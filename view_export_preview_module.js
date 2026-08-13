@@ -3537,8 +3537,12 @@ function ExportPreviewView(props) {
     toggleA11yInspect,
     updateExportPreview: updateExportPreview2,
     exportPreviewSource,
-    onExportSuccess
+    onExportSuccess,
+    builderWorkspaceMode = "author",
+    setBuilderWorkspaceMode,
+    onAdvancedReviewSessionChange
   } = props;
+  const isAdvancedReview = builderWorkspaceMode === "advanced-review" && exportPreviewSource === "remediation";
   const [writingCheck, setWritingCheck] = React.useState(null);
   const [wordGoalProgress, setWordGoalProgress] = React.useState({ count: 0, goal: 0, percent: 0 });
   const [wordCount, setWordCount] = React.useState(0);
@@ -3648,6 +3652,15 @@ function ExportPreviewView(props) {
   const [pageElements, setPageElements] = React.useState({ headerText: "", headerAlignment: "left", footerText: "", pageNumbers: "none" });
   const [paragraphLayout, setParagraphLayout] = React.useState(() => ({ ..._BUILDER_PARAGRAPH_DEFAULTS, tabStops: [] }));
   const [rulerTabAlignment, setRulerTabAlignment] = React.useState("left");
+  const [advancedReviewTab, setAdvancedReviewTab] = React.useState("structure");
+  const [advancedReviewTree, setAdvancedReviewTree] = React.useState({ roots: [], flat: [], document: { language: "", title: "" } });
+  const [advancedReviewSelectedId, setAdvancedReviewSelectedId] = React.useState("");
+  const [advancedReviewHistory, setAdvancedReviewHistory] = React.useState([]);
+  const [advancedReviewEvidenceStale, setAdvancedReviewEvidenceStale] = React.useState(false);
+  const [advancedReviewTreeError, setAdvancedReviewTreeError] = React.useState("");
+  const [advancedReviewAltDraft, setAdvancedReviewAltDraft] = React.useState("");
+  const [advancedReviewLanguageDraft, setAdvancedReviewLanguageDraft] = React.useState("");
+  const [advancedReviewCurrentHtml, setAdvancedReviewCurrentHtml] = React.useState("");
   const unresolvedReviewCommentCount = reviewComments.filter((comment) => !comment.resolved).length;
   const reviewCommentAuthors = Array.from(new Set(reviewComments.flatMap((comment) => comment.authors || comment.thread.map((message) => message.author)).filter(Boolean))).sort((left, right) => left.localeCompare(right));
   const visibleReviewComments = reviewComments.filter((comment) => (showResolvedComments || !comment.resolved) && (commentAuthorFilter === "all" || (comment.authors || []).includes(commentAuthorFilter)));
@@ -3729,6 +3742,13 @@ function ExportPreviewView(props) {
   const rulerRef = React.useRef(null);
   const rulerDragCleanupRef = React.useRef(null);
   const openerRef = React.useRef(null);
+  const advancedReviewBaselineRef = React.useRef("");
+  const advancedReviewSessionRef = React.useRef(null);
+  const advancedReviewSessionOpenRef = React.useRef(false);
+  const advancedReviewActiveRef = React.useRef(isAdvancedReview);
+  const advancedReviewHistoryRef = React.useRef([]);
+  const advancedReviewCommandDispatchRef = React.useRef(false);
+  const advancedReviewManualTimerRef = React.useRef(null);
   const draftDocumentTitle = String(exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || "AlloFlow Document").trim().substring(0, 120) || "AlloFlow Document";
   const draftIdentitySeed = Array.isArray(history) ? `${history.length}:${history[0]?.id || history[0]?.type || ""}:${history[history.length - 1]?.id || history[history.length - 1]?.type || ""}` : "empty";
   const draftStorageKey = React.useMemo(() => `alloflow-builder-draft-v1:${encodeURIComponent([exportPreviewSource || "generated", exportPreviewMode || "print", draftDocumentTitle, draftIdentitySeed].join("|")).substring(0, 220)}`, [exportPreviewSource, exportPreviewMode, draftDocumentTitle, draftIdentitySeed]);
@@ -6729,6 +6749,7 @@ ${pageCss}
     clone.querySelectorAll(".allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css,script:not([data-allo-citation-store])").forEach((node) => node.remove());
     if (options?.forExport) clone.querySelectorAll(_BUILDER_CITATION_STORE_SELECTOR).forEach((node) => node.remove());
     clone.querySelectorAll("[contenteditable]").forEach((node) => node.removeAttribute("contenteditable"));
+    clone.querySelectorAll("[data-allo-semantic-selected]").forEach((node) => node.removeAttribute("data-allo-semantic-selected"));
     _builderStripEditorBreakMetadata(clone);
     clone.querySelectorAll("[data-allo-crop-tabindex-added]").forEach((node) => {
       const added = node.getAttribute("data-allo-crop-tabindex-added") === "added";
@@ -6739,6 +6760,299 @@ ${pageCss}
     const title = String(exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || doc.title || "AlloFlow Document").trim();
     return { doc, clone, title, html: "<!DOCTYPE html>\n" + clone.outerHTML };
   }, [exportPreviewRef, exportConfig]);
+  const sanitizeAdvancedReviewSessionHtml = React.useCallback((html) => {
+    if (typeof html !== "string" || !html.trim()) return "";
+    try {
+      const parsed = new DOMParser().parseFromString(html, "text/html");
+      parsed.querySelectorAll("#allo-builder-edit-css,.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles").forEach((node) => node.remove());
+      parsed.querySelectorAll("[data-allo-semantic-selected]").forEach((node) => node.removeAttribute("data-allo-semantic-selected"));
+      parsed.body?.removeAttribute("data-allo-user-edited");
+      return "<!DOCTYPE html>\n" + parsed.documentElement.outerHTML;
+    } catch (_) {
+      return html;
+    }
+  }, []);
+  const getAdvancedReviewLiveHtml = React.useCallback(() => {
+    const clean = getCleanBuilderDocument();
+    if (clean?.html) return sanitizeAdvancedReviewSessionHtml(clean.html);
+    const doc = exportPreviewRef.current?.contentDocument;
+    return doc?.documentElement ? sanitizeAdvancedReviewSessionHtml("<!DOCTYPE html>\n" + doc.documentElement.outerHTML) : "";
+  }, [exportPreviewRef, getCleanBuilderDocument, sanitizeAdvancedReviewSessionHtml]);
+  const refreshAdvancedReviewTree = React.useCallback((providedDoc) => {
+    if (!advancedReviewActiveRef.current) return null;
+    const api = window.AlloModules?.SemanticReview;
+    if (!api || typeof api.buildSemanticTree !== "function") {
+      if (mountedRef.current) setAdvancedReviewTreeError("Semantic review tools are still loading.");
+      return null;
+    }
+    const doc = providedDoc || exportPreviewRef.current?.contentDocument;
+    if (!doc?.documentElement || !doc.body) return null;
+    try {
+      const liveHtml = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+      const result = api.buildSemanticTree(liveHtml);
+      if (!result?.ok) {
+        if (mountedRef.current) setAdvancedReviewTreeError("The document structure could not be read.");
+        return null;
+      }
+      const selector = Object.keys(api.TAG_TO_PDF_ROLE || {}).join(",");
+      const liveNodes = selector ? Array.from(doc.body.querySelectorAll(selector)) : [];
+      if (doc.body.getAttribute("data-allo-user-edited") === "1") {
+        result.flat.forEach((node, index) => {
+          if (liveNodes[index] && node?.id) liveNodes[index].setAttribute(api.SEMANTIC_ID_ATTRIBUTE || "data-allo-semantic-id", node.id);
+        });
+      }
+      const treeState = {
+        roots: result.roots || [],
+        flat: result.flat || [],
+        document: result.document || { language: "", title: "" },
+        truncated: Boolean(result.truncated)
+      };
+      if (mountedRef.current) {
+        setAdvancedReviewTree(treeState);
+        setAdvancedReviewTreeError("");
+        setAdvancedReviewSelectedId((currentId) => !currentId || treeState.flat.some((node) => node.id === currentId) ? currentId : "");
+      }
+      if (!advancedReviewBaselineRef.current) {
+        const cleanHtml = getAdvancedReviewLiveHtml();
+        advancedReviewBaselineRef.current = cleanHtml;
+        if (mountedRef.current) setAdvancedReviewCurrentHtml(cleanHtml);
+      }
+      return treeState;
+    } catch (_) {
+      if (mountedRef.current) setAdvancedReviewTreeError("The document structure could not be read.");
+      return null;
+    }
+  }, [exportPreviewRef, getAdvancedReviewLiveHtml]);
+  const selectAdvancedReviewNode = React.useCallback((nodeId) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc) return;
+    doc.querySelectorAll("[data-allo-semantic-selected]").forEach((node) => node.removeAttribute("data-allo-semantic-selected"));
+    let target = Array.from(doc.querySelectorAll("[data-allo-semantic-id]")).find((node) => node.getAttribute("data-allo-semantic-id") === nodeId);
+    if (!target) {
+      const api = window.AlloModules?.SemanticReview;
+      const selector = Object.keys(api?.TAG_TO_PDF_ROLE || {}).join(",");
+      const index = advancedReviewTree.flat.findIndex((node) => node.id === nodeId);
+      target = selector && index >= 0 ? Array.from(doc.body.querySelectorAll(selector))[index] : null;
+    }
+    if (!target) {
+      setAdvancedReviewSelectedId("");
+      return;
+    }
+    target.setAttribute("data-allo-semantic-selected", "1");
+    setAdvancedReviewSelectedId(nodeId);
+    try {
+      target.scrollIntoView({ block: "center", behavior: "smooth" });
+    } catch (_) {
+      target.scrollIntoView?.();
+    }
+  }, [advancedReviewTree, exportPreviewRef]);
+  const publishAdvancedReviewMutation = React.useCallback((html, entry) => {
+    if (!entry || !advancedReviewActiveRef.current) return;
+    const at = Date.now();
+    const normalized = {
+      id: entry.id || "review-" + at + "-" + Math.random().toString(36).slice(2, 7),
+      at,
+      type: entry.type || "manual-edit",
+      targetId: entry.targetId || "",
+      summary: entry.summary || "Edited document content",
+      details: entry.details || {},
+      actor: entry.actor || "Specialist"
+    };
+    const previous = advancedReviewHistoryRef.current;
+    const last = previous[previous.length - 1];
+    const coalesceManual = normalized.type === "manual-edit" && last?.type === "manual-edit" && at - last.at < 2e3;
+    const next = (coalesceManual ? [...previous.slice(0, -1), { ...last, at, summary: normalized.summary }] : [...previous, normalized]).slice(-100);
+    advancedReviewHistoryRef.current = next;
+    if (mountedRef.current) {
+      setAdvancedReviewHistory(next);
+      setAdvancedReviewEvidenceStale(true);
+      setAdvancedReviewCurrentHtml(html);
+    }
+    let sessionValue = null;
+    try {
+      const sessionApi = window.AlloModules?.ReviewDocumentSession;
+      if (sessionApi && typeof sessionApi.createSession === "function" && typeof sessionApi.applyCommand === "function") {
+        if (!sessionApi.isSession?.(advancedReviewSessionRef.current)) {
+          advancedReviewSessionRef.current = sessionApi.createSession({
+            workspaceMode: "advanced-review",
+            remediationResult: pdfFixResult || null,
+            baselineHtml: advancedReviewBaselineRef.current,
+            currentHtml: advancedReviewBaselineRef.current || html
+          });
+        }
+        sessionValue = sessionApi.applyCommand(
+          advancedReviewSessionRef.current,
+          { type: normalized.type, nodeId: normalized.targetId || void 0, summary: normalized.summary, details: normalized.details },
+          { ok: true, changed: true, html, summary: normalized.summary, reason: "content-modified-pending-reverification" }
+        );
+        advancedReviewSessionRef.current = sessionValue;
+      }
+    } catch (_) {
+      sessionValue = null;
+    }
+    if (typeof onAdvancedReviewSessionChange === "function") {
+      try {
+        onAdvancedReviewSessionChange(sessionValue || {
+          version: 1,
+          workspaceMode: "advanced-review",
+          source: "remediation",
+          baselineHtml: advancedReviewBaselineRef.current,
+          currentHtml: html,
+          dirty: true,
+          evidenceState: "pending-reverification",
+          invalidationReason: "content-modified-pending-reverification",
+          ledger: next,
+          lastMutation: normalized,
+          updatedAt: at
+        });
+      } catch (_) {
+      }
+    }
+  }, [onAdvancedReviewSessionChange, pdfFixResult]);
+  const applyAdvancedReviewCommand = React.useCallback((command) => {
+    if (!advancedReviewActiveRef.current) return;
+    const api = window.AlloModules?.SemanticReview;
+    if (!api || typeof api.applySemanticCommand !== "function") {
+      addToast && addToast("Semantic review tools are still loading. Please try again.", "error");
+      return;
+    }
+    const doc = exportPreviewRef.current?.contentDocument;
+    const sourceHtml = getAdvancedReviewLiveHtml();
+    if (!doc?.body || !sourceHtml) return;
+    const result = api.applySemanticCommand(sourceHtml, command);
+    if (!result?.ok) {
+      addToast && addToast("That structure change could not be applied (" + (result?.error || "unknown error") + ").", "error");
+      return;
+    }
+    if (!result.changed) {
+      addToast && addToast("The document already has that setting.", "info");
+      return;
+    }
+    try {
+      const parsed = new DOMParser().parseFromString(result.html, "text/html");
+      doc.body.innerHTML = parsed.body.innerHTML;
+      const nextLanguage = parsed.documentElement.getAttribute("lang");
+      if (nextLanguage) doc.documentElement.setAttribute("lang", nextLanguage);
+      else doc.documentElement.removeAttribute("lang");
+      doc.querySelectorAll("[data-allo-semantic-selected]").forEach((node) => node.removeAttribute("data-allo-semantic-selected"));
+      const selected = Array.from(doc.querySelectorAll("[data-allo-semantic-id]")).find((node) => node.getAttribute("data-allo-semantic-id") === result.targetId);
+      if (selected) selected.setAttribute("data-allo-semantic-selected", "1");
+      doc.body.setAttribute("data-allo-user-edited", "1");
+      advancedReviewCommandDispatchRef.current = true;
+      try {
+        doc.body.dispatchEvent(new (doc.defaultView?.Event || Event)("input", { bubbles: true }));
+      } finally {
+        advancedReviewCommandDispatchRef.current = false;
+      }
+      const currentHtml = sanitizeAdvancedReviewSessionHtml(result.html);
+      publishAdvancedReviewMutation(currentHtml, result.entry || { type: command.type, targetId: result.targetId, summary: result.summary || "Updated document semantics" });
+      refreshAdvancedReviewTree(doc);
+      if (result.targetId && result.targetId !== "document") selectAdvancedReviewNode(result.targetId);
+      addToast && addToast(result.summary || "Document semantics updated.", "success");
+    } catch (_) {
+      advancedReviewCommandDispatchRef.current = false;
+      addToast && addToast("The structure change could not be written to the editable preview.", "error");
+    }
+  }, [addToast, exportPreviewRef, getAdvancedReviewLiveHtml, publishAdvancedReviewMutation, refreshAdvancedReviewTree, sanitizeAdvancedReviewSessionHtml, selectAdvancedReviewNode]);
+  const noteAdvancedReviewManualInput = React.useCallback((doc) => {
+    if (!advancedReviewActiveRef.current || advancedReviewCommandDispatchRef.current) return;
+    if (mountedRef.current) setAdvancedReviewEvidenceStale(true);
+    if (advancedReviewManualTimerRef.current) clearTimeout(advancedReviewManualTimerRef.current);
+    advancedReviewManualTimerRef.current = setTimeout(() => {
+      advancedReviewManualTimerRef.current = null;
+      if (!advancedReviewActiveRef.current) return;
+      refreshAdvancedReviewTree(doc);
+      const currentHtml = getAdvancedReviewLiveHtml();
+      if (!currentHtml) return;
+      publishAdvancedReviewMutation(currentHtml, { type: "manual-edit", summary: "Edited document content in the preview" });
+    }, 450);
+  }, [getAdvancedReviewLiveHtml, publishAdvancedReviewMutation, refreshAdvancedReviewTree]);
+  const advancedReviewSelectedNode = React.useMemo(() => advancedReviewTree.flat.find((node) => node.id === advancedReviewSelectedId) || null, [advancedReviewTree, advancedReviewSelectedId]);
+  const advancedReviewOutline = React.useMemo(() => {
+    const rows = [];
+    const walk = (nodes, depth) => (nodes || []).forEach((node) => {
+      rows.push({ node, depth });
+      walk(node.children, depth + 1);
+    });
+    walk(advancedReviewTree.roots, 0);
+    return rows;
+  }, [advancedReviewTree]);
+  const advancedReviewIssues = React.useMemo(() => {
+    const issues = [];
+    const seen = /* @__PURE__ */ new Set();
+    const addIssue = (issue, source, index) => {
+      if (!issue) return;
+      const title = String(issue.title || issue.rule || issue.id || issue.message || "Accessibility finding");
+      const message = String(issue.message || issue.description || issue.help || issue.summary || title);
+      const key = (source + "|" + title + "|" + message).toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      issues.push({ id: String(issue.id || source + "-" + index), source, title, message, severity: String(issue.severity || issue.impact || issue.priority || "review").toLowerCase() });
+    };
+    const addList = (value, source) => {
+      if (Array.isArray(value)) value.forEach((issue, index) => addIssue(issue, source, index));
+    };
+    addList(exportAuditResult?.issues, "Current Builder audit");
+    addList(pdfFixResult?.issues, "Remediation review");
+    addList(pdfFixResult?.remainingIssues, "Remediation review");
+    addList(pdfFixResult?.axeAudit?.violations, "axe-core");
+    addList(pdfFixResult?.verificationAudit?.issues, "Verification");
+    addList(pdfFixResult?.secondEngineAudit?.violations, "Second engine");
+    advancedReviewTree.flat.forEach((node) => (node.warnings || []).forEach((warning, index) => addIssue({ id: node.id + "-warning-" + index, title: warning, message: node.text || node.role, severity: "review" }, "Structure review", index)));
+    return issues;
+  }, [advancedReviewTree, exportAuditResult, pdfFixResult]);
+  React.useEffect(() => {
+    advancedReviewActiveRef.current = isAdvancedReview;
+    if (!showExportPreview) {
+      advancedReviewSessionOpenRef.current = false;
+      advancedReviewBaselineRef.current = "";
+      advancedReviewSessionRef.current = null;
+      advancedReviewHistoryRef.current = [];
+      if (advancedReviewManualTimerRef.current) clearTimeout(advancedReviewManualTimerRef.current);
+      advancedReviewManualTimerRef.current = null;
+      setAdvancedReviewHistory([]);
+      setAdvancedReviewEvidenceStale(false);
+      setAdvancedReviewSelectedId("");
+      setAdvancedReviewCurrentHtml("");
+      return void 0;
+    }
+    if (!isAdvancedReview) return void 0;
+    if (!advancedReviewSessionOpenRef.current) {
+      const baseline = sanitizeAdvancedReviewSessionHtml(pdfFixResult?.accessibleHtml || getAdvancedReviewLiveHtml());
+      advancedReviewSessionOpenRef.current = true;
+      advancedReviewBaselineRef.current = baseline;
+      try {
+        const sessionApi = window.AlloModules?.ReviewDocumentSession;
+        advancedReviewSessionRef.current = sessionApi?.createSession?.({
+          workspaceMode: "advanced-review",
+          remediationResult: pdfFixResult || null,
+          baselineHtml: baseline,
+          currentHtml: baseline
+        }) || null;
+      } catch (_) {
+        advancedReviewSessionRef.current = null;
+      }
+      advancedReviewHistoryRef.current = [];
+      setAdvancedReviewHistory([]);
+      setAdvancedReviewEvidenceStale(false);
+      setAdvancedReviewSelectedId("");
+      setAdvancedReviewCurrentHtml(baseline);
+      setAdvancedReviewTab("structure");
+    }
+    const timer = setTimeout(() => refreshAdvancedReviewTree(), 0);
+    return () => clearTimeout(timer);
+  }, [getAdvancedReviewLiveHtml, isAdvancedReview, pdfFixResult?.accessibleHtml, refreshAdvancedReviewTree, sanitizeAdvancedReviewSessionHtml, showExportPreview]);
+  React.useEffect(() => {
+    setAdvancedReviewAltDraft(advancedReviewSelectedNode?.properties?.alt || "");
+    setAdvancedReviewLanguageDraft(advancedReviewSelectedNode?.properties?.language || advancedReviewTree.document?.language || "");
+  }, [advancedReviewSelectedNode, advancedReviewTree.document]);
+  const runAdvancedReviewBuilderAudit = React.useCallback(() => {
+    setAdvancedReviewTab("issues");
+    const dialog = exportPreviewRef.current?.closest('[role="dialog"]');
+    const auditButton = dialog?.querySelector('[data-help-key="doc_builder_wcag_audit_btn"]');
+    if (auditButton && !auditButton.disabled) auditButton.click();
+    else addToast && addToast("The Builder HTML audit is not available yet.", "info");
+  }, [addToast, exportPreviewRef]);
   const readLocalDraftStore = React.useCallback(() => {
     try {
       const rawDraft = window.localStorage.getItem(draftStorageKey);
@@ -7203,9 +7517,9 @@ ${pageCss}
         const alreadyUsed = citationItemsDraft.some((candidate, candidateIndex) => candidateIndex !== index && candidate.sourceId === source.id);
         return /* @__PURE__ */ React.createElement("option", { key: source.id, value: source.id, disabled: alreadyUsed }, source.title || _builderCitationAuthorKey(source, citationStyle), alreadyUsed ? " ? already cited" : "");
       }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex shrink-0", role: "group", "aria-label": "Reorder source " + (index + 1) }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveCitationItemDraft(index, -1), disabled: !index, className: "h-8 w-7 rounded-l border border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30", "aria-label": "Move source " + (index + 1) + " earlier" }, "?"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveCitationItemDraft(index, 1), disabled: index === citationItemsDraft.length - 1, className: "h-8 w-7 border-y border-r border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30", "aria-label": "Move source " + (index + 1) + " later" }, "?"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeCitationItemDraft(index), disabled: citationItemsDraft.length === 1, className: "h-8 rounded-r border-y border-r border-slate-300 bg-white px-2 text-[9px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-30", "aria-label": "Remove source " + (index + 1) + " from citation" }, "Remove"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-1.5 sm:grid-cols-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Prefix", /* @__PURE__ */ React.createElement("input", { value: item.prefix, onChange: (event) => updateCitationItemDraft(index, { prefix: event.target.value.slice(0, 120) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "e.g., see" })), /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Page or locator", /* @__PURE__ */ React.createElement("input", { value: item.locator, onChange: (event) => updateCitationItemDraft(index, { locator: event.target.value.slice(0, 80) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "23 or chap. 2" })), /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Suffix", /* @__PURE__ */ React.createElement("input", { value: item.suffix, onChange: (event) => updateCitationItemDraft(index, { suffix: event.target.value.slice(0, 120) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "e.g., emphasis added" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.suppressAuthor, onChange: (event) => updateCitationItemDraft(index, { suppressAuthor: event.target.checked }), className: "accent-cyan-800" }), "Suppress author"), /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.suppressYear, onChange: (event) => updateCitationItemDraft(index, { suppressYear: event.target.checked }), className: "accent-cyan-800" }), "Suppress year")));
-    }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCitationItemDraft, disabled: citationItemsDraft.length >= _BUILDER_CITATION_ITEM_LIMIT || citationItemsDraft.length >= (documentReferences.sources?.length || 0), className: "h-8 w-full rounded border border-dashed border-cyan-500 bg-cyan-50 px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, "+ Add another source"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[8px] font-black uppercase tracking-wide text-cyan-800" }, "Preview ? ", _BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle), /* @__PURE__ */ React.createElement("p", { className: "mt-1 break-words text-[11px] font-semibold text-slate-800", "aria-live": "polite" }, _builderFormatCitationCluster(citationItemsDraft, documentReferences.sources || [], citationStyle))), /* @__PURE__ */ React.createElement("p", { className: "min-h-4 text-[10px] font-bold text-red-700", role: "alert" }, citationEditorError)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2 border-t border-slate-200 bg-white px-3 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "h-9 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !citationItemsDraft.length, className: "h-9 rounded bg-cyan-800 px-4 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:opacity-40" }, "Update citation"))), /* @__PURE__ */ React.createElement("div", { className: `${isFocusMode ? "hidden" : "w-full lg:w-72"} shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("h2", { id: "document-builder-title", className: "text-sm font-black text-slate-800 flex items-center gap-2" }, "\u{1F6E0}\uFE0F Document Builder"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCitationItemDraft, disabled: citationItemsDraft.length >= _BUILDER_CITATION_ITEM_LIMIT || citationItemsDraft.length >= (documentReferences.sources?.length || 0), className: "h-8 w-full rounded border border-dashed border-cyan-500 bg-cyan-50 px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, "+ Add another source"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[8px] font-black uppercase tracking-wide text-cyan-800" }, "Preview ? ", _BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle), /* @__PURE__ */ React.createElement("p", { className: "mt-1 break-words text-[11px] font-semibold text-slate-800", "aria-live": "polite" }, _builderFormatCitationCluster(citationItemsDraft, documentReferences.sources || [], citationStyle))), /* @__PURE__ */ React.createElement("p", { className: "min-h-4 text-[10px] font-bold text-red-700", role: "alert" }, citationEditorError)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2 border-t border-slate-200 bg-white px-3 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "h-9 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !citationItemsDraft.length, className: "h-9 rounded bg-cyan-800 px-4 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:opacity-40" }, "Update citation"))), /* @__PURE__ */ React.createElement("div", { className: `${isFocusMode ? "hidden" : "w-full lg:w-72"} shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("h2", { id: "document-builder-title", className: "text-sm font-black text-slate-800 flex items-center gap-2" }, isAdvancedReview ? "Review Studio" : "Document Builder"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
       if (typeof window.AlloToggleTheme === "function") window.AlloToggleTheme();
-    }, className: "p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm", "aria-label": t("a11y.toggle_theme") || "Toggle color theme", title: theme === "contrast" ? t("theme.high_contrast") || "High Contrast" : theme === "dark" ? t("theme.dark") || "Dark Mode" : t("theme.light") || "Light Mode" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, theme === "contrast" ? "\u{1F441}" : theme === "dark" ? "\u{1F319}" : "\u2600\uFE0F")), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowExportPreview(false), className: "p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors", "data-help-key": "doc_builder_close_btn", "aria-label": t("a11y.close_doc_builder") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-controls": "document-builder-preview", onClick: () => exportPreviewRef.current?.focus(), className: "sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white" }, "Skip to editable preview"), exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u267F ", t("export_preview.remediation_banner_title") || "Editing the remediated document."), " ", t("export_preview.remediation_banner_body") || "Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them."), /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Quick Start", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Presets"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => /* @__PURE__ */ React.createElement(
+    }, className: "p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm", "aria-label": t("a11y.toggle_theme") || "Toggle color theme", title: theme === "contrast" ? t("theme.high_contrast") || "High Contrast" : theme === "dark" ? t("theme.dark") || "Dark Mode" : t("theme.light") || "Light Mode" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, theme === "contrast" ? "\u{1F441}" : theme === "dark" ? "\u{1F319}" : "\u2600\uFE0F")), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowExportPreview(false), className: "p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors", "data-help-key": "doc_builder_close_btn", "aria-label": t("a11y.close_doc_builder") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))), exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1", role: "group", "aria-label": "Document Builder workspace" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBuilderWorkspaceMode?.("author"), "aria-pressed": !isAdvancedReview, className: `min-h-9 rounded-md px-2 text-[11px] font-bold ${!isAdvancedReview ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Standard"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBuilderWorkspaceMode?.("advanced-review"), "aria-pressed": isAdvancedReview, className: `min-h-9 rounded-md px-2 text-[11px] font-bold ${isAdvancedReview ? "bg-indigo-700 text-white shadow-sm" : "text-indigo-800 hover:bg-white"}` }, "Advanced Review")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-controls": "document-builder-preview", onClick: () => exportPreviewRef.current?.focus(), className: "sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white" }, "Skip to editable preview"), exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u267F ", t("export_preview.remediation_banner_title") || "Editing the remediated document."), " ", t("export_preview.remediation_banner_body") || "Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them."), /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Quick Start", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Presets"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key,
@@ -9170,6 +9484,7 @@ ${pageCss}
             refreshActiveHeading();
             refreshPageMetrics();
             applyEditorZoom(editorZoom);
+            if (advancedReviewActiveRef.current) refreshAdvancedReviewTree(doc);
             setDraftCaptureState("ready");
             editorSelectionRangeRef.current = null;
             formatPainterRef.current = null;
@@ -9322,6 +9637,7 @@ ${pageCss}
               try {
                 _builderRefreshAdvancedAfterSnapshots(doc);
                 if (doc.body) doc.body.setAttribute("data-allo-user-edited", "1");
+                noteAdvancedReviewManualInput(doc);
                 if (mountedRef.current) setDraftCaptureState("capturing");
                 refreshFormattingState();
                 writingCheckRunRef.current += 1;
@@ -9348,7 +9664,16 @@ ${pageCss}
           }
         }
       }
-    ))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] text-slate-600 shrink-0", "aria-label": "Document status bar" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-x-3 gap-y-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-slate-700" }, isFocusMode ? "Focus mode" : "Editing enabled"), /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: `inline-flex items-center gap-1 font-medium ${draftCaptureState === "capturing" ? "text-amber-700" : ["saved", "restored", "captured"].includes(draftCaptureState) ? "text-emerald-700" : "text-slate-500"}` }, /* @__PURE__ */ React.createElement("span", { className: `h-1.5 w-1.5 rounded-full ${draftCaptureState === "capturing" ? "bg-amber-500 animate-pulse motion-reduce:animate-none" : ["saved", "restored", "captured"].includes(draftCaptureState) ? "bg-emerald-600" : "bg-slate-400"}`, "aria-hidden": "true" }), draftCaptureState === "capturing" ? "Capturing changes\u2026" : draftCaptureState === "saved" ? "Saved on this device" : draftCaptureState === "restored" ? "Local draft restored" : draftCaptureState === "captured" ? "Draft captured in this session" : "Ready"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openTrackedChanges(activeTrackedChangeId), "aria-controls": "document-builder-navigation", className: `rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? "bg-violet-100 text-violet-800 hover:bg-violet-200" : pendingTrackedChangeCount ? "bg-amber-100 text-amber-800 hover:bg-amber-200" : "text-slate-500 hover:bg-slate-200"}`, title: "Open tracked changes review" }, "Track: ", trackChangesEnabled ? "On" : "Off", " \xB7 ", pendingTrackedChangeCount, " change", pendingTrackedChangeCount === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("button", { ref: wordCountButtonRef, type: "button", onClick: (event) => showWordCountDetails ? closeWordCountDetails(true) : openWordCountDetails(event), "aria-expanded": showWordCountDetails, "aria-controls": "builder-word-count-panel", "aria-keyshortcuts": "Control+Shift+G", className: "rounded px-1.5 py-1 font-semibold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800", title: "Open detailed Word Count (Ctrl+Shift+G)" }, selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`), showWordCountDetails && /* @__PURE__ */ React.createElement("section", { ref: wordCountPanelRef, id: "builder-word-count-panel", tabIndex: -1, role: "dialog", "aria-modal": "false", "aria-labelledby": "builder-word-count-title", "aria-describedby": "builder-word-count-description", className: "absolute bottom-full left-0 z-[90] mb-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-300 bg-white p-3 text-slate-700 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "builder-word-count-title", className: "text-sm font-black text-slate-900" }, "Word Count"), /* @__PURE__ */ React.createElement("p", { id: "builder-word-count-description", className: "text-[10px] text-slate-500" }, "Live statistics for this document", selectionStatistics.active ? " and the selected text" : "", ".")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeWordCountDetails(true), className: "min-h-8 rounded px-2 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-800", "aria-label": "Close Word Count details" }, "Close")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 overflow-hidden rounded-lg border border-slate-200" }, /* @__PURE__ */ React.createElement("table", { className: "w-full border-collapse text-[11px]" }, /* @__PURE__ */ React.createElement("caption", { className: "sr-only" }, "Document and selection statistics"), /* @__PURE__ */ React.createElement("thead", { className: "bg-slate-100 text-[9px] font-black uppercase tracking-wider text-slate-500" }, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-left" }, "Statistic"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-right" }, "Document"), selectionStatistics.active && /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-right" }, "Selection"))), /* @__PURE__ */ React.createElement("tbody", null, [
+    )), isAdvancedReview && /* @__PURE__ */ React.createElement("aside", { id: "document-builder-advanced-review", role: "complementary", "aria-labelledby": "advanced-review-heading", className: "flex w-[22rem] max-w-[44vw] shrink-0 flex-col border-l border-slate-300 bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-sky-50 px-3 py-2.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "advanced-review-heading", className: "text-xs font-black text-slate-900" }, "Advanced Review"), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[9px] leading-snug text-slate-600" }, "Specialist review of the remediated HTML structure used by AlloFlow exports. This is not a native arbitrary-PDF tag editor.")), /* @__PURE__ */ React.createElement("span", { role: "status", className: `shrink-0 rounded-full px-2 py-1 text-[9px] font-black ${advancedReviewEvidenceStale ? "bg-amber-100 text-amber-900 ring-1 ring-amber-300" : "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300"}` }, advancedReviewEvidenceStale ? "Reverify" : "Evidence current"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-5 border-b border-slate-200 bg-slate-50", role: "tablist", "aria-label": "Advanced Review tools" }, [
+      ["structure", "Structure"],
+      ["issues", "Issues"],
+      ["properties", "Properties"],
+      ["history", "History"],
+      ["compare", "Compare"]
+    ].map(([tabId, label]) => /* @__PURE__ */ React.createElement("button", { key: tabId, id: `advanced-review-tab-${tabId}`, type: "button", role: "tab", "aria-selected": advancedReviewTab === tabId, "aria-controls": `advanced-review-panel-${tabId}`, tabIndex: advancedReviewTab === tabId ? 0 : -1, onClick: () => setAdvancedReviewTab(tabId), className: `min-h-10 border-b-2 px-1 text-[9px] font-bold ${advancedReviewTab === tabId ? "border-indigo-700 bg-white text-indigo-800" : "border-transparent text-slate-600 hover:bg-white hover:text-slate-900"}` }, label, tabId === "issues" && advancedReviewIssues.length ? ` (${advancedReviewIssues.length})` : ""))), /* @__PURE__ */ React.createElement("div", { className: "min-h-0 flex-1 overflow-y-auto" }, advancedReviewTab === "structure" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-structure", role: "tabpanel", "aria-labelledby": "advanced-review-tab-structure", className: "p-2.5" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Semantic structure"), /* @__PURE__ */ React.createElement("div", { className: "text-[9px] text-slate-500" }, advancedReviewTree.flat.length, " tagged source node", advancedReviewTree.flat.length === 1 ? "" : "s")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => refreshAdvancedReviewTree(), className: "min-h-8 rounded border border-slate-300 bg-white px-2 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "Refresh")), advancedReviewTreeError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "mb-2 rounded border border-amber-300 bg-amber-50 p-2 text-[10px] font-semibold text-amber-900" }, advancedReviewTreeError), advancedReviewTree.truncated && /* @__PURE__ */ React.createElement("p", { className: "mb-2 rounded bg-amber-50 p-2 text-[9px] text-amber-900" }, "The outline is capped for responsiveness."), /* @__PURE__ */ React.createElement("div", { role: "tree", "aria-label": "Document semantic structure", className: "space-y-0.5" }, advancedReviewOutline.map(({ node, depth }) => /* @__PURE__ */ React.createElement("button", { key: node.id, type: "button", role: "treeitem", "aria-selected": advancedReviewSelectedId === node.id, "aria-level": depth + 1, onClick: () => selectAdvancedReviewNode(node.id), onDoubleClick: () => {
+      selectAdvancedReviewNode(node.id);
+      setAdvancedReviewTab("properties");
+    }, style: { paddingLeft: Math.min(48, 6 + depth * 12) }, className: `flex min-h-8 w-full items-center gap-1.5 rounded pr-2 text-left text-[10px] ${advancedReviewSelectedId === node.id ? "bg-sky-100 text-sky-950 ring-1 ring-sky-400" : "text-slate-700 hover:bg-slate-100"}` }, /* @__PURE__ */ React.createElement("span", { className: "w-9 shrink-0 rounded bg-slate-200 px-1 py-0.5 text-center font-black text-slate-700" }, node.role), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 truncate" }, node.text || "(empty)"), node.warnings?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "h-2 w-2 shrink-0 rounded-full bg-amber-500", "aria-label": `${node.warnings.length} warning${node.warnings.length === 1 ? "" : "s"}`, title: node.warnings.join("; ") }))), !advancedReviewOutline.length && !advancedReviewTreeError && /* @__PURE__ */ React.createElement("p", { className: "rounded bg-slate-50 p-3 text-center text-[10px] text-slate-500" }, "No semantic source nodes found.")), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[9px] leading-snug text-slate-500" }, "Select a node to highlight it in the preview. Double-click to open its properties.")), advancedReviewTab === "issues" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-issues", role: "tabpanel", "aria-labelledby": "advanced-review-tab-issues", className: "p-2.5" }, advancedReviewEvidenceStale && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mb-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] leading-snug text-amber-950" }, /* @__PURE__ */ React.createElement("strong", null, "Content changed."), " Findings from the prior remediation run no longer prove the edited version. Run the Builder audit for quick HTML feedback, then reverify through the remediation pipeline before claiming a verified result."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: runAdvancedReviewBuilderAudit, disabled: exportAuditLoading, "aria-busy": exportAuditLoading, className: "mb-3 min-h-9 w-full rounded-lg bg-indigo-700 px-3 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-60" }, exportAuditLoading ? "Running Builder audit..." : "Run Builder HTML audit"), /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[9px] leading-snug text-slate-500" }, "This in-editor audit is a useful review aid; it does not replace final tagged-PDF verification."), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, advancedReviewIssues.map((issue) => /* @__PURE__ */ React.createElement("article", { key: issue.source + "-" + issue.id, className: "rounded-lg border border-slate-200 bg-white p-2 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black text-slate-800" }, issue.title), /* @__PURE__ */ React.createElement("span", { className: `rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${["critical", "serious", "high"].includes(issue.severity) ? "bg-red-100 text-red-800" : ["moderate", "medium"].includes(issue.severity) ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700"}` }, issue.severity)), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-600" }, issue.message), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[8px] font-bold uppercase tracking-wide text-slate-400" }, issue.source))), !advancedReviewIssues.length && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-3 text-center text-[10px] text-slate-600" }, "No findings are available in the current review data. Run the Builder audit for this HTML version."))), advancedReviewTab === "properties" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-properties", role: "tabpanel", "aria-labelledby": "advanced-review-tab-properties", className: "space-y-3 p-2.5" }, advancedReviewSelectedNode ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-sky-200 bg-sky-50 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "rounded bg-sky-700 px-1.5 py-0.5 text-[9px] font-black text-white" }, advancedReviewSelectedNode.role), /* @__PURE__ */ React.createElement("strong", { className: "min-w-0 flex-1 truncate text-[10px] text-slate-900" }, advancedReviewSelectedNode.text || "(empty node)")), /* @__PURE__ */ React.createElement("code", { className: "mt-1 block truncate text-[8px] text-slate-500" }, advancedReviewSelectedNode.id)), ["p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote"].includes(advancedReviewSelectedNode.tag) && /* @__PURE__ */ React.createElement("label", { className: "block text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Semantic role", /* @__PURE__ */ React.createElement("select", { value: advancedReviewSelectedNode.tag, onChange: (event) => applyAdvancedReviewCommand({ type: "retag", nodeId: advancedReviewSelectedNode.id, tag: event.target.value }), className: "mt-1 min-h-9 w-full rounded border border-slate-300 bg-white px-2 text-[11px] font-semibold normal-case text-slate-900" }, /* @__PURE__ */ React.createElement("option", { value: "p" }, "Paragraph"), /* @__PURE__ */ React.createElement("option", { value: "h1" }, "Heading 1"), /* @__PURE__ */ React.createElement("option", { value: "h2" }, "Heading 2"), /* @__PURE__ */ React.createElement("option", { value: "h3" }, "Heading 3"), /* @__PURE__ */ React.createElement("option", { value: "h4" }, "Heading 4"), /* @__PURE__ */ React.createElement("option", { value: "h5" }, "Heading 5"), /* @__PURE__ */ React.createElement("option", { value: "h6" }, "Heading 6"), /* @__PURE__ */ React.createElement("option", { value: "blockquote" }, "Block quote"))), /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", { className: "text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Reading order"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "move", nodeId: advancedReviewSelectedNode.id, direction: "up" }), className: "min-h-9 rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Move earlier"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "move", nodeId: advancedReviewSelectedNode.id, direction: "down" }), className: "min-h-9 rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Move later"))), ["img", "figure"].includes(advancedReviewSelectedNode.tag) && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Alternative text", /* @__PURE__ */ React.createElement("textarea", { rows: 3, value: advancedReviewAltDraft, onChange: (event) => setAdvancedReviewAltDraft(event.target.value), className: "mt-1 w-full rounded border border-slate-300 p-2 text-[10px] font-medium normal-case text-slate-900" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-alt", nodeId: advancedReviewSelectedNode.id, alt: advancedReviewAltDraft }), className: "min-h-9 w-full rounded bg-sky-700 px-2 text-[10px] font-bold text-white hover:bg-sky-800" }, "Apply alternative text"), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-10 cursor-pointer items-center gap-2 rounded border border-slate-300 px-2 text-[10px] font-semibold text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: Boolean(advancedReviewSelectedNode.properties?.artifact), onChange: (event) => applyAdvancedReviewCommand({ type: "set-artifact", nodeId: advancedReviewSelectedNode.id, artifact: event.target.checked }) }), "Artifact / decorative image")), advancedReviewSelectedNode.tag === "table" && /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", { className: "text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Table headers"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 grid grid-cols-3 gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "first-row" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "First row"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "first-column" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "First column"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "both" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "Both")))) : /* @__PURE__ */ React.createElement("p", { className: "rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-[10px] leading-snug text-slate-600" }, "Select a node in Structure to edit its role, order, image semantics, language, or table headers."), /* @__PURE__ */ React.createElement("fieldset", { className: "rounded-lg border border-slate-200 p-2" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[9px] font-black uppercase tracking-wide text-slate-600" }, advancedReviewSelectedNode ? "Selected node language" : "Document language"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: advancedReviewLanguageDraft, onChange: (event) => setAdvancedReviewLanguageDraft(event.target.value), placeholder: "en-US", "aria-label": advancedReviewSelectedNode ? "Selected node language" : "Document language", className: "min-h-9 min-w-0 flex-1 rounded border border-slate-300 px-2 text-[10px] text-slate-900" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-language", nodeId: advancedReviewSelectedNode?.id, language: advancedReviewLanguageDraft }), className: "min-h-9 rounded bg-indigo-700 px-2 text-[9px] font-bold text-white hover:bg-indigo-800" }, "Apply")))), advancedReviewTab === "history" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-history", role: "tabpanel", "aria-labelledby": "advanced-review-tab-history", className: "p-2.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Review ledger"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-500" }, "Only actual content mutations appear here. Opening or inspecting the structure does not invalidate evidence."), /* @__PURE__ */ React.createElement("ol", { className: "mt-3 space-y-2" }, advancedReviewHistory.slice().reverse().map((entry) => /* @__PURE__ */ React.createElement("li", { key: entry.id, className: "rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("strong", { className: "text-[10px] text-slate-800" }, entry.summary), /* @__PURE__ */ React.createElement("time", { className: "shrink-0 text-[8px] text-slate-400" }, new Date(entry.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[8px] uppercase tracking-wide text-slate-500" }, entry.type, entry.targetId ? ` - ${entry.targetId}` : ""))), !advancedReviewHistory.length && /* @__PURE__ */ React.createElement("li", { className: "rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-center text-[10px] text-slate-500" }, "No specialist mutations in this session."))), advancedReviewTab === "compare" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-compare", role: "tabpanel", "aria-labelledby": "advanced-review-tab-compare", className: "p-2.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Session comparison"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-500" }, "Compare the remediation HTML as it entered this session with the current edited HTML. This is not a visual reconstruction of the original PDF."), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-3" }, /* @__PURE__ */ React.createElement("figure", null, /* @__PURE__ */ React.createElement("figcaption", { className: "mb-1 text-[9px] font-black text-slate-700" }, "Session baseline"), /* @__PURE__ */ React.createElement("iframe", { title: "Advanced Review session baseline", sandbox: "", srcDoc: advancedReviewBaselineRef.current, className: "h-52 w-full rounded border border-slate-300 bg-white" })), /* @__PURE__ */ React.createElement("figure", null, /* @__PURE__ */ React.createElement("figcaption", { className: "mb-1 text-[9px] font-black text-slate-700" }, "Current edited HTML"), /* @__PURE__ */ React.createElement("iframe", { title: "Advanced Review current document", sandbox: "", srcDoc: advancedReviewCurrentHtml || advancedReviewBaselineRef.current, className: "h-52 w-full rounded border border-slate-300 bg-white" }))))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] text-slate-600 shrink-0", "aria-label": "Document status bar" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-x-3 gap-y-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-slate-700" }, isFocusMode ? "Focus mode" : "Editing enabled"), /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: `inline-flex items-center gap-1 font-medium ${draftCaptureState === "capturing" ? "text-amber-700" : ["saved", "restored", "captured"].includes(draftCaptureState) ? "text-emerald-700" : "text-slate-500"}` }, /* @__PURE__ */ React.createElement("span", { className: `h-1.5 w-1.5 rounded-full ${draftCaptureState === "capturing" ? "bg-amber-500 animate-pulse motion-reduce:animate-none" : ["saved", "restored", "captured"].includes(draftCaptureState) ? "bg-emerald-600" : "bg-slate-400"}`, "aria-hidden": "true" }), draftCaptureState === "capturing" ? "Capturing changes\u2026" : draftCaptureState === "saved" ? "Saved on this device" : draftCaptureState === "restored" ? "Local draft restored" : draftCaptureState === "captured" ? "Draft captured in this session" : "Ready"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openTrackedChanges(activeTrackedChangeId), "aria-controls": "document-builder-navigation", className: `rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? "bg-violet-100 text-violet-800 hover:bg-violet-200" : pendingTrackedChangeCount ? "bg-amber-100 text-amber-800 hover:bg-amber-200" : "text-slate-500 hover:bg-slate-200"}`, title: "Open tracked changes review" }, "Track: ", trackChangesEnabled ? "On" : "Off", " \xB7 ", pendingTrackedChangeCount, " change", pendingTrackedChangeCount === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("button", { ref: wordCountButtonRef, type: "button", onClick: (event) => showWordCountDetails ? closeWordCountDetails(true) : openWordCountDetails(event), "aria-expanded": showWordCountDetails, "aria-controls": "builder-word-count-panel", "aria-keyshortcuts": "Control+Shift+G", className: "rounded px-1.5 py-1 font-semibold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800", title: "Open detailed Word Count (Ctrl+Shift+G)" }, selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`), showWordCountDetails && /* @__PURE__ */ React.createElement("section", { ref: wordCountPanelRef, id: "builder-word-count-panel", tabIndex: -1, role: "dialog", "aria-modal": "false", "aria-labelledby": "builder-word-count-title", "aria-describedby": "builder-word-count-description", className: "absolute bottom-full left-0 z-[90] mb-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-300 bg-white p-3 text-slate-700 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "builder-word-count-title", className: "text-sm font-black text-slate-900" }, "Word Count"), /* @__PURE__ */ React.createElement("p", { id: "builder-word-count-description", className: "text-[10px] text-slate-500" }, "Live statistics for this document", selectionStatistics.active ? " and the selected text" : "", ".")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeWordCountDetails(true), className: "min-h-8 rounded px-2 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-800", "aria-label": "Close Word Count details" }, "Close")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 overflow-hidden rounded-lg border border-slate-200" }, /* @__PURE__ */ React.createElement("table", { className: "w-full border-collapse text-[11px]" }, /* @__PURE__ */ React.createElement("caption", { className: "sr-only" }, "Document and selection statistics"), /* @__PURE__ */ React.createElement("thead", { className: "bg-slate-100 text-[9px] font-black uppercase tracking-wider text-slate-500" }, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-left" }, "Statistic"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-right" }, "Document"), selectionStatistics.active && /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-right" }, "Selection"))), /* @__PURE__ */ React.createElement("tbody", null, [
       ["Pages", pageMetrics.count, null],
       ["Words", documentStatistics.words, selectionStatistics.words],
       ["Characters (no spaces)", documentStatistics.charactersWithoutSpaces, selectionStatistics.charactersWithoutSpaces],
@@ -9465,6 +9790,7 @@ async function updateExportPreview(deps) {
     editStyle.id = "allo-builder-edit-css";
     const _baseEditCss = `
         [contenteditable]:focus, *:focus { outline: 2px solid #6366f1 !important; outline-offset: 2px; border-radius: 4px; }
+        [data-allo-semantic-selected="1"] { outline: 4px solid #0ea5e9 !important; outline-offset: 4px !important; background-color: rgba(224,242,254,.42) !important; scroll-margin: 7rem; }
         img { cursor: move; transition: outline 0.2s; }
         img:hover { outline: 2px dashed #6366f1; }
         [data-allo-page-break="1"], [data-allo-section-break] { position:relative;display:block;height:var(--allo-break-fill,24px) !important;margin:0 !important;border:0 !important;border-top:2px dashed #94a3b8 !important;background:linear-gradient(to bottom,transparent 0,transparent 11px,rgba(148,163,184,0.12) 11px,rgba(148,163,184,0.12) 13px,transparent 13px) !important; }

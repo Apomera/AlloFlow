@@ -19,6 +19,7 @@ var _lazyIcon = function (name) {
     return I ? React.createElement(I, props) : null;
   };
 };
+var AlertTriangle = _lazyIcon('AlertTriangle');
 var CheckCircle2 = _lazyIcon('CheckCircle2');
 var ChevronDown = _lazyIcon('ChevronDown');
 var ChevronUp = _lazyIcon('ChevronUp');
@@ -210,6 +211,7 @@ const InteractiveBlueprintCard = React.memo(({
   isRunning,
   onStopRun,
   onRebuildStep,
+  onOpenErrorLog,
   onCopyDiagnostics,
   onDownloadDiagnostics,
   summarizeFailureReason,
@@ -416,6 +418,7 @@ const InteractiveBlueprintCard = React.memo(({
     return opt && opt.desc || '';
   };
   const toggleDesc = id => setOpenDescIds(prev => prev.indexOf(id) === -1 ? prev.concat([id]) : prev.filter(x => x !== id));
+  const hasFailureDiagnostics = Boolean(run && Object.values(run.rows || {}).some(row => row && ['failed', 'interrupted', 'stopped'].includes(row.status)));
   return /*#__PURE__*/React.createElement("div", {
     "data-help-key": "blueprint_card_panel",
     className: "bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-lg animate-in zoom-in duration-300 w-full max-w-2xl"
@@ -433,7 +436,17 @@ const InteractiveBlueprintCard = React.memo(({
     className: "text-xs text-slate-600"
   }, isEditing ? t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.') : t('blueprint.review_instruction')))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1.5"
-  }, run && typeof onCopyDiagnostics === 'function' && /*#__PURE__*/React.createElement("button", {
+  }, hasFailureDiagnostics && typeof onOpenErrorLog === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-testid": "bp-open-error-log",
+    onClick: onOpenErrorLog,
+    className: "p-2 rounded-lg text-xs font-bold border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600",
+    title: t('blueprint.open_error_log') || 'Open error log',
+    "aria-label": t('blueprint.open_error_log') || 'Open error log'
+  }, /*#__PURE__*/React.createElement(AlertTriangle, {
+    size: 14,
+    "aria-hidden": "true"
+  })), run && typeof onCopyDiagnostics === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-testid": "bp-copy-diagnostics",
     onClick: onCopyDiagnostics,

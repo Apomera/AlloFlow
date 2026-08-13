@@ -152,6 +152,13 @@ function startLoop(fake, ctxOverrides = {}, opts = {}) {
   return { loop, ctx, rec: fake.recognitionInstances[0] };
 }
 
+describe('spoken confirmation timing', () => {
+  it('does not let slow reply speech consume the learner response window', () => {
+    const source = readFileSync('allo_commands_source.jsx', 'utf8');
+    const match = source.match(/const CONFIRMATION_TIMEOUT_MS = (\d+);/);
+    expect(Number(match && match[1])).toBeGreaterThanOrEqual(45000);
+  });
+});
 describe('voice-only pause recovery', () => {
   it('auto-resumes a bare spoken pause after the announced 30 seconds', async () => {
     vi.useFakeTimers();

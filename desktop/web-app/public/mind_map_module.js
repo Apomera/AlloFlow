@@ -129,6 +129,14 @@
   var NODE_H = 120;
   var CANVAS_W = 2400;
   var CANVAS_H = 1400;
+  var UNIT_PATH_PUBLISH_DELAY_MS = 300;
+  var UNIT_PATH_PUBLISH_RETRY_BASE_MS = 250;
+  var UNIT_PATH_PUBLISH_MAX_ATTEMPTS = 3;
+  var UNIT_PATH_MAX_NODES = 240;
+  var UNIT_PATH_MAX_EDGES = 480;
+  var UNIT_PATH_MAX_RETIREMENTS = 8;
+  var UNIT_PATH_MAX_SCOPE_ID_LENGTH = 240;
+  var UNIT_PATH_PUBLICATION_ID_RE = /^unit-path:[A-Za-z0-9._:-]{1,180}$/;
   // ── Swim-lanes (the meaningful 2nd axis: strand / UbD phase / UDL mode / tier) ──
   // node.category (already persisted + round-tripped, previously never rendered) is
   // surfaced as horizontal lane bands. The lane INDEX is the single source of
@@ -312,12 +320,39 @@
       createdAt: nowIso(),
       updatedAt: nowIso(),
       nodes: [],
-      edges: []
+      edges: [],
+      learningWebRetirements: []
     };
   }
 
+  function validUnitPathScopeId(value) {
+    return typeof value === 'string' && value.length > 0 && value.length <= UNIT_PATH_MAX_SCOPE_ID_LENGTH
+      && !/[\u0000-\u001f\u007f]/.test(value);
+  }
+  function unitPathRetirementKey(id, scopeId) { return String(id || '') + '\u0000' + String(scopeId || ''); }
+
+  function normalizeUnitPathRetirements(raw) {
+    if (!Array.isArray(raw)) return [];
+    var seen = {};
+    return raw.slice(0, UNIT_PATH_MAX_RETIREMENTS * 2).filter(function (entry) {
+      if (!entry || typeof entry !== 'object') return false;
+      var id = typeof entry.id === 'string' ? entry.id : '';
+      var scopeId = typeof entry.scopeId === 'string' ? entry.scopeId : '';
+      var reason = entry.reason === 'emptied' ? 'emptied' : (entry.reason === 'cleared' ? 'cleared' : '');
+      var key = id + "\u0000" + scopeId;
+      if (!UNIT_PATH_PUBLICATION_ID_RE.test(id) || !validUnitPathScopeId(scopeId) || !reason || seen[key]) return false;
+      seen[key] = true;
+      entry.id = id; entry.scopeId = scopeId; entry.reason = reason;
+      return true;
+    }).slice(0, UNIT_PATH_MAX_RETIREMENTS).map(function (entry) {
+      return { id: entry.id, scopeId: entry.scopeId, reason: entry.reason };
+    });
+  }
+
   // ── normalize() — tolerate partial / hand-edited / older files ──────
-  function normalizeUnit(raw) {
+  // `allowLocalRetirements` is true only for our private STORAGE_KEY.
+  // Imported/exported unit files cannot inject retirement commands.
+  function normalizeUnit(raw, allowLocalRetirements) {
     var u = emptyUnit();
     if (!raw || typeof raw !== 'object') return u;
     // carry forward known scalar fields if present
@@ -326,6 +361,7 @@
       if (raw[k] != null) u[k] = raw[k];
     });
     if (typeof raw.minAppSchema === 'number') u.minAppSchema = raw.minAppSchema;
+    u.learningWebRetirements = allowLocalRetirements ? normalizeUnitPathRetirements(raw.learningWebRetirements) : [];
     var nodes = Array.isArray(raw.nodes) ? raw.nodes : [];
     var seen = {};
     u.nodes = nodes.filter(function (n) {
@@ -363,7 +399,7 @@
       if (!raw) return emptyUnit();
       var parsed = JSON.parse(raw);
       if (!parsed || parsed.schemaVersion !== SCHEMA_VERSION) return emptyUnit();
-      return normalizeUnit(parsed);
+      return normalizeUnit(parsed, true);
     } catch (e) {
       console.warn('[Throughline] storage load failed:', e.message);
       return emptyUnit();
@@ -391,6 +427,168 @@
     } catch (e) {
       return null;
     }
+  }
+
+  // Build the read-only unit-path projection published to a host Learning Web.
+  // The editable unit remains the source of truth. This adapter is deliberately
+  // local as well as engine-aware because the shared engine is lazy-loaded: a
+  // host can register unit paths before anyone opens the optional 3D view.
+  function fallbackUnitPathGraph(unit) {
+    var graph = {
+      version: 'acg/v1',
+      title: unit && typeof unit.title === 'string' ? unit.title : '',
+      axes: null,
+      nodes: [],
+      edges: [],
+      layers: [],
+      meta: { throughline: {} }
+    };
+    if (!unit || typeof unit !== 'object') return graph;
+    Object.keys(unit).forEach(function (key) {
+      if (key !== 'nodes' && key !== 'edges' && key !== 'learningWebRetirements') graph.meta.throughline[key] = unit[key];
+    });
+    graph.nodes = (Array.isArray(unit.nodes) ? unit.nodes : []).map(function (sourceNode) {
+      var node = Object.assign({}, sourceNode, {
+        id: sourceNode.nodeId,
+        z: typeof sourceNode.z === 'number' ? sourceNode.z : 0,
+        label: typeof sourceNode.label === 'string' ? sourceNode.label : ''
+      });
+      delete node.nodeId;
+      return node;
+    });
+    graph.edges = (Array.isArray(unit.edges) ? unit.edges : []).map(function (edge) {
+      return { fromId: edge.from, toId: edge.to, type: EDGE_STYLES[edge.type] ? edge.type : 'sequence' };
+    });
+    return graph;
+  }
+
+  function unitPathLayers(nodes) {
+    var order = [], seen = {}, hasUngrouped = false;
+    (nodes || []).forEach(function (node) {
+      var category = node && typeof node.category === 'string' && node.category ? node.category : null;
+      if (category === null) { hasUngrouped = true; return; }
+      if (!seen[category]) { seen[category] = true; order.push(category); }
+    });
+    order.sort(function (a, b) { return String(a).localeCompare(String(b)); });
+    var layers = order.map(function (key, index) { return { key: key, label: key, index: index }; });
+    if (hasUngrouped || !layers.length) layers.push({ key: null, label: 'Ungrouped', index: layers.length });
+    return layers;
+  }
+
+  function unitPathIdHash(value) {
+    var input = String(value == null ? '' : value);
+    var fnv = 2166136261, djb = 5381, sdbm = 0;
+    for (var i = 0; i < input.length; i++) {
+      var code = input.charCodeAt(i);
+      fnv ^= code & 255; fnv = Math.imul(fnv, 16777619);
+      fnv ^= code >>> 8; fnv = Math.imul(fnv, 16777619);
+      djb = Math.imul(djb, 33) ^ code;
+      sdbm = Math.imul(sdbm, 65599) + code;
+    }
+    function hex(value) { return ('00000000' + (value >>> 0).toString(16)).slice(-8); }
+    return hex(fnv) + hex(djb) + hex(sdbm);
+  }
+
+  function canonicalUnitPathPublicationId(unitId) {
+    if (typeof unitId !== 'string' || !unitId.length) return '';
+    if (/^[A-Za-z0-9._:-]{1,180}$/.test(unitId)) return 'unit-path:' + unitId;
+    var readable = unitId.trim();
+    try { if (typeof readable.normalize === 'function') readable = readable.normalize('NFKD'); } catch (e) {}
+    readable = readable.replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9._:-]+/g, '-');
+    readable = readable.replace(/-+/g, '-').replace(/^[._:-]+|[._:-]+$/g, '');
+    var hash = unitPathIdHash(unitId);
+    var maxReadable = 180 - 2 - hash.length;
+    readable = readable.slice(0, maxReadable).replace(/[._:-]+$/g, '') || 'unit';
+    var id = 'unit-path:' + readable + '--' + hash;
+    if (!UNIT_PATH_PUBLICATION_ID_RE.test(id)) id = 'unit-path:unit--' + hash;
+    return UNIT_PATH_PUBLICATION_ID_RE.test(id) ? id : '';
+  }
+
+  function buildUnitPathPublication(unit, lessonPool) {
+    if (!unit || !Array.isArray(unit.nodes) || !unit.nodes.length) return null;
+    var originalUnitId = typeof unit.unitId === 'string' ? unit.unitId : '';
+    var publicationId = canonicalUnitPathPublicationId(originalUnitId);
+    if (!publicationId) return null;
+    var graphUnit = Object.assign({}, unit);
+    delete graphUnit.learningWebRetirements;
+    var shared = sharedGraphForUnit(graphUnit);
+    var sourceGraph = shared && shared.graph ? shared.graph : fallbackUnitPathGraph(graphUnit);
+    var sourceById = {};
+    unit.nodes.forEach(function (node) { if (node && node.nodeId) sourceById[node.nodeId] = node; });
+    var visibleIds = {}, nodes = [];
+    (Array.isArray(sourceGraph.nodes) ? sourceGraph.nodes.slice() : [])
+      .filter(function (node) { return node && typeof node.id === 'string' && node.id; })
+      .sort(function (a, b) { return a.id.localeCompare(b.id); })
+      .some(function (rawNode) {
+        if (nodes.length >= UNIT_PATH_MAX_NODES) return true;
+        if (visibleIds[rawNode.id]) return false;
+        var sourceNode = sourceById[rawNode.id] || null;
+        var node = Object.assign({}, rawNode);
+        var resourceId = sourceNode && typeof sourceNode.lessonId === 'string' && sourceNode.lessonId
+          ? sourceNode.lessonId
+          : (typeof node.lessonId === 'string' && node.lessonId ? node.lessonId : '');
+        if (resourceId) {
+          // Exact source reference only. Never derive a resource identity from a
+          // title, description, graph position, or neighboring node.
+          node.resourceId = resourceId;
+          var resource = lessonPool && lessonPool[resourceId];
+          if (resource && typeof resource.title === 'string' && resource.title.trim()) {
+            node.label = resource.title.trim().slice(0, 400);
+            node.resourceTitle = node.label;
+          }
+          if (resource && typeof resource.type === 'string' && resource.type) node.resourceType = resource.type.slice(0, 80);
+          if (!node.type) node.type = 'lesson';
+        } else {
+          delete node.resourceId;
+          if (!node.type) node.type = 'plannedLesson';
+        }
+        if (!node.label) node.label = sourceNode && sourceNode.description ? String(sourceNode.description).slice(0, 400) : 'Planned lesson';
+        visibleIds[node.id] = true;
+        nodes.push(node);
+        return false;
+      });
+    if (!nodes.length) return null;
+    var edges = [];
+    (Array.isArray(sourceGraph.edges) ? sourceGraph.edges.slice() : [])
+      .sort(function (a, b) {
+        var ak = String(a && a.fromId || '') + '|' + String(a && a.toId || '') + '|' + String(a && a.type || '');
+        var bk = String(b && b.fromId || '') + '|' + String(b && b.toId || '') + '|' + String(b && b.type || '');
+        return ak.localeCompare(bk);
+      })
+      .some(function (rawEdge) {
+        if (edges.length >= UNIT_PATH_MAX_EDGES) return true;
+        if (!rawEdge || !visibleIds[rawEdge.fromId] || !visibleIds[rawEdge.toId] || rawEdge.fromId === rawEdge.toId) return false;
+        edges.push(Object.assign({}, rawEdge));
+        return false;
+      });
+    var resourceIds = {};
+    unit.nodes.forEach(function (node) {
+      if (!node || typeof node !== 'object') return;
+      if (typeof node.lessonId === 'string' && node.lessonId) resourceIds[node.lessonId] = true;
+      (Array.isArray(node.bundledLessonIds) ? node.bundledLessonIds : []).forEach(function (id) {
+        if (typeof id === 'string' && id) resourceIds[id] = true;
+      });
+    });
+    var graph = Object.assign({}, sourceGraph, {
+      version: 'acg/v1',
+      title: typeof unit.title === 'string' ? unit.title : '',
+      nodes: nodes,
+      edges: edges,
+      layers: unitPathLayers(nodes),
+      meta: Object.assign({}, sourceGraph.meta || {}, {
+        throughline: Object.assign({}, sourceGraph.meta && sourceGraph.meta.throughline || {}, {
+          unitId: originalUnitId,
+          publicationId: publicationId,
+          sourceUnitId: unit.sourceUnitId || null
+        })
+      })
+    });
+    return {
+      graph: graph,
+      id: publicationId,
+      title: (typeof unit.title === 'string' && unit.title.trim()) ? unit.title.trim().slice(0, 320) : 'Untitled unit',
+      resourceRefs: Object.keys(resourceIds).sort()
+    };
   }
   // ── Topological sort for the derived linear outline (cycle-safe) ────
   // Returns { order: [nodeId...], hasCycle: bool }. Ties + disconnected nodes
@@ -509,6 +707,9 @@
     var currentLesson = props.currentLesson || null;
     var inLiveSession = !!props.inLiveSession;
     var onOpenLesson = typeof props.onOpenLesson === 'function' ? props.onOpenLesson : null;
+    var onRegisterUnitPathGraph = typeof props.onRegisterUnitPathGraph === 'function' ? props.onRegisterUnitPathGraph : null;
+    var onUnregisterUnitPathGraph = typeof props.onUnregisterUnitPathGraph === 'function' ? props.onUnregisterUnitPathGraph : null;
+    var unitPathScopeId = validUnitPathScopeId(props.unitPathScopeId) ? props.unitPathScopeId : '';
     var savedAlignmentGraphExport = props.alignmentGraphExport && typeof props.alignmentGraphExport === 'object' ? props.alignmentGraphExport : null;
     var importedAlignmentGraphExport = props.importedAlignmentGraphExport && typeof props.importedAlignmentGraphExport === 'object' ? props.importedAlignmentGraphExport : null;
     var alignmentGraphExport = importedAlignmentGraphExport || savedAlignmentGraphExport;
@@ -526,10 +727,10 @@
       return 'Unit';
     }
 
-    var unitRef = useRef(null);
-    if (unitRef.current === null) unitRef.current = loadUnitFromStorage();
+    var initialUnitRef = useRef(null);
+    if (initialUnitRef.current === null) initialUnitRef.current = loadUnitFromStorage();
 
-    var unitHook = useState(unitRef.current); var unit = unitHook[0]; var setUnit = unitHook[1];
+    var unitHook = useState(initialUnitRef.current); var unit = unitHook[0]; var setUnit = unitHook[1];
     // Lessons imported from a unit/pack file (kept in-memory to resolve lessonId
     // even when the host did not pass `history`). Map id -> item.
     var importedHook = useState({}); var importedLessons = importedHook[0]; var setImportedLessons = importedHook[1];
@@ -597,6 +798,30 @@
     var decisionRef = useRef(null);       // resolver for the per-lesson backpressure gate
     var paceResolveRef = useRef(null);    // resolver for the pacing countdown
     var paceTimerRef = useRef(null);      // active pacing setTimeout
+    var unitPathPublisherRef = useRef(onRegisterUnitPathGraph);
+    var unitPathUnregisterRef = useRef(onUnregisterUnitPathGraph);
+    var unitPathScopeRef = useRef(unitPathScopeId);
+    var lastPublishedUnitPathRef = useRef('');
+    var activePublishedUnitPathIdRef = useRef('');
+    var successfulUnitPathIdsRef = useRef({});
+    var supersededUnitPathReasonsRef = useRef(null);
+    if (supersededUnitPathReasonsRef.current === null) {
+      supersededUnitPathReasonsRef.current = {};
+      normalizeUnitPathRetirements(initialUnitRef.current && initialUnitRef.current.learningWebRetirements).forEach(function (entry) {
+        supersededUnitPathReasonsRef.current[unitPathRetirementKey(entry.id, entry.scopeId)] = {
+          id: entry.id, scopeId: entry.scopeId, reason: entry.reason, ready: true
+        };
+      });
+    }
+    var unitPathUnregisterTasksRef = useRef({});
+    var currentUnitPathIdRef = useRef('');
+    var unitPathRegistrationSequenceRef = useRef(0);
+    var unitRef = useRef(unit);
+    var publicationEpochHook = useState(0); var unitPathPublicationEpoch = publicationEpochHook[0]; var setUnitPathPublicationEpoch = publicationEpochHook[1];
+    unitPathPublisherRef.current = onRegisterUnitPathGraph;
+    unitPathUnregisterRef.current = onUnregisterUnitPathGraph;
+    unitPathScopeRef.current = unitPathScopeId;
+    unitRef.current = unit;
 
     // Resolve a lessonId against (host history ∪ imported lessons).
     var lessonPool = useMemo(function () {
@@ -610,11 +835,265 @@
       return lessonId ? (lessonPool[lessonId] || null) : null;
     }
 
+    var unitPathPublication = useMemo(function () {
+      var payload = buildUnitPathPublication(unit, lessonPool);
+      return payload ? Object.assign({}, payload, { scopeId: unitPathScopeId }) : null;
+    }, [unit, lessonPool, unitPathScopeId]);
+    var unitPathFingerprint = unitPathPublication ? JSON.stringify(unitPathPublication) : '';
+    currentUnitPathIdRef.current = unitPathPublication ? unitPathPublication.id : '';
+
+    function currentUnitPathMatches(id, scopeId) {
+      return currentUnitPathIdRef.current === id && unitPathScopeRef.current === scopeId;
+    }
+
+    function persistUnitPathRetirementCleanup(task) {
+      var current = unitRef.current;
+      if (!current) return;
+      var before = normalizeUnitPathRetirements(current.learningWebRetirements);
+      var kept = before.filter(function (entry) { return entry.id !== task.id || entry.scopeId !== task.scopeId; });
+      if (kept.length === before.length) return;
+      var cleaned = Object.assign({}, current, { learningWebRetirements: kept, updatedAt: nowIso() });
+      // Keep the marker in state if cleanup cannot be persisted. A later
+      // idempotent unregister/remount can safely finish the durable cleanup.
+      if (saveUnitToStorage(cleaned)) { unitRef.current = cleaned; setUnit(cleaned); }
+    }
+
+    function noteSupersededUnitPath(id, reason) {
+      var scopeId = unitPathScopeRef.current;
+      if (!UNIT_PATH_PUBLICATION_ID_RE.test(String(id || '')) || !validUnitPathScopeId(scopeId)) return null;
+      if (reason !== 'cleared' && reason !== 'emptied') return null;
+      var key = unitPathRetirementKey(id, scopeId);
+      var retirement = { id: id, scopeId: scopeId, reason: reason };
+      supersededUnitPathReasonsRef.current[key] = { id: id, scopeId: scopeId, reason: reason, ready: false };
+      return retirement;
+    }
+
+    function cancelUnitPathUnregister(task, keepRetirement) {
+      if (!task) return;
+      if (task.timer != null) clearTimeout(task.timer);
+      task.timer = null;
+      if (task.inFlight) { task.revived = !keepRetirement; return; }
+      task.cancelled = true;
+      if (unitPathUnregisterTasksRef.current[task.key] === task) delete unitPathUnregisterTasksRef.current[task.key];
+      if (!keepRetirement) delete supersededUnitPathReasonsRef.current[task.key];
+    }
+
+    function finishUnitPathUnregister(task, revived) {
+      if (!task || unitPathUnregisterTasksRef.current[task.key] !== task) return;
+      if (task.timer != null) clearTimeout(task.timer);
+      task.cancelled = true; task.inFlight = false; task.timer = null;
+      delete unitPathUnregisterTasksRef.current[task.key];
+      delete supersededUnitPathReasonsRef.current[task.key];
+      delete successfulUnitPathIdsRef.current[task.key];
+      persistUnitPathRetirementCleanup(task);
+      if (activePublishedUnitPathIdRef.current === task.id) activePublishedUnitPathIdRef.current = '';
+      // A later exact undo must register again even if its graph fingerprint is
+      // byte-for-byte identical to the graph that was just retired.
+      lastPublishedUnitPathRef.current = '';
+      if (revived || currentUnitPathMatches(task.id, task.scopeId)) {
+        setUnitPathPublicationEpoch(function (value) { return value + 1; });
+      }
+    }
+
+    function reviveUnitPathRetirement(id, scopeId) {
+      var key = unitPathRetirementKey(id, scopeId);
+      var task = unitPathUnregisterTasksRef.current[key];
+      delete supersededUnitPathReasonsRef.current[key];
+      lastPublishedUnitPathRef.current = '';
+      if (task && task.inFlight) {
+        task.revived = true;
+        return;
+      }
+      cancelUnitPathUnregister(task, false);
+      setUnitPathPublicationEpoch(function (value) { return value + 1; });
+    }
+
+    function carryUnitPathRetirements(previousUnit, nextUnit) {
+      var pending = normalizeUnitPathRetirements(previousUnit && previousUnit.learningWebRetirements);
+      var nextId = canonicalUnitPathPublicationId(nextUnit && nextUnit.unitId);
+      var nextScopeId = unitPathScopeRef.current;
+      var kept = pending.filter(function (entry) {
+        if (entry.id === nextId && entry.scopeId === nextScopeId) {
+          reviveUnitPathRetirement(entry.id, entry.scopeId);
+          return false;
+        }
+        return true;
+      });
+      nextUnit.learningWebRetirements = kept;
+      return nextUnit;
+    }
+
+    function requestUnitPathUnregister(record) {
+      if (!record || !record.ready || !UNIT_PATH_PUBLICATION_ID_RE.test(record.id) || !validUnitPathScopeId(record.scopeId)) return;
+      var key = unitPathRetirementKey(record.id, record.scopeId);
+      if (currentUnitPathMatches(record.id, record.scopeId)) {
+        reviveUnitPathRetirement(record.id, record.scopeId);
+        persistUnitPathRetirementCleanup(record);
+        return;
+      }
+      if (unitPathUnregisterTasksRef.current[key]) return;
+      var task = { key: key, id: record.id, scopeId: record.scopeId, reason: record.reason, attemptCount: 0, timer: null, inFlight: false, revived: false, cancelled: false };
+      unitPathUnregisterTasksRef.current[key] = task;
+      function canRun() {
+        if (task.cancelled || !mountedRef.current || unitPathUnregisterTasksRef.current[key] !== task) return false;
+        if (currentUnitPathMatches(task.id, task.scopeId)) { reviveUnitPathRetirement(task.id, task.scopeId); return false; }
+        var pending = supersededUnitPathReasonsRef.current[key];
+        if (!pending || !pending.ready) { cancelUnitPathUnregister(task, true); return false; }
+        return true;
+      }
+      function schedule(delay) { if (canRun()) task.timer = setTimeout(runAttempt, delay); }
+      function fail(kind, error) {
+        task.inFlight = false;
+        if (task.revived) { finishUnitPathUnregister(task, true); return; }
+        if (!canRun()) return;
+        console.warn('[Throughline] unit path unregister ' + kind + ' (attempt ' + task.attemptCount + '/' + UNIT_PATH_PUBLISH_MAX_ATTEMPTS + '):', error && error.message ? error.message : (error || 'host did not confirm removal'));
+        if (task.attemptCount < UNIT_PATH_PUBLISH_MAX_ATTEMPTS) schedule(UNIT_PATH_PUBLISH_RETRY_BASE_MS * Math.pow(2, task.attemptCount - 1));
+        else cancelUnitPathUnregister(task, true);
+      }
+      function succeed(value) {
+        task.inFlight = false;
+        if (value === false) { fail('resolved false', null); return; }
+        if (task.revived) { finishUnitPathUnregister(task, true); return; }
+        if (canRun()) finishUnitPathUnregister(task, false);
+      }
+      function runAttempt() {
+        task.timer = null;
+        if (!canRun()) return;
+        var unregister = unitPathUnregisterRef.current;
+        if (typeof unregister !== 'function') { cancelUnitPathUnregister(task, true); return; }
+        task.attemptCount += 1; task.inFlight = true;
+        var result;
+        try { result = unregister({ id: task.id, reason: task.reason, scopeId: task.scopeId }); }
+        catch (error) { fail('failed', error); return; }
+        var thenable = false;
+        try { thenable = !!(result && typeof result.then === 'function'); }
+        catch (error) { fail('failed', error); return; }
+        if (thenable) {
+          try { Promise.resolve(result).then(succeed, function (error) { fail('rejected', error); }); }
+          catch (error) { fail('rejected', error); }
+          return;
+        }
+        task.inFlight = false;
+        if (result) succeed(result); else fail('returned false', null);
+      }
+      schedule(0);
+    }
+
+    function sweepSupersededUnitPaths() {
+      Object.keys(supersededUnitPathReasonsRef.current).forEach(function (key) {
+        var record = supersededUnitPathReasonsRef.current[key];
+        if (!record) return;
+        if (currentUnitPathMatches(record.id, record.scopeId)) {
+          reviveUnitPathRetirement(record.id, record.scopeId);
+          persistUnitPathRetirementCleanup(record);
+          return;
+        }
+        if (record.ready) requestUnitPathUnregister(record);
+      });
+    }
+
+    function hasInFlightUnitPathRetirement(id, scopeId) {
+      var task = unitPathUnregisterTasksRef.current[unitPathRetirementKey(id, scopeId)];
+      return !!(task && task.inFlight);
+    }
+
+    // Capability changes and an explicit empty transition can make a
+    // deferred removal deliverable. Close, unmount, replace, and switch set no reason.
+    useEffect(function () { sweepSupersededUnitPaths(); }, [unitPathFingerprint, onUnregisterUnitPathGraph, unitPathScopeId]);
+    useEffect(function () {
+      return function () {
+        Object.keys(unitPathUnregisterTasksRef.current).forEach(function (key) {
+          cancelUnitPathUnregister(unitPathUnregisterTasksRef.current[key], true);
+        });
+      };
+    }, []);
+    // Publish only settled graph content. The callback lives in a ref so a host
+    // recreating it does not re-register an unchanged graph. Failed handoffs
+    // retry at bounded intervals; edit/unmount/capability cleanup invalidates
+    // the whole attempt generation, including an in-flight Promise result.
+    useEffect(function () {
+      if (!onRegisterUnitPathGraph) {
+        lastPublishedUnitPathRef.current = '';
+        return;
+      }
+      if (!unitPathPublication || !unitPathPublication.graph.nodes.length || lastPublishedUnitPathRef.current === unitPathFingerprint) return;
+      if (hasInFlightUnitPathRetirement(unitPathPublication.id, unitPathPublication.scopeId)) return;
+      var cancelled = false, timer = null, attemptCount = 0;
+      function isCurrent() {
+        return !cancelled && mountedRef.current
+          && typeof unitPathPublisherRef.current === 'function'
+          && lastPublishedUnitPathRef.current !== unitPathFingerprint;
+      }
+      function markSuccess(result, sequence) {
+        if (!mountedRef.current) return;
+        var publishedId = unitPathPublication.id;
+        var scopeId = result && typeof result === 'object' && validUnitPathScopeId(result.scopeId) ? result.scopeId : unitPathPublication.scopeId;
+        var publicationKey = unitPathRetirementKey(publishedId, scopeId);
+        var prior = successfulUnitPathIdsRef.current[publicationKey];
+        if (!prior || sequence >= prior.sequence) successfulUnitPathIdsRef.current[publicationKey] = { id: publishedId, scopeId: scopeId, sequence: sequence };
+        if (isCurrent()) {
+          lastPublishedUnitPathRef.current = unitPathFingerprint;
+          activePublishedUnitPathIdRef.current = publishedId;
+        }
+        // If this was a late result for a just-cleared/emptied path, the
+        // explicit-removal ledger now has proof it may remove exactly this ID.
+        sweepSupersededUnitPaths();
+      }
+      function schedule(delay) {
+        if (!isCurrent()) return;
+        timer = setTimeout(runAttempt, delay);
+      }
+      function fail(kind, error) {
+        if (!isCurrent()) return;
+        console.warn('[Throughline] unit path publication ' + kind + ' (attempt ' + attemptCount + '/' + UNIT_PATH_PUBLISH_MAX_ATTEMPTS + '):', error && error.message ? error.message : (error || 'host did not confirm success'));
+        if (attemptCount < UNIT_PATH_PUBLISH_MAX_ATTEMPTS) {
+          schedule(UNIT_PATH_PUBLISH_RETRY_BASE_MS * Math.pow(2, attemptCount - 1));
+        }
+      }
+      function runAttempt() {
+        timer = null;
+        if (!isCurrent()) return;
+        attemptCount += 1;
+        var sequence = ++unitPathRegistrationSequenceRef.current;
+        var result;
+        try { result = unitPathPublisherRef.current(unitPathPublication); }
+        catch (error) { fail('failed', error); return; }
+        var thenable = false;
+        try { thenable = !!(result && typeof result.then === 'function'); }
+        catch (error) { fail('failed', error); return; }
+        if (thenable) {
+          try {
+            Promise.resolve(result).then(function (value) {
+              if (value === false) { fail('resolved false', null); return; }
+              markSuccess(value, sequence);
+            }, function (error) { fail('rejected', error); });
+          } catch (error) { fail('rejected', error); }
+          return;
+        }
+        if (result) markSuccess(result, sequence); else fail('returned false', null);
+      }
+      schedule(UNIT_PATH_PUBLISH_DELAY_MS);
+      return function () {
+        cancelled = true;
+        if (timer != null) clearTimeout(timer);
+      };
+    }, [!!onRegisterUnitPathGraph, unitPathFingerprint, unitPathPublicationEpoch]);
+
     // Persist (unitLayout only) on every change; surface quota failures.
     useEffect(function () {
-      var stamped = Object.assign({}, unit, { updatedAt: nowIso() });
+      var stamped = Object.assign({}, unit, {
+        updatedAt: nowIso(),
+        learningWebRetirements: normalizeUnitPathRetirements(unit.learningWebRetirements)
+      });
       var ok = saveUnitToStorage(stamped);
       setQuotaFailed(!ok);
+      if (ok && unit.nodes.length === 0) {
+        stamped.learningWebRetirements.forEach(function (entry) {
+          var key = unitPathRetirementKey(entry.id, entry.scopeId);
+          supersededUnitPathReasonsRef.current[key] = { id: entry.id, reason: entry.reason, scopeId: entry.scopeId, ready: true };
+        });
+        sweepSupersededUnitPaths();
+      }
     }, [unit]);
 
     // ── Mutators ──────────────────────────────────────────────────
@@ -632,15 +1111,24 @@
         status: lessonId ? 'draft' : 'planned',
         category: null
       };
-      setUnit(function (u) { return Object.assign({}, u, { nodes: u.nodes.concat([n]) }); });
+      var current = unitRef.current;
+      var next = Object.assign({}, current, { nodes: current.nodes.concat([n]) });
+      carryUnitPathRetirements(current, next);
+      setUnit(next);
       return n.nodeId;
     }, []);
 
     var deleteNode = useCallback(function (nodeId) {
+      var current = unitRef.current;
+      if (!current || !current.nodes.some(function (n) { return n.nodeId === nodeId; })) return;
+      var retirement = current.nodes.length === 1
+        ? noteSupersededUnitPath(canonicalUnitPathPublicationId(current.unitId), 'emptied') : null;
       setUnit(function (u) {
+        var retirements = normalizeUnitPathRetirements((u.learningWebRetirements || []).concat(retirement ? [retirement] : []));
         return Object.assign({}, u, {
           nodes: u.nodes.filter(function (n) { return n.nodeId !== nodeId; }),
-          edges: u.edges.filter(function (e) { return e.from !== nodeId && e.to !== nodeId; })
+          edges: u.edges.filter(function (e) { return e.from !== nodeId && e.to !== nodeId; }),
+          learningWebRetirements: retirements
         });
       });
     }, []);
@@ -757,6 +1245,7 @@
         });
       });
       for (var k = 1; k < fresh.nodes.length; k++) fresh.edges.push({ from: fresh.nodes[k - 1].nodeId, to: fresh.nodes[k].nodeId, type: 'sequence' });
+      carryUnitPathRetirements(unitRef.current, fresh);
       setImportedLessons(function (m) { return Object.assign({}, m, imp); });
       setUnit(fresh);
       return true;
@@ -833,6 +1322,7 @@
           return clean;
         });
         var stamped = Object.assign({}, unit, { updatedAt: nowIso(), generator: GENERATOR, schemaVersion: SCHEMA_VERSION });
+        delete stamped.learningWebRetirements;
         var payload = {
           mode: 'independent',
           history: history,
@@ -870,6 +1360,7 @@
               var ok = await askThroughlineConfirmation(t('throughline.confirm_replace') || 'Replace your current unit with the imported one? This cannot be undone.', { title: 'Replace current unit', confirmText: 'Replace unit' });
               if (!ok) return;
             }
+            carryUnitPathRetirements(unitRef.current, nu);
             setImportedLessons(function (m) { return Object.assign({}, m, imp); });
             setUnit(nu);
             addToast((t('throughline.imported_unit') || 'Imported unit') + ': ' + (nu.title || nu.nodes.length + ' nodes'), 'success');
@@ -900,6 +1391,7 @@
           });
           for (var k = 1; k < nodes.length; k++) edges.push({ from: nodes[k - 1].nodeId, to: nodes[k].nodeId, type: 'sequence' });
           fresh.nodes = nodes; fresh.edges = edges;
+          carryUnitPathRetirements(unitRef.current, fresh);
           setImportedLessons(function (m) { return Object.assign({}, m, imp); });
           setUnit(fresh);
           addToast((t('throughline.imported_pack') || 'Imported pack as a unit') + ' (' + nodes.length + ' ' + (t('throughline.lessons') || 'lessons') + ')', 'success');
@@ -914,8 +1406,11 @@
     async function clearUnit() {
       var ok = await askThroughlineConfirmation(t('throughline.confirm_clear') || 'Clear the entire unit? This cannot be undone.', { title: 'Clear entire unit', confirmText: 'Clear unit' });
       if (!ok) return;
+      var retirement = noteSupersededUnitPath(canonicalUnitPathPublicationId(unit.unitId), 'cleared');
+      var cleared = emptyUnit();
+      cleared.learningWebRetirements = normalizeUnitPathRetirements((unit.learningWebRetirements || []).concat(retirement ? [retirement] : []));
       setImportedLessons({});
-      setUnit(emptyUnit());
+      setUnit(cleared);
       addToast(t('throughline.cleared') || 'Unit cleared', 'info');
     }
 

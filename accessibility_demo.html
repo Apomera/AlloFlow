@@ -3,22 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Accessibility | AlloFlow</title>
+<title>Accessibility &amp; AAC Demonstration | AlloFlow</title>
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://apomera.github.io/AlloFlow/accessibility_demo.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="AlloFlow">
-<meta name="description" content="Interactive demonstration of AlloFlow's WCAG 2.2 AA-oriented accessibility work: keyboard navigation, switch-access scanning, high contrast, and screen reader support for AAC communication boards.">
-<meta property="og:title" content="AlloFlow Accessibility — Interactive Demo">
-<meta property="og:description" content="See how AlloFlow serves every student, regardless of how they access technology. Try keyboard navigation, scanning modes, and high contrast.">
+<meta name="description" content="Try an AAC accessibility demonstration with keyboard navigation, switch scanning, high contrast, and screen-reader support.">
+<meta property="og:title" content="Accessibility &amp; AAC Demonstration | AlloFlow">
+<meta property="og:description" content="Try an AAC accessibility demonstration with keyboard navigation, switch scanning, high contrast, and screen-reader support.">
 <meta property="og:url" content="https://apomera.github.io/AlloFlow/accessibility_demo.html">
-<meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
-<meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:url" content="https://apomera.github.io/AlloFlow/accessibility_demo.html">
-<meta property="twitter:title" content="AlloFlow Accessibility Demo">
-<meta property="twitter:description" content="Try AlloFlow accessibility features including keyboard navigation, switch scanning, high contrast, and screen reader support.">
-<meta property="twitter:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
+<meta property="og:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://apomera.github.io/AlloFlow/accessibility_demo.html">
+<meta name="twitter:title" content="Accessibility &amp; AAC Demonstration | AlloFlow">
+<meta name="twitter:description" content="Try an AAC accessibility demonstration with keyboard navigation, switch scanning, high contrast, and screen-reader support.">
+<meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
 <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="promotion-wave3.css">
+    <link rel="stylesheet" href="promotion-wave3-shell.css">
+    <link rel="stylesheet" href="promo-nav-breakpoint.css">
     <script src="site.js" defer></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,7 +34,7 @@
 <style>
 /* ── Reset & Base ── */
 *, *::before, *::after { box-sizing: border-box; }
-html { max-width: 100%; overflow-x: hidden; }
+html { max-width: 100%; overflow-x: clip; }
 :root {
   --purple: #0f766e; --purple-light: #ccfbf1; --purple-dark: #134e4a;
   --blue: #3730a3; --green: #16a34a; --amber: #f59e0b; --red: #ef4444;
@@ -38,7 +46,7 @@ html { max-width: 100%; overflow-x: hidden; }
   --focus-ring: #0f766e;
   --font: 'Inter', system-ui, sans-serif;
 }
-body { margin: 0; font-family: 'Plus Jakarta Sans', var(--font); background: var(--bg); color: var(--text); line-height: 1.6; background-image: none; overflow-x: hidden; }
+body { margin: 0; font-family: 'Plus Jakarta Sans', var(--font); background: var(--bg); color: var(--text); line-height: 1.6; background-image: none; overflow-x: clip; }
 h1, h2, h3 { font-family: 'Outfit', var(--font); }
 body.hc {
   --bg: #000; --text: #fff; --text-muted: #ccc;
@@ -222,24 +230,42 @@ footer a { color: var(--purple); }
       <i data-lucide="layers" style="width:28px;height:28px"></i>
       AlloFlow
     </a>
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="features.html">Features</a>
-      <a href="library.html">Library</a>
-      <a href="calculator.html">Cost Planner</a>
-      <a href="students.html">Students</a>
-      <a href="accessibility_demo.html" aria-current="page" style="color:var(--indigo)">Accessibility</a>
-      <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn" rel="noopener noreferrer"><i data-lucide="github" style="width:16px;height:16px"></i> Get Code</a>
-    </div>
+    <div class="nav-links" data-site-nav="primary">
+                <a href="tools.html">Find a Tool</a>
+                <a href="features.html">Features</a>
+                <a href="remediation.html">Remediation</a>
+                <a href="ways-to-use.html">Ways to Use</a>
+                <a href="for-districts.html">For Districts</a>
+                <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
+            </div>
     <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">
       <i data-lucide="menu" style="width:24px;height:24px"></i>
     </button>
   </div>
 </nav>
-<div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
-  <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
-  <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a href="calculator.html">Cost Planner</a><a href="students.html">Students</a><a href="accessibility_demo.html" aria-current="page">Accessibility</a><a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
-</div>
+<!-- shared mobile nav:start -->
+    <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
+        <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
+        <a href="index.html">Home</a>
+        <a href="tools.html">Find a Tool</a>
+        <a href="features.html">Features</a>
+        <a href="library.html">Lesson Library</a>
+        <a href="remediation.html">Remediation</a>
+        <a href="accessibility_demo.html" aria-current="page">Accessibility Lab</a>
+        <a href="whitepaper.html">White Paper</a>
+        <a href="ways-to-use.html">Ways to Use</a>
+        <a href="for-districts.html">For Districts</a>
+        <a href="feedback.html">Feedback</a>
+        <a href="launch.html">Launch AlloFlow</a>
+        <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <noscript>
+        <style>.mobile-menu-btn{display:none!important}</style>
+        <nav class="noscript-nav" aria-label="Site navigation without JavaScript">
+            <a href="index.html">Home</a><a href="tools.html">Find a Tool</a><a href="remediation.html">Remediation</a><a href="ways-to-use.html">Ways to Use</a><a href="feedback.html">Feedback</a><a href="launch.html">Launch AlloFlow</a>
+        </nav>
+    </noscript>
+<!-- shared mobile nav:end -->
 
 <!-- ════════ HERO ════════ -->
 <div class="hero">
@@ -560,6 +586,15 @@ footer a { color: var(--purple); }
   <div class="container">
     <p>AlloFlow &middot; Created by Aaron Pomeranz, PsyD &middot; AI Collaboration with Claude (Anthropic)</p>
     <p style="margin-top:4px;">This page is designed toward WCAG 2.2 AA for this demo and welcomes independent validation. <a href="accessibility_brief.md">View full accessibility brief</a></p>
+
+<!-- shared footer links:start -->
+            <nav class="footer-links footer-link-groups" aria-label="Footer">
+                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html">Cost Planner</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
+            </nav>
+<!-- shared footer links:end -->
   </div>
 </footer>
 

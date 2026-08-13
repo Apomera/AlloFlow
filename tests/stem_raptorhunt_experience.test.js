@@ -22,6 +22,16 @@ function functionBody(text, name) {
   throw new Error(`Could not find end of ${name}`);
 }
 
+function compilePureFunction(text, name) {
+  return Function('"use strict"; return (' + functionBody(text, name) + ');')();
+}
+
+function expectNearWhite(color) {
+  expect((color >> 16) & 0xff).toBeGreaterThanOrEqual(0xe0);
+  expect((color >> 8) & 0xff).toBeGreaterThanOrEqual(0xe0);
+  expect(color & 0xff).toBeGreaterThanOrEqual(0xe0);
+}
+
 describe('Raptor Hunt resilient engine startup and mission flow', () => {
   it('uses the live Three runtime with an explicit visible retry state', () => {
     const text = source();
@@ -134,14 +144,14 @@ describe('Raptor Hunt accessible flight controls and lifecycle', () => {
 describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
   it('uses one three-dimensional forward/target calculation for both reticle and strike', () => {
     const init = functionBody(source(), 'initHuntSim');
-    expect(init).toContain('function flightForwardVector()');
+    expect(init).toMatch(/function flightForwardVector\([^)]*\)/);
     expect(init).toContain('function acquireTarget()');
     expect(init).toMatch(/Math\.sin\(raptor\.pitch\)/);
     expect(init).not.toMatch(/-Math\.sin\(raptor\.pitch\)/);
     const strike = functionBody(init, 'strike');
     expect(strike).toMatch(/acquireTarget\(\)/);
-    expect(init).toMatch(/var targetInfo\s*=\s*acquireTarget\(\)/);
-    expect(init).toMatch(/inStrikeRange\s*=\s*targetInfo\.canStrike/);
+    expect(init).toMatch(/var targetInfo\s*=\s*targetLockOn\s*\?\s*acquireTarget\(\)\s*:\s*null/);
+    expect(init).toMatch(/inStrikeRange\s*=\s*!!\(targetInfo\s*&&\s*targetInfo\.canStrike/);
   });
 
   it('keeps full-screen and compact layouts usable and honors reduced-motion preferences', () => {
@@ -198,23 +208,72 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     }
   });
 
-  it('builds recognizable species-family silhouettes and chase-camera markings', () => {
+  it('maps every specialized species to a recognizable flight silhouette', () => {
     const init = functionBody(source(), 'initHuntSim');
-    expect(init).toContain('function getRaptorSilhouetteProfile(raptorSpecies)');
-    ['owl', 'osprey', 'falcon', 'accipiter', 'buteo', 'eagle'].forEach((kind) => {
-      expect(init).toContain("kind: '" + kind + "'");
+    const getProfile = compilePureFunction(init, 'getRaptorSilhouetteProfile');
+    [
+      [{ id: 'roughLeg', family: 'Accipitridae', isOwl: false }, 'buteo'],
+      [{ id: 'sharpShin', family: 'Accipitridae', isOwl: false }, 'accipiter'],
+      [{ id: 'swainsons', family: 'Accipitridae', isOwl: false }, 'buteo'],
+      [{ id: 'missKite', family: 'Accipitridae', isOwl: false }, 'kite'],
+      [{ id: 'turkeyVulture', family: 'Cathartidae', isOwl: false }, 'vulture'],
+      [{ id: 'harpyEagle', family: 'Accipitridae', isOwl: false }, 'harpy'],
+    ].forEach(([raptorSpecies, expectedKind]) => {
+      expect(getProfile(raptorSpecies).kind).toBe(expectedKind);
     });
     expect(init).toContain('silhouetteProfile.primaryFingers');
     expect(init).toContain('silhouetteProfile.tailLength');
     expect(init).toContain('silhouetteProfile.headScale');
-    expect(init).toContain('var dorsalMarkColor =');
-    expect(init).toContain('shoulderMark');
+    expect(init).toContain('raptorSilhouetteKind: silhouetteProfile.kind');
   });
 
-  it('samples terrain mathematically and batches forest draw calls', () => {
+  it('uses species plumage profiles and keeps facial features on one tracked head node', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    const getPlumage = compilePureFunction(init, 'getRaptorPlumageProfile');
+    const bald = getPlumage({ id: 'baldEagle', family: 'Accipitridae', isOwl: false });
+    expect(bald.markKind).toBe('bald-eagle-adult');
+    expectNearWhite(bald.head);
+    expectNearWhite(bald.tail);
+    expect(init).toContain('var raptorFieldMarkIds =');
+    expect(init).toContain("raptorFieldMarkIds.push('white-head')");
+    expect(init).toContain("raptorFieldMarkIds.push('white-tail')");
+    expect(init).toContain('raptorPlumageMarkKind: plumageProfile.markKind');
+    expect(init).toContain('raptorFieldMarkIds: raptorFieldMarkIds.slice()');
+
+    expect(init).toContain('var headGroup = new THREE.Group()');
+    ['head', 'beak', 'cere'].forEach((feature) => {
+      expect(init).toContain('headGroup.add(' + feature + ')');
+    });
+    expect(init).toContain('raptorGroup.add(headGroup)');
+    expect(init).toContain('var headMesh = headGroup');
+    expect(init).not.toContain('var headMesh = head;');
+  });
+
+  it('builds indexed tapered primary feathers without rectangular finger geometry', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    const primary = functionBody(init, 'createTaperedPrimaryGeometry');
+    expect(primary).toMatch(/function createTaperedPrimaryGeometry\(side,\s*index,\s*total\)/);
+    expect(primary).toContain('new THREE.BufferGeometry()');
+    expect(primary).toMatch(/\.setIndex\(/);
+    expect(primary).toContain('.computeVertexNormals()');
+    expect(primary).not.toContain('BoxGeometry');
+    expect(init).toMatch(/createTaperedPrimaryGeometry\(-1,\s*fi,\s*silhouetteProfile\.primaryFingers\)/);
+    expect(init).toMatch(/createTaperedPrimaryGeometry\(1,\s*fi,\s*silhouetteProfile\.primaryFingers\)/);
+    expect(init).not.toMatch(/fingerGeo\s*=\s*new THREE\.BoxGeometry/);
+    ['leftPrimaryFeatherCount', 'rightPrimaryFeatherCount', 'taperedPrimaryFeatherCount'].forEach((field) => {
+      expect(init).toContain(field + ':');
+    });
+  });
+
+  it('samples the rendered terrain grid exactly and batches forest draw calls', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toContain('function terrainDisplacementAt(localX, localY)');
-    expect(init).toContain('return terrainDisplacementAt(wx, -wz)');
+    expect(init).toContain('var terrainHeightGrid = new Float32Array(terrainGridStride * terrainGridStride)');
+    expect(init).toContain('terrainHeightGrid[i / 3] = tPos[i + 2]');
+    const terrainHeight = functionBody(init, 'terrainHeightAt');
+    expect(terrainHeight).toContain('var localY = Math.max(-terrainHalfSize, Math.min(terrainHalfSize, -wz))');
+    expect(terrainHeight).toContain('if (u + v <= 1)');
+    expect(terrainHeight).not.toContain('terrainDisplacementAt');
     expect(init).not.toContain('var _trayRay = new THREE.Raycaster()');
     expect(init).toContain('new THREE.InstancedMesh(');
     expect(init).toContain("trunkInstances.name = 'instanced-forest-trunks'");
@@ -222,16 +281,46 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).not.toContain('tr.foliage.rotation.z = sway');
   });
 
-  it('uses elapsed-time damping and preserves the camera through world wrapping', () => {
+  it('uses elapsed-time damping and a nonteleporting inward world edge', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toContain('function dampingAlpha(response, deltaSeconds)');
     expect(init).toMatch(/1 - Math\.exp\(-response \* Math\.max\(0, deltaSeconds\)\)/);
     expect(init).toContain('var cameraFollowAlpha = dampingAlpha(12, dt)');
     expect(init).toContain('dampingAlpha(8, dt)');
     expect(init).toContain('dampingAlpha(3, dt)');
-    expect(init).toContain('camera.position.x += wrapDeltaX');
-    expect(init).toContain('camera.position.z += wrapDeltaZ');
+    expect(init).toContain('var inwardYaw = Math.atan2(-raptor.x, raptor.z)');
+    expect(init).toContain('worldEdgeSteerRate += (edgeSteerTarget - worldEdgeSteerRate) * dampingAlpha(4, dt)');
+    expect(init).toContain('if (raptor.x - frameStartX > 0) raptor.x = worldEdgeHard');
+    expect(init).toContain('var preyWorldEdgeHard = worldEdgeHard - 12');
+    expect(init).not.toMatch(/wrapBoundary|wrapDeltaX|wrapDeltaZ/);
     expect(init).toContain('1 - Math.exp(-1.2 * dt)');
+  });
+
+  it('sizes the chase view to the species and shares one 3D flight-forward vector', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    const forward = functionBody(init, 'flightForwardVector');
+    expect(forward).toMatch(/function flightForwardVector\(reuseTarget\)/);
+    expect(forward).toContain('Math.cos(raptor.pitch)');
+    expect(forward).toContain('Math.sin(raptor.pitch)');
+    expect(init).toMatch(/var raptorVisualRadius\s*=/);
+    expect(init).toMatch(/var currentChaseDistance\s*=/);
+    expect(init).toMatch(/currentChaseDistance[\s\S]{0,260}raptorVisualRadius|raptorVisualRadius[\s\S]{0,260}currentChaseDistance/);
+    expect(init).toContain('flightForwardVector(flightForward)');
+    expect(init).toMatch(/camTargetX\s*=\s*raptor\.x\s*-\s*flightForward\.x\s*\*\s*camDist/);
+    expect(init).toMatch(/camTargetZ\s*=\s*raptor\.z\s*-\s*flightForward\.z\s*\*\s*camDist/);
+    expect(init).toMatch(/camTargetY\s*=\s*raptor\.y\s*-\s*flightForward\.y\s*\*\s*camDist\s*\+\s*camHeight/);
+    expect(init).toMatch(/chaseLookX\s*=\s*raptor\.x\s*\+\s*flightForward\.x\s*\*\s*chaseLead/);
+    ['raptorVisualRadius', 'currentChaseDistance', 'cameraMode', 'diveActive', 'cameraFov', 'cameraDistanceToRaptor', 'cameraHeightAboveRaptor', 'raptorNdcX', 'raptorNdcY'].forEach((field) => {
+      expect(init).toContain(field + ':');
+    });
+  });
+
+  it('uses frame-rate-independent turn roll and aligns speed streaks to the camera', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    expect(init).toMatch(/var visualTurnRate\s*=/);
+    expect(init).toMatch(/var rollTarget\s*=\s*_rmFX\s*\?\s*0[\s\S]{0,180}visualTurnRate/);
+    expect(init).toContain('speedLines.quaternion.copy(camera.quaternion)');
+    expect(init).not.toContain('speedLines.lookAt(raptor.x, raptor.y, raptor.z)');
   });
 
   it('builds recognizable prey families instead of generic primitives', () => {
@@ -359,6 +448,28 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('notifyUI({ targetState: nextTargetState, targetHint: nextTargetHint })');
   });
 
+  it('clamps offscreen guidance to the same target reticle and exposes diagnostics', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    const clamp = functionBody(init, 'clampProjectedTarget');
+    expect(clamp).toMatch(/function clampProjectedTarget\(ndcX,\s*ndcY\)/);
+    expect(clamp).toMatch(/Math\.max\([^;]*Math\.min\(/);
+    ['left', 'right', 'top', 'bottom'].forEach((edge) => {
+      expect(clamp).toContain("'" + edge + "'");
+    });
+
+    expect(init).toContain('var targetScreenInset = 34');
+    expect(init).toMatch(/Math\.max\(targetScreenInset,\s*Math\.min\(screenW\s*-\s*targetScreenInset/);
+    expect(init).toMatch(/Math\.max\(targetScreenInset,\s*Math\.min\(screenH\s*-\s*targetScreenInset/);
+    expect(init).toContain("reticle.dataset.raptorReticle = 'true'");
+    expect(init).toContain('reticle.dataset.offscreen =');
+    expect(init).toContain('reticle.dataset.targetEdge =');
+    expect(init).not.toMatch(/var offscreenIndicator\s*=\s*document\.createElement/);
+    expect(init).toContain("action === 'targetProbe'");
+    ['targetProjectionState', 'targetNdcX', 'targetNdcY', 'offscreenIndicatorVisible', 'offscreenIndicatorEdge'].forEach((field) => {
+      expect(init).toContain(field + ':');
+    });
+  });
+
   it('adds quality-aware terrain texture detail and readable horizon landmarks', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toContain("var terrainSegs = graphicsQuality === 'high' ? 112 : graphicsQuality === 'low' ? 72 : 96;");
@@ -391,11 +502,23 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('emissive: new THREE.Color(tailColor).multiplyScalar(0.02)');
   });
 
+  it('keeps High Stoop atmosphere and target acquisition readable at mission altitude', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    expect(init).toMatch(/var highStoopFogBoost\s*=\s*mission\.id === 'highStoop'/);
+    expect(init).toMatch(/scene\.fog\.far\s*=[^;]*highStoopFogBoost/);
+    expect(init).toMatch(/var highCloudCount\s*=\s*0/);
+    expect(init).toMatch(/if\s*\(mission\.id === 'highStoop'\)\s*\{[\s\S]{0,160}highCloudCount\s*=/);
+    expect(init).toMatch(/for\s*\([^;]*;[^;]*<\s*highCloudCount/);
+    expect(init).toMatch(/var targetAcquireRange\s*=\s*mission\.id === 'highStoop'/);
+    expect(init).toMatch(/candidate\.distance\s*>\s*targetAcquireRange/);
+    expect(init).toContain('highCloudCount: highCloudCount');
+  });
+
   it('turns live weather into visible, wind-driven atmosphere at every frame rate', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toContain('var visualCloudCover = weather.cloudCover');
     expect(init).toContain('var cloudShade = 1 - visualCloudCover * 0.58');
-    expect(init).toContain('scene.fog.far = 600 - visualCloudCover * 150');
+    expect(init).toContain('scene.fog.far = 600 + highStoopFogBoost - visualCloudCover * 150');
     expect(init).toContain('renderer.toneMappingExposure = (0.78 + daylight * 0.28 + twilight * 0.04) * (1 - visualCloudCover * 0.12)');
     expect(init).toContain('sun.intensity = daylight * 0.96 * cloudShade');
     expect(init).toContain('starVisibility = Math.max(0, Math.min(1, 1 - daylight * 1.35)) * (1 - visualCloudCover * 0.90)');
@@ -525,8 +648,13 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain("var impactCameraPush = (!_rmFX && strikeFeedbackActive)");
     expect(init).toContain('var talonStrikeAmount = !_rmFX && strikeFeedbackActive');
     expect(init).toContain("targetInfo.canStrike && !strikeReady ? 'recovering'");
-    expect(init).toContain('var fxCount = _rmFX ? 4 : Math.max(10, Math.round(28 * qualityProfile.particles))');
-    expect(init).toContain('fx.flash.material.opacity = Math.max(0, (_rmFX ? 0.28 : 0.85)');
+    expect(init).toContain('var STRIKE_FX_SLOT_COUNT = 4');
+    expect(init).toContain('var STRIKE_FX_PER_SLOT = 28');
+    expect(init).toContain('var fxCount = _rmFX ? 0 : Math.min(');
+    expect(init).toContain('strikeFxNextSlot = (strikeFxNextSlot + 1) % STRIKE_FX_SLOT_COUNT');
+    expect(init).toContain('function updateCatchFx(deltaSeconds)');
+    expect(init).toContain("strikeContactMesh.name = 'raptor-strike-contact-pool'");
+    expect(init).not.toContain('catchFxList');
     expect(init).toMatch(/diveVig,\s*strikeFeedbackEl,\s*eventLogEl/);
   });
 

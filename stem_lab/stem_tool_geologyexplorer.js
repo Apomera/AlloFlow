@@ -12,9 +12,10 @@
  * early return before a hook) — avoids the throwlab/optics "more hooks" crash.
  *
  * a11y: the 3D canvas is an ENHANCEMENT. The accessible core is an always-present
- * cross-section (SVG) + a keyboard-navigable strata list; selecting a rock there
- * shows the same info and announces it via a live region. So screen-reader and
- * keyboard-only users — and anyone whose WebGL fails — get the full tool.
+ * cross-section or scene evidence map (SVG) + a keyboard-navigable material list;
+ * selecting a material there shows the same info and announces it via a live
+ * region. Screen-reader and keyboard-only users — and anyone whose WebGL fails —
+ * retain the learning core.
  */
 (function () {
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
@@ -139,11 +140,23 @@
     { id: 'centre', icon: '⛏️', label: 'Pluton centre', x: 7, z: 7, blurb: 'The granite pluton cuts straight down through the layers to the magma (cross-cutting).' }
   ];
   function hex(n) { return '#' + ('000000' + n.toString(16)).slice(-6); }
+  function factRow(id, label, value, speech, emphasis) {
+    return { id: id, label: label, value: value, speech: speech || (label + ' ' + value), emphasis: !!emphasis };
+  }
+  function temperatureValue(tempC) { return (typeof tempC === 'number' ? '≈ ' + tempC : String(tempC)) + ' °C'; }
+  function temperatureSpeech(tempC) { return 'Temperature about ' + (typeof tempC === 'number' ? tempC : String(tempC).replace(/^≈\s*/, '')) + ' degrees Celsius'; }
+  function measurementSpeech(rows) {
+    return (rows || []).map(function (row) { return row.speech || (row.label + ' ' + row.value); }).join('. ');
+  }
   function rockFacts(key, y) {
     var R = (SCENE && SCENE.palette[key]) || ROCKS[key];
     var depthRaw = (R && R.depthKm != null) ? R.depthKm : y * KM_PER_VOXEL;   // radial scenes carry their own depth
     var g = (SCENE ? SCENE.geotherm : crustGeotherm)(depthRaw, key);
-    return { key: key, R: R, depthKm: depthRaw.toFixed(1), tempC: g.tempC, presMPa: g.presMPa, state: g.state };
+    var digits = SCENE && SCENE.id === 'geode' ? 4 : 1;
+    var facts = { key: key, R: R, depthKm: depthRaw.toFixed(digits), tempC: g.tempC, presMPa: g.presMPa, state: g.state };
+    facts.measurements = sceneMeasurementRows(SCENE && SCENE.id, facts);
+    facts.measurementSummary = measurementSpeech(facts.measurements);
+    return facts;
   }
 
   // ── First-person "drop into the world" explorer — pure, testable seams ─────────
@@ -244,11 +257,11 @@
     while (key === 'void' && v.y < NY - 1) key = SCENE.gen(v.x, ++v.y, v.z);     // geode hollow is thick → fall to the lining you actually see (mutates v.y so depth is the lining's)
     if (key === 'void') return null;                                            // fully enclosed (defensive) — never fabricate science for empty space
     var f = rockFacts(key, v.y);
-    return { key: key, voxelY: v.y, depthKm: f.depthKm, tempC: f.tempC, presMPa: f.presMPa, state: f.state, layerName: f.R ? f.R.name : key, type: f.R ? f.R.type : '', blurb: fpBlurb(SCENE.id, key), bust: fpBust(key) };
+    return { key: key, voxelY: v.y, depthKm: f.depthKm, tempC: f.tempC, presMPa: f.presMPa, state: f.state, measurements: f.measurements.map(function (row) { return Object.assign({}, row); }), measurementSummary: f.measurementSummary, layerName: f.R ? f.R.name : key, type: f.R ? f.R.type : '', blurb: fpBlurb(SCENE.id, key), bust: fpBust(key) };
   }
   function fpAnnounceText(p) {
-    return 'You are inside ' + p.layerName + ', ' + p.type + '. Depth about ' + p.depthKm + ' kilometres, '
-      + (typeof p.tempC === 'number' ? p.tempC : String(p.tempC)) + ' degrees Celsius, ' + p.state + '.'
+    var summary = p.measurementSummary || ('Depth about ' + p.depthKm + ' kilometres. ' + temperatureSpeech(p.tempC) + '. State ' + p.state);
+    return 'You are inside ' + p.layerName + ', ' + p.type + '. ' + summary + '. State ' + p.state + '.'
       + (p.bust ? ' ' + p.bust : '');
   }
 
@@ -610,7 +623,7 @@
     geode: {
       id: 'geode', label: '💎 Crystal cavern', gen: geodeKeyAt, palette: GEODE_ROCKS,
       order: ['limestone', 'chalcedony', 'agate', 'quartz', 'amethyst'], voxelKeys: ['limestone', 'chalcedony', 'agate', 'quartz', 'amethyst'],
-      geotherm: crustGeotherm, kmPerWorldH: 2.0,
+      geotherm: crustGeotherm, kmPerWorldH: 0.002,
       features: {},
       blurb: 'Acidic groundwater dissolved a VOID in limestone (karst); mineral-rich water then precipitated a chalcedony/agate rind and grew quartz & amethyst crystals INWARD into the open space. Slow growth + room = big crystals — the same rule that makes granite coarse. Amethyst’s purple = trace iron + natural irradiation. Geodes take 10³–10⁶ years.'
     },
@@ -646,6 +659,108 @@
       blurb: 'Intraplate volcanism (schematic — not to scale): volcanoes far from ANY plate boundary. A plume of solid-but-extra-hot mantle rises from deep below and partially melts near the top; the melt burns through the moving plate to build a SHIELD volcano of runny basalt — broad and gentle, nothing like a steep arc stratovolcano. The plume stays ~fixed while the PLATE slides past, so each volcano is carried off its magma supply, goes extinct, erodes, and sinks: active island over the plume, extinct island downstream, drowned seamount beyond. Age increasing down the chain is textbook evidence that plates move — Hawaii’s chain continues 6,000 km as the Emperor Seamounts.'
     }
   };
+
+  var GEODE_MEASUREMENTS = {
+    limestone: { zone: 'Host rock outside the cavity', order: 'Predates the mineral lining' },
+    chalcedony: { zone: 'Cavity wall rind', order: 'First mineral lining' },
+    agate: { zone: 'Banded lining', order: 'Repeated growth pulses' },
+    quartz: { zone: 'Open-space crystal zone', order: 'Later inward growth' },
+    amethyst: { zone: 'Inner crystal tips', order: 'Late iron-bearing quartz growth' }
+  };
+  var SUBDUCTION_MEASUREMENTS = {
+    oceanWater: { position: 'Ocean above the incoming plate', thermal: 'Cold surface reservoir' },
+    oceanCrust: { position: 'Incoming oceanic plate', thermal: 'Cold, dense lithosphere' },
+    contCrust: { position: 'Overriding continental plate', thermal: 'Cooler buoyant crust' },
+    slab: { position: 'Descending plate below the trench', thermal: 'Cold slab anomaly' },
+    lithMantle: { position: 'Rigid mantle beneath a plate', thermal: 'Rigid plate domain' },
+    wedge: { position: 'Mantle above the descending slab', thermal: 'Hot, water-fluxed wedge' },
+    asthenosphere: { position: 'Ductile mantle below the plates', thermal: 'Hot, slowly flowing mantle' },
+    arcMagma: { position: 'Rising path above the mantle wedge', thermal: 'Buoyant partial melt' },
+    arcVolcano: { position: 'Volcanic arc at the surface', thermal: 'Eruption above the wedge' }
+  };
+  var RIDGE_MEASUREMENTS = {
+    oceanWater: { position: 'Above the spreading system', evidence: 'Seafloor deepens away from the axis' },
+    sediment: { position: 'Older spreading flank', evidence: 'Thicker cover indicates more elapsed time' },
+    basaltN: { position: 'Magnetic stripe on a spreading flank', evidence: 'Normal polarity locked in while cooling' },
+    basaltR: { position: 'Mirrored magnetic stripe', evidence: 'Reversed polarity records another interval' },
+    dikes: { position: 'Below the ridge-axis crust', evidence: 'Each dike records a crust-opening event' },
+    gabbro: { position: 'Lower oceanic crust', evidence: 'Slow cooling makes coarse crystals' },
+    axialMagma: { position: 'Ridge axis — youngest crust', evidence: 'Melt supplies new seafloor' },
+    vent: { position: 'Hot young ridge flank', evidence: 'Circulating seawater carries dissolved minerals' },
+    lithMantle: { position: 'Cooling plate below the crust', evidence: 'Rigid mantle thickens away from the axis' },
+    asthenosphere: { position: 'Upwelling below the ridge axis', evidence: 'Pressure release drives partial melting' }
+  };
+  var HOTSPOT_MEASUREMENTS = {
+    oceanWater: { position: 'Above the moving oceanic plate', age: 'Plate-motion reference' },
+    activeVolcano: { position: 'Directly over the plume', age: 'Youngest — active now' },
+    oldIsland: { position: 'Carried away from the plume', age: 'Older — extinct and eroding' },
+    seamount: { position: 'Farthest along the trail shown', age: 'Oldest — eroded and drowned' },
+    oceanCrust: { position: 'Moving plate beneath the chain', age: 'Carries volcanoes away from the plume' },
+    lithMantle: { position: 'Rigid mantle moving with the plate', age: 'Part of the moving plate' },
+    conduit: { position: 'Melt path below the active volcano', age: 'Feeds only the volcano overhead' },
+    plume: { position: 'Relatively fixed mantle source', age: 'Reference point for the age trail' },
+    asthenosphere: { position: 'Ductile mantle around the plume', age: 'Background mantle domain' }
+  };
+  function formatMeasurementNumber(value, digits) {
+    var n = Number(value);
+    return isFinite(n) ? n.toLocaleString(undefined, { maximumFractionDigits: digits == null ? 1 : digits }) : String(value);
+  }
+  function depthMeasurement(facts, label) {
+    var n = Number(facts.depthKm), shown = formatMeasurementNumber(n, n < 10 ? 1 : 0), name = label || 'Depth';
+    return factRow('depth', name, '≈ ' + shown + ' km', name + ' about ' + shown + ' kilometres');
+  }
+  function pressureMeasurement(facts) {
+    var pressure = Number(facts.presMPa);
+    if (pressure >= 1000) {
+      var gpa = pressure / 1000, shownGpa = formatMeasurementNumber(gpa, gpa < 10 ? 1 : 0);
+      return factRow('pressure', 'Pressure', '≈ ' + shownGpa + ' GPa', 'Pressure about ' + shownGpa + ' gigapascals');
+    }
+    var shownMpa = formatMeasurementNumber(pressure, 0);
+    return factRow('pressure', 'Pressure', '≈ ' + shownMpa + ' MPa', 'Pressure about ' + shownMpa + ' megapascals');
+  }
+  function temperatureMeasurement(facts) {
+    return factRow('temperature', 'Temperature', temperatureValue(facts.tempC), temperatureSpeech(facts.tempC));
+  }
+  function sceneMeasurementRows(sceneId, facts) {
+    var id = sceneId || 'crust', key = facts && facts.key;
+    if (id === 'geode') {
+      var geode = GEODE_MEASUREMENTS[key] || { zone: 'Mineral-lined cavity', order: 'Read growth from wall to center' };
+      return [
+        factRow('scale', 'Specimen scale', '≈ 2 m model span', 'Schematic specimen span about 2 metres'),
+        factRow('growth-zone', 'Growth zone', geode.zone),
+        factRow('formation-order', 'Formation order', geode.order, null, true)
+      ];
+    }
+    if (id === 'deepEarth') return [depthMeasurement(facts, 'Representative radial depth'), temperatureMeasurement(facts), pressureMeasurement(facts)];
+    if (id === 'subduction') {
+      var subduction = SUBDUCTION_MEASUREMENTS[key] || { position: 'Convergent-margin system', thermal: 'Compare slab and mantle temperature' };
+      return [
+        depthMeasurement(facts, 'Representative depth'),
+        factRow('process-position', 'Process position', subduction.position),
+        factRow('thermal-domain', 'Thermal domain', subduction.thermal, null, true),
+        temperatureMeasurement(facts)
+      ];
+    }
+    if (id === 'ridge') {
+      var ridge = RIDGE_MEASUREMENTS[key] || { position: 'Seafloor-spreading system', evidence: 'Read age outward from the axis' };
+      return [
+        depthMeasurement(facts, 'Representative depth'),
+        factRow('age-position', 'Age position', ridge.position, null, true),
+        factRow('evidence-signal', 'Evidence signal', ridge.evidence),
+        temperatureMeasurement(facts)
+      ];
+    }
+    if (id === 'hotspot') {
+      var hotspot = HOTSPOT_MEASUREMENTS[key] || { position: 'Hotspot-chain system', age: 'Read age away from the plume' };
+      return [
+        depthMeasurement(facts, 'Representative depth'),
+        factRow('track-position', 'Track position', hotspot.position),
+        factRow('age-signal', 'Age signal', hotspot.age, null, true),
+        temperatureMeasurement(facts)
+      ];
+    }
+    return [depthMeasurement(facts, 'Depth'), temperatureMeasurement(facts), pressureMeasurement(facts)];
+  }
   var SCENE = SCENES.crust;
 
 
@@ -792,6 +907,34 @@
     ];
   }
 
+  function sceneResumeState(sceneId, data) {
+    var id = SCENES[sceneId] ? sceneId : 'crust';
+    var journey = sceneJourneyFor(id);
+    var mission = SCENE_MISSIONS[id] || SCENE_MISSIONS.crust;
+    var source = data && typeof data === 'object' ? data : {};
+    var signals = source.sceneSignals && typeof source.sceneSignals === 'object' ? source.sceneSignals : source;
+    var hasSavedProgress = false, rawIndex = 0;
+    if (mission.signal) {
+      hasSavedProgress = Object.prototype.hasOwnProperty.call(signals, id) && Number.isFinite(signals[id]);
+      rawIndex = hasSavedProgress ? Math.floor(signals[id]) : 0;
+    } else if (source.sceneSignals || source.identifiedByScene || source.notebook || source.quizByScene || source.sequenceByScene) {
+      var completed = sceneJourneyProgressFor(id, source);
+      for (var i = 0; i < completed.length; i++) {
+        if (completed[i]) { hasSavedProgress = true; rawIndex = i; }
+      }
+    }
+    var index = Math.max(0, Math.min(rawIndex, journey.length - 1));
+    var stage = journey[index] || journey[0];
+    return {
+      sceneId: id,
+      index: index,
+      key: stage.key,
+      label: stage.label,
+      hasSavedProgress: hasSavedProgress,
+      message: hasSavedProgress ? 'Resumed at stage ' + (index + 1) + ': ' + stage.label + '.' : ''
+    };
+  }
+
 
   var SCENE_BEACONS = {
     crust: [
@@ -829,32 +972,32 @@
 
 
   var SCENE_PROCESS_CUES = {
-    crust: { title: 'Relative dating', summary: 'Read the layers, then follow the later heat event.', depth: 'Deeper layers are older; heat and pressure increase downward.', steps: [
+    crust: { title: 'Relative dating', summary: 'Read the layers, then follow the later heat event.', depth: 'Deeper sedimentary layers are generally older; the cutting pluton is a later exception.', axis: { label: 'Evidence axis', value: 'Depth + relative age', gradient: 'from-sky-400 via-amber-400 to-red-600', labels: ['Surface / younger', 'Layer relationships', 'Depth / generally older'], ariaLabel: 'Evidence axis: begin at the surface, use layer and cross-cutting relationships, then read toward generally older sedimentary layers at depth.' }, steps: [
       { label: 'Superposition', detail: 'Deeper sedimentary layers generally formed first.' },
       { label: 'Cross-cutting', detail: 'The pluton cuts the layers, so it formed later.' },
       { label: 'Contact heat', detail: 'Heat bakes nearby rock into a metamorphic rim.' }
     ] },
-    geode: { title: 'Crystal growth', summary: 'Groundwater builds the cavern from the wall inward.', depth: 'The visual sequence moves inward from the cavity wall to open space.', steps: [
+    geode: { title: 'Crystal growth', summary: 'Groundwater builds the cavern from the wall inward.', depth: 'Read relative time inward: the wall lining formed first and crystal tips grew later into open space.', axis: { label: 'Growth axis', value: 'Relative formation order', gradient: 'from-emerald-500 via-orange-400 to-violet-500', labels: ['Cavity wall / first', 'Agate bands', 'Open space / later'], ariaLabel: 'Growth axis: the cavity-wall rind formed first, agate bands record repeated pulses, and crystal tips grew later into open space.' }, steps: [
       { label: 'Wall rind', detail: 'Microcrystalline silica precipitates first.' },
       { label: 'Banded pulses', detail: 'Mineral-rich water leaves concentric bands.' },
       { label: 'Open-space crystals', detail: 'Room for growth produces larger crystal points.' }
     ] },
-    deepEarth: { title: 'Seismic probe', summary: 'Wave behavior reveals the hidden shells of Earth.', depth: 'Pressure and temperature rise toward the center.', steps: [
+    deepEarth: { title: 'Seismic probe', summary: 'Wave behavior reveals the hidden shells of Earth.', depth: 'Read radially from the surface toward the center; pressure and temperature rise while material state changes.', axis: { label: 'Radial axis', value: 'Depth + material state', gradient: 'from-sky-400 via-orange-500 to-yellow-300', labels: ['Surface', 'Liquid outer core', 'Center / highest pressure'], ariaLabel: 'Radial axis: move from Earth surface through the liquid outer core toward the high-pressure solid inner core at the center.' }, steps: [
       { label: 'Solid mantle', detail: 'Solid rock creeps and convects over geologic time.' },
       { label: 'S-wave shadow', detail: 'S-waves stop at the liquid outer core.' },
       { label: 'Pressure-frozen center', detail: 'Extreme pressure keeps the inner core solid.' }
     ] },
-    subduction: { title: 'Subduction flux', summary: 'A sinking slab drives melting above it.', depth: 'Cold slab material descends into hotter mantle.' , steps: [
+    subduction: { title: 'Subduction flux', summary: 'A sinking slab drives melting above it.', depth: 'This is a thermal contrast, not a simple depth gradient: a cold slab lies beside a hotter, water-fluxed mantle wedge.' , axis: { label: 'Process path', value: 'Cold slab → hot wedge → arc', gradient: 'from-sky-500 via-orange-500 to-red-600', labels: ['Incoming plate / cold', 'Wedge / fluxed', 'Arc / rising melt'], ariaLabel: 'Subduction process path: a cold incoming plate descends, water fluxes the hotter mantle wedge, and magma rises to the volcanic arc.' }, steps: [
       { label: 'Cold slab', detail: 'Dense oceanic crust sinks into the mantle.' },
       { label: 'Fluxed wedge', detail: 'Water lowers the melting point in the mantle wedge.' },
       { label: 'Arc magma', detail: 'Magma rises and feeds a volcanic arc.' }
     ] },
-    ridge: { title: 'Seafloor spreading', summary: 'New crust forms at the axis and records magnetic time.', depth: 'Fresh melt cools outward from the hot ridge axis.', steps: [
+    ridge: { title: 'Seafloor spreading', summary: 'New crust forms at the axis and records magnetic time.', depth: 'Age increases away from the central ridge axis in both directions; mirrored stripes are the key evidence.', axis: { label: 'Age axis', value: 'Distance from ridge', gradient: 'from-slate-600 via-amber-300 to-slate-600', labels: ['Older flank', 'Axis / youngest', 'Older flank'], ariaLabel: 'Symmetric age axis: the ridge axis at the center is youngest, and ocean crust becomes older toward both flanks.' }, steps: [
       { label: 'Axis melt', detail: 'Decompression melting creates new basaltic crust.' },
       { label: 'Normal polarity', detail: 'Cooling basalt records one magnetic direction.' },
       { label: 'Reversed mirror', detail: 'Symmetric stripes reveal spreading.' }
     ] },
-    hotspot: { title: 'Hotspot track', summary: 'A moving plate carries volcanic islands away from a plume.', depth: 'The active plume is hottest; older crust cools and sinks.', steps: [
+    hotspot: { title: 'Hotspot track', summary: 'A moving plate carries volcanic islands away from a plume.', depth: 'Read time along the plate-motion trail: the active volcano is over the plume and progressively older volcanoes lie downstream.', axis: { label: 'Age trail', value: 'Distance from plume', gradient: 'from-orange-500 via-slate-500 to-sky-700', labels: ['Plume / active now', 'Extinct island', 'Seamount / oldest'], ariaLabel: 'Hotspot age trail: begin at the active volcano over the plume, then follow the moving plate toward an extinct island and the oldest drowned seamount.' }, steps: [
       { label: 'Active plume', detail: 'A broad shield volcano forms above the plume.' },
       { label: 'Carried downstream', detail: 'Plate motion removes the island from its magma supply.' },
       { label: 'Drowned seamount', detail: 'Cooling, sinking crust carries the oldest link below sea level.' }
@@ -862,7 +1005,7 @@
   };
   function sceneProcessCueFor(sceneId) {
     var cue = SCENE_PROCESS_CUES[sceneId] || SCENE_PROCESS_CUES.crust;
-    return { title: cue.title, summary: cue.summary, depth: cue.depth, steps: cue.steps.map(function (item) { return Object.assign({}, item); }) };
+    return { title: cue.title, summary: cue.summary, depth: cue.depth, axis: Object.assign({}, cue.axis, { labels: cue.axis.labels.slice() }), steps: cue.steps.map(function (item) { return Object.assign({}, item); }) };
   }
 
   function focusLensIncludes(materialKey, selectedKey, enabled) {
@@ -1108,12 +1251,66 @@
 
   var SCENE_ORIENTATION = {
     crust: { scale: '~10.8 km deep', direction: 'Surface -> depth', read: 'Read the layers from top to bottom. Deeper sedimentary layers are generally older; a cutting feature is younger.' },
-    geode: { scale: '~2 km model span', direction: 'Cavity wall -> center', read: 'Read mineral growth inward from the limestone wall. The open center is not empty by accident; it records space for crystals to grow.' },
+    geode: { scale: '~2 m specimen span (schematic)', direction: 'Cavity wall -> center', read: 'Read mineral growth inward from the limestone wall. The open center is not empty by accident; it records space for crystals to grow.' },
     deepEarth: { scale: 'Earth radius 6,371 km', direction: 'Surface -> center', read: 'This is a radial slice, not a flat stack. Use the shells and seismic signal to infer state.' },
-    subduction: { scale: '~200 km model span', direction: 'Left plate -> trench -> right arc', read: 'Follow the cold slab downward. Water leaves the slab, fluxes the wedge, and the melt rises toward the arc.' },
-    ridge: { scale: '~30 km model span', direction: 'Ridge axis -> older flanks', read: 'The axis is youngest. Read outward for older crust, thicker sediment, and mirrored magnetic history.' },
-    hotspot: { scale: '~150 km model span', direction: 'Plume -> plate-motion trail', read: 'The plume is the reference point. The plate carries volcanoes away, so age increases toward the drowned seamount.' }
+    subduction: { scale: '~200 km depth range (schematic)', direction: 'Left plate -> trench -> right arc', read: 'Follow the cold slab downward. Water leaves the slab, fluxes the wedge, and the melt rises toward the arc.' },
+    ridge: { scale: '~30 km depth range (schematic)', direction: 'Ridge axis -> older flanks', read: 'The axis is youngest. Read outward for older crust, thicker sediment, and mirrored magnetic history.' },
+    hotspot: { scale: '~150 km depth range (schematic)', direction: 'Plume -> plate-motion trail', read: 'The plume is the reference point. The plate carries volcanoes away, so age increases toward the drowned seamount.' }
   };
+  var SCENE_SCHEMATICS = {
+    geode: {
+      title: 'Crystal cavern 2D evidence map',
+      description: 'Concentric mineral zones record growth from the limestone cavity wall toward crystal tips and open space.'
+    },
+    deepEarth: {
+      title: 'Deep Earth 2D evidence map',
+      description: 'Nested radial shells connect material state with the seismic evidence used to infer Earth’s hidden interior.'
+    },
+    subduction: {
+      title: 'Subduction zone 2D evidence map',
+      description: 'A cold oceanic slab descends beneath a continent while water fluxes the hotter mantle wedge and feeds an arc.'
+    },
+    ridge: {
+      title: 'Mid-ocean ridge 2D evidence map',
+      description: 'New crust forms at the central axis and mirrored magnetic stripes record spreading toward two older flanks.'
+    },
+    hotspot: {
+      title: 'Hotspot chain 2D evidence map',
+      description: 'A moving plate carries volcanoes away from a relatively fixed plume, creating an age trail from active island to seamount.'
+    }
+  };
+  function sceneSchematicInfo(sceneId, selectedKey, stageIndex) {
+    var id = SCENE_SCHEMATICS[sceneId] ? sceneId : 'geode';
+    var config = SCENE_SCHEMATICS[id], scene = SCENES[id], journey = sceneJourneyFor(id);
+    var index = Math.max(0, Math.min(Number(stageIndex) || 0, journey.length - 1));
+    var active = journey[index], selectedRock = selectedKey && scene.palette[selectedKey];
+    var selected = selectedRock ? { key: selectedKey, label: selectedRock.name } : null;
+    var ariaLabel = config.title + '. ' + config.description + ' Active process stage: ' + active.label + '.';
+    if (selected) ariaLabel += ' Selected material: ' + selected.label + '.';
+    return {
+      sceneId: id,
+      title: config.title,
+      description: config.description,
+      activeIndex: index,
+      activeKey: active.key,
+      activeLabel: active.label,
+      selectedKey: selected ? selected.key : null,
+      selectedLabel: selected ? selected.label : null,
+      ariaLabel: ariaLabel
+    };
+  }
+  function sceneSchematicState(materialKey, selectedKey, activeKey, focusOn) {
+    var selected = !!selectedKey && materialKey === selectedKey;
+    var active = !!activeKey && materialKey === activeKey;
+    var muted = !!focusOn && !!selectedKey && !selected;
+    return {
+      selected: selected,
+      active: active,
+      focusState: muted ? 'muted' : (selected ? 'match' : 'context'),
+      state: selected && active ? 'selected-active' : (selected ? 'selected' : (active ? 'active' : (muted ? 'muted' : 'context'))),
+      opacity: muted ? 0.18 : 1
+    };
+  }
 
   // Short, learner-facing definitions that bridge scene observations to the
   // vocabulary used in the mission, quiz, and evidence notebook.
@@ -1668,11 +1865,11 @@
   // baseline that locks current strata before the upcoming resolution refactor.
   try {
     window.__alloGeologyPure = {
-      rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, ridgeKeyAt: ridgeKeyAt, hotspotKeyAt: hotspotKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, aoCount: aoCount,
+      rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, ridgeKeyAt: ridgeKeyAt, hotspotKeyAt: hotspotKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, sceneMeasurementRows: sceneMeasurementRows, measurementSpeech: measurementSpeech, aoCount: aoCount,
       crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
       fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel,
       fpSeedPose: fpSeedPose, fpBob: fpBob, layerChanged: layerChanged, fpBlurb: fpBlurb, fpBust: fpBust, fpProbe: fpProbe, fpAnnounceText: fpAnnounceText, easeInOutCubic: easeInOutCubic,
-      scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; }, quizBanks: function () { return QUIZ_BANKS; }, quizRemediation: quizRemediation, missions: function () { return SCENE_MISSIONS; }, lessonGuide: function () { return LESSON_GUIDE; }, evaluateCER: evaluateCER, evidenceMapDraft: evidenceMapDraft, nextMissionHint: nextMissionHint, missionAction: missionActionFor, sceneComparisons: function () { return SCENE_COMPARISONS; }, sceneComparisonInsight: sceneComparisonInsight, sceneProgress: sceneProgressFor, orientation: function () { return SCENE_ORIENTATION; }, vocabulary: function () { return SCENE_VOCABULARY; }, sequenceChallenges: function () { return SCENE_SEQUENCE_CHALLENGES; }, sequenceInitialOrder: sequenceInitialOrder, sequenceIsCorrect: sequenceIsCorrect, sequenceMoveBefore: sequenceMoveBefore, sceneJourney: sceneJourneyFor, sceneBeacons: sceneBeaconsFor, processCues: sceneProcessCueFor, sceneTimeline: sceneTimelineFor, focusLensIncludes: focusLensIncludes, cutawayReadout: cutawayReadout, firstSolidVoxelY: firstSolidVoxelY, undoPreviewTarget: undoPreviewTarget, restoreEnginePresentation: restoreEnginePresentation, sceneJourneyProgress: sceneJourneyProgressFor, evidenceMapRoles: function () { return EVIDENCE_MAP_ROLES; }, evidenceMapForScene: evidenceMapForScene, evidenceMapStatus: evidenceMapStatus,
+      scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; }, quizBanks: function () { return QUIZ_BANKS; }, quizRemediation: quizRemediation, missions: function () { return SCENE_MISSIONS; }, lessonGuide: function () { return LESSON_GUIDE; }, evaluateCER: evaluateCER, evidenceMapDraft: evidenceMapDraft, nextMissionHint: nextMissionHint, missionAction: missionActionFor, sceneComparisons: function () { return SCENE_COMPARISONS; }, sceneComparisonInsight: sceneComparisonInsight, sceneProgress: sceneProgressFor, orientation: function () { return SCENE_ORIENTATION; }, schematicInfo: sceneSchematicInfo, schematicState: sceneSchematicState, vocabulary: function () { return SCENE_VOCABULARY; }, sequenceChallenges: function () { return SCENE_SEQUENCE_CHALLENGES; }, sequenceInitialOrder: sequenceInitialOrder, sequenceIsCorrect: sequenceIsCorrect, sequenceMoveBefore: sequenceMoveBefore, sceneJourney: sceneJourneyFor, sceneResumeState: sceneResumeState, sceneBeacons: sceneBeaconsFor, processCues: sceneProcessCueFor, sceneTimeline: sceneTimelineFor, focusLensIncludes: focusLensIncludes, cutawayReadout: cutawayReadout, firstSolidVoxelY: firstSolidVoxelY, undoPreviewTarget: undoPreviewTarget, restoreEnginePresentation: restoreEnginePresentation, sceneJourneyProgress: sceneJourneyProgressFor, evidenceMapRoles: function () { return EVIDENCE_MAP_ROLES; }, evidenceMapForScene: evidenceMapForScene, evidenceMapStatus: evidenceMapStatus,
       grid: function () { return { NX: NX, NY: NY, NZ: NZ, KM_PER_VOXEL: KM_PER_VOXEL, VOXEL: VOXEL }; }
     };
   } catch (e) {}
@@ -1748,7 +1945,8 @@
       var sequenceComplete = !!sequenceCompletionByScene[scene];
       var seqdrag = React.useState(null); var sequenceDragKey = seqdrag[0], setSequenceDragKey = seqdrag[1];
       var seqtap = React.useState(null); var sequenceTapKey = seqtap[0], setSequenceTapKey = seqtap[1];
-      var jst = React.useState(0); var sceneJourneyStep = jst[0], setSceneJourneyStep = jst[1];
+      var jst = React.useState(function () { return sceneResumeState(scene, d).index; }); var sceneJourneyStep = jst[0], setSceneJourneyStep = jst[1];
+      var rsn = React.useState(function () { var restored = sceneResumeState(scene, d); return restored.hasSavedProgress ? restored : null; }); var sceneResumeNotice = rsn[0], setSceneResumeNotice = rsn[1];
       var rts = React.useState(null); var routeTarget = rts[0], setRouteTarget = rts[1];
       var csc = React.useState(defaultComparisonScene(scene)); var compareSceneId = csc[0], setCompareSceneId = csc[1];
       var cst = React.useState(0); var compareStage = cst[0], setCompareStage = cst[1];
@@ -1763,7 +1961,7 @@
       var ttsAudioRef = React.useRef(null);
       var ttsSessionRef = React.useRef(0);
       var ttsContextRef = React.useRef({ scene: scene, mode: mode });
-      var sg = React.useState((d.sceneSignals && d.sceneSignals[scene]) || 0); var signalStep = sg[0], setSignalStep = sg[1];
+      var sg = React.useState(function () { return sceneResumeState(scene, d).index; }); var signalStep = sg[0], setSignalStep = sg[1];
       var initialNotebook = (d.notebook && typeof d.notebook === 'object') ? d.notebook : {};
       var notebookSeed = {
         evidence: Array.isArray(initialNotebook.evidence) ? initialNotebook.evidence : [],
@@ -1909,7 +2107,8 @@
         setDatingParent(100);
         setCyclePath(function (prev) { return viaCycle ? prev.concat([facts.key]).slice(-6) : [facts.key]; });
         try { if (window[ENGINE_KEY]) window[ENGINE_KEY].setHighlight(facts.key); } catch (e) {}
-        announce(msg || (facts.R.name + '. ' + facts.R.type + '. Depth about ' + facts.depthKm + ' kilometres. ' + facts.R.formation + ' ' + facts.R.age));
+        var readout = facts.measurementSummary || measurementSpeech(facts.measurements) || ('Depth about ' + facts.depthKm + ' kilometres');
+        announce(msg || (facts.R.name + '. ' + facts.R.type + '. ' + readout + '. ' + facts.R.formation + ' ' + facts.R.age));
         var cur = identifiedRef.current || {}; if (!cur[facts.key]) { var id = Object.assign({}, cur); id[facts.key] = 1; identifiedRef.current = id; upd('identified', id); }
         var byScene = identifiedBySceneRef.current || {}, sceneIdentified = Object.assign({}, byScene[SCENE.id] || {});
         if (!sceneIdentified[facts.key]) {
@@ -2188,23 +2387,29 @@
         selectRock(facts, false, 'Restored ' + restored.name + '. ' + (restored.remaining ? restored.remaining + ' excavated blocks remain.' : 'The outcrop is back to its original surface.'));
       }
       function infoPanel() {
-        if (!selected) return h('div', { className: 'text-xs ' + muted + ' p-3 rounded-xl border ' + cardBg }, t('stem.geology.pick_hint', 'Pick a rock — in the 3D block or the list below — to see its type, depth, temperature/pressure, how it forms, and its age relationship.'));
+        if (!selected) return h('div', { className: 'text-xs ' + muted + ' p-3 rounded-xl border ' + cardBg }, t('stem.geology.pick_hint', 'Pick a material — in the 3D model or the list below — to see its scene-specific position, scale, conditions, formation, and age relationship.'));
         var f = selected, R = f.R, tc = TYPE_COLOR[R.type] || '#64748b', F = FOSSILS[f.key];
+        var measurements = f.measurements && f.measurements.length ? f.measurements : [depthMeasurement(f, 'Depth'), temperatureMeasurement(f), pressureMeasurement(f)];
+        var measurementNodes = [];
+        measurements.forEach(function (row) {
+          measurementNodes.push(h('span', { key: row.id + '-label', className: muted }, row.label));
+          measurementNodes.push(h('span', { key: row.id + '-value', 'data-geology-measurement': row.id, className: row.emphasis ? ('font-semibold ' + (isDark ? 'text-amber-200' : 'text-amber-800')) : '' }, row.value));
+        });
+        if (f.state && f.state !== 'solid') {
+          measurementNodes.push(h('span', { key: 'state-label', className: muted }, t('stem.geology.state', 'State')));
+          measurementNodes.push(h('span', { key: 'state-value', className: 'font-semibold', style: { color: '#f59e0b' }, 'data-geology-measurement': 'state' }, f.state));
+        }
+        measurementNodes.push(h('span', { key: 'forms-label', className: muted }, t('stem.geology.forms', 'Forms by')));
+        measurementNodes.push(h('span', { key: 'forms-value' }, R.formation));
+        measurementNodes.push(h('span', { key: 'minerals-label', className: muted }, t('stem.geology.minerals', 'Minerals')));
+        measurementNodes.push(h('span', { key: 'minerals-value' }, R.minerals));
         return h('div', { className: 'p-3 rounded-xl border ' + cardBg, style: { borderLeft: '3px solid ' + tc }, role: 'region', 'aria-label': 'Selected rock details' },
           h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, [
             h('div', { key: 'name', className: 'text-base font-extrabold tracking-tight ' + ink }, R.name),
             h('button', { key: 'lens', type: 'button', 'aria-pressed': focusLensOn ? 'true' : 'false', 'aria-label': 'Isolate selected material in the scene', 'data-geology-focus-lens': 'true', onClick: toggleFocusLens, className: 'rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ' + (focusLensOn ? 'border-cyan-400 bg-cyan-600 text-white' : (isDark ? 'border-slate-600 bg-slate-900/60 text-slate-100 hover:border-cyan-400' : 'border-slate-300 bg-white text-slate-700 hover:border-cyan-500')) }, focusLensOn ? '◉ Focus lens: ON' : '◎ Focus lens: OFF')
           ]),
           h('span', { className: 'inline-block text-[11px] font-bold px-2 py-0.5 rounded-full mt-1 mb-2', style: { color: tc, background: tc + '22', border: '1px solid ' + tc + '55' } }, R.type),
-          h('div', { className: 'grid gap-1 text-[12px] ' + ink, style: { gridTemplateColumns: '64px 1fr' } },
-            h('span', { className: muted }, t('stem.geology.depth', 'Depth')), h('span', null, '≈ ' + f.depthKm + ' km'),
-            h('span', { className: muted }, t('stem.geology.temp', 'Temp')), h('span', null, (typeof f.tempC === 'number' ? '≈ ' + f.tempC : f.tempC) + ' °C'),
-            h('span', { className: muted }, t('stem.geology.pressure', 'Pressure')), h('span', null, '≈ ' + f.presMPa + ' MPa'),
-            (f.state && f.state !== 'solid') ? h('span', { className: muted }, t('stem.geology.state', 'State')) : null,
-            (f.state && f.state !== 'solid') ? h('span', { className: 'font-semibold', style: { color: '#f59e0b' } }, f.state) : null,
-            h('span', { className: muted }, t('stem.geology.forms', 'Forms by')), h('span', null, R.formation),
-            h('span', { className: muted }, t('stem.geology.minerals', 'Minerals')), h('span', null, R.minerals)
-          ),
+          h('div', { className: 'grid gap-1 text-[12px] ' + ink, style: { gridTemplateColumns: '92px minmax(0, 1fr)' } }, measurementNodes),
           h('div', { className: 'mt-2 text-[11.5px]', style: { color: '#f59e0b' } }, '🕓 ' + R.age),
           feat.fossils
             ? (F
@@ -2517,6 +2722,8 @@
         var next = Math.max(0, Math.min(index, mission.signal.steps.length - 1));
         var step = mission.signal.steps[next];
         setSignalStep(next);
+        setSceneJourneyStep(next);
+        setSceneResumeNotice(null);
         var signals = (d.sceneSignals && typeof d.sceneSignals === 'object') ? d.sceneSignals : {};
         var prior = Number.isFinite(signals[SCENE.id]) ? signals[SCENE.id] : -1;
         if (next > prior) upd('sceneSignals', Object.assign({}, signals, { [SCENE.id]: next }));
@@ -2773,6 +2980,7 @@
         function chooseJourneyStep(index) {
           var next = journey[index] || journey[0];
           setSceneJourneyStep(index);
+          setSceneResumeNotice(null);
           if (missionForScene().signal) {
             setModeState('investigate');
             upd('mode', 'investigate');
@@ -2801,6 +3009,9 @@
                 h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + muted }, 'Select a stage to spotlight evidence and open the matching investigation surface.')),
                h('span', { key: 'progress', className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + (completeCount === journey.length ? (isDark ? 'border-emerald-500/60 text-emerald-200' : 'border-emerald-300 text-emerald-700') : muted), 'data-geology-journey-progress': 'true' }, completeCount + '/' + journey.length + ' evidenced')
             ]),
+            sceneResumeNotice && sceneResumeNotice.sceneId === SCENE.id
+              ? h('p', { key: 'resume', className: 'mt-2 text-[11px] font-semibold ' + (isDark ? 'text-sky-300' : 'text-sky-700'), role: 'status', 'data-geology-resumed-stage': 'true' }, '↪ ' + sceneResumeNotice.message + ' Saved process evidence remains linked.')
+              : null,
             h('div', { key: 'steps', className: 'relative mt-3' }, [
               h('div', { key: 'line', className: 'absolute left-[16%] right-[16%] top-5 hidden h-px ' + (isDark ? 'bg-slate-600' : 'bg-slate-300') + ' sm:block', 'aria-hidden': 'true' }),
               h('div', { key: 'buttons', className: 'relative grid grid-cols-3 gap-1.5' }, journey.map(function (item, index) {
@@ -3029,6 +3240,200 @@
           h('polygon', { points: (W / 2) + ',' + (bands.length * bh) + ' ' + (W / 2 - 14) + ',' + (2 * bh) + ' ' + (W / 2 + 14) + ',' + (2 * bh), fill: hex(ROCKS.intrusion.color), opacity: crossFocus && focusKey !== 'intrusion' ? 0.2 : 0.92, stroke: crossFocus && focusKey === 'intrusion' ? '#fbbf24' : 'rgba(255,255,255,0.4)', strokeWidth: crossFocus && focusKey === 'intrusion' ? 2 : 1, 'data-geology-focus-state': !crossFocus ? 'context' : (focusKey === 'intrusion' ? 'match' : 'muted') })
         );
       }
+      function geodeSchematicDiagram(v) {
+        return [
+          v.mark('circle', 'limestone', { key: 'host', cx: 180, cy: 92, r: 78, fill: v.color('limestone') }),
+          v.mark('circle', 'chalcedony', { key: 'rind', cx: 180, cy: 92, r: 64, fill: v.color('chalcedony') }),
+          v.mark('circle', 'agate', { key: 'bands', cx: 180, cy: 92, r: 52, fill: v.color('agate') }),
+          v.mark('circle', 'quartz', { key: 'quartz', cx: 180, cy: 92, r: 39, fill: v.color('quartz') }),
+          v.mark('circle', 'amethyst', { key: 'amethyst', cx: 180, cy: 92, r: 27, fill: v.color('amethyst') }),
+          v.h('circle', { key: 'open', cx: 180, cy: 92, r: 11, fill: v.bg, stroke: v.edge, strokeWidth: 1.25 }),
+          v.line('host-leader', 36, 28, 112, 43),
+          v.text('Host limestone', 10, 24, 'start'),
+          v.line('rind-leader', 56, 69, 117, 72),
+          v.text('Wall rind', 10, 67, 'start'),
+          v.line('bands-leader', 244, 61, 326, 48),
+          v.text('Agate bands', 350, 45, 'end'),
+          v.line('crystal-leader', 220, 106, 323, 113),
+          v.text('Crystal tips', 350, 117, 'end'),
+          v.line('center-leader', 191, 101, 305, 150),
+          v.text('Open center', 350, 158, 'end'),
+          v.h('line', { key: 'growth-arrow', x1: 120, y1: 174, x2: 240, y2: 174, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.text('Wall first', 112, 160, 'end'),
+          v.text('Center later', 248, 160, 'start')
+        ];
+      }
+      function deepEarthSchematicDiagram(v) {
+        return [
+          v.mark('circle', 'crust', { key: 'crust', cx: 122, cy: 94, r: 80, fill: v.color('crust') }),
+          v.mark('circle', 'upperMantle', { key: 'upper-mantle', cx: 122, cy: 94, r: 73, fill: v.color('upperMantle') }),
+          v.mark('circle', 'lowerMantle', { key: 'lower-mantle', cx: 122, cy: 94, r: 56, fill: v.color('lowerMantle') }),
+          v.mark('circle', 'outerCore', { key: 'outer-core', cx: 122, cy: 94, r: 39, fill: v.color('outerCore') }),
+          v.mark('circle', 'innerCore', { key: 'inner-core', cx: 122, cy: 94, r: 19, fill: v.color('innerCore') }),
+          v.line('crust-leader', 177, 36, 238, 22),
+          v.text('Thin crust', 350, 25, 'end'),
+          v.line('mantle-leader', 169, 62, 238, 58),
+          v.text('Solid mantle', 350, 62, 'end'),
+          v.line('outer-leader', 159, 96, 238, 96),
+          v.text('Liquid outer core', 350, 100, 'end'),
+          v.line('inner-leader', 138, 109, 238, 137),
+          v.text('Solid inner core', 350, 142, 'end'),
+          v.h('path', { key: 's-wave', d: 'M 8 156 Q 48 111 84 105', fill: 'none', stroke: v.arrow, strokeWidth: 2, strokeDasharray: '6 3', markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.text('S-wave stops at liquid', 10, 181, 'start')
+        ];
+      }
+      function subductionSchematicDiagram(v) {
+        return [
+          v.mark('rect', 'asthenosphere', { key: 'asthenosphere', x: 0, y: 96, width: 360, height: 94, fill: v.color('asthenosphere') }),
+          v.mark('rect', 'oceanWater', { key: 'water', x: 0, y: 0, width: 145, height: 47, fill: v.color('oceanWater') }),
+          v.mark('polygon', 'oceanCrust', { key: 'ocean-crust', points: '0,47 132,47 176,81 163,94 124,62 0,62', fill: v.color('oceanCrust') }),
+          v.mark('polygon', 'slab', { key: 'slab', points: '120,50 134,43 278,169 260,183', fill: v.color('slab') }),
+          v.mark('polygon', 'contCrust', { key: 'continental-crust', points: '142,42 360,27 360,63 174,78', fill: v.color('contCrust') }),
+          v.mark('polygon', 'lithMantle', { key: 'lithosphere', points: '174,78 360,63 360,103 219,116', fill: v.color('lithMantle') }),
+          v.mark('polygon', 'wedge', { key: 'mantle-wedge', points: '176,81 356,105 264,166', fill: v.color('wedge') }),
+          v.mark('path', 'arcMagma', { key: 'arc-magma', d: 'M 251 132 C 252 105 268 83 281 54', fill: 'none', stroke: v.color('arcMagma'), strokeWidth: 9, strokeLinecap: 'round' }),
+          v.mark('polygon', 'arcVolcano', { key: 'arc-volcano', points: '258,42 281,14 305,40', fill: v.color('arcVolcano') }),
+          v.text('Oceanic plate', 10, 22, 'start'),
+          v.line('trench-leader', 137, 34, 145, 49),
+          v.text('Trench', 134, 30, 'end'),
+          v.line('slab-leader', 76, 116, 176, 102),
+          v.text('Cold slab + water', 10, 121, 'start'),
+          v.line('wedge-leader', 276, 128, 329, 142),
+          v.text('Fluxed mantle wedge', 350, 151, 'end'),
+          v.line('arc-leader', 303, 28, 335, 20),
+          v.text('Volcanic arc', 350, 18, 'end'),
+          v.h('path', { key: 'water-flux', d: 'M 174 94 Q 205 106 229 128', fill: 'none', stroke: v.arrow, strokeWidth: 2, strokeDasharray: '5 3', markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.text('Released water enables melting', 350, 181, 'end')
+        ];
+      }
+      function ridgeSchematicDiagram(v) {
+        return [
+          v.mark('rect', 'oceanWater', { key: 'water', x: 0, y: 0, width: 360, height: 70, fill: v.color('oceanWater') }),
+          v.mark('rect', 'asthenosphere', { key: 'asthenosphere', x: 0, y: 145, width: 360, height: 45, fill: v.color('asthenosphere') }),
+          v.mark('polygon', 'lithMantle', { key: 'left-lithosphere', points: '0,119 147,108 163,145 0,145', fill: v.color('lithMantle') }),
+          v.mark('polygon', 'lithMantle', { key: 'right-lithosphere', points: '197,145 213,108 360,119 360,145', fill: v.color('lithMantle') }),
+          v.mark('polygon', 'gabbro', { key: 'gabbro', points: '0,100 145,91 161,116 199,116 215,91 360,100 360,119 213,108 198,141 162,141 147,108 0,119', fill: v.color('gabbro') }),
+          v.mark('polygon', 'dikes', { key: 'left-dikes', points: '0,88 150,78 161,116 145,91 0,100', fill: v.color('dikes') }),
+          v.mark('polygon', 'dikes', { key: 'right-dikes', points: '199,116 210,78 360,88 360,100 215,91', fill: v.color('dikes') }),
+          v.mark('polygon', 'basaltN', { key: 'left-normal-far', points: '0,72 56,71 56,88 0,92', fill: v.color('basaltN') }),
+          v.mark('polygon', 'basaltR', { key: 'left-reversed', points: '56,71 108,68 110,84 56,88', fill: v.color('basaltR') }),
+          v.mark('polygon', 'basaltN', { key: 'left-normal-near', points: '108,68 151,57 162,77 110,84', fill: v.color('basaltN') }),
+          v.mark('polygon', 'basaltN', { key: 'axis-basalt', points: '151,57 180,44 209,57 198,77 180,67 162,77', fill: v.color('basaltN') }),
+          v.mark('polygon', 'basaltN', { key: 'right-normal-near', points: '209,57 252,68 250,84 198,77', fill: v.color('basaltN') }),
+          v.mark('polygon', 'basaltR', { key: 'right-reversed', points: '252,68 304,71 304,88 250,84', fill: v.color('basaltR') }),
+          v.mark('polygon', 'basaltN', { key: 'right-normal-far', points: '304,71 360,72 360,92 304,88', fill: v.color('basaltN') }),
+          v.mark('polygon', 'sediment', { key: 'left-sediment', points: '0,65 76,65 76,72 0,72', fill: v.color('sediment') }),
+          v.mark('polygon', 'sediment', { key: 'right-sediment', points: '284,65 360,65 360,72 284,72', fill: v.color('sediment') }),
+          v.mark('ellipse', 'axialMagma', { key: 'magma-lens', cx: 180, cy: 132, rx: 25, ry: 9, fill: v.color('axialMagma') }),
+          v.mark('path', 'vent', { key: 'vent-chimney', d: 'M 229 78 L 229 58 M 224 58 L 234 58', fill: 'none', stroke: v.color('vent'), strokeWidth: 5, strokeLinecap: 'round' }),
+          v.h('line', { key: 'spread-left', x1: 166, y1: 33, x2: 94, y2: 33, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.h('line', { key: 'spread-right', x1: 194, y1: 33, x2: 266, y2: 33, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.text('Older flank', 12, 21, 'start'),
+          v.text('Axis: youngest', 180, 20, 'middle'),
+          v.text('Older flank', 348, 21, 'end'),
+          v.h('line', { key: 'upwelling', x1: 180, y1: 183, x2: 180, y2: 151, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.text('Upwelling mantle', 10, 181, 'start'),
+          v.text('Mirrored magnetic stripes', 350, 181, 'end')
+        ];
+      }
+      function hotspotSchematicDiagram(v) {
+        return [
+          v.mark('rect', 'oceanWater', { key: 'water', x: 0, y: 0, width: 360, height: 74, fill: v.color('oceanWater') }),
+          v.mark('rect', 'oceanCrust', { key: 'ocean-crust', x: 0, y: 74, width: 360, height: 18, fill: v.color('oceanCrust') }),
+          v.mark('rect', 'lithMantle', { key: 'lithosphere', x: 0, y: 92, width: 360, height: 40, fill: v.color('lithMantle') }),
+          v.mark('rect', 'asthenosphere', { key: 'asthenosphere', x: 0, y: 132, width: 360, height: 58, fill: v.color('asthenosphere') }),
+          v.mark('path', 'plume', { key: 'plume', d: 'M 230 190 C 235 166 236 151 228 139 C 223 130 232 121 248 121 C 264 121 274 130 268 140 C 260 153 261 168 267 190 Z', fill: v.color('plume') }),
+          v.mark('path', 'conduit', { key: 'conduit', d: 'M 248 126 L 248 55', fill: 'none', stroke: v.color('conduit'), strokeWidth: 8, strokeLinecap: 'round' }),
+          v.mark('polygon', 'seamount', { key: 'seamount', points: '29,82 55,61 82,82', fill: v.color('seamount') }),
+          v.mark('polygon', 'oldIsland', { key: 'old-island', points: '121,74 150,43 180,74', fill: v.color('oldIsland') }),
+          v.mark('polygon', 'activeVolcano', { key: 'active-volcano', points: '217,74 248,30 280,74', fill: v.color('activeVolcano') }),
+          v.h('line', { key: 'plate-motion', x1: 304, y1: 20, x2: 76, y2: 20, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.text('Plate carries volcanoes left', 190, 14, 'middle'),
+          v.line('seamount-leader', 55, 62, 55, 47),
+          v.text('Oldest: drowned', 12, 43, 'start'),
+          v.line('old-leader', 150, 45, 150, 34),
+          v.text('Older: extinct', 150, 32, 'middle'),
+          v.line('active-leader', 270, 43, 319, 36),
+          v.text('Active now', 350, 34, 'end'),
+          v.line('plume-leader', 265, 158, 320, 164),
+          v.text('Relatively fixed plume', 350, 172, 'end')
+        ];
+      }
+      function sceneSchematicSVG(info) {
+        var W = 360, H = 190;
+        var bg = isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc');
+        var textColor = isContrast || isDark ? '#f8fafc' : '#0f172a';
+        var mutedColor = isContrast || isDark ? '#cbd5e1' : '#475569';
+        var edge = isContrast ? '#ffffff' : (isDark ? '#64748b' : '#64748b');
+        var selectedStroke = '#22d3ee', activeStroke = '#f59e0b';
+        var arrow = isContrast || isDark ? '#f8fafc' : '#334155';
+        var arrowId = 'geology-schematic-arrow-' + info.sceneId;
+        var titleId = 'geology-schematic-title-' + info.sceneId;
+        var descId = 'geology-schematic-desc-' + info.sceneId;
+        var palette = SCENES[info.sceneId].palette;
+        function color(key, fallback) { return palette[key] ? hex(palette[key].color) : (fallback || mutedColor); }
+        function mark(tag, key, props, children) {
+          var state = sceneSchematicState(key, info.selectedKey, info.activeKey, focusLensOn);
+          var baseWidth = props.strokeWidth == null ? 1.25 : props.strokeWidth;
+          var next = Object.assign({}, props, {
+            stroke: state.selected ? selectedStroke : (state.active ? activeStroke : (props.stroke || edge)),
+            strokeWidth: baseWidth + (state.selected ? 1.75 : (state.active ? 1.25 : 0)),
+            strokeDasharray: state.active ? (props.strokeDasharray || '6 3') : props.strokeDasharray,
+            opacity: (props.opacity == null ? 1 : props.opacity) * state.opacity,
+            vectorEffect: 'non-scaling-stroke',
+            'data-geology-schematic-material': key,
+            'data-geology-schematic-state': state.state,
+            'data-geology-focus-state': state.focusState
+          });
+          return children == null ? h(tag, next) : h(tag, next, children);
+        }
+        function textNode(label, x, y, anchor) {
+          return h('text', { key: 'label-' + label + '-' + x + '-' + y, x: x, y: y, fill: textColor, fontSize: 13, textAnchor: anchor || 'start', style: { fontWeight: 600 }, paintOrder: 'stroke', stroke: bg, strokeWidth: 2, strokeLinejoin: 'round' }, label);
+        }
+        function leader(key, x1, y1, x2, y2) {
+          return h('line', { key: key, x1: x1, y1: y1, x2: x2, y2: y2, stroke: mutedColor, strokeWidth: 1.25, vectorEffect: 'non-scaling-stroke' });
+        }
+        var v = { h: h, mark: mark, color: color, text: textNode, line: leader, bg: bg, edge: edge, arrow: arrow, arrowId: arrowId };
+        var diagrams = { geode: geodeSchematicDiagram, deepEarth: deepEarthSchematicDiagram, subduction: subductionSchematicDiagram, ridge: ridgeSchematicDiagram, hotspot: hotspotSchematicDiagram };
+        var draw = diagrams[info.sceneId] || geodeSchematicDiagram;
+        var descText = info.ariaLabel.indexOf(info.title + '. ') === 0 ? info.ariaLabel.slice(info.title.length + 2) : info.ariaLabel;
+        return h('svg', {
+          viewBox: '0 0 ' + W + ' ' + H,
+          width: '100%', height: H,
+          preserveAspectRatio: 'xMidYMid meet',
+          role: 'img',
+          'aria-labelledby': titleId + ' ' + descId,
+          'data-geology-scene-schematic': info.sceneId,
+          style: { display: 'block', width: '100%', height: H, background: bg, borderRadius: '0.5rem' }
+        },
+          h('title', { id: titleId }, info.title),
+          h('desc', { id: descId }, descText),
+          h('defs', null,
+            h('marker', { id: arrowId, viewBox: '0 0 7 6', refX: 6, refY: 3, markerWidth: 7, markerHeight: 6, orient: 'auto-start-reverse' },
+              h('path', { d: 'M 0 0 L 7 3 L 0 6 Z', fill: arrow }))),
+          draw(v));
+      }
+      function sceneSchematicPanel() {
+        var info = sceneSchematicInfo(SCENE.id, selected ? selected.key : null, sceneJourneyStep);
+        var journey = sceneJourneyFor(SCENE.id);
+        return h('section', { className: 'rounded-xl border p-3 ' + cardBg, role: 'region', 'aria-label': '2D evidence map', 'data-geology-schematic-panel': SCENE.id }, [
+          h('div', { key: 'head', className: 'flex flex-wrap items-start justify-between gap-2' }, [
+            h('div', { key: 'titles' }, [
+              h('div', { key: 'eyebrow', className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'Accessible scene map'),
+              h('h3', { key: 'title', className: 'mt-0.5 text-[12px] font-extrabold ' + ink }, info.title)
+            ]),
+            h('span', { key: 'stage', className: 'text-[10.5px] font-bold tabular-nums ' + muted }, 'Stage ' + (info.activeIndex + 1) + ' of ' + journey.length)
+          ]),
+          h('p', { key: 'description', className: 'mt-1 text-[11px] leading-relaxed ' + muted }, info.description),
+          h('div', { key: 'map', className: 'mt-2 overflow-hidden rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-300') }, sceneSchematicSVG(info)),
+          h('div', { key: 'status', className: 'mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] ' + ink, 'data-geology-schematic-status': 'true' }, [
+            h('span', { key: 'active' }, [h('span', { className: 'font-bold' }, 'Active stage: '), info.activeLabel]),
+            h('span', { key: 'selected' }, info.selectedLabel ? [h('span', { className: 'font-bold' }, 'Selected: '), info.selectedLabel] : 'Select a material below to connect it to the map.'),
+            focusLensOn && info.selectedLabel ? h('span', { key: 'focus', className: 'font-semibold text-cyan-500' }, 'Focus Lens is isolating this material.') : null
+          ]),
+          h('p', { key: 'hint', className: 'mt-1 text-[10.5px] ' + muted }, 'This map follows the formation timeline and the existing material list.')
+        ]);
+      }
       function strataList() {
         return h('div', { role: 'group', 'aria-label': 'Rock types ? select to learn more', tabIndex: -1, 'data-geology-target': 'materials', className: 'grid grid-cols-2 gap-1.5' + routeTargetClass('materials') },
           SCENE.order.map(function (k) {
@@ -3059,12 +3464,25 @@
         setCameraViewState(next); announce('Camera view: ' + cameraViewLabel(next) + '.');
         try { if (window[ENGINE_KEY] && window[ENGINE_KEY].setView) window[ENGINE_KEY].setView(next); } catch (e) {}
       }
+      function switchScene(sid) {
+        if (sid === scene || !SCENES[sid]) return;
+        var restored = sceneResumeState(sid, d);
+        setSceneState(sid); upd('scene', sid);
+        setCompareSceneId(defaultComparisonScene(sid));
+        setModeState('explore'); upd('mode', 'explore');
+        setHintShown(false); setVocabularyOpen(false);
+        setSequenceOrder(sequenceInitialOrder(sid)); setSequenceFeedback(null); setSequenceDragKey(null); setSequenceTapKey(null);
+        setSceneJourneyStep(restored.index); setSignalStep(restored.index); setSceneResumeNotice(restored.hasSavedProgress ? restored : null);
+        setCompareStage(0); setActiveBeaconId(null); setBeaconTourOn(false); setBeaconTourStep(restored.index);
+        setCameraViewState('iso'); setFocusLensOn(false); setRouteTarget(null);
+        setSlice(0); setExcavate(false); setDigCount(0); setSelected(null); setCompareList([]); setCore(null); setWaterOn(false); setQuizI(0); setQuizAns(null);
+      }
 
       function formationTimelinePanel() {
         var timeline = sceneTimelineFor(SCENE.id), activeIndex = Math.max(0, Math.min(sceneJourneyStep, timeline.length - 1)), active = timeline[activeIndex];
         function chooseStage(index) {
           var next = timeline[Math.max(0, Math.min(index, timeline.length - 1))], beacon = sceneBeaconsFor(SCENE.id).filter(function (item) { return item.id === next.beaconId; })[0];
-          if (beacon) activateBeacon(beacon); else { setSceneJourneyStep(next.index); announce(next.label + '. ' + next.body); }
+          if (beacon) activateBeacon(beacon); else { setSceneJourneyStep(next.index); setSceneResumeNotice(null); announce(next.label + '. ' + next.body); }
         }
         return h('section', { className: 'rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Formation timeline', 'data-geology-formation-timeline': 'true' },
           h('div', { className: 'p-3' }, [
@@ -3123,7 +3541,7 @@
         ]);
       }
       function processCuePanel() {
-        var cue = sceneProcessCueFor(SCENE.id), index = Math.max(0, Math.min(sceneJourneyStep, cue.steps.length - 1));
+        var cue = sceneProcessCueFor(SCENE.id), axis = cue.axis, index = Math.max(0, Math.min(sceneJourneyStep, cue.steps.length - 1));
         return h('section', { className: 'rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Process cues', 'data-geology-process-cues': 'true' },
           h('div', { className: 'p-3' }, [
             h('div', { key: 'head', className: 'flex flex-wrap items-start justify-between gap-2' }, [
@@ -3134,11 +3552,11 @@
               var on = stepIndex === index;
               return h('button', { key: step.label, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': 'Show process cue: ' + step.label, 'data-geology-process-step': stepIndex, onClick: function () { var beacon = sceneBeaconsFor(SCENE.id)[stepIndex]; if (beacon) activateBeacon(beacon); }, className: 'min-w-0 rounded-lg border px-1.5 py-2 text-center transition-colors ' + (on ? 'border-amber-500 bg-amber-500 text-amber-950 shadow-sm' : btnIdle) }, [h('span', { key: 'dot', className: 'mx-auto flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-black' }, stepIndex + 1), h('span', { key: 'label', className: 'mt-1 block text-[10px] font-bold leading-tight' }, step.label)]);
             })),
-            h('div', { key: 'depth', className: 'mt-3' }, [
-              h('div', { key: 'depth-head', className: 'flex items-center justify-between text-[10px] font-black uppercase tracking-wider ' + muted }, [h('span', { key: 'label' }, 'Depth shading'), h('span', { key: 'value' }, 'Heat + pressure')]),
-              h('div', { key: 'bar', className: 'mt-1 h-2 rounded-full bg-gradient-to-r from-sky-400 via-amber-400 to-red-600', role: 'img', 'aria-label': 'Depth shading: surface at left, increasing heat and pressure toward the right' }),
-              h('div', { key: 'labels', className: 'mt-1 flex justify-between text-[10px] ' + muted }, h('span', null, 'Surface'), h('span', null, 'Deeper / hotter')),
-              h('p', { key: 'depth-copy', className: 'mt-1 text-[10.5px] leading-snug ' + muted }, cue.depth)
+            h('div', { key: 'axis', className: 'mt-3', 'data-geology-evidence-axis-panel': SCENE.id }, [
+              h('div', { key: 'axis-head', className: 'flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wider ' + muted }, [h('span', { key: 'label' }, axis.label), h('span', { key: 'value', className: 'text-right' }, axis.value)]),
+              h('div', { key: 'bar', className: 'mt-1 h-2 rounded-full bg-gradient-to-r ' + axis.gradient, style: { height: '0.5rem', minWidth: '1px' }, role: 'img', 'aria-label': axis.ariaLabel, 'data-geology-evidence-axis': SCENE.id }),
+              h('div', { key: 'labels', className: 'mt-1 grid grid-cols-3 gap-2 text-[10px] ' + muted }, axis.labels.map(function (label, labelIndex) { return h('span', { key: label, className: labelIndex === 1 ? 'text-center' : (labelIndex === 2 ? 'text-right' : '') }, label); })),
+              h('p', { key: 'axis-copy', className: 'mt-1 text-[10.5px] leading-snug ' + muted }, cue.depth)
             ])
           ]));
       }
@@ -3146,7 +3564,7 @@
       function activateBeacon(beacon) {
         if (!beacon) return;
         var stage = Number.isFinite(beacon.stage) ? beacon.stage : 0;
-        setActiveBeaconId(beacon.id); setSceneJourneyStep(stage); setBeaconTourStep(stage); setModeState('investigate'); upd('mode', 'investigate');
+        setActiveBeaconId(beacon.id); setSceneJourneyStep(stage); setSceneResumeNotice(null); setBeaconTourStep(stage); setModeState('investigate'); upd('mode', 'investigate');
         setRouteTarget(null); setHintShown(false);
         if (beacon.view) setCameraView(beacon.view);
         try { if (window[ENGINE_KEY] && beacon.key && window[ENGINE_KEY].setHighlight) window[ENGINE_KEY].setHighlight(beacon.key); } catch (e) {}
@@ -3200,12 +3618,21 @@
       }
 
       // ── 3D viewport / loading / fallback ──
+      function measurementGridNodes(rows, prefix) {
+        var nodes = [];
+        (rows || []).forEach(function (row) {
+          nodes.push(h('span', { key: prefix + row.id + '-label', className: muted }, row.label));
+          nodes.push(h('span', { key: prefix + row.id + '-value', className: row.emphasis ? 'font-semibold text-amber-300' : '' }, row.value));
+        });
+        return nodes;
+      }
       function viewport() {
         if (webglError) {
+          var fallbackVisual = feat.crossSection ? 'cross-section' : '2D evidence map';
           return h('div', { className: 'rounded-xl border p-4 text-center ' + cardBg },
             h('div', { className: 'text-2xl mb-1' }, '⛰️'),
             h('div', { className: 'text-sm font-bold ' + ink }, t('stem.geology.no3d_title', '3D view unavailable')),
-            h('div', { className: 'text-xs mt-1 ' + muted }, t('stem.geology.no3d_body', 'Your device could not start WebGL. Use the cross-section and rock list — they have the full content.')));
+            h('div', { className: 'text-xs mt-1 ' + muted }, t('stem.geology.no3d_body_' + (feat.crossSection ? 'cross_section' : 'evidence_map'), 'Your device could not start WebGL. Use the ' + fallbackVisual + ' and material list — they preserve the learning core.')));
         }
         if (!threeReady) {
           return h('div', { className: 'rounded-xl border flex items-center justify-center ' + cardBg, style: { minHeight: 320 } },
@@ -3226,7 +3653,7 @@
           sceneBeaconOverlay(),
           processCueOverlay(),
           cameraCompassOverlay(),
-          h('div', { ref: containerRef, tabIndex: fpOn ? 0 : undefined, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: 320, background: '#060913', cursor: fpOn ? 'move' : (excavate ? 'crosshair' : 'grab') }, className: fpOn ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-inset' : undefined, role: fpOn ? 'application' : 'img', 'aria-label': fpOn ? 'First-person geology explorer. W A S D or arrow keys to fly, Q and E for up and down, I J K L or drag to look, Escape to exit.' : 'Interactive 3D voxel cross-section of the crust. Use the rock list below for a non-visual version.' }),
+          h('div', { ref: containerRef, tabIndex: fpOn ? 0 : undefined, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: 320, background: '#060913', cursor: fpOn ? 'move' : (excavate ? 'crosshair' : 'grab') }, className: fpOn ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-inset' : undefined, role: fpOn ? 'application' : 'img', 'aria-label': fpOn ? 'First-person geology explorer. W A S D or arrow keys to fly, Q and E for up and down, I J K L or drag to look, Escape to exit.' : 'Interactive 3D voxel model of ' + SCENE.label + '. Use the ' + (feat.crossSection ? 'cross-section' : '2D evidence map') + ' and material list below for an accessible alternative.' }),
           h('div', { className: 'absolute top-2 left-2 z-10 flex gap-1' },
             [['iso', '3D'], ['front', 'Front'], ['top', 'Top']].map(function (vw) {
               var activeView = cameraViewState === vw[0];
@@ -3250,12 +3677,10 @@
           (fpOn && fpHud) ? h('div', { className: 'absolute bottom-2 right-2 z-10 max-w-[220px] p-2.5 rounded-xl border ' + (isDark ? 'bg-slate-900/85 border-slate-600 text-slate-100' : 'bg-white/90 border-slate-300 text-slate-800'), role: 'status', 'aria-hidden': 'true' },
             h('div', { className: 'text-[12px] font-extrabold' }, '📍 ' + fpHud.layerName),
             fpHud.type ? h('span', { className: 'inline-block text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-0.5 mb-1', style: { color: (TYPE_COLOR[fpHud.type] || '#64748b'), background: (TYPE_COLOR[fpHud.type] || '#64748b') + '22' } }, fpHud.type) : null,
-            h('div', { className: 'grid gap-0.5 text-[11px]', style: { gridTemplateColumns: 'auto 1fr' } },
-              h('span', { className: muted }, t('stem.geology.depth', 'Depth')), h('span', null, '≈ ' + fpHud.depthKm + ' km'),
-              h('span', { className: muted }, t('stem.geology.temp', 'Temp')), h('span', null, (typeof fpHud.tempC === 'number' ? '≈ ' + fpHud.tempC : fpHud.tempC) + ' °C'),
-              h('span', { className: muted }, t('stem.geology.pressure', 'Pressure')), h('span', null, '≈ ' + fpHud.presMPa + ' MPa'),
-              (fpHud.state && fpHud.state !== 'solid') ? h('span', { className: muted }, t('stem.geology.state', 'State')) : null,
-              (fpHud.state && fpHud.state !== 'solid') ? h('span', { className: 'font-semibold', style: { color: '#f59e0b' } }, fpHud.state) : null),
+            h('div', { className: 'grid gap-0.5 text-[11px]', style: { gridTemplateColumns: 'auto minmax(0, 1fr)' } },
+              measurementGridNodes(fpHud.measurements && fpHud.measurements.length ? fpHud.measurements : [depthMeasurement(fpHud, 'Depth'), temperatureMeasurement(fpHud), pressureMeasurement(fpHud)], 'fp-'),
+              (fpHud.state && fpHud.state !== 'solid') ? h('span', { key: 'fp-state-label', className: muted }, t('stem.geology.state', 'State')) : null,
+              (fpHud.state && fpHud.state !== 'solid') ? h('span', { key: 'fp-state-value', className: 'font-semibold', style: { color: '#f59e0b' } }, fpHud.state) : null),
             fpHud.blurb ? h('div', { className: 'mt-1 text-[10.5px] leading-snug' }, fpHud.blurb) : null,
             fpHud.bust ? h('div', { className: 'mt-1 text-[10.5px] leading-snug font-semibold', style: { color: '#f59e0b' } }, '⚠ ' + fpHud.bust) : null) : null);
       }
@@ -3365,7 +3790,7 @@
               'aria-selected': on ? 'true' : 'false',
               tabIndex: on ? 0 : -1,
               onKeyDown: function(e) { geologySceneTabKeyDown(e, sceneIndex); },
-              onClick: function () { if (sid === scene) return; setSceneState(sid); upd('scene', sid); setCompareSceneId(defaultComparisonScene(sid)); setModeState('explore'); upd('mode', 'explore'); setHintShown(false); setVocabularyOpen(false); setSequenceOrder(sequenceInitialOrder(sid)); setSequenceFeedback(null); setSequenceDragKey(null); setSequenceTapKey(null); setSceneJourneyStep(0); setCompareStage(0); setActiveBeaconId(null); setBeaconTourOn(false); setBeaconTourStep(0); setCameraViewState('iso'); setFocusLensOn(false); setRouteTarget(null); setSignalStep((d.sceneSignals && Number.isFinite(d.sceneSignals[sid])) ? d.sceneSignals[sid] : 0); setSlice(0); setExcavate(false); setDigCount(0); setSelected(null); setCompareList([]); setCore(null); setWaterOn(false); setQuizI(0); setQuizAns(null); },
+              onClick: function () { switchScene(sid); },
               className: 'transition-colors active:scale-[0.97] text-xs font-bold px-3 py-1.5 rounded-lg border ' + (on ? 'bg-violet-600 border-violet-500 text-white' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'))
             }, SCENES[sid].label);
           })),
@@ -3406,9 +3831,7 @@
                   crossSectionSVG(),
                   h('p', { className: 'text-[11px] leading-relaxed ' + muted }, t('stem.geology.teach', 'Deeper sedimentary layers are older (superposition). The granite pluton is YOUNGER than the layers it cuts (cross-cutting), and it bakes a metamorphic rim (contact metamorphism). Heat + pressure rise with depth toward the magma — where the rock cycle restarts.')))
               : h('div', { className: 'space-y-2' },
-                  h('div', { className: 'rounded-xl border p-3 ' + cardBg, role: 'region', 'aria-label': 'What to notice' },
-                    h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'What to notice'),
-                    h('ul', { className: 'mt-1 space-y-1 text-[11.5px] ' + ink }, sceneMission.notice.map(function (notice, i) { return h('li', { key: i, className: 'flex gap-1.5' }, h('span', { 'aria-hidden': 'true' }, '•'), h('span', null, notice)); }))),
+                  sceneSchematicPanel(),
                   h('details', { className: 'rounded-xl border p-3 ' + cardBg },
                     h('summary', { className: 'cursor-pointer text-[11px] font-bold ' + ink }, t('stem.geology.context_summary', 'Read the science context')),
                     h('p', { className: 'mt-2 text-[11px] leading-relaxed ' + ink }, t('stem.geology.scene.' + SCENE.id + '.context', SCENE.blurb)),

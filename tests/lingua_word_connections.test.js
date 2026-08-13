@@ -179,6 +179,17 @@ describe('Lingua Word Connections', () => {
     expect(reviewedSource).toMatchObject({ provider: 'alloflow-reviewed-lexical-pilot', license: 'CC BY-SA 4.0' });
     expect(reviewedSource.sourceIds.length).toBeGreaterThan(0);
     expect(reviewedSource.sourceUrls[0]).toMatch(/^https:/);
+    const learningWeb = Lingua._connectionGraphToLearningWeb(graph, { term: 'transportar' });
+    expect(learningWeb.meta.lexicalGraph.source.manifest).toEqual({
+      provider: 'alloflow-reviewed-lexical-pilot',
+      datasetVersion: graph.manifest.datasetVersion,
+      snapshotId: graph.manifest.snapshotId,
+      license: 'CC BY-SA 4.0',
+      attribution: graph.manifest.attribution,
+      reviewedAt: graph.manifest.reviewedAt,
+    });
+    expect(learningWeb.meta.lexicalGraph.source.manifest).not.toHaveProperty('sources');
+    expect(learningWeb.edges.find((edge) => edge.relationType === 'derived_from').provenance).toEqual(reviewedSource);
   });
 
   it('opens a keyboard-contained, language-aware relationship dialog and restores focus', async () => {
@@ -202,7 +213,8 @@ describe('Lingua Word Connections', () => {
     };
     localStorage.setItem('allo_lingua_profile_v1', JSON.stringify({ known: 'English', target: 'Spanish', level: 'Beginner' }));
     localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [{ language: 'Spanish', term: 'transportar', meaning: 'to carry' }] }));
-    await mount();
+    const registeredGraphs = [];
+    await mount({ onRegisterLearningWebGraph: (payload) => { registeredGraphs.push(payload); return true; } });
     await click(button('Saved words'));
     const opener = button('Explore connections');
     await click(opener);
@@ -217,6 +229,10 @@ describe('Lingua Word Connections', () => {
     expect(dialog.querySelector('bdi[lang="es-ES"]').textContent).toBe('transportar');
     expect(dialog.querySelector('bdi[lang="fr-FR"]').textContent).toBe('transporter');
     expect(dialog.querySelector('a[href="https://example.test/family"]').rel).toContain('noopener');
+    expect(registeredGraphs).toHaveLength(1);
+    expect(registeredGraphs[0]).toMatchObject({ id: 'lexical-graph:lex:es:transportar:verb', resourceId: 'lingua:lex:es:transportar:verb', graph: { version: 'acg/v1', meta: { domain: 'lexical', lexicalGraph: { focusId: 'lex:es:transportar:verb' } } } });
+    expect(registeredGraphs[0].graph.nodes.map((node) => node.lexicalType)).toEqual(['lexeme', 'lexeme']);
+    expect(registeredGraphs[0].graph.edges[0]).toMatchObject({ type: 'associates', relationType: 'cognate_with', verification: 'reviewed', provenance: { license: 'CC0' } });
     const outer = host.querySelector('#lingua-title').closest('[role="dialog"]');
     expect(outer.getAttribute('aria-hidden')).toBe('true');
     expect(outer.hasAttribute('inert')).toBe(true);
@@ -355,5 +371,13 @@ describe('Lingua Word Connections', () => {
     expect(graph.edges.map((edge) => edge.relationType)).toEqual(expect.arrayContaining(['contains_morpheme', 'related_form']));
     expect(graph.edges.find((edge) => edge.relationType === 'contains_morpheme')).toMatchObject({ verification: 'ai-suggested', provenance: null });
     expect(graph.originNoteVerification).toBe('ai-suggested');
+    const learningWeb = Lingua._connectionGraphToLearningWeb(graph, { term: 'portable' });
+    expect(learningWeb.meta.lexicalGraph).not.toHaveProperty('source');
+    expect(learningWeb.meta.lexicalGraph).not.toHaveProperty('provider');
+    expect(learningWeb.meta.lexicalGraph).not.toHaveProperty('datasetVersion');
+    expect(learningWeb.meta.lexicalGraph).not.toHaveProperty('snapshotId');
+    expect(learningWeb.meta.lexicalGraph).not.toHaveProperty('license');
+    expect(learningWeb.meta.lexicalGraph).not.toHaveProperty('attribution');
+    expect(learningWeb.meta.lexicalGraph).not.toHaveProperty('reviewedAt');
   });
 });

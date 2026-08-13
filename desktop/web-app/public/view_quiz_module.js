@@ -73,6 +73,10 @@ var QUIZ_VOICE_STATUS_EVENT = 'alloflow:quiz-voice-status';
 function _quizVoiceNormalizeAction(value) {
   return String(value || 'status').trim().toLowerCase().replace(/[_\s]+/g, '-');
 }
+function _quizAuthoredImageAlt(value) {
+  var description = String(value == null ? '' : value).trim();
+  return description || 'No visual description provided.';
+}
 function _quizVoiceChoiceIndex(value, optionCount) {
   var count = Math.max(0, Math.min(8, Number(optionCount) || 0));
   var index = -1;
@@ -134,9 +138,32 @@ function _quizVoiceParseScopedUtterance(rawText) {
     'check my response': 'quiz_check',
     'check selections': 'quiz_check',
     'check value': 'quiz_check',
+    'check both parts': 'quiz_check',
+    'check answer and evidence': 'quiz_check',
+    'list reflections': 'quiz_list_reflections',
+    'read reflections': 'quiz_list_reflections',
+    'open reflections': 'quiz_open_reflections',
+    'go to reflections': 'quiz_open_reflections',
+    'read reflection': 'quiz_read_reflection',
+    'read the reflection': 'quiz_read_reflection',
+    'read my reflection': 'quiz_read_reflection_response',
+    'read reflection response': 'quiz_read_reflection_response',
+    'clear reflection': 'quiz_clear_reflection',
+    'clear my reflection': 'quiz_clear_reflection',
+    'submit reflection': 'quiz_submit_reflection',
+    'submit my reflection': 'quiz_submit_reflection',
+    'edit reflection': 'quiz_edit_reflection',
+    'edit my reflection': 'quiz_edit_reflection',
+    'next reflection': 'quiz_next_reflection',
+    'previous reflection': 'quiz_previous_reflection',
+    'return to question': 'quiz_return_to_question',
+    'back to question': 'quiz_return_to_question',
     'submit assessment': 'quiz_submit',
     'submit quiz': 'quiz_submit',
     'finish assessment': 'quiz_submit',
+    'cancel review': 'quiz_review_cancel',
+    'close review': 'quiz_review_cancel',
+    'return to assessment': 'quiz_review_cancel',
     'next': 'quiz_next',
     'next question': 'quiz_next',
     'previous': 'quiz_previous',
@@ -151,17 +178,51 @@ function _quizVoiceParseScopedUtterance(rawText) {
     'exit quiz': 'quiz_close'
   };
   if (direct[text]) return {
-    commandId: direct[text],
-    confidence: 0.98
+    commandId: direct[text]
   };
+  var reflectionSelection = text.match(/^(?:open|select|choose|go to)\s+reflection\s+(.+)$/);
+  if (reflectionSelection) {
+    return {
+      commandId: 'quiz_select_reflection',
+      params: {
+        reflection: reflectionSelection[1]
+      }
+    };
+  }
+  var setReflection = raw.match(/^set\s+(?:my\s+)?reflection(?:\s+response)?\s+to\s+(.+)$/i);
+  if (setReflection && String(setReflection[1] || '').trim()) {
+    return {
+      commandId: 'quiz_set_reflection',
+      params: {
+        response: String(setReflection[1]).trim()
+      }
+    };
+  }
+  var appendReflection = raw.match(/^(?:append|add)\s+(?:to\s+)?(?:my\s+)?reflection(?:\s+response)?\s+(.+)$/i);
+  if (appendReflection && String(appendReflection[1] || '').trim()) {
+    return {
+      commandId: 'quiz_append_reflection',
+      params: {
+        response: String(appendReflection[1]).trim()
+      }
+    };
+  }
+  var evidenceSelection = text.match(/^(?:choose|select)\s+(answer|evidence)(?:\s+(?:option|choice))?\s+(.+)$/);
+  if (evidenceSelection) {
+    return {
+      commandId: evidenceSelection[1] === 'evidence' ? 'quiz_choose_evidence' : 'quiz_choose_answer',
+      params: {
+        choice: evidenceSelection[2]
+      }
+    };
+  }
   var responseMatch = raw.match(/^(?:response|write|dictate|enter\s+(?:a\s+)?response|set\s+(?:my\s+)?answer\s+to|my\s+answer\s+is|answer\s+with)\s+(.+)$/i);
   if (responseMatch && String(responseMatch[1] || '').trim()) {
     return {
       commandId: 'quiz_enter_response',
       params: {
         response: String(responseMatch[1]).trim()
-      },
-      confidence: 0.99
+      }
     };
   }
   var selectionMatch = text.match(/^(select|choose|toggle|deselect|unselect|remove)(?:\s+(?:option|choice|pair|item|step|principle))?\s+(.+)$/);
@@ -172,8 +233,7 @@ function _quizVoiceParseScopedUtterance(rawText) {
       params: {
         choice: selectionMatch[2],
         mode: selectionMode
-      },
-      confidence: 0.99
+      }
     };
   }
   if (/^(?:the\s+)?order\s+is\s+(?:correct|right)$/.test(text)) {
@@ -181,8 +241,7 @@ function _quizVoiceParseScopedUtterance(rawText) {
       commandId: 'quiz_choose',
       params: {
         choice: 'yes'
-      },
-      confidence: 0.99
+      }
     };
   }
   if (/^(?:the\s+)?order\s+is\s+(?:wrong|incorrect|not correct)$/.test(text)) {
@@ -190,8 +249,7 @@ function _quizVoiceParseScopedUtterance(rawText) {
       commandId: 'quiz_choose',
       params: {
         choice: 'no'
-      },
-      confidence: 0.99
+      }
     };
   }
   var explicitChoice = text.match(/^(?:choose|select|answer)(?:\s+(?:option|choice|answer))?\s+(.+)$/);
@@ -201,8 +259,7 @@ function _quizVoiceParseScopedUtterance(rawText) {
       commandId: 'quiz_choose',
       params: {
         choice: choice
-      },
-      confidence: explicitChoice ? 0.99 : 0.97
+      }
     };
   }
   return null;
@@ -223,6 +280,22 @@ function _quizVoiceNamedChoiceIndex(value, options) {
     if (candidate && candidate === normalized) return i;
   }
   return -1;
+}
+function _quizVoiceReflectionIndex(value, reflectionCount) {
+  var count = Math.max(0, Math.min(20, Number(reflectionCount) || 0));
+  var normalized = String(value == null ? '' : value).trim().toLowerCase().replace(/^(?:reflection|prompt)\s+/, '').replace(/[?!.,]+$/g, '');
+  var positional = _quizVoiceChoiceIndex(normalized, Math.min(8, count));
+  if (positional >= 0) return positional;
+  if (/^(?:9|1[0-9]|20)$/.test(normalized)) {
+    var index = Number(normalized) - 1;
+    return index < count ? index : -1;
+  }
+  return -1;
+}
+function _quizVoiceReflectionPrompt(reflection) {
+  if (typeof reflection === 'string') return reflection.trim();
+  if (!reflection || typeof reflection !== 'object') return '';
+  return String(reflection.text || reflection.prompt || reflection.question || '').trim();
 }
 var _quizVoiceItemControllers = {};
 function _quizVoiceControllerKey(namespace, questionIdx) {
@@ -305,6 +378,25 @@ function _quizVoiceQuestionPayload(question, questionIdx, totalQuestions, select
       return idx + 1 + ', ' + String(pair && pair.left || '') + ' with ' + String(pair && pair.right || '');
     }).join('. ') + '.';
     if (state.prompt) message += ' ' + state.prompt;
+  } else if (type === 'answer-evidence') {
+    var answerOptions = Array.isArray(state.answerOptions) ? state.answerOptions : [];
+    var evidenceOptions = Array.isArray(state.evidenceOptions) ? state.evidenceOptions : [];
+    message += ' This is an answer and evidence item. Part 1, choose the best answer.';
+    if (answerOptions.length > 0) message += ' Answer options: ' + answerOptions.map(function (option, idx) {
+      return String.fromCharCode(65 + idx) + ', ' + option;
+    }).join('. ') + '.';
+    if (typeof state.answerIndex === 'number' && answerOptions[state.answerIndex] != null) {
+      message += ' Answer option ' + String.fromCharCode(65 + state.answerIndex) + ' is selected.';
+      message += ' Part 2, ' + String(state.evidencePrompt || 'choose the supporting evidence') + '.';
+      if (evidenceOptions.length > 0) message += ' Evidence options: ' + evidenceOptions.map(function (option, idx) {
+        return String.fromCharCode(65 + idx) + ', ' + option;
+      }).join('. ') + '.';
+      if (typeof state.evidenceIndex === 'number' && evidenceOptions[state.evidenceIndex] != null) {
+        message += ' Evidence option ' + String.fromCharCode(65 + state.evidenceIndex) + ' is selected.';
+      }
+    } else {
+      message += ' Say choose answer followed by a letter, number, ordinal, or the exact answer text.';
+    }
   }
   return {
     questionIndex: questionIdx,
@@ -317,6 +409,64 @@ function _quizVoiceQuestionPayload(question, questionIdx, totalQuestions, select
     selectedOptionLabel: typeof selectedOptionIdx === 'number' && options[selectedOptionIdx] ? options[selectedOptionIdx].label : null,
     itemState: state,
     message: message
+  };
+}
+function _quizVoiceIsSemanticFrontmost(ctx, status) {
+  if (!status || !status.mounted || status.state === 'unsupported-mode') return false;
+  var context = ctx && typeof ctx === 'object' ? ctx : null;
+  if (!context) return true;
+  if (context.quizVoiceFrontmost === false || context.testPrepHubOpen === true || context.contentIsQuiz === false) return false;
+  var hasResolver = typeof context.getCurrentLearnerResource === 'function';
+  var current = null;
+  if (hasResolver) {
+    try {
+      current = context.getCurrentLearnerResource();
+    } catch (e) {
+      return false;
+    }
+    if (!current || typeof current !== 'object') return false;
+  } else if (context.currentLearnerResource && typeof context.currentLearnerResource === 'object') {
+    current = context.currentLearnerResource;
+  } else if (context.quizVoiceFrontmost === true || context.contentIsQuiz === true) {
+    return true;
+  } else {
+    // Legacy embedded hosts do not yet publish semantic ownership. Preserve
+    // their existing Quiz behavior; production hosts use the resolver above.
+    return true;
+  }
+  return String(current.type || '').trim().toLowerCase() === 'quiz' && current.frontmost !== false;
+}
+function _quizVoicePublicState(status, frontmost) {
+  var source = status && typeof status === 'object' ? status : {};
+  var item = source.itemState && typeof source.itemState === 'object' ? source.itemState : {};
+  var actions = Array.isArray(source.actions) ? source.actions.map(function (action) {
+    return String(action || '').slice(0, 80);
+  }).filter(Boolean) : [];
+  var hasSelection = typeof source.selectedOptionIndex === 'number' || Array.isArray(item.selectedIndices) && item.selectedIndices.length > 0 || typeof item.answerIndex === 'number' || typeof item.evidenceIndex === 'number' || typeof item.selectedIndex === 'number';
+  var hasWrittenResponse = typeof item.response === 'string' && item.response.trim().length > 0;
+  var hasReflectionResponse = typeof source.reflectionResponse === 'string' && source.reflectionResponse.trim().length > 0;
+  return {
+    ready: source.ready === true,
+    mounted: source.mounted === true,
+    frontmost: frontmost !== false,
+    state: String(source.state || 'unavailable').slice(0, 80),
+    surface: 'quiz',
+    surfaceMode: String(source.surfaceMode || (source.reviewOpen ? 'review' : 'question')).slice(0, 40),
+    questionNumber: Number.isFinite(Number(source.questionNumber)) ? Number(source.questionNumber) : 0,
+    totalQuestions: Number.isFinite(Number(source.totalQuestions)) ? Number(source.totalQuestions) : 0,
+    itemType: String(source.type || '').slice(0, 80),
+    optionCount: Array.isArray(source.options) ? source.options.length : 0,
+    hasSelection: hasSelection,
+    hasResponse: hasSelection || hasWrittenResponse,
+    checked: source.checked === true,
+    submitted: source.state === 'submitted',
+    reviewOpen: source.reviewOpen === true,
+    reflectionNumber: Number.isFinite(Number(source.reflectionNumber)) ? Number(source.reflectionNumber) : 0,
+    reflectionTotal: Number.isFinite(Number(source.reflectionTotal)) ? Number(source.reflectionTotal) : 0,
+    hasReflectionResponse: hasReflectionResponse,
+    reflectionSubmitted: source.reflectionSubmitted === true,
+    hasFeedback: actions.indexOf('repeat-feedback') >= 0,
+    actions: actions
   };
 }
 function _quizFocusableElements(container) {
@@ -3614,7 +3764,7 @@ function AnswerEvidenceCard(p) {
   var setConfidence = confidenceState[1];
   var renderRules = p.modeStrategy && p.modeStrategy.render || {};
   function submit() {
-    if (answerIdx === null || evidenceIdx === null) return;
+    if (answerIdx === null || evidenceIdx === null) return null;
     var answerCorrect = answers[answerIdx] === q.correctAnswer;
     var evidenceCorrect = evidence[evidenceIdx] === q.correctEvidence;
     var rawScore = (answerCorrect ? 1 : 0) + (evidenceCorrect ? 1 : 0);
@@ -3634,6 +3784,7 @@ function AnswerEvidenceCard(p) {
     setGrade(payload);
     setSubmitted(payload);
     _quizEmitDeterministicAnswer(p, 'answer-evidence', payload, confidence);
+    return payload;
   }
   function markIDK() {
     var payload = {
@@ -3657,6 +3808,123 @@ function AnswerEvidenceCard(p) {
     setSubmitted(null);
     setConfidence(null);
   }
+  _quizUseVoiceController(p, {
+    getState: function () {
+      var actions = grade ? ['try-again'] : ['choose-answer'];
+      if (!grade && answerIdx !== null) actions.push('choose-evidence');
+      if (!grade && answerIdx !== null && evidenceIdx !== null) actions.push('check');
+      return {
+        type: 'answer-evidence',
+        answerOptions: answers.slice(0, 8),
+        evidenceOptions: evidence.slice(0, 8),
+        evidencePrompt: String(q.evidencePrompt || 'Which evidence or reason best supports your answer?'),
+        answerIndex: typeof answerIdx === 'number' ? answerIdx : null,
+        evidenceIndex: typeof evidenceIdx === 'number' ? evidenceIdx : null,
+        gradeStatus: grade && grade.status || null,
+        score: grade && typeof grade.score === 'number' ? grade.score : null,
+        actions: actions,
+        resetRequiresConfirmation: !!(grade || answerIdx !== null || evidenceIdx !== null),
+        prompt: grade ? 'Both parts have been checked. Say try again to clear both selections and answer again.' : answerIdx === null ? 'Choose the answer part explicitly, for example choose answer B.' : evidenceIdx === null ? 'Now choose the evidence part explicitly, for example choose evidence A.' : 'Both parts are selected. Say check both parts.'
+      };
+    },
+    execute: function (action, request) {
+      var input = request && typeof request === 'object' ? request : {};
+      if (action === 'try-again' || action === 'reset') {
+        if ((grade || answerIdx !== null || evidenceIdx !== null) && input.confirmed !== true) {
+          return {
+            ok: false,
+            state: 'confirmation-required',
+            confirmationRequired: true,
+            confirmationToken: 'reset-answer-evidence',
+            message: 'Try again will clear both the answer and evidence selections. Confirm try again to continue.'
+          };
+        }
+        reset();
+        return {
+          ok: true,
+          state: 'reset',
+          message: 'Answer and evidence selections cleared. Choose the answer part first.'
+        };
+      }
+      if (grade) {
+        return {
+          ok: false,
+          state: 'locked',
+          message: 'Both parts have already been checked. Say try again to answer again.'
+        };
+      }
+      var part = action === 'choose-answer' ? 'answer' : action === 'choose-evidence' ? 'evidence' : String(input.part || '').toLowerCase();
+      if (action === 'choose' && part !== 'answer' && part !== 'evidence') {
+        return {
+          ok: false,
+          state: 'ambiguous-choice',
+          message: 'Name the part explicitly. Say choose answer B or choose evidence A.'
+        };
+      }
+      if (part === 'answer' || part === 'evidence') {
+        if (part === 'evidence' && answerIdx === null) {
+          return {
+            ok: false,
+            state: 'inapplicable',
+            message: 'Choose the answer part before choosing supporting evidence.'
+          };
+        }
+        var items = part === 'answer' ? answers : evidence;
+        var choice = input.choice != null ? input.choice : input.option != null ? input.option : input.value;
+        var chosenIndex = _quizVoiceNamedChoiceIndex(choice, items.slice(0, 8));
+        if (chosenIndex < 0) {
+          return {
+            ok: false,
+            state: 'invalid-choice',
+            message: 'Choose an available ' + part + ' option by letter A through H, number, ordinal, or exact option text.'
+          };
+        }
+        if (part === 'answer') {
+          setAnswerIdx(chosenIndex);
+          if (answerIdx !== chosenIndex) setEvidenceIdx(null);
+        } else {
+          setEvidenceIdx(chosenIndex);
+        }
+        var label = String.fromCharCode(65 + chosenIndex);
+        return {
+          ok: true,
+          state: 'selected',
+          part: part,
+          selectedIndex: chosenIndex,
+          selectedLabel: label,
+          message: (part === 'answer' ? 'Answer' : 'Evidence') + ' option ' + label + ' selected.' + (part === 'answer' ? ' Now choose supporting evidence.' : ' Both parts are selected. Say check both parts.')
+        };
+      }
+      if (action === 'check') {
+        if (answerIdx === null || evidenceIdx === null) {
+          return {
+            ok: false,
+            state: 'inapplicable',
+            message: 'Choose one answer and one evidence option before checking both parts.'
+          };
+        }
+        var result = submit();
+        if (!result) return {
+          ok: false,
+          state: 'error',
+          message: 'Both parts could not be checked.'
+        };
+        var message = result.status === 'correct' ? 'Both parts checked. The answer and supporting evidence are correct.' : result.status === 'partially-correct' ? 'Both parts checked. One part is correct and one part needs review.' : 'Both parts checked. The answer and supporting evidence need review.';
+        return {
+          ok: true,
+          state: 'checked',
+          correct: result.status === 'correct',
+          score: result.score,
+          message: message
+        };
+      }
+      return {
+        ok: false,
+        state: 'invalid-action',
+        message: 'Use choose answer, choose evidence, or check both parts for this item.'
+      };
+    }
+  });
   if (answers.length === 0 || evidence.length === 0) return null;
   var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
   function optionGrid(items, selectedIdx, setter, disabled) {
@@ -4346,13 +4614,21 @@ function QuizVoiceInputButton(p) {
   var status = statusState[0];
   var setStatus = statusState[1];
   var controllerRef = React.useRef(null);
+  var mountedRef = React.useRef(true);
+  var voiceHandoffRef = React.useRef({
+    token: 0,
+    restore: false
+  });
   var voice = typeof window !== 'undefined' ? window.AlloFlowVoice : null;
   var nativeSupported = typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
   var sharedServicePresent = !!(voice && typeof voice.isDictationSupported === 'function');
+  var coordinatedFallbackPresent = !!(voice && typeof voice.acquireVoiceSession === 'function');
   var sharedSupported = sharedServicePresent && voice.isDictationSupported();
-  var supported = p.allowDictation !== false && (sharedServicePresent ? sharedSupported : nativeSupported);
+  var supported = p.allowDictation !== false && (sharedServicePresent ? sharedSupported : nativeSupported && coordinatedFallbackPresent);
   React.useEffect(function () {
+    mountedRef.current = true;
     return function () {
+      mountedRef.current = false;
       try {
         if (controllerRef.current) controllerRef.current.abort('unmount');
       } catch (e) {}
@@ -4365,22 +4641,81 @@ function QuizVoiceInputButton(p) {
     var prior = String(p.value || '').trim();
     p.onChange((prior ? prior + ' ' : '') + clean);
   }
-  function createNativeFallback() {
+  function beginVoiceHandoff() {
+    var next = {
+      token: voiceHandoffRef.current.token + 1,
+      restore: false
+    };
+    try {
+      var loop = window.__alloVoiceLoop;
+      var wasActive = !!(loop && typeof loop.isActive === 'function' && loop.isActive());
+      var wasPaused = !!(wasActive && loop && typeof loop.isPaused === 'function' && loop.isPaused());
+      next.restore = wasActive && !wasPaused;
+      if (wasActive && typeof loop.stop === 'function') loop.stop();
+    } catch (e) {
+      next.restore = false;
+    }
+    voiceHandoffRef.current = next;
+    return next.token;
+  }
+  function restoreVoiceAccess(token, reason) {
+    var handoff = voiceHandoffRef.current;
+    if (!handoff || handoff.token !== token || !handoff.restore) return;
+    // A replacement session represents newer user intent. Never reopen the
+    // microphone after another owner (including a newly toggled Voice Access
+    // session) displaced this dictation.
+    if (reason === 'replaced' || reason === 'external') {
+      handoff.restore = false;
+      return;
+    }
+    handoff.restore = false;
+    window.setTimeout(function () {
+      try {
+        if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+        var shared = window.AlloFlowVoice;
+        var sessionStatus = shared && typeof shared.getActiveVoiceSessionStatus === 'function' ? shared.getActiveVoiceSessionStatus() : null;
+        if (sessionStatus && sessionStatus.owner) return;
+        var loop = window.__alloVoiceLoop;
+        if (!loop || typeof loop.start !== 'function') return;
+        if (typeof loop.isActive !== 'function' || !loop.isActive()) loop.start();
+      } catch (e) {}
+    }, 150);
+  }
+  function updateDictationStatus(nextStatus, token) {
+    var next = nextStatus && typeof nextStatus === 'object' ? nextStatus : {
+      state: 'idle'
+    };
+    if (mountedRef.current) setStatus(next);
+    if (next.state === 'idle' || next.state === 'error') restoreVoiceAccess(token, next.reason || '');
+  }
+  function createNativeFallback(token) {
     var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Recognition) return null;
+    var coordinator = window.AlloFlowVoice;
+    if (!Recognition || !coordinator || typeof coordinator.acquireVoiceSession !== 'function') return null;
     var recognition = new Recognition();
     var active = false;
+    var terminal = false;
+    var lease = null;
+    function release(reason) {
+      var currentLease = lease;
+      lease = null;
+      if (currentLease && typeof currentLease.release === 'function') {
+        try {
+          currentLease.release(reason || 'completed');
+        } catch (e) {}
+      }
+    }
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = typeof document !== 'undefined' && document.documentElement.lang ? document.documentElement.lang : 'en-US';
     recognition.onstart = function () {
       active = true;
-      setStatus({
+      updateDictationStatus({
         state: 'listening',
         engineLabel: window.__alloLocalSRShim ? 'On-device Whisper' : 'Browser speech service',
         privacy: window.__alloLocalSRShim ? 'Audio stays on this device.' : 'Your browser may send audio to its speech provider.',
         message: 'Listening...'
-      });
+      }, token);
     };
     recognition.onresult = function (event) {
       var transcript = event && event.results && event.results[0] && event.results[0][0] ? event.results[0][0].transcript : '';
@@ -4388,34 +4723,79 @@ function QuizVoiceInputButton(p) {
     };
     recognition.onerror = function (event) {
       active = false;
-      setStatus({
+      terminal = true;
+      release('error');
+      updateDictationStatus({
         state: 'error',
         engineLabel: '',
         privacy: '',
+        reason: event && event.error || 'error',
         message: event && event.error === 'not-allowed' ? 'Microphone permission was not granted.' : 'Dictation was unavailable.'
-      });
+      }, token);
     };
     recognition.onend = function () {
       active = false;
-      setStatus({
+      if (terminal) return;
+      terminal = true;
+      release('completed');
+      updateDictationStatus({
         state: 'idle',
         engineLabel: '',
         privacy: '',
+        reason: 'completed',
         message: 'Dictation added.'
-      });
+      }, token);
     };
     return {
       start: function () {
-        recognition.start();
-        return true;
+        terminal = false;
+        lease = coordinator.acquireVoiceSession('quiz-dictation', {
+          mode: 'dictation',
+          label: 'Quiz dictation',
+          state: 'starting',
+          message: 'Starting microphone...',
+          onStop: function (reason) {
+            lease = null;
+            active = false;
+            terminal = true;
+            try {
+              recognition.abort();
+            } catch (e) {}
+            updateDictationStatus({
+              state: 'idle',
+              engineLabel: '',
+              privacy: '',
+              reason: reason || 'replaced',
+              message: ''
+            }, token);
+          }
+        });
+        try {
+          recognition.start();
+          return true;
+        } catch (error) {
+          terminal = true;
+          release('start-error');
+          throw error;
+        }
       },
       stop: function () {
         recognition.stop();
       },
-      abort: function () {
+      abort: function (reason) {
+        active = false;
+        terminal = true;
         try {
           recognition.abort();
         } catch (e) {}
+        release(reason || 'cancelled');
+        updateDictationStatus({
+          state: 'idle',
+          engineLabel: '',
+          privacy: '',
+          reason: reason || 'cancelled',
+          message: ''
+        }, token);
       },
       isActive: function () {
         return active;
@@ -4432,36 +4812,43 @@ function QuizVoiceInputButton(p) {
       current.stop();
       return;
     }
+    var handoffToken = beginVoiceHandoff();
     if (voice && typeof voice.createDictationController === 'function') {
       current = voice.createDictationController({
+        owner: 'quiz-dictation',
+        label: 'Quiz dictation',
         continuous: false,
         restartOnEnd: false,
         lang: typeof document !== 'undefined' && document.documentElement.lang ? document.documentElement.lang : 'en-US',
         onTranscript: appendTranscript,
-        onStateChange: setStatus
+        onStateChange: function (nextStatus) {
+          updateDictationStatus(nextStatus, handoffToken);
+        }
       });
     } else {
-      current = createNativeFallback();
+      current = createNativeFallback(handoffToken);
     }
     controllerRef.current = current;
     if (!current) {
-      setStatus({
+      updateDictationStatus({
         state: 'error',
         engineLabel: '',
         privacy: '',
+        reason: 'unavailable',
         message: 'Dictation was unavailable.'
-      });
+      }, handoffToken);
       return;
     }
     try {
-      current.start();
+      if (current.start() === false) restoreVoiceAccess(handoffToken, 'start-failed');
     } catch (e) {
-      setStatus({
+      updateDictationStatus({
         state: 'error',
         engineLabel: '',
         privacy: '',
+        reason: 'start-error',
         message: 'Dictation was unavailable.'
-      });
+      }, handoffToken);
     }
   }
   if (!supported) return null;
@@ -5234,6 +5621,7 @@ function FreeformItemsBlock(p) {
         itemNumber: entry.idx + 1,
         questionIdx: entry.idx,
         draftNamespace: p.draftNamespace,
+        registerVoiceController: p.registerVoiceController,
         onSubmitLiveAnswer: p.onSubmitLiveAnswer,
         modeStrategy: p.modeStrategy,
         scoringPolicy: p.scoringPolicy
@@ -5973,6 +6361,9 @@ function QuizView(props) {
   var currentQuestionIdx = currentQuestionState[0];
   var setCurrentQuestionIdx = currentQuestionState[1];
   var quizVoiceLastFeedbackRef = React.useRef('');
+  var quizVoiceReflectionState = React.useState(null);
+  var quizVoiceReflectionIdx = quizVoiceReflectionState[0];
+  var setQuizVoiceReflectionIdx = quizVoiceReflectionState[1];
   var quizVoiceScopeRef = React.useRef({
     getStatus: null,
     getCommands: null
@@ -6046,6 +6437,7 @@ function QuizView(props) {
     var total = Array.isArray(assessmentData.questions) ? assessmentData.questions.length : 0;
     var next = Math.max(0, Math.min(Math.max(0, total - 1), Number(questionIdx) || 0));
     setCurrentQuestionIdx(next);
+    setQuizVoiceReflectionIdx(null);
     setReviewOpen(false);
     window.setTimeout(function () {
       try {
@@ -6225,7 +6617,7 @@ function QuizView(props) {
   function submitReflection(rIdx) {
     var entry = reflectionAnswers[rIdx] || {};
     var text = (entry.draft || '').trim();
-    if (!text) return;
+    if (!text) return false;
     setReflectionAnswers(function (prev) {
       var next = Object.assign({}, prev);
       next[rIdx] = {
@@ -6235,8 +6627,7 @@ function QuizView(props) {
       };
       return next;
     });
-    if (typeof onSubmitLiveAnswer !== 'function') return;
-    try {
+    if (typeof onSubmitLiveAnswer === 'function') try {
       onSubmitLiveAnswer({
         questionIdx: 'r' + rIdx,
         itemType: 'reflection',
@@ -6247,6 +6638,7 @@ function QuizView(props) {
         timestamp: Date.now()
       });
     } catch (e) {}
+    return true;
   }
   function reopenReflection(rIdx) {
     setReflectionAnswers(function (prev) {
@@ -6254,6 +6646,17 @@ function QuizView(props) {
       next[rIdx] = Object.assign({}, next[rIdx] || {}, {
         submitted: false
       });
+      return next;
+    });
+  }
+  function clearReflection(rIdx) {
+    setReflectionAnswers(function (prev) {
+      var next = Object.assign({}, prev);
+      next[rIdx] = {
+        draft: '',
+        submitted: false,
+        submittedText: ''
+      };
       return next;
     });
   }
@@ -6908,9 +7311,59 @@ function QuizView(props) {
     onGo: goToAssessmentQuestion,
     onSubmit: submitAssessmentAttempt
   });
+  function getQuizReflections() {
+    if (Array.isArray(assessmentData.reflections)) return assessmentData.reflections;
+    return assessmentData.reflection ? [assessmentData.reflection] : [];
+  }
+  function getQuizVoiceReflectionStatus(reflections, canExit, requestedIdx) {
+    var list = Array.isArray(reflections) ? reflections : [];
+    var focusIdx = typeof requestedIdx === 'number' ? requestedIdx : quizVoiceReflectionIdx;
+    var rIdx = typeof focusIdx === 'number' && focusIdx >= 0 && focusIdx < list.length ? focusIdx : null;
+    if (rIdx === null) return null;
+    var entry = reflectionAnswers[rIdx] || {};
+    var draft = String(entry.draft || '');
+    var submitted = !!entry.submitted;
+    var response = submitted ? String(entry.submittedText || draft) : draft;
+    var actions = ['status', 'describe', 'list-actions', 'list-reflections', 'select-reflection', 'read-reflection', 'read-reflection-response', 'return-to-question'];
+    if (submitted) actions.push('edit-reflection');else {
+      actions.push('set-reflection', 'append-reflection');
+      if (draft.trim()) actions.push('submit-reflection');
+    }
+    if (response.trim() && !submitted) actions.push('clear-reflection');
+    if (rIdx > 0) actions.push('previous-reflection');
+    if (rIdx < list.length - 1) actions.push('next-reflection');
+    if (draftNamespace) actions.push('submit');
+    if (quizVoiceLastFeedbackRef.current) actions.push('repeat-feedback');
+    if (canExit) actions.push('close');
+    var prompt = _quizVoiceReflectionPrompt(list[rIdx]);
+    var message = 'Reflection ' + (rIdx + 1) + ' of ' + list.length + '. ' + prompt;
+    if (submitted) message += ' This reflection is submitted. Say read my reflection or edit reflection.';else if (draft.trim()) message += ' A draft response is present. Say read my reflection, append to reflection, clear reflection, or submit reflection.';else message += ' No response has been entered. Say set reflection to, followed by your response.';
+    return {
+      ok: true,
+      ready: true,
+      mounted: true,
+      state: submitted ? 'reflection-submitted' : 'reflection-ready',
+      surface: 'quiz',
+      surfaceMode: 'reflection',
+      type: 'reflection',
+      actions: actions,
+      reflectionIndex: rIdx,
+      reflectionNumber: rIdx + 1,
+      reflectionTotal: list.length,
+      reflectionPrompt: prompt,
+      reflectionResponse: response,
+      reflectionSubmitted: submitted,
+      canChooseByVoice: false,
+      canEnterFreeformByVoice: !submitted,
+      canResetByVoice: false,
+      reviewOpen: reviewOpen,
+      message: message
+    };
+  }
   // QUIZ VOICE SURFACE: semantic state actions; pointer and keyboard remain available.
   function getQuizVoiceBoundaryStatus() {
     var questions = Array.isArray(assessmentData.questions) ? assessmentData.questions : [];
+    var reflections = getQuizReflections();
     var learnerSurface = !isTeacherMode && !isParentMode || isIndependentMode;
     var ordinarySurface = learnerSurface && !isEditingQuiz && !isPresentationMode && !isReviewGame && !(escapeRoomState && escapeRoomState.isActive);
     var canExit = typeof props.onClose === 'function' || typeof props.onExit === 'function';
@@ -6936,15 +7389,40 @@ function QuizView(props) {
         message: 'This assessment has been submitted.'
       };
     }
-    if (questions.length === 0) {
+    if (reviewOpen) {
+      var currentReviewProgress = reviewProgress || _quizBuildAttemptProgress(assessmentData, _quizReadWorkingDraft(draftNamespace));
       return {
-        ok: false,
+        ok: true,
         ready: false,
         mounted: true,
-        state: 'empty',
+        state: 'review',
         surface: 'quiz',
-        actions: canExit ? ['status', 'close'] : ['status'],
-        message: 'This quiz does not contain any questions.'
+        surfaceMode: 'review',
+        type: 'assessment-review',
+        actions: ['status', 'describe', 'list-actions', 'submit', 'cancel-review'],
+        reviewOpen: true,
+        totalQuestions: questions.length,
+        answeredCount: currentReviewProgress.answered,
+        unansweredCount: currentReviewProgress.unanswered,
+        flaggedCount: currentReviewProgress.flagged,
+        message: 'Quiz review is open. ' + currentReviewProgress.answered + ' of ' + currentReviewProgress.total + ' questions are answered. Say submit assessment or cancel review.'
+      };
+    }
+    var reflectionStatus = getQuizVoiceReflectionStatus(reflections, canExit);
+    if (reflectionStatus) return reflectionStatus;
+    if (questions.length === 0) {
+      var emptyActions = ['status', 'describe'];
+      if (reflections.length > 0) emptyActions.push('list-reflections', 'open-reflections', 'select-reflection');
+      if (canExit) emptyActions.push('close');
+      return {
+        ok: reflections.length > 0,
+        ready: false,
+        mounted: true,
+        state: reflections.length > 0 ? 'reflection-overview' : 'empty',
+        surface: 'quiz',
+        actions: emptyActions,
+        reflectionTotal: reflections.length,
+        message: reflections.length > 0 ? 'This quiz has no questions and ' + reflections.length + ' reflection prompt' + (reflections.length === 1 ? '' : 's') + '. Say open reflections.' : 'This quiz does not contain any questions or reflections.'
       };
     }
     var questionIdx = Math.max(0, Math.min(questions.length - 1, currentQuestionIdx));
@@ -6955,6 +7433,7 @@ function QuizView(props) {
     var itemState = itemController && typeof itemController.getState === 'function' ? itemController.getState() : null;
     var itemActions = itemState && Array.isArray(itemState.actions) ? itemState.actions : [];
     var actions = ['status', 'describe', 'list-actions', 'read-question'];
+    if (reflections.length > 0) actions.push('list-reflections', 'open-reflections', 'select-reflection');
     if (type === 'mcq' && Array.isArray(question.options) && question.options.length > 0) actions.push('choose');
     itemActions.forEach(function (itemAction) {
       if (actions.indexOf(itemAction) < 0) actions.push(itemAction);
@@ -6969,15 +7448,18 @@ function QuizView(props) {
       ok: true,
       ready: true,
       mounted: true,
-      state: reviewOpen ? 'review' : 'ready',
+      state: 'ready',
       surface: 'quiz',
       actions: actions,
-      canChooseByVoice: type === 'mcq' && Array.isArray(question.options) && question.options.length > 0 || itemActions.indexOf('choose') >= 0,
+      canChooseByVoice: type === 'mcq' && Array.isArray(question.options) && question.options.length > 0 || itemActions.indexOf('choose') >= 0 || itemActions.indexOf('choose-answer') >= 0 || itemActions.indexOf('choose-evidence') >= 0,
+      canChooseAnswerPartByVoice: itemActions.indexOf('choose-answer') >= 0,
+      canChooseEvidencePartByVoice: itemActions.indexOf('choose-evidence') >= 0,
+      reflectionTotal: reflections.length,
       canEnterFreeformByVoice: itemActions.indexOf('enter-response') >= 0,
       canResetByVoice: itemActions.indexOf('try-again') >= 0,
-      reviewOpen: reviewOpen,
+      reviewOpen: false,
       checked: Boolean(showQuizAnswers),
-      message: reviewOpen ? 'Quiz review is open. Nothing is submitted until submission is confirmed.' : 'Quiz is ready at question ' + (questionIdx + 1) + ' of ' + questions.length + '.'
+      message: 'Quiz is ready at question ' + (questionIdx + 1) + ' of ' + questions.length + '.'
     }, _quizVoiceQuestionPayload(question, questionIdx, questions.length, selectedOptionIdx, itemState));
   }
   function publishQuizVoiceBoundaryResult(result, request, action) {
@@ -7076,7 +7558,263 @@ function QuizView(props) {
       message: checkMessage
     });
   }
+  function handleQuizVoiceReflectionNavigation(action, request, status) {
+    var reflections = getQuizReflections();
+    var canExit = typeof props.onClose === 'function' || typeof props.onExit === 'function';
+    if (action === 'list-reflections') {
+      if (reflections.length === 0) return Object.assign({}, status, {
+        ok: false,
+        state: 'inapplicable',
+        message: 'This quiz has no reflection prompts.'
+      });
+      var listed = reflections.slice(0, 20).map(function (reflection, idx) {
+        return 'Reflection ' + (idx + 1) + ': ' + _quizVoiceReflectionPrompt(reflection);
+      }).join(' ');
+      if (reflections.length > 20) listed += ' Voice number selection is limited to the first 20 reflections.';
+      return Object.assign({}, status, {
+        ok: true,
+        state: 'reflection-list',
+        reflectionTotal: reflections.length,
+        message: listed
+      });
+    }
+    if (action === 'open-reflections' || action === 'select-reflection') {
+      if (reflections.length === 0) return Object.assign({}, status, {
+        ok: false,
+        state: 'inapplicable',
+        message: 'This quiz has no reflection prompts.'
+      });
+      var requested = action === 'open-reflections' ? 0 : typeof request.reflectionIndex === 'number' ? Math.floor(request.reflectionIndex) : _quizVoiceReflectionIndex(request.reflection != null ? request.reflection : request.choice != null ? request.choice : request.value, reflections.length);
+      if (requested < 0 || requested >= reflections.length) {
+        return Object.assign({}, status, {
+          ok: false,
+          state: 'invalid-reflection',
+          message: 'Choose a reflection by its exact number, from 1 through ' + Math.min(20, reflections.length) + '.'
+        });
+      }
+      setQuizVoiceReflectionIdx(requested);
+      return Object.assign({}, getQuizVoiceReflectionStatus(reflections, canExit, requested), {
+        state: 'reflection-selected'
+      });
+    }
+    if (action === 'next-reflection' || action === 'previous-reflection') {
+      if (status.surfaceMode !== 'reflection') return Object.assign({}, status, {
+        ok: false,
+        state: 'inapplicable',
+        message: 'Open reflections before moving between reflection prompts.'
+      });
+      var nextIdx = status.reflectionIndex + (action === 'next-reflection' ? 1 : -1);
+      if (nextIdx < 0 || nextIdx >= reflections.length) {
+        return Object.assign({}, status, {
+          ok: false,
+          state: 'inapplicable',
+          message: action === 'next-reflection' ? 'This is the last reflection.' : 'This is the first reflection.'
+        });
+      }
+      setQuizVoiceReflectionIdx(nextIdx);
+      return Object.assign({}, getQuizVoiceReflectionStatus(reflections, canExit, nextIdx), {
+        state: 'reflection-selected'
+      });
+    }
+    if (action === 'return-to-question') {
+      if (status.surfaceMode !== 'reflection') return Object.assign({}, status, {
+        ok: false,
+        state: 'inapplicable',
+        message: 'Quiz voice focus is already on a question.'
+      });
+      setQuizVoiceReflectionIdx(null);
+      var questions = Array.isArray(assessmentData.questions) ? assessmentData.questions : [];
+      if (questions.length === 0) return {
+        ok: true,
+        ready: false,
+        mounted: true,
+        state: 'reflection-overview',
+        surface: 'quiz',
+        reflectionTotal: reflections.length,
+        message: 'Returned to the Quiz overview. This quiz has no questions.'
+      };
+      var qIdx = Math.max(0, Math.min(questions.length - 1, currentQuestionIdx));
+      return Object.assign({
+        ok: true,
+        ready: true,
+        mounted: true,
+        state: 'returned-to-question',
+        surface: 'quiz'
+      }, _quizVoiceQuestionPayload(questions[qIdx], qIdx, questions.length, studentMcqAnswers[qIdx]), {
+        message: 'Returned to question ' + (qIdx + 1) + ' of ' + questions.length + '.'
+      });
+    }
+    if (action === 'read-reflection' || action === 'read-reflection-response') {
+      if (status.surfaceMode !== 'reflection') return Object.assign({}, status, {
+        ok: false,
+        state: 'inapplicable',
+        message: 'Open or select a reflection first.'
+      });
+      if (action === 'read-reflection') return Object.assign({}, status, {
+        ok: true,
+        state: 'reading-reflection',
+        message: 'Reflection ' + status.reflectionNumber + ' of ' + status.reflectionTotal + '. ' + status.reflectionPrompt
+      });
+      return Object.assign({}, status, {
+        ok: !!String(status.reflectionResponse || '').trim(),
+        state: String(status.reflectionResponse || '').trim() ? 'reading-reflection-response' : 'inapplicable',
+        message: String(status.reflectionResponse || '').trim() ? 'Your reflection response is: ' + status.reflectionResponse : 'No reflection response has been entered.'
+      });
+    }
+    return null;
+  }
+  function handleQuizVoiceReflectionEdit(action, request, status) {
+    if (['set-reflection', 'append-reflection', 'clear-reflection', 'submit-reflection', 'edit-reflection'].indexOf(action) < 0) return null;
+    if (status.surfaceMode !== 'reflection') return Object.assign({}, status, {
+      ok: false,
+      state: 'inapplicable',
+      message: 'Open or select a reflection before changing its response.'
+    });
+    var rIdx = status.reflectionIndex;
+    var entry = reflectionAnswers[rIdx] || {};
+    var current = String(entry.draft || '');
+    if (action === 'edit-reflection') {
+      if (!entry.submitted) return Object.assign({}, status, {
+        ok: false,
+        state: 'inapplicable',
+        message: 'This reflection is already open for editing.'
+      });
+      reopenReflection(rIdx);
+      var editMessage = 'Reflection ' + (rIdx + 1) + ' reopened for editing. Your submitted text remains in the draft.';
+      quizVoiceLastFeedbackRef.current = editMessage;
+      return Object.assign({}, status, {
+        ok: true,
+        state: 'reflection-editing',
+        reflectionSubmitted: false,
+        message: editMessage
+      });
+    }
+    if (entry.submitted) return Object.assign({}, status, {
+      ok: false,
+      state: 'locked',
+      message: 'This reflection is submitted. Say edit reflection before changing it.'
+    });
+    if (action === 'set-reflection' || action === 'append-reflection') {
+      var text = _quizVoiceRequestText(request);
+      if (!text) return Object.assign({}, status, {
+        ok: false,
+        state: 'invalid-response',
+        message: action === 'set-reflection' ? 'Say set reflection to, followed by your response.' : 'Say append to reflection, followed by the text to add.'
+      });
+      if (action === 'set-reflection' && current.trim() && current.trim() !== text && request.confirmed !== true) {
+        return Object.assign({}, status, {
+          ok: false,
+          state: 'confirmation-required',
+          confirmationRequired: true,
+          confirmationToken: 'replace-reflection',
+          message: 'Setting this reflection will replace the current draft. Confirm set reflection to replace it, or say append to reflection.'
+        });
+      }
+      var nextText = action === 'append-reflection' && current.trim() ? current.replace(/\s+$/g, '') + ' ' + text : text;
+      setReflectionDraft(rIdx, nextText);
+      var wordCount = nextText.trim() ? nextText.trim().split(/\s+/).length : 0;
+      var changedMessage = 'Reflection ' + (rIdx + 1) + (action === 'append-reflection' ? ' updated. ' : ' response set. ') + wordCount + ' word' + (wordCount === 1 ? '' : 's') + ' in the draft.';
+      quizVoiceLastFeedbackRef.current = changedMessage;
+      return Object.assign({}, status, {
+        ok: true,
+        state: action === 'append-reflection' ? 'reflection-appended' : 'reflection-set',
+        reflectionResponse: nextText,
+        message: changedMessage
+      });
+    }
+    if (action === 'clear-reflection') {
+      if (!current.trim()) return Object.assign({}, status, {
+        ok: false,
+        state: 'inapplicable',
+        message: 'The current reflection response is already empty.'
+      });
+      if (request.confirmed !== true) return Object.assign({}, status, {
+        ok: false,
+        state: 'confirmation-required',
+        confirmationRequired: true,
+        confirmationToken: 'clear-reflection',
+        message: 'Clear reflection will permanently erase the current response. Confirm clear reflection to continue.'
+      });
+      clearReflection(rIdx);
+      var clearMessage = 'Reflection ' + (rIdx + 1) + ' response cleared.';
+      quizVoiceLastFeedbackRef.current = clearMessage;
+      return Object.assign({}, status, {
+        ok: true,
+        state: 'reflection-cleared',
+        reflectionResponse: '',
+        reflectionSubmitted: false,
+        message: clearMessage
+      });
+    }
+    if (!current.trim()) return Object.assign({}, status, {
+      ok: false,
+      state: 'inapplicable',
+      message: 'Enter a reflection response before submitting it.'
+    });
+    if (request.confirmed !== true) return Object.assign({}, status, {
+      ok: false,
+      state: 'confirmation-required',
+      confirmationRequired: true,
+      confirmationToken: 'submit-reflection',
+      message: 'Submit reflection ' + (rIdx + 1) + ' now? You can reopen it later by saying edit reflection. Confirm submit reflection to continue.'
+    });
+    if (!submitReflection(rIdx)) return Object.assign({}, status, {
+      ok: false,
+      state: 'error',
+      message: 'The reflection could not be submitted. Its draft remains saved.'
+    });
+    var submitMessage = 'Reflection ' + (rIdx + 1) + ' submitted.';
+    quizVoiceLastFeedbackRef.current = submitMessage;
+    return Object.assign({}, status, {
+      ok: true,
+      state: 'reflection-submitted',
+      reflectionSubmitted: true,
+      message: submitMessage
+    });
+  }
   function handleQuizVoiceSubmit(request, status) {
+    if (status.surfaceMode === 'review') {
+      if (!draftNamespace) {
+        return Object.assign({}, status, {
+          ok: false,
+          state: 'inapplicable',
+          message: 'This quiz mode does not have a submit-assessment action.'
+        });
+      }
+      if (request.confirmed !== true) {
+        return Object.assign({}, status, {
+          ok: false,
+          state: 'confirmation-required',
+          confirmationRequired: true,
+          confirmationToken: 'submit-assessment',
+          message: 'Submit this assessment now? Say yes or no.'
+        });
+      }
+      var reviewReceipt = submitAssessmentAttempt();
+      if (!reviewReceipt) {
+        return Object.assign({}, status, {
+          ok: false,
+          state: 'error',
+          message: 'The assessment could not be submitted. The draft remains saved.'
+        });
+      }
+      var reviewSubmitMessage = 'Assessment submitted with ' + reviewReceipt.summary.answered + ' of ' + reviewReceipt.summary.total + ' questions answered.';
+      quizVoiceLastFeedbackRef.current = reviewSubmitMessage;
+      return {
+        ok: true,
+        ready: false,
+        mounted: true,
+        state: 'submitted',
+        surface: 'quiz',
+        receipt: {
+          submittedAt: reviewReceipt.submittedAt,
+          total: reviewReceipt.summary.total,
+          answered: reviewReceipt.summary.answered,
+          unanswered: reviewReceipt.summary.unanswered
+        },
+        message: reviewSubmitMessage
+      };
+    }
     if (!status.ready) return status;
     if (!draftNamespace) {
       return Object.assign({}, status, {
@@ -7123,6 +7861,24 @@ function QuizView(props) {
     };
   }
   function handleQuizVoiceOtherAction(action, status) {
+    if (action === 'cancel-review') {
+      if (!status.reviewOpen) {
+        return Object.assign({}, status, {
+          ok: false,
+          state: 'inapplicable',
+          message: 'Quiz review is not open.'
+        });
+      }
+      setReviewOpen(false);
+      return Object.assign({}, status, {
+        ok: true,
+        ready: true,
+        state: 'review-closed',
+        surfaceMode: 'question',
+        reviewOpen: false,
+        message: 'Quiz review closed. Your assessment draft remains saved.'
+      });
+    }
     if (action === 'next' || action === 'previous') {
       if (!status.ready) return status;
       var nextQuestionIdx = status.questionIndex + (action === 'next' ? 1 : -1);
@@ -7184,7 +7940,14 @@ function QuizView(props) {
     var question = status.ready && Array.isArray(assessmentData.questions) ? assessmentData.questions[status.questionIndex] : null;
     var selectedOptionIdx = status.ready && typeof studentMcqAnswers[status.questionIndex] === 'number' ? studentMcqAnswers[status.questionIndex] : null;
     if (action === 'status') return status;
+    var reflectionNavigation = handleQuizVoiceReflectionNavigation(action, request, status);
+    if (reflectionNavigation) return reflectionNavigation;
+    var reflectionEdit = handleQuizVoiceReflectionEdit(action, request, status);
+    if (reflectionEdit) return reflectionEdit;
     if (action === 'describe') {
+      if (status.surfaceMode === 'reflection') return Object.assign({}, status, {
+        message: status.message + ' Say list actions for reflection commands, or return to question.'
+      });
       if (!status.ready) return status;
       var description = 'Ordinary learner quiz. Question ' + status.questionNumber + ' of ' + status.totalQuestions + '.';
       var progress = reviewProgress;
@@ -7218,6 +7981,17 @@ function QuizView(props) {
       return status.ready ? Object.assign({}, status, {
         state: 'reading'
       }) : status;
+    }
+    if (action === 'choose-answer' || action === 'choose-evidence') {
+      var partController = getQuizItemVoiceController(status.questionIndex);
+      if (!partController || typeof partController.execute !== 'function') return Object.assign({}, status, {
+        ok: false,
+        state: 'unsupported-item',
+        message: 'This item does not expose answer-and-evidence voice selection.'
+      });
+      var partResult = partController.execute(action, request);
+      if (partResult && partResult.message) quizVoiceLastFeedbackRef.current = partResult.message;
+      return Object.assign({}, status, partResult || {});
     }
     if (action === 'choose' || action === 'select' || action === 'answer') {
       return handleQuizVoiceChoice(request, status, question);
@@ -7266,42 +8040,135 @@ function QuizView(props) {
         aliases: aliases || []
       }, extra || {});
     };
-    if (status.ready && status.canEnterFreeformByVoice) {
-      commands.push(command('quiz_enter_response', 'Enter a Quiz response', ['response followed by your answer', 'my answer is'], {
-        params: ['response']
-      }));
-    }
     var commands = [command('quiz_describe', 'Describe this Quiz', ['describe quiz', 'quiz status']), command('quiz_list_actions', 'List Quiz actions', ['list actions', 'what can I do'])];
-    if (status.ready) commands.push(command('quiz_read_question', 'Read the current question', ['read question', 'repeat question']));
-    if (status.ready && status.canResetByVoice) commands.push(command('quiz_try_again', 'Reset this Quiz response', ['try again', 'reset answer', 'clear answer']));
-    if (status.ready && status.canChooseByVoice) {
-      commands.push(command('quiz_choose', 'Choose a Quiz answer', ['choose A', 'answer one', 'select first'], {
-        params: ['choice']
-      }));
-    }
-    if (status.ready && status.actions.indexOf('check') >= 0) {
-      commands.push(command('quiz_check', 'Check my Quiz answer', ['check answer', 'check my answer'], {
+    if (status.ready && status.surfaceMode !== 'reflection' && status.canEnterFreeformByVoice) {
+      commands.push(command('quiz_enter_response', 'Enter a Quiz response', ['response followed by your answer', 'my answer is'], {
+        params: ['response'],
         risk: 'state-change',
-        confirmation: 'never'
+        confirmation: 'low-confidence',
+        confirmMessage: 'Update this Quiz response? The dictated text will not be repeated. Say yes or no.'
       }));
     }
-    if (status.ready && status.actions.indexOf('next') >= 0) commands.push(command('quiz_next', 'Next Quiz question', ['next', 'next question']));
-    if (status.ready && status.actions.indexOf('previous') >= 0) commands.push(command('quiz_previous', 'Previous Quiz question', ['previous', 'previous question']));
+    if (status.actions && status.actions.indexOf('read-question') >= 0) commands.push(command('quiz_read_question', 'Read the current question', ['read question', 'repeat question']));
+    if (status.ready && status.canResetByVoice) commands.push(command('quiz_try_again', 'Reset this Quiz response', ['try again', 'reset answer', 'clear answer'], status.itemState && status.itemState.resetRequiresConfirmation ? {
+      risk: 'destructive',
+      confirmation: 'always',
+      confirmMessage: 'Clear this Quiz response and try again? Say yes or no.'
+    } : {
+      risk: 'state-change',
+      confirmation: 'low-confidence',
+      confirmMessage: 'Reset this Quiz response and try again? Say yes or no.'
+    }));
+    if (status.ready && status.type !== 'answer-evidence' && status.canChooseByVoice) {
+      commands.push(command('quiz_choose', 'Choose a Quiz answer', ['choose A', 'answer one', 'select first'], {
+        params: ['choice'],
+        risk: 'state-change',
+        confirmation: 'low-confidence',
+        confirmMessage: 'Change the selected Quiz answer? Say yes or no.'
+      }));
+    }
+    if (status.ready && status.canChooseAnswerPartByVoice) commands.push(command('quiz_choose_answer', 'Choose the answer part', ['choose answer A', 'select answer option one'], {
+      params: ['choice'],
+      risk: 'state-change',
+      confirmation: 'low-confidence',
+      confirmMessage: 'Change the selected answer part? Say yes or no.'
+    }));
+    if (status.ready && status.canChooseEvidencePartByVoice) commands.push(command('quiz_choose_evidence', 'Choose the evidence part', ['choose evidence A', 'select evidence option one'], {
+      params: ['choice'],
+      risk: 'state-change',
+      confirmation: 'low-confidence',
+      confirmMessage: 'Change the selected evidence part? Say yes or no.'
+    }));
+    if (status.ready && status.actions.indexOf('check') >= 0) {
+      commands.push(command('quiz_check', status.type === 'answer-evidence' ? 'Check both answer and evidence parts' : 'Check my Quiz answer', status.type === 'answer-evidence' ? ['check both parts', 'check answer and evidence'] : ['check answer', 'check my answer'], {
+        risk: 'state-change',
+        confirmation: 'low-confidence',
+        confirmMessage: 'Check this Quiz response now? Say yes or no.'
+      }));
+    }
+    if (status.actions && status.actions.indexOf('list-reflections') >= 0) commands.push(command('quiz_list_reflections', 'List Quiz reflections', ['list reflections', 'read reflections']));
+    if (status.actions && status.actions.indexOf('open-reflections') >= 0) commands.push(command('quiz_open_reflections', 'Open Quiz reflections', ['open reflections', 'go to reflections'], {
+      risk: 'state-change',
+      confirmation: 'low-confidence'
+    }));
+    if (status.actions && status.actions.indexOf('select-reflection') >= 0) commands.push(command('quiz_select_reflection', 'Select a Quiz reflection', ['select reflection one', 'open reflection two'], {
+      params: ['reflection'],
+      risk: 'state-change',
+      confirmation: 'low-confidence'
+    }));
+    if (status.actions && status.actions.indexOf('read-reflection') >= 0) commands.push(command('quiz_read_reflection', 'Read the reflection prompt', ['read reflection', 'read the reflection']));
+    if (status.actions && status.actions.indexOf('read-reflection-response') >= 0) commands.push(command('quiz_read_reflection_response', 'Read my reflection response', ['read my reflection', 'read reflection response']));
+    if (status.actions && status.actions.indexOf('set-reflection') >= 0) commands.push(command('quiz_set_reflection', 'Set the reflection response', ['set reflection to'], Object.assign({
+      params: ['response']
+    }, String(status.reflectionResponse || '').trim() ? {
+      risk: 'destructive',
+      confirmation: 'always',
+      confirmMessage: 'Replace the current reflection draft? Say yes or no.'
+    } : {
+      risk: 'state-change',
+      confirmation: 'low-confidence',
+      confirmMessage: 'Set this reflection response? The dictated text will not be repeated. Say yes or no.'
+    })));
+    if (status.actions && status.actions.indexOf('append-reflection') >= 0) commands.push(command('quiz_append_reflection', 'Append to the reflection response', ['append to reflection', 'add to my reflection'], {
+      params: ['response'],
+      risk: 'state-change',
+      confirmation: 'low-confidence',
+      confirmMessage: 'Append to this reflection? The dictated text will not be repeated. Say yes or no.'
+    }));
+    if (status.actions && status.actions.indexOf('clear-reflection') >= 0) commands.push(command('quiz_clear_reflection', 'Clear the reflection response', ['clear reflection', 'clear my reflection'], {
+      risk: 'destructive',
+      confirmation: 'always',
+      confirmMessage: 'Permanently clear this reflection response? Say yes or no.'
+    }));
+    if (status.actions && status.actions.indexOf('submit-reflection') >= 0) commands.push(command('quiz_submit_reflection', 'Submit this reflection', ['submit reflection', 'submit my reflection'], {
+      risk: 'destructive',
+      confirmation: 'always',
+      confirmMessage: 'Submit this reflection now? Say yes or no.'
+    }));
+    if (status.actions && status.actions.indexOf('edit-reflection') >= 0) commands.push(command('quiz_edit_reflection', 'Edit the submitted reflection', ['edit reflection', 'edit my reflection'], {
+      risk: 'state-change',
+      confirmation: 'low-confidence'
+    }));
+    if (status.actions && status.actions.indexOf('next-reflection') >= 0) commands.push(command('quiz_next_reflection', 'Next Quiz reflection', ['next reflection'], {
+      risk: 'state-change',
+      confirmation: 'low-confidence'
+    }));
+    if (status.actions && status.actions.indexOf('previous-reflection') >= 0) commands.push(command('quiz_previous_reflection', 'Previous Quiz reflection', ['previous reflection'], {
+      risk: 'state-change',
+      confirmation: 'low-confidence'
+    }));
+    if (status.actions && status.actions.indexOf('return-to-question') >= 0) commands.push(command('quiz_return_to_question', 'Return to the Quiz question', ['return to question', 'back to question'], {
+      risk: 'state-change',
+      confirmation: 'low-confidence'
+    }));
+    if (status.ready && status.actions.indexOf('next') >= 0) commands.push(command('quiz_next', 'Next Quiz question', ['next', 'next question'], {
+      risk: 'state-change',
+      confirmation: 'low-confidence'
+    }));
+    if (status.ready && status.actions.indexOf('previous') >= 0) commands.push(command('quiz_previous', 'Previous Quiz question', ['previous', 'previous question'], {
+      risk: 'state-change',
+      confirmation: 'low-confidence'
+    }));
     if (status.actions && status.actions.indexOf('repeat-feedback') >= 0) commands.push(command('quiz_repeat_feedback', 'Repeat Quiz feedback', ['repeat feedback', 'repeat response']));
-    if (status.ready && status.actions.indexOf('submit') >= 0) {
+    if (status.actions && status.actions.indexOf('submit') >= 0) {
       commands.push(command('quiz_submit', 'Submit this assessment', ['submit assessment', 'submit quiz', 'finish assessment'], {
         risk: 'destructive',
         confirmation: 'always',
         confirmMessage: 'Submit this assessment now? Say yes or no.'
       }));
     }
-    if (status.actions && status.actions.indexOf('close') >= 0) commands.push(command('quiz_close', 'Close Quiz', ['close quiz', 'exit quiz']));
+    if (status.actions && status.actions.indexOf('cancel-review') >= 0) commands.push(command('quiz_review_cancel', 'Cancel assessment review', ['cancel review', 'close review', 'return to assessment'], {
+      risk: 'state-change',
+      confirmation: 'low-confidence'
+    }));
+    if (status.actions && status.actions.indexOf('close') >= 0) commands.push(command('quiz_close', 'Close Quiz', ['close quiz', 'exit quiz'], {
+      risk: 'destructive',
+      confirmation: 'always',
+      confirmMessage: 'Close Quiz? Your saved assessment draft will remain available. Say yes or no.'
+    }));
     return commands;
   }
   function dispatchQuizVoiceScopeAction(action, params, meta) {
-    if (params && Object.prototype.hasOwnProperty.call(params, 'response')) detail.response = params.response;
-    if (params && Object.prototype.hasOwnProperty.call(params, 'mode')) detail.mode = params.mode;
-    if (params && Object.prototype.hasOwnProperty.call(params, 'value')) detail.value = params.value;
     var response = null;
     var detail = {
       action: action,
@@ -7310,7 +8177,12 @@ function QuizView(props) {
         response = payload;
       }
     };
+    if (params && Object.prototype.hasOwnProperty.call(params, 'response')) detail.response = params.response;
+    if (params && Object.prototype.hasOwnProperty.call(params, 'mode')) detail.mode = params.mode;
+    if (params && Object.prototype.hasOwnProperty.call(params, 'value')) detail.value = params.value;
     if (params && Object.prototype.hasOwnProperty.call(params, 'choice')) detail.choice = params.choice;
+    if (params && Object.prototype.hasOwnProperty.call(params, 'reflection')) detail.reflection = params.reflection;
+    if (params && Object.prototype.hasOwnProperty.call(params, 'reflectionIndex')) detail.reflectionIndex = params.reflectionIndex;
     if (meta && meta.confirmed === true) detail.confirmed = true;
     var event = typeof window.CustomEvent === 'function' ? new window.CustomEvent(QUIZ_VOICE_CONTROL_EVENT, {
       detail: detail
@@ -7336,25 +8208,51 @@ function QuizView(props) {
     return module.registerCommandScope({
       id: 'quiz',
       priority: 80,
-      isActive: function () {
+      isActive: function (ctx) {
         var current = quizVoiceScopeRef.current;
         var status = current && current.getStatus ? current.getStatus() : null;
-        return !!(status && status.mounted && status.state !== 'unsupported-mode');
+        // Includes the legacy status.state !== 'unsupported-mode' guard plus
+        // the production host's semantic frontmost ownership contract.
+        return _quizVoiceIsSemanticFrontmost(ctx, status);
       },
-      getCommands: function () {
+      getCommands: function (ctx) {
         var current = quizVoiceScopeRef.current;
+        var status = current && current.getStatus ? current.getStatus() : null;
+        if (!_quizVoiceIsSemanticFrontmost(ctx, status)) return [];
         return current && current.getCommands ? current.getCommands() : [];
       },
-      getCapabilities: function () {
+      getCapabilities: function (ctx) {
         var current = quizVoiceScopeRef.current;
         var status = current && current.getStatus ? current.getStatus() : {
           actions: []
         };
+        if (!_quizVoiceIsSemanticFrontmost(ctx, status)) {
+          return {
+            describe: false,
+            listActions: false,
+            readQuestion: false,
+            chooseAnswer: false,
+            chooseAnswerPart: false,
+            chooseEvidencePart: false,
+            reflections: false,
+            editReflection: false,
+            checkAnswer: false,
+            submit: false,
+            next: false,
+            previous: false,
+            repeatFeedback: false,
+            close: false
+          };
+        }
         return {
           describe: true,
           listActions: true,
           readQuestion: status.ready,
           chooseAnswer: status.canChooseByVoice,
+          chooseAnswerPart: status.canChooseAnswerPartByVoice,
+          chooseEvidencePart: status.canChooseEvidencePartByVoice,
+          reflections: status.reflectionTotal > 0,
+          editReflection: status.actions && (status.actions.indexOf('set-reflection') >= 0 || status.actions.indexOf('edit-reflection') >= 0),
           checkAnswer: status.actions && status.actions.indexOf('check') >= 0,
           submit: status.actions && status.actions.indexOf('submit') >= 0,
           next: status.actions && status.actions.indexOf('next') >= 0,
@@ -7363,32 +8261,72 @@ function QuizView(props) {
           close: status.actions && status.actions.indexOf('close') >= 0
         };
       },
-      getState: function () {
+      getState: function (ctx) {
         var current = quizVoiceScopeRef.current;
-        return current && current.getStatus ? current.getStatus() : {
+        var status = current && current.getStatus ? current.getStatus() : {
           ready: false,
           state: 'unavailable'
         };
+        var frontmost = _quizVoiceIsSemanticFrontmost(ctx, status);
+        return _quizVoicePublicState(status, frontmost);
       },
-      help: function () {
+      help: function (ctx) {
         var current = quizVoiceScopeRef.current;
+        var status = current && current.getStatus ? current.getStatus() : null;
+        if (!_quizVoiceIsSemanticFrontmost(ctx, status)) return [];
         var commands = current && current.getCommands ? current.getCommands() : [];
         return commands.map(function (item) {
           return item.label;
         });
       },
       parse: function (text) {
-        return _quizVoiceParseScopedUtterance(text);
+        var parsed = _quizVoiceParseScopedUtterance(text);
+        var current = quizVoiceScopeRef.current;
+        var status = current && current.getStatus ? current.getStatus() : null;
+        if (!parsed || !status || status.surfaceMode !== 'review') return parsed;
+        // The modal owns the semantic surface. Recognized question actions
+        // are consumed as orientation instead of falling through to mutate
+        // the obscured question beneath the focus trap.
+        if (parsed.commandId !== 'quiz_submit' && parsed.commandId !== 'quiz_review_cancel' && parsed.commandId !== 'quiz_describe' && parsed.commandId !== 'quiz_list_actions') {
+          return {
+            commandId: 'quiz_describe'
+          };
+        }
+        return parsed;
       },
-      quiz_enter_response: 'enter-response',
       execute: function (commandId, params, ctx, meta) {
+        var current = quizVoiceScopeRef.current;
+        var currentStatus = current && current.getStatus ? current.getStatus() : null;
+        if (!_quizVoiceIsSemanticFrontmost(ctx, currentStatus)) {
+          return {
+            ok: false,
+            narration: 'Quiz is not the frontmost learner surface, so nothing was changed.'
+          };
+        }
         var actionMap = {
+          quiz_enter_response: 'enter-response',
           quiz_try_again: 'try-again',
           quiz_describe: 'describe',
           quiz_list_actions: 'list-actions',
           quiz_read_question: 'read-question',
           quiz_choose: 'choose',
+          quiz_choose_answer: 'choose-answer',
+          quiz_choose_evidence: 'choose-evidence',
           quiz_check: 'check',
+          quiz_list_reflections: 'list-reflections',
+          quiz_open_reflections: 'open-reflections',
+          quiz_select_reflection: 'select-reflection',
+          quiz_read_reflection: 'read-reflection',
+          quiz_read_reflection_response: 'read-reflection-response',
+          quiz_set_reflection: 'set-reflection',
+          quiz_append_reflection: 'append-reflection',
+          quiz_clear_reflection: 'clear-reflection',
+          quiz_submit_reflection: 'submit-reflection',
+          quiz_edit_reflection: 'edit-reflection',
+          quiz_next_reflection: 'next-reflection',
+          quiz_previous_reflection: 'previous-reflection',
+          quiz_return_to_question: 'return-to-question',
+          quiz_review_cancel: 'cancel-review',
           quiz_submit: 'submit',
           quiz_next: 'next',
           quiz_previous: 'previous',
@@ -8001,7 +8939,7 @@ function QuizView(props) {
     className: "relative mb-3"
   }, /*#__PURE__*/React.createElement("img", {
     src: q.imageUrl,
-    alt: q.question || 'Question image',
+    alt: _quizAuthoredImageAlt(q.imageAltText),
     loading: "lazy",
     className: "w-full max-h-64 object-contain rounded-lg border border-slate-200 bg-slate-50"
   }), renderImageRefineOverlay(i, 'question', null, false)), /*#__PURE__*/React.createElement("div", {
@@ -8069,7 +9007,7 @@ function QuizView(props) {
     className: "relative mb-2"
   }, /*#__PURE__*/React.createElement("img", {
     src: q.optionImageUrls[optIdx],
-    alt: opt,
+    alt: _quizAuthoredImageAlt(Array.isArray(q.optionImageAltTexts) ? q.optionImageAltTexts[optIdx] : ''),
     loading: "lazy",
     className: "w-full h-24 object-contain rounded bg-white border border-slate-200"
   }), renderImageRefineOverlay(i, 'option', optIdx, true)), /*#__PURE__*/React.createElement("div", {

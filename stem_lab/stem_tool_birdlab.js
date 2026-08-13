@@ -132,8 +132,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '  84%, 100% { transform: translate(0, 0) scaleX(1); }',
       '}',
       '@keyframes birdlab-cloud-drift {',
-      '  0%, 100% { transform: translateX(-8px); opacity: .66; }',
-      '  50% { transform: translateX(26px); opacity: .9; }',
+      '  0% { transform: translateX(-12px); opacity: 0; }',
+      '  12%, 82% { opacity: 1; }',
+      '  100% { transform: translateX(34px); opacity: 0; }',
+      '}',
+      '@keyframes birdlab-kingfisher-splash {',
+      '  0%, 42% { opacity: 0; transform: translateY(4px) scale(.38); }',
+      '  56% { opacity: .92; transform: translateY(-2px) scale(1); }',
+      '  74%, 100% { opacity: 0; transform: translateY(1px) scale(1.18); }',
+      '}',
+      '@keyframes birdlab-kingfisher-ripple {',
+      '  0%, 44% { opacity: 0; transform: scale(.34); }',
+      '  58% { opacity: .7; transform: scale(.62); }',
+      '  100% { opacity: 0; transform: scale(1.38); }',
+      '}',
+      '@keyframes birdlab-mallard-contact-paddle {',
+      '  0%, 100% { opacity: .48; transform: translateX(-2px) scaleX(.9); }',
+      '  50% { opacity: .72; transform: translateX(1px) scaleX(1.08); }',
+      '}',
+      '@keyframes birdlab-mallard-contact-dabble {',
+      '  0%, 100% { opacity: .42; transform: scale(.66); }',
+      '  50% { opacity: .76; transform: scale(1.04); }',
+      '}',
+      '@keyframes birdlab-mallard-contact-recover {',
+      '  0% { opacity: .68; transform: scale(.62); }',
+      '  100% { opacity: 0; transform: scale(1.28); }',
       '}',
       '@keyframes birdlab-mist-drift {',
       '  0%, 100% { transform: translateX(-12px); opacity: .28; }',
@@ -163,6 +186,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '  0%, 100% { transform: rotate(0deg); }',
       '  55%, 82% { transform: rotate(12deg); }',
       '}',
+      '@keyframes birdlab-kingfisher-balance {',
+      '  0%, 34%, 100% { transform: rotate(0deg); }',
+      '  58%, 78% { transform: rotate(4deg); }',
+      '}',
       '@keyframes birdlab-junco-tail-flick {',
       '  0%, 100% { transform: rotate(0deg) scaleY(1); }',
       '  42%, 64% { transform: rotate(-9deg) scaleY(1.12); }',
@@ -182,10 +209,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '  68% { transform: translate(-1px, 8px) rotate(.8deg); }',
       '}',
       '@keyframes birdlab-wade-strike {',
-      '  0%, 42%, 76%, 100% { transform: translate(0, 0); }',
-      '  48%, 60% { transform: translate(2px, 0); }',
-      '  64% { transform: translate(5px, 1px); }',
-      '  69% { transform: translate(2px, 0); }',
+      '  0%, 72%, 84%, 100% { transform: translate(0, 0); }',
+      '  74% { transform: translate(2px, 0); }',
+      '  76% { transform: translate(5px, 1px); }',
+      '  78% { transform: translate(2px, 0); }',
       '}',
       '@keyframes birdlab-double-scratch {',
       '  0%, 28%, 66%, 100% { transform: translate(0, 0); }',
@@ -202,10 +229,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '  52% { transform: translateX(var(--birdlab-scratch-x2, -10px)) scale(1); opacity: .72; }',
       '}',
       '@keyframes birdlab-heron-neck-strike {',
-      '  0%, 68%, 90%, 100% { transform: rotate(0deg); }',
-      '  73% { transform: rotate(2deg); }',
-      '  78% { transform: rotate(4deg); }',
-      '  83% { transform: rotate(1deg); }',
+      '  0%, 72%, 84%, 100% { transform: rotate(0deg); }',
+      '  74% { transform: rotate(2deg); }',
+      '  76% { transform: rotate(4deg); }',
+      '  78% { transform: rotate(1deg); }',
+      '}',
+      '@keyframes birdlab-raft-bob {',
+      '  0%, 100% { transform: translateY(0) rotate(0deg); }',
+      '  28% { transform: translateY(-1.2px) rotate(-.55deg); }',
+      '  62% { transform: translateY(.8px) rotate(.4deg); }',
+      '}',
+      '@keyframes birdlab-contact-raft-bob {',
+      '  0%, 100% { transform: translateY(0) scaleX(.9); opacity: .72; }',
+      '  28% { transform: translateY(-.6px) scaleX(1.05); opacity: .48; }',
+      '  62% { transform: translateY(.35px) scaleX(.96); opacity: .62; }',
       '}',
       '@keyframes birdlab-nuthatch-probe {',
       '  0%, 36%, 70%, 100% { transform: rotate(0deg); }',
@@ -399,13 +436,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-contact-scuttle { animation: birdlab-contact-scuttle 6.4s ease-in-out infinite; }',
       '.birdlab-contact-waddle { animation: birdlab-contact-waddle 9s ease-in-out infinite; }',
       '.birdlab-contact-double-scratch { animation: birdlab-contact-double-scratch 8.4s ease-in-out infinite; }',
+      '.birdlab-raft-bob { animation: birdlab-raft-bob 9.6s ease-in-out infinite; transform-origin: center bottom; }',
+      '.birdlab-contact-raft-bob { animation: birdlab-contact-raft-bob 9.6s ease-in-out infinite; transform-origin: center; }',
+      '.birdlab-kingfisher-impact { pointer-events: none; transform-box: fill-box; transform-origin: center; }',
+      '.birdlab-kingfisher-splash { animation: birdlab-kingfisher-splash 2s ease-out both; transform-box: fill-box; transform-origin: center bottom; }',
+      '.birdlab-kingfisher-ripple { animation: birdlab-kingfisher-ripple 2s ease-out both; transform-box: fill-box; transform-origin: center; }',
+      '.birdlab-mallard-contact--paddle { animation: birdlab-mallard-contact-paddle 3.2s ease-in-out infinite; }',
+      '.birdlab-mallard-contact--dabble { animation: birdlab-mallard-contact-dabble 2.8s ease-in-out infinite; }',
+      '.birdlab-mallard-contact--recover { animation: birdlab-mallard-contact-recover 3.2s ease-out infinite; }',
+      '.birdlab-motion-subject--dabbling { animation-play-state: paused !important; }',
       '.birdlab-anatomy-motion { transform-box: fill-box; transform-origin: center; }',
       '.birdlab-behavior-motion { transform-box: fill-box; transform-origin: center; }',
       '.birdlab-chickadee-head-dip { animation: birdlab-feeder-head-dip .55s ease-in-out infinite; transform-origin: center bottom; }',
       '.birdlab-kingfisher-aim { animation: birdlab-kingfisher-aim .8s ease-in-out infinite; transform-origin: center; }',
+      '.birdlab-kingfisher-balance { animation: birdlab-kingfisher-balance 6.2s ease-in-out infinite; transform-origin: center; }',
       '.birdlab-junco-tail-flick { animation: birdlab-junco-tail-flick .72s ease-in-out infinite; transform-origin: right center; }',
       '.birdlab-motion-subject--behavior-route { animation: none !important; transform: none !important; }',
-      '.birdlab-heron-neck { animation: birdlab-heron-neck-strike 11s ease-in-out infinite; transform-origin: left bottom; }',
+      '.birdlab-heron-neck { animation: birdlab-heron-neck-strike 11s ease-in-out infinite; animation-delay: var(--birdlab-motion-delay, 0s); transform-origin: left bottom; }',
       '.birdlab-nuthatch-head { animation: birdlab-nuthatch-probe 10.8s ease-in-out infinite; }',
       '.birdlab-redwing-epaulet { animation: birdlab-redwing-epaulet-flash 6.6s ease-in-out infinite; }',
       '.birdlab-towhee-tail { animation: birdlab-towhee-tail-flare 8.4s ease-in-out infinite; }',
@@ -413,7 +460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-pileated-head { animation: birdlab-pileated-drum 8.5s ease-in-out infinite; }',
       '.birdlab-puffin-head { animation: birdlab-puffin-look 9s ease-in-out infinite; }',
       '.birdlab-eagle-head { animation: birdlab-eagle-scan 8s ease-in-out infinite; }',
-      '.birdlab-motion-subject--anchored .birdlab-anatomy-motion, .birdlab-motion-subject--anchored .birdlab-behavior-motion { animation: none !important; transform: none !important; }',
+      '.birdlab-motion-subject--anchored .birdlab-anatomy-motion:not(.birdlab-anatomy-motion--pinned-safe), .birdlab-motion-subject--anchored .birdlab-behavior-motion:not(.birdlab-anatomy-motion--pinned-safe) { animation: none !important; transform: none !important; }',
       '.birdlab-scene-subject { opacity: 1; transform: translate(0, 0) scale(1); transition: opacity 760ms ease, transform 1180ms cubic-bezier(.22,.75,.25,1); }',
       '.birdlab-scene-subject--entering { opacity: 0; transform: translate(var(--birdlab-entry-x), var(--birdlab-entry-y)) scale(.88); pointer-events: none; }',
       '.birdlab-scene-subject--arriving { opacity: 1; transform: translate(0, 0) scale(1); pointer-events: none; }',
@@ -422,7 +469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-scene-subject--cooldown { opacity: 0; transform: translate(var(--birdlab-away-x), var(--birdlab-away-y)) scale(.84); pointer-events: none; }',
       '.birdlab-leaf-sway   { animation: birdlab-leaf-sway 4s ease-in-out infinite; transform-origin: bottom center; }',
       '.birdlab-ambient-motion { pointer-events: none; transform-box: fill-box; transform-origin: center; transition: opacity 240ms ease; }',
-      '.birdlab-cloud-drift { animation: birdlab-cloud-drift 18s ease-in-out infinite; }',
+      '.birdlab-cloud-drift { animation: birdlab-cloud-drift 30s linear infinite; }',
       '.birdlab-mist-drift { animation: birdlab-mist-drift 15s ease-in-out infinite; }',
       '.birdlab-water-shimmer { animation: birdlab-water-shimmer 8s ease-in-out infinite; }',
       '.birdlab-reed-sway { animation: birdlab-reed-sway 7s ease-in-out infinite; transform-origin: bottom center; }',
@@ -481,7 +528,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-scope-corners { position: absolute; z-index: 22; inset: 14px; border: 1px solid rgba(253,230,138,0.42); border-radius: 18px; pointer-events: none; opacity: 0.72; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14), 0 0 0 1px rgba(15,23,42,0.08); }',
       '.birdlab-selected-label { pointer-events: none; filter: drop-shadow(0 3px 7px rgba(15,23,42,0.38)); }',
       '.birdlab-scene--motion-off .birdlab-leaf-sway, .birdlab-scene--motion-off .birdlab-hint-ring, .birdlab-scene--motion-off .birdlab-motion-subject, .birdlab-scene--motion-off .birdlab-ambient-motion { animation-play-state: paused !important; }',
-      '.birdlab-scene--motion-off .birdlab-subject-contact, .birdlab-scene--motion-off .birdlab-anatomy-motion, .birdlab-scene--motion-off .birdlab-behavior-motion { animation-play-state: paused !important; }',
+      '.birdlab-scene--motion-off .birdlab-subject-contact, .birdlab-scene--motion-off .birdlab-anatomy-motion, .birdlab-scene--motion-off .birdlab-behavior-motion, .birdlab-scene--motion-off .birdlab-kingfisher-splash, .birdlab-scene--motion-off .birdlab-kingfisher-ripple { animation-play-state: paused !important; }',
       '.birdlab-scene--motion-off .birdlab-behavior-motion { animation-play-state: paused !important; }',
       '.birdlab-scene-subject--cooldown .birdlab-motion-subject, .birdlab-scene-subject--cooldown .birdlab-subject-contact, .birdlab-scene-subject--cooldown .birdlab-anatomy-motion, .birdlab-scene-subject--cooldown .birdlab-behavior-motion { animation-play-state: paused !important; }',
       '.birdlab-scene--motion-off::before { display: none !important; }',
@@ -514,7 +561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-binocular-reticle::before { content: ""; position: absolute; inset: 4px; border: 3px solid var(--birdlab-reticle-color, #38bdf8); border-radius: 50%; background: conic-gradient(var(--birdlab-reticle-color, #38bdf8) var(--birdlab-reticle-progress, 0%), rgba(255,255,255,.2) 0); -webkit-mask: radial-gradient(circle, transparent 0 72%, #000 74%); mask: radial-gradient(circle, transparent 0 72%, #000 74%); }',
       '.birdlab-binocular-reticle::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(#f8fafc,#f8fafc) 50% 7px/2px 10px no-repeat, linear-gradient(#f8fafc,#f8fafc) 50% calc(100% - 7px)/2px 10px no-repeat, linear-gradient(90deg,#f8fafc,#f8fafc) 7px 50%/10px 2px no-repeat, linear-gradient(90deg,#f8fafc,#f8fafc) calc(100% - 7px) 50%/10px 2px no-repeat; filter: drop-shadow(0 1px 2px #0f172a); }',
       '.birdlab-binocular-feedback { pointer-events: none; }',
-      '.birdlab-scene--acquiring .birdlab-ambient-motion { animation-play-state: paused !important; opacity: .32 !important; }',
+      '.birdlab-scene--acquiring .birdlab-ambient-motion { animation-timing-function: ease-in-out; }',
       '.birdlab-scene--binocular-active { cursor: none; }',
       '.birdlab-scene--binocular-active .birdlab-scope-corners { opacity: 0; }',
       '.birdlab-observation-rail[data-acquiring="true"] [data-birdlab-rail-slot="condition"], .birdlab-observation-rail[data-acquiring="true"] [data-birdlab-rail-slot="assignment"] { opacity: .58; }',
@@ -533,7 +580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-scene-card[data-birdlab-condition="dusk"] [data-birdlab-ambient="forest-light"], .birdlab-scene-card[data-birdlab-condition="dusk"] [data-birdlab-ambient="forest-floor"], .birdlab-scene-card[data-birdlab-condition="dusk"] [data-birdlab-ambient="yard-dapple"], .birdlab-scene-card[data-birdlab-condition="dusk"] [data-birdlab-ambient="alpine-light"] { opacity: .12; }',
       '.birdlab-condition-button { position: relative; overflow: hidden; }',
       '.birdlab-condition-button[aria-checked="true"]::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: 3px; height: 2px; border-radius: 999px; background: #fbbf24; box-shadow: 0 0 8px rgba(251,191,36,0.75); }',
-      '@media (prefers-reduced-motion: reduce) { .birdlab-scene-card::before { display: none !important; } .birdlab-scene-card > .birdlab-scene-canvas { transform: none !important; } .birdlab-scene-subject { opacity: 1 !important; transform: none !important; transition: none !important; } .birdlab-motion-subject { animation: none !important; } .birdlab-ambient-motion { animation: none !important; } .birdlab-subject-contact { animation: none !important; } .birdlab-anatomy-motion { animation: none !important; transform: none !important; } .birdlab-behavior-motion { animation: none !important; transform: none !important; } }',
+      '@media (prefers-reduced-motion: reduce) { .birdlab-scene-card::before { display: none !important; } .birdlab-scene-card > .birdlab-scene-canvas { transform: none !important; } .birdlab-scene-subject { opacity: 1 !important; transform: none !important; transition: none !important; } .birdlab-motion-subject { animation: none !important; } .birdlab-ambient-motion { animation: none !important; } .birdlab-subject-contact { animation: none !important; } .birdlab-anatomy-motion { animation: none !important; transform: none !important; } .birdlab-behavior-motion { animation: none !important; transform: none !important; } .birdlab-kingfisher-splash, .birdlab-kingfisher-ripple { animation: none !important; opacity: .48 !important; transform: none !important; } }',
       '@media (max-width: 720px) { .birdlab-observation-rail { grid-template-columns: 1fr; min-height: 0; } .birdlab-scene-hud, .birdlab-observation-slot { min-height: 54px; } }',
       '@media (hover: none) { .birdlab-scene-card:hover::before { display: none; } .birdlab-scene-card:hover > .birdlab-scene-canvas { transform: none; } }',
       '.birdlab-bird-list { box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08); }',
@@ -2095,11 +2142,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   var SCENE_BIRD_BEHAVIOR_SCRIPTS = {
     'backyard:chickadee': 'feeder-grab-go',
     'marsh:kingfisher': 'hover-aim-dive',
+    'marsh:mallard': 'paddle-dabble-recover',
+    'coast:baldEagle': 'snag-land-sentinel-launch',
     'mountain:junco': 'ground-forage-flush'
   };
   var SCENE_BIRD_BEHAVIOR_POSES = {
     'feeder-grab-go': ['chickadee-feeder'],
     'hover-aim-dive': ['kingfisher-hover', 'kingfisher-dive'],
+    'paddle-dabble-recover': ['species-default', 'mallard-dabble'],
+    'snag-land-sentinel-launch': ['eagle-sentinel', 'eagle-flight'],
     'ground-forage-flush': ['junco-ground', 'junco-tail-flight']
   };
   // Envelopes cover every readable/trackable pose in a script. Entry and
@@ -2108,6 +2159,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   var SCENE_BIRD_BEHAVIOR_ENVELOPES = {
     'feeder-grab-go': { left: 32, right: 32, up: 32, down: 32 },
     'hover-aim-dive': { left: 34, right: 34, up: 34, down: 34 },
+    'paddle-dabble-recover': { left: 36, right: 36, up: 34, down: 36 },
+    'snag-land-sentinel-launch': { left: 35, right: 35, up: 35, down: 35 },
     'ground-forage-flush': { left: 33, right: 33, up: 33, down: 33 }
   };
   function sceneBirdBehaviorScript(bird, habitatKey) {
@@ -2121,6 +2174,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     var stable = {
       'feeder-grab-go': { state: 'observe', pose: 'chickadee-feeder' },
       'hover-aim-dive': { state: 'hover', pose: 'kingfisher-hover' },
+      'paddle-dabble-recover': { state: 'paddle', pose: 'species-default' },
+      'snag-land-sentinel-launch': { state: 'sentinel', pose: 'eagle-sentinel' },
       'ground-forage-flush': { state: 'forage', pose: 'junco-ground' }
     }[script];
     // Reduced/static scenes use the most legible diagnostic posture. During
@@ -2153,6 +2208,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       if (phase === 'cooldown') return { script: script, state: 'away', pose: 'kingfisher-hover', trackable: false };
       if (visibleMs < 5200) return { script: script, state: 'hover', pose: 'kingfisher-hover', trackable: true };
       return { script: script, state: 'pre-dive', pose: 'kingfisher-hover', trackable: true };
+    }
+    if (script === 'paddle-dabble-recover') {
+      if (phase === 'entering' || phase === 'arriving') return { script: script, state: phase === 'arriving' ? 'landing' : 'approach', pose: 'species-default', trackable: false };
+      if (phase === 'exiting' || phase === 'cooldown') return { script: script, state: phase === 'exiting' ? 'depart' : 'away', pose: 'species-default', trackable: false };
+      if (visibleMs < 3100) return { script: script, state: 'paddle', pose: 'species-default', trackable: true };
+      if (visibleMs < 5100) return { script: script, state: 'dabble', pose: 'mallard-dabble', trackable: true };
+      return { script: script, state: 'recover', pose: 'species-default', trackable: true };
+    }
+    if (script === 'snag-land-sentinel-launch') {
+      if (phase === 'entering') return { script: script, state: 'approach', pose: 'eagle-flight', trackable: false };
+      if (phase === 'arriving') return { script: script, state: 'landing', pose: 'eagle-flight', trackable: false };
+      if (phase === 'exiting') return { script: script, state: 'launch', pose: 'eagle-flight', trackable: false };
+      if (phase === 'cooldown') return { script: script, state: 'away', pose: 'eagle-flight', trackable: false };
+      if (visibleMs < 5100) return { script: script, state: 'sentinel', pose: 'eagle-sentinel', trackable: true };
+      return { script: script, state: 'crouch', pose: 'eagle-sentinel', trackable: true };
     }
     if (phase === 'entering') return { script: script, state: 'approach', pose: 'junco-tail-flight', trackable: false };
     if (phase === 'arriving') return { script: script, state: 'landing', pose: 'junco-tail-flight', trackable: false };
@@ -2243,6 +2313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     var direction = facing < 0 ? -1 : 1;
     return {
       animationDelay: animationDelay,
+      '--birdlab-motion-delay': animationDelay,
       '--birdlab-walk-x': (46 * direction) + 'px',
       '--birdlab-glide-start': (-6 * direction) + 'px',
       '--birdlab-glide-end': (16 * direction) + 'px',
@@ -2255,14 +2326,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     };
   }
 
+  function sceneRaftMotionDelay(subject) {
+    if (!subject || subject.groupId !== 'eider-raft') return null;
+    return subject.x < 600 ? '-1.35s' : '-3.55s';
+  }
+
   function renderSceneMotionBox(h, position) {
     return h('rect', { x: position.x - 30, y: position.y - 30, width: 60, height: 60, fill: 'transparent', opacity: 0, pointerEvents: 'none', 'aria-hidden': 'true', 'data-birdlab-motion-box': '60x60' });
   }
 
-  function renderSceneSubjectGrounding(h, subject, kind, habitatKey, position, displayScale, placement, motionName, motionDelay, motionFacing) {
+  function renderSceneSubjectGrounding(h, subject, kind, habitatKey, position, displayScale, placement, motionName, motionDelay, motionFacing, behaviorState) {
     var surface = sceneSubjectSurface(subject, kind, habitatKey);
     var baseY = position.y + (kind === 'bird' ? 13 : 11) * displayScale;
     if (placement === 'behavior' && surface === 'water') {
+      if (kind === 'bird' && habitatKey === 'marsh' && subject.species === 'mallard' && behaviorState && behaviorState.script === 'paddle-dabble-recover') {
+        var mallardContactClass = 'birdlab-subject-contact birdlab-mallard-contact--' + behaviorState.state;
+        if (behaviorState.state === 'dabble') return h('g', { className: mallardContactClass, 'aria-hidden': 'true', 'data-birdlab-contact': 'water', style: { pointerEvents: 'none' } },
+          h('ellipse', { cx: position.x, cy: baseY + 1, rx: 10 * displayScale, ry: 2.3 * displayScale, fill: 'none', stroke: '#e0f2fe', strokeWidth: 1.1, opacity: .7, vectorEffect: 'non-scaling-stroke' }),
+          h('ellipse', { cx: position.x - 9 * displayScale, cy: baseY + 4, rx: 5.5 * displayScale, ry: 1.8 * displayScale, fill: 'none', stroke: '#f0f9ff', strokeWidth: .9, opacity: .62, vectorEffect: 'non-scaling-stroke' })
+        );
+        if (behaviorState.state === 'recover') return h('g', { className: mallardContactClass, 'aria-hidden': 'true', 'data-birdlab-contact': 'water', style: { pointerEvents: 'none' } },
+          h('ellipse', { cx: position.x, cy: baseY + 1, rx: 14 * displayScale, ry: 2.7 * displayScale, fill: 'none', stroke: '#dbeafe', strokeWidth: 1, opacity: .58, vectorEffect: 'non-scaling-stroke' }),
+          h('ellipse', { cx: position.x, cy: baseY + 2, rx: 20 * displayScale, ry: 3.5 * displayScale, fill: 'none', stroke: '#eff6ff', strokeWidth: .8, opacity: .3, vectorEffect: 'non-scaling-stroke' })
+        );
+        return h('g', { className: mallardContactClass, 'aria-hidden': 'true', 'data-birdlab-contact': 'water', style: { pointerEvents: 'none' } },
+          h('path', { d: 'M' + (position.x - 24 * displayScale) + ' ' + (baseY + 2) + ' Q' + (position.x - 10 * displayScale) + ' ' + (baseY - 2) + ' ' + position.x + ' ' + baseY, fill: 'none', stroke: '#dbeafe', strokeWidth: 1.1, opacity: .58, vectorEffect: 'non-scaling-stroke' }),
+          h('ellipse', { cx: position.x, cy: baseY + 1, rx: 12 * displayScale, ry: 2.3 * displayScale, fill: 'none', stroke: '#eff6ff', strokeWidth: .8, opacity: .34, vectorEffect: 'non-scaling-stroke' })
+        );
+      }
+      var raftDelay = kind === 'bird' && habitatKey === 'coast' ? sceneRaftMotionDelay(subject) : null;
+      if (raftDelay) return h('g', { className: 'birdlab-subject-contact', 'aria-hidden': 'true', 'data-birdlab-contact': 'water' },
+        h('g', { className: 'birdlab-anatomy-motion birdlab-anatomy-motion--pinned-safe birdlab-contact-raft-bob', style: { animationDelay: raftDelay } },
+          h('ellipse', { cx: position.x, cy: baseY, rx: 17 * displayScale, ry: 3.2 * displayScale, fill: 'none', stroke: '#dbeafe', strokeWidth: 1.1, opacity: 0.52, vectorEffect: 'non-scaling-stroke' }),
+          h('ellipse', { cx: position.x, cy: baseY + 2.6, rx: 10 * displayScale, ry: 2 * displayScale, fill: '#dbeafe', opacity: 0.12 })
+        )
+      );
       return h('g', { className: 'birdlab-subject-contact', 'aria-hidden': 'true', 'data-birdlab-contact': 'water' },
         h('ellipse', { cx: position.x, cy: baseY, rx: 17 * displayScale, ry: 3.2 * displayScale, fill: 'none', stroke: '#dbeafe', strokeWidth: 1.1, opacity: 0.52, vectorEffect: 'non-scaling-stroke' }),
         h('ellipse', { cx: position.x, cy: baseY + 2.6, rx: 10 * displayScale, ry: 2 * displayScale, fill: '#dbeafe', opacity: 0.12 })
@@ -2280,6 +2378,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       });
     }
     return null;
+  }
+
+  function renderKingfisherImpact(h, bird, position, behaviorState) {
+    if (!bird || bird.species !== 'kingfisher' || !position || position.phase !== 'exiting' || !behaviorState || behaviorState.script !== 'hover-aim-dive' || behaviorState.state !== 'dive') return null;
+    return h('g', { key: 'kingfisher-impact', className: 'birdlab-kingfisher-impact', transform: 'translate(610,380)', 'aria-hidden': 'true', style: { pointerEvents: 'none' }, 'data-birdlab-impact': 'kingfisher-water' },
+      h('g', { className: 'birdlab-anatomy-motion birdlab-kingfisher-splash' },
+        h('path', { d: 'M0 1 Q-5 -13 -8 -2 M0 1 Q0 -17 1 -3 M0 1 Q6 -12 9 -1', fill: 'none', stroke: '#f8fafc', strokeWidth: 2.2, strokeLinecap: 'round', opacity: .92 }),
+        h('circle', { cx: -10, cy: -5, r: 1.5, fill: '#e0f2fe', opacity: .9 }),
+        h('circle', { cx: 8, cy: -8, r: 1.2, fill: '#f0f9ff', opacity: .9 })
+      ),
+      h('g', { className: 'birdlab-anatomy-motion birdlab-kingfisher-ripple' },
+        h('ellipse', { cx: 0, cy: 2, rx: 13, ry: 3.1, fill: 'none', stroke: '#f0f9ff', strokeWidth: 1.2, opacity: .72, vectorEffect: 'non-scaling-stroke' }),
+        h('ellipse', { cx: 0, cy: 3, rx: 21, ry: 4.5, fill: 'none', stroke: '#dbeafe', strokeWidth: .9, opacity: .48, vectorEffect: 'non-scaling-stroke' })
+      )
+    );
   }
 
   function renderHabitatSceneDefs(h, habitatKey) {
@@ -2335,9 +2448,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
   function renderHabitatClouds(h, habitatKey) {
     var palette = HABITAT_SCENE_PALETTES[habitatKey] || HABITAT_SCENE_PALETTES.forest;
-    return h('g', { key: 'blScene-' + habitatKey + '-clouds', className: 'birdlab-ambient-motion birdlab-cloud-drift', opacity: palette.cloudOpacity, 'aria-hidden': 'true', 'data-birdlab-cloud-layer': 'foreground-of-sky', style: { animationDelay: '-3.4s', pointerEvents: 'none' } },
-      h('path', { d: 'M-45 118 C-8 91 32 98 54 120 C78 94 122 98 142 124 C115 137 14 139 -45 132 Z', fill: '#f8fafc' }),
-      h('path', { d: 'M520 104 C553 78 590 85 610 105 C637 78 683 88 702 115 C666 126 568 129 520 119 Z', fill: '#f8fafc', opacity: 0.72 })
+    return h('g', { key: 'blScene-' + habitatKey + '-clouds', opacity: palette.cloudOpacity, 'aria-hidden': 'true', 'data-birdlab-cloud-layer': 'foreground-of-sky', style: { pointerEvents: 'none' } },
+      h('g', { className: 'birdlab-ambient-motion birdlab-cloud-drift', style: { animationDelay: '-3.4s' } },
+        h('path', { d: 'M-45 118 C-8 91 32 98 54 120 C78 94 122 98 142 124 C115 137 14 139 -45 132 Z', fill: '#f8fafc' }),
+        h('path', { d: 'M520 104 C553 78 590 85 610 105 C637 78 683 88 702 115 C666 126 568 129 520 119 Z', fill: '#f8fafc', opacity: 0.72 })
+      )
     );
   }
 
@@ -2399,6 +2514,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   var SCENE_FLIGHT_SPECIES = { coopershawk: true, herringGull: true, raven: true, kingfisher: true };
   function renderSceneBirdArt(h, bird, species, motionName, habitatKey, behaviorState) {
     var fieldPose = behaviorState && behaviorState.pose ? behaviorState.pose : sceneBirdFieldPose(bird, habitatKey, motionName);
+    if (habitatKey === 'coast' && bird && bird.species === 'eider' && fieldPose === 'species-default') {
+      var raftDelay = sceneRaftMotionDelay(bird);
+      return h('g', { className: 'birdlab-anatomy-motion birdlab-anatomy-motion--pinned-safe birdlab-raft-bob', style: { animationDelay: raftDelay }, 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose, 'data-birdlab-raft-member': bird.x < 600 ? 'lead' : 'trail' }, species.svg(h));
+    }
+    if (fieldPose === 'mallard-dabble') return h('g', { 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose },
+      h('path', { d: 'M8 17 Q16 9 27 12 L29 8 L30 17 Q22 22 11 21 Z', fill: '#9ca3af', stroke: '#334155', strokeWidth: .75 }),
+      h('path', { d: 'M17 12 Q24 11 27 14 L25 19 Q20 18 16 17 Z', fill: '#6b7280' }),
+      h('path', { d: 'M18 14 L24 14.5 L23 17 L18 16.5 Z', fill: '#2563eb', stroke: '#f8fafc', strokeWidth: .5 }),
+      h('path', { d: 'M9 17 Q7 20 7 23', fill: 'none', stroke: '#f8fafc', strokeWidth: 1.1, strokeLinecap: 'round' }),
+      h('circle', { cx: 6.4, cy: 25.2, r: 3.8, fill: '#166534', stroke: '#14532d', strokeWidth: .65 }),
+      h('path', { d: 'M3.3 25 L0 26.2 L3.5 27 Z', fill: '#d6a33d', stroke: '#7c5c20', strokeWidth: .35 }),
+      h('circle', { cx: 5.2, cy: 24.2, r: .65, fill: '#f8fafc' }),
+      h('path', { d: 'M29 9 L27 3 L25.5 10 Z', fill: '#f8fafc', stroke: '#64748b', strokeWidth: .45 })
+    );
+    if (fieldPose === 'eagle-flight') return h('g', { 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose, 'data-birdlab-flight-pose': 'bald-eagle' },
+      h('path', { d: 'M14 14 C10 11 6 6 1 3 C2 10 6 16 12 19 Z', fill: '#5a3e2c', stroke: '#292524', strokeWidth: .8, strokeLinejoin: 'round' }),
+      h('path', { d: 'M16 14 C20 11 24 6 29 3 C28 10 24 16 18 19 Z', fill: '#5a3e2c', stroke: '#292524', strokeWidth: .8, strokeLinejoin: 'round' }),
+      h('ellipse', { cx: 15, cy: 16, rx: 4.2, ry: 7.5, fill: '#4a3225', stroke: '#292524', strokeWidth: .7 }),
+      h('path', { d: 'M11 22 L8 29 L15 26 L22 29 L19 22 Z', fill: '#f8fafc', stroke: '#cbd5e1', strokeWidth: .55 }),
+      h('path', { d: 'M12 10 Q15 4 20 6 Q23 9 20 13 Q16 14 13 12 Z', fill: '#f8fafc', stroke: '#cbd5e1', strokeWidth: .6 }),
+      h('path', { d: 'M19 8 L25 10 L21 12 L19 14 L17.8 11 Z', fill: '#fbbf24', stroke: '#a16207', strokeWidth: .45 }),
+      h('circle', { cx: 19.2, cy: 8.1, r: .65, fill: '#0f172a' })
+    );
     if (fieldPose === 'chickadee-feeder') {
       var feederState = behaviorState ? behaviorState.state : 'observe';
       var feederFlight = feederState === 'approach' || feederState === 'landing' || feederState === 'depart';
@@ -2460,7 +2598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       h('ellipse', { cx: 13, cy: 18, rx: 8, ry: 6.2, fill: '#725746', stroke: '#334155', strokeWidth: .8, transform: 'rotate(8 13 18)' }),
       h('ellipse', { cx: 16, cy: 20, rx: 5.4, ry: 4.6, fill: '#d76836', opacity: .96 }),
       h('path', { d: 'M8 15 Q13 12 17 17 Q13 20 9 19 Z', fill: '#4f453f', stroke: '#334155', strokeWidth: .6 }),
-      h('g', { className: 'birdlab-anatomy-motion birdlab-robin-head' },
+      h('g', { className: 'birdlab-anatomy-motion birdlab-anatomy-motion--pinned-safe birdlab-robin-head' },
         h('circle', { cx: 21.5, cy: 20.5, r: 4.5, fill: '#514740', stroke: '#334155', strokeWidth: .75 }),
         h('path', { d: 'M25 21 L30 23.2 L25 23.4 Z', fill: '#e3ad46', stroke: '#7c5c20', strokeWidth: .45 }),
         h('path', { d: 'M19 19 Q22 17.6 24 19', fill: 'none', stroke: '#f8fafc', strokeWidth: 1.1 }),
@@ -2473,7 +2611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       h('ellipse', { cx: 14, cy: 17, rx: 5.4, ry: 8.5, fill: '#111827', stroke: '#020617', strokeWidth: .9 }),
       h('path', { d: 'M10 12 Q14 15 18 12 L18 20 Q14 17 10 20 Z', fill: '#f8fafc' }),
       h('path', { d: 'M11 14 Q14 17 17 20', fill: 'none', stroke: '#111827', strokeWidth: 1.8 }),
-      h('g', { className: 'birdlab-anatomy-motion birdlab-pileated-head' },
+      h('g', { className: 'birdlab-anatomy-motion birdlab-anatomy-motion--pinned-safe birdlab-pileated-head' },
         h('circle', { cx: 18.8, cy: 8.8, r: 4.5, fill: '#111827', stroke: '#020617', strokeWidth: .8 }),
         h('path', { d: 'M15.2 6.5 L16 1 L21 5.2 L23.5 7 Z', fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: .55 }),
         h('path', { d: 'M16.5 9 Q19 6.8 22 8.3 L20 11.5 Z', fill: '#f8fafc' }),
@@ -2486,7 +2624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       h('path', { d: 'M10 8 L7 1 L13 5 Z', fill: '#64748b', stroke: '#334155', strokeWidth: .7 }),
       h('ellipse', { cx: 14, cy: 14.5, rx: 5.5, ry: 8.5, fill: '#94a3b8', stroke: '#334155', strokeWidth: .8, transform: 'rotate(-8 14 14.5)' }),
       h('path', { d: 'M10 12 Q14 9 18 13 L17 21 Q13 22 10 18 Z', fill: '#f8fafc' }),
-      h('g', { className: 'birdlab-anatomy-motion birdlab-nuthatch-head' },
+      h('g', { className: 'birdlab-anatomy-motion birdlab-anatomy-motion--pinned-safe birdlab-nuthatch-head' },
         h('circle', { cx: 17, cy: 22, r: 4.4, fill: '#f8fafc', stroke: '#334155', strokeWidth: .75 }),
         h('path', { d: 'M13 20 Q17 16 21 19 L20 21 Q16 19 13 22 Z', fill: '#111827' }),
         h('path', { d: 'M20.5 23 L27 27 L20 25 Z', fill: '#475569' }),
@@ -2514,14 +2652,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       h('path', { d: 'M23.7 9 L29 10.4 L23.5 11 Z', fill: '#475569' }),
       h('circle', { cx: 21.4, cy: 8.5, r: .8, fill: '#f8fafc' }),
       h('path', { d: 'M11 15 Q15 11 19 16 L17 22 Q13 21 11 18 Z', fill: '#1f2937', stroke: '#020617', strokeWidth: .55 }),
-      h('g', { className: 'birdlab-anatomy-motion birdlab-redwing-epaulet' },
+      h('g', { className: 'birdlab-anatomy-motion birdlab-anatomy-motion--pinned-safe birdlab-redwing-epaulet' },
         h('path', { d: 'M10.5 12 Q14 8.5 18 12 L17 15 Q13 12.5 10.5 15 Z', fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: .5 }),
         h('path', { d: 'M11.3 14 Q14 12 17.2 14 L16.5 15.4 Q13.5 14 11.2 15.5 Z', fill: '#facc15' })
       ),
       h('path', { d: 'M13 23 L12 28 M17 23 L18 28 M10 28 H14 M16 28 H20', fill: 'none', stroke: '#4b382c', strokeWidth: .9, strokeLinecap: 'round' })
     );
     if (fieldPose === 'towhee-double-scratch') return h('g', { 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose },
-      h('g', { className: 'birdlab-anatomy-motion birdlab-towhee-tail' },
+      h('g', { className: 'birdlab-anatomy-motion birdlab-anatomy-motion--pinned-safe birdlab-towhee-tail' },
         h('path', { d: 'M9 19 L2 28 L11 25 L15 30 L16 20 Z', fill: '#111827', stroke: '#020617', strokeWidth: .75 }),
         h('path', { d: 'M3 27 L7 25 L8 27 Z M12 27 L15 24 L15 28 Z', fill: '#f8fafc' })
       ),
@@ -2537,7 +2675,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       h('ellipse', { cx: 14, cy: 18, rx: 7.2, ry: 10, fill: '#111827', stroke: '#020617', strokeWidth: .9 }),
       h('ellipse', { cx: 16, cy: 20, rx: 4.8, ry: 6.8, fill: '#f8fafc' }),
       h('path', { d: 'M8 16 Q12 12 15 17 L13 24 Q9 22 8 18 Z', fill: '#1f2937' }),
-      h('g', { className: 'birdlab-anatomy-motion birdlab-puffin-head' },
+      h('g', { className: 'birdlab-anatomy-motion birdlab-anatomy-motion--pinned-safe birdlab-puffin-head' },
         h('circle', { cx: 18, cy: 9, r: 6, fill: '#111827', stroke: '#020617', strokeWidth: .8 }),
         h('path', { d: 'M15 6 Q20 4 22 8 Q21 13 16 13 Q14 10 15 6 Z', fill: '#f8fafc' }),
         h('path', { d: 'M22 8 L30 10.5 L22 13 Z', fill: '#f97316', stroke: '#9a3412', strokeWidth: .6 }),
@@ -2550,7 +2688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       h('path', { d: 'M9 21 L8 29 L14 25 L19 29 L18 21 Z', fill: '#f8fafc', stroke: '#cbd5e1', strokeWidth: .7 }),
       h('ellipse', { cx: 14, cy: 17, rx: 7.2, ry: 9, fill: '#5a3e2c', stroke: '#292524', strokeWidth: .9 }),
       h('path', { d: 'M8 14 Q13 10 18 15 L17 23 Q12 21 9 24 Z', fill: '#4a3225', stroke: '#292524', strokeWidth: .6 }),
-      h('g', { className: 'birdlab-anatomy-motion birdlab-eagle-head' },
+      h('g', { className: 'birdlab-anatomy-motion birdlab-anatomy-motion--pinned-safe birdlab-eagle-head' },
         h('path', { d: 'M14 8 Q17 2 23 4 Q27 7 24 12 Q20 15 15 11 Z', fill: '#f8fafc', stroke: '#cbd5e1', strokeWidth: .7 }),
         h('path', { d: 'M23 7 L30 9 L25 11 L23 14 L21.5 10 Z', fill: '#fbbf24', stroke: '#a16207', strokeWidth: .55 }),
         h('circle', { cx: 22, cy: 7, r: .8, fill: '#0f172a' })
@@ -2591,7 +2729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         h('path', { d: 'M17 15 C22 12 25 5 27 1 C21 4 17 7 15 12 Z', fill: '#64748b', stroke: '#334155', strokeWidth: 0.7, strokeLinejoin: 'round' }),
         h('ellipse', { cx: 15, cy: 17, rx: 4.4, ry: 7.8, fill: '#dbeafe', stroke: '#334155', strokeWidth: 0.7 }),
         h('path', { d: 'M11 17 Q15 13 19 17 L18 22 Q15 25 12 22 Z', fill: '#3f647d', opacity: 0.9 }),
-        h('g', { className: 'birdlab-behavior-motion' + (behaviorState && (behaviorState.state === 'aim' || behaviorState.state === 'pre-dive') ? ' birdlab-kingfisher-aim' : '') },
+        h('g', { className: 'birdlab-behavior-motion birdlab-anatomy-motion--pinned-safe' + (behaviorState && (behaviorState.state === 'aim' || behaviorState.state === 'pre-dive') ? ' birdlab-kingfisher-aim' : ' birdlab-kingfisher-balance') },
           h('circle', { cx: 15, cy: 9.5, r: 4.4, fill: '#4f7188', stroke: '#334155', strokeWidth: 0.7 }),
           h('path', { d: 'M11 8 L8 5 L12.5 6.2 Z', fill: '#3f647d' }),
           h('path', { d: 'M18.5 9 L27 10.8 L18.5 11.2 Z', fill: '#334155' }),
@@ -11463,6 +11601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           if (behaviorScript === 'feeder-grab-go') { entryX = -58; entryY = -34; awayX = 80; awayY = -46; }
           else if (behaviorScript === 'hover-aim-dive') { entryX = -70; entryY = -24; awayX = 30; awayY = 174; }
           else if (behaviorScript === 'ground-forage-flush') { entryX = -42; entryY = -28; awayX = 55; awayY = -38; }
+          else if (behaviorScript === 'snag-land-sentinel-launch') { entryX = 115; entryY = -55; awayX = -135; awayY = -70; }
           else if (surface === 'trunk' || motionName === 'trunk-cling' || motionName === 'walk-down') {
             // Trunk birds emerge along the same tree instead of flying sideways.
             entryY = routeIndex % 2 ? 78 : -78;
@@ -11661,7 +11800,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             setAssignmentClueProgress(d.blAssignmentClueProgress);
           }
         }, [d.blAssignmentClueProgress]);
-        var hintActive_state = useState(null); // { species, ts } — currently pulsing bird
+        var qaHintSpecies = birdLabVisualQa && birdLabVisualQa.hintSpecies;
+        var hintActive_state = useState(qaHintSpecies ? { species: qaHintSpecies, ts: 1 } : null); // { species, ts } — currently pulsing bird
         var hintActive = hintActive_state[0], setHintActive = hintActive_state[1];
         var foundVia_state = useState(d.blFoundVia || {});
         var foundVia = foundVia_state[0], setFoundVia = foundVia_state[1];
@@ -12382,6 +12522,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var assignmentMovementCue = ({
           'feeder-grab-go': 'quick feeder visits and a single seed grab',
           'hover-aim-dive': 'a sustained hover followed by a fishing dive',
+          'paddle-dabble-recover': 'steady paddling, a brief head-down dabble, and an upright recovery',
+          'snag-land-sentinel-launch': 'a snag landing, a long sentinel scan, and a powerful launch',
           'ground-forage-flush': 'short ground hops, foraging, and a white-tail flick'
         })[assignmentBehaviorId] || ({
           'perch-bob': 'small balance shifts on a perch', flit: 'quick flights between cover',
@@ -13257,6 +13399,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           announce('Small screen: opened the ' + fullest.id + ' sweep so birds are large enough to identify. '
             + 'Switch to the wide sweep any time from the scene lens controls.');
         }, [sceneStageIsSmall, habitatId, sceneLens, sceneSweep]);
+        function sceneBirdBehaviorHoldsRoute(behaviorState) {
+          return !!(behaviorState && behaviorState.script === 'paddle-dabble-recover' && behaviorState.state === 'dabble');
+        }
+        function sceneBirdMotionClass(bird, behaviorState, anchored) {
+          var className = 'birdlab-motion-subject birdlab-' + sceneBirdMotionName(bird, habitatId);
+          if (anchored) className += ' birdlab-motion-subject--anchored';
+          if (sceneBirdBehaviorHoldsRoute(behaviorState)) className += ' birdlab-motion-subject--dabbling';
+          if (!behaviorState.trackable && behaviorState.script !== 'field-mark-loop') className += ' birdlab-motion-subject--behavior-route';
+          return className;
+        }
         function renderSceneBirds(layer, keyPrefix) {
           return habitat.birds.filter(function(bird) { return bird.layer === layer && sceneBirdVisible(bird); }).map(function(bird) {
             var birdIndex = habitat.birds.indexOf(bird);
@@ -13269,7 +13421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             var facing = sceneSubjectFacing(bird, birdIndex, 'bird', habitatId);
             var motionName = sceneBirdMotionName(bird, habitatId);
             var anchored = (hintActive && hintActive.species === bird.species) || pickedSpeciesKey === bird.species;
-            var motionClass = 'birdlab-motion-subject birdlab-' + motionName + (anchored ? ' birdlab-motion-subject--anchored' : '') + (!position.trackable && behaviorState.script !== 'field-mark-loop' ? ' birdlab-motion-subject--behavior-route' : '');
+            var motionClass = sceneBirdMotionClass(bird, behaviorState, anchored);
             var motionStyle = sceneActorMotionStyle(travelStyle.animationDelay, facing);
             var assignmentTarget = assignmentSearchActive && !assignmentComplete && bird.species === assignmentBird.species;
             var foundClass = found[bird.species] && !assignmentTarget ? ' birdlab-bird-found' : '';
@@ -13290,7 +13442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               (behaviorState.script === 'ground-forage-flush' && (position.phase === 'entering' || position.phase === 'exiting' || position.phase === 'cooldown')) ? null : renderSceneSubjectGrounding(h, bird, 'bird', habitatId, position, displayScale, 'lifecycle', motionName, travelStyle.animationDelay, facing),
               h('g', { className: motionClass, style: motionStyle },
                 renderSceneMotionBox(h, position),
-                renderSceneSubjectGrounding(h, bird, 'bird', habitatId, position, displayScale, 'behavior'),
+                renderSceneSubjectGrounding(h, bird, 'bird', habitatId, position, displayScale, 'behavior', motionName, travelStyle.animationDelay, facing, behaviorState),
                 h('g', { className: 'birdlab-scene-actor', style: sceneActorDepthStyle(bird), 'data-birdlab-depth': sceneActorDepthName(bird) },
                   h('g', {
                     transform: 'translate(' + position.x + ',' + position.y + ') scale(' + (displayScale * facing) + ',' + displayScale + ') translate(-15,-15)',
@@ -13572,6 +13724,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   // Birds and distractors at layer 3 (mid-flight)
                   renderSceneBirds(3, 'bird3'),
                   renderSceneDistractors(3, 'fauna3'),
+                  habitatId === 'marsh' && habitat.birds.map(function(impactBird, impactIndex) {
+                    var impactRuntime = sceneBirdRuntimeStates[impactIndex];
+                    return renderKingfisherImpact(h, impactBird, impactRuntime.position, impactRuntime.behavior);
+                  }),
                   // Foreground structure and subtle surface light ground actors.
                   staticSceneArt.layer4,
                   staticSceneArt.ambientSurface,
@@ -13647,7 +13803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     var hDesc = xFrac < 0.33 ? 'left' : xFrac > 0.66 ? 'right' : 'center';
                     var areaDesc = vDesc + ', ' + hDesc;
                     var hitSize = 60;
-                    var targetMotionClass = 'birdlab-motion-subject birdlab-' + sceneBirdMotionName(b, habitatId) + (((hintActive && hintActive.species === b.species) || pickedSpeciesKey === b.species) ? ' birdlab-motion-subject--anchored' : '') + (!position.trackable && behaviorState.script !== 'field-mark-loop' ? ' birdlab-motion-subject--behavior-route' : '');
+                    var targetMotionClass = sceneBirdMotionClass(b, behaviorState, ((hintActive && hintActive.species === b.species) || pickedSpeciesKey === b.species));
                     return h('g', { key: 'target-' + subjectId, className: sceneSubjectClass(position.phase), style: travelStyle, 'data-birdlab-presence': position.phase, 'data-birdlab-behavior': behaviorState.script, 'data-birdlab-behavior-state': behaviorState.state, 'data-birdlab-behavior-pose': behaviorState.pose, 'data-birdlab-behavior-frozen': behaviorState.frozen ? 'true' : undefined, 'data-birdlab-species': b.species, 'data-birdlab-assignment-target': targetObservationRequired ? 'true' : undefined },
                       h('g', { className: targetMotionClass, style: sceneActorMotionStyle(travelStyle.animationDelay, targetFacing) },
                         renderSceneMotionBox(h, position),

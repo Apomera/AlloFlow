@@ -5,6 +5,7 @@ var LanguageContext = window.AlloLanguageContext;
 var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef;
 var useContext = React.useContext; var useMemo = React.useMemo; var useCallback = React.useCallback;
 var _lazyIcon = function(name) { return function(props) { var I = window.AlloIcons && window.AlloIcons[name]; return I ? React.createElement(I, props) : null; }; };
+var AlertTriangle = _lazyIcon('AlertTriangle');
 var CheckCircle2 = _lazyIcon('CheckCircle2');
 var ChevronDown = _lazyIcon('ChevronDown');
 var ChevronUp = _lazyIcon('ChevronUp');
@@ -157,7 +158,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
     );
 };
 
-const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun, onRebuildStep, onCopyDiagnostics, onDownloadDiagnostics, summarizeFailureReason, onPreviewStep, onSaveTemplate, onUpdate, onConfirm, onCancel }) => {
+const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun, onRebuildStep, onOpenErrorLog, onCopyDiagnostics, onDownloadDiagnostics, summarizeFailureReason, onPreviewStep, onSaveTemplate, onUpdate, onConfirm, onCancel }) => {
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
@@ -320,6 +321,8 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
   };
   const toggleDesc = (id) => setOpenDescIds(prev =>
       prev.indexOf(id) === -1 ? prev.concat([id]) : prev.filter(x => x !== id));
+  const hasFailureDiagnostics = Boolean(run && Object.values(run.rows || {}).some(row =>
+      row && ['failed', 'interrupted', 'stopped'].includes(row.status)));
   return (
     <div data-help-key="blueprint_card_panel" className="bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-lg animate-in zoom-in duration-300 w-full max-w-2xl">
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-indigo-50">
@@ -341,6 +344,18 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
             row's status vanishes while its resource still generates, and added
             rows render as never-run under a "running" banner. */}
         <div className="flex items-center gap-1.5">
+        {hasFailureDiagnostics && typeof onOpenErrorLog === 'function' && (
+            <button
+                type="button"
+                data-testid="bp-open-error-log"
+                onClick={onOpenErrorLog}
+                className="p-2 rounded-lg text-xs font-bold border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600"
+                title={t('blueprint.open_error_log') || 'Open error log'}
+                aria-label={t('blueprint.open_error_log') || 'Open error log'}
+            >
+                <AlertTriangle size={14} aria-hidden="true" />
+            </button>
+        )}
         {run && typeof onCopyDiagnostics === 'function' && (
             <button
                 type="button"

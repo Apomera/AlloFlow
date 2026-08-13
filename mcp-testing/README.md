@@ -109,6 +109,23 @@ npm i pdfjs-dist --no-save    # --no-save on purpose; it must not persist
 Do not run a bare `npm i`/`npm ci` in this tree to get it — that drops `@babel/core`, which is only
 a peer dependency here, and the next deploy aborts on "JSX compilation".
 
+## Refinement effectiveness study
+
+[`refinement-study/`](./refinement-study/) contains prospective experiment tooling for comparing
+the canonical one-shot primary pass with the evidence-gated loop. It is plan-only by default and
+never contacts a provider or reads an implicit key file while planning.
+
+```bash
+# Pinned six-document development calibration plan: 36 runs, zero execution
+node mcp-testing/refinement-study/run.cjs mcp-testing/refinement-study/development-pilot.json
+
+# See the runner safeguards and bounded execution syntax
+node mcp-testing/refinement-study/run.cjs --help
+```
+
+The development manifest is procedure/integrity calibration evidence, not held-out effectiveness
+evidence. Keep plans and allocation maps private from reviewers.
+
 ## `runs/`
 
 One directory per real remediation, holding the inputs and every artifact produced, so the output

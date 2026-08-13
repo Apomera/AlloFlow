@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "kind": "alloflow-refinement-development-pilot-manifest",
+  "studyId": "alloflow-mcp-refinement-development-pilot-v1",
+  "partition": "development_pilot",
+  "exposureStatus": "development_exposed",
+  "effectClaimEligible": false,
+  "purpose": "Procedure, integrity, reviewer-calibration, cost, and variance pilot only.",
+  "conditions": [
+    "primary-one-shot",
+    "gated-loop"
+  ],
+  "repetitions": 3,
+  "sharedOptions": {
+    "targetScore": 95,
+    "fixPasses": 2,
+    "polishPasses": 0,
+    "taggedPdf": true,
+    "autoContinueRounds": 3,
+    "visionMode": "direct",
+    "ocrLanguage": "",
+    "modelRetryBudget": 6
+  },
+  "knownExposureEvidence": [
+    "mcp-testing/corpus/round-10/sweep-baseline.json",
+    "mcp-testing/corpus/round-10/sweep-round10c.json",
+    "mcp-testing/corpus/round-01/ROUND-01.md",
+    "mcp-testing/corpus/round-14/ROUND-14.md"
+  ],
+  "documents": [
+    {
+      "documentId": "D01",
+      "corpusId": "ed-parent-guide-idea",
+      "path": "mcp-testing/corpus/born-digital/ed-parent-guide-idea.pdf",
+      "bytes": 64871,
+      "sha256": "31910c54e4b52fea0b8c79d08a9a707ab43f413261b3ae15335d82c1fd0753a5",
+      "pages": 2,
+      "language": "en",
+      "strata": ["narrative", "born_digital"],
+      "rightsPosture": "US Government work; verify embedded assets before redistribution",
+      "priorRunPaths": ["mcp-testing/runs/2026-08-10_ed-parent-guide-idea_portable"]
+    },
+    {
+      "documentId": "D02",
+      "corpusId": "ohchr-udhr-spanish",
+      "path": "mcp-testing/corpus/born-digital/ohchr-udhr-spanish.pdf",
+      "bytes": 186317,
+      "sha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e",
+      "pages": 9,
+      "language": "es",
+      "familyId": "ohchr-udhr",
+      "strata": ["multilingual", "narrative", "born_digital"],
+      "rightsPosture": "UN OHCHR; local test use only unless redistribution is cleared",
+      "priorRunPaths": ["mcp-testing/corpus/round-02/runs/udhr-spanish"]
+    },
+    {
+      "documentId": "D03",
+      "corpusId": "uscis-civics-100q",
+      "path": "mcp-testing/corpus/born-digital/uscis-civics-100q.pdf",
+      "bytes": 302640,
+      "sha256": "a19050dcb6f64f97596c75089459de3a5ff8a84606924b26f149669ac7c4a379",
+      "pages": 11,
+      "language": "en",
+      "strata": ["deep_hierarchy", "question_answer", "born_digital"],
+      "rightsPosture": "US Government work; verify embedded assets before redistribution",
+      "priorRunPaths": ["mcp-testing/corpus/round-03/runs/uscis-civics"]
+    },
+    {
+      "documentId": "D04",
+      "corpusId": "fda-nexium-prea-letter",
+      "path": "mcp-testing/corpus/figures/fda-nexium-prea-letter.pdf",
+      "bytes": 170089,
+      "sha256": "c2c6b405b820fce4ea338ebb2f62de3b3696bd68d465f19d480038a903c5c7b1",
+      "pages": 7,
+      "language": "en",
+      "strata": ["figure", "table", "redaction", "born_digital"],
+      "rightsPosture": "US Government work; verify embedded assets before redistribution",
+      "priorRunPaths": ["mcp-testing/corpus/round-04/runs/fda-nexium"]
+    },
+    {
+      "documentId": "D05",
+      "corpusId": "nist-cyber-framework-quickstart",
+      "path": "mcp-testing/corpus/tables/nist-cyber-framework-quickstart.pdf",
+      "bytes": 1518858,
+      "sha256": "3c31f46fee98cac0c4323453e5109291a213b4de7fef8c058af9bf67f717433c",
+      "pages": 32,
+      "language": "en",
+      "strata": ["table_heavy", "born_digital"],
+      "rightsPosture": "US Government work; verify embedded assets before redistribution",
+      "priorRunPaths": ["mcp-testing/corpus/round-05", "mcp-testing/corpus/round-11"]
+    },
+    {
+      "documentId": "D06",
+      "corpusId": "nsf-science-indicators-brief",
+      "path": "mcp-testing/corpus/figures/nsf-science-indicators-brief.pdf",
+      "bytes": 8528614,
+      "sha256": "d7e1a20e39cc79e6643d52fe3aa418576ce0532c61a18a1fbcc07a3e51f45a21",
+      "pages": 46,
+      "language": "en",
+      "strata": ["figure", "multicolumn", "born_digital"],
+      "rightsPosture": "US Government work; verify embedded assets before redistribution",
+      "priorRunPaths": ["mcp-testing/corpus/round-10/sweep-round10c.json"]
+    }
+  ]
+}

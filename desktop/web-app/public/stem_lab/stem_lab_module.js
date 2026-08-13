@@ -322,6 +322,10 @@
 
           function build(THREE, node) {
             var renderer;
+            var reducedMotion = (function () {
+              try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+              catch (e) { return false; }
+            })();
             try {
               renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
             } catch (e) {
@@ -430,7 +434,8 @@
               // count (e.g. which body-position tab is open, adult vs infant).
               // Rebuilds are driven by props.sceneKey, so the caller decides
               // what counts as a change rather than us deep-comparing.
-              sceneProps: props.sceneProps || null
+              sceneProps: props.sceneProps || null,
+              reduced: reducedMotion
             });
             var meshes = content.meshes;
             var picks = content.picks;
@@ -468,10 +473,7 @@
               yaw: cfg.home.yaw, pitch: cfg.home.pitch, dist: cfg.home.dist,
               dragging: false, lastX: 0, lastY: 0, moved: 0,
               hovered: null, t0: 0, raf: 0, handlers: [],
-              reduced: (function () {
-                try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
-                catch (e) { return false; }
-              })()
+              reduced: reducedMotion
             };
           }
 
@@ -491,8 +493,13 @@
             var g = S.meshes[id];
             if (!g) return null;
             var v = new S.THREE.Vector3();
-            g.getWorldPosition(v);
-            v.y += 0.30;
+            if (g.userData && g.userData.labelAnchor) {
+              v.copy(g.userData.labelAnchor);
+              g.localToWorld(v);
+            } else {
+              g.getWorldPosition(v);
+              v.y += 0.30;
+            }
             v.project(S.camera);
             if (v.z > 1) return null;
             var r = S.renderer.domElement;
@@ -579,28 +586,52 @@
               // Wide on purpose. At 0.82-1.16 a node at 19% and a node at 74% were
               // the same dot on screen, which defeats the point of drawing the data
               // at all — size is the cue that survives a small viewport.
-              var wantScale = isSel ? (S.reduced ? 1.12 : 1.06 + 0.06 * pulse)
-                : (lvl == null ? 1 : 0.52 + 0.78 * lvl);
+              var keepGroupScale = !!(g.userData && g.userData.noSelectionScale);
+              var wantScale = keepGroupScale ? 1
+                : (isSel ? (S.reduced ? 1.12 : 1.06 + 0.06 * pulse)
+                  : (lvl == null ? 1 : 0.52 + 0.78 * lvl));
               g.scale.setScalar(g.scale.x + (wantScale - g.scale.x) * 0.25);
 
               g.traverse(function (o) {
                 if (!o.isMesh || !o.material) return;
                 if (o.material.emissive) {
+                  // Tree foliage opts into preserving its dim transmitted-light base.
+                  // All existing materials keep the original zero-base behaviour.
+                  var baseR = 0, baseG = 0, baseB = 0;
+                  if (o.material.userData && o.material.userData._preserveBaseEmissive) {
+                    if (!o.material.userData._baseEmissive) {
+                      o.material.userData._baseEmissive = {
+                        r: o.material.emissive.r, g: o.material.emissive.g, b: o.material.emissive.b
+                      };
+                    }
+                    baseR = o.material.userData._baseEmissive.r;
+                    baseG = o.material.userData._baseEmissive.g;
+                    baseB = o.material.userData._baseEmissive.b;
+                  }
                   // Restrained on purpose. The wireframe cage answers "where is it";
-                  // a hot emissive on top of that just repaints the part gold and
-                  // destroys the colour cue the student is meant to transfer to a
-                  // real engine bay.
-                  if (isSel) o.material.emissive.setRGB(0.26 * pulse, 0.19 * pulse, 0.03 * pulse);
-                  else if (isHov) o.material.emissive.setRGB(0.16, 0.17, 0.20);
-                  else if (lvl != null) o.material.emissive.setRGB(0.30 * lvl, 0.22 * lvl, 0.44 * lvl);
-                  else if (marks[id] === 'checked') o.material.emissive.setRGB(0.02, 0.13, 0.07);
-                  else o.material.emissive.setRGB(0, 0, 0);
+                  // a hot emissive on top of that just repaints the part gold.
+                  if (isSel) o.material.emissive.setRGB(
+                    Math.min(1, baseR + 0.26 * pulse),
+                    Math.min(1, baseG + 0.19 * pulse),
+                    Math.min(1, baseB + 0.03 * pulse));
+                  else if (isHov) o.material.emissive.setRGB(
+                    Math.min(1, baseR + 0.16), Math.min(1, baseG + 0.17), Math.min(1, baseB + 0.20));
+                  else if (lvl != null) o.material.emissive.setRGB(
+                    Math.min(1, baseR + 0.30 * lvl), Math.min(1, baseG + 0.22 * lvl),
+                    Math.min(1, baseB + 0.44 * lvl));
+                  else if (marks[id] === 'checked') o.material.emissive.setRGB(
+                    Math.min(1, baseR + 0.02), Math.min(1, baseG + 0.13), Math.min(1, baseB + 0.07));
+                  else o.material.emissive.setRGB(baseR, baseG, baseB);
                 }
                 if (o.material.userData._baseOpacity === undefined) {
                   o.material.userData._baseOpacity = (o.material.opacity === undefined) ? 1 : o.material.opacity;
                 }
                 var base = o.material.userData._baseOpacity;
-                var want = recede ? base * 0.70 : base;
+                // Alpha-tested foliage must stay in the opaque render queue. Switching
+                // it to blending makes instanced leaves sort and wink as the view moves.
+                var keepOpaque = o.material.alphaTest > 0 ||
+                  !!(o.material.userData && o.material.userData._keepOpaqueOnRecede);
+                var want = recede && !keepOpaque ? base * 0.70 : base;
                 if (Math.abs(o.material.opacity - want) > 0.01) {
                   o.material.opacity = want;
                   var nextTransparent = want < 1;
@@ -714,7 +745,21 @@
             function hit() {
               S.raycaster.setFromCamera(S.pointer, S.camera);
               var xs = S.raycaster.intersectObjects(S.picks, false);
-              return xs.length ? xs[0].object.userData.partId : null;
+              // Raycaster checks the mesh itself, not hidden ancestors. Skip an
+              // invisible crown so a dead tree's visible trunk/roots remain clickable.
+              for (var xi = 0; xi < xs.length; xi++) {
+                var candidate = xs[xi].object;
+                var node = candidate;
+                var visible = true;
+                while (node) {
+                  if (node.visible === false) { visible = false; break; }
+                  node = node.parent;
+                }
+                if (visible && candidate.userData && candidate.userData.partId) {
+                  return candidate.userData.partId;
+                }
+              }
+              return null;
             }
             on(el, 'pointerdown', function (ev) {
               S.dragging = true; S.moved = 0;
@@ -822,11 +867,32 @@
               try { hd[0].removeEventListener(hd[1], hd[2], hd[3]); } catch (e) {}
             });
             try {
+              var disposedGeometries = new Set();
+              var disposedMaterials = new Set();
+              var disposedTextures = new Set();
+              var textureSlots = [
+                'map', 'alphaMap', 'aoMap', 'bumpMap', 'displacementMap', 'emissiveMap',
+                'envMap', 'lightMap', 'metalnessMap', 'normalMap', 'roughnessMap', 'specularMap'
+              ];
               S.scene.traverse(function (o) {
-                if (o.geometry && o.geometry.dispose) o.geometry.dispose();
+                if (o.geometry && o.geometry.dispose && !disposedGeometries.has(o.geometry)) {
+                  disposedGeometries.add(o.geometry);
+                  o.geometry.dispose();
+                }
                 if (o.material) {
                   var ms = Array.isArray(o.material) ? o.material : [o.material];
-                  ms.forEach(function (m) { if (m && m.dispose) m.dispose(); });
+                  ms.forEach(function (m) {
+                    if (!m || disposedMaterials.has(m)) return;
+                    disposedMaterials.add(m);
+                    for (var tsi = 0; tsi < textureSlots.length; tsi++) {
+                      var tex = m[textureSlots[tsi]];
+                      if (tex && tex.dispose && !disposedTextures.has(tex)) {
+                        disposedTextures.add(tex);
+                        tex.dispose();
+                      }
+                    }
+                    if (m.dispose) m.dispose();
+                  });
                 }
               });
               if (S.renderer.domElement && S.renderer.domElement.parentNode) {
@@ -1926,7 +1992,7 @@
           '.stem-tool-card-icon { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background-color: var(--stem-card-icon-bg); }',
           '.stem-tool-card h4 { color: var(--stem-card-title) !important; line-height: 1.25; }',
           '.stem-tool-card p { color: var(--stem-card-desc) !important; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }',
-          '.stem-active-toolbar { position: sticky; top: 0; z-index: 16; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 24px; border-bottom: 1px solid rgba(148,163,184,0.24); backdrop-filter: blur(12px); }',
+          '.stem-active-toolbar { position: sticky; top: 0; z-index: 100; flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 24px; border-bottom: 1px solid rgba(148,163,184,0.24); backdrop-filter: blur(12px); }',
           '.stem-active-tool-main { display: flex; align-items: center; gap: 10px; min-width: 0; }',
           '.stem-active-tool-icon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 18px; background: rgba(99,102,241,0.10); }',
           '.stem-active-tool-title { min-width: 0; }',
@@ -2744,13 +2810,15 @@
               if (document.activeElement === last) { e.preventDefault(); first.focus(); }
             }
           }
-          // ? key toggles keyboard help
-          if ((e.key === '?' || e.key === '/') && !e.altKey && !e.ctrlKey && !e.metaKey) {
+          // ? key toggles keyboard help. A bare slash is ordinary text/navigation
+          // input and must not trigger a global UI change.
+          if (e.key === '?' && !e.altKey && !e.ctrlKey && !e.metaKey) {
             var tag = document.activeElement ? document.activeElement.tagName : '';
             if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
               e.preventDefault();
-              _setShowKeyHelp(function (v) { return !v; });
-              announceToSR(_showKeyHelp ? 'Keyboard help hidden' : 'Keyboard help shown');
+              var nextHelpState = !_showKeyHelp;
+              _setShowKeyHelp(nextHelpState);
+              announceToSR(nextHelpState ? 'Keyboard help shown' : 'Keyboard help hidden');
             }
           }
           // Keyboard shortcuts (with Alt key)
@@ -2762,72 +2830,10 @@
         }
         document.addEventListener('keydown', handleKeyDown);
         return function () { document.removeEventListener('keydown', handleKeyDown); };
-      }, [stemLabTool, stemLabTab]);
+      }, [stemLabTool, stemLabTab, _showKeyHelp]);
 
-      // ── Accessibility: Runtime A11Y Enhancer ──
-      React.useEffect(function () {
-        try {
-          var root = _stemDialogRef.current;
-          if (!root) return;
-          // Auto-label unlabeled buttons by reading their text content
-          root.querySelectorAll('button:not([aria-label])').forEach(function (btn) {
-            var txt = (btn.textContent || '').trim().replace(/[\uD800-\uDFFF].|[\u2000-\u3300]|[\uD83C-\uDBFF][\uDC00-\uDFFF]/g, '').trim();
-            if (!txt || txt.length < 2) {
-              // Emoji-only button — derive label from parent context or set generic
-              var parent = btn.closest('[class*="bg-"]');
-              var ctx = parent ? (parent.textContent || '').trim().substring(0, 30) : 'Action';
-              btn.setAttribute('aria-label', ctx || 'Action button');
-            }
-          });
-          // Auto-label canvases without role
-          root.querySelectorAll('canvas:not([role])').forEach(function (cv) {
-            cv.setAttribute('role', 'img');
-            var dataAttr = Array.from(cv.attributes).find(function (a) { return a.name.startsWith('data-'); });
-            cv.setAttribute('aria-label', dataAttr ? dataAttr.name.replace('data-', '').replace(/-/g, ' ') + ' visualization' : 'Interactive STEM visualization');
-          });
-          // Auto-label inputs without aria-label
-          root.querySelectorAll('input:not([aria-label]):not([id])').forEach(function (inp) {
-            var prev = inp.previousElementSibling;
-            var label = prev ? (prev.textContent || '').trim().substring(0, 40) : inp.placeholder || inp.type || 'Input';
-            inp.setAttribute('aria-label', label);
-          });
-          // Auto-label selects without aria-label
-          root.querySelectorAll('select:not([aria-label])').forEach(function (sel) {
-            var prev = sel.previousElementSibling;
-            var label = prev ? (prev.textContent || '').trim().substring(0, 40) : '';
-            if (!label) { var par = sel.closest('[class*="gap-"]'); if (par) { var spn = par.querySelector('span'); label = spn ? (spn.textContent || '').trim().substring(0, 40) : ''; } }
-            sel.setAttribute('aria-label', label || 'Selection');
-          });
-          // Auto-label textareas without aria-label
-          root.querySelectorAll('textarea:not([aria-label])').forEach(function (ta) {
-            var label = ta.placeholder ? ta.placeholder.substring(0, 40) : '';
-            if (!label) { var heading = ta.closest('div') && ta.closest('div').querySelector('h3,h4,label'); label = heading ? (heading.textContent || '').trim().substring(0, 40) : 'Text input'; }
-            ta.setAttribute('aria-label', label || 'Text input');
-          });
-          // Hide decorative SVGs from screen readers
-          root.querySelectorAll('svg:not([aria-label]):not([aria-hidden])').forEach(function (svg) {
-            svg.setAttribute('aria-hidden', 'true');
-          });
-          // Fix focus visibility: replace outline-none without replacement
-          root.querySelectorAll('[class*="outline-none"]:not([class*="focus:ring"]):not([class*="focus:border"])').forEach(function (el) {
-            el.classList.add('focus:ring-2', 'focus:ring-indigo-500', 'focus:ring-offset-1');
-          });
-          // Auto-set aria-pressed on toggle buttons (buttons with active-state color classes)
-          var activeClasses = ['bg-blue-600', 'bg-green-600', 'bg-purple-600', 'bg-indigo-600', 'bg-pink-600', 'bg-amber-600', 'bg-cyan-600', 'bg-emerald-600', 'bg-red-600'];
-          root.querySelectorAll('button:not([aria-pressed])').forEach(function (btn) {
-            var cls = btn.className || '';
-            var isToggle = activeClasses.some(function (ac) { return cls.includes(ac); });
-            if (isToggle) btn.setAttribute('aria-pressed', 'true');
-          });
-          // Auto-set aria-expanded on collapsible section headers
-          root.querySelectorAll('button').forEach(function (btn) {
-            var txt = (btn.textContent || '').trim();
-            if ((txt.includes('▼') || txt.includes('▲') || txt.includes('▾') || txt.includes('▸')) && !btn.hasAttribute('aria-expanded')) {
-              btn.setAttribute('aria-expanded', txt.includes('▼') || txt.includes('▾') ? 'true' : 'false');
-            }
-          });
-        } catch (e) { }
-      }, [stemLabTool, stemLabTab, labToolData]);
+      // Accessibility semantics belong to the React source. The report-only
+      // scanner below surfaces gaps without rewriting React-owned DOM.
 
       // ── Accessibility: aria-live feedback region ──
       var [a11yAnnouncement, setA11yAnnouncement] = React.useState('');
@@ -4189,7 +4195,17 @@
         }, a11yAnnouncement),
         /*#__PURE__*/React.createElement("div", {
         className: "stem-lab-modal-shell w-full max-w-[98vw] m-2 rounded-2xl shadow-2xl flex flex-col overflow-hidden" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300"),
-        style: { backgroundColor: _pal.bg, color: _pal.text, minHeight: 0, overflow: 'hidden' }
+        style: {
+          backgroundColor: _pal.bg,
+          color: _pal.text,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          maxHeight: 'calc(100% - 16px)',
+          minHeight: 0,
+          overflow: 'hidden',
+          boxSizing: 'border-box'
+        }
       }, /*#__PURE__*/React.createElement("div", {
         className: "stem-lab-topbar flex items-center justify-between px-6 py-3 text-white", role: "banner",
         style: { background: isContrast ? '#000' : 'linear-gradient(to right, #2563eb, #4f46e5, #7c3aed)', borderBottom: isContrast ? '3px solid #fbbf24' : 'none' }
@@ -4590,10 +4606,22 @@
         /*#__PURE__*/React.createElement("div", {
           className: "stem-lab-scroll-region stemlab-styled-scrollbar flex-1 overflow-y-auto p-6",
           "data-stem-scroll-region": "true",
+          "data-stem-scroll-contract": "vertical",
           tabIndex: 0,
           role: "region",
           "aria-label": stemLabTool && _activeStemToolMeta ? _activeStemToolMeta.label + " workspace" : "STEAM Lab workspace",
-          style: { backgroundColor: _pal.bg, color: _pal.text, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }
+          style: {
+            backgroundColor: _pal.bg,
+            color: _pal.text,
+            flex: '1 1 0%',
+            minHeight: 0,
+            maxHeight: '100%',
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y',
+            scrollbarGutter: 'stable'
+          }
         }, stemLabTab === 'create' && !showAssessmentBuilder && /*#__PURE__*/React.createElement("div", {
           className: "space-y-5 max-w-3xl mx-auto animate-in fade-in duration-200"
         }, /*#__PURE__*/React.createElement("div", {

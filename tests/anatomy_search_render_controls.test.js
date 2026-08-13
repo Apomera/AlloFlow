@@ -228,8 +228,9 @@ describe('Anatomy explicit mobile 3D controls', () => {
       _bodyView3d: true,
       _body3dStyle: 'realistic',
     }));
-    const controls = root.querySelector('[role="group"][aria-label*="3D"]');
+    const controls = root.querySelector('[data-anatomy-canvas-controls="realistic"]');
     expect(controls).not.toBeNull();
+    expect(controls?.getAttribute('aria-label')).toBe('Surface camera controls');
 
     const labels = Array.from(controls.querySelectorAll('button')).map((button) => (
       button.getAttribute('aria-label') || button.textContent || ''

@@ -300,7 +300,7 @@ test.describe('raptorHunt — deterministic celestial atmosphere', () => {
   test.afterAll(async () => { await harness.stop(); });
   test.afterEach(async ({ page }) => { await harness.destroy(page); });
 
-  test('switches rendered sky, sun, moon, clouds, reflection, and compact weather metadata', async ({ page }) => {
+  test('switches rendered atmosphere and preserves semantic bird, camera, and target visuals', async ({ page }) => {
     await harness.mount(page, flightState, "document.querySelector('[data-raptor-canvas=true]')?._rhSnapshot");
     const currentSnapshot = () => page.evaluate(
       () => (document.querySelector('[data-raptor-canvas="true"]') as any)._rhSnapshot(),
@@ -338,6 +338,39 @@ test.describe('raptorHunt — deterministic celestial atmosphere', () => {
     expect(clearNoon.moonCameraDistance).toBeCloseTo(690, 1);
     expect(clearNoon.cameraAltitude).toBeGreaterThan(900);
     expect(clearNoon.skyDomeMargin).toBeGreaterThan(895);
+    expect(clearNoon.fogFar).toBeGreaterThan(clearNoon.cameraAltitude + 200);
+    expect(clearNoon.highCloudCount).toBeGreaterThan(0);
+
+    expect(clearNoon.raptorSpeciesId).toBe('baldEagle');
+    expect(clearNoon.raptorSilhouetteKind).toBe('eagle');
+    expect(clearNoon.raptorPlumageMarkKind).toBe('bald-eagle-adult');
+    expect(clearNoon.raptorFieldMarkIds).toEqual(expect.arrayContaining(['white-head', 'white-tail']));
+    expect(clearNoon.leftPrimaryFeatherCount).toBeGreaterThan(0);
+    expect(clearNoon.rightPrimaryFeatherCount).toBe(clearNoon.leftPrimaryFeatherCount);
+    expect(clearNoon.taperedPrimaryFeatherCount)
+      .toBe(clearNoon.leftPrimaryFeatherCount + clearNoon.rightPrimaryFeatherCount);
+    expect(clearNoon.raptorVisualRadius).toBeGreaterThan(1);
+
+    const baselineFlight = await currentSnapshot();
+    expect(baselineFlight.cameraMode).toBe('chase');
+    expect(baselineFlight.diveActive).toBe(false);
+    expect(baselineFlight.cameraDistanceToRaptor).toBeGreaterThan(1);
+    expect(baselineFlight.cameraHeightAboveRaptor).toBeGreaterThan(0);
+    expect(Math.abs(baselineFlight.raptorNdcX)).toBeLessThan(0.9);
+    expect(Math.abs(baselineFlight.raptorNdcY)).toBeLessThan(0.9);
+
+    await command('hold', { key: 'shift', pressed: 1 });
+    await expect.poll(async () => (await currentSnapshot()).diveActive, { timeout: 5_000 }).toBe(true);
+    await expect.poll(async () => (await currentSnapshot()).cameraFov, { timeout: 5_000 })
+      .toBeGreaterThan(baselineFlight.cameraFov + 2);
+    const diveFlight = await currentSnapshot();
+    expect(diveFlight.cameraMode).toBe('chase');
+    expect(diveFlight.cameraDistanceToRaptor).toBeGreaterThan(1);
+    expect(diveFlight.cameraHeightAboveRaptor).toBeGreaterThan(0);
+    expect(Math.abs(diveFlight.raptorNdcX)).toBeLessThan(0.9);
+    expect(Math.abs(diveFlight.raptorNdcY)).toBeLessThan(0.9);
+    await command('hold', { key: 'shift', pressed: 0 });
+    await expect.poll(async () => (await currentSnapshot()).diveActive, { timeout: 5_000 }).toBe(false);
 
     expect(clearNight.moonOpacity).toBeGreaterThan(clearNight.sunOpacity);
     expect(clearNight.moonAltitude).toBeGreaterThan(0);
@@ -357,9 +390,39 @@ test.describe('raptorHunt — deterministic celestial atmosphere', () => {
     expect(initialAssist.visibleBeaconCount).toBeLessThanOrEqual(1);
     expect(initialAssist.activeTargetIndex).toBeGreaterThanOrEqual(-1);
     expect(initialAssist.activeTargetIndex).toBeLessThan(initialAssist.preyCount);
+
+    const reticle = page.locator('[data-raptor-reticle="true"]');
+    await command('targetProbe', { ndcX: 1.6, ndcY: 1.4, ndcZ: 0 });
+    await expect.poll(async () => reticle.getAttribute('data-offscreen'), { timeout: 5_000 }).toBe('true');
+    const edgeReticle = await reticle.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const hostRect = (element.parentElement as HTMLElement).getBoundingClientRect();
+      return {
+        display: getComputedStyle(element).display,
+        targetEdge: (element as HTMLElement).dataset.targetEdge || '',
+        left: rect.left - hostRect.left,
+        top: rect.top - hostRect.top,
+        right: rect.right - hostRect.left,
+        bottom: rect.bottom - hostRect.top,
+        hostWidth: hostRect.width,
+        hostHeight: hostRect.height,
+      };
+    });
+    expect(edgeReticle.display).not.toBe('none');
+    expect(edgeReticle.targetEdge).toContain('right');
+    expect(edgeReticle.targetEdge).toContain('top');
+    expect(edgeReticle.left).toBeGreaterThanOrEqual(0);
+    expect(edgeReticle.top).toBeGreaterThanOrEqual(0);
+    expect(edgeReticle.right).toBeLessThanOrEqual(edgeReticle.hostWidth);
+    expect(edgeReticle.bottom).toBeLessThanOrEqual(edgeReticle.hostHeight);
+
     await command('assist');
     await expect.poll(async () => (await currentSnapshot()).assistEnabled, { timeout: 5_000 }).toBe(false);
     expect((await currentSnapshot()).visibleBeaconCount).toBe(0);
+    await expect.poll(async () => reticle.evaluate((element) => getComputedStyle(element).display), {
+      timeout: 5_000,
+    }).toBe('none');
+    await command('targetProbe', { clear: 1 });
     await command('assist');
     await expect.poll(async () => (await currentSnapshot()).assistEnabled, { timeout: 5_000 }).toBe(true);
     await expect.poll(async () => (await currentSnapshot()).visibleBeaconCount, { timeout: 5_000 })

@@ -39,7 +39,10 @@ describe('water cycle canvas animation loop', () => {
       expect(source).toContain('function onWaterCycleCanvasClick(e)');
       expect(source).toContain("canvasEl.addEventListener('click', onWaterCycleCanvasClick);");
       expect(source).toContain('if (!canvasEl.isConnected) { cleanupWaterCycleCanvas(); return; }');
-      expect(source).toContain('tick += wcMotionReduced ? 0.2 : 1;');
+      expect(source).toContain('if (!wcMotionReduced) tick += 1;');
+      expect(source).toContain("wcMotionMedia.addEventListener('change', syncWcMotionPreference)");
+      expect(source).toContain("wcMotionMedia.removeEventListener('change', syncWcMotionPreference)");
+      expect(source).toContain("canvasEl.dataset.matterEnergyMotion = wcMotionReduced ? 'static' : 'dynamic';")
       expect(source).toContain('scheduleWaterCycleFrame();');
       expect(source).not.toContain("canvasEl.addEventListener('click', function(e)");
       expect(source).not.toContain('if (!canvasEl.isConnected) { if (canvasEl._wcAnim) cancelAnimationFrame(canvasEl._wcAnim); return; }');

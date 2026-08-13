@@ -203,25 +203,40 @@ describe('blueprint plan rows: run status', () => {
     expect(r[2].textContent).toContain('Failed');
   });
 
-  it('mounts the production diagnostic copy/download controls and saved-run warning', () => {
+  it('mounts the production error-log/copy/download controls and saved-run warning', () => {
     installRegistry();
+    const onOpenErrorLog = vi.fn();
     const onCopyDiagnostics = vi.fn();
     const onDownloadDiagnostics = vi.fn();
     const el = mountRun({
       run: { ...RUN, persistenceWarning: 'Only compact diagnostics were restored.' },
+      onOpenErrorLog,
       onCopyDiagnostics,
       onDownloadDiagnostics,
     });
+    const openButton = el.querySelector('[data-testid="bp-open-error-log"]');
     const copyButton = el.querySelector('[data-testid="bp-copy-diagnostics"]');
     const button = el.querySelector('[data-testid="bp-download-diagnostics"]');
+    expect(openButton).not.toBeNull();
     expect(copyButton).not.toBeNull();
     expect(button).not.toBeNull();
     expect(button.getAttribute('aria-label')).toContain('Download Blueprint');
     expect(el.textContent).toContain('Only compact diagnostics were restored.');
+    act(() => openButton.dispatchEvent(new MouseEvent('click', { bubbles: true })));
     act(() => copyButton.dispatchEvent(new MouseEvent('click', { bubbles: true })));
     act(() => button.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    expect(onOpenErrorLog).toHaveBeenCalledTimes(1);
     expect(onCopyDiagnostics).toHaveBeenCalledTimes(1);
     expect(onDownloadDiagnostics).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not offer the error log action when every row succeeded', () => {
+    installRegistry();
+    const el = mountRun({
+      run: { rows: { 'analysis-0': { uiId: 'analysis-0', tool: 'analysis', status: 'landed' } } },
+      onOpenErrorLog: vi.fn(),
+    });
+    expect(el.querySelector('[data-testid="bp-open-error-log"]')).toBeNull();
   });
 
   // Scoped to the ROWS: the card also has a standing role="status" live region

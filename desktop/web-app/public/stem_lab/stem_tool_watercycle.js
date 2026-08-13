@@ -234,9 +234,9 @@
       '.wc-precip-journey-choice{left:auto;right:12px;bottom:76px;width:min(400px,calc(100% - 24px));transform:none;padding:10px;background:rgba(4,26,43,.88);box-shadow:0 14px 34px rgba(2,6,23,.38)}.wc-precip-journey-choice h5{font-size:13px}.wc-precip-journey-choice p{margin-bottom:7px}.wc-precip-journey-choice .wc-viewport-choice-grid{gap:5px}.wc-precip-journey-choice .wc-route-choice-card{background:rgba(8,47,73,.78)}@media(max-width:560px){.wc-precip-journey-choice{left:10px;right:10px;bottom:76px;width:auto}.wc-precip-journey-choice .wc-viewport-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-precip-journey-choice .wc-route-choice-card[data-route-choice="plant"]{grid-column:1/-1}}@media(forced-colors:active){.wc-precip-journey-choice{background:Canvas;box-shadow:none}.wc-precip-journey-choice .wc-route-choice-card{background:Canvas;color:CanvasText;border-color:CanvasText}}',
       '.wc-viewport-choice-grid .wc-route-share-track{display:block;height:5px;margin-top:6px;border-radius:999px;background:rgba(125,211,252,.22);overflow:hidden}.wc-viewport-choice-grid .wc-route-share-track span{display:block;height:100%;margin:0;border-radius:inherit;background:#60a5fa}.wc-viewport-choice-grid button[data-route-choice="infiltrate"] .wc-route-share-track span{background:#22d3ee}.wc-viewport-choice-grid button[data-route-choice="plant"] .wc-route-share-track span{background:#4ade80}@media (forced-colors: active){.wc-viewport-choice-grid .wc-route-share-track{border:1px solid CanvasText;background:Canvas}.wc-viewport-choice-grid .wc-route-share-track span{background:Highlight}}',
       '.wc-route-choice-card{position:relative;transition:transform 160ms ease,box-shadow 160ms ease}.wc-route-choice-card:hover{transform:translateY(-1px)}.wc-route-choice-card.is-leading{box-shadow:0 0 0 2px #facc15,0 10px 22px rgba(250,204,21,.18)}.wc-route-leader-badge{display:inline-block!important;margin-top:5px!important;padding:2px 5px;border-radius:5px;background:#facc15;color:#422006!important;font-size:8px!important;font-weight:900!important;letter-spacing:.04em;text-transform:uppercase}.wc-route-choice-signal{margin:4px 0 9px!important;padding:5px 7px;border-left:2px solid #facc15;border-radius:5px;background:rgba(250,204,21,.1);color:#fef08a!important;font-size:10px!important;font-weight:800!important}.wc-route-choice-card:focus-visible{outline:3px solid #facc15;outline-offset:2px}@media (forced-colors: active){.wc-route-choice-card.is-leading{box-shadow:0 0 0 2px Highlight}.wc-route-leader-badge{background:Highlight;color:HighlightText!important}.wc-route-choice-signal{border-color:Highlight;background:Canvas;color:CanvasText!important}}',
-      '.wc-journey-lens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:-2px 0 10px;border-left:3px solid #0ea5e9;background:rgba(14,165,233,.16)}',
+      '.wc-journey-lens{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin:-2px 0 10px;border-left:3px solid #0ea5e9;background:rgba(14,165,233,.16)}',
       '.wc-journey-lens div{padding:8px 10px;background:rgba(255,255,255,.88)}',
-      '.wc-journey-lens span{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b}',
+      '.wc-journey-lens span{display:block;font-size:11px;font-weight:800;text-transform:uppercase;color:#64748b}',
       '.wc-journey-lens strong{display:block;margin-top:2px;font-size:12px;line-height:1.3;color:#0f172a}',
       '.wc-journey-choice-receipt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;margin-top:8px;padding:8px 10px;border:1px solid rgba(14,165,233,.28);border-left:3px solid #0ea5e9;border-radius:9px;background:rgba(224,242,254,.62);color:#334155}.wc-journey-choice-receipt-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#0369a1}.wc-journey-choice-receipt strong{display:block;margin-top:2px;font-size:12px;line-height:1.25;color:#0f172a}.wc-journey-choice-receipt-copy{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:#475569}.wc-journey-choice-signal{align-self:center;min-width:92px;padding:5px 7px;border-radius:7px;background:rgba(255,255,255,.78);color:#0369a1;font-size:10px;font-weight:900;text-align:center}.wc-journey-choice-track{display:block;height:5px;margin-top:5px;border-radius:999px;background:rgba(14,165,233,.18);overflow:hidden}.wc-journey-choice-track span{display:block;height:100%;border-radius:inherit;background:#0ea5e9}.dark .wc-journey-choice-receipt{background:rgba(8,47,73,.54);border-color:rgba(56,189,248,.25);border-left-color:#38bdf8;color:#cbd5e1}.dark .wc-journey-choice-receipt-kicker{color:#7dd3fc}.dark .wc-journey-choice-receipt strong{color:#f8fafc}.dark .wc-journey-choice-receipt-copy{color:#cbd5e1}.dark .wc-journey-choice-signal{background:rgba(15,23,42,.72);color:#7dd3fc}.dark .wc-journey-choice-track{background:rgba(56,189,248,.2)}.dark .wc-journey-choice-track span{background:#38bdf8}@media(max-width:460px){.wc-journey-choice-receipt{grid-template-columns:1fr}.wc-journey-choice-signal{justify-self:start;text-align:left}}@media(forced-colors:active){.wc-journey-choice-receipt{border-color:CanvasText;border-left-color:Highlight;background:Canvas;color:CanvasText}.wc-journey-choice-receipt-kicker,.wc-journey-choice-receipt strong,.wc-journey-choice-receipt-copy,.wc-journey-choice-signal{color:CanvasText}.wc-journey-choice-signal{background:Canvas}.wc-journey-choice-track{border:1px solid CanvasText;background:Canvas}.wc-journey-choice-track span{background:Highlight}}',
       '.wc-journey-choice-receipt.is-complete{border-left-color:#10b981;background:linear-gradient(135deg,rgba(236,253,245,.86),rgba(224,242,254,.58))}.dark .wc-journey-choice-receipt.is-complete{border-left-color:#34d399;background:linear-gradient(135deg,rgba(6,78,59,.5),rgba(8,47,73,.54))}@media(forced-colors:active){.wc-journey-choice-receipt.is-complete{border-left-color:Highlight;background:Canvas}}',
@@ -379,6 +379,8 @@
 '.wc-stage-focus{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:0 0 12px;padding:10px 12px;border:1px solid rgba(14,165,233,.24);border-left:3px solid #0ea5e9;border-radius:12px;background:rgba(224,242,254,.55)}',
       '.wc-stage-focus-copy{min-width:0}.wc-stage-focus-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#0369a1}.wc-stage-focus-title{display:flex;align-items:center;gap:6px;margin-top:2px;font-size:13px;font-weight:900;color:#0f172a}.wc-stage-focus-title span{font-size:16px}.wc-stage-focus-summary{margin:3px 0 0;font-size:11px;line-height:1.35;color:#475569;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.wc-stage-focus-meta{flex:0 0 auto;padding:5px 7px;border-radius:8px;background:rgba(255,255,255,.7);font-size:10px;font-weight:900;color:#0369a1;white-space:nowrap}',
       '.wc-stage-focus-flow{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:6px;font-size:10px;line-height:1.2;color:#075985}.wc-stage-focus-flow-label{font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#0369a1}.wc-stage-focus-flow strong{padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.72);font-size:10px;color:#0f172a}.wc-stage-focus-flow-arrow{font-size:13px;font-weight:900;color:#0284c7}',
+      '.wc-matter-energy{margin:8px 0 0;padding-top:7px;border-top:1px solid rgba(14,165,233,.2)}.wc-matter-energy-title{margin:0;font-size:11px;font-weight:900;color:#0c4a6e}.wc-matter-energy-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:5px 0 0}.wc-matter-energy-grid div{min-width:0}.wc-matter-energy-grid dt{font-size:11px;font-weight:900;color:#0369a1}.wc-matter-energy-grid dd{margin:2px 0 0;font-size:11px;line-height:1.3;color:#334155;overflow-wrap:anywhere}.wc-matter-energy-grid strong{color:#0f172a}.dark .wc-matter-energy{border-top-color:rgba(56,189,248,.2)}.dark .wc-matter-energy-title,.dark .wc-matter-energy-grid dt{color:#7dd3fc}.dark .wc-matter-energy-grid dd,.dark .wc-matter-energy-grid strong{color:#e2e8f0}@media(max-width:620px){.wc-matter-energy-grid{grid-template-columns:1fr}.wc-matter-energy-grid div{display:grid;grid-template-columns:92px minmax(0,1fr);gap:7px;align-items:baseline}}@media(forced-colors:active){.wc-matter-energy{border-color:CanvasText}.wc-matter-energy-title,.wc-matter-energy-grid dt,.wc-matter-energy-grid dd,.wc-matter-energy-grid strong{color:CanvasText}}',
+      '.wc-subsurface-note{margin:7px 0 0;padding:6px 8px;border-left:2px solid #22d3ee;background:rgba(207,250,254,.62);font-size:11px;line-height:1.4;color:#164e63}.wc-subsurface-note strong{color:#0e7490}.dark .wc-subsurface-note{background:rgba(8,47,73,.58);border-left-color:#67e8f9;color:#cffafe}.dark .wc-subsurface-note strong{color:#67e8f9}@media(forced-colors:active){.wc-subsurface-note{border-color:Highlight;background:Canvas;color:CanvasText}.wc-subsurface-note strong{color:CanvasText}}',
       '.dark .wc-stage-focus-flow-label{color:#7dd3fc}.dark .wc-stage-focus-flow strong{background:rgba(15,23,42,.72);color:#f8fafc}.dark .wc-stage-focus-flow-arrow{color:#38bdf8}',
       '.wc-land-reset{color:#047857;border-color:rgba(16,185,129,.3);background:rgba(255,255,255,.72)}.wc-land-reset:hover{background:#ecfdf5;box-shadow:0 5px 12px rgba(16,185,129,.14)}',
       '@media(max-width:560px){.wc-stage-focus{gap:8px;padding:9px 10px}.wc-stage-focus-meta{align-self:flex-start}.wc-stage-focus-summary{-webkit-line-clamp:3}}',
@@ -5672,8 +5674,111 @@ const d = labToolData.waterCycle || {};
             transpiration: { from: 'Plant water', to: 'Atmosphere' },
             infiltration: { from: 'Surface water', to: 'Soil and aquifer' }
           };
+          var MATTER_ENERGY_TRACE = {
+            evaporation: {
+              phaseFrom: 'Liquid water', phaseTo: 'Water vapor', energyTransfer: 'absorbed',
+              energyLabel: 'Latent heat absorbed', driver: 'Solar and surface thermal energy; wind transports vapor away',
+              source: 'Ocean or surface water', destination: 'Atmospheric vapor'
+            },
+            condensation: {
+              phaseFrom: 'Water vapor', phaseTo: 'Liquid droplets or ice', energyTransfer: 'released',
+              energyLabel: 'Latent heat released to surrounding air', driver: 'Cooling and condensation nuclei',
+              source: 'Atmospheric vapor', destination: 'Cloud droplets or ice'
+            },
+            precipitation: {
+              phaseFrom: 'Cloud water or ice', phaseTo: 'Falling liquid or solid water', energyTransfer: 'none',
+              energyLabel: 'No required phase change during the fall', driver: 'Gravity after droplets or ice particles grow',
+              source: 'Cloud water or ice', destination: 'Land or ocean'
+            },
+            collection: {
+              phaseFrom: 'Liquid or solid water', phaseTo: 'Stored liquid water or ice', energyTransfer: 'none',
+              energyLabel: 'No required phase change during storage', driver: 'Gravity routes water into surface stores',
+              source: 'Runoff, rivers, rain, or groundwater discharge', destination: 'Surface water storage'
+            },
+            transpiration: {
+              phaseFrom: 'Liquid plant water', phaseTo: 'Water vapor', energyTransfer: 'absorbed',
+              energyLabel: 'Latent heat absorbed at leaves', driver: 'Leaf energy, stomata, and atmospheric demand',
+              source: 'Plant xylem', destination: 'Atmospheric vapor'
+            },
+            infiltration: {
+              phaseFrom: 'Liquid surface water', phaseTo: 'Liquid soil pore water', energyTransfer: 'none',
+              energyLabel: 'No phase change; infiltration is not automatically recharge', driver: 'Gravity and capillarity through pore spaces',
+              source: 'Surface water', destination: 'Soil pore water'
+            }
+          };
+          var JOURNEY_MATTER_ENERGY_TRACE = {
+            ocean: {
+              phaseFrom: 'Stored liquid water', phaseTo: 'Stored liquid water', energyTransfer: 'none',
+              energyLabel: 'No phase change during storage', driver: 'Storage; solar energy can begin the next transfer',
+              source: 'Ocean storage', destination: 'Ocean storage'
+            },
+            evaporating: Object.assign({}, MATTER_ENERGY_TRACE.evaporation, {
+              source: 'Ocean surface', destination: 'Atmospheric vapor'
+            }),
+            condensing: Object.assign({}, MATTER_ENERGY_TRACE.condensation, {
+              source: 'Atmospheric vapor', destination: 'Cloud droplets or ice'
+            }),
+            precipitating: Object.assign({}, MATTER_ENERGY_TRACE.precipitation, {
+              source: 'Cloud water or ice', destination: 'Land surface'
+            }),
+            ground_choice: {
+              phaseFrom: 'Liquid surface water', phaseTo: 'Liquid surface water', energyTransfer: 'none',
+              energyLabel: 'No required phase change while choosing a route', driver: 'Land cover, slope, saturation, and permeability',
+              source: 'Land surface', destination: 'Chosen land pathway'
+            },
+            river_runoff: {
+              phaseFrom: 'Liquid surface water', phaseTo: 'Liquid surface water', energyTransfer: 'none',
+              energyLabel: 'No phase change during surface flow', driver: 'Gravity over terrain',
+              source: 'Land surface', destination: 'Ocean via river and estuary'
+            },
+            infiltrating: Object.assign({}, MATTER_ENERGY_TRACE.infiltration, {
+              source: 'Surface water', destination: 'Soil pore water'
+            }),
+            aquifer_flow: {
+              phaseFrom: 'Liquid groundwater', phaseTo: 'Liquid surface water', energyTransfer: 'none',
+              energyLabel: 'No phase change along this modeled return path', driver: 'Hydraulic gradient through permeable material',
+              source: 'Groundwater', destination: 'Surface water or ocean discharge'
+            },
+            plant_absorb: {
+              phaseFrom: 'Liquid soil water', phaseTo: 'Liquid plant water', energyTransfer: 'none',
+              energyLabel: 'No phase change during root and xylem transport', driver: 'Water-potential gradient through roots and xylem',
+              source: 'Soil water', destination: 'Plant xylem'
+            },
+            transpiring: Object.assign({}, MATTER_ENERGY_TRACE.transpiration, {
+              source: 'Plant xylem', destination: 'Atmospheric vapor'
+            }),
+            complete: {
+              phaseFrom: 'Stored liquid water', phaseTo: 'Stored liquid water', energyTransfer: 'none',
+              energyLabel: 'No phase change during storage', driver: 'The cycle can begin another transfer',
+              source: 'Ocean storage', destination: 'Ocean storage'
+            }
+          };
 
           // ── Canvas narration: init ──
+          // Physical-time bands are qualitative teaching cues. They describe broad
+          // residence/transit patterns; playback speed is never used as hydrologic time.
+          var STAGE_HYDROLOGIC_TIME_TRACE = {
+            evaporation: { role: 'transfer', roleLabel: 'Transfer', bandKey: 'responsive', rank: 2, label: 'Minutes to days', caveat: 'Energy and weather dependent; animation is compressed.' },
+            condensation: { role: 'transfer', roleLabel: 'Transfer', bandKey: 'event-scale', rank: 1, label: 'Minutes to hours', caveat: 'Cloud conditions vary; this is not a countdown.' },
+            precipitation: { role: 'transfer', roleLabel: 'Transfer', bandKey: 'event-scale', rank: 1, label: 'Minutes to hours', caveat: 'Storm depth and fall path vary.' },
+            collection: { role: 'storage', roleLabel: 'Storage', bandKey: 'variable', rank: 3, label: 'Highly variable', caveat: 'Surface, coastal, and deep-ocean stores have very different residence times.' },
+            transpiration: { role: 'transfer', roleLabel: 'Transfer', bandKey: 'responsive', rank: 2, label: 'Hours to days', caveat: 'Plant, daylight, soil water, and weather dependent.' },
+            infiltration: { role: 'transfer', roleLabel: 'Transit into soil', bandKey: 'variable', rank: 3, label: 'Hours to months', caveat: 'Soil dependent; infiltration is not automatic recharge.' }
+          };
+          var JOURNEY_HYDROLOGIC_TIME_TRACE = {
+            ocean: { role: 'storage', roleLabel: 'Storage', bandKey: 'long-storage', rank: 4, label: 'Highly variable; potentially long', caveat: 'Surface, coastal, and deep-ocean stores differ; this is not a parcel prediction.' },
+            evaporating: { role: 'transfer', roleLabel: 'Transfer', bandKey: 'responsive', rank: 2, label: 'Minutes to days', caveat: 'Energy and weather dependent; animation is compressed.' },
+            condensing: { role: 'transfer', roleLabel: 'Transfer', bandKey: 'event-scale', rank: 1, label: 'Minutes to hours', caveat: 'Cloud conditions vary; this is not a countdown.' },
+            precipitating: { role: 'transfer', roleLabel: 'Transfer', bandKey: 'event-scale', rank: 1, label: 'Minutes to hours', caveat: 'Storm depth and fall path vary.' },
+            ground_choice: { role: 'choice', roleLabel: 'Path choice', bandKey: 'decision', rank: 0, label: 'Learner decision', caveat: 'Learner decision pause; this is not physical waiting.' },
+            river_runoff: { role: 'transfer', roleLabel: 'Transfer with temporary storage', bandKey: 'variable', rank: 3, label: 'Hours to months', caveat: 'Watershed size, slope, soils, and temporary surface stores vary.' },
+            infiltrating: { role: 'transfer', roleLabel: 'Transit into soil', bandKey: 'variable', rank: 3, label: 'Hours to months', caveat: 'Soil dependent; infiltration is not automatic recharge.' },
+            aquifer_flow: { role: 'storage-transfer', roleLabel: 'Storage and slow transfer', bandKey: 'long-storage', rank: 4, label: 'Years to millennia possible', caveat: 'Some fractured or karst groundwater paths can be much faster.' },
+            plant_absorb: { role: 'storage-transfer', roleLabel: 'Biological storage and transfer', bandKey: 'responsive', rank: 2, label: 'Hours to weeks', caveat: 'Species, soil water, season, and weather change the transit time.' },
+            transpiring: { role: 'transfer', roleLabel: 'Transfer', bandKey: 'responsive', rank: 2, label: 'Hours to days', caveat: 'Daylight, stomata, soil water, and weather dependent.' },
+            complete: { role: 'storage', roleLabel: 'Storage', bandKey: 'long-storage', rank: 4, label: 'Highly variable; potentially long', caveat: 'The cycle has no clock-like endpoint; this is not a parcel prediction.' }
+          };
+
           if (typeof canvasNarrate === 'function') {
             canvasNarrate('waterCycle', 'init', {
               first: 'Water Cycle Simulator loaded. Currently viewing ' + (sel ? sel.label : 'evaporation') + '. This interactive diagram shows evaporation, condensation, precipitation, collection, transpiration, and infiltration.',
@@ -5726,7 +5831,24 @@ const d = labToolData.waterCycle || {};
             var tick = 0;
             var wcAlive = true;
             var wcMotionReduced = false;
-            try { wcMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+            var wcMotionMedia = null;
+            function syncWcMotionPreference(event) {
+              wcMotionReduced = !!(event && typeof event.matches === 'boolean' ? event.matches : wcMotionMedia && wcMotionMedia.matches);
+              canvasEl.dataset.matterEnergyMotion = wcMotionReduced ? 'static' : 'dynamic';
+              if (wcAlive) {
+                cancelWaterCycleFrame();
+                draw(true);
+              }
+            }
+            try {
+              wcMotionMedia = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+              wcMotionReduced = !!(wcMotionMedia && wcMotionMedia.matches);
+              if (wcMotionMedia) {
+                if (wcMotionMedia.addEventListener) wcMotionMedia.addEventListener('change', syncWcMotionPreference);
+                else if (wcMotionMedia.addListener) wcMotionMedia.addListener(syncWcMotionPreference);
+              }
+            } catch (e) {}
+            canvasEl.dataset.matterEnergyMotion = wcMotionReduced ? 'static' : 'dynamic';
 
             function isWaterCycleHidden() {
               return typeof document !== 'undefined' && !!document.hidden;
@@ -5757,6 +5879,10 @@ const d = labToolData.waterCycle || {};
               cancelWaterCycleFrame();
               canvasEl.removeEventListener('click', onWaterCycleCanvasClick);
               if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onWaterCycleVisibilityChange);
+              if (wcMotionMedia) {
+                if (wcMotionMedia.removeEventListener) wcMotionMedia.removeEventListener('change', syncWcMotionPreference);
+                else if (wcMotionMedia.removeListener) wcMotionMedia.removeListener(syncWcMotionPreference);
+              }
               canvasEl._onJourneyTransition = null;
               canvasEl._onJourneyComplete = null;
               canvasEl._wcSyncReact = null;
@@ -5790,11 +5916,13 @@ const d = labToolData.waterCycle || {};
 
             // Rain drops
 
+            var catchmentMinX2d = 0.58;
+            var catchmentSpanX2d = 0.34;
             var rainPs = [];
 
             for (var ri = 0; ri < 35; ri++) {
 
-              rainPs.push({ x: cW * 0.1 / dpr + Math.random() * cW * 0.5 / dpr, y: cH * 0.1 / dpr + Math.random() * cH * 0.4 / dpr, speed: 1 + Math.random() * 1.5, len: 3 + Math.random() * 4, phase: Math.random() * Math.PI * 2 });
+              rainPs.push({ x: cW * catchmentMinX2d / dpr + Math.random() * cW * catchmentSpanX2d / dpr, y: cH * 0.1 / dpr + Math.random() * cH * 0.4 / dpr, speed: 1 + Math.random() * 1.5, len: 3 + Math.random() * 4, phase: Math.random() * Math.PI * 2 });
 
             }
 
@@ -5824,7 +5952,7 @@ const d = labToolData.waterCycle || {};
 
             for (var ii = 0; ii < 15; ii++) {
 
-              infiltPs.push({ x: cW * 0.3 / dpr + Math.random() * cW * 0.4 / dpr, y: cH * 0.68 / dpr + Math.random() * cH * 0.05 / dpr, speed: 0.15 + Math.random() * 0.25, phase: Math.random() * Math.PI * 2 });
+              infiltPs.push({ x: cW * catchmentMinX2d / dpr + Math.random() * cW * catchmentSpanX2d / dpr, y: cH * 0.64 / dpr + Math.random() * cH * 0.05 / dpr, speed: 0.15 + Math.random() * 0.25, phase: Math.random() * Math.PI * 2 });
 
             }
 
@@ -5868,7 +5996,7 @@ const d = labToolData.waterCycle || {};
               infiltrating: { pts: [{x:0.34,y:0.62},{x:0.35,y:0.70},{x:0.34,y:0.76},{x:0.33,y:0.82}], loop: false },
               aquifer_flow: { pts: [{x:0.33,y:0.82},{x:0.28,y:0.84},{x:0.22,y:0.83},{x:0.15,y:0.80},{x:0.10,y:0.75},{x:0.08,y:0.70},{x:0.10,y:0.67}], loop: false },
               plant_absorb: { pts: [{x:0.34,y:0.62},{x:0.45,y:0.63},{x:0.55,y:0.62},{x:0.58,y:0.58}], loop: false },
-              transpiring:  { pts: [{x:0.58,y:0.58},{x:0.57,y:0.48},{x:0.56,y:0.38},{x:0.55,y:0.28},{x:0.50,y:0.20}], loop: false }
+              transpiring:  { pts: [{x:0.58,y:0.58},{x:0.57,y:0.48},{x:0.56,y:0.38},{x:0.55,y:0.28},{x:0.25,y:0.22}], loop: false }
             };
 
             // Science facts shown at each transition
@@ -5879,8 +6007,8 @@ const d = labToolData.waterCycle || {};
               precipitating:'Cloud droplets collide and merge. When you reach ~0.5mm, gravity overcomes air resistance  -  you fall!',
               ground_choice:'You hit the ground! Water can take 3 paths from here. Where will you go?',
               river_runoff: 'Surface runoff! You flow downhill over soil and rock, joining streams and rivers back to the ocean.',
-              infiltrating: 'You seep through soil pores, filtered naturally. Some water takes hundreds of years to reach the ocean!',
-              aquifer_flow: 'Deep underground in porous rock, you join the aquifer  -  Earth\'s hidden reservoir.',
+              infiltrating: 'You enter unsaturated soil pores in the vadose zone. Water can remain as soil moisture; infiltration does not automatically become groundwater recharge.',
+              aquifer_flow: 'This selected parcel follows one deep-recharge pathway to the water table, then moves slowly through groundwater toward discharge. Many infiltrated parcels remain in soil or take other paths.',
               plant_absorb: 'Roots absorb you via osmosis! You travel up through the xylem to the leaves.',
               transpiring:  'Through tiny stomata pores, you evaporate from the leaf surface back into the atmosphere!'
             };
@@ -6083,6 +6211,209 @@ const d = labToolData.waterCycle || {};
               return jState;
             }
 
+            function evidenceLabel2d(text, x, y, color) {
+              ctx.save();
+              ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              var paddingX = 5 * dpr;
+              var labelWidth = ctx.measureText(text).width + paddingX * 2;
+              ctx.fillStyle = 'rgba(2,6,23,0.78)';
+              ctx.fillRect(x - paddingX, y - 9 * dpr, labelWidth, 18 * dpr);
+              ctx.strokeStyle = color;
+              ctx.lineWidth = 1.5 * dpr;
+              ctx.strokeRect(x - paddingX, y - 9 * dpr, labelWidth, 18 * dpr);
+              ctx.fillStyle = '#f8fafc';
+              ctx.fillText(text, x, y);
+              ctx.restore();
+            }
+
+            function evidenceArrow2d(x1, y1, x2, y2, color, dashed) {
+              var angle = Math.atan2(y2 - y1, x2 - x1);
+              ctx.save();
+              ctx.strokeStyle = color;
+              ctx.fillStyle = color;
+              ctx.lineWidth = 2 * dpr;
+              if (dashed) ctx.setLineDash([5 * dpr, 4 * dpr]);
+              ctx.beginPath();
+              ctx.moveTo(x1, y1);
+              ctx.lineTo(x2, y2);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.beginPath();
+              ctx.moveTo(x2, y2);
+              ctx.lineTo(x2 - Math.cos(angle - Math.PI / 6) * 8 * dpr, y2 - Math.sin(angle - Math.PI / 6) * 8 * dpr);
+              ctx.lineTo(x2 - Math.cos(angle + Math.PI / 6) * 8 * dpr, y2 - Math.sin(angle + Math.PI / 6) * 8 * dpr);
+              ctx.closePath();
+              ctx.fill();
+              ctx.restore();
+            }
+
+            function drawPhysicalTimeGlyph2d(role, rank, stageId) {
+              var anchors2d = { evaporation: [0.13, 0.49], condensation: [0.52, 0.22],
+                precipitation: [0.48, 0.45], collection: [0.25, 0.70],
+                transpiration: [0.79, 0.39], infiltration: [0.79, 0.80] };
+              var anchor2d = anchors2d[stageId] || anchors2d.collection;
+              var glyphX2d = cW * anchor2d[0], glyphY2d = cH * anchor2d[1];
+              var boundedRank2d = Math.max(0, Math.min(4, parseInt(rank, 10) || 0));
+              var storageGlyph2d = role === 'storage' || role === 'storage-transfer';
+              var transferGlyph2d = role === 'transfer' || role === 'storage-transfer';
+              ctx.save();
+              ctx.strokeStyle = 'rgba(224,242,254,0.92)';
+              ctx.fillStyle = 'rgba(224,242,254,0.92)';
+              ctx.lineWidth = 1.5 * dpr;
+              if (storageGlyph2d) {
+                for (var timeRing2d = 0; timeRing2d < Math.max(2, boundedRank2d); timeRing2d++) {
+                  ctx.beginPath();
+                  ctx.arc(glyphX2d, glyphY2d, (5 + timeRing2d * 4) * dpr, 0, Math.PI * 2);
+                  ctx.stroke();
+                }
+              }
+              if (transferGlyph2d) {
+                ctx.setLineDash([4 * dpr, 3 * dpr]);
+                ctx.beginPath();
+                ctx.arc(glyphX2d, glyphY2d, 13 * dpr, -Math.PI * 0.75, Math.PI * 0.55);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(glyphX2d + 10 * dpr, glyphY2d + 8 * dpr);
+                ctx.lineTo(glyphX2d + 16 * dpr, glyphY2d + 7 * dpr);
+                ctx.lineTo(glyphX2d + 13 * dpr, glyphY2d + 2 * dpr);
+                ctx.closePath();
+                ctx.fill();
+              }
+              if (role === 'choice') {
+                ctx.beginPath();
+                ctx.moveTo(glyphX2d, glyphY2d + 11 * dpr);
+                ctx.lineTo(glyphX2d, glyphY2d);
+                ctx.lineTo(glyphX2d - 10 * dpr, glyphY2d - 9 * dpr);
+                ctx.moveTo(glyphX2d, glyphY2d);
+                ctx.lineTo(glyphX2d + 10 * dpr, glyphY2d - 9 * dpr);
+                ctx.stroke();
+              }
+              ctx.restore();
+            }
+
+            function drawMatterEnergyEvidence2d(stageId, journeyState, metrics) {
+              var evidenceState2d = journeyState && journeyState !== 'idle' ? journeyState : stageId;
+              drawPhysicalTimeGlyph2d(metrics.timeRole, metrics.timeRank, stageId);
+              canvasEl.dataset.timeLensVisual = metrics.timeRole === 'choice' ? 'choice-fork' : metrics.timeRole === 'storage' ? 'storage-rings' : metrics.timeRole === 'storage-transfer' ? 'storage-transfer-rings' : 'transfer-ticks';
+              ctx.save();
+              if (stageId === 'evaporation' || evidenceState2d === 'evaporating') {
+                var evapSurfaceX2d = cW * 0.22;
+                var evapSurfaceY2d = cH * 0.61;
+                evidenceArrow2d(cW * 0.08, cH * 0.38, evapSurfaceX2d - 8 * dpr, evapSurfaceY2d - 4 * dpr, '#f59e0b', false);
+                evidenceLabel2d('LATENT HEAT IN', cW * 0.035, cH * 0.35, '#f59e0b');
+                ctx.strokeStyle = 'rgba(186,230,253,0.86)';
+                ctx.lineWidth = 1.5 * dpr;
+                ctx.setLineDash([4 * dpr, 4 * dpr]);
+                ctx.beginPath();
+                ctx.moveTo(evapSurfaceX2d, evapSurfaceY2d);
+                ctx.bezierCurveTo(cW * 0.20, cH * 0.50, cW * 0.28, cH * 0.42, cW * 0.25, cH * 0.30);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                for (var em2d = 0; em2d < 4; em2d++) {
+                  var moleculeY2d = evapSurfaceY2d - em2d * cH * 0.045;
+                  ctx.globalAlpha = 1 - em2d * 0.22;
+                  ctx.beginPath();
+                  ctx.arc(evapSurfaceX2d + Math.sin(em2d * 1.8) * 10 * dpr, moleculeY2d, (3.2 - em2d * 0.35) * dpr, 0, Math.PI * 2);
+                  ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+                evidenceLabel2d('INVISIBLE VAPOR — PATH SHOWN', cW * 0.12, cH * 0.28, '#7dd3fc');
+              } else if (stageId === 'condensation' || evidenceState2d === 'condensing') {
+                var lensX2d = cW * 0.38;
+                var lensY2d = cH * 0.16;
+                var lensRadius2d = 30 * dpr;
+                ctx.fillStyle = 'rgba(224,242,254,0.34)';
+                ctx.strokeStyle = '#e0f2fe';
+                ctx.lineWidth = 2 * dpr;
+                ctx.beginPath();
+                ctx.arc(lensX2d, lensY2d, lensRadius2d, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                for (var nucleusIndex2d = 0; nucleusIndex2d < 8; nucleusIndex2d++) {
+                  var nucleusAngle2d = nucleusIndex2d * Math.PI * 0.77;
+                  var nucleusRadius2d = lensRadius2d * (0.25 + (nucleusIndex2d % 3) * 0.18);
+                  var nucleusX2d = lensX2d + Math.cos(nucleusAngle2d) * nucleusRadius2d;
+                  var nucleusY2d = lensY2d + Math.sin(nucleusAngle2d) * nucleusRadius2d;
+                  ctx.fillStyle = '#475569';
+                  ctx.beginPath();
+                  ctx.arc(nucleusX2d, nucleusY2d, 1.4 * dpr, 0, Math.PI * 2);
+                  ctx.fill();
+                  ctx.strokeStyle = 'rgba(125,211,252,0.95)';
+                  ctx.beginPath();
+                  ctx.arc(nucleusX2d, nucleusY2d, (3.5 + nucleusIndex2d % 2) * dpr, 0, Math.PI * 2);
+                  ctx.stroke();
+                }
+                evidenceArrow2d(lensX2d + lensRadius2d, lensY2d, lensX2d + 78 * dpr, lensY2d, '#fb7185', false);
+                evidenceLabel2d('LATENT HEAT OUT', cW * 0.47, cH * 0.13, '#fb7185');
+                evidenceLabel2d('DROPLETS / ICE ON NUCLEI', cW * 0.29, cH * 0.255, '#7dd3fc');
+              } else if (stageId === 'precipitation' || evidenceState2d === 'precipitating') {
+                evidenceArrow2d(cW * 0.36, cH * 0.24, cW * 0.36, cH * 0.56, '#60a5fa', false);
+                evidenceLabel2d('GRAVITY — FALLING TRANSPORT', cW * 0.20, cH * 0.46, '#60a5fa');
+              } else if (stageId === 'collection' || evidenceState2d === 'river_runoff' || evidenceState2d === 'ocean' || evidenceState2d === 'complete') {
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2 * dpr;
+                ctx.beginPath();
+                ctx.ellipse(cW * 0.22, cH * 0.67, cW * 0.12, 8 * dpr, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                evidenceArrow2d(cW * 0.46, cH * 0.62, cW * 0.32, cH * 0.66, '#38bdf8', false);
+                evidenceLabel2d(evidenceState2d === 'river_runoff' ? 'RUNOFF → SURFACE STORAGE' : 'SCHEMATIC SURFACE STORE', cW * 0.07, cH * 0.73, '#38bdf8');
+              } else if (stageId === 'transpiration' || evidenceState2d === 'plant_absorb' || evidenceState2d === 'transpiring') {
+                var plantBaseX2d = cW * 0.61;
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 3 * dpr;
+                ctx.beginPath();
+                ctx.moveTo(plantBaseX2d - 12 * dpr, cH * 0.69);
+                ctx.lineTo(plantBaseX2d, cH * 0.61);
+                ctx.lineTo(plantBaseX2d, cH * 0.48);
+                ctx.lineTo(cW * 0.66, cH * 0.44);
+                ctx.stroke();
+                evidenceArrow2d(plantBaseX2d - 18 * dpr, cH * 0.70, plantBaseX2d, cH * 0.51, '#4ade80', false);
+                ctx.strokeStyle = 'rgba(187,247,208,0.88)';
+                ctx.setLineDash([4 * dpr, 4 * dpr]);
+                ctx.beginPath();
+                ctx.moveTo(cW * 0.66, cH * 0.44);
+                ctx.bezierCurveTo(cW * 0.68, cH * 0.37, cW * 0.63, cH * 0.31, cW * 0.68, cH * 0.25);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                evidenceLabel2d(evidenceState2d === 'plant_absorb' ? 'ROOT → XYLEM' : 'XYLEM → LEAF', cW * 0.51, cH * 0.54, '#4ade80');
+                evidenceLabel2d(metrics.transpiration < 0.12 ? 'LIMITED VEGETATION / STOMATA CLOSED' : 'STOMATA → INVISIBLE VAPOR', cW * 0.58, cH * 0.24, '#86efac');
+              } else if (stageId === 'infiltration' || evidenceState2d === 'infiltrating' || evidenceState2d === 'aquifer_flow') {
+                var subsurfaceEvidencePhase2d = canvasEl.dataset.subsurfacePhase || 'soil-storage';
+                var deepRechargeEvidence2d = subsurfaceEvidencePhase2d === 'selected-deep-recharge';
+                var groundwaterTransferEvidence2d = subsurfaceEvidencePhase2d === 'groundwater-transfer';
+                ctx.strokeStyle = '#67e8f9';
+                ctx.lineWidth = 2 * dpr;
+                if (groundwaterTransferEvidence2d) {
+                  ctx.setLineDash([6 * dpr, 4 * dpr]);
+                  ctx.beginPath();
+                  ctx.moveTo(cW * 0.48, cH * 0.82);
+                  ctx.bezierCurveTo(cW * 0.56, cH * 0.84, cW * 0.66, cH * 0.78, cW * 0.76, cH * 0.80);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+                  evidenceArrow2d(cW * 0.68, cH * 0.80, cW * 0.77, cH * 0.79, '#67e8f9', false);
+                  evidenceLabel2d('GROUNDWATER → DISCHARGE', cW * 0.49, cH * 0.87, '#67e8f9');
+                } else {
+                  var vadoseFrontY2d = deepRechargeEvidence2d ? cH * 0.82 : cH * 0.765;
+                  ctx.setLineDash(deepRechargeEvidence2d ? [6 * dpr, 4 * dpr] : []);
+                  ctx.beginPath();
+                  ctx.ellipse(cW * 0.65, vadoseFrontY2d, cW * 0.14, 7 * dpr, 0, 0, Math.PI * 2);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+                  for (var poreArrow2d = 0; poreArrow2d < 3; poreArrow2d++) {
+                    var poreX2d = cW * (0.56 + poreArrow2d * 0.08);
+                    evidenceArrow2d(poreX2d, cH * 0.68, poreX2d,
+                      deepRechargeEvidence2d ? cH * 0.815 : cH * 0.75, '#67e8f9', deepRechargeEvidence2d);
+                  }
+                  evidenceLabel2d(deepRechargeEvidence2d ? 'SELECTED DEEP RECHARGE' : 'SOIL PORE WATER (VADOSE ZONE)',
+                    cW * 0.49, deepRechargeEvidence2d ? cH * 0.87 : cH * 0.81, '#67e8f9');
+                }
+              }
+              ctx.restore();
+            }
+
             function draw(forceRender) {
               if (!wcAlive) return;
               canvasEl._wcAnim = null;
@@ -6090,7 +6421,7 @@ const d = labToolData.waterCycle || {};
               if (isWaterCycleHidden()) { cancelWaterCycleFrame(); return; }
               if (canvasEl.dataset.renderMode !== 'state-only' && canvasEl.dataset.wc2dPaused === 'true' && forceRender !== true) return;
 
-              tick += wcMotionReduced ? 0.2 : 1;
+              if (!wcMotionReduced) tick += 1;
 
               if (canvasEl.dataset.renderMode === 'state-only') {
                 advanceJourneyFrame();
@@ -6100,6 +6431,62 @@ const d = labToolData.waterCycle || {};
               ctx.clearRect(0, 0, cW, cH);
 
               var isDark = canvasEl.dataset.darkMode === 'true';
+              var activeProcess2d = canvasEl.dataset.activeStage || 'evaporation';
+              var journeyStateForEvidence2d = canvasEl.dataset.journeyState || 'idle';
+              var solarInput2d = Math.max(0, Math.min(2, parseFloat(canvasEl.dataset.climSolar || '1')));
+              var tempInput2d = parseFloat(canvasEl.dataset.climTemp || '15');
+              var windInput2d = Math.max(0, Math.min(3, parseFloat(canvasEl.dataset.climWind || '1')));
+              var runoffIndex2d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.runoffIndex || '50')));
+              var infiltrationIndex2d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.infiltrationIndex || '50')));
+              var landRain2d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.landRainIntensity || '55')));
+              var landSaturation2d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.landSaturation || '45')));
+              var landCover2d = canvasEl.dataset.landCover || 'grass';
+              var evaporationPotential2d = Math.max(0.08, Math.min(1,
+                solarInput2d * 0.38 + Math.max(0, tempInput2d + 5) / 50 * 0.42 + windInput2d / 3 * 0.20));
+              var rainActivity2d = landRain2d / 100;
+              var vegetationFactor2d = landCover2d === 'forest' ? 1 : landCover2d === 'grass' ? 0.62 : 0;
+              var solarPlantFactor2d = Math.max(0, Math.min(1, solarInput2d / 1.2));
+              var soilWaterFactor2d = Math.max(0, Math.min(1, landSaturation2d / 65));
+              var temperaturePlantFactor2d = tempInput2d <= 0 || tempInput2d >= 42 ? 0 : Math.max(0, 1 - Math.abs(tempInput2d - 24) / 24);
+              var transpirationPotential2d = Math.max(0, Math.min(1, vegetationFactor2d * solarPlantFactor2d * soilWaterFactor2d * temperaturePlantFactor2d));
+              var activeEvapCount2d = Math.max(4, Math.min(evapPs.length, Math.round(evapPs.length * evaporationPotential2d)));
+              var transpirationParticleCount2d = Math.max(0,
+                Math.min(transPs.length, Math.round(transPs.length * transpirationPotential2d)));
+              var rainParticleCount2d = tempInput2d < 0 ? 0 :
+                Math.max(0, Math.min(rainPs.length, Math.round(rainPs.length * rainActivity2d)));
+              var infiltrationParticleCount2d = Math.max(0,
+                Math.min(infiltPs.length, Math.round(infiltPs.length * infiltrationIndex2d / 100)));
+              var activeRiverParticleCount2d = Math.max(2, Math.min(riverPs.length, Math.round(riverPs.length * (0.18 + runoffIndex2d / 122))));
+              var runoffRiverWidth2d = (2.4 + runoffIndex2d / 24) * dpr;
+              canvasEl.dataset.processVisual = activeProcess2d + '-evidence';
+              canvasEl.dataset.waterVaporDepiction =
+                activeProcess2d === 'evaporation' || activeProcess2d === 'transpiration'
+                  ? 'invisible-path-shown' : 'not-applicable';
+              canvasEl.dataset.landRouting = runoffIndex2d > infiltrationIndex2d + 10 ? 'runoff-favored' :
+                infiltrationIndex2d > runoffIndex2d + 10 ? 'infiltration-favored' : 'mixed-opportunity';
+              var subsurfacePhase2d = journeyStateForEvidence2d === 'infiltrating' ||
+                (journeyStateForEvidence2d === 'idle' && activeProcess2d === 'infiltration')
+                ? 'soil-storage'
+                : journeyStateForEvidence2d === 'aquifer_flow'
+                  ? (journey.progress < 0.34 ? 'selected-deep-recharge' : 'groundwater-transfer')
+                  : 'hidden';
+              if (subsurfacePhase2d === 'groundwater-transfer') infiltrationParticleCount2d = 0;
+              var infiltrationParticleBottom2d = subsurfacePhase2d === 'selected-deep-recharge' ? 0.84 : 0.785;
+              canvasEl.dataset.subsurfacePhase = subsurfacePhase2d;
+              canvasEl.dataset.percolation = subsurfacePhase2d === 'soil-storage' ? 'retained-in-soil' :
+                subsurfacePhase2d === 'selected-deep-recharge' ? 'deep-recharge' : 'hidden';
+              canvasEl.dataset.groundwaterDepiction =
+                subsurfacePhase2d === 'groundwater-transfer' ? 'modeled-selected-discharge-path' :
+                subsurfacePhase2d === 'selected-deep-recharge' ? 'selected-deep-recharge-path' :
+                subsurfacePhase2d === 'soil-storage' ? 'vadose-zone-pore-water' : 'contextual';
+              canvasEl.dataset.infiltrationDepth = subsurfacePhase2d === 'selected-deep-recharge' ? 'water-table' :
+                subsurfacePhase2d === 'soil-storage' ? 'vadose-zone' : 'hidden';
+              canvasEl.dataset.matterEnergyMotion = wcMotionReduced ? 'static' : 'dynamic';
+              canvasEl.dataset.reducedMotion = String(wcMotionReduced);
+              canvasEl.dataset.transpirationSignal = String(Math.round(transpirationPotential2d * 100));
+              canvasEl.dataset.stomataCue = transpirationPotential2d < 0.12 ? 'limited-or-closed' : 'active';
+              canvasEl.dataset.runoffRiverWidth = runoffRiverWidth2d.toFixed(2);
+              canvasEl.dataset.activeRiverParticles = String(activeRiverParticleCount2d);
 
               // ── Sky gradient with dynamic time + climate response ──
 
@@ -6342,7 +6729,15 @@ const d = labToolData.waterCycle || {};
               // ── Ground ──
 
               var groundGrad = ctx.createLinearGradient(0, cH * 0.62, 0, cH * 0.72);
-              if (isDark) {
+              if (landCover2d === 'urban') {
+                groundGrad.addColorStop(0, isDark ? '#475569' : '#94a3b8');
+                groundGrad.addColorStop(0.5, isDark ? '#334155' : '#64748b');
+                groundGrad.addColorStop(1, isDark ? '#1e293b' : '#475569');
+              } else if (landCover2d === 'forest') {
+                groundGrad.addColorStop(0, isDark ? '#064e3b' : '#15803d');
+                groundGrad.addColorStop(0.5, isDark ? '#022c22' : '#166534');
+                groundGrad.addColorStop(1, isDark ? '#011c15' : '#14532d');
+              } else if (isDark) {
                 groundGrad.addColorStop(0, '#064e3b');
                 groundGrad.addColorStop(0.5, '#022c22');
                 groundGrad.addColorStop(1, '#011c15');
@@ -6362,14 +6757,14 @@ const d = labToolData.waterCycle || {};
 
                 var gbx = (gbi / 80) * cW;
 
-                // Skip water area
-                if (gbx < cW * 0.55) continue;
+                // Skip water and impervious urban ground.
+                if (gbx < cW * 0.55 || landCover2d === 'urban') continue;
 
                 var gby = cH * 0.62;
 
                 var gbSway = Math.sin(tick * 0.015 + gbi * 0.7) * 3 * dpr;
 
-                var gbHeight = (4 + Math.random() * 5) * dpr;
+                var gbHeight = (4 + ((gbi * 37) % 11) / 10 * 5) * dpr;
 
                 ctx.strokeStyle = isDark 
                   ? (gbi % 3 === 0 ? 'rgba(16,185,129,0.4)' : 'rgba(5,150,105,0.3)')
@@ -6604,7 +6999,7 @@ const d = labToolData.waterCycle || {};
 
               ctx.strokeStyle = isDark ? 'rgba(6,182,212,0.6)' : 'rgba(59,130,246,0.5)';
 
-              ctx.lineWidth = 4 * dpr;
+              ctx.lineWidth = runoffRiverWidth2d;
 
               ctx.beginPath();
 
@@ -6640,11 +7035,11 @@ const d = labToolData.waterCycle || {};
 
               // River flow particles
 
-              for (var rfp = 0; rfp < riverPs.length; rfp++) {
+              for (var rfp = 0; rfp < activeRiverParticleCount2d; rfp++) {
 
                 var rp = riverPs[rfp];
 
-                rp.t += rp.speed;
+                if (!wcMotionReduced) rp.t += rp.speed * (0.45 + runoffIndex2d / 70);
 
                 if (rp.t > 1) rp.t -= 1;
 
@@ -6820,11 +7215,45 @@ const d = labToolData.waterCycle || {};
 
               }
 
-              drawTree(cW * 0.6 / dpr, cH * 0.62 / dpr, 1.1);
-
-              drawTree(cW * 0.67 / dpr, cH * 0.61 / dpr, 0.8);
-
-              drawTree(cW * 0.54 / dpr, cH * 0.63 / dpr, 0.7);
+              if (landCover2d === 'forest') {
+                drawTree(cW * 0.57 / dpr, cH * 0.63 / dpr, 0.9);
+                drawTree(cW * 0.63 / dpr, cH * 0.62 / dpr, 1.15);
+                drawTree(cW * 0.70 / dpr, cH * 0.62 / dpr, 0.82);
+                drawTree(cW * 0.77 / dpr, cH * 0.61 / dpr, 1.04);
+                drawTree(cW * 0.84 / dpr, cH * 0.62 / dpr, 0.74);
+              } else if (landCover2d === 'urban') {
+                ctx.save();
+                ctx.fillStyle = isDark ? '#1e293b' : '#475569';
+                ctx.fillRect(cW * 0.55, cH * 0.585, cW * 0.45, cH * 0.045);
+                var buildingHeights2d = [0.11, 0.16, 0.09, 0.14];
+                for (var buildingIndex2d = 0; buildingIndex2d < buildingHeights2d.length; buildingIndex2d++) {
+                  var buildingX2d = cW * (0.58 + buildingIndex2d * 0.1);
+                  var buildingW2d = cW * 0.065;
+                  var buildingH2d = cH * buildingHeights2d[buildingIndex2d];
+                  ctx.fillStyle = buildingIndex2d % 2 ? (isDark ? '#334155' : '#94a3b8') : (isDark ? '#475569' : '#cbd5e1');
+                  ctx.fillRect(buildingX2d, cH * 0.585 - buildingH2d, buildingW2d, buildingH2d);
+                  ctx.fillStyle = 'rgba(250,204,21,0.72)';
+                  for (var windowRow2d = 0; windowRow2d < 2; windowRow2d++) {
+                    for (var windowColumn2d = 0; windowColumn2d < 2; windowColumn2d++) {
+                      ctx.fillRect(buildingX2d + (10 + windowColumn2d * 18) * dpr,
+                        cH * 0.585 - buildingH2d + (10 + windowRow2d * 18) * dpr, 5 * dpr, 6 * dpr);
+                    }
+                  }
+                }
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = (1.5 + runoffIndex2d / 80) * dpr;
+                ctx.beginPath();
+                ctx.moveTo(cW * 0.58, cH * 0.61);
+                ctx.lineTo(cW * 0.72, cH * 0.625);
+                ctx.lineTo(cW * 0.86, cH * 0.615);
+                ctx.stroke();
+                evidenceLabel2d('IMPERVIOUS RUNOFF', cW * 0.71, cH * 0.66, '#38bdf8');
+                ctx.restore();
+              } else {
+                drawTree(cW * 0.6 / dpr, cH * 0.62 / dpr, 1.1);
+                drawTree(cW * 0.67 / dpr, cH * 0.61 / dpr, 0.8);
+                drawTree(cW * 0.54 / dpr, cH * 0.63 / dpr, 0.7);
+              }
 
 
 
@@ -6862,100 +7291,75 @@ const d = labToolData.waterCycle || {};
               // The selected process's particles stay full strength while the others fade, so the
               // animated diagram actually ISOLATES the stage the student chose instead of showing
               // every process at once. Reads the same dataset.activeStage the label loop uses.
-              var _activeStage = canvasEl.dataset.activeStage || 'evaporation';
+              var _activeStage = activeProcess2d;
               var _emph = function (id) { return _activeStage === id ? 1 : 0.25; };
 
               // ── Evaporation particles ──
 
-              for (var epi = 0; epi < evapPs.length; epi++) {
-
+              for (var epi = 0; epi < activeEvapCount2d; epi++) {
                 var ep = evapPs[epi];
-
-                ep.y -= ep.speed * 0.4;
-
-                ep.x += Math.sin(ep.phase + tick * 0.02) * 0.3;
-
-                ep.phase += 0.03;
-
-                if (ep.y < cH * 0.12 / dpr) { ep.y = cH * 0.62 / dpr; ep.x = Math.random() * cW * 0.5 / dpr; }
-
-                ctx.beginPath(); ctx.arc(ep.x * dpr, ep.y * dpr, ep.size * dpr, 0, Math.PI * 2);
-
-                var epAlpha = (0.2 + 0.2 * Math.sin(ep.phase)) * _emph('evaporation');
-
-                ctx.fillStyle = 'rgba(251,191,36,' + epAlpha + ')';
-
-                ctx.fill();
-
-              }
-
-
-
-              // ── Transpiration particles (green, from trees) ──
-
-              for (var tpi = 0; tpi < transPs.length; tpi++) {
-
-                var tp = transPs[tpi];
-
-                tp.y -= tp.speed * 0.35;
-
-                tp.x += Math.sin(tp.phase + tick * 0.025) * 0.25;
-
-                tp.phase += 0.04;
-
-                if (tp.y < cH * 0.15 / dpr) { tp.y = cH * 0.48 / dpr; tp.x = cW * 0.55 / dpr + Math.random() * cW * 0.15 / dpr; }
-
-                ctx.beginPath(); ctx.arc(tp.x * dpr, tp.y * dpr, tp.size * dpr, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(74,222,128,' + ((0.2 + Math.sin(tp.phase) * 0.15) * _emph('transpiration')) + ')';
-
-                ctx.fill();
-
-              }
-
-
-
-              // ── Rain drops ──
-
-              for (var rpi = 0; rpi < rainPs.length; rpi++) {
-
-                var rr = rainPs[rpi];
-
-                rr.y += rr.speed * 1.3;
-
-                rr.x -= 0.15; // Slight wind
-
-                if (rr.y > cH * 0.65 / dpr) {
-
-                  rr.y = cH * 0.12 / dpr;
-
-                  rr.x = cW * 0.1 / dpr + Math.random() * cW * 0.5 / dpr;
-
+                if (!wcMotionReduced) {
+                  ep.y -= ep.speed * (0.24 + evaporationPotential2d * 0.42);
+                  ep.x += Math.sin(ep.phase + tick * 0.02) * 0.18 + windInput2d * 0.06;
+                  ep.phase += 0.02 + evaporationPotential2d * 0.018;
+                  if (ep.y < cH * 0.12 / dpr) {
+                    ep.y = cH * 0.62 / dpr;
+                    ep.x = ((epi * 47) % 100) / 100 * cW * 0.5 / dpr;
+                  }
                 }
-
-                ctx.strokeStyle = 'rgba(59,130,246,' + ((0.3 + Math.sin(rr.phase + tick * 0.05) * 0.2) * _emph('precipitation')) + ')';
-
-                ctx.lineWidth = 1.5 * dpr;
-
+                var evaporationRise2d = Math.max(0, Math.min(1,
+                  (cH * 0.62 / dpr - ep.y) / (cH * 0.50 / dpr)));
+                var epAlpha = Math.max(0.025, 0.44 * (1 - evaporationRise2d)) * _emph('evaporation');
                 ctx.beginPath();
-
-                ctx.moveTo(rr.x * dpr, rr.y * dpr);
-
-                ctx.lineTo((rr.x - 0.5) * dpr, (rr.y + rr.len) * dpr);
-
+                ctx.arc(ep.x * dpr, ep.y * dpr, Math.max(0.7, ep.size * (1 - evaporationRise2d * 0.45)) * dpr, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(186,230,253,' + epAlpha + ')';
+                ctx.lineWidth = 1.2 * dpr;
                 ctx.stroke();
-
               }
-
-
-
-              // ── Cloud wisps (drifting) ──
-
+              for (var tpi = 0; tpi < transpirationParticleCount2d; tpi++) {
+                var tp = transPs[tpi];
+                if (!wcMotionReduced) {
+                  tp.y -= tp.speed * (0.22 + solarInput2d * 0.16);
+                  tp.x += Math.sin(tp.phase + tick * 0.025) * 0.18 + windInput2d * 0.05;
+                  tp.phase += 0.025;
+                  if (tp.y < cH * 0.15 / dpr) {
+                    tp.y = cH * 0.48 / dpr;
+                    tp.x = cW * 0.55 / dpr + ((tpi * 29) % 100) / 100 * cW * 0.15 / dpr;
+                  }
+                }
+                var transpirationRise2d = Math.max(0, Math.min(1,
+                  (cH * 0.48 / dpr - tp.y) / (cH * 0.33 / dpr)));
+                ctx.beginPath();
+                ctx.arc(tp.x * dpr, tp.y * dpr, Math.max(0.65, tp.size * (1 - transpirationRise2d * 0.4)) * dpr, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(187,247,208,' +
+                  (Math.max(0.025, 0.42 * (1 - transpirationRise2d)) * _emph('transpiration')) + ')';
+                ctx.lineWidth = 1.15 * dpr;
+                ctx.stroke();
+              }
+              for (var rpi = 0; rpi < rainParticleCount2d; rpi++) {
+                var rr = rainPs[rpi];
+                if (!wcMotionReduced) {
+                  rr.y += rr.speed * (0.65 + rainActivity2d * 1.05);
+                  rr.x += (windInput2d - 1) * 0.12;
+                  if (rr.y > cH * 0.65 / dpr) {
+                    rr.y = cH * 0.12 / dpr;
+                    rr.x = cW * catchmentMinX2d / dpr + ((rpi * 43) % 100) / 100 * cW * catchmentSpanX2d / dpr;
+                  }
+                }
+                var rainAlpha2d = (0.22 + rainActivity2d * 0.48) * _emph('precipitation');
+                ctx.strokeStyle = 'rgba(59,130,246,' + rainAlpha2d + ')';
+                ctx.lineWidth = (1 + rainActivity2d * 1.2) * dpr;
+                ctx.beginPath();
+                ctx.moveTo(rr.x * dpr, rr.y * dpr);
+                ctx.lineTo((rr.x + (windInput2d - 1) * 1.8) * dpr,
+                  (rr.y + rr.len * (0.7 + rainActivity2d * 0.7)) * dpr);
+                ctx.stroke();
+              }
               for (var cwi = 0; cwi < cloudPs.length; cwi++) {
 
                 var cw = cloudPs[cwi];
 
-                cw.x += cw.speed;
+                if (!wcMotionReduced) cw.x += cw.speed * (0.55 + windInput2d * 0.45);
 
                 if (cw.x > cW / dpr + 20) cw.x = -20;
 
@@ -6963,7 +7367,7 @@ const d = labToolData.waterCycle || {};
 
                 ctx.arc(cw.x * dpr, cw.y * dpr, cw.size * dpr, 0, Math.PI * 2);
 
-                ctx.fillStyle = 'rgba(226,232,240,' + (0.15 + Math.sin(cw.phase + tick * 0.01) * 0.1) + ')';
+                ctx.fillStyle = 'rgba(226,232,240,' + ((0.15 + Math.sin(cw.phase + tick * 0.01) * 0.1) * (0.55 + _emph('condensation') * 0.45)) + ')';
 
                 ctx.fill();
 
@@ -6973,121 +7377,74 @@ const d = labToolData.waterCycle || {};
 
               // ── Infiltration drips (into ground) ──
 
-              for (var ipi = 0; ipi < infiltPs.length; ipi++) {
-
+              for (var ipi = 0; ipi < infiltrationParticleCount2d; ipi++) {
                 var ip = infiltPs[ipi];
-
-                ip.y += ip.speed;
-
-                ip.x += Math.sin(ip.phase + tick * 0.01) * 0.1;
-
-                if (ip.y > cH * 0.88 / dpr) { ip.y = cH * 0.7 / dpr; ip.x = cW * 0.3 / dpr + Math.random() * cW * 0.4 / dpr; }
-
-                ctx.beginPath(); ctx.arc(ip.x * dpr, ip.y * dpr, 1.5 * dpr, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(59,130,246,' + (0.2 * _emph('infiltration')) + ')';
-
+                if (!wcMotionReduced) {
+                  ip.y += ip.speed * (0.45 + infiltrationIndex2d / 70);
+                  ip.x += Math.sin(ip.phase + tick * 0.01) * 0.08;
+                  if (ip.y > cH * infiltrationParticleBottom2d / dpr) {
+                    ip.y = cH * 0.64 / dpr;
+                    ip.x = cW * catchmentMinX2d / dpr + ((ipi * 61) % 100) / 100 * cW * catchmentSpanX2d / dpr;
+                  }
+                }
+                ctx.beginPath();
+                ctx.arc(ip.x * dpr, ip.y * dpr, (1.1 + infiltrationIndex2d / 180) * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(59,130,246,' + ((0.12 + infiltrationIndex2d / 220) * _emph('infiltration')) + ')';
                 ctx.fill();
-
               }
 
-
-
-              // ── Process Labels on diagram ──
-
+              drawMatterEnergyEvidence2d(activeProcess2d, journeyStateForEvidence2d, {
+                evaporation: evaporationPotential2d,
+                rain: rainActivity2d,
+                runoff: runoffIndex2d,
+                infiltration: infiltrationIndex2d,
+                saturation: landSaturation2d,
+                transpiration: transpirationPotential2d,
+                timeRole: canvasEl.dataset.hydrologicTimeRole || 'transfer',
+                timeRank: parseInt(canvasEl.dataset.hydrologicTimeRank || '1', 10)
+              });
               var activeId = canvasEl.dataset.activeStage || 'evaporation';
 
               ctx.textAlign = 'left';
 
               var labels = [
-
-                { id: 'evaporation', text: t('stem.watercycle.evaporation', '\u2191 Evaporation'), x: 8, y: cH * 0.54, color: '#fbbf24' },
-
-                { id: 'condensation', text: t('stem.watercycle.condensation', '\u2601 Condensation'), x: cW * 0.28, y: cH * 0.06, color: '#64748b' },
-
-                { id: 'precipitation', text: t('stem.watercycle.precipitation', '\u2193 Precipitation'), x: cW * 0.08, y: cH * 0.28, color: '#60a5fa' },
-
-                { id: 'collection', text: t('stem.watercycle.collection', '\uD83C\uDF0A Collection'), x: cW * 0.55, y: cH * 0.72, color: '#0ea5e9' },
-
-                { id: 'transpiration', text: t('stem.watercycle.transpiration', '\uD83C\uDF3F Transpiration'), x: cW * 0.70, y: cH * 0.42, color: '#22c55e' },
-
-                { id: 'infiltration', text: t('stem.watercycle.infiltration', '\uD83E\uDEB4 Infiltration'), x: cW * 0.42, y: cH * 0.80, color: '#92400e' }
-
+                { id: 'evaporation', text: t('stem.watercycle.evaporation', '\u2191 Evaporation'), xNorm: 0.02, yNorm: 0.54, color: '#fbbf24' },
+                { id: 'condensation', text: t('stem.watercycle.condensation', '\u2601 Condensation'), xNorm: 0.28, yNorm: 0.06, color: '#64748b' },
+                { id: 'precipitation', text: t('stem.watercycle.precipitation', '\u2193 Precipitation'), xNorm: 0.59, yNorm: 0.28, color: '#60a5fa' },
+                { id: 'collection', text: t('stem.watercycle.collection', '\uD83C\uDF0A Collection'), xNorm: 0.43, yNorm: 0.72, color: '#0ea5e9' },
+                { id: 'transpiration', text: t('stem.watercycle.transpiration', '\uD83C\uDF3F Transpiration'), xNorm: 0.69, yNorm: 0.42, color: '#22c55e' },
+                { id: 'infiltration', text: t('stem.watercycle.infiltration', '\uD83E\uDEB4 Infiltration'), xNorm: 0.61, yNorm: 0.80, color: '#92400e' }
               ];
-
+              function clampStageLabel2d(value, minimum, maximum) {
+                return Math.max(minimum, Math.min(maximum, value));
+              }
               labels.forEach(function (lbl) {
-
                 var isActive = activeId === lbl.id;
                 ctx.save();
-                
-                var lblColor = lbl.color;
-                if (lbl.id === 'condensation' && isDark) {
-                  lblColor = '#cbd5e1';
+                var lblColor = lbl.id === 'condensation' && isDark ? '#cbd5e1' : lbl.color;
+                ctx.font = (isActive ? 'bold ' : '') + ((isActive ? 12 : 11) * dpr) + 'px sans-serif';
+                var stageLabelWidth2d = ctx.measureText(lbl.text).width;
+                var stageLabelX2d = clampStageLabel2d(cW * lbl.xNorm, 6 * dpr, cW - stageLabelWidth2d - 8 * dpr);
+                var stageLabelY2d = clampStageLabel2d(cH * lbl.yNorm, 19 * dpr, cH - 24 * dpr);
+                ctx.fillStyle = isActive ? lblColor : (isDark ? (lbl.id === 'condensation' ? '#94a3b8' : lblColor + 'B8') : lblColor + 'A8');
+                if (isActive && isDark) {
+                  ctx.shadowBlur = 8 * dpr;
+                  ctx.shadowColor = lblColor;
                 }
-
-                ctx.font = (isActive ? 'bold ' : '') + ((isActive ? 8.5 : 7) * dpr) + 'px sans-serif';
-
+                ctx.fillText(lbl.text, stageLabelX2d, stageLabelY2d);
                 if (isActive) {
-                  ctx.fillStyle = lblColor;
-                  if (isDark) {
-                    ctx.shadowBlur = 8 * dpr;
-                    ctx.shadowColor = lblColor;
-                  }
-                } else {
-                  ctx.fillStyle = isDark ? (lbl.id === 'condensation' ? '#475569' : lblColor + '90') : lblColor + '80';
-                }
-
-                ctx.fillText(lbl.text, lbl.x * dpr, lbl.y * dpr);
-
-                if (isActive) {
-                  ctx.strokeStyle = lblColor;
+                  ctx.strokeStyle = isDark ? lblColor : lblColor + '80';
                   ctx.lineWidth = 1.5 * dpr;
-                  
                   if (isDark) {
                     ctx.shadowBlur = 10 * dpr;
-                    ctx.shadowColor = lblColor;
                     ctx.setLineDash([]);
                   } else {
-                    ctx.strokeStyle = lblColor + '60';
-                    ctx.setLineDash([4, 3]);
+                    ctx.setLineDash([4 * dpr, 3 * dpr]);
                   }
-
-                  ctx.strokeRect((lbl.x - 4) * dpr, (lbl.y - 11) * dpr, ctx.measureText(lbl.text).width + 8 * dpr, 15 * dpr);
-
+                  ctx.strokeRect(stageLabelX2d - 4 * dpr, stageLabelY2d - 14 * dpr, stageLabelWidth2d + 8 * dpr, 19 * dpr);
                 }
-                
                 ctx.restore();
-
               });
-
-
-
-              // ── Flying birds ──
-
-              for (var bdi = 0; bdi < 4; bdi++) {
-
-                var bdx = ((tick * 0.4 + bdi * cW * 0.28) % (cW + 40 * dpr)) - 20 * dpr;
-
-                var bdy = cH * (0.08 + bdi * 0.06) + Math.sin(tick * 0.015 + bdi * 2) * 8 * dpr;
-
-                var bdWing = Math.sin(tick * 0.06 + bdi * 1.5) * 0.4;
-
-                ctx.strokeStyle = 'rgba(30,41,59,' + (0.3 + bdi * 0.05) + ')'; ctx.lineWidth = 1.2 * dpr;
-
-                // Left wing
-
-                ctx.beginPath(); ctx.moveTo(bdx - 6 * dpr, bdy + bdWing * 4 * dpr);
-
-                ctx.quadraticCurveTo(bdx - 3 * dpr, bdy - 3 * dpr, bdx, bdy); ctx.stroke();
-
-                // Right wing
-
-                ctx.beginPath(); ctx.moveTo(bdx + 6 * dpr, bdy + bdWing * 4 * dpr);
-
-                ctx.quadraticCurveTo(bdx + 3 * dpr, bdy - 3 * dpr, bdx, bdy); ctx.stroke();
-
-              }
-
 
               // ═══ CLIMATE LAB  -  Dynamic Weather Effects ═══
               var climSolar = parseFloat(canvasEl.dataset.climSolar || '1.0');
@@ -7156,9 +7513,11 @@ const d = labToolData.waterCycle || {};
                 var snowCount = Math.floor(snowPs.length * snowAlpha);
                 for (var sni = 0; sni < snowCount; sni++) {
                   var sn = snowPs[sni];
-                  sn.y += sn.speed * 0.5;
-                  sn.x += Math.sin(sn.drift + tick * 0.01) * sn.wobble * climWind;
-                  sn.drift += 0.02;
+                  if (!wcMotionReduced) {
+                    sn.y += sn.speed * 0.5;
+                    sn.x += Math.sin(sn.drift + tick * 0.01) * sn.wobble * climWind;
+                    sn.drift += 0.02;
+                  }
                   if (sn.y > cH * 0.65 / dpr) { sn.y = -2; sn.x = Math.random() * cW / dpr; }
                   if (sn.x > cW / dpr) sn.x = 0; if (sn.x < 0) sn.x = cW / dpr;
                   ctx.fillStyle = 'rgba(255,255,255,' + (0.5 + Math.sin(sn.drift) * 0.2) + ')';
@@ -7187,7 +7546,7 @@ const d = labToolData.waterCycle || {};
                 var fogIntensity = 1 - Math.abs(climTemp - 10) / 10;
                 for (var fgi = 0; fgi < fogPs.length; fgi++) {
                   var fg = fogPs[fgi];
-                  fg.x += fg.speed * climWind;
+                  if (!wcMotionReduced) fg.x += fg.speed * climWind;
                   if (fg.x > cW / dpr + fg.size) fg.x = -fg.size;
                   ctx.fillStyle = 'rgba(203,213,225,' + (fg.alpha * fogIntensity) + ')';
                   ctx.beginPath(); ctx.ellipse(fg.x * dpr, fg.y * dpr, fg.size * dpr, fg.size * 0.3 * dpr, 0, 0, Math.PI * 2); ctx.fill();
@@ -7195,7 +7554,7 @@ const d = labToolData.waterCycle || {};
               }
 
               // ── Rainbow (after rain when sun is out  -  solar > 0.7 and temp > 10) ──
-              if (climSolar > 0.7 && climTemp > 10 && climTemp < 35) {
+              if (rainActivity2d > 0.15 && climSolar > 0.7 && climTemp > 10 && climTemp < 35) {
                 rainbow.alpha = Math.min(rainbow.alpha + 0.003, 0.25);
                 rainbow.visible = true;
               } else {
@@ -7214,8 +7573,9 @@ const d = labToolData.waterCycle || {};
 
               // ── Climate-responsive evaporation/rain intensity ──
               // Adjust particle visibility based on climate controls
-              var evapActivity = Math.max(0.2, Math.min(2, climSolar * (climTemp / 15)));
-              var rainActivity = climTemp < 0 ? 0.3 : (climTemp > 25 ? 1.5 : 1.0);
+              canvasEl.dataset.evaporationParticleCount = String(activeEvapCount2d);
+              canvasEl.dataset.rainParticleCount = String(rainParticleCount2d);
+              canvasEl.dataset.infiltrationParticleCount = String(infiltrationParticleCount2d);
 
 
               // ═══ JOURNEY MODE  -  Draw droplet + update state ═══
@@ -7251,7 +7611,8 @@ const d = labToolData.waterCycle || {};
 
                 // Draw the droplet
                 if (jState !== 'idle' && jState !== 'complete' && jState !== 'ground_choice') {
-                  var pos = interpPath(jState, Math.min(journey.progress, 0.999));
+                  var journeyVisualProgress2d = wcMotionReduced ? 0.55 : Math.min(journey.progress, 0.999);
+                  var pos = interpPath(jState, journeyVisualProgress2d);
                   drawDroplet(pos.x, pos.y, jState, tick);
                 }
 
@@ -7263,7 +7624,7 @@ const d = labToolData.waterCycle || {};
                   var choices = GROUND_CHOICES;
                   for (var chi = 0; chi < choices.length; chi++) {
                     var ch = choices[chi];
-                    var chPulse = 0.7 + Math.sin(tick * 0.05 + chi * 2) * 0.3;
+                    var chPulse = wcMotionReduced ? 1 : 0.7 + Math.sin(tick * 0.05 + chi * 2) * 0.3;
                     ctx.fillStyle = ch.color;
                     ctx.strokeStyle = ch.border;
                     ctx.lineWidth = 2 * dpr;
@@ -9291,7 +9652,8 @@ const d = labToolData.waterCycle || {};
             makeProcessLabel3d('precipitation', 'Precipitation', '#60a5fa', [2.7, 1.25, -0.4]);
             makeProcessLabel3d('land', 'Land pathways', '#f59e0b', [4.3, 0.05, -0.1]);
             makeProcessLabel3d('river', 'Surface runoff', '#3b82f6', [1.15, -0.1, 1.35]);
-            makeProcessLabel3d('aquifer', 'Groundwater', '#22d3ee', [4.8, -1.45, -0.55]);
+            makeProcessLabel3d('aquifer', 'Groundwater', '#22d3ee', [4.8, -1.72, -0.55]);
+            makeProcessLabel3d('soil_pore_water', 'Soil pore water', '#67e8f9', [4.65, -1.12, -0.42]);
             makeProcessLabel3d('plant', 'Plant uptake', '#4ade80', [5.9, 0.45, 1.25]);
             makeProcessLabel3d('transpiration', 'Transpiration', '#86efac', [5.9, 2.85, 1.25]);
             makeProcessLabel3d('cycle', 'Cycle continues', '#67e8f9', [-3.0, 0.65, 1.7]);
@@ -9472,7 +9834,7 @@ const d = labToolData.waterCycle || {};
             var stateLabelKey3d = {
               ocean: 'ocean', complete: 'cycle', evaporating: 'evaporation',
               condensing: 'condensation', precipitating: 'precipitation', ground_choice: 'land',
-              river_runoff: 'river', infiltrating: 'aquifer', aquifer_flow: 'aquifer',
+              river_runoff: 'river', infiltrating: 'soil_pore_water', aquifer_flow: 'aquifer',
               plant_absorb: 'plant', transpiring: 'transpiration'
             };
 
@@ -9569,18 +9931,109 @@ const d = labToolData.waterCycle || {};
               }), !!closed, 'catmullrom', 0.35);
             }
             var stateCurves3d = {
-              ocean: makeJourneyCurve3d([[-3.4,-0.72,1.45],[-2.8,-0.67,1.9],[-2.4,-0.76,1.55],[-3.0,-0.72,1.25]], true),
+              ocean: makeJourneyCurve3d([[-3.0,-0.72,1.7],[-2.55,-0.67,1.95],[-2.35,-0.76,1.55],[-3.15,-0.72,1.3]], true),
               evaporating: makeJourneyCurve3d([[-3.0,-0.72,1.7],[-2.7,0.15,1.35],[-2.1,1.15,0.75],[-1.2,2.15,-0.1],[-0.35,2.82,-0.95]], false),
               condensing: makeJourneyCurve3d([[-0.35,2.82,-0.95],[-0.1,3.18,-1.25],[0.25,3.3,-1.55],[0.72,3.16,-1.72]], false),
               precipitating: makeJourneyCurve3d([[0.72,3.16,-1.72],[1.2,2.35,-1.3],[2.25,0.75,-0.65],[3.35,-0.35,-0.25],[4.3,-0.82,-0.1]], false),
-              ground_choice: makeJourneyCurve3d([[4.1,-0.78,-0.25],[4.3,-0.82,-0.1],[4.45,-0.8,0.08]], false),
+              ground_choice: makeJourneyCurve3d([[4.3,-0.82,-0.1],[4.4,-0.8,-0.02],[4.45,-0.8,0.08]], false),
               river_runoff: makeJourneyCurve3d([[4.3,-0.82,-0.1],[3.3,-0.88,0.35],[2.0,-0.9,0.95],[0.6,-1.0,1.45],[-1.2,-1.08,1.65],[-3.0,-0.72,1.7]], false),
               infiltrating: makeJourneyCurve3d([[4.3,-0.82,-0.1],[4.38,-1.18,-0.18],[4.46,-1.5,-0.28],[4.5,-1.78,-0.35]], false),
               aquifer_flow: makeJourneyCurve3d([[4.5,-1.78,-0.35],[5.25,-2.18,-0.35],[3.2,-2.12,0.1],[1.0,-1.95,0.75],[-1.1,-1.45,1.35],[-3.0,-0.72,1.7]], false),
               plant_absorb: makeJourneyCurve3d([[4.3,-0.82,-0.1],[4.95,-1.0,0.45],[5.55,-0.72,0.95],[5.8,-0.35,1.2]], false),
-              transpiring: makeJourneyCurve3d([[5.8,-0.35,1.2],[5.9,0.75,1.2],[5.9,2.0,1.2],[4.1,2.65,0.4],[2.0,3.0,-0.55],[0.25,3.3,-1.55]], false),
-              complete: makeJourneyCurve3d([[-3.4,-0.72,1.45],[-2.8,-0.67,1.9],[-2.4,-0.76,1.55],[-3.0,-0.72,1.25]], true)
+              transpiring: makeJourneyCurve3d([[5.8,-0.35,1.2],[5.9,0.75,1.2],[5.9,2.0,1.2],[4.1,2.65,0.4],[2.0,3.0,-0.55],[-0.35,2.82,-0.95]], false),
+              complete: makeJourneyCurve3d([[-3.0,-0.72,1.7],[-2.55,-0.67,1.95],[-2.35,-0.76,1.55],[-3.15,-0.72,1.3]], true)
             };
+
+            // Pooled source and destination beacons give every journey state the same
+            // visual grammar: departure ring -> transfer route -> arrival target.
+            var handoffVisualGroup3d = new THREE.Group();
+            handoffVisualGroup3d.name = 'matter-energy-handoff';
+            var handoffSourceBeacon3d = new THREE.Group();
+            var handoffSourceRingMaterial3d = new THREE.MeshBasicMaterial({
+              color: 0x38bdf8, transparent: true, opacity: 0.72,
+              side: THREE.DoubleSide, depthWrite: false
+            });
+            var handoffSourceRing3d = new THREE.Mesh(
+              new THREE.RingGeometry(0.20, 0.29, 28), handoffSourceRingMaterial3d
+            );
+            handoffSourceRing3d.rotation.x = -Math.PI / 2;
+            handoffSourceBeacon3d.add(handoffSourceRing3d);
+            var handoffSourceCoreMaterial3d = new THREE.MeshBasicMaterial({
+              color: 0xe0f2fe, transparent: true, opacity: 0.62, depthWrite: false
+            });
+            var handoffSourceCore3d = new THREE.Mesh(
+              new THREE.SphereGeometry(0.075, 12, 9), handoffSourceCoreMaterial3d
+            );
+            handoffSourceCore3d.position.y = 0.035;
+            handoffSourceBeacon3d.add(handoffSourceCore3d);
+            handoffVisualGroup3d.add(handoffSourceBeacon3d);
+
+            var handoffDestinationBeacon3d = new THREE.Group();
+            var handoffDestinationRingMaterial3d = new THREE.MeshBasicMaterial({
+              color: 0x38bdf8, transparent: true, opacity: 0.9,
+              side: THREE.DoubleSide, depthWrite: false
+            });
+            var handoffDestinationOuter3d = new THREE.Mesh(
+              new THREE.RingGeometry(0.24, 0.32, 32), handoffDestinationRingMaterial3d
+            );
+            handoffDestinationOuter3d.rotation.x = -Math.PI / 2;
+            handoffDestinationBeacon3d.add(handoffDestinationOuter3d);
+            var handoffDestinationInnerMaterial3d = handoffDestinationRingMaterial3d.clone();
+            var handoffDestinationInner3d = new THREE.Mesh(
+              new THREE.RingGeometry(0.10, 0.15, 24), handoffDestinationInnerMaterial3d
+            );
+            handoffDestinationInner3d.rotation.x = -Math.PI / 2;
+            handoffDestinationInner3d.position.y = 0.012;
+            handoffDestinationBeacon3d.add(handoffDestinationInner3d);
+            var handoffDestinationCoreMaterial3d = new THREE.MeshBasicMaterial({
+              color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false
+            });
+            var handoffDestinationCore3d = new THREE.Mesh(
+              new THREE.OctahedronGeometry(0.095, 0), handoffDestinationCoreMaterial3d
+            );
+            handoffDestinationCore3d.position.y = 0.05;
+            handoffDestinationBeacon3d.add(handoffDestinationCore3d);
+            handoffVisualGroup3d.add(handoffDestinationBeacon3d);
+            // Pooled static arcs distinguish transfer from storage without using animation speed as time.
+            var residenceLensGroup3d = new THREE.Group();
+            residenceLensGroup3d.name = 'hydrologic-physical-time-lens';
+            var residenceDwellRings3d = [];
+            var residenceDwellMaterials3d = [];
+            for (var residenceRingIndex3d = 0; residenceRingIndex3d < 4; residenceRingIndex3d++) {
+              var residenceRingRadius3d = 0.37 + residenceRingIndex3d * 0.09;
+              var residenceRingMaterial3d = new THREE.MeshBasicMaterial({
+                color: 0x7dd3fc, transparent: true, opacity: 0.46,
+                side: THREE.DoubleSide, depthTest: false, depthWrite: false
+              });
+              var residenceRingMesh3d = new THREE.Mesh(
+                new THREE.RingGeometry(residenceRingRadius3d, residenceRingRadius3d + 0.018, 36),
+                residenceRingMaterial3d
+              );
+              residenceRingMesh3d.rotation.x = -Math.PI / 2;
+              residenceRingMesh3d.renderOrder = 7;
+              residenceDwellRings3d.push(residenceRingMesh3d);
+              residenceDwellMaterials3d.push(residenceRingMaterial3d);
+              residenceLensGroup3d.add(residenceRingMesh3d);
+            }
+            var residenceTransferArcMaterial3d = new THREE.MeshBasicMaterial({
+              color: 0x7dd3fc, transparent: true, opacity: 0.82,
+              side: THREE.DoubleSide, depthTest: false, depthWrite: false
+            });
+            var residenceTransferArc3d = new THREE.Mesh(
+              new THREE.RingGeometry(0.37, 0.405, 36, 1, -Math.PI * 0.15, Math.PI * 1.35),
+              residenceTransferArcMaterial3d
+            );
+            residenceTransferArc3d.rotation.x = -Math.PI / 2;
+            residenceTransferArc3d.position.y = 0.01;
+            residenceTransferArc3d.renderOrder = 8;
+            residenceLensGroup3d.add(residenceTransferArc3d);
+            residenceLensGroup3d.visible = false;
+            handoffVisualGroup3d.add(residenceLensGroup3d);
+
+            var handoffSourcePoint3d = new THREE.Vector3();
+            var handoffDestinationPoint3d = new THREE.Vector3();
+            handoffVisualGroup3d.visible = false;
+            world3d.add(handoffVisualGroup3d);
 
             var branchPreviewGroup3d = new THREE.Group();
             var branchPreviewSpecs3d = [
@@ -9876,6 +10329,7 @@ const d = labToolData.waterCycle || {};
             var urbanStormPulseMemory3d = 0;
             var meadowRetentionMemory3d = 0;
             var groundwaterStorageMemory3d = 0.24;
+            var lastWaterTableStaticLevel3d = null;
             var floodplainStorageMemory3d = 0;
             var dropletScaleGoal3d = new THREE.Vector3(1, 1, 1);
             var vaporSourceGoal3d = new THREE.Vector3(-2.1, 0.8, 1.0);
@@ -9899,6 +10353,11 @@ const d = labToolData.waterCycle || {};
               var tempVisual3d = parseFloat(canvasEl.dataset.climTemp || '15');
               var windVisual3d = Math.max(0, Math.min(3, parseFloat(canvasEl.dataset.climWind || '1')));
               var precipLabSource3d = canvasEl.dataset.precipitationSource === 'lab';
+              var hydrologicTimeRole3d = canvasEl.dataset.hydrologicTimeRole || 'transfer';
+              var hydrologicTimeRank3d = parseInt(canvasEl.dataset.hydrologicTimeRank || '1', 10);
+              if (!isFinite(hydrologicTimeRank3d)) hydrologicTimeRank3d = 1;
+              hydrologicTimeRank3d = Math.max(0, Math.min(4, hydrologicTimeRank3d));
+
               var precipWindDirection3d = canvasEl.dataset.precipitationWindDirection || 'east';
               var precipWindSign3d = precipWindDirection3d === 'calm' ? 0 : (precipWindDirection3d === 'west' ? -1 : 1);
               var requestedPrecipType3d = canvasEl.dataset.precipitationType || '';
@@ -9963,6 +10422,82 @@ const d = labToolData.waterCycle || {};
               var cameraGoal3d = new THREE.Vector3(cameraArray3d[0], cameraArray3d[1], cameraArray3d[2]);
               syncJourneyRoute3d(state3d);
               canvasEl.dataset.journeyProgress = String(journeyProgress3d);
+
+              var handoffMode3d = 'hidden';
+              var handoffStorageState3d = state3d === 'ocean' || state3d === 'complete';
+              var handoffChoiceState3d = state3d === 'ground_choice';
+              var handoffStormConflict3d = precipLabSource3d && state3d === 'precipitating';
+              var handoffVisible3d = !!activeCurve3d && !handoffStormConflict3d;
+              handoffVisualGroup3d.visible = handoffVisible3d;
+              handoffSourceBeacon3d.visible = handoffVisible3d;
+              handoffDestinationBeacon3d.visible = handoffVisible3d && !handoffStorageState3d && !handoffChoiceState3d;
+              if (!handoffVisible3d) {
+                handoffMode3d = 'hidden';
+              } else if (handoffStorageState3d) {
+                handoffMode3d = 'storage';
+              } else if (handoffChoiceState3d) {
+                handoffMode3d = 'branch-choice';
+              } else {
+                handoffMode3d = 'transfer';
+              }
+              canvasEl.dataset.handoffVisual = handoffMode3d;
+              canvasEl.dataset.matterEnergyMotion = motionReduced3d ? 'static' : 'dynamic';
+              canvasEl.dataset.timeLensMotion = 'static';
+              canvasEl.dataset.timeLensVisual = !handoffVisible3d ? 'hidden' :
+                handoffChoiceState3d ? 'choice-fork' :
+                hydrologicTimeRole3d === 'storage' ? 'storage-rings' :
+                hydrologicTimeRole3d === 'storage-transfer' ? 'storage-transfer-rings' : 'transfer-arc';
+              if (!handoffVisible3d || handoffChoiceState3d) residenceLensGroup3d.visible = false;
+
+
+              if (handoffVisible3d) {
+                activeCurve3d.getPointAt(0, handoffSourcePoint3d);
+                handoffSourceBeacon3d.position.copy(handoffSourcePoint3d);
+                if (handoffDestinationBeacon3d.visible) {
+                  activeCurve3d.getPointAt(1, handoffDestinationPoint3d);
+                  handoffDestinationBeacon3d.position.copy(handoffDestinationPoint3d);
+                }
+                var handoffColor3d = stateColors3d[state3d] || 0x38bdf8;
+                var residenceStorageVisible3d = hydrologicTimeRole3d === 'storage' || hydrologicTimeRole3d === 'storage-transfer';
+                var residenceTransferVisible3d = hydrologicTimeRole3d === 'transfer' || hydrologicTimeRole3d === 'storage-transfer';
+                residenceLensGroup3d.visible = !handoffChoiceState3d;
+                residenceLensGroup3d.position.copy(handoffSourcePoint3d);
+                residenceTransferArc3d.visible = residenceTransferVisible3d;
+                residenceTransferArcMaterial3d.color.setHex(handoffColor3d);
+                residenceDwellRings3d.forEach(function(residenceRing3d, residenceRingIndex3d) {
+                  residenceRing3d.visible = residenceStorageVisible3d && residenceRingIndex3d < Math.max(2, hydrologicTimeRank3d);
+                  residenceDwellMaterials3d[residenceRingIndex3d].color.setHex(handoffColor3d);
+                  residenceDwellMaterials3d[residenceRingIndex3d].opacity = 0.5 - residenceRingIndex3d * 0.06;
+                });
+
+                handoffSourceRingMaterial3d.color.setHex(handoffColor3d);
+                handoffSourceCoreMaterial3d.color.setHex(handoffColor3d);
+                handoffDestinationRingMaterial3d.color.setHex(handoffColor3d);
+                handoffDestinationInnerMaterial3d.color.setHex(handoffColor3d);
+                var handoffProgress3d = rawState3d === 'idle' ? 0.5 : journeyProgress3d;
+                var handoffPulse3d = motionReduced3d ? 1 : 1 + Math.sin(visualTime3d * 2.4) * 0.08;
+                var handoffSourceStrength3d = handoffStorageState3d || handoffChoiceState3d
+                  ? 0.82 : 0.24 + (1 - handoffProgress3d) * 0.62;
+                var handoffDestinationStrength3d = 0.28 + handoffProgress3d * 0.66;
+                handoffSourceRingMaterial3d.opacity = handoffSourceStrength3d;
+                handoffSourceCoreMaterial3d.opacity = Math.min(0.92, handoffSourceStrength3d + 0.08);
+                handoffDestinationRingMaterial3d.opacity = handoffDestinationStrength3d;
+                handoffDestinationInnerMaterial3d.opacity = Math.min(0.96, handoffDestinationStrength3d + 0.06);
+                handoffDestinationCoreMaterial3d.opacity = Math.min(1, handoffDestinationStrength3d + 0.12);
+                handoffSourceBeacon3d.scale.setScalar(
+                  handoffPulse3d * (handoffStorageState3d || handoffChoiceState3d ? 1.08 : 0.88 + (1 - handoffProgress3d) * 0.18)
+                );
+                handoffDestinationBeacon3d.scale.setScalar(
+                  handoffPulse3d * (0.86 + handoffProgress3d * 0.24)
+                );
+                if (!motionReduced3d) {
+                  handoffSourceRing3d.rotation.z = visualTime3d * 0.32;
+                  handoffDestinationOuter3d.rotation.z = -visualTime3d * 0.42;
+                  handoffDestinationInner3d.rotation.z = visualTime3d * 0.58;
+                  handoffDestinationCore3d.rotation.y = visualTime3d * 0.55;
+                }
+              }
+
               var activeLabelKey3d = stateLabelKey3d[state3d] || 'ocean';
               var groundChoiceActive3d = state3d === 'ground_choice';
               branchChoiceEnabled3d = groundChoiceActive3d;
@@ -10219,14 +10754,17 @@ const d = labToolData.waterCycle || {};
                 (stomatalReleaseActive3d ? 'supplying-stomata' : 'ascending') : 'hidden';
               canvasEl.dataset.stomatalRelease = stomatalReleaseActive3d ? 'active' : 'hidden';
 
-              var infiltrationFlowActive3d = state3d === 'infiltrating' || state3d === 'infiltration' || state3d === 'aquifer_flow';
-              var wettingFrontActive3d = state3d === 'infiltrating' || state3d === 'infiltration';
-              var aquiferRechargeActive3d = state3d === 'aquifer_flow';
+              var vadoseStorageActive3d = state3d === 'infiltrating' || state3d === 'infiltration';
+              var aquiferRouteActive3d = state3d === 'aquifer_flow';
+              var aquiferRechargeActive3d = aquiferRouteActive3d && journeyProgress3d < 0.34;
+              var groundwaterTransferActive3d = aquiferRouteActive3d && !aquiferRechargeActive3d;
+              var infiltrationFlowActive3d = vadoseStorageActive3d || aquiferRouteActive3d;
+              var wettingFrontActive3d = vadoseStorageActive3d;
               var infiltrationStrength3d = Math.max(0, Math.min(1, infiltrationVisual3d / 100));
-              var wettingDepth3d = wettingFrontActive3d ?
-                0.18 + journeyProgress3d * (0.68 + infiltrationStrength3d * 0.18) :
+              var wettingDepth3d = vadoseStorageActive3d ?
+                0.18 + journeyProgress3d * (0.52 + infiltrationStrength3d * 0.14) :
                 (aquiferRechargeActive3d ? 1.02 : 0);
-              var soilMoistureVisible3d = wettingFrontActive3d || aquiferRechargeActive3d;
+              var soilMoistureVisible3d = vadoseStorageActive3d || aquiferRechargeActive3d;
               soilMoistureFrontGroup3d.visible = soilMoistureVisible3d;
               soilMoistureFrontGroup3d.position.set(4.5, -1.02 - wettingDepth3d * 0.5, -0.4);
               soilMoistureFrontGroup3d.children.forEach(function(frontLobeMesh3d) {
@@ -10252,10 +10790,9 @@ const d = labToolData.waterCycle || {};
               var rechargePulse3d = motionReduced3d ? 0 : Math.sin(visualTime3d * 1.8) * 0.06;
               waterTableRecharge3d.scale.set(1.45 + rechargePulse3d, 0.82 + rechargePulse3d * 0.5, 1);
               waterTableRechargeMat3d.opacity = aquiferRechargeActive3d ? 0.24 + infiltrationStrength3d * 0.3 : 0;
-              var groundwaterRechargeTarget3d = aquiferRechargeActive3d ?
-                Math.min(1, 0.38 + infiltrationStrength3d * 0.52) :
-                (wettingFrontActive3d ?
-                  Math.min(0.58, 0.2 + journeyProgress3d * infiltrationStrength3d * 0.34) : 0.18);
+              var groundwaterRechargeTarget3d = aquiferRouteActive3d
+                ? Math.min(1, 0.38 + infiltrationStrength3d * 0.52)
+                : 0.18;
               var groundwaterStorageTrend3d = groundwaterRechargeTarget3d > groundwaterStorageMemory3d + 0.01 ?
                 'rising' : (groundwaterRechargeTarget3d < groundwaterStorageMemory3d - 0.01 ? 'receding' : 'steady');
               if (!journeyPaused3d) {
@@ -10271,7 +10808,7 @@ const d = labToolData.waterCycle || {};
               }
               var waterTableLevel3d = -2.08 + groundwaterStorageMemory3d * 0.34;
               waterTableRecharge3d.position.y = waterTableLevel3d + 0.015;
-              var groundwaterStorageVisible3d = infiltrationFlowActive3d;
+              var groundwaterStorageVisible3d = aquiferRouteActive3d;
               groundwaterStorageGroup3d.visible = groundwaterStorageVisible3d;
               groundwaterStorageGroup3d.position.y = waterTableLevel3d;
               waterTableSurfaceMat3d.opacity = groundwaterStorageVisible3d ?
@@ -10280,7 +10817,9 @@ const d = labToolData.waterCycle || {};
               waterTableRimMat3d.opacity = groundwaterStorageVisible3d ?
                 0.22 + groundwaterStorageMemory3d * 0.52 : 0;
               var waterTableSurfacePosition3d = waterTableSurfaceGeometry3d.attributes.position;
-              if (groundwaterStorageVisible3d) {
+              var updateWaterTableSurface3d = groundwaterStorageVisible3d &&
+                (!motionReduced3d || lastWaterTableStaticLevel3d !== waterTableLevel3d);
+              if (updateWaterTableSurface3d) {
                 for (var waterTableVertexIndex3d = 0;
                   waterTableVertexIndex3d < waterTableSurfacePosition3d.count;
                   waterTableVertexIndex3d++) {
@@ -10295,7 +10834,9 @@ const d = labToolData.waterCycle || {};
                 }
                 waterTableSurfacePosition3d.needsUpdate = true;
                 waterTableSurfaceGeometry3d.computeVertexNormals();
+                if (motionReduced3d) lastWaterTableStaticLevel3d = waterTableLevel3d;
               }
+              if (!groundwaterStorageVisible3d || !motionReduced3d) lastWaterTableStaticLevel3d = null;
               var capillaryFringePosition3d = capillaryFringeGeometry3d.attributes.position;
               for (var capillaryFringeIndex3d = 0; capillaryFringeIndex3d < capillaryFringeCount3d; capillaryFringeIndex3d++) {
                 var capillaryFringePhase3d = (capillaryFringeSeeds3d[capillaryFringeIndex3d * 3 + 1] +
@@ -10648,15 +11189,18 @@ const d = labToolData.waterCycle || {};
               canvasEl.dataset.floodplainSedimentTrap = floodplainStorageVisible3d ?
                 'settling-suspended-material' : 'hidden';
 
-              aquiferFlow3d.visible = infiltrationFlowActive3d;
-              aquiferFlow3d.material.opacity = Math.min(0.94, 0.3 + infiltrationVisual3d / 145);
+              aquiferFlow3d.visible = groundwaterTransferActive3d;
+              aquiferFlow3d.material.opacity = groundwaterTransferActive3d ?
+                Math.min(0.94, 0.3 + infiltrationVisual3d / 145) : 0;
               var aquiferMarkerPosition3d = aquiferMarkerGeometry3d.attributes.position;
-              for (var aquiferMarkerIndex3d = 0; aquiferMarkerIndex3d < aquiferMarkerPosition3d.count; aquiferMarkerIndex3d++) {
-                var aquiferMarkerT3d = (aquiferMarkerIndex3d / aquiferMarkerPosition3d.count + visualTime3d * (0.008 + infiltrationVisual3d * 0.00042)) % 1;
-                var aquiferMarkerPoint3d = aquiferCurrentCurve3d.getPointAt(aquiferMarkerT3d);
-                aquiferMarkerPosition3d.setXYZ(aquiferMarkerIndex3d, aquiferMarkerPoint3d.x, aquiferMarkerPoint3d.y, aquiferMarkerPoint3d.z);
+              if (groundwaterTransferActive3d) {
+                for (var aquiferMarkerIndex3d = 0; aquiferMarkerIndex3d < aquiferMarkerPosition3d.count; aquiferMarkerIndex3d++) {
+                  var aquiferMarkerT3d = (aquiferMarkerIndex3d / aquiferMarkerPosition3d.count + visualTime3d * (0.008 + infiltrationVisual3d * 0.00042)) % 1;
+                  var aquiferMarkerPoint3d = aquiferCurrentCurve3d.getPointAt(aquiferMarkerT3d);
+                  aquiferMarkerPosition3d.setXYZ(aquiferMarkerIndex3d, aquiferMarkerPoint3d.x, aquiferMarkerPoint3d.y, aquiferMarkerPoint3d.z);
+                }
+                aquiferMarkerPosition3d.needsUpdate = true;
               }
-              aquiferMarkerPosition3d.needsUpdate = true;
 
               var oceanCurrentActive3d = state3d === 'ocean' || state3d === 'complete' ||
                 state3d === 'river_runoff' || state3d === 'aquifer_flow';
@@ -10728,7 +11272,7 @@ const d = labToolData.waterCycle || {};
               }
               canvasEl.dataset.salinityGradient = estuaryMixingActive3d ? 'freshwater,brackish,marine' : 'hidden';
 
-              var groundwaterSeepActive3d = state3d === 'aquifer_flow';
+              var groundwaterSeepActive3d = groundwaterTransferActive3d;
               groundwaterSeep3d.visible = groundwaterSeepActive3d;
               groundwaterSeep3d.material.opacity = groundwaterSeepActive3d ? 0.3 + infiltrationVisual3d / 190 : 0;
               groundwaterSeep3d.material.size = 0.062 + infiltrationVisual3d / 1500;
@@ -10749,17 +11293,37 @@ const d = labToolData.waterCycle || {};
               canvasEl.dataset.oceanExchange = estuaryMixingActive3d ? 'river-mixing' :
                 (groundwaterSeepActive3d ? 'groundwater-discharge' : (oceanCurrentActive3d ? 'collection-currents' : 'hidden'));
 
-              soilPercolation3d.visible = infiltrationFlowActive3d;
-              soilPercolation3d.material.opacity = Math.min(0.88, 0.2 + infiltrationVisual3d / 150);
+              var percolationVisualActive3d = vadoseStorageActive3d || aquiferRechargeActive3d;
+              var activePercolationCount3d = !percolationVisualActive3d ? 0 :
+                (vadoseStorageActive3d
+                  ? Math.min(percolationCount3d, Math.round(14 + infiltrationStrength3d * 12))
+                  : Math.min(percolationCount3d, Math.round(9 + infiltrationStrength3d * 10)));
+              var percolationDepthSpan3d = aquiferRechargeActive3d ? 1.08 : 0.48;
+              soilPercolation3d.visible = percolationVisualActive3d;
+              soilPercolation3d.material.opacity = percolationVisualActive3d ?
+                Math.min(0.88, 0.2 + infiltrationVisual3d / 150) : 0;
+              percolationGeometry3d.setDrawRange(0, activePercolationCount3d);
               var percolationPosition3d = percolationGeometry3d.attributes.position;
-              for (var soilDropIndex3d = 0; soilDropIndex3d < percolationPosition3d.count; soilDropIndex3d++) {
-                var soilDropPhase3d = (soilDropIndex3d / percolationPosition3d.count + visualTime3d * (0.035 + infiltrationVisual3d * 0.0008)) % 1;
-                percolationPosition3d.setY(soilDropIndex3d, -1.04 - soilDropPhase3d * 1.14);
+              if (percolationVisualActive3d) {
+                for (var soilDropIndex3d = 0; soilDropIndex3d < activePercolationCount3d; soilDropIndex3d++) {
+                  var soilDropPhase3d = motionReduced3d
+                    ? (soilDropIndex3d % 6) / 5
+                    : (soilDropIndex3d / Math.max(1, activePercolationCount3d) +
+                      visualTime3d * (0.035 + infiltrationVisual3d * 0.0008)) % 1;
+                  percolationPosition3d.setY(soilDropIndex3d, -1.04 - soilDropPhase3d * percolationDepthSpan3d);
+                }
+                percolationPosition3d.needsUpdate = true;
               }
-              percolationPosition3d.needsUpdate = true;
+              canvasEl.dataset.subsurfacePhase = vadoseStorageActive3d ? 'soil-storage' :
+                aquiferRechargeActive3d ? 'selected-deep-recharge' :
+                groundwaterTransferActive3d ? 'groundwater-transfer' : 'hidden';
               canvasEl.dataset.surfaceFlow = riverFlow3d.visible ? 'moving' : 'quiet';
-              canvasEl.dataset.groundwaterFlow = aquiferFlow3d.visible ? 'moving' : 'hidden';
-              canvasEl.dataset.percolation = soilPercolation3d.visible ? 'visible' : 'hidden';
+              canvasEl.dataset.groundwaterFlow = groundwaterTransferActive3d ? 'moving' : 'hidden';
+              canvasEl.dataset.percolation = vadoseStorageActive3d ? 'retained-in-soil' :
+                aquiferRechargeActive3d ? 'deep-recharge' : 'hidden';
+              canvasEl.dataset.percolationParticleCount = String(activePercolationCount3d);
+              canvasEl.dataset.percolationDepth = vadoseStorageActive3d ? 'vadose-zone' :
+                aquiferRechargeActive3d ? 'water-table' : 'hidden';
 
               var atmosphericTransfer3d = vaporTransfer3d || condensationTransfer3d || precipitationTransfer3d;
               var showWindField3d = atmosphericTransfer3d && windVisual3d > 0.12;
@@ -11464,9 +12028,11 @@ const d = labToolData.waterCycle || {};
               }
               river3d.material.opacity = Math.min(0.94, 0.3 + runoffVisual3d / 145 + snowmeltIntensity3d * 0.18 + precipRunoffAccum3d / 420);
               river3d.material.emissiveIntensity = 0.1 + runoffVisual3d / 420 + snowmeltIntensity3d * 0.14 + precipRunoffAccum3d / 620;
-              aquifer3d.material.opacity = Math.min(0.92, 0.28 + infiltrationVisual3d / 180 +
-                ((state3d === 'infiltrating' || state3d === 'infiltration' || state3d === 'aquifer_flow') ? 0.2 : 0));
-              aquifer3d.material.emissiveIntensity = 0.12 + infiltrationVisual3d / 300;
+              aquifer3d.material.opacity = Math.min(0.92, 0.24 + infiltrationVisual3d / 220 +
+                (aquiferRouteActive3d ? 0.28 : (vadoseStorageActive3d ? 0.04 : 0)));
+              aquifer3d.material.emissiveIntensity = aquiferRouteActive3d
+                ? 0.2 + infiltrationVisual3d / 260
+                : 0.08 + infiltrationVisual3d / 420;
               vapor3d.material.opacity = Math.min(0.92, 0.28 + solarVisual3d * 0.2 + Math.max(0, tempVisual3d) / 180) *
                 (condensationTransfer3d ? Math.max(0.08, parcelGasBlend3d) : 1);
               rain3d.material.color.setHex(snowDriftActive3d ? 0xe0f2fe : tempVisual3d <= 3 ? 0x93c5fd : 0x69d7ff);
@@ -11853,7 +12419,35 @@ const d = labToolData.waterCycle || {};
           var resolvedStage = STAGES.find(function(stage) { return stage.id === resolvedStageId; });
           var currentStageLabel = resolvedStage ? resolvedStage.label : (sel ? sel.label : 'Evaporation');
           var currentStageCue = resolvedStage ? (STAGE_CUES[resolvedStage.id] || '') : '';
-          var currentStageFlow = STAGE_FLOW[resolvedStageId] || STAGE_FLOW.collection;
+          var activeJourneyMatterEnergy = d.journeyActive
+            ? (JOURNEY_MATTER_ENERGY_TRACE[d.journeyState || 'ocean'] || JOURNEY_MATTER_ENERGY_TRACE.ocean)
+            : null;
+          var currentMatterEnergy = activeJourneyMatterEnergy ||
+            MATTER_ENERGY_TRACE[resolvedStageId] || MATTER_ENERGY_TRACE.collection;
+          var activeJourneyHydrologicTime = d.journeyActive
+            ? (JOURNEY_HYDROLOGIC_TIME_TRACE[d.journeyState || 'ocean'] || JOURNEY_HYDROLOGIC_TIME_TRACE.ocean)
+            : null;
+          var currentHydrologicTime = activeJourneyHydrologicTime ||
+            STAGE_HYDROLOGIC_TIME_TRACE[resolvedStageId] || STAGE_HYDROLOGIC_TIME_TRACE.collection;
+          var currentHydrologicTimeLabel = currentHydrologicTime.roleLabel + ' - ' + currentHydrologicTime.label;
+          var currentSubsurfacePhase = d.journeyActive
+            ? (d.journeyState === 'infiltrating' ? 'soil-storage' :
+              (d.journeyState === 'aquifer_flow' ? 'selected-deep-recharge' : 'hidden'))
+            : (resolvedStageId === 'infiltration' ? 'soil-storage' : 'hidden');
+          var currentSubsurfacePhaseLabel = currentSubsurfacePhase === 'soil-storage'
+            ? 'Vadose-zone soil storage'
+            : currentSubsurfacePhase === 'selected-deep-recharge'
+              ? 'Selected deep-recharge pathway'
+              : 'No active subsurface transfer';
+          var currentSubsurfacePhaseDetail = currentSubsurfacePhase === 'soil-storage'
+            ? 'Water is entering unsaturated pore spaces and may be retained as soil water. Infiltration is not automatic groundwater recharge.'
+            : currentSubsurfacePhase === 'selected-deep-recharge'
+              ? 'This tracked parcel follows one modeled path downward to the water table, then moves with groundwater; not all infiltrated water takes this route.'
+              : 'The selected process is outside the modeled subsurface pathway.';
+          var currentStageFlow = activeJourneyMatterEnergy
+            ? { from: activeJourneyMatterEnergy.source, to: activeJourneyMatterEnergy.destination }
+            : (STAGE_FLOW[resolvedStageId] || STAGE_FLOW.collection);
+          var currentMatterEnergyPhaseLabel = currentMatterEnergy.phaseFrom + ' → ' + currentMatterEnergy.phaseTo;
           var resolvedStageIndex = Math.max(0, STAGES.findIndex(function(stage) { return stage.id === resolvedStageId; })) + 1;
           var wcWalkthroughActive = !!d.wcWalkthroughActive;
           var wcWalkthroughIndex = typeof d.wcWalkthroughIndex === 'number' ? Math.max(0, Math.min(STAGES.length - 1, d.wcWalkthroughIndex)) : Math.max(0, resolvedStageIndex - 1);
@@ -12814,8 +13408,8 @@ journeyView === '2d' && React.createElement("div", {
                 React.createElement("strong", null, journeyLens.driver)
               ),
               React.createElement("div", null,
-                React.createElement("span", null, "Relative pace"),
-                React.createElement("strong", null, journeyLens.pace)
+                React.createElement("span", null, "Physical time"),
+                React.createElement("strong", null, currentHydrologicTimeLabel)
               ),
               React.createElement("div", null,
                 React.createElement("span", null, "Journey status"),
@@ -12938,6 +13532,45 @@ React.createElement("div", {
                   React.createElement("strong", null, currentStageFlow.from),
                   React.createElement("span", { className: "wc-stage-focus-flow-arrow", "aria-hidden": "true" }, "\u2192"),
                   React.createElement("strong", null, currentStageFlow.to)
+                ),
+                currentSubsurfacePhase !== 'hidden' && React.createElement("p", {
+                  className: "wc-subsurface-note",
+                  "data-subsurface-summary": currentSubsurfacePhase
+                },
+                  React.createElement("strong", null, currentSubsurfacePhaseLabel + ": "),
+                  currentSubsurfacePhaseDetail
+                ),
+                React.createElement("section", {
+                  className: "wc-matter-energy",
+                  "aria-labelledby": "wcMatterEnergyTitle"
+                },
+                  React.createElement("h4", { id: "wcMatterEnergyTitle", className: "wc-matter-energy-title" }, "Matter, energy, and physical time"),
+                  React.createElement("p", { className: "wc-matter-energy-note" }, "Water cycles; energy flows. Physical time is qualitative and separate from playback."),
+                  React.createElement("dl", {
+                    id: "wcMatterEnergySummary",
+                    className: "wc-matter-energy-grid",
+                    "aria-labelledby": "wcMatterEnergyTitle"
+                  },
+                    React.createElement("div", null,
+                      React.createElement("dt", null, "Water state"),
+                      React.createElement("dd", null, React.createElement("strong", null, currentMatterEnergyPhaseLabel))
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("dt", null, "Energy"),
+                      React.createElement("dd", null, currentMatterEnergy.energyLabel)
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("dt", null, "Driver"),
+                      React.createElement("dd", null, currentMatterEnergy.driver)
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("dt", null, "Physical time"),
+                      React.createElement("dd", null,
+                        React.createElement("strong", null, currentHydrologicTimeLabel),
+                        React.createElement("span", null, currentHydrologicTime.caveat)
+                      )
+                    )
+                  )
                 )
               ),
               React.createElement("div", { className: "wc-stage-focus-meta", "aria-label": "Stage " + resolvedStageIndex + " of " + STAGES.length }, resolvedStageIndex + "/" + STAGES.length)
@@ -12973,6 +13606,19 @@ React.createElement("div", {
                 "data-watercycle-canvas": "true",
                 "data-render-mode": journeyView === '2d' ? 'visual' : 'state-only',
                 "data-active-stage": resolvedStageId,
+                "data-water-phase-from": currentMatterEnergy.phaseFrom,
+                "data-water-phase-to": currentMatterEnergy.phaseTo,
+                "data-energy-transfer": currentMatterEnergy.energyTransfer,
+                "data-process-driver": currentMatterEnergy.driver,
+                "data-handoff-source": currentMatterEnergy.source,
+                "data-handoff-destination": currentMatterEnergy.destination,
+                "data-matter-energy-motion": "dynamic",
+                "data-hydrologic-time-role": currentHydrologicTime.role,
+                "data-hydrologic-time-band": currentHydrologicTime.bandKey,
+                "data-hydrologic-time-rank": String(currentHydrologicTime.rank),
+                "data-animation-time-scale": "compressed-not-physical",
+                "data-subsurface-phase": currentSubsurfacePhase,
+                "data-percolation": currentSubsurfacePhase === 'soil-storage' ? 'retained-in-soil' : currentSubsurfacePhase === 'selected-deep-recharge' ? 'deep-recharge' : 'hidden',
                 "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle',
                 "data-journey-paused": String(!!d.journeyPaused),
                 "data-wc-2d-paused": String(wc2dPaused),
@@ -13009,6 +13655,16 @@ React.createElement("div", {
                 "data-thunder-estimate-checked": precipJourneyModel ? String(!!precipJourneyModel.config.thunderEstimateChecked) : 'false',
                 "data-thunder-estimate-band": precipJourneyModel && precipJourneyModel.config.thunderEstimateChecked ? precipJourneyModel.thunderEstimate.band : 'unsubmitted',
                 "data-thunder-estimate-error-km": precipJourneyModel ? String(precipJourneyModel.thunderEstimate.errorKm) : '',
+                "data-runoff-index": String(runoffTendency),
+                "data-infiltration-index": String(infiltrationOpportunity),
+                "data-land-rain-intensity": String(landRainIntensity),
+                "data-land-saturation": String(landSaturation),
+                "data-land-permeability": landPermeability,
+                "data-land-slope": landSlope,
+                "data-land-cover": landCover,
+                "data-route-runoff-share": String(wcRouteShares.runoff),
+                "data-route-infiltration-share": String(wcRouteShares.infiltration),
+                "data-route-plant-share": String(wcRouteShares.plant),
                 "data-dark-mode": String(isDark),
                 style: {
                   position: "absolute", inset: 0, width: "100%", height: "100%", display: "block",
@@ -13050,7 +13706,7 @@ React.createElement("div", {
               ),
               journeyView === '3d' && React.createElement("p", {
                 id: "wcJourney3dGroundwaterInstructions", className: "sr-only"
-              }, "In the underground cutaway, the luminous water table rises during recharge and recedes slowly afterward; upward particles show the capillary fringe. Its level is a schematic storage indicator, not a measured depth."
+              }, "In the underground cutaway, infiltration first enters the unsaturated vadose zone and can remain as soil pore water. Only the selected deep-recharge pathway reaches the water table; this does not mean all infiltration becomes recharge. During the later aquifer leg, the luminous water table, capillary fringe, slow groundwater transfer, and discharge become visible. Their levels are schematic teaching cues, not measured depths or flow rates."
               ),
               journeyView === '3d' && React.createElement("p", {
                 id: "wcJourney3dSedimentInstructions", className: "sr-only"
@@ -13065,7 +13721,7 @@ React.createElement("div", {
                 tabIndex: 0,
                 "aria-label": "Three-dimensional tracked water parcel in the " + immersiveStageLabel + " stage. Water moves from " + currentStageFlow.from + " to " + currentStageFlow.to + ". " + journeyStatusLabel + ". Drag or use arrow keys to explore the scene.",
                 "aria-keyshortcuts": "ArrowLeft ArrowRight ArrowUp ArrowDown F",
-                "aria-describedby": "wcJourney3dInstructions wcJourney3dStormInstructions wcJourney3dUrbanInstructions wcJourney3dGrassInstructions wcJourney3dRouteBalanceInstructions wcJourney3dGroundwaterInstructions wcJourney3dSedimentInstructions wcJourney3dFloodplainInstructions",
+                "aria-describedby": "wcMatterEnergySummary wcJourney3dInstructions wcJourney3dStormInstructions wcJourney3dUrbanInstructions wcJourney3dGrassInstructions wcJourney3dRouteBalanceInstructions wcJourney3dGroundwaterInstructions wcJourney3dSedimentInstructions wcJourney3dFloodplainInstructions",
                 onKeyDown: handleJourney3dKey,
                 onClick: handleJourney3dSceneClick,
                 ref: journey3dRef,
@@ -13073,6 +13729,19 @@ React.createElement("div", {
                 className: "wc-journey-3d",
                 "data-watercycle-journey-3d": "true",
                 "data-active-stage": resolvedStageId,
+                "data-water-phase-from": currentMatterEnergy.phaseFrom,
+                "data-water-phase-to": currentMatterEnergy.phaseTo,
+                "data-energy-transfer": currentMatterEnergy.energyTransfer,
+                "data-process-driver": currentMatterEnergy.driver,
+                "data-handoff-source": currentMatterEnergy.source,
+                "data-handoff-destination": currentMatterEnergy.destination,
+                "data-matter-energy-motion": "dynamic",
+                "data-hydrologic-time-role": currentHydrologicTime.role,
+                "data-hydrologic-time-band": currentHydrologicTime.bandKey,
+                "data-hydrologic-time-rank": String(currentHydrologicTime.rank),
+                "data-animation-time-scale": "compressed-not-physical",
+                "data-subsurface-phase": currentSubsurfacePhase,
+                "data-percolation": currentSubsurfacePhase === 'soil-storage' ? 'retained-in-soil' : currentSubsurfacePhase === 'selected-deep-recharge' ? 'deep-recharge' : 'hidden',
                 "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle',
                 "data-journey-paused": String(!!d.journeyPaused),
                 "data-journey-speed": String(d.journeySpeed || 1),
@@ -13340,6 +14009,27 @@ React.createElement("div", {
                       React.createElement("td", null,
                         React.createElement("strong", null, currentStageLabel),
                         React.createElement("span", null, currentStageCue || "The selected process is highlighted in the model.")
+                      )
+                    ),
+                    React.createElement("tr", null,
+                      React.createElement("th", { scope: "row" }, "Matter and energy"),
+                      React.createElement("td", null,
+                        React.createElement("strong", null, currentMatterEnergyPhaseLabel + " · " + currentMatterEnergy.energyLabel),
+                        React.createElement("span", null, "Driver: " + currentMatterEnergy.driver)
+                      )
+                    ),
+                    React.createElement("tr", null,
+                      React.createElement("th", { scope: "row" }, "Physical time"),
+                      React.createElement("td", null,
+                        React.createElement("strong", null, currentHydrologicTimeLabel),
+                        React.createElement("span", null, currentHydrologicTime.caveat + " Animation is compressed, not a physical clock.")
+                      )
+                    ),
+                    React.createElement("tr", null,
+                      React.createElement("th", { scope: "row" }, "Subsurface pathway"),
+                      React.createElement("td", null,
+                        React.createElement("strong", null, currentSubsurfacePhaseLabel),
+                        React.createElement("span", null, currentSubsurfacePhaseDetail)
                       )
                     ),
                     React.createElement("tr", null,
@@ -14071,7 +14761,7 @@ React.createElement("div", {
                   })
                 ),
                 React.createElement("p", { role: "note", className: "text-[11px] leading-relaxed " + (isDark ? "text-cyan-200" : "text-cyan-800") },
-                  "Playback speed changes this animation only. Real water residence times vary enormously; groundwater pathways can take years to millennia."
+                  "Playback speed changes this animation only. Animation is compressed - not physical time. For context, groundwater pathways can take years to millennia. Faster fractured-rock pathways also exist, and real residence and transit times vary enormously."
                 ),
                 // Current state card
                 React.createElement("div", { className: "rounded-lg p-3 border " + (isDark ? "bg-slate-900/60 border-cyan-950/50 text-slate-350" : "bg-white border-cyan-100 text-slate-800") },

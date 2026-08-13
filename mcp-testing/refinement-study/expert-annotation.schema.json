@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alloflow.org/schemas/mcp-refinement-expert-annotation-v1.json",
+  "title": "AlloFlow blinded specialist annotation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "annotationId", "annotationProtocolSha256", "annotationJoinKey", "subjectSha256",
+    "blinded", "reviewerCount", "baselineAdjudicationSha256", "baselineMaterialIssueCount",
+    "materialDefectsIntroduced", "criticalSeriousIssuesResolved", "pass", "adjudicatedAt",
+    "contentCommitmentSha256"
+  ],
+  "properties": {
+    "schema": { "const": "alloflow.mcp-refinement-expert-annotation/v1" },
+    "annotationId": { "$ref": "#/$defs/nonempty" },
+    "annotationProtocolSha256": { "$ref": "#/$defs/sha256" },
+    "annotationJoinKey": { "$ref": "#/$defs/nonempty" },
+    "subjectSha256": { "$ref": "#/$defs/sha256" },
+    "blinded": { "const": true },
+    "reviewerCount": { "type": "integer", "minimum": 2 },
+    "baselineAdjudicationSha256": { "$ref": "#/$defs/sha256" },
+    "baselineMaterialIssueCount": { "type": "integer", "minimum": 1 },
+    "materialDefectsIntroduced": { "type": "integer", "minimum": 0 },
+    "criticalSeriousIssuesResolved": { "type": "integer", "minimum": 0 },
+    "pass": { "type": "boolean" },
+    "adjudicatedAt": { "type": "string", "format": "date-time" },
+    "contentCommitmentSha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "nonempty": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

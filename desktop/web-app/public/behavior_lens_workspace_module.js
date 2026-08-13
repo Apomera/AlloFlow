@@ -33,30 +33,43 @@
     }
 
     function normalizeWorkspace(data) {
-        var source = data && typeof data === 'object' ? data : {};
-        var profile = source.studentProfile && typeof source.studentProfile === 'object'
+        var source = data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+        var profile = source.studentProfile && typeof source.studentProfile === 'object' && !Array.isArray(source.studentProfile)
             ? source.studentProfile : {};
+        var normalizedBehaviors = normalizeTargetBehaviors(source.targetBehaviors, source.abcEntries);
+        var normalizedAbc = normalizeAbcEntries(source.abcEntries, { targetBehaviors: normalizedBehaviors });
+        var normalizedObservations = normalizeObservationSessions(source.observationSessions, { targetBehaviors: normalizedBehaviors });
         return {
-            abcEntries: Array.isArray(source.abcEntries) ? source.abcEntries.slice(0, 5000) : [],
-            observationSessions: Array.isArray(source.observationSessions) ? source.observationSessions.slice(0, 1000) : [],
+            version: WORKSPACE_VERSION,
+            abcEntries: normalizedAbc.items,
+            observationSessions: normalizedObservations.items,
             sessionNotes: Array.isArray(source.sessionNotes) ? source.sessionNotes.slice(0, 500) : [],
             teamNotes: Array.isArray(source.teamNotes) ? source.teamNotes.slice(0, 500) : [],
-            studentProfile: Object.assign(emptyStudentProfile(), profile),
+            studentProfile: Object.assign(emptyStudentProfile(), sanitizeJsonObject(profile, 64 * 1024)),
             sessionHistory: Array.isArray(source.sessionHistory) ? source.sessionHistory.slice(0, 1000) : [],
             designPhases: Array.isArray(source.designPhases) ? source.designPhases.slice(0, 100) : [],
-            activityRegistry: source.activityRegistry && typeof source.activityRegistry === 'object' ? source.activityRegistry : {},
-            activeDesign: source.activeDesign || null,
-            workflowTrack: source.workflowTrack || null,
-            workflowSubSteps: source.workflowSubSteps && typeof source.workflowSubSteps === 'object' ? source.workflowSubSteps : {},
-            graphExport: source.graphExport || null,
-            effectSizeResults: source.effectSizeResults || null,
-            aiAnalysis: source.aiAnalysis || null,
-            fullSummary: typeof source.fullSummary === 'string' ? source.fullSummary : '',
-            dismissedAlerts: Array.isArray(source.dismissedAlerts) ? source.dismissedAlerts : [],
-            visitedPanels: Array.isArray(source.visitedPanels) ? source.visitedPanels : [],
-            favorites: Array.isArray(source.favorites) ? source.favorites.slice(0, 100) : null,
-            userRole: typeof source.userRole === 'string' ? source.userRole : null,
-            savedAt: source.savedAt || null,
+            activityRegistry: sanitizeJsonObject(source.activityRegistry, 256 * 1024),
+            activeDesign: sanitizeJsonValue(source.activeDesign, { maxBytes: 64 * 1024 }),
+            workflowTrack: boundedText(source.workflowTrack, 100) || null,
+            workflowSubSteps: sanitizeJsonObject(source.workflowSubSteps, 128 * 1024),
+            graphExport: sanitizeJsonValue(source.graphExport, { maxBytes: 128 * 1024 }),
+            effectSizeResults: sanitizeJsonValue(source.effectSizeResults, { maxBytes: 128 * 1024 }),
+            aiAnalysis: sanitizeJsonValue(source.aiAnalysis, { maxBytes: 256 * 1024 }),
+            fullSummary: boundedText(source.fullSummary, 50000),
+            dismissedAlerts: normalizeStringArray(source.dismissedAlerts, 5000, 160),
+            visitedPanels: normalizeStringArray(source.visitedPanels, 5000, 160),
+            favorites: Array.isArray(source.favorites) ? normalizeStringArray(source.favorites, 100, 160) : null,
+            userRole: boundedText(source.userRole, 80) || null,
+            targetBehaviors: normalizedBehaviors,
+            toolState: normalizeToolState(source.toolState),
+            deletedAbcEntries: normalizeDeletedAbcEntries(source.deletedAbcEntries, normalizedBehaviors),
+            auditLog: normalizeAuditLog(source.auditLog),
+            workflowDiagnostics: normalizeWorkflowDiagnostics(source.workflowDiagnostics),
+            normalizationReport: {
+                abcEntries: normalizedAbc.report,
+                observationSessions: normalizedObservations.report
+            },
+            savedAt: normalizeIsoTimestamp(source.savedAt),
             revision: workspaceRevision(source)
         };
     }
@@ -121,6 +134,7 @@
         return latest;
     }
 
+    var WORKSPACE_VERSION = 4;
     var LOCAL_STORAGE_SAFETY_BYTES = 4 * 1024 * 1024;
     var WORKSPACE_WARNING_BYTES = 2 * 1024 * 1024;
     var LOCAL_WORKSPACE_SAVE_DELAY_MS = 300;
@@ -137,8 +151,17 @@
         designPhases: 100,
         favorites: 100,
         dismissedAlerts: 5000,
-        visitedPanels: 5000
+        visitedPanels: 5000,
+        targetBehaviors: 100,
+        deletedAbcEntries: 250,
+        auditLog: 1000,
+        workflowDiagnostics: 1000
     };
+    var MAX_TARGET_BEHAVIORS = 100;
+    var MAX_DELETED_ABC_ENTRIES = 250;
+    var MAX_AUDIT_EVENTS = 1000;
+    var MAX_WORKFLOW_DIAGNOSTICS = 1000;
+    var MAX_TOOL_STATE_BYTES = 512 * 1024;
 
     function paginateCollection(items, requestedPageIndex, requestedPageSize, options) {
         options = options || {};
@@ -172,6 +195,577 @@
             hasPrevious: pageIndex > 0,
             hasNext: pageIndex < pageCount - 1
         };
+    }
+
+    function boundedText(value, maxLength) {
+        if (value == null) return '';
+        var text = String(value).replace(/\u0000/g, '').trim();
+        var limit = Math.max(0, Number(maxLength) || 0);
+        return limit ? text.slice(0, limit) : text;
+    }
+
+    function normalizeStringArray(values, maximumItems, maximumLength) {
+        if (!Array.isArray(values)) return [];
+        var seen = Object.create(null);
+        var result = [];
+        values.slice(0, maximumItems || values.length).forEach(function (value) {
+            var text = boundedText(value, maximumLength || 200);
+            if (!text || seen[text]) return;
+            seen[text] = true;
+            result.push(text);
+        });
+        return result;
+    }
+
+    function normalizeToken(value) {
+        var text = boundedText(value, 500).toLowerCase();
+        if (text.normalize) text = text.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+        return text.replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
+    }
+
+    function stableHash(value) {
+        var text;
+        try { text = typeof value === 'string' ? value : JSON.stringify(value); }
+        catch (_) { text = String(value == null ? '' : value); }
+        var hash = 2166136261;
+        for (var index = 0; index < text.length; index += 1) {
+            hash ^= text.charCodeAt(index);
+            hash = Math.imul(hash, 16777619);
+        }
+        return ('00000000' + (hash >>> 0).toString(16)).slice(-8);
+    }
+
+    function canonicalBehaviorId(label) {
+        var token = normalizeToken(label);
+        var slug = token.replace(/\s+/g, '-').slice(0, 40) || 'unclassified';
+        return 'behavior-' + slug + '-' + stableHash(token).slice(0, 6);
+    }
+
+    function normalizeIsoTimestamp(value) {
+        if (typeof value !== 'string' && typeof value !== 'number' && !(value instanceof Date)) return null;
+        var date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
+        return Number.isFinite(date.getTime()) ? date.toISOString() : null;
+    }
+
+    function normalizeTimezoneOffset(value) {
+        var numeric = Number(value);
+        return Number.isFinite(numeric) && numeric >= -840 && numeric <= 840 ? Math.round(numeric) : null;
+    }
+
+    function localDayKey(value, timezoneOffset) {
+        var iso = normalizeIsoTimestamp(value);
+        if (!iso) return null;
+        var date = new Date(iso);
+        var offset = normalizeTimezoneOffset(timezoneOffset);
+        if (offset == null) {
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0');
+            var day = String(date.getDate()).padStart(2, '0');
+            return year + '-' + month + '-' + day;
+        }
+        var shifted = new Date(date.getTime() - offset * 60000);
+        return shifted.getUTCFullYear() + '-' + String(shifted.getUTCMonth() + 1).padStart(2, '0') + '-' + String(shifted.getUTCDate()).padStart(2, '0');
+    }
+
+    function parseLocalDateBoundary(value, endExclusive) {
+        var match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+        if (!match) return null;
+        var date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+        if (!Number.isFinite(date.getTime()) || date.getFullYear() !== Number(match[1]) || date.getMonth() !== Number(match[2]) - 1 || date.getDate() !== Number(match[3])) return null;
+        if (endExclusive) date.setDate(date.getDate() + 1);
+        return date;
+    }
+
+    function normalizeTargetBehavior(value, index) {
+        var source = value && typeof value === 'object' && !Array.isArray(value) ? value : { label: value };
+        var label = boundedText(source.label || source.name, 240);
+        if (!label) return null;
+        var id = boundedText(source.id, 120) || canonicalBehaviorId(label);
+        return {
+            id: id,
+            label: label,
+            operationalDefinition: boundedText(source.operationalDefinition || source.definition, 4000),
+            aliases: normalizeStringArray(source.aliases, 50, 240),
+            active: source.active !== false,
+            measurement: boundedText(source.measurement, 120) || null,
+            createdAt: normalizeIsoTimestamp(source.createdAt),
+            updatedAt: normalizeIsoTimestamp(source.updatedAt),
+            order: Number.isFinite(Number(source.order)) ? Number(source.order) : index
+        };
+    }
+
+    function normalizeTargetBehaviors(values, entries) {
+        var result = [];
+        var seenIds = Object.create(null);
+        var seenLabels = Object.create(null);
+        function add(value) {
+            if (result.length >= MAX_TARGET_BEHAVIORS) return;
+            var normalized = normalizeTargetBehavior(value, result.length);
+            if (!normalized) return;
+            var key = normalizeToken(normalized.label);
+            if (seenIds[normalized.id] || seenLabels[key]) return;
+            seenIds[normalized.id] = true;
+            seenLabels[key] = true;
+            result.push(normalized);
+        }
+        (Array.isArray(values) ? values : []).slice(0, MAX_TARGET_BEHAVIORS).forEach(add);
+        (Array.isArray(entries) ? entries : []).slice(0, 5000).forEach(function (entry) {
+            if (!entry || typeof entry !== 'object') return;
+            var label = boundedText(entry.behavior, 240);
+            if (label) add({ id: boundedText(entry.behaviorId, 120) || canonicalBehaviorId(label), label: label });
+        });
+        return result;
+    }
+
+    function buildBehaviorLookup(targetBehaviors) {
+        var byId = Object.create(null);
+        var byToken = Object.create(null);
+        (Array.isArray(targetBehaviors) ? targetBehaviors : []).forEach(function (behavior) {
+            if (!behavior || !behavior.id) return;
+            byId[behavior.id] = behavior;
+            [behavior.label].concat(behavior.aliases || []).forEach(function (label) {
+                var token = normalizeToken(label);
+                if (token && !byToken[token]) byToken[token] = behavior;
+            });
+        });
+        return { byId: byId, byToken: byToken };
+    }
+
+    function resolveCanonicalBehavior(value, targetBehaviors) {
+        var entry = value && typeof value === 'object' ? value : { behavior: value };
+        var label = boundedText(entry.behavior || entry.label, 240);
+        var lookup = buildBehaviorLookup(targetBehaviors);
+        var behavior = entry.behaviorId && lookup.byId[entry.behaviorId]
+            ? lookup.byId[entry.behaviorId] : lookup.byToken[normalizeToken(label)];
+        if (behavior) return { id: behavior.id, label: behavior.label, defined: true };
+        return { id: boundedText(entry.behaviorId, 120) || canonicalBehaviorId(label), label: label || 'Unclassified', defined: false };
+    }
+
+    function normalizeIntensity(value) {
+        if (value == null || value === '') return null;
+        var numeric = Number(value);
+        return Number.isFinite(numeric) && numeric >= 1 && numeric <= 5 ? numeric : null;
+    }
+
+    function normalizeDurationSeconds(value) {
+        if (value == null || value === '') return null;
+        var numeric = Number(value);
+        return Number.isFinite(numeric) && numeric >= 0 && numeric <= 86400 ? numeric : null;
+    }
+
+    function sanitizeJsonValue(value, options, depth) {
+        options = options || {};
+        depth = depth || 0;
+        if (depth > (options.maxDepth || 8)) return null;
+        if (value == null || typeof value === 'boolean') return value;
+        if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+        if (typeof value === 'string') return value.slice(0, options.maxStringLength || 20000);
+        if (Array.isArray(value)) return value.slice(0, options.maxArrayLength || 1000).map(function (item) {
+            return sanitizeJsonValue(item, options, depth + 1);
+        });
+        if (typeof value !== 'object') return null;
+        var result = {};
+        Object.keys(value).slice(0, options.maxObjectKeys || 500).forEach(function (key) {
+            if (key === '__proto__' || key === 'prototype' || key === 'constructor') return;
+            result[key] = sanitizeJsonValue(value[key], options, depth + 1);
+        });
+        if (options.maxBytes) {
+            try { if (utf8ByteLength(JSON.stringify(result)) > options.maxBytes) return null; }
+            catch (_) { return null; }
+        }
+        return result;
+    }
+
+    function sanitizeJsonObject(value, maxBytes) {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+        var normalized = sanitizeJsonValue(value, { maxBytes: maxBytes || 128 * 1024 });
+        return normalized && typeof normalized === 'object' && !Array.isArray(normalized) ? normalized : {};
+    }
+
+    function normalizeAbcEntry(value, options) {
+        options = options || {};
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return { ok: false, entry: null, issues: ['invalid-record'] };
+        var issues = [];
+        var antecedent = boundedText(value.antecedent, 4000);
+        var behaviorText = boundedText(value.behavior, 4000);
+        var consequence = boundedText(value.consequence, 4000);
+        if (!antecedent) issues.push('missing-antecedent');
+        if (!behaviorText) issues.push('missing-behavior');
+        if (!consequence) issues.push('missing-consequence');
+        var occurredAt = normalizeIsoTimestamp(value.occurredAt || value.timestamp || value.date);
+        if (!occurredAt) issues.push('invalid-timestamp');
+        var intensity = normalizeIntensity(value.intensity);
+        if (value.intensity != null && value.intensity !== '' && intensity == null) issues.push('invalid-intensity');
+        if (intensity == null) issues.push('missing-intensity');
+        var timezoneOffset = normalizeTimezoneOffset(value.timezoneOffset);
+        var behavior = resolveCanonicalBehavior({ behavior: behaviorText, behaviorId: value.behaviorId }, options.targetBehaviors);
+        var seed = [occurredAt || '', antecedent, behaviorText, consequence, options.index || 0].join('|');
+        return {
+            ok: true,
+            issues: issues,
+            entry: {
+                id: boundedText(value.id, 160) || 'abc-' + stableHash(seed),
+                timestamp: occurredAt,
+                occurredAt: occurredAt,
+                recordedAt: normalizeIsoTimestamp(value.recordedAt) || occurredAt,
+                timezoneOffset: timezoneOffset,
+                localDate: occurredAt ? localDayKey(occurredAt, timezoneOffset) : null,
+                antecedent: antecedent,
+                antecedentId: boundedText(value.antecedentId, 120) || (antecedent ? 'antecedent-' + stableHash(normalizeToken(antecedent)) : null),
+                behavior: behaviorText,
+                behaviorId: behavior.id,
+                consequence: consequence,
+                consequenceId: boundedText(value.consequenceId, 120) || (consequence ? 'consequence-' + stableHash(normalizeToken(consequence)) : null),
+                setting: boundedText(value.setting, 2000),
+                intensity: intensity,
+                duration: normalizeDurationSeconds(value.duration),
+                phase: boundedText(value.phase, 120) || null,
+                notes: boundedText(value.notes, 10000),
+                observer: boundedText(value.observer, 240),
+                source: boundedText(value.source, 80).toLowerCase() || 'unknown',
+                observationSessionId: boundedText(value.observationSessionId, 160) || null,
+                student: boundedText(value.student, 240) || null,
+                function: boundedText(value.function, 120) || null,
+                tags: normalizeStringArray(value.tags, 50, 160),
+                metadata: sanitizeJsonObject(value.metadata, 32 * 1024)
+            }
+        };
+    }
+
+    function normalizeAbcEntries(values, options) {
+        var items = [];
+        var issueCounts = Object.create(null);
+        var dropped = 0;
+        (Array.isArray(values) ? values : []).slice(0, WORKSPACE_ARRAY_LIMITS.abcEntries).forEach(function (value, index) {
+            var result = normalizeAbcEntry(value, Object.assign({}, options || {}, { index: index }));
+            if (!result.ok || !result.entry) { dropped += 1; return; }
+            result.issues.forEach(function (issue) { issueCounts[issue] = (issueCounts[issue] || 0) + 1; });
+            items.push(result.entry);
+        });
+        return { items: items, report: { inputCount: Array.isArray(values) ? values.length : 0, outputCount: items.length, droppedCount: dropped, issueCounts: issueCounts } };
+    }
+
+    function normalizeObservationSession(value, options) {
+        options = options || {};
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return { ok: false, session: null, issues: ['invalid-record'] };
+        var issues = [];
+        var occurredAt = normalizeIsoTimestamp(value.occurredAt || value.timestamp || value.date);
+        if (!occurredAt) issues.push('invalid-timestamp');
+        var timezoneOffset = normalizeTimezoneOffset(value.timezoneOffset);
+        var behavior = resolveCanonicalBehavior({ behavior: value.behavior || value.targetBehavior, behaviorId: value.behaviorId }, options.targetBehaviors);
+        var duration = normalizeDurationSeconds(value.duration);
+        if (duration == null) issues.push('missing-duration');
+        var seed = [occurredAt || '', value.method || '', duration || '', options.index || 0].join('|');
+        return {
+            ok: true,
+            issues: issues,
+            session: {
+                id: boundedText(value.id, 160) || 'obs-' + stableHash(seed),
+                timestamp: occurredAt,
+                occurredAt: occurredAt,
+                recordedAt: normalizeIsoTimestamp(value.recordedAt) || occurredAt,
+                timezoneOffset: timezoneOffset,
+                localDate: occurredAt ? localDayKey(occurredAt, timezoneOffset) : null,
+                method: boundedText(value.method, 80).toLowerCase() || 'unknown',
+                duration: duration,
+                behavior: boundedText(value.behavior || value.targetBehavior, 4000),
+                behaviorId: behavior.id,
+                phase: boundedText(value.phase, 120) || null,
+                observer: boundedText(value.observer, 240),
+                source: boundedText(value.source, 80).toLowerCase() || 'unknown',
+                notes: boundedText(value.notes, 10000),
+                data: sanitizeJsonObject(value.data, 128 * 1024)
+            }
+        };
+    }
+
+    function normalizeObservationSessions(values, options) {
+        var items = [];
+        var issueCounts = Object.create(null);
+        var dropped = 0;
+        (Array.isArray(values) ? values : []).slice(0, WORKSPACE_ARRAY_LIMITS.observationSessions).forEach(function (value, index) {
+            var result = normalizeObservationSession(value, Object.assign({}, options || {}, { index: index }));
+            if (!result.ok || !result.session) { dropped += 1; return; }
+            result.issues.forEach(function (issue) { issueCounts[issue] = (issueCounts[issue] || 0) + 1; });
+            items.push(result.session);
+        });
+        return { items: items, report: { inputCount: Array.isArray(values) ? values.length : 0, outputCount: items.length, droppedCount: dropped, issueCounts: issueCounts } };
+    }
+
+    function normalizeToolState(value) {
+        return sanitizeJsonObject(value, MAX_TOOL_STATE_BYTES);
+    }
+
+    function normalizeDeletedAbcEntries(values, targetBehaviors) {
+        var result = [];
+        (Array.isArray(values) ? values : []).slice(0, MAX_DELETED_ABC_ENTRIES).forEach(function (item, index) {
+            var source = item && item.entry ? item : { entry: item };
+            var normalized = normalizeAbcEntry(source.entry, { targetBehaviors: targetBehaviors, index: index });
+            if (!normalized.ok || !normalized.entry) return;
+            result.push({
+                entry: normalized.entry,
+                deletedAt: normalizeIsoTimestamp(source.deletedAt) || normalized.entry.recordedAt,
+                deletedBy: boundedText(source.deletedBy, 240),
+                reason: boundedText(source.reason, 500),
+                auditId: boundedText(source.auditId, 160) || null
+            });
+        });
+        return result;
+    }
+
+    function normalizeAuditLog(values) {
+        var result = [];
+        (Array.isArray(values) ? values : []).slice(0, MAX_AUDIT_EVENTS).forEach(function (event, index) {
+            if (!event || typeof event !== 'object' || Array.isArray(event)) return;
+            var timestamp = normalizeIsoTimestamp(event.timestamp);
+            var action = boundedText(event.action, 80);
+            if (!timestamp || !action) return;
+            result.push({
+                id: boundedText(event.id, 160) || 'audit-' + stableHash(timestamp + '|' + action + '|' + index),
+                timestamp: timestamp,
+                action: action,
+                entityType: boundedText(event.entityType, 80) || 'workspace',
+                entityId: boundedText(event.entityId, 160) || null,
+                actor: boundedText(event.actor, 240),
+                summary: boundedText(event.summary, 1000),
+                metadata: sanitizeJsonObject(event.metadata, 16 * 1024)
+            });
+        });
+        return result;
+    }
+
+    function normalizeWorkflowDiagnostics(values) {
+        var result = [];
+        (Array.isArray(values) ? values : []).slice(0, MAX_WORKFLOW_DIAGNOSTICS).forEach(function (event, index) {
+            if (!event || typeof event !== 'object' || Array.isArray(event)) return;
+            var timestamp = normalizeIsoTimestamp(event.timestamp);
+            var action = boundedText(event.action, 80);
+            if (!timestamp || !action) return;
+            result.push({
+                id: boundedText(event.id, 160) || 'diagnostic-' + stableHash(timestamp + '|' + action + '|' + index),
+                timestamp: timestamp,
+                action: action,
+                toolId: boundedText(event.toolId, 120) || null,
+                durationMs: Number.isFinite(Number(event.durationMs)) && Number(event.durationMs) >= 0 ? Math.round(Number(event.durationMs)) : null,
+                outcome: boundedText(event.outcome, 80) || null
+            });
+        });
+        return result;
+    }
+
+    function summarizeIntensity(entries) {
+        var distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        var sum = 0;
+        var ratedCount = 0;
+        var totalCount = Array.isArray(entries) ? entries.length : 0;
+        (Array.isArray(entries) ? entries : []).forEach(function (entry) {
+            var value = normalizeIntensity(entry && entry.intensity);
+            if (value == null) return;
+            sum += value;
+            ratedCount += 1;
+            distribution[value] += 1;
+        });
+        return {
+            mean: ratedCount ? sum / ratedCount : null,
+            sum: sum,
+            ratedCount: ratedCount,
+            missingCount: totalCount - ratedCount,
+            totalCount: totalCount,
+            distribution: distribution
+        };
+    }
+
+    function groupByCanonicalBehavior(entries, targetBehaviors) {
+        var groups = Object.create(null);
+        (Array.isArray(entries) ? entries : []).forEach(function (entry) {
+            var behavior = resolveCanonicalBehavior(entry, targetBehaviors);
+            if (!groups[behavior.id]) groups[behavior.id] = { id: behavior.id, label: behavior.label, defined: behavior.defined, count: 0, entries: [] };
+            groups[behavior.id].count += 1;
+            groups[behavior.id].entries.push(entry);
+        });
+        return Object.keys(groups).map(function (id) {
+            var group = groups[id];
+            group.intensity = summarizeIntensity(group.entries);
+            return group;
+        }).sort(function (left, right) { return right.count - left.count || left.label.localeCompare(right.label); });
+    }
+
+    function groupByLocalDay(entries) {
+        var groups = Object.create(null);
+        (Array.isArray(entries) ? entries : []).forEach(function (entry) {
+            var key = entry && entry.localDate || localDayKey(entry && (entry.occurredAt || entry.timestamp), entry && entry.timezoneOffset);
+            if (!key) return;
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(entry);
+        });
+        return Object.keys(groups).sort().map(function (date) {
+            return { date: date, count: groups[date].length, entries: groups[date], intensity: summarizeIntensity(groups[date]) };
+        });
+    }
+
+    function filterByDateRange(items, options) {
+        options = options || {};
+        var from = options.from instanceof Date ? options.from : parseLocalDateBoundary(options.from, false);
+        var toExclusive = options.toExclusive instanceof Date ? options.toExclusive : parseLocalDateBoundary(options.to, true);
+        return (Array.isArray(items) ? items : []).filter(function (item) {
+            var iso = normalizeIsoTimestamp(item && (item.occurredAt || item.timestamp || item.date));
+            if (!iso) return false;
+            var date = new Date(iso);
+            return (!from || date >= from) && (!toExclusive || date < toExclusive);
+        });
+    }
+
+    function summarizeExposure(observationSessions, options) {
+        options = options || {};
+        var seconds = 0;
+        var sessionCount = 0;
+        (Array.isArray(observationSessions) ? observationSessions : []).forEach(function (session) {
+            if (options.phase && session && session.phase !== options.phase) return;
+            if (options.behaviorId && session && session.behaviorId && session.behaviorId !== options.behaviorId) return;
+            var duration = normalizeDurationSeconds(session && session.duration);
+            if (duration == null || duration <= 0) return;
+            seconds += duration;
+            sessionCount += 1;
+        });
+        return { seconds: seconds, minutes: seconds / 60, hours: seconds / 3600, sessionCount: sessionCount };
+    }
+
+    function calculateIncidentRate(entries, observationSessions, options) {
+        options = options || {};
+        var incidents = (Array.isArray(entries) ? entries : []).filter(function (entry) {
+            if (options.phase && entry && entry.phase !== options.phase) return false;
+            if (options.behaviorId && entry && entry.behaviorId !== options.behaviorId) return false;
+            return true;
+        }).length;
+        var exposure = summarizeExposure(observationSessions, options);
+        return {
+            incidents: incidents,
+            exposure: exposure,
+            perObservedHour: exposure.hours > 0 ? incidents / exposure.hours : null,
+            denominatorAvailable: exposure.hours > 0
+        };
+    }
+
+    function summarizePhases(entries, observationSessions) {
+        var phases = Object.create(null);
+        (Array.isArray(entries) ? entries : []).forEach(function (entry) {
+            var phase = boundedText(entry && entry.phase, 120) || 'Unassigned';
+            if (!phases[phase]) phases[phase] = [];
+            phases[phase].push(entry);
+        });
+        return Object.keys(phases).map(function (phase) {
+            var rate = calculateIncidentRate(phases[phase], observationSessions, { phase: phase === 'Unassigned' ? null : phase });
+            return { phase: phase, count: phases[phase].length, intensity: summarizeIntensity(phases[phase]), rate: rate };
+        }).sort(function (left, right) { return right.count - left.count; });
+    }
+
+    function inspectAbcData(entries, targetBehaviors, observationSessions) {
+        var normalized = normalizeAbcEntries(entries, { targetBehaviors: targetBehaviors });
+        var issueCounts = normalized.report.issueCounts;
+        var undefinedBehaviors = groupByCanonicalBehavior(normalized.items, targetBehaviors).filter(function (group) { return !group.defined; });
+        var exposure = summarizeExposure(observationSessions);
+        return {
+            recordCount: normalized.items.length,
+            droppedCount: normalized.report.droppedCount,
+            issueCounts: issueCounts,
+            missingIntensityCount: issueCounts['missing-intensity'] || 0,
+            invalidTimestampCount: issueCounts['invalid-timestamp'] || 0,
+            incompleteAbcCount: Math.max(issueCounts['missing-antecedent'] || 0, issueCounts['missing-behavior'] || 0, issueCounts['missing-consequence'] || 0),
+            undefinedBehaviorCount: undefinedBehaviors.length,
+            undefinedBehaviors: undefinedBehaviors.slice(0, 20).map(function (group) { return { id: group.id, label: group.label, count: group.count }; }),
+            exposure: exposure,
+            denominatorAvailable: exposure.hours > 0
+        };
+    }
+
+    function dataFingerprint(entries) {
+        var relevant = (Array.isArray(entries) ? entries : []).map(function (entry) {
+            return [entry && entry.id, entry && (entry.occurredAt || entry.timestamp), entry && entry.antecedentId, entry && entry.behaviorId, entry && entry.consequenceId, entry && normalizeIntensity(entry.intensity), entry && entry.phase];
+        }).sort(function (left, right) { return String(left[0] || '').localeCompare(String(right[0] || '')); });
+        return 'bl-data-' + stableHash(relevant);
+    }
+
+    function selectStratifiedEntries(entries, maximum) {
+        var sorted = (Array.isArray(entries) ? entries : []).slice().sort(function (left, right) {
+            return (Date.parse(left && (left.occurredAt || left.timestamp) || '') || 0) - (Date.parse(right && (right.occurredAt || right.timestamp) || '') || 0);
+        });
+        var limit = Math.max(1, Math.floor(Number(maximum) || 20));
+        if (sorted.length <= limit) return { entries: sorted, strategy: 'complete', totalCount: sorted.length, sampleCount: sorted.length };
+        var selected = [];
+        var seen = Object.create(null);
+        for (var index = 0; index < limit; index += 1) {
+            var position = Math.round(index * (sorted.length - 1) / (limit - 1));
+            var entry = sorted[position];
+            var key = entry && entry.id || String(position);
+            if (seen[key]) continue;
+            seen[key] = true;
+            selected.push(entry);
+        }
+        return { entries: selected, strategy: 'stratified-across-date-range', totalCount: sorted.length, sampleCount: selected.length };
+    }
+
+    function createAnalysisProvenance(entries, sample, now) {
+        var values = Array.isArray(entries) ? entries : [];
+        var timestamps = values.map(function (entry) { return normalizeIsoTimestamp(entry && (entry.occurredAt || entry.timestamp)); }).filter(Boolean).sort();
+        var selected = sample && Array.isArray(sample.entries) ? sample : selectStratifiedEntries(values, 20);
+        return {
+            generatedAt: normalizeIsoTimestamp(now) || new Date().toISOString(),
+            sourceFingerprint: dataFingerprint(values),
+            totalEntries: values.length,
+            sampleCount: selected.sampleCount,
+            sampleStrategy: selected.strategy,
+            dateFrom: timestamps.length ? timestamps[0] : null,
+            dateTo: timestamps.length ? timestamps[timestamps.length - 1] : null,
+            sampledEntryIds: selected.entries.map(function (entry) { return entry && entry.id; }).filter(Boolean)
+        };
+    }
+
+    function isAnalysisStale(analysis, entries) {
+        return !!(analysis && analysis.provenance && analysis.provenance.sourceFingerprint && analysis.provenance.sourceFingerprint !== dataFingerprint(entries));
+    }
+
+    function createAuditEvent(action, options) {
+        options = options || {};
+        var timestamp = normalizeIsoTimestamp(options.timestamp) || new Date().toISOString();
+        return {
+            id: boundedText(options.id, 160) || 'audit-' + stableHash(timestamp + '|' + action + '|' + (options.entityId || '')),
+            timestamp: timestamp,
+            action: boundedText(action, 80),
+            entityType: boundedText(options.entityType, 80) || 'workspace',
+            entityId: boundedText(options.entityId, 160) || null,
+            actor: boundedText(options.actor, 240),
+            summary: boundedText(options.summary, 1000),
+            metadata: sanitizeJsonObject(options.metadata, 16 * 1024)
+        };
+    }
+
+    function appendBounded(items, value, maximum) {
+        return [value].concat(Array.isArray(items) ? items : []).slice(0, Math.max(1, maximum || 1000));
+    }
+
+    function softDeleteAbcEntries(entries, deletedEntries, ids, options) {
+        options = options || {};
+        var idSet = Object.create(null);
+        (Array.isArray(ids) ? ids : [ids]).forEach(function (id) { if (id != null) idSet[String(id)] = true; });
+        var kept = [];
+        var removed = [];
+        (Array.isArray(entries) ? entries : []).forEach(function (entry) {
+            if (!entry || !idSet[String(entry.id)]) { kept.push(entry); return; }
+            removed.push({ entry: entry, deletedAt: normalizeIsoTimestamp(options.deletedAt) || new Date().toISOString(), deletedBy: boundedText(options.deletedBy, 240), reason: boundedText(options.reason, 500), auditId: boundedText(options.auditId, 160) || null });
+        });
+        return { entries: kept, deletedEntries: removed.concat(Array.isArray(deletedEntries) ? deletedEntries : []).slice(0, MAX_DELETED_ABC_ENTRIES), removed: removed };
+    }
+
+    function restoreDeletedAbcEntry(entries, deletedEntries, id) {
+        var restored = null;
+        var remaining = [];
+        (Array.isArray(deletedEntries) ? deletedEntries : []).forEach(function (item) {
+            if (!restored && item && item.entry && String(item.entry.id) === String(id)) restored = item.entry;
+            else remaining.push(item);
+        });
+        if (!restored) return { entries: Array.isArray(entries) ? entries : [], deletedEntries: remaining, restored: null };
+        var withoutDuplicate = (Array.isArray(entries) ? entries : []).filter(function (entry) { return !entry || String(entry.id) !== String(restored.id); });
+        return { entries: [restored].concat(withoutDuplicate), deletedEntries: remaining, restored: restored };
     }
 
     function utf8ByteLength(value) {
@@ -680,12 +1274,50 @@
         sameWorkspaceEdit: sameWorkspaceEdit,
         sameWorkspaceSnapshot: sameWorkspaceSnapshot,
         findLatestTabDraft: findLatestTabDraft,
+        WORKSPACE_VERSION: WORKSPACE_VERSION,
+        MAX_TARGET_BEHAVIORS: MAX_TARGET_BEHAVIORS,
+        MAX_DELETED_ABC_ENTRIES: MAX_DELETED_ABC_ENTRIES,
+        MAX_AUDIT_EVENTS: MAX_AUDIT_EVENTS,
+        MAX_WORKFLOW_DIAGNOSTICS: MAX_WORKFLOW_DIAGNOSTICS,
+        MAX_TOOL_STATE_BYTES: MAX_TOOL_STATE_BYTES,
         MAX_WORKSPACE_IMPORT_BYTES: MAX_WORKSPACE_IMPORT_BYTES,
         MAX_SHARED_WORKSPACE_IMPORT_BYTES: MAX_SHARED_WORKSPACE_IMPORT_BYTES,
         LOCAL_WORKSPACE_SAVE_DELAY_MS: LOCAL_WORKSPACE_SAVE_DELAY_MS,
         COLLECTION_DEFAULT_PAGE_SIZE: COLLECTION_DEFAULT_PAGE_SIZE,
         COLLECTION_MAX_PAGE_SIZE: COLLECTION_MAX_PAGE_SIZE,
         paginateCollection: paginateCollection,
+        boundedText: boundedText,
+        normalizeToken: normalizeToken,
+        stableHash: stableHash,
+        canonicalBehaviorId: canonicalBehaviorId,
+        normalizeIsoTimestamp: normalizeIsoTimestamp,
+        normalizeTimezoneOffset: normalizeTimezoneOffset,
+        localDayKey: localDayKey,
+        parseLocalDateBoundary: parseLocalDateBoundary,
+        normalizeTargetBehaviors: normalizeTargetBehaviors,
+        resolveCanonicalBehavior: resolveCanonicalBehavior,
+        normalizeIntensity: normalizeIntensity,
+        normalizeAbcEntry: normalizeAbcEntry,
+        normalizeAbcEntries: normalizeAbcEntries,
+        normalizeObservationSession: normalizeObservationSession,
+        normalizeObservationSessions: normalizeObservationSessions,
+        normalizeToolState: normalizeToolState,
+        summarizeIntensity: summarizeIntensity,
+        groupByCanonicalBehavior: groupByCanonicalBehavior,
+        groupByLocalDay: groupByLocalDay,
+        filterByDateRange: filterByDateRange,
+        summarizeExposure: summarizeExposure,
+        calculateIncidentRate: calculateIncidentRate,
+        summarizePhases: summarizePhases,
+        inspectAbcData: inspectAbcData,
+        dataFingerprint: dataFingerprint,
+        selectStratifiedEntries: selectStratifiedEntries,
+        createAnalysisProvenance: createAnalysisProvenance,
+        isAnalysisStale: isAnalysisStale,
+        createAuditEvent: createAuditEvent,
+        appendBounded: appendBounded,
+        softDeleteAbcEntries: softDeleteAbcEntries,
+        restoreDeletedAbcEntry: restoreDeletedAbcEntry,
         utf8ByteLength: utf8ByteLength,
         formatByteSize: formatByteSize,
         createWorkspacePersistenceScheduler: createWorkspacePersistenceScheduler,

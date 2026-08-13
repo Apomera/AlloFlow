@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlloFlow Accessibility Remediation White Paper</title>
+    <meta name="description"
+        content="AlloFlow's document-remediation architecture, standards context, evidence model, privacy boundaries, delivery paths, limitations, and case studies.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://apomera.github.io/AlloFlow/whitepaper.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="AlloFlow">
+    <meta property="og:url" content="https://apomera.github.io/AlloFlow/whitepaper.html">
+    <meta property="og:title" content="AlloFlow Document Accessibility White Paper">
+    <meta property="og:description"
+        content="A transparent account of the remediation pipeline, evidence boundaries, privacy model, and current limitations.">
+    <meta property="og:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://apomera.github.io/AlloFlow/whitepaper.html">
+    <meta name="twitter:title" content="AlloFlow Document Accessibility White Paper">
+    <meta name="twitter:description"
+        content="Architecture, verification, privacy, legal context, case studies, and limitations.">
+    <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+    <link rel="icon" type="image/svg+xml" href="allobot.svg">
+    <link rel="apple-touch-icon" href="allobot.png">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="promotion-wave3.css">
+    <link rel="stylesheet" href="promotion-wave3-shell.css">
+    <link rel="stylesheet" href="promo-nav-breakpoint.css">
+    <link rel="stylesheet" href="promotion-wave2.css">
+    <script src="site.js" defer></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="promo-page">
+    <a class="skip-link" href="#paper-title">Skip to white paper</a>
+
+    <nav class="navbar" aria-label="Primary">
+        <div class="navbar-inner">
+            <a href="index.html" class="nav-logo"><i data-lucide="layers"
+                    style="width:28px;height:28px"></i>AlloFlow</a>
+            <div class="nav-links" data-site-nav="primary">
+                <a href="tools.html">Find a Tool</a>
+                <a href="features.html">Features</a>
+                <a href="remediation.html">Remediation</a>
+                <a href="ways-to-use.html">Ways to Use</a>
+                <a href="for-districts.html">For Districts</a>
+                <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
+            </div>
+            <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
+                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+        </div>
+    </nav>
+
+    <!-- shared mobile nav:start -->
+    <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
+        <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
+        <a href="index.html">Home</a>
+        <a href="tools.html">Find a Tool</a>
+        <a href="features.html">Features</a>
+        <a href="library.html">Lesson Library</a>
+        <a href="remediation.html">Remediation</a>
+        <a href="accessibility_demo.html">Accessibility Lab</a>
+        <a href="whitepaper.html" aria-current="page">White Paper</a>
+        <a href="ways-to-use.html">Ways to Use</a>
+        <a href="for-districts.html">For Districts</a>
+        <a href="feedback.html">Feedback</a>
+        <a href="launch.html">Launch AlloFlow</a>
+        <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <noscript>
+        <style>.mobile-menu-btn{display:none!important}</style>
+        <nav class="noscript-nav" aria-label="Site navigation without JavaScript">
+            <a href="index.html">Home</a><a href="tools.html">Find a Tool</a><a href="remediation.html">Remediation</a><a href="ways-to-use.html">Ways to Use</a><a href="feedback.html">Feedback</a><a href="launch.html">Launch AlloFlow</a>
+        </nav>
+    </noscript>
+<!-- shared mobile nav:end -->
+
+    <main id="main-content" tabindex="-1">
+        <div class="paper-download-bar">
+            <div class="paper-download-inner">
+                <p><strong>Print-ready edition.</strong> Use your browser's Print command to save a PDF copy; accessibility varies by browser, so use this HTML page or the Markdown source as the accessible reference edition.</p>
+                <a href="downloads/AlloFlow-Document-Accessibility-White-Paper.md" download>Download Markdown source</a>
+            </div>
+        </div>
+
+        <div class="paper-shell">
+            <nav class="paper-toc" aria-label="White paper contents">
+                <p class="promo-kicker">Contents</p>
+                <ol>
+                    <li><a href="#executive-summary">Executive summary</a></li>
+                    <li><a href="#standards-context">Standards and deadline</a></li>
+                    <li><a href="#problem">The remediation problem</a></li>
+                    <li><a href="#architecture">Pipeline architecture</a></li>
+                    <li><a href="#evidence">Evidence model</a></li>
+                    <li><a href="#delivery">Delivery paths</a></li>
+                    <li><a href="#privacy">Privacy boundaries</a></li>
+                    <li><a href="#case-studies">Case studies</a></li>
+                    <li><a href="#limitations">Limitations</a></li>
+                    <li><a href="#recommendations">Adoption guidance</a></li>
+                    <li><a href="#references">References</a></li>
+                </ol>
+            </nav>
+
+            <article class="paper">
+                <header class="paper-header">
+                    <p class="promo-kicker">Technical white paper · public draft 1.0</p>
+                    <h1 id="paper-title" tabindex="-1">Evidence-aware document accessibility remediation in AlloFlow</h1>
+                    <p class="paper-subtitle">Architecture, standards context, privacy boundaries, delivery paths, and
+                        the limits of automated assurance.</p>
+                    <p class="paper-meta">Prepared August 13, 2026 · AlloFlow open-source project · This paper is
+                        technical information, not legal advice or a conformance certification.</p>
+                </header>
+
+                <section id="executive-summary" aria-labelledby="executive-summary-heading">
+                    <h2 id="executive-summary-heading">1. Executive summary</h2>
+                    <p>Document remediation is not a file conversion problem. An accessible result must preserve the
+                        source's information while exposing meaningful headings, lists, tables, links, image
+                        alternatives, language, reading order, navigation, and interaction to people using different
+                        sensory and input modes. Automated tools can identify and repair some failures, but they cannot
+                        decide whether every description is useful, every table conveys its intended relationships, or
+                        every page remains faithful to the author.</p>
+                    <p>AlloFlow therefore treats remediation as a staged, evidence-producing workflow. It assesses and
+                        extracts the source; rebuilds a semantic HTML representation; applies deterministic and
+                        AI-supported repairs; checks the exact HTML with multiple evidence sources; stops or reverts
+                        when an improvement loop plateaus or regresses; then creates a native tagged PDF and, when the
+                        local validator is available, runs veraPDF against the final PDF bytes. The output is a package
+                        for review rather than a blanket declaration of compliance.</p>
+                    <div class="paper-callout"><strong>Central claim.</strong> AlloFlow is designed to produce a more
+                        accessible, reviewable document package with source-bound evidence. It does not claim that
+                        automation alone establishes WCAG, PDF/UA, Section 508, or legal compliance.</div>
+                </section>
+
+                <section id="standards-context" aria-labelledby="standards-context-heading">
+                    <h2 id="standards-context-heading">2. Standards and current public-sector timeline</h2>
+                    <h3>2.1 Why WCAG matters</h3>
+                    <p>The Web Content Accessibility Guidelines are a shared international technical standard for
+                        making digital content more accessible to people with disabilities. WCAG 2 organizes its
+                        requirements under four principles: content should be perceivable, operable, understandable,
+                        and robust. Testable success criteria are grouped at Levels A, AA, and AAA. W3C encourages use
+                        of WCAG 2.2, which adds criteria while retaining the earlier WCAG 2 requirements, apart from a
+                        documented obsolete parsing criterion.</p>
+                    <p>AlloFlow's engineering work is aimed toward WCAG 2.2 Level AA. That target should not be confused
+                        with the legal baseline selected in a particular regulation or with a product-wide conformance
+                        claim.</p>
+                    <h3>2.2 U.S. Department of Justice Title II rule</h3>
+                    <p>The Department of Justice's 2024 Title II rule adopted WCAG 2.1 Level AA as the technical
+                        standard for covered web content and mobile applications provided by state and local
+                        governments. Public schools, public universities, libraries, and other public entities can fall
+                        within its scope. The rule also contains definitions, exceptions, and entity-specific
+                        considerations that require direct review of official guidance.</p>
+                    <p>An interim final rule effective April 20, 2026 extended the compliance dates. Public entities
+                        with a population of 50,000 or more generally have a compliance date of April 26, 2027. Public
+                        entities with a population below 50,000 and special district governments generally have a date
+                        of April 26, 2028. DOJ emphasizes that accessibility obligations under Title II continue
+                        independently of those dates.</p>
+                    <div class="paper-callout paper-warning"><strong>Planning implication.</strong> A later date should
+                        not be treated as permission to delay inventory and remediation. Accessible content requires
+                        ownership, training, procurement standards, repeatable authoring practice, user testing, and a
+                        sustainable way to handle new material.</div>
+                </section>
+
+                <section id="problem" aria-labelledby="problem-heading">
+                    <h2 id="problem-heading">3. The remediation problem</h2>
+                    <p>Conventional documents often encode appearance more reliably than meaning. A heading may be only
+                        large bold text. A table may be a group of positioned words. A scanned PDF may contain no text
+                        layer. Reading order can diverge from visual order. Form fields can be unlabeled. Images may
+                        lack text alternatives or may require context that cannot be inferred safely.</p>
+                    <p>A robust process must address at least four kinds of risk:</p>
+                    <ul>
+                        <li><strong>Extraction risk:</strong> text or relationships can be lost, duplicated, or placed
+                            in the wrong order.</li>
+                        <li><strong>Semantic risk:</strong> a visually plausible output can expose weak or incorrect
+                            structure to assistive technology.</li>
+                        <li><strong>Transformation risk:</strong> an attempted fix can alter meaning or introduce a new
+                            defect.</li>
+                        <li><strong>Assurance risk:</strong> a clean automated scan can be mistaken for complete
+                            accessibility evidence.</li>
+                    </ul>
+                    <p>AlloFlow's architecture addresses these risks by separating source recovery, semantic authoring,
+                        browser-level checks, PDF structural checks, and human review.</p>
+                </section>
+
+                <section id="architecture" aria-labelledby="architecture-heading">
+                    <h2 id="architecture-heading">4. Pipeline architecture</h2>
+                    <div class="paper-flow">PDF / DOCX / PPTX
+        ↓
+source assessment + text/layout extraction + OCR when needed
+        ↓
+semantic HTML rebuild
+        ↓
+deterministic repair → AI-diagnosed surgical repair → complex rewrite only when needed
+        ↓
+fresh rubric review + axe-core + IBM Equal Access on exact HTML bytes
+        ↓
+bounded keep-best loop with plateau stop and regression rollback
+        ↓
+reviewable HTML + evidence report + native tagged PDF
+        ↓
+internal PDF preflight + optional local veraPDF PDF/UA-1 validation
+        ↓
+human source comparison and usability review</div>
+                    <h3>4.1 Assessment and extraction</h3>
+                    <p>The pipeline begins by identifying the source format, page characteristics, text availability,
+                        images, links, and likely reading-order or structure risks. Text-native pages are extracted
+                        directly. Image-based pages can be routed through OCR. Extraction remains an evidence source,
+                        not an authority: recovered tokens and order must be compared with the source.</p>
+                    <h3>4.2 Semantic rebuild</h3>
+                    <p>The primary intermediate representation is semantic HTML. This creates an inspectable structure
+                        for headings, paragraphs, lists, tables, figures, links, language, navigation, and accessible
+                        names. Deterministic fixes are preferred because they are reproducible. More invasive
+                        AI-supported repair is used for defects that require diagnosis or rewriting.</p>
+                    <h3>4.3 Bounded improvement</h3>
+                    <p>Verification results feed a keep-best loop. The process can apply a candidate repair, re-run
+                        evidence, keep an improvement, revert a regression, and stop when the results plateau. This is
+                        safer than an unbounded “self-healing” claim because every iteration is conditional on fresh
+                        evidence.</p>
+                    <h3>4.4 Output and PDF validation</h3>
+                    <p>The application can produce accessible HTML, an audit/evidence report, and native tagged PDF for
+                        PDF inputs. Office inputs in the local connector produce accessible HTML rather than pretending
+                        that a generic HTML-to-PDF step reconstructs an editable Office source. Editable and alternate
+                        exports include DOCX, ODT, EPUB 3, DAISY 3, and uncontracted Grade-1 BRF, each with its own
+                        disclosed validation boundary.</p>
+                </section>
+
+                <section id="evidence" aria-labelledby="evidence-heading">
+                    <h2 id="evidence-heading">5. Evidence model</h2>
+                    <h3>5.1 HTML evidence</h3>
+                    <p>Complete application-level HTML evidence combines a rubric-based accessibility review with
+                        axe-core and IBM Equal Access checks. These are not three interchangeable scores. The rubric can
+                        address contextual requirements that rule engines may not decide; rule engines provide
+                        deterministic findings for supported machine-testable patterns.</p>
+                    <h3>5.2 Exact-output binding</h3>
+                    <p>Evidence is useful only when it corresponds to the artifact being delivered. AlloFlow binds
+                        verification to the exact HTML output and, in the portable workflow, binds the repair plan to a
+                        SHA-256 digest of the source. Stamped reports and verification worksheets are intended to make
+                        stale or altered evidence detectable.</p>
+                    <h3>5.3 PDF evidence</h3>
+                    <p>A tagged PDF and a browser-accessible HTML rendering are different artifacts. PDF output receives
+                        an internal structural preflight. When local Java and veraPDF are available, the final PDF bytes
+                        can receive independent PDF/UA-1 validation. A veraPDF pass evaluates the rules in its profile;
+                        it does not prove that every description is meaningful or every reading-order choice matches
+                        author intent.</p>
+                    <h3>5.4 Human review</h3>
+                    <p>A qualified reviewer still compares the source and output; checks reading order, tables,
+                        equations, forms, and image descriptions; tests keyboard and assistive-technology use where
+                        relevant; and resolves cautions that automation cannot decide. Legal, signed, and interactive
+                        form records receive additional restrictions in the portable workflow.</p>
+                </section>
+
+                <section id="delivery" aria-labelledby="delivery-heading">
+                    <h2 id="delivery-heading">6. Delivery paths</h2>
+                    <h3>6.1 Application pipeline</h3>
+                    <p>The full AlloFlow application presents an interactive document workflow with preview, audit,
+                        repair, verification, export, and review controls. It is available through the project's broader
+                        runtime paths, whose AI and storage boundaries differ.</p>
+                    <h3>6.2 Portable Agent Skill v0.2.9</h3>
+                    <p>The portable Skill is the simplest public remediation distribution. A user attaches a document
+                        in a compatible AI workspace. The selected host model analyzes the attachment and creates a
+                        strict, source-bound repair plan. Bundled scripts perform deterministic rebuild and validation,
+                        then produce HTML, tagged PDF when local capability is present, a scoped report, and a privacy
+                        receipt. A fresh-context second reader or human reviewer verifies the result. Source files are never overwritten; automatic rebuild is blocked for interactive forms, signed documents, certificates, and legal records.</p>
+                    <p>The neutral Skill is the ordinary direct-use package. The OpenAI package supports the publisher and submission flow, while the Claude Code wrapper supports that plugin environment. They are versioned, checksum-listed assets in the portable-v0.2.9 GitHub Release, not the Claude Desktop MCP connector. Baseline scripts require Python 3.9 or newer; tagged PDF needs local Node, Playwright, and Chromium capability; PDF/UA validation needs a separate local Java and veraPDF setup.</p>
+                    <h3>6.3 Local MCP connector</h3>
+                    <p>The local MCP source exposes 29 tools for remediation, auditing, extraction, redaction, form
+                        conversion, validation, and alternate-format work. It includes a companion Skill that teaches a
+                        compatible client how to use the connector. The connector runs as local standard input/output;
+                        offline document tools keep document data local. Setup and some export helpers can download
+                        public dependencies without intentionally sending document content; credential checking sends
+                        only the key. Gemini-dependent operations may send the full selected document or derived
+                        content using the user's configured key.</p>
+                    <p>A public MCPB binary is intentionally not linked at the time of this paper. The repository build
+                        on disk has release/checksum drift. A trustworthy release requires a fresh non-lean build,
+                        parity tests, artifact verification, an updated checksum, an SBOM, attestation, and a versioned release tag and checksum record.</p>
+                    <h3>6.4 Institution-owned remote pilot architecture</h3>
+                    <p>The repository also contains a fail-closed remote MCP design using institution-owned Cloudflare
+                        infrastructure for OAuth, opaque identifiers, private storage, durable workflows, isolated
+                        containers, quotas, and retention. It has not been provisioned as a public service and should
+                        not be confused with the Cloudflare Pages browser application.</p>
+                </section>
+
+                <section id="privacy" aria-labelledby="privacy-heading">
+                    <h2 id="privacy-heading">7. Privacy boundaries</h2>
+                    <p>“Local” and “private” must name the system boundary. AlloFlow uses different boundaries for
+                        different workflows:</p>
+                    <ul>
+                        <li><strong>Portable Skill:</strong> the attachment is processed by the chosen host agent under
+                            its terms and settings. Bundled scripts make no document request to AlloFlow, Cloudflare, a
+                            remote MCP, another model API, or telemetry.</li>
+                        <li><strong>Local MCP:</strong> offline document tools keep document data local. Some setup and export helpers fetch public dependencies without intentionally sending document content; credential checking sends only the key. Gemini-dependent operations may send the full selected document or derived content using the user's key. Local job metadata can persist for up to 30 days.</li>
+                        <li><strong>Cloudflare-hosted browser app:</strong> Cloudflare Pages delivers static application
+                            assets. Ordinary web configuration, including a configured provider key, is stored in that
+                            browser's unencrypted local storage; shared or student devices should be avoided and keys removed after use. AI requests go to the selected provider. Cloudflare Pages is not the remediation document service.</li>
+                        <li><strong>Packaged Electron Desktop:</strong> provider keys can use OS-backed encrypted storage, and supported
+                            local models can avoid a remote model provider for compatible operations.</li>
+                    </ul>
+                    <div class="paper-callout paper-warning"><strong>Protected-data caution.</strong> No path should be
+                        used for student records, health information, or other protected content solely because it is
+                        described as local or portable. Institutions must approve the host, account, provider,
+                        retention, device, storage, and human workflow together.</div>
+                </section>
+
+                <section id="case-studies" aria-labelledby="case-studies-heading">
+                    <h2 id="case-studies-heading">8. Case-study evidence</h2>
+                    <p>Repository test reports provide useful examples of the pipeline under specific conditions. They
+                        are not general accuracy estimates.</p>
+                    <h3>8.1 Five-document cross-validation</h3>
+                    <p>A dated five-document corpus report recorded agreement between two PDF/UA validation pathways
+                        across all five tested outputs and recorded zero failed rules in those runs. The same report
+                        included corroborating axe-core and IBM Equal Access results on the tested HTML. The correct
+                        interpretation is that these five artifacts passed the described tests—not that every future
+                        document will do so.</p>
+                    <h3>8.2 Large-document verification</h3>
+                    <p>A 126-page case recorded 1,663 of 1,663 verification items in its round report. A separate
+                        40-page, 17-image teacher-guide case recorded 388 of 388 items after the verification process
+                        exposed seven authoring discrepancies and they were corrected. These examples illustrate why
+                        the verification loop matters: a useful evaluator must be able to block or revise output, not
+                        merely produce a positive score.</p>
+                </section>
+
+                <section id="limitations" aria-labelledby="limitations-heading">
+                    <h2 id="limitations-heading">9. Current limitations and non-claims</h2>
+                    <ul>
+                        <li>Automated output is not a legal opinion, accessibility certification, or substitute for an
+                            organization's conformance evaluation.</li>
+                        <li>A zero-finding axe or Equal Access run covers only the rules and rendered state tested.</li>
+                        <li>AI review can be inconsistent and must be corroborated by deterministic checks and people.</li>
+                        <li>OCR can misrecognize characters, order, mathematical notation, or language.</li>
+                        <li>Alternative-text quality, source fidelity, and reading-order intent require human judgment.</li>
+                        <li>EPUB checking is structural and is not an epubcheck result.</li>
+                        <li>DAISY output is not currently backed by a contracted DAISY validator.</li>
+                        <li>BRF output is uncontracted Grade 1 and requires qualified review; Grade 2 UEB is not claimed.</li>
+                        <li>The public MCPB connector release is pending a clean, reproducible release gate.</li>
+                        <li>The remote institutional MCP is code for a pilot architecture, not a live public service.</li>
+                    </ul>
+                </section>
+
+                <section id="recommendations" aria-labelledby="recommendations-heading">
+                    <h2 id="recommendations-heading">10. Adoption guidance</h2>
+                    <ol>
+                        <li><strong>Inventory before bulk conversion.</strong> Classify active, archived, duplicate,
+                            exempt-candidate, and high-impact content with counsel and accessibility leadership.</li>
+                        <li><strong>Prioritize services and current learning content.</strong> Focus first on documents
+                            people need to participate, apply, learn, communicate, or receive support.</li>
+                        <li><strong>Fix authoring upstream.</strong> Pair remediation with accessible templates,
+                            procurement requirements, training, and publishing gates.</li>
+                        <li><strong>Choose a documented data boundary.</strong> Approve the complete host/provider/device
+                            path before uploading protected documents.</li>
+                        <li><strong>Require artifact-bound evidence.</strong> Keep the source digest, output digest,
+                            check versions, findings, cautions, and review record together.</li>
+                        <li><strong>Include disabled users and assistive-technology testing.</strong> Technical checks
+                            are necessary but cannot represent the full experience of accessing a document.</li>
+                    </ol>
+                </section>
+
+                <section id="references" aria-labelledby="references-heading">
+                    <h2 id="references-heading">11. References and technical record</h2>
+                    <ol class="source-list">
+                        <li><a href="https://www.ada.gov/resources/web-rule-first-steps/" target="_blank"
+                                rel="noopener noreferrer">U.S. DOJ, First Steps Toward Complying with the Title II Web
+                                and Mobile App Rule</a>.</li>
+                        <li><a href="https://www.ada.gov/resources/2024-03-08-web-rule/" target="_blank"
+                                rel="noopener noreferrer">U.S. DOJ, Fact Sheet on the Title II Web and Mobile App
+                                Rule</a>.</li>
+                        <li><a href="https://www.ada.gov/assets/pdfs/2026-ifr.pdf" target="_blank"
+                                rel="noopener noreferrer">U.S. DOJ, 2026 Interim Final Rule extending compliance
+                                dates</a>.</li>
+                        <li><a href="https://www.w3.org/WAI/standards-guidelines/wcag/" target="_blank"
+                                rel="noopener noreferrer">W3C Web Accessibility Initiative, WCAG 2 Overview</a>.</li>
+                        <li><a href="https://www.w3.org/WAI/standards-guidelines/wcag/glance/" target="_blank"
+                                rel="noopener noreferrer">W3C WAI, WCAG 2 at a Glance</a>.</li>
+                        <li><a href="https://github.com/Apomera/AlloFlow/blob/main/PIPELINE_ARCHITECTURE.md"
+                                target="_blank" rel="noopener noreferrer">AlloFlow current remediation pipeline
+                                architecture</a>.</li>
+                        <li><a href="https://github.com/Apomera/AlloFlow/blob/main/docs/wcag_sc_coverage.md"
+                                target="_blank" rel="noopener noreferrer">AlloFlow generated WCAG capability map</a>.</li>
+                        <li><a href="https://github.com/Apomera/AlloFlow/blob/main/VPAT-2.5-WCAG-AlloFlow.md"
+                                target="_blank" rel="noopener noreferrer">AlloFlow interim accessibility conformance
+                                report</a>.</li>
+                        <li><a href="https://github.com/Apomera/AlloFlow/blob/main/docs/alloflow-portable-remediation.md"
+                                target="_blank" rel="noopener noreferrer">Portable remediation architecture and
+                                trust model</a>.</li>
+                        <li><a href="https://github.com/Apomera/AlloFlow/blob/main/desktop/mcp/PRIVACY.md"
+                                target="_blank" rel="noopener noreferrer">Local MCP privacy policy</a>.</li>
+                        <li><a href="https://github.com/Apomera/AlloFlow/blob/main/mcp-testing/CROSS-VALIDATION-2026-08-04.md"
+                                target="_blank" rel="noopener noreferrer">Five-document cross-validation report</a>.</li>
+                        <li><a href="https://github.com/Apomera/AlloFlow/blob/main/mcp-testing/corpus/round-11/ROUND-11.md" target="_blank" rel="noopener noreferrer">Round 11: 126-page verification record</a>.</li>
+                        <li><a href="https://github.com/Apomera/AlloFlow/blob/main/mcp-testing/corpus/round-12/ROUND-12.md" target="_blank" rel="noopener noreferrer">Round 12: 40-page image-rich verification record</a>.</li>
+                        <li><a href="https://github.com/Apomera/AlloFlow/releases/tag/portable-v0.2.9"
+                                target="_blank" rel="noopener noreferrer">Portable remediation v0.2.9 release and
+                                manifest</a>.</li>
+                    </ol>
+                </section>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+                AlloFlow</div>
+            <p>Public technical record for the document-accessibility workflow.</p>
+            <!-- shared footer links:start -->
+            <nav class="footer-links footer-link-groups" aria-label="Footer">
+                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html">Cost Planner</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
+            </nav>
+<!-- shared footer links:end -->
+        </div>
+    </footer>
+
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})"
+        aria-label="Back to top"><i data-lucide="chevron-up" style="width:20px;height:20px"></i></button>
+    <script>
+        if (window.lucide) lucide.createIcons();
+        const backBtn = document.querySelector('.back-to-top');
+        window.addEventListener('scroll', function () {
+            backBtn.classList.toggle('visible', window.scrollY > 500);
+        }, { passive: true });
+    </script>
+</body>
+
+</html>

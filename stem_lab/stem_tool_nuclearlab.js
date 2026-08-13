@@ -1004,6 +1004,9 @@
       var protectRef = React.useRef(null);
       var shelterRef = React.useRef(null);
       var bioRef = React.useRef(null);
+      // Route buttons swap whole sections in one React commit. Remember the
+      // requested destination so focus moves only after that section exists.
+      var nkPendingTargetRef = React.useRef(null);
       var stGuess = React.useState('');
       var ageGuess = stGuess[0], setAgeGuess = stGuess[1];
       var stShown = React.useState(false);
@@ -1620,11 +1623,11 @@
             { label: 'Each halving', colour: 'rgba(167,139,250,0.75)', dash: true }
           ]
         });
-      }, [halves, isoId, isDark]);
+      }, [halves, isoId, isDark, d.nkPath]);
 
       React.useEffect(function () {
         nkChainMap(chainRef.current, d.chainPick);
-      }, [d.chainPick, isDark]);
+      }, [d.chainPick, isDark, d.nkPath]);
 
       // Dose against how long it takes to get clear. The shelter line is flat
       // — the plume does not care how fast you drive — and the evacuation line
@@ -1659,7 +1662,7 @@
             { label: 'Evacuate now', colour: ink('#f87171') }
           ]
         });
-      }, [shRate, shPlume, shEvac, shPlaceId, isDark]);
+      }, [shRate, shPlume, shEvac, shPlaceId, isDark, d.nkPath]);
 
       // Dose rate against distance, bare and shielded. Two curves make the
       // point the prose cannot: distance is free and works on everything,
@@ -1691,7 +1694,7 @@
                { label: nkFmt(ptThick, 1) + ' cm of ' + ptShield.name.toLowerCase(), colour: ink(ptSrc.colour) }]
             : [{ label: 'Unshielded', colour: ink(ptSrc.colour) }]
         });
-      }, [ptSrcId, ptDist, ptShieldId, ptThick, isDark]);
+      }, [ptSrcId, ptDist, ptShieldId, ptThick, isDark, d.nkPath]);
 
       // Inverse-square curve, with the last measured net rate dropped on top of
       // it. The gap between the dot and the line IS the counting noise.
@@ -1714,7 +1717,7 @@
             : [{ label: 'True rate', colour: ink('#2dd4bf') }],
           marker: cdLast ? { x: nkClamp(cdLast.d, 0, 60), y: nkClamp(cdNet, -0.18 * cdChartMax, cdChartMax), colour: ink('#fbbf24') } : null
         });
-      }, [cdSrcId, cdDist, cdRuns.length, cdChartMax, cdNet, isDark]);
+      }, [cdSrcId, cdDist, cdRuns.length, cdChartMax, cdNet, isDark, d.nkPath]);
 
       // Body burden against time, with the decay-only curve behind it. For the
       // long-lived nuclides the decay-only curve is visibly FLAT across the
@@ -1740,7 +1743,7 @@
             { label: 'Decay + excretion', colour: ink(bio.colour) }
           ]
         });
-      }, [bioId, isDark]);
+      }, [bioId, isDark, d.nkPath]);
 
 
       // ── Reactor simulator ────────────────────────────────────────────
@@ -2078,7 +2081,7 @@
           if (io) io.disconnect();
           document.removeEventListener('visibilitychange', onVisibility);
         };
-      }, []);
+      }, [d.nkPath]);
 
       React.useEffect(function () {
         var el = rxCanvasRef.current;
@@ -2087,7 +2090,7 @@
         el.dataset.scenario = rxScenario;
         el.dataset.running = rxUi.running ? 'on' : 'off';
         rxWakeRef.current();
-      }, [rxMode, rxScenario, rxUi.running]);
+      }, [rxMode, rxScenario, rxUi.running, d.nkPath]);
 
       React.useEffect(function () {
         RX_VIEWER.sync({
@@ -2173,7 +2176,7 @@
           ],
           legend: [{ label: 'Measured nuclides (AME2020)', colour: ink('#38bdf8') }]
         });
-      }, [isDark]);
+      }, [isDark, d.nkPath]);
 
       // ── personal dose ──
       var dsAlt = typeof d.dsAlt === 'number' ? d.dsAlt : 100;         // metres
@@ -2526,6 +2529,17 @@
         if (d.nkOpen !== false) upd({ nkOpen: false });
         if (typeof announceToSR === 'function') announceToSR('Jumped to ' + s.label + '.');
       }
+      // A route's first section is absent until React commits the route change.
+      // Moving focus in the click handler races that commit and leaves keyboard
+      // focus on a route button that is about to disappear with the folded
+      // index. Complete the jump after the destination has mounted instead.
+      React.useEffect(function () {
+        var pending = nkPendingTargetRef.current;
+        if (!pending || typeof document === 'undefined') return;
+        if (!document.getElementById('nksec-' + pending.id)) return;
+        nkPendingTargetRef.current = null;
+        nkGoTo(pending);
+      }, [nkPathId]);
       // ── Scroll-spy ───────────────────────────────────────────────────────
       // Nineteen sections and eleven thousand pixels. Once the index folds
       // there is nothing telling a reader where in the document they are, and
@@ -2697,13 +2711,13 @@
               NK_PATHS.map(function (route) {
                 return pill(nkPathId === route.id, '#22d3ee', route.icon + ' ' + route.q, function () {
                   var on = nkPathId === route.id;
+                  var first = !on && NK_SECTIONS.filter(function (x) { return x.id === route.steps[0]; })[0];
+                  nkPendingTargetRef.current = first || null;
                   // Taking a route clears the search and the category, because
                   // three filters fighting each other is worse than none.
                   upd({ nkPath: on ? null : route.id, nkQuery: '', nkGroup: 'all' });
                   if (!on) {
                     pushOnce('pathsTried', route.id);
-                    var first = NK_SECTIONS.filter(function (x) { return x.id === route.steps[0]; })[0];
-                    if (first) nkGoTo(first);
                   }
                   if (typeof beep === 'function') beep();
                 }, (nkPathId === route.id ? 'Leave the route: ' : 'Follow the route: ') + route.q
@@ -3091,10 +3105,12 @@
           heading(ink('#34d399'), '⚛️ 6. The chain reaction, and what holds it steady'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A uranium-235 nucleus absorbs a neutron, splits, and releases 2 or 3 more. k is how many of those go on to cause another fission. Everything about reactor control is holding k at exactly 1.'),
-          h('p', { className: 'text-[11px] mb-1 font-bold', style: { color: ink(kState === 'critical' ? '#34d399' : '#fbbf24') } },
+          h('p', { className: 'text-[11px] mb-1 font-bold', style: { color: ink(kState === 'critical' ? '#34d399' : (kState === 'supercritical' ? '#f87171' : '#fbbf24')) } },
             kState === 'critical'
               ? '✓ k = 1.000. That is the whole job — and notice it is one position out of a hundred.'
-              : 'The core is shut down. Withdraw the rods until k reads exactly 1.000.'),
+              : (kState === 'supercritical'
+                ? 'Power is rising. Insert the rods until k reads exactly 1.000.'
+                : 'The core is shut down. Withdraw the rods until k reads exactly 1.000.')),
           slider('nk-rods', 'Control rods in', 0, 100, 1, rods,
             function (e) {
               var v = parseFloat(e.target.value);

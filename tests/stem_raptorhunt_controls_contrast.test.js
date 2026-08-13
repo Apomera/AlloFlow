@@ -66,14 +66,21 @@ describe('Raptor Hunt steering and model heading regressions', () => {
     expect(flightForward(initialYaw + 0.1).x).toBeLessThan(0);
   });
 
-  it('adds directional depth cues without replacing the biome aesthetic', () => {
+  it('adds directional depth cues with species-aware, dive-safe chase framing', () => {
     const text = source();
     expect(text).toContain('new THREE.HemisphereLight');
     expect(text).toContain('var rimLight = new THREE.DirectionalLight');
-    expect(text).toContain('var initialCamDistance = 6;');
-    expect(text).toContain('var chaseLead = diveKey ? 5 : 2.5;');
+    expect(text).toMatch(/var raptorVisualRadius\s*=/);
+    expect(text).toMatch(/var currentChaseDistance\s*=/);
+    expect(text).toMatch(/function flightForwardVector\(reuseTarget\)/);
+    expect(text).toContain('flightForwardVector(flightForward)');
+    expect(text).toMatch(/camTargetX\s*=\s*raptor\.x\s*-\s*flightForward\.x\s*\*\s*camDist/);
+    expect(text).toMatch(/camTargetY\s*=\s*raptor\.y\s*-\s*flightForward\.y\s*\*\s*camDist\s*\+\s*camHeight/);
+    expect(text).toMatch(/camTargetZ\s*=\s*raptor\.z\s*-\s*flightForward\.z\s*\*\s*camDist/);
     expect(text).toContain('visualBank: 0');
     expect(text).toContain('var bankTarget =');
+    expect(text).toMatch(/var visualTurnRate\s*=/);
+    expect(text).toContain('speedLines.quaternion.copy(camera.quaternion)');
   });
 });
 

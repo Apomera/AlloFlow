@@ -476,3 +476,18 @@ Recent validation from the desktop work:
 - **Damage is message-only — no file content changed.** `a87d94fca`'s message lost its first line (`i18n(economicslab): fix Kirundi 'new' = -shasha (not -sha) and keep ibisobanuro`) and its trailing `Co-Authored-By:` line. The full original message is intact in the reflog at `906b1ba15` (`git log -1 --format=%B 906b1ba15`).
 - **No surgery attempted:** HEAD had already moved again (`948175c93`), so repairing it would mean rebasing your commits while you are working. Left as-is deliberately; restore the message yourself if you care to.
 - My own commit `0b3b9cb4b` (directions quest-map stations + travel links) kept a stray `@` subject line from the same botched command. Content is correct and tested (52/52 across the three directions suites).
+
+### 2026-08-13 - AlloFlow main UI cognitive-load pass (Codex /root)
+- Approved scope: reduce main-shell cognitive load while increasing visual polish; preserve all capabilities, product vocabulary, accessibility, and Guided Mode behavior.
+- Root owns `AlloFlowANTI.txt`, shell-focused tests, central `node build.js --mode=dev`, and final validation. Root will preserve the substantial pre-existing canonical-shell edits.
+- Header lane owns only `view_header_source.jsx`, its builder, generated root module, and public mirror.
+- History/navigation lane owns only `view_history_panel_source.jsx`, `view_sidebar_tabs_nav_source.jsx`, their builders, generated root modules, and public mirrors.
+- Student-tools lane owns only `view_fab_stack_source.jsx`, its builder, generated root module, and public mirror.
+- No lane may run `build.js`, deploy, stage, commit, or edit `desktop/web-app/src/App.jsx` directly. Report overlap or concurrent drift before overwriting a generated mirror.
+- Guided contracts to preserve: Setup Start/Resume/Start over; all tour target IDs and help keys; Create ownership during Guided Mode; honest History-based completion; focus/announcement behavior; saved progress, recovery, and delivery paths.
+
+### 2026-08-13 - AlloFlow refinement finishing pass (Codex /root)
+- Approved scope: complete visual refinement with rendered QA, a clearer Launch Pad, consistent sidebar forms, calmer empty states, and safer toast feedback.
+- Root owns only `AlloFlowANTI.txt`, shell-focused tests, final generation, and validation. Launch Pad and sidebar-panel work remain isolated in their extracted source/build lanes.
+- The separate Test Prep dataset generator is actively rewriting `test_prep/` and public mirrors; this pass must not edit, restore, stage, or otherwise interfere with those files.
+- Preserve all mode pathways, Guided targets/progress, voice/device setup, translations, accessibility behavior, and existing tool handlers.

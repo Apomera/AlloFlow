@@ -3537,7 +3537,11 @@ function ExportPreviewView(props) {
     toggleA11yInspect, updateExportPreview,
     exportPreviewSource,
     onExportSuccess,
+    builderWorkspaceMode = 'author',
+    setBuilderWorkspaceMode,
+    onAdvancedReviewSessionChange,
   } = props;
+  const isAdvancedReview = builderWorkspaceMode === 'advanced-review' && exportPreviewSource === 'remediation';
   // BrandProfile inline integration — replaces the standalone Educator Hub tool.
   // Read the user's saved brand profiles so they can be picked as export themes
   // alongside the built-in STYLE_SEEDS, and surface a "Manage" button + first-
@@ -3635,6 +3639,15 @@ function ExportPreviewView(props) {
   const [pageElements, setPageElements] = React.useState({ headerText: '', headerAlignment: 'left', footerText: '', pageNumbers: 'none' });
   const [paragraphLayout, setParagraphLayout] = React.useState(() => ({ ..._BUILDER_PARAGRAPH_DEFAULTS, tabStops: [] }));
   const [rulerTabAlignment, setRulerTabAlignment] = React.useState('left');
+  const [advancedReviewTab, setAdvancedReviewTab] = React.useState('structure');
+  const [advancedReviewTree, setAdvancedReviewTree] = React.useState({ roots: [], flat: [], document: { language: '', title: '' } });
+  const [advancedReviewSelectedId, setAdvancedReviewSelectedId] = React.useState('');
+  const [advancedReviewHistory, setAdvancedReviewHistory] = React.useState([]);
+  const [advancedReviewEvidenceStale, setAdvancedReviewEvidenceStale] = React.useState(false);
+  const [advancedReviewTreeError, setAdvancedReviewTreeError] = React.useState('');
+  const [advancedReviewAltDraft, setAdvancedReviewAltDraft] = React.useState('');
+  const [advancedReviewLanguageDraft, setAdvancedReviewLanguageDraft] = React.useState('');
+  const [advancedReviewCurrentHtml, setAdvancedReviewCurrentHtml] = React.useState('');
   const unresolvedReviewCommentCount = reviewComments.filter((comment) => !comment.resolved).length;
   const reviewCommentAuthors = Array.from(new Set(reviewComments.flatMap((comment) => comment.authors || comment.thread.map((message) => message.author)).filter(Boolean))).sort((left, right) => left.localeCompare(right));
   const visibleReviewComments = reviewComments.filter((comment) => (showResolvedComments || !comment.resolved) && (commentAuthorFilter === 'all' || (comment.authors || []).includes(commentAuthorFilter)));
@@ -3719,6 +3732,13 @@ function ExportPreviewView(props) {
   const rulerRef = React.useRef(null);
   const rulerDragCleanupRef = React.useRef(null);
   const openerRef = React.useRef(null);
+  const advancedReviewBaselineRef = React.useRef('');
+  const advancedReviewSessionRef = React.useRef(null);
+  const advancedReviewSessionOpenRef = React.useRef(false);
+  const advancedReviewActiveRef = React.useRef(isAdvancedReview);
+  const advancedReviewHistoryRef = React.useRef([]);
+  const advancedReviewCommandDispatchRef = React.useRef(false);
+  const advancedReviewManualTimerRef = React.useRef(null);
   const draftDocumentTitle = String((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || 'AlloFlow Document').trim().substring(0, 120) || 'AlloFlow Document';
   const draftIdentitySeed = Array.isArray(history)
     ? `${history.length}:${history[0]?.id || history[0]?.type || ''}:${history[history.length - 1]?.id || history[history.length - 1]?.type || ''}`
@@ -6737,6 +6757,7 @@ function ExportPreviewView(props) {
     clone.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css,script:not([data-allo-citation-store])').forEach((node) => node.remove());
     if (options?.forExport) clone.querySelectorAll(_BUILDER_CITATION_STORE_SELECTOR).forEach((node) => node.remove());
     clone.querySelectorAll('[contenteditable]').forEach((node) => node.removeAttribute('contenteditable'));
+    clone.querySelectorAll('[data-allo-semantic-selected]').forEach((node) => node.removeAttribute('data-allo-semantic-selected'));
     _builderStripEditorBreakMetadata(clone);
     clone.querySelectorAll('[data-allo-crop-tabindex-added]').forEach((node) => {
       const added = node.getAttribute('data-allo-crop-tabindex-added') === 'added';
@@ -6747,6 +6768,297 @@ function ExportPreviewView(props) {
     const title = String((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || doc.title || 'AlloFlow Document').trim();
     return { doc, clone, title, html: '<!DOCTYPE html>\n' + clone.outerHTML };
   }, [exportPreviewRef, exportConfig]);
+
+  const sanitizeAdvancedReviewSessionHtml = React.useCallback((html) => {
+    if (typeof html !== 'string' || !html.trim()) return '';
+    try {
+      const parsed = new DOMParser().parseFromString(html, 'text/html');
+      parsed.querySelectorAll('#allo-builder-edit-css,.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles').forEach((node) => node.remove());
+      parsed.querySelectorAll('[data-allo-semantic-selected]').forEach((node) => node.removeAttribute('data-allo-semantic-selected'));
+      parsed.body?.removeAttribute('data-allo-user-edited');
+      return '<!DOCTYPE html>\n' + parsed.documentElement.outerHTML;
+    } catch (_) {
+      return html;
+    }
+  }, []);
+
+  const getAdvancedReviewLiveHtml = React.useCallback(() => {
+    const clean = getCleanBuilderDocument();
+    if (clean?.html) return sanitizeAdvancedReviewSessionHtml(clean.html);
+    const doc = exportPreviewRef.current?.contentDocument;
+    return doc?.documentElement ? sanitizeAdvancedReviewSessionHtml('<!DOCTYPE html>\n' + doc.documentElement.outerHTML) : '';
+  }, [exportPreviewRef, getCleanBuilderDocument, sanitizeAdvancedReviewSessionHtml]);
+
+  const refreshAdvancedReviewTree = React.useCallback((providedDoc) => {
+    if (!advancedReviewActiveRef.current) return null;
+    const api = window.AlloModules?.SemanticReview;
+    if (!api || typeof api.buildSemanticTree !== 'function') {
+      if (mountedRef.current) setAdvancedReviewTreeError('Semantic review tools are still loading.');
+      return null;
+    }
+    const doc = providedDoc || exportPreviewRef.current?.contentDocument;
+    if (!doc?.documentElement || !doc.body) return null;
+    try {
+      const liveHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+      const result = api.buildSemanticTree(liveHtml);
+      if (!result?.ok) {
+        if (mountedRef.current) setAdvancedReviewTreeError('The document structure could not be read.');
+        return null;
+      }
+      // Stable semantic IDs are editor metadata until a specialist performs a
+      // real mutation. Deterministic ID injection does not dispatch input,
+      // create a ledger entry, or invalidate prior remediation evidence.
+      const selector = Object.keys(api.TAG_TO_PDF_ROLE || {}).join(',');
+      const liveNodes = selector ? Array.from(doc.body.querySelectorAll(selector)) : [];
+      // Persist stable IDs only after a real edit. Before that, the deterministic
+      // tree IDs are sufficient for inspection and closing untouched must not
+      // make a previously verified artifact appear changed.
+      if (doc.body.getAttribute('data-allo-user-edited') === '1') {
+        result.flat.forEach((node, index) => {
+          if (liveNodes[index] && node?.id) liveNodes[index].setAttribute(api.SEMANTIC_ID_ATTRIBUTE || 'data-allo-semantic-id', node.id);
+        });
+      }
+      const treeState = {
+        roots: result.roots || [],
+        flat: result.flat || [],
+        document: result.document || { language: '', title: '' },
+        truncated: Boolean(result.truncated),
+      };
+      if (mountedRef.current) {
+        setAdvancedReviewTree(treeState);
+        setAdvancedReviewTreeError('');
+        setAdvancedReviewSelectedId((currentId) => (!currentId || treeState.flat.some((node) => node.id === currentId)) ? currentId : '');
+      }
+      if (!advancedReviewBaselineRef.current) {
+        const cleanHtml = getAdvancedReviewLiveHtml();
+        advancedReviewBaselineRef.current = cleanHtml;
+        if (mountedRef.current) setAdvancedReviewCurrentHtml(cleanHtml);
+      }
+      return treeState;
+    } catch (_) {
+      if (mountedRef.current) setAdvancedReviewTreeError('The document structure could not be read.');
+      return null;
+    }
+  }, [exportPreviewRef, getAdvancedReviewLiveHtml]);
+
+  const selectAdvancedReviewNode = React.useCallback((nodeId) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc) return;
+    doc.querySelectorAll('[data-allo-semantic-selected]').forEach((node) => node.removeAttribute('data-allo-semantic-selected'));
+    let target = Array.from(doc.querySelectorAll('[data-allo-semantic-id]')).find((node) => node.getAttribute('data-allo-semantic-id') === nodeId);
+    if (!target) {
+      const api = window.AlloModules?.SemanticReview;
+      const selector = Object.keys(api?.TAG_TO_PDF_ROLE || {}).join(',');
+      const index = advancedReviewTree.flat.findIndex((node) => node.id === nodeId);
+      target = selector && index >= 0 ? Array.from(doc.body.querySelectorAll(selector))[index] : null;
+    }
+    if (!target) { setAdvancedReviewSelectedId(''); return; }
+    target.setAttribute('data-allo-semantic-selected', '1');
+    setAdvancedReviewSelectedId(nodeId);
+    try { target.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) { target.scrollIntoView?.(); }
+  }, [advancedReviewTree, exportPreviewRef]);
+
+  const publishAdvancedReviewMutation = React.useCallback((html, entry) => {
+    if (!entry || !advancedReviewActiveRef.current) return;
+    const at = Date.now();
+    const normalized = {
+      id: entry.id || ('review-' + at + '-' + Math.random().toString(36).slice(2, 7)),
+      at,
+      type: entry.type || 'manual-edit',
+      targetId: entry.targetId || '',
+      summary: entry.summary || 'Edited document content',
+      details: entry.details || {},
+      actor: entry.actor || 'Specialist',
+    };
+    const previous = advancedReviewHistoryRef.current;
+    const last = previous[previous.length - 1];
+    const coalesceManual = normalized.type === 'manual-edit' && last?.type === 'manual-edit' && at - last.at < 2000;
+    const next = (coalesceManual ? [...previous.slice(0, -1), { ...last, at, summary: normalized.summary }] : [...previous, normalized]).slice(-100);
+    advancedReviewHistoryRef.current = next;
+    if (mountedRef.current) {
+      setAdvancedReviewHistory(next);
+      setAdvancedReviewEvidenceStale(true);
+      setAdvancedReviewCurrentHtml(html);
+    }
+    let sessionValue = null;
+    try {
+      const sessionApi = window.AlloModules?.ReviewDocumentSession;
+      if (sessionApi && typeof sessionApi.createSession === 'function' && typeof sessionApi.applyCommand === 'function') {
+        if (!sessionApi.isSession?.(advancedReviewSessionRef.current)) {
+          advancedReviewSessionRef.current = sessionApi.createSession({
+            workspaceMode: 'advanced-review',
+            remediationResult: pdfFixResult || null,
+            baselineHtml: advancedReviewBaselineRef.current,
+            currentHtml: advancedReviewBaselineRef.current || html,
+          });
+        }
+        sessionValue = sessionApi.applyCommand(
+          advancedReviewSessionRef.current,
+          { type: normalized.type, nodeId: normalized.targetId || undefined, summary: normalized.summary, details: normalized.details },
+          { ok: true, changed: true, html, summary: normalized.summary, reason: 'content-modified-pending-reverification' },
+        );
+        advancedReviewSessionRef.current = sessionValue;
+      }
+    } catch (_) { sessionValue = null; }
+    if (typeof onAdvancedReviewSessionChange === 'function') {
+      try {
+        onAdvancedReviewSessionChange(sessionValue || {
+          version: 1,
+          workspaceMode: 'advanced-review',
+          source: 'remediation',
+          baselineHtml: advancedReviewBaselineRef.current,
+          currentHtml: html,
+          dirty: true,
+          evidenceState: 'pending-reverification',
+          invalidationReason: 'content-modified-pending-reverification',
+          ledger: next,
+          lastMutation: normalized,
+          updatedAt: at,
+        });
+      } catch (_) {}
+    }
+  }, [onAdvancedReviewSessionChange, pdfFixResult]);
+
+  const applyAdvancedReviewCommand = React.useCallback((command) => {
+    if (!advancedReviewActiveRef.current) return;
+    const api = window.AlloModules?.SemanticReview;
+    if (!api || typeof api.applySemanticCommand !== 'function') {
+      addToast && addToast('Semantic review tools are still loading. Please try again.', 'error');
+      return;
+    }
+    const doc = exportPreviewRef.current?.contentDocument;
+    const sourceHtml = getAdvancedReviewLiveHtml();
+    if (!doc?.body || !sourceHtml) return;
+    const result = api.applySemanticCommand(sourceHtml, command);
+    if (!result?.ok) {
+      addToast && addToast('That structure change could not be applied (' + (result?.error || 'unknown error') + ').', 'error');
+      return;
+    }
+    if (!result.changed) {
+      addToast && addToast('The document already has that setting.', 'info');
+      return;
+    }
+    try {
+      const parsed = new DOMParser().parseFromString(result.html, 'text/html');
+      doc.body.innerHTML = parsed.body.innerHTML;
+      const nextLanguage = parsed.documentElement.getAttribute('lang');
+      if (nextLanguage) doc.documentElement.setAttribute('lang', nextLanguage);
+      else doc.documentElement.removeAttribute('lang');
+      doc.querySelectorAll('[data-allo-semantic-selected]').forEach((node) => node.removeAttribute('data-allo-semantic-selected'));
+      const selected = Array.from(doc.querySelectorAll('[data-allo-semantic-id]')).find((node) => node.getAttribute('data-allo-semantic-id') === result.targetId);
+      if (selected) selected.setAttribute('data-allo-semantic-selected', '1');
+      doc.body.setAttribute('data-allo-user-edited', '1');
+      advancedReviewCommandDispatchRef.current = true;
+      try { doc.body.dispatchEvent(new (doc.defaultView?.Event || Event)('input', { bubbles: true })); }
+      finally { advancedReviewCommandDispatchRef.current = false; }
+      const currentHtml = sanitizeAdvancedReviewSessionHtml(result.html);
+      publishAdvancedReviewMutation(currentHtml, result.entry || { type: command.type, targetId: result.targetId, summary: result.summary || 'Updated document semantics' });
+      refreshAdvancedReviewTree(doc);
+      if (result.targetId && result.targetId !== 'document') selectAdvancedReviewNode(result.targetId);
+      addToast && addToast(result.summary || 'Document semantics updated.', 'success');
+    } catch (_) {
+      advancedReviewCommandDispatchRef.current = false;
+      addToast && addToast('The structure change could not be written to the editable preview.', 'error');
+    }
+  }, [addToast, exportPreviewRef, getAdvancedReviewLiveHtml, publishAdvancedReviewMutation, refreshAdvancedReviewTree, sanitizeAdvancedReviewSessionHtml, selectAdvancedReviewNode]);
+
+  const noteAdvancedReviewManualInput = React.useCallback((doc) => {
+    if (!advancedReviewActiveRef.current || advancedReviewCommandDispatchRef.current) return;
+    if (mountedRef.current) setAdvancedReviewEvidenceStale(true);
+    if (advancedReviewManualTimerRef.current) clearTimeout(advancedReviewManualTimerRef.current);
+    advancedReviewManualTimerRef.current = setTimeout(() => {
+      advancedReviewManualTimerRef.current = null;
+      if (!advancedReviewActiveRef.current) return;
+      refreshAdvancedReviewTree(doc);
+      const currentHtml = getAdvancedReviewLiveHtml();
+      if (!currentHtml) return;
+      publishAdvancedReviewMutation(currentHtml, { type: 'manual-edit', summary: 'Edited document content in the preview' });
+    }, 450);
+  }, [getAdvancedReviewLiveHtml, publishAdvancedReviewMutation, refreshAdvancedReviewTree]);
+
+  const advancedReviewSelectedNode = React.useMemo(() => advancedReviewTree.flat.find((node) => node.id === advancedReviewSelectedId) || null, [advancedReviewTree, advancedReviewSelectedId]);
+  const advancedReviewOutline = React.useMemo(() => {
+    const rows = [];
+    const walk = (nodes, depth) => (nodes || []).forEach((node) => { rows.push({ node, depth }); walk(node.children, depth + 1); });
+    walk(advancedReviewTree.roots, 0);
+    return rows;
+  }, [advancedReviewTree]);
+
+  const advancedReviewIssues = React.useMemo(() => {
+    const issues = [];
+    const seen = new Set();
+    const addIssue = (issue, source, index) => {
+      if (!issue) return;
+      const title = String(issue.title || issue.rule || issue.id || issue.message || 'Accessibility finding');
+      const message = String(issue.message || issue.description || issue.help || issue.summary || title);
+      const key = (source + '|' + title + '|' + message).toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      issues.push({ id: String(issue.id || source + '-' + index), source, title, message, severity: String(issue.severity || issue.impact || issue.priority || 'review').toLowerCase() });
+    };
+    const addList = (value, source) => { if (Array.isArray(value)) value.forEach((issue, index) => addIssue(issue, source, index)); };
+    addList(exportAuditResult?.issues, 'Current Builder audit');
+    addList(pdfFixResult?.issues, 'Remediation review');
+    addList(pdfFixResult?.remainingIssues, 'Remediation review');
+    addList(pdfFixResult?.axeAudit?.violations, 'axe-core');
+    addList(pdfFixResult?.verificationAudit?.issues, 'Verification');
+    addList(pdfFixResult?.secondEngineAudit?.violations, 'Second engine');
+    advancedReviewTree.flat.forEach((node) => (node.warnings || []).forEach((warning, index) => addIssue({ id: node.id + '-warning-' + index, title: warning, message: node.text || node.role, severity: 'review' }, 'Structure review', index)));
+    return issues;
+  }, [advancedReviewTree, exportAuditResult, pdfFixResult]);
+
+  React.useEffect(() => {
+    advancedReviewActiveRef.current = isAdvancedReview;
+    if (!showExportPreview) {
+      advancedReviewSessionOpenRef.current = false;
+      advancedReviewBaselineRef.current = '';
+      advancedReviewSessionRef.current = null;
+      advancedReviewHistoryRef.current = [];
+      if (advancedReviewManualTimerRef.current) clearTimeout(advancedReviewManualTimerRef.current);
+      advancedReviewManualTimerRef.current = null;
+      setAdvancedReviewHistory([]);
+      setAdvancedReviewEvidenceStale(false);
+      setAdvancedReviewSelectedId('');
+      setAdvancedReviewCurrentHtml('');
+      return undefined;
+    }
+    if (!isAdvancedReview) return undefined;
+    if (!advancedReviewSessionOpenRef.current) {
+      const baseline = sanitizeAdvancedReviewSessionHtml(pdfFixResult?.accessibleHtml || getAdvancedReviewLiveHtml());
+      advancedReviewSessionOpenRef.current = true;
+      advancedReviewBaselineRef.current = baseline;
+      try {
+        const sessionApi = window.AlloModules?.ReviewDocumentSession;
+        advancedReviewSessionRef.current = sessionApi?.createSession?.({
+          workspaceMode: 'advanced-review',
+          remediationResult: pdfFixResult || null,
+          baselineHtml: baseline,
+          currentHtml: baseline,
+        }) || null;
+      } catch (_) { advancedReviewSessionRef.current = null; }
+      advancedReviewHistoryRef.current = [];
+      setAdvancedReviewHistory([]);
+      setAdvancedReviewEvidenceStale(false);
+      setAdvancedReviewSelectedId('');
+      setAdvancedReviewCurrentHtml(baseline);
+      setAdvancedReviewTab('structure');
+    }
+    const timer = setTimeout(() => refreshAdvancedReviewTree(), 0);
+    return () => clearTimeout(timer);
+  }, [getAdvancedReviewLiveHtml, isAdvancedReview, pdfFixResult?.accessibleHtml, refreshAdvancedReviewTree, sanitizeAdvancedReviewSessionHtml, showExportPreview]);
+
+  React.useEffect(() => {
+    setAdvancedReviewAltDraft(advancedReviewSelectedNode?.properties?.alt || '');
+    setAdvancedReviewLanguageDraft(advancedReviewSelectedNode?.properties?.language || advancedReviewTree.document?.language || '');
+  }, [advancedReviewSelectedNode, advancedReviewTree.document]);
+
+  const runAdvancedReviewBuilderAudit = React.useCallback(() => {
+    setAdvancedReviewTab('issues');
+    const dialog = exportPreviewRef.current?.closest('[role="dialog"]');
+    const auditButton = dialog?.querySelector('[data-help-key="doc_builder_wcag_audit_btn"]');
+    if (auditButton && !auditButton.disabled) auditButton.click();
+    else addToast && addToast('The Builder HTML audit is not available yet.', 'info');
+  }, [addToast, exportPreviewRef]);
 
   const readLocalDraftStore = React.useCallback(() => {
     try {
@@ -7228,13 +7540,19 @@ function ExportPreviewView(props) {
               {/* Left Panel — Settings */}
               <div className={`${isFocusMode ? 'hidden' : 'w-full lg:w-72'} shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3`}>
                 <div className="flex items-center justify-between mb-1">
-                  <h2 id="document-builder-title" className="text-sm font-black text-slate-800 flex items-center gap-2">🛠️ Document Builder</h2>
+                  <h2 id="document-builder-title" className="text-sm font-black text-slate-800 flex items-center gap-2">{isAdvancedReview ? 'Review Studio' : 'Document Builder'}</h2>
                   <div className="flex items-center gap-1">
                     <button onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }} className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm" aria-label={t('a11y.toggle_theme') || 'Toggle color theme'} title={theme === 'contrast' ? (t('theme.high_contrast') || 'High Contrast') : theme === 'dark' ? (t('theme.dark') || 'Dark Mode') : (t('theme.light') || 'Light Mode')}><span aria-hidden="true">{theme === 'contrast' ? '👁' : theme === 'dark' ? '🌙' : '☀️'}</span></button>
                     <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
                     <button onClick={() => setShowExportPreview(false)} className="p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors" data-help-key="doc_builder_close_btn" aria-label={t("a11y.close_doc_builder")}><X size={20} /></button>
                   </div>
                 </div>
+                {exportPreviewSource === 'remediation' && (
+                  <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1" role="group" aria-label="Document Builder workspace">
+                    <button type="button" onClick={() => setBuilderWorkspaceMode?.('author')} aria-pressed={!isAdvancedReview} className={`min-h-9 rounded-md px-2 text-[11px] font-bold ${!isAdvancedReview ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Standard</button>
+                    <button type="button" onClick={() => setBuilderWorkspaceMode?.('advanced-review')} aria-pressed={isAdvancedReview} className={`min-h-9 rounded-md px-2 text-[11px] font-bold ${isAdvancedReview ? 'bg-indigo-700 text-white shadow-sm' : 'text-indigo-800 hover:bg-white'}`}>Advanced Review</button>
+                  </div>
+                )}
                 <button type="button" aria-controls="document-builder-preview" onClick={() => exportPreviewRef.current?.focus()} className="sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white">Skip to editable preview</button>
                 {exportPreviewSource === 'remediation' && (
                   <div className="bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800" role="status">
@@ -9938,6 +10256,7 @@ const _downloadBRF = (brf) => {
                         refreshActiveHeading();
                         refreshPageMetrics();
                         applyEditorZoom(editorZoom);
+                        if (advancedReviewActiveRef.current) refreshAdvancedReviewTree(doc);
                         setDraftCaptureState('ready');
                         editorSelectionRangeRef.current = null;
                         formatPainterRef.current = null;
@@ -10071,6 +10390,7 @@ const _downloadBRF = (brf) => {
                           try {
                             _builderRefreshAdvancedAfterSnapshots(doc);
                             if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
+                            noteAdvancedReviewManualInput(doc);
                             if (mountedRef.current) setDraftCaptureState('capturing');
                             refreshFormattingState();
                             writingCheckRunRef.current += 1;
@@ -10096,6 +10416,121 @@ const _downloadBRF = (brf) => {
                     }}
                   />
                   </div>
+                  {isAdvancedReview && (
+                    <aside id="document-builder-advanced-review" role="complementary" aria-labelledby="advanced-review-heading" className="flex w-[22rem] max-w-[44vw] shrink-0 flex-col border-l border-slate-300 bg-white">
+                      <div className="border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-sky-50 px-3 py-2.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h3 id="advanced-review-heading" className="text-xs font-black text-slate-900">Advanced Review</h3>
+                            <p className="mt-0.5 text-[9px] leading-snug text-slate-600">Specialist review of the remediated HTML structure used by AlloFlow exports. This is not a native arbitrary-PDF tag editor.</p>
+                          </div>
+                          <span role="status" className={`shrink-0 rounded-full px-2 py-1 text-[9px] font-black ${advancedReviewEvidenceStale ? 'bg-amber-100 text-amber-900 ring-1 ring-amber-300' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300'}`}>{advancedReviewEvidenceStale ? 'Reverify' : 'Evidence current'}</span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-5 border-b border-slate-200 bg-slate-50" role="tablist" aria-label="Advanced Review tools">
+                        {[
+                          ['structure', 'Structure'],
+                          ['issues', 'Issues'],
+                          ['properties', 'Properties'],
+                          ['history', 'History'],
+                          ['compare', 'Compare'],
+                        ].map(([tabId, label]) => (
+                          <button key={tabId} id={`advanced-review-tab-${tabId}`} type="button" role="tab" aria-selected={advancedReviewTab === tabId} aria-controls={`advanced-review-panel-${tabId}`} tabIndex={advancedReviewTab === tabId ? 0 : -1} onClick={() => setAdvancedReviewTab(tabId)} className={`min-h-10 border-b-2 px-1 text-[9px] font-bold ${advancedReviewTab === tabId ? 'border-indigo-700 bg-white text-indigo-800' : 'border-transparent text-slate-600 hover:bg-white hover:text-slate-900'}`}>{label}{tabId === 'issues' && advancedReviewIssues.length ? ` (${advancedReviewIssues.length})` : ''}</button>
+                        ))}
+                      </div>
+                      <div className="min-h-0 flex-1 overflow-y-auto">
+                        {advancedReviewTab === 'structure' && (
+                          <section id="advanced-review-panel-structure" role="tabpanel" aria-labelledby="advanced-review-tab-structure" className="p-2.5">
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                              <div><div className="text-[10px] font-black uppercase tracking-wide text-slate-700">Semantic structure</div><div className="text-[9px] text-slate-500">{advancedReviewTree.flat.length} tagged source node{advancedReviewTree.flat.length === 1 ? '' : 's'}</div></div>
+                              <button type="button" onClick={() => refreshAdvancedReviewTree()} className="min-h-8 rounded border border-slate-300 bg-white px-2 text-[9px] font-bold text-slate-700 hover:bg-slate-50">Refresh</button>
+                            </div>
+                            {advancedReviewTreeError && <p role="alert" className="mb-2 rounded border border-amber-300 bg-amber-50 p-2 text-[10px] font-semibold text-amber-900">{advancedReviewTreeError}</p>}
+                            {advancedReviewTree.truncated && <p className="mb-2 rounded bg-amber-50 p-2 text-[9px] text-amber-900">The outline is capped for responsiveness.</p>}
+                            <div role="tree" aria-label="Document semantic structure" className="space-y-0.5">
+                              {advancedReviewOutline.map(({ node, depth }) => (
+                                <button key={node.id} type="button" role="treeitem" aria-selected={advancedReviewSelectedId === node.id} aria-level={depth + 1} onClick={() => selectAdvancedReviewNode(node.id)} onDoubleClick={() => { selectAdvancedReviewNode(node.id); setAdvancedReviewTab('properties'); }} style={{ paddingLeft: Math.min(48, 6 + depth * 12) }} className={`flex min-h-8 w-full items-center gap-1.5 rounded pr-2 text-left text-[10px] ${advancedReviewSelectedId === node.id ? 'bg-sky-100 text-sky-950 ring-1 ring-sky-400' : 'text-slate-700 hover:bg-slate-100'}`}>
+                                  <span className="w-9 shrink-0 rounded bg-slate-200 px-1 py-0.5 text-center font-black text-slate-700">{node.role}</span>
+                                  <span className="min-w-0 flex-1 truncate">{node.text || '(empty)'}</span>
+                                  {node.warnings?.length > 0 && <span className="h-2 w-2 shrink-0 rounded-full bg-amber-500" aria-label={`${node.warnings.length} warning${node.warnings.length === 1 ? '' : 's'}`} title={node.warnings.join('; ')}></span>}
+                                </button>
+                              ))}
+                              {!advancedReviewOutline.length && !advancedReviewTreeError && <p className="rounded bg-slate-50 p-3 text-center text-[10px] text-slate-500">No semantic source nodes found.</p>}
+                            </div>
+                            <p className="mt-3 text-[9px] leading-snug text-slate-500">Select a node to highlight it in the preview. Double-click to open its properties.</p>
+                          </section>
+                        )}
+                        {advancedReviewTab === 'issues' && (
+                          <section id="advanced-review-panel-issues" role="tabpanel" aria-labelledby="advanced-review-tab-issues" className="p-2.5">
+                            {advancedReviewEvidenceStale && <div role="status" className="mb-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] leading-snug text-amber-950"><strong>Content changed.</strong> Findings from the prior remediation run no longer prove the edited version. Run the Builder audit for quick HTML feedback, then reverify through the remediation pipeline before claiming a verified result.</div>}
+                            <button type="button" onClick={runAdvancedReviewBuilderAudit} disabled={exportAuditLoading} aria-busy={exportAuditLoading} className="mb-3 min-h-9 w-full rounded-lg bg-indigo-700 px-3 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-60">{exportAuditLoading ? 'Running Builder audit...' : 'Run Builder HTML audit'}</button>
+                            <p className="mb-2 text-[9px] leading-snug text-slate-500">This in-editor audit is a useful review aid; it does not replace final tagged-PDF verification.</p>
+                            <div className="space-y-2">
+                              {advancedReviewIssues.map((issue) => (
+                                <article key={issue.source + '-' + issue.id} className="rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
+                                  <div className="flex items-start justify-between gap-2"><h4 className="text-[10px] font-black text-slate-800">{issue.title}</h4><span className={`rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${['critical', 'serious', 'high'].includes(issue.severity) ? 'bg-red-100 text-red-800' : ['moderate', 'medium'].includes(issue.severity) ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-700'}`}>{issue.severity}</span></div>
+                                  <p className="mt-1 text-[9px] leading-snug text-slate-600">{issue.message}</p>
+                                  <p className="mt-1 text-[8px] font-bold uppercase tracking-wide text-slate-400">{issue.source}</p>
+                                </article>
+                              ))}
+                              {!advancedReviewIssues.length && <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-center text-[10px] text-slate-600">No findings are available in the current review data. Run the Builder audit for this HTML version.</div>}
+                            </div>
+                          </section>
+                        )}
+                        {advancedReviewTab === 'properties' && (
+                          <section id="advanced-review-panel-properties" role="tabpanel" aria-labelledby="advanced-review-tab-properties" className="space-y-3 p-2.5">
+                            {advancedReviewSelectedNode ? (
+                              <>
+                                <div className="rounded-lg border border-sky-200 bg-sky-50 p-2">
+                                  <div className="flex items-center gap-2"><span className="rounded bg-sky-700 px-1.5 py-0.5 text-[9px] font-black text-white">{advancedReviewSelectedNode.role}</span><strong className="min-w-0 flex-1 truncate text-[10px] text-slate-900">{advancedReviewSelectedNode.text || '(empty node)'}</strong></div>
+                                  <code className="mt-1 block truncate text-[8px] text-slate-500">{advancedReviewSelectedNode.id}</code>
+                                </div>
+                                {['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'].includes(advancedReviewSelectedNode.tag) && (
+                                  <label className="block text-[9px] font-black uppercase tracking-wide text-slate-600">Semantic role
+                                    <select value={advancedReviewSelectedNode.tag} onChange={(event) => applyAdvancedReviewCommand({ type: 'retag', nodeId: advancedReviewSelectedNode.id, tag: event.target.value })} className="mt-1 min-h-9 w-full rounded border border-slate-300 bg-white px-2 text-[11px] font-semibold normal-case text-slate-900">
+                                      <option value="p">Paragraph</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option><option value="h4">Heading 4</option><option value="h5">Heading 5</option><option value="h6">Heading 6</option><option value="blockquote">Block quote</option>
+                                    </select>
+                                  </label>
+                                )}
+                                <fieldset><legend className="text-[9px] font-black uppercase tracking-wide text-slate-600">Reading order</legend><div className="mt-1 grid grid-cols-2 gap-2"><button type="button" onClick={() => applyAdvancedReviewCommand({ type: 'move', nodeId: advancedReviewSelectedNode.id, direction: 'up' })} className="min-h-9 rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50">Move earlier</button><button type="button" onClick={() => applyAdvancedReviewCommand({ type: 'move', nodeId: advancedReviewSelectedNode.id, direction: 'down' })} className="min-h-9 rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50">Move later</button></div></fieldset>
+                                {['img', 'figure'].includes(advancedReviewSelectedNode.tag) && (
+                                  <>
+                                    <label className="block text-[9px] font-black uppercase tracking-wide text-slate-600">Alternative text<textarea rows={3} value={advancedReviewAltDraft} onChange={(event) => setAdvancedReviewAltDraft(event.target.value)} className="mt-1 w-full rounded border border-slate-300 p-2 text-[10px] font-medium normal-case text-slate-900" /></label>
+                                    <button type="button" onClick={() => applyAdvancedReviewCommand({ type: 'set-alt', nodeId: advancedReviewSelectedNode.id, alt: advancedReviewAltDraft })} className="min-h-9 w-full rounded bg-sky-700 px-2 text-[10px] font-bold text-white hover:bg-sky-800">Apply alternative text</button>
+                                    <label className="flex min-h-10 cursor-pointer items-center gap-2 rounded border border-slate-300 px-2 text-[10px] font-semibold text-slate-800"><input type="checkbox" checked={Boolean(advancedReviewSelectedNode.properties?.artifact)} onChange={(event) => applyAdvancedReviewCommand({ type: 'set-artifact', nodeId: advancedReviewSelectedNode.id, artifact: event.target.checked })} />Artifact / decorative image</label>
+                                  </>
+                                )}
+                                {advancedReviewSelectedNode.tag === 'table' && (
+                                  <fieldset><legend className="text-[9px] font-black uppercase tracking-wide text-slate-600">Table headers</legend><div className="mt-1 grid grid-cols-3 gap-1"><button type="button" onClick={() => applyAdvancedReviewCommand({ type: 'set-table-headers', nodeId: advancedReviewSelectedNode.id, mode: 'first-row' })} className="min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50">First row</button><button type="button" onClick={() => applyAdvancedReviewCommand({ type: 'set-table-headers', nodeId: advancedReviewSelectedNode.id, mode: 'first-column' })} className="min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50">First column</button><button type="button" onClick={() => applyAdvancedReviewCommand({ type: 'set-table-headers', nodeId: advancedReviewSelectedNode.id, mode: 'both' })} className="min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50">Both</button></div></fieldset>
+                                )}
+                              </>
+                            ) : <p className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-[10px] leading-snug text-slate-600">Select a node in Structure to edit its role, order, image semantics, language, or table headers.</p>}
+                            <fieldset className="rounded-lg border border-slate-200 p-2"><legend className="px-1 text-[9px] font-black uppercase tracking-wide text-slate-600">{advancedReviewSelectedNode ? 'Selected node language' : 'Document language'}</legend><div className="flex gap-1"><input value={advancedReviewLanguageDraft} onChange={(event) => setAdvancedReviewLanguageDraft(event.target.value)} placeholder="en-US" aria-label={advancedReviewSelectedNode ? 'Selected node language' : 'Document language'} className="min-h-9 min-w-0 flex-1 rounded border border-slate-300 px-2 text-[10px] text-slate-900" /><button type="button" onClick={() => applyAdvancedReviewCommand({ type: 'set-language', nodeId: advancedReviewSelectedNode?.id, language: advancedReviewLanguageDraft })} className="min-h-9 rounded bg-indigo-700 px-2 text-[9px] font-bold text-white hover:bg-indigo-800">Apply</button></div></fieldset>
+                          </section>
+                        )}
+                        {advancedReviewTab === 'history' && (
+                          <section id="advanced-review-panel-history" role="tabpanel" aria-labelledby="advanced-review-tab-history" className="p-2.5">
+                            <h4 className="text-[10px] font-black uppercase tracking-wide text-slate-700">Review ledger</h4>
+                            <p className="mt-1 text-[9px] leading-snug text-slate-500">Only actual content mutations appear here. Opening or inspecting the structure does not invalidate evidence.</p>
+                            <ol className="mt-3 space-y-2">
+                              {advancedReviewHistory.slice().reverse().map((entry) => <li key={entry.id} className="rounded-lg border border-slate-200 bg-white p-2"><div className="flex items-start justify-between gap-2"><strong className="text-[10px] text-slate-800">{entry.summary}</strong><time className="shrink-0 text-[8px] text-slate-400">{new Date(entry.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></div><div className="mt-1 text-[8px] uppercase tracking-wide text-slate-500">{entry.type}{entry.targetId ? ` - ${entry.targetId}` : ''}</div></li>)}
+                              {!advancedReviewHistory.length && <li className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-center text-[10px] text-slate-500">No specialist mutations in this session.</li>}
+                            </ol>
+                          </section>
+                        )}
+                        {advancedReviewTab === 'compare' && (
+                          <section id="advanced-review-panel-compare" role="tabpanel" aria-labelledby="advanced-review-tab-compare" className="p-2.5">
+                            <h4 className="text-[10px] font-black uppercase tracking-wide text-slate-700">Session comparison</h4>
+                            <p className="mt-1 text-[9px] leading-snug text-slate-500">Compare the remediation HTML as it entered this session with the current edited HTML. This is not a visual reconstruction of the original PDF.</p>
+                            <div className="mt-3 space-y-3">
+                              <figure><figcaption className="mb-1 text-[9px] font-black text-slate-700">Session baseline</figcaption><iframe title="Advanced Review session baseline" sandbox="" srcDoc={advancedReviewBaselineRef.current} className="h-52 w-full rounded border border-slate-300 bg-white" /></figure>
+                              <figure><figcaption className="mb-1 text-[9px] font-black text-slate-700">Current edited HTML</figcaption><iframe title="Advanced Review current document" sandbox="" srcDoc={advancedReviewCurrentHtml || advancedReviewBaselineRef.current} className="h-52 w-full rounded border border-slate-300 bg-white" /></figure>
+                            </div>
+                          </section>
+                        )}
+                      </div>
+                    </aside>
+                  )}
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] text-slate-600 shrink-0" aria-label="Document status bar">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -10293,6 +10728,7 @@ async function updateExportPreview(deps) {
       editStyle.id = 'allo-builder-edit-css';
       const _baseEditCss = `
         [contenteditable]:focus, *:focus { outline: 2px solid #6366f1 !important; outline-offset: 2px; border-radius: 4px; }
+        [data-allo-semantic-selected="1"] { outline: 4px solid #0ea5e9 !important; outline-offset: 4px !important; background-color: rgba(224,242,254,.42) !important; scroll-margin: 7rem; }
         img { cursor: move; transition: outline 0.2s; }
         img:hover { outline: 2px dashed #6366f1; }
         [data-allo-page-break="1"], [data-allo-section-break] { position:relative;display:block;height:var(--allo-break-fill,24px) !important;margin:0 !important;border:0 !important;border-top:2px dashed #94a3b8 !important;background:linear-gradient(to bottom,transparent 0,transparent 11px,rgba(148,163,184,0.12) 11px,rgba(148,163,184,0.12) 13px,transparent 13px) !important; }

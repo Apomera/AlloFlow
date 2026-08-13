@@ -58,7 +58,7 @@ describe('Crossword dialog accessibility', () => {
     expect(component).toContain('incorrectCount');
     expect(component).toContain('announce_incorrect_count');
     expect(component).toContain('announce_revealed');
-    expect(component).toContain('isWon && !reducedMotion && <ConfettiExplosion />');
+    expect(component).toContain('isWon && !wasRevealed && !reducedMotion && <ConfettiExplosion />');
     expect(component).toContain('motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300');
   });
 });

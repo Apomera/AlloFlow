@@ -8,6 +8,7 @@ const registryPath = resolve(root, 'test_prep/pack_registry.json');
 const manifestPath = resolve(root, 'test_prep/pack_manifest.json');
 const deployManifestPath = resolve(root, 'desktop/web-app/public/test_prep/pack_manifest.json');
 const modulePath = resolve(root, 'test_prep_hub_module.js');
+const deployModulePath = resolve(root, 'desktop/web-app/public/test_prep_hub_module.js');
 const supportedCategories = [
   'professional-school-personnel',
   'workforce-vocational',
@@ -200,11 +201,22 @@ describe('Test Prep pack registry and generated manifest', () => {
     }
   });
 
-  it('keeps AP and EPPP lazy content out of the size-limited monolithic runtime bundle', () => {
+  it('keeps every large lazy bank external and the mirrored runtime comfortably below the deployment limit', () => {
+    const registry = readJson(registryPath);
     const moduleBuffer = fs.readFileSync(modulePath);
     const moduleText = moduleBuffer.toString('utf8');
+    const deployModuleBuffer = fs.readFileSync(deployModulePath);
 
-    expect(moduleBuffer.byteLength).toBeLessThan(25 * 1024 * 1024);
+    expect(moduleBuffer.byteLength).toBeLessThan(10 * 1024 * 1024);
+    expect(deployModuleBuffer.equals(moduleBuffer)).toBe(true);
+    for (const entry of registry.entries.filter((candidate) => candidate.sourcePath)) {
+      const sourcePath = resolve(root, ...entry.sourcePath.split('/'));
+      if (fs.statSync(sourcePath).size > 1024 * 1024) expect(entry.loadMode, entry.id).toBe('lazy');
+      if (entry.loadMode !== 'lazy') continue;
+      const pack = readJson(sourcePath);
+      const itemIds = [pack.items?.[0]?.id, pack.items?.at(-1)?.id].filter(Boolean);
+      for (const itemId of itemIds) expect(moduleText, entry.id + ' item ' + itemId).not.toContain(JSON.stringify(itemId));
+    }
     expect(moduleText).not.toContain('"ap-psychology-pilot"');
     expect(moduleText).not.toContain('"ap-psych-u1-001"');
     expect(moduleText).not.toContain('EPPP_NATIVE_ITEMS');

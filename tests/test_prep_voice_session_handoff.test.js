@@ -24,6 +24,12 @@ describe('Test Prep shared voice-session handoff', () => {
     expect(source).toContain('handsFreeVoiceLeaseRef.current = null');
     expect(source).toContain('if (handsFreeEnabledRef.current) disableHandsFree(true, false)');
   });
+  it('fails closed while the shared voice coordinator is unavailable', () => {
+    expect(source).toMatch(/typeof sharedVoice\.acquireVoiceSession !== 'function'/);
+    expect(source).toContain('The shared voice service is still loading. Try hands-free mode again in a moment.');
+    expect(source.indexOf('typeof sharedVoice.acquireVoiceSession !=='))
+      .toBeLessThan(source.indexOf('handsFreeEnabledRef.current = true'));
+  });
   it('publishes semantic start, stop, and status responses without removing other inputs', () => {
     expect(source).toContain("TEST_PREP_VOICE_CONTROL_EVENT = 'alloflow:test-prep-voice-control'");
     expect(source).toContain("TEST_PREP_VOICE_STATUS_EVENT = 'alloflow:test-prep-voice-status'");

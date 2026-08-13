@@ -24,7 +24,7 @@ No MCP session or user document is stored in Worker global memory.
 
 ## Verified Cloudflare reuse decision
 
-A read-only Wrangler inventory on July 29, 2026 established the current
+A read-only Wrangler inventory on August 13, 2026 reconfirmed the current
 deployment boundary:
 
 | Existing item | Decision |
@@ -34,8 +34,8 @@ deployment boundary:
 | Public `alloflow-cdn` Pages deployment | Keep public and separate; never route MCP document traffic through it |
 | `alloflow-catalog-submit` Worker | Do not reuse; it has unrelated submission/search behavior and secrets |
 | `BUG_REPORTS`, `PD_SUBMISSIONS`, `PLUGIN_SUBMISSIONS`, `SEARCH_RATE` KV | Do not reuse; create a new OAuth KV namespace |
-| Current account data services | No D1 or Workflow exists; R2 is not activated |
-| Containers | Unavailable until this account moves from Workers Free to Workers Paid |
+| Current account data services | No D1 or Workflow exists; the staging Worker is absent; R2 returns disabled code 10042 |
+| Containers | Unauthorized on the current Workers Free plan; requires Workers Paid |
 
 The same account can host the full synthetic architecture after Workers Paid
 is enabled, R2 is activated, and dedicated pilot resources are provisioned.
@@ -57,7 +57,13 @@ Production is intentionally not configured. It gets a different hostname and
 an entirely separate set of bindings only after the synthetic, privacy,
 vendor-asset, and institutional-ownership gates pass.
 
-No remote MCP Worker or supporting pilot resource has been provisioned or deployed.
+No remote MCP Worker or supporting pilot resource has been provisioned or
+deployed yet. A checked storage reconciler now provides a read-only remote plan
+and an explicitly confirmed, idempotent apply for the dedicated KV, D1, and R2
+resources. It fails clearly until R2 is activated and deliberately stops before
+secrets, Access, migrations, lifecycle, Worker/Workflow/Container deployment,
+or acceptance. Wrangler provisions the Worker, Workflow, and Container together
+during the later checked deploy; the storage reconciler does not.
 
 ## Pilot scope
 
@@ -394,10 +400,24 @@ resources and do not upload real documents.
    administrators. Upgrade the same account to Workers Paid and activate R2.
 2. Copy `wrangler.pilot.example.jsonc` to the ignored exact path
    `wrangler.pilot.local.jsonc`.
-3. Create a new private OAuth KV namespace, staging D1 database, and private
-   staging R2 bucket. Keep the dedicated `PILOT_METRICS` Analytics Engine
-   dataset and `CF_VERSION_METADATA` binding from the template. Never paste an
-   existing catalog KV ID.
+3. Pin the intended 32-hex account ID, then run the checked read-only plan.
+   Review the account, Worker, exact resource names, and every `create`, `adopt`,
+   or `keep` action before copying the emitted confirmation into apply:
+
+   ```powershell
+   $env:CLOUDFLARE_ACCOUNT_ID = "REPLACE_WITH_32_HEX_ACCOUNT_ID"
+   npm run provision:staging:plan
+   npm run provision:staging:apply -- --confirm "alloflow-remediation-institution-staging@REPLACE_WITH_32_HEX_ACCOUNT_ID:create-staging-storage"
+   npm run provision:staging:plan
+   ```
+
+   Apply creates or adopts only the exact dedicated OAuth KV, staging D1, and
+   private staging R2 names. It re-inventories all three before normalizing the
+   ignored local config with the verified KV and D1 IDs. A retry is idempotent;
+   a configured ID/name mismatch fails closed. The final plan must report only
+   `keep`. Keep the dedicated `PILOT_METRICS` Analytics Engine dataset and
+   `CF_VERSION_METADATA` binding from the template. Never paste an existing
+   catalog KV ID.
 4. Create a Cloudflare Access for SaaS OIDC application and connect the
    institution IdP. Create a separate self-hosted Access application scoped to
    `/upload/*` and `/result/*`, require the same institution identity, and copy

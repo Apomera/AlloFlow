@@ -26,12 +26,13 @@ async function flush(count = 6) {
   for (let i = 0; i < count; i++) await Promise.resolve();
 }
 
-function installPlayer({ callTTS, AudioClass, synthesis, muted = false }) {
+function installPlayer({ callTTS, AudioClass, synthesis, muted = false, connection, onLine = true }) {
   const fakeWindow = new window.EventTarget();
   fakeWindow.speechSynthesis = synthesis;
   fakeWindow.__alloInvalidateTtsUrl = vi.fn();
   fakeWindow.__alloAddToast = vi.fn();
   const events = [];
+  fakeWindow.navigator = { onLine, connection };
   fakeWindow.addEventListener('allo-speech-state', (event) => events.push(event.detail));
 
   class FakeUtterance {
@@ -85,6 +86,59 @@ describe('shared AlloSpeechPlayer source contract', () => {
 });
 
 describe('shared AlloSpeechPlayer event ordering', () => {
+  it('prefetches silently, shares identical work with playback, and honors Save-Data', async () => {
+    const gate = deferred();
+    const callTTS = vi.fn(() => gate.promise);
+    const audioInstances = [];
+    class ControlledAudio {
+      constructor(url) {
+        this.url = url;
+        this.play = vi.fn(async () => {});
+        this.pause = vi.fn();
+        audioInstances.push(this);
+      }
+    }
+    const synthesis = { speak: vi.fn(), cancel: vi.fn() };
+    const harness = installPlayer({ callTTS, AudioClass: ControlledAudio, synthesis });
+    const options = { language: 'French', locale: 'fr-CA', dialect: 'Quebec French', reason: 'lingua-prewarm' };
+
+    const warm = harness.player.prefetch('Bonjour', options);
+    await flush();
+    expect(callTTS).toHaveBeenCalledTimes(1);
+    expect(callTTS.mock.calls[0][3]).toMatchObject({
+      language: 'French', locale: 'fr-CA', dialect: 'Quebec French', priority: 'low', maxRetries: 0,
+    });
+    expect(harness.events).toEqual([]);
+    expect(audioInstances).toEqual([]);
+
+    const speaking = harness.player.speak('Bonjour', options);
+    expect(callTTS).toHaveBeenCalledTimes(1);
+    gate.resolve('blob:warm');
+    await flush();
+    expect(audioInstances).toHaveLength(1);
+    audioInstances[0].onplaying();
+    await expect(speaking).resolves.toBe(1);
+    expect(await warm.promise).toBe('blob:warm');
+
+    const saveData = installPlayer({
+      callTTS: vi.fn(), synthesis, connection: { saveData: true },
+    });
+    await expect(saveData.player.prefetch('Salut').promise).resolves.toBeNull();
+    expect(saveData.player.getState().status).toBe('idle');
+  });
+
+  it('aborts an unowned prefetch without emitting playback state', async () => {
+    const callTTS = vi.fn(() => new Promise(() => {}));
+    const harness = installPlayer({ callTTS, synthesis: { speak: vi.fn(), cancel: vi.fn() } });
+    const warm = harness.player.prefetch('Au revoir', { language: 'French' });
+    await flush();
+    const signal = callTTS.mock.calls[0][3].signal;
+    warm.cancel();
+    await expect(warm.promise).resolves.toBeNull();
+    expect(signal.aborted).toBe(true);
+    expect(harness.events).toEqual([]);
+  });
+
   it('keeps browser fallback generating and resolves only after utterance start', async () => {
     vi.useFakeTimers();
     let utterance;

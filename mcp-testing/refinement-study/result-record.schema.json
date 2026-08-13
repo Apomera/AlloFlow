@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alloflow.org/schemas/mcp-refinement-result-v1.json",
+  "title": "AlloFlow hash-bound MCP refinement result",
+  "description": "Strict immutable analysis record; analysis.mjs additionally enforces cross-field bindings and policy gates.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "observationId", "runId", "capturedAt", "document", "condition", "protocol", "execution", "artifacts", "outcome", "rounds", "usage", "expertAdjudication"],
+  "properties": {
+    "schema": { "const": "alloflow.mcp-refinement-result/v1" },
+    "observationId": { "$ref": "#/$defs/nonempty" },
+    "runId": { "$ref": "#/$defs/nonempty" },
+    "capturedAt": { "type": "string", "format": "date-time" },
+    "document": {
+      "type": "object", "additionalProperties": false,
+      "required": ["documentId", "sourceSha256", "partition"],
+      "properties": {
+        "documentId": { "$ref": "#/$defs/nonempty" },
+        "sourceSha256": { "$ref": "#/$defs/sha256" },
+        "partition": { "enum": ["development_pilot", "development_retrospective", "safety", "prospective_held_out"] }
+      }
+    },
+    "condition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "replicate"],
+      "properties": {
+        "kind": { "enum": ["one_shot", "gated_loop", "deterministic_only", "ungated_loop"] },
+        "replicate": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "protocol": {
+      "type": "object", "additionalProperties": false,
+      "required": ["protocolSha256", "engine", "provider", "model", "sharedOptions", "conditionOptions"],
+      "properties": {
+        "protocolSha256": { "$ref": "#/$defs/sha256" },
+        "engine": {
+          "type": "object", "additionalProperties": false,
+          "required": ["name", "version", "buildSha256"],
+          "properties": {
+            "name": { "$ref": "#/$defs/nonempty" },
+            "version": { "$ref": "#/$defs/nonempty" },
+            "buildSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "provider": { "$ref": "#/$defs/nonempty" },
+        "model": {
+          "type": "object", "additionalProperties": false,
+          "required": ["primary", "fallback", "endpoint", "sampling", "temperatureControlled", "seedControlled", "fallbackEnabled", "actualModelTraceComplete"],
+          "properties": {
+            "primary": { "$ref": "#/$defs/nonempty" },
+            "fallback": { "$ref": "#/$defs/nonempty" },
+            "endpoint": { "$ref": "#/$defs/nonempty" },
+            "sampling": { "$ref": "#/$defs/nonempty" },
+            "temperatureControlled": { "type": "boolean" },
+            "seedControlled": { "type": "boolean" },
+            "fallbackEnabled": { "type": "boolean" },
+            "actualModelTraceComplete": { "type": "boolean" }
+          }
+        },
+        "sharedOptions": { "type": "object" },
+        "conditionOptions": { "type": "object" }
+      }
+    },
+    "execution": {
+      "type": "object", "additionalProperties": false,
+      "required": ["providerClass", "evidenceClass", "effectivenessEligible"],
+      "properties": {
+        "providerClass": { "enum": ["live", "scripted", "synthetic"] },
+        "evidenceClass": { "enum": ["infrastructure_only", "development_descriptive", "prospective_confirmatory"] },
+        "effectivenessEligible": { "type": "boolean" }
+      }
+    },
+    "artifacts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["finalSha256", "verificationSha256", "verificationSubjectSha256", "verificationBindingValid", "finalArtifactEvidenceBound"],
+      "properties": {
+        "finalSha256": { "$ref": "#/$defs/sha256" },
+        "verificationSha256": { "$ref": "#/$defs/sha256" },
+        "verificationSubjectSha256": { "$ref": "#/$defs/sha256" },
+        "verificationBindingValid": { "type": "boolean" },
+        "finalArtifactEvidenceBound": { "type": "boolean" }
+      }
+    },
+    "outcome": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "automated", "expertConfirmed"],
+      "properties": {
+        "status": { "enum": ["complete", "incomplete", "failed"] },
+        "automated": {
+          "type": "object", "additionalProperties": false,
+          "required": ["beforeScore", "afterScore", "openIssueCount", "introducedDefectCount", "verificationComplete", "pdfUaStatus", "pdfUaFailedRules", "pdfUaFailedChecks", "deliveryRefusal"],
+          "properties": {
+            "beforeScore": { "$ref": "#/$defs/nullableScore" },
+            "afterScore": { "$ref": "#/$defs/nullableScore" },
+            "openIssueCount": { "$ref": "#/$defs/nullableCount" },
+            "introducedDefectCount": { "$ref": "#/$defs/nullableCount" },
+            "verificationComplete": { "type": "boolean" },
+            "pdfUaStatus": { "$ref": "#/$defs/nullableString" },
+            "pdfUaFailedRules": { "$ref": "#/$defs/nullableCount" },
+            "pdfUaFailedChecks": { "$ref": "#/$defs/nullableCount" },
+            "deliveryRefusal": { "$ref": "#/$defs/nullableString" }
+          }
+        },
+        "expertConfirmed": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/expertOutcome" }] }
+      }
+    },
+    "rounds": {
+      "type": "object", "additionalProperties": false,
+      "required": ["attempted", "accepted", "reverted"],
+      "properties": {
+        "attempted": { "$ref": "#/$defs/count" },
+        "accepted": { "$ref": "#/$defs/count" },
+        "reverted": { "$ref": "#/$defs/count" }
+      }
+    },
+    "usage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["latencyMs", "modelCalls", "inputTokens", "outputTokens", "costUsd"],
+      "properties": {
+        "latencyMs": { "type": "number", "minimum": 0 },
+        "modelCalls": { "$ref": "#/$defs/nullableCount" },
+        "inputTokens": { "$ref": "#/$defs/nullableCount" },
+        "outputTokens": { "$ref": "#/$defs/nullableCount" },
+        "costUsd": { "oneOf": [{ "type": "null" }, { "type": "number", "minimum": 0 }] }
+      }
+    },
+    "expertAdjudication": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "annotationJoinKey", "expectedSubjectSha256", "annotationFile", "annotationSha256"],
+      "properties": {
+        "status": { "enum": ["unassigned", "joined"] },
+        "annotationJoinKey": { "$ref": "#/$defs/nonempty" },
+        "expectedSubjectSha256": { "$ref": "#/$defs/sha256" },
+        "annotationFile": { "$ref": "#/$defs/nullableString" },
+        "annotationSha256": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/sha256" }] }
+      }
+    }
+  },
+  "$defs": {
+    "nonempty": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "nullableString": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/nonempty" }] },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "count": { "type": "integer", "minimum": 0 },
+    "nullableCount": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/count" }] },
+    "nullableScore": { "oneOf": [{ "type": "null" }, { "type": "number", "minimum": 0, "maximum": 100 }] },
+    "expertOutcome": {
+      "type": "object", "additionalProperties": false,
+      "required": ["annotationId", "annotationProtocolSha256", "subjectSha256", "blinded", "reviewerCount", "baselineAdjudicationSha256", "baselineMaterialIssueCount", "materialDefectsIntroduced", "criticalSeriousIssuesResolved", "pass"],
+      "properties": {
+        "annotationId": { "$ref": "#/$defs/nonempty" },
+        "annotationProtocolSha256": { "$ref": "#/$defs/sha256" },
+        "subjectSha256": { "$ref": "#/$defs/sha256" },
+        "blinded": { "type": "boolean" },
+        "reviewerCount": { "type": "integer", "minimum": 1 },
+        "baselineAdjudicationSha256": { "$ref": "#/$defs/sha256" },
+        "baselineMaterialIssueCount": { "type": "integer", "minimum": 1 },
+        "materialDefectsIntroduced": { "$ref": "#/$defs/count" },
+        "criticalSeriousIssuesResolved": { "$ref": "#/$defs/count" },
+        "pass": { "type": "boolean" }
+      }
+    }
+  }
+}

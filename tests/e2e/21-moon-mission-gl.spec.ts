@@ -240,6 +240,17 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     await harness.mount(page, AT_EVA, EVA_READY);
     expect(await page.evaluate(() => (window as any).__focusEva())).toBe(true);
 
+    const evaCanvas = page.locator('canvas[data-eva-canvas="true"]');
+    const geologyAction = page.locator('#eva-gt-action');
+    await expect(page.locator('#eva-geology-traverse')).toBeVisible();
+    await expect(geologyAction).toHaveText('Start optional traverse');
+    await geologyAction.click();
+    await expect(geologyAction).toHaveText('Restart traverse');
+    await expect.poll(() => evaCanvas.getAttribute('data-geology-traverse-status')).toBe('active');
+    await expect.poll(() => evaCanvas.getAttribute('data-geology-traverse-step')).toBe('1');
+    expect(await page.evaluate(() => document.activeElement?.matches('canvas[data-eva-canvas="true"]')))
+      .toBe(true);
+
     // From the EVA spawn, W+D follows a diagonal that passes within the rover's
     // three-metre boarding radius. Wait on the accessible control, not a fixed
     // duration, so SwiftShader frame rate cannot make this flaky.
@@ -256,6 +267,7 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     await page.keyboard.press('KeyV');
     await expect(page.locator('#eva-mode')).toContainText('LRV');
     await expect(page.locator('#eva-lrv-action')).toContainText('Exit LRV');
+    await expect.poll(() => evaCanvas.getAttribute('data-geology-traverse-step')).toBe('2');
 
     await page.keyboard.down('KeyW');
     const drove = await page.waitForFunction(() => {

@@ -237,6 +237,53 @@
     var minimum = Number.isFinite(numericFloor) ? Math.max(0, Math.min(1, numericFloor)) : 0.08;
     return opacity * Math.max(minimum, Math.min(1, transmission));
   }
+  // Geometric Sun altitude through one local-solar day. This intentionally
+  // avoids civil clock time, refraction, terrain and weather assumptions.
+  function solarDaylightProfile(yearValue, monthValue, dayValue, latitudeValue, stepMinutesValue) {
+    var numericYear = Number(yearValue), numericMonth = Number(monthValue), numericDay = Number(dayValue);
+    var year = Number.isInteger(numericYear) && numericYear >= 1900 && numericYear <= 2099 ? numericYear : 2000;
+    var month = Number.isInteger(numericMonth) && numericMonth >= 1 && numericMonth <= 12 ? numericMonth : 6;
+    var daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    var day = Number.isInteger(numericDay) ? Math.max(1, Math.min(daysInMonth, numericDay)) : 15;
+    var numericLatitude = Number(latitudeValue);
+    var latitude = Number.isFinite(numericLatitude) ? Math.max(-89.999, Math.min(89.999, numericLatitude)) : 0;
+    var numericStep = Number(stepMinutesValue);
+    var stepMinutes = Number.isInteger(numericStep) && numericStep >= 5 && numericStep <= 60 && 1440 % numericStep === 0 ? numericStep : 15;
+    var declination = sunRaDec(astroDayNumber(year, month, day, 12)).dec;
+    function altitudeAt(localSolarHour) {
+      var hourAngle = 15 * (localSolarHour - 12);
+      var sineAltitude = sind(latitude) * sind(declination) + cosd(latitude) * cosd(declination) * cosd(hourAngle);
+      return asind(Math.max(-1, Math.min(1, sineAltitude)));
+    }
+    var samples = [];
+    for (var minute = 0; minute <= 1440; minute += stepMinutes) {
+      var solarHour = minute / 60;
+      samples.push({ t: solarHour, altitude: altitudeAt(solarHour) });
+    }
+    var cosineHourAngle = -tand(latitude) * tand(declination);
+    var state = 'normal', daylightHours, sunriseSolarHour = null, sunsetSolarHour = null;
+    if (cosineHourAngle <= -1) {
+      state = 'polar-day';
+      daylightHours = 24;
+    } else if (cosineHourAngle >= 1) {
+      state = 'polar-night';
+      daylightHours = 0;
+    } else {
+      var horizonHourAngle = Math.acos(Math.max(-1, Math.min(1, cosineHourAngle))) * R2D;
+      daylightHours = 2 * horizonHourAngle / 15;
+      sunriseSolarHour = 12 - horizonHourAngle / 15;
+      sunsetSolarHour = 12 + horizonHourAngle / 15;
+    }
+    return {
+      state: state,
+      declinationDeg: declination,
+      daylightHours: daylightHours,
+      sunriseSolarHour: sunriseSolarHour,
+      sunsetSolarHour: sunsetSolarHour,
+      solarNoon: { t: 12, altitude: altitudeAt(12) },
+      samples: samples
+    };
+  }
   // Illustrative reference-star contrast for the Sky Map. Bortle class describes
   // a site-wide visual impression; this deliberately avoids visibility cutoffs.
   function bortleSkyPreview(bortleValue, sunAltitudeDeg) {
@@ -482,7 +529,7 @@
       moonRaDec: moonRaDec, moonPhaseAt: moonPhaseAt, moonPhaseFromAge: moonPhaseFromAge, moonGlyphGeometry: moonGlyphGeometry,
       moonAgeAtDate: moonAgeAtDate, amEclipseState: amEclipseState, AM_SYNODIC: AM_SYNODIC, planetRaDec: planetRaDec, siderealTime: siderealTime,
       equToHorizon: equToHorizon, angularSep: angularSep, skyNow: skyNow, atmosphericVisibility: atmosphericVisibility,
-      bortleSkyPreview: bortleSkyPreview, bortleStarContrast: bortleStarContrast,
+      bortleSkyPreview: bortleSkyPreview, bortleStarContrast: bortleStarContrast, solarDaylightProfile: solarDaylightProfile,
       observingWindowEligibility: observingWindowEligibility, buildObservingWindows: buildObservingWindows,
       BRIGHT_STARS: BRIGHT_STARS, PLANET_EL: PLANET_EL
     };
@@ -4932,15 +4979,72 @@
         var orbitAngle = phase * 2 * Math.PI;
         var earthX = 80 * Math.cos(orbitAngle);
         var earthY = 80 * Math.sin(orbitAngle);
-        // N hemisphere season label
+        // Meteorological season labels (month groups), distinct from astronomical boundary dates.
         var nSeason = month >= 3 && month <= 5 ? 'Spring' : (month >= 6 && month <= 8 ? 'Summer' : (month >= 9 && month <= 11 ? 'Fall' : 'Winter'));
         var sSeason = nSeason === 'Spring' ? 'Fall' : nSeason === 'Summer' ? 'Winter' : nSeason === 'Fall' ? 'Spring' : 'Summer';
         var note = '';
-        if (month === 3) note = 'Spring equinox (March 20-21): day and night roughly equal everywhere.';
+        if (month === 3) note = 'March equinox (March 20-21): day and night are about 12 hours at most latitudes; the Sun skims the horizon at the poles.';
         else if (month === 6) note = 'June solstice (June 20-21): longest day in Northern Hemisphere, shortest in Southern.';
-        else if (month === 9) note = 'Fall equinox (September 22-23): day and night roughly equal everywhere.';
+        else if (month === 9) note = 'September equinox (September 22-23): day and night are about 12 hours at most latitudes; the Sun skims the horizon at the poles.';
         else if (month === 12) note = 'December solstice (December 21-22): shortest day in Northern Hemisphere, longest in Southern.';
 
+        var seasonLoc = SKY_LOCS.find(function(location) {
+          return location.id === (typeof d.skyLoc === 'string' ? d.skyLoc : 'portland');
+        }) || SKY_LOCS[0];
+        var currentSolarYear = new Date().getUTCFullYear();
+        var representativeYear = currentSolarYear >= 1900 && currentSolarYear <= 2099 ? currentSolarYear : 2000;
+        var representativeDay = 15;
+        var solarProfile = solarDaylightProfile(representativeYear, month, representativeDay, seasonLoc.lat, 15);
+        var representativeDate = representativeYear + '-' + String(month).padStart(2, '0') + '-15';
+        function formatDaylightHours(hours) {
+          var roundedMinutes = Math.max(0, Math.min(1440, Math.round(Number(hours) * 12) * 5));
+          if (Number(hours) > 0 && Number(hours) < 5 / 60) return '<5 min';
+          if (Number(hours) < 24 && Number(hours) > 24 - 5 / 60) return '>23 h 55 min';
+          if (roundedMinutes === 1440) return '24 hours';
+          if (roundedMinutes === 0) return '0 hours';
+          var wholeHours = Math.floor(roundedMinutes / 60), minutes = roundedMinutes % 60;
+          return wholeHours + ' h' + (minutes ? ' ' + minutes + ' min' : '');
+        }
+        function formatSolarHour(hour) {
+          var roundedMinutes = Math.max(0, Math.min(1440, Math.round(Number(hour) * 12) * 5));
+          var wholeHours = Math.floor(roundedMinutes / 60), minutes = roundedMinutes % 60;
+          return String(wholeHours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+        }
+        var daylightText = formatDaylightHours(solarProfile.daylightHours);
+        var solarStateText = solarProfile.state === 'polar-day' ? 'polar day' : solarProfile.state === 'polar-night' ? 'polar night' : 'normal sunrise and sunset';
+        var sunStatusText = seasonLoc.name + ' \u00B7 representative date ' + monthFullNames[month - 1] + ' 15, ' + representativeYear +
+          ' \u00B7 geometric daylight ' + daylightText + ' (' + solarStateText + ') \u00B7 solar noon ' + Math.round(solarProfile.solarNoon.altitude) + '\u00B0 high. ' +
+          'Local solar time puts the Sun highest at 12:00; it is not civil clock time. The curve holds solar declination fixed at the representative date\'s noon value. ' +
+          'Horizon crossings use the Sun\'s geometric center. Atmospheric refraction, elevation, terrain, weather, daylight-saving time, and thermal lag are not modeled.';
+        var solarPlot = { left: 46, right: 350, top: 14, bottom: 146 };
+        var solarHorizonY = (solarPlot.top + solarPlot.bottom) / 2;
+        function solarX(hour) { return solarPlot.left + (solarPlot.right - solarPlot.left) * Number(hour) / 24; }
+        function solarY(altitude) { return solarPlot.top + (solarPlot.bottom - solarPlot.top) * (90 - Number(altitude)) / 180; }
+        function solarPath(points) {
+          return points.map(function(point, index) {
+            return (index ? 'L ' : 'M ') + solarX(point.t).toFixed(2) + ' ' + solarY(point.altitude).toFixed(2);
+          }).join(' ');
+        }
+        var solarAltitudePath = solarPath(solarProfile.samples);
+        var solarDaylightFill = null;
+        if (solarProfile.state === 'normal') {
+          var daylightPoints = [{ t: solarProfile.sunriseSolarHour, altitude: 0 }]
+            .concat(solarProfile.samples.filter(function(sample) {
+              return sample.t > solarProfile.sunriseSolarHour && sample.t < solarProfile.sunsetSolarHour;
+            }))
+            .concat([{ t: solarProfile.sunsetSolarHour, altitude: 0 }]);
+          solarDaylightFill = solarPath(daylightPoints) + ' Z';
+        } else if (solarProfile.state === 'polar-day') {
+          solarDaylightFill = 'M ' + solarX(0).toFixed(2) + ' ' + solarHorizonY.toFixed(2) + ' ' +
+            solarPath(solarProfile.samples).replace(/^M /, 'L ') + ' L ' + solarX(24).toFixed(2) + ' ' + solarHorizonY.toFixed(2) + ' Z';
+        }
+        var showSeparateHorizonLabels = solarProfile.state === 'normal' &&
+          solarProfile.daylightHours >= 5 / 60 && solarProfile.daylightHours <= 24 - 5 / 60;
+        var solarGrazingText = solarProfile.state !== 'normal' ? null
+          : solarProfile.daylightHours < 5 / 60 ? 'Brief daylight horizon graze around solar noon'
+            : solarProfile.daylightHours > 24 - 5 / 60 ? 'Brief horizon dip around solar midnight' : null;
+        var seasonSunTitleId = 'astronomy-season-sun-title';
+        var seasonSunDescId = 'astronomy-season-sun-desc';
         return h('div', { style: { padding: 16 } },
           softNote('Seasons are caused by Earth\'s axial tilt (23.5°), NOT by distance from the Sun. The hemisphere tipped toward the Sun gets more direct sunlight per square meter AND longer days. Earth is actually slightly farther from the Sun during Northern Hemisphere summer.'),
 
@@ -4964,7 +5068,7 @@
               )
             ),
             h('div', null,
-              h('div', { id: 'astronomy-season-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, 'Month: ' + monthFullNames[month - 1] + '. Northern Hemisphere: ' + nSeason + '. Southern Hemisphere: ' + sSeason + '.'),
+              h('div', { id: 'astronomy-season-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, 'Month: ' + monthFullNames[month - 1] + '. Meteorological season \u2014 Northern Hemisphere: ' + nSeason + '. Southern Hemisphere: ' + sSeason + '.'),
               h('input', {
                 type: 'range', min: 1, max: 12, value: month,
                 onChange: function(e) { upd({ seasonMonth: parseInt(e.target.value, 10) }); },
@@ -4972,17 +5076,95 @@
                 style: { width: '100%', accentColor: INDIGO, marginBottom: 12 }
               }),
               h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.astronomy.northern_hemisphere', 'Northern Hemisphere')),
+                h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.astronomy.northern_hemisphere', 'Northern Hemisphere') + '\u00B7 meteorological'),
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a' } }, nSeason)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.astronomy.southern_hemisphere', 'Southern Hemisphere')),
+                h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.astronomy.southern_hemisphere', 'Southern Hemisphere') + '\u00B7 meteorological'),
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: '#bae6fd' } }, sSeason)
               ),
               note ? h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.55 } }, note) : null
             )
           ),
 
+          sectionCard('\u2600 Sun path & geometric day length',
+            h('div', { id: 'astronomy-season-sun-panel', style: { minWidth: 0, maxWidth: '100%' } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px 8px', alignItems: 'center', marginBottom: 8, minWidth: 0 } },
+                h('label', { htmlFor: 'astronomy-season-observer', style: { color: '#e2e8f0', fontSize: 12, fontWeight: 800 } }, 'Observer location'),
+                h('select', {
+                  id: 'astronomy-season-observer', value: seasonLoc.id,
+                  'aria-label': 'Observer location for Sun path',
+                  'aria-controls': 'astronomy-season-sun-path',
+                  'aria-describedby': 'astronomy-season-sun-status',
+                  onChange: function(event) { upd({ skyLoc: event.target.value }); },
+                  style: { flex: '1 1 220px', width: '100%', maxWidth: '100%', minWidth: 0, padding: '7px 9px', borderRadius: 7, border: '1px solid #64748b', background: '#0f172a', color: '#f8fafc' }
+                }, SKY_LOCS.map(function(location) {
+                  return h('option', { key: location.id, value: location.id }, location.name);
+                }))
+              ),
+              h('svg', {
+                id: 'astronomy-season-sun-path', viewBox: '0 0 360 190',
+                role: 'img', 'aria-labelledby': seasonSunTitleId + ' ' + seasonSunDescId,
+                'data-solar-state': solarProfile.state, 'data-date': representativeDate,
+                'data-daylight-hours': solarProfile.daylightHours.toFixed(4),
+                'data-noon-altitude': solarProfile.solarNoon.altitude.toFixed(3),
+                style: { display: 'block', width: '100%', maxWidth: '100%', height: 'auto', background: '#0a0e1a', border: '1px solid #64748b', borderRadius: 8 }
+              },
+                h('title', { id: seasonSunTitleId }, 'Sun path for ' + seasonLoc.name + ' on ' + monthFullNames[month - 1] + ' 15, ' + representativeYear),
+                h('desc', { id: seasonSunDescId }, 'Geometric Sun altitude across 24 hours of local solar time. ' + sunStatusText),
+                h('rect', { x: solarPlot.left, y: solarPlot.top, width: solarPlot.right - solarPlot.left, height: solarPlot.bottom - solarPlot.top, fill: '#0a0e1a', stroke: '#94a3b8', strokeWidth: 1 }),
+                solarDaylightFill ? h('path', { d: solarDaylightFill, fill: '#38bdf8', fillOpacity: 0.18, stroke: 'none', 'data-solar-daylight-fill': 'true', 'aria-hidden': 'true' }) : null,
+                h('line', { x1: solarPlot.left, y1: solarPlot.bottom, x2: solarPlot.right, y2: solarPlot.bottom, stroke: '#94a3b8', strokeWidth: 1.2, 'data-solar-axis': 'x' }),
+                h('line', { x1: solarPlot.left, y1: solarPlot.top, x2: solarPlot.left, y2: solarPlot.bottom, stroke: '#94a3b8', strokeWidth: 1.2, 'data-solar-axis': 'y' }),
+                h('line', { x1: solarPlot.left, y1: solarHorizonY, x2: solarPlot.right, y2: solarHorizonY, stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '5 4', 'data-solar-horizon': 'true' }),
+                [-90, 0, 90].map(function(altitude) {
+                  return h('g', { key: 'solar-y-' + altitude, 'aria-hidden': 'true' },
+                    h('line', { x1: solarPlot.left - 4, y1: solarY(altitude), x2: solarPlot.left, y2: solarY(altitude), stroke: '#94a3b8', strokeWidth: 1 }),
+                    h('text', { x: solarPlot.left - 7, y: solarY(altitude) + 5, textAnchor: 'end', fill: '#cbd5e1', fontSize: 16 }, altitude + '\u00B0')
+                  );
+                }),
+                [0, 6, 12, 18, 24].map(function(hour) {
+                  return h('g', { key: 'solar-x-' + hour, 'aria-hidden': 'true' },
+                    h('line', { x1: solarX(hour), y1: solarPlot.bottom, x2: solarX(hour), y2: solarPlot.bottom + 4, stroke: '#94a3b8', strokeWidth: 1 }),
+                    h('text', { x: solarX(hour), y: solarPlot.bottom + 18, textAnchor: hour === 0 ? 'start' : hour === 24 ? 'end' : 'middle', fill: '#cbd5e1', fontSize: 16 }, String(hour))
+                  );
+                }),
+                h('text', { x: (solarPlot.left + solarPlot.right) / 2, y: 184, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 16, fontWeight: 700 }, 'Local solar time (hours)'),
+                h('text', { x: 16, y: (solarPlot.top + solarPlot.bottom) / 2, transform: 'rotate(-90 16 ' + ((solarPlot.top + solarPlot.bottom) / 2) + ')', textAnchor: 'middle', fill: '#e2e8f0', fontSize: 16, fontWeight: 700 }, 'Sun altitude'),
+                h('path', { d: solarAltitudePath, fill: 'none', stroke: '#f8fafc', strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round', 'data-solar-altitude-path': 'true' }),
+                solarProfile.samples.map(function(sample, index) {
+                  return h('circle', {
+                    key: 'solar-sample-' + index, cx: solarX(sample.t), cy: solarY(sample.altitude), r: 0.65,
+                    fill: '#f8fafc', opacity: 0.35, 'aria-hidden': 'true',
+                    'data-solar-sample': 'true', 'data-local-solar-hour': sample.t.toFixed(4), 'data-altitude': sample.altitude.toFixed(4)
+                  });
+                }),
+                showSeparateHorizonLabels ? h('g', { 'data-solar-sunrise': 'true', 'data-solar-hour': solarProfile.sunriseSolarHour.toFixed(4), 'aria-hidden': 'true' },
+                  h('circle', { cx: solarX(solarProfile.sunriseSolarHour), cy: solarHorizonY, r: 3.2, fill: '#fbbf24', stroke: '#0a0e1a', strokeWidth: 1 }),
+                  h('text', { x: solarX(solarProfile.sunriseSolarHour), y: solarHorizonY - 8, textAnchor: 'middle', fill: '#fde68a', fontSize: 16, fontWeight: 700 }, 'Rise ' + formatSolarHour(solarProfile.sunriseSolarHour))
+                ) : null,
+                showSeparateHorizonLabels ? h('g', { 'data-solar-sunset': 'true', 'data-solar-hour': solarProfile.sunsetSolarHour.toFixed(4), 'aria-hidden': 'true' },
+                  h('circle', { cx: solarX(solarProfile.sunsetSolarHour), cy: solarHorizonY, r: 3.2, fill: '#fbbf24', stroke: '#0a0e1a', strokeWidth: 1 }),
+                  h('text', { x: solarX(solarProfile.sunsetSolarHour), y: solarHorizonY + 20, textAnchor: 'middle', fill: '#fde68a', fontSize: 16, fontWeight: 700 }, 'Set ' + formatSolarHour(solarProfile.sunsetSolarHour))
+                ) : null,
+                solarGrazingText ? h('text', { x: (solarPlot.left + solarPlot.right) / 2, y: solarHorizonY + 24, textAnchor: 'middle', fill: '#fde68a', fontSize: 16, fontWeight: 700, 'data-solar-graze': 'true', 'aria-hidden': 'true' }, solarGrazingText) : null,
+                h('g', { 'data-solar-noon': 'true', 'data-solar-hour': '12', 'data-altitude': solarProfile.solarNoon.altitude.toFixed(3), 'aria-hidden': 'true' },
+                  h('circle', { cx: solarX(12), cy: solarY(solarProfile.solarNoon.altitude), r: 4, fill: '#fde68a', stroke: '#0a0e1a', strokeWidth: 1.2 }),
+                  h('text', { x: solarX(12), y: solarY(solarProfile.solarNoon.altitude) < 34 ? solarY(solarProfile.solarNoon.altitude) + 20 : solarY(solarProfile.solarNoon.altitude) - 8, textAnchor: 'middle', fill: '#fde68a', fontSize: 16, fontWeight: 800 }, 'Noon ' + Math.round(solarProfile.solarNoon.altitude) + '\u00B0')
+                ),
+                solarProfile.state !== 'normal' ? h('text', {
+                  x: (solarPlot.left + solarPlot.right) / 2, y: 130, textAnchor: 'middle',
+                  fill: '#fde68a', fontSize: 16, fontWeight: 800,
+                  'data-solar-polar-state': solarProfile.state
+                }, solarProfile.state === 'polar-day' ? 'Polar day \u00B7 Sun stays above the horizon' : 'Polar night \u00B7 Sun stays below the horizon') : null
+              ),
+              h('div', {
+                id: 'astronomy-season-sun-status',
+                style: { marginTop: 8, color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.55, overflowWrap: 'anywhere' }
+              }, sunStatusText)
+            ),
+            '#fbbf24'
+          ),
           sectionCard('Why the tilt matters more than the distance',
             h('div', null,
               h('p', { style: { margin: '0 0 8px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },

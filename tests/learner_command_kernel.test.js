@@ -87,9 +87,12 @@ describe('learner command kernel safety', () => {
     expect(execute).not.toHaveBeenCalled();
 
     active = true;
-    const result = await kernel.handleUtterance('A', { allowAi: false });
+    const result = await kernel.handleUtterance('A', { allowAi: false, recognitionConfidence: 0.96 });
     expect(result).toMatchObject({ handled: true, changed: true, scopeId: 'assessment' });
-    expect(execute).toHaveBeenCalledWith('choose_option', { choice: 'A' }, {}, expect.objectContaining({ confidence: 0.96 }));
+    expect(execute).toHaveBeenCalledWith('choose_option', { choice: 'A' }, {}, expect.objectContaining({
+      recognitionConfidence: 0.96,
+      parseConfidence: 0.96,
+    }));
   });
 
   it('keeps destructive params private, confirms the exact sanitized action, and supports cancellation', () => {
@@ -143,7 +146,7 @@ describe('learner command kernel safety', () => {
       execute,
     }));
     const kernel = AC.createCommandKernel({}, { channel: 'voice' });
-    const result = await kernel.handleUtterance('next', { confidence: 0.99, allowAi: false });
+    const result = await kernel.handleUtterance('next', { recognitionConfidence: 0.99, allowAi: false });
     expect(result).toMatchObject({ handled: true, ok: false, rejected: true, commandId: 'advance' });
     expect(execute).not.toHaveBeenCalled();
   });

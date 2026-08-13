@@ -2511,14 +2511,20 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @param {string} base64Data
      * @param {Object} [opts]
      * @param {string} [opts.mimeType='image/png']
+     * @param {AbortSignal} [opts.signal]
      * @returns {Promise<string>} Analysis text
      */
-    async analyzeImage(prompt, base64Data, { mimeType = 'image/png' } = {}) {
+    async analyzeImage(prompt, base64Data, { mimeType = 'image/png', signal = null } = {}) {
+        if (signal && signal.aborted) {
+            const error = new Error('Image analysis cancelled.');
+            error.name = 'AbortError';
+            throw error;
+        }
         this._debugLog(`[AIProvider] analyzeImage: ${prompt?.substring(0, 50)}`);
 
         switch (this.backend) {
             case 'gemini':
-                return this._geminiAnalyzeImage(prompt, base64Data, mimeType);
+                return this._geminiAnalyzeImage(prompt, base64Data, mimeType, signal);
             case 'openai':
             case 'localai':
             case 'lmstudio':
@@ -2527,11 +2533,11 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiAnalyzeImage(prompt, base64Data, mimeType);
+                return this._openaiAnalyzeImage(prompt, base64Data, mimeType, signal);
         }
     }
 
-    async _geminiAnalyzeImage(prompt, base64Data, mimeType) {
+    async _geminiAnalyzeImage(prompt, base64Data, mimeType, signal) {
         const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
         const url = `${this.baseUrl}/models/${this.models.vision}:generateContent${keyParam}`;
 
@@ -2548,12 +2554,18 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
+            signal: signal || undefined,
         });
         const data = await response.json();
+        if (signal && signal.aborted) {
+            const error = new Error('Image analysis cancelled.');
+            error.name = 'AbortError';
+            throw error;
+        }
         return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     }
 
-    async _openaiAnalyzeImage(prompt, base64Data, mimeType) {
+    async _openaiAnalyzeImage(prompt, base64Data, mimeType, signal) {
         const url = this.backend === 'ollama'
             ? `${this.baseUrl}/api/chat`
             : `${this.baseUrl}/v1/chat/completions`;
@@ -2577,8 +2589,14 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             method: 'POST',
             headers,
             body: JSON.stringify(payload),
+            signal: signal || undefined,
         });
         const data = await response.json();
+        if (signal && signal.aborted) {
+            const error = new Error('Image analysis cancelled.');
+            error.name = 'AbortError';
+            throw error;
+        }
 
         return this.backend === 'ollama'
             ? data.message?.content || ''

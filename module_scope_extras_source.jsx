@@ -28,8 +28,19 @@
 
 const getSpeechLangCode = (friendlyName) => {
     if (!friendlyName) return 'en-US';
+    const raw = String(friendlyName).trim();
+    // Preserve real BCP-47 tags so "es" and "es-ES" do not silently
+    // fall through to the English default.
+    if (/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(raw)) {
+        return raw.split('-').map((part, index) => {
+            if (index === 0) return part.toLowerCase();
+            if (/^[A-Za-z]{4}$/.test(part)) return part[0].toUpperCase() + part.slice(1).toLowerCase();
+            if (/^(?:[A-Za-z]{2}|\d{3})$/.test(part)) return part.toUpperCase();
+            return part.toLowerCase();
+        }).join('-');
+    }
     const normalize = (str) => str.toLowerCase().trim();
-    const input = normalize(friendlyName);
+    const input = normalize(raw);
     const map = {
         'english': 'en-US',
         'spanish': 'es-ES',

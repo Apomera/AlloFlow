@@ -1938,10 +1938,10 @@ const buildStudentProgressSummary = ({
   };
 };
 
-const executeSaveFile = async (deps) => {
+const executeSaveFile = async (deps, interactionOptions = {}) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, adventureConsistentCharacters, isAdventureStoryMode, isSocialStoryMode, socialStoryFocus, adventureArtStyle, adventureCustomArtStyle, useLowQualityVisuals, enableFactionResources, factionResourceMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers, conceptMasteryLocal, user } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] executeSaveFile fired"); } catch(_) {}
-      if (!saveFileName.trim()) return;
+      if (!saveFileName.trim()) return { ok: false, reason: 'filename-required', narration: 'A filename is required before saving.' };
       let currentLog = [...studentProgressLog];
       if (saveType === 'student') {
         const quizItems = history.filter(h => h.type === 'quiz');
@@ -2277,8 +2277,9 @@ const executeSaveFile = async (deps) => {
           const _msg = _hasVoice
               ? "This project file contains a student's voice recording (an Oral Fluency read-aloud, a karaoke practice recording, and/or an SEL voice check-in). A recorded voice is identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location — don't email it or put it in personal cloud storage.\n\nSave anyway?"
               : "This project file includes SEL activity data, which can contain a student's reflections, journal entries, or safety plan — identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location — don't email it or put it in personal cloud storage.\n\nSave anyway?";
-          const _ok = (typeof window !== 'undefined' && typeof window.confirm === 'function') ? window.confirm(_msg) : true;
-          if (!_ok) { try { addToast(t('toasts.save_cancelled') || 'Save cancelled.', 'info'); } catch (_) {} return; }
+          const _spokenPrivacyConfirmed = !!(interactionOptions && interactionOptions.privacyConfirmed === true);
+          const _ok = _spokenPrivacyConfirmed || ((typeof window !== 'undefined' && typeof window.confirm === 'function') ? window.confirm(_msg) : true);
+          if (!_ok) { try { addToast(t('toasts.save_cancelled') || 'Save cancelled.', 'info'); } catch (_) {} return { ok: false, cancelled: true, reason: 'privacy-declined', narration: 'Save cancelled. The project remains open.' }; }
           if (!/CONFIDENTIAL/i.test(outName)) {
               const _dot = outName.lastIndexOf('.');
               outName = _dot > 0 ? outName.slice(0, _dot) + '_CONFIDENTIAL' + outName.slice(_dot) : outName + '_CONFIDENTIAL';
@@ -2297,7 +2298,7 @@ const executeSaveFile = async (deps) => {
               }
           } catch (_e) {
               try { addToast(t('save.encrypt_failed') || 'Could not encrypt the file. Save cancelled.', 'error'); } catch (__) {}
-              return;
+              return { ok: false, reason: 'encryption-failed', narration: t('save.encrypt_failed') || 'Could not encrypt the file. Save cancelled.' };
           }
       }
       const blob = new Blob([dataStr], { type: 'application/json' });
@@ -2313,6 +2314,7 @@ const executeSaveFile = async (deps) => {
       setLastJsonFileSave(Date.now());
       setIsSaveActionPulsing(false);
       setShowSaveModal(false);
+      return { ok: true, confidential: !!(_hasVoice || _hasSelText), narration: 'Project file saved to this device.' };
 };
 
 const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) => {

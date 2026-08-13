@@ -35,6 +35,22 @@ const UNIVERSAL_GRADE_CHOICES = [
   '12th Grade', 'College', 'Graduate Level',
 ];
 
+// Shared visual contract for the everyday sidebar forms. Keeping these tokens
+// here makes spacing, focus, disabled states, and footer actions feel like one
+// product without moving any controls or changing their behavioural wiring.
+const SIDEBAR_PANEL_UI = Object.freeze({
+  settingsSurface: 'border-b border-slate-200/80 bg-slate-50/70 p-3.5 flex flex-col gap-3.5',
+  label: 'block mb-1.5 text-[11px] font-semibold leading-4 tracking-wide text-slate-700',
+  control: 'w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none',
+  textarea: 'w-full min-h-20 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none',
+  help: 'mt-1.5 text-[11px] leading-relaxed text-slate-500',
+  checkbox: 'h-4 w-4 rounded border-slate-300 text-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50',
+  disclosure: 'flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs font-semibold transition-colors motion-reduce:transition-none focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 disabled:opacity-70',
+  primaryAction: 'group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left transition-colors motion-reduce:transition-none hover:bg-indigo-50/60 focus-visible:z-10 focus-visible:bg-indigo-50/60 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-50',
+  secondaryButton: 'inline-flex min-h-11 items-center justify-center rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 shadow-sm transition-colors transition-shadow motion-reduce:transition-none hover:border-indigo-300 hover:bg-indigo-50 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none',
+  iconButton: 'inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 transition-colors motion-reduce:transition-none hover:border-indigo-300 hover:bg-indigo-100 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:opacity-70',
+});
+
 // Types eligible for a differentiated set. Restricted to branches PROVEN to
 // honour configOverride.grade (probe, 2026-07-28: 17 of 20 reach the prompt).
 // 'image' routes grade through a helper the probe cannot see, and 'analysis'
@@ -97,7 +113,7 @@ function UniversalApplicability({ settingKey, t }) {
 // only the UI pattern is shared. labelKey/placeholder/helpKey/aria pass through
 // unchanged so tour anchors and lang-pack keys survive the consolidation; the
 // visual shell is normalized to one canonical style.
-function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback, placeholderKey, labelKey, optional = true, disabled = false, wrapperClass = '' }) {
+function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback, placeholderKey, labelKey, optional = true, disabled = false, wrapperClass = '', premium = false }) {
   const label = t(labelKey || 'input.custom_instructions');
   const hasValue = !!(value && String(value).trim());
   // Collapsed by default: twenty always-open textareas were the single biggest
@@ -118,7 +134,7 @@ function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback,
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         disabled={disabled}
-        className={`w-full flex items-center justify-between gap-2 text-left text-xs font-medium rounded-md px-2 py-1.5 border transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${hasValue ? 'border-indigo-200 bg-indigo-50/60 text-indigo-800' : 'border-transparent text-slate-600 hover:bg-slate-50'}`}
+        className={premium ? `${SIDEBAR_PANEL_UI.disclosure} ${hasValue ? 'border-indigo-200 bg-indigo-50/70 text-indigo-800' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'}` : `w-full flex items-center justify-between gap-2 text-left text-xs font-medium rounded-md px-2 py-1.5 border transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${hasValue ? 'border-indigo-200 bg-indigo-50/60 text-indigo-800' : 'border-transparent text-slate-600 hover:bg-slate-50'}`}
       >
         <span className="flex items-center gap-1.5 min-w-0">
           {hasValue
@@ -139,7 +155,7 @@ function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback,
           placeholder={t(placeholderKey)}
           disabled={disabled}
           maxLength={2000}
-          className="w-full mt-1 text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 resize-none h-16 bg-white text-slate-800 placeholder:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition-shadow motion-reduce:transition-none duration-300"
+          className={premium ? `${SIDEBAR_PANEL_UI.textarea} mt-2 h-20 resize-y text-xs` : 'w-full mt-1 text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 resize-none h-16 bg-white text-slate-800 placeholder:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition-shadow motion-reduce:transition-none duration-300'}
         />
       )}
     </div>
@@ -268,9 +284,9 @@ function SurpriseMeCompare(props) {
           <div className="font-bold text-violet-950">Edit before using — your judgment wins over the proposal</div>
           <textarea value={editedBrief} onChange={(e) => setEditedBrief(e.target.value)} rows={6}
             aria-label="Edit the pinned lesson direction before using it"
-            className="mt-1 w-full rounded border border-violet-200 p-1.5 text-[11px] focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none" />
+            className={`${SIDEBAR_PANEL_UI.textarea} mt-2 text-xs focus-visible:border-violet-500 focus-visible:ring-violet-500/20`} />
           <button type="button" onClick={function () { onUse(directions[pinnedIndex], editedBrief); }}
-            className="mt-1 rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800">Use this direction</button>
+            className={`${SIDEBAR_PANEL_UI.secondaryButton} mt-2 border-violet-200 text-violet-700 hover:border-violet-300 hover:bg-violet-50 focus-visible:ring-violet-500/20`}>Use this direction</button>
         </div>
       )}
     </div>
@@ -387,11 +403,11 @@ function UniversalSettingsPanel(props) {
     dokLevel ? dokLevel.split(':')[0] : null,
   ].filter(Boolean);
   return (
-            <div id="tour-universal-settings" data-help-key="tool_universal_settings" className="rounded-3xl border-2 border-indigo-200 bg-white overflow-hidden shadow-sm mb-3">
+            <div id="tour-universal-settings" data-help-key="tool_universal_settings" className="mb-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
               <button type="button"
                 aria-expanded={isOpen}
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full p-3 bg-indigo-50/60 flex justify-between items-center hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
+                className="flex min-h-14 w-full items-center justify-between bg-white px-3.5 py-3 transition-colors motion-reduce:transition-none hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-indigo-500/20"
               >
                 <div className="text-left min-w-0">
                   <div className="text-sm font-bold text-indigo-900 flex gap-2 items-center">
@@ -402,15 +418,15 @@ function UniversalSettingsPanel(props) {
                 <ChevronDown size={16} className={`text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? 'rotate-180' : ''}`}/>
               </button>
               {isOpen && (
-                <div className="p-3 space-y-3 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
+                <div className="animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                         <div>
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('wizard.grade_level')}</label>
+                            <label className={SIDEBAR_PANEL_UI.label}>{t('wizard.grade_level')}</label>
                             <select aria-label={t('common.selection')}
                                 data-help-key="simplified_grade_level"
                                 value={gradeLevel}
                                 onChange={(e) => setGradeLevel(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                className={SIDEBAR_PANEL_UI.control}
                             >
                                 <option value="Kindergarten">{t('grades.k')}</option>
                                 <option value="1st Grade">{t('grades.g1')}</option>
@@ -431,12 +447,12 @@ function UniversalSettingsPanel(props) {
                             <UniversalApplicability settingKey="grade" t={t} />
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('wizard.output_language')}</label>
+                            <label className={SIDEBAR_PANEL_UI.label}>{t('wizard.output_language')}</label>
                             <select aria-label={t('common.selection')}
                                 data-help-key="simplified_language"
                                 value={leveledTextLanguage}
                                 onChange={(e) => setLeveledTextLanguage(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                className={SIDEBAR_PANEL_UI.control}
                             >
                                 <option value="English">{t('languages.english')}</option>
                                 {selectedLanguages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
@@ -449,7 +465,7 @@ function UniversalSettingsPanel(props) {
                                 (this select, Adventure's language mode, and Glossary's
                                 translations), so it belongs with the shared settings. */}
                             <div className="mt-2" data-help-key="glossary_language_input">
-                                <label className="block text-[10px] text-slate-500 mb-1">
+                                <label className={SIDEBAR_PANEL_UI.label}>
                                     {t('glossary.add_languages_label')}
                                 </label>
                                 <div className="flex gap-2">
@@ -460,13 +476,13 @@ function UniversalSettingsPanel(props) {
                                         onKeyDown={handleKeyDown}
                                         placeholder={t('glossary.language_placeholder')}
                                         maxLength={40}
-                                        className="flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+                                        className={`${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow`}
                                         aria-label={t('common.target_language_aria')}
                                     />
                                     <button type="button"
                                         onClick={addLanguage}
                                         disabled={!languageInput.trim() || selectedLanguages.length >= 4}
-                                        className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
+                                        className={SIDEBAR_PANEL_UI.iconButton}
                                         aria-label={t('common.add')}
                                     >
                                         <Plus size={16} />
@@ -484,7 +500,7 @@ function UniversalSettingsPanel(props) {
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1">
+                            <label className={`${SIDEBAR_PANEL_UI.label} flex items-center gap-1`}>
                                 {t('quiz.dok_target')}
                                 <InfoTooltip text="Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." />
                             </label>
@@ -492,7 +508,7 @@ function UniversalSettingsPanel(props) {
                                 data-help-key="simplified_dok"
                                 value={dokLevel}
                                 onChange={(e) => setDokLevel(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                className={SIDEBAR_PANEL_UI.control}
                             >
                                 <option value="">{t('wizard.dok_levels.none')}</option>
                                 <option value="Level 1: Recall & Reproduction">{t('wizard.dok_levels.l1')}</option>
@@ -508,7 +524,7 @@ function UniversalSettingsPanel(props) {
                         </div>
                     </div>
                     <div>
-                        <div className="bg-slate-50 p-2 rounded-lg border border-slate-400" data-help-key="simplified_standards">
+                        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm" data-help-key="simplified_standards">
                             <div className="flex justify-between items-center mb-2">
                                 <span id="simplified-standard-mode-label" className="text-xs text-slate-600 font-bold flex items-center gap-1">
                                     <CheckCircle size={12} className="text-indigo-600"/> Target Standard
@@ -537,13 +553,13 @@ function UniversalSettingsPanel(props) {
                                             onChange={(e) => setAiStandardQuery(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleFindStandards(gradeLevel)}
                                             placeholder={`Describe skill (e.g. "identify main idea") for ${gradeLevel}...`}
-                                            className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+                                            className={`${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow text-xs`}
                                         />
                                         <button type="button"
                                             aria-label={t('common.refresh')}
                                             onClick={() => handleFindStandards(gradeLevel)}
                                             disabled={!aiStandardQuery.trim() || isFindingStandards}
-                                            className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
+                                            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-indigo-600 bg-indigo-600 text-white shadow-sm transition-colors motion-reduce:transition-none hover:border-indigo-700 hover:bg-indigo-700 focus-visible:ring-4 focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none"
                                             title={t('common.find_relevant_standards')}
                                         >
                                             {isFindingStandards ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Search size={14}/>}
@@ -594,12 +610,12 @@ function UniversalSettingsPanel(props) {
                                             }}
                                             onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
                                             placeholder={t('standards.manual_placeholder')}
-                                            className="flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                            className={`${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow`}
                                         />
                                         <button type="button" aria-label={t('common.add')}
                                             onClick={handleAddStandard}
                                             disabled={!standardInputValue.trim() || targetStandards.length >= 3}
-                                            className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className={SIDEBAR_PANEL_UI.iconButton}
                                             title={t('standards.add_button')}
                                         >
                                             <Plus size={16} />
@@ -707,7 +723,7 @@ function UniversalSettingsPanel(props) {
                             </div>
                         )}
                         <div data-help-key="simplified_interests">
-                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1 mt-2">
+                            <label className={`${SIDEBAR_PANEL_UI.label} mt-2 flex items-center gap-1`}>
                                 <Heart size={12} className="text-indigo-500"/> {t('input.interests_label')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
                             </label>
                             <div className="flex gap-2 mb-2">
@@ -717,12 +733,12 @@ function UniversalSettingsPanel(props) {
                                     onChange={(e) => setInterestInput(e.target.value)}
                                     onKeyDown={handleInterestKeyDown}
                                     placeholder={t('common.interest_placeholder')}
-                                    className="flex-grow text-sm px-2 py-1.5 border border-slate-400 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+                                    className={`${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow`}
                                 />
                                 <button type="button" aria-label={t('common.add')}
                                     onClick={addInterest}
                                     disabled={!interestInput.trim() || studentInterests.length >= 5}
-                                    className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
+                                    className={SIDEBAR_PANEL_UI.iconButton}
                                 >
                                     <Plus size={16} />
                                 </button>
@@ -745,7 +761,7 @@ function UniversalSettingsPanel(props) {
                                     type="checkbox"
                                     checked={useEmojis}
                                     onChange={(e) => setUseEmojis(e.target.checked)}
-                                    className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                                    className={SIDEBAR_PANEL_UI.checkbox}
                                 />
                                 <label htmlFor="useEmojis" className="text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1">
                                     <Smile size={12} className="text-indigo-500"/> {t('simplified.use_emojis')}
@@ -754,13 +770,13 @@ function UniversalSettingsPanel(props) {
                             <UniversalApplicability settingKey="emoji" t={t} />
                         </div>
                         <div className="mt-3 pt-3 border-t border-slate-200" data-help-key="simplified_differentiation">
-                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1">
+                            <label className={`${SIDEBAR_PANEL_UI.label} flex items-center gap-1`}>
                                 <Layout size={12} className="text-indigo-500"/> {t('simplified.diff_label')}
                             </label>
                             <select aria-label={t('simplified.diff_label')}
                                 value={differentiationRange}
                                 onChange={(e) => setDifferentiationRange(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                className={SIDEBAR_PANEL_UI.control}
                             >
                                 <option value="None">{t('simplified.diff_options.none')}</option>
                                 <option value="1">{t('simplified.diff_options.one')}</option>
@@ -819,7 +835,7 @@ function UniversalSettingsPanel(props) {
                             )}
                         </div>
                         <div className="mt-2" data-help-key="universal_image_style">
-                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1">
+                            <label className={`${SIDEBAR_PANEL_UI.label} flex items-center gap-1`}>
                                 <Palette size={12} className="text-indigo-500"/> {t('universal.image_style') || 'Image Style (default)'} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
                             </label>
                             <input
@@ -829,9 +845,9 @@ function UniversalSettingsPanel(props) {
                                 onChange={(e) => setUniversalImageStyle(e.target.value)}
                                 placeholder={t('concept_sort.style_placeholder') || "e.g. cartoon, pixel art, watercolor"}
                                 maxLength={120}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                className={SIDEBAR_PANEL_UI.control}
                             />
-                            <p className="text-[10px] text-slate-500 mt-1">{t('universal.image_style_hint') || 'Used for Visuals, Glossary, Timeline and Concept Sort images unless a tool sets its own style.'}</p>
+                            <p className={SIDEBAR_PANEL_UI.help}>{t('universal.image_style_hint') || 'Used for Visuals, Glossary, Timeline and Concept Sort images unless a tool sets its own style.'}</p>
                         </div>
                     </div>
                 </div>
@@ -1379,7 +1395,7 @@ function AdventurePanel(props) {
                             <button type="button" aria-label={t('common.next')}
                                 data-help-key="adventure_start_btn" onClick={handleStartAdventure}
                                 disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                                className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                                className={SIDEBAR_PANEL_UI.primaryAction}
                             >
                                 <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('adventure.start')} <Sparkles size={14} className="text-yellow-600"/></span>
                                 <ArrowRight size={16} className="text-slate-600 group-hover:text-purple-600" />
@@ -1403,15 +1419,15 @@ function SimplifiedPanel(props) {
   if (!expandedTools || !expandedTools.includes('simplified')) return null;
   return (
               <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                <div id="tour-level-settings" data-help-key="tour-simplified-settings" className="p-3 border-b border-slate-100 space-y-3">
+                <div id="tour-level-settings" data-help-key="tour-simplified-settings" className={SIDEBAR_PANEL_UI.settingsSurface}>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                         <div>
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('wizard.output_format')}</label>
+                            <label className={SIDEBAR_PANEL_UI.label}>{t('wizard.output_format')}</label>
                             <select aria-label={t('common.selection')}
                                 data-help-key="simplified_format"
                                 value={textFormat}
                                 onChange={(e) => setTextFormat(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                className={SIDEBAR_PANEL_UI.control}
                             >
                                 <option value="Standard Text">{t('simplified.formats.standard')}</option>
                                 <option value="Dialogue Script">{t('simplified.formats.dialogue')}</option>
@@ -1424,12 +1440,12 @@ function SimplifiedPanel(props) {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('input.length')}</label>
+                            <label className={SIDEBAR_PANEL_UI.label}>{t('input.length')}</label>
                             <select aria-label={t('common.selection')}
                                 data-help-key="simplified_length"
                                 value={leveledTextLength}
                                 onChange={(e) => setLeveledTextLength(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                className={SIDEBAR_PANEL_UI.control}
                             >
                                 <option value="Same as Source">{t('simplified.length_options.same')}</option>
                                 <option value="Condense (50%)">{t('simplified.length_options.condense')}</option>
@@ -1441,7 +1457,7 @@ function SimplifiedPanel(props) {
                         </div>
                     </div>
                     <div>
-                        <ResourceCustomInstructions helpKey="simplified_custom_instructions" t={t}
+                        <ResourceCustomInstructions premium helpKey="simplified_custom_instructions" t={t}
                             ariaFallback="Custom instructions for simplified text"
                             value={leveledTextCustomInstructions} onChange={setLeveledTextCustomInstructions}
                             placeholderKey="common.custom_instructions_placeholder" />
@@ -1451,7 +1467,7 @@ function SimplifiedPanel(props) {
                                 type="checkbox"
                                 checked={keepCitations}
                                 onChange={(e) => setKeepCitations(e.target.checked)}
-                                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                                className={SIDEBAR_PANEL_UI.checkbox}
                             />
                             <label htmlFor="keepCitations" className="text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1">
                                 <Link size={12} className="text-indigo-500"/> {t('simplified.preserve_links')}
@@ -1463,7 +1479,7 @@ function SimplifiedPanel(props) {
                                 type="checkbox"
                                 checked={includeCharts}
                                 onChange={(e) => setIncludeCharts(e.target.checked)}
-                                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                                className={SIDEBAR_PANEL_UI.checkbox}
                             />
                             <label htmlFor="includeCharts" className="text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1">
                                 <Layout size={12} className="text-indigo-500"/> {t('simplified.data_visuals')}
@@ -1475,7 +1491,7 @@ function SimplifiedPanel(props) {
                     aria-label={t('common.generate')}
                     onClick={() => handleGenerate('simplified')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                    className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={SIDEBAR_PANEL_UI.primaryAction}
                 >
                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('simplified.rewrite')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
@@ -1504,10 +1520,10 @@ function MathPanel(props) {
   if (!expandedTools || !expandedTools.includes('math')) return null;
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                    <div className="p-3 border-b border-slate-100 bg-blue-50/50 flex flex-col gap-3">
+                    <div className={SIDEBAR_PANEL_UI.settingsSurface}>
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-xs text-slate-600 mb-1 font-medium">{t('math.subject')}</label>
+                                <label className={SIDEBAR_PANEL_UI.label}>{t('math.subject')}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                         <BookOpen size={12} className="text-slate-600" />
@@ -1516,7 +1532,7 @@ function MathPanel(props) {
                                         data-help-key="math_subject"
                                         value={mathSubject}
                                         onChange={(e) => setMathSubject(e.target.value)}
-                                        className="w-full pl-7 text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                        className={`${SIDEBAR_PANEL_UI.control} pl-8 focus-visible:border-blue-500 focus-visible:ring-blue-500/20`}
                                     >
                                         <option value="General Math">{t('math.subjects.general')}</option>
                                         <option value="Algebra">{t('math.subjects.algebra')}</option>
@@ -1532,7 +1548,7 @@ function MathPanel(props) {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-600 mb-1 font-medium">{t('math.mode')}</label>
+                                <label className={SIDEBAR_PANEL_UI.label}>{t('math.mode')}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                         <Settings2 size={12} className="text-slate-600" />
@@ -1541,7 +1557,7 @@ function MathPanel(props) {
                                         data-help-key="math_mode"
                                         value={mathMode}
                                         onChange={(e) => setMathMode(e.target.value)}
-                                        className="w-full pl-7 text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                        className={`${SIDEBAR_PANEL_UI.control} pl-8 focus-visible:border-blue-500 focus-visible:ring-blue-500/20`}
                                     >
                                         <option value="Problem Set Generator">{t('math.modes.problem_set')}</option>
                                         <option value="Step-by-Step">{t('math.modes.step_by_step')}</option>
@@ -1616,7 +1632,7 @@ function MathPanel(props) {
 })}
                         {(mathMode === 'Problem Set Generator' || mathMode === 'Word Problems from Source' || mathMode === 'Freeform Builder') && (
                             <div>
-                                <label className="block text-xs text-slate-600 mb-1 font-medium">{t('math.quantity')}</label>
+                                <label className={SIDEBAR_PANEL_UI.label}>{t('math.quantity')}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                         <ListOrdered size={12} className="text-slate-600" />
@@ -1628,13 +1644,13 @@ function MathPanel(props) {
                                         max="10"
                                         value={mathQuantity}
                                         onChange={(e) => setMathQuantity(parseInt(e.target.value) || 5)}
-                                        className="w-full pl-7 text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                        className={`${SIDEBAR_PANEL_UI.control} pl-8 focus-visible:border-blue-500 focus-visible:ring-blue-500/20`}
                                     />
                                 </div>
                             </div>
                         )}
                         <div>
-                            <label className="block text-xs font-medium text-slate-700 mb-1">
+                            <label className={SIDEBAR_PANEL_UI.label}>
                                 {mathMode === 'Problem Set Generator'
                                     ? t('math.labels.topic_skill')
                                     : mathMode === 'Word Problems from Source'
@@ -1656,7 +1672,7 @@ function MathPanel(props) {
                                         mathMode === 'Word Problems from Source' ? t('math.placeholder_focus') :
                                         t('math.placeholder_eq')
                                     }
-                                    className="w-full pl-8 text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 resize-none h-24 font-mono transition-shadow motion-reduce:transition-none duration-300"
+                                    className={`${SIDEBAR_PANEL_UI.textarea} h-24 resize-y pl-8 text-xs font-mono focus-visible:border-blue-500 focus-visible:ring-blue-500/20`}
                                 />
                             </div>
                         </div>
@@ -1666,7 +1682,7 @@ function MathPanel(props) {
                                 type="checkbox"
                                 checked={isMathGraphEnabled}
                                 onChange={(e) => setIsMathGraphEnabled(e.target.checked)}
-                                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                                className={SIDEBAR_PANEL_UI.checkbox}
                             />
                             <label htmlFor="mathGraph" className="text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1">
                                 <ImageIcon size={12} className="text-blue-500"/> {t('math.graph_label')}
@@ -1679,7 +1695,7 @@ function MathPanel(props) {
                                 type="checkbox"
                                 checked={autoAttachManipulatives !== false}
                                 onChange={(e) => setAutoAttachManipulatives && setAutoAttachManipulatives(e.target.checked)}
-                                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                                className={SIDEBAR_PANEL_UI.checkbox}
                             />
                             <label htmlFor="mathManipulatives" className="text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1">
                                 🧩 Attach manipulatives
@@ -1693,7 +1709,7 @@ function MathPanel(props) {
                                 onChange={(e) => setUseMathSourceContext(e.target.checked)}
                                 disabled={!hasSourceOrAnalysis}
                                 title={!hasSourceOrAnalysis ? "No source text or analysis available to use as context" : "Use source text to contextualize math problems"}
-                                className={`w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 ${!hasSourceOrAnalysis ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                className={SIDEBAR_PANEL_UI.checkbox}
                             />
                             <label htmlFor="mathContext" className="text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1">
                                 <FileText size={12} className="text-blue-500"/> {t('math.customize_label')}
@@ -1706,7 +1722,7 @@ function MathPanel(props) {
                         onClick={handleGenerateMath}
                         disabled={!mathInput.trim() || isProcessing || mathMode === 'Fluency Probe'}
                         style={mathMode === 'Fluency Probe' ? { display: 'none' } : {}}
-                         className="w-full p-3 bg-gradient-to-r w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed group disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
+                         className={SIDEBAR_PANEL_UI.primaryAction}
                      >
                         <span className="text-sm font-bold flex items-center gap-2">{t('math.solve')} <Sparkles size={14} className="text-yellow-600"/></span>
                         <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
@@ -2132,10 +2148,10 @@ function GlossaryPanel(props) {
   if (!expandedTools || !expandedTools.includes('glossary')) return null;
   return (
               <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                <div className="p-3 border-b border-slate-100" data-help-key="tour-glossary-settings">
+                <div className={`${SIDEBAR_PANEL_UI.settingsSurface} !gap-0`} data-help-key="tour-glossary-settings">
                     <div className="grid grid-cols-2 gap-2 mb-3">
                         <div data-help-key="glossary_tier2_count">
-                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center">
+                            <label className={`${SIDEBAR_PANEL_UI.label} flex items-center`}>
                                 {t('glossary.tier2')}
                                 <InfoTooltip text={t('glossary.tier2_tooltip')} />
                             </label>
@@ -2145,11 +2161,11 @@ function GlossaryPanel(props) {
                                 max="20"
                                 value={glossaryTier2Count}
                                 onChange={(e) => setGlossaryTier2Count(parseInt(e.target.value) || 0)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 p-1"
+                                className={`${SIDEBAR_PANEL_UI.control} focus-visible:border-sky-500 focus-visible:ring-sky-500/20`}
                             />
                         </div>
                         <div data-help-key="glossary_tier3_count">
-                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center">
+                            <label className={`${SIDEBAR_PANEL_UI.label} flex items-center`}>
                                 {t('glossary.tier3')}
                                 <InfoTooltip text={t('glossary.tier3_tooltip')} />
                             </label>
@@ -2159,15 +2175,15 @@ function GlossaryPanel(props) {
                                 max="20"
                                 value={glossaryTier3Count}
                                 onChange={(e) => setGlossaryTier3Count(parseInt(e.target.value) || 0)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 p-1"
+                                className={`${SIDEBAR_PANEL_UI.control} focus-visible:border-sky-500 focus-visible:ring-sky-500/20`}
                             />
                         </div>
                         <div className="col-span-2" data-help-key="glossary_definition_level">
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('glossary.def_level')}</label>
+                            <label className={SIDEBAR_PANEL_UI.label}>{t('glossary.def_level')}</label>
                             <select aria-label={t('common.selection')}
                                 value={glossaryDefinitionLevel}
                                 onChange={(e) => setGlossaryDefinitionLevel(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 py-1.5 pl-2 pr-8"
+                                className={`${SIDEBAR_PANEL_UI.control} py-1.5 pl-2 pr-8 focus-visible:border-sky-500 focus-visible:ring-sky-500/20`}
                             >
                                 <option value="Same as Source Text">{t('glossary.def_options.source')}</option>
                                 <option value="Same as Global Level">{t('glossary.def_options.global')} ({gradeLevel})</option>
@@ -2192,17 +2208,17 @@ function GlossaryPanel(props) {
                                 type="checkbox"
                                 checked={includeEtymology}
                                 onChange={(e) => setIncludeEtymology(e.target.checked)}
-                                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                                className={SIDEBAR_PANEL_UI.checkbox}
                             />
                             📜 {t('glossary.settings.include_etymology') || 'Include word roots / etymology'}
                         </label>
                         {includeEtymology && (
-                            <p className="mt-1 ml-6 text-[11px] text-slate-600 leading-snug">
+                            <p className={`${SIDEBAR_PANEL_UI.help} ml-6`}>
                                 {t('glossary.settings.etymology_always_all') || 'Applied to every term — shows the actual root morphemes, word history, and related English words that share the root.'}
                             </p>
                         )}
                     </div>
-                    <ResourceCustomInstructions helpKey="glossary_custom_instructions" t={t}
+                    <ResourceCustomInstructions premium helpKey="glossary_custom_instructions" t={t}
                         wrapperClass="mb-3"
                         ariaFallback="Custom instructions for glossary"
                         value={glossaryCustomInstructions} onChange={setGlossaryCustomInstructions}
@@ -2222,7 +2238,7 @@ function GlossaryPanel(props) {
                                 type="checkbox"
                                 checked={autoRemoveWords}
                                 onChange={(e) => setAutoRemoveWords(e.target.checked)}
-                                className="rounded border-slate-300 text-indigo-600 focus:ring-sky-500 h-4 w-4"
+                                className={SIDEBAR_PANEL_UI.checkbox}
                             />
                             <span className="flex items-center gap-1">
                                 <Ban size={12} className="text-red-600"/> {t('glossary.auto_remove')} <span className="text-[11px] text-slate-600 font-normal">{t('glossary.slower')}</span>
@@ -2234,7 +2250,7 @@ function GlossaryPanel(props) {
                     aria-label={t('common.generate')}
                     onClick={() => handleGenerate('glossary')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                    className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={SIDEBAR_PANEL_UI.primaryAction}
                 >
                     <span className="text-sm text-slate-600 group-hover:text-sky-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('glossary.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
@@ -2636,20 +2652,20 @@ function TimelinePanel(props) {
   if (!expandedTools || !expandedTools.includes('timeline')) return null;
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                    <div className="p-3 border-b border-slate-100 bg-teal-50 flex flex-col gap-3">
+                    <div className={SIDEBAR_PANEL_UI.settingsSurface}>
                         <div>
-                            <label className="block text-xs font-medium text-slate-700 mb-1">{t('timeline.topic')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span></label>
+                            <label className={SIDEBAR_PANEL_UI.label}>{t('timeline.topic')} <span className="font-normal text-slate-500">{t('common.optional')}</span></label>
                             <input aria-label={t('common.enter_timeline_topic')}
                                 data-help-key="timeline_topic"
                                 type="text"
                                 value={timelineTopic}
                                 onChange={(e) => setTimelineTopic(e.target.value)}
                                 placeholder={t('timeline.topic_placeholder')}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 p-1.5"
+                                className={`${SIDEBAR_PANEL_UI.control} focus-visible:border-teal-500 focus-visible:ring-teal-500/20`}
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-slate-700 mb-1">{t('timeline.count')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span></label>
+                            <label className={SIDEBAR_PANEL_UI.label}>{t('timeline.count')} <span className="font-normal text-slate-500">{t('common.optional')}</span></label>
                             <input aria-label={t('common.text_field')}
                                 data-help-key="timeline_count"
                                 type="number"
@@ -2664,18 +2680,18 @@ function TimelinePanel(props) {
                                     setTimelineItemCount(String(Math.min(20, Math.max(3, n))));
                                 }}
                                 placeholder={t('timeline.placeholder_count')}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5"
+                                className={SIDEBAR_PANEL_UI.control}
                             />
                         </div>
                         <div data-help-key="timeline_mode_info">
-                            <label className="block text-xs font-medium text-slate-700 mb-1">
+                            <label className={SIDEBAR_PANEL_UI.label}>
                                 {t('timeline.settings.mode_label') || 'Ordering Mode'}
                             </label>
                             <select
                                 aria-label={t('timeline.settings.mode_label') || 'Ordering mode'}
                                 value={timelineMode}
                                 onChange={(e) => setTimelineMode(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5"
+                                className={SIDEBAR_PANEL_UI.control}
                             >
                                 <option value="auto">{t('timeline.settings.mode_auto') || '✨ Auto-detect (AI picks best)'}</option>
                                 <option value="chronological">{t('timeline.modes.chronological') || 'Chronological — dates, events'}</option>
@@ -2687,7 +2703,7 @@ function TimelinePanel(props) {
                                 <option value="intensity">{t('timeline.modes.intensity') || 'Intensity / Degree — least to most'}</option>
                                 <option value="narrative">{t('timeline.modes.narrative') || 'Narrative arc — exposition to resolution'}</option>
                             </select>
-                            <p className="text-[11px] text-slate-500 italic mt-1">
+                            <p className={SIDEBAR_PANEL_UI.help}>
                                 {timelineMode === 'auto'
                                     ? (t('timeline.settings.mode_hint_auto') || 'AI examines the text and topic hint to pick the best ordering axis.')
                                     : (TIMELINE_MODE_DEFINITIONS[timelineMode]?.description || '')}
@@ -2699,11 +2715,11 @@ function TimelinePanel(props) {
                                     type="checkbox"
                                     checked={includeTimelineVisuals}
                                     onChange={(e) => setIncludeTimelineVisuals(e.target.checked)}
-                                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                                    className={SIDEBAR_PANEL_UI.checkbox}
                                 />
                                 🎨 {t('timeline.settings.include_visuals') || 'Include sequence visuals'}
                             </label>
-                            <p className="text-[11px] text-slate-500 italic mt-1 ml-6">
+                            <p className={`${SIDEBAR_PANEL_UI.help} ml-6`}>
                                 {t('timeline.settings.visuals_hint') || 'Generates an AI icon for each item. Adds ~30-50 seconds.'}
                             </p>
                         </div>
@@ -2712,7 +2728,7 @@ function TimelinePanel(props) {
                         aria-label={t('common.generate')}
                         onClick={() => handleGenerate('timeline')}
                         disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                        className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={SIDEBAR_PANEL_UI.primaryAction}
                         data-help-key="timeline_generate_button"
                     >
                         <span className="text-sm font-bold text-slate-700 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">
@@ -2736,9 +2752,9 @@ function ConceptSortPanel(props) {
   if (!expandedTools || !expandedTools.includes('concept-sort')) return null;
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                    <div className="p-3 border-b border-slate-100 bg-amber-50 flex flex-col gap-3">
+                    <div className={SIDEBAR_PANEL_UI.settingsSurface}>
                         <div>
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('concept_sort.categories')} {t('concept_sort.max_categories')} <span className="text-amber-600 font-normal">{t('common.optional')}</span></label>
+                            <label className={SIDEBAR_PANEL_UI.label}>{t('concept_sort.categories')} {t('concept_sort.max_categories')} <span className="font-normal text-slate-500">{t('common.optional')}</span></label>
                             <div className="flex gap-2 mb-2">
                                 <input aria-label={t('common.enter_concept_input')}
                                     data-help-key="concept_sort_categories"
@@ -2747,12 +2763,12 @@ function ConceptSortPanel(props) {
                                     onChange={(e) => setConceptInput(e.target.value)}
                                     onKeyDown={handleConceptKeyDown}
                                     placeholder={t('concept_sort.placeholder_categories')}
-                                    className="flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200"
+                                    className={`${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow`}
                                 />
                                 <button type="button" aria-label={t('common.add')}
                                     onClick={addConcept}
                                     disabled={!conceptInput.trim() || selectedConcepts.length >= 5}
-                                    className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
+                                    className={SIDEBAR_PANEL_UI.iconButton}
                                 >
                                     <Plus size={16} />
                                 </button>
@@ -2768,7 +2784,7 @@ function ConceptSortPanel(props) {
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">
+                            <label className={SIDEBAR_PANEL_UI.label}>
                                 {t('concept_sort.items')} <span className="text-amber-600 font-normal">(optional)</span>
                             </label>
                             <input aria-label={t('common.text_field')}
@@ -2783,17 +2799,17 @@ function ConceptSortPanel(props) {
                                   setConceptItemCount(v === '' ? '' : (parseInt(v, 10) || ''));
                                 }}
                                 title={t('concept_sort.item_count_tooltip') || 'Leave blank to let AI pick the right number based on your source text. Or type 4–30 to force a specific count.'}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
+                                className={SIDEBAR_PANEL_UI.control}
                             />
                         </div>
                         <div className="mt-2">
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('concept_sort.card_visuals_label') || 'Card visuals'}</label>
+                            <label className={SIDEBAR_PANEL_UI.label}>{t('concept_sort.card_visuals_label') || 'Card visuals'}</label>
                             <select
                                 aria-label={t('concept_sort.card_visuals_label') || 'Card visuals'}
                                 data-help-key="concept_sort_image_mode"
                                 value={conceptImageMode}
                                 onChange={(e) => setConceptImageMode(e.target.value)}
-                                className="w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
+                                className={`${SIDEBAR_PANEL_UI.control} text-xs`}
                             >
                                 <option value="auto">{t('concept_sort.card_visuals_auto') || 'Auto (only on short items)'}</option>
                                 <option value="always">{t('concept_sort.card_visuals_always') || 'Always generate images'}</option>
@@ -2803,7 +2819,7 @@ function ConceptSortPanel(props) {
                         {/* Outside the image-mode conditional on purpose: the dispatcher consumes
                             these instructions unconditionally, so hiding the field with card
                             visuals would leave an invisible string steering every sort. */}
-                        <ResourceCustomInstructions helpKey="concept_sort_custom_instructions" t={t}
+                        <ResourceCustomInstructions premium helpKey="concept_sort_custom_instructions" t={t}
                             ariaFallback="Custom instructions for concept sort"
                             value={conceptSortCustomInstructions} onChange={setConceptSortCustomInstructions}
                             placeholderKey="common.custom_instructions_placeholder" />
@@ -2813,7 +2829,7 @@ function ConceptSortPanel(props) {
                         data-help-key="concept_sort_generate_button"
                         onClick={() => handleGenerate('concept-sort')}
                         disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                        className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                         <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('concept_sort.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                         <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
@@ -2833,8 +2849,8 @@ function BrainstormPanel(props) {
   if (!expandedTools || !expandedTools.includes('brainstorm')) return null;
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                    <div className="p-3 border-b border-slate-100 bg-yellow-50/50 flex flex-col gap-3">
-                        <ResourceCustomInstructions helpKey="brainstorm_custom_instructions" t={t}
+                    <div className={SIDEBAR_PANEL_UI.settingsSurface}>
+                        <ResourceCustomInstructions premium helpKey="brainstorm_custom_instructions" t={t}
                             labelKey="brainstorm.instructions" optional={false}
                             ariaFallback="Brainstorm instructions"
                             value={brainstormCustomInstructions} onChange={setBrainstormCustomInstructions}
@@ -2844,7 +2860,7 @@ function BrainstormPanel(props) {
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('brainstorm')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                    className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                     <span className="text-sm text-slate-700 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2 font-semibold">{t('brainstorm.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-700 group-hover:text-violet-600" />
@@ -2927,18 +2943,18 @@ function ImagePanel(props) {
   if (!expandedTools || !expandedTools.includes('image')) return null;
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                    <div className="p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3" data-help-key="tour-visual-settings">
+                    <div className={SIDEBAR_PANEL_UI.settingsSurface} data-help-key="tour-visual-settings">
                         <div className="flex flex-col gap-2">
                             <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none">
-                            <input aria-label={t('common.toggle')} data-help-key="visuals_worksheet_mode" type="checkbox" checked={fillInTheBlank} onChange={(e) => setFillInTheBlank(e.target.checked)} className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4 w-4"/>
+                            <input aria-label={t('common.toggle')} data-help-key="visuals_worksheet_mode" type="checkbox" checked={fillInTheBlank} onChange={(e) => setFillInTheBlank(e.target.checked)} className={SIDEBAR_PANEL_UI.checkbox}/>
                             <PenTool size={12} className="text-purple-600" /> {t('visuals.worksheet_mode')}
                             </label>
                             <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none">
-                                <input aria-label={t('common.toggle')} data-help-key="visuals_creative_mode" type="checkbox" checked={creativeMode} onChange={(e) => setCreativeMode(e.target.checked)} className="rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 h-4 w-4"/>
+                                <input aria-label={t('common.toggle')} data-help-key="visuals_creative_mode" type="checkbox" checked={creativeMode} onChange={(e) => setCreativeMode(e.target.checked)} className={SIDEBAR_PANEL_UI.checkbox}/>
                                 <Palette size={12} className="text-pink-600" /> {t('visuals.enhanced')}
                             </label>
                             <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none">
-                                <input aria-label={t('common.toggle_no_text')} data-help-key="visuals_no_text" type="checkbox" checked={noText} onChange={(e) => setNoText(e.target.checked)} className="rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 h-4 w-4"/>
+                                <input aria-label={t('common.toggle_no_text')} data-help-key="visuals_no_text" type="checkbox" checked={noText} onChange={(e) => setNoText(e.target.checked)} className={SIDEBAR_PANEL_UI.checkbox}/>
                                 <Ban size={12} className="text-red-500" /> {t('visuals.text_reduced')}
                             </label>
                             <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none">
@@ -2946,19 +2962,19 @@ function ImagePanel(props) {
                                     type="checkbox"
                                     data-help-key="adventure_setup_chk_lowqual" checked={useLowQualityVisuals}
                                     onChange={(e) => setUseLowQualityVisuals(e.target.checked)}
-                                    className="rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 h-4 w-4"
+                                    className={SIDEBAR_PANEL_UI.checkbox}
                                 />
                                 <MonitorPlay size={12} className="text-slate-600" /> {t('visuals.low_quality_label')}
                                 <span className="text-[11px] text-slate-600 ml-1">{t('visuals.low_quality_hint')}</span>
                             </label>
                         </div>
                         <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">{t('visuals.art_style')}</label>
+                        <label className={SIDEBAR_PANEL_UI.label}>{t('visuals.art_style')}</label>
                         <select aria-label={t('common.selection')}
                             data-help-key="visuals_art_style"
                             value={visualStyle}
                             onChange={(e) => setVisualStyle(e.target.value)}
-                            className="w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-cyan-300 focus:ring focus:ring-cyan-200 p-1"
+                            className={`${SIDEBAR_PANEL_UI.control} text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`}
                         >
                             <option value="Default">{t('visuals.styles.default')}</option>
                             <option value="Isometric Diagram">{t('visuals.styles.isometric')}</option>
@@ -2978,7 +2994,7 @@ function ImagePanel(props) {
                                 placeholder={t('visuals.styles.custom_placeholder') || 'e.g. Vintage botanical illustration, Crayon drawing, Stained glass…'}
                                 maxLength={120}
                                 aria-label={t('visuals.styles.custom_aria') || 'Custom art style description'}
-                                className="w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-cyan-300 focus:ring focus:ring-cyan-200 p-1 mt-1"
+                                className={`${SIDEBAR_PANEL_UI.control} mt-2 text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`}
                             />
                         )}
                         </div>
@@ -2988,7 +3004,7 @@ function ImagePanel(props) {
                             data-help-key="visuals_layout_mode"
                             value={visualLayoutMode}
                             onChange={(e) => setVisualLayoutMode(e.target.value)}
-                            className="w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-cyan-300 focus:ring focus:ring-cyan-200 p-1"
+                            className={`${SIDEBAR_PANEL_UI.control} text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`}
                         >
                             <option value="auto">🤖 AI Art Director (Auto)</option>
                             <option value="single">🖼️ Single Image</option>
@@ -2999,7 +3015,7 @@ function ImagePanel(props) {
                         </select>
                         </div>
                         <div>
-                        <ResourceCustomInstructions helpKey="visuals_custom_instructions" t={t}
+                        <ResourceCustomInstructions premium helpKey="visuals_custom_instructions" t={t}
                             ariaFallback="Custom instructions for visuals"
                             value={visualCustomInstructions} onChange={setVisualCustomInstructions}
                             placeholderKey="visuals.placeholder_instructions" />
@@ -3009,7 +3025,7 @@ function ImagePanel(props) {
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('image')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                    className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('visuals.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-cyan-600" />
@@ -3096,14 +3112,14 @@ function OutlinePanel(props) {
   if (!expandedTools || !expandedTools.includes('outline')) return null;
   return (
               <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                <div className="p-3 border-b border-slate-100 bg-orange-50/50 flex flex-col gap-3">
+                <div className={SIDEBAR_PANEL_UI.settingsSurface}>
                     <div>
-                        <label className="block text-xs text-slate-600 mb-1 font-medium">{t('outline.structure_label')}</label>
+                        <label className={SIDEBAR_PANEL_UI.label}>{t('outline.structure_label')}</label>
                         <select aria-label={t('common.selection')}
                             data-help-key="outline_structure"
                             value={outlineType}
                             onChange={(e) => setOutlineType(e.target.value)}
-                            className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 p-1"
+                            className={`${SIDEBAR_PANEL_UI.control} focus-visible:border-orange-500 focus-visible:ring-orange-500/20`}
                         >
                             <option value="Venn Diagram">{t('outline.venn')}</option>
                             <option value="T-Chart">{t('outline.t_chart')}</option>
@@ -3122,7 +3138,7 @@ function OutlinePanel(props) {
                             <option value="Memory Palace">{t('outline.memory_palace') || 'Memory Palace (method of loci)'}</option>
                         </select>
                     </div>
-                    <ResourceCustomInstructions helpKey="outline_custom_instructions" t={t}
+                    <ResourceCustomInstructions premium helpKey="outline_custom_instructions" t={t}
                         labelKey="outline.instructions_label" optional={false}
                         ariaFallback="Custom instructions for outline"
                         value={outlineCustomInstructions} onChange={setOutlineCustomInstructions}
@@ -3133,7 +3149,7 @@ function OutlinePanel(props) {
                     data-help-key="outline_generate_button"
                     onClick={() => handleGenerate('outline')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                    className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={SIDEBAR_PANEL_UI.primaryAction}
                 >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('outline.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-cyan-600" />
@@ -3154,15 +3170,15 @@ function NoteTakingPanel(props) {
   if (!expandedTools || !expandedTools.includes('note-taking')) return null;
   return (
     <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-      <div className="p-3 border-b border-slate-100 bg-violet-50/50 flex flex-col gap-3">
+      <div className={SIDEBAR_PANEL_UI.settingsSurface}>
         <div>
-          <label className="block text-xs text-slate-600 mb-1 font-medium">{t('note_taking.template_label') || 'Template type'}</label>
+          <label className={SIDEBAR_PANEL_UI.label}>{t('note_taking.template_label') || 'Template type'}</label>
           <select
             aria-label={t('common.selection') || 'Selection'}
             data-help-key="note_taking_template"
             value={noteTakingTemplateType || 'cornell-notes'}
             onChange={(e) => setNoteTakingTemplateType(e.target.value)}
-            className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-violet-300 focus:ring focus:ring-violet-200 p-1"
+            className={`${SIDEBAR_PANEL_UI.control} focus-visible:border-violet-500 focus-visible:ring-violet-500/20`}
           >
             <option value="cornell-notes">{t('note_taking.cornell') || 'Cornell Notes (2-column + summary)'}</option>
             <option value="lab-report">{t('note_taking.lab_report') || 'Lab Report (Q / Hypothesis / Method / Data / CER / Conclusion)'}</option>
@@ -3172,11 +3188,11 @@ function NoteTakingPanel(props) {
             <option value="q-and-a">{t('note_taking.q_and_a') || 'Q&A Study Notes (self-quiz)'}</option>
           </select>
         </div>
-        <ResourceCustomInstructions helpKey="note_taking_custom_instructions" t={t}
+        <ResourceCustomInstructions premium helpKey="note_taking_custom_instructions" t={t}
           ariaFallback="Custom instructions for notes"
           value={noteTakingCustomInstructions} onChange={setNoteTakingCustomInstructions}
           placeholderKey="common.custom_instructions_placeholder" />
-        <p className="text-[11px] text-slate-500 italic leading-snug">
+        <p className={SIDEBAR_PANEL_UI.help}>
           {t('note_taking.help') || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons."}
         </p>
       </div>
@@ -3186,7 +3202,7 @@ function NoteTakingPanel(props) {
         onClick={() => handleGenerate('note-taking')}
         disabled={!hasSourceOrAnalysis || isProcessing}
         aria-busy={isProcessing}
-        className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+        className={SIDEBAR_PANEL_UI.primaryAction}
       >
         <span className="text-sm text-slate-600 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('note_taking.generate') || 'Generate template'} <Sparkles size={14} className="text-yellow-600"/></span>
         <ArrowRight size={16} className="text-slate-600 group-hover:text-violet-600"/>
@@ -3208,15 +3224,15 @@ function AnchorChartPanel(props) {
   if (!expandedTools || !expandedTools.includes('anchor-chart')) return null;
   return (
     <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-      <div className="p-3 border-b border-slate-100 bg-amber-50/50 flex flex-col gap-3">
+      <div className={SIDEBAR_PANEL_UI.settingsSurface}>
         <div>
-          <label className="block text-xs text-slate-600 mb-1 font-medium">{t('anchor_chart.type_label') || 'Chart type'}</label>
+          <label className={SIDEBAR_PANEL_UI.label}>{t('anchor_chart.type_label') || 'Chart type'}</label>
           <select
             aria-label={t('common.selection') || 'Selection'}
             data-help-key="anchor_chart_type"
             value={anchorChartType || 'auto'}
             onChange={(e) => setAnchorChartType(e.target.value)}
-            className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-amber-400 focus:ring focus:ring-amber-200 p-1"
+            className={`${SIDEBAR_PANEL_UI.control} focus-visible:border-amber-500 focus-visible:ring-amber-500/20`}
           >
             <option value="auto">{t('anchor_chart.auto') || 'Auto-pick best fit'}</option>
             <option value="reference">{t('anchor_chart.reference') || 'Reference (features / norms / conventions)'}</option>
@@ -3232,11 +3248,11 @@ function AnchorChartPanel(props) {
             <option value="question-guide">{t('anchor_chart.question_guide') || 'Question Guide (discussion / analysis prompts)'}</option>
           </select>
         </div>
-        <ResourceCustomInstructions helpKey="anchor_chart_custom_instructions" t={t}
+        <ResourceCustomInstructions premium helpKey="anchor_chart_custom_instructions" t={t}
           ariaFallback="Custom instructions for anchor chart"
           value={anchorChartCustomInstructions} onChange={setAnchorChartCustomInstructions}
           placeholderKey="common.custom_instructions_placeholder" />
-        <p className="text-[11px] text-slate-500 italic leading-snug">
+        <p className={SIDEBAR_PANEL_UI.help}>
           {t('anchor_chart.help') || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it."}
         </p>
       </div>
@@ -3246,7 +3262,7 @@ function AnchorChartPanel(props) {
         onClick={() => handleGenerate('anchor-chart')}
         disabled={!hasSourceOrAnalysis || isProcessing}
         aria-busy={isProcessing}
-        className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+        className={SIDEBAR_PANEL_UI.primaryAction}
       >
         <span className="text-sm text-slate-600 group-hover:text-amber-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('anchor_chart.generate') || 'Generate anchor chart'} <Sparkles size={14} className="text-yellow-600"/></span>
         <ArrowRight size={16} className="text-slate-600 group-hover:text-amber-600"/>
@@ -3265,14 +3281,14 @@ function FaqPanel(props) {
   if (!expandedTools || !expandedTools.includes('faq')) return null;
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                    <div className="p-3 border-b border-slate-100 bg-cyan-50/50 flex flex-col gap-3" data-help-key="tour-faq-settings">
+                    <div className={SIDEBAR_PANEL_UI.settingsSurface} data-help-key="tour-faq-settings">
                         <div>
-                        <label className="block text-xs text-slate-600 mb-1 font-medium">{t('faq.count')}</label>
+                        <label className={SIDEBAR_PANEL_UI.label}>{t('faq.count')}</label>
                         <select aria-label={t('common.selection')}
                             data-help-key="faq_count"
                             value={faqCount}
                             onChange={(e) => setFaqCount(parseInt(e.target.value))}
-                            className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-cyan-300 focus:ring focus:ring-cyan-200 p-1"
+                            className={`${SIDEBAR_PANEL_UI.control} focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`}
                         >
                             <option value={3}>{t('faq.options.q3')}</option>
                             <option value={5}>{t('faq.options.q5')}</option>
@@ -3280,7 +3296,7 @@ function FaqPanel(props) {
                             <option value={10}>{t('faq.options.q10')}</option>
                         </select>
                         </div>
-                        <ResourceCustomInstructions helpKey="faq_custom_instructions" t={t}
+                        <ResourceCustomInstructions premium helpKey="faq_custom_instructions" t={t}
                             ariaFallback="Custom instructions for FAQ"
                             value={faqCustomInstructions} onChange={setFaqCustomInstructions}
                             placeholderKey="faq.placeholder_instructions" />
@@ -3289,7 +3305,7 @@ function FaqPanel(props) {
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('faq')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                    className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('faq.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
@@ -3308,21 +3324,21 @@ function SentenceFramesPanel(props) {
   if (!expandedTools || !expandedTools.includes('sentence-frames')) return null;
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                    <div className="p-3 border-b border-slate-100 bg-rose-50/50 flex flex-col gap-3" data-help-key="tour-scaffolds-settings">
+                    <div className={SIDEBAR_PANEL_UI.settingsSurface} data-help-key="tour-scaffolds-settings">
                         <div>
-                        <label className="block text-xs text-slate-600 mb-1 font-medium">{t('scaffolds.type')}</label>
+                        <label className={SIDEBAR_PANEL_UI.label}>{t('scaffolds.type')}</label>
                         <select aria-label={t('common.selection')}
                             data-help-key="scaffolds_type"
                             value={frameType}
                             onChange={(e) => setFrameType(e.target.value)}
-                            className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-rose-300 focus:ring focus:ring-rose-200 p-1"
+                            className={`${SIDEBAR_PANEL_UI.control} focus-visible:border-rose-500 focus-visible:ring-rose-500/20`}
                         >
                             <option value="Sentence Starters">{t('scaffolds.starters')}</option>
                             <option value="Paragraph Frame">{t('scaffolds.frame')}</option>
                             <option value="Discussion Prompts">{t('scaffolds.prompts')}</option>
                         </select>
                         </div>
-                        <ResourceCustomInstructions helpKey="scaffolds_custom_instructions" t={t}
+                        <ResourceCustomInstructions premium helpKey="scaffolds_custom_instructions" t={t}
                             optional={false}
                             ariaFallback="Custom instructions for scaffolds"
                             value={frameCustomInstructions} onChange={setFrameCustomInstructions}
@@ -3332,7 +3348,7 @@ function SentenceFramesPanel(props) {
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('sentence-frames')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                    className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('scaffolds.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-cyan-600" />
@@ -3350,8 +3366,8 @@ function LessonPlanPanel(props) {
   if (!expandedTools || !expandedTools.includes('lesson-plan')) return null;
   return (
                  <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                     <div className="p-3 border-b border-slate-100 bg-indigo-50/50 flex flex-col gap-3">
-                         <ResourceCustomInstructions helpKey="lesson_plan_custom_additions" t={t}
+                     <div className={SIDEBAR_PANEL_UI.settingsSurface}>
+                         <ResourceCustomInstructions premium helpKey="lesson_plan_custom_additions" t={t}
                              labelKey="lesson_plan.custom_additions"
                              ariaFallback="Lesson plan custom additions"
                              value={lessonCustomAdditions} onChange={setLessonCustomAdditions}
@@ -3361,7 +3377,7 @@ function LessonPlanPanel(props) {
                         aria-label={t('common.generate_lesson_plan')}
                         onClick={handleGenerateLessonPlan}
                         disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                        className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                         <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">
                             {isProcessing && activeView === 'lesson-plan' ? t('lesson_plan.drafting') : t('lesson_plan.generate')}
@@ -3382,26 +3398,26 @@ function AnalysisPanel(props) {
   if (!expandedTools || !expandedTools.includes('analysis')) return null;
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                    <div className="p-3 border-b border-slate-100 bg-violet-50/50" data-help-key="tour-analysis-settings">
+                    <div className={`${SIDEBAR_PANEL_UI.settingsSurface} !gap-1.5`} data-help-key="tour-analysis-settings">
                         <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none" data-help-key="analysis_check_accuracy">
                             <input aria-label={t('common.toggle_check_accuracy_with_search')}
                                 type="checkbox"
                                 checked={checkAccuracyWithSearch}
                                 onChange={(e) => setCheckAccuracyWithSearch(e.target.checked)}
-                                className="rounded border-slate-300 text-violet-600 focus:ring-violet-500 h-4 w-4"
+                                className={SIDEBAR_PANEL_UI.checkbox}
                             />
                             <span className="flex items-center gap-1">
                                 <Globe size={12} className="text-blue-500"/> {t('analysis.check_accuracy')}
                             </span>
                         </label>
-                        <p className="text-[11px] text-slate-600 mt-1 ml-6 mb-2">{t('analysis.grounding_desc')}</p>
+                        <p className={`${SIDEBAR_PANEL_UI.help} ml-6`}>{t('analysis.grounding_desc')}</p>
                     </div>
                     <button type="button"
                         aria-label={t('common.generate')}
                         data-help-key="analysis_generate_button"
                         onClick={() => handleGenerate('analysis')}
                         disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                        className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                         <span className="text-sm text-slate-600 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('analysis.run')} <Sparkles size={14} className="text-yellow-600"/></span>
                         <ArrowRight size={16} className="text-slate-600 group-hover:text-violet-600" />

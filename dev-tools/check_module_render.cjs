@@ -116,6 +116,42 @@ function simplified(overrides) { return Object.assign({}, simplifiedBase, overri
 // function returning [label, reactElement] pairs to render. Add modules here over time.
 const CONFIG = [
   {
+    file: 'view_video_ref_player_module.js',
+    key: 'VideoRefPlayer',
+    renders: function (M) {
+      return [['metadata-card', React.createElement(M.VideoRefPlayerOverlay, {
+        item: { title: 'Fraction lesson', data: { title: 'Fraction lesson', durationSec: 95, sizeBytes: 1048576, hasCaptions: true } },
+        onClose: noop, addToast: noop, t: t,
+      })]];
+    },
+  },
+  {
+    file: 'view_end_session_preview_module.js',
+    key: 'EndSessionPreview',
+    renders: function (M) {
+      var preview = {
+        busy: false, followUpBusy: '', followUpResourceId: 'r1', followUpResources: [{ id: 'r1', title: 'Fraction review' }],
+        deliveryGuard: true, deliverySummary: { assigned: 2, opened: 1, pending: 1, loading: 0, failed: 0 },
+        summary: {
+          participants: { a: {} }, absentCodenames: ['Calm Fox'], unmatchedCodenames: [],
+          insightBrief: {
+            activityCount: 1, submissions: 1, revisions: 0, followUpCodenames: ['Calm Fox'],
+            byKind: [{ kind: 'exit_ticket', submitted: 1, invited: 2 }],
+            evidenceCohorts: [{ code: 'follow-up', intent: 'support', label: 'Follow-up', count: 1, codenames: ['Calm Fox'], recommendedAction: 'Review one more example.' }],
+            groups: [{ groupId: 'g1', followUpCount: 1 }],
+            nextMoves: [{ code: 'review', count: 1, label: 'Review one more example' }],
+          },
+        },
+      };
+      return [['delivery-guard+cohort', React.createElement(M.EndSessionPreview, {
+        preview: preview, note: '', dialogRef: { current: null }, canSaveSummary: true,
+        groupNamesById: { g1: 'Blue group' }, copyToClipboard: noop,
+        getConnectedCount: function () { return 1; }, onFollowUpResourceChange: noop,
+        onSendCohort: noop, onNoteChange: noop, onKeepOpen: noop, onComplete: noop,
+      })]];
+    },
+  },
+  {
     file: 'annotation_suite_module.js',
     key: 'AnnotationSuite',
     renders: function (M) {

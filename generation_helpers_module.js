@@ -534,7 +534,13 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     });
     const updateFullPackRun = (mutator) => {
         if (typeof setFullPackRun !== 'function') return;
-        setFullPackRun(prev => mutator(prev || {}));
+        setFullPackRun(prev => {
+            // Async resource completions belong only to the run that started
+            // them. If that record was dismissed or replaced, a late result
+            // must not recreate it or write into the newer run.
+            if (!prev || prev.runId !== _fullPackRunId) return prev;
+            return mutator(prev);
+        });
     };
     if (typeof setFullPackRun === 'function') {
         setFullPackRun({ runId: _fullPackRunId, retryOf: (_retryRun || _groupRetryRun) && (_retryRun || _groupRetryRun).runId || null, approvedFrom: _approvedRun && _approvedRun.runId || null, status: _preflightOnly ? 'planning' : 'running', startedAt: new Date().toISOString(), elapsedMs: 0, settingsSnapshot: _fullPackSettingsSnapshot, resources: {}, groups: {} });

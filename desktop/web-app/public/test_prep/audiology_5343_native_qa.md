@@ -1,6 +1,6 @@
 # Praxis Audiology (5343) QA report
 
-Generated: 2026-08-12T23:34:39.678Z
+Generated: 2026-08-13T08:44:40.742Z
 
 ## Result
 
@@ -13,4 +13,4 @@ Generated: 2026-08-12T23:34:39.678Z
 
 > This is not ETS or ASHA approval, independent licensed-audiologist validation, field testing, psychometric calibration, a scaled-score model, clinical evaluation, diagnosis, vestibular or medical decision, device fitting, treatment, supervision, or legal advice.
 
-- Independent-batch audit: 200 original source questions plus 100 assistant-authored independent practice questions produce 204 distinct independent content kernels. 200 additional activities remain guided review only. 296 new independent questions remain to reach 500.
+- Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 104 distinct independent content kernels. 300 additional activities remain guided review only. 396 new independent questions remain to reach 500.

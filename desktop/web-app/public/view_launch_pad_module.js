@@ -570,6 +570,22 @@
       html.style.overflow = previousHtmlOverflow;
     };
   }, []);
+  function LaunchPadIcon(iconProps) {
+    var IconComponent = window.AlloIcons && window.AlloIcons[iconProps.name];
+    if (IconComponent) {
+      return /*#__PURE__*/React.createElement(IconComponent, {
+        className: iconProps.className || '',
+        size: iconProps.size || 22,
+        strokeWidth: iconProps.strokeWidth || 1.9,
+        "aria-hidden": "true",
+        focusable: "false"
+      });
+    }
+    return /*#__PURE__*/React.createElement("span", {
+      className: iconProps.className || '',
+      "aria-hidden": "true"
+    }, iconProps.fallback || '\u25c7');
+  }
   return /*#__PURE__*/React.createElement("div", {
     className: "lp-root",
     "data-alloflow-launch-pad": "true",
@@ -583,67 +599,122 @@
       flexDirection: 'column',
       alignItems: 'center',
       backgroundColor: '#080d1d',
-      animation: 'fadeIn 0.6s ease-out',
+      animation: 'lpEnter .28s ease-out',
       overflowY: 'auto',
       overflowX: 'hidden',
       boxSizing: 'border-box'
     }
   }, /*#__PURE__*/React.createElement("style", null, `
-            @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-            @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-            @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
-            @keyframes cardPop { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes lpEnter { from { opacity: 0; } to { opacity: 1; } }
             body.alloflow-launchpad-active #allo-err-badge { display: none !important; }
-            .lp-root { justify-content: center; padding: 40px 0 48px; isolation: isolate; }
-            .lp-root { background: radial-gradient(ellipse at top left, rgba(124,58,237,.22), transparent), radial-gradient(ellipse at top right, rgba(14,165,233,.17), transparent), linear-gradient(145deg, #080d1d, #11162d, #171644, #0b2133); }
+            .lp-root { justify-content: flex-start; padding: 88px 0 42px; isolation: isolate; color-scheme: dark; }
+            .lp-root { background: radial-gradient(circle at 14% 0%, rgba(99,102,241,.18), transparent 34%), radial-gradient(circle at 88% 8%, rgba(14,165,233,.11), transparent 30%), linear-gradient(155deg, #080b16 0%, #0d1324 48%, #10182b 100%); }
             .lp-root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
-            .lp-card { appearance: none; width: 100%; min-height: 44px; font: inherit; color: inherit; text-align: left; backdrop-filter: blur(20px); background: linear-gradient(145deg, rgba(255,255,255,.115), rgba(255,255,255,.055)); border: 1px solid rgba(226,232,240,.2); border-radius: 22px; padding: 28px 26px; cursor: pointer; transition: transform .28s cubic-bezier(.2,.8,.2,1), background .28s ease, border-color .28s ease, box-shadow .28s ease; position: relative; overflow: hidden; animation: cardPop 0.5s ease-out both; box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 16px 40px rgba(2,6,23,.18); }
-            .lp-card:hover { transform: translateY(-5px); background: linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,.075)); border-color: rgba(199,210,254,.46); }
-            .lp-card::after { content: '→'; position: absolute; right: 22px; bottom: 18px; color: rgba(224,231,255,.62); font-size: 18px; transition: transform .25s ease, color .25s ease; }
-            .lp-card:hover::after { transform: translateX(4px); color: #fde68a; }
-            .lp-card:focus-visible { outline: 3px solid #facc15; outline-offset: 4px; background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.65); box-shadow: 0 0 0 2px #1e1b4b; }
-            .lp-card:active { transform: translateY(-1px) scale(0.99); }
-            @media (max-width: 600px), (max-height: 820px) { .lp-root { justify-content: flex-start !important; } }
-            @media (max-width: 600px) {
-              .lp-root { padding: 16px 0 32px !important; }
-              .lp-lang-switcher { position: static !important; align-self: flex-end; margin: 0 20px 18px 0; }
-              .lp-logo-block { margin-bottom: 24px !important; }
-              .lp-mic-shell { padding: 0 24px !important; margin-bottom: 24px !important; }
-              .lp-mic-panel { align-items: stretch !important; padding: 18px 20px !important; }
-              .lp-mic-title-row { justify-content: flex-start !important; }
-              .lp-mic-actions { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
-              .lp-mic-actions button { width: 100% !important; }
-              .lp-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
-              .lp-card { min-height: 126px; padding: 24px 58px 24px 24px !important; }
-              .lp-voice-grid { grid-template-columns: 1fr !important; }
-              .lp-voice-setup { margin-top: 20px !important; }
-              .lp-ai-settings { margin-top: 24px !important; }
+            .lp-root *, .lp-root *::before, .lp-root *::after { box-sizing: border-box; }
+            .lp-shell { width: min(760px, 100%); padding: 0 24px; display: grid; gap: 28px; }
+            .lp-utility-bar { position: absolute; top: 18px; right: 20px; z-index: 2147483001; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+            .lp-lang-switcher { position: relative; }
+            .lp-logo-block { text-align: center; }
+            .lp-voice-setup { width: 100%; }
+            .lp-launch-footer { padding-top: 2px; }
+            .lp-section-intro { display: grid; gap: 7px; margin-bottom: 14px; }
+            .lp-eyebrow { margin: 0; color: #a5b4fc; font-size: 10px; font-weight: 850; letter-spacing: 1.45px; text-transform: uppercase; }
+            .lp-section-title { margin: 0; color: #f8fafc; font-size: clamp(20px, 3vw, 25px); line-height: 1.2; font-weight: 820; letter-spacing: -.45px; }
+            .lp-section-copy { margin: 0; color: #aebbd2; font-size: 12px; line-height: 1.55; }
+            .lp-mode-grid, .lp-direct-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+            .lp-card { appearance: none; width: 100%; min-height: 44px; font: inherit; color: inherit; text-align: left; background: rgba(20,29,49,.92); border: 1px solid rgba(148,163,184,.22); border-radius: 18px; cursor: pointer; transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease; position: relative; overflow: hidden; box-shadow: inset 0 1px 0 rgba(255,255,255,.055), 0 14px 36px rgba(2,6,23,.2); }
+            .lp-card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; border-top: 1px solid rgba(255,255,255,.06); }
+            .lp-card::after { content: '→'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 18px; transition: transform .18s ease, color .18s ease; }
+            .lp-mode-grid .lp-card { min-height: 178px; padding: 24px 54px 22px 22px; }
+            .lp-mode-grid .lp-card[data-emphasis="recommended"] { background: linear-gradient(145deg, rgba(55,48,163,.86), rgba(30,41,82,.96)); border-color: rgba(165,180,252,.62); box-shadow: inset 0 1px 0 rgba(255,255,255,.13), 0 18px 46px rgba(49,46,129,.28); }
+            .lp-direct-grid .lp-card { min-height: 104px; padding: 18px 50px 18px 18px; display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: center; gap: 13px; box-shadow: inset 0 1px 0 rgba(255,255,255,.045), 0 10px 26px rgba(2,6,23,.15); }
+            .lp-card-icon { display: inline-grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(165,180,252,.24); border-radius: 13px; color: #c7d2fe; background: rgba(99,102,241,.14); }
+            .lp-mode-grid .lp-card-icon { width: 46px; height: 46px; margin-bottom: 18px; border-radius: 14px; }
+            .lp-card[data-emphasis="recommended"] .lp-card-icon { color: #fff7d6; border-color: rgba(253,230,138,.33); background: rgba(253,230,138,.12); }
+            .lp-card-title { display: block; color: #f8fafc; font-size: 17px; font-weight: 820; line-height: 1.25; letter-spacing: -.2px; }
+            .lp-card-desc { display: block; color: #c3cede; font-size: 11px; line-height: 1.55; margin-top: 6px; }
+            .lp-direct-copy { min-width: 0; padding-right: 4px; }
+            .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; font-size: 9px; font-weight: 800; padding: 5px 9px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; text-transform: uppercase; letter-spacing: 1.1px; box-shadow: 0 4px 14px rgba(15,23,42,.2); }
+            .lp-mode-badge { position: absolute; top: 14px; right: 14px; }
+            .lp-direct-badge { display: inline-block; margin-top: 8px; color: #a5b4fc; font-size: 9px; font-weight: 800; letter-spacing: .75px; text-transform: uppercase; }
+            .lp-direct-badge .lp-badge { padding: 3px 7px; font-size: 8px; letter-spacing: .8px; box-shadow: none; }
+            @media (hover: hover) {
+              .lp-card:hover { transform: translateY(-2px); background: rgba(27,38,63,.98); border-color: rgba(165,180,252,.48); box-shadow: inset 0 1px 0 rgba(255,255,255,.075), 0 18px 42px rgba(2,6,23,.28); }
+              .lp-card:hover::after { transform: translate(3px, -50%); color: #fde68a; }
             }
-            .lp-card::before { content: ''; position: absolute; inset: 0; border-radius: 22px; padding: 1px; background: linear-gradient(135deg, rgba(255,255,255,.42), rgba(255,255,255,.04) 42%, rgba(129,140,248,.28)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
-            .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; font-size: 9px; font-weight: 800; padding: 5px 10px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; text-transform: uppercase; letter-spacing: 1.35px; animation: shimmer 3s infinite linear; background-size: 200% auto; box-shadow: 0 5px 16px rgba(15,23,42,.25); }
-            @media (prefers-reduced-motion: reduce) {
-              .lp-root, .lp-card, .lp-card:hover, .lp-card:active, .lp-card-icon, .lp-badge, .lp-lang-item, .lp-lang-trigger, .lp-mic-actions button, .lp-download-button, .lp-download-button:hover, .lp-ai-settings { animation: none !important; transition: none !important; transform: none !important; }
-            }
+            .lp-card:focus-visible { outline: 3px solid #facc15; outline-offset: 4px; background: rgba(30,41,67,.98); border-color: rgba(255,255,255,0.65); box-shadow: 0 0 0 2px #1e1b4b; }
+            .lp-card:active { transform: translateY(0) scale(.995); }
+            .lp-setup-panel { border: 1px solid rgba(148,163,184,.18); border-top: 0; border-radius: 0 0 16px 16px; background: rgba(8,13,27,.52); padding: 16px; }
+            .lp-mic-panel { display: grid; gap: 13px; padding: 14px; border: 1px solid rgba(165,180,252,.2); border-radius: 14px; background: rgba(255,255,255,.035); }
+            .lp-mic-title-row { display: flex; align-items: flex-start; gap: 11px; }
+            .lp-mic-icon { flex: 0 0 auto; display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; color: #c7d2fe; background: rgba(99,102,241,.15); border: 1px solid rgba(165,180,252,.2); }
+            .lp-mic-actions { display: flex; gap: 9px; flex-wrap: wrap; }
+            .lp-mic-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+            .lp-setup-divider { height: 1px; margin: 16px 0; background: rgba(148,163,184,.16); }
+            .lp-offline-header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; margin-bottom: 11px; }
+            .lp-voice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+            .lp-voice-option { display: grid; gap: 8px; border: 1px solid rgba(148,163,184,.16); border-radius: 13px; padding: 12px; background: rgba(255,255,255,.035); }
+            .lp-voice-option-title { display: flex; align-items: center; gap: 7px; color: #f8fafc; font-size: 12px; }
+            .lp-lang-trigger, .lp-ai-settings { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid rgba(148,163,184,.22); border-radius: 11px; background: rgba(15,23,42,.76); color: #dbe4f3; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; backdrop-filter: blur(16px); transition: background .18s ease, border-color .18s ease, color .18s ease; }
+            .lp-lang-trigger:hover:not([aria-disabled="true"]), .lp-ai-settings:hover { background: rgba(30,41,67,.96); border-color: rgba(165,180,252,.42); color: white; }
             .lp-lang-item:hover:not([disabled]) { background: rgba(99,102,241,0.2) !important; }
-            .lp-download-button { min-height: 44px; border: 1px solid rgba(165,180,252,.38); border-radius: 12px; padding: 10px 14px; background: rgba(67,56,202,.64); color: white; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; transition: background .2s, transform .2s, border-color .2s; box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
+            .lp-download-button { min-height: 44px; border: 1px solid rgba(165,180,252,.38); border-radius: 11px; padding: 10px 13px; background: rgba(67,56,202,.64); color: white; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; transition: background .18s, transform .18s, border-color .18s; box-shadow: inset 0 1px 0 rgba(255,255,255,.1); }
             .lp-download-button:hover:not([disabled]) { background: #4f46e5; border-color: rgba(199,210,254,.72); transform: translateY(-1px); }
             .lp-download-button[disabled] { cursor: default; opacity: 0.75; }
-            .lp-voice-disclosure > summary { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border: 1px solid rgba(165,180,252,.24); border-radius: 16px; color: #e0e7ff; background: rgba(8,13,29,.32); font-size: 12px; font-weight: 800; cursor: pointer; list-style: none; }
+            .lp-voice-disclosure > summary { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 15px; border: 1px solid rgba(148,163,184,.2); border-radius: 16px; color: #cbd5e1; background: rgba(15,23,42,.5); font-size: 11px; font-weight: 800; cursor: pointer; list-style: none; }
             .lp-voice-disclosure > summary::-webkit-details-marker { display: none; }
+            .lp-voice-summary-copy { display: inline-flex; align-items: center; gap: 9px; }
+            .lp-voice-summary-meta { margin-left: auto; color: #94a3b8; font-size: 10px; font-weight: 650; }
             .lp-voice-disclosure > summary::after { content: '+'; font-size: 18px; color: #a5b4fc; }
-            .lp-voice-disclosure[open] > summary { border-radius: 16px 16px 0 0; background: rgba(30,27,75,.58); }
+            .lp-voice-disclosure[open] > summary { border-radius: 16px 16px 0 0; background: rgba(30,41,67,.78); color: #f8fafc; }
             .lp-voice-disclosure[open] > summary::after { content: '−'; }
             .lp-lang-trigger:focus-visible, .lp-lang-item:focus-visible, .lp-mic-actions button:focus-visible, .lp-download-button:focus-visible, .lp-ai-settings:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
             .lp-voice-disclosure > summary:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
             .lp-lang-trigger, .lp-lang-item, .lp-mic-actions button, .lp-download-button, .lp-ai-settings { min-height: 44px; }
+            @media (max-width: 680px), (max-height: 820px) { .lp-root { justify-content: flex-start !important; } }
+            @media (max-width: 680px) {
+              .lp-root { padding: 18px 0 32px !important; }
+              .lp-utility-bar { position: static; width: 100%; padding: 0 16px; margin-bottom: 22px; }
+              .lp-shell { padding: 0 16px; gap: 24px; }
+              .lp-logo-block { margin-bottom: 2px !important; }
+              .lp-mode-grid, .lp-direct-grid { grid-template-columns: 1fr !important; }
+              .lp-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+              .lp-mode-grid .lp-card { min-height: 142px; padding: 20px 54px 19px 19px; }
+              .lp-direct-grid .lp-card { min-height: 92px; }
+              .lp-mic-actions { flex-direction: column; align-items: stretch; }
+              .lp-mic-actions button { width: 100%; }
+              .lp-voice-grid { grid-template-columns: 1fr !important; }
+              .lp-voice-summary-meta { display: none; }
+            }
+            @media (max-width: 390px) {
+              .lp-utility-bar { justify-content: space-between; }
+              .lp-lang-trigger > span:nth-child(2) { max-width: 108px !important; }
+              .lp-section-title { font-size: 20px; }
+            }
+            @media (max-width: 360px) {
+              .lp-ai-settings { width: 44px; padding: 8px; justify-content: center; }
+              .lp-ai-settings span { display: none; }
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .lp-root, .lp-card, .lp-card:hover, .lp-card:active, .lp-card-icon, .lp-badge, .lp-lang-item, .lp-lang-trigger, .lp-mic-actions button, .lp-download-button, .lp-download-button:hover, .lp-ai-settings { animation: none !important; transition: none !important; transform: none !important; }
+            }
           `), /*#__PURE__*/React.createElement("div", {
-    className: "lp-lang-switcher",
-    style: {
-      position: 'absolute',
-      top: '20px',
-      right: '20px',
-      zIndex: 2147483001
-    }
+    className: "lp-utility-bar",
+    "aria-label": copy('launch_pad.utilities_label', 'Launch Pad settings')
+  }, !_isCanvasEnv && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: e => {
+      e.stopPropagation();
+      setShowAIBackendModal(true);
+    },
+    className: "lp-ai-settings",
+    "aria-label": "AI Backend Settings",
+    title: "AI Backend Settings"
+  }, /*#__PURE__*/React.createElement(Unplug, {
+    size: 15,
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("span", null, "AI Backend Settings")), /*#__PURE__*/React.createElement("div", {
+    className: "lp-lang-switcher"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     ref: langTriggerRef,
@@ -657,50 +728,25 @@
     "aria-controls": "launch-pad-language-list",
     "aria-disabled": isTranslating,
     style: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '6px',
-      padding: '8px 12px',
-      borderRadius: '12px',
-      border: '1px solid rgba(255,255,255,0.15)',
-      background: 'rgba(255,255,255,0.08)',
-      backdropFilter: 'blur(20px)',
-      color: '#e0e7ff',
-      fontSize: '12px',
-      fontWeight: 600,
-      cursor: isTranslating ? 'wait' : 'pointer',
-      transition: 'all 0.2s',
-      opacity: isTranslating ? 0.6 : 1
-    },
-    onMouseOver: e => {
-      if (!isTranslating) {
-        e.currentTarget.style.background = 'rgba(255,255,255,0.14)';
-        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
-      }
-    },
-    onMouseOut: e => {
-      e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
+      opacity: isTranslating ? 0.6 : 1,
+      cursor: isTranslating ? 'wait' : 'pointer'
     }
-  }, /*#__PURE__*/React.createElement("span", {
-    "aria-hidden": "true",
-    style: {
-      fontSize: '14px'
-    }
-  }, "🌐"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    name: "Globe2",
+    size: 15,
+    strokeWidth: 2
+  }), /*#__PURE__*/React.createElement("span", {
     style: {
       maxWidth: '140px',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap'
     }
-  }, lpCurrentLabel()), /*#__PURE__*/React.createElement("span", {
-    "aria-hidden": "true",
-    style: {
-      fontSize: '9px',
-      opacity: 0.7
-    }
-  }, langMenuOpen ? '▲' : '▼')), langMenuOpen && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, lpCurrentLabel()), /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    name: langMenuOpen ? 'ChevronUp' : 'ChevronDown',
+    size: 13,
+    strokeWidth: 2.2
+  })), langMenuOpen && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     onClick: closeLanguageMenu,
     "aria-hidden": "true",
     style: {
@@ -761,13 +807,10 @@
         transition: 'background 0.15s'
       }
     }, selected ? '✓ ' : '  ', lpLangLabel(lang)));
-  })))), /*#__PURE__*/React.createElement("div", {
-    className: "lp-logo-block",
-    style: {
-      textAlign: 'center',
-      marginBottom: '38px',
-      animation: 'fadeIn 0.6s ease-out'
-    }
+  }))))), /*#__PURE__*/React.createElement("main", {
+    className: "lp-shell"
+  }, /*#__PURE__*/React.createElement("header", {
+    className: "lp-logo-block"
   }, /*#__PURE__*/React.createElement("img", {
     src: "rainbow-book.jpg",
     alt: "",
@@ -776,72 +819,208 @@
       e.currentTarget.style.display = 'none';
     },
     style: {
-      width: '74px',
-      height: '74px',
-      margin: '0 auto 18px',
+      width: '58px',
+      height: '58px',
+      margin: '0 auto 14px',
       display: 'block',
-      filter: 'drop-shadow(0 16px 30px rgba(2,6,23,.48)) drop-shadow(0 0 22px rgba(129,140,248,.30))',
-      borderRadius: '20px',
-      border: '1px solid rgba(255,255,255,.25)',
-      objectFit: 'cover',
-      animation: 'float 4s ease-in-out infinite'
+      filter: 'drop-shadow(0 12px 24px rgba(2,6,23,.42))',
+      borderRadius: '16px',
+      border: '1px solid rgba(255,255,255,.2)',
+      objectFit: 'cover'
     }
   }), /*#__PURE__*/React.createElement("h1", {
     style: {
-      fontSize: 'clamp(34px, 5vw, 44px)',
+      fontSize: 'clamp(32px, 5vw, 41px)',
       lineHeight: 1,
       fontWeight: 900,
-      background: 'linear-gradient(100deg,#fef3c7,#fcd34d 34%,#fdba74 70%,#fb923c)',
+      background: 'linear-gradient(100deg,#fff7d6,#fcd34d 42%,#fb923c)',
       WebkitBackgroundClip: 'text',
       backgroundClip: 'text',
       color: 'transparent',
-      margin: '0 0 12px',
-      letterSpacing: '-1.6px'
+      margin: '0 0 10px',
+      letterSpacing: '-1.45px'
     }
   }, "AlloFlow"), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: '11px',
-      color: '#c7d2fe',
-      fontWeight: 750,
-      letterSpacing: '2.6px',
+      fontSize: '10px',
+      color: '#aebbd2',
+      fontWeight: 780,
+      letterSpacing: '2.25px',
       textTransform: 'uppercase',
       margin: 0
     }
-  }, copy('launch_pad.subtitle', 'Adaptive Levels, Layers, & Outputs'))), !micBannerDismissed && /*#__PURE__*/React.createElement("div", {
-    className: "lp-mic-shell",
-    style: {
-      maxWidth: '620px',
-      width: '100%',
-      padding: '0 24px',
-      marginBottom: '24px',
-      animation: 'fadeIn 0.5s ease-out'
-    }
+  }, copy('launch_pad.subtitle', 'Adaptive Levels, Layers, & Outputs'))), /*#__PURE__*/React.createElement("section", {
+    className: "lp-choice-section",
+    "aria-labelledby": "launch-pad-choice-title"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "lp-mic-panel",
-    style: {
-      backdropFilter: 'blur(22px) saturate(120%)',
-      background: 'linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.045))',
-      border: '1px solid rgba(165,180,252,.25)',
-      borderRadius: '18px',
-      padding: '20px 24px',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '12px',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,.09), 0 14px 36px rgba(2,6,23,.14)'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "lp-mic-title-row",
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '10px'
+    className: "lp-section-intro"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "lp-eyebrow"
+  }, copy('launch_pad.workspace_eyebrow', 'Choose your workspace')), /*#__PURE__*/React.createElement("h2", {
+    id: "launch-pad-choice-title",
+    className: "lp-section-title"
+  }, copy('launch_pad.choice_title', 'How would you like to begin?')), /*#__PURE__*/React.createElement("p", {
+    className: "lp-section-copy"
+  }, copy('launch_pad.choice_desc', 'Start with step-by-step guidance or open the complete AlloFlow workspace.'))), /*#__PURE__*/React.createElement("div", {
+    className: "lp-grid lp-mode-grid"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "lp-card",
+    "data-emphasis": "recommended",
+    "aria-labelledby": "launch-pad-guided-title",
+    "aria-describedby": "launch-pad-guided-badge launch-pad-guided-desc",
+    onClick: () => {
+      setHasSelectedMode(true);
+      setGuidedMode(true);
     }
   }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: '24px'
+    id: "launch-pad-guided-badge",
+    className: "lp-mode-badge"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "lp-badge"
+  }, copy('launch_pad.badge_recommended', 'Recommended'))), /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    className: "lp-card-icon",
+    name: "Compass",
+    fallback: "G",
+    size: 24
+  }), /*#__PURE__*/React.createElement("span", {
+    id: "launch-pad-guided-title",
+    className: "lp-card-title"
+  }, guidedTitle), /*#__PURE__*/React.createElement("span", {
+    id: "launch-pad-guided-desc",
+    className: "lp-card-desc"
+  }, guidedDesc)), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "lp-card",
+    "data-emphasis": "standard",
+    "aria-labelledby": "launch-pad-full-title",
+    "aria-describedby": "launch-pad-full-desc",
+    onClick: () => {
+      setHasSelectedMode(true);
+      setGuidedMode(false);
     }
-  }, "🎤"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    className: "lp-card-icon",
+    name: "LayoutDashboard",
+    fallback: "F",
+    size: 24
+  }), /*#__PURE__*/React.createElement("span", {
+    id: "launch-pad-full-title",
+    className: "lp-card-title"
+  }, fullTitle), /*#__PURE__*/React.createElement("span", {
+    id: "launch-pad-full-desc",
+    className: "lp-card-desc"
+  }, fullDesc)))), /*#__PURE__*/React.createElement("section", {
+    className: "lp-direct-section",
+    "aria-labelledby": "launch-pad-direct-title"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "lp-section-intro"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "lp-eyebrow"
+  }, copy('launch_pad.direct_eyebrow', 'Destinations')), /*#__PURE__*/React.createElement("h2", {
+    id: "launch-pad-direct-title",
+    className: "lp-section-title"
+  }, copy('launch_pad.direct_title', 'Open a tool directly')), /*#__PURE__*/React.createElement("p", {
+    className: "lp-section-copy"
+  }, copy('launch_pad.direct_desc', 'Jump straight to a focused collection without opening the full workspace first.'))), /*#__PURE__*/React.createElement("div", {
+    className: "lp-direct-grid"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "lp-card",
+    "aria-labelledby": "launch-pad-learning-title",
+    "aria-describedby": "launch-pad-learning-badge launch-pad-learning-desc",
+    onClick: () => {
+      setShowLearningHub(true);
+      setIsTeacherMode(false);
+      setShowWizard(false);
+      setHasSelectedRole(true);
+      setHasSelectedMode(true);
+    }
+  }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    className: "lp-card-icon",
+    name: "Shapes",
+    fallback: "L",
+    size: 22
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "lp-direct-copy"
+  }, /*#__PURE__*/React.createElement("span", {
+    id: "launch-pad-learning-title",
+    className: "lp-card-title"
+  }, learningToolsTitle), /*#__PURE__*/React.createElement("span", {
+    id: "launch-pad-learning-desc",
+    className: "lp-card-desc"
+  }, learningToolsDesc), /*#__PURE__*/React.createElement("span", {
+    id: "launch-pad-learning-badge",
+    className: "lp-direct-badge"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "lp-badge",
+    style: {
+      background: 'linear-gradient(135deg, #047857, #065f46)'
+    }
+  }, copy('launch_pad.badge_3_tools', '8 Tools'))))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "lp-card",
+    "aria-labelledby": "launch-pad-educator-title",
+    "aria-describedby": "launch-pad-educator-badge launch-pad-educator-desc",
+    onClick: () => {
+      setHasSelectedMode(true);
+      setHasSelectedRole(true);
+      setShowWizard(false);
+      if (typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key) {
+        setPendingRole('educator_hub');
+        setIsGateOpen(true);
+      } else {
+        setIsTeacherMode(true);
+        setShowEducatorHub(true);
+      }
+    }
+  }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    className: "lp-card-icon",
+    name: "GraduationCap",
+    fallback: "E",
+    size: 23
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "lp-direct-copy"
+  }, /*#__PURE__*/React.createElement("span", {
+    id: "launch-pad-educator-title",
+    className: "lp-card-title"
+  }, educatorToolsTitle), /*#__PURE__*/React.createElement("span", {
+    id: "launch-pad-educator-desc",
+    className: "lp-card-desc"
+  }, educatorToolsDesc), /*#__PURE__*/React.createElement("span", {
+    id: "launch-pad-educator-badge",
+    className: "lp-direct-badge"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "lp-badge",
+    style: {
+      background: 'linear-gradient(135deg, #7c3aed, #5b21b6)'
+    }
+  }, (typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key) ? copy('launch_pad.badge_educator', 'Educator') : copy('launch_pad.badge_educator_open', 'Educator'))))))), /*#__PURE__*/React.createElement("section", {
+    className: "lp-voice-setup",
+    "aria-labelledby": "launch-pad-offline-voice-title"
+  }, /*#__PURE__*/React.createElement("details", {
+    className: "lp-voice-disclosure"
+  }, /*#__PURE__*/React.createElement("summary", {
+    id: "launch-pad-offline-voice-title"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "lp-voice-summary-copy"
+  }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    name: "SlidersHorizontal",
+    size: 16
+  }), copy('launch_pad.voice_device_title', 'Voice & device setup')), /*#__PURE__*/React.createElement("span", {
+    className: "lp-voice-summary-meta"
+  }, voiceAccessActive ? copy('launch_pad.voice_access_active_short', 'Voice active') : copy('launch_pad.optional_label', 'Optional'))), /*#__PURE__*/React.createElement("div", {
+    className: "lp-setup-panel"
+  }, !micBannerDismissed && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "lp-mic-panel"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "lp-mic-title-row"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "lp-mic-icon"
+  }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    name: "Mic2",
+    size: 18
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '14px',
       fontWeight: 700,
@@ -894,7 +1073,10 @@
       transition: 'all 0.2s',
       boxShadow: '0 4px 20px rgba(99,102,241,0.4)'
     }
-  }, voiceAccessStarting ? '⏳ ' : voiceAccessActive ? '✅ ' : '🎤 ', voiceAccessButtonText), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    name: voiceAccessStarting ? 'LoaderCircle' : voiceAccessActive ? 'CircleCheck' : 'Mic2',
+    size: 15
+  }), voiceAccessButtonText), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setMicBannerDismissed(true),
     "aria-label": "Skip Voice Access setup",
@@ -909,7 +1091,7 @@
       fontWeight: 600,
       transition: 'all 0.2s'
     }
-  }, "Skip for Now")), /*#__PURE__*/React.createElement("p", {
+  }, copy('launch_pad.voice_access_skip', 'Skip for Now'))), /*#__PURE__*/React.createElement("p", {
     id: "launch-pad-voice-access-status",
     role: "status",
     "aria-live": "polite",
@@ -921,292 +1103,34 @@
       margin: 0,
       fontWeight: voiceAccessDenied ? 600 : 700
     }
-  }, voiceAccessStatusText))), /*#__PURE__*/React.createElement("div", {
-    className: "lp-grid",
-    style: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(2, 1fr)',
-      gap: '16px',
-      maxWidth: '680px',
-      width: '100%',
-      padding: '0 24px'
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "lp-card",
-    style: {
-      animationDelay: '0.1s'
-    },
-    "aria-labelledby": "launch-pad-full-title",
-    "aria-describedby": "launch-pad-full-desc",
-    onClick: () => {
-      setHasSelectedMode(true);
-      setGuidedMode(false);
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "lp-card-icon",
-    style: {
-      display: 'block',
-      fontSize: '40px',
-      marginBottom: '16px',
-      animation: 'float 3s ease-in-out infinite'
-    },
+  }, voiceAccessStatusText)), /*#__PURE__*/React.createElement("div", {
+    className: "lp-setup-divider",
     "aria-hidden": "true"
-  }, "🚀"), /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-full-title",
-    style: {
-      display: 'block',
-      fontSize: '18px',
-      fontWeight: 800,
-      color: 'white',
-      margin: '0 0 8px'
-    }
-  }, fullTitle), /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-full-desc",
-    style: {
-      display: 'block',
-      fontSize: '12px',
-      color: '#e0e7ff',
-      lineHeight: '1.6',
-      margin: 0
-    }
-  }, fullDesc)), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "lp-card",
-    style: {
-      animationDelay: '0.2s'
-    },
-    "aria-labelledby": "launch-pad-guided-title",
-    "aria-describedby": "launch-pad-guided-badge launch-pad-guided-desc",
-    onClick: () => {
-      setHasSelectedMode(true);
-      setGuidedMode(true);
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-guided-badge",
-    style: {
-      position: 'absolute',
-      top: '12px',
-      right: '12px'
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "lp-badge"
-  }, copy('launch_pad.badge_recommended', 'Recommended'))), /*#__PURE__*/React.createElement("span", {
-    className: "lp-card-icon",
-    style: {
-      display: 'block',
-      fontSize: '40px',
-      marginBottom: '16px',
-      animation: 'float 3s ease-in-out infinite',
-      animationDelay: '0.5s'
-    },
-    "aria-hidden": "true"
-  }, "🧭"), /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-guided-title",
-    style: {
-      display: 'block',
-      fontSize: '18px',
-      fontWeight: 800,
-      color: 'white',
-      margin: '0 0 8px'
-    }
-  }, guidedTitle), /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-guided-desc",
-    style: {
-      display: 'block',
-      fontSize: '12px',
-      color: '#e0e7ff',
-      lineHeight: '1.6',
-      margin: 0
-    }
-  }, guidedDesc)), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "lp-card",
-    style: {
-      animationDelay: '0.3s'
-    },
-    "aria-labelledby": "launch-pad-learning-title",
-    "aria-describedby": "launch-pad-learning-badge launch-pad-learning-desc",
-    onClick: () => {
-      setShowLearningHub(true);
-      setIsTeacherMode(false);
-      setShowWizard(false);
-      setHasSelectedRole(true);
-      setHasSelectedMode(true);
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-learning-badge",
-    style: {
-      position: 'absolute',
-      top: '12px',
-      right: '12px'
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "lp-badge",
-    style: {
-      background: 'linear-gradient(135deg, #047857, #065f46)'
-    }
-  }, copy('launch_pad.badge_3_tools', '8 Tools'))), /*#__PURE__*/React.createElement("span", {
-    className: "lp-card-icon",
-    style: {
-      display: 'block',
-      fontSize: '40px',
-      marginBottom: '16px',
-      animation: 'float 3s ease-in-out infinite',
-      animationDelay: '1s'
-    },
-    "aria-hidden": "true"
-  }, "🧩"), /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-learning-title",
-    style: {
-      display: 'block',
-      fontSize: '18px',
-      fontWeight: 800,
-      color: 'white',
-      margin: '0 0 8px'
-    }
-  }, learningToolsTitle), /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-learning-desc",
-    style: {
-      display: 'block',
-      fontSize: '12px',
-      color: '#e0e7ff',
-      lineHeight: '1.6',
-      margin: 0
-    }
-  }, learningToolsDesc)), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "lp-card",
-    style: {
-      animationDelay: '0.4s'
-    },
-    "aria-labelledby": "launch-pad-educator-title",
-    "aria-describedby": "launch-pad-educator-badge launch-pad-educator-desc",
-    onClick: () => {
-      setHasSelectedMode(true);
-      setHasSelectedRole(true);
-      setShowWizard(false);
-      if (typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key) {
-        setPendingRole('educator_hub');
-        setIsGateOpen(true);
-      } else {
-        setIsTeacherMode(true);
-        setShowEducatorHub(true);
-      }
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-educator-badge",
-    style: {
-      position: 'absolute',
-      top: '12px',
-      right: '12px'
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "lp-badge",
-    style: {
-      background: 'linear-gradient(135deg, #7c3aed, #5b21b6)'
-    }
-  }, (typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key) ? copy('launch_pad.badge_educator', 'Educator') : copy('launch_pad.badge_educator_open', 'Educator'))), /*#__PURE__*/React.createElement("span", {
-    className: "lp-card-icon",
-    style: {
-      display: 'block',
-      fontSize: '40px',
-      marginBottom: '16px',
-      animation: 'float 3s ease-in-out infinite',
-      animationDelay: '1.5s'
-    },
-    "aria-hidden": "true"
-  }, "🛠️"), /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-educator-title",
-    style: {
-      display: 'block',
-      fontSize: '18px',
-      fontWeight: 800,
-      color: 'white',
-      margin: '0 0 8px'
-    }
-  }, educatorToolsTitle), /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-educator-desc",
-    style: {
-      display: 'block',
-      fontSize: '12px',
-      color: '#e0e7ff',
-      lineHeight: '1.6',
-      margin: 0
-    }
-  }, educatorToolsDesc))), /*#__PURE__*/React.createElement("section", {
-    className: "lp-voice-setup",
-    "aria-labelledby": "launch-pad-offline-voice-title",
-    style: {
-      maxWidth: '680px',
-      width: '100%',
-      padding: '0 24px',
-      marginTop: '18px'
-    }
-  }, /*#__PURE__*/React.createElement("details", {
-    className: "lp-voice-disclosure"
-  }, /*#__PURE__*/React.createElement("summary", {
-    id: "launch-pad-offline-voice-title"
-  }, /*#__PURE__*/React.createElement("span", null, "Optional offline voice tools"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: '#a5b4fc',
-      fontSize: '10px',
-      fontWeight: 650
-    }
-  }, "Set up anytime")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      border: '1px solid rgba(165,180,252,.2)',
-      borderRadius: '18px',
-      background: 'rgba(8,13,29,.38)',
-      padding: '16px',
-      backdropFilter: 'blur(18px)',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,.05)'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      alignItems: 'baseline',
-      justifyContent: 'space-between',
-      gap: '6px 12px',
-      marginBottom: '12px'
-    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "lp-offline-header"
   }, /*#__PURE__*/React.createElement("h2", {
     style: {
       color: 'white',
-      fontSize: '14px',
-      fontWeight: 850,
+      fontSize: '13px',
+      fontWeight: 820,
       margin: 0
     }
-  }, "Private, on-device options"), /*#__PURE__*/React.createElement("span", {
+  }, copy('launch_pad.on_device_title', 'Private, on-device options')), /*#__PURE__*/React.createElement("span", {
     style: {
-      color: '#c7d2fe',
+      color: '#94a3b8',
       fontSize: '10px',
       fontWeight: 650
     }
-  }, "One-time download · stored locally when supported")), /*#__PURE__*/React.createElement("div", {
-    className: "lp-voice-grid",
-    style: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-      gap: '10px'
-    }
+  }, copy('launch_pad.on_device_note', 'One-time download · stored locally when supported'))), /*#__PURE__*/React.createElement("div", {
+    className: "lp-voice-grid"
   }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'grid',
-      gap: '7px',
-      border: '1px solid rgba(255,255,255,0.12)',
-      borderRadius: '14px',
-      padding: '12px',
-      background: 'rgba(255,255,255,0.06)'
-    }
+    className: "lp-voice-option"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", {
-    style: {
-      display: 'block',
-      color: 'white',
-      fontSize: '12px'
-    }
-  }, "🎙️ Whisper speech recognition"), /*#__PURE__*/React.createElement("span", {
+    className: "lp-voice-option-title"
+  }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    name: "Mic2",
+    size: 15
+  }), "Whisper speech recognition"), /*#__PURE__*/React.createElement("span", {
     id: "launch-pad-whisper-desc",
     style: {
       display: 'block',
@@ -1223,21 +1147,13 @@
     disabled: voiceSetup.whisper.phase === 'loading' || voiceSetup.whisper.phase === 'ready',
     onClick: downloadWhisperFromLaunchPad
   }, voiceSetup.whisper.phase === 'ready' ? '✓ Whisper ready' : voiceSetup.whisper.phase === 'loading' ? voiceSetup.whisper.progress == null ? 'Preparing Whisper…' : 'Downloading Whisper · ' + voiceSetup.whisper.progress + '%' : voiceSetup.whisper.phase === 'error' ? 'Retry Whisper download' : 'Download Whisper')), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'grid',
-      gap: '7px',
-      border: '1px solid rgba(255,255,255,0.12)',
-      borderRadius: '14px',
-      padding: '12px',
-      background: 'rgba(255,255,255,0.06)'
-    }
+    className: "lp-voice-option"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", {
-    style: {
-      display: 'block',
-      color: 'white',
-      fontSize: '12px'
-    }
-  }, "🔊 Kokoro read-aloud"), /*#__PURE__*/React.createElement("span", {
+    className: "lp-voice-option-title"
+  }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    name: "Volume2",
+    size: 15
+  }), "Kokoro read-aloud"), /*#__PURE__*/React.createElement("span", {
     id: "launch-pad-kokoro-desc",
     style: {
       display: 'block',
@@ -1265,52 +1181,17 @@
       lineHeight: 1.5,
       margin: '10px 0 0'
     }
-  }, voiceSetup.message)))), /*#__PURE__*/React.createElement("p", {
+  }, voiceSetup.message)))), /*#__PURE__*/React.createElement("footer", {
+    className: "lp-launch-footer"
+  }, /*#__PURE__*/React.createElement("p", {
     style: {
-      marginTop: '24px',
+      margin: 0,
+      textAlign: 'center',
       fontSize: '11px',
-      color: 'rgba(199,210,254,0.85)',
-      fontWeight: 500
+      color: '#94a3b8',
+      fontWeight: 550
     }
-  }, switchHint), !_isCanvasEnv && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: e => {
-      e.stopPropagation();
-      setShowAIBackendModal(true);
-    },
-    className: "lp-ai-settings",
-    style: {
-      marginTop: '16px',
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '8px',
-      background: '#312e81',
-      border: '1px solid rgba(165,180,252,0.4)',
-      borderRadius: '16px',
-      padding: '10px 20px',
-      color: '#e0e7ff',
-      fontSize: '12px',
-      fontWeight: 600,
-      cursor: 'pointer',
-      transition: 'all 0.3s',
-      backdropFilter: 'blur(10px)'
-    },
-    onMouseOver: e => {
-      e.currentTarget.style.background = '#4338ca';
-      e.currentTarget.style.color = '#ffffff';
-      e.currentTarget.style.borderColor = 'rgba(165,180,252,0.7)';
-    },
-    onMouseOut: e => {
-      e.currentTarget.style.background = '#312e81';
-      e.currentTarget.style.color = '#e0e7ff';
-      e.currentTarget.style.borderColor = 'rgba(165,180,252,0.4)';
-    },
-    "aria-label": "AI Backend Settings",
-    title: "AI Backend Settings"
-  }, /*#__PURE__*/React.createElement(Unplug, {
-    size: 16,
-    "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("span", null, "AI Backend Settings")));
+  }, switchHint))));
 }
 
   window.AlloModules = window.AlloModules || {};

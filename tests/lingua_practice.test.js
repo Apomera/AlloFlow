@@ -36,10 +36,13 @@ describe('Lingua Practice bounded text requests', () => {
     vi.useFakeTimers();
     try {
       let resolveLate;
+      let providerSignal;
       const lateProvider = new Promise((resolveLateRequest) => { resolveLate = resolveLateRequest; });
-      const stalled = boundedRequest(() => lateProvider, 10);
+      const stalled = boundedRequest((signal) => { providerSignal = signal; return lateProvider; }, 10);
       await vi.advanceTimersByTimeAsync(10);
       await expect(stalled).resolves.toEqual({ status: 'timeout' });
+      expect(providerSignal).toBeInstanceOf(AbortSignal);
+      expect(providerSignal.aborted).toBe(true);
       resolveLate('late response');
       await Promise.resolve();
       await expect(boundedRequest(() => Promise.reject(new Error('offline')), 10))
@@ -547,6 +550,69 @@ describe('Lingua Practice spaced review helpers', () => {
     expect(lapse.reviewStage).toBe(2);
     expect(lapse.lapses).toBe(3);
     expect(lapse.nextReviewAt).toBe(base + 10 * 60 * 1000);
+  });
+
+  it('adapts transparently from the prior interval and elapsed time', () => {
+    const day = 24 * 60 * 60 * 1000;
+    const previousInterval = 30 * day;
+    const lastReviewedAt = 100 * day;
+    const card = {
+      id: 'Spanish::hola', reviewStage: 5, reviews: 8,
+      lastReviewedAt, nextReviewAt: lastReviewedAt + previousInterval, lastRating: 'know',
+      reviewHistory: [{ at: lastReviewedAt, rating: 'know', interval: previousInterval, stage: 5 }],
+    };
+
+    const due = Lingua._reviewScheduleFactors(card, 'know', lastReviewedAt + previousInterval);
+    expect(due).toEqual({
+      mode: 'adaptive', rating: 'know', interval: 96 * day, legacyInterval: 30 * day,
+      previousInterval, elapsed: previousInterval, elapsedRatio: 1, boundedElapsedRatio: 1,
+      multiplier: 3.2, timingFactor: 1,
+    });
+    expect(Lingua._reviewScheduleFactors(card, 'know', lastReviewedAt + previousInterval / 2).interval).toBe(84 * day);
+    expect(Lingua._reviewScheduleFactors(card, 'know', lastReviewedAt + previousInterval * 2).interval).toBe(120 * day);
+    expect(Lingua._reviewScheduleFactors(card, 'know', lastReviewedAt + previousInterval * 3)).toMatchObject({
+      elapsedRatio: 3, boundedElapsedRatio: 2, interval: 120 * day,
+    });
+    expect(Lingua._reviewScheduleFactors(card, 'again', lastReviewedAt + previousInterval)).toMatchObject({
+      mode: 'reset', interval: 10 * 60 * 1000, previousInterval: 0, multiplier: 0,
+    });
+    expect(Lingua._reviewScheduleFactors({ ...card, hints: 99, score: 0, aiJudgment: 'ignore' }, 'know', lastReviewedAt + previousInterval)).toEqual(due);
+    expect(Lingua._reviewScheduleFactors({ reviewStage: 1 }, 'know', lastReviewedAt + previousInterval)).toMatchObject({
+      mode: 'legacy', interval: 7 * day, previousInterval: 0,
+    });
+    expect(Lingua._legacyReviewDelay({ reviewStage: 1 }, 'know')).toBe(7 * day);
+    expect(Lingua._reviewScheduleFactors({
+      reviewStage: 5, lastReviewedAt, nextReviewAt: lastReviewedAt + previousInterval, lastRating: 'know',
+    }, 'know', lastReviewedAt + previousInterval)).toMatchObject({ mode: 'adaptive', previousInterval, interval: 96 * day });
+    expect(Lingua._reviewScheduleFactors({
+      ...card, reviewHistory: [{ at: lastReviewedAt, rating: 'know', interval: 200 * day, stage: 5 }],
+    }, 'know', lastReviewedAt + 200 * day).interval).toBe(365 * day);
+  });
+
+  it('uses the same bounded adaptive schedule for word and form cards', () => {
+    const day = 24 * 60 * 60 * 1000;
+    const previousInterval = 30 * day;
+    const lastReviewedAt = 100 * day;
+    const now = lastReviewedAt + previousInterval;
+    const memory = {
+      reviewStage: 5, reviews: 8, lapses: 1, lastReviewedAt,
+      nextReviewAt: now, lastRating: 'know',
+      reviewHistory: [{ at: lastReviewedAt, rating: 'know', interval: previousInterval, stage: 5 }],
+    };
+    const word = Lingua._scheduleReview({ id: 'Spanish::hola', ...memory }, 'know', now);
+    expect(word.nextReviewAt).toBe(now + 96 * day);
+    expect(word.reviewHistory.slice(0, 2)).toEqual([
+      { at: now, rating: 'know', interval: 96 * day, stage: 5 },
+      { at: lastReviewedAt, rating: 'know', interval: previousInterval, stage: 5 },
+    ]);
+
+    const form = { wordId: 'word-hablar', formId: 'form-yo', base: 'hablar', meaning: 'to speak', label: 'present · yo', form: 'hablo' };
+    const formRecord = {
+      ...memory, ...form, id: Lingua._formReviewId('Spanish', form), kind: 'form', language: 'Spanish',
+    };
+    const applied = Lingua._applyFormReviewRating({ formReviews: [formRecord] }, form, 'Spanish', 'know', now, {});
+    expect(applied.record).toMatchObject({ kind: 'form', reviewStage: 5, nextReviewAt: now + 96 * day, lastRating: 'know' });
+    expect(applied.record.reviewHistory[0]).toEqual({ at: now, rating: 'know', interval: 96 * day, stage: 5 });
   });
 
   it('alternates recall direction and formats adaptive intervals', () => {

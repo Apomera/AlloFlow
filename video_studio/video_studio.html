@@ -4146,9 +4146,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // so an un-shared copy would silently lose the null-when-unsure rule, which
   // is the entire reason this function exists.
   //
-  // opts.posture === 'learner' enforces the governing rule from the provenance
-  // design: Socratic about the lesson, direct about the tool. The coach helps a
-  // student operate software; it never advances the schoolwork on the screen.
+  // Only opts.posture === 'educator' widens the governing rule from the
+  // provenance design. Missing or malformed posture therefore fails closed to
+  // learner: Socratic about the lesson, direct about the tool. The coach helps
+  // a student operate software; it never advances schoolwork on the screen.
   // Enforcement is HERE and not only in the prompt, because a prompt is a
   // request and this is a guarantee. An academic-content reply is REPLACED
   // whole, guidance and box together: a highlight drawn around the right answer
@@ -4157,11 +4158,27 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // An unclassified reply counts as content for a learner. The prompt always
   // asks for the field, so a missing one means the model could not tell us what
   // it was looking at, and that is not a model to trust with the distinction.
+  // The model's label is not authority either: catch a deliberately narrow set
+  // of unmistakable answer-giving phrases even when they arrive mislabeled as
+  // navigation. This is a backstop, not a general semantic classifier.
+  function vsCoachGuidanceLooksAcademic(guidance) {
+    var text = String(guidance || '').replace(/\s+/g, ' ').trim().slice(0, 400);
+    if (!text) return false;
+    return [
+      /\b(?:the\s+)?answer\s+(?:is|equals|would\s+be|should\s+be)\b/i,
+      /\b(?:correct|best)\s+(?:answer|choice|option)\b/i,
+      /\b(?:choose|select|pick|mark|click)\s+(?:the\s+)?(?:answer|choice|option)\s*(?:[a-h]|\d+|one|two|three|four|first|second|third|fourth)\b/i,
+      /\b(?:solve|simplify|evaluate|calculate)\s+(?:the|this|that)\s+(?:problem|equation|expression)\b/i,
+      /\b(?:write|draft|revise|complete)\s+(?:the|your)\s+(?:answer|response|essay|paragraph)\b/i
+    ].some(function (pattern) { return pattern.test(text); });
+  }
   function vsSanitizeCoachAdvice(raw, opts) {
     raw = raw && typeof raw === 'object' ? raw : {};
     opts = opts && typeof opts === 'object' ? opts : {};
+    var posture = opts.posture === 'educator' ? 'educator' : 'learner';
     var kind = (raw.kind === 'navigation' || raw.kind === 'content') ? raw.kind : 'unknown';
-    if (opts.posture === 'learner' && kind !== 'navigation') {
+    var guidance = String(raw.guidance || '').trim().slice(0, 400);
+    if (posture === 'learner' && (kind !== 'navigation' || vsCoachGuidanceLooksAcademic(guidance))) {
       return {
         guidance: VS_COACH_CONTENT_REFUSAL,
         target: null,
@@ -4181,7 +4198,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       }
     }
     return {
-      guidance: String(raw.guidance || '').trim().slice(0, 400),
+      guidance: guidance,
       target: target,
       done: raw.done === true,
       kind: kind,

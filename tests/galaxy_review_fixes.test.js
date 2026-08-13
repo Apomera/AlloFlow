@@ -312,7 +312,7 @@ describe('galaxy visuals', () => {
     expect(source).toContain('morphologyVisual.exposureBias');
     expect(source).toContain("atmosphereGroup.visible = galaxyType !== 'elliptical'");
     expect(source).toContain('coreFlare.visible = isSpiralMorphology');
-    expect(source).toContain('(isSpiralMorphology ? [0, 1] : []).forEach');
+    expect(source).toContain("(galaxyType === 'barredSpiral' ? [0, 1] : []).forEach");
     expect(source).toContain('var ellipticalEnvelope = Math.random() < 0.72');
     expect(source).toContain("uElliptical: { value: galaxyType === 'elliptical' ? 1 : 0 }");
     expect(source).toContain('vec3 orbitAxis = normalize');
@@ -325,7 +325,8 @@ describe('galaxy visuals', () => {
 
     const diffuse = source.slice(source.indexOf('var diskGrad ='), source.indexOf('var glowCount ='));
     expect(diffuse).toContain('if (isSpiralMorphology)');
-    expect(diffuse).toContain('diskSheen = new THREE.Sprite(diskSheenMat)');
+    expect(diffuse).toContain("var diskTex = isSpiralMorphology ?");
+    expect(diffuse).not.toContain('diskSheen = new THREE.Sprite(diskSheenMat)');
     expect(diffuse).not.toContain("gType.arms || (galaxyType === 'elliptical' ? 2 : 3)");
 
     const dust = source.slice(source.indexOf('// â”€â”€ Dust lanes'), source.indexOf('var gasGroup ='));
@@ -354,7 +355,7 @@ describe('galaxy visuals', () => {
     const diffuse = source.slice(source.indexOf('var diskGrad ='), source.indexOf('var glowCount ='));
     expect(diffuse).toContain('Patchy associations replace the logarithmic arm texture');
     expect(diffuse).toContain('if (isSpiralMorphology)');
-    expect(diffuse).not.toContain("if (galaxyType !== 'elliptical')");
+    expect(diffuse).not.toContain("if (galaxyType !== 'elliptical') { var diskArms");
     expect(diffuse).not.toContain('bezierCurveTo(342, 278, 403, 317, 486, 365)');
 
     expect(source).toContain('for (var rr = 0; rr < (isSpiralMorphology ? 6 : 0); rr++)');

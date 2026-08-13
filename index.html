@@ -4,29 +4,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlloFlow | Open-Source AI Classroom Assistant</title>
-    <meta name="description"
-        content="Free, open-source AI platform for differentiated instruction, AAC communication, RTI progress monitoring, clinical reporting, STEM/SEL tools, and accessibility workflows. August 2026 inventory: 137 STEM plugin files / 138 registered STEM IDs, 70 SEL tools, Desktop local-first path, and optional School Box server stack.">
+    <title>AlloFlow | Open Tools for Learning, Access & Creation</title>
+    <meta name="description" content="Find open-source STEM labs, source-aware learning tools, accessibility workflows, and flexible AlloFlow launch paths for educators and teams.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://apomera.github.io/AlloFlow/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="AlloFlow">
     <meta property="og:url" content="https://apomera.github.io/AlloFlow/">
-    <meta property="og:title" content="AlloFlow | Open-Source UDL and Accessibility Toolkit">
-    <meta property="og:description"
-        content="Free, open-source classroom AI with 137 STEM plugin files / 138 registered STEM IDs, 70 SEL tools, AAC boards, clinical workflows, Desktop local-first options, and PDF accessibility remediation support.">
-    <meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://apomera.github.io/AlloFlow/">
-    <meta property="twitter:title" content="AlloFlow | Open-Source UDL and Accessibility Toolkit">
-    <meta property="twitter:description" content="Free, open-source AI platform for differentiated instruction, AAC communication, RTI progress monitoring, clinical reporting, STEM/SEL tools, Desktop local-first use, and accessibility supports.">
-    <meta property="twitter:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
+    <meta property="og:title" content="AlloFlow | Open Tools for Learning, Access &amp; Creation">
+    <meta property="og:description" content="Find a tool by goal, understand what source or AI access it needs, and choose the AlloFlow path that fits.">
+    <meta property="og:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://apomera.github.io/AlloFlow/">
+    <meta name="twitter:title" content="AlloFlow | Open Tools for Learning, Access &amp; Creation">
+    <meta name="twitter:description" content="Find STEM, learning, accessibility, and document workflows by goal—then launch through the path that fits.">
+    <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"SoftwareApplication","name":"AlloFlow","applicationCategory":"EducationalApplication","operatingSystem":"Web Browser, Windows, macOS","description":"Open-source AI platform for differentiated instruction, AAC communication, clinical reporting, STEM/SEL education, local-first Desktop use, and PDF accessibility remediation support.","url":"https://apomera.github.io/AlloFlow/","author":{"@type":"Person","name":"Aaron Pomeranz","jobTitle":"School Psychologist"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true}
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://apomera.github.io/AlloFlow/#website",
+      "name": "AlloFlow",
+      "url": "https://apomera.github.io/AlloFlow/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://apomera.github.io/AlloFlow/tools.html?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://apomera.github.io/AlloFlow/#software",
+      "name": "AlloFlow",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser, Windows, macOS",
+      "description": "Open-source, source-aware tools for differentiated learning, STEM and SEL activities, AAC communication, accessibility workflows, and document remediation evidence.",
+      "url": "https://apomera.github.io/AlloFlow/",
+      "codeRepository": "https://github.com/Apomera/AlloFlow",
+      "license": "https://www.gnu.org/licenses/agpl-3.0.html",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Aaron Pomeranz",
+        "jobTitle": "School Psychologist"
+      }
+    }
+  ]
+}
     </script>
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
     <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="promotion-wave2.css">
+    <link rel="stylesheet" href="tool-finder.css">
+    <link rel="stylesheet" href="promotion-wave3.css">
+    <link rel="stylesheet" href="promotion-wave3-shell.css">
+    <link rel="stylesheet" href="promo-nav-breakpoint.css">
+    <link rel="stylesheet" href="promo-accessibility-overrides.css">
+    <script src="tool-catalog-data.js" defer></script>
+    <script src="tool-finder.js" defer></script>
     <script src="site.js" defer></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -41,20 +89,15 @@
                 <i data-lucide="layers" style="width:28px;height:28px"></i>
                 AlloFlow
                 <span
-                    style="font-size:0.6rem;font-weight:400;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:4px;border:1px solid #e2e8f0;margin-left:4px"><span data-release-version>v1.2</span></span>
+                    style="font-size:0.7rem;font-weight:700;color:#334155;background:#f1f5f9;padding:2px 8px;border-radius:4px;border:1px solid #e2e8f0;margin-left:4px"><span data-release-version>v1.2</span></span>
             </a>
-            <div class="nav-links">
-                <a href="index.html" aria-current="page">Home</a>
+            <div class="nav-links" data-site-nav="primary">
+                <a href="tools.html">Find a Tool</a>
                 <a href="features.html">Features</a>
-                <a href="library.html">Library</a>
-                <a href="calculator.html">Cost Planner</a>
-                <a href="students.html">Students</a>
+                <a href="remediation.html">Remediation</a>
+                <a href="ways-to-use.html">Ways to Use</a>
                 <a href="for-districts.html">For Districts</a>
-                <a href="accessibility_demo.html">Accessibility</a>
-                <a href="#pricing">Pricing</a>
-                <a href="#privacy">Privacy</a>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn" rel="noopener noreferrer"><i data-lucide="github"
-                        style="width:16px;height:16px"></i> Get Code</a>
+                <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
             </div>
             <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
                 aria-label="Open menu">
@@ -64,75 +107,106 @@
     </nav>
 
     <!-- Mobile Nav Overlay -->
+    <!-- shared mobile nav:start -->
     <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
-        <button type="button" class="close-btn"
-            aria-label="Close menu">&times;</button>
-        <a href="index.html" aria-current="page" >Home</a>
+        <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
+        <a href="index.html" aria-current="page">Home</a>
+        <a href="tools.html">Find a Tool</a>
         <a href="features.html">Features</a>
-        <a href="library.html">Library</a>
-        <a href="calculator.html">Cost Planner</a>
-        <a href="students.html">Students</a>
+        <a href="library.html">Lesson Library</a>
+        <a href="remediation.html">Remediation</a>
+        <a href="accessibility_demo.html">Accessibility Lab</a>
+        <a href="whitepaper.html">White Paper</a>
+        <a href="ways-to-use.html">Ways to Use</a>
         <a href="for-districts.html">For Districts</a>
-        <a href="accessibility_demo.html">Accessibility</a>
-        <a href="#pricing" >Pricing</a>
-        <a href="#privacy" >Privacy</a>
+        <a href="feedback.html">Feedback</a>
+        <a href="launch.html">Launch AlloFlow</a>
         <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
+    <noscript>
+        <style>.mobile-menu-btn{display:none!important}</style>
+        <nav class="noscript-nav" aria-label="Site navigation without JavaScript">
+            <a href="index.html">Home</a><a href="tools.html">Find a Tool</a><a href="remediation.html">Remediation</a><a href="ways-to-use.html">Ways to Use</a><a href="feedback.html">Feedback</a><a href="launch.html">Launch AlloFlow</a>
+        </nav>
+    </noscript>
+<!-- shared mobile nav:end -->
 
     <main id="main-content" tabindex="-1">
         <!-- Hero -->
-        <header class="section" style="padding-top:100px;padding-bottom:60px;text-align:center;position:relative">
+        <header class="section promo-home-hero" style="padding-top:88px;padding-bottom:68px;text-align:center;position:relative">
             <div class="blob" style="width:500px;height:500px;background:#818cf8;top:-100px;left:-150px"></div>
-            <div class="blob" style="width:400px;height:400px;background:#c084fc;bottom:-100px;right:-100px"></div>
-            <div style="position:relative;z-index:1;max-width:800px;margin:0 auto">
-                <div
-                    style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:#fff;border:1px solid #e0e7ff;border-radius:999px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
-                    <span
-                        style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 2s infinite"></span>
-                    <span
-                        style="font-size:0.7rem;font-weight:700;color:#312e81;text-transform:uppercase;letter-spacing:0.1em">Gemini Canvas · AlloFlow Desktop · Optional School Box Server</span>
-                </div>
-                <h1
-                    style="font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;line-height:1.1;margin-bottom:20px;letter-spacing:-0.02em">
-                    Differentiation with<br><span class="gradient-text">Local Control</span>
+            <div class="blob" style="width:400px;height:400px;background:#5eead4;bottom:-100px;right:-100px"></div>
+            <div style="position:relative;z-index:1;max-width:900px;margin:0 auto">
+                <p class="promo-kicker">Open source · source-aware · built for access</p>
+                <h1 style="font-size:clamp(2.45rem,6vw,4.45rem);font-weight:900;line-height:1.08;margin:18px 0 22px;letter-spacing:-0.035em">
+                    Turn a source—or a learning goal—into<br><span class="gradient-text">accessible, differentiated learning.</span>
                 </h1>
-                <p style="font-size:1.15rem;color:#64748b;max-width:600px;margin:0 auto 32px;line-height:1.7">
-                    Open-source classroom AI for differentiated materials, STEM/SEL activities, AAC supports,
-                    clinical workflows, and accessibility evidence. Run in Gemini Canvas, Firebase, or the local-first
-                    Desktop app; use School Box only when you need school-owned server infrastructure.
+                <p style="font-size:1.15rem;color:#526176;max-width:720px;margin:0 auto 30px;line-height:1.72">
+                    Find a STEM lab, adapt classroom material, build a learning resource, or create a more accessible document alternative. AlloFlow shows what each workflow needs before you begin.
                 </p>
-                <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:24px">
-                    <button type="button" onclick="copyCanvasLink()" class="btn-primary" id="hero-copy-btn">
-                        <i data-lucide="link" style="width:18px;height:18px"></i>
-                        <span>Copy Canvas Link</span>
-                    </button>
-                    <a href="https://github.com/Apomera/AlloFlow/tree/main/desktop" class="btn-secondary" style="text-decoration:none">
-                        <i data-lucide="download" style="width:18px;height:18px"></i> Desktop Setup
-                    </a>
-                    <a href="https://github.com/Apomera/AlloFlow/blob/main/docker/README.md" class="btn-secondary" style="text-decoration:none">
-                        <i data-lucide="server" style="width:18px;height:18px"></i> Optional School Box
-                    </a>
+                <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:18px">
+                    <a href="launch.html" class="btn-primary" style="text-decoration:none"><i data-lucide="rocket" aria-hidden="true" style="width:18px;height:18px"></i> Launch in Gemini Canvas</a>
+                    <a href="tools.html" class="btn-secondary" style="text-decoration:none"><i data-lucide="search" aria-hidden="true" style="width:18px;height:18px"></i> Find the right tool</a>
+                    <a href="ways-to-use.html" class="btn-secondary" style="text-decoration:none">Compare access paths</a>
                 </div>
-                <div style="margin:20px auto 0;position:relative;display:inline-block">
-                    <!-- Allobot SVG (inline for CSS animation support) -->
-                    <div style="width:110px;height:110px;margin:0 auto;position:relative;z-index:2" id="hero-allobot">
-                        <img src="allobot.svg" alt="Allobot" class="allobot-svg" style="width:100%;height:100%">
-                        <script>
-                            fetch('allobot.svg').then(r => r.text()).then(svg => {
-                                document.getElementById('hero-allobot').innerHTML = svg;
-                            });
-                        </script>
-                    </div>
-                    <div
-                        style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60px;height:6px;background:rgba(0,0,0,0.2);border-radius:50%;filter:blur(4px);animation:shadowScale 4s ease-in-out infinite;z-index:1">
-                    </div>
-                </div>
-                <p
-                    style="font-size:0.65rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;font-weight:600">
-                    Web path works best in Chrome or Edge; Desktop provides the local-first runtime.
-                </p>
+                <div style="width:92px;height:92px;margin:8px auto 0"><img src="allobot.svg" alt="" aria-hidden="true" style="width:100%;height:100%"></div>
+                <p class="hero-path-note">Gemini Canvas is the simplest educator entry point and uses the Gemini access available to your Google account. Browser and Desktop paths are available when a different provider or local-first setup fits better.</p>
             </div>
         </header>
+
+        <section id="homeEntryPaths" class="home-entry-section" aria-labelledby="home-entry-heading">
+            <div class="home-entry-inner">
+                <div class="home-entry-heading">
+                    <div><p class="promo-kicker" style="color:#99f6e4">Start with your goal</p><h2 id="home-entry-heading">You do not need to understand all of AlloFlow first.</h2></div>
+                    <p>Choose the job closest to yours. Each route explains source requirements, AI needs, and the best place to launch.</p>
+                </div>
+                <div class="home-entry-grid">
+                    <a class="home-entry-card" href="tools.html"><span class="home-entry-number">1</span><h3>Educator: find a classroom tool</h3><p>Search STEM labs, literacy supports, planning tools, assessment workflows, and prepared resources by the task at hand.</p><span class="home-entry-link">Open the tool finder →</span></a>
+                    <a class="home-entry-card" href="remediation.html"><span class="home-entry-number">2</span><h3>Accessibility team: remediate a document</h3><p>Understand the source-bound pipeline, evidence package, portable Skill, local connector, and required human review.</p><span class="home-entry-link">Explore remediation →</span></a>
+                    <a class="home-entry-card" href="ways-to-use.html"><span class="home-entry-number">3</span><h3>District evaluator: choose an access path</h3><p>Compare Gemini Canvas, the hosted browser app, Desktop, portable Skills, and local connector responsibilities.</p><span class="home-entry-link">Compare paths →</span></a>
+                    <a class="home-entry-card" href="feedback.html"><span class="home-entry-number">4</span><h3>Tester or contributor: shape what improves</h3><p>Try one focused workflow and share an idea, bug, accessibility barrier, or de-identified classroom observation.</p><span class="home-entry-link">Share feedback safely →</span></a>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-tool-finder-section" aria-labelledby="home-tool-finder-heading">
+            <div class="section-inner home-tool-finder-layout">
+                <div class="home-tool-finder-copy">
+                    <h2 id="home-tool-finder-heading">Start with the tool you need</h2>
+                    <p>Search by classroom goal, subject, or feature. Results explain whether a tool needs source material or AI before you enter AlloFlow.</p>
+                    <div class="home-tool-finder-note"><strong>Source-aware:</strong><span>Some tools start immediately. Others need source text or analyzed source material; every catalog card tells you which.</span></div>
+                </div>
+                <div>
+                    <form id="homeToolFinder" class="home-tool-form" role="search" aria-label="Find an AlloFlow tool" action="tools.html" method="get">
+                        <label class="sr-only" for="homeToolSearch">Search AlloFlow tools</label>
+                        <input id="homeToolSearch" name="q" type="search" placeholder="Try photosynthesis, WCAG, phonics, or quiz from an article" autocomplete="off">
+                        <button type="submit">See all results</button>
+                    </form>
+                    <div id="homeToolResults" class="home-tool-results" aria-live="polite"></div>
+                    <noscript><p class="tool-noscript-note">The search form opens the full catalog. With JavaScript off, every catalog entry remains visible and can be searched with your browser’s Find command.</p></noscript>
+                    <a class="home-tool-all-link" href="tools.html">Browse the full tool finder →</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="homeRemediation" class="home-remediation-section" aria-labelledby="home-remediation-heading">
+            <div class="home-remediation-layout">
+                <div class="home-remediation-heading">
+                    <div><p class="promo-kicker">Document accessibility hub</p><h2 id="home-remediation-heading">Create accessible document alternatives with traceable evidence.</h2><p>AlloFlow can analyze a source, rebuild semantic structure, verify exact outputs with multiple engines, and package artifacts for human review. It does not promise automatic legal conformance.</p></div>
+                    <a class="promo-button" href="remediation.html">Explore remediation</a>
+                </div>
+                <div class="home-remediation-grid">
+                    <article class="home-remediation-card"><h3>Inspect the pipeline</h3><p>Follow extraction, semantic rebuild, bounded repair, independent HTML checks, tagged-PDF output, and review.</p></article>
+                    <article class="home-remediation-card"><h3>Use a portable Skill</h3><p>Download a versioned package whose scripts do not call an AlloFlow server, with clear host and local-tool boundaries.</p></article>
+                    <article class="home-remediation-card"><h3>Plan the right edition</h3><p>Understand what is local, what needs Gemini or another provider, and which connector release is still being prepared.</p></article>
+                </div>
+                <div class="home-deadline-note"><p><strong>Title II planning dates are approaching.</strong> The standards exist to make digital services usable by people with disabilities—not merely to satisfy a deadline.</p><a href="whitepaper.html#standards-context">Read the standards context</a></div>
+            </div>
+        </section>
+
+        <section class="community-feedback-band" aria-labelledby="home-feedback-heading">
+            <div class="community-feedback-inner"><div><h2 id="home-feedback-heading">Try one focused workflow and tell us what happened.</h2><p>Short, de-identified feedback about a tool, bug, or accessibility barrier is more useful than a generic review.</p></div><a href="feedback.html">Choose a safe feedback route</a></div>
+        </section>
 
         <!-- Stats Bar -->
         <div class="section reveal" style="padding:20px 24px 60px;background:#fff;border-top:1px solid #e2e8f0">
@@ -142,7 +216,7 @@
                     <div class="stat-label">Documented Features</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" data-target="131">0</div>
+                    <div class="stat-number" data-target="142">0</div>
                     <div class="stat-label">Registered STEM IDs</div>
                 </div>
                 <div class="stat-item">
@@ -2068,7 +2142,7 @@
 
                                         <!-- Bottom label -->
                                         <text x="200" y="295" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">138 STEM IDs → Browser Tools → Desktop-Ready
+                                            font-family="Inter">142 STEM IDs → Browser Tools → Desktop-Ready
                                             Native</text>
                                     </svg>
                                 </div>
@@ -2599,7 +2673,7 @@
                                         <polygon points="235,60 247,40 260,60" fill="#2e1065" stroke="#a78bfa"
                                             stroke-width="1.5" />
                                         <!-- Door -->
-                                        <rect x="185" y="120" width="30" height="40" rx="15 15 0 0" fill="#0f172a"
+                                        <rect x="185" y="120" width="30" height="40" rx="15" fill="#0f172a"
                                             stroke="#a78bfa" stroke-width="2" />
                                         <!-- Door glow -->
                                         <circle cx="200" cy="140" r="8" fill="#7c3aed" opacity="0.4">
@@ -4848,7 +4922,7 @@
                             style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#10b981">
                             <i data-lucide="flask-conical" style="width:18px;height:18px"></i> STEM Lab
                         </div>
-                        <p style="font-size:0.85rem;color:#475569">137 STEM plugin files / 138 registered STEM IDs across math, science, coding, music, economics, CTE, life skills, and applied simulations — browser-native and Desktop-ready.
+                        <p style="font-size:0.85rem;color:#475569">141 STEM plugin files / 142 registered STEM IDs across math, science, coding, music, economics, CTE, life skills, and applied simulations — browser-native and Desktop-ready.
                         </p>
                     </div>
                     <div class="card">
@@ -5131,15 +5205,14 @@
             <p>An open-source project for educators. Not affiliated with Google.</p>
             <p>AlloFlow Desktop is the primary local-first path; School Box remains optional school-owned server infrastructure.</p>
             <p>Released under the <strong>AGPL v3 License</strong>. &copy; <span id="year">2026</span></p>
-            <div class="footer-links">
-                <a href="features.html">Features</a>
-                <a href="library.html">Library</a>
-                <a href="for-districts.html">For Districts</a>
-                <a href="https://github.com/Apomera/AlloFlow#readme">Docs</a>
-                <a href="https://github.com/Apomera/AlloFlow">GitHub</a>
-                <a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a>
-                <a href="mailto:aaron.pomeranz@maine.edu">Contact</a>
-            </div>
+            <!-- shared footer links:start -->
+            <nav class="footer-links footer-link-groups" aria-label="Footer">
+                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html">Cost Planner</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
+            </nav>
+<!-- shared footer links:end -->
         </div>
 
     </footer>

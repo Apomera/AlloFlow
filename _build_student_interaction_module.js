@@ -44,7 +44,7 @@ const entry = `
 
 ${source}
 
-window.__studentInteractionExports = { StudentSubmitModal, DraftFeedbackInterface };
+window.__studentInteractionExports = { StudentSubmitModal, DraftFeedbackInterface, parseStudentSubmitVoiceCommand, resolveStudentSubmitVoiceOption, createStudentSubmitVoiceScopeSpec };
 `;
 
 fs.writeFileSync(TMP, entry, 'utf-8');
@@ -147,6 +147,9 @@ ${compiled}
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.StudentSubmitModal = StudentSubmitModal;
   window.AlloModules.DraftFeedbackInterface = DraftFeedbackInterface;
+  window.AlloModules.parseStudentSubmitVoiceCommand = parseStudentSubmitVoiceCommand;
+  window.AlloModules.resolveStudentSubmitVoiceOption = resolveStudentSubmitVoiceOption;
+  window.AlloModules.createStudentSubmitVoiceScopeSpec = createStudentSubmitVoiceScopeSpec;
   window.AlloModules.StudentInteractionModule = true;
 
   console.log('[StudentInteractionModule] 2 components registered');

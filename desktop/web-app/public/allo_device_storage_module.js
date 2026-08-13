@@ -7,13 +7,19 @@
  *
  *   direct        — the app runs on a stable origin (self-hosted shell,
  *                   desktop app): use our own IndexedDB, no bridge needed.
- *   bridge-popup  — Canvas: window.open storage_bridge.html on the stable
- *                   alloflow-cdn.pages.dev origin and speak protocol "ds1"
- *                   over postMessage. Requires a user gesture to connect.
- *   bridge-iframe — Canvas, experimental: hidden iframe of the same bridge.
- *                   Chrome partitions its storage by (top-level site, frame
- *                   origin); if the partition survives Canvas reloads this
- *                   needs no gesture. The probe() below measures exactly that.
+ *   bridge-iframe — Canvas, and the DEFAULT: an offscreen iframe of
+ *                   storage_bridge.html on the stable alloflow-cdn.pages.dev
+ *                   origin, speaking protocol "ds1" over postMessage. Chrome
+ *                   partitions its IndexedDB by (top-level site, frame origin),
+ *                   so no page on any other site can reach it. The bridge asks
+ *                   for consent ONCE per browser profile, painting the prompt
+ *                   in its own cross-origin document (the module reveals the
+ *                   frame on 'allo-bridge-consent-required'), then remembers
+ *                   the grant in that same partition. No user gesture needed.
+ *   bridge-popup  — legacy / stable-origin debugging only. window.open of the
+ *                   same page. DO NOT use it on Canvas alongside the iframe: a
+ *                   popup is top-level, so it reads the UNPARTITIONED bucket
+ *                   and shows a different (empty) store under the same DB name.
  *   memory        — graceful fallback (popup blocked, no bridge reachable).
  *
  * FERPA posture: every backend keeps data on the student's device only.
@@ -32,7 +38,7 @@
   }
 
   var PROTO = 'ds1';
-  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds4-bridge-auth';
+  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds5-partition-consent';
   var NS_RE = /^[a-z0-9_.-]{1,64}$/i;
   var REQUEST_TIMEOUT_MS = 8000;
   var CONNECT_TIMEOUT_MS = 12000;
@@ -538,6 +544,17 @@
     } catch (_) { return 'canvas'; }
   }
 
+  // The bridge iframe lives offscreen while it works. It is only brought on
+  // screen when the bridge itself asks for consent, and it goes straight back
+  // once the grant lands. The consent UI is painted by the bridge's own
+  // cross-origin document, so the embedding app can size this frame but can
+  // neither read what it says nor click its buttons.
+  var HIDDEN_FRAME_CSS = 'position:fixed;width:1px;height:1px;left:-9999px;top:-9999px;border:0;';
+  var CONSENT_FRAME_CSS = [
+    'position:fixed', 'inset:0', 'width:100%', 'height:100%',
+    'border:0', 'z-index:2147483647', 'background:rgba(15,23,42,0.72)'
+  ].join(';') + ';';
+
   // ── Transport over postMessage to a bridge window/iframe ────────
   function BridgeTransport(kind) {
     this.kind = kind;            // 'popup' | 'iframe'
@@ -591,7 +608,7 @@
         frame.src = url;
         frame.setAttribute('aria-hidden', 'true');
         frame.setAttribute('title', 'AlloFlow device storage bridge');
-        frame.style.cssText = 'position:fixed;width:1px;height:1px;left:-9999px;top:-9999px;border:0;';
+        frame.style.cssText = HIDDEN_FRAME_CSS;
         document.body.appendChild(frame);
         self.frameEl = frame;
         self.win = frame.contentWindow;
@@ -619,7 +636,27 @@
             (msg.error && msg.error.message) || 'The storage bridge rejected this connection.'));
           return;
         }
+        if (msg.type === 'allo-bridge-consent-required') {
+          // A human is now being asked a question, so the connect deadline that
+          // assumed a machine-speed handshake no longer applies. Swap it for the
+          // approval deadline, or the frame gets torn down mid-question.
+          if (self.frameEl) {
+            self.frameEl.style.cssText = CONSENT_FRAME_CSS;
+            self.frameEl.removeAttribute('aria-hidden');
+            try { self.frameEl.focus(); } catch (_) {}
+          }
+          if (self.connectTimer) clearTimeout(self.connectTimer);
+          self.connectTimer = setTimeout(function () {
+            fail(storageError('allo/consent-timeout',
+              'Device storage was not approved in time.'));
+          }, APPROVAL_TIMEOUT_MS);
+          return;
+        }
         if (msg.type === 'allo-bridge-ready') {
+          if (self.frameEl) {
+            self.frameEl.style.cssText = HIDDEN_FRAME_CSS;
+            self.frameEl.setAttribute('aria-hidden', 'true');
+          }
           if (!settled) {
             settled = true;
             if (self.connectTimer) clearTimeout(self.connectTimer);
@@ -971,8 +1008,12 @@
      *            heuristic as the monolith's _isCanvasEnv)
      *   bridgeUrl: override the hosted bridge page URL
      *   mode: 'popup' | 'iframe'      (bridge flavor for Canvas; default
-     *            iframe — probe 2026-07-14 verified partitioned iframe
-     *            storage PERSISTS across Canvas sessions, no gesture needed)
+     *            iframe, which is now the ONLY channel Canvas should use. The
+     *            iframe's IndexedDB is partitioned to (top-level site, bridge
+     *            origin) and the popup's is not, so the two see different
+     *            buckets under the same DB name. Mixing them loses work.
+     *            The iframe asks for consent once per browser profile and is
+     *            silent afterwards; it needs no user gesture.)
      * Does NOT open anything — bridge backends connect lazily via connect().
      */
     init: function (opts) {
@@ -1011,7 +1052,15 @@
     connectWithApproval: function () {
       if (state.backendName === 'direct') return Promise.resolve(api.status());
       if (state.transport) { state.transport.teardown(); state.transport = null; }
-      state.backendName = 'bridge-popup';
+      // This no longer switches to the popup, and must not. A popup is a
+      // TOP-LEVEL window on the bridge origin, so its IndexedDB is a different
+      // storage partition from the iframe's (same DB name, different bucket).
+      // Now that the iframe serves Canvas, sending a teacher to the popup after
+      // a denial would open an empty store and read as total data loss.
+      // Tearing the frame down and reconnecting gives the bridge a fresh
+      // document, which clears its in-session denial and re-raises the consent
+      // prompt against the bucket that actually holds their work.
+      if (state.backendName === 'unset') api.init({});
       return api.connect();
     },
     disconnect: function () {

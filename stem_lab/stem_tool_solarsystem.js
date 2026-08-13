@@ -10618,7 +10618,10 @@ const d = labToolData.solarSystem || {};
 
                         var skyTex = new THREE.CanvasTexture(skyCv);
 
-                        var skyMat = new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide });
+                        // Background color must not populate the depth buffer: the authored
+                        // rocky silhouette sits beyond this compact dome but still belongs in
+                        // the camera view. It is added later and remains depth-tested itself.
+                        var skyMat = new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, depthWrite: false });
 
                         scene.add(new THREE.Mesh(skyGeo, skyMat));
 
@@ -10763,31 +10766,63 @@ const d = labToolData.solarSystem || {};
                         // (no air, no atmospheric perspective), on Mars it softens into hazy
                         // ridges, on Pluto it is nearly crisp, and on Venus it is swallowed
                         // almost entirely — which is exactly what 90 bar of CO2 does.
+                        var rockySurfaceLowPower = false;
+                        try { rockySurfaceLowPower = !!(navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4); } catch (e) {}
+                        var rockySurfaceProfile = sel.terrainType === 'cratered' ? 'regolith-pitted'
+                          : sel.terrainType === 'desert' ? 'aeolian-rippled'
+                            : sel.terrainType === 'volcanic' ? 'fractured-basalt'
+                              : sel.terrainType === 'iceworld' ? 'crevassed-ice'
+                                : 'rocky-granular';
+                        var rockyHorizonMesh = null;
+                        var rockyHorizonGeo = null;
+                        var rockyHorizonMat = null;
                         if (!isFluid && !isGas) {
-                          var horizonMat = new THREE.MeshStandardMaterial({
-                            color: new THREE.Color(sel.terrainColor || '#886644').multiplyScalar(0.52),
-                            roughness: 0.98, metalness: 0.02, flatShading: true
-                          });
-                          for (var hp = 0; hp < 26; hp++) {
-                            var hpAngle = (hp / 26) * Math.PI * 2 + (Math.random() - 0.5) * 0.16;
-                            var hpDist = 140 + Math.random() * 45;
-                            var hpH = 16 + Math.random() * 42;
-                            var hpGeo = new THREE.ConeGeometry(14 + Math.random() * 30, hpH, 5 + Math.floor(Math.random() * 3));
-                            // Rough the silhouette up so it does not read as a ring of cones.
-                            var hpPos = hpGeo.attributes.position.array;
-                            for (var hv = 0; hv < hpPos.length; hv += 3) {
-                              hpPos[hv] *= 0.75 + Math.random() * 0.5;
-                              hpPos[hv + 2] *= 0.75 + Math.random() * 0.5;
+                          var horizonSegments = rockySurfaceLowPower ? 64 : 96;
+                          var horizonPositions = new Float32Array((horizonSegments + 1) * 4 * 3);
+                          var horizonIndices = [];
+                          // Even at a +/-115 playable CORNER (radius 162.6) the nearest ridge
+                          // remains 70+ units away; the deep skirt hides the terrain seam.
+                          var horizonInnerRadius = 234;
+                          var horizonOuterRadius = 262;
+                          for (var hp = 0; hp <= horizonSegments; hp++) {
+                            var hpAngle = hp / horizonSegments * Math.PI * 2;
+                            var profileWave = rockySurfaceProfile === 'aeolian-rippled' ? Math.sin(hpAngle * 5) * 5 + Math.sin(hpAngle * 11) * 2
+                              : rockySurfaceProfile === 'fractured-basalt' ? Math.abs(Math.sin(hpAngle * 7)) * 14 + Math.sin(hpAngle * 3) * 5
+                                : rockySurfaceProfile === 'crevassed-ice' ? Math.abs(Math.sin(hpAngle * 9 + 0.4)) * 9 + Math.sin(hpAngle * 4) * 4
+                                  : rockySurfaceProfile === 'regolith-pitted' ? Math.sin(hpAngle * 6) * 8 + Math.sin(hpAngle * 13) * 4
+                                    : Math.sin(hpAngle * 5) * 7 + Math.sin(hpAngle * 8) * 3;
+                            var ridgeHeight = 10 + Math.max(0, profileWave);
+                            var horizonVertex = hp * 12;
+                            horizonPositions[horizonVertex] = Math.cos(hpAngle) * horizonInnerRadius;
+                            horizonPositions[horizonVertex + 1] = -8;
+                            horizonPositions[horizonVertex + 2] = Math.sin(hpAngle) * horizonInnerRadius;
+                            horizonPositions[horizonVertex + 3] = Math.cos(hpAngle) * horizonInnerRadius;
+                            horizonPositions[horizonVertex + 4] = ridgeHeight;
+                            horizonPositions[horizonVertex + 5] = Math.sin(hpAngle) * horizonInnerRadius;
+                            horizonPositions[horizonVertex + 6] = Math.cos(hpAngle) * horizonOuterRadius;
+                            horizonPositions[horizonVertex + 7] = ridgeHeight * 0.42 - 3;
+                            horizonPositions[horizonVertex + 8] = Math.sin(hpAngle) * horizonOuterRadius;
+                            horizonPositions[horizonVertex + 9] = Math.cos(hpAngle) * horizonOuterRadius;
+                            horizonPositions[horizonVertex + 10] = -10;
+                            horizonPositions[horizonVertex + 11] = Math.sin(hpAngle) * horizonOuterRadius;
+                            if (hp < horizonSegments) {
+                              var hb = hp * 4;
+                              horizonIndices.push(hb, hb + 1, hb + 5, hb, hb + 5, hb + 4, hb + 1, hb + 2, hb + 6, hb + 1, hb + 6, hb + 5, hb + 2, hb + 3, hb + 7, hb + 2, hb + 7, hb + 6);
                             }
-                            hpGeo.computeVertexNormals();
-                            var hpMesh = new THREE.Mesh(hpGeo, horizonMat);
-                            hpMesh.position.set(Math.cos(hpAngle) * hpDist, hpH * 0.32 - 6, Math.sin(hpAngle) * hpDist);
-                            hpMesh.rotation.y = Math.random() * Math.PI;
-                            // Far outside the shadow frustum, so exclude from the cast/receive
-                            // pass below rather than paying for 26 more shadow casters.
-                            hpMesh.userData.horizonPeak = true;
-                            scene.add(hpMesh);
                           }
+                          rockyHorizonGeo = new THREE.BufferGeometry();
+                          rockyHorizonGeo.setAttribute('position', new THREE.BufferAttribute(horizonPositions, 3));
+                          rockyHorizonGeo.setIndex(horizonIndices);
+                          rockyHorizonGeo.computeVertexNormals();
+                          rockyHorizonMat = new THREE.MeshStandardMaterial({
+                            color: new THREE.Color(sel.terrainColor || '#886644').multiplyScalar(0.48),
+                            roughness: 0.99, metalness: 0, flatShading: true, fog: true, side: THREE.DoubleSide
+                          });
+                          rockyHorizonMesh = new THREE.Mesh(rockyHorizonGeo, rockyHorizonMat);
+                          rockyHorizonMesh.userData.horizonPeak = true;
+                          rockyHorizonMesh.castShadow = false;
+                          rockyHorizonMesh.receiveShadow = false;
+                          scene.add(rockyHorizonMesh);
                         }
 
                         // Hide sun/corona for ocean (underwater)
@@ -11185,8 +11220,64 @@ const d = labToolData.solarSystem || {};
                             }
                           }
                           var terrainTex = new THREE.CanvasTexture(tCv);
+                          terrainTex.encoding = THREE.sRGBEncoding;
                           terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping; terrainTex.repeat.set(12, 12);
-                          var terrainMat = new THREE.MeshStandardMaterial({ map: terrainTex, roughness: 0.92, metalness: 0.05, flatShading: true });
+
+                          // One seeded linear data texture adds terrain-type microstructure.
+                          // POT 128/256 keeps mipmapping inexpensive on classroom hardware;
+                          // ImageData is filled once, never touched during the frame loop.
+                          var terrainMicroSize = rockySurfaceLowPower ? 128 : 256;
+                          var terrainMicroCanvas = document.createElement('canvas');
+                          terrainMicroCanvas.setAttribute('aria-hidden', 'true');
+                          terrainMicroCanvas.width = terrainMicroSize;
+                          terrainMicroCanvas.height = terrainMicroSize;
+                          var terrainMicroContext = terrainMicroCanvas.getContext('2d');
+                          var terrainMicroImage = terrainMicroContext.createImageData(terrainMicroSize, terrainMicroSize);
+                          var terrainMicroData = terrainMicroImage.data;
+                          var terrainMicroSeed = sel.terrainType === 'desert' ? 73 : sel.terrainType === 'volcanic' ? 149 : sel.terrainType === 'iceworld' ? 211 : sel.terrainType === 'cratered' ? 37 : 101;
+                          for (var terrainMicroY = 0; terrainMicroY < terrainMicroSize; terrainMicroY++) {
+                            for (var terrainMicroX = 0; terrainMicroX < terrainMicroSize; terrainMicroX++) {
+                              var terrainMicroHash = Math.sin((terrainMicroX + terrainMicroSeed) * 12.9898 + (terrainMicroY + terrainMicroSeed) * 78.233) * 43758.5453;
+                              var terrainMicroNoise = terrainMicroHash - Math.floor(terrainMicroHash);
+                              var terrainMicroValue = 128;
+                              if (rockySurfaceProfile === 'aeolian-rippled') {
+                                terrainMicroValue = 126 + Math.sin(terrainMicroX * 0.30 + terrainMicroY * 0.055) * 36 + (terrainMicroNoise - 0.5) * 14;
+                              } else if (rockySurfaceProfile === 'fractured-basalt') {
+                                var fissureA = Math.abs(Math.sin(terrainMicroX * 0.115 + Math.sin(terrainMicroY * 0.073) * 2.4));
+                                var fissureB = Math.abs(Math.sin(terrainMicroY * 0.093 - terrainMicroX * 0.031));
+                                terrainMicroValue = 150 + (terrainMicroNoise - 0.5) * 38 - (fissureA < 0.10 || fissureB < 0.075 ? 86 : 0);
+                              } else if (rockySurfaceProfile === 'crevassed-ice') {
+                                var crevasseBand = Math.abs(Math.sin(terrainMicroX * 0.084 + terrainMicroY * 0.025 + Math.sin(terrainMicroY * 0.11)));
+                                terrainMicroValue = 176 + (terrainMicroNoise - 0.5) * 22 - (crevasseBand < 0.095 ? 118 : 0);
+                              } else if (rockySurfaceProfile === 'regolith-pitted') {
+                                var pitCellX = terrainMicroX % 29 - 14;
+                                var pitCellY = terrainMicroY % 23 - 11;
+                                var pitRadius = Math.sqrt(pitCellX * pitCellX + pitCellY * pitCellY);
+                                terrainMicroValue = 136 + (terrainMicroNoise - 0.5) * 46 - (pitRadius < 3.4 ? (3.4 - pitRadius) * 24 : 0);
+                              } else {
+                                terrainMicroValue = 132 + (terrainMicroNoise - 0.5) * 62 + Math.sin((terrainMicroX + terrainMicroY) * 0.12) * 10;
+                              }
+                              terrainMicroValue = Math.max(18, Math.min(238, Math.round(terrainMicroValue)));
+                              var terrainMicroOffset = (terrainMicroY * terrainMicroSize + terrainMicroX) * 4;
+                              terrainMicroData[terrainMicroOffset] = terrainMicroValue;
+                              terrainMicroData[terrainMicroOffset + 1] = terrainMicroValue;
+                              terrainMicroData[terrainMicroOffset + 2] = terrainMicroValue;
+                              terrainMicroData[terrainMicroOffset + 3] = 255;
+                            }
+                          }
+                          terrainMicroContext.putImageData(terrainMicroImage, 0, 0);
+                          var terrainMicroTex = new THREE.CanvasTexture(terrainMicroCanvas);
+                          terrainMicroTex.wrapS = terrainMicroTex.wrapT = THREE.RepeatWrapping;
+                          terrainMicroTex.repeat.set(18, 18);
+                          terrainMicroTex.minFilter = THREE.LinearMipmapLinearFilter;
+                          terrainMicroTex.magFilter = THREE.LinearFilter;
+                          terrainMicroTex.generateMipmaps = true;
+                          try { terrainMicroTex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy()); } catch (e) { terrainMicroTex.anisotropy = 1; }
+                          var terrainBumpScale = rockySurfaceProfile === 'aeolian-rippled' ? 0.16 : rockySurfaceProfile === 'fractured-basalt' ? 0.26 : rockySurfaceProfile === 'crevassed-ice' ? 0.20 : 0.22;
+                          // The grayscale micro map describes height, not reflectance. Using
+                          // it as roughness made dark pits/fissures incorrectly glossy because
+                          // MeshStandardMaterial multiplies the map by scalar roughness.
+                          var terrainMat = new THREE.MeshStandardMaterial({ map: terrainTex, bumpMap: terrainMicroTex, bumpScale: terrainBumpScale, roughness: 0.96, metalness: 0.03, flatShading: true });
                           var terrain = new THREE.Mesh(terrainGeo, terrainMat);
                           terrain.rotation.x = -Math.PI / 2; scene.add(terrain);
                           _terrainMesh = terrain;
@@ -11726,6 +11817,17 @@ const d = labToolData.solarSystem || {};
                         var roverTrackRightTangent = new THREE.Vector3();
                         var roverTrackBasis = new THREE.Matrix4();
                         var roverTrackQuaternion = new THREE.Quaternion();
+                        var roverWheelContactMesh = null;
+                        var roverWheelContactGeo = null;
+                        var roverWheelContactMat = null;
+                        var roverWheelContactTex = null;
+                        var roverWheelContactCount = 0;
+                        var roverWheelContactDummy = new THREE.Object3D();
+                        var roverWheelContactForward = new THREE.Vector3();
+                        var roverWheelContactRight = new THREE.Vector3();
+                        var roverWheelContactNormal = new THREE.Vector3();
+                        var roverWheelContactBasis = new THREE.Matrix4();
+                        var roverWheelContactQuaternion = new THREE.Quaternion();
 
                         // Technical design inspiration: winchxyz/moon-rover, audited at
                         // 8a72604adf2ca465c8a8529effd12803129c3531. This is an original
@@ -11929,7 +12031,10 @@ const d = labToolData.solarSystem || {};
                               localZ: wp[2],
                               restY: wp[1],
                               spin: 0,
-                              steerFactor: wp[2] < -0.2 ? 1 : (wp[2] > 0.2 ? -0.35 : 0)
+                              impactReady: false,
+                              previousTargetTravel: 0,
+                              visualSteer: 0,
+                              axleRole: wp[2] < -0.2 ? 'front' : (wp[2] > 0.2 ? 'rear' : 'middle')
                             });
 
                           });
@@ -11984,21 +12089,33 @@ const d = labToolData.solarSystem || {};
                           roverGroup.add(hlGlowR);
 
                           // ── Dust trail particle system ──
+                          var dustTrailCapacity = rockySurfaceLowPower ? 36 : (droneReduceMotion ? 42 : 60);
                           var dustTrailGeo = new THREE.BufferGeometry();
-                          var dustTrailPos = new Float32Array(60 * 3);
-                          var dustTrailLife = new Float32Array(60);
-                          for (var dti = 0; dti < 60; dti++) {
+                          var dustTrailPos = new Float32Array(dustTrailCapacity * 3);
+                          var dustTrailLife = new Float32Array(dustTrailCapacity);
+                          var dustTrailVelocity = new Float32Array(dustTrailCapacity * 3);
+                          for (var dti = 0; dti < dustTrailCapacity; dti++) {
                             dustTrailPos[dti * 3] = 0;
                             dustTrailPos[dti * 3 + 1] = -999;
                             dustTrailPos[dti * 3 + 2] = 0;
                             dustTrailLife[dti] = 0;
                           }
                           dustTrailGeo.setAttribute('position', new THREE.BufferAttribute(dustTrailPos, 3));
-                          var dustColor = sel.terrainType === 'iceworld' ? 0xccddee : sel.terrainType === 'volcanic' ? 0x664422 : sel.terrainType === 'earthlike' ? 0x886633 : 0xaa9966;
-                          var dustTrailMat = new THREE.PointsMaterial({ color: dustColor, size: 0.12, transparent: true, opacity: 0.35 });
+                          var dustColor = sel.terrainType === 'iceworld' ? 0xc8d8e4 : sel.terrainType === 'volcanic' ? 0x51403a : sel.terrainType === 'cratered' ? 0x9b9185 : sel.terrainType === 'earthlike' ? 0x806345 : 0xb78a5c;
+                          var dustTrailMat = new THREE.PointsMaterial({ color: dustColor, size: 0.11, transparent: true, opacity: 0.35, depthWrite: false });
                           var dustTrailMesh = new THREE.Points(dustTrailGeo, dustTrailMat);
                           scene.add(dustTrailMesh);
                           var dustTrailIdx = 0;
+                          var dustTrailSeed = 2166136261;
+                          var dustSeedKey = String(sel.key || sel.name || rockySurfaceProfile);
+                          for (var dustSeedChar = 0; dustSeedChar < dustSeedKey.length; dustSeedChar++) {
+                            dustTrailSeed ^= dustSeedKey.charCodeAt(dustSeedChar);
+                            dustTrailSeed = Math.imul(dustTrailSeed, 16777619) >>> 0;
+                          }
+                          var nextRoverDustRandom = function () {
+                            dustTrailSeed = (Math.imul(dustTrailSeed, 1664525) + 1013904223) >>> 0;
+                            return dustTrailSeed / 4294967296;
+                          };
 
                           // Fixed wheel-track pool: two rear contact marks are overwritten in
                           // a ring, so driving forever never grows the scene or allocates new
@@ -12828,9 +12945,44 @@ const d = labToolData.solarSystem || {};
                           coastDrag: 0.9,
                           turnRate: 1.15,
                           velocity: new THREE.Vector3(),
-                          dustCarry: 0
+                          dustCarry: 0,
+                          tractionSlip: 0,
+                          tractionTarget: 0,
+                          drivenWheelSpeed: 0,
+                          visualYawRate: 0,
+                          actualDistance: 0,
+                          gradeAcceleration: 0,
+                          impact: 0,
+                          impactEnvelope: 0,
+                          impactCount: 0,
+                          impactCooldown: 0,
+                          impactArmed: false,
+                          impactTriggerReady: true,
+                          impactCompressionRate: 0,
+                          impactSpring: 0,
+                          impactDustBurst: 0
                         };
                         var roverForward = new THREE.Vector3();
+                        var roverTerrainState = {
+                          probeDistance: 1,
+                          ground: 0,
+                          front: 0,
+                          back: 0,
+                          right: 0,
+                          left: 0,
+                          forwardX: 0,
+                          forwardZ: -1,
+                          rightX: 1,
+                          rightZ: 0,
+                          forwardGrade: 0,
+                          crossSlope: 0
+                        };
+                        var roverGravityRatio = Math.max(0.04, Math.min(1.2, parseFloat(sel.gravity) || 0.38));
+                        // Tuned scene acceleration preserves each world's gravity ratio
+                        // without applying raw 9.81 m/s² to this deliberately compact world.
+                        var roverSceneEarthGravity = 2.4;
+                        var roverLastGradeText = '';
+                        var roverLastTractionText = '';
 
                         function approachRoverValue(value, target, maxDelta) {
                           if (value < target) return Math.min(target, value + maxDelta);
@@ -12853,6 +13005,68 @@ const d = labToolData.solarSystem || {};
                         canvasEl.dataset.roverAudioLevel = '0.000';
                         canvasEl.dataset.roverTrackCount = '0';
                         canvasEl.dataset.roverTrackCapacity = !isFluid && !droneReduceMotion && THREE.InstancedMesh ? String(roverTrackCapacity) : '0';
+                        canvasEl.dataset.roverGradePercent = '0.0';
+                        canvasEl.dataset.roverTraction = 'Grip';
+                        canvasEl.dataset.roverSlip = '0.000';
+                        canvasEl.dataset.roverImpact = '0.000';
+                        canvasEl.dataset.roverImpactCount = '0';
+                        canvasEl.dataset.roverSurfaceProfile = isFluid ? 'none' : rockySurfaceProfile;
+                        canvasEl.dataset.roverVisualProfile = isFluid ? 'none' : 'procedural-contact-v1';
+                        canvasEl.dataset.roverContactPadCount = '0';
+                        canvasEl.dataset.roverDustCapacity = isFluid ? '0' : String(typeof dustTrailCapacity === 'number' ? dustTrailCapacity : 0);
+
+                        function publishRoverImpactTelemetry(force) {
+                          // Dataset serialization is observable but not physics. Keep it on
+                          // the existing ten-frame HUD cadence, except for reset/impact edges.
+                          if (!force && tick3d % 10 !== 0) return;
+                          var impactData = roverDrive.impactEnvelope.toFixed(3);
+                          if (canvasEl.dataset.roverImpact !== impactData) canvasEl.dataset.roverImpact = impactData;
+                        }
+
+                        function resetRoverImpactDetection() {
+                          roverDrive.impact = 0;
+                          roverDrive.impactEnvelope = 0;
+                          roverDrive.impactCooldown = 0;
+                          roverDrive.impactArmed = false;
+                          roverDrive.impactTriggerReady = true;
+                          roverDrive.impactCompressionRate = 0;
+                          roverDrive.impactSpring = 0;
+                          roverDrive.impactDustBurst = 0;
+                          for (var impactResetWheel = 0; impactResetWheel < rockyWheelRigs.length; impactResetWheel++) {
+                            rockyWheelRigs[impactResetWheel].impactReady = false;
+                            rockyWheelRigs[impactResetWheel].previousTargetTravel = 0;
+                          }
+                          publishRoverImpactTelemetry(true);
+                        }
+
+                        function triggerRoverImpact(impactStrength) {
+                          roverDrive.impact = Math.max(0, Math.min(1, impactStrength));
+                          roverDrive.impactEnvelope = Math.max(roverDrive.impactEnvelope, roverDrive.impact);
+                          roverDrive.impactCooldown = 0.32;
+                          roverDrive.impactCount++;
+                          roverDrive.impactDustBurst = Math.max(roverDrive.impactDustBurst, roverDrive.impact * 5);
+                          canvasEl.dataset.roverImpactCount = String(roverDrive.impactCount);
+                          publishRoverImpactTelemetry(true);
+                        }
+
+                        function updateRoverImpactState(risingCompressionRate, movingSpeed) {
+                          if (isFluid || roverSceneDisposed || _descentPhase !== 2) return;
+                          roverDrive.impactCooldown = Math.max(0, roverDrive.impactCooldown - droneFrameDt);
+                          roverDrive.impactEnvelope *= Math.exp(-8.5 * droneFrameDt);
+                          roverDrive.impactSpring += (roverDrive.impactEnvelope - roverDrive.impactSpring) * (1 - Math.exp(-15 * droneFrameDt));
+                          roverDrive.impact = roverDrive.impactEnvelope;
+                          roverDrive.impactCompressionRate = risingCompressionRate;
+                          var impactMotionRatio = Math.min(1, movingSpeed / roverDrive.maxForward);
+                          var impactDemand = Math.max(0, risingCompressionRate - 0.55) * impactMotionRatio * 0.75;
+                          if (impactDemand <= 0.08) roverDrive.impactTriggerReady = true;
+                          if (!roverDrive.impactArmed) {
+                            roverDrive.impactArmed = movingSpeed > 0.08;
+                          } else if (roverDrive.impactTriggerReady && roverDrive.impactCooldown <= 0 && impactDemand >= 0.18) {
+                            triggerRoverImpact(impactDemand);
+                            roverDrive.impactTriggerReady = false;
+                          }
+                          publishRoverImpactTelemetry(false);
+                        }
 
                         function updateRoverSoundButton() {
                           if (!roverSoundButton) return;
@@ -12918,7 +13132,7 @@ const d = labToolData.solarSystem || {};
                           return roverSoundEnabled;
                         }
 
-                        function updateRoverAudio(throttleInput, steeringInput) {
+                        function updateRoverAudio(throttleInput) {
                           if (!roverSoundEnabled || !roverAudio) return;
                           try {
                             var audioNow = roverAudio.context.currentTime;
@@ -12928,12 +13142,13 @@ const d = labToolData.solarSystem || {};
                               return;
                             }
                             var audioSpeedRatio = Math.min(1, Math.abs(roverDrive.speed) / roverDrive.maxForward);
-                            var audioSlip = Math.min(1, Math.abs(steeringInput) * (0.25 + audioSpeedRatio * 0.75) + (throttleInput !== 0 && Math.sign(throttleInput) !== Math.sign(roverDrive.speed) ? 0.45 : 0));
-                            var audioLevel = 0.006 + audioSpeedRatio * 0.022 + Math.abs(throttleInput) * 0.006 + audioSlip * 0.010;
-                            roverAudio.motor.frequency.setTargetAtTime(52 + audioSpeedRatio * 92 + Math.abs(throttleInput) * 18, audioNow, 0.04);
+                            var audioSlip = roverDrive.tractionSlip;
+                            var audioImpact = roverDrive.impactEnvelope;
+                            var audioLevel = 0.006 + audioSpeedRatio * 0.022 + Math.abs(throttleInput) * 0.006 + audioSlip * 0.010 + audioImpact * 0.006;
+                            roverAudio.motor.frequency.setTargetAtTime(52 + audioSpeedRatio * 92 + Math.abs(throttleInput) * 18 - audioImpact * 8, audioNow, 0.04);
                             roverAudio.motorGain.gain.setTargetAtTime(0.36 + audioSpeedRatio * 0.22, audioNow, 0.05);
                             roverAudio.traction.frequency.setTargetAtTime(31 + audioSpeedRatio * 58 + audioSlip * 48, audioNow, 0.035);
-                            roverAudio.tractionGain.gain.setTargetAtTime(0.04 + audioSlip * 0.30, audioNow, 0.04);
+                            roverAudio.tractionGain.gain.setTargetAtTime(0.04 + audioSlip * 0.30 + audioImpact * 0.12, audioNow, 0.04);
                             roverAudio.tractionFilter.frequency.setTargetAtTime(180 + audioSpeedRatio * 620 + audioSlip * 360, audioNow, 0.06);
                             roverAudio.master.gain.setTargetAtTime(audioLevel, audioNow, 0.04);
                             canvasEl.dataset.roverAudioLevel = audioLevel.toFixed(3);
@@ -13233,6 +13448,9 @@ const d = labToolData.solarSystem || {};
 
                           '<span style="color:#64748b" title="Points of interest found">\uD83D\uDD2D Disc</span><span id="hud-disc" style="color:#fbbf24">0 / 0</span>' +
 
+                          (!isFluid ? '<span style="color:#64748b" title="Signed slope along the rover heading">Grade</span><span id="hud-grade" style="color:#67e8f9">0.0% level</span>' +
+                          '<span style="color:#64748b" title="Estimated wheel traction">Traction</span><span id="hud-traction" style="color:#fbbf24">Grip</span>' : '') +
+
                           '</div>' +
 
                           '<div id="hud-science-focus" role="note" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:5px;margin-bottom:5px">' +
@@ -13296,6 +13514,30 @@ const d = labToolData.solarSystem || {};
                         canvasEl.parentElement.appendChild(hud);
 
                         var scienceReadingEl = hud.querySelector('#hud-science-reading');
+                        var roverGradeEl = hud.querySelector('#hud-grade');
+                        var roverTractionEl = hud.querySelector('#hud-traction');
+
+                        function updateRoverTerrainTelemetry() {
+                          if (isFluid) return;
+                          var signedGradePercent = roverTerrainState.forwardGrade * 100;
+                          var gradeData = signedGradePercent.toFixed(1);
+                          var gradeDirection = Math.abs(signedGradePercent) < 0.5 ? 'level' : (signedGradePercent > 0 ? 'uphill' : 'downhill');
+                          var gradeText = (signedGradePercent > 0.05 ? '+' : '') + gradeData + '% ' + gradeDirection;
+                          var tractionText = roverDrive.tractionSlip < 0.28 ? 'Grip' : (roverDrive.tractionSlip < 0.62 ? 'Scrub' : 'Slip');
+                          if (gradeText !== roverLastGradeText) {
+                            roverLastGradeText = gradeText;
+                            if (roverGradeEl) roverGradeEl.textContent = gradeText;
+                            canvasEl.dataset.roverGradePercent = gradeData;
+                          }
+                          if (tractionText !== roverLastTractionText) {
+                            roverLastTractionText = tractionText;
+                            if (roverTractionEl) roverTractionEl.textContent = tractionText;
+                            canvasEl.dataset.roverTraction = tractionText;
+                          }
+                          var slipData = roverDrive.tractionSlip.toFixed(3);
+                          if (canvasEl.dataset.roverSlip !== slipData) canvasEl.dataset.roverSlip = slipData;
+                        }
+                        updateRoverTerrainTelemetry();
                         function updateDroneScienceFocus(altitude) {
                           if (!scienceReadingEl) return;
                           if (isOcean && oceanAtmo) {
@@ -14492,6 +14734,7 @@ const d = labToolData.solarSystem || {};
 
                             thirdPerson = !thirdPerson;
                             chaseCameraReady = false;
+                            resetRoverImpactDetection();
 
                             var label = document.getElementById('hud-mode');
 
@@ -14690,6 +14933,379 @@ const d = labToolData.solarSystem || {};
                           updateRoverSoundButton();
                           canvasEl.parentElement.appendChild(roverSoundButton);
                         }
+
+                        // ── Planetary Field Traverse (rocky worlds only) ──
+                        // This authored route sits on top of free roam: it observes the same
+                        // terrain/drive state, never takes control, and can be reset at will.
+                        var roverTraversePanel = null;
+                        var roverTraverseStepEl = null;
+                        var roverTraverseProgressEl = null;
+                        var roverTraverseDetailEl = null;
+                        var roverTraverseButton = null;
+                        var roverTraverseMarker = null;
+                        var roverTraverseRing = null;
+                        var roverTraverseBeacon = null;
+                        var roverTraverseRingGeo = null;
+                        var roverTraverseBeaconGeo = null;
+                        var roverTraverseRingMat = null;
+                        var roverTraverseBeaconMat = null;
+                        var roverSurfaceFillLight = null;
+                        var roverTraverseForwardTangent = new THREE.Vector3();
+                        var roverTraverseRightTangent = new THREE.Vector3();
+                        var roverTraverseNormal = new THREE.Vector3();
+                        var roverTraverseBasis = new THREE.Matrix4();
+                        var roverTraverseQuaternion = new THREE.Quaternion();
+                        var roverTraverseUiElapsed = 0;
+                        var roverTraverseLastDetail = '';
+                        var roverTraverseCandidateOffsets = [
+                          [22, 6], [20, -8], [26, 0], [18, 10], [24, -12], [30, 4]
+                        ];
+                        var roverTraverse = {
+                          status: isFluid ? 'disabled' : 'awaiting_deployment',
+                          step: 'awaiting_deployment',
+                          active: false,
+                          completionLatched: false,
+                          startX: 0,
+                          startZ: 0,
+                          startYaw: 0,
+                          waypointX: 0,
+                          waypointZ: 0,
+                          waypointY: 0,
+                          elapsed: 0,
+                          distanceMeters: 0,
+                          dwell: 0,
+                          peakSlip: 0,
+                          peakGradePercent: 0
+                        };
+                        canvasEl.dataset.roverMissionStatus = isFluid ? 'disabled' : 'awaiting-deployment';
+                        canvasEl.dataset.roverMissionStep = isFluid ? 'none' : 'awaiting-deployment';
+                        canvasEl.dataset.roverMissionDistance = '0.0';
+
+                        function setRoverSurfaceBasis(forwardX, forwardZ, forwardGrade, crossSlope) {
+                          roverTraverseForwardTangent.set(forwardX, forwardGrade, forwardZ).normalize();
+                          roverTraverseRightTangent.set(-forwardZ, crossSlope, forwardX).normalize();
+                          roverTraverseNormal.crossVectors(roverTraverseRightTangent, roverTraverseForwardTangent).normalize();
+                          if (roverTraverseNormal.y < 0) roverTraverseNormal.multiplyScalar(-1);
+                          roverTraverseRightTangent.crossVectors(roverTraverseForwardTangent, roverTraverseNormal).normalize();
+                          roverTraverseBasis.makeBasis(roverTraverseRightTangent, roverTraverseForwardTangent, roverTraverseNormal);
+                          roverTraverseQuaternion.setFromRotationMatrix(roverTraverseBasis).normalize();
+                        }
+
+                        function placeRoverTraverseMarker(x, z, forwardX, forwardZ) {
+                          if (!roverTraverseMarker) return;
+                          var markerProbe = 0.8;
+                          var markerGround = _terrainHeightAt(x, z);
+                          var markerRightX = -forwardZ;
+                          var markerRightZ = forwardX;
+                          var markerForwardH = _terrainHeightAt(x + forwardX * markerProbe, z + forwardZ * markerProbe);
+                          var markerBackH = _terrainHeightAt(x - forwardX * markerProbe, z - forwardZ * markerProbe);
+                          var markerRightH = _terrainHeightAt(x + markerRightX * markerProbe, z + markerRightZ * markerProbe);
+                          var markerLeftH = _terrainHeightAt(x - markerRightX * markerProbe, z - markerRightZ * markerProbe);
+                          var markerGrade = (markerForwardH - markerBackH) / (2 * markerProbe);
+                          var markerCross = (markerRightH - markerLeftH) / (2 * markerProbe);
+                          setRoverSurfaceBasis(forwardX, forwardZ, markerGrade, markerCross);
+                          roverTraverseRing.position.set(x, markerGround + 0.035, z);
+                          roverTraverseRing.quaternion.copy(roverTraverseQuaternion);
+                          roverTraverseBeacon.position.set(x, markerGround + 0.9, z);
+                          roverTraverseMarker.visible = true;
+                        }
+
+                        if (!isFluid) {
+                          roverTraversePanel = document.createElement('section');
+                          roverTraversePanel.id = 'rover-traverse-panel';
+                          roverTraversePanel.setAttribute('aria-label', 'Planetary Field Traverse mission');
+                          roverTraversePanel.style.cssText = 'position:absolute;right:12px;bottom:12px;z-index:15;width:min(310px,calc(100% - 24px));padding:11px 12px;border:1px solid rgba(45,212,191,0.48);border-radius:11px;background:rgba(7,18,28,0.92);color:#dbeafe;font:11px/1.35 system-ui;box-shadow:0 8px 22px rgba(2,6,23,0.48);pointer-events:auto';
+                          roverTraversePanel.innerHTML = '<div style="font-size:12px;font-weight:800;color:#5eead4;letter-spacing:.04em">PLANETARY FIELD TRAVERSE</div>' +
+                            '<div id="rover-traverse-step" style="font-weight:700;margin-top:4px">Deployment in progress</div>' +
+                            '<div id="rover-traverse-progress" style="color:#fbbf24;margin-top:2px">Step 0 of 5</div>' +
+                            '<div id="rover-traverse-detail" style="color:#cbd5e1;margin-top:3px">Free roam remains available.</div>';
+                          roverTraverseStepEl = roverTraversePanel.querySelector('#rover-traverse-step');
+                          roverTraverseProgressEl = roverTraversePanel.querySelector('#rover-traverse-progress');
+                          roverTraverseDetailEl = roverTraversePanel.querySelector('#rover-traverse-detail');
+                          roverTraverseButton = document.createElement('button');
+                          roverTraverseButton.id = 'rover-traverse-button';
+                          roverTraverseButton.type = 'button';
+                          roverTraverseButton.textContent = 'Start traverse';
+                          roverTraverseButton.disabled = true;
+                          roverTraverseButton.style.cssText = 'margin-top:8px;min-height:34px;padding:6px 10px;border:1px solid rgba(94,234,212,.55);border-radius:7px;background:#12313a;color:#ccfbf1;font:700 11px system-ui;cursor:pointer';
+                          roverTraversePanel.appendChild(roverTraverseButton);
+                          canvasEl.parentElement.appendChild(roverTraversePanel);
+
+                          roverTraverseRingGeo = new THREE.RingGeometry(1.85, 2.15, 32);
+                          roverTraverseRingMat = new THREE.MeshBasicMaterial({ color: 0x2dd4bf, transparent: true, opacity: 0.74, side: THREE.DoubleSide, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+                          roverTraverseRing = new THREE.Mesh(roverTraverseRingGeo, roverTraverseRingMat);
+                          roverTraverseBeaconGeo = new THREE.CylinderGeometry(0.055, 0.09, 1.7, 8);
+                          roverTraverseBeaconMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.82 });
+                          roverTraverseBeacon = new THREE.Mesh(roverTraverseBeaconGeo, roverTraverseBeaconMat);
+                          roverTraverseMarker = new THREE.Group();
+                          roverTraverseMarker.add(roverTraverseRing);
+                          roverTraverseMarker.add(roverTraverseBeacon);
+                          roverTraverseMarker.visible = false;
+                          scene.add(roverTraverseMarker);
+
+                          // Six soft wheel-contact pads share one instanced draw. CircleGeometry
+                          // faces local +Z; each matrix maps local X/Y/Z to terrain right,
+                          // forward and up using exact cached height samples in the wheel loop.
+                          if (THREE.InstancedMesh) {
+                            var roverContactCanvas = document.createElement('canvas');
+                            roverContactCanvas.setAttribute('aria-hidden', 'true');
+                            roverContactCanvas.width = roverContactCanvas.height = 64;
+                            var roverContactContext = roverContactCanvas.getContext('2d');
+                            if (roverContactContext) {
+                              var roverContactGradient = roverContactContext.createRadialGradient(32, 32, 2, 32, 32, 31);
+                              roverContactGradient.addColorStop(0, 'rgba(2,4,7,0.82)');
+                              roverContactGradient.addColorStop(0.52, 'rgba(2,4,7,0.48)');
+                              roverContactGradient.addColorStop(1, 'rgba(2,4,7,0)');
+                              roverContactContext.fillStyle = roverContactGradient;
+                              roverContactContext.fillRect(0, 0, 64, 64);
+                            }
+                            roverWheelContactTex = new THREE.CanvasTexture(roverContactCanvas);
+                            roverWheelContactTex.minFilter = THREE.LinearMipmapLinearFilter;
+                            roverWheelContactTex.magFilter = THREE.LinearFilter;
+                            roverWheelContactTex.generateMipmaps = true;
+                            roverWheelContactGeo = new THREE.CircleGeometry(1, 16);
+                            roverWheelContactMat = new THREE.MeshBasicMaterial({ map: roverWheelContactTex, color: 0xffffff, transparent: true, opacity: droneShadows ? 0.11 : 0.17, side: THREE.DoubleSide, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+                            roverWheelContactCount = rockyWheelRigs.length;
+                            roverWheelContactMesh = new THREE.InstancedMesh(roverWheelContactGeo, roverWheelContactMat, roverWheelContactCount);
+                            if (roverWheelContactMesh.instanceMatrix.setUsage && THREE.DynamicDrawUsage) roverWheelContactMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+                            roverWheelContactMesh.frustumCulled = false;
+                            roverWheelContactMesh.castShadow = false;
+                            roverWheelContactMesh.receiveShadow = false;
+                            roverWheelContactMesh.visible = false;
+                            scene.add(roverWheelContactMesh);
+                            canvasEl.dataset.roverContactPadCount = String(roverWheelContactCount);
+                          }
+                          // The one bounded fill light represents nearby terrain bounce and
+                          // never casts shadows.
+                          var roverSurfaceFillAllowed = true;
+                          try { if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) roverSurfaceFillAllowed = false; } catch (e) {}
+                          if (roverSurfaceFillAllowed) {
+                            roverSurfaceFillLight = new THREE.PointLight(_skyFill, Math.min(0.22, 0.08 + _hemiPower * 0.1), 3.8, 2);
+                            roverSurfaceFillLight.castShadow = false;
+                            roverSurfaceFillLight.position.set(0, 0.55, 0);
+                            roverGroup.add(roverSurfaceFillLight);
+                          }
+                        }
+
+                        function roverTraverseStepNumber(step) {
+                          return step === 'depart' ? 1 : step === 'outbound' ? 2 : step === 'survey' ? 3 : step === 'return' ? 4 : step === 'home_park' || step === 'complete' ? 5 : 0;
+                        }
+
+                        function roverTraverseTractionQuality() {
+                          return roverTraverse.peakSlip < 0.28 ? 'Grip' : (roverTraverse.peakSlip < 0.62 ? 'Scrub' : 'Slip');
+                        }
+
+                        function updateRoverTraversePanel(force, announceTransition) {
+                          if (!roverTraversePanel) return;
+                          var stepText = '';
+                          var progressText = '';
+                          var detailText = '';
+                          var stepNumber = roverTraverseStepNumber(roverTraverse.step);
+                          if (roverTraverse.status === 'unavailable') {
+                            stepText = 'Traverse site unavailable';
+                            progressText = 'Free roam available';
+                            detailText = 'No safe nearby survey site passed the terrain checks. Move to a clearer area and retry.';
+                          } else if (roverTraverse.status === 'ready') {
+                            stepText = 'Traverse ready';
+                            progressText = 'Optional field mission • 0 of 5';
+                            detailText = 'Start when ready, or continue free roaming.';
+                          } else if (roverTraverse.step === 'awaiting_deployment') {
+                            stepText = 'Deployment in progress';
+                            progressText = 'Step 0 of 5';
+                            detailText = 'The traverse begins after landing. Free roam remains available.';
+                          } else if (roverTraverse.step === 'depart') {
+                            var departMeters = Math.sqrt(Math.pow(playerPos.x - roverTraverse.startX, 2) + Math.pow(playerPos.z - roverTraverse.startZ, 2)) * scaleFactor;
+                            stepText = '1. Depart the landing zone';
+                            progressText = 'Step 1 of 5';
+                            detailText = 'Drive away from the landing point: ' + Math.min(100, Math.round(departMeters / (5 * scaleFactor) * 100)) + '%.';
+                          } else if (roverTraverse.step === 'outbound') {
+                            var waypointMeters = Math.sqrt(Math.pow(playerPos.x - roverTraverse.waypointX, 2) + Math.pow(playerPos.z - roverTraverse.waypointZ, 2)) * scaleFactor;
+                            stepText = '2. Reach the science waypoint';
+                            progressText = 'Step 2 of 5';
+                            detailText = 'Follow the teal field marker. Distance: ' + Math.round(waypointMeters) + ' m.';
+                          } else if (roverTraverse.step === 'survey') {
+                            stepText = '3. Park for an automatic survey';
+                            progressText = 'Step 3 of 5';
+                            detailText = 'Hold nearly still inside the marker: ' + Math.min(100, Math.round(roverTraverse.dwell / 2.5 * 100)) + '%.';
+                          } else if (roverTraverse.step === 'return') {
+                            var homeMeters = Math.sqrt(Math.pow(playerPos.x - roverTraverse.startX, 2) + Math.pow(playerPos.z - roverTraverse.startZ, 2)) * scaleFactor;
+                            stepText = '4. Return to the landing zone';
+                            progressText = 'Step 4 of 5';
+                            detailText = 'The marker now shows home. Distance: ' + Math.round(homeMeters) + ' m.';
+                          } else if (roverTraverse.step === 'home_park') {
+                            stepText = '5. Park at the landing zone';
+                            progressText = 'Step 5 of 5';
+                            detailText = 'Hold nearly still at home: ' + Math.min(100, Math.round(roverTraverse.dwell / 2 * 100)) + '%.';
+                          } else if (roverTraverse.step === 'complete') {
+                            stepText = 'Traverse complete';
+                            progressText = '5 of 5 steps complete';
+                            detailText = roverTraverse.elapsed.toFixed(1) + ' s • ' + Math.round(roverTraverse.distanceMeters) + ' m • ' + roverTraverseTractionQuality() + ' • peak grade ' + roverTraverse.peakGradePercent.toFixed(1) + '%.';
+                          }
+                          if (force || roverTraverseStepEl.textContent !== stepText) roverTraverseStepEl.textContent = stepText;
+                          if (force || roverTraverseProgressEl.textContent !== progressText) roverTraverseProgressEl.textContent = progressText;
+                          if (force || roverTraverseLastDetail !== detailText) {
+                            roverTraverseLastDetail = detailText;
+                            roverTraverseDetailEl.textContent = detailText;
+                          }
+                          canvasEl.dataset.roverMissionStatus = roverTraverse.status.replace('_', '-');
+                          canvasEl.dataset.roverMissionStep = roverTraverse.step.replace('_', '-');
+                          var missionDistanceData = roverTraverse.distanceMeters.toFixed(1);
+                          if (canvasEl.dataset.roverMissionDistance !== missionDistanceData) canvasEl.dataset.roverMissionDistance = missionDistanceData;
+                          roverTraverseButton.disabled = roverTraverse.status === 'awaiting_deployment';
+                          roverTraverseButton.textContent = roverTraverse.step === 'complete' ? 'Replay traverse' : (roverTraverse.active ? 'End traverse' : (roverTraverse.status === 'unavailable' ? 'Retry traverse' : 'Start traverse'));
+                          if (announceTransition && typeof announceToSR === 'function') announceToSR(stepText + '. ' + detailText);
+                        }
+
+                        function selectRoverTraverseWaypoint() {
+                          var startForwardX = -Math.sin(roverTraverse.startYaw);
+                          var startForwardZ = -Math.cos(roverTraverse.startYaw);
+                          var startRightX = Math.cos(roverTraverse.startYaw);
+                          var startRightZ = -Math.sin(roverTraverse.startYaw);
+                          var candidateProbe = 1;
+                          for (var candidateIndex = 0; candidateIndex < roverTraverseCandidateOffsets.length; candidateIndex++) {
+                            var candidateForward = roverTraverseCandidateOffsets[candidateIndex][0];
+                            var candidateRight = roverTraverseCandidateOffsets[candidateIndex][1];
+                            var candidateX = roverTraverse.startX + startForwardX * candidateForward + startRightX * candidateRight;
+                            var candidateZ = roverTraverse.startZ + startForwardZ * candidateForward + startRightZ * candidateRight;
+                            if (Math.abs(candidateX) > 110 || Math.abs(candidateZ) > 110) continue;
+                            var candidateGround = _terrainHeightAt(candidateX, candidateZ);
+                            var candidateFront = _terrainHeightAt(candidateX + startForwardX * candidateProbe, candidateZ + startForwardZ * candidateProbe);
+                            var candidateBack = _terrainHeightAt(candidateX - startForwardX * candidateProbe, candidateZ - startForwardZ * candidateProbe);
+                            var candidateRightH = _terrainHeightAt(candidateX + startRightX * candidateProbe, candidateZ + startRightZ * candidateProbe);
+                            var candidateLeftH = _terrainHeightAt(candidateX - startRightX * candidateProbe, candidateZ - startRightZ * candidateProbe);
+                            if (!isFinite(candidateGround) || !isFinite(candidateFront) || !isFinite(candidateBack) || !isFinite(candidateRightH) || !isFinite(candidateLeftH)) continue;
+                            var candidateGrade = Math.abs((candidateFront - candidateBack) / (2 * candidateProbe));
+                            var candidateCross = Math.abs((candidateRightH - candidateLeftH) / (2 * candidateProbe));
+                            if (candidateGrade > 0.32 || candidateCross > 0.32) continue;
+                            var candidateConflict = false;
+                            for (var candidatePoiIndex = 0; candidatePoiIndex < pois.length; candidatePoiIndex++) {
+                              var candidatePoiDx = candidateX - pois[candidatePoiIndex].x;
+                              var candidatePoiDz = candidateZ - pois[candidatePoiIndex].z;
+                              if (candidatePoiDx * candidatePoiDx + candidatePoiDz * candidatePoiDz < 36) { candidateConflict = true; break; }
+                            }
+                            if (candidateConflict) continue;
+                            if (typeof geoSampleOrbs !== 'undefined' && geoSampleOrbs) {
+                              for (var candidateSampleIndex = 0; candidateSampleIndex < geoSampleOrbs.length; candidateSampleIndex++) {
+                                var candidateSample = geoSampleOrbs[candidateSampleIndex];
+                                if (!candidateSample || candidateSample._collected) continue;
+                                var candidateSampleDx = candidateX - candidateSample.position.x;
+                                var candidateSampleDz = candidateZ - candidateSample.position.z;
+                                if (candidateSampleDx * candidateSampleDx + candidateSampleDz * candidateSampleDz < 36) { candidateConflict = true; break; }
+                              }
+                            }
+                            if (candidateConflict) continue;
+                            roverTraverse.waypointX = candidateX;
+                            roverTraverse.waypointZ = candidateZ;
+                            roverTraverse.waypointY = candidateGround;
+                            placeRoverTraverseMarker(candidateX, candidateZ, startForwardX, startForwardZ);
+                            return true;
+                          }
+                          return false;
+                        }
+
+                        function setRoverTraverseStep(nextStep) {
+                          roverTraverse.step = nextStep;
+                          roverTraverse.dwell = 0;
+                          if (nextStep === 'return') {
+                            placeRoverTraverseMarker(roverTraverse.startX, roverTraverse.startZ, -Math.sin(roverTraverse.startYaw), -Math.cos(roverTraverse.startYaw));
+                          } else if (nextStep === 'complete') {
+                            roverTraverse.active = false;
+                            roverTraverse.status = 'complete';
+                            roverTraverse.completionLatched = true;
+                            if (roverTraverseMarker) roverTraverseMarker.visible = false;
+                            addMissionEntry('Planetary Field Traverse complete on ' + sel.name + ': ' + Math.round(roverTraverse.distanceMeters) + ' m, ' + roverTraverseTractionQuality() + ' traction.');
+                          }
+                          updateRoverTraversePanel(true, true);
+                        }
+
+                        function startRoverTraverseMission() {
+                          if (isFluid || roverSceneDisposed) return;
+                          roverTraverse.startX = playerPos.x;
+                          roverTraverse.startZ = playerPos.z;
+                          roverTraverse.startYaw = yaw;
+                          roverTraverse.elapsed = 0;
+                          roverTraverse.distanceMeters = 0;
+                          roverTraverse.dwell = 0;
+                          roverTraverse.peakSlip = 0;
+                          roverTraverse.peakGradePercent = 0;
+                          roverTraverse.completionLatched = false;
+                          roverTraverseUiElapsed = 0;
+                          if (!selectRoverTraverseWaypoint()) {
+                            roverTraverse.active = false;
+                            roverTraverse.status = 'unavailable';
+                            roverTraverse.step = 'unavailable';
+                            if (roverTraverseMarker) roverTraverseMarker.visible = false;
+                            updateRoverTraversePanel(true, true);
+                            return;
+                          }
+                          roverTraverse.active = true;
+                          roverTraverse.status = 'active';
+                          roverTraverse.step = 'depart';
+                          updateRoverTraversePanel(true, true);
+                        }
+
+                        function readyRoverTraverseMission(announceReady) {
+                          if (isFluid || roverSceneDisposed) return;
+                          roverTraverse.active = false;
+                          roverTraverse.status = 'ready';
+                          roverTraverse.step = 'ready';
+                          roverTraverse.dwell = 0;
+                          if (roverTraverseMarker) roverTraverseMarker.visible = false;
+                          updateRoverTraversePanel(true, !!announceReady);
+                        }
+
+                        function updateRoverTraverseMission() {
+                          if (!roverTraverse.active || roverSceneDisposed) return;
+                          roverTraverse.elapsed += droneFrameDt;
+                          roverTraverse.distanceMeters += roverDrive.actualDistance * scaleFactor;
+                          roverTraverse.peakSlip = Math.max(roverTraverse.peakSlip, roverDrive.tractionSlip);
+                          roverTraverse.peakGradePercent = Math.max(roverTraverse.peakGradePercent, Math.abs(roverTerrainState.forwardGrade * 100));
+                          var traverseActualSpeed = droneFrameDt > 0 ? roverDrive.actualDistance / droneFrameDt : 0;
+                          var traverseStartDx = playerPos.x - roverTraverse.startX;
+                          var traverseStartDz = playerPos.z - roverTraverse.startZ;
+                          var traverseStartDistance = Math.sqrt(traverseStartDx * traverseStartDx + traverseStartDz * traverseStartDz);
+                          var traverseWaypointDx = playerPos.x - roverTraverse.waypointX;
+                          var traverseWaypointDz = playerPos.z - roverTraverse.waypointZ;
+                          var traverseWaypointDistance = Math.sqrt(traverseWaypointDx * traverseWaypointDx + traverseWaypointDz * traverseWaypointDz);
+
+                          // Exactly one case runs per RAF, so completion cannot skip steps or
+                          // fire twice even when a long frame lands on a boundary.
+                          switch (roverTraverse.step) {
+                            case 'depart':
+                              if (traverseStartDistance >= 5) setRoverTraverseStep('outbound');
+                              break;
+                            case 'outbound':
+                              if (traverseWaypointDistance <= 2.4) setRoverTraverseStep('survey');
+                              break;
+                            case 'survey':
+                              if (traverseWaypointDistance <= 2.4 && traverseActualSpeed <= 0.12) roverTraverse.dwell += droneFrameDt;
+                              else if (traverseWaypointDistance > 2.8 || traverseActualSpeed > 0.16) roverTraverse.dwell = 0;
+                              if (roverTraverse.dwell >= 2.5) setRoverTraverseStep('return');
+                              break;
+                            case 'return':
+                              if (traverseStartDistance <= 3) setRoverTraverseStep('home_park');
+                              break;
+                            case 'home_park':
+                              if (traverseStartDistance <= 3 && traverseActualSpeed <= 0.12) roverTraverse.dwell += droneFrameDt;
+                              else if (traverseStartDistance > 3.5 || traverseActualSpeed > 0.16) roverTraverse.dwell = 0;
+                              if (roverTraverse.dwell >= 2) setRoverTraverseStep('complete');
+                              break;
+                          }
+
+                          roverTraverseUiElapsed += droneFrameDt;
+                          if (roverTraverseUiElapsed >= 0.25) {
+                            roverTraverseUiElapsed = 0;
+                            updateRoverTraversePanel(false, false);
+                          }
+                          if (roverTraverseRingMat) roverTraverseRingMat.opacity = droneReduceMotion ? 0.74 : 0.62 + Math.sin(roverTraverse.elapsed * 3.2) * 0.12;
+                        }
+
+                        function onRoverTraverseButtonClick() {
+                          if (roverTraverse.active) readyRoverTraverseMission(false);
+                          else startRoverTraverseMission();
+                          canvasEl.focus();
+                        }
+                        if (roverTraverseButton) roverTraverseButton.addEventListener('click', onRoverTraverseButtonClick);
 
 
 
@@ -15202,6 +15818,8 @@ const d = labToolData.solarSystem || {};
                         var _descentDurationSec = 3;
                         var _descentStartY = isOcean ? 30 : isGas ? 25 : 20;
                         var _descentTargetY = isFluid ? 5 : 1.6;
+                        var roverSceneDisposed = false;
+                        var descentArrivalTimer = null;
                         // Descent overlay
                         var descentOverlay = document.createElement('div');
                         descentOverlay.style.cssText = 'position:absolute;inset:0;z-index:30;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1s';
@@ -15243,6 +15861,7 @@ const d = labToolData.solarSystem || {};
 
                           // ── Descent intro sequence ──
                           if (_descentPhase === 0) {
+                            if (!isFluid && roverDrive.impactArmed) resetRoverImpactDetection();
                             // Wall-clock progress keeps the cinematic at three seconds on
                             // both high-refresh displays and slow software/classroom GPUs.
                             // Vehicle physics below still uses the separately clamped delta.
@@ -15272,9 +15891,11 @@ const d = labToolData.solarSystem || {};
                               if (hud) hud.style.opacity = '1';
                               pitch = 0;
                               playerPos.x = 0; playerPos.z = 0;
-                              setTimeout(function() {
+                              descentArrivalTimer = setTimeout(function() {
+                                if (roverSceneDisposed) return;
                                 if (descentOverlay.parentElement) descentOverlay.parentElement.removeChild(descentOverlay);
                                 _descentPhase = 2;
+                                if (!isFluid) readyRoverTraverseMission(true);
                               }, 1200);
                             }
                             // Still render the scene during descent
@@ -15346,6 +15967,10 @@ const d = labToolData.solarSystem || {};
 
                           // Movement
 
+                          var roverFrameStartX = playerPos.x;
+                          var roverFrameStartZ = playerPos.z;
+                          var roverImpactFrameSuppressed = false;
+
                           if (isFluid) {
                             // Preserve the established six-axis probe/submersible controls.
                             var dir = new THREE.Vector3();
@@ -15358,27 +15983,82 @@ const d = labToolData.solarSystem || {};
                             playerPos.add(dir);
                           } else {
                             // Surface rover: W/S command traction, A/D command skid-steer.
-                            // Acceleration, braking, and rolling resistance produce actual
-                            // velocity rather than translating a fixed amount every frame.
+                            // The same current-frame height probes feed physics, pose and HUD.
+                            // Positive forward grade means local -Z is uphill; the signed
+                            // gravity component therefore accelerates toward negative speed.
                             var throttleInput = (moveState.forward ? 1 : 0) - (moveState.back ? 1 : 0);
                             var steeringInput = (moveState.left ? 1 : 0) - (moveState.right ? 1 : 0);
-                            roverDrive.steering += (steeringInput - roverDrive.steering) * roverDamping(8);
+                            var steeringInputEase = 1 - Math.exp(-8 * droneFrameDt);
+                            roverDrive.steering += (steeringInput - roverDrive.steering) * steeringInputEase;
 
-                            var targetSpeed = throttleInput > 0 ? roverDrive.maxForward : (throttleInput < 0 ? -roverDrive.maxReverse : 0);
-                            var driveRate = roverDrive.coastDrag;
-                            if (throttleInput !== 0) {
-                              driveRate = roverDrive.speed !== 0 && Math.sign(roverDrive.speed) !== Math.sign(targetSpeed) ? roverDrive.brake : roverDrive.acceleration;
+                            roverTerrainState.forwardX = -Math.sin(yaw);
+                            roverTerrainState.forwardZ = -Math.cos(yaw);
+                            roverTerrainState.rightX = Math.cos(yaw);
+                            roverTerrainState.rightZ = -Math.sin(yaw);
+                            roverTerrainState.ground = _terrainHeightAt(playerPos.x, playerPos.z);
+                            roverTerrainState.front = _terrainHeightAt(playerPos.x + roverTerrainState.forwardX * roverTerrainState.probeDistance, playerPos.z + roverTerrainState.forwardZ * roverTerrainState.probeDistance);
+                            roverTerrainState.back = _terrainHeightAt(playerPos.x - roverTerrainState.forwardX * roverTerrainState.probeDistance, playerPos.z - roverTerrainState.forwardZ * roverTerrainState.probeDistance);
+                            roverTerrainState.right = _terrainHeightAt(playerPos.x + roverTerrainState.rightX * roverTerrainState.probeDistance, playerPos.z + roverTerrainState.rightZ * roverTerrainState.probeDistance);
+                            roverTerrainState.left = _terrainHeightAt(playerPos.x - roverTerrainState.rightX * roverTerrainState.probeDistance, playerPos.z - roverTerrainState.rightZ * roverTerrainState.probeDistance);
+                            var roverGradeLimit = 0.65;
+                            roverTerrainState.forwardGrade = Math.max(-roverGradeLimit, Math.min(roverGradeLimit, (roverTerrainState.front - roverTerrainState.back) / (2 * roverTerrainState.probeDistance)));
+                            roverTerrainState.crossSlope = Math.max(-roverGradeLimit, Math.min(roverGradeLimit, (roverTerrainState.right - roverTerrainState.left) / (2 * roverTerrainState.probeDistance)));
+
+                            var grade = roverTerrainState.forwardGrade;
+                            var gradeGravity = roverSceneEarthGravity * roverGravityRatio;
+                            var signedGradeAcceleration = -gradeGravity * grade / Math.sqrt(1 + grade * grade);
+                            roverDrive.gradeAcceleration = Math.max(-1.25, Math.min(1.25, signedGradeAcceleration));
+                            var speedRatioBeforeDrive = Math.min(1, Math.abs(roverDrive.speed) / roverDrive.maxForward);
+                            var opposingThrottle = throttleInput !== 0 && roverDrive.speed !== 0 && Math.sign(throttleInput) !== Math.sign(roverDrive.speed);
+                            var requestedDriveAcceleration = throttleInput === 0 ? 0 : throttleInput * (opposingThrottle ? roverDrive.brake : roverDrive.acceleration);
+                            var gradeLoad = Math.min(1, Math.abs(grade) / 0.45);
+                            var crossSlopeLoad = Math.min(1, Math.abs(roverTerrainState.crossSlope) / 0.45);
+                            var terrainLoad = Math.max(gradeLoad, crossSlopeLoad * 0.8);
+                            var availableGripAcceleration = Math.max(0.7, roverDrive.acceleration * (1 - terrainLoad * 0.38));
+                            var appliedDriveAcceleration = Math.max(-availableGripAcceleration, Math.min(availableGripAcceleration, requestedDriveAcceleration));
+                            var unmetDriveDemand = Math.abs(requestedDriveAcceleration - appliedDriveAcceleration) / Math.max(roverDrive.brake, roverDrive.acceleration);
+                            var steeringScrub = Math.abs(roverDrive.steering) * (0.08 + speedRatioBeforeDrive * 0.62);
+                            var reversalScrub = opposingThrottle ? 0.42 : 0;
+                            var movingOrDemanded = Math.abs(roverDrive.speed) > 0.035 || throttleInput !== 0;
+                            roverDrive.tractionTarget = movingOrDemanded ? Math.min(1, unmetDriveDemand * 1.7 + reversalScrub + steeringScrub + terrainLoad * 0.18) : 0;
+                            roverDrive.tractionSlip += (roverDrive.tractionTarget - roverDrive.tractionSlip) * (1 - Math.exp(-7 * droneFrameDt));
+
+                            // Rolling resistance and grade are integrated once as a signed net
+                            // acceleration. Static hold prevents parked-slope chatter, while a
+                            // sufficiently steep grade can still produce stable downhill roll.
+                            var rollingAcceleration = roverDrive.coastDrag * (0.30 + terrainLoad * 0.12);
+                            var netAcceleration = appliedDriveAcceleration + roverDrive.gradeAcceleration;
+                            var staticHold = throttleInput === 0 && Math.abs(roverDrive.speed) < 0.035 && Math.abs(netAcceleration) <= rollingAcceleration;
+                            if (staticHold) {
+                              roverDrive.speed = 0;
+                              roverDrive.tractionTarget = 0;
+                            } else {
+                              var resistanceSign = roverDrive.speed !== 0 ? Math.sign(roverDrive.speed) : Math.sign(netAcceleration);
+                              var appliedResistance = Math.abs(roverDrive.speed) < 0.035 ? Math.min(rollingAcceleration, Math.abs(netAcceleration)) : rollingAcceleration;
+                              netAcceleration -= resistanceSign * appliedResistance;
+                              var previousSignedSpeed = roverDrive.speed;
+                              roverDrive.speed += netAcceleration * droneFrameDt;
+                              if (opposingThrottle && previousSignedSpeed !== 0 && Math.sign(previousSignedSpeed) !== Math.sign(roverDrive.speed)) roverDrive.speed = 0;
+                              if (previousSignedSpeed !== 0 && Math.sign(previousSignedSpeed) !== Math.sign(roverDrive.speed) && Math.sign(netAcceleration) !== Math.sign(throttleInput)) roverDrive.speed = 0;
                             }
-                            roverDrive.speed = approachRoverValue(roverDrive.speed, targetSpeed, driveRate * droneFrameDt);
+                            roverDrive.speed = Math.max(-roverDrive.maxReverse, Math.min(roverDrive.maxForward, roverDrive.speed));
 
                             var speedRatio = Math.min(1, Math.abs(roverDrive.speed) / roverDrive.maxForward);
                             var pivotAuthority = 0.42 + speedRatio * 0.58;
-                            yaw += roverDrive.steering * roverDrive.turnRate * pivotAuthority * droneFrameDt;
+                            var tractionSteeringAuthority = Math.max(0.38, 1 - roverDrive.tractionSlip * 0.55);
+                            roverDrive.visualYawRate = roverDrive.steering * roverDrive.turnRate * pivotAuthority * tractionSteeringAuthority;
+                            yaw += roverDrive.visualYawRate * droneFrameDt;
 
                             roverForward.set(-Math.sin(yaw), 0, -Math.cos(yaw));
                             roverDrive.velocity.copy(roverForward).multiplyScalar(roverDrive.speed);
                             playerPos.addScaledVector(roverDrive.velocity, droneFrameDt);
-                            updateRoverAudio(throttleInput, steeringInput);
+                            var wheelSlipOffset = throttleInput * roverDrive.tractionSlip * 0.55;
+                            if (opposingThrottle) {
+                              roverDrive.drivenWheelSpeed = Math.sign(roverDrive.speed) * Math.max(0, Math.abs(roverDrive.speed) - Math.abs(wheelSlipOffset));
+                            } else {
+                              roverDrive.drivenWheelSpeed = roverDrive.speed + wheelSlipOffset;
+                            }
+                            updateRoverAudio(throttleInput);
                           }
 
                           if (isOcean) {
@@ -15416,7 +16096,7 @@ const d = labToolData.solarSystem || {};
                             if (moveState.down) playerPos.y = Math.max(-30, playerPos.y - speed3d);
                           } else {
                             // Rocky planet rover: ground-following, no vertical flight
-                            var groundH = _terrainHeightAt(playerPos.x, playerPos.z);
+                            var groundH = roverTerrainState.ground;
                             var targetRoverEyeY = groundH + 1.6;
                             playerPos.y += (targetRoverEyeY - playerPos.y) * roverDamping(12);
                           }
@@ -15437,7 +16117,18 @@ const d = labToolData.solarSystem || {};
                           else if (playerPos.x < -edgeLimit) { playerPos.x = -edgeLimit; hitWorldEdge = true; }
                           if (playerPos.z > edgeLimit) { playerPos.z = edgeLimit; hitWorldEdge = true; }
                           else if (playerPos.z < -edgeLimit) { playerPos.z = -edgeLimit; hitWorldEdge = true; }
-                          if (hitWorldEdge && !isFluid) roverDrive.speed *= 0.2;
+                          if (!isFluid) {
+                            roverDrive.actualDistance = Math.sqrt(Math.pow(playerPos.x - roverFrameStartX, 2) + Math.pow(playerPos.z - roverFrameStartZ, 2));
+                            // A boundary correction or discontinuous position jump is not a
+                            // suspension event. Disarm this frame and let fresh contacts arm
+                            // detection on later, continuous movement.
+                            if (hitWorldEdge || roverDrive.actualDistance > 0.75) {
+                              if (hitWorldEdge) roverDrive.speed *= 0.2;
+                              resetRoverImpactDetection();
+                              roverImpactFrameSuppressed = true;
+                            }
+                            updateRoverTraverseMission();
+                          }
 
                           // Carry the shadow frustum with the vehicle. The sun keeps its own
                           // direction — the offset below is the same vector it was placed at,
@@ -15463,6 +16154,13 @@ const d = labToolData.solarSystem || {};
                               var chaseHeight = 2.45 + chaseSpeedRatio * 0.75;
                               var travelSign = roverDrive.speed < -0.05 ? -1 : 1;
                               var roverGroundForCamera = _terrainHeightAt(playerPos.x, playerPos.z);
+                              // Predict only the camera target into the current turn. The
+                              // bounded lead is presentation-only, vanishes when parked, and
+                              // is suppressed for reduced motion without touching rover yaw.
+                              var chaseTurnLead = droneReduceMotion ? 0 : Math.max(-0.26, Math.min(0.26, roverDrive.visualYawRate * chaseSpeedRatio * 0.48));
+                              var chaseLookYaw = yaw + chaseTurnLead;
+                              var chaseLookForwardX = -Math.sin(chaseLookYaw);
+                              var chaseLookForwardZ = -Math.cos(chaseLookYaw);
 
                               chaseDesired.set(
                                 playerPos.x - roverForward.x * chaseDistance,
@@ -15474,6 +16172,10 @@ const d = labToolData.solarSystem || {};
                                 roverGroundForCamera + 0.72,
                                 playerPos.z + roverForward.z * chaseSpeedRatio * 1.8 * travelSign
                               );
+                              // Apply turn composition as a fresh-frame offset from the
+                              // established baseline; it never accumulates into chase state.
+                              chaseDesiredLook.x += (chaseLookForwardX - roverForward.x) * chaseSpeedRatio * 1.8 * travelSign;
+                              chaseDesiredLook.z += (chaseLookForwardZ - roverForward.z) * chaseSpeedRatio * 1.8 * travelSign;
 
                               // Keep the camera above its local terrain and raise it when an
                               // intervening ridge would cross the target-to-camera sightline.
@@ -15501,6 +16203,10 @@ const d = labToolData.solarSystem || {};
                               var smoothedCameraGround = _terrainHeightAt(chaseCameraPos.x, chaseCameraPos.z);
                               if (isFinite(smoothedCameraGround)) chaseCameraPos.y = Math.max(chaseCameraPos.y, smoothedCameraGround + 1.25);
                               camera.position.copy(chaseCameraPos);
+                              // Add after the damped baseline so the impulse never feeds back
+                              // into chase state. Reduced motion suppresses presentation only.
+                              var roverImpactCameraJolt = droneReduceMotion ? 0 : roverDrive.impactEnvelope * 0.09;
+                              camera.position.y += roverImpactCameraJolt;
                               camera.lookAt(chaseLookAt);
 
                               var targetChaseFov = droneReduceMotion ? 70 : 68 + chaseSpeedRatio * 8;
@@ -16480,34 +17186,64 @@ const d = labToolData.solarSystem || {};
                           // ── Rover dust trail animation (rocky planets) ──
                           if (!isGas && typeof dustTrailMesh !== 'undefined' && dustTrailMesh) {
                             var dtArr = dustTrailMesh.geometry.attributes.position.array;
-                            var roverMotionRatio = Math.min(1, Math.abs(roverDrive.speed) / roverDrive.maxForward);
-                            roverDrive.dustCarry += roverMotionRatio * droneFrameDt * 18;
-                            var dustSpawnCount = Math.min(4, Math.floor(roverDrive.dustCarry));
+                            var roverActualSpeed = droneFrameDt > 0 ? roverDrive.actualDistance / droneFrameDt : 0;
+                            var roverMotionRatio = Math.min(1, roverActualSpeed / roverDrive.maxForward);
+                            var dustPresentationScale = (rockySurfaceLowPower ? 0.62 : 1) * (droneReduceMotion ? 0.42 : 1);
+                            var dustDistanceEmission = roverImpactFrameSuppressed ? 0 : roverDrive.actualDistance * (8 + roverDrive.tractionSlip * 16);
+                            roverDrive.dustCarry = Math.min(dustTrailCapacity, roverDrive.dustCarry + (dustDistanceEmission + roverDrive.impactDustBurst) * dustPresentationScale);
+                            roverDrive.impactDustBurst = 0;
+                            var dustSpawnLimit = droneReduceMotion ? 1 : (rockySurfaceLowPower ? 2 : 4);
+                            var dustSpawnCount = Math.min(dustSpawnLimit, Math.floor(roverDrive.dustCarry));
                             roverDrive.dustCarry -= dustSpawnCount;
-                            while (dustSpawnCount-- > 0 && roverMotionRatio > 0.05) {
+                            while (dustSpawnCount-- > 0 && roverMotionRatio > 0.04) {
                               var dIdx = dustTrailIdx * 3;
                               var dustTravelSign = roverDrive.speed < 0 ? -1 : 1;
-                              var dustRearX = playerPos.x - roverForward.x * dustTravelSign * 0.48;
-                              var dustRearZ = playerPos.z - roverForward.z * dustTravelSign * 0.48;
-                              dtArr[dIdx] = dustRearX + (Math.random() - 0.5) * 0.8;
-                              dtArr[dIdx + 1] = _terrainHeightAt(dustRearX, dustRearZ) + 0.1;
-                              dtArr[dIdx + 2] = dustRearZ + (Math.random() - 0.5) * 0.8;
-                              dustTrailLife[dustTrailIdx] = 1;
-                              dustTrailIdx = (dustTrailIdx + 1) % 60;
+                              var dustTrailingLocalZ = dustTravelSign > 0 ? 0.4 : -0.4;
+                              var dustSide = dustTrailIdx % 2 === 0 ? -1 : 1;
+                              var dustLocalX = dustSide * 0.45;
+                              var dustCos = Math.cos(yaw), dustSin = Math.sin(yaw);
+                              var dustWheelX = playerPos.x + dustLocalX * dustCos + dustTrailingLocalZ * dustSin;
+                              var dustWheelZ = playerPos.z - dustLocalX * dustSin + dustTrailingLocalZ * dustCos;
+                              var dustRightX = dustCos, dustRightZ = -dustSin;
+                              var dustLateralJitter = (nextRoverDustRandom() - 0.5) * 0.12;
+                              var dustVelocityJitter = (nextRoverDustRandom() - 0.5) * (0.12 + roverDrive.tractionSlip * 0.16);
+                              var dustLiftJitter = nextRoverDustRandom() * 0.12;
+                              dtArr[dIdx] = dustWheelX + dustRightX * dustLateralJitter;
+                              dtArr[dIdx + 1] = _terrainHeightAt(dustWheelX, dustWheelZ) + 0.055;
+                              dtArr[dIdx + 2] = dustWheelZ + dustRightZ * dustLateralJitter;
+                              dustTrailVelocity[dIdx] = -roverForward.x * dustTravelSign * (0.08 + roverMotionRatio * 0.24) + dustRightX * dustVelocityJitter;
+                              dustTrailVelocity[dIdx + 1] = 0.18 + roverMotionRatio * 0.34 + roverDrive.tractionSlip * 0.22 + roverDrive.impactEnvelope * 0.32 + dustLiftJitter;
+                              dustTrailVelocity[dIdx + 2] = -roverForward.z * dustTravelSign * (0.08 + roverMotionRatio * 0.24) + dustRightZ * dustVelocityJitter;
+                              dustTrailLife[dustTrailIdx] = 0.68 + roverMotionRatio * 0.34 + roverDrive.tractionSlip * 0.2;
+                              dustTrailIdx = (dustTrailIdx + 1) % dustTrailCapacity;
                             }
-                            // Age and rise dust in seconds so plume persistence does not
-                            // change between 60 Hz and high-refresh displays.
-                            for (var dti2 = 0; dti2 < 60; dti2++) {
+                            // Velocities are seeded only at spawn, then integrated in seconds.
+                            // This removes the old refresh-rate-dependent random walk.
+                            var dustVelocityDamping = Math.exp(-1.35 * droneFrameDt);
+                            for (var dti2 = 0; dti2 < dustTrailCapacity; dti2++) {
                               if (dustTrailLife[dti2] > 0) {
-                                dustTrailLife[dti2] = Math.max(0, dustTrailLife[dti2] - droneFrameDt * 0.9);
-                                dtArr[dti2 * 3 + 1] += droneFrameDt * 0.6;
-                                dtArr[dti2 * 3] += (Math.random() - 0.5) * droneFrameDt * 0.65;
-                                dtArr[dti2 * 3 + 2] += (Math.random() - 0.5) * droneFrameDt * 0.45;
-                                if (dustTrailLife[dti2] <= 0) dtArr[dti2 * 3 + 1] = -999;
+                                var dustUpdateOffset = dti2 * 3;
+                                dustTrailLife[dti2] = Math.max(0, dustTrailLife[dti2] - droneFrameDt);
+                                dtArr[dustUpdateOffset] += dustTrailVelocity[dustUpdateOffset] * droneFrameDt;
+                                dtArr[dustUpdateOffset + 1] += dustTrailVelocity[dustUpdateOffset + 1] * droneFrameDt;
+                                dtArr[dustUpdateOffset + 2] += dustTrailVelocity[dustUpdateOffset + 2] * droneFrameDt;
+                                dustTrailVelocity[dustUpdateOffset] *= dustVelocityDamping;
+                                dustTrailVelocity[dustUpdateOffset + 1] -= 0.28 * droneFrameDt;
+                                dustTrailVelocity[dustUpdateOffset + 2] *= dustVelocityDamping;
+                                var dustReachedSurface = false;
+                                if (dustTrailVelocity[dustUpdateOffset + 1] <= 0) {
+                                  var dustSurfaceHeight = _terrainHeightAt(dtArr[dustUpdateOffset], dtArr[dustUpdateOffset + 2]) + 0.025;
+                                  dustReachedSurface = dtArr[dustUpdateOffset + 1] <= dustSurfaceHeight;
+                                }
+                                if (dustTrailLife[dti2] <= 0 || dustReachedSurface) {
+                                  dustTrailLife[dti2] = 0;
+                                  dtArr[dustUpdateOffset + 1] = -999;
+                                }
                               }
                             }
                             dustTrailMesh.geometry.attributes.position.needsUpdate = true;
-                            dustTrailMesh.material.opacity = 0.12 + roverMotionRatio * 0.34;
+                            dustTrailMat.size = 0.085 + roverMotionRatio * 0.055 + roverDrive.tractionSlip * 0.035 + roverDrive.impactEnvelope * 0.03;
+                            dustTrailMat.opacity = 0.1 + roverMotionRatio * 0.24 + roverDrive.tractionSlip * 0.18 + roverDrive.impactEnvelope * 0.1;
 
                             // ── Geological Sample Collection (rocky planets) ──
                             if (typeof geoSampleOrbs !== 'undefined' && geoSampleOrbs.length > 0) {
@@ -16659,6 +17395,8 @@ const d = labToolData.solarSystem || {};
                             if (odoEl) odoEl.textContent = odometer > 1000 ? (odometer / 1000).toFixed(1) + ' km' : Math.round(odometer) + ' m';
 
                             if (dscEl) dscEl.textContent = Object.keys(discoveredPOIs).length + ' / ' + totalPOIs;
+
+                            updateRoverTerrainTelemetry();
 
                             // ── Depth/Altitude Gauge Update ──
                             var gaugeFill = document.getElementById('depth-gauge-fill');
@@ -17038,15 +17776,16 @@ const d = labToolData.solarSystem || {};
 
                           if (!isFluid) {
 
-                            var roverGround = _terrainHeightAt(playerPos.x, playerPos.z);
-                            var fwdX = -Math.sin(yaw), fwdZ = -Math.cos(yaw);
-                            var rightX = Math.cos(yaw), rightZ = -Math.sin(yaw);
-                            var frontH = _terrainHeightAt(playerPos.x + fwdX, playerPos.z + fwdZ);
-                            var backH = _terrainHeightAt(playerPos.x - fwdX, playerPos.z - fwdZ);
-                            var rightH = _terrainHeightAt(playerPos.x + rightX, playerPos.z + rightZ);
-                            var leftH = _terrainHeightAt(playerPos.x - rightX, playerPos.z - rightZ);
-                            var targetRoverPitch = Math.max(-0.22, Math.min(0.22, (frontH - backH) * 0.10));
-                            var targetRoverRoll = Math.max(-0.18, Math.min(0.18, (rightH - leftH) * 0.10));
+                            // Wheel contacts below are post-movement, so their body reference
+                            // must be sampled at that same clamped position. The cached
+                            // bilinear sampler is allocation-free and exactly matches the mesh.
+                            var currentRoverGround = _terrainHeightAt(playerPos.x, playerPos.z);
+                            var roverGround = isFinite(currentRoverGround) ? currentRoverGround : roverTerrainState.ground;
+                            roverTerrainState.ground = roverGround;
+                            var fwdX = roverTerrainState.forwardX, fwdZ = roverTerrainState.forwardZ;
+                            var rightX = roverTerrainState.rightX, rightZ = roverTerrainState.rightZ;
+                            var targetRoverPitch = Math.max(-0.22, Math.min(0.22, Math.atan(roverTerrainState.forwardGrade)));
+                            var targetRoverRoll = Math.max(-0.18, Math.min(0.18, Math.atan(roverTerrainState.crossSlope)));
                             var targetRoverYaw = yaw;
 
                             if (!roverPoseReady) {
@@ -17060,35 +17799,89 @@ const d = labToolData.solarSystem || {};
                               var roverYawDelta = Math.atan2(Math.sin(targetRoverYaw - roverGroup.rotation.y), Math.cos(targetRoverYaw - roverGroup.rotation.y));
                               roverGroup.rotation.y += roverYawDelta * roverDamping(11);
                             }
-                            roverGroup.position.y = roverVisualGround;
+                            roverGroup.position.y = roverVisualGround - roverDrive.impactSpring * 0.065;
 
                             // Sample the terrain beneath each contact patch. Wheel travel is
                             // bounded like a real suspension stop, then damped independently.
                             var vehicleRotY = yaw;
                             var vehicleCos = Math.cos(vehicleRotY), vehicleSin = Math.sin(vehicleRotY);
+                            var roverFrameCompressionRate = 0;
+                            // Skid-steer yaw keeps its command sign in reverse. Mirror only
+                            // the wheel presentation while reversing so its rolling direction
+                            // agrees with the actual chassis path; keep pivot/launch intuitive.
+                            var visualSteeringCommand = roverDrive.steering * (roverDrive.speed < -0.05 ? -1 : 1);
                             for (var rwi = 0; rwi < rockyWheelRigs.length; rwi++) {
                               var wheelRigData = rockyWheelRigs[rwi];
                               var wheelWorldX = playerPos.x + wheelRigData.localX * vehicleCos + wheelRigData.localZ * vehicleSin;
                               var wheelWorldZ = playerPos.z - wheelRigData.localX * vehicleSin + wheelRigData.localZ * vehicleCos;
                               var wheelGround = _terrainHeightAt(wheelWorldX, wheelWorldZ);
                               var wheelTravel = Math.max(-0.11, Math.min(0.13, (wheelGround - roverGround) * 0.68));
+                              if (wheelRigData.impactReady && droneFrameDt > 0) {
+                                roverFrameCompressionRate = Math.max(roverFrameCompressionRate, Math.max(0, wheelTravel - wheelRigData.previousTargetTravel) / droneFrameDt);
+                              }
+                              wheelRigData.previousTargetTravel = wheelTravel;
+                              wheelRigData.impactReady = true;
                               var targetWheelY = wheelRigData.restY + wheelTravel;
-                              wheelRigData.rig.position.y += (targetWheelY - wheelRigData.rig.position.y) * roverDamping(14);
-                              wheelRigData.rig.rotation.y = roverDrive.steering * wheelRigData.steerFactor * 0.34;
-                              wheelRigData.spin += roverDrive.speed * droneFrameDt / 0.15;
+                              var impactWheelCompression = roverDrive.impactSpring * (wheelRigData.localZ < -0.2 ? 0.035 : 0.022);
+                              wheelRigData.rig.position.y += (targetWheelY - impactWheelCompression - wheelRigData.rig.position.y) * roverDamping(14);
+                              // Visual Ackermann geometry: local -Z is forward; positive
+                              // steering turns left, making localX < 0 the inner front wheel.
+                              var targetWheelSteer = 0;
+                              if (wheelRigData.axleRole === 'front' && Math.abs(visualSteeringCommand) > 0.001) {
+                                var requestedSteerAngle = Math.abs(visualSteeringCommand) * 0.34;
+                                var turnRadius = 0.8 / Math.max(0.01, Math.tan(requestedSteerAngle));
+                                var isInnerWheel = visualSteeringCommand > 0 ? wheelRigData.localX < 0 : wheelRigData.localX > 0;
+                                var wheelTurnRadius = Math.max(0.24, turnRadius + (isInnerWheel ? -0.45 : 0.45));
+                                targetWheelSteer = Math.sign(visualSteeringCommand) * Math.min(0.46, Math.atan(0.8 / wheelTurnRadius));
+                              } else if (wheelRigData.axleRole === 'rear') {
+                                targetWheelSteer = visualSteeringCommand * -0.09;
+                              }
+                              wheelRigData.visualSteer += (targetWheelSteer - wheelRigData.visualSteer) * (1 - Math.exp(-12 * droneFrameDt));
+                              wheelRigData.rig.rotation.y = wheelRigData.visualSteer;
+                              wheelRigData.spin += roverDrive.drivenWheelSpeed * droneFrameDt / 0.15;
                               wheelRigData.wheel.rotation.y = wheelRigData.spin;
 
                               var strutTop = 0.34;
                               var strutLength = Math.max(0.05, strutTop - wheelRigData.rig.position.y);
                               wheelRigData.strut.position.y = wheelRigData.rig.position.y + strutLength * 0.5;
                               wheelRigData.strut.scale.y = strutLength;
+
+                              if (roverWheelContactMesh) {
+                                var contactProbe = 0.12;
+                                var contactYaw = yaw + wheelRigData.visualSteer;
+                                var contactForwardX = -Math.sin(contactYaw), contactForwardZ = -Math.cos(contactYaw);
+                                var contactRightX = Math.cos(contactYaw), contactRightZ = -Math.sin(contactYaw);
+                                var contactForwardH = _terrainHeightAt(wheelWorldX + contactForwardX * contactProbe, wheelWorldZ + contactForwardZ * contactProbe);
+                                var contactRightH = _terrainHeightAt(wheelWorldX + contactRightX * contactProbe, wheelWorldZ + contactRightZ * contactProbe);
+                                roverWheelContactForward.set(contactForwardX, (contactForwardH - wheelGround) / contactProbe, contactForwardZ).normalize();
+                                roverWheelContactRight.set(contactRightX, (contactRightH - wheelGround) / contactProbe, contactRightZ).normalize();
+                                roverWheelContactNormal.crossVectors(roverWheelContactRight, roverWheelContactForward).normalize();
+                                if (roverWheelContactNormal.y < 0) roverWheelContactNormal.multiplyScalar(-1);
+                                roverWheelContactRight.crossVectors(roverWheelContactForward, roverWheelContactNormal).normalize();
+                                roverWheelContactBasis.makeBasis(roverWheelContactRight, roverWheelContactForward, roverWheelContactNormal);
+                                roverWheelContactQuaternion.setFromRotationMatrix(roverWheelContactBasis).normalize();
+                                roverWheelContactDummy.position.set(wheelWorldX, wheelGround + 0.014, wheelWorldZ);
+                                roverWheelContactDummy.quaternion.copy(roverWheelContactQuaternion);
+                                var contactCompressionScale = 1 + Math.max(0, wheelTravel) * 1.6 + roverDrive.impactSpring * 0.24;
+                                roverWheelContactDummy.scale.set(0.16 * contactCompressionScale, 0.25 * contactCompressionScale, 1);
+                                roverWheelContactDummy.updateMatrix();
+                                roverWheelContactMesh.setMatrixAt(rwi, roverWheelContactDummy.matrix);
+                              }
                             }
+                            if (roverWheelContactMesh) {
+                              roverWheelContactMesh.visible = thirdPerson;
+                              roverWheelContactMesh.instanceMatrix.needsUpdate = true;
+                              roverWheelContactMat.opacity = (droneShadows ? 0.1 : 0.16) + roverDrive.impactEnvelope * 0.035;
+                            }
+
+                            var roverImpactActualSpeed = droneFrameDt > 0 ? roverDrive.actualDistance / droneFrameDt : 0;
+                            if (!roverImpactFrameSuppressed) updateRoverImpactState(roverFrameCompressionRate, roverImpactActualSpeed);
 
                             // Emit pooled rear-wheel tracks by distance travelled, independent
                             // of frame rate. The cached sampler supplies height and two tangent
                             // slopes; all transforms reuse the temporaries declared at setup.
-                            if (roverTrackMesh && Math.abs(roverDrive.speed) > 0.08) {
-                              roverTrackDistanceCarry += Math.abs(roverDrive.speed) * droneFrameDt;
+                            if (roverTrackMesh && roverDrive.actualDistance > 0) {
+                              roverTrackDistanceCarry += roverDrive.actualDistance;
                               while (roverTrackDistanceCarry >= 0.24) {
                                 roverTrackDistanceCarry -= 0.24;
                                 for (var trackSide = -1; trackSide <= 1; trackSide += 2) {
@@ -17187,7 +17980,12 @@ const d = labToolData.solarSystem || {};
 
                         canvasEl._droneCleanup = function () {
 
+                          if (roverSceneDisposed) return;
+                          roverSceneDisposed = true;
+
                           cancelAnimationFrame(animId3d);
+
+                          if (descentArrivalTimer) { clearTimeout(descentArrivalTimer); descentArrivalTimer = null; }
 
                           disposeRoverAudio();
 
@@ -17231,6 +18029,49 @@ const d = labToolData.solarSystem || {};
                             try { if (droneComposer.renderTarget1) droneComposer.renderTarget1.dispose(); } catch (e) {}
                             try { if (droneComposer.renderTarget2) droneComposer.renderTarget2.dispose(); } catch (e) {}
                             droneComposer = null; droneBloomPass = null;
+                          }
+
+                          if (roverTraverseButton) roverTraverseButton.removeEventListener('click', onRoverTraverseButtonClick);
+                          if (roverTraversePanel && roverTraversePanel.parentElement) roverTraversePanel.parentElement.removeChild(roverTraversePanel);
+                          roverTraverseButton = null;
+                          roverTraversePanel = null;
+
+                          if (roverTraverseMarker) {
+                            scene.remove(roverTraverseMarker);
+                            roverTraverseMarker = null;
+                            roverTraverseRing = null;
+                            roverTraverseBeacon = null;
+                          }
+                          if (roverTraverseRingGeo) { try { roverTraverseRingGeo.dispose(); } catch (e) {} roverTraverseRingGeo = null; }
+                          if (roverTraverseBeaconGeo) { try { roverTraverseBeaconGeo.dispose(); } catch (e) {} roverTraverseBeaconGeo = null; }
+                          if (roverTraverseRingMat) { try { roverTraverseRingMat.dispose(); } catch (e) {} roverTraverseRingMat = null; }
+                          if (roverTraverseBeaconMat) { try { roverTraverseBeaconMat.dispose(); } catch (e) {} roverTraverseBeaconMat = null; }
+                          if (roverWheelContactMesh) { scene.remove(roverWheelContactMesh); roverWheelContactMesh = null; }
+                          if (roverWheelContactGeo) { try { roverWheelContactGeo.dispose(); } catch (e) {} roverWheelContactGeo = null; }
+                          if (roverWheelContactMat) { try { roverWheelContactMat.dispose(); } catch (e) {} roverWheelContactMat = null; }
+                          if (roverWheelContactTex) { try { roverWheelContactTex.dispose(); } catch (e) {} roverWheelContactTex = null; }
+                          if (roverSurfaceFillLight) { roverGroup.remove(roverSurfaceFillLight); roverSurfaceFillLight = null; }
+                          delete canvasEl.dataset.roverMissionStatus;
+                          delete canvasEl.dataset.roverMissionStep;
+                          delete canvasEl.dataset.roverMissionDistance;
+                          delete canvasEl.dataset.roverImpact;
+                          delete canvasEl.dataset.roverImpactCount;
+                          delete canvasEl.dataset.roverSurfaceProfile;
+                          delete canvasEl.dataset.roverVisualProfile;
+                          delete canvasEl.dataset.roverContactPadCount;
+                          delete canvasEl.dataset.roverDustCapacity;
+
+                          // Fifth-pass rocky surface resources are not owned by renderer.dispose().
+                          // Release each exactly once on planet change/unmount.
+                          if (rockyHorizonMesh) {
+                            scene.remove(rockyHorizonMesh);
+                            rockyHorizonMesh = null;
+                          }
+                          if (rockyHorizonGeo) { try { rockyHorizonGeo.dispose(); } catch (e) {} rockyHorizonGeo = null; }
+                          if (rockyHorizonMat) { try { rockyHorizonMat.dispose(); } catch (e) {} rockyHorizonMat = null; }
+                          if (typeof terrainMicroTex !== 'undefined' && terrainMicroTex) {
+                            try { terrainMicroTex.dispose(); } catch (e) {}
+                            terrainMicroTex = null;
                           }
 
                           renderer.dispose();

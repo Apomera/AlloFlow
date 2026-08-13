@@ -164,9 +164,10 @@ describe('Behavior Lens improvement contracts', () => {
     expect(source).toContain('String.fromCharCode(0xFEFF)');
     expect(source).toContain('const numeric =');
     expect(source).toContain("/[\",\\r\\n]/.test(str)");
-    expect(source).toContain('intensityStats');
+    expect(source).toContain('runtime.summarizeIntensity');
     expect(source).toContain('intensityN');
     expect(source).toContain('Counts represent logged ABC entries');
+    expect(source).toContain('incidents per observed hour');
   });
 
   it('announces connectivity changes and moves focus to newly opened panels', () => {

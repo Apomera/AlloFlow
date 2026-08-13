@@ -191,6 +191,32 @@ async function installDeterministicVoiceBrowser(page: Page): Promise<void> {
 
 async function routeTestPrepAssetsLocally(page: Page): Promise<void> {
   const publicRoot = path.join(process.cwd(), 'desktop', 'web-app', 'public');
+
+  // The production-shaped host intentionally references the deployment CDN.
+  // Fulfill every generated module that exists in this workspace from the
+  // public mirror so the journey tests the current code, not a prior deploy.
+  await page.route(/^https:\/\/alloflow-cdn\.pages\.dev\/.*/, async (route) => {
+    const url = new URL(route.request().url());
+    const relative = decodeURIComponent(url.pathname.replace(/^\/+/, ''));
+    const candidate = path.resolve(publicRoot, relative.replaceAll('/', path.sep));
+    const safeRoot = path.resolve(publicRoot) + path.sep;
+    if (!candidate.startsWith(safeRoot) || !fs.existsSync(candidate) || !fs.statSync(candidate).isFile()) {
+      return route.continue();
+    }
+    const extension = path.extname(candidate).toLowerCase();
+    const contentType = extension === '.js' || extension === '.mjs'
+      ? 'application/javascript'
+      : extension === '.json'
+        ? 'application/json'
+        : 'application/octet-stream';
+    return route.fulfill({
+      status: 200,
+      contentType,
+      headers: { 'access-control-allow-origin': '*' },
+      body: fs.readFileSync(candidate),
+    });
+  });
+
   await page.route(/https:\/\/(?:alloflow-cdn\.pages\.dev|raw\.githubusercontent\.com)\/.*\/test_prep\/.*|https:\/\/alloflow-cdn\.pages\.dev\/test_prep\/.*|https:\/\/raw\.githubusercontent\.com\/Apomera\/AlloFlow\/main\/test_prep\/.*/, async (route) => {
     const url = new URL(route.request().url());
     const marker = '/test_prep/';
@@ -230,12 +256,23 @@ async function lastNarration(page: Page): Promise<string> {
 
 test.describe('local voice-only navigation journey', () => {
   test('uses no pointer or keyboard after voice bootstrap', async ({ page }) => {
+    const startupErrors: string[] = [];
+    page.on('pageerror', (error) => startupErrors.push('page error: ' + error.message));
+    page.on('console', (message) => {
+      const value = message.text();
+      if (message.type() === 'error' && /(?:Fatal error|ReferenceError|TypeError|SyntaxError|before initialization)/i.test(value)) {
+        startupErrors.push('console error: ' + value);
+      }
+    });
     await installDeterministicVoiceBrowser(page);
     await routeTestPrepAssetsLocally(page);
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 120_000 });
 
     const launchPad = page.getByRole('region', { name: 'Choose how to use AlloFlow' });
-    await expect(launchPad).toBeVisible({ timeout: 180_000 });
+    await expect.poll(async () => {
+      if (startupErrors.length) return startupErrors.join(' | ').slice(0, 2000);
+      return await launchPad.isVisible() ? 'visible' : 'waiting';
+    }, { timeout: 180_000, message: 'launch pad should render without a browser runtime error' }).toBe('visible');
     const enableVoice = launchPad.getByRole('button', { name: /Enable Voice Access|Retry Voice Access/i });
 
     // The one allowed bootstrap action. Browser microphone consent is itself a
@@ -248,7 +285,7 @@ test.describe('local voice-only navigation journey', () => {
     await expect.poll(() => lastNarration(page)).toMatch(/AlloFlow launch pad/i);
 
     await speak(page, 'full platform');
-    const roleDialog = page.getByRole('dialog', { name: /Welcome to AlloFlow/i });
+    const roleDialog = page.locator('[data-allo-ui-modal="role-selection"]');
     await expect(roleDialog).toBeVisible();
 
     await speak(page, 'student');
@@ -279,6 +316,29 @@ test.describe('local voice-only navigation journey', () => {
 
     await speak(page, 'close page reader');
     await expect(page.getByText('Read This Page', { exact: true })).toHaveCount(0);
+
+    await speak(page, 'submit my work');
+    const submitDialog = page.getByRole('dialog', { name: /Submit Work/i });
+    await expect(submitDialog).toBeVisible();
+
+    await speak(page, 'where am I');
+    await expect.poll(() => lastNarration(page)).toMatch(/Submit work dialog/i);
+
+    await speak(page, 'read work summary');
+    await expect.poll(() => lastNarration(page)).toMatch(/Work summary:/i);
+
+    await speak(page, 'submit my work');
+    await expect.poll(() => page.evaluate(() => {
+      return (window as unknown as VoiceWindow).__alloVoiceLoop?.getState?.().confirmation?.commandId || '';
+    })).toBe('student_submit_confirm');
+    await expect.poll(() => lastNarration(page)).toMatch(/say yes to (?:submit|download)/i);
+
+    await speak(page, 'no');
+    await expect(submitDialog).toBeVisible();
+    await expect.poll(() => lastNarration(page)).toMatch(/cancelled|not submitted|keep reviewing/i);
+
+    await speak(page, 'close this dialog');
+    await expect(submitDialog).toBeHidden();
 
     await speak(page, 'open test prep hub');
     const testPrep = page.getByRole('dialog', { name: 'Test Prep Hub' });
@@ -317,6 +377,12 @@ test.describe('local voice-only navigation journey', () => {
       'yes',
       'read this page',
       'close page reader',
+      'submit my work',
+      'where am I',
+      'read work summary',
+      'submit my work',
+      'no',
+      'close this dialog',
       'open test prep hub',
       'test prep voice status',
       'close this screen',

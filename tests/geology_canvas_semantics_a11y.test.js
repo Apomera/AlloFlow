@@ -20,6 +20,13 @@ describe('Geology Explorer canvas semantics', () => {
     expect(source).toContain("bgCanvas.setAttribute('aria-hidden', 'true');");
   });
 
+  it('labels the non-crust evidence maps for assistive technology', () => {
+    expect(source).toContain('data-geology-scene-schematic');
+    expect(source).toContain('aria-labelledby');
+    expect(source).toContain('titleId');
+    expect(source).toContain('descId');
+  });
+
   it('keeps the source and deploy copies identical', () => {
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(source);
   });

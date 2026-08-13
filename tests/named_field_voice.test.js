@@ -64,10 +64,10 @@ describe('named editable-field voice scope', () => {
       { id: 'math-1', label: 'Show your work for problem 1', aliases: ['problem 1'], value: '' },
     ] };
     const { kernel } = registerFields(state);
-    expect((await kernel.handleUtterance('dictate into problem 1: first divide by four', { allowAi: false })).narration)
+    expect((await kernel.handleUtterance('dictate into problem 1: first divide by four', { allowAi: false, recognitionConfidence: 0.99 })).narration)
       .toContain('updated');
     expect(state.fields[0].value).toBe('first divide by four');
-    expect((await kernel.handleUtterance('append then check the quotient', { allowAi: false })).narration)
+    expect((await kernel.handleUtterance('append then check the quotient', { allowAi: false, recognitionConfidence: 0.99 })).narration)
       .toContain('appended');
     expect(state.fields[0].value).toBe('first divide by four then check the quotient');
   });
@@ -101,6 +101,24 @@ describe('named editable-field voice scope', () => {
     expect((await kernel.handleUtterance('dictate into missing response: text', { allowAi: false })).narration)
       .toContain('Available fields');
   });
+
+  it('addresses extended learner writing fields by exact accessible name and index', async () => {
+    const privateDraft = 'private DBQ draft';
+    const state = { selected: '', fields: [
+      { id: 'dbq-essay', label: 'Synthesis essay', aliases: ['DBQ essay'], value: privateDraft },
+      { id: 'dbq-source', label: 'Sourcing question 1 for Document A', value: '' },
+      { id: 'persona-reflection', label: 'Write your reflection', aliases: ['persona reflection'], value: '' },
+      { id: 'cornell-summary', label: 'Cornell summary', value: '' },
+    ] };
+    const { ctx, kernel } = registerFields(state);
+    expect(JSON.stringify(AC.getLearnerContextSnapshot(ctx))).not.toContain(privateDraft);
+    expect((await kernel.handleUtterance('select Sourcing question 1 for Document A', { allowAi: false })).narration)
+      .toContain('Sourcing question 1 for Document A');
+    await kernel.handleUtterance('dictate Evidence about the author and audience', { allowAi: false, recognitionConfidence: 0.99 });
+    expect(state.fields[1].value).toBe('Evidence about the author and audience');
+    expect((await kernel.handleUtterance('select field four', { allowAi: false })).narration)
+      .toContain('Cornell summary');
+  });
 });
 
 describe('main host registration contract', () => {
@@ -113,6 +131,28 @@ describe('main host registration contract', () => {
     expect(source).toContain('setValue: (next) => setInputText(next)');
     expect(source).toContain('setValue: (next) => handleStudentInput(generatedContent.id, index, next)');
     const block = source.slice(source.indexOf('const _listMainVoiceEditableFields'), source.indexOf('const _alloCmdCtxRef'));
+    expect(block).not.toMatch(/\.click\s*\(|querySelector|activeElement|\.focus\s*\(/);
+  });
+
+  it('publishes DBQ, Persona, and saved note-template drafts through direct host setters', async () => {
+    const fs = await import('node:fs');
+    const source = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
+    const block = source.slice(source.indexOf('const _listMainVoiceEditableFields'), source.indexOf('const _alloCmdCtxRef'));
+    expect(block).toContain("id: 'persona-reflection'");
+    expect(block).toContain('setValue: (next) => setPersonaReflectionInput(next)');
+    expect(block).toContain("id: 'persona-chat-message'");
+    expect(block).toContain('setValue: (next) => setPersonaInput(next)');
+    expect(block).toContain("id: 'dbq-synthesis-essay'");
+    expect(block).toContain("setDbqResponse('_essayText', next)");
+    expect(block).toContain("label: 'Sourcing question '");
+    expect(block).toContain("label: 'Analysis question '");
+    expect(block).toContain("label: 'Source reliability reasoning for '");
+    expect(block).toContain("id: 'notes-' + id");
+    for (const template of ['cornell-notes', 'lab-report', 'reading-response', 'double-entry', 'guided-notes', 'q-and-a']) {
+      expect(block).toContain("template === '" + template + "'");
+    }
+    expect(block).toContain('const setNoteValue = (key, next) => handleNoteUpdate(key, next)');
+    expect(block).toContain('if (showNotebook) return fields');
     expect(block).not.toMatch(/\.click\s*\(|querySelector|activeElement|\.focus\s*\(/);
   });
 });

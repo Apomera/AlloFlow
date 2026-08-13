@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "kind": "alloflow-mcp-refinement-protocol",
+  "protocolId": "alloflow-mcp-refinement-v1",
+  "status": "prospective-scaffold",
+  "question": "Does the canonical evidence-gated refinement loop improve accessibility outcomes over the same canonical primary pass without auto-continuation?",
+  "unitOfAnalysis": "source_document_sha256",
+  "conditions": {
+    "primary-one-shot": {
+      "autoContinue": false,
+      "implementation": "canonical-driver",
+      "role": "active-comparator"
+    },
+    "gated-loop": {
+      "autoContinue": true,
+      "autoContinueRounds": 3,
+      "implementation": "canonical-driver",
+      "role": "intervention"
+    },
+    "deterministic-only": {
+      "implementation": "external-adapter-required",
+      "role": "future-ablation"
+    },
+    "ungated-loop": {
+      "implementation": "external-adapter-required",
+      "role": "future-ablation"
+    }
+  },
+  "evidenceClasses": [
+    "infrastructure_only",
+    "development_descriptive",
+    "prospective_confirmatory"
+  ],
+  "sampling": {
+    "modelGenerationConfigSentByCurrentMcpDriver": false,
+    "temperatureControlled": false,
+    "seedControlled": false,
+    "replicatesPerAiCondition": 3,
+    "note": "Generation uses provider-default sampling; repetitions are nested within document.",
+    "actualModelTraceComplete": false,
+    "confirmatoryModelSubstitutionControl": "Require ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL to equal ALLOFLOW_MCP_GEMINI_MODEL until per-call actual-model tracing is complete; differing fallback configuration is engineering/descriptive evidence only."
+  },
+  "developmentPilot": {
+    "manifest": "development-pilot.json",
+    "documents": 6,
+    "pages": 107,
+    "plannedCanonicalRuns": 36,
+    "effectClaimEligible": false
+  },
+  "prospectiveCorpus": {
+    "primaryDocuments": 12,
+    "safetyCases": 4,
+    "strata": [
+      "narrative_deep_hierarchy",
+      "multicolumn_reading_order",
+      "table_heavy",
+      "figure_or_scan"
+    ],
+    "primaryPageRange": [
+      1,
+      75
+    ],
+    "independentCuratorRequired": true,
+    "freezeBeforeExecution": true
+  },
+  "blinding": {
+    "allocationSeedBits": 256,
+    "commitment": "sha256",
+    "conditionOrderAlgorithm": "rank SHA256(seed || document_id || replicate_id || condition_id)",
+    "opaqueArtifactIds": true,
+    "reviewOrderRandomizedPerReviewer": true,
+    "withheldUntilAdjudicationLock": [
+      "condition",
+      "automated_scores",
+      "mcp_transcript",
+      "loop_log",
+      "usage",
+      "latency",
+      "cost"
+    ]
+  },
+  "primaryOutcome": {
+    "name": "safe_material_resolution_rate",
+    "formula": "resolved_baseline_material_issues / baseline_material_issues",
+    "introducedMaterialDefectPenalty": "set outcome to zero",
+    "source": "blinded_specialist_adjudication"
+  },
+  "analysis": {
+    "primaryContrast": "gated-loop minus primary-one-shot",
+    "aggregateReplicatesWithinDocument": true,
+    "pairedDocumentBootstrap": true,
+    "confidenceLevel": 0.95,
+    "minimumProspectiveDocumentsForConfirmatoryEstimate": 12,
+    "automatedOutcomesAreSurrogates": true
+  },
+  "failClosedExclusions": [
+    "scripted_or_synthetic_from_effect_estimate",
+    "development_exposed_from_confirmatory_estimate",
+    "missing_condition_pair",
+    "engine_model_or_shared_option_drift",
+    "missing_expert_adjudication",
+    "duplicate_or_aliased_artifact_hash",
+    "broken_source_output_or_evidence_binding"
+  ]
+}

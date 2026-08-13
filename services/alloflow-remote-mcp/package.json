@@ -11,6 +11,8 @@
     "dev": "wrangler dev",
     "preflight:staging": "node scripts/pilot-preflight.cjs --config wrangler.pilot.local.jsonc",
     "preflight:staging:accepted": "node scripts/pilot-preflight.cjs --config wrangler.pilot.local.jsonc --allow-synthetic-acceptance",
+    "provision:staging:plan": "node scripts/pilot-provision.cjs --config wrangler.pilot.local.jsonc",
+    "provision:staging:apply": "node scripts/pilot-provision.cjs --config wrangler.pilot.local.jsonc --apply",
     "lifecycle:check": "node scripts/pilot-lifecycle.cjs",
     "lifecycle:apply:staging": "node scripts/pilot-lifecycle.cjs --config wrangler.pilot.local.jsonc --apply",
     "admission:pause:staging": "node scripts/pilot-admission.cjs pause --config wrangler.pilot.local.jsonc --reason staging-release",

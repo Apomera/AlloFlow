@@ -1125,10 +1125,43 @@ describe('Tree Life Lab — banks and mirrors', () => {
     let tree = E.newTree('oak');
     for (let i = 0; i < 60; i += 1) tree = E.simulateYear(tree, E.speciesById('oak'), GOOD_ENV, ALLOC);
 
+    const experimentBaseline = {
+      speciesId: 'oak', tree: E.cloneTreeSnapshot(tree, 'oak'),
+      env: { ...GOOD_ENV, droughtYears: [] }, alloc: { ...ALLOC },
+    };
+    const experimentTreatment = {
+      env: { ...GOOD_ENV, soilWater: 0.3, droughtYears: [] }, alloc: { ...ALLOC },
+    };
+    const experimentPrediction = { limiter: 'water', outcome: 'struggle', reason: '' };
+    const experimentResult = E.runExperimentTrial(
+      experimentBaseline.tree, 'oak', experimentTreatment.env, experimentTreatment.alloc, 10,
+    );
+    const experimentTrial = E.normaliseTrialRecord({
+      speciesId: 'oak', duration: 10, prediction: experimentPrediction,
+      baseline: experimentBaseline, treatment: experimentTreatment,
+      result: experimentResult, explanation: '',
+    });
+
     const SURFACES = [
       ['grow/k2', { view: 'grow', bandOverride: 'k2', tree }],
       ['grow/g68', { view: 'grow', bandOverride: 'g68', tree }],
       ['grow/g912', { view: 'grow', bandOverride: 'g912', tree }],
+      ['grow/predict', {
+        view: 'grow', bandOverride: 'g68', tree,
+        experiment: { phase: 'predict', duration: 10, prediction: experimentPrediction,
+          baseline: experimentBaseline },
+      }],
+      ['grow/ready', {
+        view: 'grow', bandOverride: 'g68', tree,
+        experiment: { phase: 'ready', duration: 10, prediction: experimentPrediction,
+          baseline: experimentBaseline, treatment: experimentTreatment },
+      }],
+      ['grow/explain-ab', {
+        view: 'grow', bandOverride: 'g68', tree: experimentResult.tree,
+        experiment: { phase: 'explain', duration: 10, prediction: experimentPrediction,
+          baseline: experimentBaseline, treatment: experimentTreatment, result: experimentResult },
+        experimentTrials: { A: experimentTrial, B: experimentTrial },
+      }],
       ['chem/k2', { view: 'chem', bandOverride: 'k2', tree }],
       ['chem/g912', { view: 'chem', bandOverride: 'g912', tree }],
       ['transport/g68', { view: 'transport', bandOverride: 'g68', tree }],
@@ -1521,5 +1554,224 @@ describe('Tree Life Lab — the comparison chart', () => {
     const html = cmp();
     expect(html).toMatch(/Height against age for five species/);
     expect(html).toMatch(/Coast Redwood (reached|died)/);
+  });
+});
+
+describe('Tree Life Lab — controlled investigations and A/B notebook', () => {
+  function grown(E, years = 25) {
+    let tree = E.newTree('oak');
+    for (let i = 0; i < years && tree.alive; i += 1) {
+      tree = E.simulateYear(tree, E.speciesById('oak'), GOOD_ENV, ALLOC);
+    }
+    return tree;
+  }
+
+  function baseline(E, tree) {
+    return {
+      speciesId: 'oak',
+      tree: E.cloneTreeSnapshot(tree, 'oak'),
+      env: { ...GOOD_ENV, droughtYears: [] },
+      alloc: { ...ALLOC },
+    };
+  }
+
+  it('runs a frozen trial deterministically without mutating its starting tree', () => {
+    const E = engine();
+    const tree = grown(E);
+    const before = JSON.parse(JSON.stringify(tree));
+    const first = E.runExperimentTrial(tree, 'oak', GOOD_ENV, ALLOC, 10);
+    const second = E.runExperimentTrial(tree, 'oak', GOOD_ENV, ALLOC, 10);
+
+    expect(first).toEqual(second);
+    expect(tree).toEqual(before);
+    expect(first.summary.yearsCompleted).toBe(10);
+    expect(first.summary.endAge - first.summary.startAge).toBe(10);
+    expect(Number.isFinite(first.summary.meanNet)).toBe(true);
+    expect(Number.isFinite(first.summary.meanRingWidth)).toBe(true);
+
+    first.tree.history[0].net = -999;
+    expect(tree.history[0].net).toBe(before.history[0].net);
+  });
+
+  it('stops a lethal treatment at death and reports finite evidence', () => {
+    const E = engine();
+    const result = E.runExperimentTrial(
+      grown(E, 5), 'oak',
+      { tempC: 22, light: 0.01, co2ppm: 420, soilWater: 0.8 },
+      ALLOC, 100,
+    );
+
+    expect(result.summary.alive).toBe(false);
+    expect(result.summary.observedOutcome).toBe('die');
+    expect(result.summary.yearsCompleted).toBeLessThan(100);
+    expect(result.summary.causeOfDeath).toBe('carbon_starvation');
+    for (const value of Object.values(result.summary)) {
+      if (typeof value === 'number') expect(Number.isFinite(value)).toBe(true);
+    }
+  });
+
+  it('normalises hostile persisted workflow and notebook state safely', () => {
+    const E = engine();
+    const tree = grown(E, 10);
+    const invalid = E.normaliseExperiment({
+      phase: 'teleport', duration: Infinity,
+      prediction: { limiter: 'magic', outcome: 'maybe', reason: 9 },
+      baseline: null,
+    });
+    expect(invalid.phase).toBe('idle');
+    expect(invalid.duration).toBe(10);
+    expect(invalid.prediction).toEqual({ limiter: null, outcome: null, reason: '' });
+
+    const missingResult = E.normaliseExperiment({
+      phase: 'explain', duration: 10,
+      prediction: { limiter: 'light', outcome: 'thrive' },
+      baseline: baseline(E, tree),
+      treatment: { env: GOOD_ENV, alloc: ALLOC },
+      result: { tree: null, summary: { meanNet: NaN } },
+    });
+    expect(missingResult.phase).toBe('ready');
+    expect(E.normaliseExperimentTrials({ A: 'broken', B: { baseline: {} } }))
+      .toEqual({ A: null, B: null });
+
+    const html = render({ treeLab: {
+      view: 'grow', tree, experiment: { phase: 'explain', baseline: null },
+      experimentTrials: { A: 'broken', B: { result: false } },
+    } });
+    expect(html.length).toBeGreaterThan(500);
+    expect(html).toContain('Investigation studio');
+  });
+
+  it('renders Predict, Run, Explain, and a controlled A/B evidence table', () => {
+    const E = engine();
+    const tree = grown(E);
+    const base = baseline(E, tree);
+    const prediction = { limiter: 'water', outcome: 'struggle', reason: 'Less water closes stomata.' };
+    const treatmentA = {
+      env: { ...GOOD_ENV, soilWater: 0.3, droughtYears: [] },
+      alloc: { ...ALLOC },
+    };
+    const treatmentB = {
+      env: { ...GOOD_ENV, soilWater: 0.75, droughtYears: [] },
+      alloc: { ...ALLOC },
+    };
+    const resultA = E.runExperimentTrial(base.tree, 'oak', treatmentA.env, treatmentA.alloc, 10);
+    const resultB = E.runExperimentTrial(base.tree, 'oak', treatmentB.env, treatmentB.alloc, 10);
+
+    const predictHtml = render({ treeLab: { view: 'grow', tree, playing: true,
+      experiment: { phase: 'predict', duration: 10, prediction, baseline: base } } });
+    expect(predictHtml).toContain('allo-tree-workbench');
+    expect(predictHtml).toContain('allo-tree-workbench-sticky');
+    expect(predictHtml).toContain('Make your prediction');
+    expect(predictHtml).toContain('▶ Play');
+    expect(predictHtml).not.toContain('Pause');
+
+    const readyHtml = render({ treeLab: { view: 'grow', tree,
+      experiment: { phase: 'ready', duration: 10, prediction, baseline: base, treatment: treatmentA } } });
+    expect(readyHtml).toContain('Prediction locked');
+    expect(readyHtml).toContain('Run trial');
+
+    const explainHtml = render({ treeLab: { view: 'grow', tree: resultA.tree,
+      experiment: { phase: 'explain', duration: 10, prediction, baseline: base,
+        treatment: treatmentA, result: resultA, explanation: '' } } });
+    expect(explainHtml).toContain('Observed outcome');
+    expect(explainHtml).toContain('treelab-explanation');
+    expect(explainHtml).toContain('role="status"');
+
+    const makeTrial = (treatment, result) => E.normaliseTrialRecord({
+      speciesId: 'oak', duration: 10, prediction, baseline: base,
+      treatment, result, explanation: 'The carbon evidence supports the result.',
+    });
+    const notebookHtml = render({ treeLab: { view: 'grow', tree: resultB.tree,
+      experimentTrials: { A: makeTrial(treatmentA, resultA), B: makeTrial(treatmentB, resultB) } } });
+    expect(notebookHtml).toContain('Controlled pair');
+    expect(notebookHtml).toContain('Trial evidence; difference is Trial B minus Trial A.');
+    expect(notebookHtml).toContain('<table');
+    expect(notebookHtml).toContain('Difference');
+  });
+});
+
+describe('Tree Life Lab - derived 3D visual state', () => {
+  function visual(E, tree, speciesId, env, season) {
+    expect(typeof E.deriveTreeVisualState,
+      'deriveTreeVisualState must be exported with the pure engine').toBe('function');
+    return E.deriveTreeVisualState(tree, E.speciesById(speciesId), env, season);
+  }
+
+  it('keeps water stress and chronic carbon deficit as independent visual channels', () => {
+    const E = engine();
+    const healthy = { rootMass: 5, leafMass: 5, deficitYears: 0 };
+    const wet = visual(E, healthy, 'oak', { soilWater: 0.9 }, 'summer');
+    const dry = visual(E, healthy, 'oak', { soilWater: 0.03 }, 'summer');
+
+    expect(dry.waterStress).toBeGreaterThan(wet.waterStress);
+    expect(dry.severeWaterStress).toBe(true);
+    expect(wet.severeWaterStress).toBe(false);
+    expect(dry.carbonStress).toBe(wet.carbonStress);
+    expect(dry.chronicDeficit).toBe(false);
+    // Drought changes turgor/colour in the scene, not the carbon-driven canopy count.
+    expect(dry.leafDensity).toBeCloseTo(wet.leafDensity, 10);
+    expect(dry.leafScale).toBeCloseTo(wet.leafScale, 10);
+
+    const carbonStarved = visual(E, { ...healthy, deficitYears: 99 }, 'oak',
+      { soilWater: 0.9 }, 'summer');
+    expect(carbonStarved.waterStress).toBeCloseTo(wet.waterStress, 10);
+    expect(carbonStarved.carbonStress).toBeGreaterThan(wet.carbonStress);
+    expect(carbonStarved.chronicDeficit).toBe(true);
+    expect(carbonStarved.leafDensity).toBeLessThan(wet.leafDensity);
+    expect(carbonStarved.leafScale).toBeLessThan(wet.leafScale);
+  });
+
+  it('draws broadleaf phenology without making evergreen needles disappear', () => {
+    const E = engine();
+    const tree = { rootMass: 5, leafMass: 5, deficitYears: 0 };
+    const oakSpring = visual(E, tree, 'oak', { soilWater: 0.8 }, 'spring');
+    const oakSummer = visual(E, tree, 'oak', { soilWater: 0.8 }, 'summer');
+    const oakAutumn = visual(E, tree, 'oak', { soilWater: 0.8 }, 'autumn');
+    const oakWinter = visual(E, tree, 'oak', { soilWater: 0.8 }, 'winter');
+    const pineWinter = visual(E, tree, 'pine', { soilWater: 0.8 }, 'winter');
+
+    expect(oakSpring.springGrowth).toBe(1);
+    expect(oakSpring.leafDensity).toBeGreaterThan(0);
+    expect(oakSpring.leafDensity).toBeLessThan(oakSummer.leafDensity);
+    expect(oakSpring.leafScale).toBeLessThan(oakSummer.leafScale);
+    expect(oakAutumn.leafDensity).toBeGreaterThan(oakSpring.leafDensity);
+    expect(oakAutumn.leafDensity).toBeLessThan(oakSummer.leafDensity);
+    expect(oakWinter.leafDensity).toBe(0);
+    expect(pineWinter.leafDensity).toBe(1);
+    expect(pineWinter.leafScale).toBe(1);
+  });
+
+  it('derives bounded root vigor from root investment rather than tree size alone', () => {
+    const E = engine();
+    const lowRoots = visual(E, { rootMass: 1, leafMass: 9, deficitYears: 0 }, 'oak',
+      { soilWater: 0.8 }, 'summer');
+    const balanced = visual(E, { rootMass: 5, leafMass: 5, deficitYears: 0 }, 'oak',
+      { soilWater: 0.8 }, 'summer');
+    const highRoots = visual(E, { rootMass: 9, leafMass: 1, deficitYears: 0 }, 'oak',
+      { soilWater: 0.8 }, 'summer');
+    const sameShareLargerTree = visual(E,
+      { rootMass: 90, leafMass: 10, deficitYears: 0 }, 'oak',
+      { soilWater: 0.8 }, 'summer');
+
+    expect(lowRoots.rootVigor).toBeGreaterThanOrEqual(0.30);
+    expect(lowRoots.rootVigor).toBeLessThan(balanced.rootVigor);
+    expect(balanced.rootVigor).toBeLessThan(highRoots.rootVigor);
+    expect(highRoots.rootVigor).toBeLessThanOrEqual(1);
+    expect(sameShareLargerTree.rootVigor).toBeCloseTo(highRoots.rootVigor, 10);
+
+    // Real model trajectories must retain separation too; synthetic mass shares can
+    // hide a mapping that saturates immediately under ordinary allocation dynamics.
+    const env = { tempC: 22, light: 0.85, co2ppm: 420, soilWater: 0.78 };
+    let leafInvested = E.newTree('oak');
+    let rootInvested = E.newTree('oak');
+    for (let year = 0; year < 14; year += 1) {
+      leafInvested = E.simulateYear(leafInvested, E.speciesById('oak'), env,
+        { leaf: 0.55, root: 0.05, wood: 0.3, repro: 0, store: 0.1 });
+      rootInvested = E.simulateYear(rootInvested, E.speciesById('oak'), env,
+        { leaf: 0.1, root: 0.55, wood: 0.25, repro: 0, store: 0.1 });
+    }
+    const leafInvestedVisual = visual(E, leafInvested, 'oak', env, 'summer');
+    const rootInvestedVisual = visual(E, rootInvested, 'oak', env, 'summer');
+    expect(rootInvestedVisual.rootVigor).toBeGreaterThan(leafInvestedVisual.rootVigor + 0.08);
   });
 });

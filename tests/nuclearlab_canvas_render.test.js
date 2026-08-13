@@ -25,6 +25,7 @@ let rafCallbacks;
 let nextRafId;
 let originalRaf;
 let originalCancelRaf;
+let originalScrollIntoView;
 
 beforeAll(() => {
   ({ act } = require(resolve(process.cwd(), 'desktop/web-app/node_modules', 'react-dom/test-utils')));
@@ -129,12 +130,28 @@ function mount(state, overrides) {
   return recordings;
 }
 
+function mountInteractive(state, overrides) {
+  const cfg = window.StemLab._registry.nuclearLab;
+  const Comp = () => {
+    const [toolData, setToolData] = React.useState({ _nuclearLab: state || {} });
+    const ctx = makeCtx(Object.assign({ toolData, setToolData }, overrides || {}));
+    return cfg.render(ctx);
+  };
+  act(() => {
+    root = ReactDOMClient.createRoot(host);
+    root.render(React.createElement(Comp));
+  });
+  flushRaf();
+}
+
 beforeEach(() => {
   installRafHarness();
   resetStemLab();
   loadTool('stem_lab/stem_tool_nuclearlab.js', 'nuclearLab');
   host = document.createElement('div');
   document.body.appendChild(host);
+  originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
+  window.HTMLElement.prototype.scrollIntoView = function () { this.__scrolledIntoView = true; };
   // Every canvas gets its own recorder, stashed on the element.
   window.HTMLCanvasElement.prototype.getContext = function () {
     if (!this.__rec) this.__rec = recordingContext(this);
@@ -148,6 +165,8 @@ afterEach(() => {
   host = null;
   globalThis.requestAnimationFrame = originalRaf;
   globalThis.cancelAnimationFrame = originalCancelRaf;
+  if (originalScrollIntoView) window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+  else delete window.HTMLElement.prototype.scrollIntoView;
   rafCallbacks.clear();
 });
 
@@ -222,6 +241,31 @@ describe('every canvas actually draws', () => {
     expect(host.querySelector('#rx-live-power').textContent).toBe('100%');
     expect(host.querySelector('button[aria-label="Stop the coolant pumps"]').getAttribute('aria-pressed')).toBe('true');
     expect(rafCallbacks.size, 'reset reactor did not return to its parked state').toBe(0);
+  });
+});
+
+describe('route-mounted canvas lifecycle', () => {
+  it('focuses the new first section and redraws its chart after the route commit', () => {
+    mountInteractive({ nkPath: 'safe', nkOpen: true });
+    expect(host.querySelector('#nksec-halflife')).toBeNull();
+
+    const works = [...host.querySelectorAll('button')].find((button) =>
+      (button.getAttribute('aria-label') || '').startsWith('Follow the route: How does any of it work?'));
+    expect(works).toBeTruthy();
+    act(() => works.click());
+    flushRaf();
+
+    const destination = host.querySelector('#nksec-halflife');
+    expect(destination).toBeTruthy();
+    expect(document.activeElement).toBe(destination);
+    expect(destination.__scrolledIntoView).toBe(true);
+    expect(host.querySelector('#nk-index-body')).toBeNull();
+
+    const decay = [...host.querySelectorAll('canvas')]
+      .find((canvas) => (canvas.getAttribute('aria-label') || '').startsWith('Decay curve.'));
+    expect(decay).toBeTruthy();
+    expect(decay.__rec.calls.length).toBeGreaterThan(0);
+    expect(decay.__rec.badNumbers).toEqual([]);
   });
 });
 

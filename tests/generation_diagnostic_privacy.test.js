@@ -36,6 +36,8 @@ const compactorSource = [
 ].join('\n');
 const { compactBlueprint, compactFullPack } = new Function(`
   const ALLO_FULL_PACK_CAPABILITY_FINGERPRINT = 'full-pack-plan-v2';
+  const ALLO_GENERATION_MAX_RESOURCES = 1000;
+  const ALLO_GENERATION_MAX_GROUPS = 100;
   ${privacySource}
   ${compactorSource}
   return {

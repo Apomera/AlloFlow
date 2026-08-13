@@ -9245,7 +9245,9 @@
     "restored_notice": "Votre plan de leçon enregistré :",
     "download_diagnostics": "Télécharger le rapport de diagnostic du plan",
     "copy_diagnostics": "Copier les diagnostics expurgés du plan",
+    "open_error_log": "Ouvrir le journal des erreurs",
     "failure_log_help": "Les détails techniques restent dans le journal d’erreurs de l’appareil; les diagnostics copiés et téléchargés sont expurgés.",
+    "open_error_log": "Ouvrir le journal des erreurs",     "error_log_loading": "Le journal des erreurs est encore en cours de chargement. Réessayez dans un instant.",
     "saved_run_warning": "Avertissement sur l’exécution enregistrée",
     "run_stopped": "Arrêté. {done} ressources sur {total} étaient terminées avant l'arrêt — les autres affichent Relancer pour les générer une à une ou redémarrer le plan.",
     "save_template": "Enregistrer comme modèle",
@@ -11194,7 +11196,7 @@
     "poettree_title": "PoetTree",
     "poettree_desc": "Écris des poèmes avec des étayages de forme, analyse de rimes et de mètre, retour IA",
     "throughline_desc": "Organisez vos leçons en une unité spatiale : séquence d'enseignement, préalables, un seul fichier exportable",
-    "throughline_title": "Throughline"
+    "throughline_title": "Learning Web: Unit Path"
   },
   "sel_hub": {
     "loading": "Chargement de SEL Hub...",
@@ -30690,9 +30692,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

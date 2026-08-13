@@ -12,7 +12,9 @@ describe('application shell accessibility remediation', () => {
     expect(modal).not.toContain('role="button" tabIndex={0} onKeyDown');
   });
   it('provides a non-empty fallback name for the global mute button', () => {
-    expect(app).toContain("muted ? 'Unmute all audio' : 'Mute all audio'");
+    expect(app).toContain("muteLabel = 'Mute all audio'");
+    expect(app).toContain("unmuteLabel = 'Unmute all audio'");
+    expect(app).toContain('aria-label={muted ? unmuteLabel : muteLabel}');
   });
   it('places floating application status and assistant content in named regions', () => {
     expect(app).toMatch(/<main[^>]*>[\s\S]*?<h1 className="sr-only">AlloFlow<\/h1>/);

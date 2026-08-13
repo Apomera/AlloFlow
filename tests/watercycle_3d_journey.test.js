@@ -291,10 +291,11 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain('var aquiferCurrentCurve3d = new THREE.CatmullRomCurve3');
       expect(source).toContain('var aquiferFlow3d = new THREE.Points');
       expect(source).toContain('aquiferCurrentCurve3d.getPointAt(aquiferMarkerT3d)');
-      expect(source).toContain("canvasEl.dataset.groundwaterFlow = aquiferFlow3d.visible ? 'moving' : 'hidden';");
+      expect(source).toContain("canvasEl.dataset.groundwaterFlow = groundwaterTransferActive3d ? 'moving' : 'hidden';");
       expect(source).toContain('var soilPercolation3d = new THREE.Points');
       expect(source).toContain('percolationPosition3d.setY');
-      expect(source).toContain("canvasEl.dataset.percolation = soilPercolation3d.visible ? 'visible' : 'hidden';");
+      expect(source).toContain("canvasEl.dataset.percolation = vadoseStorageActive3d ? 'retained-in-soil' :");
+      expect(source).toContain("aquiferRechargeActive3d ? 'deep-recharge' : 'hidden';");
       expect(source).toContain('var urbanPonding3d = new THREE.Group();');
       expect(source).toContain("canvasEl.dataset.ponding = urbanPonding3d.visible ? 'visible' : 'hidden';");
       expect(source).toContain('var branchPreviewGroup3d = new THREE.Group();');
@@ -393,11 +394,11 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain("'water_table', 'Water table'");
       expect(source).toContain('var groundwaterStorageMemory3d = 0.24;');
       expect(source).toContain('var infiltrationStrength3d = Math.max');
-      expect(source).toContain('0.18 + journeyProgress3d * (0.68 + infiltrationStrength3d * 0.18)');
+      expect(source).toContain('0.18 + journeyProgress3d * (0.52 + infiltrationStrength3d * 0.14)');
       expect(source).toContain('soilMoistureFrontGroup3d.position.set');
       expect(source).toContain('var wettingPulse3d = motionReduced3d ? 0');
       expect(source).toContain('waterTableRecharge3d.visible = aquiferRechargeActive3d;');
-      expect(source).toContain('var groundwaterRechargeTarget3d = aquiferRechargeActive3d');
+      expect(source).toContain('var groundwaterRechargeTarget3d = aquiferRouteActive3d');
       expect(source).toContain('var groundwaterStorageTrend3d = groundwaterRechargeTarget3d');
       expect(source).toContain('var waterTableLevel3d = -2.08 + groundwaterStorageMemory3d * 0.34;');
       expect(source).toContain('waterTableRecharge3d.position.y = waterTableLevel3d + 0.015;');
@@ -408,7 +409,8 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain("canvasEl.dataset.capillaryFringe = groundwaterStorageVisible3d ? 'visible'");
       expect(source).toContain("canvasEl.dataset.soilMoistureFront = wettingFrontActive3d ? 'advancing'");
       expect(source).toContain("canvasEl.dataset.surfaceIntake = soilIntakePatch3d.visible ? 'visible' : 'hidden';");
-      expect(source).toContain('the luminous water table rises during recharge');
+      expect(source).toContain('Only the selected deep-recharge pathway reaches the water table');
+      expect(source).toContain('does not mean all infiltration becomes recharge');
       expect(source).toContain('var surfaceRunoffTributaries3d = new THREE.Group();');
       expect(source).toContain('var surfaceRunoffCurves3d = [];');
       expect(source).toContain('new THREE.TubeGeometry(tributaryCurve3d, 36');
@@ -456,7 +458,7 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain('var oceanCurrentActive3d =');
       expect(source).toContain('oceanCurrentCurves3d[oceanCurrentCurveIndex3d].getPointAt');
       expect(source).toContain("var estuaryMixingActive3d = state3d === 'river_runoff'");
-      expect(source).toContain("var groundwaterSeepActive3d = state3d === 'aquifer_flow';");
+      expect(source).toContain("var groundwaterSeepActive3d = groundwaterTransferActive3d;");
       expect(source).toContain('visualTime3d * (0.08 + effectiveRunoff3d * 0.001)');
       expect(source).toContain('visualTime3d * (0.04 + infiltrationVisual3d * 0.0005)');
       expect(source).toContain("canvasEl.dataset.oceanExchange = estuaryMixingActive3d ? 'river-mixing'");

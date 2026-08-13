@@ -3123,6 +3123,19 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             'answer-evidence': { type: 'answer-evidence', question: 'Which claim is best supported?', answerOptions: ['Claim A', 'Claim B', 'Claim C', 'Claim D'], correctAnswer: 'Claim B', evidencePrompt: 'Which evidence or reason best supports that answer?', evidenceOptions: ['Evidence A', 'Evidence B', 'Evidence C', 'Evidence D'], correctEvidence: 'Evidence C', conceptLabel: 'short concept' },
             'numeric-response': { type: 'numeric-response', question: 'Calculate the requested value. Include units when appropriate.', correctValue: 12.5, tolerance: 0.1, unit: 'cm', acceptableUnits: ['centimeter', 'centimeters'], conceptLabel: 'short concept' },
         };
+        // Visual prompts are production instructions, not text alternatives. Keep
+        // authored descriptions beside them so the rendered assessment can give a
+        // blind learner the same information conveyed by each generated visual.
+        // The descriptions must remain objective and must not identify the keyed
+        // answer unless that information is visibly present in the image itself.
+        if ((_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _jsonExamplesByType.mcq) {
+            _jsonExamplesByType.mcq.imagePrompt = 'A concrete, classroom-friendly educational illustration.';
+            _jsonExamplesByType.mcq.imageAltText = 'An objective description of the visible subject, labels, spatial relationships, and other information needed to understand the illustration.';
+        }
+        if ((_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _jsonExamplesByType.mcq) {
+            _jsonExamplesByType.mcq.optionImagePrompts = ['Image prompt A', 'Image prompt B', 'Image prompt C', 'Image prompt D'];
+            _jsonExamplesByType.mcq.optionImageAltTexts = ['Objective visual description A', 'Objective visual description B', 'Objective visual description C', 'Objective visual description D'];
+        }
         const _jsonExampleQuestions = _supportedItemTypes.filter(function (key) {
             return (_modeItemMix[key] || 0) > 0;
         }).map(function (key) {
@@ -3165,6 +3178,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (question stimulus): For EACH MCQ item, additionally provide an "imagePrompt" field: a 1-sentence prompt for an image generator that depicts the question\'s subject. Use concrete, age-appropriate, classroom-friendly imagery.' : ''}
           ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (option images): For EACH MCQ item, additionally provide an "optionImagePrompts" array of 4 strings (one per option, same order as options). Each prompt must depict that option concretely.' : ''}
           ${effCustomInstructions ? `Custom instructions: ${effCustomInstructions}` : ''}
+          ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'ACCESSIBLE QUESTION VISUAL: Include imageAltText for each imagePrompt. Objectively describe the intended visible content, labels, and spatial relationships. Do not interpret the image or identify the keyed answer unless that fact is visibly explicit.' : ''}
+          ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'ACCESSIBLE OPTION VISUALS: Include optionImageAltTexts as 4 objective visual descriptions aligned with optionImagePrompts. Describe what is visibly distinct; do not merely repeat the option label.' : ''}
           ${useEmojis ? 'Use emojis only if they improve clarity.' : 'Do not use emojis.'}
           Return ONLY valid JSON matching this shape: ${_jsonShape}
           Source excerpt:
@@ -3197,6 +3212,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (question stimulus): For EACH MCQ item, additionally provide an "imagePrompt" field: a 1-sentence prompt for an image generator that depicts the question\'s subject. Use concrete, age-appropriate, classroom-friendly imagery. Example: "A simple labeled diagram of the water cycle showing evaporation, condensation, and precipitation, in a clean educational illustration style."' : ''}
           ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (option images): For EACH MCQ item, additionally provide an "optionImagePrompts" array of 4 strings (one per option, same order as options). Each is a 1-sentence prompt depicting that option\'s answer concretely. Example for "Which planet is Mars?": ["A red rocky planet with thin atmosphere", "A large striped gas giant with a great red spot", ...]' : ''}
           ${_multiSelectCount > 0 ? 'For each Multi-Select: provide 4-6 plausible options and a correctAnswers array containing the exact text of 2-4 correct options. Make every option independently judgeable. Avoid tricks such as all-of-the-above. The student receives partial credit for correct selections and loses credit for incorrect selections.' : ''}
+          ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'ACCESSIBLE QUESTION VISUAL: Include imageAltText for each imagePrompt. Objectively describe the intended visible content, labels, and spatial relationships. Do not interpret the image or identify the keyed answer unless that fact is visibly explicit.' : ''}
+          ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'ACCESSIBLE OPTION VISUALS: Include optionImageAltTexts as 4 objective visual descriptions aligned with optionImagePrompts. Describe what is visibly distinct; do not merely repeat the option label.' : ''}
           ${_fillBlankCount > 0 ? 'For each Fill-in-the-Blank: write a complete sentence with the target term replaced by "___" (3 underscores). Provide expectedFill (the precise word/phrase) AND a short list of acceptableAlternatives (synonyms or common variants — typos NOT included; the grader handles those).' : ''}
           ${_shortAnswerCount > 0 ? 'For each Short-Answer: write a question that requires a 1-2 sentence response demonstrating understanding (not just recall). Provide expectedAnswer as a 10-30 word reference answer the AI grader can compare student responses against.' : ''}
           ${_selfExplanationCount > 0 ? 'For each Self-Explanation Prompt: write a question that asks the student to explain a key concept in their own words (3-5 sentences). Provide a "rubric" string the AI grader can use — describe what a complete explanation should cover (key elements, relationships, examples). Reward genuine understanding over memorized phrasing.' : ''}
@@ -3360,6 +3377,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     const _imgTasks = [];
                     _mcqItems.forEach(function (q) {
                         if (_wantQuestionImages && q.imagePrompt) {
+                            q.imageAltText = typeof q.imageAltText === 'string' && q.imageAltText.trim()
+                                ? q.imageAltText.trim().slice(0, 600)
+                                : String(q.imagePrompt).trim().slice(0, 600);
                             _imgTasks.push({
                                 target: q,
                                 key: 'imageUrl',
@@ -3368,6 +3388,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                         }
                         if (_wantOptionImages && Array.isArray(q.optionImagePrompts)) {
                             q.optionImageUrls = q.optionImageUrls || new Array(q.options ? q.options.length : 4).fill(null);
+                            const _authoredOptionAlts = Array.isArray(q.optionImageAltTexts) ? q.optionImageAltTexts : [];
+                            q.optionImageAltTexts = q.optionImagePrompts.slice(0, 4).map(function (prompt, optIdx) {
+                                const authored = typeof _authoredOptionAlts[optIdx] === 'string' ? _authoredOptionAlts[optIdx].trim() : '';
+                                return (authored || String(prompt || '').trim()).slice(0, 600);
+                            });
                             q.optionImagePrompts.slice(0, 4).forEach(function (prompt, optIdx) {
                                 if (prompt) _imgTasks.push({
                                     target: q,

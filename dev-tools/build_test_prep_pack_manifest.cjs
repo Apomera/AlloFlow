@@ -21,6 +21,7 @@ const allowedCategories = new Set([
 const allowedLoadModes = new Set(['bundled', 'lazy']);
 const allowedVisibility = new Set(['public', 'preview', 'internal']);
 const allowedPipelineFamilies = new Set(['eppp-native-preview', 'praxis-legacy', 'ap-native']);
+const manifestOnly = process.argv.includes('--manifest-only');
 
 function fail(message) {
   throw new Error('[test-prep manifest] ' + message);
@@ -312,15 +313,22 @@ function buildManifest(options) {
   return manifest;
 }
 
-if (!fs.existsSync(epppPartOnePackBuildPath) || !fs.existsSync(epppNativeQaScriptPath)) fail('EPPP Part 1 pack/QA builder is missing.');
-execFileSync(process.execPath, [epppPartOnePackBuildPath], { cwd: root, stdio: 'inherit' });
-execFileSync(process.execPath, [epppNativeQaScriptPath], { cwd: root, stdio: 'inherit' });
-let manifest = buildManifest({ allowMissingNativeQa: true });
-if (manifest.entries.some((entry) => entry.id === 'ap-psychology-pilot')) {
-  if (!fs.existsSync(apPsychologyQaScriptPath)) fail('AP Psychology QA generator is missing.');
-  execFileSync(process.execPath, [apPsychologyQaScriptPath], { cwd: root, stdio: 'inherit' });
+let manifest;
+if (manifestOnly) {
+  // Release recovery path: rebuild descriptors and deploy mirrors from the
+  // already-reviewed pack bytes without invoking any content generator.
+  manifest = buildManifest();
+} else {
+  if (!fs.existsSync(epppPartOnePackBuildPath) || !fs.existsSync(epppNativeQaScriptPath)) fail('EPPP Part 1 pack/QA builder is missing.');
+  execFileSync(process.execPath, [epppPartOnePackBuildPath], { cwd: root, stdio: 'inherit' });
+  execFileSync(process.execPath, [epppNativeQaScriptPath], { cwd: root, stdio: 'inherit' });
+  manifest = buildManifest({ allowMissingNativeQa: true });
+  if (manifest.entries.some((entry) => entry.id === 'ap-psychology-pilot')) {
+    if (!fs.existsSync(apPsychologyQaScriptPath)) fail('AP Psychology QA generator is missing.');
+    execFileSync(process.execPath, [apPsychologyQaScriptPath], { cwd: root, stdio: 'inherit' });
+  }
+  manifest = buildManifest();
 }
-manifest = buildManifest();
 process.stdout.write(
   'Built test_prep/pack_manifest.json with ' + manifest.entries.length +
   ' entries (' + manifest.entries.filter((entry) => entry.loadMode === 'lazy').length + ' lazy) after bound AP QA.\n',

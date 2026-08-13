@@ -40,21 +40,35 @@ function FabStack(props) {
   const dictationEngineLabel = dictationStatus?.engineLabel || '';
   const dictationBusy = dictationPhase === 'starting' || dictationPhase === 'transcribing';
   const dictationAnnouncement = dictationStatus?.message || (dictationPhase !== 'idle' ? dictationEngineLabel : '');
+  const dictationActionLabel = isDictationMode ? t('toolbar.dictation_stop') : t('toolbar.dictation_start');
+  const dictationIsActive = isDictationMode || dictationBusy;
+  const showInputAndPractice = (
+    (!isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor)
+    || (activeView === 'simplified' && generatedContent)
+    || isTeacherMode
+    || studentProjectSettings.allowDictation
+    || (dictationStatus && dictationAnnouncement)
+  );
 
   React.useEffect(() => {
     if (!isFabExpanded) return undefined;
     const focusTimer = window.setTimeout(() => {
-      const firstTool = panelRef.current?.querySelector('button:not([disabled])');
+      const firstTool = panelRef.current?.querySelector('[data-student-tool="true"]:not([disabled])');
       if (firstTool) firstTool.focus();
     }, 0);
     return () => window.clearTimeout(focusTimer);
   }, [isFabExpanded]);
 
+  const closeStudentTools = () => {
+    if (!isFabExpanded) return;
+    handleToggleIsFabExpanded();
+    window.setTimeout(() => toggleRef.current?.focus(), 0);
+  };
+
   const handlePanelKeyDown = (event) => {
     if (event.key !== 'Escape') return;
     event.preventDefault();
-    handleToggleIsFabExpanded();
-    toggleRef.current?.focus();
+    closeStudentTools();
   };
 
   return (
@@ -63,215 +77,394 @@ function FabStack(props) {
         body.alloflow-launchpad-active .alloflow-fab-stack {
           display: none !important;
         }
-        @media (max-width: 640px) {
+
+        .alloflow-student-tools-panel {
+          position: absolute;
+          z-index: 2;
+          right: 0;
+          bottom: 64px;
+          width: min(380px, calc(100vw - 32px));
+          max-height: min(72vh, 680px);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          border: 1px solid rgba(148, 163, 184, 0.46);
+          border-radius: 24px;
+          background: rgba(255, 255, 255, 0.96);
+          box-shadow: 0 26px 70px -28px rgba(15, 23, 42, 0.52), 0 12px 28px -18px rgba(79, 70, 229, 0.34);
+          transform-origin: bottom right;
+        }
+        .alloflow-student-tools-handle {
+          display: none;
+        }
+        .alloflow-student-tools-body {
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          scrollbar-gutter: stable;
+        }
+        .alloflow-student-tools-section + .alloflow-student-tools-section {
+          border-top: 1px solid rgba(226, 232, 240, 0.9);
+        }
+        .alloflow-student-tools-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+        }
+        .alloflow-student-tool {
+          width: 100%;
+          min-width: 0;
+          min-height: 44px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          border: 1px solid rgba(226, 232, 240, 0.94);
+          border-radius: 14px;
+          padding: 9px 10px;
+          text-align: left;
+        }
+        .alloflow-student-tool-icon {
+          width: 30px;
+          height: 30px;
+          flex: 0 0 30px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.58);
+          box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.18);
+        }
+        .alloflow-student-tool:focus-visible,
+        .alloflow-student-tools-close:focus-visible,
+        .alloflow-student-tools-launcher:focus-visible {
+          outline: 3px solid #818cf8;
+          outline-offset: 3px;
+        }
+        .alloflow-student-tools-close {
+          min-width: 44px;
+          min-height: 44px;
+        }
+        .alloflow-student-tools-launcher {
+          position: relative;
+          z-index: 1;
+          min-width: 48px;
+          min-height: 48px;
+        }
+
+        @media (max-width: 767px) {
           .alloflow-fab-stack {
             right: calc(12px + env(safe-area-inset-right, 0px)) !important;
             bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
-            gap: 10px !important;
           }
-          .alloflow-fab-panel {
+          .alloflow-student-tools-panel {
             position: fixed !important;
-            left: 12px !important;
-            right: 12px !important;
-            bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
-            display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(44px, 1fr)) !important;
-            align-items: center !important;
-            gap: 10px !important;
-            max-height: 46vh !important;
-            overflow-y: auto !important;
-            border-radius: 18px !important;
-            padding: 12px !important;
-          }
-          .alloflow-fab-panel button {
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
             width: 100% !important;
-            min-width: 44px !important;
-            min-height: 44px !important;
-            aspect-ratio: 1 / 1 !important;
-            justify-content: center !important;
-            padding: 0 !important;
+            max-height: min(82dvh, 720px) !important;
+            border-right: 0 !important;
+            border-bottom: 0 !important;
+            border-left: 0 !important;
+            border-radius: 26px 26px 0 0 !important;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            transform-origin: bottom center;
           }
-          .alloflow-fab-panel .fab-label {
-            display: none !important;
+          .alloflow-student-tools-handle {
+            display: block;
           }
-          .alloflow-fab-panel .fab-section-label,
-          .alloflow-fab-panel .fab-divider {
-            grid-column: 1 / -1 !important;
+        }
+
+        @media (max-width: 359px) {
+          .alloflow-student-tools-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .alloflow-student-tools-panel,
+          .alloflow-student-tool,
+          .alloflow-student-tools-close,
+          .alloflow-student-tools-launcher {
+            animation: none !important;
+            scroll-behavior: auto !important;
+            transition: none !important;
+            transform: none !important;
+          }
+        }
+
+        @media (forced-colors: active) {
+          .alloflow-student-tools-panel,
+          .alloflow-student-tools-section,
+          .alloflow-student-tool,
+          .alloflow-student-tools-close,
+          .alloflow-student-tools-launcher {
+            border: 1px solid ButtonBorder !important;
+            background: Canvas !important;
+            color: CanvasText !important;
+            box-shadow: none !important;
+            forced-color-adjust: auto;
+          }
+          .alloflow-student-tool[aria-pressed="true"] {
+            outline: 2px solid Highlight;
+            outline-offset: -3px;
           }
         }
       `}</style>
-      <div data-floating-control="fab-stack" style={{ zIndex: 180 }} className={`alloflow-floating-control alloflow-fab-stack fixed bottom-24 md:bottom-8 z-[180] flex flex-col items-end gap-4 no-print transition-all duration-300 motion-reduce:transition-none ${runTour ? 'right-[530px]' : 'right-6'}`}>
-          {isFabExpanded && (
-              <div
-                id="alloflow-student-tools-panel"
-                ref={panelRef}
-                role="group"
-                aria-label="Student tools"
-                onKeyDown={handlePanelKeyDown}
-                data-help-toggle="true"
-                className="alloflow-fab-panel flex flex-col gap-3 p-3 bg-white/90 backdrop-blur-md border border-slate-400 shadow-2xl rounded-full animate-in slide-in-from-bottom-4 fade-in duration-200 motion-reduce:animate-none max-h-[75vh] overflow-y-auto custom-scrollbar"
+      <div
+        data-floating-control="fab-stack"
+        style={{ zIndex: 180 }}
+        className={`alloflow-floating-control alloflow-fab-stack ${isFabExpanded ? 'is-expanded' : ''} fixed bottom-24 md:bottom-8 z-[180] flex flex-col items-end no-print transition-all duration-300 motion-reduce:transition-none ${runTour ? 'right-[530px]' : 'right-6'}`}
+      >
+        {isFabExpanded && (
+          <div
+            id="alloflow-student-tools-panel"
+            ref={panelRef}
+            role="dialog"
+            aria-labelledby="alloflow-student-tools-title"
+            onKeyDown={handlePanelKeyDown}
+            data-help-toggle="true"
+            className="alloflow-student-tools-panel backdrop-blur-xl animate-in slide-in-from-bottom-3 fade-in duration-200 motion-reduce:animate-none"
+          >
+            <div className="alloflow-student-tools-handle mx-auto mt-2 h-1 w-10 rounded-full bg-slate-300" aria-hidden="true"></div>
+            <div className="flex items-center gap-3 border-b border-slate-200/80 px-4 py-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-violet-100 text-indigo-700 shadow-inner" aria-hidden="true">
+                <Wrench size={20} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 id="alloflow-student-tools-title" className="text-sm font-black tracking-tight text-slate-900">Student tools</h2>
+                <p className="mt-0.5 text-xs font-medium text-slate-500">Read, focus, and practice your way</p>
+              </div>
+              <button
+                type="button"
+                onClick={closeStudentTools}
+                className="alloflow-student-tools-close inline-flex items-center justify-center rounded-xl text-2xl leading-none text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 motion-reduce:transition-none"
+                aria-label={t('toolbar.student_tools_close')}
               >
-                  {!isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && (
-                      <button
-                        onClick={handleToggleShowSocraticChat}
-                        className={`px-4 py-3 rounded-full transition-all shadow-sm flex items-center gap-2 ${showSocraticChat ? 'bg-teal-700 text-white ring-2 ring-teal-400' : 'bg-teal-100 text-teal-700 hover:bg-teal-200 border border-teal-200'}`}
-                        title={t('socratic.title')}
-                        aria-label={t('socratic.ask_for_help')}
-                        aria-pressed={showSocraticChat}
-                        data-help-key="socratic_toggle"
-                      >
-                        <MessageCircleQuestion size={20} aria-hidden="true" />
-                        <span className="fab-label text-sm font-bold">{t('socratic.ask_for_help')}</span>
-                      </button>
-                  )}
-                  {activeView === 'simplified' && generatedContent && (
-                      <>
-                          <div className="fab-section-label text-[11px] font-black text-slate-600 uppercase text-center tracking-widest pt-1">{t('simplified.mode_label')}</div>
-                          <button
-                            onClick={() => { setInteractionMode('read'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsCompareMode(false); setIsFluencyMode(false); }}
-                            className={`p-3 rounded-full transition-all shadow-sm ${interactionMode === 'read' && !isCompareMode && !isFluencyMode ? 'bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                            title={t('simplified.tip_read')}
-                            aria-label={t('simplified.read_mode')}
-                            aria-pressed={interactionMode === 'read' && !isCompareMode && !isFluencyMode}
-                            data-help-key="tool_read_mode"
-                          >
-                            <Volume2 size={20} aria-hidden="true" />
-                          </button>
-                          <button
-                            onClick={() => { setInteractionMode('define'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsCompareMode(false); }}
-                            className={`p-3 rounded-full transition-all shadow-sm ${interactionMode === 'define' && !isCompareMode ? 'bg-yellow-100 text-yellow-800 ring-2 ring-yellow-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                            title={t('simplified.tip_define')}
-                            aria-label={t('simplified.define_mode')}
-                            aria-pressed={interactionMode === 'define' && !isCompareMode}
-                            data-help-key="tool_define_mode"
-                          >
-                            <Search size={20} aria-hidden="true" />
-                          </button>
-                          <button
-                            data-help-toggle="true"
-                            onClick={() => { setInteractionMode(prev => prev === 'explain' ? 'read' : 'explain'); stopPlayback(); setIsCompareMode(false); }}
-                            className={`p-3 rounded-full transition-all shadow-sm ${interactionMode === 'explain' && !isCompareMode ? 'bg-teal-100 text-teal-800 ring-2 ring-teal-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                            title={t('simplified.tip_explain')}
-                            aria-label={t('simplified.explain_mode')}
-                            aria-pressed={interactionMode === 'explain' && !isCompareMode}
-                            data-help-key="tool_explain_mode"
-                          >
-                            <HelpCircle size={20} aria-hidden="true" />
-                          </button>
-                          <button
-                            onClick={handleSetIsSyntaxGameToTrue}
-                            className="p-3 rounded-full transition-all shadow-sm bg-orange-100 text-orange-800 hover:bg-orange-200 border border-orange-200"
-                            title={t('simplified.tip_scramble')}
-                            aria-label={t('games.syntax.title')}
-                            data-help-key="tool_syntax_game"
-                          >
-                            <Gamepad2 size={20} aria-hidden="true" />
-                          </button>
-                          <div className="fab-divider h-px w-full bg-slate-200 my-1" aria-hidden="true"></div>
-                      </>
-                  )}
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+
+            <div className="alloflow-student-tools-body custom-scrollbar">
+              {activeView === 'simplified' && generatedContent && (
+                <section className="alloflow-student-tools-section px-4 py-3" aria-labelledby="alloflow-student-tools-read-heading">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <h3 id="alloflow-student-tools-read-heading" className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">Read</h3>
+                    <span className="text-[10px] font-semibold text-slate-400">{t('simplified.mode_label')}</span>
+                  </div>
+                  <div className="alloflow-student-tools-grid">
+                    <button
+                      data-student-tool="true"
+                      onClick={() => { setInteractionMode('read'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsCompareMode(false); setIsFluencyMode(false); }}
+                      className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${interactionMode === 'read' && !isCompareMode && !isFluencyMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                      title={t('simplified.tip_read')}
+                      aria-label={t('simplified.read_mode')}
+                      aria-pressed={interactionMode === 'read' && !isCompareMode && !isFluencyMode}
+                      data-help-key="tool_read_mode"
+                    >
+                      <span className="alloflow-student-tool-icon" aria-hidden="true"><Volume2 size={18} /></span>
+                      <span className="min-w-0 text-xs font-bold leading-tight">{t('simplified.read_mode')}</span>
+                    </button>
+                    <button
+                      data-student-tool="true"
+                      onClick={() => { setInteractionMode('define'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsCompareMode(false); }}
+                      className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${interactionMode === 'define' && !isCompareMode ? 'bg-yellow-100 text-yellow-900 ring-2 ring-yellow-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                      title={t('simplified.tip_define')}
+                      aria-label={t('simplified.define_mode')}
+                      aria-pressed={interactionMode === 'define' && !isCompareMode}
+                      data-help-key="tool_define_mode"
+                    >
+                      <span className="alloflow-student-tool-icon" aria-hidden="true"><Search size={18} /></span>
+                      <span className="min-w-0 text-xs font-bold leading-tight">{t('simplified.define_mode')}</span>
+                    </button>
+                    <button
+                      data-student-tool="true"
+                      data-help-toggle="true"
+                      onClick={() => { setInteractionMode(prev => prev === 'explain' ? 'read' : 'explain'); stopPlayback(); setIsCompareMode(false); }}
+                      className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${interactionMode === 'explain' && !isCompareMode ? 'bg-teal-100 text-teal-900 ring-2 ring-teal-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                      title={t('simplified.tip_explain')}
+                      aria-label={t('simplified.explain_mode')}
+                      aria-pressed={interactionMode === 'explain' && !isCompareMode}
+                      data-help-key="tool_explain_mode"
+                    >
+                      <span className="alloflow-student-tool-icon" aria-hidden="true"><HelpCircle size={18} /></span>
+                      <span className="min-w-0 text-xs font-bold leading-tight">{t('simplified.explain_mode')}</span>
+                    </button>
+                  </div>
+                </section>
+              )}
+
+              <section className="alloflow-student-tools-section px-4 py-3" aria-labelledby="alloflow-student-tools-focus-heading">
+                <h3 id="alloflow-student-tools-focus-heading" className="mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">Focus</h3>
+                <div className="alloflow-student-tools-grid">
                   <button
+                    data-student-tool="true"
                     onClick={handleToggleReadingRuler}
-                    className={`p-3 rounded-full transition-all shadow-sm ${readingRuler ? 'bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+                    className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${readingRuler ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                     title={t('a11y.toggle_ruler')}
                     aria-label={t('a11y.toggle_ruler')}
                     aria-pressed={readingRuler}
                     data-help-key="fab_ruler"
                   >
-                    <ScanLine size={20} aria-hidden="true" />
+                    <span className="alloflow-student-tool-icon" aria-hidden="true"><ScanLine size={18} /></span>
+                    <span className="min-w-0 text-xs font-bold leading-tight">{t('a11y.toggle_ruler')}</span>
                   </button>
                   <button
+                    data-student-tool="true"
                     onClick={handleSetShowStudyTimerModalToTrue}
-                    className={`p-3 rounded-full transition-all shadow-sm ${isStudyTimerRunning ? 'bg-green-100 text-green-700 ring-2 ring-green-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+                    className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${isStudyTimerRunning ? 'bg-green-100 text-green-800 ring-2 ring-green-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                     title={t('a11y.task_timer')}
                     aria-label={t('a11y.task_timer')}
                     aria-pressed={isStudyTimerRunning}
                     data-help-key="fab_timer"
                   >
-                    <Clock size={20} aria-hidden="true" />
+                    <span className="alloflow-student-tool-icon" aria-hidden="true"><Clock size={18} /></span>
+                    <span className="min-w-0 text-xs font-bold leading-tight">{t('a11y.task_timer')}</span>
                   </button>
                   <button
+                    data-student-tool="true"
                     onClick={handleToggleFocusMode}
-                    className={`p-3 rounded-full transition-all shadow-sm ${focusMode ? 'bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+                    className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${focusMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                     title={t('a11y.toggle_focus')}
                     aria-label={t('a11y.toggle_focus')}
                     aria-pressed={focusMode}
                     data-help-key="fab_focus"
                   >
-                    <Eye size={20} aria-hidden="true" />
+                    <span className="alloflow-student-tool-icon" aria-hidden="true"><Eye size={18} /></span>
+                    <span className="min-w-0 text-xs font-bold leading-tight">{t('a11y.toggle_focus')}</span>
                   </button>
                   <button
+                    data-student-tool="true"
                     onClick={handleToggleVisualSupports}
-                    className={`p-3 rounded-full transition-all shadow-sm ${showVisualSupports ? 'bg-purple-100 text-purple-600 ring-2 ring-purple-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+                    className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${showVisualSupports ? 'bg-purple-100 text-purple-700 ring-2 ring-purple-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                     title={t('fab.visual_supports') || 'Visual Supports'}
                     aria-label={t('fab.visual_supports') || 'Visual Supports'}
                     aria-pressed={showVisualSupports}
                   >
-                    <span style={{fontSize: 20, lineHeight: 1}} aria-hidden="true">{'\uD83D\uDDBC\uFE0F'}</span>
+                    <span className="alloflow-student-tool-icon" aria-hidden="true"><span style={{ fontSize: 18, lineHeight: 1 }}>{'\uD83D\uDDBC\uFE0F'}</span></span>
+                    <span className="min-w-0 text-xs font-bold leading-tight">{t('fab.visual_supports') || 'Visual Supports'}</span>
                   </button>
                   {activeView === 'simplified' && (
-                  <button
-                    onClick={() => {
+                    <button
+                      data-student-tool="true"
+                      onClick={() => {
                         setIsLineFocusMode(!isLineFocusMode);
                         setFocusedParagraphIndex(null);
-                    }}
-                    className={`p-3 rounded-full transition-all shadow-sm ${isLineFocusMode ? 'bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                    title={t('a11y.toggle_line_focus')}
-                    aria-label={t('a11y.toggle_line_focus')}
-                    aria-pressed={isLineFocusMode}
-                    data-help-key="fab_line_focus"
-                  >
-                    <AlignJustify size={20} aria-hidden="true" />
-                  </button>
+                      }}
+                      className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${isLineFocusMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                      title={t('a11y.toggle_line_focus')}
+                      aria-label={t('a11y.toggle_line_focus')}
+                      aria-pressed={isLineFocusMode}
+                      data-help-key="fab_line_focus"
+                    >
+                      <span className="alloflow-student-tool-icon" aria-hidden="true"><AlignJustify size={18} /></span>
+                      <span className="min-w-0 text-xs font-bold leading-tight">{t('a11y.toggle_line_focus')}</span>
+                    </button>
                   )}
-                  {(isTeacherMode || studentProjectSettings.allowDictation) && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        const voice = window.AlloFlowVoice;
-                        const supported = voice && typeof voice.isDictationSupported === 'function'
-                          ? voice.isDictationSupported()
-                          : !!(window.SpeechRecognition || window.webkitSpeechRecognition);
-                        if (!supported) {
+                </div>
+              </section>
+
+              {showInputAndPractice && (
+                <section className="alloflow-student-tools-section px-4 py-3" aria-labelledby="alloflow-student-tools-input-heading">
+                  <h3 id="alloflow-student-tools-input-heading" className="mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">Input &amp; practice</h3>
+                  <div className="alloflow-student-tools-grid">
+                    {!isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && (
+                      <button
+                        data-student-tool="true"
+                        onClick={handleToggleShowSocraticChat}
+                        className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${showSocraticChat ? 'bg-teal-700 text-white ring-2 ring-teal-400' : 'bg-teal-100 text-teal-800 hover:bg-teal-200'}`}
+                        title={t('socratic.title')}
+                        aria-label={t('socratic.ask_for_help')}
+                        aria-pressed={showSocraticChat}
+                        data-help-key="socratic_toggle"
+                      >
+                        <span className="alloflow-student-tool-icon" aria-hidden="true"><MessageCircleQuestion size={18} /></span>
+                        <span className="min-w-0 text-xs font-bold leading-tight">{t('socratic.ask_for_help')}</span>
+                      </button>
+                    )}
+                    {activeView === 'simplified' && generatedContent && (
+                      <button
+                        data-student-tool="true"
+                        onClick={handleSetIsSyntaxGameToTrue}
+                        className="alloflow-student-tool border-orange-200 bg-orange-100 text-orange-900 shadow-sm transition-colors hover:bg-orange-200 motion-reduce:transition-none"
+                        title={t('simplified.tip_scramble')}
+                        aria-label={t('games.syntax.title')}
+                        data-help-key="tool_syntax_game"
+                      >
+                        <span className="alloflow-student-tool-icon" aria-hidden="true"><Gamepad2 size={18} /></span>
+                        <span className="min-w-0 text-xs font-bold leading-tight">{t('games.syntax.title')}</span>
+                      </button>
+                    )}
+                    {(isTeacherMode || studentProjectSettings.allowDictation) && (
+                      <button
+                        data-student-tool="true"
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const voice = window.AlloFlowVoice;
+                          const supported = voice && typeof voice.isDictationSupported === 'function'
+                            ? voice.isDictationSupported()
+                            : !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+                          if (!supported) {
                             addToast(t('roles.voice_not_supported'), "error");
                             return;
-                        }
-                        setIsDictationMode(!isDictationMode);
-                    }}
-                    disabled={dictationPhase === 'transcribing'}
-                    className={`p-3 rounded-full transition-all shadow-sm disabled:cursor-wait ${isDictationMode || dictationBusy ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none shadow-red-500/50' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                    title={[t('toolbar.dictation_toggle'), dictationEngineLabel].filter(Boolean).join(' — ')}
-                    aria-label={isDictationMode ? t('toolbar.dictation_stop') : t('toolbar.dictation_start')}
-                    aria-pressed={isDictationMode}
-                    aria-busy={dictationBusy}
-                    data-dictation-engine={dictationStatus?.engine || ''}
-                    data-help-key="fab_dictation"
-                  >
-                    {isDictationMode || dictationBusy ? <Mic size={20} aria-hidden="true" /> : <MicOff size={20} aria-hidden="true" />}
-                  </button>
-                  )}
-                  {dictationStatus && dictationAnnouncement && (
-                    <div role={dictationPhase === 'error' ? 'alert' : 'status'} aria-live={dictationPhase === 'error' ? 'assertive' : 'polite'} aria-atomic="true" className={`fab-section-label max-w-44 px-2 text-center text-[10px] leading-tight ${dictationPhase === 'error' ? 'text-rose-700' : 'text-slate-700'}`}>
-                      <div className="font-bold">{dictationAnnouncement}</div>
-                      {dictationStatus.privacy && <div className="mt-0.5 text-slate-600">{dictationStatus.privacy}</div>}
-                    </div>
-                  )}
-              </div>
+                          }
+                          setIsDictationMode(!isDictationMode);
+                        }}
+                        disabled={dictationPhase === 'transcribing'}
+                        className={`alloflow-student-tool transition-colors shadow-sm disabled:cursor-wait motion-reduce:transition-none ${dictationIsActive ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none shadow-red-500/50' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                        title={[t('toolbar.dictation_toggle'), dictationEngineLabel].filter(Boolean).join(' — ')}
+                        aria-label={dictationActionLabel}
+                        aria-pressed={isDictationMode}
+                        aria-busy={dictationBusy}
+                        data-dictation-engine={dictationStatus?.engine || ''}
+                        data-help-key="fab_dictation"
+                      >
+                        <span className="alloflow-student-tool-icon" aria-hidden="true">
+                          {dictationIsActive ? <Mic size={18} /> : <MicOff size={18} />}
+                        </span>
+                        <span className="min-w-0 text-xs font-bold leading-tight">{dictationActionLabel}</span>
+                      </button>
+                    )}
+                    {dictationStatus && dictationAnnouncement && (
+                      <div
+                        role={dictationPhase === 'error' ? 'alert' : 'status'}
+                        aria-live={dictationPhase === 'error' ? 'assertive' : 'polite'}
+                        aria-atomic="true"
+                        className={`alloflow-student-tools-status col-span-full rounded-xl border px-3 py-2 text-xs leading-snug ${dictationPhase === 'error' ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-slate-200 bg-slate-50 text-slate-700'}`}
+                      >
+                        <div className="font-bold">{dictationAnnouncement}</div>
+                        {dictationStatus.privacy && <div className="mt-0.5 text-[11px] text-slate-600">{dictationStatus.privacy}</div>}
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+            </div>
+          </div>
+        )}
+
+        <button
+          ref={toggleRef}
+          type="button"
+          aria-expanded={isFabExpanded}
+          aria-controls="alloflow-student-tools-panel"
+          aria-haspopup="dialog"
+          onClick={handleToggleIsFabExpanded}
+          className={`alloflow-student-tools-launcher h-12 rounded-2xl px-3.5 text-white shadow-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transition-none motion-reduce:transform-none ${dictationIsActive ? 'bg-gradient-to-br from-rose-600 to-red-700 shadow-rose-600/30' : 'bg-gradient-to-br from-indigo-600 to-violet-700 shadow-indigo-600/30 hover:from-indigo-700 hover:to-violet-800'}`}
+          aria-label={isFabExpanded ? t('toolbar.student_tools_close') : t('toolbar.student_tools_open')}
+          data-dictation-active={dictationIsActive ? 'true' : 'false'}
+          data-help-key="fab_toggle"
+        >
+          <Wrench size={20} aria-hidden="true" />
+          <span className="text-sm font-black tracking-tight">Student tools</span>
+          {dictationIsActive && (
+            <span className="flex items-center gap-1 rounded-full bg-white/20 px-2 py-1 text-[10px] font-black uppercase tracking-wide">
+              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none" aria-hidden="true"></span>
+              {dictationPhase === 'transcribing' ? 'Working' : 'Listening'}
+            </span>
           )}
-          <button
-            ref={toggleRef}
-            type="button"
-            aria-expanded={isFabExpanded}
-            aria-controls="alloflow-student-tools-panel"
-            onClick={handleToggleIsFabExpanded}
-            className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-full shadow-lg shadow-indigo-600/30 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 motion-reduce:transform-none"
-            aria-label={isFabExpanded ? t('toolbar.student_tools_close') : t('toolbar.student_tools_open')}
-            data-help-key="fab_toggle"
-          >
-            <Wrench size={24} aria-hidden="true" />
-          </button>
+        </button>
       </div>
-      </>
+    </>
   );
 }

@@ -1,0 +1,16 @@
+{
+  "schema": "alloflow.mcp-refinement-expert-annotation/v1",
+  "annotationId": null,
+  "annotationProtocolSha256": null,
+  "annotationJoinKey": null,
+  "subjectSha256": null,
+  "blinded": true,
+  "reviewerCount": null,
+  "baselineAdjudicationSha256": null,
+  "baselineMaterialIssueCount": null,
+  "criticalSeriousIssuesResolved": null,
+  "materialDefectsIntroduced": null,
+  "pass": null,
+  "adjudicatedAt": null,
+  "contentCommitmentSha256": null
+}

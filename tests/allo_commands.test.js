@@ -432,6 +432,16 @@ describe('routeUtterance', () => {
     expect(r.narration).toContain('glossary');
   });
 
+  it('routes "where am I" to semantic orientation instead of visual pointing', async () => {
+    const describeCurrentScreen = vi.fn(() => 'AlloFlow launch pad.');
+    const whereIs = vi.fn(() => 'wrong visual locator');
+    const result = await AC.routeUtterance({ describeCurrentScreen, whereIs }, 'where am I');
+
+    expect(result).toMatchObject({ handled: true, commandId: 'describe_current_screen', via: 'deterministic' });
+    expect(result.narration).toBe('AlloFlow launch pad.');
+    expect(describeCurrentScreen).toHaveBeenCalledOnce();
+    expect(whereIs).not.toHaveBeenCalled();
+  });
   it('dispatches a matched command deterministically and runs it', async () => {
     const setShowEducatorHub = vi.fn();
     const r = await AC.routeUtterance({ setShowEducatorHub }, 'open the educator hub');
@@ -1083,6 +1093,28 @@ it('cancels an active command even after its current availability changes', asyn
     const signal = AC.runCommandById({ isTeacherMode: false, isIndependentMode: true, activeSessionCode: 'ABC123', openStudentSignals }, 'open_student_signal', {});
     expect(signal).toMatchObject({ handled: true, commandId: 'open_student_signal' });
     expect(openStudentSignals).toHaveBeenCalledTimes(1);
+  });
+
+  it('speaks media failures but suppresses duplicate replies after reader narration starts', () => {
+    const empty = AC.runCommandById({
+      readAllMediaDescriptions: () => ({ ok: false, count: 0 }),
+    }, 'read_media_descriptions', {});
+    expect(empty).toMatchObject({
+      handled: true, ok: false, suppressVoiceReply: false,
+    });
+    expect(empty.narration).toMatch(/No media/i);
+
+    const started = AC.runCommandById({
+      readAllMediaDescriptions: () => ({ ok: true, count: 2 }),
+    }, 'read_media_descriptions', {});
+    expect(started).toMatchObject({
+      handled: true, ok: true, suppressVoiceReply: true,
+    });
+    expect(started.narration).toMatch(/Reading 2 media/i);
+
+    const current = AC.buildAlloCommands({ readMediaDescriptions: () => ({ ok: true, count: 1, mediaIndex: 1 }) })
+      .find((command) => command.id === 'describe_current_media');
+    expect(current.aliases).not.toContain('next media description');
   });
 
   it('still gates a destructive command until confirmed:true', () => {

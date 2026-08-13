@@ -18,7 +18,7 @@ const Mod = (() => {
   // eslint-disable-next-line no-new-func
   return new Function(
     src.slice(start, end) +
-    '\nreturn { MATERIALS: MATERIALS, SUBSTANCES: SUBSTANCES, ENGINES: ENGINES, EVERYDAY: EVERYDAY, EXPANSION: EXPANSION, WALL_LAYERS: WALL_LAYERS, WALL_FILM_INSIDE: WALL_FILM_INSIDE, WALL_FILM_OUTSIDE: WALL_FILM_OUTSIDE, WALL_SURFACE_R: WALL_SURFACE_R, niceTicks: niceTicks, tickLabel: tickLabel, heatRampColour: heatRampColour };'
+    '\nreturn { MATERIALS: MATERIALS, SUBSTANCES: SUBSTANCES, ENGINES: ENGINES, EVERYDAY: EVERYDAY, EXPANSION: EXPANSION, WALL_LAYERS: WALL_LAYERS, WALL_FILM_INSIDE: WALL_FILM_INSIDE, WALL_FILM_OUTSIDE: WALL_FILM_OUTSIDE, WALL_SURFACE_R: WALL_SURFACE_R, niceTicks: niceTicks, tickLabel: tickLabel, heatRampColour: heatRampColour, radiation: heatRadiationModel, heatPump: heatPumpModel, heatPumpChartDomain: HEAT_PUMP_CHART_DOMAIN };'
   )();
 })();
 
@@ -118,23 +118,45 @@ describe('thermal colour ramp (regression pins for the documented bug)', () => {
   });
 });
 
-describe('render-scope physics (source-slice)', () => {
-  it('radiation uses Stefan-Boltzmann with net exchange and Wien peak', () => {
-    const start = src.indexOf('var SIGMA = 5.670374419e-8;', src.indexOf('function radiatedW') - 200);
-    const end = src.indexOf('// ── Module 7', start);
-    expect(start).toBeGreaterThan(-1);
-    // eslint-disable-next-line no-new-func
-    const radiatedW = new Function(src.slice(start, end < 0 ? start + 400 : src.indexOf('var radGross', start)) + '\nreturn radiatedW;')();
+describe('shared physics models (source-slice)', () => {
+  it('radiation uses Stefan-Boltzmann with signed net exchange and Wien peak', () => {
     // A 1.8 m² body at 33°C, emissivity 0.98: ~880 W gross.
-    const gross = radiatedW(33, 1.8, 0.98);
-    expect(gross).toBeGreaterThan(850);
-    expect(gross).toBeLessThan(920);
-    // Net against 20°C surroundings is far smaller than gross.
-    const net = gross - radiatedW(20, 1.8, 0.98);
-    expect(net).toBeGreaterThan(100);
-    expect(net).toBeLessThan(180);
-    // Wien: a ~300 K body peaks near 9.7 µm (deep infrared).
-    expect(2897.77 / (33 + 273.15)).toBeCloseTo(9.47, 1);
+    const warm = Mod.radiation(33, 20, 1.8, 0.98);
+    expect(warm.valid).toBe(true);
+    expect(warm.emittedW).toBeGreaterThan(850);
+    expect(warm.emittedW).toBeLessThan(920);
+    // Net against 20°C surroundings is far smaller than gross and points from
+    // the warmer surface into the room.
+    expect(warm.netToRoomW).toBeGreaterThan(100);
+    expect(warm.netToRoomW).toBeLessThan(180);
+    // Reversing the temperature difference must reverse the sign.
+    expect(Mod.radiation(-20, 20, 1.8, 0.98).netToRoomW).toBeLessThan(0);
+    expect(Mod.radiation(20, 20, 1.8, 0.98).netToRoomW).toBeCloseTo(0, 12);
+    // Wien: a ~300 K body peaks near 9.5 µm (deep infrared).
+    expect(warm.peakUm).toBeCloseTo(9.47, 1);
+  });
+
+  it('keeps every valid heat-pump slider result inside the chart domain', () => {
+    const domain = Mod.heatPumpChartDomain;
+    expect(domain).toMatchObject({ xMin: -20, xMax: 20, yMin: 0 });
+
+    let highestCOP = -Infinity;
+    for (let indoor = 15; indoor <= 26; indoor += 1) {
+      for (let outdoor = -20; outdoor <= 20; outdoor += 1) {
+        const model = Mod.heatPump(outdoor, indoor);
+        expect(outdoor).toBeGreaterThanOrEqual(domain.xMin);
+        expect(outdoor).toBeLessThanOrEqual(domain.xMax);
+        if (!model.heating) continue;
+        highestCOP = Math.max(highestCOP, model.realisticCOP);
+        expect(model.realisticCOP, `outdoor ${outdoor}, indoor ${indoor}`).toBeGreaterThanOrEqual(domain.yMin);
+        expect(model.realisticCOP, `outdoor ${outdoor}, indoor ${indoor}`).toBeLessThanOrEqual(domain.yMax);
+      }
+    }
+
+    // These two settings exposed the former x=15 and y=7 chart limits.
+    expect(Mod.heatPump(20, 21).realisticCOP).toBe(8);
+    expect(Mod.heatPump(14, 15).realisticCOP).toBe(8);
+    expect(highestCOP).toBe(8);
   });
 
   it('the sweating card uses skin-temperature latent heat, not the 100°C figure', () => {

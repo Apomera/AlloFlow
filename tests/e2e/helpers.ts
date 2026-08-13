@@ -33,10 +33,15 @@ export async function bootAlloFlow(page: Page, mode: 'learning' | 'full' = 'lear
   // will never appear.
   const sourceInput = page.getByRole('textbox', { name: /Source material input/i }).first();
   console.log('Waiting for the mode picker or the ready app...');
-  const bootState = await Promise.race([
-    card.waitFor({ state: 'visible', timeout: 30000 }).then(() => 'picker' as const),
-    sourceInput.waitFor({ state: 'visible', timeout: 30000 }).then(() => 'app' as const),
-  ]);
+  // Do not race two rejecting locator promises: if one locator times out a few
+  // milliseconds before the other becomes visible, Promise.race rejects even
+  // though the app is healthy. Poll the combined readiness predicate instead.
+  await expect.poll(async () => {
+    if (await card.isVisible().catch(() => false)) return 'picker' as const;
+    if (await sourceInput.isVisible().catch(() => false)) return 'app' as const;
+    return 'waiting' as const;
+  }, { timeout: 60000, intervals: [100, 250, 500, 1000] }).not.toBe('waiting');
+  const bootState = await card.isVisible().catch(() => false) ? 'picker' as const : 'app' as const;
   // The app shell can become visible behind the modal a few milliseconds before
   // the launch card. Re-check it so pointer-based tests never start under it.
   const pickerVisible = bootState === 'picker'

@@ -7,6 +7,7 @@ const { randomUUID } = require("node:crypto");
 const SERVICE_ROOT = path.resolve(__dirname, "..");
 const ADMISSION_SCRIPT = path.join(__dirname, "pilot-admission.cjs");
 const RECOVERY_COMMAND = "npm run admission:resume:staging";
+const NPM_COMMAND = process.platform === "win32" ? "npm.cmd" : "npm";
 
 function runCommand(command, args) {
   const result = spawnSync(command, args, {
@@ -39,9 +40,11 @@ function releaseSteps(configPath, accepted, ownership) {
       ownership.token,
     ]],
     [node, [path.join(__dirname, "stage-runner.cjs")]],
-    [node, [path.join(__dirname, "stage-runner.cjs"), "--check"]],
-    [node, ["--test", path.join(SERVICE_ROOT, "runner", "test", "server.test.cjs")]],
+    [NPM_COMMAND, ["run", "check"]],
+    [NPM_COMMAND, ["run", "runner:check"]],
     [node, [path.join(__dirname, "pilot-preflight.cjs"), "--config", configPath, ...(accepted ? ["--allow-synthetic-acceptance"] : [])]],
+    [node, [wrangler, "deploy", "--dry-run", "--config", configPath, "--outdir", ".wrangler-build/pilot"]],
+    [node, [wrangler, "check", "startup", "--config", configPath, "--outfile", ".wrangler-build/pilot-startup.cpuprofile"]],
     [node, [path.join(__dirname, "pilot-lifecycle.cjs"), "--config", configPath, "--apply"]],
     [node, [wrangler, "deploy", "--config", configPath]],
     [node, [path.join(__dirname, "pilot-release-canary.cjs"), "--config", configPath]],

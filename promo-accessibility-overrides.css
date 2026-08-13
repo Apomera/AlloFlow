@@ -1,0 +1,5 @@
+/* Focused contrast overrides found during the promotion-wave-3 browser audit. */
+.tool-card-category,
+.tool-access-label {
+    color: #4338ca;
+}

@@ -27,8 +27,8 @@
   "summary": {
     "totalItems": 1500,
     "rewrittenItems": 263,
-    "newlyAppliedItems": 49,
-    "alreadyAppliedItems": 214,
+    "newlyAppliedItems": 59,
+    "alreadyAppliedItems": 204,
     "keyPositionsPreserved": 263,
     "answerPositionCounts": [
       375,
@@ -39,11 +39,11 @@
     "sourceRecordsHydrated": 128,
     "correctedReferenceUrls": 0,
     "metricsBefore": {
-      "uniqueKeyStemLexicalLeakageCandidates": 55,
+      "uniqueKeyStemLexicalLeakageCandidates": 57,
       "asymmetricExtremeDistractorCandidates": 116,
       "advancedDirectRecallCandidates": 4,
-      "semanticConceptDuplicatePairs": 81,
-      "semanticConceptDuplicateClusters": 45
+      "semanticConceptDuplicatePairs": 84,
+      "semanticConceptDuplicateClusters": 48
     },
     "metricsAfter": {
       "uniqueKeyStemLexicalLeakageCandidates": 55,
@@ -122,9 +122,9 @@
   },
   "monotonicity": {
     "uniqueKeyStemLexicalLeakageCandidates": {
-      "before": 55,
+      "before": 57,
       "after": 55,
-      "reduction": 0
+      "reduction": 2
     },
     "asymmetricExtremeDistractorCandidates": {
       "before": 116,
@@ -137,14 +137,14 @@
       "reduction": 0
     },
     "semanticConceptDuplicatePairs": {
-      "before": 81,
+      "before": 84,
       "after": 81,
-      "reduction": 0
+      "reduction": 3
     },
     "semanticConceptDuplicateClusters": {
-      "before": 45,
+      "before": 48,
       "after": 45,
-      "reduction": 0
+      "reduction": 3
     }
   },
   "sourceCorrections": [],

@@ -31,7 +31,7 @@ const PLAN = {
 };
 
 const makeDeps = (over = {}) => {
-  const store = { run: over.run !== undefined ? over.run : { rows: {
+  const store = { run: over.run !== undefined ? over.run : { runId: 'blueprint-test-run', rows: {
     'r-analysis': { uiId: 'r-analysis', status: 'landed', resourceId: 'res-analysis' },
     'r-image-1': { uiId: 'r-image-1', status: 'landed', resourceId: 'res-img-1' },
     'r-image-2': { uiId: 'r-image-2', status: 'failed', resourceId: null },
@@ -123,6 +123,43 @@ describe('rebuilding a single row', () => {
     await first;
     // …and the guard releases, so a later rebuild works.
     expect(await PhaseO.handleRebuildBlueprintStep(deps, 'r-image-2')).toBeTruthy();
+  });
+
+  it('does not resurrect a run cleared while a rebuild is awaiting generation', async () => {
+    let release;
+    let started;
+    const began = new Promise((resolve) => { started = resolve; });
+    const result = new Promise((resolve) => { release = resolve; });
+    const { deps, store } = makeDeps({
+      handleGenerate: vi.fn(async () => { started(); return result; }),
+    });
+    const pending = PhaseO.handleRebuildBlueprintStep(deps, 'r-image-2');
+    await began;
+    store.run = null;
+    release({ id: 'late-resource', type: 'image', data: {} });
+    await pending;
+    expect(store.run).toBeNull();
+  });
+
+  it('does not write a late rebuild result into a replacement run', async () => {
+    let release;
+    let started;
+    const began = new Promise((resolve) => { started = resolve; });
+    const result = new Promise((resolve) => { release = resolve; });
+    const { deps, store } = makeDeps({
+      handleGenerate: vi.fn(async () => { started(); return result; }),
+    });
+    const pending = PhaseO.handleRebuildBlueprintStep(deps, 'r-image-2');
+    await began;
+    const replacement = {
+      runId: 'blueprint-replacement-run',
+      rows: { 'r-image-2': { uiId: 'r-image-2', status: 'planned', resourceId: null } },
+    };
+    store.run = replacement;
+    release({ id: 'late-resource', type: 'image', data: {} });
+    await pending;
+    expect(store.run).toBe(replacement);
+    expect(store.run.rows['r-image-2'].status).toBe('planned');
   });
 });
 

@@ -269,21 +269,23 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
       if ((strategy === 'term-image' || strategy === 'image-def') && !item.image) {
           strategy = 'term-def';
       }
-      let content1, type1, isTerm1;
-      let content2, type2, isTerm2;
+      let content1, type1, isTerm1, accessibleLabel1;
+      let content2, type2, isTerm2, accessibleLabel2;
+      const imageDescription = item.imageAlt || item.imageDescription || '';
+      const meaningfulImageLabel = imageDescription ? `Picture for ${item.term}: ${imageDescription}` : `Picture representing ${item.term}`;
       switch (strategy) {
           case 'term-def':
-              content1 = item.term; type1 = 'text'; isTerm1 = true;
-              content2 = item.def; type2 = 'text'; isTerm2 = false;
+              content1 = item.term; type1 = 'text'; isTerm1 = true; accessibleLabel1 = `Term: ${item.term}`;
+              content2 = item.def; type2 = 'text'; isTerm2 = false; accessibleLabel2 = `Definition: ${item.def}`;
               break;
           case 'image-def':
-              content1 = item.image; type1 = 'image'; isTerm1 = false;
-              content2 = item.def; type2 = 'text'; isTerm2 = false;
+              content1 = item.image; type1 = 'image'; isTerm1 = false; accessibleLabel1 = meaningfulImageLabel;
+              content2 = item.def; type2 = 'text'; isTerm2 = false; accessibleLabel2 = `Definition: ${item.def}`;
               break;
           case 'term-image':
           default:
-              content1 = item.term; type1 = 'text'; isTerm1 = true;
-              content2 = item.image; type2 = 'image'; isTerm2 = false;
+              content1 = item.term; type1 = 'text'; isTerm1 = true; accessibleLabel1 = `Term: ${item.term}`;
+              content2 = item.image; type2 = 'image'; isTerm2 = false; accessibleLabel2 = meaningfulImageLabel;
               break;
       }
       const card1 = {
@@ -291,14 +293,16 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
         pairId,
         content: content1,
         type: type1,
-        isTerm: isTerm1
+        isTerm: isTerm1,
+        accessibleLabel: accessibleLabel1
       };
       const card2 = {
         id: `p${index}-2`,
         pairId,
         content: content2,
         type: type2,
-        isTerm: isTerm2
+        isTerm: isTerm2,
+        accessibleLabel: accessibleLabel2
       };
       return [card1, card2];
     });
@@ -324,7 +328,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
     ) return;
     const newFlipped = [...flippedIndices, index];
     setFlippedIndices(newFlipped);
-    const cardContent = cards[index].type === 'image' ? "Image card" : cards[index].content;
+    const cardContent = cards[index].accessibleLabel || cards[index].content;
     setAnnouncement(`Flipped ${cardContent}`);
     if (newFlipped.length === 2) {
       setMoves(m => m + 1);
@@ -557,9 +561,9 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
             const isMismatch = mismatchIndices.includes(index);
             let ariaLabel = `${t('memory.card_prefix')} ${index + 1}`;
             if (isMatched) {
-                ariaLabel += `, ${t('memory.matched_suffix')}: ${card.type === 'image' ? t('memory.modes.term_image') : card.content}`;
+                ariaLabel += `, ${t('memory.matched_suffix')}: ${card.accessibleLabel || card.content}`;
             } else if (isFlipped) {
-                ariaLabel += `, ${t('memory.face_up_suffix')}: ${card.type === 'image' ? t('memory.modes.term_image') : card.content}`;
+                ariaLabel += `, ${t('memory.face_up_suffix')}: ${card.accessibleLabel || card.content}`;
             } else {
                 ariaLabel += `, ${t('memory.face_down_suffix')}`;
             }
@@ -589,7 +593,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
                     {card.type === 'image' ? (
                       <img loading="lazy"
                         src={card.content}
-                        alt={t('games.memory.card_alt') || 'memory card'}
+                        alt={card.accessibleLabel || t('games.memory.card_alt') || 'memory card'}
                         className="w-full h-full object-contain rounded"
                         decoding="async"
                       />
@@ -4581,6 +4585,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
   const [selectedCell, setSelectedCell] = useState(null);
   const [direction, setDirection] = useState('across');
   const [isWon, setIsWon] = useState(false);
+  const [wasRevealed, setWasRevealed] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [score, setScore] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
@@ -4589,6 +4594,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
   const crosswordDialogRef = useRef(null);
   const crosswordCloseRef = useRef(null);
   const crosswordGridRef = useRef(null);
+  const crosswordTouchInputRef = useRef(null);
   useGameDialogFocus(crosswordDialogRef, crosswordCloseRef, onClose);
   const availableLangs = React.useMemo(() => {
     const langs = new Set();
@@ -4729,13 +4735,16 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     setClues(newClues);
     setUserState({});
     setIsWon(false);
+    setWasRevealed(false);
     setShowErrors(false);
     setScore(0);
+    setHintsUsed(0);
+    setSelectedCell(null);
     setAnnouncement(t('games.crossword.announce_started'));
   }, [data, crosswordLang]);
   const handleCellClick = (r, c) => {
     if (!grid[r][c]) return;
-    crosswordGridRef.current?.focus();
+    crosswordTouchInputRef.current?.focus();
     if (selectedCell?.r === r && selectedCell?.c === c) {
       const newDir = direction === 'across' ? 'down' : 'across';
       setDirection(newDir);
@@ -4746,7 +4755,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     }
   };
   const handleKeyDown = (e) => {
-    if (!selectedCell) return;
+    if (!selectedCell || isWon) return;
     const { r, c } = selectedCell;
     if (e.key === 'Backspace') {
        const newKey = `${r}-${c}`;
@@ -4813,7 +4822,17 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
        setAnnouncement(t('games.crossword.announce_direction_toggle', { dir: newDir }));
     }
   };
+  const handleTouchInputChange = (e) => {
+    const chars = Array.from(e.currentTarget.value || '');
+    const char = chars.reverse().find(value => /^[a-zA-ZÀ-ÿ]$/.test(value));
+    e.currentTarget.value = '';
+    if (char) handleKeyDown({ key: char, preventDefault: () => {} });
+  };
+  const handleTouchInputKeyDown = (e) => {
+    if (e.key === 'Backspace' || e.key.startsWith('Arrow') || e.key === 'Enter' || e.key === ' ') handleKeyDown(e);
+  };
   const checkPuzzle = () => {
+    if (isWon || wasRevealed) return;
     setShowErrors(true);
     let correct = true;
     let incorrectCount = 0;
@@ -4830,6 +4849,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
          }
       }
     }
+    currentScore = Math.max(0, currentScore - hintsUsed);
     if (correct) {
         setIsWon(true);
         setAnnouncement(t('games.crossword.announce_complete'));
@@ -4840,7 +4860,9 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
             onGameComplete('crossword', {
                 score: currentScore,
                 wordsSolved: clues.across.length + clues.down.length,
-                totalWords: data?.length || 0
+                totalWords: clues.across.length + clues.down.length,
+                hintsUsed,
+                wasRevealed: false
             });
         }
     } else {
@@ -4850,6 +4872,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     setScore(currentScore);
   };
   const revealPuzzle = () => {
+     if (isWon) return;
      const autoFill = {};
      for(let r=0; r<grid.length; r++) {
       for(let c=0; c<grid[r].length; c++) {
@@ -4859,6 +4882,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
       }
     }
     setUserState(autoFill);
+    setWasRevealed(true);
     setIsWon(true);
     setScore(0);
     setAnnouncement(t('games.crossword.announce_revealed') || 'Puzzle revealed. Score set to zero.');
@@ -4920,8 +4944,12 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
          </div>
       </div>
       <div className="flex-grow overflow-hidden flex flex-col md:flex-row">
-         <div className="flex-grow p-4 overflow-auto bg-slate-100 flex justify-center items-start relative">
-            {isWon && !reducedMotion && <ConfettiExplosion />}
+         <div className="flex-grow p-4 overflow-auto bg-slate-100 flex flex-col items-center gap-3 relative">
+            {isWon && !wasRevealed && !reducedMotion && <ConfettiExplosion />}
+            <label className="no-print inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-900 shadow-sm">
+              <span>Selected square</span>
+              <input ref={crosswordTouchInputRef} type="text" inputMode="text" autoCapitalize="characters" autoComplete="off" autoCorrect="off" spellCheck={false} maxLength={2} readOnly={isWon} aria-disabled={!selectedCell || isWon} onChange={handleTouchInputChange} onKeyDown={handleTouchInputKeyDown} aria-label="Enter a letter for the selected crossword square" className="h-11 w-14 rounded-lg border-2 border-indigo-300 bg-white text-center text-xl font-black uppercase text-indigo-900 focus:ring-2 focus:ring-indigo-500" />
+            </label>
             <div
               ref={crosswordGridRef}
               tabIndex={0}
@@ -4982,9 +5010,9 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                     {clues.across.length + clues.down.length} {t('games.crossword.clues')}
                  </div>
                  <div className="flex gap-2" data-help-key="crossword_controls">
-                     {!isWon && <button type="button" onClick={revealHint} className="min-h-11 px-3 py-2 bg-amber-100 text-amber-800 rounded text-xs font-bold hover:bg-amber-200 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2 flex items-center gap-1" aria-label={t('games.crossword.reveal_letter_hint_aria') || 'Reveal one letter hint'}><HelpCircle size={12} aria-hidden="true"/> {t('games.crossword.hint_button') || 'Hint'}{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>}
+                     {!isWon && <><button type="button" onClick={revealHint} className="min-h-11 px-3 py-2 bg-amber-100 text-amber-800 rounded text-xs font-bold hover:bg-amber-200 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2 flex items-center gap-1" aria-label={t('games.crossword.reveal_letter_hint_aria') || 'Reveal one letter hint'}><HelpCircle size={12} aria-hidden="true"/> {t('games.crossword.hint_button') || 'Hint'}{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>
                      <button type="button" onClick={checkPuzzle} className="min-h-11 px-3 py-2 bg-indigo-100 text-indigo-800 rounded text-xs font-bold hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('games.crossword.check')}</button>
-                     <button type="button" onClick={revealPuzzle} className="min-h-11 px-3 py-2 bg-red-100 text-red-800 rounded text-xs font-bold hover:bg-red-200 focus:ring-2 focus:ring-red-500 focus:ring-offset-2">{t('games.crossword.reveal')}</button>
+                     <button type="button" onClick={revealPuzzle} className="min-h-11 px-3 py-2 bg-red-100 text-red-800 rounded text-xs font-bold hover:bg-red-200 focus:ring-2 focus:ring-red-500 focus:ring-offset-2">{t('games.crossword.reveal')}</button></>}
                  </div>
              </div>
              <div className="flex-grow overflow-y-auto p-4 space-y-6">
@@ -5026,7 +5054,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
              <div className="p-2 bg-slate-50 text-[11px] text-center text-slate-600 border-t">
                  {t('games.crossword.footer_tip')}
              </div>
-             {isWon && <div className="p-3"><GameReviewScreen score={score} title={t('games.crossword_title')} items={[...clues.across, ...clues.down].map(c => ({ label: c.word, detail: c.clue, status: 'correct' }))} onPlayAgain={() => { setIsWon(false); setScore(0); setUserState({}); }} onClose={onClose} t={t} /></div>}
+             {isWon && <div className="p-3"><GameReviewScreen score={score} title={t('games.crossword_title')} items={[...clues.across, ...clues.down].map(c => ({ label: c.word, detail: c.clue, status: wasRevealed ? 'incorrect' : 'correct' }))} onPlayAgain={() => { setIsWon(false); setWasRevealed(false); setScore(0); setHintsUsed(0); setShowErrors(false); setSelectedCell(null); setUserState({}); }} onClose={onClose} t={t} /></div>}
          </div>
       </div>
     </div>
@@ -5213,10 +5241,20 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   const [announcement, setAnnouncement] = useState('');
   const bingoDialogRef = useRef(null);
   const bingoCloseRef = useRef(null);
-  useGameDialogFocus(bingoDialogRef, bingoCloseRef, onClose);
   const callerAudioRef = useRef(null);
   const autoPlayTimerRef = useRef(null);
+  const callerPlaybackSessionRef = useRef(0);
+  const stopCallerPlayback = () => {
+      callerPlaybackSessionRef.current += 1;
+      if (callerAudioRef.current) { callerAudioRef.current.pause(); try { callerAudioRef.current.currentTime = 0; } catch (_) {} callerAudioRef.current = null; }
+      if (autoPlayTimerRef.current) { clearTimeout(autoPlayTimerRef.current); autoPlayTimerRef.current = null; }
+      setIsAudioPlaying(false); setIsAutoPlaying(false);
+  };
+  const handleExitCaller = () => { stopCallerPlayback(); setIsCallerMode(false); };
+  const handleCloseBingo = () => { stopCallerPlayback(); onClose(); };
+  useGameDialogFocus(bingoDialogRef, bingoCloseRef, handleCloseBingo);
   const startCaller = () => {
+      stopCallerPlayback();
       const queue = fisherYatesShuffle(data);
       setCallerQueue(queue);
       setCurrentCallIndex(-1);
@@ -5239,10 +5277,17 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
       if (callerAudioRef.current) {
           callerAudioRef.current.pause();
       }
+      const sessionId = ++callerPlaybackSessionRef.current;
       setIsAudioPlaying(true);
       try {
           if (onGenerateAudio) {
-               const url = await onGenerateAudio(textToRead, selectedVoice);
+               let url = null;
+               if (typeof window !== 'undefined' && typeof window.__alloResolveGlossaryAudio === 'function') {
+                   const resolved = await window.__alloResolveGlossaryAudio({ entryId: item.entryId || item.id || null, field: 'definition', language: item.definitionLanguage || 'English', spokenText: textToRead });
+                   url = typeof resolved === 'string' ? resolved : resolved?.audioUrl || resolved?.url || resolved?.src || null;
+               }
+               if (!url) url = await onGenerateAudio(textToRead, selectedVoice);
+               if (callerPlaybackSessionRef.current !== sessionId) return;
                if (!url) { setIsAudioPlaying(false); return; }
                const audio = new Audio(url);
                callerAudioRef.current = audio;
@@ -5253,7 +5298,8 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                    setIsAudioPlaying(false);
                    warnLog("Caller audio failed");
                };
-               audio.play();
+               const playPromise = audio.play();
+               if (playPromise !== undefined) await playPromise;
           } else {
               setIsAudioPlaying(false);
           }
@@ -5283,6 +5329,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   const toggleAutoPlay = () => {
       const newState = !isAutoPlaying;
       setIsAutoPlaying(newState);
+      if (!newState && autoPlayTimerRef.current) { clearTimeout(autoPlayTimerRef.current); autoPlayTimerRef.current = null; }
       setAnnouncement(newState ? t('bingo.start_auto') : t('bingo.stop_auto'));
       if (newState && !isAudioPlaying) {
           if (currentCallIndex === -1) {
@@ -5321,7 +5368,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
             <button
                 ref={bingoCloseRef}
                 type="button"
-                onClick={onClose}
+                onClick={handleCloseBingo}
                 className="absolute top-4 right-4 min-w-11 min-h-11 text-slate-600 hover:text-slate-900 transition-colors no-print rounded-full p-2 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 data-help-key="bingo_close_btn" aria-label={t('bingo.close_generator')}
             >
@@ -5393,7 +5440,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 ) : (
                     <div className="flex items-center gap-4 w-full justify-between">
                          <button type="button"
-                            onClick={() => setIsCallerMode(false)}
+                            onClick={handleExitCaller}
                             className="min-h-11 px-3 flex items-center gap-2 text-slate-600 hover:text-slate-700 font-bold text-xs rounded-lg focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                             data-help-key="bingo_exit_caller_btn" aria-label={t('bingo.exit_caller_aria')}
                         >
@@ -6079,10 +6126,11 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
   const [announcement, setAnnouncement] = useState('');
   const scrambleDialogRef = useRef(null);
   const scrambleInputRef = useRef(null);
+  const eligibleTermCount = Array.isArray(data) ? data.filter(item => item?.term && item.term.length > 2 && canScrambleWord(item.term)).length : 0;
   useGameDialogFocus(scrambleDialogRef, scrambleInputRef, onClose);
   useEffect(() => {
     if (!data) return;
-    const items = data.filter(item => item.term && item.term.length > 2);
+    const items = data.filter(item => item.term && item.term.length > 2 && canScrambleWord(item.term));
     for (let i = items.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [items[i], items[j]] = [items[j], items[i]];
@@ -6094,6 +6142,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
     setResults([]);
     setFeedback('idle');
     setGuess('');
+    setHintLevel(0);
     if (items.length > 0) {
         setScrambled(scrambleWord(items[0].term));
     }
@@ -6116,6 +6165,11 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
           isPerfect: totalItems > 0 && correctCount === totalItems
       });
   }, [isGameOver, results, gameItems.length, score, onGameComplete]);
+  const resetScrambleGame = () => {
+      setIsGameOver(false); setResults([]); setCurrentIndex(0); setScore(0); setGuess(''); setFeedback('idle'); setHintLevel(0);
+      if (gameItems.length > 0) { setScrambled(scrambleWord(gameItems[0].term)); requestAnimationFrame(() => scrambleInputRef.current?.focus()); }
+      else setScrambled('');
+  };
   const nextRound = (currentScore) => {
       if (currentIndex < gameItems.length - 1) {
           const nextIdx = currentIndex + 1;
@@ -6208,11 +6262,13 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
                           score={score}
                           title={t('games.scramble.title')}
                           items={results.map(r => ({ label: r.term, detail: r.def, status: r.correct ? 'correct' : 'incorrect' }))}
-                          onPlayAgain={() => { setIsGameOver(false); setResults([]); setCurrentIndex(0); setScore(0); setGuess(''); setFeedback('idle'); if (gameItems.length > 0) setScrambled(scrambleWord(gameItems[0].term)); }}
+                          onPlayAgain={resetScrambleGame}
                           onClose={onClose}
                           t={t}
                         />
                     </div>
+                ) : Array.isArray(data) && eligibleTermCount === 0 ? (
+                    <div role="status" className="max-w-md rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-900"><p className="font-bold">No terms are available for Word Scramble.</p><p className="mt-1 text-sm">Add a glossary term with at least two different letters, then try again.</p></div>
                 ) : gameItems.length > 0 ? (
                     <>
                         <div className="flex items-center justify-between w-full px-4 border-b border-slate-200 pb-2">

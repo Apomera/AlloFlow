@@ -310,6 +310,15 @@
       practicalCap: 8
     };
   }
+  // Keep the chart domain beside the model it visualises. The outdoor control
+  // reaches 20 C and the teaching estimate is capped at 8, so a narrower plot
+  // silently placed valid selected points beyond its axes.
+  var HEAT_PUMP_CHART_DOMAIN = Object.freeze({
+    xMin: -20,
+    xMax: 20,
+    yMin: 0,
+    yMax: 8.5
+  });
 
   // ── 3D convection tank ──────────────────────────────────────────────
   // Convection is the mechanism a flat diagram serves worst. In 2D it looks like
@@ -497,7 +506,8 @@
       coolingTemperature: heatCoolingTemperature,
       coolingCurve: heatCoolingCurve,
       radiation: heatRadiationModel,
-      heatPump: heatPumpModel
+      heatPump: heatPumpModel,
+      heatPumpChartDomain: HEAT_PUMP_CHART_DOMAIN
     },
 
     // Quest hooks measure deliberate acts, never "you opened the panel".
@@ -1535,7 +1545,8 @@
       // The curve itself is the argument, so draw it: the collapse in the cold
       // is obvious at a glance, and the 1.0 line shows where a heat pump stops
       // beating a plain electric heater.
-      var HP_X_MIN = -20, HP_X_MAX = 15;
+      var HP_X_MIN = HEAT_PUMP_CHART_DOMAIN.xMin;
+      var HP_X_MAX = HEAT_PUMP_CHART_DOMAIN.xMax;
       var hpCurve = [];
       for (var hx = HP_X_MIN; hx <= HP_X_MAX; hx += 0.5) {
         var hm = heatPumpModel(hx, hpIn);
@@ -1543,7 +1554,9 @@
       }
       React.useEffect(function () {
         drawChart(hpRef.current, {
-          xMin: HP_X_MIN, xMax: HP_X_MAX, yMin: 0, yMax: 7, xUnit: '', yUnit: '',
+          xMin: HP_X_MIN, xMax: HP_X_MAX,
+          yMin: HEAT_PUMP_CHART_DOMAIN.yMin, yMax: HEAT_PUMP_CHART_DOMAIN.yMax,
+          xUnit: '', yUnit: '',
           xLabel: 'outdoor temperature (°C)', yLabel: 'heat out per unit of electricity',
           series: [{ points: hpCurve, colour: '#22d3ee', width: 2.4 }],
           refLines: [{ axis: 'y', at: 1, colour: isDark ? '#f87171' : '#b91c1c', label: 'electric bar heater = 1.0', align: 'left' }],

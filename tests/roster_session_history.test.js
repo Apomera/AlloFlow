@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 const app = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const teacher = readFileSync(resolve(process.cwd(), 'teacher_source.jsx'), 'utf8');
 const modal = readFileSync(resolve(process.cwd(), 'view_session_modal_source.jsx'), 'utf8');
+const endSessionPreviewSource = readFileSync(resolve(process.cwd(), 'view_end_session_preview_source.jsx'), 'utf8');
 const helperStart = app.indexOf('const normalizeRosterSessionCodename');
 const helperEnd = app.indexOf('const generateSessionCode', helperStart);
 const helperSource = app.slice(helperStart, helperEnd);
@@ -136,8 +137,8 @@ describe('privacy-safe roster session summaries', () => {
     expect(app).toContain('const handleEndLiveSession = () => requestEndLiveSession()');
     expect(app).toContain('onRequestEndSession={requestEndLiveSession}');
     expect(modal).toContain("typeof onRequestEndSession === 'function'");
-    expect(app).toContain('Insight brief');
-    expect(app).toContain('Connections remain active during this review.');
+    expect(endSessionPreviewSource).toContain('Insight brief');
+    expect(endSessionPreviewSource).toContain('Connections remain active during this review.');
   });
 
   it('keeps history portable and removes deleted students from saved summaries', () => {

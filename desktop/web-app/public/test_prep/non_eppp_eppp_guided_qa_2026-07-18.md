@@ -13,7 +13,7 @@ Status: **hard-qa-findings**
 - Guided-review activities reviewed: **5,700**
 - Remaining distinct-question gap: **7,838**
 - Exact response-option kernels shared across different packs: **324**
-- Hard findings: **23**
+- Hard findings: **25**
 - Libraries: **22** with 264 chapters, 1056 lessons, 1320 checks, 1650 flashcards, and 440 memory aids
 - Unique learner-visible sources reviewed: **136**
 
@@ -23,9 +23,9 @@ A hard-QA pass does not mean every pack has 500 independent questions. Guided tr
 
 | Pack | Independent practice | Distinct kernels | Guided review | New independent questions needed | Hard findings | Warning items |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Audiology 5343 diagnostics | 300 | 204 | 200 | 296 | 0 | 222 |
+| Audiology 5343 diagnostics | 300 | 204 | 200 | 296 | 1 | 222 |
 | Early Childhood Education (5025) | 300 | 205 | 200 | 295 | 0 | 216 |
-| Educational Leadership (5412) | 300 | 200 | 200 | 300 | 0 | 233 |
+| Educational Leadership (5412) | 300 | 200 | 200 | 300 | 1 | 233 |
 | Praxis ESOL (5362) | 200 | 100 | 300 | 400 | 0 | 198 |
 | ParaPro diagnostic batches 1-2 | 500 | 500 | 0 | 0 | 0 | 420 |
 | PLT: Grades 5–9 (5623) | 200 | 100 | 300 | 400 | 0 | 198 |

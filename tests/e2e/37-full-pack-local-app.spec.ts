@@ -103,6 +103,15 @@ async function seedBlueprintEnvelope(page: Page, envelope: any, forceQuota = fal
   return page.evaluate(() => (window as any).__copiedGenerationDiagnostic);
 }
 
+async function openErrorLog(page: Page, testId: string) {
+  await page.getByTestId(testId).click();
+  const diagnostics = page.locator('#allo-err-panel');
+  await expect(diagnostics).toBeVisible();
+  await expect(page.locator('#aer-tab-errors')).toHaveAttribute('aria-selected', 'true');
+  await page.locator('#aer-close').click();
+  await expect(diagnostics).toHaveCount(0);
+}
+
 const expectPrivateDiagnostic = (serialized: string, secrets: string[]) => {
   for (const secret of secrets) expect(serialized).not.toContain(secret);
 };
@@ -125,6 +134,9 @@ test('actual Full Pack sidebar restores, adapts capacity, collapses rows, and ex
   await expect(toggle).toContainText('Hide completed');
   await expect(panel.getByText(/^Complete\b/)).toHaveCount(1);
   expect(await panel.evaluate(element => element.scrollWidth <= element.clientWidth + 2)).toBe(true);
+
+  await expect(page.getByTestId('full-pack-open-error-log')).toBeVisible();
+  await openErrorLog(page, 'full-pack-open-error-log');
 
   const secrets = ['SENTINEL_SOURCE_FINGERPRINT', 'SENTINEL_UI_ID', 'SENTINEL_DIRECTIVE', 'SENTINEL_STUDENT_INTEREST', 'SENTINEL_ROSTER_SIGNATURE', 'SENTINEL_GROUP_ID', 'SENTINEL_STUDENT_NAME', 'SENTINEL_RESOURCE_KEY', 'SENTINEL_RESOURCE_ID', 'SENTINEL_API_KEY'];
   await expect.poll(() => page.evaluate(key => localStorage.getItem(key) || '', STORE_KEY)).not.toContain('SENTINEL_API_KEY');
@@ -161,7 +173,7 @@ test('actual Full Pack sidebar survives quota fallback and exposes the warning',
   ]);
   expect(Object.keys(persisted.run.groups)).toEqual(['group-1']);
   expect(Object.keys(persisted.run.groups['group-1'].resources)).toEqual(['resource-1', 'resource-2']);
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('alloflow-generation-metrics-v1') || 'null')?.storageFallbacks?.fullPack || 0)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('alloflow-generation-metrics-v1') || 'null')?.storageFallbacks?.fullPack || 0)).toBe(1);
 });
 
 test('actual Full Pack sidebar migrates v1 and demotes running and retrying work after reload', async ({ page }) => {
@@ -172,7 +184,7 @@ test('actual Full Pack sidebar migrates v1 and demotes running and retrying work
   envelope.run.status = 'running';
   envelope.run.groups = {};
   envelope.run.resources = {
-    quiz: { key: 'quiz', type: 'quiz', index: 0, status: 'running', directive: '' },
+    quiz: { key: 'quiz', type: 'quiz', index: 0, status: 'running', directive: '', reason: 'Network connection failed while calling the provider' },
     image: { key: 'image', type: 'image', index: 1, status: 'retrying', directive: '' },
     done: { key: 'done', type: 'outline', index: 2, status: 'landed', directive: '' },
   };
@@ -186,6 +198,11 @@ test('actual Full Pack sidebar migrates v1 and demotes running and retrying work
   const panel = page.getByTestId('full-pack-review-panel');
   await expect(panel).toBeVisible({ timeout: 120000 });
   await expect(panel.getByText('Interrupted', { exact: true }).first()).toBeVisible();
+  const safeFailure = panel.getByTestId('full-pack-failure-reason').first();
+  await expect(safeFailure).toContainText('Transient provider or network failure');
+  await expect(safeFailure).toHaveAttribute('data-failure-code', 'network');
+  await expect(safeFailure).toHaveClass(/break-words/);
+  await expect(safeFailure).not.toHaveClass(/truncate/);
   await expect(panel.getByText('Retrying', { exact: true })).toHaveCount(0);
   const persisted = await page.evaluate(key => JSON.parse(localStorage.getItem(key) || 'null'), STORE_KEY);
   expect(persisted.v).toBe(2);
@@ -208,6 +225,7 @@ test('actual Blueprint restore explains failures safely and copies and downloads
   await expect(failure).not.toContainText('SENTINEL_BLUEPRINT_API_KEY');
   await expect(failure).not.toContainText('SENTINEL_BLUEPRINT_STUDENT');
   await expect(card.locator('[title*="SENTINEL_BLUEPRINT_API_KEY"]')).toHaveCount(0);
+  await openErrorLog(page, 'bp-open-error-log');
   await expect.poll(() => page.evaluate(key => localStorage.getItem(key) || '', BLUEPRINT_STORE_KEY)).not.toContain('SENTINEL_BLUEPRINT_API_KEY');
 
   const secrets = ['SENTINEL_BLUEPRINT_API_KEY', 'SENTINEL_BLUEPRINT_STUDENT', 'SENTINEL_BLUEPRINT_UI_ID', 'SENTINEL_BLUEPRINT_DIRECTIVE'];
@@ -246,5 +264,22 @@ test('actual Blueprint quota fallback stays visible and persists only pseudonymi
     'SENTINEL_BLUEPRINT_API_KEY', 'SENTINEL_BLUEPRINT_STUDENT',
     'SENTINEL_BLUEPRINT_UI_ID', 'SENTINEL_BLUEPRINT_DIRECTIVE',
   ]);
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('alloflow-generation-metrics-v1') || 'null')?.storageFallbacks?.blueprint || 0)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('alloflow-generation-metrics-v1') || 'null')?.storageFallbacks?.blueprint || 0)).toBe(1);
+});
+test('actual app purges malformed Full Pack state and expired Blueprint state on boot', async ({ page }) => {
+  const expiredBlueprint = blueprintEnvelope();
+  expiredBlueprint.savedAt = '2026-01-01T00:00:00.000Z';
+  await page.addInitScript(({ fullPackKey, blueprintKey, blueprintValue }) => {
+    localStorage.setItem(fullPackKey, JSON.stringify({ v: 2, run: [] }));
+    localStorage.setItem(blueprintKey, JSON.stringify(blueprintValue));
+  }, { fullPackKey: STORE_KEY, blueprintKey: BLUEPRINT_STORE_KEY, blueprintValue: expiredBlueprint });
+
+  await bootAlloFlow(page, 'full');
+  await expect.poll(() => page.evaluate(({ fullPackKey, blueprintKey }) => ({
+    fullPack: localStorage.getItem(fullPackKey),
+    blueprint: localStorage.getItem(blueprintKey),
+  }), { fullPackKey: STORE_KEY, blueprintKey: BLUEPRINT_STORE_KEY })).toEqual({
+    fullPack: null,
+    blueprint: null,
+  });
 });

@@ -1,24 +1,24 @@
 # STEM Visual QA Audit
 
-Generated: 2026-08-10T03:09:16.339Z
+Generated: 2026-08-13T05:29:47.397Z
 
 ## Scope
 
-- Registered STEM tools: 140
-- STEM tool files: 137
-- Monitored student-facing visual markers: 74
+- Registered STEM tools: 144
+- STEM tool files: 141
+- Monitored student-facing visual markers: 75
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 74 |
+| Marker passes | 75 |
 | Marker failures | 0 |
-| Monitored first-screen findings | 0 |
+| Monitored first-screen findings | 2 |
 | High-confidence monitored errors | 0 |
-| Source/public drift | 0 |
-| Any source/public/build drift | 10 |
+| Source/public drift | 1 |
+| Any source/public/build drift | 9 |
 | Monitored file drift | 8 |
 
 ## Visual Marker Coverage
@@ -99,25 +99,27 @@ Generated: 2026-08-10T03:09:16.339Z
 | pass | `galaxy` | `data-galaxy-canvas` | Rendered |
 | pass | `semiconductor` | `data-semiconductor-command` | Rendered |
 | pass | `wave` | `data-wave-canvas` | Rendered |
+| pass | `heatLab` | `data-heat-lab` | Rendered |
 
 ## Top First-Screen Findings
 
-No monitored first-screen accessibility findings.
+| Severity | Code | Count | Tools |
+| --- | --- | ---: | --- |
+| warning | `canvas-focus` | 2 | `epidemicSim`, `titrationLab` |
 
 ## Sync Drift
 
 | Status | File | Monitored | Hashes |
 | --- | --- | --- | --- |
-| build-drift | `stem_tool_applab.js` | no | source `C8AA03547B6E`, public `C8AA03547B6E`, build `845C12A193BD` |
-| build-drift | `stem_tool_calculus.js` | yes | source `C7D3BE16EBF6`, public `C7D3BE16EBF6`, build `49F67C4BE0FE` |
-| build-drift | `stem_tool_forge.js` | no | source `D68D49985E30`, public `D68D49985E30`, build `0D77471B1BC6` |
-| build-drift | `stem_tool_funcgrapher.js` | yes | source `8EE675EB11EF`, public `8EE675EB11EF`, build `EA9E7F963EEF` |
-| build-drift | `stem_tool_logiclab.js` | yes | source `989F59D267F9`, public `989F59D267F9`, build `96DAE95D9C72` |
-| build-drift | `stem_tool_music.js` | yes | source `2F03A1777D90`, public `2F03A1777D90`, build `75BEA08CC5B0` |
-| build-drift | `stem_tool_physics.js` | yes | source `6023919873CC`, public `6023919873CC`, build `3A1BCC569248` |
-| build-drift | `stem_tool_semiconductor.js` | yes | source `F26FDF2454E7`, public `F26FDF2454E7`, build `706171F545D3` |
-| build-drift | `stem_tool_spacecolony.js` | yes | source `BB939C5246A1`, public `BB939C5246A1`, build `1B57ABA1386B` |
-| build-drift | `stem_tool_wave.js` | yes | source `3E394E8438F9`, public `3E394E8438F9`, build `B48563F96A1A` |
+| build-drift | `stem_tool_astronomy.js` | yes | source `2B915A37D3D0`, public `2B915A37D3D0`, build `8F08CECA8107` |
+| source-public-drift | `stem_tool_ecosystem.js` | yes | source `CB948283C736`, public `208357F2C3E7`, build `F27BE379E416` |
+| build-drift | `stem_tool_galaxy.js` | yes | source `56D0A5F35341`, public `56D0A5F35341`, build `FF039FC784F4` |
+| build-drift | `stem_tool_geologyexplorer.js` | yes | source `0FB9F50901D3`, public `0FB9F50901D3`, build `99C6927163FD` |
+| build-drift | `stem_tool_moonmission.js` | yes | source `812B8EF67B9E`, public `812B8EF67B9E`, build `4D752143DB89` |
+| build-drift | `stem_tool_raptorhunt.js` | yes | source `2F0F4F4C8FE9`, public `2F0F4F4C8FE9`, build `E4D08B3F6666` |
+| build-drift | `stem_tool_solarsystem.js` | yes | source `A01148E88451`, public `A01148E88451`, build `44828D3ED1FA` |
+| build-drift | `stem_tool_treelab.js` | no | source `31355BFD5CDD`, public `31355BFD5CDD`, build `72B702662144` |
+| build-drift | `stem_tool_watercycle.js` | yes | source `311A5EB3A235`, public `311A5EB3A235`, build `350241B0F7D1` |
 
 ## Gate Policy
 

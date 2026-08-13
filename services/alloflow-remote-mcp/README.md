@@ -18,9 +18,22 @@ guarded by a dedicated Cloudflare Rate Limiting binding, and the staging
 configuration declares every required secret so deployment fails closed.
 
 The example is deliberately non-deployable. A local staging copy must pass the
-offline preflight before Wrangler can deploy it.
-No remote MCP Worker or supporting Cloudflare resource has been provisioned or
-deployed from this service.
+offline preflight before Wrangler can deploy it. No remote MCP Worker or
+supporting Cloudflare resource has been provisioned or deployed from this
+service yet.
+
+A checked storage reconciler now makes that bootstrap repeatable. It will fail
+with an explicit `r2_not_activated` result until R2 is enabled; Workers Paid is
+still required before the Container-backed deploy can succeed. The default
+`npm run provision:staging:plan` performs authenticated, read-only inventory
+against one explicit Cloudflare account. Its guarded apply mode requires the
+exact account-and-Worker confirmation, creates or adopts only the exact dedicated
+staging KV, D1, and R2 names, verifies them by readback, and writes their IDs to
+the ignored local config. It never deploys the Worker, Workflow, or Container.
+Wrangler provisions those three compute resources together during the later
+checked `wrangler deploy`; the storage reconciler only prepares their storage
+bindings. It also never sets secrets, configures Access, applies migrations,
+or enables acceptance.
 
 The production remediation container stages a hash-verified browser asset bundle
 from `desktop/mcp/vendor/` and sets `ALLOFLOW_MCP_OFFLINE_ASSETS=1`. The main
@@ -183,14 +196,15 @@ Inspector or add that URL to a client that can reach localhost.
 
 ## Existing Cloudflare account
 
-A read-only inventory on July 29, 2026 confirmed that the existing AlloFlow
+A read-only inventory on August 13, 2026 reconfirmed that the existing AlloFlow
 Cloudflare login and account can be reused for **synthetic engineering
 staging**. Reuse the account/login and, once confirmed, its domain and Zero
 Trust administration. Do not reuse the existing catalog Worker, public Pages
 deployment, or any of the four catalog KV namespaces.
 
-The account currently has no D1 databases or Workflows, R2 is not activated,
-and Containers are unavailable because it is on Workers Free. The present
+The account currently has no D1 databases or Workflows, the staging Worker is
+absent, R2 returns disabled code 10042, and Containers are unavailable because
+the account remains on Workers Free. The present
 Playwright runner therefore needs the same account upgraded to Workers Paid
 and R2 activated. Create new staging-only KV, D1, R2, Workflow, Worker,
 rate-limit namespace, Access applications, and secrets.
@@ -208,12 +222,21 @@ Provision and validate a staging deployment using
 
 ```powershell
 Copy-Item wrangler.pilot.example.jsonc wrangler.pilot.local.jsonc
-# Fill only dedicated staging resources and required institution values.
+$env:CLOUDFLARE_ACCOUNT_ID = "REPLACE_WITH_32_HEX_ACCOUNT_ID"
+npm run provision:staging:plan
+# After reviewing that read-only plan, copy its exact confirmation value:
+npm run provision:staging:apply -- --confirm "alloflow-remediation-institution-staging@REPLACE_WITH_32_HEX_ACCOUNT_ID:create-staging-storage"
+# Finish Access/IdP, institution values, interactive secrets, and D1 migrations.
 npm run preflight:staging
 npm run deploy:staging
 ```
 
-`wrangler.pilot.local.jsonc` is ignored by Git. The preflight rejects
+`wrangler.pilot.local.jsonc` is ignored by Git. Apply is idempotent by exact
+resource name: a retry adopts the matching resource, refuses an ID/name
+conflict, and updates the config only after all three resources are visible on
+readback. The deployment wrapper then reruns the complete Worker and runner
+checks, a pilot-config dry run, and startup profiling before any lifecycle or
+deployment mutation. The preflight rejects
 placeholders, existing catalog KV IDs, public workers.dev/Pages hostnames,
 shared or non-staging resource names, missing secret declarations, a missing
 registration limiter, and accidental acceptance enablement. Complete the

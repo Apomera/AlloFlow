@@ -1524,6 +1524,130 @@
     }
     return role + ': ' + name + (state.length ? '. ' + state.join(', ') : '');
   };
+  // Media is a first-class reading item. DOM descriptions and the structured
+  // resource payload are both inspected because some lazy renderers do not
+  // mount their visual until after Read This Page has opened. The collector is
+  // read-only and bounded; it never fetches media or infers a description.
+  const getMediaDescriptionItems = function(deps) {
+    const options = deps || {};
+    const items = [];
+    const bySource = new Map();
+    const sourceIdentity = function(kind, sourceKey) {
+      const raw = _readClean(sourceKey);
+      if (!raw) return kind + ':anonymous:' + items.length;
+      if (/^data:/i.test(raw)) return kind + ':data:' + raw.length + ':' + raw.slice(-96);
+      try {
+        const base = typeof document !== 'undefined' && document.baseURI ? document.baseURI : undefined;
+        return kind + ':' + (base ? new URL(raw, base).href : raw);
+      } catch (_) { return kind + ':' + raw.slice(0, 800); }
+    };
+    const add = function(kind, value, sourceKey, describedOverride, meta) {
+      const mediaKind = kind === 'video' || kind === 'audio' ? kind : 'image';
+      const description = _readClean(value);
+      const missing = describedOverride === false || !description;
+      const key = sourceIdentity(mediaKind, sourceKey);
+      const label = mediaKind === 'video' ? 'Video' : mediaKind === 'audio' ? 'Audio' : 'Image';
+      const item = {
+        type: mediaKind === 'image' ? 'image' : 'media',
+        mediaKind: mediaKind,
+        described: !missing,
+        language: _readClean(meta && meta.language),
+        text: missing ? (label + ': no text description is available.' + (description ? ' ' + description : '')) : (label + ': ' + description)
+      };
+      const priority = Math.max(0, Number(meta && meta.priority) || 0);
+      const existing = bySource.get(key);
+      if (existing) {
+        const shouldUpgrade = (!existing.item.described && item.described)
+          || (item.described && priority > existing.priority);
+        if (shouldUpgrade) {
+          items[existing.index] = item;
+          bySource.set(key, { index: existing.index, priority: priority, item: item });
+        }
+        return;
+      }
+      const index = items.length;
+      items.push(item);
+      bySource.set(key, { index: index, priority: priority, item: item });
+    };
+    const root = options.root || (typeof document !== 'undefined' ? document.getElementById('main-content') : null);
+    if (root && typeof root.querySelectorAll === 'function') {
+      const nodes = root.querySelectorAll('img,svg[role="img"],svg[aria-label],svg[aria-labelledby],canvas[role="img"],canvas[aria-label],video,audio');
+      Array.prototype.forEach.call(nodes, function(node, index) {
+        if (_readHidden(node) || node.getAttribute('role') === 'presentation' || node.getAttribute('role') === 'none') return;
+        const tag = String(node.tagName || '').toLowerCase();
+        const hasAlternateDescription = !!(_readClean(node.getAttribute('aria-label'))
+          || _readClean(node.getAttribute('aria-labelledby'))
+          || _readClean(node.getAttribute('aria-description'))
+          || _readClean(node.getAttribute('aria-describedby'))
+          || _readClean(node.getAttribute('data-alt-text'))
+          || _readClean(node.getAttribute('data-media-description')));
+        if (tag === 'img' && node.hasAttribute('alt') && !_readClean(node.getAttribute('alt')) && !hasAlternateDescription) return;
+        if ((tag === 'svg' || tag === 'canvas') && node.closest && node.closest('button,a,[role="button"],[role="link"]') && !hasAlternateDescription) return;
+        const figure = node.closest && node.closest('figure');
+        const caption = figure && figure.querySelector ? figure.querySelector('figcaption') : null;
+        const described = _readReferenced(node, 'aria-describedby', root);
+        const labelled = _readReferenced(node, 'aria-labelledby', root);
+        let description = _readClean(node.getAttribute('alt'))
+          || _readClean(node.getAttribute('data-alt-text'))
+          || _readClean(node.getAttribute('data-media-description'))
+          || _readClean(node.getAttribute('aria-description'))
+          || described
+          || _readClean(node.getAttribute('aria-label'))
+          || labelled
+          || _readClean(caption && caption.textContent)
+          || _readClean(node.getAttribute('title'));
+        const hasAuthoredDescription = !!description;
+        let hasDescriptionTrack = false;
+        if (tag === 'video' || tag === 'audio') {
+          const tracks = node.querySelectorAll ? node.querySelectorAll('track[kind="captions"],track[kind="descriptions"]') : [];
+          hasDescriptionTrack = Array.prototype.some.call(tracks, function(track) { return _readClean(track.getAttribute('kind')).toLowerCase() === 'descriptions'; });
+          const trackSummary = Array.prototype.map.call(tracks, function(track) {
+            const trackKind = _readClean(track.getAttribute('kind'));
+            const trackLabel = _readClean(track.getAttribute('label'));
+            return trackLabel ? (trackKind + ' ' + trackLabel) : trackKind;
+          }).filter(Boolean).join(', ');
+          if (trackSummary) description = description ? (description.replace(/[.\s]+$/, '') + '. Available tracks: ' + trackSummary) : ('Available tracks: ' + trackSummary);
+        }
+        const sourceKey = _readClean(node.currentSrc || node.getAttribute('src')) || ('dom-' + index);
+        const describedOverride = tag === 'video' || tag === 'audio' ? (hasAuthoredDescription || hasDescriptionTrack) : undefined;
+        const language = _readClean(node.getAttribute('lang')) || _readClean(node.closest && node.closest('[lang]') && node.closest('[lang]').getAttribute('lang')) || _readClean(typeof document !== 'undefined' && document.documentElement && document.documentElement.lang);
+        add(tag === 'video' ? 'video' : tag === 'audio' ? 'audio' : 'image', description, sourceKey, describedOverride, { priority: 1, language: language });
+      });
+    }
+
+    const visited = typeof WeakSet === 'function' ? new WeakSet() : null;
+    let inspected = 0;
+    const descriptionKeys = ['altText', 'alt_text', 'mediaDescription', 'media_description', 'imageDescription', 'image_description', 'visualDescription', 'visual_description', 'longDescription', 'long_description'];
+    const visit = function(value, path, depth) {
+      if (!value || typeof value !== 'object' || depth > 6 || inspected >= 240) return;
+      if (visited) { if (visited.has(value)) return; visited.add(value); }
+      inspected += 1;
+      if (Array.isArray(value)) {
+        value.slice(0, 80).forEach(function(entry, index) { visit(entry, path + '[' + index + ']', depth + 1); });
+        return;
+      }
+      const description = descriptionKeys.reduce(function(found, key) {
+        return found || (typeof value[key] === 'string' ? _readClean(value[key]) : '');
+      }, '');
+      const imageSource = value.imageUrl || value.imageURL || value.image_url || value.imageSrc || value.image_src || value.image
+        || (typeof value.src === 'string' && (/^data:image\//i.test(value.src) || /\.(?:png|jpe?g|gif|webp|svg)(?:[?#]|$)/i.test(value.src)) ? value.src : '');
+      const videoSource = value.videoUrl || value.videoURL || value.video_url || value.videoSrc || value.video_src;
+      const audioSource = value.audioUrl || value.audioURL || value.audio_url || value.audioSrc || value.audio_src;
+      const visualDescriptionEntry = /(?:^|\.)visualDescriptions?(?:\[|\.|$)/i.test(path);
+      const genericDescription = (videoSource || audioSource || imageSource || visualDescriptionEntry) && typeof value.description === 'string' ? _readClean(value.description) : '';
+      const authoredDescription = description || genericDescription;
+      const kind = videoSource ? 'video' : audioSource ? 'audio' : (imageSource ? 'image' : (visualDescriptionEntry && authoredDescription ? 'video' : (authoredDescription ? 'image' : '')));
+      const language = _readClean(value.lang || value.language || value.locale || options.language || options.locale);
+      if (kind) add(kind, authoredDescription, _readClean(videoSource || audioSource || imageSource) || ('generated:' + path), undefined, { priority: 2, language: language });
+      Object.keys(value).slice(0, 80).forEach(function(key) {
+        if (descriptionKeys.indexOf(key) >= 0 || /^(?:src|image|imageUrl|imageURL|image_url|imageSrc|image_src|videoUrl|videoURL|video_url|videoSrc|video_src|audioUrl|audioURL|audio_url|audioSrc|audio_src)$/i.test(key)) return;
+        const child = value[key];
+        if (child && typeof child === 'object') visit(child, path + '.' + key, depth + 1);
+      });
+    };
+    visit(options.generatedContent, 'generatedContent', 0);
+    return items;
+  };
   const getReadableContent = (deps) => {
     const { activeView, inputText, generatedContent, filteredGlossaryData } = deps || {};
     const items = [];
@@ -1601,11 +1725,6 @@
         main.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(function(heading) {
           if (!_readHidden(heading)) addUnique('heading', 'Heading level ' + heading.tagName.slice(1) + ': ' + heading.textContent);
         });
-        main.querySelectorAll('img').forEach(function(img) {
-          if (_readHidden(img) || img.getAttribute('role') === 'presentation') return;
-          const name = _readName(img, main);
-          if (name) addUnique('image', 'Image: ' + name);
-        });
         main.querySelectorAll('p,li,blockquote,[role="status"],[role="alert"],[aria-live]').forEach(function(node) {
           if (!_readHidden(node)) addUnique(node.matches('[role="status"],[role="alert"],[aria-live]') ? 'status' : 'text', node.textContent);
         });
@@ -1619,8 +1738,21 @@
 
 
       }
-      if (items.length <= 1) items.push({ type: 'status', text: activeView + ' view is active. Generate content to hear it read aloud.' });
     }
+    const mediaItems = getMediaDescriptionItems({
+      root: deps && deps.root,
+      generatedContent: generatedContent
+    });
+    const mediaKeys = new Set(items.filter(function(item) {
+      return item && (item.type === 'image' || item.type === 'media');
+    }).map(function(item) { return _readClean(item.text).toLowerCase(); }));
+    mediaItems.forEach(function(item) {
+      const key = _readClean(item.text).toLowerCase();
+      if (!key || mediaKeys.has(key)) return;
+      mediaKeys.add(key);
+      items.push(item);
+    });
+    if (!items.length) items.push({ type: 'status', text: (activeView || 'Current') + ' view has no readable content yet.' });
     return items;
   };
 
@@ -1689,7 +1821,7 @@
         ? Promise.resolve(window.alloDeviceStorage)
         : new Promise((resolve, reject) => {
             const s = document.createElement('script');
-            s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds4-bridge-auth';
+            s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent';
             s.onload = () => {
               if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);
               else reject(new Error('device storage module missing after load'));
@@ -2114,6 +2246,7 @@
     toggleA11yInspect,
     applyA11yInspector,
     getReadableContent,
+    getMediaDescriptionItems,
     handleFormatText,
     getAdventureImageDB,
     getChatThemeStyles,
@@ -2123,5 +2256,5 @@
     handleCopyToClipboard
   };
   window.AlloModules.ExportHandlersModule = true;
-  console.log('[ExportHandlersModule] 14 handlers registered (Phase P bundle)');
+  console.log('[ExportHandlersModule] 15 handlers registered (Phase P bundle)');
 })();

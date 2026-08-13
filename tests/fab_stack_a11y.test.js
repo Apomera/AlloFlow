@@ -5,20 +5,40 @@ import fs from 'node:fs';
 const source = fs.readFileSync('view_fab_stack_source.jsx', 'utf8');
 
 describe('Floating student-tools stack accessibility', () => {
-  it('exposes expansion and a named tool group', () => {
+  it('exposes expansion and a named non-modal tools dialog', () => {
+    expect(source).toContain('data-floating-control="fab-stack"');
     expect(source).toContain('aria-expanded={isFabExpanded}');
     expect(source).toContain('aria-controls="alloflow-student-tools-panel"');
+    expect(source).toContain('aria-haspopup="dialog"');
     expect(source).toContain('id="alloflow-student-tools-panel"');
-    expect(source).toContain('role="group"');
-    expect(source).toContain('aria-label="Student tools"');
+    expect(source).toContain('role="dialog"');
+    expect(source).toContain('aria-labelledby="alloflow-student-tools-title"');
+    expect(source).not.toContain('aria-modal="true"');
   });
 
-  it('moves focus into the expanded group and returns it on Escape', () => {
-    expect(source).toContain("panelRef.current?.querySelector('button:not([disabled])')");
+  it('moves focus to the first available tool and returns it after close or Escape', () => {
+    expect(source).toContain("panelRef.current?.querySelector('[data-student-tool=\"true\"]:not([disabled])')");
     expect(source).toContain('if (firstTool) firstTool.focus()');
     expect(source).toContain("if (event.key !== 'Escape') return");
+    expect(source).toContain('onClick={closeStudentTools}');
     expect(source).toContain('handleToggleIsFabExpanded()');
-    expect(source).toContain('toggleRef.current?.focus()');
+    expect(source).toContain('window.setTimeout(() => toggleRef.current?.focus(), 0)');
+  });
+
+  it('groups labeled actions without changing the Guided Mode selectors', () => {
+    expect(source).toContain('alloflow-student-tools-read-heading');
+    expect(source).toContain('>Read</h3>');
+    expect(source).toContain('alloflow-student-tools-focus-heading');
+    expect(source).toContain('>Focus</h3>');
+    expect(source).toContain('alloflow-student-tools-input-heading');
+    expect(source).toContain('>Input &amp; practice</h3>');
+    for (const helpKey of [
+      'tool_read_mode', 'tool_define_mode', 'tool_explain_mode', 'tool_syntax_game',
+      'fab_ruler', 'fab_timer', 'fab_focus', 'fab_line_focus', 'fab_dictation',
+      'socratic_toggle', 'fab_toggle',
+    ]) {
+      expect(source).toContain(`data-help-key="${helpKey}"`);
+    }
   });
 
   it('exposes active tool states and matches the visible Socratic label', () => {
@@ -44,9 +64,23 @@ describe('Floating student-tools stack accessibility', () => {
     expect(source).toContain('aria-busy={dictationBusy}');
     expect(source).toContain("dictationPhase === 'transcribing'");
   });
-  it('respects reduced motion and hides decorative artwork', () => {
+  it('uses an anchored desktop popover and a narrow bottom sheet with touch-sized controls', () => {
+    expect(source).toContain('{isFabExpanded && (');
+    expect(source).toContain('position: absolute;');
+    expect(source).toContain('bottom: 64px;');
+    expect(source).toContain('@media (max-width: 767px)');
+    expect(source).toContain('position: fixed !important;');
+    expect(source).toContain('max-height: min(82dvh, 720px) !important;');
+    expect(source).toContain('min-height: 44px;');
+    expect(source).toContain('min-height: 48px;');
+  });
+
+  it('respects reduced motion and forced colors and hides decorative artwork', () => {
     expect(source).toContain('animate-pulse motion-reduce:animate-none');
-    expect(source).toContain('slide-in-from-bottom-4 fade-in duration-200 motion-reduce:animate-none');
+    expect(source).toContain('slide-in-from-bottom-3 fade-in duration-200 motion-reduce:animate-none');
+    expect(source).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(source).toContain('@media (forced-colors: active)');
+    expect(source).toContain('forced-color-adjust: auto');
     expect(source).toContain('motion-reduce:transition-none');
     expect(source).toContain('motion-reduce:transform-none');
     expect(source).toContain("{'\\uD83D\\uDDBC\\uFE0F'}");

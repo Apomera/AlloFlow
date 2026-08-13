@@ -500,6 +500,186 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   }
 
   // ─────────────────────────────────────────────────────────
+  // Investigation snapshots. Notebook entries must survive later slider and tree
+  // changes, so every helper here returns plain JSON with no live array references.
+  function finiteOr(v, fallback) {
+    return typeof v === 'number' && isFinite(v) ? v : fallback;
+  }
+
+  function cloneTreeSnapshot(raw, speciesId) {
+    var t = normaliseTree(raw, speciesId);
+    var out = Object.assign({}, t);
+    out.rings = t.rings.map(function (r) { return Object.assign({}, r); });
+    out.history = t.history.map(function (r) { return Object.assign({}, r); });
+    return out;
+  }
+
+  function normaliseExperimentEnv(raw) {
+    var r = raw && typeof raw === 'object' ? raw : {};
+    return {
+      tempC: clamp(finiteOr(r.tempC, 22), -5, 45),
+      light: clamp(finiteOr(r.light, 0.8), 0, 1),
+      co2ppm: clamp(finiteOr(r.co2ppm, 420), 180, 900),
+      soilWater: clamp(finiteOr(r.soilWater, 0.7), 0, 1),
+      droughtYears: Array.isArray(r.droughtYears)
+        ? r.droughtYears.filter(function (n) { return typeof n === 'number' && isFinite(n); }).slice(0, 100)
+        : []
+    };
+  }
+
+  function dominantLimiter(counts) {
+    var best = 'light', bestN = -1;
+    ['light', 'water', 'temperature', 'co2'].forEach(function (id) {
+      var n = finiteOr(counts && counts[id], 0);
+      if (n > bestN) { best = id; bestN = n; }
+    });
+    return best;
+  }
+
+  function safeTrialSummary(raw) {
+    var r = raw && typeof raw === 'object' ? raw : {};
+    var counts = {};
+    ['light', 'water', 'temperature', 'co2'].forEach(function (id) {
+      counts[id] = Math.max(0, Math.round(finiteOr(r.limiterCounts && r.limiterCounts[id], 0)));
+    });
+    var observed = ['thrive', 'struggle', 'die'].indexOf(r.observedOutcome) >= 0
+      ? r.observedOutcome : (r.alive === false ? 'die' : 'struggle');
+    return {
+      requestedYears: clamp(Math.round(finiteOr(r.requestedYears, 10)), 1, 100),
+      yearsCompleted: Math.max(0, Math.round(finiteOr(r.yearsCompleted, 0))),
+      startAge: Math.max(0, Math.round(finiteOr(r.startAge, 0))),
+      endAge: Math.max(0, Math.round(finiteOr(r.endAge, 0))),
+      alive: r.alive !== false,
+      causeOfDeath: typeof r.causeOfDeath === 'string' ? r.causeOfDeath : null,
+      dominantLimiter: ['light', 'water', 'temperature', 'co2'].indexOf(r.dominantLimiter) >= 0
+        ? r.dominantLimiter : dominantLimiter(counts),
+      limiterCounts: counts,
+      observedOutcome: observed,
+      meanNet: finiteOr(r.meanNet, 0),
+      meanRingWidth: finiteOr(r.meanRingWidth, 0),
+      heightDelta: finiteOr(r.heightDelta, 0),
+      dbhDelta: finiteOr(r.dbhDelta, 0),
+      reservesDelta: finiteOr(r.reservesDelta, 0),
+      reproductionDelta: finiteOr(r.reproductionDelta, 0),
+      endHeight: Math.max(0, finiteOr(r.endHeight, 0)),
+      endDbh: Math.max(0, finiteOr(r.endDbh, 0)),
+      endReserves: finiteOr(r.endReserves, 0)
+    };
+  }
+  function runExperimentTrial(startTree, speciesId, envRaw, allocRaw, yearsRaw) {
+    var sid = speciesById(speciesId).id;
+    var sp = speciesById(sid);
+    var start = cloneTreeSnapshot(startTree, sid);
+    var st = cloneTreeSnapshot(start, sid);
+    var envCfg = normaliseExperimentEnv(envRaw);
+    var alloc = normaliseAlloc(allocRaw);
+    var requested = clamp(Math.round(finiteOr(yearsRaw, 10)), 1, 100);
+    var counts = { light: 0, water: 0, temperature: 0, co2: 0 };
+    var netTotal = 0, ringTotal = 0, completed = 0;
+
+    for (var i = 0; i < requested && st.alive; i++) {
+      var env = envForYear(envCfg, st.age);
+      var aperture = stomatalAperture(env.soilWater, sp.droughtTol, false);
+      var probe = grossPhotosynthesis(sp, env, st.leafArea, aperture);
+      counts[probe.limiting.id] = (counts[probe.limiting.id] || 0) + 1;
+      var historyBefore = st.history.length;
+      var ringsBefore = st.rings.length;
+      st = simulateYear(st, sp, env, alloc);
+      completed++;
+      var rec = st.history.length > historyBefore ? st.history[st.history.length - 1] : null;
+      var ring = st.rings.length > ringsBefore ? st.rings[st.rings.length - 1] : null;
+      netTotal += finiteOr(rec && rec.net, 0);
+      ringTotal += finiteOr(ring && ring.widthMm, 0);
+    }
+
+    var meanNet = completed ? netTotal / completed : 0;
+    var reservesDelta = st.reserves - start.reserves;
+    var observed = !st.alive ? 'die' : ((meanNet < 0 || reservesDelta < 0) ? 'struggle' : 'thrive');
+    return {
+      tree: cloneTreeSnapshot(st, sid),
+      summary: safeTrialSummary({
+        requestedYears: requested, yearsCompleted: completed,
+        startAge: start.age, endAge: st.age, alive: st.alive,
+        causeOfDeath: st.causeOfDeath, dominantLimiter: dominantLimiter(counts),
+        limiterCounts: counts, observedOutcome: observed,
+        meanNet: meanNet, meanRingWidth: completed ? ringTotal / completed : 0,
+        heightDelta: st.heightM - start.heightM,
+        dbhDelta: st.dbhCm - start.dbhCm,
+        reservesDelta: reservesDelta,
+        reproductionDelta: st.seedsBanked - start.seedsBanked,
+        endHeight: st.heightM, endDbh: st.dbhCm, endReserves: st.reserves
+      })
+    };
+  }
+  function normalisePrediction(raw) {
+    var r = raw && typeof raw === 'object' ? raw : {};
+    return {
+      limiter: ['light', 'water', 'temperature', 'co2'].indexOf(r.limiter) >= 0 ? r.limiter : null,
+      outcome: ['thrive', 'struggle', 'die'].indexOf(r.outcome) >= 0 ? r.outcome : null,
+      reason: typeof r.reason === 'string' ? r.reason.slice(0, 1200) : ''
+    };
+  }
+
+  function normaliseTrialResult(raw, speciesId) {
+    if (!raw || typeof raw !== 'object' || !raw.tree || !raw.summary) return null;
+    return { tree: cloneTreeSnapshot(raw.tree, speciesId), summary: safeTrialSummary(raw.summary) };
+  }
+
+  function normaliseExperiment(raw) {
+    var r = raw && typeof raw === 'object' ? raw : {};
+    var phase = ['idle', 'predict', 'ready', 'explain'].indexOf(r.phase) >= 0 ? r.phase : 'idle';
+    var sid = speciesById(r.baseline && r.baseline.speciesId).id;
+    var baseline = r.baseline && r.baseline.tree ? {
+      speciesId: sid,
+      tree: cloneTreeSnapshot(r.baseline.tree, sid),
+      env: normaliseExperimentEnv(r.baseline.env),
+      alloc: normaliseAlloc(r.baseline.alloc)
+    } : null;
+    var treatment = r.treatment && typeof r.treatment === 'object' ? {
+      env: normaliseExperimentEnv(r.treatment.env),
+      alloc: normaliseAlloc(r.treatment.alloc)
+    } : null;
+    var result = normaliseTrialResult(r.result, sid);
+    if (phase !== 'idle' && !baseline) phase = 'idle';
+    if ((phase === 'ready' || phase === 'explain') && !treatment) phase = 'predict';
+    if (phase === 'explain' && !result) phase = 'ready';
+    return {
+      phase: phase,
+      duration: clamp(Math.round(finiteOr(r.duration, 10)), 1, 100),
+      prediction: normalisePrediction(r.prediction),
+      baseline: baseline, treatment: treatment, result: result,
+      explanation: typeof r.explanation === 'string' ? r.explanation.slice(0, 4000) : ''
+    };
+  }
+
+  function normaliseTrialRecord(raw) {
+    if (!raw || typeof raw !== 'object' || !raw.baseline || !raw.result) return null;
+    var sid = speciesById(raw.speciesId || raw.baseline.speciesId).id;
+    var result = normaliseTrialResult(raw.result, sid);
+    if (!result || !raw.baseline.tree) return null;
+    return {
+      speciesId: sid,
+      duration: clamp(Math.round(finiteOr(raw.duration, result.summary.requestedYears)), 1, 100),
+      prediction: normalisePrediction(raw.prediction),
+      baseline: {
+        speciesId: sid,
+        tree: cloneTreeSnapshot(raw.baseline.tree, sid),
+        env: normaliseExperimentEnv(raw.baseline.env),
+        alloc: normaliseAlloc(raw.baseline.alloc)
+      },
+      treatment: {
+        env: normaliseExperimentEnv(raw.treatment && raw.treatment.env),
+        alloc: normaliseAlloc(raw.treatment && raw.treatment.alloc)
+      },
+      result: result,
+      explanation: typeof raw.explanation === 'string' ? raw.explanation.slice(0, 4000) : ''
+    };
+  }
+
+  function normaliseExperimentTrials(raw) {
+    var r = raw && typeof raw === 'object' ? raw : {};
+    return { A: normaliseTrialRecord(r.A), B: normaliseTrialRecord(r.B) };
+  }
   // SECTION 4: REPRODUCTION STRATEGIES
   //
   // The honest tradeoff. Clonal routes are cheap and nearly always take, but they
@@ -762,6 +942,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     return pal[i % pal.length];
   }
   var BARK = { oak: '#6b4f2a', aspen: '#c9c6b4', willow: '#5b4636', pine: '#7a4b2a', redwood: '#8a4a2f' };
+  var TREE_FORM = {
+    oak:     { branchSpread: 0.88, branchLift: 0.42, asymmetry: 0.10, wind: 0.72 },
+    aspen:   { branchSpread: 0.56, branchLift: 0.78, asymmetry: 0.04, wind: 1.28 },
+    willow:  { branchSpread: 0.92, branchLift: 0.34, asymmetry: 0.12, wind: 1.18 },
+    pine:    { branchSpread: 0.68, branchLift: 0.54, asymmetry: 0.03, wind: 0.62 },
+    redwood: { branchSpread: 0.54, branchLift: 0.64, asymmetry: 0.02, wind: 0.48 }
+  };
+  var BARK_CANVAS_CACHE = {};
+
+  // One source of truth for visual state. Water stress changes turgor and soil;
+  // carbon stress thins and dulls the crown. Keeping those channels separate avoids
+  // drawing a shaded tree as though it were dehydrated.
+  function deriveTreeVisualState(treeRaw, speciesRaw, envRaw, seasonRaw) {
+    var st = treeRaw && typeof treeRaw === 'object' ? treeRaw : {};
+    var sp = speciesRaw && typeof speciesRaw === 'object' ? speciesRaw : speciesById('oak');
+    var env = envRaw && typeof envRaw === 'object' ? envRaw : {};
+    var season = ['spring', 'summer', 'autumn', 'winter'].indexOf(seasonRaw) >= 0 ? seasonRaw : 'summer';
+    var water = clamp(typeof env.soilWater === 'number' && isFinite(env.soilWater) ? env.soilWater : 0.7, 0, 1);
+    var aperture = stomatalAperture(water, typeof sp.droughtTol === 'number' ? sp.droughtTol : 0.5, false);
+    var waterStress = clamp(1 - aperture, 0, 1);
+    var deficitTolerance = Math.max(1, Math.round(6 + (sp.droughtTol || 0) * 8));
+    var carbonStress = clamp((typeof st.deficitYears === 'number' ? st.deficitYears : 0) / deficitTolerance, 0, 1);
+    var broad = sp.leafType !== 'needle';
+    var leafDensity = broad
+      ? (season === 'spring' ? 0.64 : (season === 'autumn' ? 0.90 : (season === 'winter' ? 0 : 1)))
+      : 1;
+    var leafScale = broad ? (season === 'spring' ? 0.66 : (season === 'autumn' ? 0.92 : 1)) : 1;
+    var rootMass = Math.max(0, typeof st.rootMass === 'number' ? st.rootMass : 0);
+    var leafMass = Math.max(0, typeof st.leafMass === 'number' ? st.leafMass : 0);
+    var rootShare = rootMass / Math.max(0.01, rootMass + leafMass);
+    return {
+      waterStress: waterStress,
+      carbonStress: carbonStress,
+      severeWaterStress: waterStress > 0.62,
+      chronicDeficit: carbonStress > 0.45,
+      leafDensity: leafDensity * (1 - carbonStress * 0.28),
+      leafScale: leafScale * (1 - carbonStress * 0.16),
+      rootVigor: clamp(0.30 + rootShare * 0.76, 0.30, 1),
+      springGrowth: season === 'spring' ? 1 : 0
+    };
+  }
+
+  function visualLeafHex(season, leafType, visual, i) {
+    var h = clusterHex(season, leafType, visual.carbonStress > 0.72, i);
+    if (leafType === 'needle' && visual.springGrowth && i % 7 < 2) {
+      h = mixHex(h, '#91d36a', 0.46);
+    }
+    if (visual.waterStress > 0.18) {
+      h = mixHex(h, leafType === 'needle' ? '#77722a' : '#a98735', visual.waterStress * 0.24);
+    }
+    if (visual.carbonStress > 0.08) {
+      h = mixHex(h, '#76502a', visual.carbonStress * 0.38);
+    }
+    return h;
+  }
 
   // The four limiting factors, as a categorical palette. Assigned in a fixed order and
   // never cycled: a factor keeps its hue whatever else is on screen.
@@ -832,6 +1067,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var ctx = cv.getContext('2d');
       return ctx ? { cv: cv, ctx: ctx } : null;
     } catch (e) { return null; }
+  }
+
+  // Species-specific bark without another draw call. The cached object is only the
+  // source canvas; each scene gets its own disposable CanvasTexture.
+  function barkTexture(THREE, speciesId, baseHex) {
+    var cv = BARK_CANVAS_CACHE[speciesId];
+    if (!cv) {
+      var c = canvas2d(256, 512);
+      if (!c) return null;
+      var ctx = c.ctx;
+      var rnd = seeded(hashStr('bark:' + speciesId));
+      // Detail-only neutral texture: the material supplies species colour exactly
+      // once. Painting colour into both texture and material makes bark nearly black.
+      var bg = ctx.createLinearGradient(0, 0, 256, 0);
+      var barkLight = speciesId === 'aspen' ? '#f1f1f1' : '#d2d2d2';
+      var barkDark = speciesId === 'aspen' ? '#a8a8a8' : '#747474';
+      bg.addColorStop(0, barkDark);
+      bg.addColorStop(0.45, barkLight);
+      bg.addColorStop(1, mixHex(barkDark, '#000000', 0.12));
+      ctx.fillStyle = bg; ctx.fillRect(0, 0, 256, 512);
+      if (speciesId === 'aspen') {
+        ctx.strokeStyle = rgba('#303030', 0.72);
+        ctx.lineCap = 'round';
+        for (var a = 0; a < 74; a++) {
+          var ay = rnd() * 512, ax = rnd() * 256, aw = 5 + rnd() * 22;
+          ctx.lineWidth = 1 + rnd() * 2.2;
+          ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + aw, ay + (rnd() - 0.5) * 2); ctx.stroke();
+        }
+      } else if (speciesId === 'pine') {
+        ctx.strokeStyle = rgba('#303030', 0.58); ctx.lineWidth = 3;
+        for (var py = -20; py < 540; py += 34) {
+          for (var px = -24; px < 280; px += 32) {
+            var jx = px + (rnd() - 0.5) * 13, jy = py + (rnd() - 0.5) * 12;
+            ctx.strokeRect(jx, jy, 22 + rnd() * 17, 20 + rnd() * 24);
+          }
+        }
+      } else {
+        var groove = speciesId === 'redwood' ? '#2b2b2b' : (speciesId === 'willow' ? '#343434' : '#292929');
+        var lines = speciesId === 'redwood' ? 54 : 38;
+        ctx.strokeStyle = rgba(groove, speciesId === 'redwood' ? 0.64 : 0.56);
+        ctx.lineCap = 'round';
+        for (var g2 = 0; g2 < lines; g2++) {
+          var gx = rnd() * 256;
+          ctx.lineWidth = 1.5 + rnd() * (speciesId === 'oak' ? 5 : 3.5);
+          ctx.beginPath(); ctx.moveTo(gx, -10);
+          for (var gy = 0; gy <= 540; gy += 36) ctx.lineTo(gx + Math.sin(gy * 0.025 + g2) * (3 + rnd() * 4), gy);
+          ctx.stroke();
+        }
+      }
+      // Fine mottle keeps the pattern from reading like wallpaper in close-up.
+      for (var m = 0; m < 1200; m++) {
+        ctx.fillStyle = rgba(rnd() < 0.58 ? '#000000' : '#ffffff', 0.025 + rnd() * 0.07);
+        ctx.fillRect(rnd() * 256, rnd() * 512, 1 + rnd() * 3, 1 + rnd() * 5);
+      }
+      cv = c.cv;
+      BARK_CANVAS_CACHE[speciesId] = cv;
+    }
+    var tex = new THREE.CanvasTexture(cv);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(2, 5);
+    return tex;
   }
 
   // ── Sky ───────────────────────────────────────────────────────────────────
@@ -1064,6 +1361,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     geo.computeVertexNormals();
     return geo;
   }
+  // Merge static limb geometry for bare winter crowns. Keeping the curved geometry
+  // while collapsing hundreds of twigs into one mesh removes the winter draw-call
+  // and raycast spike without changing the silhouette.
+  function mergeStaticGeometries(THREE, sources) {
+    if (!sources || !sources.length) return null;
+    var geos = [];
+    for (var gi = 0; gi < sources.length; gi++) {
+      var source = sources[gi];
+      var ready = source.index ? source.toNonIndexed() : source;
+      if (ready !== source && source.dispose) source.dispose();
+      geos.push(ready);
+    }
+    var merged = new THREE.BufferGeometry();
+    ['position', 'normal', 'uv'].forEach(function (name) {
+      var itemSize = 0, total = 0, ArrayType = null;
+      for (var ai = 0; ai < geos.length; ai++) {
+        var attr = geos[ai].getAttribute(name);
+        if (!attr) return;
+        if (!itemSize) { itemSize = attr.itemSize; ArrayType = attr.array.constructor; }
+        if (attr.itemSize !== itemSize) return;
+        total += attr.array.length;
+      }
+      var joined = new ArrayType(total);
+      var offset = 0;
+      for (var aj = 0; aj < geos.length; aj++) {
+        var array = geos[aj].getAttribute(name).array;
+        joined.set(array, offset);
+        offset += array.length;
+      }
+      merged.setAttribute(name, new THREE.BufferAttribute(joined, itemSize));
+    });
+    for (var di = 0; di < geos.length; di++) if (geos[di].dispose) geos[di].dispose();
+    merged.computeBoundingBox();
+    merged.computeBoundingSphere();
+    return merged;
+  }
   // A foliage mass. Lumpy, flat-shaded, and never a sphere: a smooth sphere is
   // exactly what makes a procedural canopy read as a bunch of balloons.
   function blobGeom(THREE, r, seed) {
@@ -1120,12 +1453,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var st = props.tree || {};
     var season = props.season || 'summer';
     var clones = props.clones || 0;
-    var stressed = !!props.stressed;
     var dry = !!props.dry;
-    var reduced = !!props.reduced;
+    var cracked = !!props.cracked;
+    var reduced = !!props.reduced || !!api.reduced;
     var lightLevel = typeof props.light === 'number' ? clamp(props.light, 0, 1) : 0.8;
     var needle = sp.leafType === 'needle';
     var alive = st.alive !== false;
+    var visual = props.visual || deriveTreeVisualState(st, sp, { soilWater: props.soilWater }, season);
+    var stressed = visual.chronicDeficit;
+    var form = TREE_FORM[sp.id] || TREE_FORM.oak;
     // High contrast exists to make every edge legible. Weather, haze and mood light
     // all work against that, so the whole atmosphere layer is skipped there and the
     // scene falls back to the flat, maximally readable version.
@@ -1134,6 +1470,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var meshes = {};
     var picks = [];
     var group = new THREE.Group();
+    function registerPick(mesh, id) {
+      mesh.userData.partId = id;
+      picks.push(mesh);
+      return mesh;
+    }
 
     // Organic surfaces want a dark, weak specular. The shell's shared trim() uses a
     // pale blue-grey one (0x6b7688) tuned for painted metal, and on dark bark it
@@ -1146,12 +1487,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         shininess: flat ? 0 : (o.shininess == null ? 4 : o.shininess),
         specular: flat ? 0x000000 : (o.specular == null ? 0x140f0a : o.specular),
         flatShading: !!o.flat,
-        side: o.side || THREE.FrontSide
+        side: o.side || THREE.FrontSide,
+        map: flat ? null : (o.map || null)
       });
       // A little self-colour so foliage does not go muddy in its own shade. Leaves
       // TRANSMIT light; a purely reflective material cannot, and that missing
       // translucency is most of why procedural canopies look like plastic.
-      if (!flat && o.glow) m.emissive = new THREE.Color(hex).multiplyScalar(o.glow);
+      if (!flat && o.glow) {
+        m.emissive = new THREE.Color(hex).multiplyScalar(o.glow);
+        m.userData._preserveBaseEmissive = true;
+      }
       return m;
     }
 
@@ -1189,8 +1534,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var barkHex = BARK[sp.id] || '#6b4f2a';
     var bare = (season === 'winter' && !needle);
     var weeping = sp.id === 'willow';
-    // 0 = turgid, 1 = fully wilted. Deliberately affects ANGLE and not leaf count.
-    var wilt = clamp((dry ? 0.62 : 0) + (stressed ? 0.38 : 0), 0, 1);
+    // Only loss of water pressure changes leaf angle. Carbon shortage instead thins
+    // and dulls the crown, so shade/cold no longer masquerade as dehydration.
+    var wilt = clamp((visual.waterStress - 0.16) / 0.74, 0, 1);
 
     // ── Light direction. The sun's HEIGHT follows the light slider, so turning the
     //    light down no longer just changes a number: the sun sinks toward the
@@ -1205,7 +1551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var sunHex = mixHex(pal.sun, '#ff8a3c', clamp(1 - lightLevel, 0, 1) * 0.6);
 
     var groundNear, groundFar;
-    if (season === 'winter') { groundNear = api.dark ? '#7b8ca6' : '#d3e0ee'; groundFar = api.dark ? '#5a6a84' : '#bccddf'; }
+    if (season === 'winter') { groundNear = api.dark ? '#43463d' : '#918a78'; groundFar = api.dark ? '#353b38' : '#7b7a6b'; }
     else if (dry)            { groundNear = api.dark ? '#6b5c3e' : '#c3ab6c'; groundFar = api.dark ? '#4a3f2b' : '#a28d57'; }
     else if (season === 'autumn') { groundNear = api.dark ? '#55502c' : '#8a8b4c'; groundFar = api.dark ? '#464426' : '#7c7d44'; }
     else { groundNear = api.dark ? '#3d5230' : '#688f4d'; groundFar = api.dark ? '#33452a' : '#5c8144'; }
@@ -1227,7 +1573,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // every other object in the scene simply paints over it.
       sky.renderOrder = -1000;
       group.add(sky);
-      meshes.sky = sky;
 
       api.scene.background = new THREE.Color(pal.lo);
       // The shell fogs 5.2 to 11.0, tuned for a compact object on a bench. Push it
@@ -1244,7 +1589,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         sunSprite.position.copy(sunDir).multiplyScalar(26);
         sunSprite.renderOrder = -999;
         group.add(sunSprite);
-        meshes.sun = sunSprite;
       }
 
       // ── Lighting. The shell lights a workbench: ambient 0.44 under a 0.92 key,
@@ -1295,7 +1639,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     }
 
     // ── Trunk: curved, tapered, fluted, with a root flare. ──
-    var barkMat = mat(barkHex, { shininess: 2, specular: 0x1a120a });
+    var barkTex = flat ? null : barkTexture(THREE, sp.id, barkHex);
+    var barkMat = mat(barkHex, { shininess: 2, specular: 0x1a120a, map: barkTex });
     var trunkGroup = new THREE.Group();
     var trunkTopR = trunkR * (needle ? 0.13 : 0.42);
     var trunkH = needle ? H * 0.86 : Math.min(H, crownBaseY + crownR * 0.85);
@@ -1306,18 +1651,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     trunk.position.y = trunkH / 2;
     if (api.wantShadow) { trunk.castShadow = true; trunk.receiveShadow = true; }
     trunkGroup.add(trunk);
-    picks.push(trunk);
+    registerPick(trunk, 'trunk');
 
     // Basal flare — a short, much wider cone buried at the foot of the trunk.
     var flare = new THREE.Mesh(tierGeom(THREE, trunkR * 1.55, H * 0.065, 5),
-      mat(mixHex(barkHex, '#1d140c', 0.30), { shininess: 1, specular: 0x1a120a }));
+      mat(mixHex(barkHex, '#1d140c', 0.30), { shininess: 1, specular: 0x1a120a, map: barkTex }));
     flare.position.y = H * 0.031;
     if (api.wantShadow) flare.castShadow = true;
     trunkGroup.add(flare);
+    registerPick(flare, 'trunk');
 
     // ── Branches. Drawn for every tree, but they only READ on a bare winter
     //    broadleaf; in leaf they are the armature the foliage hangs from. ──
     var branchTips = [];
+    var bareBranchGeometries = [];
     var UP = new THREE.Vector3(0, 1, 0);
     var DOWN = new THREE.Vector3(0, -1, 0);
     function branch(depth, origin, dir, len, rad) {
@@ -1333,14 +1680,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var lb = wd.clone().applyQuaternion(q.clone().conjugate());
       var droop = len * (weeping ? (0.34 + 0.20 * (3 - depth)) : (0.13 + 0.08 * (3 - depth)));
       var bx = lb.x * droop, bz = lb.z * droop;
-      var m = new THREE.Mesh(
-        limbGeom(THREE, len, rad, rad * 0.5, bx, bz, depth >= 2 ? 0.08 : 0,
-          17 + depth * 7 + Math.round(len * 997), depth >= 2 ? 8 : 5),
-        barkMat);
-      m.position.copy(origin).addScaledVector(d, len / 2);
-      m.quaternion.copy(q);
-      if (api.wantShadow) m.castShadow = true;
-      trunkGroup.add(m);
+      var branchGeo = limbGeom(THREE, len, rad, rad * 0.5, bx, bz, depth >= 2 ? 0.08 : 0,
+        17 + depth * 7 + Math.round(len * 997), depth >= 2 ? 8 : 5);
+      var branchPos = origin.clone().addScaledVector(d, len / 2);
+      if (bare) {
+        var branchMatrix = new THREE.Matrix4().compose(
+          branchPos, q, new THREE.Vector3(1, 1, 1)
+        );
+        branchGeo.applyMatrix4(branchMatrix);
+        bareBranchGeometries.push(branchGeo);
+      } else {
+        var m = new THREE.Mesh(branchGeo, barkMat);
+        m.position.copy(branchPos);
+        m.quaternion.copy(q);
+        if (api.wantShadow) m.castShadow = true;
+        trunkGroup.add(m);
+        registerPick(m, 'trunk');
+      }
       // The tip is the far END of the curve, not of the straight axis. Hanging
       // foliage off the axis end left every cluster floating clear of its branch.
       var end = origin.clone().addScaledVector(d, len)
@@ -1367,16 +1723,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var orders = bare ? 4 : 2;
       var nPrimary = 6;
       for (var b = 0; b < nPrimary; b++) {
-        var a0 = b * 2.39996;
+        var a0 = b * 2.39996 + (b % 2 ? form.asymmetry : -form.asymmetry);
         // Spread the origins along the trunk rather than clustering them at one fork
         // height, and vary reach so no two primaries are the same length.
         var startY = crownBaseY - H * 0.05 + (b % 5) * H * 0.105;
-        var lean = 0.50 + (b % 4) * 0.17;
-        var dir0 = new THREE.Vector3(Math.cos(a0) * 0.74, lean, Math.sin(a0) * 0.74).normalize();
+        var lean = form.branchLift + (b % 4) * 0.10;
+        var dir0 = new THREE.Vector3(
+          Math.cos(a0) * form.branchSpread, lean, Math.sin(a0) * form.branchSpread
+        ).normalize();
         branch(orders, new THREE.Vector3(0, startY, 0), dir0,
-          crownR * (0.74 + (b % 3) * 0.13), trunkR * (bare ? 0.42 : 0.52));
+          crownR * (0.70 + form.branchSpread * 0.13 + (b % 3) * 0.11),
+          trunkR * (bare ? 0.42 : 0.52));
       }
     }
+    if (bareBranchGeometries.length) {
+      var winterBranchGeo = mergeStaticGeometries(THREE, bareBranchGeometries);
+      if (winterBranchGeo) {
+        var winterBranches = new THREE.Mesh(winterBranchGeo, barkMat);
+        if (api.wantShadow) winterBranches.castShadow = true;
+        trunkGroup.add(winterBranches);
+        registerPick(winterBranches, 'trunk');
+      }
+    }
+    trunkGroup.userData.labelAnchor = new THREE.Vector3(0, trunkH * 0.46, 0);
+    trunkGroup.userData.noSelectionScale = true;
     meshes.trunk = trunkGroup;
     group.add(trunkGroup);
 
@@ -1394,23 +1764,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var cardSpec = [];         // {p, sc, q, phase, hue}
 
     function addMass(p, r, i) {
-      // Deliberately DARKER than the leaf layer in front of it. An inner mass painted
-      // the same green as the cards flattens the crown into one silhouette again.
-      var m = new THREE.Mesh(blobGeom(THREE, r, i * 31 + 7),
-        mat(mixHex(clusterHex(season, sp.leafType, stressed, i), '#0b2412', 0.56),
-          { shininess: 3, specular: 0x0a1f10, flat: true }));
+      // Spring unfolding and carbon limitation open real gaps in the crown. The dark
+      // inner mass shrinks with the leaf layer instead of remaining a solid green ball.
+      var massR = r * (0.52 + visual.leafDensity * 0.48);
+      var leafHex = visualLeafHex(season, sp.leafType, visual, i);
+      var m = new THREE.Mesh(blobGeom(THREE, massR, i * 31 + 7),
+        mat(mixHex(leafHex, '#0b2412', 0.56),
+          { shininess: 3, specular: 0x0a1f10, flat: true, glow: 0.025 }));
       m.position.copy(p);
       if (api.wantShadow) m.castShadow = true;
       crownGroup.add(m);
-      picks.push(m);
+      registerPick(m, 'crown');
       foliage.push({ m: m, base: p.clone(), phase: (i % 9) * 0.71, h: clamp(p.y / Math.max(0.001, H), 0, 1) });
-      if (p.y + r > crownTopY) crownTopY = p.y + r;
+      if (p.y + massR > crownTopY) crownTopY = p.y + massR;
       return m;
     }
     // Scatter leaf cards over the shell of a mass. Facing OUTWARD from the cluster
     // centre with a random twist, so they catch the sun as a surface does rather than
     // as a cloud of randomly angled flakes.
     function scatterCards(centre, r, n, seed, hueBase) {
+      n = Math.max(6, Math.round(n * visual.leafDensity));
       var rnd = seeded(seed);
       for (var i = 0; i < n; i++) {
         // Golden-angle spiral on the sphere: an even shell, where uniform random
@@ -1430,7 +1803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         // only instant, honest sign of water stress the tree itself can show.
         dummy.rotateX((rnd() - 0.5) * 1.1 + wilt * (0.55 + rnd() * 0.35));
         cardSpec.push({
-          p: p, sc: r * (0.66 + rnd() * 0.40), q: dummy.quaternion.clone(),
+          p: p, sc: r * (0.66 + rnd() * 0.40) * visual.leafScale, q: dummy.quaternion.clone(),
           phase: rnd() * 6.2832, hue: hueBase + i,
           // How much sky this card faces. Foliage is not one green: the top of a crown
           // is bleached by full sun and the underside sits in its own shade, and
@@ -1452,7 +1825,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var wa = (k * 2.1) + w * 2.39996;
         var out = new THREE.Vector3(Math.cos(wa), 0, Math.sin(wa)).multiplyScalar(r * (0.3 + rnd() * 0.5));
         var len = reach * (0.55 + rnd() * 0.45);
-        var n = 7;
+        var n = Math.max(3, Math.round(7 * visual.leafDensity));
         for (var q = 0; q < n; q++) {
           var f = (q + 0.6) / n;
           var p = new THREE.Vector3(
@@ -1464,7 +1837,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           dd.lookAt(p.clone().add(new THREE.Vector3(Math.cos(wa), 0.15, Math.sin(wa))));
           dd.rotateZ((rnd() - 0.5) * 0.5);
           cardSpec.push({
-            p: p, sc: r * (0.30 + rnd() * 0.16), q: dd.quaternion.clone(),
+            p: p, sc: r * (0.30 + rnd() * 0.16) * visual.leafScale, q: dd.quaternion.clone(),
             phase: rnd() * 6.2832, hue: hueBase + q + w,
             up: -0.25,
             // Whole strands swing, and they swing far more than a rigid twig does.
@@ -1486,12 +1859,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var cr = crownR * (1 - f2 * 0.66);
         var coneR = cr * 0.84;   // the mass sits inside the spray shell
         var cone = new THREE.Mesh(tierGeom(THREE, coneR, ch, t2 * 13 + 3),
-          mat(mixHex(clusterHex(season, 'needle', stressed, t2), '#04180f', 0.62),
-            { shininess: 2, specular: 0x0a1f10, flat: true }));
+          mat(mixHex(visualLeafHex(season, 'needle', visual, t2), '#04180f', 0.62),
+            { shininess: 2, specular: 0x0a1f10, flat: true, glow: 0.02 }));
         cone.position.y = y0 + ch * (t2 === tiers - 1 ? 0.5 : 0.42);
         if (api.wantShadow) cone.castShadow = true;
         crownGroup.add(cone);
-        picks.push(cone);
+        registerPick(cone, 'crown');
         foliage.push({ m: cone, base: cone.position.clone(), phase: t2 * 0.8, h: clamp(cone.position.y / Math.max(0.001, H), 0, 1) });
         // Needle sprays around the skirt of each tier, where a conifer's foliage
         // actually is. Scattering them through the cone body would hide them inside it.
@@ -1530,7 +1903,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ci += 4;
       }
       // Core mass, so the canopy is not a ring of separate clumps around a hole.
-      var corePt = new THREE.Vector3(0, crownBaseY + crownR * 0.78, 0);
+      var corePt = new THREE.Vector3(crownR * form.asymmetry, crownBaseY + crownR * 0.78, 0);
       addMass(corePt, crownR * 0.64, ci);
       scatterCards(corePt, crownR * 0.90, 96, 4441, ci);
     } else {
@@ -1548,7 +1921,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         color: 0xffffff, shininess: flat ? 0 : 9,
         specular: flat ? 0x000000 : 0x16331d
       });
-      if (!flat) cardMat.emissive = new THREE.Color(0x0b1f10);
+      if (!flat) {
+        cardMat.emissive = new THREE.Color(0x0b1f10);
+        cardMat.userData._preserveBaseEmissive = true;
+      }
+      cardMat.userData._keepOpaqueOnRecede = true;
       cards = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), cardMat, cardSpec.length);
       if (api.wantShadow) { cards.castShadow = true; cards.receiveShadow = true; }
       var cdummy = new THREE.Object3D();
@@ -1560,7 +1937,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         cdummy.scale.setScalar(spec.sc);
         cdummy.updateMatrix();
         cards.setMatrixAt(cs, cdummy.matrix);
-        var chex = clusterHex(season, sp.leafType, stressed, spec.hue);
+        var chex = visualLeafHex(season, sp.leafType, visual, spec.hue);
         if (!flat) {
           var u2 = spec.up == null ? 0 : spec.up;
           chex = u2 >= 0 ? mixHex(chex, season === 'autumn' ? '#ffd25e' : '#cdec8e', u2 * 0.48)
@@ -1572,7 +1949,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       cards.instanceMatrix.needsUpdate = true;
       if (cards.instanceColor) cards.instanceColor.needsUpdate = true;
       crownGroup.add(cards);
+      registerPick(cards, 'crown');
     }
+    crownGroup.userData.labelAnchor = new THREE.Vector3(
+      crownR * form.asymmetry, needle ? H * 0.74 : crownBaseY + crownR * 0.78, 0
+    );
+    crownGroup.userData.noSelectionScale = true;
     meshes.crown = crownGroup;
     group.add(crownGroup);
 
@@ -1581,29 +1963,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     //    under a cutaway ground disc so they read as underground rather than as legs,
     //    which is exactly how the first version looked. ──
     var rootGroup = new THREE.Group();
-    // depthTest off + a high renderOrder draws the root system straight over the soil
-    // disc, which is the cutaway the Spread game needs. Sorting alone cannot do it:
-    // three.js renders every opaque mesh before any transparent one, so a translucent
-    // ground ALWAYS blended over the roots and tinted them to the soil colour.
+    // The cutaway is schematic: most structural roots spread through shallow soil,
+    // with two sinkers and a finer absorbing network. Root allocation changes the
+    // spread and branch density, so the model's below-ground investment is visible.
     var rootMat = mat('#3f2d1e', { shininess: 0 });
     rootMat.depthTest = false;
-    var rootSpread = crownR * 0.85 + trunkR * 3;
-    for (var ri = 0; ri < 7; ri++) {
-      var ra = ri * 2.39996;
-      var rl = rootDepth * (1.15 + (ri % 3) * 0.4);
-      var rdir = new THREE.Vector3(Math.cos(ra) * 0.55, -0.84, Math.sin(ra) * 0.55).normalize();
+    var rootSpread = (crownR * 0.85 + trunkR * 3) * (0.80 + visual.rootVigor * 0.25);
+    var structuralEnds = [];
+    for (var ri = 0; ri < 5; ri++) {
+      var ra = ri * 2.39996 + 0.18;
+      var lateral = rootSpread * (0.65 + (ri % 3) * 0.13);
+      var drop = rootDepth * (0.20 + (ri % 2) * 0.16);
+      var rend = new THREE.Vector3(Math.cos(ra) * lateral, -drop, Math.sin(ra) * lateral);
+      var rl = rend.length();
+      var rdir = rend.clone().normalize();
       var rq = new THREE.Quaternion().setFromUnitVectors(UP, rdir);
       var rwd = new THREE.Vector3(Math.cos(ra), 0, Math.sin(ra));
       rwd.addScaledVector(rdir, -rwd.dot(rdir)).normalize();
-      var rlb = rwd.applyQuaternion(rq.clone().conjugate()).multiplyScalar(rl * 0.35);
+      var rlb = rwd.applyQuaternion(rq.clone().conjugate()).multiplyScalar(rl * 0.12);
       var rm = new THREE.Mesh(
-        limbGeom(THREE, rl, trunkR * 0.42, trunkR * 0.10, rlb.x, rlb.z, 0.06, 23 + ri, 6), rootMat);
-      rm.position.copy(rdir).multiplyScalar(rl * 0.5);
+        limbGeom(THREE, rl, trunkR * (0.34 + visual.rootVigor * 0.10), trunkR * 0.075,
+          rlb.x, rlb.z, 0.06, 23 + ri, 6), rootMat);
+      rm.position.copy(rend).multiplyScalar(0.5);
       rm.quaternion.copy(rq);
       rm.renderOrder = 3;
       rootGroup.add(rm);
-      picks.push(rm);
+      registerPick(rm, 'roots');
+      structuralEnds.push({ angle: ra, end: rend });
     }
+    // A pair of deeper sinkers keeps the cutaway from implying that every tree root
+    // occupies a single flat layer.
+    for (var si = 0; si < 2; si++) {
+      var sa = 0.85 + si * Math.PI;
+      var send = new THREE.Vector3(
+        Math.cos(sa) * rootSpread * 0.18, -rootDepth * (0.82 + si * 0.10),
+        Math.sin(sa) * rootSpread * 0.18
+      );
+      var sl = send.length();
+      var sd = send.clone().normalize();
+      var sm = new THREE.Mesh(
+        limbGeom(THREE, sl, trunkR * 0.25, trunkR * 0.055, 0, 0, 0.04, 81 + si, 6), rootMat);
+      sm.position.copy(send).multiplyScalar(0.5);
+      sm.quaternion.setFromUnitVectors(UP, sd);
+      sm.renderOrder = 3;
+      rootGroup.add(sm);
+      registerPick(sm, 'roots');
+    }
+    // Fine absorbing roots are one non-shadow-casting instanced batch.
+    var finePerRoot = Math.max(3, Math.round(3 + visual.rootVigor * 3));
+    var fineCount = structuralEnds.length * finePerRoot;
+    var fineRoots = new THREE.InstancedMesh(
+      new THREE.CylinderGeometry(1, 1, 1, 5), rootMat, fineCount
+    );
+    var fineDummy = new THREE.Object3D();
+    var fineIndex = 0;
+    for (var fri = 0; fri < structuralEnds.length; fri++) {
+      var fr = structuralEnds[fri];
+      for (var fj = 0; fj < finePerRoot; fj++) {
+        var along = 0.34 + (fj + 1) / (finePerRoot + 2) * 0.58;
+        var side = (fj % 2 ? 1 : -1) * (0.58 + (fj % 3) * 0.15);
+        var fl = rootSpread * (0.11 + (fj % 3) * 0.025) * (0.82 + visual.rootVigor * 0.18);
+        var fa = fr.angle + side;
+        var fp0 = fr.end.clone().multiplyScalar(along);
+        var fd = new THREE.Vector3(Math.cos(fa), -0.20, Math.sin(fa)).normalize();
+        fineDummy.position.copy(fp0).addScaledVector(fd, fl * 0.5);
+        fineDummy.quaternion.setFromUnitVectors(UP, fd);
+        var fineRadius = Math.max(trunkR * 0.09, H * 0.0014);
+        fineDummy.scale.set(fineRadius, fl, fineRadius);
+        fineDummy.updateMatrix();
+        fineRoots.setMatrixAt(fineIndex++, fineDummy.matrix);
+      }
+    }
+    fineRoots.instanceMatrix.needsUpdate = true;
+    fineRoots.renderOrder = 3;
+    rootGroup.add(fineRoots);
+    registerPick(fineRoots, 'roots');
+    rootGroup.userData.labelAnchor = new THREE.Vector3(0, -rootDepth * 0.38, 0);
+    rootGroup.userData.noSelectionScale = true;
     meshes.roots = rootGroup;
     group.add(rootGroup);
 
@@ -1612,17 +2048,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var cloneGroup = new THREE.Group();
     var cloneCards = [];
     var nClones = clamp(clones, 0, 6);
+    // Clone only when used; unreferenced Three materials are invisible to scene
+    // traversal and would otherwise survive every no-clone scene rebuild.
+    var cloneBarkMat = nClones ? barkMat.clone() : null;
+    var cloneRootMat = nClones ? rootMat.clone() : null;
     for (var c2 = 0; c2 < nClones; c2++) {
       var cang = c2 * 2.39996 + 0.6;
       var cdist = rootSpread * (1.15 + (c2 % 3) * 0.3);
       var chh = H * (0.15 + ((c2 * 7) % 5) / 42);
       var cr3 = trunkR * 0.62;
       var cstem = new THREE.Mesh(
-        limbGeom(THREE, chh, cr3, cr3 * 0.55, chh * 0.05, chh * 0.03, 0.07, 31 + c2, 8), barkMat);
+        limbGeom(THREE, chh, cr3, cr3 * 0.55, chh * 0.05, chh * 0.03, 0.07, 31 + c2, 8), cloneBarkMat);
       cstem.position.set(Math.cos(cang) * cdist, chh / 2, Math.sin(cang) * cdist);
       if (api.wantShadow) cstem.castShadow = true;
       cloneGroup.add(cstem);
-      picks.push(cstem);
+      registerPick(cstem, 'clones');
+      if (!cloneGroup.userData.labelAnchor) {
+        cloneGroup.userData.labelAnchor = new THREE.Vector3(
+          Math.cos(cang) * cdist, chh * 1.15, Math.sin(cang) * cdist
+        );
+      }
       if (!bare) {
         var ctop = new THREE.Mesh(
           needle ? tierGeom(THREE, chh * 0.44, chh * 1.15, c2 * 9 + 2)
@@ -1630,16 +2075,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           // Same rule as the parent crown: the geometry is the dark mass BEHIND the
           // leaves, not the thing you look at. Left bright, it reads as a green crystal
           // with a few leaves stuck on.
-          mat(mixHex(clusterHex(season, sp.leafType, stressed, c2 + 3), '#0b2412', 0.56),
-            { shininess: 3, specular: 0x0a1f10, flat: true }));
+          mat(mixHex(visualLeafHex(season, sp.leafType, visual, c2 + 3), '#0b2412', 0.56),
+            { shininess: 3, specular: 0x0a1f10, flat: true, glow: 0.025 }));
         ctop.position.set(Math.cos(cang) * cdist, chh * (needle ? 1.15 : 1.12), Math.sin(cang) * cdist);
         if (api.wantShadow) ctop.castShadow = true;
         cloneGroup.add(ctop);
+        registerPick(ctop, 'clones');
         foliage.push({ m: ctop, base: ctop.position.clone(), phase: c2 * 1.3 + 0.4, h: 0.5 });
         var crnd = seeded(c2 * 331 + 19);
         var ctopR = chh * 0.52;
-        for (var cc = 0; cc < 20; cc++) {
-          var cu = (cc + 0.5) / 20;
+        var cloneLeafCount = Math.max(8, Math.round(20 * visual.leafDensity));
+        for (var cc = 0; cc < cloneLeafCount; cc++) {
+          var cu = (cc + 0.5) / cloneLeafCount;
           var cphi = Math.acos(1 - 2 * cu);
           var cdir = new THREE.Vector3(
             Math.sin(cphi) * Math.cos(cc * 2.39996), Math.cos(cphi) * 0.85, Math.sin(cphi) * Math.sin(cc * 2.39996));
@@ -1649,18 +2096,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           cdd.lookAt(cp.clone().addScaledVector(cdir, 1));
           cdd.rotateZ(crnd() * 6.2832);
           cloneCards.push({
-            p: cp, sc: ctopR * (0.55 + crnd() * 0.35), q: cdd.quaternion.clone(),
+            p: cp, sc: ctopR * (0.55 + crnd() * 0.35) * visual.leafScale, q: cdd.quaternion.clone(),
             hue: c2 * 3 + cc, up: clamp(cdir.y * 0.85 + 0.15, -1, 1)
           });
         }
       }
       // The root connection that carries a pathogen to every copy at once.
-      var link = new THREE.Mesh(new THREE.CylinderGeometry(trunkR * 0.13, trunkR * 0.13, cdist, 5), rootMat);
+      var link = new THREE.Mesh(new THREE.CylinderGeometry(trunkR * 0.13, trunkR * 0.13, cdist, 5), cloneRootMat);
       var ldir = new THREE.Vector3(Math.cos(cang), -0.1, Math.sin(cang)).normalize();
       link.position.set(Math.cos(cang) * cdist * 0.5, -rootDepth * 0.3, Math.sin(cang) * cdist * 0.5);
       link.quaternion.setFromUnitVectors(UP, ldir);
       link.renderOrder = 3;
       cloneGroup.add(link);
+      registerPick(link, 'clones');
     }
     if (cloneCards.length && !flat) {
       var cloneTex = leafTexture(THREE, needle);
@@ -1670,6 +2118,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           color: 0xffffff, shininess: 9, specular: 0x16331d
         });
         cloneMat.emissive = new THREE.Color(0x0b1f10);
+        cloneMat.userData._preserveBaseEmissive = true;
+        cloneMat.userData._keepOpaqueOnRecede = true;
         var cMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), cloneMat, cloneCards.length);
         if (api.wantShadow) cMesh.castShadow = true;
         var cdum = new THREE.Object3D();
@@ -1681,7 +2131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           cdum.scale.setScalar(csp.sc);
           cdum.updateMatrix();
           cMesh.setMatrixAt(ck, cdum.matrix);
-          var chx = clusterHex(season, sp.leafType, stressed, csp.hue);
+          var chx = visualLeafHex(season, sp.leafType, visual, csp.hue);
           chx = csp.up >= 0 ? mixHex(chx, season === 'autumn' ? '#ffd25e' : '#cdec8e', csp.up * 0.48)
                             : mixHex(chx, '#0a2413', -csp.up * 0.26);
           ccol2.set(chx);
@@ -1690,8 +2140,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         cMesh.instanceMatrix.needsUpdate = true;
         if (cMesh.instanceColor) cMesh.instanceColor.needsUpdate = true;
         cloneGroup.add(cMesh);
+        registerPick(cMesh, 'clones');
       }
     }
+    cloneGroup.userData.noSelectionScale = true;
     meshes.clones = cloneGroup;
     group.add(cloneGroup);
 
@@ -1710,6 +2162,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     ground.rotation.x = -Math.PI / 2;
     if (api.wantShadow) ground.receiveShadow = true;
     group.add(ground);
+
+    // A dark soil window explains why the roots remain visible. It is deliberately
+    // compact and slightly above the lawn to avoid a false full-depth excavation.
+    var soilWindow = new THREE.Mesh(
+      new THREE.CircleGeometry(Math.min(lawnR * 0.42, rootSpread * 1.28), 40),
+      new THREE.MeshPhongMaterial({
+        color: flat ? 0x111111 : new THREE.Color(dry ? '#6f5131' : '#59412c').getHex(),
+        side: THREE.DoubleSide, shininess: 0
+      })
+    );
+    soilWindow.rotation.x = -Math.PI / 2;
+    soilWindow.position.y = 0.003;
+    soilWindow.renderOrder = 1;
+    group.add(soilWindow);
+
+    // One seasonal ground-detail draw call: drought cracks OR fallen autumn leaves.
+    // Shape carries the cue, so it remains useful without depending on colour alone.
+    if (!flat && (cracked || (season === 'autumn' && !needle && alive))) {
+      if (cracked) {
+        var crackSegments = 32;
+        var crackPos = new Float32Array(crackSegments * 6);
+        for (var crk = 0; crk < crackSegments; crk++) {
+          var ca = (crk % 16) * 2.39996 + (crk >= 16 ? 0.18 : 0);
+          var cr0 = rootSpread * (0.42 + (crk >= 16 ? 0.26 : 0));
+          var cr1 = cr0 + lawnR * (0.12 + (crk % 4) * 0.015);
+          var cj = Math.sin(crk * 7.1) * 0.10;
+          var co = crk * 6;
+          crackPos[co] = Math.cos(ca) * cr0;
+          crackPos[co + 1] = 0.012;
+          crackPos[co + 2] = Math.sin(ca) * cr0;
+          crackPos[co + 3] = Math.cos(ca + cj) * cr1;
+          crackPos[co + 4] = 0.012;
+          crackPos[co + 5] = Math.sin(ca + cj) * cr1;
+        }
+        var crackGeo = new THREE.BufferGeometry();
+        crackGeo.setAttribute('position', new THREE.BufferAttribute(crackPos, 3));
+        group.add(new THREE.LineSegments(crackGeo,
+          new THREE.LineBasicMaterial({ color: new THREE.Color('#4a2f20').getHex() })));
+      } else {
+        var litterCount = 52;
+        var litter = new THREE.InstancedMesh(
+          new THREE.CircleGeometry(1, 5),
+          new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }), litterCount
+        );
+        var litterDummy = new THREE.Object3D();
+        var litterColor = new THREE.Color();
+        var litterRnd = seeded(7717);
+        for (var lit = 0; lit < litterCount; lit++) {
+          var la = litterRnd() * 6.2832;
+          var ld = rootSpread * (0.44 + litterRnd() * 1.05);
+          var ls = crownR * (0.020 + litterRnd() * 0.025);
+          litterDummy.position.set(Math.cos(la) * ld, 0.014, Math.sin(la) * ld);
+          litterDummy.rotation.set(-Math.PI / 2, 0, litterRnd() * 6.2832);
+          litterDummy.scale.set(ls * 1.45, ls, ls);
+          litterDummy.updateMatrix();
+          litter.setMatrixAt(lit, litterDummy.matrix);
+          litterColor.set(AUTUMN[lit % AUTUMN.length]);
+          litter.setColorAt(lit, litterColor);
+        }
+        litter.instanceMatrix.needsUpdate = true;
+        if (litter.instanceColor) litter.instanceColor.needsUpdate = true;
+        group.add(litter);
+      }
+    }
 
     if (!flat) {
 
@@ -1784,7 +2300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var tuftMat = new THREE.MeshPhongMaterial({
           map: grassTex, alphaTest: 0.4, transparent: false, side: THREE.DoubleSide,
           color: new THREE.Color(
-            season === 'winter' ? mixHex(groundNear, '#eef4fa', 0.5)
+            season === 'winter' ? mixHex(groundNear, '#94825f', 0.58)
             : season === 'autumn' ? mixHex(groundNear, '#b8a54e', 0.6)
             : dry ? mixHex(groundNear, '#c4b070', 0.6)
             : mixHex(groundNear, '#69a94e', 0.60)).getHex(),
@@ -1816,42 +2332,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     //    has asked for reduced motion — the system is not BUILT in that case rather
     //    than being built and paused, because a shower frozen in mid-air is worse than
     //    no shower at all. ──
-    var leafFall = null, leafSeeds = null, leafDummy = null, leafTop = 1, snowing = false;
-    var falling = season === 'winter' ? 'snow'
-      : (season === 'autumn' && !needle && alive ? 'leaf' : null);
+    var leafFall = null, leafSeeds = null, leafDummy = null, leafTop = 1;
+    var falling = season === 'autumn' && !needle && alive;
     if (!flat && !reduced && falling) {
-      snowing = falling === 'snow';
-      var NL = snowing ? 110 : 44;
+      var NL = 44;
       var lgeo = new THREE.PlaneGeometry(1, 1);
       var lmat = new THREE.MeshPhongMaterial({
-        color: 0xffffff, side: THREE.DoubleSide, shininess: snowing ? 0 : 8,
-        flatShading: true
+        color: 0xffffff, side: THREE.DoubleSide, shininess: 8, flatShading: true
       });
-      // Snow is its own light source as far as the eye is concerned; without this it
-      // renders as grey confetti against a bright winter sky.
-      if (snowing) lmat.emissive = new THREE.Color(0x9fb4cc);
       leafFall = new THREE.InstancedMesh(lgeo, lmat, NL);
       leafDummy = new THREE.Object3D();
       leafSeeds = [];
-      // Snow falls over the whole scene; leaves only come off the tree that dropped
-      // them, so they start inside the crown's own footprint.
-      var spread = snowing ? Math.max(lawnR * 1.3, crownR * 2.2) : crownR * 1.3;
-      leafTop = snowing ? crownTopY * 1.45 + 0.4 : crownTopY;
+      var spread = crownR * 1.3;
+      leafTop = crownTopY;
       var lrnd = seeded(6151);
       var col = new THREE.Color();
       for (var li = 0; li < NL; li++) {
         var lang = lrnd() * 6.2832;
-        var lrad = spread * Math.sqrt(lrnd());   // sqrt, or every flake crowds the rim
+        var lrad = spread * Math.sqrt(lrnd());
         leafSeeds.push({
           x: Math.cos(lang) * lrad, z: Math.sin(lang) * lrad,
-          t0: lrnd(),
-          sp: snowing ? 0.035 + lrnd() * 0.05 : 0.05 + lrnd() * 0.10,
-          sc: snowing ? 0.016 + lrnd() * 0.016 : crownR * (0.055 + lrnd() * 0.05),
-          spin: snowing ? 0.15 + lrnd() * 0.4 : 0.6 + lrnd() * 1.6,
-          sway: snowing ? 0.10 : 0.30
+          t0: lrnd(), sp: 0.05 + lrnd() * 0.10,
+          sc: crownR * (0.055 + lrnd() * 0.05),
+          spin: 0.6 + lrnd() * 1.6, sway: 0.30
         });
-        col.set(snowing ? (li % 3 ? '#ffffff' : '#e6f0fb')
-                        : clusterHex('autumn', 'broad', stressed, li));
+        col.set(clusterHex('autumn', 'broad', stressed, li));
         leafFall.setColorAt(li, col);
       }
       if (leafFall.instanceColor) leafFall.instanceColor.needsUpdate = true;
@@ -1862,7 +2367,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // the picture and not only in the toast that has already gone.
     if (!alive) {
       crownGroup.visible = false;
-      barkMat.color.setHex(flat ? 0xffffff : 0x574c40);
+      // Neutral bark detail remains, while every parent stem/flare material is
+      // desaturated. Clone materials stay independent because offspring may survive.
+      trunkGroup.traverse(function (deadPart) {
+        if (!deadPart.isMesh || !deadPart.material) return;
+        var deadMats = Array.isArray(deadPart.material) ? deadPart.material : [deadPart.material];
+        deadMats.forEach(function (deadMat) {
+          if (deadMat.color) deadMat.color.setHex(flat ? 0xffffff : 0x574c40);
+        });
+      });
     }
 
     // ── Centre the tree on the point the shell actually looks at. ──
@@ -1881,10 +2394,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var t0 = 0;
     var cardDummy = new THREE.Object3D();
     function frame(now, sceneProps, reducedNow) {
-      if (reducedNow) return;
+      if (reducedNow || (sceneProps && sceneProps.reduced)) return;
+      var wind = sceneProps && typeof sceneProps.wind === 'number' ? sceneProps.wind : 0.35;
+      if (wind <= 0) return;
+      wind *= form.wind;
       if (!t0) t0 = now;
       var t = (now - t0) / 1000;
-      var wind = (sceneProps && sceneProps.wind) || 0.35;
       // Gusts. Constant-amplitude sway is exactly what gives a sine wave away as a
       // sine wave; real wind arrives in pulses, so the amplitude is itself modulated
       // by two slow beats that never quite line up.
@@ -1966,17 +2481,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var id = null;
     var onTick = null;
     var lastSeen = 0;
+    var lastTickAt = 0;
     function stop() {
       if (id) { clearInterval(id); id = null; }
+      lastTickAt = 0;
     }
     function beat(fn) { onTick = fn; lastSeen = Date.now(); }
     function ensure(running) {
       if (!running) { stop(); return; }
       if (id) return;
+      lastTickAt = Date.now();
       id = setInterval(function () {
-        if (Date.now() - lastSeen > HEARTBEAT_STALE_MS) { stop(); return; }
+        var now = Date.now();
+        if (now - lastSeen > HEARTBEAT_STALE_MS) { stop(); return; }
         if (!onTick) return;
-        try { onTick(); } catch (e) { console.warn('[TreeLab] clock stopped', e); stop(); }
+        // setInterval is delayed by WebGL and busy school devices. Advance by real
+        // elapsed time, but cap one callback at a second so a suspended tab cannot
+        // jump centuries when it becomes visible again.
+        var elapsedMs = clamp(now - lastTickAt, TICK_MS, 1000);
+        lastTickAt = now;
+        try { onTick(elapsedMs); } catch (e) { console.warn('[TreeLab] clock stopped', e); stop(); }
       }, TICK_MS);
     }
     return { beat: beat, ensure: ensure, stop: stop, running: function () { return !!id; } };
@@ -2111,6 +2635,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           ? { bg: '#0f172a', card: '#1e293b', cardAlt: '#172033', border: '#334155', text: '#e2e8f0', dim: '#94a3b8', accent: '#34d399', onAccent: '#04241a', good: '#4ade80', bad: '#f87171', warn: '#fbbf24' }
           : { bg: '#f8fafc', card: '#ffffff', cardAlt: '#f1f5f9', border: '#cbd5e1', text: '#0f172a', dim: '#475569', accent: '#059669', onAccent: '#00150e', good: '#15803d', bad: '#dc2626', warn: '#b45309' });
 
+      // Scoped interaction and responsive polish. Everything lives below
+      // .allo-tree-lab so neighbouring STEAM tools remain untouched.
+      var visualCss = [
+        '.allo-tree-lab{position:relative;isolation:isolate;overflow:visible;}',
+        '.allo-tree-lab:before{content:"";position:absolute;inset:0 0 auto 0;height:280px;pointer-events:none;z-index:-1;background:radial-gradient(circle at 8% 5%,var(--tree-glow),transparent 36%),radial-gradient(circle at 92% 0,var(--sun-glow),transparent 30%);}',
+        '.allo-tree-hero{position:relative;overflow:hidden;}',
+        '.allo-tree-hero:after{content:"";position:absolute;width:180px;height:180px;right:-72px;bottom:-112px;border-radius:50%;border:28px solid var(--hero-ring);pointer-events:none;}',
+        '.allo-tree-workbench{display:grid;grid-template-columns:minmax(360px,540px) minmax(420px,1fr);gap:16px;align-items:start;}',
+        '.allo-tree-workbench>*{min-width:0;}',
+        '.allo-tree-workbench-sticky{position:sticky;top:12px;}',
+        '.allo-tree-card{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;}',
+
+        '.allo-tree-button,.allo-tree-tab{transition:transform .14s ease,box-shadow .14s ease,background .14s ease,border-color .14s ease;}',
+        '.allo-tree-button:not(:disabled):hover,.allo-tree-tab:hover{transform:translateY(-1px);box-shadow:0 5px 14px var(--tree-shadow);}',
+        '.allo-tree-button:focus-visible,.allo-tree-tab:focus-visible,.allo-tree-lab select:focus-visible,.allo-tree-lab input:focus-visible,.allo-tree-lab textarea:focus-visible{outline:3px solid var(--tree-focus);outline-offset:2px;}',
+        '.allo-tree-tabs{scrollbar-width:thin;}',
+        '.allo-tree-tab[aria-selected="true"]{box-shadow:0 6px 16px var(--accent-shadow);}',
+        '.allo-tree-panel{animation:tree-panel-in .22s ease-out;}',
+        '@keyframes tree-panel-in{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:none}}',
+        '@media (prefers-reduced-motion:reduce){.allo-tree-card,.allo-tree-button,.allo-tree-tab,.allo-tree-panel{transition:none!important;animation:none!important}}',
+        '@media (max-width:960px){.allo-tree-workbench{grid-template-columns:minmax(0,1fr)}.allo-tree-workbench-sticky{position:static}}',
+        '@media (max-width:620px){.allo-tree-lab{padding:10px!important}.allo-tree-hero{padding:15px!important}.allo-tree-hero-controls{width:100%;justify-content:flex-start!important}.allo-tree-hero-field{flex:1 1 130px;flex-direction:column;align-items:stretch!important}.allo-tree-hero-field select{width:100%}.allo-tree-tabs{flex-wrap:nowrap!important;overflow-x:auto;padding-bottom:7px!important}.allo-tree-tab{flex:0 0 auto}.allo-tree-card{border-radius:14px!important;padding:12px!important}.allo-tree-workbench-scene [role="img"]{height:clamp(280px,55svh,420px)!important}}'
+      ].join('');
       var view = d.view || 'grow';
       var sp = speciesById(d.speciesId || 'oak');
       var tree = normaliseTree(d.tree, sp.id);
@@ -2130,6 +2677,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         droughtYears: d.droughtYears || []
       };
       var alloc = normaliseAlloc(d.alloc);
+      var experiment = normaliseExperiment(d.experiment);
+      var experimentTrials = normaliseExperimentTrials(d.experimentTrials);
+      var experimentActive = experiment.phase !== 'idle';
+      var experimentLocked = experiment.phase === 'ready' || experiment.phase === 'explain';
+      playing = playing && !experimentActive;
 
       // Live readout for the CURRENT settings, independent of the yearly step.
       // Same environment the next simulated year will see, so a drought is visible in
@@ -2151,16 +2703,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // ── Shared UI atoms ──
       function card(children, extra) {
         return h('div', {
+          className: 'allo-tree-card',
           style: Object.assign({
-            background: T.card, border: '1px solid ' + T.border, borderRadius: 12,
-            padding: 14, marginBottom: 12
+            background: T.card, border: '1px solid ' + T.border, borderRadius: 16,
+            padding: 16, marginBottom: 14,
+            boxShadow: isContrast ? 'none' : (isDark ? '0 10px 28px rgba(2,6,23,.22)' : '0 10px 30px rgba(15,23,42,.07)')
           }, extra || {})
         }, children);
       }
       function heading(txt, sub) {
-        return h('div', { key: 'hd', style: { marginBottom: 10 } }, [
-          h('div', { key: 'h', style: { fontWeight: 700, fontSize: 15, color: T.text } }, txt),
-          sub ? h('div', { key: 's', style: { fontSize: 12, color: T.dim, marginTop: 3, lineHeight: 1.5 } }, sub) : null
+        return h('div', { key: 'hd', style: { marginBottom: 13 } }, [
+          h('div', { key: 'h', style: { fontWeight: 800, fontSize: 16, color: T.text, letterSpacing: '-0.01em' } }, txt),
+          sub ? h('div', { key: 's', style: { fontSize: 12, color: T.dim, marginTop: 4, lineHeight: 1.55, maxWidth: 760 } }, sub) : null
         ]);
       }
       // opts.ariaLabel names a button whose visible content is a glyph. The six
@@ -2170,25 +2724,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       function btn(key, labelTxt, onClick, opts) {
         var o = opts || {};
         return h('button', {
+          className: 'allo-tree-button',
           key: key, type: 'button', onClick: onClick, disabled: !!o.disabled,
           'aria-label': o.ariaLabel || undefined,
           title: o.ariaLabel || undefined,
           'aria-pressed': o.pressed == null ? undefined : !!o.pressed,
           style: {
             padding: o.small ? '5px 10px' : '8px 14px',
-            borderRadius: 8, cursor: o.disabled ? 'not-allowed' : 'pointer',
+            borderRadius: 10, cursor: o.disabled ? 'not-allowed' : 'pointer',
             fontSize: o.small ? 12 : 13, fontWeight: 600,
             border: '1px solid ' + (o.pressed ? T.accent : T.border),
             background: o.pressed ? T.accent : (o.tone === 'ghost' ? 'transparent' : T.cardAlt),
             color: o.pressed ? T.onAccent : T.text,
-            opacity: o.disabled ? 0.5 : 1,
+            opacity: o.disabled ? 0.5 : 1, minHeight: o.small ? 32 : 38,
             marginRight: 6, marginBottom: 6
           }
         }, labelTxt);
       }
       // Sliders are native inputs on purpose: they are keyboard operable and screen
       // reader labelled for free, which a div with role="slider" is not.
-      function slider(key, labelTxt, value, min, max, step, onChange, fmt) {
+      function slider(key, labelTxt, value, min, max, step, onChange, fmt, disabled) {
         var id = 'treelab-' + key;
         return h('div', { key: key, style: { marginBottom: 10 } }, [
           h('label', { key: 'l', htmlFor: id, style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.dim, marginBottom: 4 } }, [
@@ -2197,8 +2752,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           ]),
           h('input', {
             key: 'i', id: id, type: 'range', min: min, max: max, step: step, value: value,
+            disabled: !!disabled,
             onChange: function (e) { onChange(parseFloat(e.target.value)); },
-            style: { width: '100%', accentColor: T.accent }
+            style: { width: '100%', accentColor: T.accent, opacity: disabled ? 0.55 : 1 }
           })
         ]);
       }
@@ -2222,7 +2778,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       }
 
       // ── Simulation actions ──
+      function freshExperiment(baseTree, speciesId, baseEnv, baseAlloc, duration) {
+        var sid = speciesById(speciesId).id;
+        return {
+          phase: 'predict', duration: clamp(Math.round(finiteOr(duration, 10)), 1, 100),
+          prediction: { limiter: null, outcome: null, reason: '' },
+          baseline: {
+            speciesId: sid,
+            tree: cloneTreeSnapshot(baseTree, sid),
+            env: normaliseExperimentEnv(baseEnv),
+            alloc: normaliseAlloc(baseAlloc)
+          },
+          treatment: null, result: null, explanation: ''
+        };
+      }
+
+      function beginExperiment() {
+        CLOCK.stop();
+        updMulti({
+          playing: false,
+          experiment: freshExperiment(tree, sp.id, envCfg, alloc, experiment.duration)
+        });
+        sfxTick();
+        srSay(__alloT('stem.treelab.experiment_started', 'Investigation started. Set the conditions, then make a prediction.'));
+      }
+
+      function updatePrediction(field, value) {
+        var next = Object.assign({}, experiment, {
+          prediction: Object.assign({}, experiment.prediction)
+        });
+        next.prediction[field] = value;
+        upd('experiment', next);
+      }
+
+      function lockPrediction() {
+        if (!experiment.prediction.limiter || !experiment.prediction.outcome) {
+          sfxBad();
+          srSay(__alloT('stem.treelab.prediction_needed', 'Choose a limiting factor and an outcome before locking the prediction.'));
+          return;
+        }
+        upd('experiment', Object.assign({}, experiment, {
+          phase: 'ready',
+          treatment: { env: normaliseExperimentEnv(envCfg), alloc: normaliseAlloc(alloc) },
+          result: null,
+          explanation: ''
+        }));
+        sfxTick();
+        srSay(__alloT('stem.treelab.prediction_locked', 'Prediction locked. Conditions are frozen and the trial is ready to run.'));
+      }
+
+      function editPrediction() {
+        upd('experiment', Object.assign({}, experiment, {
+          phase: 'predict', treatment: null, result: null, explanation: ''
+        }));
+        srSay(__alloT('stem.treelab.prediction_editing', 'Prediction unlocked. You can change the conditions again.'));
+      }
+
+      function runLockedExperiment() {
+        if (!experiment.baseline || !experiment.treatment) { sfxBad(); return; }
+        var sid = experiment.baseline.speciesId;
+        var outcome = runExperimentTrial(
+          experiment.baseline.tree, sid,
+          experiment.treatment.env, experiment.treatment.alloc,
+          experiment.duration
+        );
+        var seen = Object.assign({}, d.limitsSeen || {});
+        Object.keys(outcome.summary.limiterCounts).forEach(function (id) {
+          if (outcome.summary.limiterCounts[id] > 0) seen[id] = true;
+        });
+        updMulti({
+          tree: outcome.tree,
+          speciesId: sid,
+          limitsSeen: seen,
+          playing: false,
+          yearPhase: 0,
+          experiment: Object.assign({}, experiment, { phase: 'explain', result: outcome })
+        });
+        outcome.tree.alive ? sfxGrow() : sfxBad();
+        xp(6);
+        srSay(__alloT('stem.treelab.trial_complete', 'Trial complete. Compare the observation with your prediction, then explain what happened.'));
+      }
+
+      function saveExperimentTrial(slot) {
+        if (experiment.phase !== 'explain' || !experiment.baseline || !experiment.result) return;
+        var trial = normaliseTrialRecord({
+          speciesId: experiment.baseline.speciesId,
+          duration: experiment.duration,
+          prediction: experiment.prediction,
+          baseline: experiment.baseline,
+          treatment: experiment.treatment,
+          result: experiment.result,
+          explanation: experiment.explanation
+        });
+        var next = { A: experimentTrials.A, B: experimentTrials.B };
+        next[slot] = trial;
+        upd('experimentTrials', next);
+        sfxGrow();
+        srSay(__alloT('stem.treelab.trial_saved', 'Trial saved in the lab notebook.'));
+        if (addToast) addToast(__alloT('stem.treelab.trial_saved_short', 'Trial ') + slot + ' ' + __alloT('stem.treelab.saved', 'saved'), 'success');
+      }
+
+      function prepareTrialBFromA() {
+        var a = experimentTrials.A;
+        if (!a) return;
+        var base = a.baseline;
+        CLOCK.stop();
+        updMulti({
+          tree: cloneTreeSnapshot(base.tree, a.speciesId),
+          speciesId: a.speciesId,
+          tempC: a.treatment.env.tempC,
+          light: a.treatment.env.light,
+          co2ppm: a.treatment.env.co2ppm,
+          soilWater: a.treatment.env.soilWater,
+          droughtYears: a.treatment.env.droughtYears.slice(),
+          alloc: Object.assign({}, a.treatment.alloc),
+          playing: false,
+          yearPhase: 0,
+          experiment: freshExperiment(base.tree, a.speciesId, base.env, base.alloc, a.duration)
+        });
+        srSay(__alloT('stem.treelab.trial_b_ready', 'Trial B starts from the same tree as Trial A. Change one condition and make a new prediction.'));
+      }
+
+      function finishExperiment() {
+        upd('experiment', {
+          phase: 'idle', duration: experiment.duration,
+          prediction: { limiter: null, outcome: null, reason: '' },
+          baseline: null, treatment: null, result: null, explanation: ''
+        });
+        srSay(__alloT('stem.treelab.investigation_closed', 'Investigation closed. Ordinary playback is available again.'));
+      }
       function stepYears(n) {
+        if (experimentActive) {
+          srSay(__alloT('stem.treelab.use_trial_run', 'Finish or close the investigation before using ordinary year steps.'));
+          return;
+        }
         var st = tree;
         var seen = Object.assign({}, d.limitsSeen || {});
         for (var i = 0; i < n && st.alive; i++) {
@@ -2245,8 +2934,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // One clock tick. Fractional years accumulate in yearPhase; simulateYear runs
       // only when a whole one has passed, so the seasons animate smoothly without
       // running the engine five times a second.
-      function tick() {
-        var advance = (speed.yps * TICK_MS) / 1000;
+      function tick(elapsedMs) {
+        var clockMs = typeof elapsedMs === 'number' && isFinite(elapsedMs) ? elapsedMs : TICK_MS;
+        var advance = (speed.yps * clockMs) / 1000;
         var phase = yearPhase + advance;
         var whole = Math.floor(phase);
         if (whole < 1) { upd('yearPhase', phase); return; }
@@ -2274,6 +2964,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       CLOCK.ensure(playing);
 
       function togglePlay() {
+        if (experimentActive) {
+          sfxBad();
+          srSay(__alloT('stem.treelab.use_trial_run', 'Finish or close the investigation before using ordinary playback.'));
+          return;
+        }
         var next = !d.playing;
         if (next && !tree.alive) { sfxBad(); srSay('This tree has died. Start a new seedling first.'); return; }
         upd('playing', next);
@@ -2304,11 +2999,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         // a fourth. Reproduction carbon is reset with the tree anyway.
         updMulti({
           tree: newTree(sid), speciesId: sid, spend: {}, lastSpread: null, playing: false,
+          selectedPart: null,
           yearPhase: 0, droughtYears: [],
           // The record belongs to the tree that earned it, and the 3D scene reads its
           // clone count from spreadTotals — a fresh seedling was inheriting the
           // previous tree's whole stand of clones.
-          spreadTotals: { diverse: 0, clonal: 0 }, spreadLog: [], spreadRounds: 0
+          spreadTotals: { diverse: 0, clonal: 0 }, spreadLog: [], spreadRounds: 0,
+          experiment: {
+            phase: 'idle', duration: experiment.duration,
+            prediction: { limiter: null, outcome: null, reason: '' },
+            baseline: null, treatment: null, result: null, explanation: ''
+          }
         });
         CLOCK.stop();
         srSay('Reset to a new ' + speciesById(sid).name + ' seedling.');
@@ -2317,35 +3018,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // ── 3D panel. TREE3D.attach is a stable module-scope function, so React mounts
       //    the canvas once instead of tearing it down every render. ──
       var cloneCount = (d.spreadTotals && d.spreadTotals.clonal) || 0;
+      var treeVisual = deriveTreeVisualState(tree, sp, liveEnv, season);
+      var isSceneDry = inDrought || liveEnv.soilWater < 0.35;
+      var isSceneCracked = liveEnv.soilWater < 0.12;
+      var crownSelectable = tree.alive && !(season === 'winter' && sp.leafType !== 'needle');
+      var sceneSelection = d.selectedPart || null;
+      if ((sceneSelection === 'clones' && cloneCount <= 0) ||
+          (sceneSelection === 'crown' && !crownSelectable)) sceneSelection = null;
+      // Geometry rebuilds destroy and recreate a WebGL renderer. During playback one
+      // age bucket per real second is enough to show growth, while pause immediately
+      // restores the exact height/DBH/canopy/root bands for close inspection.
+      var growthCadence = speed.yps >= 20 ? 25 : (speed.yps >= 5 ? 5 : 1);
+      var sceneGrowthKey = playing
+        ? 'age:' + Math.floor(Math.max(0, tree.age) / growthCadence)
+        : [
+          Math.round(tree.heightM * 4), Math.round(tree.dbhCm),
+          Math.round(Math.log(1 + Math.max(0, tree.leafArea || 0)) * 2),
+          Math.round(treeVisual.rootVigor * 4)
+        ].join(':');
       TREE3D.sync({
-        selected: d.selectedPart || null,
+        selected: sceneSelection,
         dark: isDark,
         contrast: isContrast,
         onPick: function (id) { upd('selectedPart', id); },
         onStatus: function (next) { upd('viewerStatus', next); },
         sceneKey: [
           sp.id,
-          // Coarser while the clock runs: a rebuild is a full scene teardown, and at
-          // 25 yr/s a per-tick key would thrash WebGL for sub-pixel growth.
-          playing ? Math.round(tree.heightM * 1.5) : Math.round(tree.heightM * 4),
-          Math.round(tree.dbhCm), season, cloneCount, tree.alive ? 1 : 0,
+          sceneGrowthKey,
+
+          season, cloneCount, tree.alive ? 1 : 0,
           // The sun's HEIGHT is baked into the scene, so the light slider has to be in
           // the key — but quantised to six steps, because a rebuild is a full WebGL
           // teardown and dragging a continuous slider would fire one per pixel.
-          Math.round(liveEnv.light * 5), inDrought || liveEnv.soilWater < 0.35 ? 'dry' : '-',
-          // Wilt is baked into the card angles, so carbon stress has to key the scene
-          // too — otherwise a tree that has just gone into deficit keeps its turgid
-          // canopy until something unrelated happens to force a rebuild.
-          tree.reserves < 0 ? 'stress' : '-',
+          Math.round(liveEnv.light * 5), isSceneDry ? 'dry' : '-', isSceneCracked ? 'cracked' : '-',
+          // Water angle and carbon-driven canopy density are baked into the scene;
+          // four quantised states avoid rebuilding for every slider pixel.
+          Math.round(treeVisual.waterStress * 3),
+          Math.round(treeVisual.carbonStress * 3),
           reduceMotion ? 'still' : 'anim'
         ].join('|'),
         sceneProps: {
           species: sp, tree: tree, season: season, clones: cloneCount,
-          stressed: tree.reserves < 0, wind: reduceMotion ? 0 : 0.4,
-          light: liveEnv.light,
+          visual: treeVisual, wind: reduceMotion ? 0 : 0.4,
+          light: liveEnv.light, soilWater: liveEnv.soilWater,
           // Drought reads as a dusty amber sky and dry ground, so the picture and the
           // limiting-factor card tell one story rather than two.
-          dry: inDrought || liveEnv.soilWater < 0.35,
+          dry: isSceneDry, cracked: isSceneCracked,
           // The falling-leaf system is NOT BUILT under reduced motion. A shower of
           // leaves frozen in mid-air is worse than no leaves at all.
           reduced: reduceMotion
@@ -2374,6 +3092,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       function viewerPanel() {
         var status = d.viewerStatus || 'idle';
         var full = !!d.viewerFull;
+        var viewerLimit = experimentFactorLabel(live.limiting && live.limiting.id);
+        var sceneCondition = !tree.alive
+          ? ' The tree is dead and its bare frame remains visible.'
+          : (treeVisual.severeWaterStress
+            ? ' Its leaves are visibly wilted by water stress.'
+            : (treeVisual.waterStress > 0.28 ? ' Its foliage shows mild water stress.' : ''));
+        if (tree.alive && treeVisual.chronicDeficit) {
+          sceneCondition += ' Its canopy is thinned by a chronic carbon deficit.';
+        }
+        var sceneAlt = 'Three-dimensional ' + season + ' view of ' + sp.name +
+          ', age ' + tree.age + ' years, ' + round(tree.heightM, 1) +
+          ' metres tall, with ' + cloneCount + ' clonal stems.' + sceneCondition +
+          ' Current limiting factor: ' + viewerLimit + '.';
+        var anatomyParts = [
+          { id: 'crown', icon: '🍃', label: __alloT('stem.treelab.part_leaves', 'Leaves') },
+          { id: 'trunk', icon: '🪵', label: __alloT('stem.treelab.part_trunk', 'Trunk') },
+          { id: 'roots', icon: '〰', label: __alloT('stem.treelab.part_roots', 'Roots') },
+          { id: 'clones', icon: '🌱', label: __alloT('stem.treelab.part_clones', 'Clones') }
+        ];
         var stageStyle = full
           ? {
             // The STEAM Lab modal root carries a backdrop-filter, which makes it the
@@ -2389,7 +3126,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             h('div', { key: 'a', style: { fontWeight: 700, color: T.text, fontSize: 14 } },
               sp.emoji + ' ' + sp.name + ' · ' + __alloT('stem.treelab.age', 'age') + ' ' + tree.age),
             h('div', { key: 'b', style: { fontSize: 12, color: T.dim } },
-              round(tree.heightM, 1) + ' m tall · ' + round(tree.dbhCm, 1) + ' cm across')
+              round(tree.heightM, 1) + ' m tall · ' + round(tree.dbhCm, 1) + ' cm across'),
+            h('div', { key: 'lim', style: { padding: '4px 8px', borderRadius: 999, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 10, fontWeight: 800, color: T.text } },
+              __alloT('stem.treelab.limiting_now_short', 'Limiting now: ') + viewerLimit)
           ]),
           h('div', {
             key: 'stage', style: stageStyle,
@@ -2403,8 +3142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             h('div', {
               key: 'canvas', ref: TREE3D.attach,
               role: 'img',
-              'aria-label': __alloT('stem.treelab.scene_alt',
-                'Three-dimensional view of the tree. ' + sp.name + ', age ' + tree.age + ' years, ' + round(tree.heightM, 1) + ' metres tall, with ' + cloneCount + ' clonal stems.'),
+              'aria-label': sceneAlt,
               style: full
                 ? { flex: '1 1 auto', minHeight: 0, width: '100%', background: isContrast ? T.bg : (isDark ? '#020617' : '#e2e8f0') }
                 : {
@@ -2444,6 +3182,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               btn('zi', '+', function () { TREE3D.zoom(-0.6); }, { small: true, ariaLabel: __alloT('stem.treelab.zoom_in', 'Zoom in') }),
               btn('zo', '−', function () { TREE3D.zoom(0.6); }, { small: true, ariaLabel: __alloT('stem.treelab.zoom_out', 'Zoom out') }),
               btn('rs', __alloT('stem.treelab.reset_view', 'Reset view'), function () { TREE3D.reset(); }, { small: true, tone: 'ghost' }),
+              h('span', {
+                key: 'anatomy', role: 'group', 'aria-label': __alloT('stem.treelab.anatomy_controls', 'Tree anatomy'),
+                'data-tree-anatomy': 'true', style: { display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center' }
+              }, anatomyParts.map(function (part) {
+                var selected = sceneSelection === part.id;
+                var disabled = (part.id === 'clones' && cloneCount <= 0) ||
+                  (part.id === 'crown' && !crownSelectable);
+                return btn('part-' + part.id, part.icon + ' ' + part.label, function () {
+                  var nextPart = selected ? null : part.id;
+                  upd('selectedPart', nextPart);
+                  srSay(nextPart
+                    ? part.label + ' selected in the three-dimensional view.'
+                    : 'Anatomy selection cleared.');
+                }, {
+                  small: true, pressed: selected, disabled: disabled,
+                  ariaLabel: __alloT('stem.treelab.inspect_part', 'Inspect ') + part.label
+                });
+              })),
+              h('span', {
+                key: 'root-note', style: { fontSize: 10, color: T.dim, margin: '0 8px 6px 2px' }
+              }, __alloT('stem.treelab.root_schematic', 'Roots shown as a schematic soil cutaway')),
               // Full screen is exactly where flipping between seasons pays off, so the
               // control comes with it rather than being left behind on the page below.
               // Emoji only for width; the accessible name carries the season.
@@ -2516,8 +3275,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var lim = live.limiting;
         var limName = { light: 'Light', co2: CO2, water: 'Water', temperature: 'Temperature' }[lim.id] || lim.id;
         var kids = [];
+        var scene = viewerPanel();
 
-        kids.push(viewerPanel());
+        kids.push(experimentPanel());
         kids.push(playbackPanel());
 
         kids.push(card([
@@ -2565,23 +3325,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           heading(__alloT('stem.treelab.conditions', 'Conditions'),
             __alloT('stem.treelab.conditions_sub', 'Change one thing at a time and watch which factor takes over as the limit.')),
           slider('light', __alloT('stem.treelab.light', 'Light reaching the leaves'), envCfg.light, 0, 1, 0.05,
-            function (v) { upd('light', v); }, function (v) { return Math.round(v * 100) + '%'; }),
+            function (v) { upd('light', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked),
           slider('water', __alloT('stem.treelab.soil_water', 'Soil water'), envCfg.soilWater, 0, 1, 0.05,
-            function (v) { upd('soilWater', v); }, function (v) { return Math.round(v * 100) + '%'; }),
+            function (v) { upd('soilWater', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked),
           slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC, -5, 45, 1,
-            function (v) { upd('tempC', v); }, function (v) { return v + ' ' + DEG + 'C'; }),
+            function (v) { upd('tempC', v); }, function (v) { return v + ' ' + DEG + 'C'; }, experimentLocked),
           atLeast(band, 'g68') ? slider('co2', CO2 + ' concentration', envCfg.co2ppm, 180, 900, 10,
-            function (v) { upd('co2ppm', v); }, function (v) { return v + ' ppm'; }) : null,
+            function (v) { upd('co2ppm', v); }, function (v) { return v + ' ppm'; }, experimentLocked) : null,
           h('div', { key: 'drought', style: { marginTop: 10, paddingTop: 10, borderTop: '1px dashed ' + T.border } }, [
             h('div', { key: 'lbl', style: { fontSize: 12, color: T.dim, marginBottom: 6, lineHeight: 1.5 } },
               inDrought
                 ? __alloT('stem.treelab.drought_on', 'A drought is running. Soil water is a third of what you set, the stomata are closing, and the ring this year will show it.')
                 : __alloT('stem.treelab.drought_off', 'Send a dry spell and watch what it does to the ring and to the limiting factor.')),
             inDrought
-              ? btn('rain', '🌧 ' + __alloT('stem.treelab.end_drought', 'End the drought'), endDrought, { small: true })
-              : btn('dry3', '☀️ ' + __alloT('stem.treelab.drought_3', 'Drought for 3 years'), function () { sendDrought(3); }, { small: true }),
+              ? btn('rain', '🌧 ' + __alloT('stem.treelab.end_drought', 'End the drought'), endDrought, { small: true, disabled: experimentLocked })
+              : btn('dry3', '☀️ ' + __alloT('stem.treelab.drought_3', 'Drought for 3 years'), function () { sendDrought(3); }, { small: true, disabled: experimentLocked }),
             !inDrought && atLeast(band, 'g68')
-              ? btn('dry8', '☀️ ' + __alloT('stem.treelab.drought_8', 'Drought for 8 years'), function () { sendDrought(8); }, { small: true, tone: 'ghost' })
+              ? btn('dry8', '☀️ ' + __alloT('stem.treelab.drought_8', 'Drought for 8 years'), function () { sendDrought(8); }, { small: true, tone: 'ghost', disabled: experimentLocked })
               : null
           ]),
           atLeast(band, 'g68') ? h('div', { key: 'ap', style: { marginTop: 6 } },
@@ -2600,16 +3360,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           allocSlider('repro', __alloT('stem.treelab.reproduction', 'Reproduction'), '#ec4899'),
           allocSlider('store', __alloT('stem.treelab.reserves', 'Stored reserves'), '#38bdf8'),
           h('div', { key: 'run', style: { marginTop: 10, display: 'flex', flexWrap: 'wrap' } }, [
-            btn('y1', __alloT('stem.treelab.plus_1', '+1 year'), function () { stepYears(1); }, { disabled: !tree.alive }),
-            btn('y10', __alloT('stem.treelab.plus_10', '+10 years'), function () { stepYears(10); }, { disabled: !tree.alive }),
-            btn('y50', __alloT('stem.treelab.plus_50', '+50 years'), function () { stepYears(50); }, { disabled: !tree.alive }),
+            btn('y1', __alloT('stem.treelab.plus_1', '+1 year'), function () { stepYears(1); }, { disabled: !tree.alive || experimentActive }),
+            btn('y10', __alloT('stem.treelab.plus_10', '+10 years'), function () { stepYears(10); }, { disabled: !tree.alive || experimentActive }),
+            btn('y50', __alloT('stem.treelab.plus_50', '+50 years'), function () { stepYears(50); }, { disabled: !tree.alive || experimentActive }),
             btn('rst', __alloT('stem.treelab.new_seedling', 'New seedling'), function () { resetTree(); }, { tone: 'ghost' })
           ]),
           !tree.alive ? postMortem() : null
         ]));
 
+        kids.push(trialComparisonPanel());
         if (tree.rings.length > 0) kids.push(ringPanel());
-        return kids;
+        return h('div', { key: 'workbench', className: 'allo-tree-workbench' }, [
+          h('div', { key: 'scene', className: 'allo-tree-workbench-scene' },
+            h('div', { key: 'sticky', className: 'allo-tree-workbench-sticky' }, scene)),
+          h('div', { key: 'controls', className: 'allo-tree-workbench-controls' }, kids)
+        ]);
       }
 
       // ── Post-mortem. A tree dying is the most informative thing that happens in this
@@ -2693,13 +3458,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           h('div', { key: 'row', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 } }, [
             btn('play', (playing ? '⏸ ' : '▶ ') + (playing
               ? __alloT('stem.treelab.pause', 'Pause')
-              : __alloT('stem.treelab.play', 'Play')), togglePlay, { pressed: playing, disabled: !tree.alive }),
+              : __alloT('stem.treelab.play', 'Play')), togglePlay, { pressed: playing, disabled: !tree.alive || experimentActive }),
             h('span', { key: 'gap', style: { display: 'inline-block', width: 10 } }),
             SPEEDS.map(function (option) {
               return btn('sp-' + option.id, option.label, function () {
                 updMulti({ speed: option.id });
                 srSay('Speed set to ' + option.label + '. ' + option.hint);
-              }, { small: true, pressed: speed.id === option.id });
+              }, { small: true, pressed: speed.id === option.id, disabled: experimentActive });
             })
           ]),
           h('div', { key: 'read', style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: 8 } }, [
@@ -2715,6 +3480,239 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]);
       }
 
+      function experimentFactorLabel(id) {
+        return {
+          light: __alloT('stem.treelab.light', 'Light'),
+          water: __alloT('stem.treelab.water', 'Water'),
+          temperature: __alloT('stem.treelab.temperature', 'Temperature'),
+          co2: CO2
+        }[id] || __alloT('stem.treelab.not_selected', 'Not selected');
+      }
+
+      function experimentOutcomeLabel(id) {
+        return {
+          thrive: __alloT('stem.treelab.outcome_thrive', 'Grow well'),
+          struggle: __alloT('stem.treelab.outcome_struggle', 'Struggle'),
+          die: __alloT('stem.treelab.outcome_die', 'Die')
+        }[id] || __alloT('stem.treelab.not_selected', 'Not selected');
+      }
+
+      function experimentPanel() {
+        var phase = experiment.phase;
+        var stepIndex = phase === 'predict' ? 0 : (phase === 'ready' ? 1 : (phase === 'explain' ? 2 : -1));
+        var canLock = !!experiment.prediction.limiter && !!experiment.prediction.outcome;
+        var result = experiment.result && experiment.result.summary;
+        var predictionMatched = result &&
+          experiment.prediction.limiter === result.dominantLimiter &&
+          experiment.prediction.outcome === result.observedOutcome;
+        var children = [
+          heading(__alloT('stem.treelab.investigation_title', 'Investigation studio'),
+            __alloT('stem.treelab.investigation_sub', 'Freeze a starting tree, predict what will happen, run a controlled trial, and explain the evidence.')),
+          h('div', { key: 'steps', 'aria-label': __alloT('stem.treelab.investigation_steps', 'Investigation steps'), style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 7, marginBottom: 13 } }, [
+            ['1', __alloT('stem.treelab.step_predict', 'Predict')],
+            ['2', __alloT('stem.treelab.step_run', 'Run')],
+            ['3', __alloT('stem.treelab.step_explain', 'Explain')]
+          ].map(function (item, i) {
+            var active = i === stepIndex;
+            var done = stepIndex > i;
+            return h('div', { key: item[0], style: { padding: '7px 8px', borderRadius: 9, textAlign: 'center', border: '1px solid ' + (active || done ? T.accent : T.border), background: active ? T.accent : (done ? T.cardAlt : 'transparent'), color: active ? T.onAccent : T.text, fontSize: 11, fontWeight: 800 } },
+              (done ? '✓ ' : item[0] + '. ') + item[1]);
+          }))
+        ];
+
+        if (phase === 'idle') {
+          children.push(h('div', { key: 'idle', style: { padding: 12, borderRadius: 11, background: T.cardAlt, border: '1px solid ' + T.border } }, [
+            h('p', { key: 'p', style: { margin: '0 0 10px', fontSize: 12, color: T.text, lineHeight: 1.55 } },
+              __alloT('stem.treelab.investigation_intro', 'Start from the tree you have now. During prediction you can change the conditions and carbon allocation before locking the trial.')),
+            h('label', { key: 'l', htmlFor: 'treelab-experiment-years', style: { display: 'block', fontSize: 11, fontWeight: 700, color: T.dim, marginBottom: 4 } },
+              __alloT('stem.treelab.trial_length', 'Trial length')),
+            h('select', { key: 's', id: 'treelab-experiment-years', value: experiment.duration,
+              onChange: function (e) { upd('experiment', Object.assign({}, experiment, { duration: parseInt(e.target.value, 10) })); },
+              style: { width: '100%', padding: '8px 10px', borderRadius: 9, background: T.card, color: T.text, border: '1px solid ' + T.border, marginBottom: 10 }
+            }, [1, 10, 25, 50, 100].map(function (n) {
+              return h('option', { key: n, value: n }, n + ' ' + __alloT('stem.treelab.years', 'years'));
+            })),
+            btn('begin-investigation', '🔬 ' + __alloT('stem.treelab.begin_investigation', 'Start investigation'), beginExperiment)
+          ]));
+        }
+
+        if (phase === 'predict') {
+          children.push(h('fieldset', { key: 'predict', style: { margin: 0, padding: 12, borderRadius: 11, border: '1px solid ' + T.border, background: T.cardAlt } }, [
+            h('legend', { key: 'leg', style: { padding: '0 6px', fontSize: 12, fontWeight: 800, color: T.text } },
+              __alloT('stem.treelab.make_prediction', 'Make your prediction')),
+            h('p', { key: 'hint', style: { margin: '0 0 10px', fontSize: 11, color: T.dim, lineHeight: 1.5 } },
+              __alloT('stem.treelab.predict_hint', 'Set the Conditions and allocation below first. Then predict the dominant limit and the overall outcome.')),
+            h('label', { key: 'll', htmlFor: 'treelab-predict-limit', style: { display: 'block', fontSize: 11, color: T.dim, marginBottom: 4 } },
+              __alloT('stem.treelab.predict_limit', 'Which factor will limit growth most often?')),
+            h('select', { key: 'ls', id: 'treelab-predict-limit', value: experiment.prediction.limiter || '',
+              onChange: function (e) { updatePrediction('limiter', e.target.value || null); },
+              style: { width: '100%', padding: '8px 10px', borderRadius: 9, background: T.card, color: T.text, border: '1px solid ' + T.border, marginBottom: 9 }
+            }, [
+              h('option', { key: 'blank', value: '' }, __alloT('stem.treelab.choose_factor', 'Choose a factor')),
+              h('option', { key: 'light', value: 'light' }, experimentFactorLabel('light')),
+              h('option', { key: 'water', value: 'water' }, experimentFactorLabel('water')),
+              h('option', { key: 'temperature', value: 'temperature' }, experimentFactorLabel('temperature')),
+              atLeast(band, 'g68') ? h('option', { key: 'co2', value: 'co2' }, experimentFactorLabel('co2')) : null
+            ]),
+            h('label', { key: 'ol', htmlFor: 'treelab-predict-outcome', style: { display: 'block', fontSize: 11, color: T.dim, marginBottom: 4 } },
+              __alloT('stem.treelab.predict_outcome', 'What will happen to the tree?')),
+            h('select', { key: 'os', id: 'treelab-predict-outcome', value: experiment.prediction.outcome || '',
+              onChange: function (e) { updatePrediction('outcome', e.target.value || null); },
+              style: { width: '100%', padding: '8px 10px', borderRadius: 9, background: T.card, color: T.text, border: '1px solid ' + T.border, marginBottom: 9 }
+            }, [
+              h('option', { key: 'blank', value: '' }, __alloT('stem.treelab.choose_outcome', 'Choose an outcome')),
+              h('option', { key: 'thrive', value: 'thrive' }, experimentOutcomeLabel('thrive')),
+              h('option', { key: 'struggle', value: 'struggle' }, experimentOutcomeLabel('struggle')),
+              h('option', { key: 'die', value: 'die' }, experimentOutcomeLabel('die'))
+            ]),
+            h('label', { key: 'rl', htmlFor: 'treelab-predict-reason', style: { display: 'block', fontSize: 11, color: T.dim, marginBottom: 4 } },
+              __alloT('stem.treelab.predict_reason', 'Why do you think so? (optional)')),
+            h('textarea', { key: 'r', id: 'treelab-predict-reason', value: experiment.prediction.reason,
+              onChange: function (e) { updatePrediction('reason', e.target.value); }, rows: 2,
+              style: { width: '100%', boxSizing: 'border-box', resize: 'vertical', padding: 9, borderRadius: 9, background: T.card, color: T.text, border: '1px solid ' + T.border, font: 'inherit', fontSize: 12, marginBottom: 9 }
+            }),
+            h('div', { key: 'buttons' }, [
+              btn('lock-prediction', '🔒 ' + __alloT('stem.treelab.lock_prediction', 'Lock prediction'), lockPrediction, { disabled: !canLock }),
+              btn('cancel-prediction', __alloT('stem.treelab.cancel', 'Cancel'), finishExperiment, { tone: 'ghost' })
+            ])
+          ]));
+        }
+        if (phase === 'ready') {
+          children.push(h('div', { key: 'ready', style: { padding: 12, borderRadius: 11, background: T.cardAlt, border: '1px solid ' + T.accent } }, [
+            h('div', { key: 'h', style: { fontSize: 13, fontWeight: 800, color: T.text, marginBottom: 7 } },
+              __alloT('stem.treelab.ready_title', 'Prediction locked — ready to run')),
+            h('div', { key: 'pred', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 7, marginBottom: 9 } }, [
+              statTile('pl', __alloT('stem.treelab.predicted_limit', 'Predicted limit'), experimentFactorLabel(experiment.prediction.limiter), T.accent),
+              statTile('po', __alloT('stem.treelab.predicted_outcome', 'Predicted outcome'), experimentOutcomeLabel(experiment.prediction.outcome), T.warn),
+              statTile('py', __alloT('stem.treelab.trial_length', 'Trial length'), experiment.duration + ' ' + __alloT('stem.treelab.years', 'years'), tone('#38bdf8'))
+            ]),
+            h('p', { key: 'frozen', style: { margin: '0 0 9px', fontSize: 11, color: T.dim, lineHeight: 1.5 } },
+              __alloT('stem.treelab.conditions_frozen', 'The treatment is frozen. Run uses the saved starting tree even if the live tree changes later.')),
+            h('div', { key: 'buttons' }, [
+              btn('run-investigation', '▶ ' + __alloT('stem.treelab.run_trial', 'Run trial'), runLockedExperiment),
+              btn('edit-prediction', __alloT('stem.treelab.edit_prediction', 'Edit prediction'), editPrediction, { tone: 'ghost' }),
+              btn('cancel-ready', __alloT('stem.treelab.cancel', 'Cancel'), finishExperiment, { tone: 'ghost' })
+            ])
+          ]));
+        }
+
+        if (phase === 'explain' && result) {
+          children.push(h('div', { key: 'result', role: 'status', 'aria-live': 'polite', style: { padding: 12, borderRadius: 11, background: T.cardAlt, border: '1px solid ' + (predictionMatched ? T.good : T.warn) } }, [
+            h('div', { key: 'h', style: { fontSize: 13, fontWeight: 800, color: T.text, marginBottom: 4 } },
+              predictionMatched
+                ? '✓ ' + __alloT('stem.treelab.prediction_matched', 'The evidence matched your prediction')
+                : '↺ ' + __alloT('stem.treelab.prediction_surprised', 'The evidence changed the story')),
+            h('p', { key: 'p', style: { margin: '0 0 9px', fontSize: 11, color: T.dim, lineHeight: 1.5 } },
+              __alloT('stem.treelab.observed_summary', 'Compare predicted and observed results. A mismatch is useful evidence, not a wrong experiment.')),
+            h('div', { key: 'grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(125px,1fr))', gap: 7, marginBottom: 10 } }, [
+              statTile('ol', __alloT('stem.treelab.observed_limit', 'Observed limit'), experimentFactorLabel(result.dominantLimiter), T.accent),
+              statTile('oo', __alloT('stem.treelab.observed_outcome', 'Observed outcome'), experimentOutcomeLabel(result.observedOutcome), result.observedOutcome === 'die' ? T.bad : T.good),
+              statTile('oh', __alloT('stem.treelab.height_change', 'Height change'), (result.heightDelta >= 0 ? '+' : '') + round(result.heightDelta, 2) + ' m', tone('#22c55e')),
+              statTile('on', __alloT('stem.treelab.mean_net', 'Mean net carbon'), round(result.meanNet, 2) + ' kg C', result.meanNet >= 0 ? T.good : T.bad)
+            ]),
+            h('label', { key: 'el', htmlFor: 'treelab-explanation', style: { display: 'block', fontSize: 11, fontWeight: 700, color: T.dim, marginBottom: 4 } },
+              __alloT('stem.treelab.explanation_prompt', 'Explain what caused the result. Use the limiting factor and carbon evidence.')),
+            h('textarea', { key: 'e', id: 'treelab-explanation', value: experiment.explanation, rows: 3,
+              onChange: function (e) { upd('experiment', Object.assign({}, experiment, { explanation: e.target.value })); },
+              style: { width: '100%', boxSizing: 'border-box', resize: 'vertical', padding: 9, borderRadius: 9, background: T.card, color: T.text, border: '1px solid ' + T.border, font: 'inherit', fontSize: 12, marginBottom: 9 }
+            }),
+            h('div', { key: 'buttons', style: { display: 'flex', flexWrap: 'wrap' } }, [
+              btn('save-a', 'A · ' + __alloT('stem.treelab.save_trial', 'Save trial'), function () { saveExperimentTrial('A'); }),
+              btn('save-b', 'B · ' + __alloT('stem.treelab.save_trial', 'Save trial'), function () { saveExperimentTrial('B'); }),
+              btn('new-investigation', __alloT('stem.treelab.new_investigation', 'New investigation'), beginExperiment, { tone: 'ghost' }),
+              btn('close-investigation', __alloT('stem.treelab.close', 'Close'), finishExperiment, { tone: 'ghost' })
+            ])
+          ]));
+        }
+
+        return card(children, { borderTop: '4px solid ' + T.accent });
+      }
+      function signedMetric(v, unit) {
+        return (v > 0 ? '+' : '') + round(v, 2) + (unit ? ' ' + unit : '');
+      }
+
+      function trialSlot(slot, trial) {
+        if (!trial) {
+          return h('div', { key: slot, style: { padding: 12, minHeight: 92, borderRadius: 11, border: '1px dashed ' + T.border, background: T.cardAlt } }, [
+            h('div', { key: 'h', style: { fontSize: 14, fontWeight: 900, color: T.text } },
+              __alloT('stem.treelab.trial', 'Trial') + ' ' + slot),
+            h('div', { key: 'p', style: { fontSize: 11, color: T.dim, lineHeight: 1.5, marginTop: 5 } },
+              __alloT('stem.treelab.empty_trial', 'Complete an investigation, then save its evidence here.'))
+          ]);
+        }
+        var sum = trial.result.summary;
+        var species = speciesById(trial.speciesId);
+        return h('div', { key: slot, style: { padding: 12, minHeight: 92, borderRadius: 11, border: '1px solid ' + T.accent, background: T.cardAlt } }, [
+          h('div', { key: 'top', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 } }, [
+            h('div', { key: 'h', style: { fontSize: 14, fontWeight: 900, color: T.text } },
+              __alloT('stem.treelab.trial', 'Trial') + ' ' + slot),
+            h('div', { key: 's', style: { fontSize: 11, color: T.dim } }, species.emoji + ' ' + species.name)
+          ]),
+          h('div', { key: 'out', style: { fontSize: 12, color: T.text, marginTop: 6, fontWeight: 700 } },
+            experimentOutcomeLabel(sum.observedOutcome) + ' · ' + experimentFactorLabel(sum.dominantLimiter)),
+          h('div', { key: 'metrics', style: { fontSize: 11, color: T.dim, marginTop: 4, lineHeight: 1.45 } },
+            signedMetric(sum.heightDelta, 'm') + ' · ' + signedMetric(sum.meanNet, 'kg C') + ' · ' + sum.yearsCompleted + ' ' + __alloT('stem.treelab.years', 'years')),
+          btn('clear-' + slot, __alloT('stem.treelab.clear_trial', 'Clear trial'), function () {
+            var next = { A: experimentTrials.A, B: experimentTrials.B };
+            next[slot] = null;
+            upd('experimentTrials', next);
+          }, { small: true, tone: 'ghost' })
+        ]);
+      }
+
+      function trialComparisonPanel() {
+        var a = experimentTrials.A, b = experimentTrials.B;
+        var kids = [
+          heading(__alloT('stem.treelab.notebook_title', 'A/B lab notebook'),
+            __alloT('stem.treelab.notebook_sub', 'Save two trials, then compare evidence from the same starting tree under different conditions.')),
+          h('div', { key: 'slots', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 9, marginBottom: 10 } }, [
+            trialSlot('A', a), trialSlot('B', b)
+          ])
+        ];
+        if (a && !b) {
+          kids.push(h('div', { key: 'prep', style: { padding: 10, borderRadius: 9, background: T.cardAlt, border: '1px solid ' + T.border } }, [
+            h('div', { key: 'p', style: { fontSize: 11, color: T.dim, lineHeight: 1.5, marginBottom: 7 } },
+              __alloT('stem.treelab.prepare_b_note', 'Restore Trial A’s exact starting tree, then change one condition to make a controlled Trial B.')),
+            btn('prepare-b', __alloT('stem.treelab.prepare_b', 'Prepare Trial B from A'), prepareTrialBFromA, { small: true })
+          ]));
+        }
+        if (a && b) {
+          var controlled = a.speciesId === b.speciesId &&
+            a.baseline.tree.age === b.baseline.tree.age &&
+            Math.abs(a.baseline.tree.heightM - b.baseline.tree.heightM) < 0.001;
+          var rows = [
+            [__alloT('stem.treelab.height_change', 'Height change'), a.result.summary.heightDelta, b.result.summary.heightDelta, 'm'],
+            [__alloT('stem.treelab.mean_net', 'Mean net carbon'), a.result.summary.meanNet, b.result.summary.meanNet, 'kg C'],
+            [__alloT('stem.treelab.reserve_change', 'Reserve change'), a.result.summary.reservesDelta, b.result.summary.reservesDelta, 'kg C'],
+            [__alloT('stem.treelab.mean_ring', 'Mean ring width'), a.result.summary.meanRingWidth, b.result.summary.meanRingWidth, 'mm'],
+            [__alloT('stem.treelab.reproduction_change', 'Reproduction banked'), a.result.summary.reproductionDelta, b.result.summary.reproductionDelta, 'kg C']
+          ];
+          kids.push(h('div', { key: 'control', role: 'note', style: { padding: 9, borderRadius: 9, border: '1px solid ' + (controlled ? T.good : T.warn), background: T.cardAlt, color: T.text, fontSize: 11, lineHeight: 1.5, marginBottom: 9 } },
+            controlled
+              ? '✓ ' + __alloT('stem.treelab.controlled_pair', 'Controlled pair: both trials began with the same species, age and height.')
+              : '⚠ ' + __alloT('stem.treelab.uncontrolled_pair', 'These trials began from different trees. Compare cautiously, or prepare Trial B from A.')));
+          kids.push(h('div', { key: 'tablewrap', style: { overflowX: 'auto' } },
+            h('table', { style: { width: '100%', minWidth: 480, borderCollapse: 'collapse', fontSize: 11, color: T.text } }, [
+              h('caption', { key: 'cap', style: { textAlign: 'left', color: T.dim, paddingBottom: 6 } },
+                __alloT('stem.treelab.compare_caption', 'Trial evidence; difference is Trial B minus Trial A.')),
+              h('thead', { key: 'head' }, h('tr', {}, [
+                h('th', { key: 'm', scope: 'col', style: { textAlign: 'left', padding: 7, borderBottom: '2px solid ' + T.border } }, __alloT('stem.treelab.metric', 'Metric')),
+                h('th', { key: 'a', scope: 'col', style: { textAlign: 'right', padding: 7, borderBottom: '2px solid ' + T.border } }, 'A'),
+                h('th', { key: 'b', scope: 'col', style: { textAlign: 'right', padding: 7, borderBottom: '2px solid ' + T.border } }, 'B'),
+                h('th', { key: 'd', scope: 'col', style: { textAlign: 'right', padding: 7, borderBottom: '2px solid ' + T.border } }, __alloT('stem.treelab.difference', 'Difference'))
+              ])),
+              h('tbody', { key: 'body' }, rows.map(function (r, i) {
+                return h('tr', { key: i }, [
+                  h('th', { key: 'm', scope: 'row', style: { textAlign: 'left', fontWeight: 600, padding: 7, borderBottom: '1px solid ' + T.border } }, r[0]),
+                  h('td', { key: 'a', style: { textAlign: 'right', padding: 7, borderBottom: '1px solid ' + T.border } }, signedMetric(r[1], r[3])),
+                  h('td', { key: 'b', style: { textAlign: 'right', padding: 7, borderBottom: '1px solid ' + T.border } }, signedMetric(r[2], r[3])),
+                  h('td', { key: 'd', style: { textAlign: 'right', padding: 7, borderBottom: '1px solid ' + T.border, fontWeight: 800 } }, signedMetric(r[2] - r[1], r[3]))
+                ]);
+              }))
+            ])));
+        }
+        return card(kids);
+      }
       function statTile(key, labelTxt, valueTxt, hex) {
         return h('div', {
           key: key,
@@ -2742,12 +3740,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           ]),
           h('input', {
             key: 'i', id: id, type: 'range', min: 0, max: 100, step: 5, value: pct,
+            disabled: experimentLocked,
             onChange: function (e) {
               var next = Object.assign({}, alloc);
               next[k] = parseFloat(e.target.value) / 100;
               upd('alloc', next);
             },
-            style: { width: '100%', accentColor: tone(hex) }
+            style: { width: '100%', accentColor: tone(hex), opacity: experimentLocked ? 0.55 : 1 }
           })
         ]);
       }
@@ -4030,36 +5029,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       }
 
       return h('div', {
-        style: { background: T.bg, color: T.text, padding: 14, borderRadius: 12, minHeight: 400 }
+        className: 'allo-tree-lab',
+        style: {
+          '--tree-glow': isContrast ? 'transparent' : (isDark ? 'rgba(52,211,153,.11)' : 'rgba(16,185,129,.14)'),
+          '--sun-glow': isContrast ? 'transparent' : (isDark ? 'rgba(251,191,36,.07)' : 'rgba(250,204,21,.13)'),
+          '--hero-ring': isContrast ? 'transparent' : (isDark ? 'rgba(52,211,153,.08)' : 'rgba(255,255,255,.24)'),
+          '--tree-shadow': isDark ? 'rgba(2,6,23,.32)' : 'rgba(15,23,42,.12)',
+          '--accent-shadow': isDark ? 'rgba(52,211,153,.2)' : 'rgba(5,150,105,.2)',
+          '--tree-focus': isContrast ? '#ffffff' : (isDark ? '#a7f3d0' : '#34d399'),
+          '--tree-accent': T.accent,
+          background: T.bg, color: T.text, padding: 16, borderRadius: 18, minHeight: 400
+        }
       }, [
-        h('div', { key: 'top', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap', marginBottom: 10 } }, [
-          h('div', { key: 'a' }, [
-            h('h3', { key: 't', style: { fontSize: 18, fontWeight: 800, margin: 0, color: T.text } },
+        h('style', { key: 'visual-css' }, visualCss),
+        h('div', {
+          key: 'top', className: 'allo-tree-hero',
+          style: {
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 18,
+            flexWrap: 'wrap', marginBottom: 14, padding: '20px 22px', borderRadius: 18,
+            border: '1px solid ' + (isContrast ? T.border : (isDark ? '#2f5c50' : '#a7d7c4')),
+            background: isContrast ? T.card : (isDark
+              ? 'linear-gradient(135deg,#102c2a 0%,#172033 62%,#2a2415 100%)'
+              : 'linear-gradient(135deg,#ecfdf5 0%,#f0fdf4 58%,#fffbeb 100%)'),
+            boxShadow: isContrast ? 'none' : (isDark ? '0 18px 42px rgba(2,6,23,.25)' : '0 18px 42px rgba(5,46,22,.09)')
+          }
+        }, [
+          h('div', { key: 'a', style: { flex: '1 1 330px', position: 'relative', zIndex: 1 } }, [
+            h('div', { key: 'eyebrow', style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 9px', marginBottom: 8, borderRadius: 999, border: '1px solid ' + T.border, background: isContrast ? T.cardAlt : (isDark ? 'rgba(52,211,153,.1)' : 'rgba(255,255,255,.7)'), color: T.accent, fontSize: 10, fontWeight: 800, letterSpacing: '.09em', textTransform: 'uppercase' } },
+              '● ' + __alloT('stem.treelab.studio_label', 'Living systems studio')),
+            h('h3', { key: 't', style: { fontSize: 25, lineHeight: 1.08, fontWeight: 900, letterSpacing: '-0.035em', margin: 0, color: T.text } },
               '🌳 ' + __alloT('stem.treelab.title', 'Tree Life Lab')),
-            h('div', { key: 's', style: { fontSize: 12, color: T.dim, marginTop: 2 } },
-              __alloT('stem.treelab.subtitle', 'What limits a tree, what it costs to stay alive, and how it makes more of itself'))
+            h('div', { key: 's', style: { fontSize: 13, color: T.dim, marginTop: 7, maxWidth: 570, lineHeight: 1.55 } },
+              __alloT('stem.treelab.subtitle', 'What limits a tree, what it costs to stay alive, and how it makes more of itself')),
+            h('div', { key: 'quick', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 13 } }, [
+              h('span', { key: 'age', style: { padding: '5px 9px', borderRadius: 8, background: isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.28)' : 'rgba(255,255,255,.78)'), border: '1px solid ' + T.border, color: T.text, fontSize: 11, fontWeight: 700 } },
+                __alloT('stem.treelab.age', 'Age') + ' ' + tree.age),
+              h('span', { key: 'height', style: { padding: '5px 9px', borderRadius: 8, background: isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.28)' : 'rgba(255,255,255,.78)'), border: '1px solid ' + T.border, color: T.text, fontSize: 11, fontWeight: 700 } },
+                round(tree.heightM, 1) + ' m ' + __alloT('stem.treelab.tall_short', 'tall')),
+              h('span', { key: 'carbon', style: { padding: '5px 9px', borderRadius: 8, background: isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.28)' : 'rgba(255,255,255,.78)'), border: '1px solid ' + T.border, color: tree.seedsBanked > 0 ? T.accent : T.dim, fontSize: 11, fontWeight: 700 } },
+                round(tree.seedsBanked, 1) + ' kg C ' + __alloT('stem.treelab.banked_short', 'banked'))
+            ])
           ]),
-          h('div', { key: 'b', style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' } }, [
-            h('label', { key: 'bl', htmlFor: 'treelab-band', style: { fontSize: 11, color: T.dim } },
+          h('div', { key: 'b', className: 'allo-tree-hero-controls', style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap', position: 'relative', zIndex: 1, padding: 8, borderRadius: 12, background: isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.34)' : 'rgba(255,255,255,.7)'), border: '1px solid ' + T.border } }, [
+            h('div', { key: 'band-field', className: 'allo-tree-hero-field', style: { display: 'flex', alignItems: 'center', gap: 6 } }, [
+              h('label', { key: 'bl', htmlFor: 'treelab-band', style: { fontSize: 11, color: T.dim } },
               __alloT('stem.treelab.level', 'Level')),
             h('select', {
               key: 'bs', id: 'treelab-band', value: band,
               onChange: function (e) { upd('bandOverride', e.target.value); srSay('Level set to ' + BAND_LABEL[e.target.value] + '.'); },
-              style: { padding: '4px 8px', borderRadius: 7, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, fontSize: 12 }
-            }, BANDS.map(function (b) { return h('option', { key: b, value: b }, BAND_LABEL[b]); })),
-            h('label', { key: 'sl', htmlFor: 'treelab-species', style: { fontSize: 11, color: T.dim, marginLeft: 4 } },
-              __alloT('stem.treelab.species', 'Species')),
-            h('select', {
+              style: { padding: '7px 10px', minHeight: 34, borderRadius: 9, background: T.card, color: T.text, border: '1px solid ' + T.border, fontSize: 12, fontWeight: 600 }
+              }, BANDS.map(function (b) { return h('option', { key: b, value: b }, BAND_LABEL[b]); }))
+            ]),
+            h('div', { key: 'species-field', className: 'allo-tree-hero-field', style: { display: 'flex', alignItems: 'center', gap: 6 } }, [
+              h('label', { key: 'sl', htmlFor: 'treelab-species', style: { fontSize: 11, color: T.dim } },
+                __alloT('stem.treelab.species', 'Species')),
+              h('select', {
               key: 'ss', id: 'treelab-species', value: sp.id,
               onChange: function (e) { resetTree(e.target.value); },
-              style: { padding: '4px 8px', borderRadius: 7, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, fontSize: 12 }
-            }, SPECIES.map(function (s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name); }))
+              style: { padding: '7px 10px', minHeight: 34, borderRadius: 9, background: T.card, color: T.text, border: '1px solid ' + T.border, fontSize: 12, fontWeight: 600 }
+              }, SPECIES.map(function (s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name); }))
+            ])
           ])
         ]),
-        h('div', { key: 'tabs', role: 'tablist', 'aria-label': 'Tree Life Lab sections', style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 } },
+        h('div', { key: 'tabs', className: 'allo-tree-tabs', role: 'tablist', 'aria-label': 'Tree Life Lab sections', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14, padding: 6, borderRadius: 14, background: T.card, border: '1px solid ' + T.border, boxShadow: isContrast ? 'none' : (isDark ? '0 8px 24px rgba(2,6,23,.2)' : '0 8px 24px rgba(15,23,42,.06)') } },
           TABS.map(function (t, ti) {
             var selected = view === t.id;
             return h('button', {
+              className: 'allo-tree-tab',
               key: t.id, type: 'button', role: 'tab',
               id: 'treelab-tab-' + t.id,
               'aria-selected': selected,
@@ -4089,15 +5125,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 } catch (err) {}
               },
               style: {
-                padding: '7px 12px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                padding: '9px 13px', minHeight: 38, borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer',
                 border: '1px solid ' + (selected ? T.accent : T.border),
-                background: selected ? T.accent : T.cardAlt,
-                color: selected ? T.onAccent : T.text
+                background: selected ? ('linear-gradient(135deg,' + T.accent + ',' + (isContrast ? T.accent : (isDark ? '#6ee7b7' : '#10b981')) + ')') : 'transparent',
+                color: selected ? T.onAccent : T.dim
               }
             }, t.icon + ' ' + t.label);
           })),
         h('div', {
-          key: 'body',
+          key: 'body', className: 'allo-tree-panel',
           role: 'tabpanel',
           id: 'treelab-panel',
           'aria-labelledby': 'treelab-tab-' + view,
@@ -4132,8 +5168,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     grossPhotosynthesis: grossPhotosynthesis, maintenanceRespiration: maintenanceRespiration,
     ringWidthMm: ringWidthMm, newTree: newTree, simulateYear: simulateYear,
     normaliseAlloc: normaliseAlloc, normaliseTree: normaliseTree, envForYear: envForYear,
+    cloneTreeSnapshot: cloneTreeSnapshot, normaliseExperimentEnv: normaliseExperimentEnv,
+    dominantLimiter: dominantLimiter, safeTrialSummary: safeTrialSummary,
+    runExperimentTrial: runExperimentTrial, normaliseExperiment: normaliseExperiment,
+    normaliseTrialRecord: normaliseTrialRecord, normaliseExperimentTrials: normaliseExperimentTrials,
     seasonForPhase: seasonForPhase, speedById: speedById, SPEEDS: SPEEDS, CLOCK: CLOCK,
     resolveSpread: resolveSpread, lcg: lcg, speciesById: speciesById,
+    deriveTreeVisualState: deriveTreeVisualState, buildTreeScene: buildTreeScene, TREE_FORM: TREE_FORM,
     strategyById: strategyById, resolveBand: resolveBand, atLeast: atLeast,
     SPECIES: SPECIES, STRATEGIES: STRATEGIES, QUIZ: QUIZ, BANDS: BANDS
   };

@@ -227,7 +227,7 @@ describe('Astronomy diagram state resilience', () => {
   it('recovers an invalid season month and keeps orbit geometry finite', () => {
     const html = renderAstronomy({ tab: 'seasons', observingList: [], seasonMonth: Number.POSITIVE_INFINITY });
     expect(html).toContain('aria-valuetext="June" aria-describedby="astronomy-season-status"');
-    expect(html).toContain('Month: June. Northern Hemisphere: Summer. Southern Hemisphere: Winter.');
+    expect(html).toContain('Month: June. Meteorological season \u2014 Northern Hemisphere: Summer. Southern Hemisphere: Winter.');
     expect(html).toContain('orbital position in June');
     expect(html).not.toContain('NaN');
     expect(html).not.toContain('undefined');

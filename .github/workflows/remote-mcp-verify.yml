@@ -12,12 +12,14 @@ on:
       - "doc_pipeline_source.jsx"
       - "doc_pipeline_module.js"
       - "view_pdf_validator_module.js"
+      - "verapdf/**"
       - "tests/active_content_scan_completeness.test.js"
       - "tests/mcp_driver_scripted_e2e.test.js"
       - "tests/mcp_remediation_stdio_smoke.test.js"
       - "tests/roundtrip_coverage_gate.test.js"
       - "tests/remediation_evidence_invariants_20260723.test.js"
       - "tests/batch_q_honesty_fixes.test.js"
+      - "tests/e2e/mcp_auto_continue_golden.spec.ts"
   pull_request:
     branches: [main]
     paths:
@@ -29,12 +31,14 @@ on:
       - "doc_pipeline_source.jsx"
       - "doc_pipeline_module.js"
       - "view_pdf_validator_module.js"
+      - "verapdf/**"
       - "tests/active_content_scan_completeness.test.js"
       - "tests/mcp_driver_scripted_e2e.test.js"
       - "tests/mcp_remediation_stdio_smoke.test.js"
       - "tests/roundtrip_coverage_gate.test.js"
       - "tests/remediation_evidence_invariants_20260723.test.js"
       - "tests/batch_q_honesty_fixes.test.js"
+      - "tests/e2e/mcp_auto_continue_golden.spec.ts"
 
 permissions:
   contents: read
@@ -87,6 +91,9 @@ jobs:
           tests/remediation_evidence_invariants_20260723.test.js
           tests/batch_q_honesty_fixes.test.js
           --maxWorkers=1
+      - name: Verify MCP auto-continue closed-loop refinement
+        working-directory: ${{ github.workspace }}
+        run: npx playwright test tests/e2e/mcp_auto_continue_golden.spec.ts --workers=1
       - name: Profile Worker startup
         run: npm run startup:check
       - name: Build the linux/amd64 runner image from the allowlisted context

@@ -1097,6 +1097,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var trajectory3dOpen = d.trajectory3dOpen || false;
       var trajectoryAzimuth = d.trajectoryAzimuth !== undefined ? d.trajectoryAzimuth : -35;
       var trajectoryElevation = d.trajectoryElevation !== undefined ? d.trajectoryElevation : 24;
+      var scenarioCompareOpen = d.scenarioCompareOpen || false;
+      var scenarioCompareProtocol = d.scenarioCompareProtocol === 'baselines' ? 'baselines' : 'shared';
+      var scenarioComparePrediction = d.scenarioComparePrediction || '';
+      var scenarioCompareRevealed = d.scenarioCompareRevealed || false;
+      var scenarioCompareStep = d.scenarioCompareStep !== undefined ? d.scenarioCompareStep : 50;
       var teacherMode = d.teacherMode || false;
       var teacherPrompt = d.teacherPrompt || '';
       var DISPLAY_PROFILES = [
@@ -1281,6 +1286,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           data: [], steps: 0, replayStep: 0,
           livePopHistory: [], eventHistory: [], eventsTriggered: {},
           uncertaintyResult: null, interventionResult: null,
+          scenarioComparePrediction: '',
+          scenarioCompareRevealed: false,
           analysisView: 'population',
           lastObservation: nextScenario.emoji + ' ' + nextScenario.name + ' baseline loaded. Observe how ' + nextScenario.prey.plural + ' and ' + nextScenario.predator.plural + ' respond.',
           livePhaseLabel: 'Waiting for live phase data.',
@@ -1380,6 +1387,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           carryingCapacity: carryingCapacity
         };
       };
+      // Cross-system lab: either hold every numeric input constant to isolate
+      // representation, or compare each scenario's illustrative baseline.
+      var scenarioComparisonRecords = [];
+      var scenarioComparisonMaxY = 10;
+      var scenarioComparisonMaxStep = ECO_MODEL_OUTPUT_STEPS;
+      if (scenarioCompareOpen || scenarioCompareRevealed) {
+        var sharedScenarioParameters = getModelParameters();
+        Object.keys(ECO_SCENARIOS).forEach(function(compareScenarioId) {
+          var compareScenario = ECO_SCENARIOS[compareScenarioId];
+          var comparisonParameters = Object.assign({}, scenarioCompareProtocol === 'shared' ? sharedScenarioParameters : compareScenario.baseline);
+          var comparisonResult = runEcoPopulationModel(comparisonParameters);
+          var comparisonRecord = {
+            id: compareScenarioId,
+            scenario: compareScenario,
+            parameters: comparisonParameters,
+            data: comparisonResult.data,
+            summary: classifyRun(comparisonResult.data)
+          };
+          scenarioComparisonRecords.push(comparisonRecord);
+          scenarioComparisonMaxStep = Math.max(scenarioComparisonMaxStep, comparisonRecord.data.length - 1);
+          for (var scenarioPointIndex = 0; scenarioPointIndex < comparisonRecord.data.length; scenarioPointIndex++) {
+            scenarioComparisonMaxY = Math.max(scenarioComparisonMaxY, Number(comparisonRecord.data[scenarioPointIndex].prey) || 0, Number(comparisonRecord.data[scenarioPointIndex].pred) || 0);
+          }
+        });
+      }
+      scenarioComparisonMaxY *= 1.08;
+      var scenarioComparisonCursor = Math.min(scenarioComparisonMaxStep, Math.max(0, parseInt(scenarioCompareStep, 10) || 0));
+      var scenarioComparisonIdentical = scenarioComparisonRecords.length > 1;
+      if (scenarioComparisonIdentical) {
+        var firstComparisonData = scenarioComparisonRecords[0].data;
+        var secondComparisonData = scenarioComparisonRecords[1].data;
+        scenarioComparisonIdentical = firstComparisonData.length === secondComparisonData.length;
+        for (var comparisonIdentityIndex = 0; scenarioComparisonIdentical && comparisonIdentityIndex < firstComparisonData.length; comparisonIdentityIndex++) {
+          if (firstComparisonData[comparisonIdentityIndex].prey !== secondComparisonData[comparisonIdentityIndex].prey || firstComparisonData[comparisonIdentityIndex].pred !== secondComparisonData[comparisonIdentityIndex].pred) scenarioComparisonIdentical = false;
+        }
+      }
+      var scenarioComparisonExpectedPrediction = scenarioComparisonIdentical ? 'same' : 'different';
+      var scenarioComparisonPredictionMatched = scenarioComparePrediction === scenarioComparisonExpectedPrediction;
       var replayKeyFor = function(params) {
         return ['eco-logistic-v3-rk4',
           'prey0=' + params.prey0, 'pred0=' + params.pred0,
@@ -1554,7 +1599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var cerReasoningReady = !!String(cerReasoning || '').trim();
       var cerComplete = cerClaimReady && cerEvidenceReady && cerReasoningReady;
       var addCEREvidence = function(kind) {
-        if (!data || data.length < 2) {
+        if (kind !== 'systems' && (!data || data.length < 2)) {
           if (addToast) addToast('Run the population model before collecting evidence.', 'warn');
           return;
         }
@@ -1564,6 +1609,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var currentSample = replayPointFor(data);
           source = 'Current run, step ' + currentSample.point.step;
           evidenceText = 'At step ' + currentSample.point.step + ', the current run had ' + Math.round(Number(currentSample.point.prey) || 0) + ' prey and ' + Math.round(Number(currentSample.point.pred) || 0) + ' predators; its overall outcome was ' + classifyRun(data).label + '.';
+        } else if (kind === 'systems' && scenarioCompareRevealed && scenarioComparisonRecords.length > 1) {
+          var systemEvidenceParts = scenarioComparisonRecords.map(function(record) {
+            var systemPointIndex = Math.min(record.data.length - 1, scenarioComparisonCursor);
+            var systemPoint = record.data[systemPointIndex] || record.data[0];
+            return record.scenario.name + ': prey index ' + Math.round(Number(systemPoint.prey) || 0) + ', predator index ' + Math.round(Number(systemPoint.pred) || 0);
+          });
+          source = 'Across ecosystems, ' + (scenarioCompareProtocol === 'shared' ? 'same numeric inputs' : 'illustrative baselines') + ', time ' + (scenarioComparisonCursor * ECO_MODEL_TIME_STEP).toFixed(1);
+          evidenceText = 'At modeled time ' + (scenarioComparisonCursor * ECO_MODEL_TIME_STEP).toFixed(1) + ', ' + systemEvidenceParts.join('; ') + '. ' + (scenarioComparisonIdentical
+            ? 'The trajectories were identical at every step because both runs used the same equations and numeric inputs.'
+            : 'The trajectories differed because the runs used different starting values and parameters.');
         } else if (kind === 'comparison' && comparedRun && Array.isArray(comparedRun.data) && comparedRun.data.length > 1) {
           var currentReplay = replayPointFor(data);
           var comparedReplay = replayPointFor(comparedRun.data);
@@ -1601,7 +1656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           kind: kind,
           source: source,
           text: evidenceText,
-          replayStep: replayCursor,
+          replayStep: kind === 'systems' ? scenarioComparisonCursor : replayCursor,
           replayKey: replayKeyFor(getModelParameters()),
           capturedAt: Date.now()
         };
@@ -1714,6 +1769,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             reasoning: String(cerReasoning || '').trim(),
             complete: cerComplete
           },
+          crossScenarioComparison: scenarioCompareRevealed && scenarioComparisonRecords.length > 1 ? {
+            protocol: scenarioCompareProtocol,
+            prediction: scenarioComparePrediction,
+            predictionMatched: scenarioComparisonPredictionMatched,
+            identicalTrajectories: scenarioComparisonIdentical,
+            replayStep: scenarioComparisonCursor,
+            runs: scenarioComparisonRecords.map(function(record) {
+              return {
+                scenarioId: record.id,
+                scenarioName: record.scenario.name,
+                parameters: Object.assign({}, record.parameters),
+                summary: record.summary,
+                selectedPoint: record.data[Math.min(record.data.length - 1, scenarioComparisonCursor)] || record.data[0]
+              };
+            })
+          } : null,
           evidenceLog: experimentLog
         };
       };
@@ -1908,6 +1979,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         };
         updMulti({ interventionStep: eventStep, interventionIntensity: intensity, interventionResult: result, analysisView: 'intervention', replayStep: eventStep });
         if (announceToSR) announceToSR(definition.label + ' scenario complete at step ' + eventStep + ' with ' + Math.round(intensity * 100) + ' percent intensity.');
+      };
+      var buildScenarioComparisonSVG = function(record) {
+        if (!record || !Array.isArray(record.data) || record.data.length < 2) return null;
+        var sw = 360, sh = 180, sp = 34;
+        var sx = function(index) { return sp + (index / Math.max(1, scenarioComparisonMaxStep)) * (sw - 2 * sp); };
+        var sy = function(value) { return sh - sp - ((Number(value) || 0) / scenarioComparisonMaxY) * (sh - 2 * sp); };
+        var preyPoints = '', predatorPoints = '';
+        for (var spi = 0; spi < record.data.length; spi++) {
+          preyPoints += (spi ? ' ' : '') + sx(spi).toFixed(1) + ',' + sy(record.data[spi].prey).toFixed(1);
+          predatorPoints += (spi ? ' ' : '') + sx(spi).toFixed(1) + ',' + sy(record.data[spi].pred).toFixed(1);
+        }
+        var selectedIndex = Math.min(record.data.length - 1, scenarioComparisonCursor);
+        var selectedPoint = record.data[selectedIndex] || record.data[0];
+        var cursorX = sx(selectedIndex);
+        var grid = [];
+        for (var sgi = 0; sgi <= 4; sgi++) {
+          var gridY = sp + sgi * ((sh - 2 * sp) / 4);
+          var gridValue = Math.round(scenarioComparisonMaxY - sgi * scenarioComparisonMaxY / 4);
+          grid.push(h('line', { key: 'system-grid-' + record.id + '-' + sgi, x1: sp, y1: gridY, x2: sw - sp, y2: gridY, stroke: '#94a3b8', strokeWidth: 0.6, opacity: 0.55 }));
+          grid.push(h('text', { key: 'system-grid-label-' + record.id + '-' + sgi, x: sp - 5, y: gridY + 4, textAnchor: 'end', fill: '#64748b', fontSize: 9 }, gridValue));
+        }
+        var titleId = 'eco-system-comparison-title-' + record.id;
+        var descId = 'eco-system-comparison-desc-' + record.id;
+        return h('figure', { className: 'min-w-0 space-y-1', 'data-eco-system-comparison': record.id },
+          h('figcaption', { className: 'space-y-0.5' },
+            h('div', { className: 'text-sm font-bold text-slate-900 dark:text-slate-100' }, record.scenario.emoji + ' ' + record.scenario.name),
+            h('div', { className: 'text-[10px] text-slate-600 dark:text-slate-300' }, record.scenario.producer.label + ' \u2192 ' + record.scenario.prey.label + ' \u2192 ' + record.scenario.predator.label)
+          ),
+          h('svg', { viewBox: '0 0 ' + sw + ' ' + sh, className: 'w-full', role: 'img', 'aria-labelledby': titleId + ' ' + descId },
+            h('title', { id: titleId }, record.scenario.name + ' synchronized population trajectory'),
+            h('desc', { id: descId }, 'Shared vertical scale from zero to ' + Math.round(scenarioComparisonMaxY) + ' population-index units. At modeled time ' + (selectedIndex * ECO_MODEL_TIME_STEP).toFixed(1) + ', ' + record.scenario.prey.label + ' as prey are ' + Math.round(Number(selectedPoint.prey) || 0) + ' and ' + record.scenario.predator.label + ' as predators are ' + Math.round(Number(selectedPoint.pred) || 0) + '.'),
+            grid,
+            h('rect', { x: sp, y: sp, width: sw - 2 * sp, height: sh - 2 * sp, fill: 'none', stroke: '#64748b', strokeWidth: 1 }),
+            h('polyline', { points: preyPoints, fill: 'none', stroke: '#16a34a', strokeWidth: 2.5 }),
+            h('polyline', { points: predatorPoints, fill: 'none', stroke: '#dc2626', strokeWidth: 2.5, strokeDasharray: '6,4' }),
+            h('line', { x1: cursorX, y1: sp, x2: cursorX, y2: sh - sp, stroke: '#7c3aed', strokeWidth: 1.5, strokeDasharray: '3,3' }),
+            h('circle', { cx: cursorX, cy: sy(selectedPoint.prey), r: 4.5, fill: '#16a34a', stroke: '#fff', strokeWidth: 1.5 }),
+            h('rect', { x: cursorX - 4.5, y: sy(selectedPoint.pred) - 4.5, width: 9, height: 9, fill: '#dc2626', stroke: '#fff', strokeWidth: 1.5 }),
+            h('text', { x: sp, y: 18, fill: '#16a34a', fontSize: 10, fontWeight: 'bold' }, record.scenario.prey.label + ' \u2014 prey solid'),
+            h('text', { x: sw - sp, y: 18, textAnchor: 'end', fill: '#dc2626', fontSize: 10, fontWeight: 'bold' }, record.scenario.predator.label + ' \u2014 predators dashed'),
+            h('text', { x: sw / 2, y: sh - 5, textAnchor: 'middle', fill: '#64748b', fontSize: 9 }, 'Modeled time'),
+            h('text', { x: 9, y: sh / 2, textAnchor: 'middle', fill: '#64748b', fontSize: 9, transform: 'rotate(-90, 9, ' + (sh / 2) + ')' }, 'Population index')
+          ),
+          h('div', { className: 'text-[11px] text-slate-700 dark:text-slate-200' },
+            'Time ' + (selectedIndex * ECO_MODEL_TIME_STEP).toFixed(1) + ': ' + record.scenario.prey.label + ' ' + Math.round(Number(selectedPoint.prey) || 0) + '; ' + record.scenario.predator.label + ' ' + Math.round(Number(selectedPoint.pred) || 0) + '. Outcome: ' + record.summary.label + '.'
+          )
+        );
       };
       var W = 420, H = 180, pad = 35;
 
@@ -4816,6 +4934,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('details', { className: 'text-[11px] text-slate-700 dark:text-slate-200' },
               h('summary', { className: 'cursor-pointer font-bold text-sky-800 dark:text-sky-200' }, 'What the model represents'),
               h('p', { className: 'mt-1 leading-relaxed' }, activeScenario.modelBridge + ' Parameters are illustrative teaching values, not fitted field estimates or forecasts.')
+            ),
+            h('button', { type: 'button', 'data-eco-scenario-comparison-toggle': 'true', 'aria-expanded': scenarioCompareOpen, 'aria-controls': 'eco-scenario-comparison-lab', onClick: function() { upd('scenarioCompareOpen', !scenarioCompareOpen); }, className: 'w-full rounded-lg border border-sky-600 dark:border-sky-500 bg-white/80 dark:bg-slate-900/70 px-3 py-2 text-[11px] font-bold text-sky-900 dark:text-sky-100 hover:border-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500' }, scenarioCompareOpen ? 'Close across-ecosystems lab' : 'Compare ecosystem scenarios')
+          ),
+
+          scenarioCompareOpen && h('section', { id: 'eco-scenario-comparison-lab', className: 'rounded-xl border border-cyan-300 dark:border-cyan-700 bg-cyan-50/60 dark:bg-cyan-950/20 p-3 space-y-3', 'aria-labelledby': 'eco-scenario-comparison-title', 'data-eco-scenario-comparison-lab': scenarioCompareProtocol },
+            h('div', { className: 'space-y-1' },
+              h('h3', { id: 'eco-scenario-comparison-title', className: 'text-sm font-bold text-cyan-900 dark:text-cyan-100' }, 'Across ecosystems: what actually changes?'),
+              h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200' }, 'Run Meadow and Kelp Forest through the same two-population model. Predict first, then use a synchronized timeline and shared vertical scale to separate mathematical causes from visual context.')
+            ),
+            h('fieldset', { className: 'space-y-2' },
+              h('legend', { className: 'text-[11px] font-bold text-slate-800 dark:text-slate-100' }, '1. Choose a comparison protocol'),
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+                h('label', { htmlFor: 'eco-scenario-protocol-shared', className: 'flex items-start gap-2 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/70 p-2 cursor-pointer' },
+                  h('input', { id: 'eco-scenario-protocol-shared', type: 'radio', name: 'eco-scenario-compare-protocol', value: 'shared', checked: scenarioCompareProtocol === 'shared', onChange: function() { updMulti({ scenarioCompareProtocol: 'shared', scenarioComparePrediction: '', scenarioCompareRevealed: false }); } }),
+                  h('span', null,
+                    h('strong', { className: 'block text-[11px] text-slate-800 dark:text-slate-100' }, 'Same numeric inputs'),
+                    h('span', { className: 'block text-[10px] text-slate-600 dark:text-slate-300' }, 'Use the current Explore settings for both species stories.')
+                  )
+                ),
+                h('label', { htmlFor: 'eco-scenario-protocol-baselines', className: 'flex items-start gap-2 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/70 p-2 cursor-pointer' },
+                  h('input', { id: 'eco-scenario-protocol-baselines', type: 'radio', name: 'eco-scenario-compare-protocol', value: 'baselines', checked: scenarioCompareProtocol === 'baselines', onChange: function() { updMulti({ scenarioCompareProtocol: 'baselines', scenarioComparePrediction: '', scenarioCompareRevealed: false }); } }),
+                  h('span', null,
+                    h('strong', { className: 'block text-[11px] text-slate-800 dark:text-slate-100' }, 'Each calibrated baseline'),
+                    h('span', { className: 'block text-[10px] text-slate-600 dark:text-slate-300' }, 'Use each scenario\'s illustrative starting values and rates.')
+                  )
+                )
+              )
+            ),
+            h('fieldset', { className: 'space-y-2' },
+              h('legend', { className: 'text-[11px] font-bold text-slate-800 dark:text-slate-100' }, '2. Predict: will the two numerical trajectories be identical?'),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                h('label', { htmlFor: 'eco-scenario-predict-same', className: 'inline-flex items-center gap-2 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/70 px-3 py-2 text-[11px] cursor-pointer' },
+                  h('input', { id: 'eco-scenario-predict-same', type: 'radio', name: 'eco-scenario-compare-prediction', value: 'same', checked: scenarioComparePrediction === 'same', onChange: function() { updMulti({ scenarioComparePrediction: 'same', scenarioCompareRevealed: false }); } }),
+                  'Yes, identical'
+                ),
+                h('label', { htmlFor: 'eco-scenario-predict-different', className: 'inline-flex items-center gap-2 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/70 px-3 py-2 text-[11px] cursor-pointer' },
+                  h('input', { id: 'eco-scenario-predict-different', type: 'radio', name: 'eco-scenario-compare-prediction', value: 'different', checked: scenarioComparePrediction === 'different', onChange: function() { updMulti({ scenarioComparePrediction: 'different', scenarioCompareRevealed: false }); } }),
+                  'No, different'
+                ),
+                h('button', { type: 'button', disabled: !scenarioComparePrediction, 'data-eco-run-scenario-comparison': 'true', onClick: function() { upd('scenarioCompareRevealed', true); if (announceToSR) announceToSR('Across-ecosystems comparison revealed.'); }, className: 'min-h-9 rounded-lg bg-cyan-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-cyan-800 disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500' }, 'Run comparison')
+              )
+            ),
+            scenarioCompareRevealed && h('div', { className: 'space-y-3', 'data-eco-scenario-comparison-results': 'true' },
+              h('label', { htmlFor: 'eco-scenario-comparison-time', className: 'block text-[11px] font-bold text-slate-800 dark:text-slate-100' },
+                h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, '3. Inspect the shared timeline'), h('span', { className: 'font-mono text-cyan-800 dark:text-cyan-200' }, 'Time ' + (scenarioComparisonCursor * ECO_MODEL_TIME_STEP).toFixed(1))),
+                h('input', { id: 'eco-scenario-comparison-time', type: 'range', min: 0, max: scenarioComparisonMaxStep, step: 1, value: scenarioComparisonCursor, 'aria-valuetext': 'Modeled time ' + (scenarioComparisonCursor * ECO_MODEL_TIME_STEP).toFixed(1) + ' of ' + (scenarioComparisonMaxStep * ECO_MODEL_TIME_STEP).toFixed(1), onChange: function(e) { upd('scenarioCompareStep', parseInt(e.target.value, 10)); }, className: 'w-full h-2 accent-cyan-700' })
+              ),
+              h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-3' }, scenarioComparisonRecords.map(function(record) { return buildScenarioComparisonSVG(record); })),
+              h('div', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 text-[10px] text-slate-700 dark:text-slate-200', 'aria-label': 'Scenario comparison chart legend' },
+                h('span', null, 'Solid line + circle: prey'),
+                h('span', null, 'Dashed line + square: predators'),
+                h('span', null, 'Purple guide: shared time'),
+                h('span', null, 'Both charts use one y-axis scale')
+              ),
+              h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/70 p-2 text-[11px] leading-relaxed text-slate-700 dark:text-slate-200', 'data-eco-scenario-comparison-feedback': scenarioComparisonPredictionMatched ? 'matched' : 'differed' },
+                h('strong', null, scenarioComparisonPredictionMatched ? 'Prediction matched. ' : 'Prediction differed. '),
+                scenarioComparisonIdentical
+                  ? 'The trajectories are identical at every step because the same equations with the same numeric inputs produce the same output. Species names and scene artwork shape interpretation, not calculation; this does not mean the real ecosystems are identical.'
+                  : 'The trajectories differ because the illustrative baseline parameters and starting indices differ. The pictures and labels do not cause the difference; r, a, b, d, K, and the starting values do.'
+              ),
+              h('div', { className: 'overflow-x-auto' },
+                h('table', { className: 'w-full min-w-[620px] text-[10px] border-collapse', 'data-eco-scenario-parameter-table': 'true' },
+                  h('caption', { className: 'text-left text-[11px] font-bold text-slate-800 dark:text-slate-100 mb-1' }, 'Numeric inputs used in this comparison'),
+              h('button', { type: 'button', onClick: function() { addCEREvidence('systems'); }, className: 'rounded-lg border border-cyan-600 dark:border-cyan-500 bg-white/80 dark:bg-slate-900/70 px-3 py-2 text-[11px] font-bold text-cyan-900 dark:text-cyan-100 hover:border-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500', 'data-eco-add-system-evidence': 'true' }, 'Add this comparison to CER evidence'),
+                  h('thead', null, h('tr', { className: 'text-left text-slate-700 dark:text-slate-200' }, ['Scenario', 'Prey start', 'Predator start', 'r', 'a', 'b', 'd', 'K', 'Outcome'].map(function(label) { return h('th', { key: label, scope: 'col', className: 'p-1.5 border-b border-cyan-300 dark:border-cyan-700' }, label); }))),
+                  h('tbody', null, scenarioComparisonRecords.map(function(record) {
+                    return h('tr', { key: 'scenario-parameters-' + record.id },
+                      h('th', { scope: 'row', className: 'p-1.5 text-left font-semibold' }, record.scenario.name),
+                      h('td', { className: 'p-1.5 font-mono' }, record.parameters.prey0),
+                      h('td', { className: 'p-1.5 font-mono' }, record.parameters.pred0),
+                      h('td', { className: 'p-1.5 font-mono' }, Number(record.parameters.preyBirth).toFixed(3)),
+                      h('td', { className: 'p-1.5 font-mono' }, Number(record.parameters.preyDeath).toFixed(3)),
+                      h('td', { className: 'p-1.5 font-mono' }, Number(record.parameters.predBirth).toFixed(3)),
+                      h('td', { className: 'p-1.5 font-mono' }, Number(record.parameters.predDeath).toFixed(3)),
+                      h('td', { className: 'p-1.5 font-mono' }, record.parameters.carryingCapacity),
+                      h('td', { className: 'p-1.5' }, record.summary.label)
+                    );
+                  }))
+                )
+              ),
+              h('p', { className: 'text-[11px] font-semibold text-cyan-900 dark:text-cyan-100' }, scenarioComparisonIdentical ? 'Explain: if the equations cannot see species names, what ecological information is missing from this two-variable model?' : 'Explain: which changed input best accounts for the first visible divergence, and what evidence in the trajectories supports your claim?'),
+              h('p', { className: 'text-[10px] text-slate-600 dark:text-slate-300' }, 'Comparison boundary: these are deterministic teaching runs, not field measurements, fitted forecasts, or evidence that one real ecosystem is inherently more stable.')
             )
           ),
 

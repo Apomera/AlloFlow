@@ -13,10 +13,10 @@ describe('Glossary flashcard read-aloud headings', () => {
   });
 
   it('relies on native keyboard activation instead of duplicate key handlers', () => {
-    expect(source.match(/handleSpeak\(generatedContent\?\.data\[flashcardIndex\]\.term, 'fc-front'\);/g)).toHaveLength(1);
-    expect(source.match(/handleSpeak\(term, `fc-front-\$\{standardDeckLang\}`\);/g)).toHaveLength(1);
-    expect(source.match(/handleSpeak\(generatedContent\?\.data\[flashcardIndex\]\.term, 'fc-front-term'\);/g)).toHaveLength(1);
-    expect(source.match(/handleSpeak\(transTerm, 'fc-back-term'\);/g)).toHaveLength(1);
+    expect(source.match(/handleGlossarySpeak\(generatedContent\?\.data\[flashcardIndex\], 'term',[^\n]+ 'fc-front'/g)).toHaveLength(1);
+    expect(source.match(/handleUncachedGlossarySpeak\(term, `fc-front-\$\{standardDeckLang\}`\);/g)).toHaveLength(1);
+    expect(source.match(/handleGlossarySpeak\(generatedContent\?\.data\[flashcardIndex\], 'term',[^\n]+ 'fc-front-term'/g)).toHaveLength(1);
+    expect(source.match(/handleUncachedGlossarySpeak\(transTerm, 'fc-back-term'\);/g)).toHaveLength(1);
   });
 
   it('provides large visible-focus targets and suppresses empty translated actions', () => {

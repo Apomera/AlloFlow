@@ -70,15 +70,27 @@ describe('Geology Explorer guided missions', () => {
     }
   });
 
-  it('defines scene-aware process cues with three stages and depth context', () => {
+  it('defines scene-aware process cues with three stages and an accessible evidence axis', () => {
     for (const id of P.scenes()) {
       const cue = P.processCues(id);
       expect(cue.title, id).toBeTruthy();
       expect(cue.summary, id).toBeTruthy();
       expect(cue.depth, id).toBeTruthy();
+      expect(cue.axis, id).toMatchObject({
+        label: expect.any(String),
+        value: expect.any(String),
+        gradient: expect.any(String),
+        labels: expect.any(Array),
+        ariaLabel: expect.any(String)
+      });
+      expect(cue.axis.labels, id).toHaveLength(3);
       expect(cue.steps, id).toHaveLength(3);
       expect(cue.steps.every((step) => step.label && step.detail)).toBe(true);
     }
+    expect(P.processCues('geode').axis.label).toBe('Growth axis');
+    expect(P.processCues('subduction').axis.ariaLabel).toContain('cold incoming plate');
+    expect(P.processCues('ridge').axis.labels).toEqual(['Older flank', 'Axis / youngest', 'Older flank']);
+    expect(P.processCues('hotspot').axis.value).toBe('Distance from plume');
   });
 
   it('builds a three-stage formation timeline for every scene', () => {

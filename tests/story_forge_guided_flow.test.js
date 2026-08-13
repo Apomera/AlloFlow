@@ -250,6 +250,35 @@ describe('StoryForge guided information architecture', () => {
     expect(source).toContain('data-sf-step-summary');
     expect(source).not.toContain('Next <ArrowRight');
   });
+
+  it('keeps optional Plan and Draft tools out of the first-pass path', () => {
+    const planStart = source.indexOf("{phase === 'configure'");
+    const draftStart = source.indexOf("{phase === 'write'");
+    const planSlice = source.slice(planStart, draftStart);
+    const optionalStart = planSlice.indexOf('Optional setup &amp; assignment');
+    expect(optionalStart).toBeGreaterThan(planSlice.indexOf('Vocabulary Goals'));
+    expect(planSlice.indexOf('Story Shape')).toBeGreaterThan(optionalStart);
+    expect(planSlice.indexOf('Save as Assignment')).toBeGreaterThan(optionalStart);
+
+    expect(source).toContain('aria-controls="sf-writing-tools-panel"');
+    expect(source).toContain('id="sf-writing-tools-panel"');
+    expect(source).toContain('aria-label="Expanded writing tools"');
+    expect(source).toContain('Writing setup');
+    expect(source).toContain('Comic helpers');
+    expect(source).toContain('Focus &amp; feedback');
+  });
+
+  it('separates Audio creation from settings and makes microphone failures recoverable', () => {
+    expect(source).toContain('data-sf-narration-settings');
+    expect(source).toContain('Narration settings');
+    expect(source).toContain('Create narration');
+    expect(source).toContain('Practice or record my voice');
+    expect(source).toContain('data-sf-microphone-error');
+    expect(source).toContain('Retry microphone');
+    expect(source).toContain('const result = await recorder.startRecording();');
+    expect(source).toContain('if (result?.ok) {\n      setRecordingParagraphId(paragraphId);');
+    expect(source).toContain('px-3 py-4 sm:p-6');
+  });
 });
 
 describe('StoryForge publish readiness', () => {
@@ -285,7 +314,8 @@ describe('StoryForge publish readiness', () => {
     expect(source).toContain('const exportSlideshow = () => {\n    if (!ensureReadyToPublish()) return;');
     expect(source).toContain("const exportComicScript = async () => {\n    if (layoutMode !== 'comic') return;\n    if (!ensureReadyToPublish()) return;");
     expect(source).toContain("const exportComicProductionPack = async () => {\n    if (layoutMode !== 'comic') return;\n    if (!ensureReadyToPublish()) return;");
-    expect(source).toContain('const shareToSession = async () => {\n    if (!ensureReadyToPublish()) return;');
+    expect(source).not.toContain('const shareToSession = async () => {');
+    expect(source).not.toContain('data-sf-publish-action="gallery"');
     expect(source).toContain('const saveAsSubmission = () => {\n    if (!onSaveSubmission) return;\n    if (!ensureReadyToPublish()) return;');
     expect(source).toContain('data-sf-publish-action="artifact"');
     expect(source).toContain('data-sf-publish-action="comic-script"');

@@ -29,7 +29,8 @@ function scriptedModel(promptText: string, hasInlineData: boolean): string {
     calls.push('vision-audit');
     return JSON.stringify({
       score: 55, summary: 'scripted baseline audit', confidence: 'high', documentLanguage: 'en',
-      critical: [], serious: [{ issue: 'Link text is vague', wcag: '2.4.4', location: 'page 1' }],
+      pageCount: 2, hasSearchableText: true, hasImages: false, hasTables: false, hasForms: false,
+      critical: [], serious: [{ issue: 'Link text is vague', wcag: '2.4.4', location: 'page 1', ruleId: 'link-text', claimKind: 'quality', count: 1 }],
       moderate: [], minor: [], passes: ['document has a title'],
     });
   }
@@ -39,15 +40,19 @@ function scriptedModel(promptText: string, hasInlineData: boolean): string {
     calls.push('html-audit:' + (fixed ? 'fixed' : 'unfixed'));
     if (!fixed) {
       // Primary pass: below target, ONE AI-flagged issue → auto-continue has work to do.
-      return JSON.stringify({ score: 80, summary: 'one issue remains', issues: [{ issue: 'Link text is vague', wcag: '2.4.4' }], passes: ['lang present'] });
+      return JSON.stringify({ score: 80, summary: 'one issue remains', issues: [{ issue: 'Link text is vague', wcag: '2.4.4', ruleId: 'link-text', claimKind: 'quality', count: 1 }], passes: ['lang present'] });
     }
     if (scenario === 'accept') {
-      return JSON.stringify({ score: 97, summary: 'clean after fix', issues: [], passes: ['lang present', 'links descriptive'] });
+      return JSON.stringify({ score: 97, summary: 'clean after fix', issues: [], passes: ['language declared', 'title descriptive', 'headings hierarchical', 'main landmark present', 'links descriptive'] });
     }
     // revert scenario: the "fix" made things WORSE — more issues than the 1 before.
     return JSON.stringify({
       score: 96, summary: 'regressions introduced', passes: [],
-      issues: [{ issue: 'Link text is vague', wcag: '2.4.4' }, { issue: 'Heading order broken', wcag: '1.3.1' }, { issue: 'List structure lost', wcag: '1.3.1' }],
+      issues: [
+        { issue: 'Link text is vague', wcag: '2.4.4', ruleId: 'link-text', claimKind: 'quality', count: 1 },
+        { issue: 'Heading order broken', wcag: '1.3.1', ruleId: 'heading-order', claimKind: 'structure', count: 1 },
+        { issue: 'List structure lost', wcag: '1.3.1', ruleId: 'semantic-list', claimKind: 'structure', count: 1 },
+      ],
     });
   }
   // aiFixChunked: return the chunk with the marker as an ATTRIBUTE on an existing element.

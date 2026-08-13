@@ -83,4 +83,26 @@ describe('Read This Page hands-free controller', () => {
     expect(panel).not.toContain('handleStopLegacy');
     expect(panel).not.toContain('handleItemClickLegacy');
   });
+
+  it('fails safe on mute, aborts pending TTS, and bounds browser speech completion', () => {
+    const reader = section('// @section READ_THIS_PAGE_VOICE_CONTROLLER', '// @endsection READ_THIS_PAGE_VOICE_CONTROLLER');
+    expect(app).toContain('const rtpTtsAbortRef = useRef(null)');
+    expect(reader).toContain('pendingTts.abort()');
+    expect(reader).toContain('signal: abortController ? abortController.signal : undefined');
+    expect(reader).toContain("window.addEventListener('alloflow-mute-changed', handleReadThisPageMute)");
+    expect(reader).toContain("window.removeEventListener('alloflow-mute-changed', handleReadThisPageMute)");
+    expect(reader).toContain("if (typeof isGlobalMuted === 'function' && isGlobalMuted())");
+    expect(reader).toContain('watchdogId = setTimeout(finish, watchdogMs)');
+    expect(reader).toContain('if (watchdogId != null) clearTimeout(watchdogId)');
+  });
+
+  it('uses canonical per-item speech locales and tracks media read-all progress', () => {
+    const reader = section('// @section READ_THIS_PAGE_VOICE_CONTROLLER', '// @endsection READ_THIS_PAGE_VOICE_CONTROLLER');
+    expect(reader).toContain("const speechLocale = typeof getSpeechLangCode === 'function'");
+    expect(reader).toContain('locale: speechLocale');
+    expect(reader).toContain("utterance.lang = speechLocale || 'en-US'");
+    expect(reader).toContain('rtpCurrentIndexRef.current = media[index].index');
+    expect(reader).toContain('setRtpCurrentIndex(media[index].index)');
+    expect(reader).toContain('media[index].item.language');
+  });
 });

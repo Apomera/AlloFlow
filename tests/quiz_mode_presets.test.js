@@ -180,6 +180,12 @@ describe('quiz modes as customizable presets', () => {
     const localStart = source.indexOf('if (usesLocalTextBackend)', visualConfigStart);
     const remoteStart = source.indexOf('} else {', localStart);
     const localPrompt = source.slice(localStart, remoteStart);
+    expect(localPrompt).toContain('imageAltText');
+    expect(localPrompt).toContain('optionImageAltTexts');
+    expect(source).toContain('_jsonExamplesByType.mcq.imageAltText');
+    expect(source).toContain('_jsonExamplesByType.mcq.optionImageAltTexts');
+    expect(source).toContain('q.imageAltText = typeof q.imageAltText');
+    expect(source).toContain('q.optionImageAltTexts = q.optionImagePrompts.slice(0, 4).map');
     expect(localPrompt).toContain('VISUAL MCQ (question stimulus)');
     expect(localPrompt).toContain('"imagePrompt" field');
     expect(localPrompt).toContain('VISUAL MCQ (option images)');

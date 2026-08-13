@@ -21,6 +21,7 @@ function LearningHubModal(props) {
     setSelHubTab,
     setShowLearningHub,
     setShowLitLab,
+    setShowLearningWebExplorer,
     setShowMindMap,
     setShowPoetTree,
     setShowResearchHub,
@@ -292,7 +293,7 @@ function LearningHubModal(props) {
   const hubRoleRaw = String(hubRolePreference).toLowerCase();
   const hubRoleKey = hubRoleRaw.includes("family") ? "family" : hubRoleRaw.includes("teacher") || hubRoleRaw.includes("educator") ? "teacher" : "student";
   const hubRoleLabel = { teacher: "teachers", student: "students", family: "families" }[hubRoleKey] || "learners";
-  const hubRoleRecommendations = { teacher: ["throughline", "research-hub", "stem-lab", "reading-library", "lumen-study"], student: ["lumen-study", "reading-library", "stem-lab", "text-inquiry", "test-prep"], family: ["reading-library", "lingua-practice", "sel-hub", "allohaven", "storyforge"] };
+  const hubRoleRecommendations = { teacher: ["learning-web-explorer", "throughline", "research-hub", "stem-lab", "reading-library"], student: ["learning-web-explorer", "lumen-study", "reading-library", "stem-lab", "text-inquiry"], family: ["reading-library", "lingua-practice", "sel-hub", "allohaven", "storyforge"] };
   const hubUsageRankedIds = Object.entries(hubUsageCounts).sort((a, b) => Number(b[1]) - Number(a[1])).map(([id]) => id);
   const hubRecommendedIds = Array.from(/* @__PURE__ */ new Set([...hubRoleRecommendations[hubRoleKey] || hubRoleRecommendations.student, ...hubUsageRankedIds])).slice(0, 5);
   const recommendedCards = hubRecommendedIds.map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
@@ -352,7 +353,10 @@ function LearningHubModal(props) {
         } catch (_) {
         }
         const w = window.open("https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner", "alloflow-it-coach");
-        if (w) window.__alloPendingCoachWin = w;
+        if (w) {
+          window.__alloPendingCoachWin = w;
+          window.__alloPendingCoachPosture = "learner";
+        }
       }
     } catch (_) {
     }
@@ -365,7 +369,13 @@ function LearningHubModal(props) {
   }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", "aria-hidden": "true" }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("learning_hub.research_title") || "Research Hub"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-700 mt-1" }, t("learning_hub.research_desc") || "Scientific Inquiry, Engineering Design, and Humanities research \u2014 one inquiry journal, three lanes."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "aria-pressed": hubFavoriteIds.includes("research-hub"), "aria-label": hubFavoriteIds.includes("research-hub") ? tr("hub.remove_favorite", "Remove from favorites") + ": Research Hub" : tr("hub.add_favorite", "Add to favorites") + ": Research Hub", title: hubFavoriteIds.includes("research-hub") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
     event.stopPropagation();
     toggleHubFavorite("research-hub");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("research-hub") ? "\u2605" : "\u2606")), setShowMindMap && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "throughline", "data-hub-label": "Learning Web: Unit Path", "data-hub-section": "explore" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", onClick: () => {
+  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("research-hub") ? "\u2605" : "\u2606")), typeof setShowLearningWebExplorer === "function" && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "learning-web-explorer", "data-hub-label": "Learning Web: Explore", "data-hub-section": "explore" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", onClick: () => {
+    setShowLearningHub(false);
+    setShowLearningWebExplorer(true);
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", "aria-hidden": "true" }, "\u{1F578}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-violet-900" }, tr("learning_hub.learning_web_explorer_title", "Learning Web: Explore")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, tr("learning_hub.learning_web_explorer_desc", "Explore standards, concepts, lessons, evidence, and word connections in one accessible map.")))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "aria-pressed": hubFavoriteIds.includes("learning-web-explorer"), "aria-label": hubFavoriteIds.includes("learning-web-explorer") ? tr("hub.remove_favorite", "Remove from favorites") + ": Learning Web: Explore" : tr("hub.add_favorite", "Add to favorites") + ": Learning Web: Explore", title: hubFavoriteIds.includes("learning-web-explorer") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+    event.stopPropagation();
+    toggleHubFavorite("learning-web-explorer");
+  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-violet-700 text-lg leading-none shadow-sm hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("learning-web-explorer") ? "\u2605" : "\u2606")), setShowMindMap && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "throughline", "data-hub-label": "Learning Web: Unit Path", "data-hub-section": "explore" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", onClick: () => {
     setShowLearningHub(false);
     setShowMindMap(true);
   }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", "aria-hidden": "true" }, "\u{1F9ED}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-amber-800" }, t("learning_hub.throughline_title") || "Learning Web: Unit Path"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mt-1" }, t("learning_hub.throughline_desc") || "Arrange lessons as a unit path, then explore linked standards and evidence in the shared Learning Web"))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "aria-pressed": hubFavoriteIds.includes("throughline"), "aria-label": hubFavoriteIds.includes("throughline") ? tr("hub.remove_favorite", "Remove from favorites") + ": Learning Web: Unit Path" : tr("hub.add_favorite", "Add to favorites") + ": Learning Web: Unit Path", title: hubFavoriteIds.includes("throughline") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {

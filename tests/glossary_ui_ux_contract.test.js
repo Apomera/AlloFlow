@@ -65,11 +65,24 @@ describe('Glossary focused UI and UX contract', () => {
 
   it('guards resource-scoped glossary audio preparation and reports progress', () => {
     expect(source).toContain('window.__alloPrepareGlossaryAudio');
-    expect(source).toContain('{ includeTerms: true, includeDefinitions: false, languages: [] }');
+    expect(source).toContain("var includeDefinitions = glossaryAudioScope !== 'terms'");
+    expect(source).toContain("var preparedLanguages = glossaryAudioScope === 'all'");
     expect(source).toContain("typeof prepare !== 'function'");
     expect(source).toContain("doneOrProgress && typeof doneOrProgress === 'object'");
     expect(source).toContain('Saved with this resource/project.');
     expect(source).toContain('id="glossary-audio-prep-status" role="status" aria-live="polite"');
+  });
+
+  it('prefers saved glossary audio with a live fallback and selectable preparation scope', () => {
+    expect(source).toContain('function handleGlossarySpeak(item, field, spokenText, contentId, language)');
+    expect(source).toContain('window.__alloResolveGlossaryAudio');
+    expect(source).toContain("reason: 'glossary-playback'");
+    expect(source).toContain("handleGlossarySpeak(item, 'term', item.term");
+    expect(source).toContain("handleGlossarySpeak(item, 'definition', item.def");
+    expect(source).toContain("handleGlossarySpeak(item, 'translation', item.translations[lang]");
+    expect(source).toContain('aria-label="Audio content to prepare"');
+    expect(source).toContain("includeDefinitions: includeDefinitions, languages: preparedLanguages");
+    expect(source).toContain('window.__alloEnsureGlossaryEntryIds');
   });
 
   it('keeps built and deployed artifacts synchronized', () => {

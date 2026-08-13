@@ -243,6 +243,14 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        // Unified, accessible 2D Learning Web surface. The host lazy-loads this
+        // module only when Explore is opened; the registry remains the durable
+        // project-scoped source of graph snapshots.
+        name: 'LearningWebExplorer',
+        filename: 'learning_web_explorer_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'QuestionBoardContract',
         filename: 'question_board_contract_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -849,8 +857,18 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'VideoRefPlayer',
+        filename: 'view_video_ref_player_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'SessionModal',
         filename: 'view_session_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'EndSessionPreview',
+        filename: 'view_end_session_preview_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -976,6 +994,16 @@ const MODULES = [
     {
         name: 'VerificationPolicy',
         filename: 'verification_policy_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ReviewDocumentSession',
+        filename: 'review_document_session_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'SemanticReview',
+        filename: 'semantic_review_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -1436,6 +1464,8 @@ function simplePureCompilePair(name, fileBase, guardKey) {
 const COMPILE_PAIRS = [
     simplePureCompilePair('AccessibilityEvidence', 'accessibility_evidence', 'AccessibilityEvidenceModule'),
     simplePureCompilePair('VerificationPolicy', 'verification_policy', 'VerificationPolicyModule'),
+    simplePureCompilePair('ReviewDocumentSession', 'review_document_session', 'ReviewDocumentSessionModule'),
+    simplePureCompilePair('SemanticReview', 'semantic_review', 'SemanticReviewModule'),
     simplePureCompilePair('DocBuilderRenderer', 'doc_builder_renderer', 'DocBuilderRendererModule'),
     {
         name: 'DocPipeline',
@@ -1626,6 +1656,20 @@ const COMPILE_PAIRS = [
         modPath: path.join(ROOT, 'guided_mode_config_module.js'),
         publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'guided_mode_config_module.js'),
         wrap(src) { return require('./_build_guided_mode_config_module.js').buildGuidedModeConfigModule(src); },
+    },
+    {
+        name: 'VideoRefPlayer',
+        srcPath: path.join(ROOT, 'view_video_ref_player_source.jsx'),
+        modPath: path.join(ROOT, 'view_video_ref_player_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'view_video_ref_player_module.js'),
+        wrap(src) { return require('./_build_view_video_ref_player_module.js').buildVideoRefPlayerModule(src); },
+    },
+    {
+        name: 'EndSessionPreview',
+        srcPath: path.join(ROOT, 'view_end_session_preview_source.jsx'),
+        modPath: path.join(ROOT, 'view_end_session_preview_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'view_end_session_preview_module.js'),
+        wrap(src) { return require('./_build_view_end_session_preview_module.js').buildEndSessionPreviewModule(src); },
     },
     {
         // ── immersive_reader ── Reading overlays (Focus/Speed/Bionic/Crawl/Karaoke)
@@ -2117,7 +2161,7 @@ if (dryRun) {
         const dest = path.join(PUBLIC_DIR, f);
         if (fs.existsSync(src)) {
             if (!fs.existsSync(path.dirname(dest))) fs.mkdirSync(path.dirname(dest), { recursive: true });
-            fs.copyFileSync(src, dest);
+            copyFileIfChanged(src, dest);
             copyCount++;
         }
     });

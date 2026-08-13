@@ -2926,6 +2926,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
                     renderer.setSize(W, H2);
                     renderer.setClearColor(0x000000);
+                    renderer.outputEncoding = THREE.sRGBEncoding;
 
                     // ── Bloom: glow on the Earth + sun over the lunar surface (guarded) ──
                     // Same graceful, fully-guarded pattern as solarsystem — plain render until
@@ -2972,7 +2973,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // sprite below to avoid the equirectangular wrap distortion
                     // that turned the marble into a teardrop). Stars are tiny
                     // dots so the projection stretching is invisible at that scale.
-                    var skyGeo = new THREE.SphereGeometry(200, 32, 16);
+                    // Keep the star shell behind the distant terrain silhouette even
+                    // from the playable square's corners; it never writes scene depth.
+                    var skyGeo = new THREE.SphereGeometry(360, 32, 16);
                     var skyCv = document.createElement('canvas'); skyCv.setAttribute('aria-hidden', 'true'); skyCv.width = 512; skyCv.height = 256;
                     var sCtx = skyCv.getContext('2d');
                     sCtx.fillStyle = '#000000'; sCtx.fillRect(0, 0, 512, 256);
@@ -2984,7 +2987,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       sCtx.fill();
                     }
                     var skyTex = new THREE.CanvasTexture(skyCv);
-                    scene.add(new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide })));
+                    scene.add(new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({
+                      map: skyTex, side: THREE.BackSide, depthWrite: false
+                    })));
 
                     // ── Earth as a billboard sprite ──
                     // Draw the marble onto a 256×256 canvas (centered, square),
@@ -3037,6 +3042,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       _lunarTerrainGrid[vi / 3] = tPos[vi + 2];
                     }
                     terrainGeo.computeVertexNormals();
+                    var _evaLowPower = false;
+                    try { _evaLowPower = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4); } catch (eLP) {}
                     // Regolith texture via ImageData (the old per-pixel fillRect loop made 65k
                     // canvas calls at init AND its sin() term printed visible diagonal stripes
                     // that tiled 8× across the plain). Isotropic value noise, no banding.
@@ -3059,7 +3066,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     })();
                     var terrainTex = new THREE.CanvasTexture(tCv);
                     terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping; terrainTex.repeat.set(8, 8);
-                    var terrain = new THREE.Mesh(terrainGeo, new THREE.MeshStandardMaterial({ map: terrainTex, roughness: 0.95, metalness: 0.02, flatShading: true }));
+                    terrainTex.encoding = THREE.sRGBEncoding;
+                    var lunarMicroSize = _evaLowPower ? 128 : 256;
+                    var lunarMicroCv = document.createElement('canvas');
+                    lunarMicroCv.setAttribute('aria-hidden', 'true');
+                    lunarMicroCv.width = lunarMicroCv.height = lunarMicroSize;
+                    var lunarMicroCtx = lunarMicroCv.getContext('2d');
+                    var lunarMicroImg = lunarMicroCtx.createImageData(lunarMicroSize, lunarMicroSize);
+                    var lunarMicroPx = lunarMicroImg.data;
+                    var lunarMicroSeed = 0x6d2b79f5;
+                    function lunarMicroRand() {
+                      lunarMicroSeed = (Math.imul(lunarMicroSeed, 1664525) + 1013904223) >>> 0;
+                      return lunarMicroSeed / 4294967296;
+                    }
+                    for (var lmi = 0; lmi < lunarMicroSize * lunarMicroSize; lmi++) {
+                      var lmx = lmi % lunarMicroSize, lmy = (lmi / lunarMicroSize) | 0;
+                      var lmTone = Math.max(55, Math.min(205, 150 +
+                        (lunarMicroRand() - 0.5) * 30 +
+                        Math.sin(lmx * 0.19 + lmy * 0.07) * 5 +
+                        Math.sin(lmy * 0.23 - lmx * 0.05) * 4)) | 0;
+                      var lmO = lmi * 4;
+                      lunarMicroPx[lmO] = lunarMicroPx[lmO + 1] = lunarMicroPx[lmO + 2] = lmTone;
+                      lunarMicroPx[lmO + 3] = 255;
+                    }
+                    lunarMicroCtx.putImageData(lunarMicroImg, 0, 0);
+                    var lunarPitCount = _evaLowPower ? 18 : 42;
+                    for (var lmp = 0; lmp < lunarPitCount; lmp++) {
+                      var lmpx = lunarMicroRand() * lunarMicroSize, lmpy = lunarMicroRand() * lunarMicroSize;
+                      var lmpr = 1.5 + lunarMicroRand() * (_evaLowPower ? 2.5 : 4.5);
+                      var lmg = lunarMicroCtx.createRadialGradient(lmpx, lmpy, 0, lmpx, lmpy, lmpr);
+                      lmg.addColorStop(0, 'rgba(45,45,45,0.7)');
+                      lmg.addColorStop(0.68, 'rgba(100,100,100,0.35)');
+                      lmg.addColorStop(1, 'rgba(195,195,195,0)');
+                      lunarMicroCtx.fillStyle = lmg; lunarMicroCtx.beginPath();
+                      lunarMicroCtx.arc(lmpx, lmpy, lmpr, 0, Math.PI * 2); lunarMicroCtx.fill();
+                    }
+                    var lunarMicroTex = new THREE.CanvasTexture(lunarMicroCv);
+                    lunarMicroTex.wrapS = lunarMicroTex.wrapT = THREE.RepeatWrapping;
+                    lunarMicroTex.repeat.set(8, 8);
+                    lunarMicroTex.generateMipmaps = true;
+                    lunarMicroTex.minFilter = THREE.LinearMipmapLinearFilter;
+                    lunarMicroTex.magFilter = THREE.LinearFilter;
+                    lunarMicroTex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+                    var terrainMat = new THREE.MeshStandardMaterial({
+                      map: terrainTex, bumpMap: lunarMicroTex,
+                      bumpScale: _evaLowPower ? 0.045 : 0.075,
+                      roughness: 0.96,
+                      metalness: 0.01, flatShading: true
+                    });
+                    var terrain = new THREE.Mesh(terrainGeo, terrainMat);
                     terrain.rotation.x = -Math.PI / 2;
                     terrain.receiveShadow = true;   // lunar scene sells on hard black shadows (sun.castShadow above)
                     scene.add(terrain);
@@ -3088,8 +3143,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Real lunar look = pitch-black SHADOWS under a single hard sun, with a
                     // faint warm ground-bounce (regolith reflects ~12%) instead of a flat grey
                     // ambient. Shadow map skipped on low-power devices (same tier as bloom).
-                    var _evaLowPower = false;
-                    try { _evaLowPower = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4); } catch (eLP) {}
                     scene.add(new THREE.AmbientLight(0x1a1a1e, 0.35));
                     scene.add(new THREE.HemisphereLight(0x050508, 0x35302a, 0.35));   // black sky above, regolith bounce below
                     var _sunOffset = new THREE.Vector3(40, 25, 15);
@@ -3269,6 +3322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       var mount = new THREE.Group();
                       mount.position.set(wp[0], 0.2, wp[1]);
                       mount._lrvX = wp[0]; mount._lrvZ = wp[1]; mount._lrvFront = wp[2];
+                      mount._lrvVisualSteer = 0;
                       var arm = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.42, 6), roverDark);
                       arm.rotation.z = Math.PI / 2;
                       arm.position.x = wp[0] < 0 ? 0.12 : -0.12;
@@ -3289,6 +3343,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     });
                     var rConsole = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.32, 0.22), roverDark);
                     rConsole.position.set(0, 0.72, -0.35); rConsole.rotation.x = -0.18; roverGrp.add(rConsole);
+                    // Self-lit telemetry aids night-side readability without pretending
+                    // the rover casts a headlight beam through lunar vacuum.
+                    var rConsoleDisplayMat = new THREE.MeshBasicMaterial({
+                      color: 0x67e8f9, transparent: true, opacity: 0.24, depthWrite: false
+                    });
+                    var rConsoleDisplay = new THREE.Mesh(
+                      new THREE.PlaneGeometry(0.29, 0.095), rConsoleDisplayMat);
+                    rConsoleDisplay.position.set(0, 0.035, 0.112);
+                    rConsole.add(rConsoleDisplay);
+                    var rConsoleStatusMat = new THREE.MeshBasicMaterial({
+                      color: 0x64748b, transparent: true, opacity: 0.65, depthWrite: false
+                    });
+                    var rConsoleStatus = new THREE.Mesh(
+                      new THREE.CircleGeometry(0.018, 8), rConsoleStatusMat);
+                    rConsoleStatus.position.set(0.145, 0.035, 0.114);
+                    rConsole.add(rConsoleStatus);
                     var rController = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.45, 6), roverMetal);
                     rController.position.set(-0.2, 0.93, -0.27); rController.rotation.x = -0.45; roverGrp.add(rController);
                     var rBay = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.38, 0.28), roverGold);
@@ -3302,14 +3372,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     roverGrp.add(rDish);
                     var rMast = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.68, 6), roverMetal);
                     rMast.position.set(0.48, 0.89, -0.08); roverGrp.add(rMast);
+                    // Keep the terrain-following root mathematically stable while a
+                    // lightweight child shell supplies short visual suspension impulses.
+                    var roverVisualShell = new THREE.Group();
+                    while (roverGrp.children.length) roverVisualShell.add(roverGrp.children[0]);
+                    roverGrp.add(roverVisualShell);
                     var rvX = 8, rvZ = -4;
                     roverGrp.position.set(rvX, _terrainHeightAt(rvX, rvZ), rvZ);
                     var roverHeading = 0.5;
                     var roverSpeed = 0, roverSteer = 0, roverWheelSpin = 0;
+                    var lrvVisualSteerDegrees = 0, lrvGroundedWheelCount = 4;
+                    var lrvConsoleState = 'parked';
                     var lrvThrottleSignal = 0, lrvSlipSignal = 0;
+                    var lrvGradeRatio = 0, lrvCrossSlopeRatio = 0, lrvGripState = 'Grip';
                     var lrvCameraYawOffset = 0, lrvCameraPitchOffset = 0;
+                    var lrvCameraSteerLook = 0;
                     var roverBoarded = false;
                     var LRV_BOARD_RANGE = 3.2;
+                    var LRV_VISUAL_WHEELBASE = 1.0, LRV_VISUAL_HALF_TRACK = 0.78;
+                    function lrvVisualWheelSteer(mount, centerSteer) {
+                      var steerSign = centerSteer < 0 ? -1 : 1;
+                      var steerAbs = Math.min(0.42, Math.abs(centerSteer));
+                      if (steerAbs < 0.0001) return 0;
+                      var turnRadius = LRV_VISUAL_WHEELBASE / Math.tan(steerAbs);
+                      // Positive steer/yaw turns toward local -X; that wheel is inside.
+                      var inside = steerSign > 0 ? mount._lrvX < 0 : mount._lrvX > 0;
+                      var denominator = Math.max(0.55,
+                        turnRadius + (inside ? -LRV_VISUAL_HALF_TRACK : LRV_VISUAL_HALF_TRACK));
+                      var frontAngle = Math.min(0.62,
+                        Math.atan(LRV_VISUAL_WHEELBASE / denominator));
+                      return mount._lrvFront
+                        ? steerSign * frontAngle
+                        : -steerSign * Math.min(0.18, frontAngle * 0.26);
+                    }
+                    function applyLrvVisualSteering(centerSteer) {
+                      var maxFront = 0;
+                      for (var vsi = 0; vsi < roverWheelMounts.length; vsi++) {
+                        var visualMount = roverWheelMounts[vsi];
+                        var visualAngle = lrvVisualWheelSteer(visualMount, centerSteer);
+                        visualMount._lrvVisualSteer = visualAngle;
+                        visualMount.rotation.y = visualAngle;
+                        if (visualMount._lrvFront) maxFront = Math.max(maxFront, Math.abs(visualAngle));
+                      }
+                      lrvVisualSteerDegrees = maxFront * 180 / Math.PI;
+                    }
                     roverGrp.rotation.y = roverHeading;
                     scene.add(roverGrp);
 
@@ -3317,6 +3423,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // because there is no atmosphere. A fixed pool keeps this feedback
                     // inexpensive and avoids creating objects during the render loop.
                     var LRV_DUST_COUNT = _evaLowPower ? 18 : 42;
+                    var lrvDustSeed = 0x51f15e;
+                    function lrvDustRand() {
+                      lrvDustSeed = (Math.imul(lrvDustSeed, 1664525) + 1013904223) >>> 0;
+                      return lrvDustSeed / 4294967296;
+                    }
                     var lrvDustPositions = new Float32Array(LRV_DUST_COUNT * 3);
                     var lrvDustLife = new Float32Array(LRV_DUST_COUNT);
                     var lrvDustVX = new Float32Array(LRV_DUST_COUNT);
@@ -3333,6 +3444,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     scene.add(lrvDust);
                     var lrvDustCursor = 0, lrvDustAccumulator = 0;
                     var roverDistance = 0;
+                    var lrvImpactSignal = 0, lrvImpactCount = 0, lrvImpactCooldown = 0;
+                    var lrvImpactArmTime = 0, lrvImpactContactValid = false;
+                    var lrvImpactPreviousContact = 0, lrvImpactVelocityFiltered = 0;
+                    var lrvImpactSpring = 0, lrvImpactSpringVelocity = 0;
+                    var lrvImpactAudioEnvelope = 0, lrvImpactCameraEnvelope = 0;
+                    var evaLandingImpact = 0, evaLandingImpactEnvelope = 0;
+                    var lrvImpactDatasetActive = false, evaLandingDatasetActive = false;
+                    canvasEl.dataset.lrvImpact = '0.000';
+                    canvasEl.dataset.lrvImpactCount = '0';
+                    canvasEl.dataset.evaLandingImpact = '0.000';
+                    canvasEl.dataset.lrvVisualProfile = 'contact-4+four-wheel-steer+console';
+                    canvasEl.dataset.lrvSteeringMode = 'four-wheel';
+                    canvasEl.dataset.lrvVisualSteer = '0.0';
+                    canvasEl.dataset.lrvConsoleState = 'parked';
+                    canvasEl.dataset.lrvGroundedWheels = '4';
+
+                    function emitLunarDustBurst(x, z, forwardX, forwardZ, strength, count) {
+                      var burstCount = Math.min(LRV_DUST_COUNT, Math.max(1, count | 0));
+                      for (var ldb = 0; ldb < burstCount; ldb++) {
+                        var dustI = lrvDustCursor++ % LRV_DUST_COUNT;
+                        var dustO = dustI * 3;
+                        var dustAngle = (ldb / burstCount) * Math.PI * 2 + dustI * 0.37 +
+                          (lrvDustRand() - 0.5) * 0.42;
+                        var dustSpread = (0.12 + strength * 0.28) *
+                          (0.78 + lrvDustRand() * 0.44);
+                        lrvDustPositions[dustO] = x + Math.cos(dustAngle) * 0.24;
+                        lrvDustPositions[dustO + 2] = z + Math.sin(dustAngle) * 0.24;
+                        lrvDustPositions[dustO + 1] = _terrainHeightAt(
+                          lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) + 0.055;
+                        lrvDustVX[dustI] = Math.cos(dustAngle) * dustSpread - forwardX * strength * 0.08;
+                        lrvDustVY[dustI] = (0.12 + strength * 0.32) *
+                          (0.82 + lrvDustRand() * 0.36);
+                        lrvDustVZ[dustI] = Math.sin(dustAngle) * dustSpread - forwardZ * strength * 0.08;
+                        lrvDustLife[dustI] = 0.28 + strength * 0.36 + lrvDustRand() * 0.12;
+                      }
+                    }
+
+                    function resetLrvImpactContact() {
+                      lrvImpactArmTime = 0;
+                      lrvImpactContactValid = false;
+                      lrvImpactVelocityFiltered = 0;
+                      lrvImpactSignal = 0;
+                    }
+
+                    function resetLrvImpactEffects() {
+                      resetLrvImpactContact();
+                      lrvImpactAudioEnvelope = 0;
+                      lrvImpactCameraEnvelope = 0;
+                      lrvImpactSpring = 0;
+                      lrvImpactSpringVelocity = 0;
+                      lrvCameraSteerLook = 0;
+                      roverVisualShell.position.y = 0;
+                      if (lrvImpactDatasetActive) {
+                        lrvImpactDatasetActive = false;
+                        canvasEl.dataset.lrvImpact = '0.000';
+                      }
+                    }
+
+                    function registerLrvImpact(strength) {
+                      var bounded = Math.max(0, Math.min(1, strength));
+                      if (bounded <= 0) return;
+                      lrvImpactSignal = bounded;
+                      lrvImpactCount++;
+                      lrvImpactCooldown = 0.28;
+                      lrvImpactSpringVelocity -= bounded * 0.16;
+                      lrvImpactAudioEnvelope = Math.max(lrvImpactAudioEnvelope, bounded);
+                      lrvImpactCameraEnvelope = Math.max(lrvImpactCameraEnvelope, bounded);
+                      emitLunarDustBurst(roverGrp.position.x, roverGrp.position.z,
+                        lrvForward.x, lrvForward.z, bounded, _evaLowPower ? 3 : 7);
+                      lrvImpactDatasetActive = true;
+                      canvasEl.dataset.lrvImpact = bounded.toFixed(3);
+                      canvasEl.dataset.lrvImpactCount = String(lrvImpactCount);
+                    }
 
                     // ── Scattered boulders ──
                     for (var bi = 0; bi < 30; bi++) {
@@ -3423,13 +3607,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       });
                     })();
 
+                    // One unshadowed terrain silhouette closes the plane edge without haze.
+                    var lunarHorizonSegments = _evaLowPower ? 32 : 48;
+                    var lunarHorizonGeo = new THREE.BufferGeometry();
+                    var lunarHorizonPos = new Float32Array((lunarHorizonSegments + 1) * 6);
+                    var lunarHorizonIdx = [];
+                    for (var lhi = 0; lhi <= lunarHorizonSegments; lhi++) {
+                      var lha = lhi / lunarHorizonSegments * Math.PI * 2;
+                      // Beyond the complete +/-92 m drive square, including its corners:
+                      // even the inner ridge stays at least ~70 m outside playable space.
+                      var lhr = 224 + Math.sin(lha * 5) * 4 + Math.sin(lha * 11 + 0.7) * 2;
+                      var lhh = 4.2 + Math.sin(lha * 3 + 0.4) * 2.1 + Math.sin(lha * 9) * 1.1;
+                      var lho = lhi * 6;
+                      lunarHorizonPos[lho] = Math.cos(lha) * lhr;
+                      lunarHorizonPos[lho + 1] = -18;
+                      lunarHorizonPos[lho + 2] = Math.sin(lha) * lhr;
+                      lunarHorizonPos[lho + 3] = Math.cos(lha) * (lhr - 10);
+                      lunarHorizonPos[lho + 4] = Math.max(0.8, lhh);
+                      lunarHorizonPos[lho + 5] = Math.sin(lha) * (lhr - 10);
+                      if (lhi < lunarHorizonSegments) {
+                        var lhb = lhi * 2;
+                        lunarHorizonIdx.push(lhb, lhb + 1, lhb + 2, lhb + 1, lhb + 3, lhb + 2);
+                      }
+                    }
+                    lunarHorizonGeo.setAttribute('position', new THREE.BufferAttribute(lunarHorizonPos, 3));
+                    lunarHorizonGeo.setIndex(lunarHorizonIdx);
+                    lunarHorizonGeo.computeVertexNormals();
+                    var lunarHorizonMat = new THREE.MeshStandardMaterial({
+                      color: 0x4b4845, roughness: 1, metalness: 0,
+                      flatShading: true, side: THREE.DoubleSide
+                    });
+                    var lunarHorizon = new THREE.Mesh(lunarHorizonGeo, lunarHorizonMat);
+                    lunarHorizon.castShadow = false; lunarHorizon.receiveShadow = false;
+                    scene.add(lunarHorizon);
+                    canvasEl.dataset.lunarSurfaceProfile = _evaLowPower
+                      ? 'microdetail-low+horizon-32' : 'microdetail-high+horizon-48';
+
                     // All static scenery built → mark it as shadow CASTERS in one pass (the
                     // terrain receives). Sample orbs / bootprints are added after this on
                     // purpose: glowing beacons and decals shouldn't cast, and skipping them
                     // keeps the shadow pass cheap. No-op when shadows are off (low-power).
                     if (!_evaLowPower) {
                       scene.traverse(function (n3) {
-                        if (!n3.isMesh || n3 === terrain) return;
+                        if (!n3.isMesh || n3 === terrain || n3 === lunarHorizon) return;
                         var m3 = n3.material;
                         if (m3 && (m3.isSpriteMaterial || m3.side === THREE.BackSide)) return;   // sky shell must NEVER cast — it surrounds the shadow frustum
                         n3.castShadow = true;
@@ -3532,8 +3752,493 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       lunarSampleOrbs.push(orbGroup);
                     });
 
+                    // ── Optional Lunar Geology Traverse ──
+                    // A compact authored route layered over free-roam EVA. It owns one
+                    // specimen and one low-cost surface marker, but deliberately does not
+                    // join landmark discovery or install another F handler.
+                    var gtReducedMotion = !!(window.matchMedia &&
+                      window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                    var gtStatus = 'idle', gtStep = 0, gtActive = false;
+                    var gtHomeX = 0, gtHomeZ = 0, gtHomeHeading = 0;
+                    var gtSiteX = 0, gtSiteZ = 0, gtElapsed = 0, gtStartDistance = 0;
+                    var gtPeakSlip = 0, gtPeakGrade = 0, gtParkDwell = 0;
+                    var gtSampleCollected = false, gtSampleEverBanked = false;
+                    var gtSampleResult = 'Not collected', gtCompleteLatched = false;
+                    var gtTransitionedThisFrame = false, gtLastTargetDistance = -1;
+                    var GT_SITE_RADIUS = 2.6, GT_HOME_RADIUS = 3.2;
+                    var gtCandidateOffsets = [[22, 8], [24, -8], [28, 0], [18, 12]];
+                    var gtForward = new THREE.Vector3(), gtRight = new THREE.Vector3();
+                    var gtSurfaceForward = new THREE.Vector3(), gtSurfaceRight = new THREE.Vector3();
+                    var gtSurfaceNormal = new THREE.Vector3(), gtSurfaceBasis = new THREE.Matrix4();
+                    var gtSurfaceQuaternion = new THREE.Quaternion();
+
+                    var gtBeaconGroup = new THREE.Group();
+                    var gtBeaconGeo = new THREE.RingGeometry(1.05, 1.28, 28);
+                    var gtBeaconMat = new THREE.MeshBasicMaterial({
+                      color: 0x67e8f9, transparent: true, opacity: 0.62,
+                      depthWrite: false, side: THREE.DoubleSide,
+                      polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2
+                    });
+                    var gtBeaconRing = new THREE.Mesh(gtBeaconGeo, gtBeaconMat);
+                    var gtBeaconPinGeo = new THREE.CylinderGeometry(0.035, 0.08, 0.75, 8);
+                    var gtBeaconPinMat = new THREE.MeshBasicMaterial({ color: 0xfde68a });
+                    var gtBeaconPin = new THREE.Mesh(gtBeaconPinGeo, gtBeaconPinMat);
+                    gtBeaconPin.rotation.x = Math.PI / 2;
+                    gtBeaconPin.position.z = 0.39;
+                    gtBeaconGroup.add(gtBeaconRing);
+                    gtBeaconGroup.add(gtBeaconPin);
+                    gtBeaconGroup.visible = false;
+                    gtBeaconGroup.traverse(function(gtNode) {
+                      if (gtNode.isMesh) { gtNode.castShadow = false; gtNode.receiveShadow = false; }
+                    });
+                    scene.add(gtBeaconGroup);
+
+                    var gtSpecimenData = {
+                      name: 'Traverse Breccia', type: 'Field Geology Sample', icon: '\uD83D\uDFE4', xp: 18,
+                      fact: 'Angular fragments fused by an ancient impact record how the lunar surface was repeatedly broken and welded together.'
+                    };
+                    var gtSpecimen = new THREE.Group();
+                    var gtSpecimenGeo = new THREE.DodecahedronGeometry(0.34, 0);
+                    var gtSpecimenMat = new THREE.MeshStandardMaterial({
+                      color: 0x9b8a78, emissive: 0x22d3ee, emissiveIntensity: 0.65,
+                      transparent: true, opacity: 0.92, roughness: 0.88
+                    });
+                    gtSpecimen.add(new THREE.Mesh(gtSpecimenGeo, gtSpecimenMat));
+                    var gtSpecimenRingGeo = new THREE.RingGeometry(0.48, 0.6, 16);
+                    var gtSpecimenRingMat = new THREE.MeshBasicMaterial({
+                      color: 0x67e8f9, transparent: true, opacity: 0.38,
+                      depthWrite: false, side: THREE.DoubleSide
+                    });
+                    var gtSpecimenRing = new THREE.Mesh(gtSpecimenRingGeo, gtSpecimenRingMat);
+                    gtSpecimenRing.rotation.x = -Math.PI / 2;
+                    gtSpecimenRing.position.y = -0.22;
+                    gtSpecimen.add(gtSpecimenRing);
+                    gtSpecimen._sampleData = gtSpecimenData;
+                    gtSpecimen._collected = false;
+                    gtSpecimen._pulsePhase = 0;
+                    gtSpecimen._isTraverseSample = true;
+                    gtSpecimen.visible = false;
+                    scene.add(gtSpecimen);
+                    lunarSampleOrbs.push(gtSpecimen);
+
+                    // Soft contact cues improve surface attachment without enlarging the
+                    // shadow map. CircleGeometry already has local +Z as its normal.
+                    var gtContactGeo = new THREE.CircleGeometry(1, 24);
+                    var gtContactMat = new THREE.MeshBasicMaterial({
+                      color: 0x171513, transparent: true, opacity: 0.2,
+                      depthWrite: false, side: THREE.DoubleSide,
+                      polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2
+                    });
+                    var gtRoverContact = new THREE.Mesh(gtContactGeo, gtContactMat);
+                    var gtSuitContact = new THREE.Mesh(gtContactGeo, gtContactMat);
+                    gtRoverContact.scale.set(1.05, 0.58, 1);
+                    gtSuitContact.scale.set(0.3, 0.22, 1);
+                    gtRoverContact.renderOrder = gtSuitContact.renderOrder = 1;
+                    scene.add(gtRoverContact);
+                    scene.add(gtSuitContact);
+                    // Four exact-terrain tire contact cues replace the broad rover blob.
+                    // A single instance ring is one draw call and never grows with travel.
+                    gtRoverContact.visible = false;
+                    var lrvWheelContactGeo = new THREE.PlaneGeometry(0.17, 0.34);
+                    var lrvWheelContactMat = new THREE.MeshBasicMaterial({
+                      color: 0x151311, transparent: true,
+                      opacity: _evaLowPower ? 0.13 : 0.21,
+                      depthWrite: false, side: THREE.DoubleSide,
+                      polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2
+                    });
+                    var lrvWheelContacts = new THREE.InstancedMesh(
+                      lrvWheelContactGeo, lrvWheelContactMat, 4);
+                    if (lrvWheelContacts.instanceMatrix.setUsage && THREE.DynamicDrawUsage) {
+                      lrvWheelContacts.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+                    }
+                    lrvWheelContacts.frustumCulled = false;
+                    lrvWheelContacts.castShadow = false;
+                    lrvWheelContacts.receiveShadow = false;
+                    lrvWheelContacts.renderOrder = 1;
+                    scene.add(lrvWheelContacts);
+                    var lrvContactDummy = new THREE.Object3D();
+                    var lrvContactForward = new THREE.Vector3();
+                    var lrvContactRight = new THREE.Vector3();
+                    var lrvContactNormal = new THREE.Vector3();
+                    var lrvContactBasis = new THREE.Matrix4();
+                    var lrvContactQuaternion = new THREE.Quaternion();
+
+                    function poseLrvWheelContact(index, mount, engaged, pulse) {
+                      var wheelCos = Math.cos(roverHeading), wheelSin = Math.sin(roverHeading);
+                      var wheelX = roverGrp.position.x + mount._lrvX * wheelCos + mount._lrvZ * wheelSin;
+                      var wheelZ = roverGrp.position.z - mount._lrvX * wheelSin + mount._lrvZ * wheelCos;
+                      var wheelYaw = roverHeading + mount._lrvVisualSteer;
+                      var wheelFX = -Math.sin(wheelYaw), wheelFZ = -Math.cos(wheelYaw);
+                      var wheelRX = Math.cos(wheelYaw), wheelRZ = -Math.sin(wheelYaw);
+                      var wheelH = _terrainHeightAt(wheelX, wheelZ);
+                      if (!engaged || !isFinite(wheelH)) {
+                        lrvContactDummy.position.set(wheelX, wheelH || -100, wheelZ);
+                        lrvContactDummy.quaternion.identity();
+                        lrvContactDummy.scale.set(0, 0, 0);
+                      } else {
+                        var wheelProbe = 0.11;
+                        var wheelHF = _terrainHeightAt(wheelX + wheelFX * wheelProbe, wheelZ + wheelFZ * wheelProbe);
+                        var wheelHR = _terrainHeightAt(wheelX + wheelRX * wheelProbe, wheelZ + wheelRZ * wheelProbe);
+                        lrvContactForward.set(wheelFX * wheelProbe, wheelHF - wheelH,
+                          wheelFZ * wheelProbe).normalize();
+                        lrvContactRight.set(wheelRX * wheelProbe, wheelHR - wheelH,
+                          wheelRZ * wheelProbe).normalize();
+                        lrvContactNormal.crossVectors(lrvContactRight, lrvContactForward).normalize();
+                        lrvContactRight.crossVectors(lrvContactForward, lrvContactNormal).normalize();
+                        lrvContactBasis.makeBasis(
+                          lrvContactRight, lrvContactForward, lrvContactNormal);
+                        lrvContactQuaternion.setFromRotationMatrix(lrvContactBasis).normalize();
+                        lrvContactDummy.position.set(wheelX, wheelH + 0.012, wheelZ);
+                        lrvContactDummy.quaternion.copy(lrvContactQuaternion);
+                        lrvContactDummy.scale.set(1 + pulse, 1 + pulse * 0.45, 1);
+                      }
+                      lrvContactDummy.updateMatrix();
+                      lrvWheelContacts.setMatrixAt(index, lrvContactDummy.matrix);
+                    }
+
+                    function refreshLrvWheelContacts(pulse) {
+                      var refreshCos = Math.cos(roverHeading), refreshSin = Math.sin(roverHeading);
+                      lrvGroundedWheelCount = 0;
+                      for (var rci = 0; rci < roverWheelMounts.length; rci++) {
+                        var refreshMount = roverWheelMounts[rci];
+                        var refreshX = roverGrp.position.x +
+                          refreshMount._lrvX * refreshCos + refreshMount._lrvZ * refreshSin;
+                        var refreshZ = roverGrp.position.z -
+                          refreshMount._lrvX * refreshSin + refreshMount._lrvZ * refreshCos;
+                        var refreshRaw = _terrainHeightAt(refreshX, refreshZ) -
+                          roverGrp.position.y + 0.21;
+                        var refreshEngaged = refreshRaw >= 0.095;
+                        if (refreshEngaged) lrvGroundedWheelCount++;
+                        poseLrvWheelContact(rci, refreshMount, refreshEngaged, pulse);
+                      }
+                      lrvWheelContacts.instanceMatrix.needsUpdate = true;
+                    }
+
+                    applyLrvVisualSteering(0);
+                    refreshLrvWheelContacts(0);
+
+                    function poseGtSurfaceObject(obj, x, z, lift, probe) {
+                      var p = probe || 0.55;
+                      var hC = _terrainHeightAt(x, z);
+                      var hF = _terrainHeightAt(x + gtForward.x * p, z + gtForward.z * p);
+                      var hB = _terrainHeightAt(x - gtForward.x * p, z - gtForward.z * p);
+                      var hR = _terrainHeightAt(x + gtRight.x * p, z + gtRight.z * p);
+                      var hL = _terrainHeightAt(x - gtRight.x * p, z - gtRight.z * p);
+                      gtSurfaceForward.set(gtForward.x * p * 2, hF - hB, gtForward.z * p * 2).normalize();
+                      gtSurfaceRight.set(gtRight.x * p * 2, hR - hL, gtRight.z * p * 2).normalize();
+                      gtSurfaceNormal.crossVectors(gtSurfaceRight, gtSurfaceForward).normalize();
+                      gtSurfaceRight.crossVectors(gtSurfaceForward, gtSurfaceNormal).normalize();
+                      gtSurfaceBasis.makeBasis(gtSurfaceRight, gtSurfaceForward, gtSurfaceNormal);
+                      gtSurfaceQuaternion.setFromRotationMatrix(gtSurfaceBasis).normalize();
+                      obj.position.set(x, hC + lift, z);
+                      obj.quaternion.copy(gtSurfaceQuaternion);
+                    }
+
+                    function gtConflictsWithScene(x, z) {
+                      var fixed = [[0, 0, 7], [4, 2, 4], [alsepX, alsepZ, 6]];
+                      for (var fi = 0; fi < fixed.length; fi++) {
+                        if (Math.hypot(x - fixed[fi][0], z - fixed[fi][1]) < fixed[fi][2]) return true;
+                      }
+                      for (var oi = 0; oi < lunarSampleOrbs.length; oi++) {
+                        var ordinaryOrb = lunarSampleOrbs[oi];
+                        if (!ordinaryOrb._isTraverseSample &&
+                            Math.hypot(x - ordinaryOrb.position.x, z - ordinaryOrb.position.z) < 4.5) return true;
+                      }
+                      return false;
+                    }
+
+                    function chooseGtSite() {
+                      gtForward.set(-Math.sin(gtHomeHeading), 0, -Math.cos(gtHomeHeading));
+                      gtRight.set(Math.cos(gtHomeHeading), 0, -Math.sin(gtHomeHeading));
+                      for (var ci = 0; ci < gtCandidateOffsets.length; ci++) {
+                        var candidate = gtCandidateOffsets[ci];
+                        var x = gtHomeX + gtForward.x * candidate[0] + gtRight.x * candidate[1];
+                        var z = gtHomeZ + gtForward.z * candidate[0] + gtRight.z * candidate[1];
+                        if (!isFinite(x) || !isFinite(z) || Math.abs(x) > 86 || Math.abs(z) > 86) continue;
+                        var p = 0.8;
+                        var hc = _terrainHeightAt(x, z);
+                        var hf = _terrainHeightAt(x + gtForward.x * p, z + gtForward.z * p);
+                        var hb = _terrainHeightAt(x - gtForward.x * p, z - gtForward.z * p);
+                        var hr = _terrainHeightAt(x + gtRight.x * p, z + gtRight.z * p);
+                        var hl = _terrainHeightAt(x - gtRight.x * p, z - gtRight.z * p);
+                        if (![hc, hf, hb, hr, hl].every(isFinite)) continue;
+                        if (Math.abs((hf - hb) / (p * 2)) > 0.34 ||
+                            Math.abs((hr - hl) / (p * 2)) > 0.34 ||
+                            gtConflictsWithScene(x, z)) continue;
+                        gtSiteX = x; gtSiteZ = z;
+                        poseGtSurfaceObject(gtBeaconGroup, x, z, 0.025, p);
+                        gtSpecimen.position.set(x, hc + 0.35, z);
+                        return true;
+                      }
+                      return false;
+                    }
+
+                    canvasEl.dataset.geologyTraverseStatus = 'idle';
+                    canvasEl.dataset.geologyTraverseStep = '0';
+                    canvasEl.dataset.geologyTraverseTargetDistance = '-1.0';
+                    canvasEl.dataset.geologyTraverseDistance = '0.0';
+                    var gtPanel = document.createElement('section');
+                    gtPanel.id = 'eva-geology-traverse';
+                    gtPanel.setAttribute('aria-label', 'Optional Lunar Geology Traverse');
+                    gtPanel.style.cssText = 'position:absolute;top:8px;right:8px;z-index:13;width:min(250px,42%);background:rgba(8,15,28,.9);border:1px solid rgba(103,232,249,.4);border-radius:10px;padding:9px;color:#e2e8f0;font:10px/1.35 system-ui;box-shadow:0 5px 18px rgba(0,0,0,.35)';
+                    gtPanel.innerHTML =
+                      '<div style="font-weight:800;color:#67e8f9;font-size:11px">Lunar Geology Traverse</div>' +
+                      '<div id="eva-gt-summary" style="color:#cbd5e1;margin:3px 0 5px">Optional authored route; free roam remains available.</div>' +
+                      '<ol id="eva-gt-steps" style="margin:0 0 6px 18px;padding:0;color:#94a3b8">' +
+                      '<li>Board the LRV</li><li>Drive to the geology beacon</li>' +
+                      '<li>Park, exit, and collect with F</li><li>Board and return to start</li>' +
+                      '<li>Park and exit for debrief</li></ol>' +
+                      '<button id="eva-gt-action" type="button" style="pointer-events:auto;width:100%;padding:6px;border-radius:7px;border:1px solid rgba(103,232,249,.55);background:#164e63;color:#ecfeff;font-weight:800;cursor:pointer">Start optional traverse</button>';
+                    canvasEl.parentElement.appendChild(gtPanel);
+                    var gtSummaryEl = gtPanel.querySelector('#eva-gt-summary');
+                    var gtStepsEl = gtPanel.querySelector('#eva-gt-steps');
+                    var gtStepEls = gtStepsEl ? gtStepsEl.children : [];
+                    var gtActionEl = gtPanel.querySelector('#eva-gt-action');
+                    var gtStepNames = [
+                      'Board the LRV', 'Drive to the geology beacon',
+                      'Park, exit, and collect with F', 'Board and return to start',
+                      'Park and exit for debrief'
+                    ];
+
+                    function setGtDataset(key, value) {
+                      if (canvasEl.dataset[key] !== value) canvasEl.dataset[key] = value;
+                    }
+                    function renderGtPanel() {
+                      var labels = [
+                        'Optional authored route; free roam remains available.',
+                        'Board the LRV to begin the traverse.',
+                        'Drive to the cyan geology beacon and park.',
+                        'Exit on foot and press F beside the traverse specimen.',
+                        'Board the LRV and return to the start beacon.',
+                        'Park, then exit the LRV to finish.'
+                      ];
+                      if (gtSummaryEl) {
+                        var summary = gtStatus === 'complete'
+                          ? 'Debrief: ' + gtElapsed.toFixed(1) + ' s · ' +
+                            Math.max(0, roverDistance - gtStartDistance).toFixed(1) + ' m · peak slip ' +
+                            Math.round(gtPeakSlip * 100) + '% · peak grade ' +
+                            (gtPeakGrade * 100).toFixed(1) + '% · ' + gtSampleResult
+                          : (gtStatus === 'unavailable' ? 'No safe geology site is available from this parking position.' : labels[gtStep]);
+                        if (gtSummaryEl.textContent !== summary) gtSummaryEl.textContent = summary;
+                      }
+                      for (var si = 0; si < gtStepEls.length; si++) {
+                        var done = gtStatus === 'complete' || (gtStep > si + 1);
+                        var current = gtStatus === 'active' && gtStep === si + 1;
+                        var stepText = (done ? '✓ ' : (current ? '→ ' : '○ ')) + gtStepNames[si];
+                        if (gtStepEls[si].textContent !== stepText) gtStepEls[si].textContent = stepText;
+                        gtStepEls[si].style.color = done ? '#86efac' : (current ? '#fde68a' : '#94a3b8');
+                        gtStepEls[si].style.fontWeight = current ? '800' : '400';
+                      }
+                      if (gtActionEl) gtActionEl.textContent = gtStatus === 'complete'
+                        ? 'Replay traverse' : (gtStatus === 'active' ? 'Restart traverse' : 'Start optional traverse');
+                    }
+                    function startGtMission() {
+                      gtHomeX = roverGrp.position.x;
+                      gtHomeZ = roverGrp.position.z;
+                      gtHomeHeading = roverHeading;
+                      gtElapsed = 0; gtStartDistance = roverDistance;
+                      gtPeakSlip = 0; gtPeakGrade = 0; gtParkDwell = 0;
+                      gtSampleCollected = false; gtSampleResult = 'Not collected';
+                      gtCompleteLatched = false; gtTransitionedThisFrame = false;
+                      gtSpecimen._collected = false;
+                      gtSpecimen.visible = false;
+                      if (!chooseGtSite()) {
+                        gtStatus = 'unavailable'; gtStep = 0; gtActive = false;
+                        gtSpecimen.visible = false; gtBeaconGroup.visible = false;
+                        setGtDataset('geologyTraverseStatus', 'unavailable');
+                        renderGtPanel();
+                        return;
+                      }
+                      gtStatus = 'active'; gtStep = 1; gtActive = true;
+                      gtSpecimen.visible = false; gtBeaconGroup.visible = true;
+                      gtBeaconRing.scale.set(1, 1, 1);
+                      setGtDataset('geologyTraverseStatus', 'active');
+                      setGtDataset('geologyTraverseStep', '1');
+                      setGtDataset('geologyTraverseDistance', '0.0');
+                      renderGtPanel();
+                      if (typeof announceToSR === 'function') {
+                        announceToSR('Optional Lunar Geology Traverse started. First, board the Lunar Roving Vehicle.');
+                      }
+                    }
+                    function onGtAction() {
+                      startGtMission();
+                      try { canvasEl.focus(); } catch (_gtFocusErr) {}
+                    }
+                    gtActionEl.addEventListener('click', onGtAction);
+                    renderGtPanel();
+
+                    function advanceGtStep(nextStep, announcement) {
+                      if (!gtActive || gtTransitionedThisFrame || nextStep <= gtStep) return false;
+                      gtTransitionedThisFrame = true;
+                      gtStep = nextStep;
+                      gtParkDwell = 0;
+                      setGtDataset('geologyTraverseStep', String(gtStep));
+                      gtSpecimen.visible = gtStep === 3 && !gtSpecimen._collected;
+                      if (gtStep >= 4) {
+                        gtForward.set(-Math.sin(gtHomeHeading), 0, -Math.cos(gtHomeHeading));
+                        gtRight.set(Math.cos(gtHomeHeading), 0, -Math.sin(gtHomeHeading));
+                        poseGtSurfaceObject(gtBeaconGroup, gtHomeX, gtHomeZ, 0.025, 0.8);
+                      }
+                      renderGtPanel();
+                      if (announcement && typeof announceToSR === 'function') announceToSR(announcement);
+                      return true;
+                    }
+
+                    function completeGtMission() {
+                      if (!gtActive || gtCompleteLatched || gtTransitionedThisFrame) return;
+                      gtTransitionedThisFrame = true;
+                      gtCompleteLatched = true;
+                      gtActive = false;
+                      gtStatus = 'complete';
+                      gtStep = 5;
+                      gtBeaconGroup.visible = false;
+                      gtSpecimen.visible = false;
+                      setGtDataset('geologyTraverseStatus', 'complete');
+                      setGtDataset('geologyTraverseStep', '5');
+                      setGtDataset('geologyTraverseTargetDistance', '0.0');
+                      setGtDataset('geologyTraverseDistance',
+                        Math.max(0, roverDistance - gtStartDistance).toFixed(1));
+                      renderGtPanel();
+                      if (addToast) addToast('Lunar Geology Traverse complete — debrief ready.', 'success');
+                      if (typeof announceToSR === 'function') {
+                        announceToSR('Lunar Geology Traverse complete. The debrief is available in the traverse panel.');
+                      }
+                    }
+
+                    function updateGtMission(evaDt) {
+                      if (!gtActive || _evaVRPaused) return;
+                      gtTransitionedThisFrame = false;
+                      gtElapsed += evaDt;
+                      gtPeakSlip = Math.max(gtPeakSlip, lrvSlipSignal);
+                      gtPeakGrade = Math.max(gtPeakGrade, Math.abs(lrvGradeRatio));
+                      var targetX = gtStep <= 3 ? gtSiteX : gtHomeX;
+                      var targetZ = gtStep <= 3 ? gtSiteZ : gtHomeZ;
+                      var targetDistance = Math.hypot(roverGrp.position.x - targetX, roverGrp.position.z - targetZ);
+                      gtLastTargetDistance = targetDistance;
+                      if (evaTick % 10 === 0) {
+                        setGtDataset('geologyTraverseTargetDistance', targetDistance.toFixed(1));
+                        setGtDataset('geologyTraverseDistance',
+                          Math.max(0, roverDistance - gtStartDistance).toFixed(1));
+                      }
+                      if (!gtReducedMotion) {
+                        var gtPulse = 1 + Math.sin(gtElapsed * 2.4) * 0.055;
+                        gtBeaconRing.scale.set(gtPulse, gtPulse, 1);
+                      }
+                      if (gtStep === 1) {
+                        if (roverBoarded) {
+                          advanceGtStep(2, 'Drive to the cyan geology beacon and park the rover.');
+                        }
+                        return;
+                      }
+                      if (gtStep === 2) {
+                        if (roverBoarded && targetDistance <= GT_SITE_RADIUS && Math.abs(roverSpeed) <= 0.12) {
+                          gtParkDwell += evaDt;
+                          if (gtParkDwell >= 0.65) {
+                            advanceGtStep(3, 'Geology site reached. Exit the rover and press F beside the traverse specimen.');
+                          }
+                        } else {
+                          gtParkDwell = 0;
+                        }
+                        return;
+                      }
+                      if (gtStep === 3) {
+                        gtParkDwell = 0;
+                        if (gtSampleCollected) {
+                          advanceGtStep(4, 'Traverse sample collected. Board the rover and return to the start beacon.');
+                        }
+                        return;
+                      }
+                      if (gtStep === 4) {
+                        if (roverBoarded && targetDistance <= GT_HOME_RADIUS && Math.abs(roverSpeed) <= 0.12) {
+                          gtParkDwell += evaDt;
+                          if (gtParkDwell >= 0.65) {
+                            advanceGtStep(5, 'Return parking complete. Exit the rover for the traverse debrief.');
+                          }
+                        } else {
+                          gtParkDwell = 0;
+                        }
+                        return;
+                      }
+                      if (gtStep === 5 && !roverBoarded &&
+                          targetDistance <= GT_HOME_RADIUS && Math.abs(roverSpeed) <= 0.12) {
+                        completeGtMission();
+                      }
+                    }
+
                     // ── Bootprint decals (leave prints as you walk) ──
-                    var bootprints = [];
+                    // Fixed one-draw instance ring: long EVAs never add scene nodes or
+                    // allocate geometry/materials in the animation loop.
+                    var EVA_BOOTPRINT_CAP = _evaLowPower ? 64 : 160;
+                    var evaBootprintGeo = new THREE.PlaneGeometry(0.15, 0.25);
+                    var evaBootprintMat = new THREE.MeshBasicMaterial({
+                      color: 0x4b4946, transparent: true,
+                      opacity: _evaLowPower ? 0.22 : 0.3,
+                      depthWrite: false, side: THREE.DoubleSide,
+                      polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2
+                    });
+                    var evaBootprints = new THREE.InstancedMesh(
+                      evaBootprintGeo, evaBootprintMat, EVA_BOOTPRINT_CAP);
+                    if (evaBootprints.instanceMatrix.setUsage && THREE.DynamicDrawUsage) {
+                      evaBootprints.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+                    }
+                    evaBootprints.frustumCulled = false;
+                    evaBootprints.castShadow = false;
+                    evaBootprints.receiveShadow = false;
+                    evaBootprints.renderOrder = 1;
+                    scene.add(evaBootprints);
+                    var evaBootprintDummy = new THREE.Object3D();
+                    var evaBootprintForward = new THREE.Vector3();
+                    var evaBootprintRight = new THREE.Vector3();
+                    var evaBootprintNormal = new THREE.Vector3();
+                    var evaBootprintBasis = new THREE.Matrix4();
+                    var evaBootprintQuaternion = new THREE.Quaternion();
+                    var evaBootprintCursor = 0, evaBootprintCount = 0, evaBootprintSide = -1;
+                    var evaBootprintDistanceAccumulator = 0, evaStepDistanceAccumulator = 0;
+                    var EVA_BOOTPRINT_SPACING = _evaLowPower ? 1.5 : 1.05;
+                    var EVA_STEP_STRIDE = 1.2;
+                    evaBootprintDummy.position.set(0, -100, 0);
+                    evaBootprintDummy.scale.set(0, 0, 0);
+                    evaBootprintDummy.updateMatrix();
+                    for (var ebi = 0; ebi < EVA_BOOTPRINT_CAP; ebi++) {
+                      evaBootprints.setMatrixAt(ebi, evaBootprintDummy.matrix);
+                    }
+                    evaBootprints.instanceMatrix.needsUpdate = true;
+                    canvasEl.dataset.evaBootprintCount = '0';
+                    canvasEl.dataset.evaBootprintCap = String(EVA_BOOTPRINT_CAP);
+
+                    function emitEvaBootprint(x, z, heading) {
+                      evaBootprintSide *= -1;
+                      var printFX = -Math.sin(heading), printFZ = -Math.cos(heading);
+                      var printRX = Math.cos(heading), printRZ = -Math.sin(heading);
+                      var printX = x + printRX * evaBootprintSide * 0.115;
+                      var printZ = z + printRZ * evaBootprintSide * 0.115;
+                      var printH = _terrainHeightAt(printX, printZ);
+                      var printProbe = 0.11;
+                      var printHF = _terrainHeightAt(
+                        printX + printFX * printProbe, printZ + printFZ * printProbe);
+                      var printHR = _terrainHeightAt(
+                        printX + printRX * printProbe, printZ + printRZ * printProbe);
+                      evaBootprintForward.set(printFX * printProbe, printHF - printH,
+                        printFZ * printProbe).normalize();
+                      evaBootprintRight.set(printRX * printProbe, printHR - printH,
+                        printRZ * printProbe).normalize();
+                      evaBootprintNormal.crossVectors(
+                        evaBootprintRight, evaBootprintForward).normalize();
+                      evaBootprintRight.crossVectors(
+                        evaBootprintForward, evaBootprintNormal).normalize();
+                      evaBootprintBasis.makeBasis(
+                        evaBootprintRight, evaBootprintForward, evaBootprintNormal);
+                      evaBootprintQuaternion.setFromRotationMatrix(
+                        evaBootprintBasis).normalize();
+                      evaBootprintDummy.position.set(printX, printH + 0.011, printZ);
+                      evaBootprintDummy.quaternion.copy(evaBootprintQuaternion);
+                      evaBootprintDummy.scale.set(1, 1, 1);
+                      evaBootprintDummy.updateMatrix();
+                      evaBootprints.setMatrixAt(evaBootprintCursor, evaBootprintDummy.matrix);
+                      evaBootprintCursor = (evaBootprintCursor + 1) % EVA_BOOTPRINT_CAP;
+                      evaBootprintCount = Math.min(EVA_BOOTPRINT_CAP, evaBootprintCount + 1);
+                      evaBootprints.instanceMatrix.needsUpdate = true;
+                    }
 
                     // ── Movement (1/6 gravity bouncing) ──
                     // turnLeft/turnRight exist because yaw was mouse-ONLY: arrow keys and A/D
@@ -3685,6 +4390,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         return;
                       }
                       roverBoarded = !roverBoarded;
+                      resetLrvImpactEffects();
+                      lrvImpactCooldown = 0.28;
+                      applyLrvVisualSteering(0);
+                      refreshLrvWheelContacts(0);
                       clickTarget = null;
                       isJumping = false;
                       playerVelY = 0;
@@ -3801,14 +4510,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       var speed01 = Math.min(1, Math.abs(roverSpeed) / 6.2);
                       var throttle01 = Math.min(1, Math.abs(lrvThrottleSignal));
                       var slip01 = Math.min(1, Math.max(0, lrvSlipSignal));
-                      var level = audible ? Math.min(1, 0.1 + speed01 * 0.55 + throttle01 * 0.18 + slip01 * 0.35) : 0;
+                      var impact01 = Math.min(1, Math.max(0, lrvImpactAudioEnvelope));
+                      var level = audible ? Math.min(1, 0.1 + speed01 * 0.55 +
+                        throttle01 * 0.18 + slip01 * 0.35 + impact01 * 0.16) : 0;
                       var levelText = level.toFixed(3);
                       if (canvasEl.dataset.lrvAudioLevel !== levelText) canvasEl.dataset.lrvAudioLevel = levelText;
                       setLrvAudioParam(lrvAudioMotor.frequency, 48 + speed01 * 132 + throttle01 * 22, 0.05);
-                      setLrvAudioParam(lrvAudioMotorFilter.frequency, 260 + speed01 * 920, 0.08);
+                      setLrvAudioParam(lrvAudioMotorFilter.frequency, 260 + speed01 * 920 + impact01 * 180, 0.08);
                       setLrvAudioParam(lrvAudioMotorGain.gain, 0.07 + speed01 * 0.2 + throttle01 * 0.07, 0.06);
                       setLrvAudioParam(lrvAudioTractionFilter.frequency, 420 + speed01 * 1550 + slip01 * 500, 0.07);
-                      setLrvAudioParam(lrvAudioTractionGain.gain, 0.01 + speed01 * 0.025 + slip01 * 0.22, 0.05);
+                      setLrvAudioParam(lrvAudioTractionGain.gain, 0.01 + speed01 * 0.025 +
+                        slip01 * 0.22 + impact01 * 0.08, 0.05);
                       setLrvAudioParam(lrvAudioMaster.gain, audible ? 0.045 : 0, audible ? 0.08 : 0.035);
                       lrvAudioOutputAudible = true;
                     }
@@ -3870,7 +4582,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       toggleLrvAudio();
                       try { canvasEl.focus(); } catch (_lrvSoundFocusErr) {}
                     }
-                    function onLrvVisibilityChange() { updateLrvAudio(document.hidden); }
+                    function onLrvVisibilityChange() {
+                      resetLrvImpactEffects();
+                      updateLrvAudio(document.hidden);
+                    }
                     lrvSoundEl.addEventListener('click', onLrvSoundAction);
                     document.addEventListener('visibilitychange', onLrvVisibilityChange);
                     updateLrvSoundControl();
@@ -4002,6 +4717,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       '<span style="color:#64748b">\uD83C\uDFAF</span><span id="eva-target">\u2014</span>' +
                       '<span style="color:#64748b">MODE</span><span id="eva-mode">On foot</span>' +
                       '<span style="color:#64748b">LRV</span><span id="eva-lrv-speed">Parked</span>' +
+                      '<span style="color:#64748b">GRADE</span><span id="eva-lrv-terrain">--</span>' +
+                      '<span style="color:#64748b">GRIP</span><span id="eva-lrv-grip">--</span>' +
                       '</div>' +
                       '<div style="border-top:1px solid rgba(56,189,248,0.12);margin-top:5px;padding-top:5px">' +
                       '<div style="color:#fbbf24;font-size:9px;font-weight:bold;margin-bottom:2px">CUFF CHECKLIST</div>' +
@@ -4021,6 +4738,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var evaRaf = 0;
                     var lrvForward = new THREE.Vector3();
                     var lrvRight = new THREE.Vector3();
+                    var evaUpAxis = new THREE.Vector3(0, 1, 0);
+                    var evaMoveDir = new THREE.Vector3();
+                    var LRV_SCENE_EARTH_G = 4.4;
+                    var LRV_LUNAR_G = LRV_SCENE_EARTH_G * 0.165;
+                    canvasEl.dataset.lrvGrade = '0.0';
+                    canvasEl.dataset.lrvCrossSlope = '0.0';
+                    canvasEl.dataset.lrvSlip = '0.000';
+                    canvasEl.dataset.lrvGripState = 'Grip';
                     var lrvCameraForward = new THREE.Vector3();
                     var lrvCamDesired = new THREE.Vector3();
                     var lrvCamTarget = new THREE.Vector3();
@@ -4060,30 +4785,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       }
 
                       // Movement
-                      var dir = new THREE.Vector3();
+                      var dir = evaMoveDir.set(0, 0, 0);
                       if (roverBoarded) {
-                        // Frame-rate-independent low-gravity traverse dynamics.
+                        // Frame-rate-independent terrain-aware traverse dynamics. Exact
+                        // cached mesh probes are sampled before integration so grade forces,
+                        // body pose, grip telemetry, dust and sonification describe one frame.
                         var lrvThrottle = (moveState.forward ? 1 : 0) - (moveState.back ? 1 : 0);
                         var lrvSteerInput = (moveState.left || moveState.turnLeft ? 1 : 0)
                           + (moveState.right || moveState.turnRight ? -1 : 0);
                         lrvSteerInput = Math.max(-1, Math.min(1, lrvSteerInput));
-                        if (lrvThrottle !== 0) {
-                          var lrvAccel = roverSpeed * lrvThrottle < -0.05 ? 4.4 : (lrvThrottle > 0 ? 2.15 : 1.45);
-                          roverSpeed += lrvThrottle * lrvAccel * evaDt;
-                        } else {
-                          roverSpeed *= Math.exp(-1.35 * evaDt);
-                          if (Math.abs(roverSpeed) < 0.025) roverSpeed = 0;
-                        }
-                        roverSpeed = Math.max(-2.2, Math.min(6.2, roverSpeed));
-                        var lrvSteerTarget = lrvSteerInput * (comfortMode ? 0.34 : 0.5);
-                        roverSteer += (lrvSteerTarget - roverSteer) * (1 - Math.exp(-7 * evaDt));
-                        lrvThrottleSignal = lrvThrottle;
-                        lrvSlipSignal = Math.min(1,
-                          Math.abs(roverSteer) * Math.min(1, Math.abs(roverSpeed) / 6.2) * 1.6 +
-                          Math.abs(lrvThrottle) * Math.max(0, 0.28 - Math.abs(roverSpeed) / 6.2)
-                        );
                         lrvForward.set(-Math.sin(roverHeading), 0, -Math.cos(roverHeading));
                         lrvRight.set(Math.cos(roverHeading), 0, -Math.sin(roverHeading));
+                        var lrvFrontH = _terrainHeightAt(roverGrp.position.x + lrvForward.x * 0.62, roverGrp.position.z + lrvForward.z * 0.62);
+                        var lrvRearH = _terrainHeightAt(roverGrp.position.x - lrvForward.x * 0.62, roverGrp.position.z - lrvForward.z * 0.62);
+                        var lrvRightH = _terrainHeightAt(roverGrp.position.x + lrvRight.x * 0.76, roverGrp.position.z + lrvRight.z * 0.76);
+                        var lrvLeftH = _terrainHeightAt(roverGrp.position.x - lrvRight.x * 0.76, roverGrp.position.z - lrvRight.z * 0.76);
+                        lrvGradeRatio = Math.max(-0.75, Math.min(0.75, (lrvFrontH - lrvRearH) / 1.24));
+                        lrvCrossSlopeRatio = Math.max(-0.75, Math.min(0.75, (lrvRightH - lrvLeftH) / 1.52));
+                        var lrvGradeComponent = lrvGradeRatio / Math.sqrt(1 + lrvGradeRatio * lrvGradeRatio);
+                        var lrvGradeAccel = Math.max(-0.52, Math.min(0.52, -LRV_LUNAR_G * lrvGradeComponent));
+                        var lrvSpeedBefore = roverSpeed;
+                        var lrvSpeedAbsBefore = Math.abs(lrvSpeedBefore);
+                        var lrvReversing = lrvThrottle !== 0 && Math.abs(roverSpeed) > 0.001 &&
+                          Math.sign(roverSpeed) !== Math.sign(lrvThrottle);
+                        var lrvDriveDemand = Math.abs(lrvThrottle) * (lrvReversing ? 4.4 : (lrvThrottle > 0 ? 2.15 : 1.45));
+                        var lrvSlopeLoad = Math.min(0.42, Math.abs(lrvGradeRatio) * 0.5 + Math.abs(lrvCrossSlopeRatio) * 0.22);
+                        var lrvTractionLimit = Math.max(1.05, 2.55 * (1 - lrvSlopeLoad));
+                        var lrvAppliedDrive = Math.min(lrvDriveDemand, lrvTractionLimit);
+                        var lrvUnmetDemand = lrvDriveDemand > 0 ? Math.max(0, (lrvDriveDemand - lrvAppliedDrive) / lrvDriveDemand) : 0;
+                        var lrvRollingRate = 0.18 + Math.abs(lrvGradeRatio) * 0.08 + Math.abs(lrvCrossSlopeRatio) * 0.06;
+                        var lrvNetAccel = lrvGradeAccel;
+                        if (lrvThrottle !== 0 && lrvReversing) {
+                          // Opposing throttle brakes toward zero; it cannot overshoot into
+                          // reverse within the same frame, even at the maximum clamped dt.
+                          var lrvBrakeStep = Math.min(lrvSpeedAbsBefore, lrvAppliedDrive * evaDt);
+                          roverSpeed -= Math.sign(roverSpeed) * lrvBrakeStep;
+                        } else if (lrvThrottle !== 0) {
+                          roverSpeed += lrvThrottle * lrvAppliedDrive * evaDt;
+                        } else {
+                          if (Math.abs(roverSpeed) < 0.025) {
+                            // Static regolith friction either holds exactly or yields one
+                            // net downhill acceleration; no grade-after-drag dt creep.
+                            lrvNetAccel = Math.abs(lrvGradeAccel) <= lrvRollingRate
+                              ? 0
+                              : lrvGradeAccel - Math.sign(lrvGradeAccel) * lrvRollingRate;
+                          } else {
+                            var lrvResistanceDirection = Math.sign(roverSpeed);
+                            lrvNetAccel = lrvGradeAccel - lrvResistanceDirection * lrvRollingRate;
+                            if (roverSpeed * (roverSpeed + lrvNetAccel * evaDt) < 0 &&
+                                Math.abs(lrvGradeAccel) <= lrvRollingRate) {
+                              lrvNetAccel = -roverSpeed / evaDt;
+                            }
+                          }
+                        }
+                        roverSpeed += lrvNetAccel * evaDt;
+                        if (lrvReversing && roverSpeed * lrvSpeedBefore < 0) roverSpeed = 0;
+                        if (Math.abs(roverSpeed) < 0.025 && Math.abs(lrvGradeAccel) < 0.08 && lrvThrottle === 0) roverSpeed = 0;
+                        roverSpeed = Math.max(-2.2, Math.min(6.2, roverSpeed));
+                        var lrvSpeed01ForSlip = Math.min(1, Math.abs(roverSpeed) / 6.2);
+                        var lrvDemandSlip = lrvUnmetDemand * 0.62;
+                        var lrvMotionMismatch = Math.abs(lrvThrottle) *
+                          Math.max(0, 1 - Math.abs(roverSpeed) / 0.8) * 0.18;
+                        var lrvBrakeSlip = lrvReversing ? Math.min(1, 0.32 + lrvSpeedAbsBefore / 6.2 * 0.48) : 0;
+                        var lrvTerrainSlipActive = Math.min(1,
+                          Math.abs(lrvThrottle) + Math.abs(roverSpeed) / 0.35 +
+                          (Math.abs(lrvNetAccel) > 0.001 ? 1 : 0));
+                        var lrvGradeSlip = Math.min(1,
+                          (Math.abs(lrvGradeRatio) * 0.5 + Math.abs(lrvCrossSlopeRatio) * 0.28) * lrvTerrainSlipActive);
+                        var lrvSteerSlip = Math.abs(lrvSteerInput) * lrvSpeed01ForSlip * 0.72;
+                        var lrvSlipTarget = Math.min(1,
+                          lrvDemandSlip + lrvMotionMismatch + lrvBrakeSlip + lrvGradeSlip + lrvSteerSlip);
+                        lrvSlipSignal += (lrvSlipTarget - lrvSlipSignal) * (1 - Math.exp(-8 * evaDt));
+                        var lrvPivotBlend = Math.min(1, Math.abs(roverSpeed) / 0.75);
+                        var lrvSteerAuthority = 1 - lrvSlipSignal * 0.58 * lrvPivotBlend;
+                        var lrvSteerTarget = lrvSteerInput * (comfortMode ? 0.34 : 0.5) * lrvSteerAuthority;
+                        roverSteer += (lrvSteerTarget - roverSteer) * (1 - Math.exp(-7 * evaDt));
+                        lrvThrottleSignal = lrvThrottle;
+                        lrvGripState = lrvSlipSignal >= 0.64 ? 'Slip' : (lrvSlipSignal >= 0.28 ? 'Scrub' : 'Grip');
+                        var lrvFrameTravelDistance = 0;
                         if (Math.abs(roverSpeed) > 0.025) {
                           roverHeading += roverSteer * roverSpeed * 0.38 * evaDt;
                           lrvForward.set(-Math.sin(roverHeading), 0, -Math.cos(roverHeading));
@@ -4095,57 +4874,135 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           if (lrvNextX !== roverGrp.position.x + lrvStepX || lrvNextZ !== roverGrp.position.z + lrvStepZ) roverSpeed = 0;
                           var lrvTravelX = lrvNextX - roverGrp.position.x;
                           var lrvTravelZ = lrvNextZ - roverGrp.position.z;
-                          var lrvTravelDistance = Math.sqrt(lrvTravelX * lrvTravelX + lrvTravelZ * lrvTravelZ);
-                          roverDistance += lrvTravelDistance;
+                          lrvFrameTravelDistance = Math.sqrt(lrvTravelX * lrvTravelX + lrvTravelZ * lrvTravelZ);
+                          roverDistance += lrvFrameTravelDistance;
                           roverGrp.position.x = lrvNextX;
                           roverGrp.position.z = lrvNextZ;
-                          lrvTrackDistanceAccumulator += lrvTravelDistance;
+                          lrvTrackDistanceAccumulator += lrvFrameTravelDistance;
                           while (lrvTrackDistanceAccumulator >= LRV_TRACK_SPACING) {
                             lrvTrackDistanceAccumulator -= LRV_TRACK_SPACING;
                             emitLrvTrackPair();
                           }
                         }
-                        var lrvFrontH = _terrainHeightAt(roverGrp.position.x + lrvForward.x * 0.62, roverGrp.position.z + lrvForward.z * 0.62);
-                        var lrvRearH = _terrainHeightAt(roverGrp.position.x - lrvForward.x * 0.62, roverGrp.position.z - lrvForward.z * 0.62);
-                        var lrvRightH = _terrainHeightAt(roverGrp.position.x + lrvRight.x * 0.76, roverGrp.position.z + lrvRight.z * 0.76);
-                        var lrvLeftH = _terrainHeightAt(roverGrp.position.x - lrvRight.x * 0.76, roverGrp.position.z - lrvRight.z * 0.76);
+                        // Re-probe after travel for exact body pose; dynamics intentionally
+                        // used the pre-integration probes above.
+                        lrvFrontH = _terrainHeightAt(roverGrp.position.x + lrvForward.x * 0.62, roverGrp.position.z + lrvForward.z * 0.62);
+                        lrvRearH = _terrainHeightAt(roverGrp.position.x - lrvForward.x * 0.62, roverGrp.position.z - lrvForward.z * 0.62);
+                        lrvRightH = _terrainHeightAt(roverGrp.position.x + lrvRight.x * 0.76, roverGrp.position.z + lrvRight.z * 0.76);
+                        lrvLeftH = _terrainHeightAt(roverGrp.position.x - lrvRight.x * 0.76, roverGrp.position.z - lrvRight.z * 0.76);
+                        var lrvCenterGround = _terrainHeightAt(roverGrp.position.x, roverGrp.position.z);
                         var lrvGround = (lrvFrontH + lrvRearH + lrvRightH + lrvLeftH) * 0.25;
                         var lrvBodyEase = 1 - Math.exp(-10 * evaDt);
                         roverGrp.position.y += (lrvGround - roverGrp.position.y) * lrvBodyEase;
                         roverGrp.rotation.y = roverHeading;
                         roverGrp.rotation.x += (Math.atan2(lrvFrontH - lrvRearH, 1.24) - roverGrp.rotation.x) * lrvBodyEase;
                         roverGrp.rotation.z += (Math.atan2(lrvRightH - lrvLeftH, 1.52) - roverGrp.rotation.z) * lrvBodyEase;
-                        roverWheelSpin += roverSpeed * evaDt / 0.2;
+                        var lrvWheelSlipSpin = lrvThrottle * lrvSlipSignal * (0.35 + Math.abs(roverSpeed) * 0.12);
+                        var lrvWheelAngularSpeed = roverSpeed / 0.2 + lrvWheelSlipSpin;
+                        if (lrvReversing) lrvWheelAngularSpeed *= Math.max(0, 1 - lrvSlipSignal * 0.72);
+                        roverWheelSpin += lrvWheelAngularSpeed * evaDt;
+                        applyLrvVisualSteering(roverSteer);
                         var lrvCos = Math.cos(roverHeading), lrvSin = Math.sin(roverHeading);
-                        roverWheelMounts.forEach(function(mount, wi) {
+                        var lrvContactTargetSum = 0;
+                        var lrvWheelContactPulse = lrvImpactSignal *
+                          (_evaLowPower ? 0.08 : 0.14);
+                        lrvGroundedWheelCount = 0;
+                        for (var wi = 0; wi < roverWheelMounts.length; wi++) {
+                          var mount = roverWheelMounts[wi];
                           var wheelWX = roverGrp.position.x + mount._lrvX * lrvCos + mount._lrvZ * lrvSin;
                           var wheelWZ = roverGrp.position.z - mount._lrvX * lrvSin + mount._lrvZ * lrvCos;
                           var wheelGround = _terrainHeightAt(wheelWX, wheelWZ);
-                          var suspensionY = Math.max(0.11, Math.min(0.34, wheelGround - roverGrp.position.y + 0.21));
+                          // Unsmoothed target relative to this frame's exact post-travel
+                          // centre ground: uniform slopes cancel, local compression remains.
+                          var wheelContactTarget = Math.max(0.11,
+                            Math.min(0.34, wheelGround - lrvCenterGround + 0.21));
+                          lrvContactTargetSum += wheelContactTarget;
+                          var lrvRawSuspension = wheelGround - roverGrp.position.y + 0.21;
+                          var lrvWheelEngaged = lrvRawSuspension >= 0.095;
+                          if (lrvWheelEngaged) lrvGroundedWheelCount++;
+                          var suspensionY = Math.max(0.11, Math.min(0.34, lrvRawSuspension));
                           mount.position.y += (suspensionY - mount.position.y) * lrvBodyEase;
-                          mount.rotation.y = mount._lrvFront ? roverSteer : 0;
                           roverWheelMeshes[wi].rotation.x = roverWheelSpin;
-                        });
-                        lrvDustAccumulator += Math.abs(roverSpeed) * evaDt * (_evaLowPower ? 2.0 : 4.0);
-                        while (lrvDustAccumulator >= 1) {
+                          poseLrvWheelContact(wi, mount, lrvWheelEngaged, lrvWheelContactPulse);
+                        }
+                        lrvWheelContacts.instanceMatrix.needsUpdate = true;
+                        var lrvContactAverage = lrvContactTargetSum * 0.25;
+                        lrvImpactCooldown = Math.max(0, lrvImpactCooldown - evaDt);
+                        if (!lrvImpactContactValid) {
+                          lrvImpactPreviousContact = lrvContactAverage;
+                          lrvImpactContactValid = true;
+                          lrvImpactArmTime = 0;
+                        } else {
+                          var lrvContactDelta = lrvContactAverage - lrvImpactPreviousContact;
+                          lrvImpactPreviousContact = lrvContactAverage;
+                          var lrvImpactMoving = lrvFrameTravelDistance > 0.001 &&
+                            Math.abs(roverSpeed) > 0.15;
+                          if (Math.abs(lrvContactDelta) > 0.18 || lrvFrameTravelDistance > 0.34) {
+                            lrvImpactArmTime = 0;
+                            lrvImpactVelocityFiltered = 0;
+                          } else if (lrvImpactMoving) {
+                            lrvImpactArmTime += evaDt;
+                            var lrvCompressionVelocity = Math.max(0, lrvContactDelta / evaDt);
+                            lrvImpactVelocityFiltered +=
+                              (lrvCompressionVelocity - lrvImpactVelocityFiltered) *
+                              (1 - Math.exp(-14 * evaDt));
+                            if (lrvImpactArmTime >= 0.08 && lrvImpactCooldown <= 0 &&
+                                lrvImpactVelocityFiltered > 0.30) {
+                              var lrvImpactStrength = Math.min(1,
+                                (lrvImpactVelocityFiltered - 0.30) / 1.25) *
+                                Math.min(1, Math.abs(roverSpeed) / 1.2);
+                              if (lrvImpactStrength > 0.04) {
+                                registerLrvImpact(lrvImpactStrength);
+                                lrvImpactVelocityFiltered *= 0.28;
+                              }
+                            }
+                          } else {
+                            lrvImpactArmTime = 0;
+                            lrvImpactVelocityFiltered *= Math.exp(-12 * evaDt);
+                          }
+                        }
+                        lrvImpactSpringVelocity +=
+                          (-58 * lrvImpactSpring - 12 * lrvImpactSpringVelocity) * evaDt;
+                        lrvImpactSpring += lrvImpactSpringVelocity * evaDt;
+                        lrvImpactSpring = Math.max(-0.09, Math.min(0.07, lrvImpactSpring));
+                        var lrvImpactVisualScale = gtReducedMotion ? 0.18 : (_evaLowPower ? 0.62 : 1);
+                        roverVisualShell.position.y = lrvImpactSpring * lrvImpactVisualScale;
+                        var lrvDustContactFactor = lrvGroundedWheelCount * 0.25;
+                        lrvDustAccumulator += Math.abs(roverSpeed) * evaDt *
+                          (_evaLowPower ? 2.0 : 4.0) * (1 + lrvSlipSignal * 2.2) *
+                          lrvDustContactFactor;
+                        var lrvDustEmitBudget = _evaLowPower ? 2 : 4;
+                        var lrvDustTravelSign = roverSpeed < 0 ? -1 : 1;
+                        while (lrvDustAccumulator >= 1 && lrvDustEmitBudget-- > 0) {
                           lrvDustAccumulator -= 1;
                           var dustI = lrvDustCursor++ % LRV_DUST_COUNT;
                           var dustSide = dustI % 2 ? 0.65 : -0.65;
+                          dustSide += (lrvDustRand() - 0.5) * 0.10;
                           var dustO = dustI * 3;
-                          lrvDustPositions[dustO] = roverGrp.position.x - lrvForward.x * 0.55 + lrvRight.x * dustSide;
-                          lrvDustPositions[dustO + 2] = roverGrp.position.z - lrvForward.z * 0.55 + lrvRight.z * dustSide;
+                          lrvDustPositions[dustO] = roverGrp.position.x -
+                            lrvForward.x * 0.55 * lrvDustTravelSign + lrvRight.x * dustSide;
+                          lrvDustPositions[dustO + 2] = roverGrp.position.z -
+                            lrvForward.z * 0.55 * lrvDustTravelSign + lrvRight.z * dustSide;
                           lrvDustPositions[dustO + 1] = _terrainHeightAt(lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) + 0.07;
-                          lrvDustVX[dustI] = -lrvForward.x * (0.22 + Math.random() * 0.18) + lrvRight.x * (Math.random() - 0.5) * 0.25;
-                          lrvDustVY[dustI] = 0.18 + Math.random() * 0.22;
-                          lrvDustVZ[dustI] = -lrvForward.z * (0.22 + Math.random() * 0.18) + lrvRight.z * (Math.random() - 0.5) * 0.25;
-                          lrvDustLife[dustI] = 0.45 + Math.random() * 0.35;
+                          var dustRearSpeed = 0.22 + lrvDustRand() * 0.18;
+                          var dustLateralSpeed = (lrvDustRand() - 0.5) * 0.25;
+                          lrvDustVX[dustI] = -lrvForward.x * lrvDustTravelSign * dustRearSpeed +
+                            lrvRight.x * dustLateralSpeed;
+                          lrvDustVY[dustI] = 0.18 + lrvDustRand() * 0.22;
+                          lrvDustVZ[dustI] = -lrvForward.z * lrvDustTravelSign * dustRearSpeed +
+                            lrvRight.z * dustLateralSpeed;
+                          lrvDustLife[dustI] = 0.45 + lrvDustRand() * 0.35;
                         }
+                        lrvDustAccumulator = Math.min(lrvDustAccumulator, 1.5);
                         playerPos.set(roverGrp.position.x, roverGrp.position.y + 1.02, roverGrp.position.z);
                         yaw = roverHeading;
                         dir.copy(lrvForward).multiplyScalar(Math.abs(roverSpeed) * evaDt);
                       } else {
                         lrvThrottleSignal = 0;
                         lrvSlipSignal = 0;
+                        lrvGradeRatio = 0;
+                        lrvCrossSlopeRatio = 0;
+                        lrvGripState = 'Grip';
                         // Click-to-move: auto-walk toward clickTarget; cancels on arrival or manual key press.
                         if (clickTarget && !moveState.forward && !moveState.back && !moveState.left && !moveState.right) {
                           var dx = clickTarget.x - playerPos.x;
@@ -4168,13 +5025,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           if (moveState.left) dir.x -= 1;
                           if (moveState.right) dir.x += 1;
                           dir.normalize().multiplyScalar(speed3d);
-                          dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                          dir.applyAxisAngle(evaUpAxis, yaw);
                           playerPos.add(dir);
                         }
+                        // Preserve the established legacy jump arc. The pre-clamp
+                        // downward velocity is only normalized into a visual landing cue.
+                        var evaWasAirborne = isJumping;
                         playerVelY -= 0.0027;
                         playerPos.y += playerVelY;
                         var footGroundH = _terrainHeightAt(playerPos.x, playerPos.z) + 1.8;
                         if (playerPos.y <= footGroundH) {
+                          if (evaWasAirborne && playerVelY < -0.045) {
+                            evaLandingImpact = Math.min(1, (-playerVelY - 0.045) / 0.09);
+                            evaLandingImpactEnvelope = evaLandingImpact;
+                            evaLandingDatasetActive = true;
+                            canvasEl.dataset.evaLandingImpact = evaLandingImpact.toFixed(3);
+                            emitLunarDustBurst(playerPos.x, playerPos.z,
+                              -Math.sin(yaw), -Math.cos(yaw), evaLandingImpact,
+                              _evaLowPower ? 2 : 5);
+                          }
                           playerPos.y = footGroundH;
                           playerVelY = 0;
                           isJumping = false;
@@ -4182,6 +5051,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       }
                       var groundH = _terrainHeightAt(playerPos.x, playerPos.z) + 1.8;
                       updateLrvAudio(false);
+                      lrvImpactSignal *= Math.exp(-10 * evaDt);
+                      lrvImpactAudioEnvelope *= Math.exp(-8 * evaDt);
+                      lrvImpactCameraEnvelope *= Math.exp(-11 * evaDt);
+                      evaLandingImpactEnvelope *= Math.exp(-8 * evaDt);
+                      // DOM telemetry changes only on an event and its final reset.
+                      if (lrvImpactDatasetActive && lrvImpactSignal < 0.01) {
+                        lrvImpactDatasetActive = false;
+                        canvasEl.dataset.lrvImpact = '0.000';
+                      }
+                      if (evaLandingDatasetActive && evaLandingImpactEnvelope < 0.01) {
+                        evaLandingDatasetActive = false;
+                        evaLandingImpact = 0;
+                        canvasEl.dataset.evaLandingImpact = '0.000';
+                      }
 
                       for (var dustN = 0; dustN < LRV_DUST_COUNT; dustN++) {
                         if (lrvDustLife[dustN] <= 0) continue;
@@ -4192,21 +5075,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         lrvDustPositions[dustP + 1] += lrvDustVY[dustN] * evaDt;
                         lrvDustPositions[dustP + 2] += lrvDustVZ[dustN] * evaDt;
                         lrvDustVY[dustN] -= 1.62 * evaDt;
+                        if (lrvDustVY[dustN] <= 0 &&
+                            lrvDustPositions[dustP + 1] <= _terrainHeightAt(
+                              lrvDustPositions[dustP], lrvDustPositions[dustP + 2]) + 0.012) {
+                          lrvDustLife[dustN] = 0;
+                          lrvDustPositions[dustP + 1] = -100;
+                        }
                       }
                       lrvDustGeo.attributes.position.needsUpdate = true;
 
-                      // Bootprints
-                      if (!roverBoarded && dir.length() > 0.01 && !isJumping && evaTick % 20 === 0) {
-                        evaSteps++;
-                        var bpGeo = new THREE.PlaneGeometry(0.15, 0.25);
-                        var bpMat = new THREE.MeshBasicMaterial({ color: 0x555555, transparent: true, opacity: 0.3, side: THREE.DoubleSide });
-                        var bp = new THREE.Mesh(bpGeo, bpMat);
-                        bp.rotation.x = -Math.PI / 2;
-                        bp.rotation.z = yaw;
-                        bp.position.set(playerPos.x, groundH - 1.78, playerPos.z);
-                        scene.add(bp);
-                        bootprints.push(bp);
-                        if (bootprints.length > 200) { scene.remove(bootprints.shift()); }
+                      // Distance-coupled gait evidence is stable across frame rates.
+                      // Reduced/low-power tiers alter print density only, never movement.
+                      if (!roverBoarded && dir.length() > 0.01 && !isJumping) {
+                        var evaFootTravel = dir.length();
+                        evaStepDistanceAccumulator += evaFootTravel;
+                        while (evaStepDistanceAccumulator >= EVA_STEP_STRIDE) {
+                          evaStepDistanceAccumulator -= EVA_STEP_STRIDE;
+                          evaSteps++;
+                        }
+                        evaBootprintDistanceAccumulator += evaFootTravel;
+                        if (evaBootprintDistanceAccumulator >= EVA_BOOTPRINT_SPACING) {
+                          evaBootprintDistanceAccumulator -= EVA_BOOTPRINT_SPACING;
+                          emitEvaBootprint(playerPos.x, playerPos.z, yaw);
+                        }
                       }
 
                       // Camera
@@ -4226,6 +5117,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           _terrainHeightAt(lrvCamDesired.x, lrvCamDesired.z) + 0.65,
                           roverGrp.position.y + lrvCameraHeight + Math.sin(lrvCameraPitchOffset) * lrvCameraDistance
                         );
+                        lrvCamDesired.y += lrvImpactCameraEnvelope *
+                          (gtReducedMotion ? 0 : (_evaLowPower ? 0.055 : 0.10));
                         camera.position.lerp(lrvCamDesired, 1 - Math.exp(-(comfortMode ? 4.5 : 7.0) * evaDt));
                         // Lerp follows a chord between frames; re-clamp the ACTUAL camera
                         // after smoothing so that chord can never cut through a ridge.
@@ -4233,7 +5126,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           camera.position.y,
                           _terrainHeightAt(camera.position.x, camera.position.z) + 0.75
                         );
+                        if (gtReducedMotion) {
+                          lrvCameraSteerLook = 0;
+                        } else {
+                          // Predict from the same signed automotive yaw rate used by
+                          // physics. This composes toward the path without changing it.
+                          var lrvPredictedYawDelta = roverSteer * roverSpeed * 0.38 * 0.45;
+                          var lrvSteerLookTarget = -Math.sin(lrvPredictedYawDelta) *
+                            (1.1 + lrvSpeed01 * 1.3) * (comfortMode ? 0.65 : 1);
+                          lrvCameraSteerLook += (lrvSteerLookTarget - lrvCameraSteerLook) *
+                            (1 - Math.exp(-5 * evaDt));
+                        }
                         lrvCamTarget.copy(roverGrp.position).addScaledVector(lrvForward, 1.5 + lrvSpeed01 * 1.5);
+                        lrvCamTarget.addScaledVector(lrvRight, lrvCameraSteerLook);
                         lrvCamTarget.y += 0.75;
                         camera.lookAt(lrvCamTarget);
                       } else {
@@ -4247,6 +5152,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       if (!roverBoarded) {
                         suitGroup.position.copy(playerPos);
                         suitGroup.rotation.y = yaw;
+                      }
+                      // Allocation-free terrain-conforming contact cues. Local +Z is
+                      // the decal normal; R x F = N keeps the basis right-handed.
+                      gtForward.set(-Math.sin(yaw), 0, -Math.cos(yaw));
+                      gtRight.set(Math.cos(yaw), 0, -Math.sin(yaw));
+                      gtSuitContact.visible = !roverBoarded;
+                      if (!roverBoarded) {
+                        var suitContactPulse = evaLandingImpactEnvelope *
+                          (gtReducedMotion ? 0.06 : (_evaLowPower ? 0.18 : 0.34));
+                        gtSuitContact.scale.set(0.3 * (1 + suitContactPulse),
+                          0.22 * (1 + suitContactPulse), 1);
+                        poseGtSurfaceObject(gtSuitContact, playerPos.x, playerPos.z, 0.012, 0.28);
                       }
 
                       // Keep the tight shadow frustum centred on the astronaut, and hold the
@@ -4318,29 +5235,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       // Sample collection
                       if (evaSampleCooldown > 0) evaSampleCooldown--;
                       lunarSampleOrbs.forEach(function(orb) {
-                        if (orb._collected) return;
+                        if (orb._collected || !orb.visible) return;
+                        if (orb._isTraverseSample && (!gtActive || gtStep !== 3)) return;
                         orb.children[0].rotation.y += 0.02;
                         orb.children[0].material.opacity = 0.6 + Math.sin(evaTick * 0.05 + orb._pulsePhase) * 0.2;
                         var sDist = playerPos.distanceTo(orb.position);
                         if (sDist < 2 && moveState.sample && evaSampleCooldown <= 0 && !o2Exhausted) {
                           orb._collected = true; orb.visible = false;
                           evaSampleCooldown = 60;
-                          evaSampleCount++;
+                          if (!orb._isTraverseSample) evaSampleCount++;
                           var sd = orb._sampleData;
                           var picked = { name: sd.name, type: sd.type, icon: sd.icon, fact: sd.fact };
                           // Updater form: this loop's `d` is frozen at canvas mount, so the
                           // plain form rebuilt the array from the pre-EVA collection and every
                           // pickup replaced the one before it.
-                          upd('lunarSamples', function(cur) { return (cur || []).concat([picked]); });
+                          if (!orb._isTraverseSample || !gtSampleEverBanked) {
+                            upd('lunarSamples', function(cur) { return (cur || []).concat([picked]); });
+                          }
+                          if (orb._isTraverseSample) {
+                            gtSampleCollected = true;
+                            gtSampleResult = sd.name;
+                          }
                           sfxSampleCollect();
                           if (addToast) addToast(sd.icon + ' Collected: ' + sd.name + ' \u2014 ' + sd.fact, 'success');
                           // The toast is visual-only; the HUD counter is a pointer-events:none
                           // div. Without this, a screen-reader student got no confirmation that
                           // pressing F had done anything.
-                          if (typeof announceToSR === 'function') announceToSR('Sample collected: ' + sd.name + ', ' + sd.type + '. ' + sd.fact + ' ' + evaSampleCount + ' of ' + LUNAR_SAMPLES_DATA.length + ' collected.');
-                          addXP(sd.xp);
+                          if (typeof announceToSR === 'function') announceToSR(orb._isTraverseSample
+                            ? 'Traverse sample collected: ' + sd.name + ', ' + sd.type + '. ' + sd.fact
+                            : 'Sample collected: ' + sd.name + ', ' + sd.type + '. ' + sd.fact + ' ' + evaSampleCount + ' of ' + LUNAR_SAMPLES_DATA.length + ' collected.');
+                          if (!orb._isTraverseSample || !gtSampleEverBanked) addXP(sd.xp);
+                          if (orb._isTraverseSample) gtSampleEverBanked = true;
                         }
                       });
+                      updateGtMission(evaDt);
 
                       // ── Deploy the seismometer (F, when you are standing at it) ──
                       // F is contextual: a rock at your feet gets collected, the instrument
@@ -4460,6 +5388,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         var stepsEl = document.getElementById('eva-steps');
                         var modeEl = document.getElementById('eva-mode');
                         var lrvSpeedEl = document.getElementById('eva-lrv-speed');
+                        var lrvTerrainEl = document.getElementById('eva-lrv-terrain');
+                        var lrvGripEl = document.getElementById('eva-lrv-grip');
                         if (o2El) { o2El.textContent = evaO2.toFixed(0) + '%'; o2El.style.color = evaO2 > 50 ? '#22c55e' : evaO2 > 20 ? '#f59e0b' : '#ef4444'; }
                         if (sampEl) sampEl.textContent = evaSampleCount + ' / ' + LUNAR_SAMPLES_DATA.length + ' samples';
                         if (stepsEl) stepsEl.textContent = evaSteps + ' steps';
@@ -4467,6 +5397,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         if (lrvSpeedEl) lrvSpeedEl.textContent = roverBoarded
                           ? (Math.abs(roverSpeed) * 3.6).toFixed(1) + ' km/h \u2022 ' + Math.round(roverDistance) + ' m'
                           : (roverPlanarDistance() <= LRV_BOARD_RANGE ? 'Ready to board' : Math.ceil(roverPlanarDistance()) + ' m away');
+                        var lrvGradeText = (lrvGradeRatio * 100).toFixed(1);
+                        var lrvCrossText = (lrvCrossSlopeRatio * 100).toFixed(1);
+                        var lrvSlipText = lrvSlipSignal.toFixed(3);
+                        if (canvasEl.dataset.lrvGrade !== lrvGradeText) canvasEl.dataset.lrvGrade = lrvGradeText;
+                        if (canvasEl.dataset.lrvCrossSlope !== lrvCrossText) canvasEl.dataset.lrvCrossSlope = lrvCrossText;
+                        if (canvasEl.dataset.lrvSlip !== lrvSlipText) canvasEl.dataset.lrvSlip = lrvSlipText;
+                        if (canvasEl.dataset.lrvGripState !== lrvGripState) canvasEl.dataset.lrvGripState = lrvGripState;
+                        var lrvVisualSteerText = lrvVisualSteerDegrees.toFixed(1);
+                        if (canvasEl.dataset.lrvVisualSteer !== lrvVisualSteerText) {
+                          canvasEl.dataset.lrvVisualSteer = lrvVisualSteerText;
+                        }
+                        var lrvGroundedText = String(lrvGroundedWheelCount);
+                        if (canvasEl.dataset.lrvGroundedWheels !== lrvGroundedText) {
+                          canvasEl.dataset.lrvGroundedWheels = lrvGroundedText;
+                        }
+                        lrvConsoleState = !roverBoarded ? 'parked'
+                          : (lrvGripState === 'Slip' ? 'traction'
+                            : (Math.abs(roverSpeed) > 0.12 ? 'drive' : 'ready'));
+                        if (canvasEl.dataset.lrvConsoleState !== lrvConsoleState) {
+                          canvasEl.dataset.lrvConsoleState = lrvConsoleState;
+                        }
+                        var lrvConsoleColor = lrvConsoleState === 'traction'
+                          ? 0xf59e0b : (lrvConsoleState === 'drive' ? 0x67e8f9
+                            : (lrvConsoleState === 'ready' ? 0x86efac : 0x64748b));
+                        rConsoleStatusMat.color.setHex(lrvConsoleColor);
+                        rConsoleDisplayMat.opacity = roverBoarded ? 0.52 : 0.24;
+                        var bootprintCountText = String(evaBootprintCount);
+                        if (canvasEl.dataset.evaBootprintCount !== bootprintCountText) {
+                          canvasEl.dataset.evaBootprintCount = bootprintCountText;
+                        }
+                        if (lrvTerrainEl) {
+                          var lrvTerrainText = roverBoarded ? lrvGradeText + '% \u2022 cross ' + lrvCrossText + '%' : '--';
+                          if (lrvTerrainEl.textContent !== lrvTerrainText) lrvTerrainEl.textContent = lrvTerrainText;
+                        }
+                        if (lrvGripEl) {
+                          var lrvGripText = roverBoarded ? lrvGripState + ' \u2022 ' + Math.round(lrvSlipSignal * 100) + '%' : '--';
+                          if (lrvGripEl.textContent !== lrvGripText) lrvGripEl.textContent = lrvGripText;
+                        }
                         updateLrvAction();
 
                         // ── Bearing to the nearest rock still on the ground ──
@@ -4478,7 +5446,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           var best = null, bestD = 1e9;
                           for (var ti = 0; ti < lunarSampleOrbs.length; ti++) {
                             var orbT = lunarSampleOrbs[ti];
-                            if (orbT._collected) continue;
+                            if (orbT._collected || !orbT.visible || orbT._isTraverseSample) continue;
                             var dT = playerPos.distanceTo(orbT.position);
                             if (dT < bestD) { bestD = dT; best = orbT; }
                           }
@@ -4548,10 +5516,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                                 seat: { position: [playerPos.x, 0, playerPos.z], scale: 1.0, moveSpeed: 1.6 },   // lunar amble
                                 bounds: { minX: -80, maxX: 80, minZ: -80, maxZ: 80 },
                                 render: function () { if (composer) { try { composer.render(); return; } catch (e) {} } renderer.render(scene, camera); },
-                                pauseLoop: function () { _evaVRPaused = true; updateLrvAudio(true); },
+                                pauseLoop: function () {
+                                  _evaVRPaused = true;
+                                  resetLrvImpactEffects();
+                                  updateLrvAudio(true);
+                                },
                                 resumeLoop: function () {
                                   if (evaAlive && _evaVRPaused) {
                                     _evaVRPaused = false;
+                                    resetLrvImpactEffects();
+                                    lrvImpactCooldown = 0.28;
                                     updateLrvAudio(false);
                                     animateEva();
                                   }
@@ -4568,6 +5542,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     canvasEl._evaCleanup = function() {
                       if (!evaAlive) return;
                       evaAlive = false;
+                      gtActive = false;
                       if (evaRaf) { cancelAnimationFrame(evaRaf); evaRaf = 0; }
                       canvasEl._evaCleanup = null;
                       try { if (_evaVRBtnOff) _evaVRBtnOff(); } catch (e) {}
@@ -4587,10 +5562,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         lrvActionEl.removeEventListener('click', onLrvAction);
                         if (lrvActionEl.parentElement) lrvActionEl.parentElement.removeChild(lrvActionEl);
                       }
+                      if (gtActionEl) gtActionEl.removeEventListener('click', onGtAction);
+                      if (gtPanel && gtPanel.parentElement) gtPanel.parentElement.removeChild(gtPanel);
+                      ['geologyTraverseStatus', 'geologyTraverseStep', 'geologyTraverseTargetDistance',
+                        'geologyTraverseDistance', 'lrvImpact', 'lrvImpactCount',
+                        'evaLandingImpact', 'lunarSurfaceProfile', 'lrvVisualProfile',
+                        'lrvSteeringMode', 'lrvVisualSteer', 'lrvConsoleState',
+                        'lrvGroundedWheels', 'evaBootprintCount',
+                        'evaBootprintCap'].forEach(function(gtKey) {
+                        try { delete canvasEl.dataset[gtKey]; } catch (_gtDatasetCleanupErr) {}
+                      });
                       try {
                         scene.remove(roverGrp);
                         scene.remove(lrvDust);
                         scene.remove(lrvTracks);
+                        scene.remove(gtBeaconGroup);
+                        scene.remove(gtSpecimen);
+                        scene.remove(gtRoverContact);
+                        scene.remove(gtSuitContact);
+                        scene.remove(lrvWheelContacts);
+                        scene.remove(evaBootprints);
+                        scene.remove(lunarHorizon);
                         var lrvDisposedGeometries = [], lrvDisposedMaterials = [];
                         roverGrp.traverse(function(lrvNode) {
                           if (!lrvNode || !lrvNode.isMesh) return;
@@ -4610,6 +5602,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         lrvDustMat.dispose();
                         lrvTrackGeo.dispose();
                         lrvTrackMat.dispose();
+                        lrvWheelContactGeo.dispose();
+                        lrvWheelContactMat.dispose();
+                        evaBootprintGeo.dispose();
+                        evaBootprintMat.dispose();
+                        gtBeaconGeo.dispose();
+                        gtBeaconMat.dispose();
+                        gtBeaconPinGeo.dispose();
+                        gtBeaconPinMat.dispose();
+                        gtSpecimenGeo.dispose();
+                        gtSpecimenMat.dispose();
+                        gtSpecimenRingGeo.dispose();
+                        gtSpecimenRingMat.dispose();
+                        gtContactGeo.dispose();
+                        gtContactMat.dispose();
+                        terrainMat.bumpMap = null;
+                        lunarMicroTex.dispose();
+                        lunarHorizonGeo.dispose();
+                        lunarHorizonMat.dispose();
+                        lunarMicroTex = null;
+                        lunarHorizonGeo = lunarHorizonMat = lunarHorizon = null;
                       } catch (_lrvDisposeErr) {}
                       if (document.pointerLockElement === canvasEl) document.exitPointerLock();
                       if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }

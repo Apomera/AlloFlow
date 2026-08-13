@@ -7,6 +7,7 @@ const require = createRequire(import.meta.url);
 const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
 let React, ReactDOMClient, act, Component, root, host;
 let originalFetch;
+let originalAlloFlowVoice;
 
 beforeAll(() => {
   React = require(resolve(modulesDir, 'react'));
@@ -14,6 +15,20 @@ beforeAll(() => {
   ({ act } = require(resolve(modulesDir, 'react-dom/test-utils')));
   global.React = window.React = React;
   global.IS_REACT_ACT_ENVIRONMENT = true;
+  originalAlloFlowVoice = window.AlloFlowVoice;
+  window.AlloFlowVoice = {
+    acquireVoiceSession: vi.fn(() => {
+      let active = true;
+      return {
+        update: vi.fn(() => active),
+        isActive: () => active,
+        release: vi.fn(() => {
+          active = false;
+          return true;
+        }),
+      };
+    }),
+  };
   loadAlloModule('test_prep_hub_module.js');
   Component = window.AlloModules.TestPrepHub.TestPrepHub;
   originalFetch = global.fetch;
@@ -24,6 +39,8 @@ beforeAll(() => {
 afterAll(() => {
   global.fetch = originalFetch;
   window.fetch = originalFetch;
+  if (originalAlloFlowVoice === undefined) delete window.AlloFlowVoice;
+  else window.AlloFlowVoice = originalAlloFlowVoice;
 });
 
 afterEach(async () => {

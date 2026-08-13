@@ -958,7 +958,7 @@ describe('Lingua assignment render workflows', () => {
     expect(host.textContent).toContain('This read-only record omits raw chat, speech transcripts');
     expect(host.textContent).toContain('Moon');
     expect(host.textContent).toContain('2 of 2 activity targets reached - 100%');
-    expect(host.textContent).toContain('Privacy-safe evidence: 1 form attempts and 1 transcript comparisons.');
+    expect(host.textContent).toContain('Privacy-safe evidence: 1 form attempts, 0 listening outcomes, and 1 transcript comparisons.');
     expect(host.textContent).toContain('what the recognizer heard, not pronunciation or accent quality');
     expect(host.textContent).not.toMatch(/pronunciation (?:score|accuracy|confidence)/i);
     expect(host.textContent).not.toContain(privateTranscript);
@@ -1125,6 +1125,22 @@ describe('Lingua Practice bounded interactive text requests', () => {
     expect(host.querySelector('#lingua-studio-vocabulary-0-term').value).toBe('hola');
     expect(toasts.some(([text, type]) => type === 'error' && text.includes('could not be refreshed'))).toBe(true);
 
+  });
+  it('aborts an in-flight build provider when Lingua unmounts', async () => {
+    const pending = new Promise(() => {});
+    let providerSignal;
+    await mount(React.createElement(Lingua, {
+      isOpen: true, onClose: () => {},
+      callGemini: (...args) => { providerSignal = args[5]; return pending; },
+      textRequestTimeoutMs: 1000, addToast: () => {},
+    }));
+
+    act(() => { button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => { await Promise.resolve(); });
+    expect(providerSignal).toBeInstanceOf(AbortSignal);
+    expect(providerSignal.aborted).toBe(false);
+    act(() => { root.unmount(); root = null; });
+    expect(providerSignal.aborted).toBe(true);
   });
 });
 describe('Lingua Practice Set Studio portability', () => {

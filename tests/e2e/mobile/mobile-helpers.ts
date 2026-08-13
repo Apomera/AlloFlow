@@ -5,6 +5,20 @@ import * as path from 'path';
 /** Repo root, from tests/e2e/mobile. */
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
 
+// `node build.js --mode=dev` deliberately flattens most CDN URLs. A few
+// directory-backed optional modules still have a basename-only local URL,
+// which CRA answers with index.html. Route those aliases to the same files the
+// production CDN serves so its runtime error overlay cannot mask UI tests.
+const LOCAL_DEV_MODULE_ALIASES: Record<string, string> = {
+  '/allo_quest_contract_module.js': 'allo_quest_contract_module.js',
+  '/transfer_adapter.js': 'allo_sheet/transfer_adapter.js',
+  '/host_bridge.js': 'allo_sheet/host_bridge.js',
+  '/sel_hub_module.js': 'sel_hub/sel_hub_module.js',
+  '/ccss-math.js': 'standards_snapshots/ccss-math.js',
+  '/ma-science-grade-5.js': 'standards_snapshots/ma-science-grade-5.js',
+  '/ccss-ela.js': 'standards_snapshots/ccss-ela.js',
+};
+
 /**
  * Serve the CDN modules from the working tree.
  *
@@ -35,6 +49,25 @@ export async function routeCdnToWorkingTree(page: Page): Promise<void> {
       : 'application/octet-stream';
     await route.fulfill({ status: 200, contentType: type, body: fs.readFileSync(local) });
   });
+
+  await page.route(
+    (url) => (url.hostname === '127.0.0.1' || url.hostname === 'localhost')
+      && Object.prototype.hasOwnProperty.call(LOCAL_DEV_MODULE_ALIASES, url.pathname),
+    async (route) => {
+      const url = new URL(route.request().url());
+      const rel = LOCAL_DEV_MODULE_ALIASES[url.pathname];
+      const local = path.join(REPO_ROOT, rel);
+      if (!local.startsWith(REPO_ROOT) || !fs.existsSync(local) || !fs.statSync(local).isFile()) {
+        await route.fallback();
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/javascript; charset=utf-8',
+        body: fs.readFileSync(local),
+      });
+    },
+  );
 }
 
 /** The launch pad ("Choose how to use AlloFlow") that gates first run. */

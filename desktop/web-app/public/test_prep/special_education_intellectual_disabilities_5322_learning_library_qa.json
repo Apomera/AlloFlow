@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0", "visibility": "public",
   "schemaVersion": 1,
+  "generatedAt": "2026-08-13T08:45:02.673Z",
   "libraryId": "praxis-special-education-intellectual-disabilities-5322-learning-library",
   "packId": "praxis-special-education-intellectual-disabilities-5322",
   "standard": {
@@ -22,14 +22,5 @@
     "editorialReviewedSourcePendingMemoryAids": 0,
     "findings": [],
     "status": "pass"
-  },
-  "contentBinding": {
-    "schemaVersion": 1,
-    "algorithm": "sha256",
-    "reviewedAt": "2026-07-18",
-    "sourceItemCount": 200,
-    "sourceItemsSha256": "0b95c450bc39afbc1f8424cab78ac7da743088d76dfb7d1902d58d9d56a93afe",
-    "learningLibrarySha256": "3828943ce2cdf704cfc8adc63c4b5ff25b8f3d1b606cb4658f4efba6e8356cd6",
-    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

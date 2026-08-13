@@ -1,35 +1,35 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-25T21:23:19.931Z",
+  "generatedAt": "2026-08-13T08:44:53.652Z",
   "packId": "praxis-plt-early-childhood-5621",
   "standard": {
     "label": "AlloFlow PLT Early Childhood 5621 source, structure, feedback, case-practice, linkage, and grade-band QA v2",
     "limitation": "Not ETS, CCSSO, or NAEYC approval; independent early-childhood educator, family, accessibility, legal, and psychometric validation remain pending."
   },
   "summary": {
-    "totalItems": 500,
-    "passedItems": 500,
+    "totalItems": 200,
+    "passedItems": 200,
     "findings": [],
     "status": "pass",
     "sourceItems": 200,
     "distinctSourceContentKernels": 100,
     "parallelSourceVariants": 100,
-    "guidedReasoningItems": 300,
+    "guidedReasoningItems": 0,
     "independentQuestionTarget": 500,
-    "newIndependentItemsNeeded": 400,
+    "newIndependentItemsNeeded": 300,
     "structuralStatus": "pass",
     "contentDistinctnessStatus": "target-not-met",
     "assistantReviewVerdict": "reviewed-target-not-met",
-    "diagnosticBanks": 5,
+    "diagnosticBanks": 2,
     "diagnosticBanksSemantics": "legacy-total-learning-activity-bank-alias",
     "sourceDiagnosticBanks": 2,
-    "guidedReviewBanks": 3,
-    "learningActivityBanks": 5,
+    "guidedReviewBanks": 0,
+    "learningActivityBanks": 2,
     "packIntegrity": {
       "expectedCode": "5621",
       "expectedPackId": "praxis-plt-early-childhood-5621",
       "sourceItemsReviewed": 200,
-      "allItemsReviewed": 500,
+      "allItemsReviewed": 200,
       "packIdentityMisses": 0,
       "sourceItemIdentityMisses": 0,
       "foreignCodeOccurrences": 0,
@@ -50,29 +50,19 @@
       "foreignBandOccurrences": 0,
       "outOfBandOccurrences": 0,
       "negativeGates": "pass"
-    },
-    "assistantAuthoredIndependentItems": 0,
-    "independentPracticeItems": 200,
-    "distinctIndependentContentKernels": 100,
-    "parallelIndependentVariants": 100,
-    "assistantAuthoredIndependentBanks": 0,
-    "independentDiagnosticBanks": 2
+    }
   },
   "expansion": {
     "independentQuestionTarget": 500,
-    "totalLearningActivities": 500,
+    "totalLearningActivities": 200,
     "batchSize": 100,
-    "learningActivityBanks": 5,
+    "learningActivityBanks": 2,
     "sourceItems": 200,
-    "assistantAuthoredIndependentItems": 0,
-    "independentPracticeItems": 200,
     "distinctSourceContentKernels": 100,
     "parallelSourceVariants": 100,
-    "distinctIndependentContentKernels": 100,
-    "parallelIndependentVariants": 100,
-    "guidedReasoningItems": 300,
-    "newIndependentItemsNeeded": 400,
-    "structurallyReviewedItems": 500,
+    "guidedReasoningItems": 0,
+    "newIndependentItemsNeeded": 300,
+    "structurallyReviewedItems": 200,
     "reviewer": "OpenAI Codex",
     "examItemReview": "reviewed-target-not-met",
     "taskForms": [
@@ -80,16 +70,7 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "method": "Manifest-backed independent additions passed exact artifact review, blueprint, key, distractor, feedback, source, learning-link, originality, balance, and structural validation. Remaining transformations are guided practice only.",
+    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
     "findings": []
-  },
-  "contentBinding": {
-    "schemaVersion": 1,
-    "algorithm": "sha256",
-    "reviewedAt": "2026-07-18",
-    "sourceItemCount": 200,
-    "sourceItemsSha256": "53c0e3a5e007823afd72e617f54bfde0b147834a4a7a63309196cabb05e3bf44",
-    "learningLibrarySha256": "0d2b6fdf1967867e1b420c0dbfae3f5a6e60e3e69594f7c979f399a05a76ce35",
-    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

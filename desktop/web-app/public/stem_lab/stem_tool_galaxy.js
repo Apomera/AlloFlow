@@ -505,7 +505,7 @@ if (!window._galaxyHasLoadedOnce) {
 
           var GALAXY_TYPES = {
 
-            barredSpiral: { label: t('stem.galaxy.barred_spiral'), icon: '\uD83C\uDF00', desc: __alloT('stem.galaxy.barred_spiral_desc', 'Like our Milky Way. A central bar of stars with spiral arms winding outward. ~60% of spirals have bars.'), example: 'Milky Way, NGC 1300', arms: 4, barLength: 0.15, windTightness: 2.5 },
+            barredSpiral: { label: t('stem.galaxy.barred_spiral'), icon: '\uD83C\uDF00', desc: __alloT('stem.galaxy.barred_spiral_desc', 'Like our Milky Way. A central bar of stars with spiral arms winding outward. ~60% of spirals have bars.'), example: 'Milky Way, NGC 1300', arms: 4, barLength: 0.34, windTightness: 2.5 },
 
             grandDesign: { label: t('stem.galaxy.grand_design_spiral'), icon: '\uD83C\uDF00', desc: __alloT('stem.galaxy.grand_design_spiral_desc', 'Prominent, well-defined spiral arms. Usually triggered by gravitational interaction with a companion galaxy.'), example: 'M51 (Whirlpool), M81', arms: 2, barLength: 0, windTightness: 3.5 },
 
@@ -517,6 +517,30 @@ if (!window._galaxyHasLoadedOnce) {
 
           var gType = GALAXY_TYPES[galaxyType] || GALAXY_TYPES.barredSpiral;
           var isSpiralMorphology = galaxyType === 'barredSpiral' || galaxyType === 'grandDesign';
+
+          // Canonical geometry for the identity-bearing spiral layers. Barred
+          // spirals have two arms attached to the bar ends plus two branches
+          // that open smoothly farther out; grand-design spirals keep one
+          // clean opposite pair.
+          var SPIRAL_LAYOUTS = {
+            barredSpiral: { armCount: 4, wind: 2.5, armStart: 0.34, barHalfLength: 0.34, barAngle: 0.85, branchStart: 0.46, branchOpen: 0.55 },
+            grandDesign: { armCount: 2, wind: 3.5, armStart: 0.18, barHalfLength: 0, barAngle: 0, branchStart: 1, branchOpen: 0 }
+          };
+          var spiralLayout = SPIRAL_LAYOUTS[galaxyType] || null;
+          function spiralPatternAngle(arm, radius, offset) {
+            if (!spiralLayout) return offset || 0;
+            if (galaxyType === 'barredSpiral') {
+              var barParent = arm % 2;
+              var patternAngle = spiralLayout.barAngle + barParent * Math.PI + (radius - spiralLayout.barHalfLength) * spiralLayout.wind;
+              if (arm >= 2) {
+                var branchMix = Math.max(0, Math.min(1, (radius - spiralLayout.branchStart) / Math.max(0.01, 0.88 - spiralLayout.branchStart)));
+                branchMix = branchMix * branchMix * (3 - 2 * branchMix);
+                patternAngle += spiralLayout.branchOpen * branchMix;
+              }
+              return patternAngle + (offset || 0);
+            }
+            return arm * Math.PI + radius * spiralLayout.wind + (offset || 0);
+          }
 
           // Ellipticals are pressure-supported, gas-poor stellar systems. Keep their
           // point sources small and their diffuse light below the bloom clip point;
@@ -1482,6 +1506,84 @@ if (!window._galaxyHasLoadedOnce) {
               z: -0.14 - plumeT * 0.13 + irregularBell(plumeSpread)
             };
           }
+          function sampleEllipticalVolumePosition(extent, denseShare) {
+            var denseComponent = Math.random() < denseShare;
+            var radius = Math.pow(Math.random(), denseComponent ? 1.8 : 0.62) * extent;
+            var azimuth = Math.random() * Math.PI * 2;
+            var cosPolar = Math.random() * 2 - 1;
+            var sinPolar = Math.sqrt(Math.max(0, 1 - cosPolar * cosPolar));
+            return {
+              x: Math.cos(azimuth) * sinPolar * radius,
+              y: cosPolar * radius * 0.62,
+              z: Math.sin(azimuth) * sinPolar * radius * 0.78
+            };
+          }
+
+          function resolveGalaxyStarLuminosity(typeIndex, luminositySample, luminosityScale) {
+            var sample = Math.max(0, Math.min(1, Number.isFinite(luminositySample) ? luminositySample : 0));
+            var scale = Number.isFinite(luminosityScale) ? luminosityScale : 1;
+            return Math.min(2.4, 0.34 + (1 - typeIndex / 8) * 0.52 + Math.pow(sample, 4.2) * 1.72) * scale;
+          }
+
+          // CPU twin of the stellar vertex-shader motion. Selection, measurement,
+          // and picking must follow the position learners actually see, rather than
+          // the undeformed BufferGeometry used to seed the shader.
+          function evaluateGalaxyStarPosition(star, elapsed, rotationMode, morphology, motionEnabled, target) {
+            var out = target || {};
+            var x = star.x, y = star.y, z = star.z;
+            out.x = x; out.y = y; out.z = z; out.angularRate = 0;
+            if (motionEnabled === false) return out;
+
+            var time = Number.isFinite(elapsed) ? elapsed : 0;
+            var mode = Number.isFinite(rotationMode) ? rotationMode : 2;
+            var phase = Number.isFinite(star.phase) ? star.phase : 0;
+            var phaseRadians = phase * 6.283;
+
+            if (morphology === 'elliptical') {
+              var radius3 = Math.sqrt(x * x + y * y + z * z);
+              var axisX = Math.sin(phaseRadians);
+              var axisY = 0.45 + 0.35 * Math.cos(phase * 10.2);
+              var axisZ = Math.cos(phaseRadians);
+              var axisLength = Math.sqrt(axisX * axisX + axisY * axisY + axisZ * axisZ) || 1;
+              axisX /= axisLength; axisY /= axisLength; axisZ /= axisLength;
+              var phaseOrbit = phase * 5.73;
+              var orbitRate = 0.009 * (0.72 + (phaseOrbit - Math.floor(phaseOrbit)) * 0.66) / Math.sqrt(Math.max(radius3, 0.08));
+              var orbitAngle = time * orbitRate;
+              var orbitCos = Math.cos(orbitAngle), orbitSin = Math.sin(orbitAngle), orbitBlend = 1 - orbitCos;
+              var orbitDot = axisX * x + axisY * y + axisZ * z;
+              var crossX = axisY * z - axisZ * y;
+              var crossY = axisZ * x - axisX * z;
+              var crossZ = axisX * y - axisY * x;
+              out.x = x * orbitCos + crossX * orbitSin + axisX * orbitDot * orbitBlend;
+              out.y = y * orbitCos + crossY * orbitSin + axisY * orbitDot * orbitBlend;
+              out.z = z * orbitCos + crossZ * orbitSin + axisZ * orbitDot * orbitBlend;
+              out.angularRate = orbitRate;
+              return out;
+            }
+
+            if (morphology === 'irregular') {
+              var irregularRate = mode < 0.5 ? 0.0048 : mode < 1.5 ? 0.0032 : 0.004;
+              var irregularAngle = time * irregularRate;
+              var irregularCos = Math.cos(irregularAngle), irregularSin = Math.sin(irregularAngle);
+              out.x = x * irregularCos - z * irregularSin;
+              out.y = y + (time > 0 ? Math.sin(time * 0.16 + phaseRadians) * 0.0025 : 0);
+              out.z = x * irregularSin + z * irregularCos;
+              out.angularRate = irregularRate;
+              return out;
+            }
+
+            var radius = Math.sqrt(x * x + z * z);
+            if (radius > 0.001) {
+              var baseAngle = Math.atan2(z, x);
+              var omega = mode < 0.5 ? 0.018 : mode < 1.5 ? 0.012 / Math.pow(Math.max(radius, 0.06), 1.5) : 0.03 / Math.max(radius, 0.06);
+              var animatedAngle = baseAngle + time * omega;
+              out.x = Math.cos(animatedAngle) * radius;
+              out.z = Math.sin(animatedAngle) * radius;
+              out.angularRate = omega;
+            }
+            return out;
+          }
+
           function generateStars(THREE, count, gType, galaxyType, ageDist) {
 
             var starGeo = new THREE.BufferGeometry();
@@ -1541,31 +1643,26 @@ if (!window._galaxyHasLoadedOnce) {
                 }
               } else {
 
-                var arm = i % (gType.arms || 4);
-
-                var armAngle = (arm / (gType.arms || 4)) * Math.PI * 2;
+                var arm = i % spiralLayout.armCount;
 
                 var dist = Math.pow(Math.random(), 0.6) * 0.8;
 
-                var windTight = gType.windTightness || 2.5;
-
-                var barLen = gType.barLength || 0;
-
                 var spread = 0.12 * dist + 0.04;
 
-                var angle = armAngle + dist * windTight + (Math.random() - 0.5) * spread;
+                if (galaxyType === 'barredSpiral' && dist < spiralLayout.barHalfLength) {
 
-                if (barLen > 0 && dist < barLen) {
+                  var barSide = arm % 2 ? -1 : 1;
+                  var barAlong = barSide * dist + (Math.random() - 0.5) * 0.035;
+                  var barAcross = (Math.random() - 0.5) * (0.025 + dist * 0.05);
 
-                  var barAngle = (arm % 2 === 0) ? 0 : Math.PI;
+                  x = Math.cos(spiralLayout.barAngle) * barAlong - Math.sin(spiralLayout.barAngle) * barAcross;
 
-                  x = Math.cos(barAngle) * dist + (Math.random() - 0.5) * 0.04;
-
-                  z = Math.sin(barAngle) * dist * 0.15 + (Math.random() - 0.5) * 0.03;
+                  z = Math.sin(spiralLayout.barAngle) * barAlong + Math.cos(spiralLayout.barAngle) * barAcross;
 
                 } else {
 
                   var armSpread = 0.02 + dist * 0.05;
+                  var angle = spiralPatternAngle(arm, dist, (Math.random() - 0.5) * spread);
 
                   x = Math.cos(angle) * dist + (Math.random() - 0.5) * armSpread;
 
@@ -1588,10 +1685,12 @@ if (!window._galaxyHasLoadedOnce) {
               starColors[i * 3] = c.r; starColors[i * 3 + 1] = c.g; starColors[i * 3 + 2] = c.b;
 
               starTypeArr[i] = typeIdx; starPhaseArr[i] = Math.random();
-              starLuminosityArr[i] = Math.min(2.4, 0.34 + (1 - typeIdx / 8) * 0.52 + Math.pow(Math.random(), 4.2) * 1.72);
-              if (irregularPlumeStar) starLuminosityArr[i] *= 0.44;
+              var luminositySample = Math.random(), luminosityScale = irregularPlumeStar ? 0.44 : 1;
+              starLuminosityArr[i] = resolveGalaxyStarLuminosity(typeIdx, luminositySample, luminosityScale);
 
-              starData.push({ type: st, x: x, y: y, z: z, idx: i, luminosity: starLuminosityArr[i] });
+              // Read values back from the typed arrays so CPU interaction uses the
+              // exact float32 position/phase/luminosity consumed by WebGL.
+              starData.push({ type: st, x: starPos[i * 3], y: starPos[i * 3 + 1], z: starPos[i * 3 + 2], idx: i, phase: starPhaseArr[i], luminosity: starLuminosityArr[i], luminositySample: luminositySample, luminosityScale: luminosityScale });
 
             }
 
@@ -1721,6 +1820,7 @@ if (!window._galaxyHasLoadedOnce) {
             dopplerVelocityFieldGroup.visible = isSpiralMorphology;
             radioPolarizationGroup.visible = isSpiralMorphology;
             var infraredPointMaterial = null, radioPointMaterial = null, xrayPointMaterial = null, jetMat = null, adaptiveOverlayPointMaterials = [], adaptiveDensePointMaterials = [];
+            var extendedInstrumentDetail = 1, resolvedInstrumentDetail = 1, xrayBeaconVisibility = 1;
             var fineStarTex = null;
 
             var xrayGroup = new THREE.Group(); xrayGroup.name = 'xray';
@@ -2071,7 +2171,7 @@ if (!window._galaxyHasLoadedOnce) {
                 '    float irregularAngle = uTime * irregularRate;',
                 '    float irregularCos = cos(irregularAngle);',
                 '    float irregularSin = sin(irregularAngle);',
-                '    p = vec3(position.x * irregularCos - position.z * irregularSin, position.y + sin(uTime * 0.16 + aPhase * 6.283) * 0.0025, position.x * irregularSin + position.z * irregularCos);',
+                '    p = vec3(position.x * irregularCos - position.z * irregularSin, position.y + (uTime > 0.0 ? sin(uTime * 0.16 + aPhase * 6.283) * 0.0025 : 0.0), position.x * irregularSin + position.z * irregularCos);',
                 '    rr = length(p.xz);',
                 '  } else if (rr > 0.001) {',
                 '    float a0 = atan(position.z, position.x);',
@@ -2235,7 +2335,7 @@ if (!window._galaxyHasLoadedOnce) {
             var starData = starResult.data;
 
             var visualGlow = { disk: 0.16 * morphologyVisual.diskGlow, arms: 0.18 * morphologyVisual.armGlow, core: 0.42 * morphologyVisual.coreGlow };
-            var diskSheenMat = null, armGlowMat = null, microStarMat = null, gasMat = null, coreFlare = null, coreFlareBaseScaleX = galaxyType === 'elliptical' ? 0.34 : 0.58, coreFlareBaseScaleY = galaxyType === 'elliptical' ? 0.2 : 0.24;
+            var diskSheen = null, diskSheenMat = null, armGlowMat = null, microStarMat = null, gasMat = null, coreFlare = null, glowPos = null, microStarPos = null, radioPos = null, xrayPos = null, halo = null, coreFlareBaseScaleX = galaxyType === 'elliptical' ? 0.34 : 0.58, coreFlareBaseScaleY = galaxyType === 'elliptical' ? 0.2 : 0.24;
             var coreLightBars = [];
             var streamlineGroup = new THREE.Group(); streamlineGroup.name = 'orbitalStreamlines'; streamlineGroup.renderOrder = 3; armGroup.add(streamlineGroup);
             var streamlineMats = [], streamlineGlow = 1;
@@ -2289,9 +2389,9 @@ if (!window._galaxyHasLoadedOnce) {
                   var strandOffset = (ridgeStrand - (ridgeStrands - 1) * 0.5) * 0.016;
                   for (var ridgeStep = 0; ridgeStep <= ridgeSegments; ridgeStep++) {
                     var ridgeT = ridgeStep / ridgeSegments;
-                    var ridgeRadius = 0.12 + ridgeT * 0.78;
+                    var ridgeRadius = spiralLayout.armStart + ridgeT * (0.9 - spiralLayout.armStart);
                     var ridgeFeather = Math.sin(ridgeT * Math.PI * (5 + ridgeStrand) + ridgeArm * 1.7) * (0.0025 + ridgeT * 0.005);
-                    var ridgeAngle = ridgeArm / ridgeArmCount * Math.PI * 2 + ridgeRadius * (gType.windTightness || 2.5) + strandOffset + ridgeFeather;
+                    var ridgeAngle = spiralPatternAngle(ridgeArm, ridgeRadius, strandOffset + ridgeFeather);
                     ridgePoints.push(new THREE.Vector3(Math.cos(ridgeAngle) * ridgeRadius, 0.003 + (ridgeStrand % 2 ? -1 : 1) * 0.0018 + Math.sin(ridgeT * Math.PI * 3 + ridgeArm) * 0.0012, Math.sin(ridgeAngle) * ridgeRadius));
                   }
                   var ridgeMaterial = new THREE.LineBasicMaterial({ color: ridgeStrand % 3 === 0 ? 0xbfdbfe : ridgeStrand % 3 === 1 ? 0xf9a8d4 : 0xffedd5, transparent: true, opacity: 0.028 + (ridgeStrands - ridgeStrand) * 0.006, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
@@ -2305,7 +2405,7 @@ if (!window._galaxyHasLoadedOnce) {
                 var spurArm = spurIndex % ridgeArmCount, spurBaseRadius = 0.22 + ((spurIndex * 0.173) % 0.58);
                 for (var spurStep = 0; spurStep <= spurSegments; spurStep++) {
                   var spurT = spurStep / spurSegments, spurRadius = spurBaseRadius + spurT * (0.035 + (spurIndex % 4) * 0.009);
-                  var parentAngle = spurArm / ridgeArmCount * Math.PI * 2 + spurRadius * (gType.windTightness || 2.5);
+                  var parentAngle = spiralPatternAngle(spurArm, spurRadius, 0);
                   var spurAngle = parentAngle - 0.018 + spurT * (0.1 + (spurIndex % 3) * 0.024) + Math.sin(spurT * Math.PI) * 0.012;
                   spurPoints.push(new THREE.Vector3(Math.cos(spurAngle) * spurRadius, 0.005 + Math.sin(spurT * Math.PI) * 0.0025, Math.sin(spurAngle) * spurRadius));
                 }
@@ -2365,8 +2465,9 @@ if (!window._galaxyHasLoadedOnce) {
                     diskCtx.beginPath();
                     for (var step = 0; step <= 95; step++) {
                       var frac = step / 95;
-                      var rr = 18 + frac * 224;
-                      var aa = da / diskArms * Math.PI * 2 + frac * (gType.windTightness || 2.4) * 2.2 + pass * 0.038;
+                      var armTextureRadius = spiralLayout.armStart + frac * (0.96 - spiralLayout.armStart);
+                      var rr = armTextureRadius * 245;
+                      var aa = spiralPatternAngle(da, armTextureRadius, pass * 0.038);
                       var px = Math.cos(aa) * rr;
                       var py = Math.sin(aa) * rr;
                       if (step === 0) diskCtx.moveTo(px, py);
@@ -2396,34 +2497,30 @@ if (!window._galaxyHasLoadedOnce) {
                 // Keep the optical body discontinuous; the extended plume appears
                 // through sparse stars and becomes clearest in infrared/radio.
               }
-              var diskTex = tuneGalaxyTexture(new THREE.CanvasTexture(diskCv));
-              var diskSheen;
-              if (galaxyType === 'elliptical') {
-                diskSheenMat = new THREE.SpriteMaterial({ map: diskTex, transparent: true, opacity: visualGlow.disk, depthWrite: false, blending: THREE.AdditiveBlending });
-                diskSheen = new THREE.Sprite(diskSheenMat);
-                diskSheen.scale.set(1.42, 0.86, 1);
-              } else {
+              var diskTex = isSpiralMorphology ? tuneGalaxyTexture(new THREE.CanvasTexture(diskCv)) : null;
+              diskSheen = null;
+              if (isSpiralMorphology) {
                 diskSheenMat = new THREE.MeshBasicMaterial({ map: diskTex, transparent: true, opacity: visualGlow.disk, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
                 diskSheen = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.9), diskSheenMat);
                 diskSheen.rotation.x = Math.PI * 0.5;
               }
-              diskSheen.position.y = -0.012;
-              diskSheen.renderOrder = -2;
-              armGroup.add(diskSheen);
+              if (diskSheen) {
+                diskSheen.position.y = -0.012;
+                diskSheen.renderOrder = -2;
+                armGroup.add(diskSheen);
+              }
 
               var glowCount = Math.round((galaxyType === 'elliptical' ? 1800 : galaxyType === 'irregular' ? 2400 : 4200) * detailScale);
               var glowGeo = new THREE.BufferGeometry();
-              var glowPos = new Float32Array(glowCount * 3);
+              glowPos = new Float32Array(glowCount * 3);
               var glowCol = new Float32Array(glowCount * 3);
               for (var gi2 = 0; gi2 < glowCount; gi2++) {
                 var gx, gy, gz, hue;
                 if (galaxyType === 'elliptical') {
-                  var er = Math.pow(Math.random(), 0.38) * 0.74;
-                  var et = Math.random() * Math.PI * 2;
-                  var ep = (Math.random() - 0.5) * Math.PI * 0.72;
-                  gx = Math.cos(et) * Math.cos(ep) * er;
-                  gy = Math.sin(ep) * er * 0.34;
-                  gz = Math.sin(et) * Math.cos(ep) * er * 0.78;
+                  var ellipticalGlow = sampleEllipticalVolumePosition(0.74, 0.78);
+                  gx = ellipticalGlow.x;
+                  gy = ellipticalGlow.y;
+                  gz = ellipticalGlow.z;
                   hue = 0.10 + Math.random() * 0.05;
                 } else if (galaxyType === 'irregular') {
                   var glowAnchor = pickIrregularMorphologyAnchor(((gi2 * 67) % 997) / 997);
@@ -2433,15 +2530,15 @@ if (!window._galaxyHasLoadedOnce) {
                   hue = Math.random() < 0.5 ? 0.55 + Math.random() * 0.05 : 0.90 + Math.random() * 0.07;
                 } else {
                   var ga = gi2 % (gType.arms || 4);
-                  var ga0 = ga / (gType.arms || 4) * Math.PI * 2;
                   var gr = Math.pow(Math.random(), 0.58) * 0.86;
-                  var gw = gType.windTightness || 2.5;
                   var armWidth = 0.035 + gr * 0.07;
-                  var gang = ga0 + gr * gw + (Math.random() - 0.5) * armWidth;
-                  if (gType.barLength && gr < gType.barLength) {
-                    var barAng = ga % 2 === 0 ? 0 : Math.PI;
-                    gx = Math.cos(barAng) * gr + (Math.random() - 0.5) * 0.05;
-                    gz = Math.sin(barAng) * gr * 0.18 + (Math.random() - 0.5) * 0.04;
+                  var gang = spiralPatternAngle(ga, gr, (Math.random() - 0.5) * armWidth);
+                  if (galaxyType === 'barredSpiral' && gr < spiralLayout.barHalfLength) {
+                    var glowBarSide = ga % 2 ? -1 : 1;
+                    var glowBarAlong = glowBarSide * gr + (Math.random() - 0.5) * 0.04;
+                    var glowBarAcross = (Math.random() - 0.5) * (0.035 + gr * 0.04);
+                    gx = Math.cos(spiralLayout.barAngle) * glowBarAlong - Math.sin(spiralLayout.barAngle) * glowBarAcross;
+                    gz = Math.sin(spiralLayout.barAngle) * glowBarAlong + Math.cos(spiralLayout.barAngle) * glowBarAcross;
                   } else {
                     gx = Math.cos(gang) * gr + (Math.random() - 0.5) * armWidth;
                     gz = Math.sin(gang) * gr + (Math.random() - 0.5) * armWidth;
@@ -2466,25 +2563,26 @@ if (!window._galaxyHasLoadedOnce) {
               // without inflating the selectable scientific star catalogue.
               var microStarCount = resolvedQuality === 'cinematic' ? 18000 : resolvedQuality === 'high' ? 7200 : 2400;
               var microStarGeo = new THREE.BufferGeometry();
-              var microStarPos = new Float32Array(microStarCount * 3), microStarCol = new Float32Array(microStarCount * 3);
+              microStarPos = new Float32Array(microStarCount * 3); var microStarCol = new Float32Array(microStarCount * 3);
               for (var ms = 0; ms < microStarCount; ms++) {
                 var msRadius = Math.pow(Math.random(), galaxyType === 'elliptical' ? 0.48 : 0.66) * (galaxyType === 'elliptical' ? 0.72 : 0.88);
                 var msAngle, msY, msX, msZ;
                 if (galaxyType === 'elliptical') {
-                  msAngle = Math.random() * Math.PI * 2; msY = (Math.random() - 0.5) * 0.34 * (1 - msRadius * 0.55);
+                  var ellipticalMicroStar = sampleEllipticalVolumePosition(0.72, 0.7);
+                  msX = ellipticalMicroStar.x; msY = ellipticalMicroStar.y; msZ = ellipticalMicroStar.z;
                 } else if (galaxyType === 'irregular') {
                   var microAnchor = pickIrregularMorphologyAnchor(((ms * 43) % 991) / 991);
                   msX = microAnchor.x + irregularBell(microAnchor.sx * 1.35);
                   msY = microAnchor.y + irregularBell(microAnchor.sy * 1.45);
                   msZ = microAnchor.z + irregularBell(microAnchor.sz * 1.35);
                 } else {
-                  var msArm = ms % (gType.arms || 4);
-                  msAngle = msArm / (gType.arms || 4) * Math.PI * 2 + msRadius * (gType.windTightness || 2.5) + (Math.random() - 0.5) * (0.045 + msRadius * 0.07);
+                  var msArm = ms % spiralLayout.armCount;
+                  msAngle = spiralPatternAngle(msArm, msRadius, (Math.random() - 0.5) * (0.045 + msRadius * 0.07));
                   msY = (Math.random() - 0.5) * 0.038 * (1 - msRadius * 0.45);
                 }
-                microStarPos[ms * 3] = galaxyType === 'irregular' ? msX : Math.cos(msAngle) * msRadius + (Math.random() - 0.5) * 0.012;
+                microStarPos[ms * 3] = galaxyType === 'elliptical' || galaxyType === 'irregular' ? msX : Math.cos(msAngle) * msRadius + (Math.random() - 0.5) * 0.012;
                 microStarPos[ms * 3 + 1] = msY;
-                microStarPos[ms * 3 + 2] = galaxyType === 'irregular' ? msZ : Math.sin(msAngle) * msRadius * (galaxyType === 'elliptical' ? 0.78 : 1) + (Math.random() - 0.5) * 0.012;
+                microStarPos[ms * 3 + 2] = galaxyType === 'elliptical' || galaxyType === 'irregular' ? msZ : Math.sin(msAngle) * msRadius + (Math.random() - 0.5) * 0.012;
                 var microHue = galaxyType === 'elliptical' ? 0.1 + Math.random() * 0.045 : Math.random() < 0.58 ? 0.57 + Math.random() * 0.045 : Math.random() < 0.82 ? 0.92 + Math.random() * 0.055 : 0.11;
                 var microColor = new THREE.Color().setHSL(microHue, 0.62 + Math.random() * 0.26, 0.44 + Math.random() * 0.24);
                 microStarCol[ms * 3] = microColor.r; microStarCol[ms * 3 + 1] = microColor.g; microStarCol[ms * 3 + 2] = microColor.b;
@@ -2566,10 +2664,12 @@ if (!window._galaxyHasLoadedOnce) {
               barCore.addColorStop(1, 'rgba(255,255,255,0)');
               barCtx.fillStyle = barCore; barCtx.fillRect(144, 0, 96, 48);
               var barTex = tuneGalaxyTexture(new THREE.CanvasTexture(barCv));
-              (isSpiralMorphology ? [0, 1] : []).forEach(function (barIdx) {
-                var barMat = new THREE.SpriteMaterial({ map: barTex, transparent: true, opacity: barIdx ? 0.16 : 0.24, depthWrite: false, blending: THREE.AdditiveBlending, rotation: barIdx ? 0.08 : -0.05 });
-                var barSprite = new THREE.Sprite(barMat);
-                barSprite.scale.set(barIdx ? 0.82 : 1.12, barIdx ? 0.065 : 0.08, 1);
+              (galaxyType === 'barredSpiral' ? [0, 1] : []).forEach(function (barIdx) {
+                var barMat = new THREE.MeshBasicMaterial({ map: barTex, transparent: true, opacity: barIdx ? 0.16 : 0.24, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+                var barSprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), barMat);
+                barSprite.rotation.x = Math.PI * 0.5;
+                barSprite.rotation.y = -spiralLayout.barAngle;
+                barSprite.scale.set(spiralLayout.barHalfLength * 2 * (barIdx ? 0.92 : 1.08), barIdx ? 0.055 : 0.078, 1);
                 barSprite.userData = { baseOpacity: barMat.opacity, baseScaleX: barSprite.scale.x, baseScaleY: barSprite.scale.y, phase: barIdx * 1.7 };
                 barSprite.renderOrder = 5;
                 bulgeGroup.add(barSprite);
@@ -2715,15 +2815,11 @@ if (!window._galaxyHasLoadedOnce) {
                 } else {
                 var dArm = di % (gType.arms || 4);
 
-                var dArmAngle = (dArm / (gType.arms || 4)) * Math.PI * 2;
-
                 var dDist = Math.pow(Math.random(), 0.5) * 0.7;
-
-                var dWind = gType.windTightness || 2.5;
 
                 var dOffset = 0.15 + Math.random() * 0.1;
 
-                var dAngle = dArmAngle + dDist * dWind + dOffset;
+                var dAngle = spiralPatternAngle(dArm, dDist, dOffset);
 
                 dustPos[di * 3] = Math.cos(dAngle) * dDist + (Math.random() - 0.5) * 0.02;
 
@@ -2822,7 +2918,7 @@ if (!window._galaxyHasLoadedOnce) {
               var shaftCtx = upscaleGalaxyCanvas(shaftCv, shaftCv.getContext('2d')); var shaftGradient = shaftCtx.createLinearGradient(12, 64, 244, 64); shaftGradient.addColorStop(0, 'rgba(255,255,255,0)'); shaftGradient.addColorStop(0.18, 'rgba(255,255,255,0.12)'); shaftGradient.addColorStop(0.54, 'rgba(255,255,255,0.42)'); shaftGradient.addColorStop(1, 'rgba(255,255,255,0)'); shaftCtx.fillStyle = shaftGradient; shaftCtx.beginPath(); shaftCtx.moveTo(8, 62); shaftCtx.quadraticCurveTo(118, 20, 248, 54); shaftCtx.quadraticCurveTo(118, 108, 8, 66); shaftCtx.closePath(); shaftCtx.fill();
               var shaftTexture = tuneGalaxyTexture(new THREE.CanvasTexture(shaftCv));
               var shaftCount = resolvedQuality === 'cinematic' ? 32 : resolvedQuality === 'high' ? 22 : 12;
-              for (var shaftIndex = 0; shaftIndex < shaftCount; shaftIndex++) { var shaftRadius = 0.16 + Math.pow(Math.random(), 0.82) * 0.58, shaftArm = shaftIndex % (gType.arms || 4), shaftAngle = galaxyType === 'irregular' ? Math.random() * Math.PI * 2 : shaftArm / (gType.arms || 4) * Math.PI * 2 + shaftRadius * (gType.windTightness || 2.5) + 0.08; var shaftMaterial = new THREE.SpriteMaterial({ map: shaftTexture, color: shaftIndex % 5 === 0 ? 0x93c5fd : shaftIndex % 3 === 0 ? 0xf9a8d4 : 0xfde68a, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, rotation: shaftAngle + Math.PI * 0.5 }); var shaftSprite = new THREE.Sprite(shaftMaterial), shaftScaleX = 0.16 + Math.random() * 0.24, shaftScaleY = shaftScaleX * (0.16 + Math.random() * 0.15); shaftSprite.position.set(Math.cos(shaftAngle) * shaftRadius, 0.012 + (Math.random() - 0.5) * 0.035, Math.sin(shaftAngle) * shaftRadius); shaftSprite.scale.set(shaftScaleX, shaftScaleY, 1); shaftSprite.userData = { baseOpacity: 0.025 + Math.random() * 0.055, baseScaleX: shaftScaleX, baseScaleY: shaftScaleY, phase: Math.random() * Math.PI * 2, drift: (Math.random() - 0.5) * 0.00016 }; shaftSprite.renderOrder = 7; dustBacklightGroup.add(shaftSprite); dustBacklightSprites.push(shaftSprite); }
+              for (var shaftIndex = 0; shaftIndex < shaftCount; shaftIndex++) { var shaftRadius = 0.16 + Math.pow(Math.random(), 0.82) * 0.58, shaftArm = shaftIndex % (gType.arms || 4), shaftAngle = galaxyType === 'irregular' ? Math.random() * Math.PI * 2 : spiralPatternAngle(shaftArm, shaftRadius, 0.08); var shaftMaterial = new THREE.SpriteMaterial({ map: shaftTexture, color: shaftIndex % 5 === 0 ? 0x93c5fd : shaftIndex % 3 === 0 ? 0xf9a8d4 : 0xfde68a, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, rotation: shaftAngle + Math.PI * 0.5 }); var shaftSprite = new THREE.Sprite(shaftMaterial), shaftScaleX = 0.16 + Math.random() * 0.24, shaftScaleY = shaftScaleX * (0.16 + Math.random() * 0.15); shaftSprite.position.set(Math.cos(shaftAngle) * shaftRadius, 0.012 + (Math.random() - 0.5) * 0.035, Math.sin(shaftAngle) * shaftRadius); shaftSprite.scale.set(shaftScaleX, shaftScaleY, 1); shaftSprite.userData = { baseOpacity: 0.025 + Math.random() * 0.055, baseScaleX: shaftScaleX, baseScaleY: shaftScaleY, phase: Math.random() * Math.PI * 2, drift: (Math.random() - 0.5) * 0.00016 }; shaftSprite.renderOrder = 7; dustBacklightGroup.add(shaftSprite); dustBacklightSprites.push(shaftSprite); }
             })();
             var gasGroup = new THREE.Group(); gasGroup.name = 'gas';
             scene.add(gasGroup);
@@ -2846,11 +2942,9 @@ if (!window._galaxyHasLoadedOnce) {
                   }
                 } else {
                 var gArm = gi % (gType.arms || 4);
-                var gArmAngle = (gArm / (gType.arms || 4)) * Math.PI * 2;
                 var gDist = Math.pow(Math.random(), 0.6) * 0.9;
-                var gWind = gType.windTightness || 2.5;
                 var gOffset = (Math.random() - 0.5) * 0.15;
-                var gAngle = gArmAngle + gDist * gWind + gOffset;
+                var gAngle = spiralPatternAngle(gArm, gDist, gOffset);
                 gasPos[gi * 3] = Math.cos(gAngle) * gDist + (Math.random() - 0.5) * 0.05;
                 gasPos[gi * 3 + 1] = (Math.random() - 0.5) * 0.03;
                 gasPos[gi * 3 + 2] = Math.sin(gAngle) * gDist + (Math.random() - 0.5) * 0.05;
@@ -2886,7 +2980,8 @@ if (!window._galaxyHasLoadedOnce) {
             var globularGroup = new THREE.Group(); globularGroup.name = 'globularClusterHalo';
             bgGroup.add(globularGroup); bgGroup.add(satelliteGroup); scene.add(atmosphereGroup);
             atmosphereGroup.visible = galaxyType !== 'elliptical';
-            var volumetricDustSprites = [], starBirthSprites = [], satelliteMats = [], tidalStreamMats = [];
+            var volumetricDustSprites = [], starBirthSprites = [], satelliteMats = [], tidalStreamMats = [], interactionBridgeObjects = [];
+            var companionCountRealized = 0, companionPolicy = galaxyType === 'grandDesign' ? 'interacting' : galaxyType === 'barredSpiral' ? 'background' : galaxyType === 'elliptical' ? 'minor-merger' : 'asymmetric-dwarfs';
             var globularSprites = [], satelliteCoreSprites = [], dustFeatherMats = [], ionizedShells = [], supernovaRemnantArcs = [];
             var resolvedSatelliteMorphologyGroup = new THREE.Group(); resolvedSatelliteMorphologyGroup.name = 'resolvedSatelliteDwarfMorphologies'; satelliteGroup.add(resolvedSatelliteMorphologyGroup);
             var satelliteEnvelopeSprites = [], ramPressureTailMaterials = [], strippedSatelliteGasKnots = [], satelliteDwarfMode = 1, ramPressureMode = 1;
@@ -2931,7 +3026,7 @@ if (!window._galaxyHasLoadedOnce) {
               for (var shockArm = 0; shockArm < shockArmCount; shockArm++) {
                 var shockDustPoints = [], shockFormationPoints = [];
                 for (var shockStep = 0; shockStep <= shockSegments; shockStep++) {
-                  var shockT = shockStep / shockSegments, shockRadius = 0.15 + shockT * 0.72, shockBaseAngle = shockArm / shockArmCount * Math.PI * 2 + shockRadius * (gType.windTightness || 2.5), shockRipple = Math.sin(shockT * Math.PI * 7 + shockArm) * 0.006;
+                  var shockT = shockStep / shockSegments, shockRadius = 0.15 + shockT * 0.72, shockBaseAngle = spiralPatternAngle(shockArm, shockRadius, 0), shockRipple = Math.sin(shockT * Math.PI * 7 + shockArm) * 0.006;
                   var compressionAngle = shockBaseAngle - 0.038 + shockRipple, formationAngle = shockBaseAngle + 0.024 + shockRipple * 0.55;
                   shockDustPoints.push(new THREE.Vector3(Math.cos(compressionAngle) * shockRadius, 0.006 + Math.sin(shockT * Math.PI * 4 + shockArm) * 0.0018, Math.sin(compressionAngle) * shockRadius));
                   shockFormationPoints.push(new THREE.Vector3(Math.cos(formationAngle) * shockRadius, 0.009 + Math.sin(shockT * Math.PI * 5 + shockArm) * 0.0022, Math.sin(formationAngle) * shockRadius));
@@ -2944,7 +3039,7 @@ if (!window._galaxyHasLoadedOnce) {
               var magneticFilamentCount = resolvedQuality === 'cinematic' ? 180 : resolvedQuality === 'high' ? 108 : 56, filamentPositions = new Float32Array(magneticFilamentCount * 6), filamentRimPositions = new Float32Array(magneticFilamentCount * 6);
               for (var magneticFilamentIndex = 0; magneticFilamentIndex < magneticFilamentCount; magneticFilamentIndex++) {
                 var filamentArm = magneticFilamentIndex % shockArmCount, filamentRadius = 0.18 + Math.pow(Math.random(), 0.82) * 0.64, filamentLength = 0.018 + Math.random() * 0.038, filamentRadiusA = filamentRadius - filamentLength * 0.5, filamentRadiusB = filamentRadius + filamentLength * 0.5;
-                var filamentJitter = (Math.random() - 0.5) * 0.09, filamentAngleA = filamentArm / shockArmCount * Math.PI * 2 + filamentRadiusA * (gType.windTightness || 2.5) - 0.012 + filamentJitter, filamentAngleB = filamentArm / shockArmCount * Math.PI * 2 + filamentRadiusB * (gType.windTightness || 2.5) - 0.012 + filamentJitter + (Math.random() - 0.5) * 0.025, filamentY = 0.008 + (Math.random() - 0.5) * 0.012, filamentOffset = magneticFilamentIndex * 6;
+                var filamentJitter = (Math.random() - 0.5) * 0.09, filamentAngleA = spiralPatternAngle(filamentArm, filamentRadiusA, -0.012 + filamentJitter), filamentAngleB = spiralPatternAngle(filamentArm, filamentRadiusB, -0.012 + filamentJitter + (Math.random() - 0.5) * 0.025), filamentY = 0.008 + (Math.random() - 0.5) * 0.012, filamentOffset = magneticFilamentIndex * 6;
                 filamentPositions[filamentOffset] = Math.cos(filamentAngleA) * filamentRadiusA; filamentPositions[filamentOffset + 1] = filamentY; filamentPositions[filamentOffset + 2] = Math.sin(filamentAngleA) * filamentRadiusA; filamentPositions[filamentOffset + 3] = Math.cos(filamentAngleB) * filamentRadiusB; filamentPositions[filamentOffset + 4] = filamentY; filamentPositions[filamentOffset + 5] = Math.sin(filamentAngleB) * filamentRadiusB;
                 filamentRimPositions[filamentOffset] = filamentPositions[filamentOffset] * 1.002; filamentRimPositions[filamentOffset + 1] = filamentY + 0.0012; filamentRimPositions[filamentOffset + 2] = filamentPositions[filamentOffset + 2] * 1.002; filamentRimPositions[filamentOffset + 3] = filamentPositions[filamentOffset + 3] * 1.002; filamentRimPositions[filamentOffset + 4] = filamentY + 0.0012; filamentRimPositions[filamentOffset + 5] = filamentPositions[filamentOffset + 5] * 1.002;
               }
@@ -3101,12 +3196,34 @@ if (!window._galaxyHasLoadedOnce) {
               }
 
               // Compact open clusters resolve the youngest spiral-arm associations.
-              var openClusterStarCount = resolvedQuality === 'cinematic' ? 7200 : resolvedQuality === 'high' ? 3200 : 1200;
-              var openClusterSize = 28, openCenterCount = Math.ceil(openClusterStarCount / openClusterSize), openCenters = [];
-              for (var oc = 0; oc < openCenterCount; oc++) { var ocRadius = 0.13 + Math.pow(Math.random(), 0.7) * 0.72, ocAngle = galaxyType === 'elliptical' || galaxyType === 'irregular' ? Math.random() * Math.PI * 2 : (oc % (gType.arms || 4)) / (gType.arms || 4) * Math.PI * 2 + ocRadius * (gType.windTightness || 2.5) - 0.05; openCenters.push({ x: Math.cos(ocAngle) * ocRadius, y: (Math.random() - 0.5) * 0.045, z: Math.sin(ocAngle) * ocRadius }); }
+              var baseOpenClusterStarCount = resolvedQuality === 'cinematic' ? 7200 : resolvedQuality === 'high' ? 3200 : 1200;
+              var openClusterStarCount = galaxyType === 'elliptical' ? 0 : baseOpenClusterStarCount;
+              var openClusterSize = 28, openCenterCount = Math.ceil(openClusterStarCount / openClusterSize), openCenters = [], openClusterMeanNearestAnchorDistance = 0;
+              for (var oc = 0; oc < openCenterCount; oc++) {
+                var openCenterX, openCenterY, openCenterZ;
+                if (galaxyType === 'irregular') {
+                  var openAnchor = pickIrregularMorphologyAnchor(((oc * 79) % 991) / 991);
+                  openCenterX = openAnchor.x + irregularBell(openAnchor.sx * 0.62);
+                  openCenterY = openAnchor.y + irregularBell(openAnchor.sy * 0.55);
+                  openCenterZ = openAnchor.z + irregularBell(openAnchor.sz * 0.62);
+                } else {
+                  var ocRadius = 0.13 + Math.pow(Math.random(), 0.7) * 0.72;
+                  var ocAngle = spiralPatternAngle(oc % spiralLayout.armCount, ocRadius, -0.05);
+                  openCenterX = Math.cos(ocAngle) * ocRadius;
+                  openCenterY = (Math.random() - 0.5) * 0.045;
+                  openCenterZ = Math.sin(ocAngle) * ocRadius;
+                }
+                openCenters.push({ x: openCenterX, y: openCenterY, z: openCenterZ });
+              }
+              if (galaxyType === 'irregular' && openCenters.length) {
+                openClusterMeanNearestAnchorDistance = openCenters.reduce(function (distanceSum, center) {
+                  var nearest = irregularMorphologyAnchors.reduce(function (minimum, anchor) { return Math.min(minimum, Math.hypot(center.x - anchor.x, center.y - anchor.y, center.z - anchor.z)); }, Infinity);
+                  return distanceSum + nearest;
+                }, 0) / openCenters.length;
+              }
               var openGeo = new THREE.BufferGeometry(), openPos = new Float32Array(openClusterStarCount * 3), openCol = new Float32Array(openClusterStarCount * 3);
               for (var os = 0; os < openClusterStarCount; os++) { var openCenter = openCenters[Math.floor(os / openClusterSize) % openCenters.length], openSpread = 0.004 + Math.pow(Math.random(), 2) * 0.024; openPos[os * 3] = openCenter.x + (Math.random() - 0.5) * openSpread; openPos[os * 3 + 1] = openCenter.y + (Math.random() - 0.5) * openSpread * 0.42; openPos[os * 3 + 2] = openCenter.z + (Math.random() - 0.5) * openSpread; var openColor = new THREE.Color().setHSL(os % 7 === 0 ? 0.91 : 0.57 + Math.random() * 0.045, 0.58 + Math.random() * 0.35, 0.58 + Math.random() * 0.3); openCol[os * 3] = openColor.r; openCol[os * 3 + 1] = openColor.g; openCol[os * 3 + 2] = openColor.b; }
-              openGeo.setAttribute('position', new THREE.BufferAttribute(openPos, 3)); openGeo.setAttribute('color', new THREE.BufferAttribute(openCol, 3)); openClusterMat = new THREE.PointsMaterial({ size: resolvedQuality === 'cinematic' ? 0.012 : 0.009, map: fineStarTex, vertexColors: true, transparent: true, opacity: 0.62, depthWrite: false, blending: THREE.AdditiveBlending }); openClusterMat.userData = { baseSize: openClusterMat.size, baseOpacity: openClusterMat.opacity, modeOpacity: openClusterMat.opacity }; adaptiveDensePointMaterials.push(openClusterMat); var openClusterPoints = new THREE.Points(openGeo, openClusterMat); openClusterPoints.renderOrder = 3; armGroup.add(openClusterPoints);
+              openGeo.setAttribute('position', new THREE.BufferAttribute(openPos, 3)); openGeo.setAttribute('color', new THREE.BufferAttribute(openCol, 3)); openClusterMat = new THREE.PointsMaterial({ size: resolvedQuality === 'cinematic' ? 0.012 : 0.009, map: fineStarTex, vertexColors: true, transparent: true, opacity: 0.62, depthWrite: false, blending: THREE.AdditiveBlending }); openClusterMat.userData = { baseSize: openClusterMat.size, baseOpacity: openClusterMat.opacity, modeOpacity: openClusterMat.opacity, pointCount: openClusterStarCount, centerCount: openCenterCount, meanNearestAnchorDistance: openClusterMeanNearestAnchorDistance }; adaptiveDensePointMaterials.push(openClusterMat); var openClusterPoints = new THREE.Points(openGeo, openClusterMat); openClusterPoints.renderOrder = 3; armGroup.add(openClusterPoints);
               // At close range, selected associations resolve into faint tidal
               // coronas and individually luminous members rather than larger dots.
               var resolvedClusterCount = Math.min(openCenters.length, resolvedQuality === 'cinematic' ? 48 : resolvedQuality === 'high' ? 30 : 18);
@@ -3144,10 +3261,11 @@ if (!window._galaxyHasLoadedOnce) {
               var escapedMemberGeometry = new THREE.BufferGeometry(); escapedMemberGeometry.setAttribute('position', new THREE.BufferAttribute(escapedMemberPositions, 3)); escapedMemberGeometry.setAttribute('color', new THREE.BufferAttribute(escapedMemberColors, 3)); escapedClusterMemberMaterial = new THREE.PointsMaterial({ size: resolvedQuality === 'cinematic' ? 0.0065 : 0.0055, map: fineStarTex, vertexColors: true, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); escapedClusterMemberMaterial.userData = { baseOpacity: 0.42 };
               var escapedClusterMemberPoints = new THREE.Points(escapedMemberGeometry, escapedClusterMemberMaterial); escapedClusterMemberPoints.renderOrder = 7; clusterDissolutionTailGroup.add(escapedClusterMemberPoints);
               // A vertically extended thick disk gives edge-on views real depth.
-              var thickDiskCount = resolvedQuality === 'cinematic' ? 15000 : resolvedQuality === 'high' ? 6500 : 2200;
+              var baseThickDiskCount = resolvedQuality === 'cinematic' ? 15000 : resolvedQuality === 'high' ? 6500 : 2200;
+              var thickDiskCount = isSpiralMorphology ? baseThickDiskCount : 0;
               var thickGeo = new THREE.BufferGeometry(), thickPos = new Float32Array(thickDiskCount * 3), thickCol = new Float32Array(thickDiskCount * 3);
               for (var td = 0; td < thickDiskCount; td++) { var thickRadius = Math.pow(Math.random(), 0.54) * 0.94, thickAngle = Math.random() * Math.PI * 2, thickHeight = (Math.random() < 0.5 ? -1 : 1) * Math.pow(Math.random(), 2.3) * (galaxyType === 'elliptical' ? 0.28 : 0.16) * (1 - thickRadius * 0.34); thickPos[td * 3] = Math.cos(thickAngle) * thickRadius; thickPos[td * 3 + 1] = thickHeight; thickPos[td * 3 + 2] = Math.sin(thickAngle) * thickRadius * (galaxyType === 'elliptical' ? 0.8 : 1); var thickColor = new THREE.Color().setHSL(0.075 + Math.random() * 0.09, 0.28 + Math.random() * 0.34, 0.42 + Math.random() * 0.28); thickCol[td * 3] = thickColor.r; thickCol[td * 3 + 1] = thickColor.g; thickCol[td * 3 + 2] = thickColor.b; }
-              thickGeo.setAttribute('position', new THREE.BufferAttribute(thickPos, 3)); thickGeo.setAttribute('color', new THREE.BufferAttribute(thickCol, 3)); thickDiskMat = new THREE.PointsMaterial({ size: resolvedQuality === 'cinematic' ? 0.009 : 0.007, map: fineStarTex, vertexColors: true, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending }); thickDiskMat.userData = { baseSize: thickDiskMat.size, baseOpacity: thickDiskMat.opacity, modeOpacity: thickDiskMat.opacity }; adaptiveDensePointMaterials.push(thickDiskMat); var thickDiskPoints = new THREE.Points(thickGeo, thickDiskMat); thickDiskPoints.renderOrder = 0; armGroup.add(thickDiskPoints);
+              thickGeo.setAttribute('position', new THREE.BufferAttribute(thickPos, 3)); thickGeo.setAttribute('color', new THREE.BufferAttribute(thickCol, 3)); thickDiskMat = new THREE.PointsMaterial({ size: resolvedQuality === 'cinematic' ? 0.009 : 0.007, map: fineStarTex, vertexColors: true, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending }); thickDiskMat.userData = { baseSize: thickDiskMat.size, baseOpacity: thickDiskMat.opacity, modeOpacity: thickDiskMat.opacity, pointCount: thickDiskCount }; adaptiveDensePointMaterials.push(thickDiskMat); var thickDiskPoints = new THREE.Points(thickGeo, thickDiskMat); thickDiskPoints.renderOrder = 0; armGroup.add(thickDiskPoints);
 
               // Broken shells preserve the filamentary look of supernova remnants.
               var remnantCount = resolvedQuality === 'cinematic' ? 24 : resolvedQuality === 'high' ? 15 : 8;
@@ -3318,9 +3436,17 @@ if (!window._galaxyHasLoadedOnce) {
               var dustColorPairCount = resolvedQuality === 'cinematic' ? 54 : resolvedQuality === 'high' ? 34 : 20;
               if (galaxyType === 'elliptical') dustColorPairCount = Math.round(dustColorPairCount * 0.32);
               for (var dustColorPair = 0; dustColorPair < dustColorPairCount; dustColorPair++) { var dustColorRadius = 0.16 + Math.pow(Math.random(), 0.76) * 0.68, dustColorArm = dustColorPair % (gType.arms || 4), dustColorAngle = galaxyType === 'elliptical' || galaxyType === 'irregular' ? Math.random() * Math.PI * 2 : dustColorArm / (gType.arms || 4) * Math.PI * 2 + dustColorRadius * (gType.windTightness || 2.5) + 0.1; for (var dustColorSide = 0; dustColorSide < 2; dustColorSide++) { var dustColorOffset = dustColorSide ? 0.018 : -0.018, dustColorMaterial = new THREE.SpriteMaterial({ map: armScatteringTexture, color: dustColorSide ? 0x93c5fd : 0xfdba74, transparent: true, opacity: 0, depthWrite: false, depthTest: true, blending: THREE.AdditiveBlending, rotation: dustColorAngle + Math.PI * 0.5 }); var dustColorSprite = new THREE.Sprite(dustColorMaterial), dustColorScaleX = 0.07 + Math.random() * 0.13, dustColorScaleY = dustColorScaleX * (0.18 + Math.random() * 0.16), dustColorR = dustColorRadius + dustColorOffset; dustColorSprite.position.set(Math.cos(dustColorAngle) * dustColorR, 0.006 + (dustColorSide ? 0.002 : -0.002), Math.sin(dustColorAngle) * dustColorR); dustColorSprite.scale.set(dustColorScaleX, dustColorScaleY, 1); dustColorSprite.userData = { baseOpacity: 0.018 + Math.random() * 0.035, baseScaleX: dustColorScaleX, baseScaleY: dustColorScaleY, phase: dustColorPair * 0.66 + dustColorSide * 1.8, drift: (dustColorSide ? 1 : -1) * 0.00008 }; dustColorSprite.renderOrder = 3; dustColorScatteringGroup.add(dustColorSprite); dustColorScatteringSprites.push(dustColorSprite); } }
-              var satelliteCenters = [new THREE.Vector3(1.24, 0.18, -0.48), new THREE.Vector3(-1.48, -0.26, 0.64), new THREE.Vector3(0.46, 0.42, 1.58)];
+              var satelliteCenters = galaxyType === 'grandDesign'
+                ? [new THREE.Vector3(1.08, 0.12, -0.42)]
+                : galaxyType === 'barredSpiral'
+                  ? [new THREE.Vector3(1.24, 0.18, -0.48), new THREE.Vector3(-1.48, -0.26, 0.64)]
+                  : galaxyType === 'elliptical'
+                    ? [new THREE.Vector3(-1.42, 0.28, 0.62)]
+                    : [new THREE.Vector3(1.12, 0.2, -0.54), new THREE.Vector3(-1.34, -0.18, 0.58)];
+              companionCountRealized = satelliteCenters.length;
               satelliteCenters.forEach(function (center, satelliteIndex) {
-                var satelliteCount = Math.round((satelliteIndex === 0 ? 620 : 410) * detailScale);
+                var satelliteBaseCount = galaxyType === 'grandDesign' ? 920 : galaxyType === 'elliptical' ? 280 : galaxyType === 'irregular' ? (satelliteIndex === 0 ? 480 : 330) : (satelliteIndex === 0 ? 420 : 280);
+                var satelliteCount = Math.round(satelliteBaseCount * detailScale);
                 var satelliteGeo = new THREE.BufferGeometry(); var satellitePos = new Float32Array(satelliteCount * 3); var satelliteCol = new Float32Array(satelliteCount * 3);
                 for (var sat = 0; sat < satelliteCount; sat++) {
                   var satRadius = Math.pow(Math.random(), 1.8) * (satelliteIndex === 0 ? 0.18 : 0.13); var satAngle = Math.random() * Math.PI * 2; var satHeight = (Math.random() - 0.5) * satRadius * 0.35;
@@ -3329,12 +3455,29 @@ if (!window._galaxyHasLoadedOnce) {
                   satelliteCol[sat * 3] = satColor.r; satelliteCol[sat * 3 + 1] = satColor.g; satelliteCol[sat * 3 + 2] = satColor.b;
                 }
                 satelliteGeo.setAttribute('position', new THREE.BufferAttribute(satellitePos, 3)); satelliteGeo.setAttribute('color', new THREE.BufferAttribute(satelliteCol, 3));
-                var satelliteMat = new THREE.PointsMaterial({ size: 0.018 + satelliteIndex * 0.003, map: birthTex, vertexColors: true, transparent: true, opacity: 0.46, depthWrite: false, blending: THREE.AdditiveBlending });
+                var satelliteOpacity = galaxyType === 'grandDesign' ? 0.52 : galaxyType === 'elliptical' ? 0.24 : galaxyType === 'irregular' ? 0.34 : 0.28;
+                var satelliteMat = new THREE.PointsMaterial({ size: (galaxyType === 'grandDesign' ? 0.021 : 0.018) + satelliteIndex * 0.003, map: birthTex, vertexColors: true, transparent: true, opacity: satelliteOpacity, depthWrite: false, blending: THREE.AdditiveBlending });
                 satelliteMat.userData = { baseOpacity: satelliteMat.opacity, phase: satelliteIndex * 1.8 };
                 var satellitePoints = new THREE.Points(satelliteGeo, satelliteMat); satellitePoints.userData = { phase: satelliteIndex * 2.2, center: center }; satelliteGroup.add(satellitePoints); satelliteMats.push(satelliteMat);
-                var satelliteCoreMat = new THREE.SpriteMaterial({ map: clusterTex, color: satelliteIndex === 1 ? 0xfde68a : 0xbfdbfe, transparent: true, opacity: 0.34, depthWrite: false, blending: THREE.AdditiveBlending });
-                var satelliteCore = new THREE.Sprite(satelliteCoreMat); satelliteCore.position.copy(center); var satelliteCoreScale = satelliteIndex === 0 ? 0.15 : 0.11; satelliteCore.scale.set(satelliteCoreScale, satelliteCoreScale * 0.58, 1); satelliteCore.userData = { baseOpacity: satelliteCoreMat.opacity, baseScaleX: satelliteCoreScale, baseScaleY: satelliteCoreScale * 0.58, phase: satelliteIndex * 2.1 }; satelliteCore.renderOrder = 3; satelliteGroup.add(satelliteCore); satelliteCoreSprites.push(satelliteCore);
+                var satelliteCoreOpacity = galaxyType === 'grandDesign' ? 0.42 : galaxyType === 'elliptical' ? 0.18 : galaxyType === 'irregular' ? 0.3 : 0.22;
+                var satelliteCoreMat = new THREE.SpriteMaterial({ map: clusterTex, color: satelliteIndex === 1 ? 0xfde68a : 0xbfdbfe, transparent: true, opacity: satelliteCoreOpacity, depthWrite: false, blending: THREE.AdditiveBlending });
+                var satelliteCore = new THREE.Sprite(satelliteCoreMat); satelliteCore.position.copy(center); var satelliteCoreScale = galaxyType === 'grandDesign' ? 0.18 : satelliteIndex === 0 ? 0.14 : 0.1; satelliteCore.scale.set(satelliteCoreScale, satelliteCoreScale * 0.58, 1); satelliteCore.userData = { baseOpacity: satelliteCoreMat.opacity, baseScaleX: satelliteCoreScale, baseScaleY: satelliteCoreScale * 0.58, phase: satelliteIndex * 2.1 }; satelliteCore.renderOrder = 3; satelliteGroup.add(satelliteCore); satelliteCoreSprites.push(satelliteCore);
               });
+              if (galaxyType === 'grandDesign' && satelliteCenters.length) {
+                var interactionBridgePoints = [], interactionBridgeSegments = resolvedQuality === 'cinematic' ? 128 : 84;
+                var bridgeStartRadius = 0.84, bridgeStartAngle = spiralPatternAngle(1, bridgeStartRadius, 0);
+                var bridgeStartX = Math.cos(bridgeStartAngle) * bridgeStartRadius, bridgeStartZ = Math.sin(bridgeStartAngle) * bridgeStartRadius;
+                var bridgeTarget = satelliteCenters[0];
+                for (var bridgeStep = 0; bridgeStep <= interactionBridgeSegments; bridgeStep++) {
+                  var bridgeT = bridgeStep / interactionBridgeSegments, bridgeCurve = Math.sin(bridgeT * Math.PI) * 0.055;
+                  interactionBridgePoints.push(new THREE.Vector3(bridgeStartX + (bridgeTarget.x - bridgeStartX) * bridgeT, bridgeTarget.y * bridgeT * 0.72 + bridgeCurve * 0.18, bridgeStartZ + (bridgeTarget.z - bridgeStartZ) * bridgeT - bridgeCurve));
+                }
+                var interactionBridgeMaterial = new THREE.LineBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.085, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
+                interactionBridgeMaterial.userData = { baseOpacity: interactionBridgeMaterial.opacity, phase: 0.7 };
+                var interactionBridge = new THREE.Line(new THREE.BufferGeometry().setFromPoints(interactionBridgePoints), interactionBridgeMaterial);
+                interactionBridge.name = 'grandDesignInteractionBridge'; interactionBridge.renderOrder = 3; satelliteGroup.add(interactionBridge);
+                interactionBridgeObjects.push(interactionBridge); tidalStreamMats.push(interactionBridgeMaterial);
+              }
               // Each companion resolves into nested stellar envelopes plus gas
               // swept outward by motion through the circumgalactic medium.
               var satelliteEnvelopeLayerCount = resolvedQuality === 'cinematic' ? 4 : resolvedQuality === 'high' ? 3 : 2;
@@ -3344,13 +3487,13 @@ if (!window._galaxyHasLoadedOnce) {
                   var envelopeSprite = new THREE.Sprite(envelopeMaterial), envelopeBaseScaleX = (dwarfIndex === 0 ? 0.2 : 0.145) * (1 + envelopeLayerIndex * 0.24), envelopeBaseScaleY = envelopeBaseScaleX * (0.48 + dwarfIndex * 0.06 + envelopeLayerIndex * 0.025); envelopeSprite.position.copy(satelliteCenter); envelopeSprite.scale.set(envelopeBaseScaleX, envelopeBaseScaleY, 1); envelopeSprite.userData = { baseOpacity: 0.07 + Math.max(0, satelliteEnvelopeLayerCount - envelopeLayerIndex) * 0.018, baseScaleX: envelopeBaseScaleX, baseScaleY: envelopeBaseScaleY, phase: dwarfIndex * 1.83 + envelopeLayerIndex * 0.76, drift: (envelopeLayerIndex % 2 ? -1 : 1) * 0.00008 }; envelopeSprite.renderOrder = 2; resolvedSatelliteMorphologyGroup.add(envelopeSprite); satelliteEnvelopeSprites.push(envelopeSprite);
                 }
                 var satelliteDistance = Math.max(0.01, satelliteCenter.length()), satelliteOutwardX = satelliteCenter.x / satelliteDistance, satelliteOutwardY = satelliteCenter.y / satelliteDistance, satelliteOutwardZ = satelliteCenter.z / satelliteDistance, satelliteTangentX = -satelliteOutwardZ, satelliteTangentZ = satelliteOutwardX;
-                var ramPressureTailCount = resolvedQuality === 'cinematic' ? 3 : resolvedQuality === 'high' ? 2 : 1;
+                var ramPressureTailCount = galaxyType === 'elliptical' ? 0 : resolvedQuality === 'cinematic' ? 3 : resolvedQuality === 'high' ? 2 : 1;
                 for (var ramTailIndex = 0; ramTailIndex < ramPressureTailCount; ramTailIndex++) {
                   var ramTailPoints = [], ramTailSegments = resolvedQuality === 'cinematic' ? 52 : resolvedQuality === 'high' ? 38 : 26, ramTailLength = 0.3 + dwarfIndex * 0.045 + ramTailIndex * 0.035;
                   for (var ramTailStep = 0; ramTailStep <= ramTailSegments; ramTailStep++) { var ramTailT = ramTailStep / ramTailSegments, ramTailSpread = (ramTailIndex - (ramPressureTailCount - 1) * 0.5) * 0.018 * ramTailT + Math.sin(ramTailT * Math.PI * (2 + ramTailIndex) + dwarfIndex) * 0.012 * ramTailT, ramTailDistance = ramTailLength * Math.pow(ramTailT, 0.82); ramTailPoints.push(new THREE.Vector3(satelliteCenter.x + satelliteOutwardX * ramTailDistance + satelliteTangentX * ramTailSpread, satelliteCenter.y + satelliteOutwardY * ramTailDistance * 0.38 + Math.sin(ramTailT * Math.PI + dwarfIndex) * 0.012, satelliteCenter.z + satelliteOutwardZ * ramTailDistance + satelliteTangentZ * ramTailSpread)); }
                   var ramTailMaterial = new THREE.LineBasicMaterial({ color: ramTailIndex % 2 ? 0xf9a8d4 : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); ramTailMaterial.userData = { baseOpacity: 0.045 + ramTailIndex * 0.012, phase: dwarfIndex * 1.67 + ramTailIndex * 1.14 }; var ramTailLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(ramTailPoints), ramTailMaterial); ramTailLine.renderOrder = 3; resolvedSatelliteMorphologyGroup.add(ramTailLine); ramPressureTailMaterials.push(ramTailMaterial);
                 }
-                var strippedGasKnotCount = resolvedQuality === 'cinematic' ? 12 : resolvedQuality === 'high' ? 8 : 5;
+                var strippedGasKnotCount = galaxyType === 'elliptical' ? 0 : resolvedQuality === 'cinematic' ? 12 : resolvedQuality === 'high' ? 8 : 5;
                 for (var strippedKnotIndex = 0; strippedKnotIndex < strippedGasKnotCount; strippedKnotIndex++) {
                   var strippedKnotT = (strippedKnotIndex + 1) / (strippedGasKnotCount + 1), strippedKnotDistance = (0.3 + dwarfIndex * 0.045) * Math.pow(strippedKnotT, 0.82), strippedKnotSpread = Math.sin(strippedKnotT * Math.PI * 3 + dwarfIndex * 1.7) * 0.018 * strippedKnotT + (Math.random() - 0.5) * 0.012;
                   var strippedKnotMaterial = new THREE.SpriteMaterial({ map: armScatteringTexture, color: strippedKnotIndex % 4 === 0 ? 0xf9a8d4 : strippedKnotIndex % 3 === 0 ? 0xc4b5fd : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, rotation: Math.atan2(satelliteOutwardZ, satelliteOutwardX) + Math.PI * 0.5 });
@@ -3358,7 +3501,8 @@ if (!window._galaxyHasLoadedOnce) {
                 }
               });
 
-              for (var ts = 0; ts < 5; ts++) {
+              var tidalStreamCount = galaxyType === 'grandDesign' ? 2 : galaxyType === 'elliptical' ? 3 : galaxyType === 'irregular' ? 1 : 2;
+              for (var ts = 0; ts < tidalStreamCount; ts++) {
                 var tidalPoints = []; var tidalSegments = Math.round(150 * detailScale);
                 for (var tp = 0; tp <= tidalSegments; tp++) {
                   var tidalFraction = tp / tidalSegments; var tidalAngle = -0.6 + tidalFraction * (2.1 + ts * 0.18) + ts * 0.92; var tidalRadius = 0.96 + ts * 0.14 + 0.12 * Math.sin(tidalFraction * Math.PI);
@@ -3388,13 +3532,14 @@ if (!window._galaxyHasLoadedOnce) {
             (function () {
               function registerMorphologyObject(object, material, baseOpacity, phase) { material.userData = material.userData || {}; material.userData.baseOpacity = baseOpacity; material.userData.phase = phase || 0; object.userData = object.userData || {}; object.userData.phase = phase || 0; morphologySignatureGroup.add(object); morphologySignatureMaterials.push(material); morphologySignatureObjects.push(object); }
               if (galaxyType === 'barredSpiral') {
-                for (var bl = 0; bl < 4; bl++) { var barLanePoints = [], barLaneSegments = resolvedQuality === 'cinematic' ? 112 : 72; for (var bli = 0; bli <= barLaneSegments; bli++) { var blf = bli / barLaneSegments, blx = (blf - 0.5) * 0.72, blBend = (bl % 2 ? -1 : 1) * (0.022 + Math.pow(Math.abs(blx), 1.7) * 0.2), blz = blBend + (bl < 2 ? -0.026 : 0.026); barLanePoints.push(new THREE.Vector3(blx, 0.009 + bl * 0.001, blz)); } var barLaneMat = new THREE.LineBasicMaterial({ color: bl < 2 ? 0x1f0b1c : 0x67e8f9, transparent: true, opacity: bl < 2 ? 0.42 : 0.12, depthWrite: false, blending: bl < 2 ? THREE.NormalBlending : THREE.AdditiveBlending }); var barLane = new THREE.Line(new THREE.BufferGeometry().setFromPoints(barLanePoints), barLaneMat); barLane.rotation.y = 0.22; barLane.renderOrder = bl < 2 ? 6 : 7; registerMorphologyObject(barLane, barLaneMat, barLaneMat.opacity, bl * 1.2); }
+                for (var bl = 0; bl < 4; bl++) { var barLanePoints = [], barLaneSegments = resolvedQuality === 'cinematic' ? 112 : 72; for (var bli = 0; bli <= barLaneSegments; bli++) { var blf = bli / barLaneSegments, blx = (blf - 0.5) * spiralLayout.barHalfLength * 2, blBend = (bl % 2 ? -1 : 1) * (0.022 + Math.pow(Math.abs(blx), 1.7) * 0.2), blz = blBend + (bl < 2 ? -0.026 : 0.026); barLanePoints.push(new THREE.Vector3(blx, 0.009 + bl * 0.001, blz)); } var barLaneMat = new THREE.LineBasicMaterial({ color: bl < 2 ? 0x1f0b1c : 0x67e8f9, transparent: true, opacity: bl < 2 ? 0.42 : 0.12, depthWrite: false, blending: bl < 2 ? THREE.NormalBlending : THREE.AdditiveBlending }); var barLane = new THREE.Line(new THREE.BufferGeometry().setFromPoints(barLanePoints), barLaneMat); barLane.rotation.y = -spiralLayout.barAngle; barLane.renderOrder = bl < 2 ? 6 : 7; registerMorphologyObject(barLane, barLaneMat, barLaneMat.opacity, bl * 1.2); }
                 var resonanceMat = new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.12, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }); var resonanceRing = new THREE.Mesh(new THREE.RingGeometry(0.31, 0.322, resolvedQuality === 'cinematic' ? 160 : 96), resonanceMat); resonanceRing.rotation.x = Math.PI * 0.5; resonanceRing.scale.set(1.42, 1.42, 0.62); resonanceRing.renderOrder = 5; registerMorphologyObject(resonanceRing, resonanceMat, 0.12, 0.8);
               } else if (galaxyType === 'grandDesign') {
-                for (var gs = 0; gs < 2; gs++) { var shockPoints = [], shockSegments = resolvedQuality === 'cinematic' ? 180 : 112; for (var gsi = 0; gsi <= shockSegments; gsi++) { var gsf = gsi / shockSegments, gsr = 0.18 + gsf * 0.78, gsa = gs * Math.PI + gsr * gType.windTightness - 0.075; shockPoints.push(new THREE.Vector3(Math.cos(gsa) * gsr, 0.012, Math.sin(gsa) * gsr)); } var shockMat = new THREE.LineBasicMaterial({ color: gs ? 0xfb7185 : 0x67e8f9, transparent: true, opacity: 0.14, depthWrite: false, blending: THREE.AdditiveBlending }); var shockLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(shockPoints), shockMat); shockLine.renderOrder = 6; registerMorphologyObject(shockLine, shockMat, 0.14, gs * 2.4); }
+                for (var gs = 0; gs < 2; gs++) { var shockPoints = [], shockSegments = resolvedQuality === 'cinematic' ? 180 : 112; for (var gsi = 0; gsi <= shockSegments; gsi++) { var gsf = gsi / shockSegments, gsr = 0.18 + gsf * 0.78, gsa = spiralPatternAngle(gs, gsr, -0.075); shockPoints.push(new THREE.Vector3(Math.cos(gsa) * gsr, 0.012, Math.sin(gsa) * gsr)); } var shockMat = new THREE.LineBasicMaterial({ color: gs ? 0xfb7185 : 0x67e8f9, transparent: true, opacity: 0.14, depthWrite: false, blending: THREE.AdditiveBlending }); var shockLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(shockPoints), shockMat); shockLine.renderOrder = 6; registerMorphologyObject(shockLine, shockMat, 0.14, gs * 2.4); }
               } else if (galaxyType === 'elliptical') {
                 var shellCountMorph = resolvedQuality === 'cinematic' ? 10 : resolvedQuality === 'high' ? 8 : 6;
-                for (var es = 0; es < shellCountMorph; es++) { var shellMorphMat = new THREE.MeshBasicMaterial({ color: es % 3 === 0 ? 0xbfdbfe : es % 2 ? 0xfde68a : 0xf5d0fe, transparent: true, opacity: 0.055 + es * 0.004, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }); var shellMorph = new THREE.Mesh(new THREE.RingGeometry(0.66 + es * 0.08, 0.67 + es * 0.08, resolvedQuality === 'cinematic' ? 128 : 80, 1, es * 0.47, 1.35 + (es % 3) * 0.28), shellMorphMat); shellMorph.rotation.x = Math.PI * 0.5; shellMorph.rotation.z = es * 0.31; shellMorph.scale.set(1, 0.68, 1); shellMorph.renderOrder = 2; registerMorphologyObject(shellMorph, shellMorphMat, shellMorphMat.opacity, es * 0.72); }
+                var shellInclinations = [-0.46, -0.2, 0.18, 0.42];
+                for (var es = 0; es < shellCountMorph; es++) { var shellMorphMat = new THREE.MeshBasicMaterial({ color: es % 3 === 0 ? 0xbfdbfe : es % 2 ? 0xfde68a : 0xf5d0fe, transparent: true, opacity: 0.055 + es * 0.004, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }); var shellMorph = new THREE.Mesh(new THREE.RingGeometry(0.66 + es * 0.08, 0.67 + es * 0.08, resolvedQuality === 'cinematic' ? 128 : 80, 1, es * 0.47, 1.35 + (es % 3) * 0.28), shellMorphMat); shellMorph.rotation.x = Math.PI * 0.5 + shellInclinations[es % shellInclinations.length]; shellMorph.rotation.y = (es % 3 - 1) * 0.16; shellMorph.rotation.z = es * 0.31; shellMorph.scale.set(1, 0.78, 1); shellMorph.renderOrder = 2; registerMorphologyObject(shellMorph, shellMorphMat, shellMorphMat.opacity, es * 0.72); }
               } else if (galaxyType === 'irregular') {
                 var cavityCount = resolvedQuality === 'cinematic' ? 10 : resolvedQuality === 'high' ? 7 : 5;
                 for (var ih = 0; ih < cavityCount; ih++) {
@@ -3440,9 +3585,9 @@ if (!window._galaxyHasLoadedOnce) {
                   }
                 } else {
                   var irArm = ii % (gType.arms || 4);
-                  var irAngle = (irArm / (gType.arms || 4)) * Math.PI * 2;
+                  var irAngle = spiralPatternAngle(irArm, irDist, 0);
                   var irWind = gType.windTightness || 2.5;
-                  var irA = irAngle + irDist * irWind + (Math.random() - 0.5) * 0.18;
+                  var irA = irAngle + (Math.random() - 0.5) * 0.18;
                   irPos[ii * 3] = Math.cos(irA) * irDist + (Math.random() - 0.5) * 0.035;
                   irPos[ii * 3 + 1] = (Math.random() - 0.5) * 0.028;
                   irPos[ii * 3 + 2] = Math.sin(irA) * irDist + (Math.random() - 0.5) * 0.035;
@@ -3462,9 +3607,9 @@ if (!window._galaxyHasLoadedOnce) {
               var thermalGradient = thermalCtx.createRadialGradient(96, 96, 0, 96, 96, 96); thermalGradient.addColorStop(0, 'rgba(255,255,255,0.92)'); thermalGradient.addColorStop(0.12, 'rgba(254,240,138,0.86)'); thermalGradient.addColorStop(0.34, 'rgba(251,146,60,0.48)'); thermalGradient.addColorStop(0.68, 'rgba(190,24,93,0.14)'); thermalGradient.addColorStop(1, 'rgba(0,0,0,0)'); thermalCtx.fillStyle = thermalGradient; thermalCtx.fillRect(0, 0, 192, 192);
               var thermalTexture = tuneGalaxyTexture(new THREE.CanvasTexture(thermalCv));
               var thermalCloudCount = galaxyType === 'elliptical' ? 0 : galaxyType === 'irregular' ? (resolvedQuality === 'cinematic' ? 30 : resolvedQuality === 'high' ? 22 : 14) : resolvedQuality === 'cinematic' ? 62 : resolvedQuality === 'high' ? 38 : 22;
-              for (var tc = 0; tc < thermalCloudCount; tc++) { var tcRadius = 0.13 + Math.pow(Math.random(), 0.7) * 0.76, tcAngle = galaxyType === 'elliptical' || galaxyType === 'irregular' ? Math.random() * Math.PI * 2 : (tc % (gType.arms || 4)) / (gType.arms || 4) * Math.PI * 2 + tcRadius * (gType.windTightness || 2.5) + 0.11, tcMat = new THREE.SpriteMaterial({ map: thermalTexture, color: tc % 5 === 0 ? 0xfde68a : tc % 3 === 0 ? 0xfb7185 : 0xfdba74, transparent: true, opacity: 0.12 + Math.random() * 0.2, depthWrite: false, blending: THREE.AdditiveBlending, rotation: tcAngle + (Math.random() - 0.5) * 0.5 }); var tcSprite = new THREE.Sprite(tcMat); tcSprite.position.set(Math.cos(tcAngle) * tcRadius, (Math.random() - 0.5) * 0.035, Math.sin(tcAngle) * tcRadius); var tcScale = 0.05 + Math.random() * 0.1; tcSprite.scale.set(tcScale * (1.35 + Math.random()), tcScale * (0.38 + Math.random() * 0.32), 1); tcSprite.userData = { baseOpacity: tcMat.opacity, baseScaleX: tcSprite.scale.x, baseScaleY: tcSprite.scale.y, phase: Math.random() * Math.PI * 2, drift: (Math.random() - 0.5) * 0.0006 }; tcMat.userData = { baseOpacity: tcMat.opacity, phase: tcSprite.userData.phase }; tcSprite.renderOrder = 5; infraredThermalGroup.add(tcSprite); infraredThermalSprites.push(tcSprite); infraredThermalMats.push(tcMat); }
+              for (var tc = 0; tc < thermalCloudCount; tc++) { var tcRadius = 0.13 + Math.pow(Math.random(), 0.7) * 0.76, tcAngle = galaxyType === 'elliptical' || galaxyType === 'irregular' ? Math.random() * Math.PI * 2 : (tc % (gType.arms || 4)) / (gType.arms || 4) * Math.PI * 2 + tcRadius * (gType.windTightness || 2.5) + 0.11, tcMat = new THREE.SpriteMaterial({ map: thermalTexture, color: tc % 5 === 0 ? 0xfde68a : tc % 3 === 0 ? 0xfb7185 : 0xfdba74, transparent: true, opacity: 0.12 + Math.random() * 0.2, depthWrite: false, blending: THREE.AdditiveBlending, rotation: tcAngle + (Math.random() - 0.5) * 0.5 }); var tcSprite = new THREE.Sprite(tcMat); if (galaxyType === 'irregular') { var tcAnchor = pickIrregularMorphologyAnchor(((tc * 83) % 991) / 991); tcSprite.position.set(tcAnchor.x + irregularBell(tcAnchor.sx * 0.58), tcAnchor.y + irregularBell(tcAnchor.sy * 0.52), tcAnchor.z + irregularBell(tcAnchor.sz * 0.58)); } else { tcSprite.position.set(Math.cos(tcAngle) * tcRadius, (Math.random() - 0.5) * 0.035, Math.sin(tcAngle) * tcRadius); } var tcScale = 0.05 + Math.random() * 0.1; tcSprite.scale.set(tcScale * (1.35 + Math.random()), tcScale * (0.38 + Math.random() * 0.32), 1); tcSprite.userData = { baseOpacity: tcMat.opacity, baseScaleX: tcSprite.scale.x, baseScaleY: tcSprite.scale.y, phase: Math.random() * Math.PI * 2, drift: (Math.random() - 0.5) * 0.0006 }; tcMat.userData = { baseOpacity: tcMat.opacity, phase: tcSprite.userData.phase, lodClass: 'extended' }; tcSprite.renderOrder = 5; infraredThermalGroup.add(tcSprite); infraredThermalSprites.push(tcSprite); infraredThermalMats.push(tcMat); }
               var thermalLaneCount = isSpiralMorphology ? (resolvedQuality === 'cinematic' ? 18 : 11) : 0;
-              for (var tl = 0; tl < thermalLaneCount; tl++) { var thermalLanePoints = [], thermalLaneSegments = resolvedQuality === 'cinematic' ? 84 : 52; for (var tls = 0; tls <= thermalLaneSegments; tls++) { var tlf = tls / thermalLaneSegments, tlRadius = 0.18 + tlf * 0.7, tlAngle = galaxyType === 'irregular' || galaxyType === 'elliptical' ? tl * 1.17 + tlf * 0.8 : (tl % (gType.arms || 4)) / (gType.arms || 4) * Math.PI * 2 + tlRadius * (gType.windTightness || 2.5) + (tl % 3 - 1) * 0.055; thermalLanePoints.push(new THREE.Vector3(Math.cos(tlAngle) * tlRadius, 0.01, Math.sin(tlAngle) * tlRadius)); } var thermalLaneMat = new THREE.LineBasicMaterial({ color: tl % 3 === 0 ? 0xfde68a : tl % 2 ? 0xfb7185 : 0xfdba74, transparent: true, opacity: 0.08 + (tl % 4) * 0.012, depthWrite: false, blending: THREE.AdditiveBlending }); thermalLaneMat.userData = { baseOpacity: thermalLaneMat.opacity, phase: tl * 0.9 }; var thermalLane = new THREE.Line(new THREE.BufferGeometry().setFromPoints(thermalLanePoints), thermalLaneMat); thermalLane.renderOrder = 4; infraredThermalGroup.add(thermalLane); infraredThermalMats.push(thermalLaneMat); }
+              for (var tl = 0; tl < thermalLaneCount; tl++) { var thermalLanePoints = [], thermalLaneSegments = resolvedQuality === 'cinematic' ? 84 : 52; for (var tls = 0; tls <= thermalLaneSegments; tls++) { var tlf = tls / thermalLaneSegments, tlRadius = 0.18 + tlf * 0.7, tlAngle = galaxyType === 'irregular' || galaxyType === 'elliptical' ? tl * 1.17 + tlf * 0.8 : spiralPatternAngle(tl % spiralLayout.armCount, tlRadius, (tl % 3 - 1) * 0.055); thermalLanePoints.push(new THREE.Vector3(Math.cos(tlAngle) * tlRadius, 0.01, Math.sin(tlAngle) * tlRadius)); } var thermalLaneMat = new THREE.LineBasicMaterial({ color: tl % 3 === 0 ? 0xfde68a : tl % 2 ? 0xfb7185 : 0xfdba74, transparent: true, opacity: 0.08 + (tl % 4) * 0.012, depthWrite: false, blending: THREE.AdditiveBlending }); thermalLaneMat.userData = { baseOpacity: thermalLaneMat.opacity, phase: tl * 0.9, lodClass: 'resolved' }; var thermalLane = new THREE.Line(new THREE.BufferGeometry().setFromPoints(thermalLanePoints), thermalLaneMat); thermalLane.renderOrder = 4; infraredThermalGroup.add(thermalLane); infraredThermalMats.push(thermalLaneMat); }
 
               for (var rr = 0; rr < (isSpiralMorphology ? 6 : 0); rr++) {
                 var rad = 0.18 + rr * 0.115;
@@ -3477,9 +3622,19 @@ if (!window._galaxyHasLoadedOnce) {
               }
               var radioCount = galaxyType === 'elliptical' ? 180 : galaxyType === 'irregular' ? 1050 : 900;
               var radioGeo = new THREE.BufferGeometry();
-              var radioPos = new Float32Array(radioCount * 3);
+              radioPos = new Float32Array(radioCount * 3);
               for (var ri = 0; ri < radioCount; ri++) {
-                if (galaxyType === 'irregular') {
+                if (galaxyType === 'elliptical') {
+                  var radioReservoirRadius = 0.04 + Math.pow(Math.random(), 0.75) * 0.3;
+                  var radioReservoirAngle = Math.random() * Math.PI * 2;
+                  var radioReservoirTilt = 0.42;
+                  var radioLocalX = Math.cos(radioReservoirAngle) * radioReservoirRadius;
+                  var radioLocalY = (Math.random() - 0.5) * 0.016;
+                  var radioLocalZ = Math.sin(radioReservoirAngle) * radioReservoirRadius * 0.82;
+                  radioPos[ri * 3] = radioLocalX;
+                  radioPos[ri * 3 + 1] = radioLocalY * Math.cos(radioReservoirTilt) - radioLocalZ * Math.sin(radioReservoirTilt);
+                  radioPos[ri * 3 + 2] = radioLocalY * Math.sin(radioReservoirTilt) + radioLocalZ * Math.cos(radioReservoirTilt);
+                } else if (galaxyType === 'irregular') {
                   var radioAnchor = pickIrregularMorphologyAnchor(((ri * 71) % 977) / 977);
                   radioPos[ri * 3] = radioAnchor.x + irregularBell(radioAnchor.sx * 1.55);
                   radioPos[ri * 3 + 1] = radioAnchor.y + irregularBell(radioAnchor.sy * 1.2);
@@ -3517,8 +3672,8 @@ if (!window._galaxyHasLoadedOnce) {
               var velocityFeather = velocityMapCtx.createRadialGradient(0, 0, vmRadius * 0.08, 0, 0, vmRadius);
               velocityFeather.addColorStop(0, 'rgba(255,255,255,0.92)'); velocityFeather.addColorStop(0.78, 'rgba(255,255,255,0.72)'); velocityFeather.addColorStop(1, 'rgba(255,255,255,0)');
               velocityMapCtx.globalCompositeOperation = 'destination-in'; velocityMapCtx.fillStyle = velocityFeather; velocityMapCtx.fillRect(-vmRadius, -vmRadius, vmRadius * 2, vmRadius * 2);
-              velocityMapCtx.globalCompositeOperation = 'source-over'; velocityMapCtx.lineWidth = 1.35; velocityMapCtx.setLineDash(vc < 0 ? [5, 5] : [10, 3]);
-              for (var vc = -5; vc <= 5; vc++) { if (vc === 0) continue; var velocityFraction = vc / 6; var velocityX = velocityFraction * vmRadius * 0.82; velocityMapCtx.beginPath(); velocityMapCtx.moveTo(velocityX * 0.28, -vmRadius * 0.82); velocityMapCtx.bezierCurveTo(velocityX * 1.18, -vmRadius * 0.38, velocityX * 1.18, vmRadius * 0.38, velocityX * 0.28, vmRadius * 0.82); velocityMapCtx.strokeStyle = vc < 0 ? 'rgba(191,219,254,0.52)' : 'rgba(254,202,202,0.52)'; velocityMapCtx.stroke(); }
+              velocityMapCtx.globalCompositeOperation = 'source-over'; velocityMapCtx.lineWidth = 1.35;
+              for (var vc = -5; vc <= 5; vc++) { if (vc === 0) continue; velocityMapCtx.setLineDash(vc < 0 ? [5, 5] : [10, 3]); var velocityFraction = vc / 6; var velocityX = velocityFraction * vmRadius * 0.82; velocityMapCtx.beginPath(); velocityMapCtx.moveTo(velocityX * 0.28, -vmRadius * 0.82); velocityMapCtx.bezierCurveTo(velocityX * 1.18, -vmRadius * 0.38, velocityX * 1.18, vmRadius * 0.38, velocityX * 0.28, vmRadius * 0.82); velocityMapCtx.strokeStyle = vc < 0 ? 'rgba(191,219,254,0.52)' : 'rgba(254,202,202,0.52)'; velocityMapCtx.stroke(); }
               velocityMapCtx.setLineDash([8, 6]); velocityMapCtx.lineWidth = 2; velocityMapCtx.beginPath(); velocityMapCtx.moveTo(0, -vmRadius * 0.9); velocityMapCtx.lineTo(0, vmRadius * 0.9); velocityMapCtx.strokeStyle = 'rgba(255,255,255,0.48)'; velocityMapCtx.stroke(); velocityMapCtx.restore();
               var velocityMapTexture = tuneGalaxyTexture(new THREE.CanvasTexture(velocityMapCanvas));
               dopplerVelocityFieldMaterial = new THREE.MeshBasicMaterial({ map: velocityMapTexture, transparent: true, opacity: 0.34, depthWrite: false, depthTest: true, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
@@ -3537,7 +3692,7 @@ if (!window._galaxyHasLoadedOnce) {
               // ribbons add Faraday-depth structure along the spiral disk.
               var radioPolarizationVectorCount = resolvedQuality === 'cinematic' ? 460 : resolvedQuality === 'high' ? 280 : 150, radioPolarizationPositions = new Float32Array(radioPolarizationVectorCount * 6), radioPolarizationColors = new Float32Array(radioPolarizationVectorCount * 6);
               for (var radioPolarizationIndex = 0; radioPolarizationIndex < radioPolarizationVectorCount; radioPolarizationIndex++) {
-                var radioPolarizationRadius = 0.13 + Math.pow(Math.random(), 0.62) * 0.79, radioPolarizationArm = radioPolarizationIndex % (gType.arms || 4), radioPolarizationAngle = galaxyType === 'elliptical' || galaxyType === 'irregular' ? Math.random() * Math.PI * 2 : radioPolarizationArm / (gType.arms || 4) * Math.PI * 2 + radioPolarizationRadius * (gType.windTightness || 2.5) + (Math.random() - 0.5) * 0.18, radioFieldAngle = radioPolarizationAngle + Math.PI * 0.5 + Math.sin(radioPolarizationRadius * 9 + radioPolarizationArm) * 0.16, radioVectorLength = 0.014 + Math.random() * 0.016, radioVectorCenterX = Math.cos(radioPolarizationAngle) * radioPolarizationRadius, radioVectorCenterZ = Math.sin(radioPolarizationAngle) * radioPolarizationRadius, radioVectorOffset = radioPolarizationIndex * 6;
+                var radioPolarizationRadius = 0.13 + Math.pow(Math.random(), 0.62) * 0.79, radioPolarizationArm = radioPolarizationIndex % (gType.arms || 4), radioPolarizationAngle = galaxyType === 'elliptical' || galaxyType === 'irregular' ? Math.random() * Math.PI * 2 : spiralPatternAngle(radioPolarizationArm, radioPolarizationRadius, (Math.random() - 0.5) * 0.18), radioFieldAngle = radioPolarizationAngle + Math.PI * 0.5 + Math.sin(radioPolarizationRadius * 9 + radioPolarizationArm) * 0.16, radioVectorLength = 0.014 + Math.random() * 0.016, radioVectorCenterX = Math.cos(radioPolarizationAngle) * radioPolarizationRadius, radioVectorCenterZ = Math.sin(radioPolarizationAngle) * radioPolarizationRadius, radioVectorOffset = radioPolarizationIndex * 6;
                 radioPolarizationPositions[radioVectorOffset] = radioVectorCenterX - Math.cos(radioFieldAngle) * radioVectorLength * 0.5; radioPolarizationPositions[radioVectorOffset + 1] = 0.03 + (Math.random() - 0.5) * 0.012; radioPolarizationPositions[radioVectorOffset + 2] = radioVectorCenterZ - Math.sin(radioFieldAngle) * radioVectorLength * 0.5; radioPolarizationPositions[radioVectorOffset + 3] = radioVectorCenterX + Math.cos(radioFieldAngle) * radioVectorLength * 0.5; radioPolarizationPositions[radioVectorOffset + 4] = radioPolarizationPositions[radioVectorOffset + 1]; radioPolarizationPositions[radioVectorOffset + 5] = radioVectorCenterZ + Math.sin(radioFieldAngle) * radioVectorLength * 0.5;
                 var faradaySign = Math.sin(radioPolarizationAngle * 2.1 + radioPolarizationRadius * 7.4), radioPolarizationColor = new THREE.Color(faradaySign > 0 ? 0xf0abfc : 0x67e8f9); radioPolarizationColors[radioVectorOffset] = radioPolarizationColor.r; radioPolarizationColors[radioVectorOffset + 1] = radioPolarizationColor.g; radioPolarizationColors[radioVectorOffset + 2] = radioPolarizationColor.b; radioPolarizationColors[radioVectorOffset + 3] = radioPolarizationColor.r; radioPolarizationColors[radioVectorOffset + 4] = radioPolarizationColor.g; radioPolarizationColors[radioVectorOffset + 5] = radioPolarizationColor.b;
               }
@@ -3545,19 +3700,30 @@ if (!window._galaxyHasLoadedOnce) {
               var faradayDepthRibbonCount = resolvedQuality === 'cinematic' ? 14 : resolvedQuality === 'high' ? 9 : 6;
               for (var faradayRibbonIndex = 0; faradayRibbonIndex < faradayDepthRibbonCount; faradayRibbonIndex++) {
                 var faradayRibbonPoints = [], faradayRibbonSegments = resolvedQuality === 'cinematic' ? 132 : resolvedQuality === 'high' ? 92 : 64, faradayRibbonArm = faradayRibbonIndex % (gType.arms || 4);
-                for (var faradayRibbonStep = 0; faradayRibbonStep <= faradayRibbonSegments; faradayRibbonStep++) { var faradayRibbonT = faradayRibbonStep / faradayRibbonSegments, faradayRibbonRadius = 0.14 + faradayRibbonT * 0.78, faradayRibbonAngle = galaxyType === 'elliptical' || galaxyType === 'irregular' ? faradayRibbonIndex * 0.83 + faradayRibbonT * (1.2 + faradayRibbonIndex % 3 * 0.18) : faradayRibbonArm / (gType.arms || 4) * Math.PI * 2 + faradayRibbonRadius * (gType.windTightness || 2.5) + (faradayRibbonIndex % 3 - 1) * 0.055 + Math.sin(faradayRibbonT * Math.PI * 4 + faradayRibbonIndex) * 0.018; faradayRibbonPoints.push(new THREE.Vector3(Math.cos(faradayRibbonAngle) * faradayRibbonRadius, 0.025 + (faradayRibbonIndex % 4 - 1.5) * 0.004 + Math.sin(faradayRibbonT * Math.PI * 2) * 0.003, Math.sin(faradayRibbonAngle) * faradayRibbonRadius)); }
+                for (var faradayRibbonStep = 0; faradayRibbonStep <= faradayRibbonSegments; faradayRibbonStep++) { var faradayRibbonT = faradayRibbonStep / faradayRibbonSegments, faradayRibbonRadius = 0.14 + faradayRibbonT * 0.78, faradayRibbonAngle = galaxyType === 'elliptical' || galaxyType === 'irregular' ? faradayRibbonIndex * 0.83 + faradayRibbonT * (1.2 + faradayRibbonIndex % 3 * 0.18) : spiralPatternAngle(faradayRibbonArm, faradayRibbonRadius, (faradayRibbonIndex % 3 - 1) * 0.055 + Math.sin(faradayRibbonT * Math.PI * 4 + faradayRibbonIndex) * 0.018); faradayRibbonPoints.push(new THREE.Vector3(Math.cos(faradayRibbonAngle) * faradayRibbonRadius, 0.025 + (faradayRibbonIndex % 4 - 1.5) * 0.004 + Math.sin(faradayRibbonT * Math.PI * 2) * 0.003, Math.sin(faradayRibbonAngle) * faradayRibbonRadius)); }
                 var faradayRibbonMaterial = new THREE.LineBasicMaterial({ color: faradayRibbonIndex % 3 === 0 ? 0xf0abfc : faradayRibbonIndex % 2 ? 0xc4b5fd : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); faradayRibbonMaterial.userData = { baseOpacity: 0.055 + (faradayRibbonIndex % 4) * 0.012, phase: faradayRibbonIndex * 0.87 }; var faradayRibbon = new THREE.Line(new THREE.BufferGeometry().setFromPoints(faradayRibbonPoints), faradayRibbonMaterial); faradayRibbon.userData = { drift: (faradayRibbonIndex % 2 ? -1 : 1) * 0.000018, phase: faradayRibbonIndex * 0.87 }; faradayRibbon.renderOrder = 6; radioPolarizationGroup.add(faradayRibbon); faradayRibbonMaterials.push(faradayRibbonMaterial); faradayRibbonObjects.push(faradayRibbon);
               }
               var xrayCount = 520;
               var xrayGeo = new THREE.BufferGeometry();
-              var xrayPos = new Float32Array(xrayCount * 3);
+              xrayPos = new Float32Array(xrayCount * 3);
               for (var xi = 0; xi < xrayCount; xi++) {
-                var xHot = Math.random() < 0.68;
-                var xR = xHot ? Math.pow(Math.random(), 2.2) * 0.16 : 0.2 + Math.random() * 0.55;
-                var xA = Math.random() * Math.PI * 2;
-                xrayPos[xi * 3] = Math.cos(xA) * xR;
-                xrayPos[xi * 3 + 1] = (Math.random() - 0.5) * (xHot ? 0.035 : 0.08);
-                xrayPos[xi * 3 + 2] = Math.sin(xA) * xR;
+                if (galaxyType === 'elliptical') {
+                  var xrayCompactCore = Math.random() < 0.24;
+                  var xrayAtmosphereRadius = xrayCompactCore ? Math.pow(Math.random(), 2.2) * 0.12 : Math.pow(Math.random(), 0.78) * 0.88;
+                  var xrayAzimuth = Math.random() * Math.PI * 2;
+                  var xrayCosPolar = Math.random() * 2 - 1;
+                  var xraySinPolar = Math.sqrt(Math.max(0, 1 - xrayCosPolar * xrayCosPolar));
+                  xrayPos[xi * 3] = Math.cos(xrayAzimuth) * xraySinPolar * xrayAtmosphereRadius;
+                  xrayPos[xi * 3 + 1] = xrayCosPolar * xrayAtmosphereRadius * 0.84;
+                  xrayPos[xi * 3 + 2] = Math.sin(xrayAzimuth) * xraySinPolar * xrayAtmosphereRadius * 0.92;
+                } else {
+                  var xHot = Math.random() < 0.68;
+                  var xR = xHot ? Math.pow(Math.random(), 2.2) * 0.16 : 0.2 + Math.random() * 0.55;
+                  var xA = Math.random() * Math.PI * 2;
+                  xrayPos[xi * 3] = Math.cos(xA) * xR;
+                  xrayPos[xi * 3 + 1] = (Math.random() - 0.5) * (xHot ? 0.035 : 0.08);
+                  xrayPos[xi * 3 + 2] = Math.sin(xA) * xR;
+                }
               }
               xrayGeo.setAttribute('position', new THREE.BufferAttribute(xrayPos, 3));
               var xrayBaseSize = 0.0095, xrayBaseOpacity = galaxyType === 'irregular' ? 0.42 : 0.52;
@@ -3575,11 +3741,11 @@ if (!window._galaxyHasLoadedOnce) {
               var xrayTexture = tuneGalaxyTexture(new THREE.CanvasTexture(xrayCv));
               var xraySourceCount = resolvedQuality === 'cinematic' ? 42 : resolvedQuality === 'high' ? 28 : 16;
               for (var xs = 0; xs < xraySourceCount; xs++) { var xsCore = xs < Math.ceil(xraySourceCount * 0.3), xsRadius = xsCore ? Math.pow(Math.random(), 2) * 0.2 : 0.22 + Math.random() * 0.64, xsAngle = Math.random() * Math.PI * 2, xsMat = new THREE.SpriteMaterial({ map: xrayTexture, color: xs % 5 === 0 ? 0xc4b5fd : xs % 3 === 0 ? 0x67e8f9 : 0xe0f2fe, transparent: true, opacity: 0.3 + Math.random() * 0.48, depthWrite: false, blending: THREE.AdditiveBlending }); var xsSprite = new THREE.Sprite(xsMat); xsSprite.position.set(Math.cos(xsAngle) * xsRadius, (Math.random() - 0.5) * 0.08, Math.sin(xsAngle) * xsRadius); var xsScale = (xsCore ? 0.018 : 0.012) + Math.random() * (xsCore ? 0.035 : 0.022); xsSprite.scale.set(xsScale, xsScale, 1); xsSprite.userData = { baseOpacity: xsMat.opacity, baseScale: xsScale, phase: Math.random() * Math.PI * 2, frequency: 1.1 + Math.random() * 2.6 }; xsSprite.renderOrder = 8; xrayEventGroup.add(xsSprite); xrayEventSprites.push(xsSprite); }
-              var xrayShellCount = resolvedQuality === 'cinematic' ? 18 : resolvedQuality === 'high' ? 12 : 7;
+              var xrayShellCount = galaxyType === 'elliptical' ? (resolvedQuality === 'cinematic' ? 2 : 1) : resolvedQuality === 'cinematic' ? 18 : resolvedQuality === 'high' ? 12 : 7;
               for (var xsh = 0; xsh < xrayShellCount; xsh++) { var xshRadius = 0.22 + Math.random() * 0.62, xshAngle = Math.random() * Math.PI * 2, xshMat = new THREE.MeshBasicMaterial({ color: xsh % 3 === 0 ? 0xc4b5fd : 0x67e8f9, transparent: true, opacity: 0.12 + Math.random() * 0.12, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }); var xshRing = new THREE.Mesh(new THREE.RingGeometry(0.75, 1, resolvedQuality === 'cinematic' ? 96 : 56, 1, xsh * 0.7, 4.1 + Math.random()), xshMat); xshRing.position.set(Math.cos(xshAngle) * xshRadius, (Math.random() - 0.5) * 0.04, Math.sin(xshAngle) * xshRadius); xshRing.rotation.x = Math.PI * 0.5; var xshScale = 0.018 + Math.random() * 0.042; xshRing.scale.set(xshScale, xshScale, xshScale); xshRing.userData = { baseOpacity: xshMat.opacity, baseScale: xshScale, phase: xsh * 0.77, expansion: 0.1 + Math.random() * 0.14 }; xshRing.renderOrder = 7; xrayEventGroup.add(xshRing); xrayShockShells.push(xshRing); }
 
               // Resolved remnants show temperature-stratified shock layers: a cooler violet rim encloses cyan and pale, harder-energy plasma.
-              var xrayTemperatureShellCount = resolvedQuality === 'cinematic' ? 12 : resolvedQuality === 'high' ? 8 : 5;
+              var xrayTemperatureShellCount = galaxyType === 'elliptical' ? (resolvedQuality === 'balanced' ? 0 : 1) : resolvedQuality === 'cinematic' ? 12 : resolvedQuality === 'high' ? 8 : 5;
               var xrayTemperatureShellSegments = resolvedQuality === 'cinematic' ? 96 : resolvedQuality === 'high' ? 64 : 40;
               var xrayTemperatureBands = [{ color: 0xa78bfa, radius: 1, opacity: 0.13 }, { color: 0x67e8f9, radius: 0.72, opacity: 0.18 }, { color: 0xe0f2fe, radius: 0.45, opacity: 0.23 }];
               for (var xts = 0; xts < xrayTemperatureShellCount; xts++) {
@@ -3609,12 +3775,12 @@ if (!window._galaxyHasLoadedOnce) {
                 var xokSprite = new THREE.Sprite(xokMaterial); xokSprite.position.set(Math.cos(xokAngle) * Math.random() * xokSpread, xokDirection * xokHeight, Math.sin(xokAngle) * Math.random() * xokSpread); xokSprite.scale.set(xokScale, xokScale, 1); xokSprite.userData = { baseOpacity: 0.22 + Math.random() * 0.42, baseScale: xokScale, phase: Math.random() * Math.PI * 2, frequency: 0.62 + Math.random() * 1.2 }; xokSprite.renderOrder = 12; xrayNuclearOutflowGroup.add(xokSprite); xrayOutflowSprites.push(xokSprite);
               }
               var haloMat = new THREE.MeshBasicMaterial({ color: 0xc084fc, wireframe: true, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending });
-              var halo = new THREE.Mesh(new THREE.SphereGeometry(0.94, 48, 24), haloMat);
-              halo.scale.set(1.15, 0.62, 1.15);
+              halo = new THREE.Mesh(new THREE.SphereGeometry(0.94, 48, 24), haloMat);
+              halo.scale.set(galaxyType === 'elliptical' ? 1.2 : 1.15, galaxyType === 'elliptical' ? 0.92 : 0.62, galaxyType === 'elliptical' ? 1.08 : 1.15);
               darkHaloGroup.add(halo);
               var haloGlowMat = new THREE.MeshBasicMaterial({ color: 0x6d28d9, transparent: true, opacity: 0.06, depthWrite: false, blending: THREE.AdditiveBlending });
               var haloGlow = new THREE.Mesh(new THREE.SphereGeometry(0.86, 48, 24), haloGlowMat);
-              haloGlow.scale.set(1.2, 0.7, 1.2);
+              haloGlow.scale.set(galaxyType === 'elliptical' ? 1.22 : 1.2, galaxyType === 'elliptical' ? 0.97 : 0.7, galaxyType === 'elliptical' ? 1.1 : 1.2);
               darkHaloGroup.add(haloGlow);
             })();
 
@@ -4032,6 +4198,7 @@ if (!window._galaxyHasLoadedOnce) {
               var layerVisible = visible && canvasEl._isLayerAllowed(layerKey);
               if (canvasEl._layers[layerKey]) canvasEl._layers[layerKey].visible = layerVisible;
               canvasEl._setDetailLayer(layerKey, layerVisible);
+              if (!layerVisible && selectionTarget && ((layerKey === 'arms' && selectionTarget.kind === 'star') || (layerKey === 'nebulae' && selectionTarget.kind === 'nebula'))) clearGalaxySelection();
               return layerVisible;
             };
             Object.keys(canvasEl._layers).forEach(function (layerKey) { canvasEl._setLayerVisibility(layerKey, layers[layerKey] !== false); });
@@ -4058,6 +4225,8 @@ if (!window._galaxyHasLoadedOnce) {
               armGroup.add(starPoints);
 
               starData = result.data;
+              if (selectionTarget && selectionTarget.kind === 'star') clearGalaxySelection();
+              keyboardStarIndex = -1;
               rebuildSparkles();
 
 
@@ -4220,6 +4389,8 @@ if (!window._galaxyHasLoadedOnce) {
               var idx = Math.floor(Math.random() * starData.length);
 
               var sd = starData[idx];
+              var supernovaPositionState = evaluateGalaxyStarPosition(sd, starShaderMat.uniforms.uTime.value, starShaderMat.uniforms.uRotMode.value, galaxyType, !prefersReducedMotion, {});
+              var supernovaPosition = new THREE.Vector3(supernovaPositionState.x, supernovaPositionState.y, supernovaPositionState.z);
 
               var snCv = document.createElement('canvas'); snCv.setAttribute('aria-hidden', 'true'); snCv.width = 160; snCv.height = 160;
 
@@ -4253,7 +4424,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               var snSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: snTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0 }));
 
-              snSprite.position.set(sd.x, sd.y, sd.z);
+              snSprite.position.copy(supernovaPosition);
 
               snSprite.scale.set(0.001, 0.001, 1);
 
@@ -4263,7 +4434,7 @@ if (!window._galaxyHasLoadedOnce) {
                 new THREE.RingGeometry(0.52, 0.56, 96),
                 new THREE.MeshBasicMaterial({ color: 0xfbbf24, side: THREE.DoubleSide, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })
               );
-              shockRing.position.set(sd.x, sd.y, sd.z);
+              shockRing.position.copy(supernovaPosition);
               shockRing.rotation.x = Math.PI * 0.5;
               shockRing.scale.set(0.001, 0.001, 0.001);
               scene.add(shockRing);
@@ -4307,6 +4478,7 @@ if (!window._galaxyHasLoadedOnce) {
               var colors = starPoints.geometry.attributes.color.array;
 
               var types = starPoints.geometry.attributes.aStarType.array;
+              var luminosities = starPoints.geometry.attributes.aLuminosity.array;
 
               // Seven colours, resolved once — not one THREE.Color per star per call
               // (this runs on every time-lapse tick with up to 100,000 stars).
@@ -4325,12 +4497,27 @@ if (!window._galaxyHasLoadedOnce) {
                 colors[si * 3] = stc.r; colors[si * 3 + 1] = stc.g; colors[si * 3 + 2] = stc.b;
 
                 types[si] = ti2;
+                var starRecord = starData[si];
+                var evolvedLuminosity = resolveGalaxyStarLuminosity(ti2, starRecord.luminositySample, starRecord.luminosityScale);
+                luminosities[si] = evolvedLuminosity;
+                starRecord.type = STAR_TYPES[ti2];
+                starRecord.luminosity = luminosities[si];
 
               }
 
               starPoints.geometry.attributes.color.needsUpdate = true;
 
               starPoints.geometry.attributes.aStarType.needsUpdate = true;
+              starPoints.geometry.attributes.aLuminosity.needsUpdate = true;
+              if (selectionTarget && selectionTarget.kind === 'star' && selectionTarget.data) {
+                var evolvedSelection = selectionTarget.data;
+                var evolvedPositionState = evaluateGalaxyStarPosition(evolvedSelection, starShaderMat.uniforms.uTime.value, starShaderMat.uniforms.uRotMode.value, galaxyType, !prefersReducedMotion, {});
+                var evolvedPosition = new THREE.Vector3(evolvedPositionState.x, evolvedPositionState.y, evolvedPositionState.z);
+                var evolvedColor = evolvedSelection.type && evolvedSelection.type.color ? evolvedSelection.type.color : '#a5b4fc';
+                if (selectionMarker.material && selectionMarker.material.color) selectionMarker.material.color.set(evolvedColor);
+                if (selectionHalo.material && selectionHalo.material.color) selectionHalo.material.color.set(evolvedColor);
+                if (canvasEl._onSelectStar) canvasEl._onSelectStar(evolvedSelection, evolvedPosition);
+              }
 
               var nebOp = currentObserveMode === 'gravity' ? 0.012 : 0.2 + 0.5 * Math.max(0, 1 - age / 10);
 
@@ -4587,9 +4774,22 @@ if (!window._galaxyHasLoadedOnce) {
             }
 
             var keyboardStarIndex = -1;
+            function getAnimatedStarState(star, elapsedOverride, target) {
+              var renderedElapsed = Number.isFinite(elapsedOverride) ? elapsedOverride : starShaderMat.uniforms.uTime.value;
+              return evaluateGalaxyStarPosition(star, renderedElapsed, starShaderMat.uniforms.uRotMode.value, galaxyType, !prefersReducedMotion, target || {});
+            }
+            function getAnimatedStarVector(star, elapsedOverride, target) {
+              var animatedState = getAnimatedStarState(star, elapsedOverride, {});
+              var vector = target || new THREE.Vector3();
+              vector.set(animatedState.x, animatedState.y, animatedState.z);
+              vector.angularRate = animatedState.angularRate;
+              return vector;
+            }
 
             function focusSelection(kind, data, position) {
-              selectionTarget = { kind: kind, data: data, x: position.x, y: position.y, z: position.z };
+              var focusedPosition = kind === 'star' ? getAnimatedStarVector(data) : position;
+              selectionTarget = { kind: kind, data: data };
+              position = focusedPosition;
               selectionMarker.position.copy(position); selectionMarker.scale.set(0.082, 0.082, 1); selectionMarker.visible = true;
               selectionHalo.position.copy(position); selectionHalo.scale.set(0.118, 0.118, 1); selectionHalo.visible = true;
               var selectionColor = kind === 'star' && data.type && data.type.color ? data.type.color : data.color || '#a5b4fc';
@@ -4597,7 +4797,7 @@ if (!window._galaxyHasLoadedOnce) {
               if (selectionHalo.material && selectionHalo.material.color) selectionHalo.material.color.set(selectionColor);
               cameraLookGoal.set(position.x * 0.55, position.y * 0.5, position.z * 0.55);
               if (prefersReducedMotion) cameraLookTarget.copy(cameraLookGoal);
-              measurementRulerGroup.visible = kind === 'star'; orbitalMechanicsGroup.visible = kind === 'star'; if (measurementRulerGroup.visible) { updateMeasurementRuler(position); updateOrbitalMechanics(position, 0.02, 0); }
+              measurementRulerGroup.visible = kind === 'star'; orbitalMechanicsGroup.visible = kind === 'star' && isSpiralMorphology; if (measurementRulerGroup.visible) { updateMeasurementRuler(position); if (orbitalMechanicsGroup.visible) updateOrbitalMechanics(position, 0.02, 0); }
               var label = kind === 'star' ? ((data.type && data.type.label) || 'Star') : (data.name || 'Nebula');
               setCanvasStatus('Focused on ' + label + ' · drag to orbit around it');
             }
@@ -4616,8 +4816,9 @@ if (!window._galaxyHasLoadedOnce) {
               var stride = Math.max(1, Math.floor(starData.length / 47));
               keyboardStarIndex = (keyboardStarIndex + (direction < 0 ? -stride : stride) + starData.length) % starData.length;
               var keyboardStar = starData[keyboardStarIndex];
-              focusSelection('star', keyboardStar, new THREE.Vector3(keyboardStar.x, keyboardStar.y, keyboardStar.z));
-              if (canvasEl._onSelectStar) canvasEl._onSelectStar(keyboardStar);
+              var keyboardStarPosition = getAnimatedStarVector(keyboardStar);
+              focusSelection('star', keyboardStar, keyboardStarPosition);
+              if (canvasEl._onSelectStar) canvasEl._onSelectStar(keyboardStar, keyboardStarPosition);
               setCanvasStatus('Keyboard focus: ' + ((keyboardStar.type && keyboardStar.type.label) || 'Star') + ' · [ and ] choose another star · Escape clears');
             };
 
@@ -4632,16 +4833,33 @@ if (!window._galaxyHasLoadedOnce) {
 
               raycaster.setFromCamera(mouse, camera);
 
-              var hits = raycaster.intersectObject(starPoints);
+              var nearestStarIndex = -1, nearestStarDistance = 12, nearestStarDepth = Infinity;
+              var projectedStar = new THREE.Vector3(), projectedStateScratch = {};
+              if (starPoints.updateWorldMatrix) starPoints.updateWorldMatrix(true, false);
+              if (armGroup.visible) for (var projectedIndex = 0; projectedIndex < starData.length; projectedIndex++) {
+                var projectedState = getAnimatedStarState(starData[projectedIndex], undefined, projectedStateScratch);
+                projectedStar.set(projectedState.x, projectedState.y, projectedState.z);
+                if (starPoints.matrixWorld && projectedStar.applyMatrix4) projectedStar.applyMatrix4(starPoints.matrixWorld);
+                else if (starPoints.localToWorld) starPoints.localToWorld(projectedStar);
+                projectedStar.project(camera);
+                if (!Number.isFinite(projectedStar.x) || !Number.isFinite(projectedStar.y) || projectedStar.z < -1 || projectedStar.z > 1) continue;
+                var projectedDx = (projectedStar.x - mouse.x) * rect.width * 0.5;
+                var projectedDy = (projectedStar.y - mouse.y) * rect.height * 0.5;
+                var projectedDistance = Math.hypot(projectedDx, projectedDy);
+                if (projectedDistance < nearestStarDistance || (Math.abs(projectedDistance - nearestStarDistance) < 0.25 && projectedStar.z < nearestStarDepth)) {
+                  nearestStarIndex = projectedIndex; nearestStarDistance = projectedDistance; nearestStarDepth = projectedStar.z;
+                }
+              }
 
-              if (hits.length > 0 && starData[hits[0].index]) {
-                var starHit = starData[hits[0].index];
-                focusSelection('star', starHit, new THREE.Vector3(starHit.x, starHit.y, starHit.z));
-                if (canvasEl._onSelectStar) canvasEl._onSelectStar(starHit);
+              if (nearestStarIndex >= 0) {
+                var starHit = starData[nearestStarIndex];
+                var starHitPosition = getAnimatedStarVector(starHit);
+                focusSelection('star', starHit, starHitPosition);
+                if (canvasEl._onSelectStar) canvasEl._onSelectStar(starHit, starHitPosition);
                 return;
               }
 
-              var nebHits = raycaster.intersectObjects(nebulaSprites);
+              var nebHits = nebGroup.visible ? raycaster.intersectObjects(nebulaSprites) : [];
 
               if (nebHits.length > 0) {
                 focusSelection('nebula', nebHits[0].object.userData, nebHits[0].object.position);
@@ -4697,9 +4915,65 @@ if (!window._galaxyHasLoadedOnce) {
               spherical.r = Math.max(0.2, Math.min(3, spherical.r * (direction === 'in' ? 0.82 : 1.22)));
               updateCamera(); setCanvasStatus('Zoom ' + Math.round(120 / spherical.r) + '%');
             };
+            canvasEl._galaxyGetStarVisualState = function (index, elapsedOverride, motionEnabled) {
+              var safeIndex = Math.max(0, Math.min(starData.length - 1, Number.isFinite(index) ? Math.floor(index) : 0));
+              var star = starData[safeIndex];
+              if (!star) return null;
+              var elapsedValue = Number.isFinite(elapsedOverride) ? elapsedOverride : starShaderMat.uniforms.uTime.value;
+              var animated = evaluateGalaxyStarPosition(star, elapsedValue, starShaderMat.uniforms.uRotMode.value, galaxyType, motionEnabled === undefined ? !prefersReducedMotion : motionEnabled, {});
+              return { index: safeIndex, morphology: galaxyType, elapsed: elapsedValue, base: { x: star.x, y: star.y, z: star.z }, phase: star.phase, animated: { x: animated.x, y: animated.y, z: animated.z, angularRate: animated.angularRate }, metadataTypeIndex: STAR_TYPES.indexOf(star.type), gpuTypeIndex: starPoints.geometry.attributes.aStarType.array[safeIndex], metadataLuminosity: star.luminosity, gpuLuminosity: starPoints.geometry.attributes.aLuminosity.array[safeIndex] };
+            };
+            canvasEl._galaxyGetSelectionVisualState = function () {
+              if (!selectionTarget || selectionTarget.kind !== 'star') return { selectedIndex: -1 };
+              var rulerArray = measurementRulerGeometry.attributes.position.array;
+              return { selectedIndex: selectionTarget.data.idx, marker: { x: selectionMarker.position.x, y: selectionMarker.position.y, z: selectionMarker.position.z }, halo: { x: selectionHalo.position.x, y: selectionHalo.position.y, z: selectionHalo.position.z }, rulerEnd: { x: rulerArray[3], y: rulerArray[4], z: rulerArray[5] }, elapsed: starShaderMat.uniforms.uTime.value };
+            };
             canvasEl._galaxyGetMorphologyVisualState = function () {
+              function rmsAxisRatios(positionArray) {
+                if (!positionArray || positionArray.length < 3) return { yOverX: 0, zOverX: 0 };
+                var x2 = 0, y2 = 0, z2 = 0, sampleCount = positionArray.length / 3;
+                for (var axisIndex = 0; axisIndex < positionArray.length; axisIndex += 3) {
+                  x2 += positionArray[axisIndex] * positionArray[axisIndex];
+                  y2 += positionArray[axisIndex + 1] * positionArray[axisIndex + 1];
+                  z2 += positionArray[axisIndex + 2] * positionArray[axisIndex + 2];
+                }
+                var xRms = Math.sqrt(x2 / sampleCount) || 1;
+                return { yOverX: Math.sqrt(y2 / sampleCount) / xRms, zOverX: Math.sqrt(z2 / sampleCount) / xRms };
+              }
+              var shellRotations = morphologySignatureObjects.map(function (object) { return object.rotation ? object.rotation.x : 0; });
+              var stellarPositions = starPoints.geometry.attributes.position.array;
               return {
                 morphology: galaxyType,
+                armCount: spiralLayout ? spiralLayout.armCount : 0,
+                armStart: spiralLayout ? spiralLayout.armStart : 0,
+                barVisible: coreLightBars.length > 0,
+                barObjectCount: coreLightBars.length,
+                barHalfLength: spiralLayout ? spiralLayout.barHalfLength : 0,
+                barAngle: spiralLayout ? spiralLayout.barAngle : 0,
+                companionPolicy: companionPolicy,
+                companionCount: companionCountRealized,
+                interactionBridgeCount: interactionBridgeObjects.length,
+                tidalStreamCount: tidalStreamMats.length,
+                primaryArmJoinError: galaxyType === 'barredSpiral' ? Math.abs(spiralPatternAngle(0, spiralLayout.barHalfLength, 0) - spiralLayout.barAngle) : 0,
+                oppositeArmError: galaxyType === 'grandDesign' ? Math.abs(Math.abs(spiralPatternAngle(1, spiralLayout.armStart, 0) - spiralPatternAngle(0, spiralLayout.armStart, 0)) - Math.PI) : 0,
+                diffuseEnvelopeIsBillboard: !!(diskSheen && diskSheen.isSprite),
+                diffuseEnvelopePresent: !!diskSheen,
+                diffuseBodyKind: isSpiralMorphology ? 'disk-plane' : galaxyType === 'elliptical' ? 'triaxial-volume' : 'clumpy-volume',
+                openClusterPointCount: openClusterMat && openClusterMat.userData ? openClusterMat.userData.pointCount : 0,
+                openClusterCenterCount: openClusterMat && openClusterMat.userData ? openClusterMat.userData.centerCount : 0,
+                openClusterMeanNearestAnchorDistance: openClusterMat && openClusterMat.userData ? openClusterMat.userData.meanNearestAnchorDistance : 0,
+                thickDiskPointCount: thickDiskMat && thickDiskMat.userData ? thickDiskMat.userData.pointCount : 0,
+                stellarRmsAxisRatios: rmsAxisRatios(stellarPositions),
+                glowRmsAxisRatios: rmsAxisRatios(glowPos),
+                microStarRmsAxisRatios: rmsAxisRatios(microStarPos),
+                shellInclinationSpread: shellRotations.length ? Math.max.apply(Math, shellRotations) - Math.min.apply(Math, shellRotations) : 0,
+                darkHaloAxisRatios: halo ? { yOverX: halo.scale.y / halo.scale.x, zOverX: halo.scale.z / halo.scale.x } : { yOverX: 0, zOverX: 0 },
+                darkHaloRotationY: darkHaloGroup.rotation.y,
+                radioRmsAxisRatios: rmsAxisRatios(radioPos),
+                xrayRmsAxisRatios: rmsAxisRatios(xrayPos),
+                xrayRotationY: xrayGroup.rotation.y,
+                xrayShockShellCount: xrayShockShells.length,
+                xrayThermalShellCount: xrayThermalShells.length,
                 sharedIrregularAnchorCount: galaxyType === 'irregular' ? irregularMorphologyAnchors.length : 0,
                 spiralRidgeCount: spiralRidgeMaterials.length + spiralSpurMaterials.length,
                 radioRingCount: radioGroup.children.filter(function (child) { return child.name === 'radioHydrogenRing'; }).length,
@@ -4766,9 +5040,25 @@ if (!window._galaxyHasLoadedOnce) {
               var nebulaMaxOpacity = nebulaSprites.reduce(function (maximum, sprite) { return Math.max(maximum, sprite && sprite.material && Number.isFinite(sprite.material.opacity) ? sprite.material.opacity : 0); }, 0);
               var nebulaWispMaxOpacityScale = nebulaWispSprites.reduce(function (maximum, sprite) { var base = sprite && sprite.userData ? sprite.userData.baseOpacity : 0; return Math.max(maximum, base && sprite.material ? sprite.material.opacity / base : 0); }, 0);
               var nonFiniteThermalOpacityCount = infraredThermalMats.filter(function (material) { return !Number.isFinite(material.opacity); }).length;
+              function maxMaterialOpacity(materials) { return materials.reduce(function (maximum, material) { return Math.max(maximum, material && Number.isFinite(material.opacity) ? material.opacity : 0); }, 0); }
+              var thermalCloudMaxOpacity = maxMaterialOpacity(infraredThermalMats.filter(function (material) { return material.userData && material.userData.lodClass === 'extended'; }));
+              var thermalLaneMaxOpacity = maxMaterialOpacity(infraredThermalMats.filter(function (material) { return material.userData && material.userData.lodClass === 'resolved'; }));
+              var xrayEventMaxOpacity = xrayEventSprites.reduce(function (maximum, sprite) { return Math.max(maximum, sprite.material && Number.isFinite(sprite.material.opacity) ? sprite.material.opacity : 0); }, 0);
+              var xrayShockMaxOpacity = xrayShockShells.reduce(function (maximum, shell) { return Math.max(maximum, shell.material && Number.isFinite(shell.material.opacity) ? shell.material.opacity : 0); }, 0);
+              var xrayOutflowMaxOpacity = Math.max(maxMaterialOpacity(xrayOutflowMaterials), xrayOutflowSprites.reduce(function (maximum, sprite) { return Math.max(maximum, sprite.material && Number.isFinite(sprite.material.opacity) ? sprite.material.opacity : 0); }, 0));
               return {
                 mode: currentObserveMode,
                 materials: summaries,
+                extendedInstrumentDetail: extendedInstrumentDetail,
+                resolvedInstrumentDetail: resolvedInstrumentDetail,
+                radioVelocityMapOpacity: dopplerVelocityFieldMaterial ? dopplerVelocityFieldMaterial.opacity : 0,
+                thermalCloudMaxOpacity: thermalCloudMaxOpacity,
+                thermalLaneMaxOpacity: thermalLaneMaxOpacity,
+                xrayEventMaxOpacity: xrayEventMaxOpacity,
+                xrayShockMaxOpacity: xrayShockMaxOpacity,
+                xrayOutflowMaxOpacity: xrayOutflowMaxOpacity,
+                xrayJetOpacity: jetMat ? jetMat.opacity : 0,
+                xrayNuclearOutflowVisible: !!xrayNuclearOutflowGroup.visible,
                 softInstrumentPointCount: instrumentPointMaterials.filter(function (material) { return !!(material && material.alphaMap === fineStarTex); }).length,
                 thermalCloudCount: infraredThermalSprites.length,
                 nonFiniteThermalOpacityCount: nonFiniteThermalOpacityCount,
@@ -4893,7 +5183,7 @@ if (!window._galaxyHasLoadedOnce) {
               var targetFov = 60 - cinematicMotion.warp * 4.5 + Math.sin(elapsed * 0.18) * 0.35;
               if (Math.abs(camera.fov - targetFov) > 0.02) { camera.fov = targetFov; camera.updateProjectionMatrix(); }
               if (cinematicMotion.aperture > 0.01) cinematicMotion.aperture *= 0.94;
-              var apertureMode = currentObserveMode === 'xray' ? 0.46 : currentObserveMode === 'gravity' ? 0.22 : currentObserveMode === 'infrared' ? 0.14 : currentObserveMode === 'radio' ? 0.1 : 0.06;
+              var apertureMode = 0; // Camera-attached sweeps are transition cues, not a permanent wavelength overlay.
               var apertureLevel = Math.min(1.5, apertureMode + cinematicMotion.aperture * 0.66 + cinematicMotion.warp * 0.34 + cinematicMotion.shock * 0.24);
               apertureSweepGroup.visible = apertureLevel > 0.035;
               apertureSweepSprites.forEach(function (swp, idx) {
@@ -4919,7 +5209,7 @@ if (!window._galaxyHasLoadedOnce) {
                 var streamPulse = 0.74 + 0.26 * Math.sin(elapsed * 0.5 + line.material.userData.phase + idx * 0.4);
                 line.material.opacity = Math.max(0, (line.material.userData.baseOpacity || 0.04) * streamlineGlow * streamPulse);
               });
-              if (!prefersReducedMotion) spiralRidgeGroup.rotation.y += (0.000025 + cinematicMotion.warp * 0.00012) * motionStep;
+              // Density-wave ridges remain phase-locked while shader stars orbit through them.
               spiralRidgeMaterials.forEach(function (ridgeMaterial) { var ridgeData = ridgeMaterial.userData || {}; var ridgePulse = prefersReducedMotion ? 1 : 0.9 + 0.1 * Math.sin(elapsed * 0.34 + ridgeData.phase); ridgeMaterial.opacity = (ridgeData.baseOpacity || 0.04) * spiralRidgeGlow * ageEvolutionVisual.structure * ridgePulse; });
               spiralSpurMaterials.forEach(function (spurMaterial) { var spurData = spurMaterial.userData || {}; var spurPulse = prefersReducedMotion ? 1 : 0.86 + 0.14 * Math.sin(elapsed * 0.29 + spurData.phase); spurMaterial.opacity = (spurData.baseOpacity || 0.03) * spiralRidgeGlow * ageEvolutionVisual.structure * spurPulse; });
               if (coreFlare && coreFlare.material) {
@@ -4931,7 +5221,7 @@ if (!window._galaxyHasLoadedOnce) {
               coreLightBars.forEach(function (bar, idx) {
                 var barPulse = 0.72 + 0.28 * Math.sin(elapsed * 0.95 + bar.userData.phase);
                 bar.material.opacity = (bar.userData.baseOpacity || 0.18) * (visualGlow.core / 0.42) * barPulse;
-                bar.material.rotation += (idx ? 0.0007 : -0.0005) * motionStep;
+                // The stellar bar is one coherent disk-plane structure.
                 var barScale = 1 + 0.05 * Math.sin(elapsed * 0.7 + idx);
                 bar.scale.set(bar.userData.baseScaleX * barScale, bar.userData.baseScaleY, 1);
               });
@@ -5024,28 +5314,33 @@ if (!window._galaxyHasLoadedOnce) {
                 weakLensingArcMats.forEach(function (material, idx) { material.opacity = weakLensingVisual * (0.17 + 0.08 * Math.sin(elapsed * 0.58 + idx * 0.9)); });
                 if (weakLensingTarget === 0 && weakLensingVisual < 0.01) weakLensingGroup.visible = false;
               }
+              var extendedInstrumentRaw = Math.max(0, Math.min(1, (2.15 - spherical.r) / 1.05));
+              var resolvedInstrumentRaw = Math.max(0, Math.min(1, (1.9 - spherical.r) / 1.2));
+              extendedInstrumentDetail = 0.12 + 0.88 * extendedInstrumentRaw;
+              resolvedInstrumentDetail = 0.035 + 0.965 * resolvedInstrumentRaw;
+              xrayBeaconVisibility = 0.15 + 0.85 * resolvedInstrumentRaw;
               var radioPolarizationDetailLevel = Math.max(0, Math.min(1, (2.05 - spherical.r) / 1.32));
               radioPolarizationGroup.visible = isSpiralMorphology && radioGroup.visible && radioPolarizationDetailLevel > 0.012;
               if (radioGroup.visible) {
                 var velocityPulse = prefersReducedMotion ? 1 : 0.9 + 0.1 * Math.sin(elapsed * 0.86);
-                if (dopplerVelocityFieldMaterial) dopplerVelocityFieldMaterial.opacity = 0.3 + velocityPulse * 0.08;
+                if (dopplerVelocityFieldMaterial) dopplerVelocityFieldMaterial.opacity = (0.22 + velocityPulse * 0.06) * extendedInstrumentDetail;
                 if (dopplerVelocitySampleMaterial) dopplerVelocitySampleMaterial.userData.modeOpacity = dopplerVelocitySampleMaterial.userData.baseOpacity * (0.88 + velocityPulse * 0.12);
                 if (radioPolarizationMaterial) radioPolarizationMaterial.opacity = (radioPolarizationMaterial.userData.baseOpacity || 0.48) * radioPolarizationDetailLevel * ageEvolutionVisual.structure * Math.max(0.42, ageEvolutionVisual.gas) * velocityPulse;
                 faradayRibbonMaterials.forEach(function (faradayRibbonMaterial) { var faradayRibbonData = faradayRibbonMaterial.userData || {}, faradayRibbonPulse = prefersReducedMotion ? 1 : 0.84 + 0.16 * Math.sin(elapsed * 0.34 + faradayRibbonData.phase); faradayRibbonMaterial.opacity = (faradayRibbonData.baseOpacity || 0.065) * radioPolarizationDetailLevel * ageEvolutionVisual.structure * Math.max(0.45, ageEvolutionVisual.gas) * faradayRibbonPulse; });
-                if (!prefersReducedMotion) faradayRibbonObjects.forEach(function (faradayRibbon) { faradayRibbon.rotation.y += faradayRibbon.userData.drift || 0; });
+                // Faraday ribbons stay registered to the radio spiral pattern.
               }
               if (infraredGroup.visible) {
-                infraredThermalMats.forEach(function (thermalMaterial) { var thermalData = thermalMaterial.userData || {}; var thermalPulse = prefersReducedMotion ? 1 : 0.88 + 0.12 * Math.sin(elapsed * 0.54 + thermalData.phase); thermalMaterial.opacity = (thermalData.baseOpacity || 0.12) * ageEvolutionVisual.gas * thermalPulse; });
-                infraredThermalSprites.forEach(function (thermalSprite) { var thermalData = thermalSprite.userData || {}; if (!prefersReducedMotion) thermalSprite.material.rotation += thermalData.drift || 0; var thermalScalePulse = prefersReducedMotion ? 1 : 0.96 + 0.06 * Math.sin(elapsed * 0.42 + thermalData.phase); thermalSprite.scale.set((thermalData.baseScaleX || 0.1) * thermalScalePulse, (thermalData.baseScaleY || 0.04) * (2 - thermalScalePulse), 1); });
+                infraredThermalMats.forEach(function (thermalMaterial) { var thermalData = thermalMaterial.userData || {}; var thermalPulse = prefersReducedMotion ? 1 : 0.88 + 0.12 * Math.sin(elapsed * 0.54 + thermalData.phase); var thermalLod = thermalData.lodClass === 'resolved' ? resolvedInstrumentDetail : extendedInstrumentDetail; thermalMaterial.opacity = (thermalData.baseOpacity || 0.12) * ageEvolutionVisual.gas * thermalPulse * thermalLod; });
+                infraredThermalSprites.forEach(function (thermalSprite) { var thermalData = thermalSprite.userData || {}; if (!prefersReducedMotion) thermalSprite.material.rotation += thermalData.drift || 0; var thermalScalePulse = prefersReducedMotion ? 1 : 0.96 + 0.06 * Math.sin(elapsed * 0.42 + thermalData.phase), thermalLodScale = 0.75 + 0.25 * extendedInstrumentDetail; thermalSprite.scale.set((thermalData.baseScaleX || 0.1) * thermalScalePulse * thermalLodScale, (thermalData.baseScaleY || 0.04) * (2 - thermalScalePulse) * thermalLodScale, 1); });
               }
               if (xrayGroup.visible) {
-                xrayEventSprites.forEach(function (eventSprite) { var eventData = eventSprite.userData || {}; var eventPulse = prefersReducedMotion ? 0.9 : 0.52 + 0.48 * Math.sin(elapsed * eventData.frequency + eventData.phase); var eventScale = (eventData.baseScale || 0.02) * (0.82 + eventPulse * 0.58); eventSprite.scale.set(eventScale, eventScale, 1); eventSprite.material.opacity = (eventData.baseOpacity || 0.5) * ageEvolutionVisual.remnants * (0.52 + eventPulse * 0.55); });
-                xrayShockShells.forEach(function (shockShell) { var shockData = shockShell.userData || {}; var shockPulse = prefersReducedMotion ? 0.65 : 0.5 + 0.5 * Math.sin(elapsed * shockData.expansion + shockData.phase); var shockScale = (shockData.baseScale || 0.03) * (0.86 + shockPulse * 0.34); shockShell.scale.set(shockScale, shockScale, shockScale); shockShell.material.opacity = (shockData.baseOpacity || 0.14) * ageEvolutionVisual.remnants * (0.95 - shockPulse * 0.48); if (!prefersReducedMotion) shockShell.rotation.z += 0.00018; });
+                xrayEventSprites.forEach(function (eventSprite) { var eventData = eventSprite.userData || {}; var eventPulse = prefersReducedMotion ? 0.9 : 0.52 + 0.48 * Math.sin(elapsed * eventData.frequency + eventData.phase); var eventScale = (eventData.baseScale || 0.02) * (0.82 + eventPulse * 0.58) * (0.72 + 0.28 * resolvedInstrumentDetail); eventSprite.scale.set(eventScale, eventScale, 1); eventSprite.material.opacity = (eventData.baseOpacity || 0.5) * ageEvolutionVisual.remnants * (0.52 + eventPulse * 0.55) * xrayBeaconVisibility; });
+                xrayShockShells.forEach(function (shockShell) { var shockData = shockShell.userData || {}; var shockPulse = prefersReducedMotion ? 0.65 : 0.5 + 0.5 * Math.sin(elapsed * shockData.expansion + shockData.phase); var shockScale = (shockData.baseScale || 0.03) * (0.86 + shockPulse * 0.34) * (0.75 + 0.25 * resolvedInstrumentDetail); shockShell.scale.set(shockScale, shockScale, shockScale); shockShell.material.opacity = (shockData.baseOpacity || 0.14) * ageEvolutionVisual.remnants * (0.95 - shockPulse * 0.48) * resolvedInstrumentDetail; if (!prefersReducedMotion) shockShell.rotation.z += 0.00018; });
                 var xrayThermalDetailLevel = Math.max(0, Math.min(1, (1.95 - spherical.r) / 1.3));
                 xrayThermalShellGroup.visible = xrayThermalDetailLevel > 0.012;
                 xrayThermalShells.forEach(function (thermalShell) { var thermalShellData = thermalShell.userData || {}, thermalShellPulse = prefersReducedMotion ? 0.72 : 0.5 + 0.5 * Math.sin(elapsed * thermalShellData.expansion + thermalShellData.phase), thermalShellScale = (thermalShellData.baseScale || 0.04) * (0.9 + thermalShellPulse * 0.22); thermalShell.scale.setScalar(thermalShellScale); if (!prefersReducedMotion) thermalShell.rotation.z += 0.0001; });
                 xrayThermalShellMaterials.forEach(function (thermalShellMaterial) { var thermalMaterialData = thermalShellMaterial.userData || {}, thermalBandPulse = prefersReducedMotion ? 1 : 0.88 + 0.12 * Math.sin(elapsed * (0.34 + thermalMaterialData.band * 0.08) + thermalMaterialData.phase); thermalShellMaterial.opacity = (thermalMaterialData.baseOpacity || 0.13) * xrayThermalDetailLevel * ageEvolutionVisual.remnants * thermalBandPulse; });
-                var xrayOutflowDetailLevel = Math.max(0.18, Math.min(1, (2.2 - spherical.r) / 1.45)), xrayOutflowEvolution = 0.48 + ageEvolutionVisual.gas * 0.28 + ageEvolutionVisual.remnants * 0.24;
+                var xrayOutflowDetailLevel = resolvedInstrumentDetail, xrayOutflowEvolution = 0.48 + ageEvolutionVisual.gas * 0.28 + ageEvolutionVisual.remnants * 0.24; xrayNuclearOutflowGroup.visible = xrayOutflowDetailLevel > 0.012;
                 xrayOutflowMaterials.forEach(function (outflowMaterial) { var outflowData = outflowMaterial.userData || {}, outflowPulse = prefersReducedMotion ? 1 : 0.86 + 0.14 * Math.sin(elapsed * 0.46 + outflowData.phase); outflowMaterial.opacity = (outflowData.baseOpacity || 0.04) * xrayOutflowDetailLevel * xrayOutflowEvolution * outflowPulse; });
                 xrayOutflowSprites.forEach(function (outflowSprite) { var outflowSpriteData = outflowSprite.userData || {}, outflowSpritePulse = prefersReducedMotion ? 0.86 : 0.56 + 0.44 * Math.sin(elapsed * outflowSpriteData.frequency + outflowSpriteData.phase), outflowSpriteScale = (outflowSpriteData.baseScale || 0.01) * (0.88 + outflowSpritePulse * 0.34); outflowSprite.scale.set(outflowSpriteScale, outflowSpriteScale, 1); outflowSprite.material.opacity = (outflowSpriteData.baseOpacity || 0.32) * xrayOutflowDetailLevel * xrayOutflowEvolution * (0.56 + outflowSpritePulse * 0.44); });
                 if (!prefersReducedMotion) xrayNuclearOutflowGroup.rotation.y += 0.00022 * motionStep;              }
@@ -5180,20 +5475,21 @@ if (!window._galaxyHasLoadedOnce) {
               tidalStreamMats.forEach(function (tidalMat) { tidalMat.opacity = (tidalMat.userData.baseOpacity || 0.05) * volumetricVisual.satellite * ageEvolutionVisual.disturbance * (0.78 + 0.22 * Math.sin(elapsed * 0.38 + tidalMat.userData.phase)); });
               if (!prefersReducedMotion) satelliteGroup.children.forEach(function (satelliteChild) { if (satelliteChild.userData && satelliteChild.userData.drift) satelliteChild.rotation.y += satelliteChild.userData.drift; });
               morphologySignatureMaterials.forEach(function (morphMaterial) { var morphData = morphMaterial.userData || {}; var morphPulse = prefersReducedMotion ? 1 : 0.9 + 0.1 * Math.sin(elapsed * 0.42 + morphData.phase); morphMaterial.opacity = (morphData.baseOpacity || 0.08) * ageEvolutionVisual.structure * morphPulse; });
-              if (!prefersReducedMotion) morphologySignatureObjects.forEach(function (morphObject, morphIndex) { if (galaxyType === 'irregular' && morphObject.userData && morphObject.userData.baseScale) { var morphWave = 0.96 + 0.08 * Math.sin(elapsed * 0.36 + morphObject.userData.phase); var morphScale = morphObject.userData.baseScale * morphWave; morphObject.scale.set(morphScale * 1.25, morphScale, morphScale); } else if (galaxyType !== 'elliptical') morphObject.rotation.y += (morphIndex % 2 ? -0.000025 : 0.000018); });
+              if (!prefersReducedMotion) morphologySignatureObjects.forEach(function (morphObject) { if (galaxyType === 'irregular' && morphObject.userData && morphObject.userData.baseScale) { var morphWave = 0.96 + 0.08 * Math.sin(elapsed * 0.36 + morphObject.userData.phase); var morphScale = morphObject.userData.baseScale * morphWave; morphObject.scale.set(morphScale * 1.25, morphScale, morphScale); } });
 
               nebulaSprites.forEach(function (s, i) {
                 var nebBase = currentObserveMode === 'gravity' ? 0.012 : currentObserveMode === 'radio' ? 0.1 : currentObserveMode === 'xray' ? 0.05 : currentObserveMode === 'infrared' ? 0.18 : 0.25;
                 var nebPulse = currentObserveMode === 'gravity' ? 0.004 : currentObserveMode === 'radio' ? 0.06 : currentObserveMode === 'xray' ? 0.03 : 0.15;
-                s.material.opacity = nebBase + nebPulse * Math.sin(elapsed * 0.5 + i * 1.8);
+                s.material.opacity = (nebBase + nebPulse * Math.sin(elapsed * 0.5 + i * 1.8)) * extendedInstrumentDetail;
               });
               nebulaWispSprites.forEach(function (w, i) {
                 var wMode = currentObserveMode === 'infrared' ? 1.45 : currentObserveMode === 'radio' ? 0.62 : currentObserveMode === 'xray' ? 0.38 : currentObserveMode === 'gravity' ? 0.06 : 1;
                 var wPulse = 0.72 + 0.28 * Math.sin(elapsed * 0.44 + w.userData.phase);
-                w.material.opacity = w.userData.baseOpacity * wMode * wPulse;
+                w.material.opacity = w.userData.baseOpacity * wMode * wPulse * resolvedInstrumentDetail;
                 w.material.rotation += (0.0009 + (i % 3) * 0.00035) * motionStep;
                 var wScale = 0.96 + 0.05 * Math.sin(elapsed * 0.38 + w.userData.phase);
-                w.scale.set(w.userData.baseScaleX * wScale, w.userData.baseScaleY * (1.02 - (wScale - 0.96)), 1);
+                var wLodScale = 0.75 + 0.25 * resolvedInstrumentDetail;
+                w.scale.set(w.userData.baseScaleX * wScale * wLodScale, w.userData.baseScaleY * (1.02 - (wScale - 0.96)) * wLodScale, 1);
               });
 
               var microDetailLevel = Math.max(0, Math.min(1, (1.48 - spherical.r) / 0.98));
@@ -5221,17 +5517,17 @@ if (!window._galaxyHasLoadedOnce) {
               if (!prefersReducedMotion && coreLensingCausticGroup.visible) coreCausticObjects.forEach(function (causticObject) { causticObject.rotation.z += causticObject.userData.drift || 0; });
               coreLensedImages.forEach(function (lensedImage) { var imageData = lensedImage.userData || {}, imagePulse = prefersReducedMotion ? 1 : 0.78 + 0.22 * Math.sin(elapsed * 1.08 + imageData.phase), imageAngle = imageData.angle + (prefersReducedMotion ? 0 : elapsed * imageData.drift); lensedImage.position.set(Math.cos(imageAngle) * imageData.radius, Math.sin(imageData.phase) * 0.0035, Math.sin(imageAngle) * imageData.radius * 0.62); lensedImage.material.opacity = (imageData.baseOpacity || 0.2) * coreLensingDetailLevel * Math.max(0.24, blackHoleDrama.lens / 0.18) * imagePulse; var imageScale = (imageData.baseScale || 0.01) * (0.9 + imagePulse * 0.18); lensedImage.scale.set(imageScale * 1.8, imageScale, 1); });
 
-              if (infraredGroup.visible) infraredGroup.rotation.y += 0.0009 * motionStep;
+              if (infraredGroup.visible && isSpiralMorphology) infraredGroup.rotation.y += 0.0009 * motionStep;
 
-              if (radioGroup.visible) radioGroup.rotation.y -= 0.0012 * motionStep;
+              if (radioGroup.visible && isSpiralMorphology) radioGroup.rotation.y -= 0.0012 * motionStep;
 
               if (xrayGroup.visible) {
-                xrayGroup.rotation.y += 0.006 * motionStep;
-                if (jetMat) jetMat.opacity = 0.15 + 0.05 * Math.sin(elapsed * 2.4);
+                if (isSpiralMorphology) xrayGroup.rotation.y += 0.006 * motionStep;
+                if (jetMat) jetMat.opacity = (0.15 + 0.05 * Math.sin(elapsed * 2.4)) * resolvedInstrumentDetail;
               }
 
               if (darkHaloGroup.visible) {
-                darkHaloGroup.rotation.y += 0.001 * motionStep;
+                if (galaxyType !== 'elliptical') darkHaloGroup.rotation.y += 0.001 * motionStep;
                 darkHaloGroup.children.forEach(function (obj, idx) { if (obj.material && obj.material.opacity !== undefined) obj.material.opacity = idx === 0 ? 0.18 + 0.04 * Math.sin(elapsed * 0.9) : 0.045 + 0.018 * Math.sin(elapsed * 0.7); });
               }
 
@@ -5271,16 +5567,13 @@ if (!window._galaxyHasLoadedOnce) {
 
               if (selectionTarget && selectionMarker.visible) {
                 if (selectionTarget.kind === 'star') {
-                  var selectedRadius = Math.sqrt(selectionTarget.x * selectionTarget.x + selectionTarget.z * selectionTarget.z);
-                  var selectedAngle = Math.atan2(selectionTarget.z, selectionTarget.x);
-                  var selectedMode = starShaderMat.uniforms.uRotMode.value;
-                  var selectedOmega = selectedMode < 0.5 ? 0.018 : selectedMode < 1.5 ? 0.012 / Math.pow(Math.max(selectedRadius, 0.08), 1.5) : 0.03 / Math.max(selectedRadius, 0.08);
-                  var selectedAnimatedAngle = selectedAngle + elapsed * selectedOmega;
-                  selectionMarker.position.set(Math.cos(selectedAnimatedAngle) * selectedRadius, selectionTarget.y, Math.sin(selectedAnimatedAngle) * selectedRadius);
+                  var selectedState = getAnimatedStarState(selectionTarget.data, elapsed, {});
+                  selectionMarker.position.set(selectedState.x, selectedState.y, selectedState.z);
                   selectionHalo.position.copy(selectionMarker.position);
                   cameraLookGoal.set(selectionMarker.position.x * 0.55, selectionMarker.position.y * 0.5, selectionMarker.position.z * 0.55);
                   updateMeasurementRuler(selectionMarker.position);
-                  updateOrbitalMechanics(selectionMarker.position, selectedOmega, elapsed);
+                  orbitalMechanicsGroup.visible = isSpiralMorphology;
+                  if (isSpiralMorphology) updateOrbitalMechanics(selectionMarker.position, selectedState.angularRate, elapsed);
                 }
                 var focusWave = prefersReducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(elapsed * 3.2);
                 var focusPulse = 0.078 + 0.012 * focusWave;
@@ -5356,7 +5649,7 @@ if (!window._galaxyHasLoadedOnce) {
                 denseMaterial.opacity = denseModeOpacity * overviewOpacityScale;
               });
               renderer.toneMappingExposure += (targetExposure - renderer.toneMappingExposure) * adaptationRate;
-              if (composer && canvasEl._bloomPass) { var adaptiveBloomStrength = bloomModeStrength - coreProximity * 0.24 - outerContextCompression * 0.18 - transientGlareCompression * 0.8; var adaptiveBloomThreshold = bloomModeThreshold + coreProximity * 0.075 + outerContextCompression * 0.035 + transientGlareCompression * 0.12; canvasEl._bloomPass.strength += (adaptiveBloomStrength - canvasEl._bloomPass.strength) * adaptationRate; canvasEl._bloomPass.threshold += (adaptiveBloomThreshold - canvasEl._bloomPass.threshold) * adaptationRate; }
+              if (composer && canvasEl._bloomPass) { var overviewBloomStrengthCompression = currentObserveMode === 'xray' ? 0.32 : 0.18, overviewBloomThresholdLift = currentObserveMode === 'xray' ? 0.08 : 0.035; var adaptiveBloomStrength = bloomModeStrength - coreProximity * 0.24 - outerContextCompression * overviewBloomStrengthCompression - transientGlareCompression * 0.8; var adaptiveBloomThreshold = bloomModeThreshold + coreProximity * 0.075 + outerContextCompression * overviewBloomThresholdLift + transientGlareCompression * 0.12; canvasEl._bloomPass.strength += (adaptiveBloomStrength - canvasEl._bloomPass.strength) * adaptationRate; canvasEl._bloomPass.threshold += (adaptiveBloomThreshold - canvasEl._bloomPass.threshold) * adaptationRate; }
 
               if (composer) composer.render();
 
@@ -5523,11 +5816,12 @@ if (!window._galaxyHasLoadedOnce) {
           galaxyRuntimeRef.current.patchGalaxy = patchGalaxy;
           var galaxyCanvasElementRef = React.useCallback(function (el) {
             if (!el) { canvasRefCb(null); return; }
-            el._onSelectStar = function (sd) {
+            el._onSelectStar = function (sd, visualPosition) {
               var runtime = galaxyRuntimeRef.current;
               var key = 'star:' + sd.type.id;
-              var radiusNorm = Math.sqrt(sd.x * sd.x + sd.z * sd.z);
-              runtime.patchGalaxy({ selectedStar: sd.type.id, selectedNebula: null, selectedStarMeasurement: { x: sd.x, y: sd.y, z: sd.z, radiusNorm: radiusNorm, luminosity: sd.luminosity || 1, index: sd.idx }, hasMeasuredStar: true, inspectTarget: key, inspectLog: runtime.addInspectKey(key) });
+              var measuredPosition = visualPosition || sd;
+              var radiusNorm = Math.sqrt(measuredPosition.x * measuredPosition.x + measuredPosition.z * measuredPosition.z);
+              runtime.patchGalaxy({ selectedStar: sd.type.id, selectedNebula: null, selectedStarMeasurement: { x: measuredPosition.x, y: measuredPosition.y, z: measuredPosition.z, radiusNorm: radiusNorm, luminosity: sd.luminosity || 1, index: sd.idx }, hasMeasuredStar: true, inspectTarget: key, inspectLog: runtime.addInspectKey(key) });
               if (typeof runtime.awardStemXP === 'function') runtime.awardStemXP('galaxy_explore', 2, 'Discovered ' + sd.type.label + ' star');
             };
             el._onSelectNebula = function (neb) {
@@ -6002,7 +6296,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     onClick: function () {
 
-                      upd("galaxyType", key);
+                      patchGalaxy({ galaxyType: key, selectedStar: null, selectedNebula: null, selectedStarMeasurement: null, inspectTarget: 'galaxyType' });
 
                       // Canvas Narration: galaxy type switch
                       if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'galaxyType', {

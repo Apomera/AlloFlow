@@ -137,6 +137,56 @@ describe('galaxy 3-D scene builder', () => {
   );
 
 
+  it.each([
+    ['barredSpiral', { arms: 4, bar: true, barObjects: 2, armStart: 0.34, companionPolicy: 'background', companions: 2, bridges: 0 }],
+    ['grandDesign', { arms: 2, bar: false, barObjects: 0, armStart: 0.18, companionPolicy: 'interacting', companions: 1, bridges: 1 }],
+  ])('realizes the canonical %s spiral layout', async (galaxyType, expected) => {
+    await mountGalaxy({ ...LIGHT, galaxyType, galaxyQuality: 'high' });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    const morphology = canvas._galaxyGetMorphologyVisualState();
+
+    expect(morphology.armCount).toBe(expected.arms);
+    expect(morphology.barVisible).toBe(expected.bar);
+    expect(morphology.barObjectCount).toBe(expected.barObjects);
+    expect(morphology.armStart).toBeCloseTo(expected.armStart, 8);
+    expect(morphology.primaryArmJoinError).toBeLessThan(1e-8);
+    expect(morphology.oppositeArmError).toBeLessThan(1e-8);
+    expect(morphology.companionPolicy).toBe(expected.companionPolicy);
+    expect(morphology.companionCount).toBe(expected.companions);
+    expect(morphology.interactionBridgeCount).toBe(expected.bridges);
+    expect(morphology.spiralRidgeCount).toBeGreaterThan(0);
+    assertClean();
+  }, SCENE_TIMEOUT);
+
+  it('keeps the elliptical luminous body and instrument layers three-dimensional', async () => {
+    await mountGalaxy({ ...LIGHT, galaxyType: 'elliptical', galaxyQuality: 'cinematic' });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    const morphology = canvas._galaxyGetMorphologyVisualState();
+
+    expect(morphology.diffuseEnvelopeIsBillboard).toBe(false);
+    expect(morphology.armCount).toBe(0);
+    expect(morphology.barVisible).toBe(false);
+    expect(morphology.companionPolicy).toBe('minor-merger');
+    expect(morphology.companionCount).toBe(1);
+    expect(morphology.interactionBridgeCount).toBe(0);
+    expect(morphology.glowRmsAxisRatios.yOverX).toBeCloseTo(morphology.stellarRmsAxisRatios.yOverX, 1);
+    expect(morphology.glowRmsAxisRatios.zOverX).toBeCloseTo(morphology.stellarRmsAxisRatios.zOverX, 1);
+    expect(morphology.microStarRmsAxisRatios.yOverX).toBeCloseTo(morphology.stellarRmsAxisRatios.yOverX, 1);
+    expect(morphology.microStarRmsAxisRatios.zOverX).toBeCloseTo(morphology.stellarRmsAxisRatios.zOverX, 1);
+    expect(morphology.shellInclinationSpread).toBeGreaterThan(0.7);
+    expect(morphology.darkHaloAxisRatios.yOverX).toBeGreaterThan(0.72);
+    expect(morphology.darkHaloAxisRatios.zOverX).toBeGreaterThan(0.85);
+    expect(morphology.radioRmsAxisRatios.yOverX).toBeGreaterThan(0.25);
+    expect(morphology.xrayRmsAxisRatios.yOverX).toBeGreaterThan(0.7);
+    expect(morphology.xrayRmsAxisRatios.zOverX).toBeGreaterThan(0.82);
+    expect(morphology.xrayShockShellCount).toBeLessThanOrEqual(2);
+    expect(morphology.xrayThermalShellCount).toBeLessThanOrEqual(1);
+    expect(morphology.darkHaloRotationY).toBe(0);
+    expect(morphology.xrayRotationY).toBe(0);
+    assertClean();
+  }, SCENE_TIMEOUT);
+
+
   it('keeps spiral-only layers unavailable in the elliptical scene', async () => {
     await mountGalaxy({ ...LIGHT, galaxyType: 'elliptical', galaxyQuality: 'balanced' });
     await React.act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
@@ -170,6 +220,9 @@ describe('galaxy 3-D scene builder', () => {
     expect(morphology.orderedRadioFieldVisible).toBe(false);
     expect(morphology.coreFlareVisible).toBe(false);
     expect(morphology.coherentIrregularMotion).toBe(true);
+    expect(morphology.companionPolicy).toBe('asymmetric-dwarfs');
+    expect(morphology.companionCount).toBe(2);
+    expect(morphology.interactionBridgeCount).toBe(0);
     expect(morphology.morphologySignatureCount).toBe(7);
     expect(morphology.armScatteringCount).toBe(32);
     expect(morphology.molecularFilamentCount).toBe(28);

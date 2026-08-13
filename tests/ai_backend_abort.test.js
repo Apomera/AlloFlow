@@ -154,3 +154,73 @@ describe('AIProvider image cancellation', () => {
     expect(calls).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('AIProvider vision-analysis cancellation', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('rejects an already-aborted analysis before starting a transport', async () => {
+    const calls = vi.fn();
+    const provider = createProvider('openai', calls);
+    const controller = new AbortController();
+    controller.abort();
+
+    await expect(provider.analyzeImage('Inspect this screen.', 'frame', {
+      mimeType: 'image/jpeg',
+      signal: controller.signal,
+    })).rejects.toMatchObject({ name: 'AbortError' });
+    expect(calls).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['openai', { choices: [{ message: { content: 'ok' } }] }],
+    ['ollama', { message: { content: 'ok' } }],
+  ])('forwards the same signal to the %s analysis transport', async (backend, body) => {
+    const calls = [];
+    const provider = createProvider(backend, async (_url, options) => {
+      calls.push(options);
+      return { json: async () => body };
+    });
+    const controller = new AbortController();
+
+    await expect(provider.analyzeImage('Inspect this screen.', 'frame', {
+      mimeType: 'image/jpeg',
+      signal: controller.signal,
+    })).resolves.toBe('ok');
+    expect(calls).toHaveLength(1);
+    expect(calls[0].signal).toBe(controller.signal);
+  });
+
+  it('rejects if cancellation arrives while an analysis response is being parsed', async () => {
+    let releaseJson;
+    const provider = createProvider('openai', async () => ({
+      json: () => new Promise((resolve) => { releaseJson = resolve; }),
+    }));
+    const controller = new AbortController();
+    const pending = provider.analyzeImage('Inspect this screen.', 'frame', {
+      mimeType: 'image/jpeg',
+      signal: controller.signal,
+    });
+
+    await vi.waitFor(() => expect(releaseJson).toBeTypeOf('function'));
+    controller.abort();
+    releaseJson({ choices: [{ message: { content: 'stale' } }] });
+
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+  });
+
+  it('forwards the signal to Gemini analysis fetch', async () => {
+    const controller = new AbortController();
+    let optionsSeen = null;
+    vi.stubGlobal('fetch', vi.fn(async (_url, options) => {
+      optionsSeen = options;
+      return { json: async () => ({ candidates: [{ content: { parts: [{ text: 'ok' }] } }] }) };
+    }));
+    const provider = createProvider('gemini', async () => { throw new Error('retry wrapper should not run'); });
+
+    await expect(provider.analyzeImage('Inspect this screen.', 'frame', {
+      mimeType: 'image/jpeg',
+      signal: controller.signal,
+    })).resolves.toBe('ok');
+    expect(optionsSeen.signal).toBe(controller.signal);
+  });
+});

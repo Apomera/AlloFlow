@@ -24,10 +24,25 @@ function renderAnatomy(filePath, state = {}) {
   });
 }
 
-function expectActiveMode(html, label) {
-  expect(html).toContain(`>${label}</button>`);
+function expectActiveViewAndModel(html, dimension, model) {
+  const root = document.createElement('div');
+  root.innerHTML = html;
+  const viewSwitcher = root.querySelector('[data-anatomy-view-switcher="true"]');
+  const activeView = viewSwitcher?.querySelector('[data-anatomy-view-dimension="' + dimension + '"]');
 
-  expect(html).toMatch(new RegExp('<button[^>]*aria-pressed="true"[^>]*>' + label + '</button>'));
+  expect(viewSwitcher).not.toBeNull();
+  expect(activeView?.getAttribute('aria-pressed')).toBe('true');
+  if (!model) {
+    expect(root.querySelector('[data-anatomy-model-switcher="true"]')).toBeNull();
+    expect(activeView?.dataset.anatomyViewOption).toBe('2d');
+    return;
+  }
+
+  const modelSwitcher = root.querySelector('[data-anatomy-model-switcher="true"]');
+  const activeModel = modelSwitcher?.querySelector('[data-anatomy-model-option="' + model + '"]');
+  expect(modelSwitcher).not.toBeNull();
+  expect(activeModel?.getAttribute('aria-pressed')).toBe('true');
+  expect(activeModel?.dataset.anatomyViewOption).toBe(model);
 }
 
 function findElement(node, predicate) {
@@ -55,20 +70,20 @@ describe('Anatomy model visual refinement', () => {
     expect(atlas).toContain('data-anatomy-canvas="true"');
     expect(atlas).not.toContain('anatomy-canvas-mode-chip');
     expect(atlas).not.toContain('data-anatomy-3d-canvas="true"');
-    expectActiveMode(atlas, '2D Atlas');
+    expectActiveViewAndModel(atlas, '2d');
 
     const blueprint = renderAnatomy(filePath, { _bodyView3d: true, _body3dStyle: 'blueprint' });
     expect(blueprint).toContain('data-anatomy-view="3d"');
     expect(blueprint).toContain('data-anatomy-3d-canvas="true"');
     expect(blueprint).not.toContain('data-anatomy-canvas="true"');
     expect(blueprint).toContain('anatomy-canvas-mode-chip');
-    expectActiveMode(blueprint, '3D Blueprint');
+    expectActiveViewAndModel(blueprint, '3d', 'blueprint');
 
     const surface = renderAnatomy(filePath, { _bodyView3d: true, _body3dStyle: 'realistic' });
     expect(surface).toContain('data-anatomy-view="3d"');
     expect(surface).toContain('data-anatomy-3d-canvas="true"');
     expect(surface).not.toContain('data-anatomy-canvas="true"');
-    expectActiveMode(surface, '3D Surface');
+    expectActiveViewAndModel(surface, '3d', 'realistic');
   });
 
   it.each(ANATOMY_PATHS)('scopes display, appearance, and model-source controls to the relevant view in %s', (filePath) => {

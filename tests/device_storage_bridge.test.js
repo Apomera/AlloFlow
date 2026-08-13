@@ -31,8 +31,54 @@ describe('device storage bridge — file contracts', () => {
     expect(bridgeSrc).toContain('event.source !== client');
     expect(bridgeSrc).toContain('window.opener || (window.parent !== window ? window.parent : null)');
     expect(bridgeSrc).toContain("bridgeParams.get('allo-ds')");
-    expect(bridgeSrc).toContain("'allo/approval-required'");
     expect(moduleSrc).toContain('event.source !== self.win || event.origin !== self.bridgeOrigin');
+  });
+
+  // Replaces the old assertion that a cross-origin iframe is refused with
+  // 'allo/approval-required'. It no longer fails closed: it asks its own
+  // storage partition whether a human already approved this browser profile.
+  // What must stay true is that a cross-origin client is never authorized
+  // without EITHER a stored grant or a fresh answer from a person.
+  it('cross-origin clients need a stored grant or a human, never neither', () => {
+    // Consent lives in the same partition as the data, so it cannot be
+    // replayed from another top-level site.
+    expect(bridgeSrc).toContain("var CONSENT_NS = '__bridge'");
+    expect(bridgeSrc).toContain('function readConsent()');
+    // Auto-approve is still same-origin only.
+    expect(bridgeSrc).toContain("origin !== 'null' && origin === location.origin");
+    // The only paths out of a hello from a cross-origin client.
+    expect(bridgeSrc).toContain('if (record && record.v === 1 && !denied)');
+    expect(bridgeSrc).toContain('showApproval(helloSource, observedOrigin)');
+    // The grant is written by the approve handler, never by a message.
+    expect(bridgeSrc).toContain('writeConsent(approved.origin)');
+    // And it is revocable from the review UI without erasing any work.
+    expect(bridgeSrc).toContain('function forgetConsent()');
+    expect(bridgeSrc).toContain("getElementById('btn-forget')");
+  });
+
+  it('bridge bookkeeping namespaces are off the client op surface', () => {
+    // NS_RE allows a leading "__", so the consent record and probe counters
+    // would otherwise be readable and writable through ordinary get/set.
+    expect(bridgeSrc).toContain('RESERVED_NS_RE');
+    expect(bridgeSrc).toContain("'allo/reserved-namespace'");
+  });
+
+  it('the consent prompt is shown, and only shown, by revealing the bridge frame', () => {
+    // The bridge paints the prompt in its own cross-origin document; the app
+    // may size that frame but can neither read nor click it.
+    expect(bridgeSrc).toContain("type: 'allo-bridge-consent-required'");
+    expect(moduleSrc).toContain("msg.type === 'allo-bridge-consent-required'");
+    expect(moduleSrc).toContain('CONSENT_FRAME_CSS');
+    // Revealed for the question, hidden again the moment the grant lands.
+    expect(moduleSrc).toContain('HIDDEN_FRAME_CSS');
+  });
+
+  it('connectWithApproval retries the iframe and never switches Canvas to the popup', () => {
+    // A popup is top-level, so it reads the UNPARTITIONED bucket. Switching
+    // channels mid-session would show an empty store and read as data loss.
+    const fn = moduleSrc.slice(moduleSrc.indexOf('connectWithApproval: function ()'));
+    const body = fn.slice(0, fn.indexOf('disconnect:'));
+    expect(body).not.toContain("state.backendName = 'bridge-popup'");
   });
 
   it('module targets the CDN origin, never prismflow', () => {
@@ -195,10 +241,10 @@ describe('device storage bridge — file contracts', () => {
   it('the bridge cache-buster was bumped so caches refetch the manager protocol', () => {
     // The bridge is loaded from the CDN, so a stale ?v= would keep enforcing
     // the prior fixed-only policy for anyone whose browser cached the page.
-    expect(moduleSrc).toContain('storage_bridge.html?v=ds4-bridge-auth');
+    expect(moduleSrc).toContain('storage_bridge.html?v=ds5-partition-consent');
     expect(moduleSrc).not.toContain('ds2-slots8');
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-    expect(anti).toContain('allo_device_storage_module.js?v=ds4-bridge-auth');
+    expect(anti).toContain('allo_device_storage_module.js?v=ds5-partition-consent');
     expect(anti).not.toContain('ds2-slots8');
     const sharedLoaders = [
       'utils_pure_source.jsx',
@@ -212,7 +258,7 @@ describe('device storage bridge — file contracts', () => {
     ];
     for (const file of sharedLoaders) {
       const loaderSource = readFileSync(resolve(process.cwd(), file), 'utf8');
-      expect(loaderSource).toContain('allo_device_storage_module.js?v=ds4-bridge-auth');
+      expect(loaderSource).toContain('allo_device_storage_module.js?v=ds5-partition-consent');
       expect(loaderSource).not.toContain('allo_device_storage_module.js?v=ds1');
     }
   });

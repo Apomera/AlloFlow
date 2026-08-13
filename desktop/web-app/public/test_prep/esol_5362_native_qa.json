@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-25T21:23:19.510Z",
+  "generatedAt": "2026-08-13T08:45:14.117Z",
   "packId": "praxis-esol-5362",
   "standard": {
     "label": "AlloFlow independent Praxis ESOL 5362 source, structure, feedback, originality, safety, and linkage QA v1",
@@ -34,15 +34,6 @@
     "independentDiagnosticBanks": 2,
     "guidedReviewBanks": 3,
     "learningActivityBanks": 5
-  },
-  "contentBinding": {
-    "schemaVersion": 1,
-    "algorithm": "sha256",
-    "reviewedAt": "2026-07-18",
-    "sourceItemCount": 200,
-    "sourceItemsSha256": "cb9ec0f82816eca7b266d593b7ff20d89b6d0f461a050e83f552ecc8f2ce113c",
-    "learningLibrarySha256": "4c27865e1c7ff93205e36067f2f6acb47a8aaa97f4a5bef9ba8bbbce11dd2a66",
-    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {
     "independentQuestionTarget": 500,

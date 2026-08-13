@@ -119,6 +119,19 @@ test.describe('Solar System — real WebGL', () => {
     // drive input. Wait for its DOM status to leave before measuring traction.
     await page.waitForFunction(() => !document.getElementById('descent-status'), null, { timeout: 35000 });
 
+    const traversePanel = page.locator('#rover-traverse-panel');
+    const traverseButton = page.locator('#rover-traverse-button');
+    await expect(traversePanel).toBeVisible();
+    await expect(page.locator('#rover-traverse-step')).toHaveText('Traverse ready');
+    await expect(canvas).toHaveAttribute('data-rover-mission-status', 'ready');
+    await expect(canvas).toHaveAttribute('data-rover-mission-step', 'ready');
+    await expect(canvas).toHaveAttribute('data-rover-mission-distance', '0.0');
+    await expect(traverseButton).toHaveText('Start traverse');
+    await traverseButton.click();
+    await expect(canvas).toBeFocused();
+    await expect(canvas).toHaveAttribute('data-rover-mission-status', 'active');
+    await expect(canvas).toHaveAttribute('data-rover-mission-step', 'depart');
+
     const soundToggle = page.locator('[data-rover-sound-toggle=true]');
     await expect(soundToggle).toBeVisible();
     await expect(soundToggle).toHaveAttribute('aria-keyshortcuts', 'B');
@@ -131,6 +144,17 @@ test.describe('Solar System — real WebGL', () => {
     await expect(soundToggle).toHaveAttribute('aria-pressed', 'false');
     await expect(canvas).toHaveAttribute('data-rover-sound', 'off');
     await expect(canvas).toBeFocused();
+    await expect(page.locator('#hud-grade')).toContainText('%');
+    await expect(page.locator('#hud-traction')).toHaveText(/Grip|Scrub|Slip/);
+    await expect(canvas).toHaveAttribute('data-rover-grade-percent', /^-?\d+\.\d$/);
+    await expect(canvas).toHaveAttribute('data-rover-traction', /^(Grip|Scrub|Slip)$/);
+    await expect(canvas).toHaveAttribute('data-rover-slip', /^\d\.\d{3}$/);
+    await expect(canvas).toHaveAttribute('data-rover-surface-profile', 'aeolian-rippled');
+    await expect(canvas).toHaveAttribute('data-rover-visual-profile', 'procedural-contact-v1');
+    await expect(canvas).toHaveAttribute('data-rover-contact-pad-count', '6');
+    await expect(canvas).toHaveAttribute('data-rover-dust-capacity', /^(36|42|60)$/);
+    await expect(canvas).toHaveAttribute('data-rover-impact', /^\d\.\d{3}$/);
+    await expect(canvas).toHaveAttribute('data-rover-impact-count', /^\d+$/);
 
     await page.keyboard.down('KeyW');
     const moving = await page.waitForFunction(() => {
@@ -138,8 +162,48 @@ test.describe('Solar System — real WebGL', () => {
       const speed = el ? Number.parseFloat(String(el.textContent)) : 0;
       return speed > 0.05 ? String(el!.textContent) : false;
     }, null, { timeout: 8000 }).catch(() => null);
+    const departed = await page.waitForFunction(() => {
+      const el = document.querySelector('canvas[data-drone-vehicle-mode="surface-rover"]') as HTMLElement | null;
+      return el?.dataset.roverMissionStep === 'outbound';
+    }, null, { timeout: 10000 }).catch(() => null);
+    await page.keyboard.down('KeyA');
+    await page.waitForFunction(() => {
+      const el = document.querySelector('canvas[data-drone-vehicle-mode="surface-rover"]') as HTMLElement | null;
+      return Number.parseFloat(el?.dataset.roverSlip || '0') > 0.02;
+    }, null, { timeout: 5000 });
+    const tractionHooks = await canvas.evaluate((el) => ({
+      grade: Number.parseFloat((el as HTMLElement).dataset.roverGradePercent || ''),
+      traction: (el as HTMLElement).dataset.roverTraction,
+      slip: Number.parseFloat((el as HTMLElement).dataset.roverSlip || ''),
+      missionDistance: Number.parseFloat((el as HTMLElement).dataset.roverMissionDistance || ''),
+      impact: Number.parseFloat((el as HTMLElement).dataset.roverImpact || ''),
+      impactCount: Number.parseInt((el as HTMLElement).dataset.roverImpactCount || '', 10),
+      surfaceProfile: (el as HTMLElement).dataset.roverSurfaceProfile,
+      visualProfile: (el as HTMLElement).dataset.roverVisualProfile,
+      contactPads: Number.parseInt((el as HTMLElement).dataset.roverContactPadCount || '', 10),
+      dustCapacity: Number.parseInt((el as HTMLElement).dataset.roverDustCapacity || '', 10),
+    }));
+    await page.keyboard.up('KeyA');
     await page.keyboard.up('KeyW');
     expect(moving, 'the rover never accelerated from keyboard input').not.toBeNull();
+    expect(departed, 'the rover never departed the traverse landing zone').not.toBeNull();
+    expect(Number.isFinite(tractionHooks.grade)).toBe(true);
+    expect(['Grip', 'Scrub', 'Slip']).toContain(tractionHooks.traction);
+    expect(tractionHooks.slip).toBeGreaterThan(0);
+    expect(tractionHooks.missionDistance).toBeGreaterThan(0);
+    expect(tractionHooks.impact).toBeGreaterThanOrEqual(0);
+    expect(tractionHooks.impact).toBeLessThanOrEqual(1);
+    expect(tractionHooks.impactCount).toBeGreaterThanOrEqual(0);
+    expect(tractionHooks.surfaceProfile).toBe('aeolian-rippled');
+    expect(tractionHooks.visualProfile).toBe('procedural-contact-v1');
+    expect(tractionHooks.contactPads).toBe(6);
+    expect([36, 42, 60]).toContain(tractionHooks.dustCapacity);
+    await expect(page.locator('#rover-traverse-progress')).toContainText('Step 2 of 5');
+
+    await traverseButton.click();
+    await expect(canvas).toBeFocused();
+    await expect(canvas).toHaveAttribute('data-rover-mission-status', 'ready');
+    await expect(traverseButton).toHaveText('Start traverse');
 
     await page.keyboard.press('KeyV');
     await expect(page.locator('#hud-mode')).toContainText('3RD PERSON');

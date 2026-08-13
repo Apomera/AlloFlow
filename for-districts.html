@@ -15,15 +15,23 @@
     <meta property="og:title" content="AlloFlow for Districts - Open-Source Classroom AI">
     <meta property="og:description"
         content="400+ documented capabilities, current STEM and SEL inventories, local-first Desktop support, and FERPA-aligned deployment options for district review.">
-    <meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://apomera.github.io/AlloFlow/for-districts.html">
-    <meta property="twitter:title" content="AlloFlow for Districts | Open-Source AI Education Platform">
-    <meta property="twitter:description" content="A district-facing brief for AlloFlow: open-source classroom AI, local-first deployment, accessibility documentation, and an open-source software-license alternative.">
-    <meta property="twitter:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
+    <meta property="og:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://apomera.github.io/AlloFlow/for-districts.html">
+    <meta name="twitter:title" content="AlloFlow for Districts | Open-Source AI Education Platform">
+    <meta name="twitter:description" content="A district-facing brief for AlloFlow: open-source classroom AI, local-first deployment, accessibility documentation, and an open-source software-license alternative.">
+    <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
     <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="promotion-wave3.css">
+    <link rel="stylesheet" href="promotion-wave3-shell.css">
+    <link rel="stylesheet" href="promo-nav-breakpoint.css">
     <script src="site.js" defer></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -36,28 +44,41 @@
         <div class="navbar-inner">
             <a href="index.html" class="nav-logo"><i data-lucide="layers" style="width:28px;height:28px"></i>
                 AlloFlow</a>
-            <div class="nav-links">
-                <a href="index.html">Home</a>
+            <div class="nav-links" data-site-nav="primary">
+                <a href="tools.html">Find a Tool</a>
                 <a href="features.html">Features</a>
-                <a href="library.html">Library</a>
-                <a href="students.html">Students</a>
-                <a href="for-districts.html" aria-current="page" style="color:var(--indigo)">For Districts</a>
-                <a href="index.html#pricing">Pricing</a>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn" rel="noopener noreferrer"><i data-lucide="github"
-                        style="width:16px;height:16px"></i> Get Code</a>
+                <a href="remediation.html">Remediation</a>
+                <a href="ways-to-use.html">Ways to Use</a>
+                <a href="for-districts.html" aria-current="page">For Districts</a>
+                <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
             </div>
             <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
                 aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
+    <!-- shared mobile nav:start -->
     <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
-        <button type="button" class="close-btn"
-            aria-label="Close menu">&times;</button>
-        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a
-            href="students.html">Students</a><a href="for-districts.html" aria-current="page">For Districts</a><a
-            href="accessibility_demo.html">Accessibility</a><a href="https://github.com/Apomera/AlloFlow"
-            target="_blank" rel="noopener noreferrer">GitHub</a>
+        <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
+        <a href="index.html">Home</a>
+        <a href="tools.html">Find a Tool</a>
+        <a href="features.html">Features</a>
+        <a href="library.html">Lesson Library</a>
+        <a href="remediation.html">Remediation</a>
+        <a href="accessibility_demo.html">Accessibility Lab</a>
+        <a href="whitepaper.html">White Paper</a>
+        <a href="ways-to-use.html">Ways to Use</a>
+        <a href="for-districts.html" aria-current="page">For Districts</a>
+        <a href="feedback.html">Feedback</a>
+        <a href="launch.html">Launch AlloFlow</a>
+        <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
+    <noscript>
+        <style>.mobile-menu-btn{display:none!important}</style>
+        <nav class="noscript-nav" aria-label="Site navigation without JavaScript">
+            <a href="index.html">Home</a><a href="tools.html">Find a Tool</a><a href="remediation.html">Remediation</a><a href="ways-to-use.html">Ways to Use</a><a href="feedback.html">Feedback</a><a href="launch.html">Launch AlloFlow</a>
+        </nav>
+    </noscript>
+<!-- shared mobile nav:end -->
 
     <!-- Page Header -->
     <header class="section"
@@ -368,7 +389,7 @@
                             <i data-lucide="flask-conical" style="width:18px;height:18px"></i> STEM Lab
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6">
-                            <strong>137 STEM plugin files and 138 registered STEM IDs</strong> across math, life/earth/space science, physics/chemistry,
+                            <strong>141 STEM plugin files and 142 registered STEM IDs</strong> across math, life/earth/space science, physics/chemistry,
                             CS/tech, and creative/applied labs. Includes RoadReady driver's ed, Space Explorer
                             roguelike, LLM Literacy Lab, AppLab generative-AI mini-app builder.
                         </p>
@@ -574,15 +595,14 @@
             <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
                 AlloFlow</div>
             <p>An open-source project for educators. Not affiliated with Google.</p>
-            <div class="footer-links">
-                <a href="index.html">Home</a>
-                <a href="features.html">Features</a>
-                <a href="library.html">Library</a>
-                <a href="for-districts.html" aria-current="page">For Districts</a>
-                <a href="https://github.com/Apomera/AlloFlow">GitHub</a>
-                <a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a>
-                <a href="mailto:aaron.pomeranz@maine.edu">Contact</a>
-            </div>
+            <!-- shared footer links:start -->
+            <nav class="footer-links footer-link-groups" aria-label="Footer">
+                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html">Cost Planner</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
+            </nav>
+<!-- shared footer links:end -->
         </div>
     </footer>
 

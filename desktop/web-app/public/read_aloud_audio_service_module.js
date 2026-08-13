@@ -785,7 +785,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
     const defaultIsCancelled = typeof dependencies.isCancelled === 'function'
         ? dependencies.isCancelled
         : () => false;
-    const SUPPORTED_TYPES = new Set(['simplified', 'faq']);
+    const SUPPORTED_TYPES = new Set(['simplified', 'faq', 'glossary']);
     const ADAPTER_VERSION = 1;
 
     function safeCall(fn, fallback, args) {
@@ -841,13 +841,18 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         const spokenText = cleanText(value, Object.assign({ index }, context || {}));
         if (!spokenText) return null;
         const fingerprint = textFingerprint(spokenText);
-        const suppliedSegmentId = value && typeof value === 'object' && value.segmentId != null
-            ? String(value.segmentId).trim()
-            : '';
-        const suppliedScopeId = value && typeof value === 'object' && value.scopeId != null
-            ? String(value.scopeId).trim()
-            : '';
         const original = value && typeof value === 'object' ? value : null;
+        const suppliedIdentity = original && original.identity && typeof original.identity === 'object'
+            ? original.identity
+            : null;
+        const suppliedSegmentId = original && (original.segmentId != null ||
+            (suppliedIdentity && suppliedIdentity.segmentId != null))
+            ? String(original.segmentId != null ? original.segmentId : suppliedIdentity.segmentId).trim()
+            : '';
+        const suppliedScopeId = original && (original.scopeId != null ||
+            (suppliedIdentity && suppliedIdentity.scopeId != null))
+            ? String(original.scopeId != null ? original.scopeId : suppliedIdentity.scopeId).trim()
+            : '';
         const synthesisProfile = descriptorSynthesisProfile(original);
         return {
             spokenText,
@@ -858,6 +863,9 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             scopeId: suppliedScopeId || 'main',
             kind: original && original.kind,
             faqIndex: original && original.faqIndex,
+            entryId: original && original.entryId,
+            field: original && original.field,
+            language: original && original.language,
             occurrence: original && original.occurrence != null && Number.isInteger(Number(original.occurrence)) ? Math.max(0, Number(original.occurrence)) : null,
             identity: original && original.identity != null ? original.identity : null,
             synthesisProfile,
@@ -905,16 +913,38 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             }
         }
         if (resourceType === 'faq') return fallbackFaqSegments(resource, context);
+        if (resourceType === 'glossary' && typeof enumerateGlossaryReadAloudSegments === 'function') {
+            return descriptorsFromList(enumerateGlossaryReadAloudSegments(resource, context || {}), context);
+        }
         return [];
     }
 
     function reconcileSuppliedSentences(canonical, supplied, context, occurrence) {
         if (!Array.isArray(supplied)) return canonical;
         const availableByText = new Map();
+        const availableByLocator = new Map();
+        const claimed = new Set();
+        const locatorKey = (descriptor) => descriptor && descriptor.segmentId
+            ? String(descriptor.scopeId || 'main') + '\u0000' + String(descriptor.segmentId)
+            : '';
         canonical.forEach((descriptor) => {
             if (!availableByText.has(descriptor.spokenText)) availableByText.set(descriptor.spokenText, []);
             availableByText.get(descriptor.spokenText).push(descriptor);
+            const key = locatorKey(descriptor);
+            if (key) {
+                if (!availableByLocator.has(key)) availableByLocator.set(key, []);
+                availableByLocator.get(key).push(descriptor);
+            }
         });
+        const mergeSupplied = (descriptor, suppliedDescriptor, index) => {
+            claimed.add(descriptor);
+            return Object.assign({}, descriptor, {
+                suppliedIndex: index,
+                occurrence: suppliedDescriptor.occurrence != null ? suppliedDescriptor.occurrence : descriptor.occurrence,
+                identity: suppliedDescriptor.identity != null ? suppliedDescriptor.identity : descriptor.identity,
+                synthesisProfile: suppliedDescriptor.synthesisProfile || descriptor.synthesisProfile,
+            });
+        };
         // A single-sentence request may target the caller's Nth occurrence of
         // a duplicated sentence. Without it, the first canonical twin absorbed
         // every duplicate's resolve/capture and the saved counter stayed short.
@@ -923,6 +953,16 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             const suppliedDescriptor = segmentDescriptor(value, index, context);
             const spokenText = suppliedDescriptor && suppliedDescriptor.spokenText;
             if (!spokenText) return null;
+
+            // Explicit semantic identity wins over text. Glossaries may contain
+            // duplicate terms and translations, so first-text-match is unsafe.
+            const explicitKey = locatorKey(suppliedDescriptor);
+            if (explicitKey) {
+                const exact = (availableByLocator.get(explicitKey) || [])
+                    .find((descriptor) => !claimed.has(descriptor));
+                if (exact) return mergeSupplied(exact, suppliedDescriptor, index);
+            }
+
             const matches = availableByText.get(spokenText);
             if (matches && matches.length) {
                 const explicitOccurrence = suppliedDescriptor && Number.isInteger(suppliedDescriptor.occurrence)
@@ -932,14 +972,9 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
                     ? matches[occurrence]
                     : (explicitOccurrence != null
                         ? matches[explicitOccurrence]
-                        : matches.shift());
-                if (!descriptor) return null;
-                return Object.assign({}, descriptor, {
-                    suppliedIndex: index,
-                    occurrence: suppliedDescriptor.occurrence != null ? suppliedDescriptor.occurrence : descriptor.occurrence,
-                    identity: suppliedDescriptor.identity != null ? suppliedDescriptor.identity : descriptor.identity,
-                    synthesisProfile: suppliedDescriptor.synthesisProfile || descriptor.synthesisProfile,
-                });
+                        : matches.find((candidate) => !claimed.has(candidate)));
+                if (!descriptor || claimed.has(descriptor)) return null;
+                return mergeSupplied(descriptor, suppliedDescriptor, index);
             }
             // A sentence that is genuinely outside the resource has no stable
             // semantic locator; retain the legacy text-derived fallback.
@@ -1435,4 +1470,8 @@ const enumerateGlossaryReadAloudSegments = (resource, options = {}) => {
     });
     return segments;
 };
+
+window.AlloModules.createGlossaryEntryId = createGlossaryEntryId;
+window.AlloModules.normalizeGlossaryEntries = normalizeGlossaryEntries;
+window.AlloModules.enumerateGlossaryReadAloudSegments = enumerateGlossaryReadAloudSegments;
 })();

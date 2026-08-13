@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Remediation Pipeline | AlloFlow</title>
+    <meta name="description"
+        content="See how AlloFlow rebuilds and verifies more accessible documents, explains privacy boundaries and current deadlines, and distributes its portable Skill.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://apomera.github.io/AlloFlow/remediation.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="AlloFlow">
+    <meta property="og:url" content="https://apomera.github.io/AlloFlow/remediation.html">
+    <meta property="og:title" content="Evidence-backed document accessibility remediation">
+    <meta property="og:description"
+        content="From source assessment to semantic rebuild, independent checks, tagged PDF, and review-ready evidence.">
+    <meta property="og:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://apomera.github.io/AlloFlow/remediation.html">
+    <meta name="twitter:title" content="AlloFlow Document Accessibility Remediation">
+    <meta name="twitter:description"
+        content="A transparent remediation pipeline with portable workflows and evidence boundaries.">
+    <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+    <link rel="icon" type="image/svg+xml" href="allobot.svg">
+    <link rel="apple-touch-icon" href="allobot.png">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="promotion-wave3.css">
+    <link rel="stylesheet" href="promotion-wave3-shell.css">
+    <link rel="stylesheet" href="promo-nav-breakpoint.css">
+    <link rel="stylesheet" href="promotion-wave2.css">
+    <script src="site.js" defer></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="promo-page">
+    <a class="skip-link" href="#main-content">Skip to remediation overview</a>
+
+    <nav class="navbar" aria-label="Primary">
+        <div class="navbar-inner">
+            <a href="index.html" class="nav-logo">
+                <i data-lucide="layers" style="width:28px;height:28px"></i>
+                AlloFlow
+            </a>
+            <div class="nav-links" data-site-nav="primary">
+                <a href="tools.html">Find a Tool</a>
+                <a href="features.html">Features</a>
+                <a href="remediation.html" aria-current="page">Remediation</a>
+                <a href="ways-to-use.html">Ways to Use</a>
+                <a href="for-districts.html">For Districts</a>
+                <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
+            </div>
+            <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
+                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+        </div>
+    </nav>
+
+    <!-- shared mobile nav:start -->
+    <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
+        <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
+        <a href="index.html">Home</a>
+        <a href="tools.html">Find a Tool</a>
+        <a href="features.html">Features</a>
+        <a href="library.html">Lesson Library</a>
+        <a href="remediation.html" aria-current="page">Remediation</a>
+        <a href="accessibility_demo.html">Accessibility Lab</a>
+        <a href="whitepaper.html">White Paper</a>
+        <a href="ways-to-use.html">Ways to Use</a>
+        <a href="for-districts.html">For Districts</a>
+        <a href="feedback.html">Feedback</a>
+        <a href="launch.html">Launch AlloFlow</a>
+        <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <noscript>
+        <style>.mobile-menu-btn{display:none!important}</style>
+        <nav class="noscript-nav" aria-label="Site navigation without JavaScript">
+            <a href="index.html">Home</a><a href="tools.html">Find a Tool</a><a href="remediation.html">Remediation</a><a href="ways-to-use.html">Ways to Use</a><a href="feedback.html">Feedback</a><a href="launch.html">Launch AlloFlow</a>
+        </nav>
+    </noscript>
+<!-- shared mobile nav:end -->
+
+    <main id="main-content" tabindex="-1">
+        <header class="promo-hero">
+            <div class="promo-hero-inner">
+                <div>
+                    <p class="promo-kicker">Document accessibility remediation</p>
+                    <h1>Repair the structure. <span class="gradient-text">Keep the evidence.</span></h1>
+                    <p class="promo-hero-lede">AlloFlow turns a document into a reviewable accessibility package:
+                        a semantic rebuild, automated findings, a tagged-PDF pathway, and an explicit record of what
+                        still needs human judgment. It is designed to support remediation work—not to manufacture a
+                        one-click compliance claim.</p>
+                    <div class="promo-actions">
+                        <a class="promo-button" href="#downloads">Get the portable Skill</a>
+                        <a class="promo-button-secondary" href="whitepaper.html">Read the technical white paper</a>
+                    </div>
+                </div>
+                <aside class="promo-proof-card" aria-labelledby="remediation-outcome-heading">
+                    <h2 id="remediation-outcome-heading">What the workflow preserves</h2>
+                    <ul class="promo-proof-list">
+                        <li><strong>Source fidelity</strong>Extraction and OCR are compared against the original.</li>
+                        <li><strong>Semantic structure</strong>Headings, lists, tables, links, images, and reading order
+                            are rebuilt deliberately.</li>
+                        <li><strong>Bound evidence</strong>Checks are tied to the exact output instead of a generic
+                            project score.</li>
+                        <li><strong>Human responsibility</strong>Meaning, intent, and usability remain review tasks.</li>
+                    </ul>
+                </aside>
+            </div>
+        </header>
+
+        <section class="deadline-panel" aria-labelledby="deadline-heading">
+            <div class="deadline-panel-inner">
+                <div>
+                    <h2 id="deadline-heading">The current U.S. public-sector timeline</h2>
+                    <p>The U.S. Department of Justice's Title II web and mobile-app rule uses WCAG 2.1 Level AA as its
+                        technical standard. An April 2026 interim final rule extended the dates shown here. Public
+                        schools, colleges, universities, libraries, and other state or local entities should confirm
+                        how the rule and its exceptions apply to their own content. This is general information, not
+                        legal advice. <a href="https://www.ada.gov/resources/web-rule-first-steps/" target="_blank"
+                            rel="noopener noreferrer">Read the current DOJ guidance</a>.</p>
+                </div>
+                <div class="deadline-dates" aria-label="Current compliance dates">
+                    <div class="deadline-date"><strong>April 26, 2027</strong>Public entities with a population of
+                        50,000 or more</div>
+                    <div class="deadline-date"><strong>April 26, 2028</strong>Smaller public entities and special
+                        district governments</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="promo-section" aria-labelledby="purpose-heading">
+            <div class="promo-section-inner">
+                <div class="promo-section-head">
+                    <p class="promo-kicker">Why WCAG exists</p>
+                    <h2 id="purpose-heading">Access is the purpose. The deadline is a planning signal.</h2>
+                    <p>WCAG gives teams shared, testable criteria for reducing barriers in digital content. Its four
+                        principles help make information usable by people with visual, auditory, physical, speech,
+                        cognitive, learning, language, and neurological disabilities—and by the assistive technologies
+                        they use.</p>
+                </div>
+                <div class="purpose-grid">
+                    <article class="purpose-card"><span aria-hidden="true">P</span>
+                        <h3>Perceivable</h3>
+                        <p>Information has alternatives and structure that people can perceive in different ways.</p>
+                    </article>
+                    <article class="purpose-card"><span aria-hidden="true">O</span>
+                        <h3>Operable</h3>
+                        <p>People can navigate and use functionality with the input methods available to them.</p>
+                    </article>
+                    <article class="purpose-card"><span aria-hidden="true">U</span>
+                        <h3>Understandable</h3>
+                        <p>Language, relationships, instructions, and interactions are clear and predictable.</p>
+                    </article>
+                    <article class="purpose-card"><span aria-hidden="true">R</span>
+                        <h3>Robust</h3>
+                        <p>Content exposes reliable semantics to current and future user agents and assistive tools.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="promo-section" aria-labelledby="pipeline-heading">
+            <div class="promo-section-inner">
+                <div class="promo-section-head">
+                    <p class="promo-kicker">How the pipeline functions</p>
+                    <h2 id="pipeline-heading">A staged repair loop with separate evidence layers</h2>
+                    <p>The application pipeline escalates from deterministic repair to AI-supported diagnosis only
+                        where needed. It keeps HTML accessibility evidence separate from PDF structural validation, and
+                        it can roll back changes that make the evidence worse.</p>
+                </div>
+                <ol class="pipeline">
+                    <li>
+                        <h3>Assess</h3>
+                        <p>Inspect the source, detect the format, and identify likely structural and content risks.</p>
+                    </li>
+                    <li>
+                        <h3>Extract</h3>
+                        <p>Recover text, layout signals, links, images, and OCR content when a page is image-based.</p>
+                    </li>
+                    <li>
+                        <h3>Rebuild</h3>
+                        <p>Create semantic HTML and apply deterministic fixes before more invasive repair.</p>
+                    </li>
+                    <li>
+                        <h3>Verify</h3>
+                        <p>Combine rubric review with axe-core and IBM Equal Access checks on the exact HTML.</p>
+                    </li>
+                    <li>
+                        <h3>Improve</h3>
+                        <p>Run a bounded keep-best loop; stop on a plateau and revert evidence regressions.</p>
+                    </li>
+                    <li>
+                        <h3>Package</h3>
+                        <p>Produce reviewable HTML, reports, and tagged PDF; optionally validate PDF/UA structure with
+                            local veraPDF.</p>
+                    </li>
+                </ol>
+                <div class="pipeline-note"><strong>One score cannot prove accessibility.</strong> AlloFlow reports the
+                    weakest available evidence layer and keeps semantic review, browser checks, PDF structure, and
+                    human source comparison distinct.</div>
+            </div>
+        </section>
+
+        <section class="promo-section" aria-labelledby="paths-heading">
+            <div class="promo-section-inner">
+                <div class="promo-section-head">
+                    <p class="promo-kicker">Choose the right workflow</p>
+                    <h2 id="paths-heading">The Skill and the MCP connector solve different problems</h2>
+                    <p>There is no honest single privacy label for every access path. These options make the processing
+                        boundary explicit before a document is attached.</p>
+                </div>
+                <div class="path-grid">
+                    <article class="path-card">
+                        <span class="status-chip status-ready">Download available</span>
+                        <h3>Portable Agent Skill</h3>
+                        <p>Upload a PDF to a compatible AI workspace, let the host model create a strict repair plan,
+                            and use bundled deterministic scripts to rebuild and verify outputs. No AlloFlow server,
+                            Cloudflare document service, remote MCP, or separate model key is used by the scripts.</p>
+                        <a href="#downloads">Choose a Skill package</a>
+                    </article>
+                    <article class="path-card">
+                        <span class="status-chip status-review">Release verification</span>
+                        <h3>Local MCP connector</h3>
+                        <p>A 29-tool local connector for Claude Desktop with PDF, Office, extraction, redaction,
+                            validation, and alternate-format workflows. Offline document tools keep document data local. Some setup and export helpers fetch public dependencies without intentionally sending document content; credential checking sends only the key. Gemini-dependent operations may send the full selected document or derived content using the key you configure.</p>
+                        <a href="#mcp-status">See install and release status</a>
+                    </article>
+                    <article class="path-card">
+                        <span class="status-chip status-future">Institution pilot code</span>
+                        <h3>Remote institutional MCP</h3>
+                        <p>A separate fail-closed design for institution-owned Cloudflare infrastructure, opaque job
+                            IDs, retention policy, and long-running workflows. It is not a live public document service
+                            and is not the default route.</p>
+                        <a href="ways-to-use.html#remote-pilot">Understand the architecture</a>
+                    </article>
+                </div>
+                <aside class="boundary-panel">
+                    <h3>The portable workflow is private from AlloFlow—not from the AI host you choose</h3>
+                    <p>ChatGPT, Claude, or another selected host still processes the attachment under that provider's
+                        terms and settings. In the MCP pathway, Gemini sees content only when a Gemini-dependent tool is
+                        invoked. Do not use either route for protected data unless your organization has approved the
+                        complete environment and workflow.</p>
+                </aside>
+            </div>
+        </section>
+
+        <section class="promo-section" aria-labelledby="evidence-heading">
+            <div class="promo-section-inner">
+                <div class="promo-section-head">
+                    <p class="promo-kicker">What “evidence-backed” means</p>
+                    <h2 id="evidence-heading">Each artifact answers a different question</h2>
+                    <p>Automated findings are useful precisely because their limits are documented. Human review is
+                        still required for meaning, source fidelity, reading order, alternative-text quality, and
+                        real-world assistive-technology use.</p>
+                </div>
+                <div class="evidence-grid">
+                    <article class="evidence-card"><strong>01</strong>
+                        <h3>Semantic output</h3>
+                        <p>Does the rebuilt document expose headings, lists, tables, links, images, and language in a
+                            coherent structure?</p>
+                    </article>
+                    <article class="evidence-card"><strong>02</strong>
+                        <h3>HTML checks</h3>
+                        <p>What do the current rubric review, axe-core, and IBM Equal Access runs find in the exact
+                            rendered HTML?</p>
+                    </article>
+                    <article class="evidence-card"><strong>03</strong>
+                        <h3>PDF structure</h3>
+                        <p>Does the exported PDF pass internal preflight and, when available, independent local PDF/UA-1
+                            validation with veraPDF?</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="downloads" class="promo-section" aria-labelledby="downloads-heading">
+            <div class="promo-section-inner">
+                <div class="promo-section-head">
+                    <p class="promo-kicker">Published portable release · v0.2.9</p>
+                    <h2 id="downloads-heading">Start with the neutral Skill; use wrappers for their named workflows</h2>
+                    <p>These versioned, checksum-listed GitHub Release assets were published August 11, 2026. For ordinary direct use, start with the neutral Skill. Baseline rebuild requires Python 3.9 or newer; tagged PDF requires local Node, Playwright, and Chromium capability; PDF/UA validation requires a separate local Java and veraPDF setup. Source files are never overwritten, and automatic rebuild is blocked for interactive forms, signed documents, certificates, and legal records. Each package includes instructions, scripts, privacy information, licensing, and verification materials. The checksums below match the published release metadata.</p>
+                </div>
+                <div class="download-grid">
+                    <article class="download-card">
+                        <span class="status-chip status-ready">Neutral package</span>
+                        <h3>Portable Agent Skill</h3>
+                        <p>The ordinary direct-use package for compatible agent workspaces that accept a Skill folder or ZIP.</p>
+                        <code class="checksum">SHA-256 a3af2c179c32f2b018f6c4003cf8ca93d4917671360922d6dc1f517e9e84d399</code>
+                        <a class="promo-button"
+                            href="https://github.com/Apomera/AlloFlow/releases/download/portable-v0.2.9/alloflow-portable-remediation-agent-skill-v0.2.9.zip">Download
+                            Skill ZIP</a>
+                    </article>
+                    <article class="download-card">
+                        <span class="status-chip status-ready">Publisher package</span>
+                        <h3>OpenAI publisher package</h3>
+                        <p>Use for the OpenAI publisher and submission workflow. For ordinary direct use in a compatible agent workspace, choose the neutral Skill ZIP.</p>
+                        <code class="checksum">SHA-256 05c5c9fa7b7b5ef47ca52e1bc513e5f9eb3ba9b7205e47c408b6140a63b36fa4</code>
+                        <a class="promo-button"
+                            href="https://github.com/Apomera/AlloFlow/releases/download/portable-v0.2.9/alloflow-pdf-remediation-openai-plugin-v0.2.9.zip">Download
+                            OpenAI ZIP</a>
+                    </article>
+                    <article class="download-card">
+                        <span class="status-chip status-ready">Claude Code wrapper</span>
+                        <h3>Claude Code plugin package</h3>
+                        <p>Use the packaged wrapper intended for Claude Code. This is not the Claude Desktop MCPB
+                            connector.</p>
+                        <code class="checksum">SHA-256 c12cd24bf2a0b543836c6c82b93a5c2d67e3156f3282ebc693d2759388767ea8</code>
+                        <a class="promo-button"
+                            href="https://github.com/Apomera/AlloFlow/releases/download/portable-v0.2.9/alloflow-pdf-remediation-claude-code-plugin-v0.2.9.zip">Download
+                            Claude Code ZIP</a>
+                    </article>
+                </div>
+                <p style="margin-top:18px"><a href="https://github.com/Apomera/AlloFlow/releases/tag/portable-v0.2.9"
+                        target="_blank" rel="noopener noreferrer">View release notes and manifest on GitHub</a></p>
+
+                <aside id="mcp-status" class="release-note">
+                    <h3>Why there is not an MCPB download button yet</h3>
+                    <p>The connector source and packaging workflow are present, but the current local build does not
+                        have a verified public release and its adjacent checksum is stale. The next release must be
+                        rebuilt, pass parity and artifact validation, receive a fresh checksum and SBOM, and be
+                        published as a versioned, checksum-listed release. Once that gate passes, installation will be: download the
+                        <code>.mcpb</code>, open Claude Desktop Settings → Extensions, install it, call
+                        <code>remediation_capabilities</code>, and run the one-time browser setup only if requested.
+                        Publishing a mismatched binary would contradict the pipeline's evidence requirements.</p>
+                </aside>
+            </div>
+        </section>
+
+        <section class="promo-section" aria-labelledby="next-heading">
+            <div class="promo-section-inner">
+                <div class="promo-section-head">
+                    <p class="promo-kicker">Go deeper</p>
+                    <h2 id="next-heading">Choose an explanation for your audience</h2>
+                </div>
+                <div class="path-grid">
+                    <article class="path-card">
+                        <h3>For accessibility and technical teams</h3>
+                        <p>Read the architecture, evidence boundaries, privacy model, standards context, and case-study
+                            results.</p>
+                        <a href="whitepaper.html">Read the white paper</a>
+                    </article>
+                    <article class="path-card">
+                        <h3>For educators and evaluators</h3>
+                        <p>Explore interactive examples of keyboard, switch, visual, screen-reader, and communication
+                            access.</p>
+                        <a href="accessibility_demo.html">Open the Accessibility Lab</a>
+                    </article>
+                    <article class="path-card">
+                        <h3>For implementation planning</h3>
+                        <p>Compare Gemini Canvas, the Cloudflare browser edition, Desktop, portable Skills, and
+                            connector paths.</p>
+                        <a href="ways-to-use.html">See ways to use AlloFlow</a>
+                    </article>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+                AlloFlow</div>
+            <p>Open-source tools for access, learning, and evidence-aware document remediation.</p>
+            <!-- shared footer links:start -->
+            <nav class="footer-links footer-link-groups" aria-label="Footer">
+                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html">Cost Planner</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
+            </nav>
+<!-- shared footer links:end -->
+        </div>
+    </footer>
+
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})"
+        aria-label="Back to top"><i data-lucide="chevron-up" style="width:20px;height:20px"></i></button>
+    <script>
+        if (window.lucide) lucide.createIcons();
+        const backBtn = document.querySelector('.back-to-top');
+        window.addEventListener('scroll', function () {
+            backBtn.classList.toggle('visible', window.scrollY > 500);
+        }, { passive: true });
+    </script>
+</body>
+
+</html>

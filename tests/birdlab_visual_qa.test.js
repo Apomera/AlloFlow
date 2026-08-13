@@ -35,7 +35,10 @@ describe('BirdLab visual-state QA harness', () => {
     });
 
     const coreStateData = JSON.stringify(CORE_STATES);
-    for (const behavior of ['feeder-grab-go', 'hover-aim-dive', 'ground-forage-flush']) {
+    for (const behavior of [
+      'feeder-grab-go', 'hover-aim-dive', 'ground-forage-flush',
+      'paddle-dabble-recover', 'snag-land-sentinel-launch',
+    ]) {
       expect(coreStateData, 'missing core behavior checkpoints: ' + behavior).toContain(behavior);
     }
     const scriptedStates = CORE_STATES.filter((state) => state.behaviorId);
@@ -50,6 +53,17 @@ describe('BirdLab visual-state QA harness', () => {
       } else {
         expect(state.frozenBehavior).toBeNull();
       }
+    }
+
+    for (const script of ['paddle-dabble-recover', 'snag-land-sentinel-launch']) {
+      const scriptStates = scriptedStates.filter((state) => state.behaviorId === script);
+      const naturalStates = scriptStates.filter((state) => !state.targetId);
+      const acquiredStates = scriptStates.filter((state) => !!state.targetId);
+      expect(naturalStates.length, script + ' natural checkpoints').toBeGreaterThan(0);
+      expect(naturalStates.every((state) => state.dwellProgress === 0 && state.frozenBehavior === null)).toBe(true);
+      expect(acquiredStates.length, script + ' acquired checkpoints').toBeGreaterThan(0);
+      expect(acquiredStates.every((state) => state.dwellProgress > 0 && state.frozenBehavior?.script === script)).toBe(true);
+      expect(acquiredStates.every((state) => state.frozenBehavior?.state === state.behaviorCheckpoint)).toBe(true);
     }
 
     const habitats = new Set(EXHAUSTIVE_STATES.map((state) => state.habitat));
@@ -78,6 +92,7 @@ describe('BirdLab visual-state QA harness', () => {
       'assignmentComplete',
       'assignmentDate',
       'assignmentClueStage',
+      'hintSpecies',
     ]) {
       expect(
         EXHAUSTIVE_STATES.some((state) => Object.prototype.hasOwnProperty.call(state, field)),
@@ -114,6 +129,107 @@ describe('BirdLab visual-state QA harness', () => {
     expect(mobileFieldMark.viewport.id).toBe('mobile');
     const reducedPosture = clueStates.find((state) => state.targetScenario === 'target-clue-posture-reduced');
     expect(reducedPosture).toMatchObject({ assignmentClueStage: 'behavior', reducedMotion: true });
+  });
+
+  it('renders natural signature poses separately from acquired frozen checkpoints', async () => {
+    const { CORE_STATES, renderScenarios } = await loadHarness();
+    for (const specimen of [
+      { script: 'paddle-dabble-recover', pose: 'mallard-dabble' },
+      { script: 'snag-land-sentinel-launch', pose: 'eagle-flight' },
+    ]) {
+      const naturalStates = CORE_STATES.filter((state) => state.behaviorId === specimen.script && !state.targetId);
+      expect(naturalStates.length, specimen.script + ' natural render states').toBeGreaterThan(0);
+      const naturalResults = await renderScenarios(naturalStates);
+      const signatureResult = naturalResults.find((result) => result.markup.includes('data-birdlab-field-pose="' + specimen.pose + '"'));
+      expect(signatureResult, specimen.script + ' never naturally renders ' + specimen.pose).toBeTruthy();
+      const naturalHost = document.createElement('div');
+      naturalHost.innerHTML = signatureResult.markup;
+      const naturalNodes = [...naturalHost.querySelectorAll('[data-birdlab-behavior="' + specimen.script + '"]')];
+      const naturalActor = naturalNodes.find((node) => node.querySelector('.birdlab-scene-actor'));
+      const naturalTarget = naturalNodes.find((node) => node.querySelector('[data-birdlab-kind="bird"]'));
+      expect(naturalActor).toBeTruthy();
+      expect(naturalTarget).toBeTruthy();
+      expect(naturalActor.getAttribute('data-birdlab-behavior-pose')).toBe(specimen.pose);
+      expect(naturalActor.hasAttribute('data-birdlab-behavior-frozen')).toBe(false);
+      for (const attribute of ['data-birdlab-behavior-state', 'data-birdlab-behavior-pose']) {
+        expect(naturalActor.getAttribute(attribute)).toBe(naturalTarget.getAttribute(attribute));
+      }
+
+      const acquiredState = CORE_STATES.find((state) => state.behaviorId === specimen.script && state.targetId && state.frozenBehavior);
+      expect(acquiredState, specimen.script + ' acquired render state').toBeTruthy();
+      const [acquiredResult] = await renderScenarios([acquiredState]);
+      const acquiredHost = document.createElement('div');
+      acquiredHost.innerHTML = acquiredResult.markup;
+      const acquiredNodes = [...acquiredHost.querySelectorAll('[data-birdlab-behavior="' + specimen.script + '"]')];
+      const acquiredActor = acquiredNodes.find((node) => node.querySelector('.birdlab-scene-actor'));
+      const acquiredTarget = acquiredNodes.find((node) => node.querySelector('[data-birdlab-kind="bird"]'));
+      expect(acquiredActor).toBeTruthy();
+      expect(acquiredTarget).toBeTruthy();
+      for (const attribute of ['data-birdlab-behavior-state', 'data-birdlab-behavior-pose', 'data-birdlab-behavior-frozen']) {
+        expect(acquiredActor.getAttribute(attribute)).toBe(acquiredTarget.getAttribute(attribute));
+      }
+      expect(acquiredActor.getAttribute('data-birdlab-behavior-frozen')).toBe('true');
+    }
+  });
+
+  it('captures impact, dabble wake, and hint containment checkpoints on the live lattice', async () => {
+    const { CORE_STATES, renderScenarios } = await loadHarness();
+    const kingfisherImpact = CORE_STATES.find((state) => state.behaviorId === 'hover-aim-dive'
+      && state.lifecycleMs === 13000 && !state.targetId);
+    expect(kingfisherImpact).toMatchObject({
+      habitat: 'marsh',
+      behaviorCheckpoint: expect.stringMatching(/^(?:dive|impact)$/),
+    });
+
+    const mallardCheckpoints = new Map(
+      CORE_STATES.filter((state) => state.behaviorId === 'paddle-dabble-recover' && !state.targetId)
+        .map((state) => [state.lifecycleMs, state]),
+    );
+    expect(mallardCheckpoints.get(9000)).toMatchObject({ behaviorCheckpoint: 'paddle' });
+    expect(mallardCheckpoints.get(12000)).toMatchObject({ behaviorCheckpoint: 'dabble', behaviorPose: 'mallard-dabble' });
+    expect(mallardCheckpoints.get(14000)).toMatchObject({ behaviorCheckpoint: 'recover' });
+
+    const hintStates = CORE_STATES.filter((state) => state.hintSpecies === 'kingfisher' && state.lifecycleMs === 11000);
+    expect(hintStates).toHaveLength(3);
+    expect(new Set(hintStates.map((state) => state.motionMode))).toEqual(new Set(['live', 'manual-paused', 'reduced']));
+    expect(hintStates.every((state) => state.habitat === 'marsh' && !state.targetId && state.dwellProgress === 0)).toBe(true);
+
+    const results = await renderScenarios([kingfisherImpact, ...mallardCheckpoints.values(), ...hintStates]);
+    const impactResult = results.find((result) => result.state.id === kingfisherImpact.id);
+    const impactHost = document.createElement('div');
+    impactHost.innerHTML = impactResult.markup;
+    const impactNodes = impactHost.querySelectorAll('.birdlab-kingfisher-impact');
+    expect(impactNodes).toHaveLength(1);
+    expect(impactNodes[0].closest('.birdlab-motion-subject')).toBeNull();
+    expect(impactNodes[0].querySelector('.birdlab-kingfisher-splash')).toBeTruthy();
+    expect(impactNodes[0].querySelector('.birdlab-kingfisher-ripple')).toBeTruthy();
+
+    for (const [lifecycleMs, checkpoint] of mallardCheckpoints) {
+      if (![9000, 12000, 14000].includes(lifecycleMs)) continue;
+      const result = results.find((candidate) => candidate.state.id === checkpoint.id);
+      const host = document.createElement('div');
+      host.innerHTML = result.markup;
+      const nodes = [...host.querySelectorAll('[data-birdlab-species="mallard"][data-birdlab-behavior="paddle-dabble-recover"]')];
+      const actor = nodes.find((node) => node.querySelector('.birdlab-scene-actor'));
+      const target = nodes.find((node) => node.querySelector('[data-birdlab-kind="bird"]'));
+      const actorMotion = actor.querySelector('.birdlab-motion-subject');
+      const targetMotion = target.querySelector('.birdlab-motion-subject');
+      expect(actorMotion.getAttribute('class')).toBe(targetMotion.getAttribute('class'));
+      expect(actorMotion.classList.contains('birdlab-motion-subject--dabbling')).toBe(checkpoint.behaviorCheckpoint === 'dabble');
+      expect(actor.querySelector('.birdlab-mallard-contact--' + checkpoint.behaviorCheckpoint)).toBeTruthy();
+    }
+
+    for (const state of hintStates) {
+      const result = results.find((candidate) => candidate.state.id === state.id);
+      const host = document.createElement('div');
+      host.innerHTML = result.markup;
+      const actor = [...host.querySelectorAll('[data-birdlab-species="kingfisher"]')]
+        .find((node) => node.querySelector('.birdlab-scene-actor'));
+      expect(actor.querySelector('.birdlab-motion-subject').classList.contains('birdlab-motion-subject--anchored')).toBe(true);
+      expect(actor.querySelector('.birdlab-anatomy-motion--pinned-safe')).toBeTruthy();
+      expect(host.querySelector('[data-birdlab-scene-shell]').classList.contains('birdlab-scene--motion-off'))
+        .toBe(state.motionMode !== 'live');
+    }
   });
 
   it('keeps check and capture as explicit package commands', () => {

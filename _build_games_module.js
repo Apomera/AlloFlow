@@ -171,16 +171,6 @@ const outputCode = `/**
   var warnLog = (typeof window.__alloWarnLog === 'function') ? window.__alloWarnLog : function() { console.warn.apply(console, arguments); };
 
   // ── Local utilities ──
-  var scrambleWord = function(word) {
-    if (!word || word.length < 2) return word;
-    var arr = word.split('');
-    for (var i = arr.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
-    }
-    var result = arr.join('');
-    return result === word ? scrambleWord(word) : result;
-  };
 
   // ── Lucide icons from host app ──
   var _icons = window.AlloIcons || {};

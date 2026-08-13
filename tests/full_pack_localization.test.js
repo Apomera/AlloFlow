@@ -14,7 +14,7 @@ const catalogs = [
 const fullPackKeys = [
   'action_plan', 'action_generate_original', 'panel_plan', 'panel_progress',
   'settings_changed', 'capacity_preview', 'provider', 'estimate_observed',
-  'hide_completed', 'show_completed', 'copy_diagnostics', 'download_report',
+  'hide_completed', 'show_completed', 'open_error_log', 'copy_diagnostics', 'download_report',
   'status_retrying', 'warning_local_serial', 'warning_large_pack', 'warning_image_quota',
 ];
 
@@ -24,6 +24,7 @@ describe('Full Pack and Blueprint localization coverage', () => {
     for (const key of fullPackKeys) expect(source).toContain(`"${key}":`);
     expect(source).toContain('"download_diagnostics":');
     expect(source).toContain('"failure_log_help":');
+    expect(source).toContain('"error_log_loading":');
     expect(source).toContain('"saved_run_warning":');
   });
 
@@ -32,7 +33,7 @@ describe('Full Pack and Blueprint localization coverage', () => {
     for (const key of [
       'fullpack.action_plan', 'fullpack.panel_plan', 'fullpack.settings_changed',
       'fullpack.capacity_preview', 'fullpack.provider', 'fullpack.hide_completed',
-      'fullpack.copy_diagnostics', 'fullpack.download_report', 'fullpack.status_retrying',
+      'fullpack.open_error_log', 'fullpack.copy_diagnostics', 'fullpack.download_report', 'fullpack.status_retrying',
     ]) expect(source).toContain(`t('${key}')`);
   });
 
@@ -41,6 +42,15 @@ describe('Full Pack and Blueprint localization coverage', () => {
     expect(source).toContain("t('blueprint.download_diagnostics')");
     expect(source).toContain("t('blueprint.copy_diagnostics')");
     expect(source).toContain("t('blueprint.failure_log_help')");
+    expect(source).toContain("t('blueprint.open_error_log')");
     expect(source).toContain("t('blueprint.saved_run_warning')");
   });
+  it('keeps Full Pack failure summaries visible on narrow panels and links to the error log', () => {
+    const source = read('AlloFlowANTI.txt');
+    expect(source).toContain('data-testid="full-pack-failure-reason"');
+    expect(source).toContain('className="mt-0.5 break-words text-[10px] leading-snug text-rose-700"');
+    expect(source).toContain('data-testid="full-pack-open-error-log"');
+    expect(source).toContain('onClick={handleOpenGenerationErrorLog}');
+  });
+
 });

@@ -21,7 +21,7 @@
 html {
     scroll-behavior: smooth;
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 body {
@@ -32,7 +32,7 @@ body {
         linear-gradient(180deg, rgba(15, 118, 110, 0.045), rgba(255, 255, 255, 0) 280px),
         radial-gradient(#dbe4ea 1px, transparent 1px);
     background-size: auto, 28px 28px;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 body.site-menu-open {

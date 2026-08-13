@@ -183,7 +183,11 @@ test("both staging deploy paths apply lifecycle before Worker deploy", () => {
     path.join(serviceRoot, "scripts", "pilot-deploy.cjs"),
     "utf8",
   );
-  assert.ok(wrapper.indexOf("pilot-lifecycle.cjs") < wrapper.indexOf('"deploy"'));
+  const lifecycle = wrapper.indexOf("pilot-lifecycle.cjs");
+  const dryRun = wrapper.indexOf('"deploy", "--dry-run"');
+  const deployment = wrapper.indexOf('wrangler, "deploy", "--config"');
+  assert.ok(dryRun >= 0 && dryRun < lifecycle);
+  assert.ok(lifecycle >= 0 && lifecycle < deployment);
   assert.match(wrapper, /finally/u);
   assert.match(wrapper, /ADMISSIONS REMAIN CLOSED/u);
   assert.match(wrapper, /"assert-owned"/u);

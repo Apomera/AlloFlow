@@ -115,8 +115,9 @@ describe('BirdLab I-Spy binocular tracking', () => {
     expect(actorSource).toContain("? null : renderSceneSubjectGrounding(h, bird, 'bird'");
 
     const qaSource = fs.readFileSync('dev-tools/birdlab_visual_qa.mjs', 'utf8');
-    expect(qaSource).toContain("state.behaviorCheckpoint === 'landing' || state.behaviorCheckpoint === 'braking'");
-    expect(qaSource).toContain("actorNode.getAttribute('data-birdlab-presence') !== 'arriving'");
+    expect(qaSource).toContain('const expectedPresence = state.behaviorPresence ||');
+    expect(qaSource).toContain("actorNode.getAttribute('data-birdlab-presence') !== expectedPresence");
+    expect(qaSource).toContain("expectedPresence === 'arriving'");
     expect(qaSource).toContain(".birdlab-scene-subject--arriving { opacity: 1");
   });
 
@@ -214,7 +215,17 @@ describe('BirdLab I-Spy binocular tracking', () => {
     expect(source).toContain("'data-birdlab-reticle-style': 'clear-center-ticks'");
     expect(source).toContain("'--birdlab-reticle-color': '#38bdf8'");
     expect(rawSource).toContain('.birdlab-scene--motion-off .birdlab-motion-subject, .birdlab-scene--motion-off .birdlab-ambient-motion { animation-play-state: paused !important; }');
-    expect(rawSource).toContain('.birdlab-scene--acquiring .birdlab-ambient-motion { animation-play-state: paused !important;');
+    const acquiringAmbientStart = rawSource.indexOf("'.birdlab-scene--acquiring .birdlab-ambient-motion {");
+    const acquiringAmbientEnd = rawSource.indexOf('\n', acquiringAmbientStart);
+    expect(acquiringAmbientStart).toBeGreaterThan(-1);
+    expect(acquiringAmbientEnd).toBeGreaterThan(acquiringAmbientStart);
+    const acquiringAmbientRule = rawSource.slice(acquiringAmbientStart, acquiringAmbientEnd);
+    expect(acquiringAmbientRule).not.toMatch(/opacity\s*:\s*\.32/i);
+    expect(acquiringAmbientRule).not.toMatch(/animation(?:-play-state)?\s*:\s*(?:none|paused)/i);
+    const slowAmbientDurations = [...rawSource.matchAll(/\.birdlab-(?:cloud-drift|mist-drift|water-shimmer|reed-sway|dapple-flicker|mote-float)\s*\{\s*animation:[^;\r\n]*?([0-9.]+)s/g)]
+      .map((match) => Number(match[1]));
+    expect(slowAmbientDurations.length).toBeGreaterThanOrEqual(4);
+    expect(slowAmbientDurations.every((seconds) => seconds >= 5)).toBe(true);
     expect(rawSource).toContain('@media (prefers-reduced-motion: reduce)');
     expect(rawSource).toContain('.birdlab-motion-subject { animation: none !important; }');
     expect(rawSource).toContain('.birdlab-ambient-motion { animation: none !important; }');
@@ -514,7 +525,10 @@ describe('BirdLab I-Spy binocular tracking', () => {
     const behaviorContractEnd = rawSource.indexOf('function sceneBirdMotionName', stateHelperStart);
     expect(behaviorContractEnd).toBeGreaterThan(stateHelperStart);
     const behaviorContractSource = rawSource.slice(registryStart, behaviorContractEnd);
-    ['feeder-grab-go', 'hover-aim-dive', 'ground-forage-flush'].forEach((script) => {
+    [
+      'feeder-grab-go', 'hover-aim-dive', 'ground-forage-flush',
+      'paddle-dabble-recover', 'snag-land-sentinel-launch',
+    ].forEach((script) => {
       expect(behaviorContractSource).toContain(script);
     });
     [
@@ -523,6 +537,8 @@ describe('BirdLab I-Spy binocular tracking', () => {
       'kingfisher-dive',
       'junco-ground',
       'junco-tail-flight',
+      'mallard-dabble',
+      'eagle-flight',
     ].forEach((pose) => expect(behaviorContractSource).toContain(pose));
 
     const visibleBirdStart = source.indexOf('function renderSceneBirds(');
@@ -569,6 +585,230 @@ describe('BirdLab I-Spy binocular tracking', () => {
       });
       expect(renderedPoses.some((pose) => specimen.poses.includes(pose))).toBe(true);
     }
+  });
+
+  it('adds natural mallard and eagle behavior arcs plus synchronized raft wakes', () => {
+    const source = birdLabRenderSource();
+    const rawSource = fs.readFileSync('stem_lab/stem_tool_birdlab.js', 'utf8');
+    const registryStart = rawSource.indexOf('var SCENE_BIRD_BEHAVIOR_SCRIPTS');
+    const stateStart = rawSource.indexOf('function sceneBirdBehaviorState', registryStart);
+    const stateEnd = rawSource.indexOf('function sceneBirdMotionName', stateStart);
+    expect(registryStart).toBeGreaterThan(-1);
+    expect(stateStart).toBeGreaterThan(registryStart);
+    expect(stateEnd).toBeGreaterThan(stateStart);
+    const registrySource = rawSource.slice(registryStart, stateStart);
+    const stateSource = rawSource.slice(stateStart, stateEnd);
+    expect(registrySource).toContain("'marsh:mallard': 'paddle-dabble-recover'");
+    expect(registrySource).toContain("'coast:baldEagle': 'snag-land-sentinel-launch'");
+    for (const [script, pose] of [
+      ['paddle-dabble-recover', 'mallard-dabble'],
+      ['snag-land-sentinel-launch', 'eagle-flight'],
+    ]) {
+      expect(registrySource, script + ' pose registry').toContain(script);
+      expect(registrySource, script + ' pose registry').toContain(pose);
+      const branchStart = stateSource.indexOf("if (script === '" + script + "')");
+      expect(branchStart, script + ' state branch').toBeGreaterThan(-1);
+      const afterStart = stateSource.slice(branchStart + 1);
+      const nextBranchOffset = afterStart.search(/\n\s*if \(script === '[^']+'\)/);
+      const branchSource = nextBranchOffset < 0
+        ? stateSource.slice(branchStart)
+        : stateSource.slice(branchStart, branchStart + 1 + nextBranchOffset);
+      expect(branchSource).toContain(pose);
+      expect(branchSource).toContain('trackable: false');
+      expect(branchSource).toContain('trackable: true');
+      expect(branchSource).toMatch(/phase === '(?:entering|arriving)'/);
+      expect(branchSource).toMatch(/phase === '(?:exiting|cooldown)'/);
+    }
+    const rendererStart = rawSource.indexOf('function renderSceneBirdArt');
+    const rendererEnd = rawSource.indexOf('function renderHabitatOccluders', rendererStart);
+    expect(rendererStart).toBeGreaterThan(-1);
+    expect(rendererEnd).toBeGreaterThan(rendererStart);
+    const rendererSource = rawSource.slice(rendererStart, rendererEnd);
+    expect(rendererSource).toContain("fieldPose === 'mallard-dabble'");
+    expect(rendererSource).toContain("fieldPose === 'eagle-flight'");
+
+    expect(rawSource).toContain('@keyframes birdlab-raft-bob');
+    expect(rawSource).toContain('@keyframes birdlab-contact-raft-bob');
+    expect(rawSource).toContain('.birdlab-raft-bob');
+    expect(rawSource).toContain('.birdlab-contact-raft-bob');
+    const coastHost = document.createElement('div');
+    coastHost.innerHTML = renderTool('birdLab', {
+      birdLab: { view: 'ispy', activeHabitat: 'coast', blSceneMotion: false },
+    });
+    const eiderActors = [...coastHost.querySelectorAll('[data-birdlab-species="eider"][data-birdlab-presence]')]
+      .filter((node) => node.querySelector('.birdlab-scene-actor'));
+    expect(eiderActors).toHaveLength(2);
+    const raftDelays = [];
+    for (const actor of eiderActors) {
+      const bob = actor.querySelector('.birdlab-raft-bob');
+      const wake = actor.querySelector('.birdlab-contact-raft-bob');
+      expect(bob).toBeTruthy();
+      expect(wake).toBeTruthy();
+      expect(wake.closest('[data-birdlab-contact="water"]')).toBeTruthy();
+      const bobDelay = bob.style.animationDelay || bob.style.getPropertyValue('--birdlab-raft-delay');
+      const wakeDelay = wake.style.animationDelay || wake.style.getPropertyValue('--birdlab-raft-delay');
+      expect(bobDelay).toBeTruthy();
+      expect(wakeDelay).toBe(bobDelay);
+      raftDelays.push(bobDelay);
+      const bobUsesSharedPauseClass = bob.classList.contains('birdlab-anatomy-motion') || bob.classList.contains('birdlab-behavior-motion');
+      const bobHasExplicitPauseSelector = rawSource.match(/\.birdlab-scene--motion-off[^\r\n]*\.birdlab-raft-bob/);
+      const bobHasExplicitReducedSelector = rawSource.match(/@media\s*\(prefers-reduced-motion:\s*reduce\)[^\r\n]*\.birdlab-raft-bob/);
+      expect(!!bobUsesSharedPauseClass || !!bobHasExplicitPauseSelector).toBe(true);
+      expect(!!bobUsesSharedPauseClass || !!bobHasExplicitReducedSelector).toBe(true);
+    }
+    expect(new Set(raftDelays).size).toBe(2);
+    expect(rawSource).toMatch(/\.birdlab-scene--motion-off[^\r\n]*\.birdlab-subject-contact/);
+
+    const acquiredHost = document.createElement('div');
+    acquiredHost.innerHTML = renderTool('birdLab', {
+      birdLab: { view: 'ispy', activeHabitat: 'marsh' },
+    }, {
+      props: { birdLabVisualQa: { lifecycleMs: 4000, targetId: 'bird-0', dwellProgress: 42 } },
+    });
+    const baselineHost = document.createElement('div');
+    baselineHost.innerHTML = renderTool('birdLab', {
+      birdLab: { view: 'ispy', activeHabitat: 'marsh' },
+    }, {
+      props: { birdLabVisualQa: { lifecycleMs: 4000 } },
+    });
+    expect(acquiredHost.querySelector('[data-birdlab-scene-shell]')?.classList.contains('birdlab-scene--acquiring')).toBe(true);
+    expect(acquiredHost.querySelectorAll('.birdlab-ambient-motion').length).toBeGreaterThan(0);
+    expect(acquiredHost.querySelectorAll('.birdlab-ambient-motion')).toHaveLength(baselineHost.querySelectorAll('.birdlab-ambient-motion').length);
+  });
+
+  it('renders the kingfisher impact once with synchronized splash and ripple', () => {
+    birdLabRenderSource();
+    const rawSource = fs.readFileSync('stem_lab/stem_tool_birdlab.js', 'utf8');
+    const helperStart = rawSource.indexOf('function renderKingfisherImpact');
+    const helperEnd = rawSource.indexOf('\n  function ', helperStart + 1);
+    expect(helperStart).toBeGreaterThan(-1);
+    expect(helperEnd).toBeGreaterThan(helperStart);
+    const helperSource = rawSource.slice(helperStart, helperEnd);
+    for (const marker of [
+      'birdlab-kingfisher-impact',
+      'birdlab-kingfisher-splash',
+      'birdlab-kingfisher-ripple',
+    ]) {
+      expect(helperSource).toContain(marker);
+    }
+    expect(helperSource).toContain("'aria-hidden': 'true'");
+    expect(helperSource).toMatch(/behaviorState[\s\S]{0,500}(?:dive|impact)/);
+
+    const host = document.createElement('div');
+    host.innerHTML = renderTool('birdLab', {
+      birdLab: { view: 'ispy', activeHabitat: 'marsh' },
+    }, {
+      props: { birdLabVisualQa: { lifecycleMs: 13000 } },
+    });
+    const kingfisherNodes = [...host.querySelectorAll('[data-birdlab-species="kingfisher"][data-birdlab-behavior="hover-aim-dive"]')];
+    const actor = kingfisherNodes.find((node) => node.querySelector('.birdlab-scene-actor'));
+    const hotspot = kingfisherNodes.find((node) => node.querySelector('[data-birdlab-kind="bird"]'));
+    expect(actor).toBeTruthy();
+    expect(hotspot).toBeTruthy();
+    expect(actor.getAttribute('data-birdlab-behavior-state')).toMatch(/^(?:dive|impact)$/);
+    expect(actor.getAttribute('data-birdlab-presence')).toBe('exiting');
+    const scene = host.querySelector('[data-birdlab-scene-shell]');
+    const impacts = scene.querySelectorAll('.birdlab-kingfisher-impact');
+    expect(impacts).toHaveLength(1);
+    const impact = impacts[0];
+    expect(impact.getAttribute('aria-hidden')).toBe('true');
+    expect(impact.querySelector('.birdlab-kingfisher-splash')).toBeTruthy();
+    expect(impact.querySelector('.birdlab-kingfisher-ripple')).toBeTruthy();
+    expect(impact.closest('.birdlab-motion-subject')).toBeNull();
+    expect(hotspot.querySelector('.birdlab-kingfisher-impact')).toBeNull();
+
+    const impactUsesSharedPauseClass = impact.classList.contains('birdlab-anatomy-motion')
+      || impact.classList.contains('birdlab-behavior-motion')
+      || !!impact.querySelector('.birdlab-anatomy-motion, .birdlab-behavior-motion');
+    const explicitPause = /\.birdlab-scene--motion-off[^\r\n]*(?:birdlab-kingfisher-impact|birdlab-kingfisher-splash|birdlab-kingfisher-ripple)/.test(rawSource);
+    const explicitReduced = /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]{0,5000}(?:birdlab-kingfisher-impact|birdlab-kingfisher-splash|birdlab-kingfisher-ripple)/.test(rawSource);
+    expect(impactUsesSharedPauseClass || explicitPause).toBe(true);
+    expect(impactUsesSharedPauseClass || explicitReduced).toBe(true);
+  });
+
+  it('keeps mallard dabbling stationary while its wake follows the behavior state', () => {
+    birdLabRenderSource();
+    const rawSource = fs.readFileSync('stem_lab/stem_tool_birdlab.js', 'utf8');
+    const dabbleRule = rawSource.match(/\.birdlab-motion-subject--dabbling\s*\{[^}\r\n]*\}/)?.[0] || '';
+    expect(dabbleRule).toMatch(/animation-play-state\s*:\s*paused\s*!important/i);
+    expect(dabbleRule).not.toMatch(/animation\s*:\s*none/i);
+    expect(dabbleRule).not.toMatch(/transform\s*:\s*none/i);
+
+    for (const checkpoint of [
+      { lifecycleMs: 9000, state: 'paddle' },
+      { lifecycleMs: 12000, state: 'dabble' },
+      { lifecycleMs: 14000, state: 'recover' },
+    ]) {
+      const host = document.createElement('div');
+      host.innerHTML = renderTool('birdLab', {
+        birdLab: { view: 'ispy', activeHabitat: 'marsh' },
+      }, {
+        props: { birdLabVisualQa: { lifecycleMs: checkpoint.lifecycleMs } },
+      });
+      const mallardNodes = [...host.querySelectorAll('[data-birdlab-species="mallard"][data-birdlab-behavior="paddle-dabble-recover"]')];
+      const actor = mallardNodes.find((node) => node.querySelector('.birdlab-scene-actor'));
+      const hotspot = mallardNodes.find((node) => node.querySelector('[data-birdlab-kind="bird"]'));
+      expect(actor).toBeTruthy();
+      expect(hotspot).toBeTruthy();
+      expect(actor.getAttribute('data-birdlab-behavior-state')).toBe(checkpoint.state);
+      expect(hotspot.getAttribute('data-birdlab-behavior-state')).toBe(checkpoint.state);
+      const actorMotion = actor.querySelector('.birdlab-motion-subject');
+      const hotspotMotion = hotspot.querySelector('.birdlab-motion-subject');
+      expect(actorMotion).toBeTruthy();
+      expect(hotspotMotion).toBeTruthy();
+      expect(actorMotion.getAttribute('class')).toBe(hotspotMotion.getAttribute('class'));
+      expect(actorMotion.getAttribute('style')).toBe(hotspotMotion.getAttribute('style'));
+      expect(actorMotion.classList.contains('birdlab-motion-subject--dabbling')).toBe(checkpoint.state === 'dabble');
+
+      const contact = actor.querySelector('.birdlab-mallard-contact--' + checkpoint.state);
+      expect(contact, 'missing ' + checkpoint.state + ' wake').toBeTruthy();
+      expect(contact.closest('[data-birdlab-contact="water"]')).toBeTruthy();
+      for (const other of ['paddle', 'dabble', 'recover'].filter((state) => state !== checkpoint.state)) {
+        expect(actor.querySelector('.birdlab-mallard-contact--' + other)).toBeNull();
+      }
+    }
+  });
+
+  it('contains hinted travel without suppressing pinned-safe anatomy', () => {
+    const rawSource = fs.readFileSync('stem_lab/stem_tool_birdlab.js', 'utf8');
+    const source = birdLabRenderSource();
+    expect(source).toContain('birdLabVisualQa.hintSpecies');
+    expect(rawSource).toContain('birdlab-anatomy-motion--pinned-safe');
+    const anchoredRules = rawSource.split(/\r?\n/)
+      .filter((line) => line.includes('birdlab-motion-subject--anchored'))
+      .join('\n');
+    expect(anchoredRules).toContain('birdlab-anatomy-motion--pinned-safe');
+    expect(anchoredRules).toMatch(/:not\(\.birdlab-anatomy-motion--pinned-safe\)|birdlab-anatomy-motion--pinned-safe[^}]*animation/i);
+    expect(rawSource).toMatch(/\.birdlab-scene--motion-off[^\r\n]*\.birdlab-(?:anatomy|behavior)-motion/);
+    expect(rawSource).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]{0,5000}\.birdlab-(?:anatomy|behavior)-motion/);
+
+    const renderHinted = (sceneMotion = true) => {
+      const host = document.createElement('div');
+      host.innerHTML = renderTool('birdLab', {
+        birdLab: { view: 'ispy', activeHabitat: 'marsh', blSceneMotion: sceneMotion },
+      }, {
+        props: { birdLabVisualQa: { lifecycleMs: 11000, hintSpecies: 'kingfisher' } },
+      });
+      return host;
+    };
+    const liveHost = renderHinted();
+    const kingfisherNodes = [...liveHost.querySelectorAll('[data-birdlab-species="kingfisher"]')];
+    const actor = kingfisherNodes.find((node) => node.querySelector('.birdlab-scene-actor'));
+    const hotspot = kingfisherNodes.find((node) => node.querySelector('[data-birdlab-kind="bird"]'));
+    expect(actor).toBeTruthy();
+    expect(hotspot).toBeTruthy();
+    const actorMotion = actor.querySelector('.birdlab-motion-subject');
+    const hotspotMotion = hotspot.querySelector('.birdlab-motion-subject');
+    expect(actorMotion.classList.contains('birdlab-motion-subject--anchored')).toBe(true);
+    expect(actorMotion.getAttribute('class')).toBe(hotspotMotion.getAttribute('class'));
+    const pinnedSafe = actor.querySelector('.birdlab-anatomy-motion--pinned-safe');
+    expect(pinnedSafe).toBeTruthy();
+    expect(pinnedSafe.matches('.birdlab-anatomy-motion, .birdlab-behavior-motion')).toBe(true);
+    expect(liveHost.querySelector('[data-birdlab-scene-shell]').classList.contains('birdlab-scene--motion-off')).toBe(false);
+
+    const pausedHost = renderHinted(false);
+    expect(pausedHost.querySelector('[data-birdlab-scene-shell]').classList.contains('birdlab-scene--motion-off')).toBe(true);
+    expect(pausedHost.querySelector('.birdlab-anatomy-motion--pinned-safe')).toBeTruthy();
   });
 
   it('freezes the acquired scripted behavior descriptor until focus is cancelled', () => {

@@ -220,42 +220,31 @@ function HistoryPanel(props) {
     clearResourceFilters();
     setIsMoreActionsOpen(false);
   }, [activeUnitId]);
-  return /* @__PURE__ */ React.createElement("div", { id: "tour-history-panel", "data-help-key": "history_panel", className: `allo-premium-history bg-slate-950 text-slate-100 rounded-2xl p-4 border border-slate-700/70 shadow-xl shadow-slate-950/30 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? "fixed inset-4 z-[190] h-auto" : !isTeacherMode ? "h-full" : "flex-grow min-h-[500px]"}` }, /* @__PURE__ */ React.createElement("style", null, `
-                  .allo-premium-history { background: linear-gradient(180deg, #111827 0%, #0f172a 58%, #0b1220 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 18px 46px rgba(2,6,23,.24); }
-                  .allo-premium-history button:focus-visible, .allo-premium-history input:focus-visible, .allo-premium-history select:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+  return /* @__PURE__ */ React.createElement("div", { id: "tour-history-panel", "data-help-key": "history_panel", className: `allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? "fixed inset-4 z-[190] h-auto" : !isTeacherMode ? "h-full" : "flex-grow min-h-[500px]"}` }, /* @__PURE__ */ React.createElement("style", null, `
+                  .allo-premium-history { background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 18px 46px rgba(15,23,42,.08); }
+                  .allo-premium-history button:focus-visible, .allo-premium-history input:focus-visible, .allo-premium-history select:focus-visible { outline: 3px solid #4f46e5; outline-offset: 2px; }
                   @media (prefers-reduced-motion: reduce) { .allo-premium-history, .allo-premium-history * { transition-duration: .01ms !important; } }
-                `), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 mb-3 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-sm flex items-center gap-2" }, /* @__PURE__ */ React.createElement(History, { size: 16 }), " ", isTeacherMode ? t("sidebar.resource_pack_history") : t("sidebar.my_resources"), /* @__PURE__ */ React.createElement(
+                `), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 mb-3 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-col" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-base text-slate-950 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-700" }, /* @__PURE__ */ React.createElement(History, { size: 16 })), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 truncate" }, isTeacherMode ? t("sidebar.resource_pack_history") : t("sidebar.my_resources")), /* @__PURE__ */ React.createElement(
     "span",
     {
-      className: "rounded-full bg-indigo-700/80 px-2 py-0.5 text-[11px] font-bold text-indigo-100",
+      className: "rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-600",
       "aria-live": "polite",
       "aria-label": isResourceFilterActive ? t("history.resource_count_filtered", { visible: filteredHistory.length, total: unitFilteredHistory.length }) : t("history.resource_count", { count: unitFilteredHistory.length })
     },
     isResourceFilterActive ? filteredHistory.length + " of " + unitFilteredHistory.length : unitFilteredHistory.length
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-1 text-[11px] font-medium opacity-80" }, isCanvas && canvasRecoverySaveStatus === "inactive" ? /* @__PURE__ */ React.createElement("span", { className: "flex min-h-11 items-center gap-1 text-indigo-200" }, "Live-session device recovery is off") : isCanvas ? /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-1 pl-10 text-xs font-medium text-slate-500" }, isCanvas && canvasRecoverySaveStatus === "inactive" ? /* @__PURE__ */ React.createElement("span", { className: "flex min-h-11 items-center gap-1 text-slate-500" }, "Live-session device recovery is off") : isCanvas ? /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: onOpenDeviceRecovery,
-      className: "flex min-h-11 items-center gap-1 rounded-lg px-2 text-left transition-colors hover:bg-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white " + (canvasRecoverySaveStatus === "error" ? "text-red-200" : canvasRecoverySaveStatus === "locked" ? "text-amber-200" : canvasRecoverySaveStatus === "saved" ? "text-green-300" : "text-indigo-200"),
+      className: "flex min-h-11 items-center gap-1 rounded-lg px-2 text-left transition-colors hover:bg-slate-100 " + (canvasRecoverySaveStatus === "error" ? "text-red-700" : canvasRecoverySaveStatus === "locked" ? "text-amber-700" : canvasRecoverySaveStatus === "saved" ? "text-emerald-700" : "text-slate-500"),
       title: canvasRecoverySaveStatus === "locked" ? "Protected recovery workspaces are locked in this tab. Open the manager to unlock." : String(canvasRecoverySnapshotCount) + " saved " + (canvasRecoverySnapshotCount === 1 ? "workspace" : "workspaces") + " on this device. Open saved work manager.",
       "aria-label": (canvasRecoverySaveStatus === "error" ? "Device save needs attention" : canvasRecoverySaveStatus === "locked" ? "Protected recovery workspaces locked, " + canvasRecoverySnapshotCount + " workspaces" : canvasRecoverySaveStatus === "idle" ? "Current workspace is not saved yet" : lastSaved ? "Saved on this device at " + lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "On-device saved work") + ". Open saved work manager.",
       "data-help-key": "history_device_storage"
     },
     canvasRecoverySaveStatus === "checking" || canvasRecoverySaveStatus === "saving" || canvasRecoverySaveStatus === "restoring" ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin", "aria-hidden": "true" }) : canvasRecoverySaveStatus === "error" ? /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }) : canvasRecoverySaveStatus === "locked" ? /* @__PURE__ */ React.createElement(Lock, { size: 10, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Save, { size: 10, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", null, canvasRecoverySaveStatus === "checking" ? "Checking saved work\u2026" : canvasRecoverySaveStatus === "saving" ? "Saving on this device\u2026" : canvasRecoverySaveStatus === "restoring" ? "Restoring saved work\u2026" : canvasRecoverySaveStatus === "error" ? "Device save needs attention" : canvasRecoverySaveStatus === "locked" ? "Protected recovery workspaces locked \xB7 " + canvasRecoverySnapshotCount + (canvasRecoverySnapshotCount === 1 ? " workspace" : " workspaces") : canvasRecoverySaveStatus === "idle" ? canvasRecoverySnapshotCount > 0 ? "Current workspace not saved yet" : "Not saved on this device yet" : lastSaved ? "Saved on this device \xB7 " + lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Saved on this device")
-  ) : isStorageDisabled ? /* @__PURE__ */ React.createElement("span", { className: "text-red-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10 }), " ", t("status.storage_disabled")) : isCloudSyncEnabled ? /* @__PURE__ */ React.createElement(React.Fragment, null, cloudSyncStatus === "syncing" && /* @__PURE__ */ React.createElement("span", { className: "text-indigo-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }), " ", t("status.syncing")), cloudSyncStatus === "error" && /* @__PURE__ */ React.createElement("span", { className: "text-red-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10 }), " ", t("status.sync_error")), (cloudSyncStatus === "saved" || cloudSyncStatus === "idle") && /* @__PURE__ */ React.createElement("span", { className: "text-green-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10 }), " ", t("status.cloud_saved"))) : pendingSync ? /* @__PURE__ */ React.createElement("span", { className: "text-orange-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CloudOff, { size: 10 }), " ", t("status.unsaved")) : lastSaved ? /* @__PURE__ */ React.createElement("span", { className: "text-green-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10 }), " ", t("status.autosaved", { time: lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })) : /* @__PURE__ */ React.createElement("span", { className: "text-indigo-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }), " ", t("status.syncing")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.upload_file"), type: "file", ref: projectFileInputRef, onChange: handleLoadProject, className: "hidden", accept: ".json" }), !isCanvas && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: onOpenDeviceRecovery,
-      className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300",
-      title: "Manage local storage and recovery",
-      "aria-label": "Manage local storage and recovery",
-      "data-help-key": "history_device_storage"
-    },
-    /* @__PURE__ */ React.createElement(Settings, { size: 14, "aria-hidden": "true" })
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => projectFileInputRef.current.click(), className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300", title: t("history.load_project"), "aria-label": t("history.load_project"), "data-help-key": "history_load_project" }, /* @__PURE__ */ React.createElement(Upload, { size: 14, "aria-hidden": "true" })), isTeacherMode && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: initiateSaveTeacherProject, disabled: history.length === 0, className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 " + (isSaveActionPulsing ? "pulse-history shadow-indigo-500/50" : ""), title: t("history.save_teacher"), "aria-label": t("history.save_teacher"), "data-help-key": "history_save_teacher" }, /* @__PURE__ */ React.createElement(Save, { size: 14, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: initiateSaveStudentProject, disabled: history.length === 0, className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 " + (isSaveActionPulsing ? "pulse-history shadow-indigo-500/50" : ""), title: isTeacherMode ? t("history.save_student") : t("history.save_work"), "aria-label": isTeacherMode ? t("history.save_student") : t("history.save_work"), "data-help-key": "history_save_student" }, isTeacherMode ? /* @__PURE__ */ React.createElement(Lock, { size: 14, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Save, { size: 14, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleToggleIsHistoryMaximized, className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300", title: isHistoryMaximized ? t("history.minimize") : t("history.maximize"), "aria-label": isHistoryMaximized ? t("history.minimize") : t("history.maximize"), "data-help-key": "history_max_toggle" }, isHistoryMaximized ? /* @__PURE__ */ React.createElement(Minimize, { size: 14, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Maximize, { size: 14, "aria-hidden": "true" })), (isTeacherMode || history.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
+  ) : isStorageDisabled ? /* @__PURE__ */ React.createElement("span", { className: "text-red-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10 }), " ", t("status.storage_disabled")) : isCloudSyncEnabled ? /* @__PURE__ */ React.createElement(React.Fragment, null, cloudSyncStatus === "syncing" && /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }), " ", t("status.syncing")), cloudSyncStatus === "error" && /* @__PURE__ */ React.createElement("span", { className: "text-red-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10 }), " ", t("status.sync_error")), (cloudSyncStatus === "saved" || cloudSyncStatus === "idle") && /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10 }), " ", t("status.cloud_saved"))) : pendingSync ? /* @__PURE__ */ React.createElement("span", { className: "text-amber-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CloudOff, { size: 10 }), " ", t("status.unsaved")) : lastSaved ? /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10 }), " ", t("status.autosaved", { time: lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }), " ", t("status.syncing")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.upload_file"), type: "file", ref: projectFileInputRef, onChange: handleLoadProject, className: "hidden", accept: ".json" }), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       ref: moreActionsButtonRef,
@@ -270,13 +259,13 @@ function HistoryPanel(props) {
           closeMoreActions(true);
         }
       },
-      className: "min-h-11 rounded-lg px-2.5 text-[11px] font-bold text-indigo-100 hover:bg-indigo-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300",
+      className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50",
       "aria-label": t("history.more_actions_aria"),
       "aria-haspopup": "menu",
       "aria-expanded": isMoreActionsOpen,
       "aria-controls": "history-more-actions-menu"
     },
-    t("history.more_actions")
+    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5" }, t("history.more_actions"), " ", /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, "aria-hidden": "true" }))
   ), isMoreActionsOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -294,8 +283,86 @@ function HistoryPanel(props) {
       role: "menu",
       "aria-label": t("history.more_actions_aria"),
       onKeyDown: handleMoreActionsMenuKeyDown,
-      className: "absolute right-0 top-full z-[90] mt-1 w-56 rounded-xl border border-indigo-600 bg-indigo-950 p-1.5 shadow-2xl"
+      className: "absolute right-0 top-full z-[90] mt-1 w-64 rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-2xl shadow-slate-900/15"
     },
+    !isCanvas && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => {
+          closeMoreActions(false);
+          onOpenDeviceRecovery();
+        },
+        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
+        "data-help-key": "history_device_storage"
+      },
+      /* @__PURE__ */ React.createElement(Settings, { size: 15, "aria-hidden": "true" }),
+      /* @__PURE__ */ React.createElement("span", null, "Manage local storage and recovery")
+    ),
+    /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => {
+          closeMoreActions(false);
+          projectFileInputRef.current.click();
+        },
+        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
+        "data-help-key": "history_load_project"
+      },
+      /* @__PURE__ */ React.createElement(Upload, { size: 15, "aria-hidden": "true" }),
+      /* @__PURE__ */ React.createElement("span", null, t("history.load_project"))
+    ),
+    /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => {
+          closeMoreActions(false);
+          handleToggleIsHistoryMaximized();
+        },
+        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
+        "data-help-key": "history_max_toggle"
+      },
+      isHistoryMaximized ? /* @__PURE__ */ React.createElement(Minimize, { size: 15, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Maximize, { size: 15, "aria-hidden": "true" }),
+      /* @__PURE__ */ React.createElement("span", null, isHistoryMaximized ? t("history.minimize") : t("history.maximize"))
+    ),
+    isTeacherMode && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => {
+          closeMoreActions(false);
+          initiateSaveTeacherProject();
+        },
+        disabled: history.length === 0,
+        className: `flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 ${isSaveActionPulsing ? "ring-2 ring-indigo-200" : ""}`,
+        "data-help-key": "history_save_teacher"
+      },
+      /* @__PURE__ */ React.createElement(Save, { size: 15, "aria-hidden": "true" }),
+      /* @__PURE__ */ React.createElement("span", null, t("history.save_teacher"))
+    ),
+    /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => {
+          closeMoreActions(false);
+          initiateSaveStudentProject();
+        },
+        disabled: history.length === 0,
+        className: `flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 ${isSaveActionPulsing ? "ring-2 ring-indigo-200" : ""}`,
+        "data-help-key": "history_save_student"
+      },
+      isTeacherMode ? /* @__PURE__ */ React.createElement(Lock, { size: 15, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Save, { size: 15, "aria-hidden": "true" }),
+      /* @__PURE__ */ React.createElement("span", null, isTeacherMode ? t("history.save_student") : t("history.save_work"))
+    ),
+    /* @__PURE__ */ React.createElement("div", { role: "separator", className: "my-1 h-px bg-slate-200" }),
     /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -306,7 +373,7 @@ function HistoryPanel(props) {
           shareResourcePackToCommunity();
         },
         disabled: history.length === 0,
-        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-indigo-100 hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50",
+        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50",
         "data-help-key": "history_share_pack"
       },
       /* @__PURE__ */ React.createElement(Share2, { size: 15, "aria-hidden": "true" }),
@@ -321,7 +388,7 @@ function HistoryPanel(props) {
           closeMoreActions(false);
           handleSetIsProjectSettingsOpenToTrue();
         },
-        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-indigo-100 hover:bg-indigo-800",
+        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
         "data-help-key": "history_settings"
       },
       /* @__PURE__ */ React.createElement(Settings, { size: 15, "aria-hidden": "true" }),
@@ -336,19 +403,19 @@ function HistoryPanel(props) {
           closeMoreActions(false);
           handleClearHistory();
         },
-        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-200 hover:bg-red-950/70",
+        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-700 hover:bg-red-50",
         "data-help-key": "history_clear_button"
       },
       /* @__PURE__ */ React.createElement(Trash2, { size: 15, "aria-hidden": "true" }),
       /* @__PURE__ */ React.createElement("span", null, t("history.clear"))
     )
-  ))))), isTeacherMode && !isIndependentMode && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-950/50 p-2 rounded-lg border border-indigo-700/50 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(FolderOpen, { size: 14, className: "text-indigo-300 shrink-0" }), /* @__PURE__ */ React.createElement(
+  ))))), isTeacherMode && !isIndependentMode && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-slate-50/90 p-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(FolderOpen, { size: 16, className: "text-slate-500 shrink-0" }), /* @__PURE__ */ React.createElement(
     "select",
     {
       value: activeUnitId,
       "data-help-key": "history_filter_unit_select",
       onChange: (e) => setActiveUnitId(e.target.value),
-      className: "flex-grow text-xs bg-indigo-900 border border-indigo-700 text-indigo-100 rounded focus:ring-1 focus:ring-indigo-500 outline-none py-1 px-2",
+      className: "min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
       "aria-label": t("common.filter_by_unit_aria")
     },
     /* @__PURE__ */ React.createElement("option", { value: "all" }, t("history.filter_all")),
@@ -359,7 +426,7 @@ function HistoryPanel(props) {
     {
       "data-help-key": "history_create_unit_btn",
       onClick: handleSetIsUnitModalOpenToTrue,
-      className: "p-1 rounded bg-indigo-700 hover:bg-indigo-600 text-white transition-colors",
+      className: "min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-indigo-700 transition-colors hover:bg-indigo-50",
       title: t("history.create_unit_tooltip"),
       "aria-label": t("history.create_unit_tooltip")
     },
@@ -368,7 +435,7 @@ function HistoryPanel(props) {
     "button",
     {
       onClick: () => onVisualizeUnit(activeUnitId),
-      className: "p-1 rounded bg-amber-700/40 hover:bg-amber-600 text-amber-200 hover:text-white transition-colors",
+      className: "min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-amber-700 transition-colors hover:bg-amber-50",
       title: t("history.visualize_unit_tooltip") || "Open this unit in Learning Web: Unit Path",
       "aria-label": t("history.visualize_unit_tooltip") || "Open this unit in Learning Web: Unit Path"
     },
@@ -378,12 +445,12 @@ function HistoryPanel(props) {
     {
       "data-help-key": "history_delete_unit_btn",
       onClick: handleDeleteUnit,
-      className: "p-1 rounded hover:bg-red-900/50 text-red-600 hover:text-red-300 transition-colors",
+      className: "min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-red-700 transition-colors hover:bg-red-50",
       title: t("history.delete_unit_tooltip"),
       "aria-label": t("history.delete_unit_tooltip")
     },
     /* @__PURE__ */ React.createElement(Trash2, { size: 14 })
-  )), (unitFilteredHistory.length >= 6 || isResourceFilterActive) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-indigo-700/70 bg-indigo-950/40 p-2", role: "search", "aria-label": t("history.find_resources_aria") }, /* @__PURE__ */ React.createElement("div", { className: "relative min-w-[150px] flex-1" }, /* @__PURE__ */ React.createElement(Search, { size: 14, "aria-hidden": "true", className: "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-indigo-300" }), /* @__PURE__ */ React.createElement("input", { type: "search", value: resourceSearch, onChange: (e) => setResourceSearch(e.target.value), placeholder: t("history.search_resources_placeholder"), "aria-label": t("history.search_resources_aria"), className: "min-h-11 w-full rounded-lg border border-indigo-700 bg-indigo-900 py-2 pl-8 pr-9 text-xs text-white placeholder:text-indigo-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400" }), resourceSearch && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setResourceSearch(""), "aria-label": t("history.clear_resource_search_aria"), className: "absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-indigo-300 hover:bg-indigo-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300" }, /* @__PURE__ */ React.createElement(X, { size: 14, className: "mx-auto", "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("select", { value: resourceTypeFilter, onChange: (e) => setResourceTypeFilter(e.target.value), "aria-label": t("history.filter_by_type_aria"), className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-indigo-700 bg-indigo-900 px-2 text-xs text-indigo-100 focus:border-indigo-400 focus:outline-none focus:ring-2 focus-visible:ring-indigo-400" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, t("history.all_types")), displayedResourceTypes.map((type) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, getResourceTypeLabel(type)))), isResourceFilterActive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-indigo-100 hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300" }, t("history.clear_filters")), isResourceFilterActive && /* @__PURE__ */ React.createElement("p", { className: "w-full text-[11px] text-indigo-200", role: "status" }, t("history.filtered_status", { visible: filteredHistory.length, total: unitFilteredHistory.length }))), isUnitModalOpen && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-800 p-2 rounded-lg border border-indigo-600 animate-in slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-indigo-200 mb-1" }, t("history.new_unit_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+  )), (unitFilteredHistory.length > 0 || isResourceFilterActive) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5", role: "search", "aria-label": t("history.find_resources_aria") }, /* @__PURE__ */ React.createElement("div", { className: "relative min-w-[150px] flex-1" }, /* @__PURE__ */ React.createElement(Search, { size: 14, "aria-hidden": "true", className: "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" }), /* @__PURE__ */ React.createElement("input", { type: "search", value: resourceSearch, onChange: (e) => setResourceSearch(e.target.value), placeholder: t("history.search_resources_placeholder"), "aria-label": t("history.search_resources_aria"), className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-9 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }), resourceSearch && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setResourceSearch(""), "aria-label": t("history.clear_resource_search_aria"), className: "absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900" }, /* @__PURE__ */ React.createElement(X, { size: 14, className: "mx-auto", "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("select", { value: resourceTypeFilter, onChange: (e) => setResourceTypeFilter(e.target.value), "aria-label": t("history.filter_by_type_aria"), className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, t("history.all_types")), displayedResourceTypes.map((type) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, getResourceTypeLabel(type)))), isResourceFilterActive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-indigo-700 hover:bg-indigo-50" }, t("history.clear_filters")), isResourceFilterActive && /* @__PURE__ */ React.createElement("p", { className: "w-full text-xs text-slate-500", role: "status" }, t("history.filtered_status", { visible: filteredHistory.length, total: unitFilteredHistory.length }))), isUnitModalOpen && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, t("history.new_unit_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_new_unit_name"),
@@ -392,14 +459,14 @@ function HistoryPanel(props) {
       "data-help-key": "history_unit_name_input",
       onChange: (e) => setNewUnitName(e.target.value),
       placeholder: t("history.new_unit_placeholder"),
-      className: "flex-grow text-xs border border-indigo-600 bg-indigo-900 text-white rounded p-1 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400",
+      className: "min-h-11 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
       autoFocus: true,
       onKeyDown: (e) => e.key === "Enter" && handleCreateUnit()
     }
-  ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "history_save_unit_btn", onClick: handleCreateUnit, className: "text-xs bg-indigo-600 text-white px-2 rounded hover:bg-indigo-500 border border-indigo-500" }, t("common.save")), /* @__PURE__ */ React.createElement("button", { "data-help-key": "history_cancel_unit_btn", onClick: handleSetIsUnitModalOpenToFalse, className: "text-xs text-indigo-300 hover:text-white px-1" }, t("common.cancel"))))), (() => {
+  ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "history_save_unit_btn", onClick: handleCreateUnit, className: "min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800" }, t("common.save")), /* @__PURE__ */ React.createElement("button", { "data-help-key": "history_cancel_unit_btn", onClick: handleSetIsUnitModalOpenToFalse, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-white" }, t("common.cancel"))))), (() => {
     const stations = JSON.parse(localStorage.getItem("alloflow_stem_stations") || "[]");
     if (stations.length === 0) return null;
-    return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} STEM Stations", /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-500/30 text-emerald-200 text-[11px] px-1.5 py-0.5 rounded-full" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} STEM Stations", /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-emerald-50 px-1.5 py-0.5 text-xs text-emerald-700" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => /* @__PURE__ */ React.createElement(
       "div",
       {
         key: st.id,
@@ -408,10 +475,10 @@ function HistoryPanel(props) {
           setShowStemLab(true);
           setStemLabTab && setStemLabTab("explore");
         },
-        className: "group flex items-center gap-2 p-2 rounded-lg bg-emerald-900/40 border border-emerald-700/50 hover:bg-emerald-800/60 cursor-pointer transition-all"
+        className: "group flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 cursor-pointer transition-colors hover:border-emerald-300 hover:bg-emerald-50/60"
       },
-      /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-emerald-800 text-emerald-700 shrink-0" }, "\u{1F52C}"),
-      /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-100 truncate" }, st.name), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-emerald-300" }, st.tools.length, " tool", st.tools.length !== 1 ? "s" : "")),
+      /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-emerald-50 text-emerald-700 shrink-0" }, "\u{1F52C}"),
+      /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800 truncate" }, st.name), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, st.tools.length, " tool", st.tools.length !== 1 ? "s" : "")),
       /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -422,7 +489,7 @@ function HistoryPanel(props) {
             if (activeStation && activeStation.id === st.id) setActiveStation(null);
             addToast && addToast("Station removed");
           },
-          className: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-red-600 hover:text-red-300 p-1 transition-opacity",
+          className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 transition-colors hover:bg-red-50",
           "aria-label": t("history.delete_station_aria") || "Delete station"
         },
         /* @__PURE__ */ React.createElement(X, { size: 12 })
@@ -431,7 +498,7 @@ function HistoryPanel(props) {
   })(), (() => {
     const stations = JSON.parse(localStorage.getItem("alloflow_sel_stations") || "[]");
     if (stations.length === 0) return null;
-    return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} SEL Stations", /* @__PURE__ */ React.createElement("span", { className: "bg-pink-500/30 text-pink-200 text-[11px] px-1.5 py-0.5 rounded-full" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} SEL Stations", /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-pink-50 px-1.5 py-0.5 text-xs text-pink-700" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => /* @__PURE__ */ React.createElement(
       "div",
       {
         key: st.id,
@@ -440,10 +507,10 @@ function HistoryPanel(props) {
           setShowSelHub(true);
           setSelHubTab && setSelHubTab("explore");
         },
-        className: "group flex items-center gap-2 p-2 rounded-lg bg-pink-900/40 border border-pink-700/50 hover:bg-pink-800/60 cursor-pointer transition-all"
+        className: "group flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 cursor-pointer transition-colors hover:border-pink-300 hover:bg-pink-50/60"
       },
-      /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-pink-800 text-pink-700 shrink-0" }, "\u{1F496}"),
-      /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-pink-100 truncate" }, st.name), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-pink-300" }, (st.tools || []).length, " tool", (st.tools || []).length !== 1 ? "s" : "", (st.quests || []).length > 0 ? ` \xB7 ${st.quests.length} quest${st.quests.length !== 1 ? "s" : ""}` : "")),
+      /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-pink-50 text-pink-700 shrink-0" }, "\u{1F496}"),
+      /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800 truncate" }, st.name), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, (st.tools || []).length, " tool", (st.tools || []).length !== 1 ? "s" : "", (st.quests || []).length > 0 ? ` \xB7 ${st.quests.length} quest${st.quests.length !== 1 ? "s" : ""}` : "")),
       /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -454,15 +521,19 @@ function HistoryPanel(props) {
             if (activeSelStation && activeSelStation.id === st.id) setActiveSelStation(null);
             addToast && addToast("SEL Station removed");
           },
-          className: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-red-600 hover:text-red-300 p-1 transition-opacity",
+          className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 transition-colors hover:bg-red-50",
           "aria-label": `Delete SEL Station ${st.name}`
         },
         /* @__PURE__ */ React.createElement(X, { size: 12 })
       )
     ))));
-  })(), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10", role: "list", "aria-label": t("sidebar.resource_pack_history") || "Saved resources" }, filteredHistory.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center p-4 text-indigo-200 text-xs italic" }, history.length === 0 ? t("history.empty_general") : unitFilteredHistory.length === 0 ? t("history.empty_unit") : t("history.no_filter_matches"), isResourceFilterActive && unitFilteredHistory.length > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "mx-auto mt-3 block min-h-11 rounded-lg px-3 font-bold text-indigo-100 hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300" }, t("history.clear_filters"))), filteredHistory.map((item, idx) => {
+  })(), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10", role: "list", "aria-label": t("sidebar.resource_pack_history") || "Saved resources" }, filteredHistory.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500" }, history.length === 0 ? t("history.empty_general") : unitFilteredHistory.length === 0 ? t("history.empty_unit") : t("history.no_filter_matches"), isResourceFilterActive && unitFilteredHistory.length > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "mx-auto mt-3 block min-h-11 rounded-lg px-3 font-bold text-indigo-700 hover:bg-indigo-50" }, t("history.clear_filters"))), filteredHistory.map((item, idx) => {
     const itemTitle = isTeacherMode && !isIndependentMode ? String(item.title || getDefaultTitle(item.type)) : sanitizeString(item.title || getDefaultTitle(item.type));
     const itemMeta = typeof item.meta === "string" ? item.meta.trim() : "";
+    const itemTypeLabel = getResourceTypeLabel(item.type);
+    const itemDate = item.timestamp ? new Date(item.timestamp) : null;
+    const itemDateLabel = itemDate && Number.isFinite(itemDate.getTime()) ? itemDate.toLocaleDateString(void 0, { month: "short", day: "numeric", year: "numeric" }) : "";
+    const itemDateTime = itemDateLabel ? itemDate.toISOString() : void 0;
     const itemUnit = item.unitId ? units.find((u) => u.id === item.unitId) : null;
     const isCurrent = !!(generatedContent && generatedContent.id === item.id);
     const openLabel = t("common.open") || "Open";
@@ -475,7 +546,7 @@ function HistoryPanel(props) {
         onDragEnter: (e) => canReorderResources && handleDragEnter(e, idx),
         onDragOver: (e) => canReorderResources && e.preventDefault(),
         onDragEnd: handleDragEnd,
-        className: `group flex flex-col p-2 rounded-lg transition-all border ${isCurrent ? "bg-white text-indigo-900 border-white" : "bg-indigo-800/50 border-indigo-700 hover:bg-indigo-800 text-indigo-100"} ${isSyncMode ? "cursor-not-allowed opacity-60" : "cursor-default"}`
+        className: `group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] ${isCurrent ? "border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5" : "border-slate-200 border-l-transparent bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/70"} ${isSyncMode ? "cursor-not-allowed opacity-60" : "cursor-default"}`
       },
       /* @__PURE__ */ React.createElement("div", { className: "flex items-stretch gap-2 w-full" }, /* @__PURE__ */ React.createElement(
         "button",
@@ -502,23 +573,23 @@ function HistoryPanel(props) {
           "aria-keyshortcuts": canReorderResources ? "Alt+ArrowUp Alt+ArrowDown" : void 0,
           "aria-disabled": !canReorderResources || editingId === item.id,
           "aria-label": canReorderResources ? (t("common.reorder_list") || "Reorder") + ": " + itemTitle + ". " + (t("history.position") || "Position") + " " + (idx + 1) + " " + (t("common.of") || "of") + " " + filteredHistory.length + ". " + (t("history.keyboard_reorder") || "Use Alt plus Up or Down Arrow to reorder.") : itemTitle + ". " + t("history.clear_filters_to_reorder"),
-          className: `min-h-11 min-w-11 rounded-lg flex items-center justify-center gap-0.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${isCurrent ? "text-indigo-500 hover:bg-indigo-100" : "text-indigo-400 hover:bg-indigo-700 hover:text-white"} ${editingId === item.id || !canReorderResources ? "cursor-not-allowed opacity-40" : "cursor-grab active:cursor-grabbing"}`,
+          className: `min-h-11 min-w-11 rounded-lg flex items-center justify-center gap-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "text-indigo-600 hover:bg-indigo-100" : "text-slate-400 hover:bg-slate-100 hover:text-slate-700"} ${editingId === item.id || !canReorderResources ? "cursor-not-allowed opacity-40" : "cursor-grab active:cursor-grabbing"}`,
           "data-help-key": "history_item_drag",
           title: isResourceFilterActive ? t("history.clear_filters_to_reorder") : t("common.drag_to_reorder")
         },
         /* @__PURE__ */ React.createElement(GripVertical, { size: 14, "aria-hidden": "true" }),
         /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold", "aria-hidden": "true" }, idx + 1)
-      ), /* @__PURE__ */ React.createElement("div", { className: `self-center p-1.5 rounded-md shrink-0 ${isCurrent ? "bg-indigo-100 text-indigo-700" : "bg-indigo-900 text-indigo-300"}` }, getIconForType(item.type)), editingId === item.id ? /* @__PURE__ */ React.createElement("div", { className: "flex min-h-11 min-w-0 flex-grow items-center gap-1", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("div", { className: `self-center p-2 rounded-lg shrink-0 ${isCurrent ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"}` }, getIconForType(item.type)), editingId === item.id ? /* @__PURE__ */ React.createElement("div", { className: "flex min-h-11 min-w-0 flex-grow items-center gap-1", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
         "input",
         {
           "aria-label": t("common.enter_edit_title"),
           type: "text",
           value: editTitle,
           onChange: (e) => setEditTitle(e.target.value),
-          className: "w-full text-xs text-indigo-900 p-1 rounded border border-indigo-300 focus:ring-2 focus:ring-indigo-500 outline-none",
+          className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
           autoFocus: true
         }
-      ), /* @__PURE__ */ React.createElement("button", { onClick: (e) => handleSaveEdit(e), className: "p-1 text-green-600 hover:bg-green-100 rounded", "aria-label": t("common.save") }, /* @__PURE__ */ React.createElement(Save, { size: 12 })), /* @__PURE__ */ React.createElement("button", { onClick: (e) => handleCancelEdit(e), className: "p-1 text-red-500 hover:bg-red-100 rounded", "aria-label": t("common.cancel") }, /* @__PURE__ */ React.createElement(X, { size: 12 }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("button", { onClick: (e) => handleSaveEdit(e), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-emerald-700 hover:bg-emerald-50", "aria-label": t("common.save") }, /* @__PURE__ */ React.createElement(Save, { size: 14 })), /* @__PURE__ */ React.createElement("button", { onClick: (e) => handleCancelEdit(e), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 hover:bg-red-50", "aria-label": t("common.cancel") }, /* @__PURE__ */ React.createElement(X, { size: 14 }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -531,12 +602,12 @@ function HistoryPanel(props) {
             }
             handleRestoreView(item);
           },
-          className: `min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${isCurrent ? "cursor-default bg-indigo-50 text-indigo-900" : "hover:bg-indigo-700 text-indigo-100"} aria-disabled:opacity-60`,
+          className: `min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "cursor-default bg-indigo-50/80 text-slate-900" : "hover:bg-slate-100 text-slate-800"} aria-disabled:opacity-60`,
           "aria-label": isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`,
           "aria-current": isCurrent ? "page" : void 0,
           "aria-disabled": isSyncMode || isCurrent
         },
-        /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold line-clamp-2 capitalize", title: itemTitle }, itemTitle), (itemUnit || item.fromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] truncate opacity-70 flex items-center gap-1 mt-0.5" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "bg-indigo-900 px-1 rounded text-indigo-300 border border-indigo-700 flex items-center gap-0.5" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnit.name), item.fromDA && /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold leading-snug line-clamp-2", title: itemTitle }, itemTitle), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), (itemUnit || item.fromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnit.name), item.fromDA && /* @__PURE__ */ React.createElement(
           "span",
           {
             className: "bg-violet-100 text-violet-700 border border-violet-300 px-1 rounded font-bold",
@@ -544,12 +615,12 @@ function HistoryPanel(props) {
           },
           "\u{1F52C} DA",
           typeof item.daItemIndex === "number" ? ` \xB7 #${item.daItemIndex + 1}` : ""
-        ), itemMeta && /* @__PURE__ */ React.createElement("span", null, isTeacherMode && !isIndependentMode ? itemMeta : sanitizeString(itemMeta))), item.type === "word-sounds" && item.configSummary && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-indigo-400 mt-0.5 truncate flex items-center gap-1", title: item.configSummary }, /* @__PURE__ */ React.createElement("span", { className: "px-1 bg-violet-900/50 rounded border border-violet-700/50" }, "\u{1F4CB} ", item.configSummary))),
+        ), itemMeta && /* @__PURE__ */ React.createElement("span", null, isTeacherMode && !isIndependentMode ? itemMeta : sanitizeString(itemMeta))), item.type === "word-sounds" && item.configSummary && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex items-center gap-1 truncate text-xs text-slate-500", title: item.configSummary }, /* @__PURE__ */ React.createElement("span", { className: "rounded border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-violet-700" }, "\u{1F4CB} ", item.configSummary))),
         /* @__PURE__ */ React.createElement(
           "span",
           {
             "aria-hidden": "true",
-            className: `shrink-0 rounded-md px-2 py-1 text-[11px] font-bold ${isCurrent ? "bg-emerald-100 text-emerald-800" : "bg-indigo-700 text-indigo-100 group-hover:bg-indigo-600"}`
+            className: `shrink-0 rounded-md px-2 py-1 text-xs font-bold ${isCurrent ? "bg-emerald-100 text-emerald-800" : "border border-slate-200 bg-white text-indigo-700"}`
           },
           isCurrent ? currentLabel : openLabel
         )
@@ -559,12 +630,12 @@ function HistoryPanel(props) {
           "aria-label": t("common.edit"),
           "data-help-key": "history_rename_btn",
           onClick: (e) => handleStartEdit(e, item),
-          className: "min-h-11 min-w-11 self-center p-2 rounded hover:bg-indigo-100 hover:text-indigo-700 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity text-indigo-600 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300",
+          className: "min-h-11 min-w-11 self-center grid place-items-center rounded-lg border border-transparent text-indigo-700 transition-colors hover:border-indigo-200 hover:bg-indigo-50",
           title: t("actions.rename")
         },
         /* @__PURE__ */ React.createElement(Pencil, { size: 10 })
       ))),
-      isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mt-2 pt-2 border-t border-indigo-800/30", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 relative" }, /* @__PURE__ */ React.createElement(
+      isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center justify-between border-t border-slate-200 pt-2", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 relative" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -572,7 +643,7 @@ function HistoryPanel(props) {
           "data-help-key": "history_move_up_btn",
           onClick: (e) => moveItem(e, idx, "up"),
           disabled: !canReorderResources || idx === 0,
-          className: "min-h-11 min-w-11 p-2 rounded hover:bg-indigo-700 disabled:opacity-30 transition-colors text-indigo-300 focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 outline-none",
+          className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
           title: t("actions.move_up")
         },
         /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 })
@@ -584,7 +655,7 @@ function HistoryPanel(props) {
           "data-help-key": "history_move_down_btn",
           onClick: (e) => moveItem(e, idx, "down"),
           disabled: !canReorderResources || idx === filteredHistory.length - 1,
-          className: "min-h-11 min-w-11 p-2 rounded hover:bg-indigo-700 disabled:opacity-30 transition-colors text-indigo-300 focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 outline-none",
+          className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
           title: t("actions.move_down")
         },
         /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
@@ -598,17 +669,17 @@ function HistoryPanel(props) {
           "aria-haspopup": "menu",
           "aria-controls": `history-move-menu-${item.id}`,
           onClick: () => setMovingItemId(movingItemId === item.id ? null : item.id),
-          className: `min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 ${item.unitId ? "text-yellow-400" : ""}`,
+          className: `min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 ${item.unitId ? "text-amber-700" : ""}`,
           title: t("history.tooltips.move_to_unit")
         },
         /* @__PURE__ */ React.createElement(FolderInput, { size: 12, "aria-hidden": "true" })
-      ), movingItemId === item.id && /* @__PURE__ */ React.createElement("div", { id: `history-move-menu-${item.id}`, role: "menu", className: "absolute left-0 top-12 z-[100] bg-white shadow-xl border border-indigo-200 rounded-lg p-1 w-40 animate-in fade-in zoom-in-95 origin-top-left" }, /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2 py-1" }, t("history.move_to_label")), /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar" }, /* @__PURE__ */ React.createElement(
+      ), movingItemId === item.id && /* @__PURE__ */ React.createElement("div", { id: `history-move-menu-${item.id}`, role: "menu", className: "absolute left-0 top-12 z-[100] w-48 origin-top-left rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 animate-in fade-in zoom-in-95" }, /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-500" }, t("history.move_to_label")), /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           role: "menuitem",
           onClick: () => handleMoveToUnit(item.id, "uncategorized"),
-          className: `text-[11px] text-left px-2 py-1.5 rounded hover:bg-indigo-50 text-slate-700 w-full truncate ${!item.unitId ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
+          className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${!item.unitId ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
         },
         t("history.uncategorized")
       ), units.map((u) => /* @__PURE__ */ React.createElement(
@@ -618,10 +689,10 @@ function HistoryPanel(props) {
           role: "menuitem",
           key: u.id,
           onClick: () => handleMoveToUnit(item.id, u.id),
-          className: `text-[11px] text-left px-2 py-1.5 rounded hover:bg-indigo-50 text-slate-700 w-full truncate ${item.unitId === u.id ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
+          className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${item.unitId === u.id ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
         },
         u.name
-      )), units.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 px-2 py-1 italic" }, t("history.no_units")))), movingItemId === item.id && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetMovingItemIdToNull }))), item.type === "word-sounds" && /* @__PURE__ */ React.createElement(
+      )), units.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "px-2 py-2 text-xs italic text-slate-500" }, t("history.no_units")))), movingItemId === item.id && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetMovingItemIdToNull }))), item.type === "word-sounds" && /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: (e) => {
@@ -648,7 +719,7 @@ function HistoryPanel(props) {
             URL.revokeObjectURL(url);
             addToast && addToast("CSV downloaded for RTI progress monitoring", "success");
           },
-          className: `p-1 ${generatedContent && generatedContent.id === item.id ? "text-emerald-700" : "text-emerald-300"} hover:text-emerald-300 hover:bg-emerald-900/30 rounded transition-colors flex items-center gap-1 text-[11px]`,
+          className: `min-h-11 rounded-lg px-2 text-xs font-semibold transition-colors flex items-center gap-1 ${generatedContent && generatedContent.id === item.id ? "text-emerald-800" : "text-emerald-700"} hover:bg-emerald-50`,
           title: t("common.export_csv_for_rti")
         },
         /* @__PURE__ */ React.createElement(Download, { size: 12 }),
@@ -658,7 +729,7 @@ function HistoryPanel(props) {
         {
           "aria-label": t("common.delete"),
           onClick: (e) => handleDeleteHistoryItem(e, item.id),
-          className: "p-1 text-indigo-300 hover:text-red-300 hover:bg-indigo-900/50 rounded transition-colors flex items-center gap-1 text-[11px]",
+          className: "min-h-11 rounded-lg px-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 flex items-center gap-1",
           title: t("history.tooltips.remove_item"),
           "data-help-key": "resource_delete_button"
         },

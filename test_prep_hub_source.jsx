@@ -2373,28 +2373,6 @@ function clearTestPrepSession() {
 }
 
 registerTestPrepPack(EPPP_INTEGRATED_2027_PREVIEW_PACK);
-registerTestPrepPack(PARAPRO_PRACTICE_PACK);
-registerTestPrepPack(SPECIAL_EDUCATION_5355_PRACTICE_PACK);
-registerTestPrepPack(SCHOOL_COUNSELOR_5422_PRACTICE_PACK);
-registerTestPrepPack(SCHOOL_PSYCHOLOGIST_5403_PRACTICE_PACK);
-registerTestPrepPack(SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK);
-registerTestPrepPack(AUDIOLOGY_5343_PRACTICE_PACK);
-registerTestPrepPack(READING_SPECIALIST_5302_PRACTICE_PACK);
-registerTestPrepPack(EDUCATIONAL_LEADERSHIP_5412_PRACTICE_PACK);
-registerTestPrepPack(PLT_K6_5622_PRACTICE_PACK);
-registerTestPrepPack(PRAXIS_CORE_5752_PRACTICE_PACK);
-registerTestPrepPack(ESOL_5362_PRACTICE_PACK);
-registerTestPrepPack(TEACHING_READING_5205_PRACTICE_PACK);
-registerTestPrepPack(EARLY_CHILDHOOD_5025_PRACTICE_PACK);
-registerTestPrepPack(PLT_EARLY_CHILDHOOD_5621_PRACTICE_PACK);
-registerTestPrepPack(SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK);
-registerTestPrepPack(SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_PRACTICE_PACK);
-registerTestPrepPack(SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PRACTICE_PACK);
-registerTestPrepPack(SPECIAL_EDUCATION_BEHAVIOR_EMOTIONAL_5372_PRACTICE_PACK);
-registerTestPrepPack(SPECIAL_EDUCATION_INTELLECTUAL_DISABILITIES_5322_PRACTICE_PACK);
-registerTestPrepPack(PLT_5_9_5623_PRACTICE_PACK);
-registerTestPrepPack(PLT_7_12_5624_PRACTICE_PACK);
-registerTestPrepPack(SCHOOL_LIBRARIAN_5312_PRACTICE_PACK);
 
 function TestPrepStatusBadge({ status }) {
   const styles = status === 'ready'
@@ -2757,6 +2735,48 @@ function testPrepParseHandsFreeCommand(value, options) {
   if (/^(?:help|commands|what can i say)$/.test(text)) return { type: 'help', transcript: original };
   if (/^(?:ask|clarify|follow up|explain|define|tell me|what does|what is|who is|can you|could you|why|how)\b/.test(text)) return { type: 'clarify', query: original.replace(/^(?:ask|clarify|follow up)\s+/i, '').trim() || original, transcript: original };
   return { type: 'unknown', transcript: original };
+}
+
+function testPrepPracticeVoiceHelpText() {
+  return 'While app Voice Access is active, you can say read question, read choices, read option B, repeat feedback, or status. To choose or submit an answer, move to another question, change review or confidence marks, add time, ask for clarification, open progress, choose another set, or exit Test Prep, say start hands free first.';
+}
+
+function testPrepParsePracticeVoiceCommand(value, options) {
+  const command = testPrepParseHandsFreeCommand(value, options);
+  if (!command || command.type === 'unknown') return null;
+  // Listing and enabling the already-open practice's guarded local hands-free
+  // mode remain owned by the setup scope. Starting/replacing a practice would
+  // discard current answers, so the active-practice scope must intercept it.
+  if (command.type === 'list-practice-sets' || command.type === 'start-hands-free') return null;
+  if (['choose-practice-set', 'start-practice', 'start-practice-hands-free'].includes(command.type)) {
+    return {
+      commandId: 'practice_start_hands_free_required',
+      params: { requestedAction: command.type },
+    };
+  }
+  const narrationIds = {
+    'repeat-question': 'practice_read_question',
+    'repeat-choices': 'practice_read_choices',
+    'repeat-choice': 'practice_read_option',
+    'repeat-feedback': 'practice_repeat_feedback',
+    status: 'practice_status',
+    help: 'practice_help',
+  };
+  if (narrationIds[command.type]) {
+    return {
+      commandId: narrationIds[command.type],
+      params: command.type === 'repeat-choice' ? { choiceIndex: command.choiceIndex } : {},
+    };
+  }
+  const guardedTypes = new Set([
+    'choose', 'submit', 'next', 'save-review', 'remove-review', 'confidence',
+    'add-time', 'clarify', 'another-set', 'open-progress', 'exit',
+  ]);
+  if (guardedTypes.has(command.type)) {
+    return { commandId: 'practice_start_hands_free_required', params: { requestedAction: command.type } };
+  }
+  // Global stop/confirmation/speech-rate commands remain owned by the platform loop.
+  return null;
 }
 
 function testPrepPreAnswerClarificationPolicy(question, history) {
@@ -3642,6 +3662,7 @@ function TestPrepHub(props) {
   const handsFreeVoiceLeaseRef = React.useRef(null);
   const handsFreeResumeGlobalVoiceRef = React.useRef(false);
   const handsFreeCommandHandlerRef = React.useRef(null);
+  const testPrepPracticeVoiceRef = React.useRef(null);
   const handsFreeRateRef = React.useRef(1);
   const handsFreePromptModeRef = React.useRef(handsFreePromptMode);
   const handsFreePendingChoiceRef = React.useRef(null);
@@ -3776,6 +3797,25 @@ function TestPrepHub(props) {
   handsFreeRateRef.current = handsFreeRate;
   handsFreePromptModeRef.current = handsFreePromptMode;
   handsFreePendingChoiceRef.current = handsFreePendingChoice;
+  testPrepPracticeVoiceRef.current = {
+    phase: result ? 'complete' : checkpoint ? 'checkpoint' : currentItem ? (checked ? 'feedback' : 'question') : '',
+    packId: activePack ? String(activePack.id || '') : '',
+    itemId: currentItem ? String(currentItem.id || '') : '',
+    questionIndex: Math.max(0, questionIndex),
+    totalQuestions: activePack && Array.isArray(activePack.items) ? activePack.items.length : 0,
+    practiceMode,
+    selectedChoice: selectedChoice == null ? null : Number(selectedChoice),
+    checked: checked === true,
+    saved: currentItemSavedForReview,
+    confidence: currentItem && ['sure', 'unsure', 'guess'].includes(confidence[currentItem.id]) ? confidence[currentItem.id] : '',
+    timeRemainingSeconds: Math.max(0, Math.floor(testPrepFinite(timeRemainingSeconds, 0))),
+    promptMode: handsFreePromptMode,
+    pendingConfirmation: handsFreePendingChoice ? { choiceIndex: handsFreePendingChoice.choiceIndex } : null,
+    listening: handsFreeEnabled && handsFreeStatus === 'listening',
+    speaking: handsFreeEnabled && handsFreeStatus === 'speaking',
+    compatible: currentHandsFreeCompatibility.allowed !== false,
+    compatibilityReason: String(currentHandsFreeCompatibility.reason || ''),
+  };
 
   React.useEffect(() => {
     const lease = handsFreeVoiceLeaseRef.current;
@@ -3845,6 +3885,134 @@ function TestPrepHub(props) {
       },
     });
   }, [isOpen, handsFreeEnabled, selectedPackId, practiceStarted, currentItem && currentItem.id, Boolean(result), voicePracticeSetKey]);
+
+  React.useEffect(() => {
+    if (!isOpen || handsFreeEnabledRef.current || typeof window === 'undefined') return undefined;
+    const commands = window.AlloModules && window.AlloModules.AlloCommands;
+    if (!commands || typeof commands.registerCommandScope !== 'function') return undefined;
+    const compatibilityMessage = currentHandsFreeCompatibility && currentHandsFreeCompatibility.message
+      ? currentHandsFreeCompatibility.message
+      : 'This question is not compatible with voice-only practice.';
+    return commands.registerCommandScope({
+      id: 'test-prep-practice',
+      priority: 100,
+      isActive: () => {
+        const state = testPrepPracticeVoiceRef.current;
+        return Boolean(catalogIsOpenRef.current && !handsFreeEnabledRef.current && state && state.phase);
+      },
+      getCapabilities: () => {
+        const state = testPrepPracticeVoiceRef.current || {};
+        return {
+          semanticPracticeVoice: true,
+          compatible: state.compatible !== false,
+          canReadQuestion: state.compatible !== false && (state.phase === 'question' || state.phase === 'feedback'),
+          canReadChoices: state.compatible !== false && (state.phase === 'question' || state.phase === 'feedback'),
+          canReadFeedback: state.compatible !== false && state.phase === 'feedback',
+          mutationsRequireLocalHandsFree: true,
+        };
+      },
+      getState: () => {
+        const state = testPrepPracticeVoiceRef.current || {};
+        return {
+          phase: String(state.phase || ''),
+          questionIndex: Math.max(0, Number(state.questionIndex) || 0),
+          totalQuestions: Math.max(0, Number(state.totalQuestions) || 0),
+          practiceMode: String(state.practiceMode || ''),
+          hasSelection: state.selectedChoice != null,
+          checked: state.checked === true,
+          saved: state.saved === true,
+          hasConfidence: !!state.confidence,
+          timeRemainingSeconds: Math.max(0, Number(state.timeRemainingSeconds) || 0),
+          promptMode: String(state.promptMode || ''),
+          hasPendingConfirmation: !!state.pendingConfirmation,
+          listening: state.listening === true,
+          speaking: state.speaking === true,
+          compatible: state.compatible !== false,
+          compatibilityReason: String(state.compatibilityReason || ''),
+        };
+      },
+      getCommands: () => [
+        { id: 'practice_read_question', risk: 'none', confirmation: 'never' },
+        { id: 'practice_read_choices', risk: 'none', confirmation: 'never' },
+        { id: 'practice_read_option', params: ['choiceIndex'], risk: 'none', confirmation: 'never' },
+        { id: 'practice_repeat_feedback', risk: 'none', confirmation: 'never' },
+        { id: 'practice_status', risk: 'none', confirmation: 'never' },
+        { id: 'practice_help', risk: 'none', confirmation: 'never' },
+        { id: 'practice_start_hands_free_required', params: ['requestedAction'], risk: 'none', confirmation: 'never' },
+      ],
+      parse: (text) => testPrepParsePracticeVoiceCommand(text, { packs: voicePracticeSets, allowBareChoice: false }),
+      execute: (commandId, params) => {
+        const state = testPrepPracticeVoiceRef.current || {};
+        const requiresCompatibleItem = ['practice_read_question', 'practice_read_choices', 'practice_read_option', 'practice_repeat_feedback'].includes(commandId);
+        if (requiresCompatibleItem && state.phase !== 'question' && state.phase !== 'feedback') {
+          return {
+            ok: false,
+            status: 'unsupported',
+            narration: state.phase === 'complete'
+              ? 'Practice is complete. Say status for your summary, or close current surface to exit Test Prep.'
+              : 'A diagnostic checkpoint is open. Say status, or start hands free to continue with the checkpoint controls.',
+          };
+        }
+        if (requiresCompatibleItem && state.compatible === false) {
+          return { ok: false, status: 'unsupported', narration: compatibilityMessage };
+        }
+        if (commandId === 'practice_read_question') {
+          return { ok: true, narration: currentItem ? testPrepQuestionSpeechText(currentItem, questionIndex, activePack ? activePack.items.length : 1, 'quick') : 'No practice question is open.' };
+        }
+        if (commandId === 'practice_read_choices') {
+          return { ok: true, narration: currentItem ? testPrepChoicesSpeechText(currentItem) : 'No answer choices are open.' };
+        }
+        if (commandId === 'practice_read_option') {
+          const choiceIndex = Number(params && params.choiceIndex);
+          const choices = currentItem && Array.isArray(currentItem.choices) ? currentItem.choices : [];
+          return Number.isInteger(choiceIndex) && choiceIndex >= 0 && choiceIndex < choices.length
+            ? { ok: true, narration: testPrepChoicesSpeechText(currentItem, choiceIndex) }
+            : { ok: false, status: 'unsupported', narration: 'That option is not available for this question.' };
+        }
+        if (commandId === 'practice_repeat_feedback') {
+          return state.phase === 'feedback' && checked && currentItem
+            ? { ok: true, narration: testPrepFeedbackSpeechText(currentItem, selectedChoice, 'quick') || 'No feedback is available for this question.' }
+            : { ok: false, status: 'unsupported', narration: 'Check your answer before asking to repeat the feedback.' };
+        }
+        if (commandId === 'practice_status') {
+          if (result) {
+            const correct = Math.max(0, Math.floor(testPrepFinite(result.correct, 0)));
+            const total = Math.max(correct, Math.floor(testPrepFinite(result.total, correct)));
+            return {
+              ok: true,
+              narration: 'Practice is complete. You answered ' + correct + ' of ' + total + ' correctly. This is a learning result, not an official score or readiness estimate. App Voice Access is active. Say close current surface to exit Test Prep, or use the visible completion controls to choose another set or open progress.',
+            };
+          }
+          if (checkpoint) return { ok: true, narration: 'A diagnostic checkpoint is open. Start hands free to continue or review the checkpoint controls on screen.' };
+          return {
+            ok: true,
+            narration: testPrepHandsFreeStatusText({
+              item: currentItem,
+              questionIndex,
+              totalQuestions: activePack ? activePack.items.length : 1,
+              selectedChoice,
+              checked,
+              saved: currentItemSavedForReview,
+              confidence: currentItem ? confidence[currentItem.id] : '',
+              practiceMode,
+              timeRemainingSeconds,
+            }),
+          };
+        }
+        if (commandId === 'practice_help') {
+          if (state.phase === 'complete') return { ok: true, narration: 'Say status to repeat your completion summary, or close current surface to exit Test Prep. Use the visible completion controls to choose another set or open progress.' };
+          if (state.phase === 'checkpoint') return { ok: true, narration: 'Say status to hear the checkpoint state, start hands free to continue, or close current surface to exit Test Prep.' };
+          if (state.compatible === false) return { ok: true, narration: compatibilityMessage + ' Use the on-screen keyboard and screen-reader controls for this question.' };
+          return { ok: true, narration: testPrepPracticeVoiceHelpText() };
+        }
+        return {
+          ok: false,
+          status: 'unsupported',
+          narration: 'That Test Prep action changes your work. Say start hands free first so Test Prep can apply its question and confidence safeguards.',
+        };
+      },
+    });
+  }, [isOpen, handsFreeEnabled, currentItem && currentItem.id, questionIndex, checked, selectedChoice, currentItemSavedForReview, currentItem && confidence[currentItem.id], practiceMode, activePack && activePack.items.length, Boolean(checkpoint), Boolean(result), voicePracticeSetKey, handsFreePromptMode, currentHandsFreeCompatibility.allowed, currentHandsFreeCompatibility.reason]);
 
   React.useEffect(() => {
     if (!selectedPackId || packs.some((pack) => pack.id === selectedPackId)) return;
@@ -5267,6 +5435,16 @@ function TestPrepHub(props) {
     } catch (_) {}
     handsFreeResumeGlobalVoiceRef.current = wasGlobalVoiceActive;
     const sharedVoice = typeof window !== 'undefined' && window.AlloFlowVoice;
+    if (!sharedVoice || typeof sharedVoice.acquireVoiceSession !== 'function') {
+      handsFreeResumeGlobalVoiceRef.current = false;
+      setHandsFreeStatus('unavailable');
+      setHandsFreeError('The shared voice service is still loading. Try hands-free mode again in a moment.');
+      announce('The shared voice service is still loading. Try hands-free mode again in a moment.', 'warning');
+      if (wasGlobalVoiceActive) {
+        try { if (window.__alloVoiceLoop && window.__alloVoiceLoop.start) window.__alloVoiceLoop.start(); } catch (_) {}
+      }
+      return;
+    }
     if (sharedVoice && typeof sharedVoice.acquireVoiceSession === 'function') {
       try {
         handsFreeVoiceLeaseRef.current = sharedVoice.acquireVoiceSession('test-prep', {
@@ -5437,6 +5615,11 @@ function TestPrepHub(props) {
       'start-hands-free': 'start-hands-free',
     };
     if (setupActionByType[command.type]) {
+      const replacesActivePractice = command.type === 'choose-practice-set' || command.type === 'start-practice' || command.type === 'start-practice-hands-free';
+      if (replacesActivePractice && currentItem && !result) {
+        await speakTestPrepText('That would replace the practice you are working on. Finish or exit this practice before choosing or starting another set.');
+        return;
+      }
       const status = handleTestPrepVoiceBoundaryAction(setupActionByType[command.type], { selector: command.selector });
       if (command.type === 'list-practice-sets' || command.type === 'start-hands-free') {
         await speakTestPrepText(status.message);
@@ -6472,4 +6655,3 @@ function TestPrepHub(props) {
     </div>
   );
 }
-

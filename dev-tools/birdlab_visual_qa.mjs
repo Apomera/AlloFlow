@@ -29,6 +29,8 @@ const FOCUSED_LENSES = {
 function stateId(state) {
   const pieces = [state.habitat, state.lens, state.condition, state.viewport.id, state.motionMode];
   if (state.behaviorId) pieces.push(state.behaviorId, state.behaviorCheckpoint);
+  if (state.behaviorVariant) pieces.push(state.behaviorVariant);
+  if (state.hintSpecies) pieces.push('hint-' + state.hintSpecies);
   if (state.targetScenario) pieces.push(state.targetScenario);
   return pieces.join('--');
 }
@@ -60,6 +62,11 @@ function makeState(input) {
     dwellProgress: input.dwellProgress == null ? 0 : input.dwellProgress,
     behaviorId: input.behaviorId || null,
     behaviorCheckpoint: input.behaviorCheckpoint || null,
+    behaviorVariant: input.behaviorVariant || null,
+    behaviorPose: input.behaviorPose || null,
+    behaviorPresence: input.behaviorPresence || null,
+    behaviorTrackable: typeof input.behaviorTrackable === 'boolean' ? input.behaviorTrackable : null,
+    hintSpecies: input.hintSpecies || null,
     assignmentSearchActive: input.assignmentSearchActive === true,
     assignmentComplete: input.assignmentComplete === true,
     assignmentDate: input.assignmentDate || '2026-08-12',
@@ -114,7 +121,7 @@ const behaviorDefinitions = [
   },
 ];
 
-const behaviorStates = behaviorDefinitions.flatMap((definition) => definition.checkpoints.map((checkpoint) => {
+const legacyBehaviorStates = behaviorDefinitions.flatMap((definition) => definition.checkpoints.map((checkpoint) => {
   const nonTrackable = ['landing', 'braking', 'depart', 'dive', 'flush'].includes(checkpoint[0]);
   const acquired = !nonTrackable;
   return makeState({
@@ -131,6 +138,63 @@ const behaviorStates = behaviorDefinitions.flatMap((definition) => definition.ch
     behaviorId: definition.behaviorId,
     behaviorCheckpoint: checkpoint[0],
   });
+}));
+
+// These checkpoints use the exact one-second lifecycle values sampled by the
+// live game. Natural states prove the behavior is reachable without a QA
+// freeze; a separate acquired sample verifies binocular descriptor parity.
+const lifecycleBehaviorDefinitions = [
+  {
+    habitat: 'marsh', targetId: 'bird-1', behaviorId: 'hover-aim-dive',
+    checkpoints: [
+      { state: 'dive', lifecycleMs: 13000, pose: 'kingfisher-dive', presence: 'exiting', trackable: false },
+    ],
+    acquired: [],
+  },
+  {
+    habitat: 'marsh', targetId: 'bird-2', behaviorId: 'paddle-dabble-recover',
+    checkpoints: [
+      { state: 'landing', lifecycleMs: 8000, pose: 'species-default', presence: 'arriving', trackable: false },
+      { state: 'paddle', lifecycleMs: 9000, pose: 'species-default', presence: 'visible', trackable: true },
+      { state: 'dabble', lifecycleMs: 12000, pose: 'mallard-dabble', presence: 'visible', trackable: true },
+      { state: 'recover', lifecycleMs: 14000, pose: 'species-default', presence: 'visible', trackable: true },
+      { state: 'depart', lifecycleMs: 16000, pose: 'species-default', presence: 'exiting', trackable: false },
+    ],
+    acquired: [{ state: 'dabble', lifecycleMs: 12000, pose: 'mallard-dabble' }],
+  },
+  {
+    habitat: 'coast', targetId: 'bird-0', behaviorId: 'snag-land-sentinel-launch',
+    checkpoints: [
+      { state: 'landing', lifecycleMs: 1000, pose: 'eagle-flight', presence: 'arriving', trackable: false },
+      { state: 'sentinel', lifecycleMs: 2000, pose: 'eagle-sentinel', presence: 'visible', trackable: true },
+      { state: 'crouch', lifecycleMs: 8000, pose: 'eagle-sentinel', presence: 'visible', trackable: true },
+      { state: 'launch', lifecycleMs: 9000, pose: 'eagle-flight', presence: 'exiting', trackable: false },
+    ],
+    acquired: [{ state: 'sentinel', lifecycleMs: 2000, pose: 'eagle-sentinel' }],
+  },
+];
+
+const lifecycleBehaviorStates = lifecycleBehaviorDefinitions.flatMap((definition) => [
+  ...definition.checkpoints.map((checkpoint) => makeState({
+    habitat: definition.habitat, lens: 'wide', condition: 'day', viewport: 'desktop', motionMode: 'live',
+    lifecycleMs: checkpoint.lifecycleMs, targetId: null, dwellProgress: 0, frozenBehavior: null,
+    behaviorId: definition.behaviorId, behaviorCheckpoint: checkpoint.state, behaviorVariant: 'natural',
+    behaviorPose: checkpoint.pose, behaviorPresence: checkpoint.presence, behaviorTrackable: checkpoint.trackable,
+  })),
+  ...definition.acquired.map((checkpoint) => makeState({
+    habitat: definition.habitat, lens: 'wide', condition: 'day', viewport: 'desktop', motionMode: 'live',
+    lifecycleMs: checkpoint.lifecycleMs, targetId: definition.targetId, dwellProgress: 52,
+    frozenBehavior: { script: definition.behaviorId, state: checkpoint.state, pose: checkpoint.pose },
+    behaviorId: definition.behaviorId, behaviorCheckpoint: checkpoint.state, behaviorVariant: 'acquired',
+    behaviorPose: checkpoint.pose, behaviorPresence: 'visible', behaviorTrackable: true,
+  })),
+]);
+
+const behaviorStates = [...legacyBehaviorStates, ...lifecycleBehaviorStates];
+
+const hintedAnimationStates = ['live', 'manual-paused', 'reduced'].map((motionMode) => makeState({
+  habitat: 'marsh', lens: 'wide', condition: 'day', viewport: 'desktop', motionMode,
+  lifecycleMs: 11000, hintSpecies: 'kingfisher',
 }));
 
 // Target Search changes the learner's goal and HUD only. These fixed-date
@@ -151,7 +215,7 @@ const targetSearchStates = [
   makeState({ habitat: 'forest', lens: 'wide', condition: 'dusk', viewport: 'desktop', motionMode: 'reduced', difficulty: 'easy', assignmentSearchActive: true, assignmentClueStage: 'behavior', targetScenario: 'target-clue-posture-reduced' }),
 ];
 
-export const EXHAUSTIVE_STATES = Object.freeze([...baseStates, ...behaviorStates, ...targetSearchStates]);
+export const EXHAUSTIVE_STATES = Object.freeze([...baseStates, ...behaviorStates, ...hintedAnimationStates, ...targetSearchStates]);
 
 const coreIds = new Set();
 function addCore(match) {
@@ -180,6 +244,7 @@ for (const habitat of HABITATS) {
   addCore((state) => state.habitat === habitat && state.lens === 'wide' && state.condition === 'dawn' && state.viewport.id === 'desktop' && state.motionMode === 'manual-paused' && !state.behaviorId);
 }
 for (const state of behaviorStates) coreIds.add(state.id);
+for (const state of hintedAnimationStates) coreIds.add(state.id);
 for (const state of targetSearchStates) coreIds.add(state.id);
 
 export const CORE_STATES = Object.freeze(EXHAUSTIVE_STATES.filter((state) => coreIds.has(state.id)));
@@ -195,6 +260,15 @@ export function validateStateMatrix() {
     if (!CONDITIONS.includes(state.condition)) errors.push('Unknown condition in ' + state.id);
     if (!state.viewport || !VIEWPORTS.some((viewport) => viewport.id === state.viewport.id)) errors.push('Unknown viewport in ' + state.id);
     if (!MOTION_MODES.some((mode) => mode.id === state.motionMode)) errors.push('Unknown motion mode in ' + state.id);
+    if (state.behaviorVariant) {
+      if (!['natural', 'acquired'].includes(state.behaviorVariant)) errors.push('Unknown behavior variant in ' + state.id);
+      if (!state.behaviorPose) errors.push('Behavior pose is missing in ' + state.id);
+      if (!['arriving', 'visible', 'exiting'].includes(state.behaviorPresence)) errors.push('Behavior presence is invalid in ' + state.id);
+      if (typeof state.behaviorTrackable !== 'boolean') errors.push('Behavior trackability is missing in ' + state.id);
+      if (!Number.isInteger(state.lifecycleMs) || state.lifecycleMs % 1000 !== 0) errors.push('Behavior checkpoint is off the one-second lifecycle lattice in ' + state.id);
+      if (state.behaviorVariant === 'natural' && (state.targetId || state.frozenBehavior || state.dwellProgress !== 0)) errors.push('Natural behavior checkpoint is accidentally acquired in ' + state.id);
+      if (state.behaviorVariant === 'acquired' && (!state.targetId || !state.frozenBehavior || state.dwellProgress <= 0)) errors.push('Acquired behavior checkpoint is incomplete in ' + state.id);
+    }
   }
   for (const state of CORE_STATES) {
     if (!ids.has(state.id)) errors.push('Core scenario is absent from exhaustive matrix: ' + state.id);
@@ -230,6 +304,18 @@ function installDom(reducedMotion) {
 // its own. The default output lives under test-results/, which other tooling
 // in this repo clears mid-run; a capture racing that cleanup silently loses
 // most of its shots.
+let smokeHarnessImportOrdinal = 0;
+const smokeHarnessModuleUrl = pathToFileURL(resolve('tests/helpers/stem_widgets_smoke_harness.js')).href;
+
+async function loadSmokeHarness(reducedMotion) {
+  // Vitest's module runner cannot reliably resolve a second cache-busted
+  // relative file import after renderScenarios installs a fresh jsdom window.
+  // An absolute file URL bypasses that transformed /@id/file: path while the
+  // ordinal still re-evaluates the helper for each newly installed window.
+  const cacheKey = (reducedMotion ? 'reduced' : 'standard') + '-' + (++smokeHarnessImportOrdinal);
+  return import(/* @vite-ignore */ smokeHarnessModuleUrl + '?birdlabVisualQa=' + cacheKey);
+}
+
 export async function renderScenarios(states) {
   let activeReduced = null;
   let harness = null;
@@ -237,7 +323,7 @@ export async function renderScenarios(states) {
   for (const state of states) {
     if (activeReduced !== state.reducedMotion) {
       installDom(state.reducedMotion);
-      harness = await import('../tests/helpers/stem_widgets_smoke_harness.js?birdlabVisualQa=' + (state.reducedMotion ? 'reduced' : 'standard') + '-' + Date.now());
+      harness = await loadSmokeHarness(state.reducedMotion);
       harness.resetStemLab();
       harness.loadTool('stem_lab/stem_tool_birdlab.js', 'birdLab');
       activeReduced = state.reducedMotion;
@@ -268,6 +354,7 @@ export async function renderScenarios(states) {
           assignmentComplete: state.assignmentComplete,
           assignmentDate: state.assignmentDate,
           assignmentClueStage: state.assignmentClueStage,
+          hintSpecies: state.hintSpecies,
         },
       },
     });
@@ -385,12 +472,28 @@ function assertRenderedScenario(result) {
     const actorNode = behaviorNodes.find((node) => node.querySelector('.birdlab-scene-actor'));
     const targetNode = behaviorNodes.find((node) => node.querySelector('[data-birdlab-kind="bird"]'));
     if (!actorNode || !targetNode) throw new Error(state.id + ' must render matching visual and focus behavior nodes.');
-    if (state.behaviorCheckpoint === 'landing' || state.behaviorCheckpoint === 'braking') {
-      if (actorNode.getAttribute('data-birdlab-presence') !== 'arriving') throw new Error(state.id + ' arrival checkpoint must be visible and nontrackable.');
-      if (!result.injectedStyles.includes('.birdlab-scene-subject--arriving { opacity: 1')) throw new Error(state.id + ' arrival CSS must paint at nonzero opacity.');
-    }
+    const targetButton = targetNode.querySelector('[data-birdlab-kind="bird"]');
+    const expectedPresence = state.behaviorPresence || ((state.behaviorCheckpoint === 'landing' || state.behaviorCheckpoint === 'braking') ? 'arriving' : null);
+    if (expectedPresence && actorNode.getAttribute('data-birdlab-presence') !== expectedPresence) throw new Error(state.id + ' rendered the wrong lifecycle presence.');
+    if (expectedPresence === 'arriving' && !result.injectedStyles.includes('.birdlab-scene-subject--arriving { opacity: 1')) throw new Error(state.id + ' arrival CSS must paint at nonzero opacity.');
     for (const attribute of ['data-birdlab-presence', 'data-birdlab-behavior', 'data-birdlab-behavior-state', 'data-birdlab-behavior-pose', 'data-birdlab-behavior-frozen']) {
       if (actorNode.getAttribute(attribute) !== targetNode.getAttribute(attribute)) throw new Error(state.id + ' actor/target mismatch for ' + attribute);
+    }
+    if (state.behaviorPose && actorNode.getAttribute('data-birdlab-behavior-pose') !== state.behaviorPose) throw new Error(state.id + ' rendered the wrong behavior pose.');
+    if (typeof state.behaviorTrackable === 'boolean') {
+      if (!targetButton || targetButton.disabled === state.behaviorTrackable || targetButton.tabIndex !== (state.behaviorTrackable ? 0 : -1)) throw new Error(state.id + ' rendered the wrong behavior trackability.');
+    }
+    if (state.behaviorVariant === 'natural' && actorNode.hasAttribute('data-birdlab-behavior-frozen')) throw new Error(state.id + ' natural checkpoint must remain unacquired.');
+    if (state.behaviorId === 'hover-aim-dive' && state.behaviorCheckpoint === 'dive') {
+      const impact = behaviorDom.window.document.querySelector('.birdlab-kingfisher-impact');
+      if (!impact || impact.closest('.birdlab-motion-subject')) throw new Error(state.id + ' kingfisher impact must stay fixed at the waterline.');
+    }
+    if (state.behaviorId === 'paddle-dabble-recover' && state.behaviorVariant === 'natural') {
+      const actorMotionForWater = actorNode.querySelector('.birdlab-motion-subject');
+      const targetMotionForWater = targetNode.querySelector('.birdlab-motion-subject');
+      const isDabble = state.behaviorCheckpoint === 'dabble';
+      if (!actorMotionForWater || !targetMotionForWater || actorMotionForWater.classList.contains('birdlab-motion-subject--dabbling') !== isDabble || targetMotionForWater.classList.contains('birdlab-motion-subject--dabbling') !== isDabble) throw new Error(state.id + ' mallard route hold diverged.');
+      if (!actorNode.querySelector('.birdlab-mallard-contact--' + state.behaviorCheckpoint)) throw new Error(state.id + ' mallard contact state is missing.');
     }
     if (state.frozenBehavior) {
       if (actorNode.getAttribute('data-birdlab-behavior-frozen') !== 'true') throw new Error(state.id + ' must freeze its acquired behavior checkpoint.');
@@ -404,6 +507,18 @@ function assertRenderedScenario(result) {
     if (!actorMotion.querySelector('[data-birdlab-motion-box="60x60"]') || !targetMotion.querySelector('[data-birdlab-motion-box="60x60"]')) {
       throw new Error(state.id + ' actor/target fixed transform boxes are missing.');
     }
+  }
+  if (state.hintSpecies) {
+    const { JSDOM } = require('jsdom');
+    const hintDom = new JSDOM('<!doctype html><body>' + markup + '</body>');
+    const hintedNodes = [...hintDom.window.document.querySelectorAll('[data-birdlab-species="' + state.hintSpecies + '"]')];
+    const hintedActor = hintedNodes.find((node) => node.querySelector('.birdlab-scene-actor'));
+    const hintedTarget = hintedNodes.find((node) => node.querySelector('[data-birdlab-kind="bird"]'));
+    if (!hintedActor || !hintedTarget) throw new Error(state.id + ' hinted actor and target are missing.');
+    const hintedMotion = hintedActor.querySelector('.birdlab-motion-subject');
+    const hintedTargetMotion = hintedTarget.querySelector('.birdlab-motion-subject');
+    if (!hintedMotion || !hintedTargetMotion || !hintedMotion.classList.contains('birdlab-motion-subject--anchored') || hintedMotion.className.baseVal !== hintedTargetMotion.className.baseVal) throw new Error(state.id + ' hint containment diverged.');
+    if (!hintedActor.querySelector('.birdlab-anatomy-motion--pinned-safe')) throw new Error(state.id + ' hinted bird lost its bounded anatomy motion.');
   }
 }
 

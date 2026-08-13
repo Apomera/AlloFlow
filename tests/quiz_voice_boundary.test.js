@@ -88,6 +88,30 @@ function quizRuntimeProps() {
   };
 }
 
+function evidenceReflectionRuntimeProps() {
+  const props = quizRuntimeProps();
+  props.generatedContent = {
+    id: 'quiz-voice-evidence-reflections',
+    data: {
+      mode: 'exit-ticket',
+      deliverySettings: { pacing: 'one-at-a-time', showProgress: true },
+      questions: [{
+        type: 'answer-evidence',
+        question: 'What change forms clouds?',
+        answerOptions: ['Evaporation', 'Condensation'],
+        correctAnswer: 'Condensation',
+        evidencePrompt: 'Which observation best supports the answer?',
+        evidenceOptions: ['Water vapor cools into droplets', 'Sunlight warms surface water'],
+        correctEvidence: 'Water vapor cools into droplets',
+      }],
+      reflections: [
+        'What helped you choose your evidence?',
+        { prompt: 'What would you review next?' },
+      ],
+    },
+  };
+  return props;
+}
 
 describe('ordinary Quiz voice boundary', () => {
   it('exposes stable semantic events and does not simulate DOM clicks', () => {
@@ -126,6 +150,22 @@ describe('ordinary Quiz voice boundary', () => {
     expect(registerCommandScope).toHaveBeenCalledTimes(1);
     expect(scope).toBeTruthy();
     expect(scope.isActive()).toBe(true);
+    expect(scope.isActive({
+      contentIsQuiz: true,
+      quizVoiceFrontmost: true,
+      getCurrentLearnerResource: () => ({ id: 'quiz-voice-runtime', type: 'quiz', frontmost: true }),
+    })).toBe(true);
+    expect(scope.isActive({
+      contentIsQuiz: true,
+      quizVoiceFrontmost: false,
+      testPrepHubOpen: true,
+      getCurrentLearnerResource: () => ({ id: 'quiz-voice-runtime', type: 'quiz', frontmost: false }),
+    })).toBe(false);
+    expect(scope.getCommands({
+      contentIsQuiz: true,
+      quizVoiceFrontmost: false,
+      getCurrentLearnerResource: () => ({ id: 'quiz-voice-runtime', type: 'quiz', frontmost: false }),
+    })).toEqual([]);
 
     const send = async (action, extra = {}) => {
       let response;
@@ -159,10 +199,17 @@ describe('ordinary Quiz voice boundary', () => {
       selectedOptionIndex: 1,
       selectedOptionLabel: 'B',
     });
-    expect(scope.getState()).toMatchObject({
+    const publicState = scope.getState();
+    expect(publicState).toMatchObject({
       questionNumber: 1,
-      selectedOptionIndex: 1,
+      itemType: 'mcq',
+      optionCount: 2,
+      hasSelection: true,
     });
+    expect(publicState).not.toHaveProperty('question');
+    expect(publicState).not.toHaveProperty('options');
+    expect(publicState).not.toHaveProperty('itemState');
+    expect(publicState).not.toHaveProperty('selectedOptionIndex');
 
     const firstCommands = scope.getCommands().map(command => command.id);
     expect(firstCommands).toContain('quiz_next');
@@ -214,6 +261,14 @@ describe('ordinary Quiz voice boundary', () => {
     expect(QuizView.voiceBoundary.parseScopedUtterance('open quiz')).toBeNull();
   });
 
+  it('does not manufacture recognition confidence in the Quiz grammar', () => {
+    for (const utterance of ['help', 'choose option B', 'response followed by my explanation']) {
+      const parsed = QuizView.voiceBoundary.parseScopedUtterance(utterance);
+      expect(parsed).toBeTruthy();
+      expect(parsed).not.toHaveProperty('confidence');
+    }
+  });
+
   it('registers a state-aware learner scope with exact destructive submit confirmation', () => {
     const source = readFileSync(resolve(process.cwd(), 'view_quiz_source.jsx'), 'utf8');
     expect(source).toContain("module.registerCommandScope({");
@@ -250,5 +305,98 @@ describe('ordinary Quiz voice boundary', () => {
     expect(source).toContain("type: 'sequence-sense'");
     expect(source).toContain("type: 'relation-mismatch'");
     expect(source).toContain("type: q.type || 'short-answer'");
+  });
+  it('parses exact evidence parts and explicit reflection grammar without stealing ambiguous choices', () => {
+    expect(QuizView.voiceBoundary.parseScopedUtterance('choose answer option B')).toMatchObject({
+      commandId: 'quiz_choose_answer', params: { choice: 'b' },
+    });
+    expect(QuizView.voiceBoundary.parseScopedUtterance('select evidence first')).toMatchObject({
+      commandId: 'quiz_choose_evidence', params: { choice: 'first' },
+    });
+    expect(QuizView.voiceBoundary.parseScopedUtterance('select reflection second')).toMatchObject({
+      commandId: 'quiz_select_reflection', params: { reflection: 'second' },
+    });
+    expect(QuizView.voiceBoundary.parseScopedUtterance('set reflection to I compared both observations')).toMatchObject({
+      commandId: 'quiz_set_reflection', params: { response: 'I compared both observations' },
+    });
+    expect(QuizView.voiceBoundary.parseScopedUtterance('append to my reflection and checked the prompt')).toMatchObject({
+      commandId: 'quiz_append_reflection', params: { response: 'and checked the prompt' },
+    });
+    expect(QuizView.voiceBoundary.parseScopedUtterance('choose B')).toMatchObject({
+      commandId: 'quiz_choose',
+    });
+  });
+
+  it('keeps evidence/reflection voice mutations state-driven and confirms destructive paths', () => {
+    const source = readFileSync(resolve(process.cwd(), 'view_quiz_source.jsx'), 'utf8');
+    const voiceSlice = source.slice(source.indexOf('// QUIZ VOICE SURFACE:'), source.indexOf('// QUIZ_VOICE_EFFECT'));
+    expect(voiceSlice).not.toMatch(/\.click\s*\(/);
+    expect(voiceSlice).not.toContain('querySelector');
+    expect(source).toContain("confirmationToken: 'reset-answer-evidence'");
+    expect(source).toContain("confirmationToken: 'clear-reflection'");
+    expect(source).toContain("confirmationToken: 'submit-reflection'");
+    expect(source).toContain('setReflectionDraft(rIdx, nextText)');
+    expect(source).toContain('clearReflection(rIdx)');
+    expect(source).toContain('submitReflection(rIdx)');
+  });
+  it('completes Answer + Evidence and reflection lifecycles through semantic runtime events', async () => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    let scope;
+    window.AlloModules.AlloCommands = {
+      registerCommandScope: vi.fn(spec => { scope = spec; return vi.fn(); }),
+    };
+    runtimeHost = document.createElement('div');
+    document.body.appendChild(runtimeHost);
+    runtimeRoot = ReactDOMClient.createRoot(runtimeHost);
+    await React.act(async () => {
+      runtimeRoot.render(React.createElement(QuizView, evidenceReflectionRuntimeProps()));
+    });
+    const send = async (action, extra = {}) => {
+      let response;
+      await React.act(async () => {
+        window.dispatchEvent(new window.CustomEvent('alloflow:quiz-voice-control', {
+          detail: { action, ...extra, respond: value => { response = value; } },
+        }));
+      });
+      return response;
+    };
+
+    const initial = await send('status');
+    expect(initial).toMatchObject({ type: 'answer-evidence', questionNumber: 1 });
+    expect(initial.message).toContain('Part 1, choose the best answer');
+    expect(initial.message).not.toContain('Evidence options:');
+    expect(JSON.stringify(initial)).not.toMatch(/correctAnswer|correctEvidence/);
+    expect(await send('choose', { choice: 'B' })).toMatchObject({ state: 'ambiguous-choice' });
+    expect(await send('choose-answer', { choice: 'B' })).toMatchObject({
+      ok: true, part: 'answer', selectedLabel: 'B',
+    });
+    expect((await send('status')).message).toContain('Evidence options:');
+    expect(scope.getCommands().map(command => command.id)).toContain('quiz_choose_evidence');
+    expect(await send('choose-evidence', { choice: 'Water vapor cools into droplets' })).toMatchObject({
+      ok: true, part: 'evidence', selectedLabel: 'A',
+    });
+    expect(await send('check')).toMatchObject({ ok: true, state: 'checked', correct: true, score: 2 });
+    expect(await send('try-again')).toMatchObject({ state: 'confirmation-required', confirmationToken: 'reset-answer-evidence' });
+    expect(await send('try-again', { confirmed: true })).toMatchObject({ ok: true, state: 'reset' });
+
+    expect((await send('list-reflections')).message).toContain('Reflection 2: What would you review next?');
+    expect(await send('select-reflection', { reflection: '2' })).toMatchObject({
+      ok: true, surfaceMode: 'reflection', reflectionNumber: 2,
+    });
+    expect(await send('set-reflection', { response: 'I would review the water cycle.' })).toMatchObject({ state: 'reflection-set' });
+    expect(await send('append-reflection', { response: 'Then compare another example.' })).toMatchObject({ state: 'reflection-appended' });
+    expect((await send('read-reflection-response')).message).toContain('I would review the water cycle. Then compare another example.');
+    const reflectionCommands = scope.getCommands();
+    expect(reflectionCommands.find(command => command.id === 'quiz_clear_reflection')).toMatchObject({ confirmation: 'always' });
+    expect(reflectionCommands.find(command => command.id === 'quiz_submit_reflection')).toMatchObject({ confirmation: 'always' });
+    expect(await send('clear-reflection')).toMatchObject({ state: 'confirmation-required', confirmationToken: 'clear-reflection' });
+    expect(await send('clear-reflection', { confirmed: true })).toMatchObject({ ok: true, state: 'reflection-cleared' });
+    await send('set-reflection', { response: 'I would review condensation.' });
+    expect(await send('submit-reflection')).toMatchObject({ state: 'confirmation-required', confirmationToken: 'submit-reflection' });
+    expect(await send('submit-reflection', { confirmed: true })).toMatchObject({ ok: true, state: 'reflection-submitted' });
+    expect(await send('set-reflection', { response: 'This should stay locked.' })).toMatchObject({ state: 'locked' });
+    expect(await send('edit-reflection')).toMatchObject({ ok: true, state: 'reflection-editing' });
+    expect(await send('set-reflection', { response: 'I would review both phase changes.' })).toMatchObject({ state: 'confirmation-required', confirmationToken: 'replace-reflection' });
+    expect(await send('set-reflection', { response: 'I would review both phase changes.', confirmed: true })).toMatchObject({ ok: true, state: 'reflection-set' });
   });
 });

@@ -1,0 +1,10 @@
+/* Keep the compact six-link desktop navigation visible just above the shared 1024px mobile breakpoint. */
+@media (min-width: 1025px) {
+    body:not(.promo-page) .nav-links {
+        display: flex;
+    }
+
+    body:not(.promo-page) .mobile-menu-btn {
+        display: none;
+    }
+}

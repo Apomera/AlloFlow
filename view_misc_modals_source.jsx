@@ -27,7 +27,7 @@ function UDLGuideModal(props) {
   const {
     InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult,
     isExecutingBlueprint, handleStopBlueprintRun, archiveLivePlan, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan,
-    handleRebuildBlueprintStep, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, getSafeGenerationFailureReason,
+    handleRebuildBlueprintStep, handleOpenGenerationErrorLog, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, getSafeGenerationFailureReason,
     lessonTemplates, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate,
     handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview,
     aiStandardQuery, aiStandardRegion, autoSendVoice, chatStyles,
@@ -247,6 +247,7 @@ function UDLGuideModal(props) {
                           isRunning={!!isExecutingBlueprint}
                           onStopRun={handleStopBlueprintRun}
                           onRebuildStep={handleRebuildBlueprintStep}
+                          onOpenErrorLog={handleOpenGenerationErrorLog}
                           onCopyDiagnostics={handleCopyBlueprintDiagnostics}
                           onDownloadDiagnostics={handleDownloadBlueprintDiagnostics}
                           summarizeFailureReason={getSafeGenerationFailureReason}
@@ -428,6 +429,7 @@ function UDLGuideModal(props) {
                   isRunning={!!isExecutingBlueprint}
                   onStopRun={handleStopBlueprintRun}
                   onRebuildStep={handleRebuildBlueprintStep}
+                  onOpenErrorLog={handleOpenGenerationErrorLog}
                   onCopyDiagnostics={handleCopyBlueprintDiagnostics}
                   onDownloadDiagnostics={handleDownloadBlueprintDiagnostics}
                   summarizeFailureReason={getSafeGenerationFailureReason}

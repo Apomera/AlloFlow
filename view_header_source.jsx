@@ -125,19 +125,16 @@ function HeaderBar(props) {
   } = props;
 
   const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
-  // Remembered per device. Defaults to collapsed when either dimension is
-  // constrained, including portrait tablets where height alone looked roomy
-  // even though the two-column command cluster was cramped.
+  // Remembered per device. The compact app bar is the default: the complete
+  // command surface is still one explicit "More" action away, but it no
+  // longer consumes the first third of a laptop viewport on every visit.
   const [headerCollapsed, setHeaderCollapsed] = React.useState(() => {
     try {
       const saved = localStorage.getItem('allo_header_collapsed');
       if (saved === 'true') return true;
       if (saved === 'false') return false;
-      return typeof window !== 'undefined' && (
-        (window.innerWidth > 0 && window.innerWidth < 1180)
-        || (window.innerHeight > 0 && window.innerHeight < 900)
-      );
-    } catch (_) { return false; }
+      return true;
+    } catch (_) { return true; }
   });
   const toggleHeaderCollapsed = React.useCallback(() => {
     setHeaderCollapsed(previous => {
@@ -247,25 +244,53 @@ function HeaderBar(props) {
   const selectedReadingThemeLabel = t('header.' + selectedReadingThemeKey)
     || readingThemeFallbackLabels[readingTheme]
     || readingThemeFallbackLabels.default;
+  const piiWarningText = t('header.pii_warning');
+  const compactRoleLabel = isIndependentMode
+    ? (t('roles.independent') || 'Independent Learner')
+    : isParentMode
+      ? (t('roles.parent') || 'Parent')
+      : isTeacherMode
+        ? (t('roles.teacher') || 'Teacher')
+        : (t('roles.student') || 'Student');
+  const compactViewFallback = String(activeView || '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, char => char.toUpperCase());
+  const compactContextLabel = guidedMode
+    ? (t('launch_pad.guided_title') || 'Guided Mode')
+    : activeView === 'dashboard'
+      ? (t('dashboard.title') || 'Dashboard')
+      : activeView === 'input'
+        ? (t('tools.source') || 'Source Material')
+        : (compactViewFallback || (t('common.ready') || 'Ready'));
+  const openJoinFromCompactHeader = () => {
+    // The named, focus-trapped Join dialog lives in the full command surface.
+    // Expand first so the trigger never opens an unmounted dialog.
+    setHeaderCollapsed(false);
+    try { localStorage.setItem('allo_header_collapsed', 'false'); } catch (_) {}
+    if (!isJoinPopoverOpen) handleToggleIsJoinPopoverOpen();
+  };
 
   return (
-      <header aria-label={t('common.main_application_header')} className={`allo-premium-header ${headerCollapsed ? 'p-3 md:py-2 md:px-8' : 'p-4 md:py-4 md:px-8'} no-print relative z-50 transition-all duration-500 w-full min-w-0 overflow-x-clip ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-400' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white'}`}>
+      <header aria-label={t('common.main_application_header')} className={`allo-premium-header ${headerCollapsed ? 'px-3 sm:px-5 md:px-6 py-px' : 'p-4 md:py-4 md:px-8'} no-print relative z-50 transition-all duration-500 w-full min-w-0 overflow-x-clip ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-400' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white'}`}>
         <style>{`
           .allo-premium-header { border-bottom: 1px solid rgba(255,255,255,.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 12px 32px rgba(2,6,23,.18); }
           .allo-premium-header::after { content: ''; position: absolute; left: 3%; right: 3%; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(165,180,252,.55), transparent); pointer-events: none; }
-          .allo-premium-header button { min-height: 40px; }
+          .allo-premium-header button { min-height: 44px; }
           .allo-premium-header button:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
+          .allo-premium-appbar { min-height: 68px; }
+          .allo-premium-compact-nav { scrollbar-width: none; }
+          .allo-premium-compact-nav::-webkit-scrollbar { display: none; }
           @media (prefers-reduced-motion: reduce) { .allo-premium-header, .allo-premium-header * { transition-duration: .01ms !important; } }
         `}</style>
-        <div className="w-full max-w-[98%] mx-auto relative">
-          <div className={`flex flex-col lg:flex-row items-start lg:items-center justify-between ${headerCollapsed ? 'gap-2' : 'gap-4'}`}>
-            <div>
+        <div className="w-full max-w-[1600px] mx-auto relative">
+          <div className={headerCollapsed ? 'allo-premium-appbar flex items-center gap-2 sm:gap-3 min-w-0' : 'flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4'}>
+            <div className={headerCollapsed ? 'flex flex-1 items-center gap-2 sm:gap-3 min-w-0' : ''}>
               <h1 className={`${headerCollapsed ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'} font-black tracking-tight flex items-center gap-3 ${theme === 'contrast' ? 'text-yellow-400' : 'text-white drop-shadow-sm'}`}>
                 <span className={`inline-flex items-center justify-center ${theme === 'contrast' ? '' : `${headerCollapsed ? 'p-1 rounded-xl' : 'p-1.5 rounded-2xl'} bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30`}`} aria-hidden="true">
                   <Layers className={headerCollapsed ? 'w-7 h-7' : 'w-9 h-9'} aria-hidden="true" />
                 </span>
                 {theme === 'contrast' ? t('header.app_name') : <span className="bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent">{t('header.app_name')}</span>}
-                <div className={`hidden 2xl:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
+                {!headerCollapsed && <div className={`hidden 2xl:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                     <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === 'contrast' ? 'text-yellow-400' : 'text-green-200'}`}>
                         <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
                         <span className="text-[11px] font-black uppercase tracking-widest opacity-90">{t('header.equitable')}</span>
@@ -280,21 +305,29 @@ function HeaderBar(props) {
                         <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
                         <span className="text-[11px] font-black uppercase tracking-widest opacity-90">{t('header.scaffolded')}</span>
                     </div>
-                </div>
+                </div>}
               </h1>
               {!headerCollapsed && (
                 <p className={`mt-2 text-sm font-medium italic opacity-90 ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
                   {t('header.tagline')}
                 </p>
               )}
-              <div className="flex flex-wrap items-center gap-2 mt-2">
-                {!headerCollapsed && (
+              {headerCollapsed ? (
+                <div className="min-w-0 max-w-[18rem] flex flex-col justify-center leading-tight">
+                  <span className={`truncate text-[11px] font-black uppercase tracking-[.14em] ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
+                    {compactRoleLabel} <span aria-hidden="true">/</span> {compactContextLabel}
+                  </span>
+                  <span className={`mt-1 flex min-w-0 items-center gap-1 text-[11px] font-medium ${theme === 'contrast' ? 'text-red-400' : 'text-orange-100'}`} title={piiWarningText}>
+                    <AlertCircle size={11} className="shrink-0" aria-hidden="true" />
+                    <span className="truncate">{piiWarningText}</span>
+                  </span>
+                </div>
+              ) : <div className="flex flex-wrap items-center gap-2 mt-2">
                 <span className={`inline-flex items-center gap-1 text-[11px] ${theme === 'contrast' ? 'text-yellow-400' : 'px-2.5 py-0.5 rounded-xl bg-white/10 border border-white/20 text-indigo-100'}`}>
                   {t('header.rights')}
                 </span>
-                )}
                 <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${theme === 'contrast' ? 'text-red-400' : 'px-2.5 py-0.5 rounded-xl bg-orange-400/15 border border-orange-300/30 text-orange-100'}`}>
-                  <AlertCircle size={10} aria-hidden="true" /> {t('header.pii_warning')}
+                  <AlertCircle size={10} aria-hidden="true" /> {piiWarningText}
                 </span>
                 {/* Explicit and remembered. No scroll-driven shrinking: moving
                     hit targets mid-scroll is exactly the kind of thing this app
@@ -303,18 +336,124 @@ function HeaderBar(props) {
                   type="button"
                   onClick={toggleHeaderCollapsed}
                   aria-expanded={!headerCollapsed}
-                  aria-label={headerCollapsed ? (t('header.expand') || 'Expand header') : (t('header.collapse') || 'Collapse header to make room for content')}
+                  aria-label={headerCollapsed ? (t('common.expand') || 'Expand header') : (t('common.collapse') || 'Collapse header to make room for content')}
                   className="inline-flex items-center gap-1 rounded-xl border border-white/25 bg-white/10 px-2.5 py-0.5 text-[11px] font-bold text-white/90 hover:bg-white/20"
                 >
-                  {headerCollapsed ? (t('header.expand_short') || 'More') : (t('header.collapse_short') || 'Less')}
+                  {headerCollapsed ? (t('common.more_information') || 'More') : (t('common.collapse') || 'Less')}
+                </button>
+              </div>}
+            </div>
+            {headerCollapsed && (
+              <div className="ml-auto min-w-0 flex items-center justify-end gap-1.5 sm:gap-2">
+                <nav aria-label={t('common.content_tabs') || 'Primary navigation'} className="allo-premium-compact-nav flex min-w-0 items-center gap-1 overflow-x-auto overscroll-x-contain">
+                  <button type="button"
+                    onClick={handleSetActiveViewToDashboard}
+                    data-help-key="header_dashboard"
+                    className={`hidden sm:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 transition-colors ${activeView === 'dashboard' ? 'bg-white text-indigo-900 shadow-lg' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}
+                    title={t('dashboard.title')}
+                    aria-label={t('dashboard.title')}
+                  >
+                    <Layout size={18} aria-hidden="true" />
+                    <span className="hidden 2xl:inline text-xs font-bold">{t('dashboard.title')}</span>
+                  </button>
+                  {isTeacherMode && setShowLearningHub && (
+                    <button type="button"
+                      onClick={() => setShowLearningHub(true)}
+                      data-help-key="header_learning_hub"
+                      className="hidden xl:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-white/85 hover:bg-white/10 hover:text-white transition-colors"
+                      title={t('header.learning_tools_tooltip') || 'Learning Tools (STEAM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)'}
+                      aria-label={t('header.learning_tools_aria') || 'Learning Tools'}
+                    >
+                      <BookOpen size={18} aria-hidden="true" />
+                      <span className="hidden 2xl:inline text-xs font-bold">{t('header.nav_learn') || 'Learn'}</span>
+                    </button>
+                  )}
+                  {isTeacherMode && (
+                    <button type="button"
+                      onClick={() => {
+                        if (APP_CONFIG._cfg_validation_key) { setPendingRole('educator_hub'); setIsGateOpen(true); }
+                        else setShowEducatorHub(true);
+                      }}
+                      data-help-key="header_educator_hub"
+                      className="hidden xl:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-white/85 hover:bg-white/10 hover:text-white transition-colors"
+                      title={t('header.educator_tools_tooltip') || 'Educator Tools (Symbol Studio, BehaviorLens, Report Writer)'}
+                      aria-label={t('header.educator_tools_aria') || 'Educator Tools'}
+                    >
+                      <GraduationCap size={18} aria-hidden="true" />
+                      <span className="hidden 2xl:inline text-xs font-bold">{t('header.nav_tools') || 'Tools'}</span>
+                    </button>
+                  )}
+                  {!isTeacherMode && (
+                    <button type="button"
+                      onClick={() => { try { window.dispatchEvent(new window.CustomEvent('alloflow:open-command-palette')); } catch (_) {} }}
+                      data-help-key="header_student_actions"
+                      className="hidden sm:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-teal-700 px-3 text-white shadow-lg shadow-teal-900/20 hover:bg-teal-800 transition-colors"
+                      title={t('student.actions') || 'Student actions'}
+                      aria-label={t('student.actions') || 'Open student actions'}
+                    >
+                      <Sparkles size={18} aria-hidden="true" />
+                      <span className="hidden 2xl:inline text-xs font-bold">{t('student.actions') || 'Student actions'}</span>
+                    </button>
+                  )}
+                </nav>
+                {isTeacherMode && !isIndependentMode && !isParentMode && (
+                  <button type="button"
+                    onClick={() => activeSessionCode ? setShowSessionModal(true) : startClassSession()}
+                    className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black border transition-colors ${activeSessionCode ? 'bg-emerald-600 text-white border-emerald-300' : 'bg-white text-indigo-950 border-white shadow-lg hover:bg-indigo-50'}`}
+                    data-help-key="header_session_start"
+                    title={t('session.start_tooltip')}
+                    aria-label={activeSessionCode ? `Live: ${activeSessionCode}` : (t('session.start') || t('common.connect'))}
+                  >
+                    <Wifi size={16} aria-hidden="true" />
+                    <span className="hidden lg:inline">{activeSessionCode ? `Live: ${activeSessionCode}` : t('session.start')}</span>
+                  </button>
+                )}
+                {!isTeacherMode && !activeSessionCode && (
+                  <button type="button"
+                    onClick={openJoinFromCompactHeader}
+                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors"
+                    data-help-key="header_session_join"
+                    title={t('session.join_tooltip')}
+                    aria-haspopup="dialog"
+                    aria-expanded={isJoinPopoverOpen}
+                  >
+                    <WifiOff size={16} aria-hidden="true" />
+                    <span className="hidden lg:inline">{t('session.join')}</span>
+                  </button>
+                )}
+                {!isTeacherMode && activeSessionCode && (
+                  <span role="status" className="hidden md:inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-emerald-300/60 bg-emerald-600 px-3 text-xs font-black text-white">
+                    <Wifi size={16} className="animate-pulse motion-reduce:animate-none" aria-hidden="true" /> Live: {activeSessionCode}
+                  </span>
+                )}
+                {isTeacherMode && (
+                  <button type="button"
+                    onClick={() => setShowSetupPathMenu(true)}
+                    data-help-key="header_rerun_wizard"
+                    className="hidden sm:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors"
+                    title={t('toolbar.setup_options') || 'Setup and Guided Mode'}
+                    aria-label={t('toolbar.setup_options_aria') || 'Open setup and Guided Mode options'}
+                  >
+                    <Sparkles size={16} aria-hidden="true" />
+                    <span className="max-w-[10rem] truncate">{t('toolbar.setup_options') || 'Setup and Guided Mode'}</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={toggleHeaderCollapsed}
+                  aria-expanded={!headerCollapsed}
+                  aria-label={t('common.expand') || 'Expand header'}
+                  className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/25 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors"
+                >
+                  <span>{t('common.more_information') || 'More'}</span>
+                  <ChevronDown size={14} aria-hidden="true" />
                 </button>
               </div>
-            </div>
-            {/* Collapsed = truly minimal: the whole control cluster (XP badge +
-                settings strip) unmounts, leaving one slim title row. Field ask
-                2026-08-11: the full bar "gets in the way on a smaller screen".
-                Every control returns via the persisted More/Less toggle, and
-                the command palette / FAB stack keep their own entry points. */}
+            )}
+            {/* Compact keeps context, primary destinations, session status, and
+                Setup visible while the dense settings/utility surface unmounts.
+                Every capability returns via the persisted More/Less toggle; no
+                control moves in response to scrolling. */}
             {!headerCollapsed && (
             <div className="flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0">
                 <div className="w-full flex items-center gap-2 sm:gap-4 flex-wrap justify-start sm:justify-end relative min-w-0">

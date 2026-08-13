@@ -226,7 +226,27 @@
     }
 
     const h = React.createElement;
-    const { useState, useEffect, useRef, useMemo, useCallback, useReducer } = React;
+    const { useState, useEffect, useRef, useMemo, useCallback, useReducer, useContext } = React;
+    const BehaviorLensToolStateContext = React.createContext(null);
+    const useDurableToolState = (key, initialValue) => {
+        const context = useContext(BehaviorLensToolStateContext);
+        const initialRef = useRef(typeof initialValue === 'function' ? initialValue() : initialValue);
+        const [fallbackValue, setFallbackValue] = useState(initialRef.current);
+        const hasDurableValue = !!(context && context.state && Object.prototype.hasOwnProperty.call(context.state, key));
+        const value = hasDurableValue ? context.state[key] : fallbackValue;
+        const setValue = useCallback((nextValue) => {
+            if (!context || typeof context.setState !== 'function') {
+                setFallbackValue(previous => typeof nextValue === 'function' ? nextValue(previous) : nextValue);
+                return;
+            }
+            context.setState(previousState => {
+                const previous = Object.prototype.hasOwnProperty.call(previousState, key) ? previousState[key] : initialRef.current;
+                const resolved = typeof nextValue === 'function' ? nextValue(previous) : nextValue;
+                return Object.assign({}, previousState, { [key]: resolved });
+            });
+        }, [context, key]);
+        return [value, setValue];
+    };
 
     // ── UI localization: pack-first, runtime-AI fallback (self-contained) ──
     // BehaviorLab renders t('behavior_lens.*') || 'English' at ~1.6k sites, but
@@ -341,7 +361,10 @@
     };
 
     // ─── Utility helpers ────────────────────────────────────────────────
-    const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const uid = () => {
+        try { if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID(); } catch (_) {}
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    };
     const fmtDate = (iso) => {
         if (!iso) return '';
         const d = new Date(iso);
@@ -607,14 +630,17 @@
 
     // ─── ABCModal ───────────────────────────────────────────────────────
     // Modal for adding/editing a single ABC data entry
-    const ABCModal = ({ entry, onSave, onClose, t, callGemini, studentName, addToast }) => {
+    const ABCModal = ({ entry, onSave, onClose, t, callGemini, studentName, addToast, targetBehaviors }) => {
         const [antecedent, setAntecedent] = useState(entry?.antecedent || '');
         const [behavior, setBehavior] = useState(entry?.behavior || '');
+        const [behaviorId, setBehaviorId] = useState(entry?.behaviorId || '');
         const [consequence, setConsequence] = useState(entry?.consequence || '');
         const [intensity, setIntensity] = useState(entry?.intensity || 3);
         const [duration, setDuration] = useState(entry?.duration || '');
         const [notes, setNotes] = useState(entry?.notes || '');
         const [setting, setSetting] = useState(entry?.setting || '');
+        const [observer, setObserver] = useState(entry?.observer || '');
+        const [entrySource, setEntrySource] = useState(entry?.source || 'manual');
         const [customA, setCustomA] = useState('');
         const [customB, setCustomB] = useState('');
         const [customC, setCustomC] = useState('');
@@ -735,7 +761,8 @@ Return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 if (parsed.antecedent) setAntecedent(parsed.antecedent);
-                if (parsed.behavior) setBehavior(parsed.behavior);
+                if (parsed.behavior) { setBehavior(parsed.behavior); setBehaviorId(''); }
+                setEntrySource('ai-quick-fill');
                 if (parsed.consequence) setConsequence(parsed.consequence);
                 if (parsed.intensity) setIntensity(Math.min(5, Math.max(1, parseInt(parsed.intensity) || 3)));
                 if (parsed.setting) setSetting(parsed.setting);
@@ -748,17 +775,31 @@ Return ONLY valid JSON:
 
         const handleSave = () => {
             if (!antecedent || !behavior || !consequence) return;
-            onSave({
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            const now = new Date();
+            const behaviorText = behavior === 'Other' ? (customB || 'Other') : behavior;
+            const normalized = runtime.normalizeAbcEntry({
                 id: entry?.id || uid(),
-                timestamp: entry?.timestamp || new Date().toISOString(),
+                timestamp: entry?.timestamp || now.toISOString(),
+                occurredAt: entry?.occurredAt || entry?.timestamp || now.toISOString(),
+                recordedAt: entry?.recordedAt || now.toISOString(),
+                timezoneOffset: entry?.timezoneOffset ?? now.getTimezoneOffset(),
                 antecedent: antecedent === 'Other' ? (customA || 'Other') : antecedent,
-                behavior: behavior === 'Other' ? (customB || 'Other') : behavior,
+                behavior: behaviorText,
+                behaviorId,
                 consequence: consequence === 'Other' ? (customC || 'Other') : consequence,
                 intensity,
                 duration: duration ? parseInt(duration) : null,
                 notes,
                 setting,
-            });
+                observer,
+                source: entry?.source || entrySource
+            }, { targetBehaviors: targetBehaviors || [] });
+            if (!normalized.ok || !normalized.entry) {
+                if (addToast) addToast('This observation could not be normalized. Review the required ABC fields.', 'error');
+                return;
+            }
+            onSave(normalized.entry);
         };
 
         const renderCategoryPicker = (label, items, value, setValue, customVal, setCustomVal, icon) => {
@@ -872,9 +913,38 @@ Return ONLY valid JSON:
                             )
                         )
                     ),
+                    h('div', { className: 'mb-4' },
+                        h('label', { htmlFor: 'behavior-lens-observer', className: 'block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide' }, 'Observer / recorder'),
+                        h('input', {
+                            id: 'behavior-lens-observer',
+                            type: 'text',
+                            value: observer,
+                            onChange: event => setObserver(event.target.value),
+                            placeholder: 'Optional role or initials',
+                            className: 'w-full text-sm border border-slate-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400'
+                        })
+                    ),
                     // A-B-C pickers
                     renderCategoryPicker('antecedent', ABC_CATEGORIES.antecedent, antecedent, setAntecedent, customA, setCustomA, '⚡'),
-                    renderCategoryPicker('behavior', ABC_CATEGORIES.behavior, behavior, setBehavior, customB, setCustomB, '🔴'),
+                    Array.isArray(targetBehaviors) && targetBehaviors.some(item => item.active !== false) && h('div', { className: 'mb-3' },
+                        h('label', { htmlFor: 'behavior-lens-target-behavior', className: 'block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide' }, 'Canonical target behavior'),
+                        h('select', {
+                            id: 'behavior-lens-target-behavior',
+                            value: behaviorId,
+                            onChange: event => {
+                                const nextId = event.target.value;
+                                setBehaviorId(nextId);
+                                const definition = targetBehaviors.find(item => item.id === nextId);
+                                if (definition) setBehavior(definition.label);
+                            },
+                            className: 'w-full min-h-11 text-sm border border-slate-400 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400'
+                        },
+                            h('option', { value: '' }, 'Use the narrative below'),
+                            targetBehaviors.filter(item => item.active !== false).map(item => h('option', { key: item.id, value: item.id }, item.label))
+                        ),
+                        h('p', { className: 'mt-1 text-[11px] text-slate-600' }, 'The original narrative remains in the record; this definition keeps analytics consistent.')
+                    ),
+                    renderCategoryPicker('behavior', ABC_CATEGORIES.behavior, behavior, value => { setBehavior(value); setBehaviorId(''); }, customB, setCustomB, '🔴'),
                     renderCategoryPicker('consequence', ABC_CATEGORIES.consequence, consequence, setConsequence, customC, setCustomC, '➡️'),
                     // Intensity slider
                     h('div', { className: 'mb-4' },
@@ -944,9 +1014,81 @@ Return ONLY valid JSON:
         );
     };
 
+
+    const TargetBehaviorManager = ({ targetBehaviors, setTargetBehaviors, entries, setEntries, addToast }) => {
+        const runtime = getBehaviorLensWorkspaceRuntime();
+        const [label, setLabel] = useState('');
+        const [definition, setDefinition] = useState('');
+        const [aliases, setAliases] = useState('');
+        const catalog = Array.isArray(targetBehaviors) ? targetBehaviors : [];
+        const undefinedGroups = useMemo(() => runtime.groupByCanonicalBehavior(entries, catalog).filter(group => !group.defined), [entries, catalog]);
+
+        const addDefinition = () => {
+            if (!label.trim()) return;
+            const now = new Date().toISOString();
+            const next = runtime.normalizeTargetBehaviors(catalog.concat([{
+                id: runtime.canonicalBehaviorId(label),
+                label: label.trim(),
+                operationalDefinition: definition.trim(),
+                aliases: aliases.split(',').map(value => value.trim()).filter(Boolean),
+                active: true,
+                createdAt: now,
+                updatedAt: now
+            }]), entries);
+            setTargetBehaviors(next);
+            setLabel(''); setDefinition(''); setAliases('');
+            if (addToast) addToast('Target behavior definition added.', 'success');
+        };
+        const updateDefinition = (id, patch) => {
+            setTargetBehaviors(previous => runtime.normalizeTargetBehaviors(previous.map(item => item.id === id
+                ? Object.assign({}, item, patch, { updatedAt: new Date().toISOString() }) : item), entries));
+        };
+        const applyDefinitions = () => {
+            setEntries(previous => previous.map(entry => {
+                const resolved = runtime.resolveCanonicalBehavior(entry, catalog);
+                return Object.assign({}, entry, { behaviorId: resolved.id });
+            }));
+            if (addToast) addToast('Canonical behavior definitions applied to existing records.', 'success');
+        };
+
+        return h('section', { className: 'rounded-xl border-2 border-indigo-200 bg-indigo-50/50 p-4 space-y-4', 'aria-labelledby': 'behavior-lens-definitions-heading' },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                h('div', null,
+                    h('h4', { id: 'behavior-lens-definitions-heading', className: 'text-sm font-black text-indigo-950' }, 'Canonical target behaviors'),
+                    h('p', { className: 'text-xs text-indigo-900 mt-1' }, 'Link aliases and operational definitions without replacing each observation’s original wording.')
+                ),
+                h('button', { type: 'button', onClick: applyDefinitions, className: 'min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-800' }, 'Apply to records')
+            ),
+            catalog.length > 0 && h('div', { className: 'space-y-3' }, catalog.map(item =>
+                h('div', { key: item.id, className: 'rounded-lg border border-indigo-200 bg-white p-3 space-y-2' },
+                    h('div', { className: 'flex items-center gap-2' },
+                        h('input', { value: item.label, onChange: event => updateDefinition(item.id, { label: event.target.value }), 'aria-label': 'Target behavior label', className: 'min-h-11 flex-1 rounded-lg border border-slate-400 px-3 text-sm font-bold' }),
+                        h('button', { type: 'button', 'aria-pressed': item.active !== false, onClick: () => updateDefinition(item.id, { active: item.active === false }), className: 'min-h-11 rounded-lg border border-slate-400 px-3 text-xs font-bold text-slate-800' }, item.active === false ? 'Inactive' : 'Active')
+                    ),
+                    h('textarea', { value: item.operationalDefinition || '', onChange: event => updateDefinition(item.id, { operationalDefinition: event.target.value }), 'aria-label': 'Operational definition for ' + item.label, placeholder: 'Observable, measurable operational definition', rows: 2, className: 'w-full rounded-lg border border-slate-400 px-3 py-2 text-xs' }),
+                    h('input', { value: (item.aliases || []).join(', '), onChange: event => updateDefinition(item.id, { aliases: event.target.value.split(',').map(value => value.trim()).filter(Boolean) }), 'aria-label': 'Aliases for ' + item.label, placeholder: 'Aliases separated by commas', className: 'min-h-11 w-full rounded-lg border border-slate-400 px-3 text-xs' })
+                )
+            )),
+            undefinedGroups.length > 0 && h('div', { className: 'rounded-lg border border-amber-300 bg-amber-50 p-3' },
+                h('p', { className: 'text-xs font-bold text-amber-950' }, undefinedGroups.length + ' unclassified behavior label' + (undefinedGroups.length === 1 ? '' : 's') + ' remain.'),
+                h('div', { className: 'mt-2 flex flex-wrap gap-2' }, undefinedGroups.slice(0, 10).map(group =>
+                    h('button', { key: group.id, type: 'button', onClick: () => { setLabel(group.label); setAliases(group.label); }, className: 'min-h-11 rounded-full border border-amber-400 bg-white px-3 text-xs font-bold text-amber-950' }, group.label + ' (' + group.count + ')')
+                ))
+            ),
+            h('div', { className: 'rounded-lg border border-indigo-200 bg-white p-3 space-y-2' },
+                h('h5', { className: 'text-xs font-black text-slate-900' }, 'Add a target behavior'),
+                h('input', { value: label, onChange: event => setLabel(event.target.value), 'aria-label': 'New target behavior label', placeholder: 'Short label', className: 'min-h-11 w-full rounded-lg border border-slate-400 px-3 text-sm' }),
+                h('textarea', { value: definition, onChange: event => setDefinition(event.target.value), 'aria-label': 'New target behavior operational definition', placeholder: 'Observable, measurable definition', rows: 2, className: 'w-full rounded-lg border border-slate-400 px-3 py-2 text-sm' }),
+                h('input', { value: aliases, onChange: event => setAliases(event.target.value), 'aria-label': 'New target behavior aliases', placeholder: 'Aliases separated by commas', className: 'min-h-11 w-full rounded-lg border border-slate-400 px-3 text-sm' }),
+                h('button', { type: 'button', onClick: addDefinition, disabled: !label.trim(), className: 'min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-xs font-bold text-white disabled:opacity-50' }, 'Add definition')
+            )
+        );
+    };
+
     // ─── ABCDataPanel ───────────────────────────────────────────────────
     // Main ABC data collection table with entries list, add button, and summary
-    const ABCDataPanel = ({ entries, setEntries, studentName, onAnalyze, analyzing, t, addToast, callGemini }) => {
+    const ABCDataPanel = ({ entries, setEntries, studentName, onAnalyze, analyzing, t, addToast, callGemini,
+        targetBehaviors, setTargetBehaviors, deletedEntries, setDeletedEntries, appendAuditEvent, userRole, recordWorkflowDiagnostic }) => {
         const [editEntry, setEditEntry] = useState(null);
         const [showModal, setShowModal] = useState(false);
         const [sortField, setSortField] = useState('timestamp');
@@ -965,6 +1107,8 @@ Return ONLY valid JSON:
         const [nlEditLoading, setNlEditLoading] = useState(false);
         const [pageIndex, setPageIndex] = useState(0);
         const [pageSize, setPageSize] = useState(50);
+        const [showBehaviorManager, setShowBehaviorManager] = useState(false);
+        const [showDeletedEntries, setShowDeletedEntries] = useState(false);
 
         const handleRestorativeQuestions = async (entry) => {
             if (!callGemini) return;
@@ -1114,35 +1258,55 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         }, [page.pageIndex]);
 
         const handleSaveEntry = (entry) => {
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            const normalized = runtime.normalizeAbcEntry(entry, { targetBehaviors: targetBehaviors || [] });
+            if (!normalized.ok || !normalized.entry) return;
+            const existing = entries.find(item => item.id === normalized.entry.id);
             setEntries(prev => {
-                const idx = prev.findIndex(e => e.id === entry.id);
+                const idx = prev.findIndex(item => item.id === normalized.entry.id);
                 if (idx >= 0) {
                     const updated = [...prev];
-                    updated[idx] = entry;
+                    updated[idx] = normalized.entry;
                     return updated;
                 }
-                return [entry, ...prev];
+                return [normalized.entry, ...prev];
             });
+            if (appendAuditEvent) appendAuditEvent(runtime.createAuditEvent(existing ? 'abc-entry-updated' : 'abc-entry-created', {
+                entityType: 'abc-entry', entityId: normalized.entry.id, actor: userRole,
+                summary: existing ? 'Updated an ABC observation.' : 'Created an ABC observation.',
+                metadata: { source: normalized.entry.source, behaviorId: normalized.entry.behaviorId }
+            }));
+            if (recordWorkflowDiagnostic) recordWorkflowDiagnostic(existing ? 'record-update' : 'record-create', { toolId: 'abc', outcome: 'saved' });
             setShowModal(false);
             setEditEntry(null);
-            if (addToast) addToast(tt('behavior_lens.abc.entry_saved', 'ABC entry saved ✅'), 'success');
+            if (addToast) addToast(tt('behavior_lens.abc.entry_saved', 'ABC entry saved'), 'success');
         };
 
         const handleDelete = async (id) => {
-            // Confirm before destroying a permanent observation — there is no
-            // undo, and bulk delete already confirms, so single delete should
-            // too (matches the crisis-contact removal pattern).
-            const msg = (t && t('behavior_lens.confirm.delete_entry')) || 'Delete this ABC entry? This cannot be undone.';
-            if (!await askBehaviorLensConfirmation(msg, { title: 'Delete ABC entry', confirmText: 'Delete entry' })) return;
-            setEntries(prev => prev.filter(e => e.id !== id));
-            setSelectedIds(prev => { const n = new Set(prev); n.delete(id); return n; });
-            if (addToast) addToast(tt('behavior_lens.abc.entry_deleted', 'Entry deleted'), 'info');
+            const msg = (t && t('behavior_lens.confirm.delete_entry')) || 'Move this ABC entry to Recently deleted?';
+            if (!await askBehaviorLensConfirmation(msg, { title: 'Delete ABC entry', confirmText: 'Move to Recently deleted' })) return;
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            const audit = runtime.createAuditEvent('abc-entry-deleted', { entityType: 'abc-entry', entityId: id, actor: userRole, summary: 'Moved an ABC observation to Recently deleted.' });
+            const result = runtime.softDeleteAbcEntries(entries, deletedEntries, [id], { deletedBy: userRole, auditId: audit.id });
+            setEntries(result.entries);
+            setDeletedEntries(result.deletedEntries);
+            if (appendAuditEvent) appendAuditEvent(audit);
+            if (recordWorkflowDiagnostic) recordWorkflowDiagnostic('record-delete', { toolId: 'abc', outcome: 'recoverable' });
+            setSelectedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
+            if (addToast) addToast('Entry moved to Recently deleted', 'info');
         };
 
         const handleBulkDelete = () => {
             if (selectedIds.size === 0) return;
-            setEntries(prev => prev.filter(e => !selectedIds.has(e.id)));
-            if (addToast) addToast(t('behavior_lens.toast.n_entries_deleted') || `${selectedIds.size} entries deleted`, 'info');
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            const ids = Array.from(selectedIds);
+            const audit = runtime.createAuditEvent('abc-entries-bulk-deleted', { entityType: 'abc-entry', actor: userRole, summary: ids.length + ' ABC observations moved to Recently deleted.', metadata: { ids } });
+            const result = runtime.softDeleteAbcEntries(entries, deletedEntries, ids, { deletedBy: userRole, auditId: audit.id });
+            setEntries(result.entries);
+            setDeletedEntries(result.deletedEntries);
+            if (appendAuditEvent) appendAuditEvent(audit);
+            if (recordWorkflowDiagnostic) recordWorkflowDiagnostic('record-bulk-delete', { toolId: 'abc', outcome: 'recoverable' });
+            if (addToast) addToast(ids.length + ' entries moved to Recently deleted', 'info');
             setSelectedIds(new Set());
             setConfirmBulkDelete(false);
         };
@@ -1166,13 +1330,19 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             });
         };
 
-        const behaviorSummary = useMemo(() => {
-            const counts = {};
-            entries.forEach(e => {
-                counts[e.behavior] = (counts[e.behavior] || 0) + 1;
-            });
-            return Object.entries(counts).sort((a, b) => b[1] - a[1]);
-        }, [entries]);
+        const behaviorSummary = useMemo(() => getBehaviorLensWorkspaceRuntime()
+            .groupByCanonicalBehavior(entries, targetBehaviors || [])
+            .map(group => [group.label, group.count]), [entries, targetBehaviors]);
+        const restoreDeletedEntry = (id) => {
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            const result = runtime.restoreDeletedAbcEntry(entries, deletedEntries, id);
+            if (!result.restored) return;
+            setEntries(result.entries);
+            setDeletedEntries(result.deletedEntries);
+            if (appendAuditEvent) appendAuditEvent(runtime.createAuditEvent('abc-entry-restored', { entityType: 'abc-entry', entityId: id, actor: userRole, summary: 'Restored an ABC observation from Recently deleted.' }));
+            if (recordWorkflowDiagnostic) recordWorkflowDiagnostic('record-restore', { toolId: 'abc', outcome: 'restored' });
+            if (addToast) addToast('ABC entry restored.', 'success');
+        };
 
         const dateRangeOpts = [
             { key: 'all', label: 'All' },
@@ -1194,7 +1364,9 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         sorted.length !== entries.length && ` (${sorted.length} shown)`
                     )
                 ),
-                h('div', { className: 'flex items-center gap-2' },
+                h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
+                    h('button', { type: 'button', 'aria-expanded': String(showBehaviorManager), onClick: () => setShowBehaviorManager(value => !value), className: 'min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 text-xs font-bold text-indigo-800' }, 'Definitions (' + (targetBehaviors || []).length + ')'),
+                    (deletedEntries || []).length > 0 && h('button', { type: 'button', 'aria-expanded': String(showDeletedEntries), onClick: () => setShowDeletedEntries(value => !value), className: 'min-h-11 rounded-lg border border-amber-300 bg-amber-50 px-3 text-xs font-bold text-amber-900' }, 'Recently deleted (' + deletedEntries.length + ')'),
                     entries.length >= 3 && h('button', { "aria-label": "On Analyze",
                         onClick: onAnalyze,
                         disabled: analyzing, 'aria-busy': analyzing,
@@ -1209,6 +1381,18 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         className: 'bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all flex items-center gap-1.5'
                     }, h(Plus, { size: 14 }), tt('behavior_lens.abc.add_entry', 'Add Entry'))
                 )
+            ),
+            showBehaviorManager && h(TargetBehaviorManager, { targetBehaviors, setTargetBehaviors, entries, setEntries, addToast }),
+            showDeletedEntries && (deletedEntries || []).length > 0 && h('section', { className: 'rounded-xl border-2 border-amber-200 bg-amber-50 p-4', 'aria-labelledby': 'behavior-lens-recently-deleted-heading' },
+                h('h4', { id: 'behavior-lens-recently-deleted-heading', className: 'text-sm font-black text-amber-950' }, 'Recently deleted ABC entries'),
+                h('p', { className: 'mt-1 text-xs text-amber-900' }, 'Deleted observations remain recoverable in this workspace until this bounded list reaches 250 entries.'),
+                h('div', { className: 'mt-3 space-y-2' }, deletedEntries.slice(0, 25).map(item => h('div', { key: item.entry.id, className: 'flex flex-wrap items-center gap-3 rounded-lg border border-amber-200 bg-white p-3' },
+                    h('div', { className: 'min-w-0 flex-1' },
+                        h('p', { className: 'truncate text-xs font-bold text-slate-900' }, item.entry.behavior || 'Unlabeled observation'),
+                        h('p', { className: 'text-[11px] text-slate-600' }, 'Deleted ' + (item.deletedAt ? fmtDate(item.deletedAt) : 'recently'))
+                    ),
+                    h('button', { type: 'button', onClick: () => restoreDeletedEntry(item.entry.id), className: 'min-h-11 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white hover:bg-emerald-800', 'aria-label': 'Restore ' + (item.entry.behavior || 'ABC entry') }, 'Restore')
+                )))
             ),
             // Search + Date range + Behavior filter bar
             entries.length > 0 && h('div', { className: 'space-y-2' },
@@ -1554,6 +1738,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             // Modal
             showModal && h(ABCModal, {
                 entry: editEntry,
+                targetBehaviors,
                 onSave: handleSaveEntry,
                 onClose: () => { setShowModal(false); setEditEntry(null); },
                 t,
@@ -1824,125 +2009,119 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
     // ─── OverviewPanel ───────────────────────────────────────────────────
     // Visual dashboard summarizing all behavioral data with trend analysis
-    const OverviewPanel = ({ abcEntries, observationSessions, aiAnalysis, studentName, t }) => {
+    const OverviewPanel = ({ abcEntries, observationSessions, aiAnalysis, studentName, targetBehaviors, t }) => {
         const [dateRange, setDateRange] = useState(14); // 7, 14, 30, or 0 for all
 
         const stats = useMemo(() => {
+            const runtime = getBehaviorLensWorkspaceRuntime();
             const now = new Date();
-            const cutoff = dateRange > 0 ? new Date(now - dateRange * 24 * 60 * 60 * 1000) : new Date(0);
-            const filtered = abcEntries.filter(e => new Date(e.timestamp) >= cutoff);
-            const intensityStats = (entries) => {
-                const rated = entries.map(e => Number(e.intensity)).filter(v => Number.isFinite(v) && v >= 1 && v <= 5);
-                return { mean: rated.length > 0 ? rated.reduce((sum, value) => sum + value, 0) / rated.length : null, n: rated.length };
-            };
-            const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
-            const thisWeek = abcEntries.filter(e => new Date(e.timestamp) >= weekAgo);
+            const cutoff = dateRange > 0 ? new Date(now.getTime() - dateRange * 86400000) : null;
+            const filtered = cutoff ? runtime.filterByDateRange(abcEntries, { from: cutoff }) : abcEntries.slice();
+            const filteredSessions = cutoff ? runtime.filterByDateRange(observationSessions, { from: cutoff }) : observationSessions.slice();
+            const weekAgo = new Date(now.getTime() - 7 * 86400000);
+            const twoWeeksAgo = new Date(now.getTime() - 14 * 86400000);
+            const thisWeek = runtime.filterByDateRange(abcEntries, { from: weekAgo });
+            const lastWeek = runtime.filterByDateRange(abcEntries, { from: twoWeeksAgo }).filter(entry => {
+                const value = runtime.normalizeIsoTimestamp(entry.occurredAt || entry.timestamp);
+                return value && new Date(value) < weekAgo;
+            });
             const antecedentCounts = {};
             const consequenceCounts = {};
             const settingCounts = {};
-            const intensities = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
             const dayMap = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
-            filtered.forEach(e => {
-                if (e.antecedent) antecedentCounts[e.antecedent] = (antecedentCounts[e.antecedent] || 0) + 1;
-                if (e.consequence) consequenceCounts[e.consequence] = (consequenceCounts[e.consequence] || 0) + 1;
-                if (e.setting) settingCounts[e.setting] = (settingCounts[e.setting] || 0) + 1;
-                if (e.intensity) intensities[e.intensity] = (intensities[e.intensity] || 0) + 1;
-                const d = new Date(e.timestamp);
-                if (d >= weekAgo) dayMap[d.getDay()] = (dayMap[d.getDay()] || 0) + 1;
+            const hourMap = {};
+            filtered.forEach(entry => {
+                if (entry.antecedent) antecedentCounts[entry.antecedent] = (antecedentCounts[entry.antecedent] || 0) + 1;
+                if (entry.consequence) consequenceCounts[entry.consequence] = (consequenceCounts[entry.consequence] || 0) + 1;
+                if (entry.setting) settingCounts[entry.setting] = (settingCounts[entry.setting] || 0) + 1;
+                const iso = runtime.normalizeIsoTimestamp(entry.occurredAt || entry.timestamp);
+                if (!iso) return;
+                const date = new Date(iso);
+                if (date >= weekAgo) dayMap[date.getDay()] = (dayMap[date.getDay()] || 0) + 1;
+                hourMap[date.getHours()] = (hourMap[date.getHours()] || 0) + 1;
             });
 
-            // 14-day trend data
+            const dailyLookup = {};
+            runtime.groupByLocalDay(abcEntries).forEach(day => { dailyLookup[day.date] = day; });
             const trendDays = Math.min(dateRange || 30, 30);
             const trendData = [];
-            for (let i = trendDays - 1; i >= 0; i--) {
+            for (let index = trendDays - 1; index >= 0; index -= 1) {
                 const dayStart = new Date(now);
                 dayStart.setHours(0, 0, 0, 0);
-                dayStart.setDate(dayStart.getDate() - i);
-                const dayEnd = new Date(dayStart);
-                dayEnd.setDate(dayEnd.getDate() + 1);
-                const dayEntries = abcEntries.filter(e => {
-                    const ts = new Date(e.timestamp);
-                    return ts >= dayStart && ts < dayEnd;
-                });
-                const dayIntensity = intensityStats(dayEntries);
-                const avgI = dayIntensity.mean;
+                dayStart.setDate(dayStart.getDate() - index);
+                const key = runtime.localDayKey(dayStart, dayStart.getTimezoneOffset());
+                const group = dailyLookup[key];
                 trendData.push({
-                    date: dayStart,
-                    count: dayEntries.length,
-                    avgIntensity: avgI,
+                    date: key,
+                    count: group ? group.count : 0,
+                    avgIntensity: group ? group.intensity.mean : null,
+                    intensityN: group ? group.intensity.ratedCount : 0,
                     label: dayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                 });
             }
 
-            // Hour-of-day distribution
-            const hourMap = {};
-            filtered.forEach(e => {
-                const hour = new Date(e.timestamp).getHours();
-                hourMap[hour] = (hourMap[hour] || 0) + 1;
-            });
-
             const topAntecedents = Object.entries(antecedentCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
             const topConsequences = Object.entries(consequenceCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
             const topSettings = Object.entries(settingCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
-            const filteredIntensity = intensityStats(filtered);
+            const filteredIntensity = runtime.summarizeIntensity(filtered);
+            const thisWeekIntensity = runtime.summarizeIntensity(thisWeek);
+            const lastWeekIntensity = runtime.summarizeIntensity(lastWeek);
             const avgIntensity = filteredIntensity.mean === null ? 'No ratings' : filteredIntensity.mean.toFixed(1);
-
-            // Week-over-week comparison
-            const twoWeeksAgo = new Date(now - 14 * 24 * 60 * 60 * 1000);
-            const lastWeek = abcEntries.filter(e => { const d = new Date(e.timestamp); return d >= twoWeeksAgo && d < weekAgo; });
             const wowCountChange = thisWeek.length - lastWeek.length;
-            const wowCountPct = lastWeek.length > 0 ? Math.round(((thisWeek.length - lastWeek.length) / lastWeek.length) * 100) : null;
-            const thisWeekIntensity = intensityStats(thisWeek);
-            const lastWeekIntensity = intensityStats(lastWeek);
-            const thisWeekAvgI = thisWeekIntensity.mean;
-            const lastWeekAvgI = lastWeekIntensity.mean;
-            const wowIntensityChange = thisWeekAvgI !== null && lastWeekAvgI !== null ? thisWeekAvgI - lastWeekAvgI : null;
+            const wowCountPct = lastWeek.length > 0 ? Math.round((wowCountChange / lastWeek.length) * 100) : null;
+            const wowIntensityChange = thisWeekIntensity.mean !== null && lastWeekIntensity.mean !== null
+                ? thisWeekIntensity.mean - lastWeekIntensity.mean : null;
 
-            // Antecedent → Behavior correlation matrix
-            const topBehaviors = Object.entries(filtered.reduce((m, e) => { if (e.behavior) m[e.behavior] = (m[e.behavior] || 0) + 1; return m; }, {})).sort((a, b) => b[1] - a[1]).slice(0, 5).map(x => x[0]);
-            const topAntecedentstNames = topAntecedents.map(x => x[0]);
+            const behaviorGroups = runtime.groupByCanonicalBehavior(filtered, targetBehaviors || []);
+            const topBehaviors = behaviorGroups.slice(0, 5).map(group => group.label);
+            const topAntecedentNames = topAntecedents.map(item => item[0]);
             const corrMatrix = {};
             let corrMax = 1;
-            topAntecedentstNames.forEach(a => {
-                corrMatrix[a] = {};
-                topBehaviors.forEach(b => {
-                    const count = filtered.filter(e => e.antecedent === a && e.behavior === b).length;
-                    corrMatrix[a][b] = count;
-                    if (count > corrMax) corrMax = count;
+            topAntecedentNames.forEach(antecedent => {
+                corrMatrix[antecedent] = {};
+                topBehaviors.forEach(behavior => {
+                    const count = filtered.filter(entry => entry.antecedent === antecedent && runtime.resolveCanonicalBehavior(entry, targetBehaviors || []).label === behavior).length;
+                    corrMatrix[antecedent][behavior] = count;
+                    corrMax = Math.max(corrMax, count);
                 });
             });
 
-            // AI insight extraction
             const abcChains = {};
-            filtered.forEach(e => {
-                if (e.antecedent && e.behavior && e.consequence) {
-                    const chain = `${e.antecedent} → ${e.behavior} → ${e.consequence}`;
-                    abcChains[chain] = (abcChains[chain] || 0) + 1;
-                }
+            filtered.forEach(entry => {
+                if (!entry.antecedent || !entry.behavior || !entry.consequence) return;
+                const behavior = runtime.resolveCanonicalBehavior(entry, targetBehaviors || []).label;
+                const chain = entry.antecedent + ' -> ' + behavior + ' -> ' + entry.consequence;
+                abcChains[chain] = (abcChains[chain] || 0) + 1;
             });
             const topChain = Object.entries(abcChains).sort((a, b) => b[1] - a[1])[0] || null;
-            // Peak risk = hour + setting combo
             const hourSettingMap = {};
-            filtered.forEach(e => {
-                const hr = new Date(e.timestamp).getHours();
-                const key = `${hr}:00–${hr + 1}:00 in ${e.setting || 'unknown'}`;
+            filtered.forEach(entry => {
+                const iso = runtime.normalizeIsoTimestamp(entry.occurredAt || entry.timestamp);
+                if (!iso) return;
+                const hour = new Date(iso).getHours();
+                const key = hour + ':00-' + (hour + 1) + ':00 in ' + (entry.setting || 'unknown');
                 hourSettingMap[key] = (hourSettingMap[key] || 0) + 1;
             });
             const peakRisk = Object.entries(hourSettingMap).sort((a, b) => b[1] - a[1])[0] || null;
+            const rate = runtime.calculateIncidentRate(filtered, filteredSessions);
+            const phases = runtime.summarizePhases(filtered, filteredSessions);
+            const quality = runtime.inspectAbcData(filtered, targetBehaviors || [], filteredSessions);
 
             return {
-                filtered, thisWeek, lastWeek, topAntecedents, topConsequences, topSettings, intensities,
-                dayMap, avgIntensity, intensityN: filteredIntensity.n, totalAbc: filtered.length, totalObs: observationSessions.length,
-                trendData, hourMap, allAbc: abcEntries.length,
-                wowCountChange, wowCountPct, thisWeekAvgI, lastWeekAvgI, thisWeekIntensityN: thisWeekIntensity.n, lastWeekIntensityN: lastWeekIntensity.n, wowIntensityChange,
-                topBehaviors, corrMatrix, corrMax,
-                topChain, peakRisk
+                filtered, filteredSessions, thisWeek, lastWeek, topAntecedents, topConsequences, topSettings,
+                intensities: filteredIntensity.distribution, dayMap, avgIntensity,
+                intensityN: filteredIntensity.ratedCount, missingIntensityCount: filteredIntensity.missingCount,
+                totalAbc: filtered.length, totalObs: filteredSessions.length, trendData, hourMap, allAbc: abcEntries.length,
+                wowCountChange, wowCountPct, thisWeekAvgI: thisWeekIntensity.mean, lastWeekAvgI: lastWeekIntensity.mean,
+                thisWeekIntensityN: thisWeekIntensity.ratedCount, lastWeekIntensityN: lastWeekIntensity.ratedCount, wowIntensityChange,
+                topBehaviors, corrMatrix, corrMax, topChain, peakRisk, rate, phases, quality
             };
-        }, [abcEntries, observationSessions, dateRange]);
+        }, [abcEntries, observationSessions, targetBehaviors, dateRange]);
 
         const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const maxDay = Math.max(1, ...Object.values(stats.dayMap));
         const maxTrend = Math.max(1, ...stats.trendData.map(d => d.count));
+        const aiAnalysisStale = useMemo(() => getBehaviorLensWorkspaceRuntime().isAnalysisStale(aiAnalysis, abcEntries), [aiAnalysis, abcEntries]);
 
         const renderStatCard = (icon, label, value, color) =>
             h('div', { className: `bg-${color}-50 border border-${color}-200 rounded-xl p-4 text-center` },
@@ -1973,6 +2152,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         }
 
         return h('div', { className: 'max-w-4xl mx-auto space-y-6' },
+            aiAnalysisStale && h('div', { role: 'status', className: 'rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs font-bold text-amber-900' }, 'The saved AI analysis predates the current ABC data. Re-run analysis before relying on it.'),
             // Date range filter
             h('div', { className: 'flex items-center justify-between bg-white rounded-xl border border-slate-400 p-3 shadow-sm' },
                 h('span', { className: 'text-xs font-bold text-slate-600 uppercase' }, '📅 Date Range'),
@@ -1995,7 +2175,13 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 renderStatCard('📅', tt('behavior_lens.stat_this_week', 'This Week'), stats.thisWeek.length, 'sky'),
                 renderStatCard('⚡', tt('behavior_lens.stat_avg_intensity', 'Avg Intensity'), stats.avgIntensity, 'amber')
             ),
-            h('p', { className: 'text-[11px] text-slate-600 -mt-3' }, 'Counts represent logged ABC entries. Average intensity uses rated entries only; n = ' + stats.intensityN + '.'),
+            h('div', { className: 'text-[11px] text-slate-600 -mt-3 space-y-1' },
+                h('p', null, 'Counts represent logged ABC entries. Average intensity uses rated entries only; n = ' + stats.intensityN + '; missing = ' + stats.missingIntensityCount + '.'),
+                h('p', null, stats.rate.denominatorAvailable
+                    ? 'Exposure-adjusted rate: ' + stats.rate.perObservedHour.toFixed(2) + ' incidents per observed hour across ' + stats.rate.exposure.hours.toFixed(2) + ' hours.'
+                    : 'Exposure-adjusted rate is unavailable because no valid observation duration is recorded.'),
+                stats.quality.undefinedBehaviorCount > 0 && h('p', { className: 'font-bold text-amber-700' }, stats.quality.undefinedBehaviorCount + ' behavior group(s) need a canonical definition or alias.')
+            ),
             // Week-over-week comparison strip
             (stats.thisWeek.length > 0 || stats.lastWeek.length > 0) && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('h3', { className: 'text-xs font-black text-slate-600 uppercase mb-3' }, '📊 ' + (tt('behavior_lens.week_comparison', 'Week-over-Week Comparison'))),
@@ -2077,6 +2263,16 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         h('span', { className: 'text-[11px] text-slate-600' }, tt('behavior_lens.high_intensity_label', 'High intensity'))
                     )
                 )
+            ),
+            stats.phases.length > 1 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, 'Phase comparison'),
+                h('div', { className: 'grid gap-2 sm:grid-cols-2' }, stats.phases.map(phase =>
+                    h('div', { key: phase.phase, className: 'rounded-lg border border-slate-200 bg-slate-50 p-3' },
+                        h('div', { className: 'text-xs font-black text-slate-800' }, phase.phase),
+                        h('div', { className: 'mt-1 text-[11px] text-slate-600' }, phase.count + ' incidents; intensity ' + (phase.intensity.mean === null ? 'not rated' : phase.intensity.mean.toFixed(1) + ' (n=' + phase.intensity.ratedCount + ')')),
+                        h('div', { className: 'text-[11px] text-slate-600' }, phase.rate.denominatorAvailable ? phase.rate.perObservedHour.toFixed(2) + ' per observed hour' : 'No phase-specific exposure denominator')
+                    )
+                ))
             ),
             // Weekly heatmap
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
@@ -2638,7 +2834,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const [timerActive, setTimerActive] = useState(false);
         const [intervalReady, setIntervalReady] = useState(false);
         const timerRef = useRef(null);
-        const [sessionHistory, setSessionHistory] = useState([]);
+        const [sessionHistory, setSessionHistory] = useDurableToolState('tokenHistory', []);
         const [showHistory, setShowHistory] = useState(false);
         const [showThinning, setShowThinning] = useState(false);
         const [aiSuggestLoading, setAiSuggestLoading] = useState(false);
@@ -2676,21 +2872,7 @@ Return ONLY valid JSON:
             } finally { setAiSuggestLoading(false); }
         };
 
-        // Session history is now managed by parent workspace JSON
-        // localStorage fallback only for backward compat on initial load
-        useEffect(() => {
-            if (!studentName) return;
-            try {
-                const idKey = studentKey ? studentKey('behaviorLens_tokenHistory_') : `behaviorLens_tokenHistory_${studentName}`;
-                const legacyKey = `behaviorLens_tokenHistory_${studentName}`;
-                const saved = localStorage.getItem(idKey) || (idKey !== legacyKey ? localStorage.getItem(legacyKey) : null);
-                if (saved && sessionHistory.length === 0) {
-                    setSessionHistory(JSON.parse(saved));
-                    debugLog('TokenBoard: loaded legacy session history from localStorage');
-                }
-            } catch (e) { /* localStorage may be unavailable in Canvas */ }
-        }, [studentName, studentKey]);
-
+        // Session history is stored in the canonical student workspace.
         // Save session history
         const saveSession = useCallback(() => {
             if (!studentName || responseCount === 0) return;
@@ -2706,9 +2888,7 @@ Return ONLY valid JSON:
                 totalSlots: slots,
             };
             setSessionHistory(prev => {
-                const updated = [session, ...prev].slice(0, 50);
-                try { localStorage.setItem(studentKey ? studentKey('behaviorLens_tokenHistory_') : `behaviorLens_tokenHistory_${studentName}`, JSON.stringify(updated)); } catch (e) { /* localStorage may be unavailable in Canvas — workspace JSON is primary */ }
-                return updated;
+                return [session, ...prev].slice(0, 50);
             });
             if (addToast) addToast(tt('behavior_lens.toast.session_saved', 'Session saved ✨'), 'success');
         }, [studentName, responseCount, scheduleType, scheduleParam, targetBehavior, reward, tokens, slots]);
@@ -3967,26 +4147,7 @@ Create a hypothesis diagram and return ONLY valid JSON:
         const [progressScore, setProgressScore] = useState(3);
         const [progressNotes, setProgressNotes] = useState('');
 
-        const goalsKey = studentKey ? studentKey('behaviorLens_goals_') : `behaviorLens_goals_${studentName || 'default'}`;
-        const [savedGoals, setSavedGoals] = useState(() => {
-            try {
-                const idVal = localStorage.getItem(goalsKey);
-                if (idVal) return JSON.parse(idVal);
-                // One-shot legacy fallback: read the raw-codename key the first
-                // time the component mounts post-migration.
-                const legacy = `behaviorLens_goals_${studentName || 'default'}`;
-                if (legacy !== goalsKey) {
-                    const legacyVal = localStorage.getItem(legacy);
-                    if (legacyVal) return JSON.parse(legacyVal);
-                }
-                return [];
-            } catch { return []; }
-        });
-
-        // Persist on change
-        useEffect(() => {
-            try { localStorage.setItem(goalsKey, JSON.stringify(savedGoals)); } catch { }
-        }, [savedGoals, goalsKey]);
+        const [savedGoals, setSavedGoals] = useDurableToolState('smartGoals', []);
 
         const goalPreview = useMemo(() => {
             const parts = [specific, measurable, achievable, relevant, timeBound].filter(Boolean);
@@ -4274,20 +4435,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
     // ─── BehaviorContract ───────────────────────────────────────────────
     // AI-assisted behavior contract builder with persistence + history
     const BehaviorContract = ({ studentName, studentKey, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
-        const lsKey = studentKey ? studentKey('bl_contracts_') : `bl_contracts_${studentName || '_'}`;
-        const loadHistory = () => {
-            try {
-                const idVal = localStorage.getItem(lsKey);
-                if (idVal) return JSON.parse(idVal);
-                const legacy = `bl_contracts_${studentName || '_'}`;
-                if (legacy !== lsKey) {
-                    const v = localStorage.getItem(legacy);
-                    if (v) return JSON.parse(v);
-                }
-                return [];
-            } catch { return []; }
-        };
-
+        const [history, setHistory] = useDurableToolState('behaviorContracts', []);
         const [target, setTarget] = useState('');
         const [studentExpectations, setStudentExpectations] = useState('');
         const [rewards, setRewards] = useState('');
@@ -4298,54 +4446,45 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
         const [studentSigDate, setStudentSigDate] = useState('');
         const [teacherSig, setTeacherSig] = useState('');
         const [teacherSigDate, setTeacherSigDate] = useState('');
-        const [status, setStatus] = useState('active'); // active | expired | renewed
+        const [status, setStatus] = useState('active');
         const [drafting, setDrafting] = useState(false);
-        const [history, setHistory] = useState(loadHistory);
         const [showHistory, setShowHistory] = useState(false);
+        const initializedHistoryRef = useRef(false);
 
-        // Load most recent contract from history on mount
         useEffect(() => {
-            const h = loadHistory();
-            setHistory(h);
-            if (h.length > 0) {
-                const latest = h[0];
-                setTarget(latest.target || '');
-                setStudentExpectations(latest.studentExpectations || '');
-                setRewards(latest.rewards || '');
-                setTeacherSupports(latest.teacherSupports || '');
-                setSupportPlan(latest.supportPlan || '');
-                setDuration(latest.duration || '2 weeks');
-                setStudentSig(latest.studentSig || '');
-                setStudentSigDate(latest.studentSigDate || '');
-                setTeacherSig(latest.teacherSig || '');
-                setTeacherSigDate(latest.teacherSigDate || '');
-                setStatus(latest.status || 'active');
-            }
-        }, [studentName]);
+            if (initializedHistoryRef.current || history.length === 0) return;
+            const latest = history[0];
+            setTarget(latest.target || '');
+            setStudentExpectations(latest.studentExpectations || '');
+            setRewards(latest.rewards || '');
+            setTeacherSupports(latest.teacherSupports || '');
+            setSupportPlan(latest.supportPlan || '');
+            setDuration(latest.duration || '2 weeks');
+            setStudentSig(latest.studentSig || '');
+            setStudentSigDate(latest.studentSigDate || '');
+            setTeacherSig(latest.teacherSig || '');
+            setTeacherSigDate(latest.teacherSigDate || '');
+            setStatus(latest.status || 'active');
+            initializedHistoryRef.current = true;
+        }, [history]);
 
         const saveContract = () => {
             if (!target.trim()) { if (addToast) addToast(tt('behavior_lens.toast.enter_a_target_behavior_first', 'Enter a target behavior first'), 'error'); return; }
             const entry = { id: uid(), savedAt: new Date().toISOString(), target, studentExpectations, rewards, teacherSupports, supportPlan, duration, studentSig, studentSigDate, teacherSig, teacherSigDate, status };
-            const updated = [entry, ...history.filter(c => c.id !== entry.id)].slice(0, 20);
-            setHistory(updated);
-            try { localStorage.setItem(lsKey, JSON.stringify(updated)); } catch { }
-            if (addToast) addToast(tt('behavior_lens.toast.contract_saved', 'Contract saved ✨'), 'success');
+            setHistory(previous => [entry, ...previous].slice(0, 20));
+            if (addToast) addToast(tt('behavior_lens.toast.contract_saved', 'Contract saved'), 'success');
         };
 
-        const loadContract = (c) => {
-            setTarget(c.target || ''); setStudentExpectations(c.studentExpectations || '');
-            setRewards(c.rewards || ''); setTeacherSupports(c.teacherSupports || '');
-            setSupportPlan(c.supportPlan || ''); setDuration(c.duration || '2 weeks');
-            setStudentSig(c.studentSig || ''); setStudentSigDate(c.studentSigDate || '');
-            setTeacherSig(c.teacherSig || ''); setTeacherSigDate(c.teacherSigDate || '');
-            setStatus(c.status || 'active'); setShowHistory(false);
+        const loadContract = (contract) => {
+            setTarget(contract.target || ''); setStudentExpectations(contract.studentExpectations || '');
+            setRewards(contract.rewards || ''); setTeacherSupports(contract.teacherSupports || '');
+            setSupportPlan(contract.supportPlan || ''); setDuration(contract.duration || '2 weeks');
+            setStudentSig(contract.studentSig || ''); setStudentSigDate(contract.studentSigDate || '');
+            setTeacherSig(contract.teacherSig || ''); setTeacherSigDate(contract.teacherSigDate || '');
+            setStatus(contract.status || 'active'); setShowHistory(false);
         };
 
-        const deleteHistoryItem = (id) => {
-            const updated = history.filter(c => c.id !== id);
-            setHistory(updated);
-            try { localStorage.setItem(lsKey, JSON.stringify(updated)); } catch { }
-        };
+        const deleteHistoryItem = (id) => setHistory(previous => previous.filter(contract => contract.id !== id));
 
         const handleDraft = async () => {
             if (!callGemini) return;
@@ -4481,8 +4620,6 @@ Generate a behavior contract and return ONLY valid JSON:
     // ─── EscalationCycle ────────────────────────────────────────────────
     // Colvin & Sugai 7-phase escalation cycle with persistence + editor
     const EscalationCycle = ({ abcEntries, aiAnalysis, studentName, studentKey, callGemini, t, addToast }) => {
-        const lsKey = studentKey ? studentKey('bl_escalation_') : `bl_escalation_${studentName || '_'}`;
-        const legacyEscalationKey = `bl_escalation_${studentName || '_'}`;
         const defaultPhases = [
             { name: tt('behavior_lens.cycle_calm', 'Calm'), icon: '😌', color: '#22c55e', bg: '#f0fdf4', signs: 'Cooperative, on-task, following routines', response: 'Reinforce positive behavior, build rapport' },
             { name: tt('behavior_lens.cycle_triggers', 'Triggers'), icon: '⚡', color: '#eab308', bg: '#fefce8', signs: 'Subtle changes in body language, withdrawal', response: 'Remove/reduce trigger, redirect calmly' },
@@ -4494,27 +4631,15 @@ Generate a behavior contract and return ONLY valid JSON:
         ];
         const [selected, setSelected] = useState(null);
         const [personalizing, setPersonalizing] = useState(false);
-        const [personalized, setPersonalized] = useState({});
+        const [personalized, setPersonalized] = useDurableToolState('escalationCycle', {});
         const [editing, setEditing] = useState(false);
 
-        // Load from localStorage on mount
-        useEffect(() => {
-            try {
-                let raw = localStorage.getItem(lsKey);
-                if (!raw && legacyEscalationKey !== lsKey) raw = localStorage.getItem(legacyEscalationKey);
-                const saved = JSON.parse(raw || 'null');
-                if (saved) setPersonalized(saved);
-            } catch { }
-        }, [studentName, studentKey]);
-
         const saveCycle = () => {
-            try { localStorage.setItem(lsKey, JSON.stringify(personalized)); } catch { }
-            if (addToast) addToast(tt('behavior_lens.toast.escalation_cycle_saved', 'Escalation cycle saved ✅'), 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.escalation_cycle_saved', 'Escalation cycle saved'), 'success');
         };
 
         const resetCycle = () => {
             setPersonalized({});
-            try { localStorage.removeItem(lsKey); } catch { }
             if (addToast) addToast(tt('behavior_lens.toast.reset_to_defaults', 'Reset to defaults'), 'info');
         };
 
@@ -4634,57 +4759,33 @@ Personalize each phase of the cycle and return ONLY valid JSON:
             edible: { label: (tt('behavior_lens.raw.fooddrink', 'Food/Drink')), icon: '🍎', items: ['Healthy snack', 'Water bottle refill', 'Special lunch item', 'Gum/mints'] }
         };
 
-        const lsKey = studentKey ? studentKey('bl_reinforcer_') : `bl_reinforcer_${studentName || '_'}`;
-        const snapKey = studentKey ? studentKey('bl_reinforcer_snaps_') : `bl_reinforcer_snaps_${studentName || '_'}`;
-        const legacyLsKey = `bl_reinforcer_${studentName || '_'}`;
-        const legacySnapKey = `bl_reinforcer_snaps_${studentName || '_'}`;
-
-        const [ratings, setRatings] = useState({});
+        const [ratings, setRatings] = useDurableToolState('reinforcerRatings', {});
         const [aiSuggestions, setAiSuggestions] = useState(null);
         const [suggesting, setSuggesting] = useState(false);
-        const [snapshots, setSnapshots] = useState([]);
+        const [snapshots, setSnapshots] = useDurableToolState('reinforcerSnapshots', []);
         const [showHistory, setShowHistory] = useState(false);
 
-        // Load from localStorage on mount
-        useEffect(() => {
-            try {
-                let raw = localStorage.getItem(lsKey);
-                if (!raw && legacyLsKey !== lsKey) raw = localStorage.getItem(legacyLsKey);
-                const saved = JSON.parse(raw || 'null');
-                if (saved) setRatings(saved);
-            } catch { }
-            try {
-                let snapsRaw = localStorage.getItem(snapKey);
-                if (!snapsRaw && legacySnapKey !== snapKey) snapsRaw = localStorage.getItem(legacySnapKey);
-                const snaps = JSON.parse(snapsRaw || '[]');
-                if (Array.isArray(snaps)) setSnapshots(snaps);
-            } catch { }
-        }, [studentName, studentKey]);
-
         const setRating = (item, value) => {
-            setRatings(prev => ({ ...prev, [item]: prev[item] === value ? 0 : value }));
+            setRatings(previous => ({ ...previous, [item]: previous[item] === value ? 0 : value }));
         };
 
         const saveRatings = () => {
-            try { localStorage.setItem(lsKey, JSON.stringify(ratings)); } catch { }
-            if (addToast) addToast(tt('behavior_lens.toast.ratings_saved', 'Ratings saved ✅'), 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.ratings_saved', 'Ratings saved'), 'success');
         };
 
         const takeSnapshot = () => {
-            const ratedCount = Object.values(ratings).filter(v => v > 0).length;
+            const ratedCount = Object.values(ratings).filter(value => value > 0).length;
             if (ratedCount === 0) {
                 if (addToast) addToast(tt('behavior_lens.toast.rate_at_least_one_item_first', 'Rate at least one item first'), 'warning');
                 return;
             }
-            const snap = {
+            const snapshot = {
                 date: new Date().toISOString(),
                 ratings: { ...ratings },
-                topItems: Object.entries(ratings).filter(([_, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([item]) => item)
+                topItems: Object.entries(ratings).filter(item => item[1] > 0).sort((left, right) => right[1] - left[1]).slice(0, 3).map(item => item[0])
             };
-            const updated = [snap, ...snapshots].slice(0, 10);
-            setSnapshots(updated);
-            try { localStorage.setItem(snapKey, JSON.stringify(updated)); } catch { }
-            if (addToast) addToast(tt('behavior_lens.toast.snapshot_saved', 'Snapshot saved 📸'), 'success');
+            setSnapshots(previous => [snapshot, ...previous].slice(0, 10));
+            if (addToast) addToast(tt('behavior_lens.toast.snapshot_saved', 'Snapshot saved'), 'success');
         };
 
         const rankedItems = useMemo(() => {
@@ -5367,38 +5468,20 @@ Provide a brief impact interpretation and return ONLY valid JSON:
     // ─── CrisisIntervention ─────────────────────────────────────────────
     // 3-tier emergency protocol with persistence + structured contacts
     const CrisisIntervention = ({ studentName, studentKey, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
-        const lsKey = studentKey ? studentKey('bl_crisis_') : `bl_crisis_${studentName || '_'}`;
-        const legacyCrisisKey = `bl_crisis_${studentName || '_'}`;
         const tiers = [
             { key: 'prevention', label: (tt('behavior_lens.raw.prevention', 'Prevention')), icon: '🛡️', color: '#22c55e', bg: '#f0fdf4' },
             { key: 'deescalation', label: tt('behavior_lens.cycle_de_escalation', 'De-escalation'), icon: '🌊', color: '#3b82f6', bg: '#eff6ff' },
             { key: 'emergency', label: (tt('behavior_lens.raw.emergency', 'Emergency')), icon: '🚨', color: '#ef4444', bg: '#fef2f2' },
         ];
         const emptyPlan = { prevention: { triggers: '', staffActions: '', communication: '' }, deescalation: { triggers: '', staffActions: '', communication: '' }, emergency: { triggers: '', staffActions: '', communication: '' } };
-        const [plan, setPlan] = useState(emptyPlan);
-        const [contacts, setContacts] = useState([{ id: uid(), name: '', role: '', phone: '' }]);
-        const [lastReviewed, setLastReviewed] = useState(null);
+        const [plan, setPlan] = useDurableToolState('crisisPlan', emptyPlan);
+        const [contacts, setContacts] = useDurableToolState('crisisContacts', [{ id: 'initial-contact', name: '', role: '', phone: '' }]);
+        const [lastReviewed, setLastReviewed] = useDurableToolState('crisisLastReviewed', null);
         const [drafting, setDrafting] = useState(false);
 
-        // Load from localStorage on mount
-        useEffect(() => {
-            try {
-                let raw = localStorage.getItem(lsKey);
-                if (!raw && legacyCrisisKey !== lsKey) raw = localStorage.getItem(legacyCrisisKey);
-                const saved = JSON.parse(raw || 'null');
-                if (saved) {
-                    if (saved.plan) setPlan(saved.plan);
-                    if (saved.contacts && Array.isArray(saved.contacts)) setContacts(saved.contacts.map(c => c && c.id ? c : { ...c, id: uid() }));
-                    if (saved.lastReviewed) setLastReviewed(saved.lastReviewed);
-                }
-            } catch { }
-        }, [studentName, studentKey]);
-
         const savePlan = () => {
-            const data = { plan, contacts: contacts.filter(c => c.name || c.role || c.phone), lastReviewed: new Date().toISOString() };
-            setLastReviewed(data.lastReviewed);
-            try { localStorage.setItem(lsKey, JSON.stringify(data)); } catch { }
-            if (addToast) addToast(tt('behavior_lens.toast.crisis_plan_saved', 'Crisis plan saved ✅'), 'success');
+            setLastReviewed(new Date().toISOString());
+            if (addToast) addToast(tt('behavior_lens.toast.crisis_plan_saved', 'Crisis plan saved'), 'success');
         };
 
         const addContact = () => setContacts(prev => [...prev, { id: uid(), name: '', role: '', phone: '' }]);
@@ -5994,36 +6077,15 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
     // ─── FidelityChecklist ──────────────────────────────────────────────
     // Daily BIP adherence tracking with history + streak calendar
     const FidelityChecklist = ({ studentName, studentKey, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
-        const lsKey = studentKey ? studentKey('bl_fidelity_') : `bl_fidelity_${studentName || '_'}`;
-        const loadSaved = () => {
-            try {
-                const v = localStorage.getItem(lsKey);
-                if (v) return JSON.parse(v);
-                const legacy = `bl_fidelity_${studentName || '_'}`;
-                if (legacy !== lsKey) {
-                    const lv = localStorage.getItem(legacy);
-                    if (lv) return JSON.parse(lv);
-                }
-                return {};
-            } catch { return {}; }
-        };
-
-        const [items, setItems] = useState([]);
-        const [checks, setChecks] = useState({});
+        const [items, setItems] = useDurableToolState('fidelityItems', []);
         const [generating, setGenerating] = useState(false);
         const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-        const [history, setHistory] = useState({});  // { 'YYYY-MM-DD': { items, score, pct } }
+        const [history, setHistory] = useDurableToolState('fidelityHistory', {});
+        const [checks, setChecks] = useState({});
 
-        // Load history + today's data on mount
         useEffect(() => {
-            const saved = loadSaved();
-            if (saved.history) setHistory(saved.history);
-            if (saved.items) setItems(saved.items);
-            const today = new Date().toISOString().slice(0, 10);
-            if (saved.history && saved.history[today]) {
-                setChecks(saved.history[today].checks || {});
-            }
-        }, [studentName]);
+            if (history[date]) setChecks(history[date].checks || {});
+        }, [history, date]);
 
         const totalItems = items.length;
         const checkedCount = Object.values(checks).filter(Boolean).length;
@@ -6033,7 +6095,6 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
             if (items.length === 0) { if (addToast) addToast(tt('behavior_lens.toast.generate_a_checklist_first', 'Generate a checklist first'), 'error'); return; }
             const updated = { ...history, [date]: { checks: { ...checks }, score: checkedCount, total: totalItems, pct } };
             setHistory(updated);
-            try { localStorage.setItem(lsKey, JSON.stringify({ items, history: updated })); } catch { }
             if (addToast) addToast(t('behavior_lens.toast.fidelity_saved_for_n') || `Fidelity saved for ${date} ✅`, 'success');
         };
 
@@ -6652,7 +6713,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
     // ─── HomeBehaviorLog ────────────────────────────────────────────────
     // Simplified ABC logging designed for parents/family context
     const HomeBehaviorLog = ({ studentName, studentKey, t, addToast, callGemini, setAbcEntries }) => {
-        const [entries, setEntries] = useState([]);
+        const [entries, setEntries] = useDurableToolState('homeLog', []);
         const [showForm, setShowForm] = useState(false);
         const [newEntry, setNewEntry] = useState({ context: '', behavior: '', response: '', notes: '', mood: '' });
         const [aiPatternLoading, setAiPatternLoading] = useState(false);
@@ -6676,23 +6737,10 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             { emoji: '😟', label: (tt('behavior_lens.raw.challenging', 'Challenging')) }
         ];
 
-        // Load from localStorage
-        useEffect(() => {
-            if (!studentName) return;
-            try {
-                const idKey = studentKey ? studentKey('behaviorLens_homeLog_') : `behaviorLens_homeLog_${studentName}`;
-                const legacyKey = `behaviorLens_homeLog_${studentName}`;
-                const saved = localStorage.getItem(idKey) || (idKey !== legacyKey ? localStorage.getItem(legacyKey) : null);
-                if (saved) setEntries(JSON.parse(saved));
-            } catch (e) { /* ignore */ }
-        }, [studentName, studentKey]);
-
         const saveEntry = () => {
             if (!newEntry.behavior.trim()) return;
             const entry = { ...newEntry, id: uid(), timestamp: new Date().toISOString() };
-            const updated = [entry, ...entries];
-            setEntries(updated);
-            try { localStorage.setItem(studentKey ? studentKey('behaviorLens_homeLog_') : `behaviorLens_homeLog_${studentName}`, JSON.stringify(updated)); } catch (e) { /* ignore */ }
+            setEntries(previous => [entry, ...previous].slice(0, 250));
             setNewEntry({ context: '', behavior: '', response: '', notes: '', mood: '' });
             setShowForm(false);
             if (addToast) addToast(tt('behavior_lens.toast.entry_saved', 'Entry saved ✅'), 'success');
@@ -7532,23 +7580,12 @@ Respond only with the student's words:`;
             { emoji: '😢', label: 'Sad', color: 'violet' }
         ];
 
-        const [entries, setEntries] = useState([]);
+        const [entries, setEntries] = useDurableToolState('selfCheck', []);
         const [showForm, setShowForm] = useState(false);
         const [mood, setMood] = useState('');
         const [answers, setAnswers] = useState({ happening: '', feeling: '', needed: '', nextTime: '' });
-        const storageKey = studentKey ? studentKey('behaviorLens_selfCheck_') : `behaviorLens_selfCheck_${studentName}`;
-        const legacySelfCheckKey = `behaviorLens_selfCheck_${studentName}`;
         const [aiReflectionLoading, setAiReflectionLoading] = useState(false);
         const [aiReflectionResult, setAiReflectionResult] = useState('');
-
-        // Load from localStorage
-        useEffect(() => {
-            if (!studentName) return;
-            try {
-                const saved = localStorage.getItem(storageKey) || (legacySelfCheckKey !== storageKey ? localStorage.getItem(legacySelfCheckKey) : null);
-                if (saved) setEntries(JSON.parse(saved));
-            } catch (e) { /* ignore */ }
-        }, [studentName, studentKey]);
 
         const saveReflection = () => {
             if (!mood) return;
@@ -7558,9 +7595,7 @@ Respond only with the student's words:`;
                 mood,
                 ...answers
             };
-            const updated = [entry, ...entries];
-            setEntries(updated);
-            try { localStorage.setItem(storageKey, JSON.stringify(updated)); } catch (e) { /* ignore */ }
+            setEntries(previous => [entry, ...previous].slice(0, 250));
             setMood('');
             setAnswers({ happening: '', feeling: '', needed: '', nextTime: '' });
             setShowForm(false);
@@ -7572,9 +7607,7 @@ Respond only with the student's words:`;
             const when = e && e.timestamp ? fmtDate(e.timestamp) : 'this entry';
             const msg = (t && t('behavior_lens.confirm.delete_self_check')) || `Delete the self-check from ${when}? This can't be undone.`;
             if (!await askBehaviorLensConfirmation(msg, { title: 'Delete self-check entry', confirmText: 'Delete entry' })) return;
-            const updated = entries.filter(e => e.id !== id);
-            setEntries(updated);
-            try { localStorage.setItem(storageKey, JSON.stringify(updated)); } catch (e) { /* ignore */ }
+            setEntries(previous => previous.filter(entry => entry.id !== id));
             if (addToast) addToast(tt('behavior_lens.toast.self_check_deleted', 'Self-check entry deleted'), 'info');
         };
 
@@ -7770,23 +7803,8 @@ Keep language warm and age-appropriate.`;
         const fileRef = useRef(null);
         const [aiMessageLoading, setAiMessageLoading] = useState(false);
 
-        // Read home log and self-check entries from localStorage
-        const homeLogEntries = useMemo(() => {
-            try {
-                const idKey = studentKey ? studentKey('behaviorLens_homeLog_') : `behaviorLens_homeLog_${studentName}`;
-                const legacyKey = `behaviorLens_homeLog_${studentName}`;
-                const saved = localStorage.getItem(idKey) || (idKey !== legacyKey ? localStorage.getItem(legacyKey) : null);
-                return saved ? JSON.parse(saved) : [];
-            } catch (e) { return []; }
-        }, [studentName, studentKey]);
-        const selfCheckEntries = useMemo(() => {
-            try {
-                const idKey = studentKey ? studentKey('behaviorLens_selfCheck_') : `behaviorLens_selfCheck_${studentName}`;
-                const legacyKey = `behaviorLens_selfCheck_${studentName}`;
-                const saved = localStorage.getItem(idKey) || (idKey !== legacyKey ? localStorage.getItem(legacyKey) : null);
-                return saved ? JSON.parse(saved) : [];
-            } catch (e) { return []; }
-        }, [studentName, studentKey]);
+        const [homeLogEntries] = useDurableToolState('homeLog', []);
+        const [selfCheckEntries] = useDurableToolState('selfCheck', []);
 
         const allChecks = [includeAbc, includeObs, includeAi, includeHomeLog, includeSelfCheck];
         const allSelected = allChecks.every(Boolean);
@@ -8150,30 +8168,13 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
             },
         ];
 
-        const storageKey = studentKey ? studentKey('behaviorLens_consent_') : `behaviorLens_consent_${studentName || 'default'}`;
-        const [sections, setSections] = useState(() => {
-            try {
-                const v = localStorage.getItem(storageKey);
-                if (v) return JSON.parse(v);
-                const legacy = `behaviorLens_consent_${studentName || 'default'}`;
-                if (legacy !== storageKey) {
-                    const lv = localStorage.getItem(legacy);
-                    if (lv) return JSON.parse(lv);
-                }
-                return DEFAULT_SECTIONS;
-            } catch { return DEFAULT_SECTIONS; }
-        });
+        const [sections, setSections] = useDurableToolState('consentSections', DEFAULT_SECTIONS);
         const [editingId, setEditingId] = useState(null);
         const [editBuffer, setEditBuffer] = useState('');
         const [schoolName, setSchoolName] = useState('');
         const [teacherName, setTeacherName] = useState('');
         const [showPrint, setShowPrint] = useState(false);
         const fileRef = useRef(null);
-
-        // Persist on change
-        useEffect(() => {
-            try { localStorage.setItem(storageKey, JSON.stringify(sections)); } catch { }
-        }, [sections, storageKey]);
 
         const startEdit = (section) => {
             setEditingId(section.id);
@@ -10445,290 +10446,317 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
 
     // ─── DataQualityChecker ─────────────────────────────────────────────
     // AI-powered review of ABC entries with improvement suggestions
-    const DataQualityChecker = ({ abcEntries, callGemini, t, addToast }) => {
+    const DataQualityChecker = ({ abcEntries, observationSessions, targetBehaviors, callGemini, t, addToast }) => {
         const [report, setReport] = useState(null);
+        const [reportProvenance, setReportProvenance] = useState(null);
         const [checking, setChecking] = useState(false);
+        const runtime = getBehaviorLensWorkspaceRuntime();
+        const inspection = useMemo(() => runtime.inspectAbcData(abcEntries, targetBehaviors || [], observationSessions || []), [abcEntries, targetBehaviors, observationSessions]);
 
         const handleCheck = async () => {
             if (!callGemini || abcEntries.length === 0) return;
-            if (report) { setReport(null); return; }
+            if (report) { setReport(null); setReportProvenance(null); return; }
             setChecking(true);
             try {
-                const entriesStr = abcEntries.slice(-15).map((e, i) =>
-                    `Entry ${i + 1}: A="${e.antecedent}" B="${e.behavior}" C="${e.consequence}" Setting="${e.setting || 'not specified'}" Intensity=${e.intensity || 'not rated'} Duration="${e.duration || 'not recorded'}"`
-                ).join('\n');
-
-                const prompt = `You are a BCBA reviewing ABC behavioral data entries for quality and completeness.
-${RESTORATIVE_PREAMBLE}
-
-Review these ABC data entries and provide specific, actionable feedback:
-
-${entriesStr}
-
-Evaluate the data on these criteria and give an overall quality rating:
-
-1. SPECIFICITY: Are behaviors described in observable, measurable terms? (not vague like "acted out")
-2. COMPLETENESS: Are all fields filled in? Are settings, intensity, and duration recorded?
-3. ANTECEDENT DETAIL: Do antecedents describe the immediate trigger clearly?
-4. CONSEQUENCE DETAIL: Do consequences describe what actually happened after?
-5. VARIETY: Is there variation in antecedents and consequences, or are they copy-pasted?
-6. SUFFICIENCY: Is there enough data to identify patterns? (typically need 10+ entries)
-
-Return your response in this format:
-QUALITY: [🟢 Good / 🟡 Fair / 🔴 Needs Work]
-
-STRENGTHS:
-- (list strengths)
-
-AREAS FOR IMPROVEMENT:
-- (list specific improvements with examples)
-
-SPECIFIC SUGGESTIONS:
-- (actionable next steps)
-
-Keep it concise and encouraging. Use plain language.`;
-
+                const sample = runtime.selectStratifiedEntries(abcEntries, 20);
+                const provenance = runtime.createAnalysisProvenance(abcEntries, sample);
+                const entriesStr = sample.entries.map((entry, index) => {
+                    const behavior = runtime.resolveCanonicalBehavior(entry, targetBehaviors || []).label;
+                    return 'Entry ' + (index + 1) + ': Date="' + (entry.localDate || 'unknown') + '" A="' + (entry.antecedent || '') + '" B="' + behavior + '" C="' + (entry.consequence || '') + '" Setting="' + (entry.setting || 'not specified') + '" Intensity=' + (runtime.normalizeIntensity(entry.intensity) == null ? 'not rated' : entry.intensity) + ' Duration="' + (entry.duration == null ? 'not recorded' : entry.duration) + '"';
+                }).join('\n');
+                const prompt = [
+                    'You are a BCBA reviewing ABC behavioral data entries for quality and completeness.',
+                    RESTORATIVE_PREAMBLE,
+                    '',
+                    'SAMPLE DISCLOSURE: ' + sample.sampleCount + ' of ' + sample.totalCount + ' entries, selected using ' + sample.strategy + ' across the recorded date range.',
+                    '',
+                    entriesStr,
+                    '',
+                    'Evaluate observable specificity, ABC completeness, immediate antecedent detail, actual consequence detail, repeated/copy-pasted language, operational definitions, and whether the sample supports pattern analysis.',
+                    'Return concise plain text with headings QUALITY, STRENGTHS, AREAS FOR IMPROVEMENT, and SPECIFIC SUGGESTIONS. State that findings apply to the disclosed sample.'
+                ].join('\n');
                 const result = await callGemini(prompt, true);
                 setReport(result);
-                if (addToast) addToast(tt('behavior_lens.toast.quality_check_complete', 'Quality check complete ✅'), 'success');
-            } catch (err) {
-                warnLog('Quality check failed:', err);
+                setReportProvenance(provenance);
+                if (addToast) addToast(tt('behavior_lens.toast.quality_check_complete', 'Quality check complete'), 'success');
+            } catch (error) {
+                warnLog('Quality check failed:', error);
                 if (addToast) addToast(tt('behavior_lens.toast.quality_check_failed', 'Quality check failed'), 'error');
             } finally { setChecking(false); }
         };
 
-        // Quick local checks (no AI)
         const quickChecks = useMemo(() => {
             if (abcEntries.length === 0) return [];
             const checks = [];
-            const vague = abcEntries.filter(e => e.behavior && e.behavior.length < 15).length;
-            if (vague > 0) checks.push({ icon: '⚠️', msg: `${vague} entries have very brief behavior descriptions (< 15 chars)`, type: 'warning' });
-            const noSetting = abcEntries.filter(e => !e.setting || e.setting.trim() === '').length;
-            if (noSetting > 0) checks.push({ icon: '📍', msg: `${noSetting} entries missing setting/location information`, type: 'warning' });
-            const noIntensity = abcEntries.filter(e => !e.intensity).length;
-            if (noIntensity > 0) checks.push({ icon: '📏', msg: `${noIntensity} entries missing intensity ratings`, type: 'warning' });
-            if (abcEntries.length < 5) checks.push({ icon: '📊', msg: `Only ${abcEntries.length} entries — need at least 5-10 for pattern analysis`, type: 'info' });
-            else if (abcEntries.length >= 10) checks.push({ icon: '✅', msg: `${abcEntries.length} entries collected — good sample size for analysis`, type: 'positive' });
-            // Check for duplicate antecedents
-            const antecedents = abcEntries.map(e => (e.antecedent || '').toLowerCase().trim()).filter(Boolean);
-            const uniqueAnt = new Set(antecedents).size;
-            if (antecedents.length > 3 && uniqueAnt < antecedents.length * 0.5) {
-                checks.push({ icon: '🔄', msg: `Low variety: only ${uniqueAnt} unique antecedents across ${antecedents.length} entries`, type: 'warning' });
-            }
+            const vague = abcEntries.filter(entry => entry.behavior && entry.behavior.trim().length < 15).length;
+            if (inspection.incompleteAbcCount > 0) checks.push({ msg: inspection.incompleteAbcCount + ' records have an incomplete ABC chain', type: 'warning' });
+            if (vague > 0) checks.push({ msg: vague + ' records have very brief behavior descriptions', type: 'warning' });
+            if (inspection.missingIntensityCount > 0) checks.push({ msg: inspection.missingIntensityCount + ' records have no valid intensity rating; they are excluded from averages', type: 'warning' });
+            if (inspection.invalidTimestampCount > 0) checks.push({ msg: inspection.invalidTimestampCount + ' records have invalid occurrence timestamps', type: 'warning' });
+            if (inspection.undefinedBehaviorCount > 0) checks.push({ msg: inspection.undefinedBehaviorCount + ' canonical behavior groups need definitions or aliases', type: 'warning' });
+            if (!inspection.denominatorAvailable) checks.push({ msg: 'No valid observation duration is available, so exposure-adjusted incident rates cannot be calculated', type: 'info' });
+            if (inspection.recordCount < 5) checks.push({ msg: 'Only ' + inspection.recordCount + ' valid records; collect more across representative routines before inferring patterns', type: 'info' });
+            if (inspection.recordCount >= 10 && inspection.incompleteAbcCount === 0) checks.push({ msg: inspection.recordCount + ' valid records with complete ABC chains', type: 'positive' });
             return checks;
-        }, [abcEntries]);
-
-        const checkColors = { warning: 'bg-amber-50 border-amber-200 text-amber-700', info: 'bg-blue-50 border-blue-200 text-blue-700', positive: 'bg-green-50 border-green-200 text-green-700' };
+        }, [abcEntries, inspection]);
+        const checkColors = { warning: 'bg-amber-50 border-amber-200 text-amber-800', info: 'bg-blue-50 border-blue-200 text-blue-800', positive: 'bg-green-50 border-green-200 text-green-800' };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
-                h('div', { className: 'text-4xl mb-2' }, '✅'),
                 h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_data_quality_checker' }, tt('behavior_lens.ui.data_quality_checker', 'Data Quality Checker')),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.review_your_abc_data_collection_for_completeness_a', 'Review your ABC data collection for completeness and quality'))
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Deterministic validation first; optional AI review uses a disclosed date-stratified sample.')
             ),
-            // Quick local checks
             quickChecks.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '⚡ Quick Checks'),
-                h('div', { className: 'space-y-2' },
-                    quickChecks.map((c, i) =>
-                        h('div', { key: i, className: `flex items-center gap-2 px-3 py-2 rounded-lg border ${checkColors[c.type]}` },
-                            h('span', null, c.icon),
-                            h('span', { className: 'text-xs font-bold' }, c.msg)
-                        )
-                    )
-                )
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, 'Validated checks'),
+                h('div', { className: 'space-y-2' }, quickChecks.map((check, index) =>
+                    h('div', { key: index, className: 'px-3 py-2 rounded-lg border text-xs font-bold ' + checkColors[check.type] }, check.msg)
+                )),
+                inspection.undefinedBehaviors.length > 0 && h('p', { className: 'mt-3 text-[11px] text-slate-600' }, 'Undefined: ' + inspection.undefinedBehaviors.map(item => item.label + ' (' + item.count + ')').join(', '))
             ),
-            abcEntries.length === 0 && h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-400' },
-                h('div', { className: 'text-3xl mb-2' }, '📭'),
-                h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.no_abc_entries_to_check_yet_start_collecting_data', 'No ABC entries to check yet. Start collecting data first!'))
-            ),
-            // AI deep check
-            callGemini && abcEntries.length > 0 && h('button', { onClick: handleCheck,
-                disabled: checking,
-                className: 'w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-            }, checking ? '⏳ Analyzing...' : report ? '▴ Hide AI Report' : '🧠 Run AI Quality Analysis'),
+            abcEntries.length === 0 && h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-400 text-sm text-slate-600' }, 'No ABC entries to check yet.'),
+            callGemini && abcEntries.length > 0 && h('button', { type: 'button', onClick: handleCheck, disabled: checking, className: 'w-full min-h-[44px] py-3 bg-emerald-700 text-white rounded-xl font-bold shadow hover:bg-emerald-800 disabled:opacity-40' }, checking ? 'Analyzing disclosed sample...' : report ? 'Hide AI report' : 'Run sampled AI quality review'),
             report && h('div', { className: 'bg-white rounded-xl border border-green-200 p-5 shadow-sm' },
+                reportProvenance && h('p', { className: 'mb-3 rounded-lg bg-slate-50 p-2 text-[11px] font-bold text-slate-700' }, 'AI review provenance: ' + reportProvenance.sampleCount + ' of ' + reportProvenance.totalEntries + ' entries; ' + reportProvenance.sampleStrategy + '; generated ' + new Date(reportProvenance.generatedAt).toLocaleString() + '.'),
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, report),
-                h('div', { className: 'flex gap-2 mt-4' },
-                    h('button', { "aria-label": "Copy Report",
-                        onClick: () => { navigator.clipboard.writeText(report); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
-                        className: 'px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-[11px] font-bold hover:bg-green-200'
-                    }, '📋 Copy Report')
-                )
+                h('button', { type: 'button', onClick: () => { navigator.clipboard.writeText(report); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }, className: 'mt-4 min-h-[44px] px-3 py-2 bg-green-100 text-green-800 rounded-lg text-xs font-bold hover:bg-green-200' }, 'Copy report')
             )
         );
     };
 
-    // ─── BehaviorTrendDashboard ─────────────────────────────────────────
-    // SVG-based visual charts for behavioral data trends
-    const BehaviorTrendDashboard = ({ abcEntries, observationSessions, t }) => {
+    // BehaviorTrendDashboard uses the shared analytics runtime.
+    const BehaviorTrendDashboard = ({ abcEntries, observationSessions, targetBehaviors, t }) => {
         const [view, setView] = useState('intensity');
-
-        // Intensity over time — SVG line chart
-        const intensityData = useMemo(() => {
-            if (abcEntries.length === 0) return [];
-            return abcEntries.slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)).map((e, i) => ({
-                x: i,
-                y: e.intensity || 0,
-                label: new Date(e.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                behavior: (e.behavior || '').substring(0, 30)
-            }));
-        }, [abcEntries]);
-
-        // Frequency by setting — bar chart
+        const [behaviorFilter, setBehaviorFilter] = useState('all');
+        const runtime = getBehaviorLensWorkspaceRuntime();
+        const behaviorGroups = useMemo(
+            () => runtime.groupByCanonicalBehavior(abcEntries, targetBehaviors || []),
+            [abcEntries, targetBehaviors]
+        );
+        const filteredEntries = useMemo(() => {
+            if (behaviorFilter === 'all') return abcEntries;
+            return abcEntries.filter(entry => runtime.resolveCanonicalBehavior(entry, targetBehaviors || []).id === behaviorFilter);
+        }, [abcEntries, targetBehaviors, behaviorFilter]);
+        const intensitySummary = useMemo(() => runtime.summarizeIntensity(filteredEntries), [filteredEntries]);
+        const intensityData = useMemo(() => runtime.groupByLocalDay(filteredEntries)
+            .filter(day => day.intensity.ratedCount > 0)
+            .map(day => ({ date: day.date, y: day.intensity.mean, n: day.intensity.ratedCount, count: day.count })), [filteredEntries]);
         const settingData = useMemo(() => {
             const counts = {};
-            abcEntries.forEach(e => {
-                const s = (e.setting || 'Unknown').split(',')[0].trim();
-                counts[s] = (counts[s] || 0) + 1;
+            filteredEntries.forEach(entry => {
+                const setting = (entry.setting || 'Unknown').split(',')[0].trim() || 'Unknown';
+                counts[setting] = (counts[setting] || 0) + 1;
             });
-            return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([label, count]) => ({ label, count }));
-        }, [abcEntries]);
-
-        // Day-of-week × time heatmap
+            return Object.entries(counts)
+                .sort((left, right) => right[1] - left[1])
+                .slice(0, 8)
+                .map(item => ({ label: item[0], count: item[1] }));
+        }, [filteredEntries]);
         const heatmapData = useMemo(() => {
-            const grid = Array.from({ length: 7 }, () => Array(4).fill(0)); // 7 days × 4 time blocks
-            abcEntries.forEach(e => {
-                if (!e.timestamp) return;
-                const d = new Date(e.timestamp);
-                const day = d.getDay();
-                const hour = d.getHours();
-                if (isNaN(day) || isNaN(hour) || day < 0 || day > 6) return;
+            const grid = Array.from({ length: 7 }, () => Array(4).fill(0));
+            filteredEntries.forEach(entry => {
+                const iso = runtime.normalizeIsoTimestamp(entry.occurredAt || entry.timestamp);
+                if (!iso) return;
+                const date = new Date(iso);
+                const hour = date.getHours();
                 const block = hour < 9 ? 0 : hour < 12 ? 1 : hour < 15 ? 2 : 3;
-                grid[day][block]++;
+                grid[date.getDay()][block] += 1;
             });
             return grid;
-        }, [abcEntries]);
+        }, [filteredEntries]);
+        const selectedRate = useMemo(
+            () => runtime.calculateIncidentRate(
+                filteredEntries,
+                observationSessions || [],
+                behaviorFilter === 'all' ? {} : { behaviorId: behaviorFilter }
+            ),
+            [filteredEntries, observationSessions, behaviorFilter]
+        );
+        const phases = useMemo(
+            () => runtime.summarizePhases(filteredEntries, observationSessions || []),
+            [filteredEntries, observationSessions]
+        );
         const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const timeLabels = [tt('behavior_lens.early_am', 'Early AM'), tt('behavior_lens.morning_label', 'Morning'), tt('behavior_lens.afternoon_label', 'Afternoon'), tt('behavior_lens.late_pm', 'Late PM')];
-
-        const views = [
-            { id: 'intensity', label: '📈 Intensity Trend' },
-            { id: 'settings', label: '📊 By Setting' },
-            { id: 'heatmap', label: '🔥 Heatmap' },
+        const timeLabels = [
+            tt('behavior_lens.early_am', 'Early AM'),
+            tt('behavior_lens.morning_label', 'Morning'),
+            tt('behavior_lens.afternoon_label', 'Afternoon'),
+            tt('behavior_lens.late_pm', 'Late PM')
         ];
+        const views = [
+            { id: 'intensity', label: 'Rated intensity' },
+            { id: 'settings', label: 'By setting' },
+            { id: 'heatmap', label: 'Day and time' },
+            { id: 'phases', label: 'Phases' }
+        ];
+
+        const renderMetric = (label, value, color) => h('div', {
+            className: 'rounded-xl border border-' + color + '-200 bg-' + color + '-50 p-3 text-center'
+        },
+            h('div', { className: 'text-xl font-black text-' + color + '-800' }, value),
+            h('div', { className: 'text-[11px] font-bold text-slate-600' }, label)
+        );
+
+        const renderIntensity = () => {
+            if (intensityData.length === 0) {
+                return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
+                    h('h3', { className: 'text-sm font-black text-slate-800' }, 'Mean rated intensity by local day'),
+                    h('p', { className: 'py-8 text-center text-sm text-slate-600' }, 'No valid intensity ratings for this selection.')
+                );
+            }
+            const width = 600;
+            const height = 220;
+            const pad = 42;
+            const points = intensityData.map((item, index) => ({
+                x: pad + (index / Math.max(1, intensityData.length - 1)) * (width - pad * 2),
+                y: height - pad - (item.y / 5) * (height - pad * 2)
+            }));
+            const pathData = points.map((point, index) => (index === 0 ? 'M ' : 'L ') + point.x + ' ' + point.y).join(' ');
+            const labelInterval = Math.max(1, Math.floor(intensityData.length / 6));
+            return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-2' }, 'Mean rated intensity by local day'),
+                h('p', { className: 'text-[11px] text-slate-600 mb-4' }, 'Days without valid ratings are omitted; incident counts remain available in the other views.'),
+                h('svg', {
+                    role: 'img',
+                    'aria-label': 'Mean rated intensity by local day: ' + intensityData.map(item => item.date + ', ' + item.y.toFixed(1) + ', n ' + item.n).join('; '),
+                    viewBox: '0 0 ' + width + ' ' + height,
+                    className: 'w-full'
+                },
+                    [1, 2, 3, 4, 5].map(value => {
+                        const y = height - pad - (value / 5) * (height - pad * 2);
+                        return h('g', { key: value },
+                            h('line', { x1: pad, y1: y, x2: width - pad, y2: y, stroke: '#e2e8f0' }),
+                            h('text', { x: pad - 8, y: y + 4, textAnchor: 'end', fontSize: 10, fill: '#64748b' }, value)
+                        );
+                    }),
+                    h('path', { d: pathData, fill: 'none', stroke: '#4f46e5', strokeWidth: 3, strokeLinejoin: 'round' }),
+                    points.map((point, index) => h('circle', {
+                        key: index, cx: point.x, cy: point.y, r: 4, fill: '#4f46e5', stroke: '#fff', strokeWidth: 2
+                    })),
+                    intensityData.map((item, index) => {
+                        if (index % labelInterval !== 0 && index !== intensityData.length - 1) return null;
+                        return h('text', {
+                            key: item.date, x: points[index].x, y: height - 8, textAnchor: 'middle', fontSize: 9, fill: '#64748b'
+                        }, item.date.slice(5));
+                    })
+                )
+            );
+        };
+
+        const renderSettings = () => h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
+            h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, 'Incidents by setting'),
+            settingData.length === 0
+                ? h('p', { className: 'text-sm text-slate-600' }, 'No setting data for this selection.')
+                : h('div', { className: 'space-y-2' }, settingData.map(item => {
+                    const maximum = Math.max(1, ...settingData.map(value => value.count));
+                    return h('div', { key: item.label, className: 'flex items-center gap-3' },
+                        h('div', { className: 'w-28 text-[11px] font-bold text-slate-600 text-end truncate' }, item.label),
+                        h('div', { className: 'flex-1 bg-slate-100 rounded-full h-6 overflow-hidden' },
+                            h('div', {
+                                className: 'h-full bg-indigo-600 rounded-full flex items-center justify-end pe-2',
+                                style: { width: (item.count / maximum * 100) + '%' }
+                            }, h('span', { className: 'text-[11px] font-bold text-white' }, item.count))
+                        )
+                    );
+                }))
+        );
+
+        const renderHeatmap = () => {
+            const maximum = Math.max(1, ...heatmapData.flat());
+            return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm overflow-x-auto' },
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, 'Incident count by local day and time block'),
+                h('table', { className: 'w-full' },
+                    h('caption', { className: 'sr-only' }, 'Incident count by local day and time block'),
+                    h('thead', null,
+                        h('tr', null,
+                            h('th', { scope: 'col' }, ''),
+                            timeLabels.map(label => h('th', {
+                                key: label, scope: 'col', className: 'p-1 text-[11px] text-slate-600'
+                            }, label))
+                        )
+                    ),
+                    h('tbody', null,
+                        heatmapData.map((row, dayIndex) => h('tr', { key: dayIndex },
+                            h('th', { scope: 'row', className: 'pe-2 text-[11px] text-slate-600' }, dayLabels[dayIndex]),
+                            row.map((value, blockIndex) => {
+                                const opacity = value === 0 ? 0.05 : 0.2 + value / maximum * 0.8;
+                                return h('td', { key: blockIndex, className: 'p-1' },
+                                    h('div', {
+                                        className: 'h-8 rounded-lg flex items-center justify-center text-[11px] font-bold',
+                                        style: {
+                                            backgroundColor: 'rgba(79,70,229,' + opacity + ')',
+                                            color: opacity > 0.55 ? '#fff' : '#334155'
+                                        }
+                                    }, value)
+                                );
+                            })
+                        ))
+                    )
+                )
+            );
+        };
+
+        const renderPhases = () => h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
+            h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, 'Phase summaries'),
+            phases.length === 0
+                ? h('p', { className: 'text-sm text-slate-600' }, 'No phase-tagged incidents.')
+                : h('div', { className: 'space-y-2' }, phases.map(phase => {
+                    const intensityText = phase.intensity.mean === null
+                        ? 'unavailable'
+                        : phase.intensity.mean.toFixed(1) + ' (n=' + phase.intensity.ratedCount + ')';
+                    const rateText = phase.rate.denominatorAvailable
+                        ? phase.rate.perObservedHour.toFixed(2) + ' per observed hour'
+                        : 'no exposure denominator';
+                    return h('div', { key: phase.phase, className: 'rounded-lg border border-slate-200 p-3' },
+                        h('div', { className: 'font-black text-sm text-slate-800' }, phase.phase),
+                        h('div', { className: 'text-xs text-slate-600 mt-1' }, phase.count + ' incidents; rated mean ' + intensityText + '; ' + rateText)
+                    );
+                }))
+        );
 
         if (abcEntries.length === 0) {
             return h('div', { className: 'max-w-2xl mx-auto text-center py-12' },
-                h('div', { className: 'text-4xl mb-3' }, '📊'),
                 h('h2', { className: 'text-lg font-black text-slate-800 mb-2' }, tt('behavior_lens.trend_dashboard', 'Behavior Trend Dashboard')),
-                h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.add_abc_entries_to_see_visual_trend_data', 'Add ABC entries to see visual trend data.'))
+                h('p', { className: 'text-sm text-slate-600' }, 'Add ABC entries to see visual trend data.')
             );
         }
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
-                h('div', { className: 'text-4xl mb-2' }, '📊'),
                 h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_trend_dashboard' }, tt('behavior_lens.trend_dashboard', 'Behavior Trend Dashboard')),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, `${abcEntries.length} entries visualized`)
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, filteredEntries.length + ' canonical incidents visualized')
             ),
-            // View tabs
-            h('div', { className: 'flex gap-2 bg-white rounded-xl border border-slate-400 p-2 shadow-sm' },
-                views.map(v => h('button', { "aria-label": "Toggle view",
-                    key: v.id,
-                    onClick: () => setView(v.id),
-                    className: `flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${view === v.id ? 'bg-indigo-500 text-white shadow' : 'text-slate-600 hover:bg-slate-50'}`
-                }, v.label))
-            ),
-
-            // Intensity line chart
-            view === 'intensity' && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '📈 Behavior Intensity Over Time'),
-                (() => {
-                    const W = 600, H = 200, pad = 40;
-                    const maxY = Math.max(5, ...intensityData.map(d => d.y));
-                    const points = intensityData.map((d, i) => ({
-                        cx: pad + (i / Math.max(1, intensityData.length - 1)) * (W - pad * 2),
-                        cy: H - pad - (d.y / maxY) * (H - pad * 2)
-                    }));
-                    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.cx} ${p.cy}`).join(' ');
-                    return h('svg', { role: 'img', 'aria-label': `Behavior intensity over time. ${intensityData.length} observations: ${intensityData.map(d => `${d.label}, intensity ${d.y}`).join('; ')}.`, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '220px' } },
-                        // Grid lines
-                        ...[1, 2, 3, 4, 5].map(v => {
-                            const y = H - pad - (v / maxY) * (H - pad * 2);
-                            return h('g', { key: 'g' + v },
-                                h('line', { x1: pad, y1: y, x2: W - pad, y2: y, stroke: '#e2e8f0', strokeWidth: 1 }),
-                                h('text', { x: pad - 8, y: y + 4, textAnchor: 'end', fontSize: 10, fill: '#94a3b8' }, v)
-                            );
-                        }),
-                        // Line
-                        h('path', { d: pathD, fill: 'none', stroke: '#6366f1', strokeWidth: 2.5, strokeLinejoin: 'round' }),
-                        // Area fill
-                        h('path', { d: pathD + ` L ${points[points.length - 1]?.cx || pad} ${H - pad} L ${pad} ${H - pad} Z`, fill: 'url(#areaGrad)', opacity: 0.3 }),
-                        h('defs', null, h('linearGradient', { id: 'areaGrad', x1: '0', y1: '0', x2: '0', y2: '1' },
-                            h('stop', { offset: '0%', stopColor: '#6366f1' }),
-                            h('stop', { offset: '100%', stopColor: '#6366f1', stopOpacity: 0 })
-                        )),
-                        // Dots
-                        ...points.map((p, i) =>
-                            h('circle', { key: 'c' + i, cx: p.cx, cy: p.cy, r: 4, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 })
-                        ),
-                        // X labels (show every few)
-                        ...intensityData.filter((_, i) => i % Math.max(1, Math.floor(intensityData.length / 6)) === 0).map((d, _, arr) => {
-                            const idx = intensityData.indexOf(d);
-                            return h('text', { key: 'xl' + idx, x: points[idx]?.cx, y: H - 8, textAnchor: 'middle', fontSize: 9, fill: '#94a3b8' }, d.label);
-                        })
-                    );
-                })()
-            ),
-
-            // Settings bar chart
-            view === 'settings' && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '📊 Incidents by Setting'),
-                h('div', { className: 'space-y-2' },
-                    settingData.map((s, i) => {
-                        const maxC = Math.max(1, ...settingData.map(d => d.count));
-                        return h('div', { key: i, className: 'flex items-center gap-3' },
-                            h('div', { className: 'w-28 text-[11px] font-bold text-slate-600 text-end truncate shrink-0' }, s.label),
-                            h('div', { className: 'flex-1 bg-slate-100 rounded-full h-6 overflow-hidden' },
-                                h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
-                                    'aria-valuenow': Math.round((s.count / maxC) * 100),
-                                    className: 'h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full flex items-center justify-end pe-2 transition-all duration-500',
-                                    style: { width: `${(s.count / maxC) * 100}%` }
-                                }, h('span', { className: 'text-[11px] font-bold text-white' }, s.count))
-                            )
-                        );
-                    })
+            h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3 shadow-sm' },
+                h('label', { className: 'block text-[11px] font-bold uppercase text-slate-600 mb-1', htmlFor: 'bl-trend-behavior' }, 'Target behavior'),
+                h('select', {
+                    id: 'bl-trend-behavior', value: behaviorFilter,
+                    onChange: event => setBehaviorFilter(event.target.value),
+                    className: 'w-full min-h-[44px] rounded-lg border border-slate-400 bg-white px-3 text-sm'
+                },
+                    h('option', { value: 'all' }, 'All canonical behaviors'),
+                    behaviorGroups.map(group => h('option', { key: group.id, value: group.id }, group.label + ' (' + group.count + ')'))
                 )
             ),
-
-            // Heatmap
-            view === 'heatmap' && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '🔥 Day × Time Heatmap'),
-                h('div', { className: 'overflow-x-auto' },
-                    h('table', { className: 'w-full' },
-                        h('caption', { className: 'sr-only' }, '🔥 Day × Time Heatmap'), h('thead', null, h('tr', null,
-                            h('th', { scope: 'col', className: 'text-[11px] text-slate-600 p-1' }),
-                            ...timeLabels.map(t => h('th', { scope: 'col', key: t, className: 'text-[11px] text-slate-600 font-bold p-1 text-center' }, t))
-                        )),
-                        h('tbody', null,
-                            ...heatmapData.map((row, dayIdx) => {
-                                const maxVal = Math.max(1, ...heatmapData.flat());
-                                return h('tr', { key: dayIdx },
-                                    h('td', { className: 'text-[11px] font-bold text-slate-600 pe-2 text-end' }, dayLabels[dayIdx]),
-                                    ...row.map((val, colIdx) => {
-                                        const intensity = val / maxVal;
-                                        const bg = val === 0 ? 'bg-slate-50' : intensity < 0.33 ? 'bg-green-200' : intensity < 0.66 ? 'bg-amber-300' : 'bg-red-400';
-                                        return h('td', { key: colIdx, className: 'p-1' },
-                                            h('div', { className: `w-full h-8 rounded-lg ${bg} flex items-center justify-center text-[11px] font-bold ${val > 0 ? 'text-white' : 'text-slate-600'}` }, val || '·')
-                                        );
-                                    })
-                                );
-                            })
-                        )
-                    )
-                ),
-                h('div', { className: 'flex items-center gap-4 mt-3 text-[11px] text-slate-600' },
-                    h('span', null, tt('behavior_lens.ui.low', 'Low')), h('div', { className: 'w-4 h-3 bg-green-200 rounded' }),
-                    h('div', { className: 'w-4 h-3 bg-amber-300 rounded' }),
-                    h('div', { className: 'w-4 h-3 bg-red-400 rounded' }), h('span', null, tt('behavior_lens.ui.high', 'High'))
-                )
-            )
+            h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+                renderMetric('Incidents', filteredEntries.length, 'indigo'),
+                renderMetric('Rated mean (n=' + intensitySummary.ratedCount + ')', intensitySummary.mean === null ? 'No ratings' : intensitySummary.mean.toFixed(1), 'amber'),
+                renderMetric('Per observed hour', selectedRate.denominatorAvailable ? selectedRate.perObservedHour.toFixed(2) : 'Unavailable', 'emerald'),
+                renderMetric('Missing ratings', intensitySummary.missingCount, 'slate')
+            ),
+            h('div', { className: 'flex flex-wrap gap-2 bg-white rounded-xl border border-slate-400 p-2 shadow-sm' },
+                views.map(item => h('button', {
+                    type: 'button', key: item.id, onClick: () => setView(item.id),
+                    'aria-pressed': String(view === item.id),
+                    className: 'min-h-[44px] flex-1 rounded-lg px-3 text-xs font-bold ' + (view === item.id ? 'bg-indigo-600 text-white' : 'text-slate-700 hover:bg-slate-50')
+                }, item.label))
+            ),
+            view === 'intensity' && renderIntensity(),
+            view === 'settings' && renderSettings(),
+            view === 'heatmap' && renderHeatmap(),
+            view === 'phases' && renderPhases()
         );
     };
 
-    // ─── TeamNotes ──────────────────────────────────────────────────────
-    // Multi-role timestamped collaboration thread
+    // TeamNotes
     const TeamNotes = ({ studentName, notes, setNotes, announce, t, addToast }) => {
         const [newNote, setNewNote] = useState('');
         const [role, setRole] = useState('teacher');
@@ -14203,30 +14231,10 @@ Keep it encouraging and professional. Under 300 words.`;
     // ─── AlloBotChat ────────────────────────────────────────────────────
     // Conversational AI chat panel for behavioral analysis questions
     const AlloBotChat = ({ callGemini, studentName, studentKey, studentProfile, sessionNotes, abcEntries, aiAnalysis, buildStudentContext, t, addToast, alloBotRef }) => {
-        const chatLsKey = studentKey ? studentKey('bl_allobot_') : `bl_allobot_${studentName || '_'}`;
-        const loadChatHistory = () => {
-            try {
-                const v = localStorage.getItem(chatLsKey);
-                if (v) return JSON.parse(v);
-                const legacy = `bl_allobot_${studentName || '_'}`;
-                if (legacy !== chatLsKey) {
-                    const lv = localStorage.getItem(legacy);
-                    if (lv) return JSON.parse(lv);
-                }
-                return [];
-            } catch { return []; }
-        };
-        const [messages, setMessages] = useState(() => loadChatHistory());
+        const [messages, setMessages] = useDurableToolState('alloBotMessages', []);
         const [input, setInput] = useState('');
         const [isSending, setIsSending] = useState(false);
         const chatEndRef = useRef(null);
-
-        // Persist chat history to localStorage
-        useEffect(() => {
-            if (messages.length > 0) {
-                try { localStorage.setItem(chatLsKey, JSON.stringify(messages.slice(-30))); } catch { }
-            }
-        }, [messages, chatLsKey]);
 
         useEffect(() => {
             if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -14235,7 +14243,6 @@ Keep it encouraging and professional. Under 300 words.`;
         const clearChat = () => {
             if (messages.length === 0) return;
             setMessages([]);
-            try { localStorage.removeItem(chatLsKey); } catch { }
             if (addToast) addToast(tt('behavior_lens.toast.chat_cleared', 'Chat cleared'), 'info');
         };
 
@@ -14243,7 +14250,7 @@ Keep it encouraging and professional. Under 300 words.`;
             const text = input.trim();
             if (!text || !callGemini || isSending) return;
             const userMsg = { role: 'user', content: text, ts: new Date().toISOString() };
-            setMessages(prev => [...prev, userMsg]);
+            setMessages(previous => [...previous, userMsg].slice(-30));
             setInput('');
             setIsSending(true);
             try {
@@ -14275,14 +14282,14 @@ Respond helpfully and concisely as AlloBot:`;
                     return;
                 }
                 const botMsg = { role: 'bot', content: result, ts: new Date().toISOString() };
-                setMessages(prev => [...prev, botMsg]);
+                setMessages(previous => [...previous, botMsg].slice(-30));
                 // Have the embodied bot speak the response aloud (truncated)
                 if (alloBotRef?.current?.speak) {
                     try { alloBotRef.current.speak(result.slice(0, 200)); } catch (_) {}
                 }
             } catch (err) {
                 warnLog('AlloBotChat error:', err);
-                setMessages(prev => [...prev, { role: 'bot', content: 'Sorry, I encountered an error. Please try again.', ts: new Date().toISOString() }]);
+                setMessages(previous => [...previous, { role: 'bot', content: 'Sorry, I encountered an error. Please try again.', ts: new Date().toISOString() }].slice(-30));
                 if (addToast) addToast(tt('behavior_lens.toast.allobot_response_failed', 'AlloBot response failed'), 'error');
             } finally {
                 setIsSending(false);
@@ -15338,9 +15345,7 @@ Fill in clinically appropriate values. The replacement behavior should serve the
         });
         const [examples, setExamples] = useState('');
         const [nonExamples, setNonExamples] = useState('');
-        const [savedDefs, setSavedDefs] = useState(() => {
-            try { return JSON.parse(localStorage.getItem('bl_opdef_saved') || '[]'); } catch { return []; }
-        });
+        const [savedDefs, setSavedDefs] = useDurableToolState('operationalDefinitions', []);
 
         const updateDim = (key, val) => setDimensions(prev => ({ ...prev, [key]: val }));
 
@@ -15449,7 +15454,6 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
             };
             const updated = [entry, ...savedDefs].slice(0, 20);
             setSavedDefs(updated);
-            try { localStorage.setItem('bl_opdef_saved', JSON.stringify(updated)); } catch {}
             if (addToast) addToast(t('toasts.definition_saved') + updated.length + ' total)', 'success');
         };
 
@@ -22245,21 +22249,20 @@ Keep the language professional but accessible.`;
 
     // ─── MTSSTierManager ────────────────────────────────────────
 
-    const MTSSTierManager = ({ dashboardData, abcEntries, callGemini, t, addToast, selectedStudent }) => {
-
-        const [tiers, setTiers] = useState(() => { try { const s = localStorage.getItem('behaviorlens_mtss_tiers'); return s ? JSON.parse(s) : {}; } catch { return {}; } });
+    const MTSSTierManager = ({ dashboardData, abcEntries, callGemini, t, addToast, selectedStudent, studentRoster, setStudentRoster }) => {
 
         const [aiRecs, setAiRecs] = useState(null);
-
         const [recsLoading, setRecsLoading] = useState(false);
-
-        useEffect(() => { try { localStorage.setItem('behaviorlens_mtss_tiers', JSON.stringify(tiers)); } catch { } }, [tiers]);
-
-        const students = useMemo(() => (dashboardData && Array.isArray(dashboardData) ? dashboardData : []).map(s => s.studentNickname).filter(Boolean), [dashboardData]);
-
-        const getTier = (name) => tiers[name] || 1;
-
-        const setTier = (name, tier) => setTiers(prev => ({ ...prev, [name]: tier }));
+        const students = useMemo(() => (dashboardData && Array.isArray(dashboardData) ? dashboardData : []).map(item => item.studentNickname).filter(Boolean), [dashboardData]);
+        const getTier = (name) => {
+            const record = (studentRoster || []).find(item => item.name === name);
+            return record && [1, 2, 3].includes(record.mtssTier) ? record.mtssTier : 1;
+        };
+        const setTier = (name, tier) => setStudentRoster(previous => {
+            const exists = previous.some(item => item.name === name);
+            if (!exists) return [{ id: uid(), name, mtssTier: tier, lastAccessed: new Date().toISOString() }, ...previous].slice(0, 20);
+            return previous.map(item => item.name === name ? { ...item, mtssTier: tier } : item);
+        });
 
         const tierConfig = { 1: { label: (tt('behavior_lens.raw.tier_1_universal', 'Tier 1 — Universal')), color: 'emerald', emoji: '🟢', pct: '80%' }, 2: { label: (tt('behavior_lens.raw.tier_2_targeted', 'Tier 2 — Targeted')), color: 'amber', emoji: '🟡', pct: '15%' }, 3: { label: (tt('behavior_lens.raw.tier_3_intensive', 'Tier 3 — Intensive')), color: 'red', emoji: '🔴', pct: '5%' } };
 
@@ -22271,7 +22274,8 @@ Keep the language professional but accessible.`;
 
             try {
 
-                const studentData = students.map(name => { const abc = abcEntries.filter(e => e.student === name); return `${name}: Tier ${getTier(name)}, ${abc.length} entries, avg int ${abc.length > 0 ? (abc.reduce((s, e) => s + (e.intensity || 3), 0) / abc.length).toFixed(1) : 'N/A'}`; }).join('\n');
+                const runtime = getBehaviorLensWorkspaceRuntime();
+                const studentData = students.map(name => { const abc = abcEntries.filter(entry => entry.student === name); const intensity = runtime.summarizeIntensity(abc); return `${name}: Tier ${getTier(name)}, ${abc.length} entries, avg rated intensity ${intensity.mean === null ? 'N/A' : intensity.mean.toFixed(1) + ' (n=' + intensity.ratedCount + ')'}`; }).join('\n');
 
                 const prompt = `You are an MTSS coordinator. Review tier assignments:\n${studentData}\n\nRecommend changes. Return ONLY valid JSON:\n{"recommendations":[{"student":"name","currentTier":1,"recommendedTier":2,"reason":"..."}],"summary":"Overall MTSS health in 2 sentences"}`;
 
@@ -23554,7 +23558,7 @@ Keep the language professional but accessible.`;
 
 
     // ─── ProgressReportGenerator ──────────────────────────────────────────
-    const ProgressReportGenerator = ({ abcEntries, observationSessions, sessionHistory, aiAnalysis, studentProfile, selectedStudent, callGemini, addToast, t }) => {
+    const ProgressReportGenerator = ({ abcEntries, observationSessions, sessionHistory, aiAnalysis, targetBehaviors, studentProfile, selectedStudent, callGemini, addToast, t }) => {
         const [audience, setAudience] = useState('parent'); // parent | iep | clinical
         const [dateRange, setDateRange] = useState('all');
         const [customFrom, setCustomFrom] = useState('');
@@ -23571,89 +23575,50 @@ Keep the language professional but accessible.`;
 
         // ─── Filtered data ──────────────────────────────────────────────
         const filtered = useMemo(() => {
-            let entries = abcEntries || [];
-            let sessions = observationSessions || [];
-            if (dateRange === 'week') {
-                const cutoff = new Date(Date.now() - 7 * 86400000);
-                entries = entries.filter(e => new Date(e.timestamp) >= cutoff);
-                sessions = sessions.filter(s => new Date(s.timestamp) >= cutoff);
-            } else if (dateRange === 'month') {
-                const cutoff = new Date(Date.now() - 30 * 86400000);
-                entries = entries.filter(e => new Date(e.timestamp) >= cutoff);
-                sessions = sessions.filter(s => new Date(s.timestamp) >= cutoff);
-            } else if (dateRange === 'custom' && customFrom) {
-                const from = new Date(customFrom);
-                const to = customTo ? new Date(customTo + 'T23:59:59') : new Date();
-                entries = entries.filter(e => { const d = new Date(e.timestamp); return d >= from && d <= to; });
-                sessions = sessions.filter(s => { const d = new Date(s.timestamp); return d >= from && d <= to; });
-            }
-            return { entries, sessions };
-        }, [abcEntries, observationSessions, dateRange, customFrom, customTo]);
-
-        // ─── Analytics derived from filtered data ───────────────────────
-        const analytics = useMemo(() => {
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            let range = {};
+            if (dateRange === 'week') range.from = new Date(Date.now() - 7 * 86400000);
+            else if (dateRange === 'month') range.from = new Date(Date.now() - 30 * 86400000);
+            else if (dateRange === 'custom') { range.from = customFrom || null; range.to = customTo || null; }
+            return {
+                entries: dateRange === 'all' ? (abcEntries || []).slice() : runtime.filterByDateRange(abcEntries || [], range),
+                sessions: dateRange === 'all' ? (observationSessions || []).slice() : runtime.filterByDateRange(observationSessions || [], range)
+            };
+        }, [abcEntries, observationSessions, dateRange, customFrom, customTo]);        const analytics = useMemo(() => {
+            const runtime = getBehaviorLensWorkspaceRuntime();
             const entries = filtered.entries;
-            const behaviorCounts = {};
-            const settingCounts = {};
-            const antecedentCounts = {};
-            const consequenceCounts = {};
-            let totalIntensity = 0;
-            entries.forEach(e => {
-                const b = (e.behavior || '').trim();
-                if (b) behaviorCounts[b] = (behaviorCounts[b] || 0) + 1;
-                const s = (e.setting || '').trim();
-                if (s) settingCounts[s] = (settingCounts[s] || 0) + 1;
-                const a = (e.antecedent || '').trim();
-                if (a) antecedentCounts[a] = (antecedentCounts[a] || 0) + 1;
-                const c = (e.consequence || '').trim();
-                if (c) consequenceCounts[c] = (consequenceCounts[c] || 0) + 1;
-                totalIntensity += (e.intensity || 3);
-            });
-            const topBehaviors = Object.entries(behaviorCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
-            const topSettings = Object.entries(settingCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-            const topAntecedents = Object.entries(antecedentCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-            const topConsequences = Object.entries(consequenceCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-            const avgIntensity = entries.length > 0 ? (totalIntensity / entries.length).toFixed(1) : '—';
-
-            // Daily frequency for chart
-            const byDay = {};
-            entries.forEach(e => {
-                const d = new Date(e.timestamp).toISOString().split('T')[0];
-                byDay[d] = (byDay[d] || 0) + 1;
-            });
-            const dailyData = Object.entries(byDay).sort(([a], [b]) => a.localeCompare(b)).map(([date, count]) => ({ date, count }));
-
-            // Linear regression — gated at ≥5 datapoints (ABA convention; a
-            // trend from 2 points is noise, not signal).
+            const countValues = field => {
+                const counts = {};
+                entries.forEach(entry => { const value = String(entry[field] || '').trim(); if (value) counts[value] = (counts[value] || 0) + 1; });
+                return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+            };
+            const intensity = runtime.summarizeIntensity(entries);
+            const topBehaviors = runtime.groupByCanonicalBehavior(entries, targetBehaviors || []).slice(0, 8).map(group => [group.label, group.count]);
+            const dailyData = runtime.groupByLocalDay(entries).map(day => ({ date: day.date, count: day.count, avgIntensity: day.intensity.mean, intensityN: day.intensity.ratedCount }));
             let trend = null;
             if (dailyData.length >= 5) {
                 const n = dailyData.length;
-                const xs = dailyData.map((_, i) => i);
-                const ys = dailyData.map(d => d.count);
-                const sumX = xs.reduce((a, b) => a + b, 0);
-                const sumY = ys.reduce((a, b) => a + b, 0);
-                const sumXY = xs.reduce((a, x, i) => a + x * ys[i], 0);
-                const sumX2 = xs.reduce((a, x) => a + x * x, 0);
+                const sumX = dailyData.reduce((sum, _, index) => sum + index, 0);
+                const sumY = dailyData.reduce((sum, day) => sum + day.count, 0);
+                const sumXY = dailyData.reduce((sum, day, index) => sum + index * day.count, 0);
+                const sumX2 = dailyData.reduce((sum, _, index) => sum + index * index, 0);
                 const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
                 const intercept = (sumY - slope * sumX) / n;
                 trend = { slope, intercept, startY: intercept, endY: slope * (n - 1) + intercept };
             }
-
-            // Observation session stats
-            const freqSessions = filtered.sessions.filter(s => s.method === 'frequency');
-            const intervalSessions = filtered.sessions.filter(s => s.method === 'interval');
-            const durationSessions = filtered.sessions.filter(s => s.method === 'duration');
-
+            const freqSessions = filtered.sessions.filter(session => session.method === 'frequency');
+            const intervalSessions = filtered.sessions.filter(session => session.method === 'interval');
+            const durationSessions = filtered.sessions.filter(session => session.method === 'duration');
+            const rate = runtime.calculateIncidentRate(entries, filtered.sessions);
             return {
                 totalEntries: entries.length, totalSessions: filtered.sessions.length,
-                topBehaviors, topSettings, topAntecedents, topConsequences,
-                avgIntensity, dailyData, trend,
-                freqSessions, intervalSessions, durationSessions
+                topBehaviors, topSettings: countValues('setting').slice(0, 5), topAntecedents: countValues('antecedent').slice(0, 5), topConsequences: countValues('consequence').slice(0, 5),
+                avgIntensity: intensity.mean === null ? 'No ratings' : intensity.mean.toFixed(1), ratedIntensityCount: intensity.ratedCount, missingIntensityCount: intensity.missingCount,
+                dailyData, trend, freqSessions, intervalSessions, durationSessions, rate,
+                phases: runtime.summarizePhases(entries, filtered.sessions), quality: runtime.inspectAbcData(entries, targetBehaviors || [], filtered.sessions)
             };
-        }, [filtered]);
-
-        // ─── Generate AI Recommendations ────────────────────────────────
-        const generateRecs = async () => {
+        }, [filtered, targetBehaviors]);
+        const aiAnalysisStale = useMemo(() => getBehaviorLensWorkspaceRuntime().isAnalysisStale(aiAnalysis, abcEntries), [aiAnalysis, abcEntries]);        const generateRecs = async () => {
             if (!callGemini || analytics.totalEntries === 0) return;
             setRecsLoading(true);
             try {
@@ -23662,9 +23627,10 @@ Keep the language professional but accessible.`;
 Student: ${selectedStudent || 'Student'}
 Total ABC entries: ${analytics.totalEntries}
 Top behaviors: ${analytics.topBehaviors.map(([b, c]) => `${b} (${c}x)`).join(', ')}
-Average intensity: ${analytics.avgIntensity}/5
+Average intensity: ${analytics.avgIntensity}${analytics.ratedIntensityCount ? ` / 5 from ${analytics.ratedIntensityCount} rated entries; ${analytics.missingIntensityCount} missing` : ''}
+Exposure-adjusted rate: ${analytics.rate.denominatorAvailable ? analytics.rate.perObservedHour.toFixed(2) + ' incidents per observed hour across ' + analytics.rate.exposure.hours.toFixed(2) + ' observed hours' : 'unavailable; no valid observation duration'}
 Trend: ${analytics.trend ? (analytics.trend.slope > 0.1 ? 'increasing' : analytics.trend.slope < -0.1 ? 'decreasing' : 'stable') : 'insufficient data'}
-${aiAnalysis ? `Hypothesized function: ${aiAnalysis.hypothesizedFunction} (${aiAnalysis.confidence}% confidence)` : ''}
+${aiAnalysis ? `Hypothesized function: ${aiAnalysis.hypothesizedFunction} (AI estimate: ${aiConfidenceBucket(aiAnalysis.confidence).label} confidence${aiAnalysisStale ? '; stale relative to current data' : ''})` : ''}
 ${studentProfile?.goals ? `Current goals: ${studentProfile.goals}` : ''}
 
 Write 4-6 ${audience === 'parent' ? 'practical, encouraging recommendations using simple language' : audience === 'iep' ? 'specific, measurable recommendations aligned with IEP goals' : 'evidence-based clinical recommendations with ABA terminology'}.
@@ -25811,13 +25777,33 @@ IMPORTANT rules for expert keys:
         const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
         const [isPracticeMode, setIsPracticeMode] = useState(false);
         const [practiceScenarioName, setPracticeScenarioName] = useState('');
-        const [favorites, setFavorites] = useState(() => {
-            try { return JSON.parse(localStorage.getItem('bl_favorites') || '[]'); } catch(e) { return []; }
-        });
-        // Persist favorites to localStorage (works in Firebase deploy; resets in Canvas)
-        useEffect(() => { try { localStorage.setItem('bl_favorites', JSON.stringify(favorites)); } catch(e) {} }, [favorites]);
+        const [favorites, setFavorites] = useState([]);
         const [sessionNotes, setSessionNotes] = useState([]);
         const [teamNotes, setTeamNotes] = useState([]);
+        const [targetBehaviors, setTargetBehaviors] = useState([]);
+        const [toolState, setToolState] = useState({});
+        const [deletedAbcEntries, setDeletedAbcEntries] = useState([]);
+        const [auditLog, setAuditLog] = useState([]);
+        const [workflowDiagnostics, setWorkflowDiagnostics] = useState([]);
+        const appendAuditEvent = useCallback((event) => {
+            setAuditLog(previous => getBehaviorLensWorkspaceRuntime().appendBounded(
+                previous, event, getBehaviorLensWorkspaceRuntime().MAX_AUDIT_EVENTS
+            ));
+        }, []);
+        const recordWorkflowDiagnostic = useCallback((action, details = {}) => {
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            const timestamp = new Date().toISOString();
+            const event = {
+                id: 'diagnostic-' + runtime.stableHash(timestamp + '|' + action + '|' + (details.toolId || '')),
+                timestamp,
+                action,
+                toolId: details.toolId || null,
+                durationMs: Number.isFinite(Number(details.durationMs)) ? Math.max(0, Math.round(Number(details.durationMs))) : null,
+                outcome: details.outcome || null
+            };
+            setWorkflowDiagnostics(previous => runtime.appendBounded(previous, event, runtime.MAX_WORKFLOW_DIAGNOSTICS));
+        }, []);
+        const durableToolStateContextValue = useMemo(() => ({ state: toolState, setState: setToolState }), [toolState]);
 
         // ─── WCAG: Screen reader announcements ─────────────────────────
         const [_blAnnouncement, _setBlAnnouncement] = useState('');
@@ -25876,6 +25862,11 @@ IMPORTANT rules for expert keys:
             setAnalyzing(false);
             setSessionNotes([]);
             setTeamNotes([]);
+            setTargetBehaviors([]);
+            setToolState({});
+            setDeletedAbcEntries([]);
+            setAuditLog([]);
+            setWorkflowDiagnostics([]);
             setStudentProfile(emptyStudentProfile());
             setSessionHistory([]);
             setActivityRegistry({});
@@ -25903,6 +25894,11 @@ IMPORTANT rules for expert keys:
             setObservationSessions(workspace.observationSessions);
             setSessionNotes(workspace.sessionNotes);
             setTeamNotes(workspace.teamNotes);
+            setTargetBehaviors(workspace.targetBehaviors);
+            setToolState(workspace.toolState);
+            setDeletedAbcEntries(workspace.deletedAbcEntries);
+            setAuditLog(workspace.auditLog);
+            setWorkflowDiagnostics(workspace.workflowDiagnostics);
             setStudentProfile(workspace.studentProfile);
             setSessionHistory(workspace.sessionHistory);
             setDesignPhases(workspace.designPhases);
@@ -25969,100 +25965,35 @@ IMPORTANT rules for expert keys:
             if (selectedStudent) return prefix + String(selectedStudent).replace(/[^A-Za-z0-9_-]/g, '_');
             return prefix + '_';
         }, [activeStudentId, selectedStudent]);
-
-        // ─── One-time legacy localStorage migration ──────────────────────
-        // Pre-migration data was keyed by raw codename ("behaviorLens_abc_Brave Otter").
-        // On first load post-upgrade, walk known prefixes, find/create a
-        // roster entry for each legacy name, and copy its data under
-        // prefix+id. Legacy keys are LEFT IN PLACE as a recovery backup
-        // until a future cleanup pass — there is no destructive delete here
-        // because users have no way to recover if this migration is wrong.
-        const _legacyStorageMigrationDone = useRef(false);
-        useEffect(() => {
-            if (_legacyStorageMigrationDone.current) return;
-            _legacyStorageMigrationDone.current = true;
-            try {
-                const FLAG = 'bl_studentkey_migrated_v1';
-                if (localStorage.getItem(FLAG)) return;
-                const PREFIXES = [
-                    'behaviorLens_abc_', 'behaviorLens_obs_', 'behaviorLens_homeLog_',
-                    'behaviorLens_selfCheck_', 'behaviorLens_consent_',
-                    'behaviorLens_tokenHistory_', 'behaviorLens_goals_',
-                    'bl_contracts_', 'bl_escalation_', 'bl_reinforcer_',
-                    'bl_reinforcer_snaps_', 'bl_crisis_', 'bl_fidelity_',
-                    'bl_allobot_', 'prefassess_'
-                ];
-                const ID_SHAPE = /^[a-z0-9]{8,20}$/; // shape of uid() output — already-migrated key
-                const nameToId = new Map();
-                let rosterChanged = false;
-                const rosterCopy = studentRoster.map(r => {
-                    if (r && r.name && r.id) nameToId.set(r.name, r.id);
-                    return r;
-                });
-
-                const legacyKeys = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const k = localStorage.key(i);
-                    if (!k) continue;
-                    for (const p of PREFIXES) {
-                        if (!k.startsWith(p)) continue;
-                        const suffix = k.slice(p.length);
-                        if (!suffix || suffix === '_' || suffix === 'default') break;
-                        if (ID_SHAPE.test(suffix)) break; // already id-shape — assume already migrated
-                        let id = nameToId.get(suffix);
-                        if (!id) {
-                            id = uid();
-                            nameToId.set(suffix, id);
-                            rosterCopy.push({ id, name: suffix, lastAccessed: new Date().toISOString() });
-                            rosterChanged = true;
-                        }
-                        legacyKeys.push({ k, p, id });
-                        break;
-                    }
-                }
-
-                let migrated = 0;
-                legacyKeys.forEach(({ k, p, id }) => {
-                    const newK = p + id;
-                    if (localStorage.getItem(newK) == null) {
-                        const v = localStorage.getItem(k);
-                        if (v != null) {
-                            try { localStorage.setItem(newK, v); migrated++; } catch {}
-                        }
-                    }
-                });
-
-                if (rosterChanged) setStudentRoster(rosterCopy.slice(0, 20));
-                try { localStorage.setItem(FLAG, '1'); } catch {}
-                if (migrated > 0) debugLog('BehaviorLens: migrated ' + migrated + ' legacy storage keys to studentId-scoped form');
-            } catch (e) {
-                debugLog('BehaviorLens: legacy storage migration skipped', e);
-            }
-        }, []);
+        // Durable student data now lives only in the canonical version-4 workspace.
+        // No legacy key migration is needed because Behavior Lens has not shipped user data yet.
 
         // Build a summary object from full workspace data (for comparisonWorkspaces entries)
         const buildWorkspaceSummary = useCallback((data) => {
+            const runtime = getBehaviorLensWorkspaceRuntime();
             const entries = data.abcEntries || [];
+            const observationData = data.observationSessions || [];
             const sessions = data.sessionHistory || [];
-            const behaviorCounts = {};
-            entries.forEach(e => { const b = (e.behavior || '').trim(); if (b) behaviorCounts[b] = (behaviorCounts[b] || 0) + 1; });
-            const ratedIntensities = entries.map(e => Number(e.intensity)).filter(v => Number.isFinite(v) && v >= 1 && v <= 5);
-            const avgIntensity = ratedIntensities.length > 0 ? ratedIntensities.reduce((sum, value) => sum + value, 0) / ratedIntensities.length : 0;
-            const lastEntry = entries.length > 0 ? entries.reduce((latest, entry) => new Date(entry.timestamp || entry.date || 0) > new Date(latest.timestamp || latest.date || 0) ? entry : latest, entries[0]).timestamp : null;
-            const topBehaviors = Object.entries(behaviorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const intensity = runtime.summarizeIntensity(entries);
+            const behaviorGroups = runtime.groupByCanonicalBehavior(entries, data.targetBehaviors || []);
+            const validTimestamps = entries.map(entry => runtime.normalizeIsoTimestamp(entry.occurredAt || entry.timestamp)).filter(Boolean).sort();
+            const rate = runtime.calculateIncidentRate(entries, observationData);
             return {
                 student: data.student || data.selectedStudent || 'Unknown',
                 abcCount: entries.length,
-                sessionCount: sessions.length,
-                avgIntensity: parseFloat(avgIntensity.toFixed(1)),
-                            avgIntensityN: ratedIntensities.length,
-                topBehaviors,
-                lastEntry,
+                sessionCount: observationData.length,
+                avgIntensity: intensity.mean === null ? null : Number(intensity.mean.toFixed(1)),
+                avgIntensityN: intensity.ratedCount,
+                missingIntensityCount: intensity.missingCount,
+                incidentRatePerObservedHour: rate.perObservedHour === null ? null : Number(rate.perObservedHour.toFixed(2)),
+                exposureMinutes: Number(rate.exposure.minutes.toFixed(1)),
+                topBehaviors: behaviorGroups.slice(0, 5).map(group => [group.label, group.count]),
+                lastEntry: validTimestamps.length ? validTimestamps[validTimestamps.length - 1] : null,
                 savedAt: data.savedAt || new Date().toISOString(),
                 profile: data.studentProfile || {},
                 sessionHistory: sessions.slice(0, 20),
                 designPhases: data.designPhases || [],
-                effectSizeResults: data.effectSizeResults,
+                effectSizeResults: data.effectSizeResults
             };
         }, []);
 
@@ -26070,11 +26001,12 @@ IMPORTANT rules for expert keys:
         const saveCurrentToRoster = useCallback(() => {
             if (!selectedStudent) return;
             const currentData = {
-                version: 2, savedAt: new Date().toISOString(), student: selectedStudent,
+                version: getBehaviorLensWorkspaceRuntime().WORKSPACE_VERSION, savedAt: new Date().toISOString(), student: selectedStudent,
                 abcEntries, observationSessions, favorites, sessionNotes, teamNotes, studentProfile,
                 userRole, activityRegistry, sessionHistory, designPhases, activeDesign,
                 workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
                 aiAnalysis: aiAnalysis || null,
+                targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics,
                 dismissedAlerts: Array.from(dismissedAlerts),
                 visitedPanels: Array.from(visitedPanels),
             };
@@ -26088,7 +26020,8 @@ IMPORTANT rules for expert keys:
         }, [selectedStudent, abcEntries, observationSessions, favorites, sessionNotes, teamNotes,
             studentProfile, userRole, activityRegistry, sessionHistory, designPhases,
             activeDesign, workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
-            aiAnalysis, dismissedAlerts, visitedPanels, buildWorkspaceSummary]);
+            aiAnalysis, targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics,
+            dismissedAlerts, visitedPanels, buildWorkspaceSummary]);
 
         // Switch to a different student from the comparison workspaces
         const switchToStudent = useCallback((studentName) => {
@@ -26194,7 +26127,10 @@ IMPORTANT rules for expert keys:
 
         // Practice sandbox data loader
         const handleLoadScenario = (scenarioData) => {
-            setAbcEntries(scenarioData.entries || []);
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            const scenarioBehaviors = runtime.normalizeTargetBehaviors([], scenarioData.entries || []);
+            setTargetBehaviors(scenarioBehaviors);
+            setAbcEntries(runtime.normalizeAbcEntries(scenarioData.entries || [], { targetBehaviors: scenarioBehaviors }).items);
             if (!scenarioData.append) {
                 // Full load — reset analysis and observations
                 setObservationSessions(scenarioData.observations || []);
@@ -26229,6 +26165,13 @@ IMPORTANT rules for expert keys:
             URL.revokeObjectURL(url);
             setLastSavedAt(now);
             setDataChangedSinceSave(false);
+            recordWorkflowDiagnostic('workspace-export', { toolId: 'workspace', outcome: 'downloaded' });
+            appendAuditEvent(getBehaviorLensWorkspaceRuntime().createAuditEvent('workspace-exported', {
+                entityType: 'workspace',
+                entityId: activeStudentId || selectedStudent,
+                actor: userRole,
+                summary: 'Downloaded a complete Behavior Lens workspace backup.'
+            }));
             // Cloud write-through on manual save
             if (cloudSync.userId && !isCanvasEnv && selectedStudent) {
                 cloudSync.saveToCloud(activeStudentId || selectedStudent, workspace).then(ok => {
@@ -26351,6 +26294,7 @@ IMPORTANT rules for expert keys:
 
         // Track visited panels for recommendations
         const openPanel = (panelId) => {
+            recordWorkflowDiagnostic('panel-open', { toolId: panelId, outcome: 'opened' });
             // AI analysis is a command that renders in the hub, not a separate panel.
             if (panelId === 'analysis') {
                 setVisitedPanels(prev => new Set(prev).add(panelId));
@@ -26575,7 +26519,7 @@ Use professional language. Refer to "the student" (not the codename).`;
         if (!localTabIdRef.current) localTabIdRef.current = uid();
         const workspaceSnapshotSequenceRef = useRef(0);
         const buildWorkspaceSnapshot = useCallback(() => ({
-            version: 3,
+            version: getBehaviorLensWorkspaceRuntime().WORKSPACE_VERSION,
             savedAt: new Date().toISOString(),
             snapshotId: localTabIdRef.current + ':' + (++workspaceSnapshotSequenceRef.current).toString(36),
             student: selectedStudent,
@@ -26585,12 +26529,14 @@ Use professional language. Refer to "the student" (not the codename).`;
             userRole, activityRegistry, sessionHistory, designPhases, activeDesign,
             workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
             aiAnalysis, fullSummary, favorites,
+            targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics,
             dismissedAlerts: Array.from(dismissedAlerts),
             visitedPanels: Array.from(visitedPanels)
         }), [selectedStudent, activeStudentId, abcEntries, observationSessions, sessionNotes, teamNotes,
             studentProfile, userRole, activityRegistry, sessionHistory, designPhases,
             activeDesign, workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
-            aiAnalysis, fullSummary, favorites, dismissedAlerts, visitedPanels]);
+            aiAnalysis, fullSummary, favorites, targetBehaviors, toolState, deletedAbcEntries,
+            auditLog, workflowDiagnostics, dismissedAlerts, visitedPanels]);
         const cloudLoadAttempted = useRef({});
         const abcHydratedRef = useRef(false);
         const hydrationRef = useRef(null);
@@ -26780,9 +26726,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 dirtyKey,
                 tabDraftPrefix: studentKey('behaviorLens_workspace_tabdraft_') + '_',
                 abcKey,
-                legacyAbcKey: 'behaviorLens_abc_' + selectedStudent,
-                observationKey,
-                legacyObservationKey: 'behaviorLens_obs_' + selectedStudent
+                observationKey
             });
             loadPromise.then((result) => {
                 if (!result || result.stale || !isCurrent()) {
@@ -26958,7 +26902,8 @@ Use professional language. Refer to "the student" (not the codename).`;
             setDataChangedSinceSave(true);
         }, [abcEntries, observationSessions, sessionHistory, sessionNotes, teamNotes, designPhases, studentProfile,
             activeDesign, workflowTrack, workflowSubSteps, graphExport, effectSizeResults, aiAnalysis,
-            fullSummary, activeStudentId, selectedStudent]);
+            fullSummary, targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics,
+            activeStudentId, selectedStudent]);
 
         // Auto-save reminder toast (every 10 min if unsaved changes exist)
         useEffect(() => {
@@ -26993,65 +26938,66 @@ Use professional language. Refer to "the student" (not the codename).`;
         const handleAiAnalyze = async () => {
             if (!callGemini || abcEntries.length < 3) return;
             if (!aiConsent) {
-                if (addToast) addToast(tt('behavior_lens.toast.ai_disabled', '🤖 AI is off — toggle it on in the header to use this feature'), 'info');
+                if (addToast) addToast(tt('behavior_lens.toast.ai_disabled', 'AI is off - toggle it on in the header to use this feature'), 'info');
                 return;
             }
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            const startedAt = Date.now();
             setAnalyzing(true);
             try {
-                const dataStr = abcEntries.slice(0, 20).map((e, i) =>
-                    `Entry ${i + 1}: Antecedent="${e.antecedent}", Behavior="${e.behavior}", Consequence="${e.consequence}", Intensity=${e.intensity}/5${e.setting ? ', Setting="' + e.setting + '"' : ''}${e.notes ? ', Notes="' + e.notes + '"' : ''}`
-                ).join('\n');
-
-                const prompt = `You are a Board Certified Behavior Analyst (BCBA) reviewing ABC behavioral observation data for a student.
-${RESTORATIVE_PREAMBLE}
-
-ABC DATA (${abcEntries.length} entries):
-${dataStr}
-
-Analyze this data and return ONLY valid JSON:
-{
-  "summary": "2-3 sentence high-level summary of behavioral patterns observed",
-  "hypothesizedFunction": "Attention" | "Escape" | "Tangible" | "Sensory" | "Multiple" | "Unknown",
-  "confidence": <0-100>,
-  "patterns": [
-    { "pattern": "description of pattern", "frequency": "how often", "evidence": "which entries support this" }
-  ],
-  "recommendations": [
-    "specific, actionable recommendation based on the data"
-  ],
-  "notes": "any caveats or additional observations"
-}`;
-
+                const sample = runtime.selectStratifiedEntries(abcEntries, 24);
+                const provenance = runtime.createAnalysisProvenance(abcEntries, sample);
+                const dataStr = sample.entries.map((entry, index) => {
+                    const behavior = runtime.resolveCanonicalBehavior(entry, targetBehaviors || []).label;
+                    const intensity = runtime.normalizeIntensity(entry.intensity);
+                    return 'Entry ' + (index + 1) + ': Date="' + (entry.localDate || 'unknown') + '", Antecedent="' + (entry.antecedent || '') + '", Behavior="' + behavior + '", Consequence="' + (entry.consequence || '') + '", Intensity=' + (intensity == null ? 'not rated' : intensity + '/5') + (entry.setting ? ', Setting="' + entry.setting + '"' : '') + (entry.phase ? ', Phase="' + entry.phase + '"' : '') + (entry.notes ? ', Notes="' + entry.notes + '"' : '');
+                }).join('\n');
+                const prompt = [
+                    'You are a Board Certified Behavior Analyst (BCBA) reviewing ABC behavioral observation data for a student.',
+                    RESTORATIVE_PREAMBLE,
+                    '',
+                    'DATA COVERAGE: ' + sample.sampleCount + ' of ' + sample.totalCount + ' entries using ' + sample.strategy + '.',
+                    'Recorded range: ' + (provenance.dateFrom || 'unknown') + ' through ' + (provenance.dateTo || 'unknown') + '.',
+                    'Missing intensity means not rated; do not impute a value. Treat repeated entries as observations, not independent proof of function.',
+                    '',
+                    dataStr,
+                    '',
+                    'Analyze this data and return ONLY valid JSON:',
+                    '{',
+                    '  "summary": "2-3 sentence high-level summary of patterns and limitations",',
+                    '  "hypothesizedFunction": "Attention" | "Escape" | "Tangible" | "Sensory" | "Multiple" | "Unknown",',
+                    '  "confidence": <0-100>,',
+                    '  "patterns": [{ "pattern": "description", "frequency": "how often in this sample", "evidence": "sample entry references" }],',
+                    '  "recommendations": ["specific, observable, reversible next step"],',
+                    '  "notes": "sampling, missing-data, and alternative-explanation caveats"',
+                    '}'
+                ].join('\n');
                 const result = await callGemini(prompt, true);
-                const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                const cleaned = result.replace(/\x60\x60\x60json\n?/g, '').replace(/\x60\x60\x60\n?/g, '').trim();
                 let parsed;
-                try {
-                    parsed = JSON.parse(cleaned);
-                } catch (e) {
-                    const obj = parseJsonBlobFromText(result);
-                    if (obj) parsed = obj;
-                    else throw new Error('Could not parse AI response');
-                }
+                try { parsed = JSON.parse(cleaned); }
+                catch (error) { const object = parseJsonBlobFromText(result); if (object) parsed = object; else throw new Error('Could not parse AI response'); }
                 const normalizedAnalysis = parsed && typeof parsed === 'object' ? {
                     summary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 4000) : '',
-                    hypothesizedFunction: typeof parsed.hypothesizedFunction === 'string' ? parsed.hypothesizedFunction : 'Unknown',
+                    hypothesizedFunction: typeof parsed.hypothesizedFunction === 'string' ? parsed.hypothesizedFunction.slice(0, 120) : 'Unknown',
                     confidence: Math.max(0, Math.min(100, Number(parsed.confidence) || 0)),
-                    patterns: Array.isArray(parsed.patterns) ? parsed.patterns.filter(p => p && typeof p === 'object').slice(0, 20).map(p => ({
-                        pattern: typeof p.pattern === 'string' ? p.pattern.slice(0, 500) : '',
-                        frequency: typeof p.frequency === 'string' ? p.frequency.slice(0, 200) : '',
-                        evidence: typeof p.evidence === 'string' ? p.evidence.slice(0, 500) : ''
-                    })) : [],
-                    recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations.filter(r => typeof r === 'string').slice(0, 20).map(r => r.slice(0, 500)) : [],
-                    notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 2000) : ''
-                } : { summary: '', hypothesizedFunction: 'Unknown', confidence: 0, patterns: [], recommendations: [], notes: '' };
+                    patterns: Array.isArray(parsed.patterns) ? parsed.patterns.filter(item => item && typeof item === 'object').slice(0, 20).map(item => ({ pattern: typeof item.pattern === 'string' ? item.pattern.slice(0, 500) : '', frequency: typeof item.frequency === 'string' ? item.frequency.slice(0, 200) : '', evidence: typeof item.evidence === 'string' ? item.evidence.slice(0, 500) : '' })) : [],
+                    recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations.filter(item => typeof item === 'string').slice(0, 20).map(item => item.slice(0, 500)) : [],
+                    notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 2000) : '',
+                    provenance,
+                    source: 'ai-assisted',
+                    reviewStatus: 'unreviewed'
+                } : { summary: '', hypothesizedFunction: 'Unknown', confidence: 0, patterns: [], recommendations: [], notes: '', provenance, source: 'ai-assisted', reviewStatus: 'unreviewed' };
+                if (aiAnalysis) setToolState(previous => ({ ...previous, aiAnalysisHistory: [aiAnalysis].concat(Array.isArray(previous.aiAnalysisHistory) ? previous.aiAnalysisHistory : []).slice(0, 10) }));
                 setAiAnalysis(normalizedAnalysis);
-                if (addToast) addToast(tt('behavior_lens.abc.analysis_complete', 'Analysis complete ✨'), 'success');
-            } catch (err) {
-                warnLog("AI Analysis failed:", err);
-                if (addToast) addToast(tt('behavior_lens.abc.analysis_failed', 'Analysis failed — try again'), 'error');
-            } finally {
-                setAnalyzing(false);
-            }
+                appendAuditEvent(runtime.createAuditEvent('ai-analysis-generated', { entityType: 'analysis', entityId: provenance.sourceFingerprint, actor: userRole, summary: 'Generated an AI-assisted ABC analysis from a disclosed stratified sample.', metadata: { totalEntries: provenance.totalEntries, sampleCount: provenance.sampleCount, sampleStrategy: provenance.sampleStrategy } }));
+                recordWorkflowDiagnostic('ai-analysis', { toolId: 'analysis', durationMs: Date.now() - startedAt, outcome: 'completed' });
+                if (addToast) addToast(tt('behavior_lens.abc.analysis_complete', 'Analysis complete'), 'success');
+            } catch (error) {
+                warnLog('AI Analysis failed:', error);
+                recordWorkflowDiagnostic('ai-analysis', { toolId: 'analysis', durationMs: Date.now() - startedAt, outcome: 'failed' });
+                if (addToast) addToast(tt('behavior_lens.abc.analysis_failed', 'Analysis failed - try again'), 'error');
+            } finally { setAnalyzing(false); }
         };
 
         const handleSaveObsSession = (sessionData) => {
@@ -29014,7 +28960,7 @@ Analyze this data and return ONLY valid JSON:
         };
 
         // ─── Main Render ──────────────────────────────────────────────
-        return h('div', {
+        return h(BehaviorLensToolStateContext.Provider, { value: durableToolStateContextValue }, h('div', {
             className: 'fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300',
             ref: behaviorLensDialogRef,
             role: 'dialog',
@@ -29258,6 +29204,13 @@ Analyze this data and return ONLY valid JSON:
                     onAnalyze: handleAiAnalyze,
                     analyzing,
                     callGemini: callGeminiGuarded,
+                    targetBehaviors,
+                    setTargetBehaviors,
+                    deletedEntries: deletedAbcEntries,
+                    setDeletedEntries: setDeletedAbcEntries,
+                    appendAuditEvent,
+                    userRole,
+                    recordWorkflowDiagnostic,
                     t,
                     addToast
                 }),
@@ -29265,6 +29218,7 @@ Analyze this data and return ONLY valid JSON:
                     abcEntries,
                     observationSessions,
                     aiAnalysis,
+                    targetBehaviors,
                     studentName: selectedStudent,
                     t
                 }),
@@ -29508,6 +29462,8 @@ Analyze this data and return ONLY valid JSON:
                 }),
                 activePanel === 'qualitycheck' && h(DataQualityChecker, {
                     abcEntries,
+                    observationSessions,
+                    targetBehaviors,
                     callGemini: callGeminiWithContext,
                     t,
                     addToast
@@ -29515,6 +29471,7 @@ Analyze this data and return ONLY valid JSON:
                 activePanel === 'trends' && h(BehaviorTrendDashboard, {
                     abcEntries,
                     observationSessions,
+                    targetBehaviors,
                     t
                 }),
                 activePanel === 'teamnotes' && h(TeamNotes, {
@@ -29760,7 +29717,7 @@ Analyze this data and return ONLY valid JSON:
                 }),
                 activePanel === 'mtss' && h(MTSSTierManager, {
                     dashboardData, abcEntries, callGemini: callGeminiWithContext,
-                    t, addToast, selectedStudent
+                    t, addToast, selectedStudent, studentRoster, setStudentRoster
                 }),
                 activePanel === 'nlabc' && h(NaturalLanguageABC, {
                     abcEntries, setAbcEntries, callGemini: callGeminiWithContext,
@@ -29793,12 +29750,12 @@ Analyze this data and return ONLY valid JSON:
                 }),
                 activePanel === 'sharing' && h(WorkspaceSharing, {
                     abcEntries, observationSessions, sessionHistory,
-                    aiAnalysis, studentProfile, selectedStudent,
+                    aiAnalysis, targetBehaviors, studentProfile, selectedStudent,
                     studentRoster, cloudSync, addToast, t
                 }),
                 activePanel === 'progressreport' && h(ProgressReportGenerator, {
                     abcEntries, observationSessions, sessionHistory,
-                    aiAnalysis, studentProfile, selectedStudent,
+                    aiAnalysis, targetBehaviors, studentProfile, selectedStudent,
                     callGemini: callGeminiWithContext, addToast, t
                 }),
                 activePanel === 'practicum' && h(VirtualPracticum, { t, addToast, callGemini: callGeminiWithContext }),
@@ -29817,7 +29774,7 @@ Analyze this data and return ONLY valid JSON:
                 }),
                 activePanel === 'printreport' && h(ProgressReportGenerator, {
                     abcEntries, observationSessions, sessionHistory,
-                    aiAnalysis, studentProfile, selectedStudent,
+                    aiAnalysis, targetBehaviors, studentProfile, selectedStudent,
                     callGemini: callGeminiWithContext, addToast, t
                 }),
                 activePanel === 'opdef' && h(OperationalDefinitionBuilder, {
@@ -30836,7 +30793,7 @@ Analyze this data and return ONLY valid JSON:
                     )
                 )
             )
-        );
+        ));
     };
 
     debugLog("BehaviorLens module registered ✅");

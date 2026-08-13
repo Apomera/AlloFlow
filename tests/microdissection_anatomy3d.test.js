@@ -1095,8 +1095,10 @@ describe('Enhanced dissection lighting, texture, motion, and fluid visuals', () 
     expect(html).toContain('Reduce visual intensity');
     const source = fs.readFileSync(filePath, 'utf8');
     expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
-    expect(source).toContain('timestamp - lastProcedurePaint >= 48');
-    expect(source).toContain('requestAnimationFrame(animateProcedureField)');
+    expect(source).toContain('timestamp - lastPaint >= 48');
+    expect(source).toContain('requestAnimationFrame(paint)');
+    expect(source).toContain('canvas._anatomyProcedureReduceMotion = reducedMotion');
+    expect(source).toContain('ref: stableAnatomyProcedureRef');
     expect(source).toContain('function drawProcedureLayerTexture');
     expect(source).toContain('fluidVisualLayers = 3');
   });

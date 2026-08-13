@@ -10,7 +10,7 @@
  * passes straight through a dead handler — that is exactly how the class survives
  * audits, since role and aria-label are all present and axe is satisfied.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, type ElementHandle, type Page } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
 
 const harness = new GlHarness({
@@ -26,7 +26,7 @@ test.beforeAll(async () => { await harness.start(); });
 test.afterAll(async () => { await harness.stop(); });
 test.afterEach(async ({ page }) => { await harness.destroy(page); });
 
-async function mountImaging(page: import('@playwright/test').Page) {
+async function mountImaging(page: Page) {
   await page.goto(`${(harness as any).base}/__harness`);
   await page.waitForFunction(() => !!(window as any).StemLab?._registry?.anatomy, null, { timeout: 30000 });
   await page.evaluate(() => (window as any).__mount({ anatomy: { _activeTab: 'imaging' } }));
@@ -34,8 +34,56 @@ async function mountImaging(page: import('@playwright/test').Page) {
   await page.waitForTimeout(400);
 }
 
+async function mountProcedure(page: Page) {
+  await page.goto(`${(harness as any).base}/__harness`);
+  await page.waitForFunction(() => !!(window as any).StemLab?._registry?.anatomy, null, { timeout: 30000 });
+  await page.evaluate(() => (window as any).__mount({
+    anatomy: {
+      _activeTab: 'procedure',
+      procedure: {
+        stage: 3,
+        planLocked: true,
+        timeoutConfirmed: true,
+        sterilePrep: true,
+        eyeProtection: true,
+        tool: 'scalpel',
+        pressure: 4,
+        incisionDepth: 36,
+        exposure: 42,
+        bleeding: 0,
+      },
+    },
+  }));
+  await page.waitForSelector('[data-anatomy-procedure-canvas]', { timeout: 30000 });
+  await page.waitForTimeout(400);
+}
+
+async function captureCanvas(page: Page, selector: string) {
+  const canvas = await page.locator(selector).elementHandle();
+  if (!canvas) throw new Error(`Canvas did not mount: ${selector}`);
+  return canvas;
+}
+
+async function expectSameFocusedCanvas(
+  page: Page,
+  selector: string,
+  original: ElementHandle<SVGElement | HTMLElement>,
+  action: string,
+) {
+  const continuity = await page.evaluate(({ selector, original }) => {
+    const current = document.querySelector(selector);
+    return {
+      sameNode: current === original,
+      focused: document.activeElement === current,
+    };
+  }, { selector, original });
+
+  expect(continuity.sameNode, `${action} replaced the canvas DOM node`).toBe(true);
+  expect(continuity.focused, `${action} moved focus away from the canvas`).toBe(true);
+}
+
 /** Annotations the tool has stored for the imaging view. */
-async function annotationCount(page: import('@playwright/test').Page): Promise<number> {
+async function annotationCount(page: Page): Promise<number> {
   return page.evaluate(() => {
     const img = (window as any).__toolData?.anatomy?.imaging;
     return (img && Array.isArray(img.annotations)) ? img.annotations.length : 0;
@@ -79,8 +127,10 @@ test('Enter places an annotation, which was impossible without a mouse', async (
 
 test('arrow keys move the placement cursor before committing', async ({ page }) => {
   await mountImaging(page);
-  const canvas = page.locator('[data-anatomy-imaging-canvas]');
+  const selector = '[data-anatomy-imaging-canvas]';
+  const canvas = page.locator(selector);
   await canvas.focus();
+  const originalCanvas = await captureCanvas(page, selector);
 
   const read = () => page.evaluate(() => {
     const img = (window as any).__toolData?.anatomy?.imaging || {};
@@ -89,18 +139,21 @@ test('arrow keys move the placement cursor before committing', async ({ page }) 
 
   await page.keyboard.press('ArrowRight');
   await page.waitForTimeout(250);
+  await expectSameFocusedCanvas(page, selector, originalCanvas, 'ArrowRight');
   const moved = await read();
   expect(typeof moved.x, 'ArrowRight did not move the cursor').toBe('number');
   expect(moved.x).toBeGreaterThan(0.5);
 
   await page.keyboard.press('ArrowDown');
   await page.waitForTimeout(250);
+  await expectSameFocusedCanvas(page, selector, originalCanvas, 'ArrowDown');
   const down = await read();
   expect(down.y).toBeGreaterThan(0.5);
 
   // The annotation must land where the cursor was driven to, not at a fixed point.
   await page.keyboard.press('Enter');
   await page.waitForTimeout(350);
+  await expectSameFocusedCanvas(page, selector, originalCanvas, 'Enter');
   const placed = await page.evaluate(() => {
     const a = ((window as any).__toolData?.anatomy?.imaging?.annotations) || [];
     return a[a.length - 1];
@@ -108,6 +161,45 @@ test('arrow keys move the placement cursor before committing', async ({ page }) 
   expect(placed, 'nothing was placed').toBeTruthy();
   expect(placed.x).toBeCloseTo(down.x, 5);
   expect(placed.y).toBeCloseTo(down.y, 5);
+});
+
+test('Procedure keyboard actions preserve the focused canvas node across state updates', async ({ page }) => {
+  await mountProcedure(page);
+  const selector = '[data-anatomy-procedure-canvas]';
+  const canvas = page.locator(selector);
+  await canvas.focus();
+  const originalCanvas = await captureCanvas(page, selector);
+
+  const before = await page.evaluate(() => {
+    const procedure = (window as any).__toolData?.anatomy?.procedure || {};
+    return {
+      pressure: procedure.pressure,
+      actions: Number(procedure.actions) || 0,
+      strokes: Array.isArray(procedure.strokes) ? procedure.strokes.length : 0,
+    };
+  });
+
+  await page.keyboard.press('ArrowUp');
+  await page.waitForTimeout(250);
+  await expectSameFocusedCanvas(page, selector, originalCanvas, 'ArrowUp');
+  const afterPressure = await page.evaluate(() =>
+    (window as any).__toolData?.anatomy?.procedure?.pressure);
+  expect(afterPressure, 'ArrowUp did not increase procedure pressure').toBe(before.pressure + 1);
+
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(350);
+  await expectSameFocusedCanvas(page, selector, originalCanvas, 'Enter');
+  const afterInstrument = await page.evaluate(() => {
+    const procedure = (window as any).__toolData?.anatomy?.procedure || {};
+    return {
+      actions: Number(procedure.actions) || 0,
+      strokes: Array.isArray(procedure.strokes) ? procedure.strokes.length : 0,
+    };
+  });
+  expect(afterInstrument.actions, 'Enter did not apply the selected procedure instrument')
+    .toBeGreaterThan(before.actions);
+  expect(afterInstrument.strokes, 'Enter did not record a procedure stroke')
+    .toBeGreaterThan(before.strokes);
 });
 
 test('it does not swallow Tab, which would trap focus', async ({ page }) => {

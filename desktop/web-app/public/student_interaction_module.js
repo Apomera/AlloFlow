@@ -135,6 +135,163 @@ function getStudentInteractionThemeStyles(themeContext = {}) {
     stat: "bg-white border border-slate-400 text-slate-700"
   };
 }
+function normalizeStudentSubmitVoiceText(value) {
+  return String(value == null ? "" : value).toLocaleLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^\p{L}\p{N}]+/gu, " ").trim().replace(/\s+/g, " ");
+}
+function resolveStudentSubmitVoiceOption(options, reference) {
+  const values = Array.isArray(options) ? options : [];
+  const normalized = normalizeStudentSubmitVoiceText(reference).replace(/^(?:option|choice|number)\s+/, "").replace(/\s+(?:option|choice)$/, "");
+  const ordinalWords = {
+    one: 1,
+    first: 1,
+    two: 2,
+    second: 2,
+    three: 3,
+    third: 3,
+    four: 4,
+    fourth: 4,
+    five: 5,
+    fifth: 5,
+    six: 6,
+    sixth: 6,
+    seven: 7,
+    seventh: 7,
+    eight: 8,
+    eighth: 8,
+    nine: 9,
+    ninth: 9,
+    ten: 10,
+    tenth: 10,
+    eleven: 11,
+    eleventh: 11,
+    twelve: 12,
+    twelfth: 12
+  };
+  const numericMatch = normalized.match(/^(\d{1,3})(?:st|nd|rd|th)?$/);
+  const oneBasedIndex = numericMatch ? Number(numericMatch[1]) : ordinalWords[normalized];
+  if (Number.isInteger(oneBasedIndex) && oneBasedIndex >= 1 && oneBasedIndex <= values.length) {
+    return { value: values[oneBasedIndex - 1], index: oneBasedIndex };
+  }
+  const matches = values.reduce((out, value, index) => {
+    if (normalizeStudentSubmitVoiceText(value) === normalized) out.push({ value, index: index + 1 });
+    return out;
+  }, []);
+  return matches.length === 1 ? matches[0] : null;
+}
+function parseStudentSubmitVoiceCommand(value) {
+  const raw = String(value || "").trim().slice(0, 200);
+  const text = normalizeStudentSubmitVoiceText(raw);
+  if (/^(?:where am i|describe (?:this|the) (?:screen|dialog)|describe submission|submission status)$/.test(text)) return { commandId: "student_submit_describe", confidence: 1 };
+  if (/^(?:what can i do(?: here)?|list (?:available )?actions|list my choices|help)$/.test(text)) return { commandId: "student_submit_list_actions", confidence: 1 };
+  if (/^(?:read|describe|speak|tell me) (?:my |the )?work summary$/.test(text) || /^what (?:work|content) (?:will be|is) submitted$/.test(text)) return { commandId: "student_submit_read_summary", confidence: 1 };
+  let match = raw.match(/^(?:select|choose|set|use)\s+(?:the\s+)?(?:codename\s+)?adjective(?:\s+(?:to|as|number))?\s+(.+)$/i);
+  if (match) return { commandId: "student_submit_select_adjective", params: { choice: match[1].trim() }, confidence: 0.99 };
+  match = raw.match(/^(?:select|choose|set|use)\s+(?:the\s+)?(?:codename\s+)?animal(?:\s+(?:to|as|number))?\s+(.+)$/i);
+  if (match) return { commandId: "student_submit_select_animal", params: { choice: match[1].trim() }, confidence: 0.99 };
+  if (/^(?:randomize|change|choose|give me)(?: (?:a|the))? (?:different |new )?(?:private )?codename$/.test(text) || /^(?:different|new) codename$/.test(text)) return { commandId: "student_submit_randomize_codename", confidence: 1 };
+  if (/^(?:submit|send|turn in|hand in)(?: my| the)? (?:work|assignment|submission)?$/.test(text) || /^(?:confirm|finish) submission$/.test(text)) return { commandId: "student_submit_confirm", confidence: 1 };
+  if (/^(?:cancel|go back|back|keep reviewing|close (?:this|the) (?:screen|dialog))$/.test(text)) return { commandId: "student_submit_cancel", confidence: 1 };
+  return null;
+}
+function executeStudentSubmitVoiceCommand(scopeRef, commandId, params) {
+  const current = scopeRef.current;
+  if (!current || !current.isOpen) return { ok: false, narration: "The submission dialog is no longer open." };
+  if (commandId === "student_submit_describe") {
+    const destination = current.submissionMethod === "mailbox" ? "your teacher's private class mailbox" : "a submission file on this device";
+    return { ok: true, narration: "Submit work dialog. Your private codename is ready and will not be spoken. Your complete work will go to " + destination + ". You can read the work summary, choose either codename part by name or number, randomize the codename, submit, or cancel." };
+  }
+  if (commandId === "student_submit_list_actions") return { ok: true, narration: "Available actions: read work summary; select adjective by name or number; select animal by name or number; randomize codename; submit work; or cancel." };
+  if (commandId === "student_submit_read_summary") {
+    const summary = current.summary || {};
+    return { ok: true, narration: "Work summary: " + (summary.quizzes || 0) + " quizzes, " + (summary.readings || 0) + " readings, " + (summary.adventures || 0) + " adventures, and " + (summary.scaffolds || 0) + " scaffolds." };
+  }
+  if (commandId === "student_submit_select_adjective" || commandId === "student_submit_select_animal") {
+    const isAdjective = commandId === "student_submit_select_adjective";
+    const choice = isAdjective ? current.selectAdjective(params && params.choice) : current.selectAnimal(params && params.choice);
+    if (!choice) {
+      const count = isAdjective ? current.adjectiveCount : current.animalCount;
+      return { ok: false, narration: "That " + (isAdjective ? "adjective" : "animal") + " option was not found. Choose an accessible option name or a number from 1 to " + count + "." };
+    }
+    return { ok: true, narration: (isAdjective ? "Adjective" : "Animal") + " option " + choice.index + " selected. The private codename was not spoken." };
+  }
+  if (commandId === "student_submit_randomize_codename") {
+    current.randomize();
+    return { ok: true, narration: "A different private codename is ready. It was not spoken." };
+  }
+  if (commandId === "student_submit_confirm") {
+    if (current.submitting) return { ok: false, narration: "Submission is already in progress." };
+    if (!current.codenameReady) return { ok: false, narration: "Both private codename choices are required before submission." };
+    return Promise.resolve(current.submit()).then((result) => {
+      if (result === false || result && result.ok === false) return { ok: false, narration: result && result.narration || "Submission did not finish. Your work remains available." };
+      if (result && result.delivery === "mailbox") return { ok: true, narration: "Submission delivered to your teacher's private class mailbox." };
+      if (result && result.delivery === "backup") return { ok: true, narration: "The teacher mailbox could not receive the submission, so a backup submission file was downloaded to this device." };
+      if (result && result.delivery === "standard-live-download") return { ok: true, narration: "Live activity responses remain synced, and the complete work file was downloaded for your teacher or learning system." };
+      return { ok: true, narration: "Submission file downloaded. Send it to your teacher or upload it to your learning system." };
+    });
+  }
+  if (commandId === "student_submit_cancel") {
+    if (current.submitting) return { ok: false, narration: "Submission is already in progress and cannot be closed yet." };
+    current.cancel();
+    return { ok: true, narration: "Submission cancelled. Your work remains available." };
+  }
+  return { ok: false, narration: "That submission action is not available." };
+}
+const STUDENT_SUBMIT_VOICE_COMMANDS = Object.freeze([
+  { id: "student_submit_describe", label: "Describe submission dialog", risk: "none", confirmation: "never" },
+  { id: "student_submit_list_actions", label: "List submission actions", risk: "none", confirmation: "never" },
+  { id: "student_submit_read_summary", label: "Read work summary", risk: "none", confirmation: "never" },
+  { id: "student_submit_select_adjective", label: "Select codename adjective", params: ["choice"], risk: "state-change", confirmation: "never" },
+  { id: "student_submit_select_animal", label: "Select codename animal", params: ["choice"], risk: "state-change", confirmation: "never" },
+  { id: "student_submit_randomize_codename", label: "Choose a different private codename", risk: "state-change", confirmation: "never" },
+  {
+    id: "student_submit_confirm",
+    label: "Submit work to the configured destination",
+    risk: "destructive",
+    confirmation: "always",
+    confirmMessage: "Submit your complete work to the destination described in this dialog? Say yes to submit, or no to keep reviewing."
+  },
+  { id: "student_submit_cancel", label: "Cancel submission", risk: "state-change", confirmation: "never" }
+]);
+function createStudentSubmitVoiceScopeSpec(scopeRef) {
+  return {
+    id: "student-submit-dialog",
+    priority: 140,
+    isActive: () => !!(scopeRef.current && scopeRef.current.isOpen),
+    getCapabilities: () => {
+      const current = scopeRef.current;
+      return {
+        semanticSubmission: true,
+        describe: true,
+        listActions: true,
+        chooseCodenameParts: true,
+        randomizeCodename: true,
+        readWorkSummary: true,
+        submit: !!(current && current.canSubmit),
+        cancel: true
+      };
+    },
+    getState: () => {
+      const current = scopeRef.current;
+      return {
+        phase: current && current.submitting ? "submitting" : "review",
+        codenameReady: !!(current && current.codenameReady),
+        adjectiveOptionCount: current ? current.adjectiveCount : 0,
+        animalOptionCount: current ? current.animalCount : 0,
+        delivery: current && current.submissionMethod === "mailbox" ? "teacher-mailbox" : "device-download"
+      };
+    },
+    getCommands: () => STUDENT_SUBMIT_VOICE_COMMANDS.map((command) => {
+      if (command.id !== "student_submit_confirm") return command;
+      const mailboxDelivery = !!(scopeRef.current && scopeRef.current.submissionMethod === "mailbox");
+      return {
+        ...command,
+        confirmMessage: mailboxDelivery ? "Submit your complete work to your teacher's private class mailbox? Say yes to submit, or no to keep reviewing." : "Download your complete work as a submission file on this device? Say yes to download it, or no to keep reviewing."
+      };
+    }),
+    parse: parseStudentSubmitVoiceCommand,
+    execute: (commandId, params) => executeStudentSubmitVoiceCommand(scopeRef, commandId, params)
+  };
+}
 const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], currentNickname = "", submissionMethod = "download", submissionContext = "file" }) => {
   const { t } = useContext(LanguageContext);
   const themeContext = useContext(window.AlloThemeContext || StudentInteractionThemeFallbackContext);
@@ -144,6 +301,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   const descId = "student-submit-modal-desc";
   const summaryId = "student-submit-summary-title";
   const [submitting, setSubmitting] = useState(false);
+  const submitVoiceScopeRef = useRef(null);
   const adjectives = t("codenames.adjectives", { returnObjects: true }) || [];
   const animals = t("codenames.animals", { returnObjects: true }) || [];
   const parseNickname = useCallback((nickname) => {
@@ -195,7 +353,6 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     };
   }, [isOpen]);
   const getFullName = () => `${selectedAdj} ${selectedAnimal}`;
-  if (!isOpen) return null;
   const getSummaryStats = () => {
     const stats2 = {
       quizzes: 0,
@@ -230,19 +387,70 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     return parts.join(", ");
   };
   const mailboxDelivery = submissionMethod === "mailbox";
-  const submitLabel = mailboxDelivery ? "Submit to teacher\u2019s Drive" : t("modals.download_submission") || "Download submission file";
-  const submitHint = mailboxDelivery ? "Your complete work will be saved automatically as a JSON file in your teacher\u2019s private \u201CAlloFlow Class Mailbox\u201D Drive folder. If delivery fails, a backup file downloads instead." : submissionContext === "standard-live" ? "Live quiz and activity responses sync during class. Your complete portfolio downloads as a file for your teacher or LMS." : "Your complete work downloads as a file. Send it to your teacher or upload it to your LMS.";
+  const submitLabel = mailboxDelivery ? "Submit to teacher's Drive" : t("modals.download_submission") || "Download submission file";
+  const submitHint = mailboxDelivery ? "Your complete work will be saved automatically as a JSON file in your teacher's private AlloFlow Class Mailbox Drive folder. If delivery fails, a backup file downloads instead." : submissionContext === "standard-live" ? "Live quiz and activity responses sync during class. Your complete portfolio downloads as a file for your teacher or LMS." : "Your complete work downloads as a file. Send it to your teacher or upload it to your LMS.";
   const handleSubmit = async () => {
     const fullName = getFullName();
-    if (!selectedAdj || !selectedAnimal || submitting) return;
+    if (!selectedAdj || !selectedAnimal || submitting) return false;
     setSubmitting(true);
     try {
       const completed = await Promise.resolve(onSubmit(fullName, stats));
-      if (completed !== false) onClose();
+      const succeeded = completed !== false && !(completed && completed.ok === false);
+      if (succeeded) onClose();
+      return succeeded ? completed || true : false;
     } finally {
       setSubmitting(false);
     }
   };
+  submitVoiceScopeRef.current = {
+    isOpen: !!isOpen,
+    submitting: !!submitting,
+    codenameReady: !!(selectedAdj && selectedAnimal),
+    canSubmit: !!(selectedAdj && selectedAnimal && !submitting),
+    adjectiveCount: adjectives.length,
+    animalCount: animals.length,
+    summary: stats,
+    submissionMethod,
+    randomize: randomizeName,
+    selectAdjective: (reference) => {
+      const choice = resolveStudentSubmitVoiceOption(adjectives, reference);
+      if (!choice) return null;
+      setSelectedAdj(choice.value);
+      return choice;
+    },
+    selectAnimal: (reference) => {
+      const choice = resolveStudentSubmitVoiceOption(animals, reference);
+      if (!choice) return null;
+      setSelectedAnimal(choice.value);
+      return choice;
+    },
+    submit: handleSubmit,
+    cancel: onClose
+  };
+  useEffect(() => {
+    if (!isOpen || typeof window === "undefined") return void 0;
+    let disposed = false;
+    let unregister = null;
+    let retryTimer = null;
+    const attach = () => {
+      if (disposed || unregister) return;
+      const commands = window.AlloModules && window.AlloModules.AlloCommands;
+      if (!commands || typeof commands.registerCommandScope !== "function") {
+        retryTimer = window.setTimeout(attach, 200);
+        return;
+      }
+      unregister = commands.registerCommandScope(createStudentSubmitVoiceScopeSpec(submitVoiceScopeRef));
+    };
+    attach();
+    return () => {
+      disposed = true;
+      if (retryTimer) window.clearTimeout(retryTimer);
+      try {
+        if (typeof unregister === "function") unregister();
+      } catch (_) {
+      }
+    };
+  }, [isOpen]);
   const handleDialogKeyDown = (e) => {
     if (e.key === "Escape") {
       e.stopPropagation();
@@ -264,6 +472,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       first.focus();
     }
   };
+  if (!isOpen) return null;
   return /* @__PURE__ */ React.createElement("div", { className: cx("fixed inset-0 z-[300] backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300", styles.overlay) }, /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -440,6 +649,9 @@ const DraftFeedbackInterface = React.memo(({
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.StudentSubmitModal = StudentSubmitModal;
   window.AlloModules.DraftFeedbackInterface = DraftFeedbackInterface;
+  window.AlloModules.parseStudentSubmitVoiceCommand = parseStudentSubmitVoiceCommand;
+  window.AlloModules.resolveStudentSubmitVoiceOption = resolveStudentSubmitVoiceOption;
+  window.AlloModules.createStudentSubmitVoiceScopeSpec = createStudentSubmitVoiceScopeSpec;
   window.AlloModules.StudentInteractionModule = true;
 
   console.log('[StudentInteractionModule] 2 components registered');

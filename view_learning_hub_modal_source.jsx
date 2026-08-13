@@ -11,7 +11,7 @@
 function LearningHubModal(props) {
   const {
     setIsAlloHavenOpen, setIsLinguaPracticeOpen, setIsOpenGrooveOpen, setIsTestPrepHubOpen, setIsTimelineStudioOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
-    setShowMindMap, setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
+    setShowLearningWebExplorer, setShowMindMap, setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
     setStemLabTab, setStemLabTool, setLabToolData, showLearningHub,
     // Family Bridge launcher (2026-06-28): opens live two-way translation. Optional
     // default so a host that hasn't wired the setter still renders the hub.
@@ -203,7 +203,7 @@ function LearningHubModal(props) {
   const hubRoleRaw = String(hubRolePreference).toLowerCase();
   const hubRoleKey = hubRoleRaw.includes('family') ? 'family' : (hubRoleRaw.includes('teacher') || hubRoleRaw.includes('educator')) ? 'teacher' : 'student';
   const hubRoleLabel = ({ teacher: 'teachers', student: 'students', family: 'families' }[hubRoleKey] || 'learners');
-  const hubRoleRecommendations = { teacher: ['throughline', 'research-hub', 'stem-lab', 'reading-library', 'lumen-study'], student: ['lumen-study', 'reading-library', 'stem-lab', 'text-inquiry', 'test-prep'], family: ['reading-library', 'lingua-practice', 'sel-hub', 'allohaven', 'storyforge'] };
+  const hubRoleRecommendations = { teacher: ['learning-web-explorer', 'throughline', 'research-hub', 'stem-lab', 'reading-library'], student: ['learning-web-explorer', 'lumen-study', 'reading-library', 'stem-lab', 'text-inquiry'], family: ['reading-library', 'lingua-practice', 'sel-hub', 'allohaven', 'storyforge'] };
   const hubUsageRankedIds = Object.entries(hubUsageCounts).sort((a, b) => Number(b[1]) - Number(a[1])).map(([id]) => id);
   const hubRecommendedIds = Array.from(new Set([...(hubRoleRecommendations[hubRoleKey] || hubRoleRecommendations.student), ...hubUsageRankedIds])).slice(0, 5);
   const recommendedCards = hubRecommendedIds.map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
@@ -397,7 +397,7 @@ function LearningHubModal(props) {
                   way a student reaches the unrestricted coach. It opens in its
                   own window because the site it coaches is not AlloFlow. */}
               <div className="relative group" data-hub-id="screen-coach" data-hub-label="Screen Coach" data-hub-section="practice">
-                <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); try { const VS = (window.AlloModules && window.AlloModules.VideoStudio) || null; if (VS && typeof VS.openCoachWindow === 'function') { VS.openCoachWindow('learner'); } else { try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {} const w = window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner', 'alloflow-it-coach'); if (w) window.__alloPendingCoachWin = w; } } catch (_) {} }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
+                <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); try { const VS = (window.AlloModules && window.AlloModules.VideoStudio) || null; if (VS && typeof VS.openCoachWindow === 'function') { VS.openCoachWindow('learner'); } else { try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {} const w = window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner', 'alloflow-it-coach'); if (w) { window.__alloPendingCoachWin = w; window.__alloPendingCoachPosture = 'learner'; } } } catch (_) {} }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">{'🧭'}</span>
                 <div>
                   <h3 className="font-bold text-sky-900">{t('learning_hub.screen_coach_title') || 'Screen Coach'}</h3>
@@ -427,6 +427,18 @@ function LearningHubModal(props) {
 
                 <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('research-hub')} aria-label={hubFavoriteIds.includes('research-hub') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Research Hub' : tr('hub.add_favorite', 'Add to favorites') + ': Research Hub'} title={hubFavoriteIds.includes('research-hub') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('research-hub'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('research-hub') ? '★' : '☆'}</button>
               </div>
+              {typeof setShowLearningWebExplorer === 'function' && (
+                <div className="relative group" data-hub-id="learning-web-explorer" data-hub-label="Learning Web: Explore" data-hub-section="explore">
+                  <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowLearningWebExplorer(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
+                    <span className="text-4xl" aria-hidden="true">{'\uD83D\uDD78\uFE0F'}</span>
+                    <div>
+                      <h3 className="font-bold text-violet-900">{tr('learning_hub.learning_web_explorer_title', 'Learning Web: Explore')}</h3>
+                      <p className="text-xs text-violet-700 mt-1">{tr('learning_hub.learning_web_explorer_desc', 'Explore standards, concepts, lessons, evidence, and word connections in one accessible map.')}</p>
+                    </div>
+                  </button>
+                  <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('learning-web-explorer')} aria-label={hubFavoriteIds.includes('learning-web-explorer') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Learning Web: Explore' : tr('hub.add_favorite', 'Add to favorites') + ': Learning Web: Explore'} title={hubFavoriteIds.includes('learning-web-explorer') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('learning-web-explorer'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-violet-700 text-lg leading-none shadow-sm hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('learning-web-explorer') ? '★' : '☆'}</button>
+                </div>
+              )}
               {setShowMindMap && (
                 <div className="relative group" data-hub-id="throughline" data-hub-label="Learning Web: Unit Path" data-hub-section="explore">
                   <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowMindMap(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">

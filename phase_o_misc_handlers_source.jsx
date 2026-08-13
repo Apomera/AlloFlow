@@ -990,7 +990,7 @@ const handleExecuteBlueprint = async (deps) => {
                     // rebuild it from _runRows in this closure — that resurrects
                     // the dead plan's board and leaves it on screen with
                     // activeBlueprint already null. A cleared record stays clear.
-                    if (!prev || !prev.rows) return prev;
+                    if (!prev || prev.runId !== _blueprintRunId || !prev.rows) return prev;
                     const base = prev;
                     const next = Object.assign({}, base, {
                         rows: Object.assign({}, base.rows, {
@@ -1023,7 +1023,7 @@ const handleExecuteBlueprint = async (deps) => {
         const _wasStopped = !!(_blueprintAbortCtl && _blueprintAbortCtl.signal && _blueprintAbortCtl.signal.aborted);
         if (_wasStopped) {
             setBlueprintExecutionResult(prev => {
-                if (!prev || !prev.rows) return prev;
+                if (!prev || prev.runId !== _blueprintRunId || !prev.rows) return prev;
                 const rows = {};
                 Object.keys(prev.rows).forEach(k => {
                     const r = prev.rows[k];
@@ -1066,11 +1066,11 @@ const handleExecuteBlueprint = async (deps) => {
                 warnLog('[Blueprint] ALL ' + total + ' steps failed — this is systemic, not per-resource.'
                     + ' Distinct reasons: ' + (reasons.length ? reasons.join(' | ') : '(none captured)'));
             }
-            setBlueprintExecutionResult(prev => prev ? Object.assign({}, prev, { status: 'partial', finishedAt: new Date().toISOString() }) : prev);
+            setBlueprintExecutionResult(prev => prev && prev.runId === _blueprintRunId ? Object.assign({}, prev, { status: 'partial', finishedAt: new Date().toISOString() }) : prev);
             addToast(warnMsg, "warning");
             setUdlMessages(prev => [...prev, { role: 'model', text: warnMsg }]);
         } else {
-            setBlueprintExecutionResult(prev => prev ? Object.assign({}, prev, { status: 'completed', finishedAt: new Date().toISOString() }) : prev);
+            setBlueprintExecutionResult(prev => prev && prev.runId === _blueprintRunId ? Object.assign({}, prev, { status: 'completed', finishedAt: new Date().toISOString() }) : prev);
             addToast(t('blueprint.execution_complete'), "success");
             setUdlMessages(prev => [...prev, {
                 role: 'model',
@@ -1086,7 +1086,7 @@ const handleExecuteBlueprint = async (deps) => {
         // unbuildable and undismissable. Mark them interrupted so the board can
         // offer a retry instead of a spinner that never resolves.
         setBlueprintExecutionResult(prev => {
-            if (!prev || !prev.rows) return prev;
+            if (!prev || prev.runId !== _blueprintRunId || !prev.rows) return prev;
             const rows = {};
             Object.keys(prev.rows).forEach(k => {
                 const r = prev.rows[k];
@@ -1100,7 +1100,7 @@ const handleExecuteBlueprint = async (deps) => {
         _blueprintAbortCtl = null;   // a Stop pressed after this is a harmless no-op
         setIsProcessing(false);
         setIsExecutingBlueprint(false);
-        setBlueprintExecutionResult(prev => prev ? Object.assign({}, prev, { done: true, status: prev.status || 'completed', finishedAt: prev.finishedAt || new Date().toISOString() }) : prev);
+        setBlueprintExecutionResult(prev => prev && prev.runId === _blueprintRunId ? Object.assign({}, prev, { done: true, status: prev.status || 'completed', finishedAt: prev.finishedAt || new Date().toISOString() }) : prev);
     }
 };
 
@@ -1130,15 +1130,28 @@ const handleRebuildBlueprintStep = async (deps, uiId) => {
     return null;
   }
   _blueprintRunInFlight = true;
+  const _existingRunId = blueprintExecutionResult && blueprintExecutionResult.runId;
+  const _rebuildRunId = _existingRunId || ('blueprint-rebuild-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8));
   const patch = (fields) => setBlueprintExecutionResult(function (prev) {
-    const base = (prev && prev.rows) ? prev : { rows: {}, done: true };
-    return Object.assign({}, base, {
-      rows: Object.assign({}, base.rows, {
-        [uiId]: Object.assign({}, base.rows[uiId], { uiId: uiId, tool: row.tool }, fields)
+    if (!prev || prev.runId !== _rebuildRunId || !prev.rows || !prev.rows[uiId]) return prev;
+    return Object.assign({}, prev, {
+      rows: Object.assign({}, prev.rows, {
+        [uiId]: Object.assign({}, prev.rows[uiId], { uiId: uiId, tool: row.tool }, fields)
       })
     });
   });
-  patch({ status: 'running' });
+  // Stamp legacy records with a run ID once, but only if the exact record that
+  // launched this rebuild is still current. All later writes require that ID.
+  setBlueprintExecutionResult(function (prev) {
+    if (!prev || !prev.rows || !prev.rows[uiId]) return prev;
+    if (_existingRunId ? prev.runId !== _existingRunId : prev !== blueprintExecutionResult) return prev;
+    return Object.assign({}, prev, {
+      runId: _rebuildRunId,
+      rows: Object.assign({}, prev.rows, {
+        [uiId]: Object.assign({}, prev.rows[uiId], { uiId: uiId, tool: row.tool, status: 'running' })
+      })
+    });
+  });
   try {
     const resultItem = await handleGenerate(row.tool, null, false, null, {
       customInstructions: row.directive || '',

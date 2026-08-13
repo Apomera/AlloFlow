@@ -54,6 +54,11 @@ describe('Geology Explorer adaptive hints and orientation', () => {
       expect(orientation[scene].direction, scene).toBeTruthy();
       expect(orientation[scene].read, scene).toBeTruthy();
     }
+    expect(orientation.geode.scale).toContain('2 m');
+    expect(orientation.geode.scale).not.toContain('km');
+    expect(orientation.subduction.scale).toContain('depth range');
+    expect(orientation.ridge.scale).toContain('depth range');
+    expect(orientation.hotspot.scale).toContain('depth range');
   });
 
   it('keeps both app mirrors identical', () => {

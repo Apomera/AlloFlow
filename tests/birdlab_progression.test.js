@@ -588,7 +588,9 @@ describe('BirdLab field progression and scene engagement', () => {
     expect(source).toContain('function toggleSceneMotion()');
     expect(source).toContain('sceneViewBox');
     expect(source).toContain('function renderSceneBirds(layer, keyPrefix)');
-    expect(source).toContain("var motionClass = 'birdlab-motion-subject birdlab-' + motionName");
+    expect(source).toContain('function sceneBirdMotionClass(bird, behaviorState, anchored)');
+    expect(source).toContain('var motionClass = sceneBirdMotionClass(bird, behaviorState, anchored);');
+    expect(source).toContain('var targetMotionClass = sceneBirdMotionClass(b, behaviorState,');
     expect(source).toContain('data-birdlab-scene-controls');
     expect(source).toContain('function stepSceneLens(delta)');
     expect(source).toContain('sceneLensContainsBird');

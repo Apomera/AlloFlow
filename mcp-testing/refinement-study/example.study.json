@@ -1,0 +1,27 @@
+{
+  "studyId": "example-refinement-pilot",
+  "sources": [
+    {
+      "id": "example-document",
+      "path": "../../tests/e2e/artifacts/remediation-e2e.source.pdf",
+      "partition": "development_pilot"
+    }
+  ],
+  "conditions": [
+    "primary-one-shot",
+    "gated-loop"
+  ],
+  "repetitions": 1,
+  "randomizationSeed": "replace-and-preregister-this-seed",
+  "outputRoot": "./runs",
+  "options": {
+    "targetScore": 95,
+    "fixPasses": 2,
+    "polishPasses": 0,
+    "taggedPdf": true,
+    "autoContinueRounds": 3,
+    "visionMode": "direct",
+    "modelRetryBudget": 6,
+    "maxRunMinutes": 30
+  }
+}

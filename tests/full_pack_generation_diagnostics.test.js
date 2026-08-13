@@ -179,6 +179,44 @@ describe('Full Pack failure diagnostics and resilience', () => {
     expect(handleGenerate).toHaveBeenCalledTimes(1);
     expect(deps.addToast).toHaveBeenCalledWith(expect.stringContaining('stopped'), 'info');
   });
+  it('does not resurrect a run dismissed while a resource is still generating', async () => {
+    let latestRun = null;
+    let release;
+    let started;
+    const began = new Promise((resolve) => { started = resolve; });
+    const result = new Promise((resolve) => { release = resolve; });
+    const deps = makeDeps({
+      setFullPackRun: (next) => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      handleGenerate: vi.fn(async () => { started(); return result; }),
+    });
+    const pending = GenerationHelpers.handleGenerateFullPack(null, deps);
+    await began;
+    latestRun = null;
+    release({ id: 'late-resource', type: 'quiz', data: {} });
+    await pending;
+    expect(latestRun).toBeNull();
+  });
+
+  it('does not write a late resource result into a replacement run', async () => {
+    let latestRun = null;
+    let release;
+    let started;
+    const began = new Promise((resolve) => { started = resolve; });
+    const result = new Promise((resolve) => { release = resolve; });
+    const deps = makeDeps({
+      setFullPackRun: (next) => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      handleGenerate: vi.fn(async () => { started(); return result; }),
+    });
+    const pending = GenerationHelpers.handleGenerateFullPack(null, deps);
+    await began;
+    const replacement = { runId: 'full-pack-replacement-run', status: 'ready', resources: {} };
+    latestRun = replacement;
+    release({ id: 'late-resource', type: 'quiz', data: {} });
+    await pending;
+    expect(latestRun).toBe(replacement);
+    expect(latestRun.status).toBe('ready');
+  });
+
   it('rejects malformed output and continues with later resources', async () => {
     vi.useFakeTimers();
     const prior = window.AlloModules.ErrorReporter;

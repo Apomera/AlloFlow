@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 
 const app = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const sharedActivitySource = readFileSync(resolve(process.cwd(), 'shared_activity_source.jsx'), 'utf8');
+const endSessionPreviewSource = readFileSync(resolve(process.cwd(), 'view_end_session_preview_source.jsx'), 'utf8');
 const teacher = readFileSync(resolve(process.cwd(), 'teacher_source.jsx'), 'utf8');
 const mailbox = readFileSync(resolve(process.cwd(), 'apps_script/session_mailbox/Code.gs'), 'utf8');
 
@@ -456,9 +457,9 @@ describe('session evidence report contract', () => {
     expect(previewSource).toContain('summary: latestSummary');
     expect(previewSource).toContain('const result = await handleSetStudentsResource(uids, resourceId);');
     expect(previewSource).not.toContain('updateDoc(');
-    expect(app).toContain('aria-label="Choose the student-safe resource to send to an evidence cohort"');
-    expect(app).toContain("aria-label={'Send the selected follow-up resource to ' + connectedCount");
-    expect(app).toContain('disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy}');
+    expect(endSessionPreviewSource).toContain('aria-label="Choose the student-safe resource to send to an evidence cohort"');
+    expect(endSessionPreviewSource).toContain("aria-label={'Send the selected follow-up resource to ' + connectedCount");
+    expect(endSessionPreviewSource).toContain('disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy}');
   });
 
   it('rebuilds the saved summary from the latest live evidence at completion time', () => {
@@ -632,6 +633,6 @@ describe('live-session reliability refinements', () => {
     const completionSource = app.slice(completionStart);
     expect(completionSource).toContain('deliveryGuard: true');
     expect(completionSource.indexOf('await endMailboxLiveSession')).toBeLessThan(completionSource.indexOf('saveRosterSessionSummary'));
-    expect(completionSource).toContain('Save summary & end anyway');
+    expect(endSessionPreviewSource).toContain('Save summary & end anyway');
   });
 });

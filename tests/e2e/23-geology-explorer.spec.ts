@@ -92,9 +92,10 @@ test.afterEach(async ({ page }) => {
   } catch {}
 });
 
-async function mount(page, route = '/__harness') {
+async function mount(page, route = '/__harness', geologyData: Record<string, unknown> | null = null) {
   await page.goto(base + route);
   await page.waitForFunction(() => !!window.__geologyTool);
+  if (geologyData) await page.evaluate((seed) => { window.__ctx.toolData.geologyExplorer = seed; }, geologyData);
   await page.evaluate(() => window.__mount());
   await page.waitForSelector('[data-geology-tool="true"]');
 }
@@ -248,14 +249,135 @@ test.describe('Geology Explorer learning path', () => {
     await expect(page.getByRole('region', { name: 'Explain your evidence' })).toBeFocused();
   });
 
-  test('shows process cues and depth shading for the active scene', async ({ page }) => {
+  test('shows a scientifically appropriate evidence axis for the active scene', async ({ page }) => {
     await mount(page);
     const cues = page.getByRole('region', { name: 'Process cues' });
     await expect(cues).toContainText('Relative dating');
     await expect(cues.locator('[data-geology-process-step]')).toHaveCount(3);
-    await expect(cues.getByRole('img', { name: /Depth shading/ })).toBeVisible();
+    await expect(cues.getByRole('img', { name: /Evidence axis: begin at the surface/ })).toBeVisible();
     await cues.getByRole('button', { name: 'Show process cue: Cross-cutting' }).click();
     await expect(cues.getByRole('button', { name: 'Show process cue: Cross-cutting' })).toHaveAttribute('aria-pressed', 'true');
+
+    await page.getByRole('tab', { name: /Crystal cavern/ }).click();
+    await expect(cues).toContainText('Growth axis');
+    await expect(cues).toContainText('Cavity wall / first');
+    await expect(cues.getByRole('img', { name: /Growth axis: the cavity-wall rind formed first/ })).toBeVisible();
+
+    await page.getByRole('tab', { name: /Subduction zone/ }).click();
+    await expect(cues).toContainText('Cold slab → hot wedge → arc');
+    await expect(cues).toContainText('thermal contrast');
+    await expect(cues.getByRole('img', { name: /Subduction process path/ })).toBeVisible();
+
+    await page.getByRole('tab', { name: /Mid-ocean ridge/ }).click();
+    await expect(cues).toContainText('Axis / youngest');
+    await expect(cues.getByRole('img', { name: /Symmetric age axis/ })).toBeVisible();
+  });
+
+  test('changes selected-material measurements to match each geology world', async ({ page }) => {
+    await mount(page);
+
+    await page.getByRole('tab', { name: /Crystal cavern/ }).click();
+    await page.locator('[data-geology-material=quartz]').click();
+    let details = page.getByRole('region', { name: 'Selected rock details' });
+    await expect(details).toContainText('Specimen scale');
+    await expect(details).toContainText('≈ 2 m model span');
+    await expect(details).toContainText('Open-space crystal zone');
+    await expect(details).not.toContainText('Pressure');
+
+    await page.getByRole('tab', { name: /Subduction zone/ }).click();
+    await page.locator('[data-geology-material=slab]').click();
+    details = page.getByRole('region', { name: 'Selected rock details' });
+    await expect(details).toContainText('Representative depth');
+    await expect(details).toContainText('Cold slab anomaly');
+    await expect(details).toContainText('Temperature');
+
+    await page.getByRole('tab', { name: /Mid-ocean ridge/ }).click();
+    await page.locator('[data-geology-material=axialMagma]').click();
+    details = page.getByRole('region', { name: 'Selected rock details' });
+    await expect(details).toContainText('Age position');
+    await expect(details).toContainText('Ridge axis — youngest crust');
+
+    await page.getByRole('tab', { name: /Deep Earth/ }).click();
+    await page.locator('[data-geology-material=innerCore]').click();
+    details = page.getByRole('region', { name: 'Selected rock details' });
+    await expect(details).toContainText('Representative radial depth');
+    await expect(details).toContainText('≈ 360 GPa');
+  });
+
+  test('synchronizes the 2D evidence map with selection, Focus Lens, and formation stage', async ({ page }) => {
+    await mount(page);
+    await page.getByRole('tab', { name: /Crystal cavern/ }).click();
+    const map = page.getByRole('region', { name: '2D evidence map' });
+    await expect(map.getByRole('img', { name: /Crystal cavern 2D evidence map/ })).toBeVisible();
+    await expect(map.locator('[data-geology-schematic-material=chalcedony]').first()).toHaveAttribute('data-geology-schematic-state', 'active');
+
+    await page.locator('[data-geology-material=quartz]').click();
+    const quartz = map.locator('[data-geology-schematic-material=quartz]').first();
+    await expect(quartz).toHaveAttribute('data-geology-schematic-state', 'selected');
+    await expect(map.locator('[data-geology-schematic-status=true]')).toContainText('Selected: Quartz crystal');
+
+    const lens = page.getByRole('region', { name: 'Selected rock details' }).getByRole('button', { name: 'Isolate selected material in the scene' });
+    await lens.click();
+    await expect(quartz).toHaveAttribute('data-geology-focus-state', 'match');
+    await expect(map.locator('[data-geology-schematic-material=agate]').first()).toHaveAttribute('data-geology-focus-state', 'muted');
+
+    await page.getByRole('region', { name: 'Formation timeline' }).getByRole('button', { name: 'Timeline stage 3: Open-space crystals' }).click();
+    await expect(quartz).toHaveAttribute('data-geology-schematic-state', 'selected-active');
+    await expect(map.locator('[data-geology-schematic-status=true]')).toContainText('Open-space crystals');
+  });
+
+  test('provides a labelled evidence map in every non-crust world', async ({ page }) => {
+    await mount(page);
+    const scenes: Array<[RegExp, string, RegExp]> = [
+      [/Crystal cavern/, 'geode', /Crystal cavern 2D evidence map/],
+      [/Deep Earth/, 'deepEarth', /Deep Earth 2D evidence map/],
+      [/Subduction zone/, 'subduction', /Subduction zone 2D evidence map/],
+      [/Mid-ocean ridge/, 'ridge', /Mid-ocean ridge 2D evidence map/],
+      [/Hotspot chain/, 'hotspot', /Hotspot chain 2D evidence map/],
+    ];
+    for (const [tabName, sceneId, mapName] of scenes) {
+      await page.getByRole('tab', { name: tabName }).click();
+      const map = page.getByRole('region', { name: '2D evidence map' });
+      await expect(map.locator('[data-geology-scene-schematic]')).toHaveAttribute('data-geology-scene-schematic', sceneId);
+      await expect(map.getByRole('img', { name: mapName })).toBeVisible();
+      expect(await map.locator('[data-geology-schematic-material]').count()).toBeGreaterThan(0);
+    }
+  });
+
+  test('derives the layered-crust resume stage from saved evidence', async ({ page }) => {
+    await mount(page, '/__harness', {
+      scene: 'crust',
+      identifiedByScene: { crust: { sandstone: 1, shale: 1, limestone: 1, intrusion: 1 } },
+      notebook: { evidence: [] },
+    });
+    await expect(page.locator('[data-geology-resumed-stage=true]')).toContainText('Resumed at stage 2: Find what cuts');
+    await expect(page.getByRole('region', { name: 'Interactive process map' }).getByRole('button', { name: 'Stage 2: Find what cuts' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('region', { name: 'Formation timeline' }).locator('[data-geology-timeline-position=true]')).toContainText('Stage 2 of 3');
+  });
+
+  test('resumes one saved process stage across every synchronized surface', async ({ page }) => {
+    await mount(page, '/__harness', { scene: 'geode', sceneSignals: { geode: 2 } });
+    await expect(page.locator('[data-geology-resumed-stage=true]')).toContainText('Resumed at stage 3: Open-space crystals');
+    await expect(page.getByRole('region', { name: 'Interactive process map' }).getByRole('button', { name: 'Stage 3: Open-space crystals' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('region', { name: 'Formation timeline' }).locator('[data-geology-timeline-position=true]')).toContainText('Stage 3 of 3');
+    await expect(page.getByRole('region', { name: 'Crystal growth sequence' }).getByRole('button', { name: /Open-space crystals/ })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('region', { name: '2D evidence map' }).locator('[data-geology-schematic-material=quartz]').first()).toHaveAttribute('data-geology-schematic-state', 'active');
+  });
+
+  test('keeps direct process controls synchronized after leaving and revisiting a world', async ({ page }) => {
+    await mount(page);
+    await page.getByRole('tab', { name: /Crystal cavern/ }).click();
+    await page.getByRole('region', { name: 'Crystal growth sequence' }).getByRole('button', { name: /Banded pulses/ }).click();
+    await expect(page.getByRole('region', { name: 'Interactive process map' }).getByRole('button', { name: 'Stage 2: Banded pulses' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('region', { name: 'Formation timeline' }).locator('[data-geology-timeline-position=true]')).toContainText('Stage 2 of 3');
+    await expect(page.getByRole('region', { name: '2D evidence map' }).locator('[data-geology-schematic-material=agate]').first()).toHaveAttribute('data-geology-schematic-state', 'selected-active');
+
+    await page.getByRole('tab', { name: /Deep Earth/ }).click();
+    await page.getByRole('tab', { name: /Crystal cavern/ }).click();
+    await expect(page.locator('[data-geology-resumed-stage=true]')).toContainText('Resumed at stage 2: Banded pulses');
+    await expect(page.getByRole('region', { name: 'Interactive process map' }).getByRole('button', { name: 'Stage 2: Banded pulses' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('region', { name: 'Formation timeline' }).locator('[data-geology-timeline-position=true]')).toContainText('Stage 2 of 3');
+    await expect(page.getByRole('region', { name: '2D evidence map' }).locator('[data-geology-schematic-material=agate]').first()).toHaveAttribute('data-geology-schematic-state', 'active');
   });
 
   test('keeps a camera orientation breadcrumb available outside the 3D view', async ({ page }) => {
@@ -573,5 +695,13 @@ test.describe('Geology Explorer learning path', () => {
     await expect(page.locator('[data-geology-material="sandstone"]')).toHaveAttribute('data-geology-focus-state', 'muted');
   });
 
+  test('keeps a non-crust evidence map available without WebGL', async ({ page }) => {
+    await mount(page, '/__harness/nogl');
+    await expect(page.getByText('3D view unavailable')).toBeVisible({ timeout: 30_000 });
+    await page.getByRole('tab', { name: /Crystal cavern/ }).click();
+    await expect(page.getByText(/Use the 2D evidence map and material list/)).toBeVisible();
+    await expect(page.getByRole('region', { name: '2D evidence map' })).toBeVisible();
+    await expect(page.getByRole('group', { name: /Rock types/ })).toBeVisible();
+  });
 
 });

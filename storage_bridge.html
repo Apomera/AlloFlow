@@ -79,8 +79,12 @@
 <main id="approval-ui" hidden>
   <h1>Approve AlloFlow device storage?</h1>
   <p class="muted">A page is asking to read and update AlloFlow work saved in
-  this browser profile. Approve only if you just opened this window from
-  AlloFlow. Approval lasts only for this connection.</p>
+  this browser profile. Approve only if you were using AlloFlow just now.
+  Approval is remembered for this browser profile so you are not asked every
+  session. You can withdraw it at any time by opening this page directly and
+  choosing &ldquo;Forget approval&rdquo;. Anyone who can use this browser
+  profile can reach this data, so on a shared computer use a separate
+  Windows or Chrome profile.</p>
   <div class="card">
     <p><strong>Requesting page:</strong> <span id="approval-origin">Waiting for request?</span></p>
     <p class="muted">For a Gemini Canvas session, the browser may identify the
@@ -104,6 +108,7 @@
     <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
       <button id="btn-export">⬇ Export everything (JSON)</button>
       <button id="btn-refresh">↻ Refresh</button>
+      <button id="btn-forget">🔒 Forget approval</button>
       <button id="btn-wipe" class="danger">🗑 Erase everything</button>
     </div>
     <table id="ns-table"><thead>
@@ -775,11 +780,46 @@
     return !!origin && origin !== 'null' && origin === location.origin;
   }
 
+  // ── Remembered consent ───────────────────────────────────────────
+  // Chrome partitions this document's IndexedDB by (top-level site, this
+  // origin). A hidden iframe of this page inside Gemini Canvas therefore gets
+  // a bucket that NO page on any other top-level site can reach, and that
+  // bucket is where both the consent record and the teacher's data live. So a
+  // remembered grant cannot be replayed from another site: the attacker never
+  // reaches the record OR the data. What consent buys is a human saying yes
+  // once per browser profile instead of once per session; the partition, not
+  // the record, is the access control. Data confidentiality against anyone
+  // who can already use this browser profile is the vault's job, not this.
+  var CONSENT_NS = '__bridge';
+  var CONSENT_KEY = 'consent_v1';
+  var RESERVED_NS_RE = /^__/;
+  function readConsent() {
+    return kvGet(CONSENT_NS, CONSENT_KEY).catch(function () { return null; });
+  }
+  function writeConsent(origin) {
+    return kvSet(CONSENT_NS, CONSENT_KEY, {
+      v: 1,
+      grantedAt: new Date().toISOString(),
+      channel: connectionKind,
+      origin: origin === 'null' ? 'opaque' : String(origin || '')
+    }).catch(function () { return null; });
+  }
+  function forgetConsent() {
+    return kvDelete(CONSENT_NS, CONSENT_KEY).catch(function () { return null; });
+  }
+
   function handleOp(msg) {
     var ns = msg.ns, key = msg.key;
     var needsNs = { get:1, set:1, compareAndSwap:1, mutateRecovery:1, delete:1, list:1, getAll:1, clearNamespace:1 };
     if (needsNs[msg.op] && !NS_RE.test(String(ns || ''))) {
       return Promise.reject({ code: 'allo/bad-namespace', message: 'Invalid namespace' });
+    }
+    // NS_RE happily allows a leading "__", so a client could otherwise read or
+    // rewrite the consent record and the probe counters through ordinary ops.
+    // Those are the bridge's own bookkeeping; keep them off the client surface.
+    if (needsNs[msg.op] && RESERVED_NS_RE.test(String(ns || ''))) {
+      return Promise.reject({ code: 'allo/reserved-namespace',
+        message: 'Namespaces beginning with "__" are reserved for the bridge.' });
     }
     if ((msg.op === 'get' || msg.op === 'set' || msg.op === 'delete' ||
          msg.op === 'compareAndSwap' || msg.op === 'mutateRecovery') &&
@@ -837,6 +877,10 @@
     var approvalStatus = document.getElementById('approval-status');
     var approveButton = document.getElementById('btn-approve');
     var denyButton = document.getElementById('btn-deny');
+    var consentCheckInFlight = false;
+    // A popup only ever exists because someone clicked to open it, so it shows
+    // the dialog immediately. The iframe stays silent until the consent lookup
+    // below says a human has not answered yet.
     if (connectionKind === 'popup') approvalUi.hidden = false;
 
     function authorize(source, origin) {
@@ -865,17 +909,30 @@
       approvalOrigin.textContent = origin === 'null'
         ? 'Gemini Canvas or another opaque-origin page'
         : origin;
-      approvalStatus.textContent = 'Review the requesting page, then approve or deny this one connection.';
+      approvalStatus.textContent = 'Review the requesting page, then approve or deny.';
       approveButton.disabled = false;
       denyButton.disabled = false;
       approvalUi.hidden = false;
+      // In iframe mode this page is 1px and offscreen until the app is told to
+      // reveal it. Without this the dialog would be invisible and the connection
+      // would look like a hang.
+      replyTo(source, origin, { allo: PROTO, type: 'allo-bridge-consent-required', nonce: nonce });
       try { approveButton.focus(); } catch (_) {}
     }
 
     approveButton.addEventListener('click', function () {
       if (!pendingApproval) return;
       var approved = pendingApproval;
-      authorize(approved.source, approved.origin);
+      approveButton.disabled = true;
+      denyButton.disabled = true;
+      approvalStatus.textContent = 'Saving your approval for this browser profile…';
+      // Record BEFORE authorizing: if the write fails the grant simply is not
+      // remembered and the teacher is asked again next session, which is the
+      // safe direction to fail in.
+      writeConsent(approved.origin).then(function () {
+        if (!pendingApproval) return;
+        authorize(approved.source, approved.origin);
+      });
     });
     denyButton.addEventListener('click', function () {
       if (!pendingApproval) return;
@@ -911,12 +968,27 @@
           authorize(event.source, observedOrigin);
           return;
         }
-        if (connectionKind !== 'popup') {
-          bridgeError(event.source, observedOrigin, 'allo/approval-required',
-            'Cross-origin device storage requires a visible popup and explicit approval.');
-          return;
-        }
-        showApproval(event.source, observedOrigin);
+        // Cross-origin, which in Canvas is the literal opaque origin "null".
+        // Previously the iframe failed closed here and every Canvas session had
+        // to open a popup. It now asks its OWN partition whether a human has
+        // already approved this browser profile, and only prompts if not. The
+        // prompt is rendered by this page, cross-origin, so the embedding app
+        // can size the frame but can neither read it nor click it.
+        if (consentCheckInFlight) return;
+        consentCheckInFlight = true;
+        var helloSource = event.source;
+        readConsent().then(function (record) {
+          consentCheckInFlight = false;
+          if (authorizedSource) return;
+          // A grant on file is honoured unless this session was already denied.
+          // Everything else falls through to showApproval, which keeps its own
+          // handling of a repeat hello, a changed origin, and a prior denial.
+          if (record && record.v === 1 && !denied) {
+            authorize(helloSource, observedOrigin);
+            return;
+          }
+          showApproval(helloSource, observedOrigin);
+        });
         return;
       }
 
@@ -1036,6 +1108,17 @@
     });
   }
   document.getElementById('btn-refresh').onclick = refresh;
+  // Withdrawing consent is the counterpart to remembering it. It deliberately
+  // does NOT erase anything: the teacher is revoking the app's standing
+  // permission to connect, not asking to lose their work. "Erase everything"
+  // is the button next to it for that.
+  document.getElementById('btn-forget').onclick = function () {
+    if (!confirm('Forget the saved approval? AlloFlow will ask for your approval again the next time it opens on this browser profile. Your saved work is not touched.')) return;
+    forgetConsent().then(function () {
+      alert('Approval forgotten. AlloFlow will ask again next time.');
+      refresh();
+    });
+  };
   document.getElementById('btn-wipe').onclick = function () {
     if (confirm('Erase EVERYTHING AlloFlow has stored on this device? This cannot be undone.') &&
         confirm('Really erase all device storage?')) {

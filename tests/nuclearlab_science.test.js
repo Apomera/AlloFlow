@@ -1256,6 +1256,14 @@ describe('The chain reaction is a task, not a display', () => {
     expect(html).not.toContain('The core is shut down.');
   });
 
+  it('tells a supercritical learner to insert, not withdraw, the rods', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { rods: 40, rodsMoved: true } });
+    expect(html).toContain('Power is rising. Insert the rods until k reads exactly 1.000.');
+    expect(html).toMatch(/supercritical/i);
+    expect(html).not.toContain('The core is shut down.');
+    expect(html).not.toContain('Withdraw the rods');
+  });
+
   it('tells a screen-reader user what the rod position did', () => {
     // A range input announces "50%", which says nothing about whether the core
     // went critical — the one thing the control exists to find.

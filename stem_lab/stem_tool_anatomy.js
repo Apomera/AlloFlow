@@ -65,7 +65,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-mission-title{font-size:19px;line-height:1.12;font-weight:950;color:#0f172a;margin:2px 0 5px;}',
       '.anatomy-mission-text{font-size:12px;line-height:1.55;color:#475569;max-width:760px;}',
       '.anatomy-mission-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}',
-      '.anatomy-mission-actions button{border-radius:8px;}',
+      '.anatomy-mission-actions button{border-radius:8px;}.anatomy-study-dashboard{align-self:start;border:1px solid rgba(124,58,237,.18);border-radius:10px;background:rgba(255,255,255,.76);overflow:hidden}.anatomy-study-dashboard-summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:7px 10px;color:#4c1d95;font-size:10px;font-weight:950;cursor:pointer;list-style:none;user-select:none}.anatomy-study-dashboard-summary::-webkit-details-marker{display:none}.anatomy-study-dashboard-summary:after{content:"+";margin-left:auto;color:#7c3aed;font-size:15px}.anatomy-study-dashboard[open]>.anatomy-study-dashboard-summary:after{content:"-"}.anatomy-study-dashboard-summary>span:last-of-type{margin-left:auto;color:#64748b;font-size:9px;font-weight:850;text-align:right}.anatomy-study-dashboard-content{display:grid;gap:8px;padding:8px 10px 10px;border-top:1px solid rgba(124,58,237,.12)}',
       '.anatomy-lens{border-radius:12px;border:1px solid rgba(79,70,229,.18);background:linear-gradient(135deg,#eef2ff 0%,#f8fafc 52%,#ecfeff 100%);padding:12px;box-shadow:0 8px 20px rgba(30,41,59,.05);}',
       '.anatomy-lens-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:9px;}',
       '.anatomy-lens-header h3{margin:1px 0 2px;font-size:16px;line-height:1.2;font-weight:950;color:#1e1b4b;}',
@@ -113,7 +113,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-challenge-chip{height:22px;min-width:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid rgba(245,158,11,.26);background:#fff7ed;font-size:12px;}',
       '.anatomy-challenge-chip[data-done="false"]{opacity:.32;filter:grayscale(1);background:#f8fafc;border-color:#e2e8f0;}',
       '.anatomy-tab-strip,.anatomy-system-rail,.anatomy-layer-bar,.anatomy-controls-bar{border-radius:8px;border:1px solid rgba(15,23,42,.12);background:rgba(248,250,252,.86);padding:8px;}',
-      '.anatomy-tab-strip{position:sticky;top:0;z-index:3;box-shadow:0 10px 22px rgba(15,23,42,.06);}',
+      '.anatomy-tab-strip{position:sticky;top:0;z-index:3;display:flex!important;flex-wrap:nowrap!important;align-items:center;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scroll-padding-inline:8px;scrollbar-width:thin;box-shadow:0 10px 22px rgba(15,23,42,.06);}',
+      '.anatomy-tab-strip>button{flex:0 0 auto;white-space:nowrap;scroll-snap-align:start}',
+      '.anatomy-tab-strip>span{flex:0 0 auto;white-space:nowrap}',
       '.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-layer-bar button,.anatomy-controls-bar button{border-radius:8px;}',
       '.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-layer-bar button,.anatomy-controls-bar button,.anatomy-structure-list button{min-height:36px;}',
       '.anatomy-tool-shell button:focus-visible,.anatomy-tool-shell input:focus-visible,.anatomy-tool-shell canvas:focus-visible{outline:3px solid #7c3aed;outline-offset:2px;}',
@@ -127,7 +129,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       // the dark theme puts tools on while passing elsewhere — a contrast bug
       // that appears and disappears with the theme. An explicit muted colour
       // gives the same visual hierarchy and the same ratio everywhere.
-      '.anatomy-system-count{font-size:9px;font-weight:900;color:#475569;white-space:nowrap;}',
+      '.anatomy-system-count{font-size:9px;font-weight:900;color:#475569;white-space:nowrap;}.anatomy-system-button[aria-pressed="true"] .anatomy-system-count{color:inherit;text-shadow:none;}',
       '.anatomy-system-meter{position:absolute;left:7px;right:7px;bottom:4px;height:2px;border-radius:999px;background:rgba(100,116,139,.18);overflow:hidden;}',
       '.anatomy-system-meter>span{display:block;height:100%;border-radius:inherit;background:var(--system-accent);transition:width .25s ease;}',
       '.anatomy-system-button[aria-pressed="true"] .anatomy-system-meter{background:rgba(255,255,255,.28);}',
@@ -299,7 +301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-review-queue button{min-height:30px;padding:4px 7px;border:1px solid #c4b5fd;border-radius:7px;background:#fff;color:#5b21b6;font-size:10px;font-weight:850;text-align:left;}',
       '.anatomy-review-queue button:hover{background:#f5f3ff;border-color:#8b5cf6;}',
       '.anatomy-review-queue-more{font-size:10px;font-weight:800;color:#7c3aed;}',
-      '.anatomy-tool-shell{padding:2px 4px 18px;}',
+      '.anatomy-tool-shell{width:min(72rem,100%);min-width:0;max-width:100%;box-sizing:border-box;padding:2px 4px 18px;}',
       '.anatomy-topbar{min-height:44px;padding:5px 7px!important;border:1px solid rgba(148,163,184,.22);border-radius:14px;background:rgba(255,255,255,.82);box-shadow:0 10px 28px rgba(15,23,42,.06);backdrop-filter:blur(14px);}',
       '.anatomy-workspace{grid-template-columns:minmax(350px,430px) minmax(0,1fr);gap:20px;}',
       '.anatomy-body-shell{overflow:hidden;border:1px solid rgba(148,163,184,.38)!important;border-radius:22px;background:linear-gradient(155deg,rgba(255,255,255,.98),rgba(248,250,252,.96) 58%,var(--anatomy-soft) 175%);padding:14px 14px 16px;box-shadow:0 24px 58px rgba(15,23,42,.13),0 2px 8px rgba(15,23,42,.06);}',
@@ -310,10 +312,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-view-toggle[data-has-clinical-atlas="true"]{grid-template-columns:repeat(4,minmax(0,1fr));}',
       '.anatomy-view-toggle button{min-width:0;min-height:31px;padding:5px 7px;border:1px solid transparent;border-radius:8px;font-size:9px;line-height:1.15;letter-spacing:.01em;transition:background .16s ease,color .16s ease,box-shadow .16s ease,transform .16s ease;}',
       '.anatomy-view-toggle button:hover{background:rgba(255,255,255,.72);color:#0f172a;}.anatomy-view-toggle button[aria-pressed="true"]{border-color:var(--anatomy-accent);background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;box-shadow:0 0 0 1px var(--anatomy-accent),0 4px 12px rgba(15,23,42,.18);}',
+      '.anatomy-view-model-controls{display:grid;gap:6px;width:100%}.anatomy-view-control-row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:7px;align-items:center}.anatomy-view-control-label{color:#64748b;font-size:9px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.anatomy-view-switcher{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.anatomy-model-switcher{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.anatomy-model-switcher[data-has-clinical-atlas="true"]{grid-template-columns:repeat(3,minmax(0,1fr))}',
       '.anatomy-canvas-toolbar{width:min(400px,100%);margin-bottom:8px;padding:5px 6px;border:1px solid rgba(148,163,184,.32);border-radius:11px;background:rgba(248,250,252,.9);}',
       '.anatomy-canvas-toolbar button{border-color:rgba(148,163,184,.55);border-radius:8px;box-shadow:0 1px 2px rgba(15,23,42,.04);}.anatomy-canvas-toolbar button:hover:not(:disabled){border-color:var(--anatomy-accent);background:var(--anatomy-soft);color:#0f172a;}',
+      '.anatomy-3d-toolbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}.anatomy-3d-procedure-button{min-height:44px;padding-inline:10px}.anatomy-structure-detail{border-left-width:4px!important;background:linear-gradient(145deg,#fff,#f8fafc)!important}.anatomy-structure-detail-header{gap:10px}.anatomy-structure-detail-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.anatomy-structure-detail-actions button{min-height:34px}',
       '.anatomy-3d-mobile-controls .anatomy-3d-nudge{display:none}.anatomy-3d-mobile-controls button{min-height:44px}.anatomy-3d-mobile-controls .anatomy-3d-procedure-button{min-width:96px}',
-      '@media (max-width:720px), (hover:none) and (pointer:coarse){.anatomy-3d-mobile-controls{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:5px}.anatomy-3d-mobile-controls .anatomy-3d-nudge{display:block}.anatomy-3d-mobile-controls .anatomy-3d-procedure-button{grid-column:span 2}.anatomy-3d-canvas{touch-action:pan-y}}',
+      '@media (max-width:720px), (hover:none) and (pointer:coarse){.anatomy-3d-toolbar-actions{width:100%;align-items:stretch;flex-direction:column}.anatomy-3d-mobile-controls{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:5px}.anatomy-3d-mobile-controls .anatomy-3d-nudge{display:block}.anatomy-3d-mobile-controls .anatomy-3d-procedure-button{grid-column:span 2}.anatomy-3d-toolbar-actions>.anatomy-3d-procedure-button{width:100%}.anatomy-3d-canvas{touch-action:pan-y}}',
       '.anatomy-canvas-frame{width:min(400px,100%);border:1px solid rgba(148,163,184,.42);border-radius:18px;background:#08111f;box-shadow:0 18px 42px rgba(15,23,42,.18),inset 0 1px 0 rgba(255,255,255,.12);}',
       '.anatomy-canvas-frame:after{content:"";position:absolute;inset:0;z-index:4;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 -38px 52px rgba(2,6,23,.08);pointer-events:none;}',
       '.anatomy-canvas-mode-chip{position:absolute;top:9px;left:9px;z-index:5;display:inline-flex;align-items:center;min-height:23px;padding:3px 8px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(7,17,31,.76);color:#e2e8f0;font-size:8px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;box-shadow:0 4px 14px rgba(2,6,23,.22);backdrop-filter:blur(8px);pointer-events:none;}',
@@ -336,7 +340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-visual-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:0 9px 9px}.anatomy-visual-presets button{min-height:34px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#475569;font-size:10px;font-weight:900}.anatomy-visual-presets button:hover{border-color:var(--anatomy-accent);background:var(--anatomy-soft);color:#0f172a}.anatomy-visual-presets button[aria-pressed="true"]{border-color:#0f172a;background:#0f172a;color:#fff;box-shadow:0 3px 10px rgba(15,23,42,.16)}',
       '.anatomy-layer-options{margin:0;border:0;border-top:1px solid rgba(148,163,184,.24);border-radius:0;background:transparent;box-shadow:none}.anatomy-appearance-content,.anatomy-model-source-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:0 9px 9px}.anatomy-appearance-content+.anatomy-appearance-content{padding-top:0}',
       '.anatomy-controls-bar{align-items:center}.anatomy-controls-bar>.anatomy-appearance-panel{flex:0 0 auto;box-shadow:none;background:#fff}.anatomy-controls-bar>.anatomy-appearance-panel summary{min-height:34px;padding:5px 9px}.anatomy-controls-bar>.anatomy-appearance-panel[open]{flex:1 1 100%}',
-      '.anatomy-body-header{display:block}.anatomy-body-badges{display:grid;grid-template-columns:minmax(0,1fr) auto;width:100%;margin-top:8px;gap:6px;align-items:center}.anatomy-body-badges>.anatomy-view-toggle{grid-column:1/-1;grid-row:1}.anatomy-body-badges>span{grid-column:1;grid-row:2;justify-self:start}.anatomy-body-badges>.anatomy-orientation-key{grid-column:2;grid-row:2}.anatomy-body-badges>.anatomy-model-source{grid-column:1/-1;grid-row:3;width:100%}',
+      '.anatomy-body-header{display:block}.anatomy-body-badges{display:grid;grid-template-columns:minmax(0,1fr) auto;width:100%;margin-top:8px;gap:6px;align-items:center}.anatomy-body-badges>.anatomy-view-model-controls{grid-column:1/-1;grid-row:1}.anatomy-body-badges>span{grid-column:1;grid-row:2;justify-self:start}.anatomy-body-badges>.anatomy-orientation-key{grid-column:2;grid-row:2}.anatomy-body-badges>.anatomy-model-source{grid-column:1/-1;grid-row:3;width:100%}',
       '.anatomy-model-source-row label,.anatomy-model-source-row button{min-height:32px}.anatomy-model-source-note{flex:1 1 170px;color:#64748b;font-size:9px;line-height:1.35}',
       '.anatomy-atlas-provenance{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 9px;width:100%;padding:0 9px 7px;color:#475569;font-size:9px;line-height:1.4}.anatomy-atlas-provenance dt{font-weight:900;color:#334155}.anatomy-atlas-provenance dd{min-width:0;margin:0;overflow-wrap:anywhere}.anatomy-atlas-provenance a{font-weight:850;color:#0369a1;text-decoration:underline;text-underline-offset:2px}.anatomy-atlas-scope-note{margin:0 9px 9px;padding:7px 8px;border-left:3px solid #0d9488;background:#ecfdf5;color:#065f46;font-size:9px;line-height:1.45}',
       '.anatomy-global-search{position:relative;flex:1 1 220px;min-width:180px;z-index:12}.anatomy-global-search-results{position:absolute;top:calc(100% + 5px);left:0;right:0;display:grid;gap:3px;max-height:260px;padding:5px;overflow-y:auto;border:1px solid #94a3b8;border-radius:11px;background:rgba(255,255,255,.98);box-shadow:0 16px 34px rgba(15,23,42,.2)}.anatomy-global-search-results button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:42px;padding:7px 9px;border-radius:8px;color:#0f172a;text-align:left}.anatomy-global-search-results button:hover,.anatomy-global-search-results button[aria-selected="true"]{background:var(--anatomy-soft);outline:1px solid var(--anatomy-accent)}.anatomy-global-search-results strong{font-size:11px}.anatomy-global-search-results span{font-size:9px;font-weight:800;color:#64748b;text-align:right}',
@@ -346,11 +350,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-skin-tone-controls{padding-top:2px}.anatomy-skin-tone-controls>span:first-child{color:#64748b!important}',
       '@media (max-width:560px){.anatomy-visual-presets button{min-height:44px}.anatomy-display-summary,.anatomy-appearance-summary,.anatomy-model-source-summary{min-height:44px}.anatomy-layer-options button{min-height:42px}}',
       '@media (max-width:900px){.anatomy-workspace{grid-template-columns:1fr}.anatomy-body-shell{max-width:560px;margin-inline:auto;width:100%;}}',
-      '@media (max-width:560px){.anatomy-tool-shell{padding-inline:0}.anatomy-topbar{border-radius:11px}.anatomy-body-shell{padding:12px 10px 14px;border-radius:16px}.anatomy-body-header{display:block}.anatomy-body-badges{align-items:stretch;margin-top:8px}.anatomy-view-toggle{min-width:0}.anatomy-view-toggle button{min-height:44px;padding:5px 3px}.anatomy-canvas-frame{border-radius:14px}.anatomy-canvas-toolbar{padding:6px}.anatomy-canvas-mode-chip{top:7px;left:7px}}',
+      '@media (max-width:560px){.anatomy-tool-shell{padding-inline:0}.anatomy-topbar{border-radius:11px}.anatomy-body-shell{padding:12px 10px 14px;border-radius:16px}.anatomy-body-header{display:block}.anatomy-body-badges{align-items:stretch;margin-top:8px}.anatomy-view-control-row{grid-template-columns:40px minmax(0,1fr);gap:5px}.anatomy-view-toggle{min-width:0}.anatomy-view-toggle button{min-height:44px;padding:5px 3px}.anatomy-canvas-frame{border-radius:14px}.anatomy-canvas-toolbar{padding:6px}.anatomy-canvas-mode-chip{top:7px;left:7px}}',
       '@media (max-width:720px){.anatomy-tab-strip{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin;padding-bottom:4px}.anatomy-tab-strip>button{flex:0 0 116px!important;width:auto!important;scroll-snap-align:start}.anatomy-tab-strip>span{flex:0 0 auto}}',
-      '@media (max-width:560px){.anatomy-mission-actions,.anatomy-challenge-strip{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:4px;scrollbar-width:thin}.anatomy-mission-actions button,.anatomy-challenge-strip>*{flex:0 0 auto;scroll-snap-align:start}.anatomy-mission-actions button{min-height:44px}.anatomy-metric-grid{display:flex;overflow-x:auto;gap:6px;padding-bottom:4px;scroll-snap-type:x proximity;scrollbar-width:thin}.anatomy-metric{flex:0 0 128px;scroll-snap-align:start}.anatomy-system-rail{display:flex;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin;padding-bottom:4px}.anatomy-system-rail>button{flex:0 0 136px;scroll-snap-align:start}.anatomy-tool-shell:not([data-reading-mode=true]) .anatomy-mission-text{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}',
+      '@media (max-width:560px){.anatomy-mission-actions,.anatomy-challenge-strip{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:4px;scrollbar-width:thin}.anatomy-mission-actions button,.anatomy-challenge-strip>*{flex:0 0 auto;scroll-snap-align:start}.anatomy-mission-actions button{min-height:44px}.anatomy-metric-grid{display:flex;overflow-x:auto;gap:6px;padding-bottom:4px;scroll-snap-type:x proximity;scrollbar-width:thin}.anatomy-metric{flex:0 0 128px;scroll-snap-align:start}.anatomy-system-rail{display:flex;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin;padding-bottom:4px}.anatomy-system-rail>button{flex:0 0 136px;scroll-snap-align:start}.anatomy-mission-text{overflow-wrap:anywhere}.anatomy-clinical-search{grid-template-columns:1fr}.anatomy-clinical-search input{min-height:44px;font-size:16px}.anatomy-clinical-search button{min-height:44px}.anatomy-clinical-search>span{grid-column:1}.anatomy-clinical-visual-key{font-size:11px}}',
       '@media (min-width:901px) and (max-height:900px){.anatomy-body-shell{position:relative;top:auto}}',
-      '@media (forced-colors:active){.anatomy-body-shell,.anatomy-canvas-frame,.anatomy-view-toggle,.anatomy-canvas-mode-chip{forced-color-adjust:auto;border:1px solid CanvasText}.anatomy-view-toggle button[aria-pressed="true"]{background:Highlight;color:HighlightText}}',
+      '.anatomy-body-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.anatomy-model-focus-toggle{min-height:32px;padding:5px 9px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font-size:9px;font-weight:900;white-space:nowrap;box-shadow:0 2px 7px rgba(15,23,42,.06);transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease}.anatomy-model-focus-toggle:hover{border-color:#7c3aed;background:#f5f3ff;color:#5b21b6}.anatomy-model-focus-toggle[aria-pressed="true"]{border-color:#7c3aed;background:#6d28d9;color:#fff;box-shadow:0 5px 14px rgba(109,40,217,.22)}',
+      '.anatomy-clinical-pack-switcher{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 8px;border:1px solid rgba(13,148,136,.32);border-radius:11px;background:linear-gradient(135deg,#f0fdfa,#ecfeff);box-shadow:0 4px 12px rgba(13,148,136,.07)}.anatomy-clinical-pack-switcher label{display:flex;align-items:center;gap:7px;min-width:0;color:#115e59;font-size:9px;font-weight:950;letter-spacing:.02em}.anatomy-clinical-pack-switcher select{min-width:0;max-width:210px;min-height:32px;padding:4px 26px 4px 8px;border:1px solid #5eead4;border-radius:8px;background:#fff;color:#134e4a;font-size:10px;font-weight:850}.anatomy-clinical-pack-switcher>span{color:#0f766e;font-size:8px;font-weight:850;white-space:nowrap}.anatomy-body-badges>.anatomy-clinical-pack-switcher{grid-column:1/-1;grid-row:3}.anatomy-body-badges>.anatomy-clinical-pack-switcher+.anatomy-model-source{grid-row:4}',
+      '.anatomy-canvas-guide,.anatomy-learning-tools{width:min(400px,100%);margin:8px auto 0;border:1px solid rgba(148,163,184,.34);border-radius:11px;background:rgba(248,250,252,.84);overflow:hidden}.anatomy-canvas-guide-summary,.anatomy-learning-tools-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;padding:7px 9px;color:#334155;font-size:10px;font-weight:900;cursor:pointer;list-style:none;user-select:none}.anatomy-canvas-guide-summary::-webkit-details-marker,.anatomy-learning-tools-summary::-webkit-details-marker{display:none}.anatomy-canvas-guide-summary:after,.anatomy-learning-tools-summary:after{content:"+";color:#64748b;font-size:15px;line-height:1}.anatomy-canvas-guide[open]>.anatomy-canvas-guide-summary:after,.anatomy-learning-tools[open]>.anatomy-learning-tools-summary:after{content:"-"}.anatomy-canvas-guide-summary>span:last-of-type,.anatomy-learning-tools-summary>span:last-of-type{margin-left:auto;padding:2px 7px;border-radius:999px;background:#fff;color:#64748b;font-size:8px}.anatomy-canvas-help-content{margin:0;padding:0 9px 9px;border-top:1px solid rgba(148,163,184,.22);background:transparent}.anatomy-learning-tools-content{padding:0 9px 9px;border-top:1px solid rgba(148,163,184,.22)}.anatomy-learning-tools .anatomy-scale-journey{margin-top:9px}.anatomy-learning-tools .anatomy-marker-legend{max-width:none}',
+      '.anatomy-clinical-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px;align-items:center;margin-top:8px}.anatomy-clinical-search input{min-width:0;min-height:40px;padding:7px 9px;border:1px solid #99f6e4;border-radius:9px;background:#fff;color:#134e4a;font-size:11px;font-weight:750}.anatomy-clinical-search button{min-height:40px;padding:5px 9px;border:1px solid #5eead4;border-radius:8px;background:#fff;color:#0f766e;font-size:10px;font-weight:900}.anatomy-clinical-search>span{grid-column:1/-1;color:#64748b;font-size:10px;font-weight:800}.anatomy-clinical-concept-grid{max-height:246px;overflow:auto;overscroll-behavior:contain;padding:2px 3px 3px 2px;scrollbar-gutter:stable}.anatomy-clinical-concept-grid:focus-visible{outline:3px solid #0f766e;outline-offset:2px}.anatomy-clinical-concept-empty{margin-top:6px;padding:7px 8px;border:1px dashed #94a3b8;border-radius:8px;background:#fff;color:#475569;font-size:10px}.anatomy-clinical-concept:focus-visible{position:relative;z-index:1}.anatomy-clinical-visual-key{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;margin-top:7px;padding:7px 8px;border:1px solid #fde68a;border-radius:9px;background:#fffbeb;color:#713f12;font-size:10px}.anatomy-clinical-visual-key-title{font-size:10px;font-weight:950}.anatomy-clinical-visual-key span{display:inline-flex;align-items:center;gap:4px}.anatomy-clinical-visual-key i{display:inline-block;width:11px;height:11px;border-radius:999px;border:1px solid rgba(15,23,42,.28)}.anatomy-clinical-visual-key i[data-key="selected"]{background:#facc15;box-shadow:0 0 0 2px rgba(250,204,21,.22)}.anatomy-clinical-visual-key i[data-key="context"]{background:repeating-linear-gradient(135deg,#cbd5e1 0 2px,#f8fafc 2px 4px)}.anatomy-clinical-visual-key i[data-key="whole"]{background:linear-gradient(135deg,#0d9488,#6366f1)}.anatomy-clinical-visual-key-note{flex:1 1 100%;color:#92400e}',
+      '@media (max-width:560px), (any-pointer:coarse){.anatomy-clinical-search input,.anatomy-clinical-search button{min-height:44px}.anatomy-clinical-search input{font-size:16px}}',
+      '.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-mission,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-tab-strip,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-system-rail,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-fact-card,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-mnemonics-card,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-progress-row,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-display-panel,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-controls-bar,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-compare-tray,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-side-panel{display:none!important}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-workspace{grid-template-columns:minmax(0,1fr)!important}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-body-shell{position:relative;top:auto;width:100%;max-width:760px;margin-inline:auto;padding:18px 20px 20px}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-canvas-frame,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-canvas-toolbar,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-canvas-guide,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-3d-status,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-clinical-structures,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-learning-tools{width:min(520px,100%);max-width:520px}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-body-header{max-width:620px;margin-inline:auto;margin-bottom:12px}',
+      '.anatomy-tool-shell button:focus-visible,.anatomy-tool-shell input:focus-visible,.anatomy-tool-shell select:focus-visible,.anatomy-tool-shell textarea:focus-visible,.anatomy-tool-shell summary:focus-visible,.anatomy-tool-shell a:focus-visible,.anatomy-tool-shell canvas:focus-visible{outline:3px solid #7c3aed;outline-offset:2px}',
+      '.anatomy-topbar-title{min-width:0;flex:1}.anatomy-topbar-title h3,.anatomy-topbar-title p{overflow:hidden;text-overflow:ellipsis}.anatomy-topbar-action,.anatomy-topbar-back{flex:0 0 auto}',
+      '@media (max-width:560px){.anatomy-topbar{display:grid!important;grid-template-columns:44px minmax(0,1fr) 1fr 1fr;align-items:center;gap:6px;padding:7px!important}.anatomy-topbar-back{grid-column:1;grid-row:1;min-width:44px;min-height:44px}.anatomy-topbar-title{grid-column:2/-1;grid-row:1}.anatomy-topbar-title h3{font-size:16px;white-space:nowrap}.anatomy-topbar-title p{font-size:10px;white-space:nowrap}.anatomy-topbar-action{min-height:44px;margin-left:0!important}.anatomy-topbar-action:nth-of-type(2){grid-column:1/3;grid-row:2}.anatomy-topbar-snapshot{grid-column:3/5;grid-row:2}.anatomy-model-focus-toggle{min-height:44px}.anatomy-clinical-pack-switcher{align-items:stretch;flex-direction:column}.anatomy-clinical-pack-switcher label{justify-content:space-between}.anatomy-clinical-pack-switcher select{max-width:none;min-height:44px;flex:1}.anatomy-clinical-pack-switcher>span{white-space:normal}.anatomy-canvas-guide-summary,.anatomy-learning-tools-summary{min-height:44px}.anatomy-clinical-concept-grid{max-height:300px}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-body-shell{padding:12px 10px 14px}}',
+      '.anatomy-model-source-note,.anatomy-atlas-provenance,.anatomy-atlas-scope-note,.anatomy-clinical-pack-switcher label,.anatomy-clinical-pack-switcher>span,.anatomy-clinical-structures-head span,.anatomy-clinical-selection,.anatomy-clinical-locator p,.anatomy-clinical-ftu-head p,.anatomy-clinical-ftu-badge,.anatomy-clinical-ftu figcaption,.anatomy-clinical-ftu-selection,.anatomy-clinical-ftu-note{font-size:10px}.anatomy-clinical-concept strong,.anatomy-clinical-ftu-cell strong{font-size:11px}.anatomy-clinical-concept span,.anatomy-clinical-ftu-cell span{font-size:9px}',
+      '@media (max-width:560px), (any-pointer:coarse){.anatomy-view-toggle button,.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-clinical-pack-switcher select,.anatomy-controls-bar button,.anatomy-controls-bar summary,.anatomy-clinical-concept,.anatomy-clinical-locator button,.anatomy-model-source button,.anatomy-model-source label,.anatomy-model-source select{min-height:44px}}',
+      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-model-source-note,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-provenance,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-scope-note,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-pack-switcher label,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-pack-switcher>span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-structures-head span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-selection,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-locator p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-head p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu figcaption,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-selection,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-note{font-size:13px;line-height:1.55}.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell strong{font-size:13px;line-height:1.4}.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell span{font-size:11px;line-height:1.4}',
+      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-provenance,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-scope-note,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-head p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu figcaption,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-note{font-size:12px;line-height:1.55}',
+      '@media (forced-colors:active){.anatomy-body-shell,.anatomy-canvas-frame,.anatomy-view-toggle,.anatomy-canvas-mode-chip,.anatomy-model-focus-toggle,.anatomy-clinical-pack-switcher,.anatomy-canvas-guide,.anatomy-learning-tools{forced-color-adjust:auto;border:1px solid CanvasText}.anatomy-view-toggle button[aria-pressed="true"],.anatomy-model-focus-toggle[aria-pressed="true"]{background:Highlight;color:HighlightText}}',
       '@media (max-width:560px){.anatomy-review-queue{align-items:stretch;flex-direction:column}.anatomy-review-queue button{width:100%;min-height:40px;}}',
     ].join('');
     document.head.appendChild(st);
@@ -533,6 +550,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
   function stableAnatomy2dRef(canvas) {
     anatomy2dController.attach(canvas);
+  }
+
+  // Procedure publishes its latest visual state into one persistent canvas
+  // controller. Keyboard and pointer updates redraw the same focused DOM node
+  // instead of replacing it with a newly keyed canvas.
+  var anatomyProcedureController = (function() {
+    var canvas = null, context = null, frame = null, latestPainter = null;
+    var needsPaint = false, lastPaint = -1000, reducedMotion = false;
+
+    function stop() {
+      if (frame && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(frame);
+      frame = null;
+      if (canvas) {
+        canvas._anatomyProcedureFrame = null;
+        canvas._anatomyProcedureAnimation = false;
+      }
+    }
+    function detach() {
+      var detachedCanvas = canvas;
+      stop();
+      if (detachedCanvas) {
+        detachedCanvas._anatomyProcedurePaint = null;
+        detachedCanvas._anatomyProcedureCleanup = null;
+        detachedCanvas._anatomyProcedureReduceMotion = false;
+      }
+      canvas = null;
+      context = null;
+      lastPaint = -1000;
+      reducedMotion = false;
+    }
+    function paint(timestamp) {
+      frame = null;
+      if (canvas) canvas._anatomyProcedureFrame = null;
+      if (!canvas || !canvas.isConnected) { detach(); return; }
+      if (!context || typeof latestPainter !== 'function') return;
+      if (needsPaint || timestamp - lastPaint >= 48) {
+        reducedMotion = !!latestPainter(canvas, context, timestamp || 0);
+        canvas._anatomyProcedureReduceMotion = reducedMotion;
+        needsPaint = false;
+        lastPaint = timestamp || 0;
+      }
+      if (!reducedMotion) requestPaint();
+      else canvas._anatomyProcedureAnimation = false;
+    }
+    function requestPaint() {
+      if (!canvas || !canvas.isConnected || typeof latestPainter !== 'function' || frame) return;
+      if (typeof requestAnimationFrame === 'function') {
+        canvas._anatomyProcedureAnimation = true;
+        frame = requestAnimationFrame(paint);
+        canvas._anatomyProcedureFrame = frame;
+      } else {
+        needsPaint = false;
+        reducedMotion = !!latestPainter(canvas, context, 0);
+        canvas._anatomyProcedureReduceMotion = reducedMotion;
+      }
+    }
+    function attach(nextCanvas) {
+      if (nextCanvas === canvas) { requestPaint(); return; }
+      if (canvas) detach();
+      if (!nextCanvas) return;
+      canvas = nextCanvas;
+      context = canvas.getContext && canvas.getContext('2d');
+      if (!context) { canvas = null; return; }
+      var attachedCanvas = canvas;
+      canvas._anatomyProcedurePaint = function(timestamp) {
+        return typeof latestPainter === 'function' ? latestPainter(attachedCanvas, context, timestamp || 0) : false;
+      };
+      canvas._anatomyProcedureCleanup = function() { if (canvas === attachedCanvas) detach(); };
+      needsPaint = true;
+      requestPaint();
+    }
+    function push(nextPainter) {
+      latestPainter = typeof nextPainter === 'function' ? nextPainter : null;
+      needsPaint = true;
+      requestPaint();
+    }
+    return { attach: attach, push: push };
+  })();
+
+  function stableAnatomyProcedureRef(canvas) {
+    anatomyProcedureController.attach(canvas);
+  }
+
+  function focusAnatomyStructureDetail() {
+    setTimeout(function() {
+      if (typeof document === 'undefined') return;
+      var heading = document.querySelector('[data-anatomy-structure-detail-heading="true"]');
+      if (heading && typeof heading.focus === 'function') heading.focus();
+    }, 0);
+  }
+
+  function restoreAnatomyStructureListFocus(structureId) {
+    setTimeout(function() {
+      if (typeof document === 'undefined') return;
+      var option = document.getElementById('anatomy-structure-option-' + structureId);
+      var target = option || document.getElementById('anatomy-structure-list-title');
+      if (!target || typeof target.focus !== 'function') return;
+      target.focus();
+      if (option && typeof option.scrollIntoView === 'function') option.scrollIntoView({ block: 'nearest' });
+    }, 0);
   }
 
   // A callback ref passed to React must keep one identity. The previous inline
@@ -2037,6 +2154,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var anatomyTabOrder = ['explore', 'imaging', 'procedure', 'tour', 'connections', 'aiTutor', 'spotter', 'pathways', 'flashcards', 'homeoHunt'];
         var activeTab = anatomyTabOrder.indexOf(d._activeTab) !== -1 ? d._activeTab : 'explore';
         var focusedAnatomyWorkspace = activeTab === 'imaging' || activeTab === 'procedure';
+        var anatomyModelFocus = d._anatomyModelFocus === true && !focusedAnatomyWorkspace;
         function activateAnatomyTab(tab) {
           if (tab === 'tour') {
             var nextTourIndex = tourActive ? tourStepIdx : 0;
@@ -3050,12 +3168,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           || systemClinicalAtlasPacks[0] || null;
         var clinicalAtlasAvailable = systemClinicalAtlasPacks.length > 0;
         var clinicalAtlasConcepts = selectedClinicalAtlasPack ? getAnatomyAtlasConcepts(selectedClinicalAtlasPack) : [];
+        var clinicalConceptSearch = typeof d._clinicalConceptSearch === 'string' ? d._clinicalConceptSearch.slice(0, 120) : '';
+        var normalizedClinicalConceptSearch = clinicalConceptSearch.trim().toLowerCase();
         var clinicalPackIdentityMatches = !!selectedClinicalAtlasPack && requestedClinicalAtlasPackId === selectedClinicalAtlasPack.id;
         var requestedClinicalConceptId = clinicalPackIdentityMatches && typeof d._clinicalAtlasConceptId === 'string' ? d._clinicalAtlasConceptId : '';
         var selectedClinicalConcept = clinicalAtlasConcepts.find(function(concept) { return concept.id === requestedClinicalConceptId; })
           || clinicalAtlasConcepts.find(function(concept) { return selectedClinicalAtlasPack && concept.id === selectedClinicalAtlasPack.primaryOntologyId; })
           || clinicalAtlasConcepts[0] || null;
         var selectedClinicalConceptId = selectedClinicalConcept ? selectedClinicalConcept.id : '';
+        var matchingClinicalAtlasConcepts = clinicalAtlasConcepts.filter(function(concept) {
+          if (!normalizedClinicalConceptSearch) return true;
+          var haystack = [concept.label, concept.id].concat(concept.nodeNames || []).join(' ').toLowerCase();
+          return haystack.indexOf(normalizedClinicalConceptSearch) !== -1;
+        });
+        var selectedClinicalConceptMatchesSearch = !normalizedClinicalConceptSearch || matchingClinicalAtlasConcepts.some(function(concept) { return concept.id === selectedClinicalConceptId; });
+        var visibleClinicalAtlasConcepts = matchingClinicalAtlasConcepts.slice();
+        if (selectedClinicalConcept && !selectedClinicalConceptMatchesSearch) visibleClinicalAtlasConcepts.unshift(selectedClinicalConcept);
+        visibleClinicalAtlasConcepts.sort(function(a, b) {
+          if (a.id === selectedClinicalConceptId) return -1;
+          if (b.id === selectedClinicalConceptId) return 1;
+          return a.label.localeCompare(b.label);
+        });
         var selectedClinicalScaleBridge = selectedClinicalAtlasPack ? selectedClinicalAtlasPack.scaleBridge : null;
         var selectedClinicalTissueAtlas = selectedClinicalAtlasPack ? selectedClinicalAtlasPack.tissueAtlas : null;
         var requestedClinicalFtuAtlasId = clinicalPackIdentityMatches && typeof d._clinicalFtuAtlasId === 'string' ? d._clinicalFtuAtlasId : '';
@@ -3126,7 +3259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             var x = lum(a), y = lum(b);
             return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
           };
-          return ratio('#ffffff', bg) >= ratio('#0f172a', bg) ? '#ffffff' : '#0f172a';
+          return ratio('#ffffff', bg) >= ratio('#020617', bg) ? '#ffffff' : '#020617';
         };
 
         var LAYER_DEFS = [
@@ -3795,7 +3928,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0,
             search: '', _anatomySearchIndex: 0, _flashcardIdx: 0, _flashcardFlipped: false,
             _bodyView3d: true, _body3dStyle: 'clinical', _clinicalAtlasPackId: pack.id,
-            _clinicalAtlasConceptId: conceptId || pack.primaryOntologyId || '',
+            _clinicalAtlasConceptId: conceptId || pack.primaryOntologyId || '', _clinicalConceptSearch: '',
             _clinicalFtuCellId: null, _clinicalFtuAtlasId: null, _regionalAtlasOpen: null,
             _lastSelectedSource: source || 'clinical-pack'
           };
@@ -10364,13 +10497,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           className: 'anatomy-tool-shell max-w-6xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1',
           'data-anatomy-tool': 'true',
           'data-reading-mode': readingMode ? 'true' : 'false',
+          'data-anatomy-model-focus': anatomyModelFocus ? 'true' : 'false',
+          'data-anatomy-active-mode': bodyView3d ? body3dStyle : '2d',
           style: { '--anatomy-accent': sys.accent, '--anatomy-soft': sys.color }
         },
 
           // Header
           h('div', { className: 'anatomy-topbar flex items-center gap-3 mb-3' },
-            h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 active:scale-[0.97]', 'aria-label': t('stem.anatomy.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-            h('div', null,
+            h('button', { className: 'anatomy-topbar-back p-1.5 hover:bg-slate-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 active:scale-[0.97]', onClick: function() { setStemLabTool(null); }, 'aria-label': t('stem.anatomy.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+            h('div', { className: 'anatomy-topbar-title' },
               h('h3', { className: 'text-lg font-bold text-slate-800 tracking-tight' }, t('stem.anatomy.human_anatomy_explorer', '\uD83E\uDEC0 Human Anatomy Explorer')),
               h('p', { className: 'text-xs text-slate-600' }, sys.desc)
             ),
@@ -10380,11 +10515,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               'aria-pressed': readingMode,
               onClick: toggleReadingMode,
               title: readingMode ? 'Use standard text size' : 'Increase text size and line spacing',
-              className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all active:scale-[0.97] ' + (readingMode ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-indigo-50 text-indigo-800 border-indigo-300 hover:bg-indigo-100')
+              className: 'anatomy-topbar-action px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all active:scale-[0.97] ' + (readingMode ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-indigo-50 text-indigo-800 border-indigo-300 hover:bg-indigo-100')
             }, readingMode ? 'Comfort text on' : 'Comfort text'),
             h('button', { 'aria-label': t('stem.anatomy.snapshot', 'Snapshot'),
               onClick: takeSnapshot,
-              className: 'ml-auto px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all active:scale-[0.97]',
+              className: 'anatomy-topbar-action anatomy-topbar-snapshot ml-auto px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all active:scale-[0.97]',
               title: t('stem.anatomy.save_snapshot', 'Save snapshot')
             }, t('stem.anatomy.snapshot_2', '\uD83D\uDCF8 Snapshot'))
           ),
@@ -10392,13 +10527,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           // Mission dashboard
           h('section', {
             className: 'anatomy-mission mb-3',
-            'data-anatomy-mission': 'true',
+            'data-anatomy-mission': 'true', 'aria-labelledby': 'anatomy-mission-title',
             style: { borderColor: sys.accent + '26' }
           },
             h('div', { className: 'anatomy-mission-inner' },
               h('div', null,
                 h('div', { className: 'anatomy-kicker' }, t('stem.anatomy.body_systems_lab', 'Body systems lab')),
-                h('h2', { className: 'anatomy-mission-title' }, sys.icon + ' ' + sys.name + ' ' + t('stem.anatomy.system', 'system')),
+                h('h2', { id: 'anatomy-mission-title', className: 'anatomy-mission-title' }, sys.icon + ' ' + sys.name + ' ' + t('stem.anatomy.system', 'system')),
                 h('p', { className: 'anatomy-mission-text' }, missionPrompt),
                 h('div', { className: 'anatomy-mission-actions' },
                   h('button', {
@@ -10433,7 +10568,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   }, showMasteryMap ? 'Hide mastery map' : 'Mastery map')
                 )
               ),
-              h('div', null,
+              h('details', { className: 'anatomy-study-dashboard', 'data-anatomy-study-dashboard': 'true', open: readingMode ? true : undefined },
+                h('summary', { className: 'anatomy-study-dashboard-summary', 'data-anatomy-study-dashboard-summary': 'true' },
+                  h('span', null, 'Study dashboard'),
+                  h('span', null, structuresViewedCount + ' viewed · ' + currentSystemReviewCount + ' to review · ' + researchPoints + ' RP')
+                ),
+                h('div', { className: 'anatomy-study-dashboard-content', 'data-anatomy-study-dashboard-content': 'true' },
                 h('div', { className: 'anatomy-metric-grid' },
                   h('div', { className: 'anatomy-metric' },
                     h('strong', null, String(structuresViewedCount)),
@@ -10460,17 +10600,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('span', null, 'To review')
                   )
                 ),
-                h('div', { className: 'anatomy-challenge-strip', 'aria-label': t('stem.anatomy.challenge_progress', 'Challenge progress') },
+                h('div', { className: 'anatomy-challenge-strip', role: 'list', 'aria-label': t('stem.anatomy.challenge_progress', 'Challenge progress') },
                   ANAT_CHALLENGES.map(function(ch) {
                     var done = completedChallenges.indexOf(ch.id) !== -1;
                     return h('span', {
                       key: ch.id,
                       title: ch.name + ': ' + ch.desc + ' (' + ch.rp + ' RP)',
-                      className: 'anatomy-challenge-chip',
+                      className: 'anatomy-challenge-chip', role: 'listitem',
+                      'aria-label': ch.name + ', ' + (done ? 'completed' : 'not completed') + ', ' + ch.rp + ' research points',
                       'data-done': done ? 'true' : 'false'
-                    }, ch.icon);
+                    }, h('span', { 'aria-hidden': 'true' }, ch.icon));
                   }),
-                  h('span', { className: 'text-[11px] font-bold text-amber-700 self-center ml-1' }, researchPoints + ' RP - ' + completedChallengeCount + '/' + ANAT_CHALLENGES.length)
+                  h('span', { className: 'text-[11px] font-bold text-amber-700 self-center ml-1', role: 'listitem', 'aria-label': researchPoints + ' research points, ' + completedChallengeCount + ' of ' + ANAT_CHALLENGES.length + ' challenges completed' }, researchPoints + ' RP - ' + completedChallengeCount + '/' + ANAT_CHALLENGES.length)
                 ),
                 h('section', { className: 'anatomy-coach', 'aria-label': 'Recommended next study step' },
                   h('span', { className: 'anatomy-kicker' }, 'Recommended next step'),
@@ -10497,6 +10638,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     }),
                     reviewQueueRemaining > 0 ? h('span', { className: 'anatomy-review-queue-more' }, '+' + reviewQueueRemaining + ' more') : null
                   ) : null
+                )
                 )
               )
             )
@@ -10547,52 +10689,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ) : null,
 
           // Tab bar (10 tabs)
-          h('div', { className: 'anatomy-tab-strip flex flex-wrap gap-1 gap-y-1.5 mb-3', role: 'tablist', 'aria-label': t('stem.anatomy.learning_modes', 'Anatomy learning modes'), 'aria-orientation': 'horizontal', onKeyDown: handleAnatomyTabKey, 'data-anatomy-tab-strip': 'true' },
-            h('button', { 'aria-label': t('stem.anatomy.explore', 'Explore'),
+          h('div', { className: 'anatomy-tab-strip flex gap-1 mb-3', role: 'tablist', 'aria-label': t('stem.anatomy.learning_modes', 'Anatomy learning modes'), 'aria-orientation': 'horizontal', onKeyDown: handleAnatomyTabKey, 'data-anatomy-tab-strip': 'true', ref: function(tabStrip) { if (!tabStrip || tabStrip._anatomyActiveTab === activeTab) return; tabStrip._anatomyActiveTab = activeTab; setTimeout(function() { if (!tabStrip.isConnected) return; var activeModeTab = tabStrip.querySelector('#anatomy-mode-tab-' + activeTab); if (activeModeTab && typeof activeModeTab.scrollIntoView === 'function') activeModeTab.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' }); }, 0); } },
+            h('button', { id: 'anatomy-mode-tab-explore', 'aria-label': t('stem.anatomy.explore', 'Explore'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'explore', tabIndex: activeTab === 'explore' ? 0 : -1,
               onClick: function() { activateAnatomyTab('explore'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'explore' ? 'bg-slate-800 text-white border border-slate-800' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.explore_2', '\uD83E\uDEC0 Explore')),
-            h('button', { 'aria-label': 'Imaging Lab',
+            h('button', { id: 'anatomy-mode-tab-imaging', 'aria-label': 'Imaging Lab',
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'imaging', tabIndex: activeTab === 'imaging' ? 0 : -1,
               onClick: function() { activateAnatomyTab('imaging'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'imaging' ? 'bg-cyan-800 text-white border border-cyan-800' : 'bg-white text-slate-600 hover:bg-cyan-50 border border-slate-300 active:scale-[0.97]')
             }, '🩻 Imaging'),
-            h('button', { 'aria-label': 'Procedure Studio',
+            h('button', { id: 'anatomy-mode-tab-procedure', 'aria-label': 'Procedure Studio',
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'procedure', tabIndex: activeTab === 'procedure' ? 0 : -1,
               onClick: function() { activateAnatomyTab('procedure'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'procedure' ? 'bg-rose-800 text-white border border-rose-800' : 'bg-white text-slate-600 hover:bg-rose-50 border border-slate-300 active:scale-[0.97]')
-            }, '\uD83E\uDE7A Procedure'),            h('button', { 'aria-label': t('stem.anatomy.tour', 'Tour'),
+            }, '\uD83E\uDE7A Procedure'),            h('button', { id: 'anatomy-mode-tab-tour', 'aria-label': t('stem.anatomy.tour', 'Tour'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'tour', tabIndex: activeTab === 'tour' ? 0 : -1,
               onClick: function() { activateAnatomyTab('tour'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'tour' ? 'bg-emerald-700 text-white border border-emerald-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.tour_2', '\uD83E\uDDED Tour')),
-            h('button', { 'aria-label': t('stem.anatomy.connect', 'Connect'),
+            h('button', { id: 'anatomy-mode-tab-connections', 'aria-label': t('stem.anatomy.connect', 'Connect'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'connections', tabIndex: activeTab === 'connections' ? 0 : -1,
               onClick: function() { activateAnatomyTab('connections'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'connections' ? 'bg-sky-700 text-white border border-sky-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.connect_2', '\uD83D\uDD17 Connect')),
-            h('button', { 'aria-label': t('stem.anatomy.ai_tutor', 'AI Tutor'),
+            h('button', { id: 'anatomy-mode-tab-aiTutor', 'aria-label': t('stem.anatomy.ai_tutor', 'AI Tutor'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'aiTutor', tabIndex: activeTab === 'aiTutor' ? 0 : -1,
               onClick: function() { activateAnatomyTab('aiTutor'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-700 text-white border border-violet-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.ai_tutor_2', '\uD83E\uDD16 AI Tutor')),
-            h('button', { 'aria-label': t('stem.anatomy.spotter', 'Spotter'),
+            h('button', { id: 'anatomy-mode-tab-spotter', 'aria-label': t('stem.anatomy.spotter', 'Spotter'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'spotter', tabIndex: activeTab === 'spotter' ? 0 : -1,
               onClick: function() { activateAnatomyTab('spotter'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-700 text-white border border-amber-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.spotter_2', '\uD83C\uDFAF Spotter')),
-            h('button', { 'aria-label': t('stem.anatomy.pathways', 'Pathways'),
+            h('button', { id: 'anatomy-mode-tab-pathways', 'aria-label': t('stem.anatomy.pathways', 'Pathways'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'pathways', tabIndex: activeTab === 'pathways' ? 0 : -1,
               onClick: function() { activateAnatomyTab('pathways'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-700 text-white border border-rose-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.pathways_2', '\uD83D\uDEE4 Pathways')),
-            h('button', { 'aria-label': t('stem.anatomy.cards', 'Cards'),
+            h('button', { id: 'anatomy-mode-tab-flashcards', 'aria-label': t('stem.anatomy.cards', 'Cards'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'flashcards', tabIndex: activeTab === 'flashcards' ? 0 : -1,
               onClick: function() { activateAnatomyTab('flashcards'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-700 text-white border border-teal-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.cards_2', '\uD83C\uDCCF Cards')),
-            h('button', { 'aria-label': t('stem.anatomy.homeostasis_discovery', 'Homeostasis discovery'),
+            h('button', { id: 'anatomy-mode-tab-homeoHunt', 'aria-label': t('stem.anatomy.homeostasis_discovery', 'Homeostasis discovery'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'homeoHunt', tabIndex: activeTab === 'homeoHunt' ? 0 : -1,
               onClick: function() { activateAnatomyTab('homeoHunt'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'homeoHunt' ? 'bg-indigo-700 text-white border border-indigo-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
@@ -10678,8 +10820,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               return h('button', { key: key, 'aria-pressed': systemIsActive,
                 'aria-label': s.name + '. ' + systemExploredCount + ' of ' + systemStructures.length + ' structures explored.',
                 onClick: function() { showAnatomySystem(key); },
-                className: 'anatomy-system-button px-3 py-1.5 rounded-lg text-xs font-bold transition-all outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 ' + (systemIsActive ? 'text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]'),
-                style: systemIsActive ? { '--system-accent': s.accent, background: s.accent, boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.24), 0 4px 10px ' + s.accent + '30' } : { '--system-accent': s.accent }
+                className: 'anatomy-system-button px-3 py-1.5 rounded-lg text-xs font-bold transition-all outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 ' + (systemIsActive ? 'shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]'),
+                style: systemIsActive ? { '--system-accent': s.accent, background: s.accent, color: anaReadableOn(s.accent), boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.24), 0 4px 10px ' + s.accent + '30' } : { '--system-accent': s.accent }
               },
                 h('span', { className: 'anatomy-system-label' },
                   h('span', null, s.icon + ' ' + s.name),
@@ -10693,7 +10835,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ),
 
           // ── Fun fact banner (Always visible) ──
-          !focusedAnatomyWorkspace && currentFact ? h('div', { className: 'mb-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2' },
+          !focusedAnatomyWorkspace && currentFact ? h('div', { className: 'anatomy-fact-card mb-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2' },
             h('span', { className: 'text-base flex-shrink-0' }, '\uD83D\uDCA1'),
             h('div', { className: 'flex-1' },
               h('span', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, t('stem.anatomy.did_you_know', 'Did you know?')),
@@ -10706,7 +10848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ) : null,
 
           // ── Mnemonics section (Always visible) ──
-          !focusedAnatomyWorkspace && MNEMONICS[sysKey] && MNEMONICS[sysKey].length > 0 ? h('div', { className: 'mb-3' },
+          !focusedAnatomyWorkspace && MNEMONICS[sysKey] && MNEMONICS[sysKey].length > 0 ? h('div', { className: 'anatomy-mnemonics-card mb-3' },
             h('button', { onClick: function() { upd('_showMnemonics', !showMnemonics); },
               'aria-expanded': showMnemonics, 'aria-controls': 'anatomy-mnemonics-panel',
               className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg bg-purple-50 border border-purple-600 hover:bg-purple-100 transition-all active:scale-[0.97]'
@@ -10925,31 +11067,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ),
 
           // ── Main Content Area: Canvas (Left) + Tab Panel (Right) ──
-          h('div', { className: 'anatomy-workspace', 'data-anatomy-workspace': 'true', style: focusedAnatomyWorkspace ? { gridTemplateColumns: 'minmax(0,1fr)' } : undefined },
+          h('div', { className: 'anatomy-workspace', 'data-anatomy-workspace': 'true', style: focusedAnatomyWorkspace || anatomyModelFocus ? { gridTemplateColumns: 'minmax(0,1fr)' } : undefined },
             // The scan workspace uses the full width; every other mode keeps the body model visible.
             !focusedAnatomyWorkspace && h('div', { className: 'anatomy-body-shell', 'data-anatomy-model-shell': 'true', style: { borderColor: sys.accent + '24' } },
               h('div', { className: 'anatomy-body-header' },
-                h('div', { className: 'anatomy-body-title' },
-                  h('strong', null, sys.icon + ' ' + sys.name),
-                  h('span', null, bodyView3d && body3dStyle === 'clinical' && selectedClinicalAtlasPack
-                    ? selectedClinicalAtlasPack.focusLabel + ' \u00b7 organ focus'
-                    : view.charAt(0).toUpperCase() + view.slice(1) + ' \u00b7 ' + (bodyView3d ? (body3dStyle === 'realistic' ? 'surface model' : 'blueprint model') : '2D atlas'))
+                h('div', { className: 'anatomy-body-title-row' },
+                  h('div', { className: 'anatomy-body-title' },
+                    h('strong', null, sys.icon + ' ' + sys.name),
+                    h('span', null, bodyView3d && body3dStyle === 'clinical' && selectedClinicalAtlasPack
+                      ? selectedClinicalAtlasPack.focusLabel + ' \u00b7 organ focus'
+                      : view.charAt(0).toUpperCase() + view.slice(1) + ' \u00b7 ' + (bodyView3d ? (body3dStyle === 'realistic' ? 'surface model' : 'blueprint model') : '2D atlas'))
+                  ),
+                  h('button', {
+                    type: 'button', className: 'anatomy-model-focus-toggle',
+                    'data-anatomy-model-focus-toggle': 'true', 'aria-pressed': anatomyModelFocus ? 'true' : 'false',
+                    'aria-label': anatomyModelFocus ? 'Exit model focus mode' : 'Focus on the anatomy model',
+                    title: anatomyModelFocus ? 'Restore learning panels' : 'Hide surrounding panels and enlarge the model',
+                    onClick: function() {
+                      upd('_anatomyModelFocus', !anatomyModelFocus);
+                      if (typeof announceToSR === 'function') announceToSR(anatomyModelFocus ? 'Model focus mode off.' : 'Model focus mode on. Surrounding learning panels are hidden until you exit focus mode.');
+                    }
+                  }, anatomyModelFocus ? 'Exit focus' : 'Focus model')
                 ),
                 h('div', { className: 'anatomy-body-badges' },
                   h('span', { 'data-anatomy-structure-count': 'true', style: { color: sys.accent } }, filtered.length + ' structures'),
-                  h('div', { className: 'anatomy-view-toggle', role: 'group', 'aria-label': 'Anatomy model view', 'data-has-clinical-atlas': clinicalAtlasAvailable ? 'true' : 'false' },
-                    h('button', { type: 'button', 'data-anatomy-view-option': '2d', 'aria-pressed': bodyView3d ? 'false' : 'true', title: 'Detailed labeled atlas', onClick: function() { bodyView3d && body3dStyle === 'clinical' ? updMulti(Object.assign(clinicalAtlasIdentityPatch(selectedClinicalConceptId), { _bodyView3d: false })) : upd('_bodyView3d', false); } }, '2D Atlas'),
-                    h('button', { type: 'button', 'data-anatomy-view-option': 'blueprint', 'aria-pressed': bodyView3d && body3dStyle === 'blueprint' ? 'true' : 'false', title: 'Transparent spatial blueprint', onClick: function() { updMulti({ _bodyView3d: true, _body3dStyle: 'blueprint' }); } }, '3D Blueprint'),
-                    h('button', { type: 'button', 'data-anatomy-view-option': 'realistic', 'aria-pressed': bodyView3d && body3dStyle === 'realistic' ? 'true' : 'false', title: 'Detailed realistic surface model', onClick: function() { updMulti({ _bodyView3d: true, _body3dStyle: 'realistic' }); } }, '3D Surface'),
-                    clinicalAtlasAvailable && h('button', {
-                      type: 'button', 'data-anatomy-view-option': 'clinical',
-                      'aria-pressed': bodyView3d && body3dStyle === 'clinical' ? 'true' : 'false',
-                      title: 'Standalone licensed reference organ with ontology provenance',
-                      onClick: function() {
-                        updMulti(clinicalAtlasPackTransitionPatch(selectedClinicalAtlasPack, 'clinical-view'));
-                        if (typeof announceToSR === 'function') announceToSR('Opening ' + selectedClinicalAtlasPack.title + ' for ' + selectedClinicalAtlasPack.focusLabel + '.');
-                      }
-                    }, 'Clinical Atlas')
+                  h('div', { className: 'anatomy-view-model-controls', 'data-anatomy-view-model-controls': 'true' },
+                    h('div', { className: 'anatomy-view-control-row' },
+                      h('span', { id: 'anatomy-view-dimension-label', className: 'anatomy-view-control-label' }, 'View'),
+                      h('div', { className: 'anatomy-view-toggle anatomy-view-switcher', role: 'group', 'aria-labelledby': 'anatomy-view-dimension-label', 'data-anatomy-view-switcher': 'true' },
+                        h('button', { type: 'button', 'data-anatomy-view-dimension': '2d', 'data-anatomy-view-option': '2d', 'aria-pressed': bodyView3d ? 'false' : 'true', title: 'Detailed labeled atlas', onClick: function() { bodyView3d && body3dStyle === 'clinical' ? updMulti(Object.assign(clinicalAtlasIdentityPatch(selectedClinicalConceptId), { _bodyView3d: false })) : upd('_bodyView3d', false); } }, '2D'),
+                        h('button', { type: 'button', 'data-anatomy-view-dimension': '3d', 'aria-pressed': bodyView3d ? 'true' : 'false', title: 'Interactive three-dimensional anatomy', onClick: function() { upd('_bodyView3d', true); } }, '3D')
+                      )
+                    ),
+                    bodyView3d && h('div', { className: 'anatomy-view-control-row' },
+                      h('span', { id: 'anatomy-model-style-label', className: 'anatomy-view-control-label' }, 'Model'),
+                      h('div', { className: 'anatomy-view-toggle anatomy-model-switcher', role: 'group', 'aria-labelledby': 'anatomy-model-style-label', 'data-anatomy-model-switcher': 'true', 'data-has-clinical-atlas': clinicalAtlasAvailable ? 'true' : 'false' },
+                        h('button', { type: 'button', 'data-anatomy-model-option': 'blueprint', 'data-anatomy-view-option': 'blueprint', 'aria-pressed': body3dStyle === 'blueprint' ? 'true' : 'false', title: 'Transparent spatial blueprint', onClick: function() { updMulti({ _bodyView3d: true, _body3dStyle: 'blueprint' }); } }, 'Blueprint'),
+                        h('button', { type: 'button', 'data-anatomy-model-option': 'realistic', 'data-anatomy-view-option': 'realistic', 'aria-pressed': body3dStyle === 'realistic' ? 'true' : 'false', title: 'Detailed realistic surface model', onClick: function() { updMulti({ _bodyView3d: true, _body3dStyle: 'realistic' }); } }, 'Surface'),
+                        clinicalAtlasAvailable && h('button', {
+                          type: 'button', 'data-anatomy-model-option': 'clinical', 'data-anatomy-view-option': 'clinical',
+                          'aria-pressed': body3dStyle === 'clinical' ? 'true' : 'false',
+                          title: 'Standalone licensed reference organ with ontology provenance',
+                          onClick: function() {
+                            updMulti(clinicalAtlasPackTransitionPatch(selectedClinicalAtlasPack, 'clinical-view'));
+                            if (typeof announceToSR === 'function') announceToSR('Opening ' + selectedClinicalAtlasPack.title + ' for ' + selectedClinicalAtlasPack.focusLabel + '.');
+                          }
+                        }, 'Clinical Atlas')
+                      )
+                    )
+                  ),
+                  bodyView3d && body3dStyle === 'clinical' && selectedClinicalAtlasPack && registeredClinicalAtlasPacks.length > 1 && h('div', {
+                    className: 'anatomy-clinical-pack-switcher', 'data-anatomy-clinical-pack-switcher': 'true'
+                  },
+                    h('label', null,
+                      h('span', null, 'Reference model'),
+                      h('select', {
+                        value: selectedClinicalAtlasPack.id,
+                        'aria-label': 'Clinical Atlas pack', 'data-anatomy-clinical-pack-select': 'true',
+                        onChange: function(event) {
+                          var nextPackId = event.currentTarget.value;
+                          var nextPack = registeredClinicalAtlasPacks.find(function(pack) { return pack.id === nextPackId; });
+                          if (!nextPack) return;
+                          updMulti(clinicalAtlasPackTransitionPatch(nextPack, 'clinical-pack-selector'));
+                          if (typeof announceToSR === 'function') announceToSR('Opening ' + nextPack.title + ' for ' + nextPack.focusLabel + '.');
+                        }
+                      }, registeredClinicalAtlasPacks.map(function(pack) { return h('option', { key: pack.id, value: pack.id }, pack.title); }))
+                    ),
+                    h('span', null, 'HRA \u00b7 ' + selectedClinicalAtlasPack.licenseName + ' \u00b7 v' + selectedClinicalAtlasPack.version)
                   ),
                   bodyView3d && body3dStyle === 'realistic' && h('details', { className: 'anatomy-model-source', 'data-anatomy-model-source-controls': 'true' },
                     h('summary', { className: 'anatomy-model-source-summary' },
@@ -10981,22 +11165,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('summary', { className: 'anatomy-model-source-summary' },
                       h('span', null, 'Atlas source & credits'),
                       h('span', { className: 'anatomy-model-source-note' }, selectedClinicalAtlasPack.title + ' \u00b7 v' + selectedClinicalAtlasPack.version + (registeredClinicalAtlasPacks.length > 1 ? ' \u00b7 ' + registeredClinicalAtlasPacks.length + ' atlas packs' : ''))
-                    ),
-                    registeredClinicalAtlasPacks.length > 1 && h('div', { className: 'anatomy-model-source-row' },
-                      h('label', { className: 'text-[10px] font-black text-slate-700' }, 'Atlas pack ',
-                        h('select', {
-                          value: selectedClinicalAtlasPack.id,
-                          'aria-label': 'Clinical Atlas pack', 'data-anatomy-clinical-pack-select': 'true',
-                          onChange: function(event) {
-                            var nextPackId = event.currentTarget.value;
-                            var nextPack = registeredClinicalAtlasPacks.find(function(pack) { return pack.id === nextPackId; });
-                            if (!nextPack) return;
-                            updMulti(clinicalAtlasPackTransitionPatch(nextPack, 'clinical-pack-selector'));
-                            if (typeof announceToSR === 'function') announceToSR('Opening ' + nextPack.title + ' for ' + nextPack.focusLabel + '.');
-                          },
-                          className: 'rounded-lg border border-slate-300 bg-white px-2 py-1 text-[10px] font-bold text-slate-800'
-                        }, registeredClinicalAtlasPacks.map(function(pack) { return h('option', { key: pack.id, value: pack.id }, pack.title); }))
-                      )
                     ),
                     h('dl', { className: 'anatomy-atlas-provenance' },
                       h('dt', null, 'Publisher'), h('dd', null, selectedClinicalAtlasPack.publisher),
@@ -11030,50 +11198,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   }, body3dStyle === 'clinical' && selectedClinicalAtlasPack ? selectedClinicalAtlasPack.focusLabel + ' \u00b7 organ focus' : 'Patient R / L')
                 )
               ),
-              h('div', { className: 'anatomy-canvas-toolbar' },
-                h('span', null, bodyView3d ? 'Camera controls · drag/wheel where supported' : (view === 'anterior' ? 'Patient right is on your left' : 'Patient left/right align with you')),
-                !bodyView3d && h('div', { className: 'anatomy-canvas-toolbar-group', role: 'group', 'aria-label': 'Diagram zoom and pan controls' },
-                  h('button', {
-                    type: 'button', 'aria-label': 'Zoom out of anatomy diagram', 'aria-keyshortcuts': '-',
-                    disabled: canvasZoomIndex === 0,
-                    onClick: function() { setCanvasView(CANVAS_ZOOM_LEVELS[Math.max(0, canvasZoomIndex - 1)], canvasPanX, canvasPanY); }
-                  }, '−'),
+              h('div', { className: 'anatomy-canvas-toolbar', 'data-anatomy-canvas-toolbar': 'true', 'data-anatomy-canvas-mode': bodyView3d ? body3dStyle : '2d' },
+                h('span', { 'data-anatomy-canvas-toolbar-label': 'true' }, bodyView3d ? (body3dStyle === 'clinical' ? 'Clinical Atlas' : body3dStyle === 'realistic' ? 'Surface' : 'Blueprint') + ' · Camera controls · drag/wheel where supported' : (view === 'anterior' ? '2D diagram · Patient right is on your left' : '2D diagram · Patient left/right align with you')),
+                !bodyView3d && h('div', { className: 'anatomy-canvas-toolbar-group', role: 'group', 'aria-label': '2D diagram controls', 'data-anatomy-canvas-controls': '2d' },
+                  h('button', { type: 'button', 'data-anatomy-canvas-control': 'zoom-out', 'aria-label': 'Zoom out of anatomy diagram', 'aria-keyshortcuts': '-', disabled: canvasZoomIndex === 0, onClick: function() { setCanvasView(CANVAS_ZOOM_LEVELS[Math.max(0, canvasZoomIndex - 1)], canvasPanX, canvasPanY); } }, '−'),
                   h('span', { className: 'text-[10px] font-bold text-slate-600 min-w-[38px] text-center', role: 'status', 'aria-live': 'polite', 'aria-label': canvasViewStatus }, Math.round(canvasZoom * 100) + '%'),
-                  h('button', {
-                    type: 'button', 'aria-label': 'Zoom in on anatomy diagram', 'aria-keyshortcuts': '+',
-                    disabled: canvasZoomIndex === CANVAS_ZOOM_LEVELS.length - 1,
-                    onClick: function() { setCanvasView(CANVAS_ZOOM_LEVELS[Math.min(CANVAS_ZOOM_LEVELS.length - 1, canvasZoomIndex + 1)], canvasPanX, canvasPanY); }
-                  }, '+'),
-                  h('button', { type: 'button', 'aria-label': 'Pan anatomy diagram left', disabled: canvasZoom === 1,
-                    onClick: function() { setCanvasView(canvasZoom, canvasPanX + 18, canvasPanY); } }, '←'),
-                  h('button', { type: 'button', 'aria-label': 'Pan anatomy diagram up', disabled: canvasZoom === 1,
-                    onClick: function() { setCanvasView(canvasZoom, canvasPanX, canvasPanY + 18); } }, '↑'),
-                  h('button', { type: 'button', 'aria-label': 'Pan anatomy diagram down', disabled: canvasZoom === 1,
-                    onClick: function() { setCanvasView(canvasZoom, canvasPanX, canvasPanY - 18); } }, '↓'),
-                  h('button', { type: 'button', 'aria-label': 'Pan anatomy diagram right', disabled: canvasZoom === 1,
-                    onClick: function() { setCanvasView(canvasZoom, canvasPanX - 18, canvasPanY); } }, '→'),
-                  h('button', { type: 'button',
-                    'aria-label': sel ? 'Focus anatomy diagram on ' + sel.name : 'Focus anatomy diagram on selected structure',
-                    disabled: !sel, 'aria-keyshortcuts': 'F',
-                    onClick: focusSelectedStructure }, 'Focus'),
-                  h('button', { type: 'button', 'aria-label': 'Reset anatomy diagram view',
-                    disabled: canvasZoom === 1 && canvasPanX === 0 && canvasPanY === 0, 'aria-keyshortcuts': 'Home 0',
-                    onClick: function() { setCanvasView(1, 0, 0); } }, 'Reset')
+                  h('button', { type: 'button', 'data-anatomy-canvas-control': 'zoom-in', 'aria-label': 'Zoom in on anatomy diagram', 'aria-keyshortcuts': '+', disabled: canvasZoomIndex === CANVAS_ZOOM_LEVELS.length - 1, onClick: function() { setCanvasView(CANVAS_ZOOM_LEVELS[Math.min(CANVAS_ZOOM_LEVELS.length - 1, canvasZoomIndex + 1)], canvasPanX, canvasPanY); } }, '+'),
+                  h('button', { type: 'button', 'data-anatomy-canvas-control': 'pan-left', 'aria-label': 'Pan anatomy diagram left', disabled: canvasZoom === 1, onClick: function() { setCanvasView(canvasZoom, canvasPanX + 18, canvasPanY); } }, '←'),
+                  h('button', { type: 'button', 'data-anatomy-canvas-control': 'pan-up', 'aria-label': 'Pan anatomy diagram up', disabled: canvasZoom === 1, onClick: function() { setCanvasView(canvasZoom, canvasPanX, canvasPanY + 18); } }, '↑'),
+                  h('button', { type: 'button', 'data-anatomy-canvas-control': 'pan-down', 'aria-label': 'Pan anatomy diagram down', disabled: canvasZoom === 1, onClick: function() { setCanvasView(canvasZoom, canvasPanX, canvasPanY - 18); } }, '↓'),
+                  h('button', { type: 'button', 'data-anatomy-canvas-control': 'pan-right', 'aria-label': 'Pan anatomy diagram right', disabled: canvasZoom === 1, onClick: function() { setCanvasView(canvasZoom, canvasPanX - 18, canvasPanY); } }, '→'),
+                  h('button', { type: 'button', 'data-anatomy-canvas-control': 'focus', 'aria-label': sel ? 'Focus anatomy diagram on ' + sel.name : 'Focus anatomy diagram on selected structure', disabled: !sel, 'aria-keyshortcuts': 'F', onClick: focusSelectedStructure }, 'Focus'),
+                  h('button', { type: 'button', 'data-anatomy-canvas-control': 'reset', 'aria-label': 'Reset anatomy diagram view', disabled: canvasZoom === 1 && canvasPanX === 0 && canvasPanY === 0, 'aria-keyshortcuts': 'Home 0', onClick: function() { setCanvasView(1, 0, 0); } }, 'Reset')
                 ),
-                bodyView3d && h('div', { className: 'anatomy-canvas-toolbar-group anatomy-3d-mobile-controls', role: 'group', 'aria-label': '3D camera and procedure controls' },
-                  h('button', { type: 'button', className: 'anatomy-3d-nudge', 'aria-label': 'Rotate left', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('ArrowLeft'); } }, '←'),
-                  h('button', { type: 'button', className: 'anatomy-3d-nudge', 'aria-label': 'Rotate right', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('ArrowRight'); } }, '→'),
-                  h('button', { type: 'button', className: 'anatomy-3d-nudge', 'aria-label': 'Tilt up', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('ArrowUp'); } }, '↑'),
-                  h('button', { type: 'button', className: 'anatomy-3d-nudge', 'aria-label': 'Tilt down', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('ArrowDown'); } }, '↓'),
-                  h('button', { type: 'button', className: 'anatomy-3d-nudge', 'aria-label': 'Zoom in', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('+'); } }, '+'),
-                  h('button', { type: 'button', className: 'anatomy-3d-nudge', 'aria-label': 'Zoom out', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('-'); } }, '−'),
-                  h('button', { type: 'button', 'aria-label': 'Reset 3D camera', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._resetAnatomy3d) cv._resetAnatomy3d(); }, 'aria-keyshortcuts': 'R 0 Home' }, 'Reset camera'),
-                  h('button', { type: 'button', className: 'anatomy-3d-procedure-button', 'data-anatomy-3d-procedure-launch': 'true', onClick: function() { var launchScenario = getAnatomyProcedureScenario({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive' }); updMulti({ _activeTab: 'procedure', procedure: normalizeAnatomyProcedureState({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive', planSlice: launchScenario.planSlice, feedback: 'Scenario created from the ' + sys.name + ' 3D overview. Review the scan and configure the case.' }) }); if (typeof announceToSR === 'function') announceToSR('Opening a matching synthetic procedure scenario from the 3D body overview.'); } }, 'Open matching procedure')
+                bodyView3d && h('div', { className: 'anatomy-3d-toolbar-actions' },
+                  h('div', { className: 'anatomy-canvas-toolbar-group anatomy-3d-mobile-controls', role: 'group', 'aria-label': body3dStyle === 'clinical' ? 'Clinical Atlas camera controls' : body3dStyle === 'realistic' ? 'Surface camera controls' : 'Blueprint camera controls', 'data-anatomy-canvas-controls': body3dStyle },
+                    h('button', { type: 'button', className: 'anatomy-3d-nudge', 'data-anatomy-canvas-control': 'rotate-left', 'aria-label': 'Rotate left', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('ArrowLeft'); } }, '←'),
+                    h('button', { type: 'button', className: 'anatomy-3d-nudge', 'data-anatomy-canvas-control': 'rotate-right', 'aria-label': 'Rotate right', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('ArrowRight'); } }, '→'),
+                    h('button', { type: 'button', className: 'anatomy-3d-nudge', 'data-anatomy-canvas-control': 'tilt-up', 'aria-label': 'Tilt up', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('ArrowUp'); } }, '↑'),
+                    h('button', { type: 'button', className: 'anatomy-3d-nudge', 'data-anatomy-canvas-control': 'tilt-down', 'aria-label': 'Tilt down', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('ArrowDown'); } }, '↓'),
+                    h('button', { type: 'button', className: 'anatomy-3d-nudge', 'data-anatomy-canvas-control': 'zoom-in', 'aria-label': 'Zoom in', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('+'); } }, '+'),
+                    h('button', { type: 'button', className: 'anatomy-3d-nudge', 'data-anatomy-canvas-control': 'zoom-out', 'aria-label': 'Zoom out', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('-'); } }, '−'),
+                    h('button', { type: 'button', 'data-anatomy-canvas-control': 'reset', 'aria-label': 'Reset 3D camera', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._resetAnatomy3d) cv._resetAnatomy3d(); }, 'aria-keyshortcuts': 'R 0 Home' }, 'Reset camera')
+                  ),
+                  body3dStyle !== 'clinical' && h('button', { type: 'button', className: 'anatomy-3d-procedure-button', 'data-anatomy-3d-procedure-launch': 'true', onClick: function() { var launchScenario = getAnatomyProcedureScenario({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive' }); updMulti({ _activeTab: 'procedure', procedure: normalizeAnatomyProcedureState({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive', planSlice: launchScenario.planSlice, feedback: 'Scenario created from the ' + sys.name + ' 3D overview. Review the scan and configure the case.' }) }); if (typeof announceToSR === 'function') announceToSR('Opening a matching synthetic procedure scenario from the 3D body overview.'); } }, 'Open matching procedure')
                 )
               ),
               h('div', { className: 'anatomy-canvas-frame', 'data-anatomy-canvas-frame': 'true', 'data-anatomy-view': bodyView3d ? '3d' : '2d' },
                 bodyView3d && h('span', { className: 'anatomy-canvas-mode-chip', 'data-mode': body3dStyle, 'aria-hidden': 'true' }, body3dStyle === 'clinical' ? 'Clinical Atlas' : body3dStyle === 'realistic' ? '3D Surface' : '3D Blueprint'),
-                bodyView3d && h('canvas', { role: 'img', tabIndex: 0, width: 360, height: 520, ref: stableAnatomy3dRef, className: 'anatomy-3d-canvas', 'data-anatomy-3d-canvas': 'true', 'data-anatomy-3d-style': body3dStyle, 'data-anatomy-atlas-pack': body3dStyle === 'clinical' && selectedClinicalAtlasPack ? selectedClinicalAtlasPack.id : undefined, 'data-anatomy-clinical-selection': body3dStyle === 'clinical' && selectedClinicalConceptId ? selectedClinicalConceptId : undefined, 'aria-keyshortcuts': body3dStyle === 'clinical' ? 'ArrowUp ArrowDown ArrowLeft ArrowRight + - R Home 0' : 'ArrowUp ArrowDown ArrowLeft ArrowRight + - [ ] R Home 0', 'aria-label': body3dStyle === 'clinical' && selectedClinicalAtlasPack ? 'Interactive clinical atlas organ-focus model of the ' + selectedClinicalAtlasPack.focusLabel + '. On touch devices, use the camera buttons above. Otherwise drag to rotate and use the wheel or plus and minus to zoom. Use the 2D Atlas for whole-body structure selection.' : 'Interactive ' + (body3dStyle === 'realistic' ? 'realistic surface' : 'blueprint') + ' 3D overview of the ' + sys.name + '. On touch devices, use the camera buttons above. Otherwise drag to rotate and use the wheel to zoom. Use arrow keys to rotate, plus and minus to zoom, and square brackets to cycle labeled markers.', 'aria-describedby': 'anatomy-3d-status anatomy-canvas-instructions' }),
+                bodyView3d && h('canvas', { role: 'img', tabIndex: 0, width: 360, height: 520, ref: stableAnatomy3dRef, className: 'anatomy-3d-canvas', 'data-anatomy-3d-canvas': 'true', 'data-anatomy-3d-style': body3dStyle, 'data-anatomy-atlas-pack': body3dStyle === 'clinical' && selectedClinicalAtlasPack ? selectedClinicalAtlasPack.id : undefined, 'data-anatomy-clinical-selection': body3dStyle === 'clinical' && selectedClinicalConceptId ? selectedClinicalConceptId : undefined, 'aria-keyshortcuts': body3dStyle === 'clinical' ? 'ArrowUp ArrowDown ArrowLeft ArrowRight + - R Home 0' : 'ArrowUp ArrowDown ArrowLeft ArrowRight + - [ ] R Home 0', 'aria-label': body3dStyle === 'clinical' && selectedClinicalAtlasPack ? 'Interactive clinical atlas organ-focus model of the ' + selectedClinicalAtlasPack.focusLabel + '. On touch devices, use the camera buttons above. Otherwise drag to rotate and use the wheel or plus and minus to zoom. Use the 2D Atlas for whole-body structure selection.' : 'Interactive ' + (body3dStyle === 'realistic' ? 'realistic surface' : 'blueprint') + ' 3D overview of the ' + sys.name + '. On touch devices, use the camera buttons above. Otherwise drag to rotate and use the wheel to zoom. Use arrow keys to rotate, plus and minus to zoom, and square brackets to cycle labeled markers.', 'aria-describedby': 'anatomy-3d-status anatomy-canvas-instructions' + (body3dStyle === 'clinical' && selectedClinicalAtlasPack ? ' anatomy-clinical-visual-key-' + selectedClinicalAtlasPack.id : '') }),
                 !bodyView3d && h('canvas', { role: 'img', tabIndex: 0, 'aria-label': canvasLabel,
                   'aria-describedby': 'anatomy-canvas-instructions',
                   'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight + - 0 Home F Escape',
@@ -11115,12 +11268,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     style: { left: (minimapSelectedMarker.x * 100) + '%', top: (minimapSelectedMarker.y * 100) + '%' } }) : null
                 ) : null
               ),
-              h('div', { id: 'anatomy-canvas-instructions', className: 'anatomy-canvas-help', 'data-anatomy-canvas-help': 'true' },
+              h('details', { id: 'anatomy-canvas-instructions', className: 'anatomy-canvas-guide', 'data-anatomy-canvas-help': 'true', open: readingMode ? true : undefined },
+                h('summary', { className: 'anatomy-canvas-guide-summary' },
+                  h('span', null, bodyView3d ? '3D controls & model notes' : 'Diagram controls & orientation'),
+                  h('span', null, 'Help')
+                ),
+                h('div', { className: 'anatomy-canvas-help anatomy-canvas-help-content' },
                 bodyView3d
                   ? h(React.Fragment, null, h('strong', { className: 'text-slate-700' }, '3D controls: '), body3dStyle === 'clinical'
                     ? 'Drag, use arrow keys, or use the camera controls above to rotate and zoom. Press R, Home, or 0 to reset. Clinical Atlas shows a standalone licensed reference organ; whole-body pins are intentionally hidden because this model is not registered to the procedural body. Select an ontology concept below, or use the 2D Atlas for whole-body location.'
                     : 'On touch devices, use the camera buttons above. Otherwise drag or use arrow keys to rotate, use the wheel or plus and minus to zoom, and use square brackets to cycle labeled markers. Press R, Home, or 0 to reset. ' + (body3dStyle === 'realistic' ? 'Surface mode shows a proportioned external body; structure markers remain teaching overlays.' : 'Blueprint mode is a transparent spatial overview.') + ' Use the 2D Atlas and structure directory for precise labels and full keyboard access.')
                   : h(React.Fragment, null, h('strong', { className: 'text-slate-700' }, 'Diagram controls: '), 'Select markers with pointer or arrow keys. When zoomed, drag or use Shift + arrows to pan; use +/− or Ctrl + wheel to zoom. Press F to focus the selected structure; Home or 0 resets. R/L always indicates the patient\'s perspective.')
+              ),
               ),
               bodyView3d && h('div', { id: 'anatomy-3d-status', className: 'anatomy-3d-status', role: 'status', 'aria-live': 'polite' }, 'Loading the interactive 3D anatomy view…'),
               bodyView3d && body3dStyle === 'clinical' && selectedClinicalAtlasPack && h('section', {
@@ -11132,7 +11291,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('strong', { id: 'anatomy-clinical-structures-title-' + selectedClinicalAtlasPack.id }, 'Explore ' + clinicalLocatorName + ' structures'),
                   h('span', null, clinicalAtlasConcepts.length + ' ontology concepts')
                 ),
-                h('div', { className: 'anatomy-clinical-concept-grid' }, clinicalAtlasConcepts.map(function(concept) {
+                h('div', { className: 'anatomy-clinical-search' },
+                  h('input', {
+                    id: 'anatomy-clinical-concept-search-' + selectedClinicalAtlasPack.id,
+                    type: 'search', role: 'searchbox', value: clinicalConceptSearch, maxLength: 120,
+                    placeholder: 'Search labels, ontology IDs, or model nodes',
+                    'aria-label': 'Search Clinical Atlas concepts',
+                    'aria-controls': 'anatomy-clinical-concepts-' + selectedClinicalAtlasPack.id,
+                    'aria-describedby': 'anatomy-clinical-concept-count-' + selectedClinicalAtlasPack.id,
+                    'data-anatomy-clinical-concept-search': 'true',
+                    onChange: function(event) { upd('_clinicalConceptSearch', event.currentTarget.value.slice(0, 120)); },
+                    onKeyDown: function(event) { if (event.key === 'Escape' && clinicalConceptSearch) { event.preventDefault(); upd('_clinicalConceptSearch', ''); } }
+                  }),
+                  clinicalConceptSearch && h('button', {
+                    type: 'button', 'aria-label': 'Clear Clinical Atlas concept search',
+                    onClick: function() {
+                      upd('_clinicalConceptSearch', '');
+                      setTimeout(function() { var searchInput = document.getElementById('anatomy-clinical-concept-search-' + selectedClinicalAtlasPack.id); if (searchInput) searchInput.focus(); }, 0);
+                    }
+                  }, 'Clear'),
+                  h('span', { id: 'anatomy-clinical-concept-count-' + selectedClinicalAtlasPack.id, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-anatomy-clinical-concept-results': 'true' },
+                    normalizedClinicalConceptSearch
+                      ? matchingClinicalAtlasConcepts.length + ' of ' + clinicalAtlasConcepts.length + ' matches' + (!selectedClinicalConceptMatchesSearch ? '; selected concept retained below' : '')
+                      : clinicalAtlasConcepts.length + ' available')
+                ),
+                h('div', {
+                  id: 'anatomy-clinical-concepts-' + selectedClinicalAtlasPack.id, className: 'anatomy-clinical-concept-grid',
+                  role: 'region', tabIndex: 0, 'aria-label': 'Clinical Atlas concepts',
+                  'aria-describedby': 'anatomy-clinical-concept-count-' + selectedClinicalAtlasPack.id,
+                  'data-anatomy-clinical-concept-scroll': 'true'
+                }, visibleClinicalAtlasConcepts.map(function(concept) {
                   var conceptSelected = concept.id === selectedClinicalConceptId;
                   return h('button', {
                     type: 'button', key: concept.id, className: 'anatomy-clinical-concept',
@@ -11145,9 +11333,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     }
                   }, h('strong', null, concept.label), h('span', null, concept.id));
                 })),
+                normalizedClinicalConceptSearch && matchingClinicalAtlasConcepts.length === 0 && h('div', { className: 'anatomy-clinical-concept-empty', role: 'status', 'data-anatomy-clinical-concept-empty': 'true' }, 'No matching Clinical Atlas concepts. The current selection remains available.'),
                 selectedClinicalConcept && h('div', {
                   className: 'anatomy-clinical-selection', 'data-anatomy-clinical-selected-concept': selectedClinicalConcept.id
                 }, h('strong', null, selectedClinicalConcept.label), ' · ' + selectedClinicalConcept.id + ' · ' + selectedClinicalConcept.nodeNames.length + ' mapped model node' + (selectedClinicalConcept.nodeNames.length === 1 ? '' : 's')),
+                h('div', { id: 'anatomy-clinical-visual-key-' + selectedClinicalAtlasPack.id, className: 'anatomy-clinical-visual-key', role: 'list', 'aria-label': 'Clinical Atlas visual key', 'data-anatomy-clinical-visual-key': 'true' },
+                  h('span', { className: 'anatomy-clinical-visual-key-title' }, 'Visual key'),
+                  h('span', { role: 'listitem' }, h('i', { 'data-key': 'selected', 'aria-hidden': 'true' }), 'Gold glow — selected mapped concept'),
+                  h('span', { role: 'listitem' }, h('i', { 'data-key': 'context', 'aria-hidden': 'true' }), 'Muted forms — surrounding atlas context'),
+                  h('span', { role: 'listitem' }, h('i', { 'data-key': 'whole', 'aria-hidden': 'true' }), 'Full color — whole-organ overview'),
+                  h('span', { className: 'anatomy-clinical-visual-key-note' }, 'Highlight colors show interface state, not natural tissue color.')
+                ),
                 h('div', { className: 'anatomy-clinical-locator' },
                   h('svg', { viewBox: '0 0 48 68', 'aria-hidden': 'true' },
                     h('path', { d: 'M24 3c7 0 10 5 10 11v6c5 4 8 10 8 17l-3 24H9L6 37c0-7 3-13 8-17v-6C14 8 17 3 24 3Z', fill: '#e2e8f0', stroke: '#64748b', strokeWidth: '1.2' }),
@@ -11165,6 +11361,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   )
                 )
               ),
+              h('details', { className: 'anatomy-learning-tools', 'data-anatomy-learning-tools': 'true', open: readingMode ? true : undefined },
+                h('summary', { className: 'anatomy-learning-tools-summary' },
+                  h('span', null, 'Learning tools'),
+                  h('span', null, clinicalScaleJourneyActive ? selectedClinicalAtlasPack.focusLabel + ' scale route' : (sel ? sel.name + ' scale route' : 'Scale journey & pin key'))
+                ),
+                h('div', { className: 'anatomy-learning-tools-content' },
               h('nav', {
                 className: 'anatomy-scale-journey', 'aria-label': 'Scale Journey from body system to cellular context',
                 'data-anatomy-scale-journey': sel ? sel.id : 'system-only',
@@ -11207,7 +11409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('button', { type: 'button', onClick: function() { openAnatomyScaleDestination('microbiology', 'microbiology', { tab: 'microscope' }, 'Microscope Lab'); } }, 'Microscope')
                 )
               ),
-              h('div', { className: 'anatomy-marker-legend', role: 'list', 'aria-label': 'Marker learning status legend' },
+              !(bodyView3d && body3dStyle === 'clinical') && h('div', { className: 'anatomy-marker-legend', role: 'list', 'aria-label': 'Marker learning status legend' },
                 h('span', { className: 'anatomy-marker-legend-title' }, 'Pin status'),
                 [
                   { id: 'unrated', symbol: '•', label: 'Unrated' },
@@ -11222,16 +11424,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 })
               ),
               // Blood-flow color legend — the circulatory canvas color-codes vessels but never said what the colors mean
-              sysKey === 'circulatory' && h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-700 bg-white/70 rounded-lg border border-slate-200 px-2 py-1.5', style: { maxWidth: 360 } },
+              sysKey === 'circulatory' && !(bodyView3d && body3dStyle === 'clinical') && h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-700 bg-white/70 rounded-lg border border-slate-200 px-2 py-1.5', 'data-anatomy-circulatory-flow-legend': 'true', style: { maxWidth: 360 } },
                 h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#ef4444' } }), t('stem.anatomy.oxygenated_arteries', 'Oxygenated (arteries)')),
                 h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#3b82f6' } }), t('stem.anatomy.deoxygenated_veins', 'Deoxygenated (veins)')),
                 h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#fbbf24' } }), t('stem.anatomy.coronary', 'Coronary')),
                 h('span', { className: 'w-full text-[9px] italic text-slate-500' }, t('stem.anatomy.exception_the_pulmonary_artery_carries', 'Exception: the pulmonary artery carries deoxygenated blood (blue), the pulmonary veins carry oxygenated blood (red).'))
               )
+                )
+              )
             ),
 
             // Tab-specific Right Panel
-            h('div', { id: 'anatomy-mode-panel', className: 'anatomy-side-panel', role: 'tabpanel', 'aria-label': activeTab + ' anatomy panel', 'data-anatomy-panel': activeTab },
+            h('div', { id: 'anatomy-mode-panel', className: 'anatomy-side-panel', role: 'tabpanel', 'aria-labelledby': 'anatomy-mode-tab-' + activeTab, 'data-anatomy-panel': activeTab },
               activeTab === 'explore' ? (
                 quizMode ? (
                   // Quiz panel (enhanced with 4 types)
@@ -11306,20 +11510,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     // glow so each body system feels distinct without
                     // changing layout.
                     h('div', {
-                      className: 'rounded-xl border-2 p-4 space-y-3',
+                      className: 'anatomy-structure-detail rounded-xl border-2 p-4 space-y-3',
+                      role: 'region', 'aria-labelledby': 'anatomy-structure-detail-title', 'data-anatomy-structure-detail': sel.id,
                       style: {
                         borderColor: sys.accent + '50',
-                        background: 'linear-gradient(135deg,#ffffff 0%,#fbf6ec 70%,#f5ebd9 100%)',
+                        borderLeftColor: sys.accent,
+                        background: 'linear-gradient(145deg,#ffffff 0%,#f8fafc 100%)',
                         boxShadow: '0 4px 14px rgba(15,23,42,0.06), 0 0 16px ' + sys.accent + '14, inset 0 1px 0 rgba(255,255,255,0.7)'
                       }
                     },
-                      h('div', { className: 'flex items-start justify-between' },
+                      h('div', { className: 'anatomy-structure-detail-header flex items-start justify-between' },
                         h('div', { className: 'flex-1' },
-                          h('h4', { className: 'text-base font-black', style: { color: sys.accent } }, sel.name),
+                          h('h4', { id: 'anatomy-structure-detail-title', tabIndex: -1, 'data-anatomy-structure-detail-heading': 'true', className: 'text-base font-black text-slate-950' }, sel.name),
                           PRONUNCIATION[sel.id] ? h('p', { className: 'text-[11px] text-indigo-600 italic mt-0.5' }, '\uD83D\uDD0A ' + PRONUNCIATION[sel.id]) : null,
                           (gradeBand === 'k2' || gradeBand === 'g35') && SIMPLE_DESC[sel.id] && SIMPLE_DESC[sel.id][gradeBand] ? h('p', { className: 'text-xs text-sky-700 bg-sky-50 rounded-lg px-2 py-1.5 mt-1 border border-sky-200 leading-relaxed' }, SIMPLE_DESC[sel.id][gradeBand]) : null
                         ),
-                        h('div', { className: 'flex gap-1' },
+                        h('div', { className: 'anatomy-structure-detail-actions' },
                           regionalAtlas ? h('button', {
                             type: 'button',
                             'aria-label': (regionalAtlasOpen ? 'Close ' : 'Open ') + regionalAtlas.title,
@@ -11338,8 +11544,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                             },
                             title: compareStructureId === sel.id ? 'Remove from compare' : 'Set as compare target',
                             className: 'p-1 rounded text-[11px] font-bold transition-all ' + (compareStructureId === sel.id ? 'bg-violet-100 text-violet-700' : 'transition-colors hover:bg-violet-50 text-violet-700 active:scale-[0.97]')
-                          }, '\u2696'),
-                          h('button', { 'aria-label': 'Back to structures from ' + sel.name, onClick: function() { upd('selectedStructure', null); },
+                          }, compareStructureId === sel.id ? 'Pinned' : 'Compare'),
+                          h('button', { 'aria-label': 'Back to structures from ' + sel.name, onClick: function() { var priorStructureId = sel.id; upd('selectedStructure', null); restoreAnatomyStructureListFocus(priorStructureId); },
                             className: 'inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 active:scale-[0.97]'
                           }, '\u2190 Structures')
                         )
@@ -11473,10 +11679,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     )
                   ) : (
                     // Structure list
-                    h('div', { className: 'anatomy-structure-panel', 'data-anatomy-structure-list': 'true' },
+                    h('div', { className: 'anatomy-structure-panel', 'data-anatomy-structure-list': 'true', 'aria-labelledby': 'anatomy-structure-list-title' },
                       h('div', { className: 'flex items-start justify-between gap-3 mb-3' },
                         h('div', null,
-                          h('h4', { className: 'text-sm font-black text-slate-900' }, t('stem.anatomy.structures_in_view', 'Structures in view')),
+                          h('h4', { id: 'anatomy-structure-list-title', tabIndex: -1, className: 'text-sm font-black text-slate-900' }, t('stem.anatomy.structures_in_view', 'Structures in view')),
                           h('p', { className: 'text-[11px] text-slate-600 leading-relaxed', role: 'status', 'aria-live': 'polite' }, sys.name + ' - ' + view + ' - ' + studyFiltered.length + ' matching')
                         ),
                         h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600' }, exploredInSystem + '/' + viewFiltered.length)
@@ -11507,8 +11713,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           }, 'Show advanced structures')
                         ),
                         studyFiltered.map(function(st) {
-                          return h('button', { key: st.id, 'aria-pressed': selectedStructureId === st.id,
-                            onClick: function() { updMulti(selectionPatch(st.id)); announceStructure(st.id); playSound('structureClick'); },
+                          return h('button', { key: st.id, id: 'anatomy-structure-option-' + st.id, type: 'button', 'data-anatomy-structure-option': st.id, 'aria-pressed': selectedStructureId === st.id,
+                            onClick: function() { updMulti(selectionPatch(st.id)); focusAnatomyStructureDetail(); announceStructure(st.id); playSound('structureClick'); },
                             className: 'w-full text-left px-3 py-2 text-xs transition-all hover:shadow-sm ' + (selectedStructureId === st.id ? 'font-bold border-2' : 'transition-colors bg-slate-50 hover:bg-white border border-slate-400 active:scale-[0.97]'),
                             style: selectedStructureId === st.id ? { borderColor: sys.accent, background: sys.color } : {}
                           },
@@ -12128,6 +12334,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   thermal_spread: { label: 'Synthetic thermal spread', guidance: 'Restore the previous checkpoint, lower pressure, and shorten the cautery gesture.' },
                   specimen_crush: { label: 'Synthetic specimen compression', guidance: 'Restore the previous checkpoint and repeat collection with lighter force.' }
                 }[procedure.complication] || null;
+                function paintAnatomyProcedureFrame(canvas, context, timestamp) {
+                  var reduceProcedureMotion = procedure.reducedVisuals;
+                  try { reduceProcedureMotion = reduceProcedureMotion || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+                  drawAnatomyProcedureField(context, canvas.width, canvas.height, Object.assign({}, procedure, { activeStroke: canvas._procedureStroke || [], visualPhase: reduceProcedureMotion ? 0 : Number(timestamp || 0) / 1000 }));
+                  return reduceProcedureMotion;
+                }
+                anatomyProcedureController.push(paintAnatomyProcedureFrame);
                 return h('section', { className: 'rounded-2xl border-2 border-rose-200 bg-white p-4 shadow-sm', 'data-anatomy-procedure-workspace': 'true', 'aria-labelledby': 'anatomy-procedure-title' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                     h('div', null, h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-rose-800' }, 'Integrated evidence journey'), h('h4', { id: 'anatomy-procedure-title', className: 'text-xl font-black text-slate-900' }, 'Scan-to-cell Procedure Studio'), h('p', { className: 'mt-1 max-w-3xl text-sm leading-relaxed text-slate-600' }, 'Use a synthetic scan to plan an approach, manage a layered tissue model, preserve a specimen, and complete the investigation at cell scale.')),
@@ -12164,26 +12377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         ),
                         h('dl', { className: 'mt-2 grid grid-cols-2 gap-2 text-center text-[10px] sm:grid-cols-4' }, [['Resistance', procedureTissue.resistance + '%'], ['Visibility', procedureVisibility.score + '% · ' + procedureVisibility.label], ['Incision continuity', Math.round(procedure.incisionContinuity) + '%'], ['Last contact', procedure.lastContact.replace('_', ' ')], ['Elastic tension', Math.round(procedure.elasticTension) + '%'], ['Compression', Math.round(procedure.compressionLevel) + '%'], ['Vessel integrity', Math.round(procedure.vesselIntegrity) + '%'], ['Nerve integrity', Math.round(procedure.nerveIntegrity) + '%']].map(function(item) { return h('div', { key: item[0], className: 'rounded-lg bg-white p-2' }, h('dt', { className: 'text-slate-500' }, item[0]), h('dd', { className: 'font-black text-slate-900' }, item[1])); }))
                       ),
-                      h('div', { className: 'overflow-hidden rounded-xl border-2 border-slate-700 bg-slate-950' }, h('canvas', { key: [procedure.stage, procedure.tool, procedure.incisionDepth, procedure.exposure, procedure.bleeding, procedure.tissueDamage, procedure.specimenCollected, procedure.strokes.length, procedure.showReplay, procedure.reducedVisuals, procedure.showHazards, procedure.complication, procedure.vesselIntegrity, procedure.nerveIntegrity, procedure.thermalLoad, procedure.tearLevel, procedure.caseId, procedure.scenarioSeed, procedure.approach, procedure.scenarioDifficulty, procedure.showLoupe, procedure.illumination, procedure.assistTool, procedure.coordinationUses, procedure.viewFocus, procedure.viewZoom, procedure.focusLock, procedure.elasticTension, procedure.compressionLevel, procedure.incisionContinuity, procedure.lastContact, procedure.contactAccuracy].join('-'), width: 760, height: 440, role: 'img', tabIndex: 0, 'aria-describedby': 'procedure-gesture-help', 'aria-keyshortcuts': 'Enter Space ArrowUp ArrowDown [ ] F', 'data-anatomy-procedure-canvas': 'true', 'data-procedure-visual-fidelity': 'enhanced', 'aria-label': procedureCase.label + ' synthetic layered tissue model. Incision depth ' + Math.round(procedure.incisionDepth) + ' percent, exposure ' + Math.round(procedure.exposure) + ' percent, visibility ' + procedureVisibility.score + ' percent. Active tool: ' + procedure.tool + (procedure.assistTool !== 'none' ? ', assisted by ' + procedure.assistTool : '') + '. Magnification ' + procedure.viewZoom + ' times, focus ' + procedure.viewFocus + (procedure.focusLock ? ' locked.' : ' following the instrument.'), onPointerDown: beginProcedureGesture, onPointerMove: moveProcedureGesture, onPointerUp: endProcedureGesture, onPointerCancel: cancelProcedureGesture, onLostPointerCapture: cancelProcedureGesture, onKeyDown: handleProcedureCanvasKey, onContextMenu: function(event) { event.preventDefault(); }, style: { display: 'block', width: '100%', height: 'auto', touchAction: 'none', cursor: canApplyTool ? 'crosshair' : 'default' }, ref: function(canvas) {
-                        if (!canvas) return;
-                        var context = canvas.getContext && canvas.getContext('2d');
-                        if (!context) return;
-                        var reduceProcedureMotion = procedure.reducedVisuals;
-                        try { reduceProcedureMotion = reduceProcedureMotion || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
-                        function paintProcedureFrame(timestamp) {
-                          drawAnatomyProcedureField(context, canvas.width, canvas.height, Object.assign({}, procedure, { activeStroke: canvas._procedureStroke || [], visualPhase: reduceProcedureMotion ? 0 : Number(timestamp || 0) / 1000 }));
-                        }
-                        paintProcedureFrame(0);
-                        if (reduceProcedureMotion || typeof requestAnimationFrame !== 'function' || canvas._anatomyProcedureAnimation) return;
-                        canvas._anatomyProcedureAnimation = true;
-                        var lastProcedurePaint = -1000;
-                        function animateProcedureField(timestamp) {
-                          if (canvas.isConnected === false) { canvas._anatomyProcedureAnimation = false; return; }
-                          if (timestamp - lastProcedurePaint >= 48) { paintProcedureFrame(timestamp); lastProcedurePaint = timestamp; }
-                          canvas._anatomyProcedureFrame = requestAnimationFrame(animateProcedureField);
-                        }
-                        canvas._anatomyProcedureFrame = requestAnimationFrame(animateProcedureField);
-                      } })),
+                      h('div', { className: 'overflow-hidden rounded-xl border-2 border-slate-700 bg-slate-950' }, h('canvas', { width: 760, height: 440, role: 'img', tabIndex: 0, 'aria-describedby': 'procedure-gesture-help', 'aria-keyshortcuts': 'Enter Space ArrowUp ArrowDown [ ] F', 'data-anatomy-procedure-canvas': 'true', 'data-procedure-visual-fidelity': 'enhanced', 'aria-label': procedureCase.label + ' synthetic layered tissue model. Incision depth ' + Math.round(procedure.incisionDepth) + ' percent, exposure ' + Math.round(procedure.exposure) + ' percent, visibility ' + procedureVisibility.score + ' percent. Active tool: ' + procedure.tool + (procedure.assistTool !== 'none' ? ', assisted by ' + procedure.assistTool : '') + '. Magnification ' + procedure.viewZoom + ' times, focus ' + procedure.viewFocus + (procedure.focusLock ? ' locked.' : ' following the instrument.'), onPointerDown: beginProcedureGesture, onPointerMove: moveProcedureGesture, onPointerUp: endProcedureGesture, onPointerCancel: cancelProcedureGesture, onLostPointerCapture: cancelProcedureGesture, onKeyDown: handleProcedureCanvasKey, onContextMenu: function(event) { event.preventDefault(); }, style: { display: 'block', width: '100%', height: 'auto', touchAction: 'none', cursor: canApplyTool ? 'crosshair' : 'default' }, ref: stableAnatomyProcedureRef })),
                       h('div', { id: 'procedure-gesture-help', className: 'mt-2 rounded-lg border border-cyan-200 bg-cyan-50 p-2 text-[11px] leading-relaxed text-cyan-950' }, h('strong', null, 'Direct control: '), 'Drag on the tissue field with a mouse, pen, or touch. Pen pressure is used when available. Keyboard: press Enter or Space to use the selected tool; use Up and Down arrows for pressure, brackets for magnification, and F to lock or unlock focus.'),
                       h('div', { className: 'mt-2 rounded-xl border border-indigo-200 bg-indigo-50/70 p-2', 'data-procedure-optics': 'true' },
                         h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-indigo-800' }, 'Working view'), h('div', { className: 'text-[11px] text-indigo-950' }, procedureVisibility.label + ' visibility · ' + procedureVisibility.score + '%')), h('button', { type: 'button', 'aria-pressed': procedure.showLoupe, onClick: function() { setProcedure({ showLoupe: !procedure.showLoupe, feedback: procedure.showLoupe ? 'Magnified working view hidden.' : 'Magnified working view enabled with adjustable focus and magnification.' }); }, className: 'rounded-lg border border-indigo-300 bg-white px-2 py-1 text-[11px] font-bold text-indigo-900' }, procedure.showLoupe ? 'Hide ' + procedure.viewZoom + '× view' : 'Show magnified view')),
@@ -12551,7 +12745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         h('div', { className: 'inline-flex rounded-lg border border-indigo-200 bg-indigo-50 p-1', role: 'group', 'aria-label': 'Anatomical plane' }, [['axial', 'Axial'], ['coronal', 'Coronal'], ['sagittal', 'Sagittal']].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': plane === item[0], onClick: function() { setImaging({ plane: item[0], rulerStart: null }); }, className: 'rounded-md px-2.5 py-1.5 text-xs font-bold ' + (plane === item[0] ? 'bg-indigo-700 text-white' : 'text-indigo-800 hover:bg-white') }, item[1]); }))
                       ),
                       h('div', { className: 'overflow-hidden rounded-xl border-2 border-slate-700 bg-slate-950 shadow-xl' },
-                        h('canvas', { key: [modality, region, plane, sliceValue, sequence, windowWidth, windowLevel, showLabels, showCrosshair, bodyScopeDepth.id, visibleImagingAnnotations.length].join('-'), width: 640, height: 480, role: 'application', tabIndex: 0, 'data-anatomy-imaging-canvas': 'true', 'aria-label': modality + ' synthetic ' + region + ' phantom in the ' + plane + ' plane, slice ' + Math.round(sliceValue) + '. Visible teaching structures: ' + regionStructures.join(', ') + '. Depth focus: ' + bodyScopeDepth.targetLabel + '. ' + visibleImagingAnnotations.length + ' annotations on this slice.' + ' Arrow keys move a placement cursor, Enter places the current tool, Escape cancels a ruler.', onClick: handleImagingClick, onKeyDown: handleImagingKey, style: { display: 'block', width: '100%', height: 'auto', cursor: imagingTool === 'ruler' ? 'crosshair' : 'copy' }, ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, drawingState); } })
+                        h('canvas', { width: 640, height: 480, role: 'application', tabIndex: 0, 'data-anatomy-imaging-canvas': 'true', 'aria-label': modality + ' synthetic ' + region + ' phantom in the ' + plane + ' plane, slice ' + Math.round(sliceValue) + '. Visible teaching structures: ' + regionStructures.join(', ') + '. Depth focus: ' + bodyScopeDepth.targetLabel + '. ' + visibleImagingAnnotations.length + ' annotations on this slice.' + ' Arrow keys move a placement cursor, Enter places the current tool, Escape cancels a ruler.', onClick: handleImagingClick, onKeyDown: handleImagingKey, style: { display: 'block', width: '100%', height: 'auto', cursor: imagingTool === 'ruler' ? 'crosshair' : 'copy' }, ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, drawingState); } })
                       ),
                       h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
                         h('label', { htmlFor: 'anatomy-imaging-slice', className: 'text-xs font-black text-slate-700' }, 'Slice ' + Math.round(sliceValue) + ' / 100'),

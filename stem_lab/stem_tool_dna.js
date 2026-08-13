@@ -2055,6 +2055,19 @@ window.StemLab = window.StemLab || {
         addToast('↺ Restored ' + (entry.label || 'saved experiment') + '.', 'success');
         announceToSR((entry.label || 'Saved experiment') + ' restored.');
       }
+      function assignDnaExperimentCompareSlot(entry, slot) {
+        if (!entry || !entry.id || (slot !== 'A' && slot !== 'B')) return;
+        var patch = {};
+        if (slot === 'A') {
+          patch.dnaCompareLeft = entry.id;
+          if (dnaCompareRightId === entry.id) patch.dnaCompareRight = '';
+        } else {
+          patch.dnaCompareRight = entry.id;
+          if (dnaCompareLeftId === entry.id) patch.dnaCompareLeft = '';
+        }
+        updMulti(patch);
+        announceToSR((entry.label || 'Saved experiment') + ' selected as comparison ' + slot + '.');
+      }
       var crisprPhase = d.crisprPhase || 'design';
       var crisprScanPos = d.crisprScanPos || 0;
       var crisprGuideLen = 6; // Schematic window; real SpCas9 spacers are typically 20 nt.
@@ -2725,6 +2738,60 @@ window.StemLab = window.StemLab || {
         return { beforeSeq: beforeSeq, afterSeq: afterSeq, beforeMRNA: beforeMRNA, afterMRNA: afterMRNA, beforeProtein: beforeProtein, afterProtein: afterProtein, codons: codons, pos: pos };
       }
       var mutationComparison = buildMutationComparison(latestMutation);
+      function classifyDnaMutationStep(beforeSeq, afterSeq, mutation) {
+        if (!mutation) return 'Unknown';
+        if (mutation.type === 'Insertion' || mutation.type === 'Deletion') {
+          var changedLength = Math.max(1, Math.abs((afterSeq || '').length - (beforeSeq || '').length));
+          return changedLength % 3 === 0 ? 'In-frame indel' : 'Frameshift';
+        }
+        if (mutation.type === 'Substitution') {
+          var beforeMRNA = (beforeSeq || '').split('').map(function(base) { return CODING_TO_RNA[base] || 'N'; }).join('');
+          var afterMRNA = (afterSeq || '').split('').map(function(base) { return CODING_TO_RNA[base] || 'N'; }).join('');
+          var beforeProtein = translateMRNA(beforeMRNA);
+          var afterProtein = translateMRNA(afterMRNA);
+          if (proteinSignature(beforeProtein) === proteinSignature(afterProtein) && !!beforeProtein.stop === !!afterProtein.stop) return 'Silent';
+          if (!beforeProtein.stop && afterProtein.stop) return 'Nonsense';
+          return 'Missense';
+        }
+        return 'Unknown';
+      }
+      function buildDnaMutationTrail(sequence, mutationLog) {
+        var log = Array.isArray(mutationLog) ? mutationLog : [];
+        var entries = [];
+        var afterSeq = typeof sequence === 'string' ? sequence : '';
+        for (var logIndex = log.length - 1; logIndex >= 0; logIndex--) {
+          var mutation = log[logIndex] || {};
+          var pos = Math.max(0, parseInt(mutation.pos, 10) || 0);
+          var beforeSeq = afterSeq;
+          if (mutation.type === 'Insertion') {
+            beforeSeq = afterSeq.substring(0, pos) + afterSeq.substring(pos + 1);
+          } else if (mutation.type === 'Deletion') {
+            beforeSeq = afterSeq.substring(0, pos) + (mutation.from || 'N') + afterSeq.substring(pos);
+          } else if (mutation.type === 'Substitution') {
+            beforeSeq = afterSeq.substring(0, pos) + (mutation.from || 'N') + afterSeq.substring(pos + 1);
+          }
+          var beforeBase = mutation.type === 'Insertion' ? '\u2014' : (mutation.from || beforeSeq[pos] || '\u2014');
+          var afterBase = mutation.type === 'Deletion' ? '\u2014' : (mutation.to || afterSeq[pos] || '\u2014');
+          var editText = beforeBase + ' \u2192 ' + afterBase;
+          if (mutation.type === 'Insertion') editText = '+' + afterBase;
+          if (mutation.type === 'Deletion') editText = '\u2212' + beforeBase;
+          entries.unshift({
+            index: logIndex + 1,
+            type: mutation.type || 'Mutation',
+            pos: pos,
+            beforeBase: beforeBase,
+            afterBase: afterBase,
+            beforeLength: beforeSeq.length,
+            afterLength: afterSeq.length,
+            effect: classifyDnaMutationStep(beforeSeq, afterSeq, mutation),
+            editText: editText,
+            isCurrent: logIndex === log.length - 1
+          });
+          afterSeq = beforeSeq;
+        }
+        return entries;
+      }
+      var dnaMutationTrail = buildDnaMutationTrail(dnaSeq, d.mutationLog || []);
       function buildDnaEvidenceRubric() {
         if (!latestMutation) {
           return {
@@ -2895,6 +2962,90 @@ window.StemLab = window.StemLab || {
         };
       }
       var dnaMutationAlignment = buildDnaMutationAlignment(mutationComparison, latestMutation);
+
+      function renderDnaMutationTrail() {
+        if (!dnaMutationTrail.length) return null;
+        var trailLabel = 'Mutation trail with ' + dnaMutationTrail.length + ' edit' + (dnaMutationTrail.length === 1 ? '' : 's') + '. ' + dnaMutationTrail.map(function(entry) {
+          return 'Edit ' + entry.index + ': ' + entry.type + ' at base ' + (entry.pos + 1) + ', ' + entry.editText + ', predicted effect ' + entry.effect + '.';
+        }).join(' ');
+        function mutationTone(type) {
+          if (type === 'Insertion') return { border: 'border-emerald-200', soft: 'bg-emerald-50', strong: 'bg-emerald-600', text: 'text-emerald-800', symbol: '+' };
+          if (type === 'Deletion') return { border: 'border-rose-200', soft: 'bg-rose-50', strong: 'bg-rose-600', text: 'text-rose-800', symbol: '\u2212' };
+          return { border: 'border-sky-200', soft: 'bg-sky-50', strong: 'bg-sky-600', text: 'text-sky-800', symbol: '\u21bb' };
+        }
+        function mutationEffectTone(effect) {
+          if (effect === 'Frameshift') return 'border-violet-200 bg-violet-50 text-violet-800';
+          if (effect === 'Nonsense') return 'border-rose-200 bg-rose-50 text-rose-800';
+          if (effect === 'Missense') return 'border-amber-200 bg-amber-50 text-amber-900';
+          if (effect === 'Silent') return 'border-slate-200 bg-slate-50 text-slate-700';
+          return 'border-indigo-200 bg-indigo-50 text-indigo-800';
+        }
+        return h("section", { className: "mt-3 overflow-hidden rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-sky-50 p-3 shadow-sm", "data-dna-mutation-trail": true, role: "region", "aria-labelledby": "dna-mutation-trail-title" },
+          h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+            h("div", { className: "max-w-2xl" },
+              h("div", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-slate-500" }, "Current experiment"),
+              h("h5", { id: "dna-mutation-trail-title", className: "mt-1 text-[12px] font-black text-slate-900" }, "Mutation trail"),
+              h("p", { className: "mt-1 mb-0 text-[10px] leading-relaxed text-slate-600" }, "Read left to right to follow each edit in order. The final card is the change shown in the detailed comparison below.")
+            ),
+            h("span", { className: "rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[9px] font-black text-slate-700 shadow-sm" }, dnaMutationTrail.length + " edit" + (dnaMutationTrail.length === 1 ? "" : "s") + " \u00b7 " + dnaSeq.length + " bp current")
+          ),
+          h("div", { className: "mt-3 flex flex-wrap gap-1.5", "data-dna-mutation-trail-legend": true, "aria-label": "Mutation trail color legend" },
+            [
+              { label: 'Substitution', tone: 'border-sky-200 bg-sky-50 text-sky-800', dot: 'bg-sky-600' },
+              { label: 'Insertion', tone: 'border-emerald-200 bg-emerald-50 text-emerald-800', dot: 'bg-emerald-600' },
+              { label: 'Deletion', tone: 'border-rose-200 bg-rose-50 text-rose-800', dot: 'bg-rose-600' }
+            ].map(function(item) {
+              return h("span", { key: item.label, className: "inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[9px] font-bold " + item.tone },
+                h("span", { className: "h-2 w-2 rounded-full " + item.dot, "aria-hidden": "true" }),
+                item.label
+              );
+            })
+          ),
+          h("ol", { className: "mt-3 flex min-w-0 snap-x snap-mandatory gap-0 overflow-x-auto pb-3 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2", tabIndex: 0, "aria-label": trailLabel },
+            dnaMutationTrail.map(function(entry, trailIndex) {
+              var tone = mutationTone(entry.type);
+              var beforeGap = entry.beforeBase === '\u2014';
+              var afterGap = entry.afterBase === '\u2014';
+              var cardLabel = 'Edit ' + entry.index + '. ' + entry.type + ' at base ' + (entry.pos + 1) + '. ' + entry.beforeBase + ' to ' + entry.afterBase + '. Sequence length ' + entry.beforeLength + ' to ' + entry.afterLength + ' base pairs. Predicted effect ' + entry.effect + (entry.isCurrent ? '. Current edit.' : '. Earlier edit.');
+              return h("li", { key: entry.index, className: "relative w-56 shrink-0 snap-start pr-3", "data-dna-mutation-step": String(entry.index), "data-mutation-type": entry.type.toLowerCase(), "data-mutation-current": entry.isCurrent ? "true" : "false", "data-mutation-effect": entry.effect.toLowerCase().replace(/\s+/g, '-'), "data-length-before": String(entry.beforeLength), "data-length-after": String(entry.afterLength) },
+                h("div", { className: "relative mb-2 flex h-8 items-center", "aria-hidden": "true" },
+                  trailIndex < dnaMutationTrail.length - 1 && h("span", { className: "absolute left-7 right-0 top-1/2 h-0.5 -translate-y-1/2 bg-slate-200" }),
+                  h("span", { className: "relative z-[1] grid h-7 w-7 place-items-center rounded-full text-[10px] font-black text-white shadow-sm ring-4 ring-white " + tone.strong }, String(entry.index)),
+                  h("span", { className: "ml-2 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-slate-500" }, entry.isCurrent ? "Current" : "Earlier")
+                ),
+                h("article", { className: "h-[10.5rem] rounded-xl border bg-white p-3 shadow-sm " + tone.border + (entry.isCurrent ? " ring-2 ring-slate-200" : ""), "aria-label": cardLabel },
+                  h("div", { className: "flex items-start justify-between gap-2" },
+                    h("div", null,
+                      h("div", { className: "text-[9px] font-black uppercase tracking-[0.12em] " + tone.text }, entry.type),
+                      h("div", { className: "mt-0.5 text-[10px] font-bold text-slate-500" }, "Base " + (entry.pos + 1))
+                    ),
+                    h("span", { className: "grid h-7 min-w-7 place-items-center rounded-lg px-1.5 font-mono text-sm font-black text-white " + tone.strong, "aria-hidden": "true" }, tone.symbol)
+                  ),
+                  h("div", { className: "mt-3 grid grid-cols-[1fr_auto_1fr] items-end gap-2", "data-dna-mutation-step-change": true },
+                    h("div", null,
+                      h("div", { className: "text-[8px] font-black uppercase tracking-wide text-slate-400" }, "Before"),
+                      h("div", { className: "mt-1 grid h-8 place-items-center rounded-md border font-mono text-[13px] font-black " + (beforeGap ? "border-dashed border-slate-300 bg-slate-50 text-slate-400" : "border-slate-200 bg-slate-100 text-slate-700"), "data-base-state": beforeGap ? "gap" : "base" }, entry.beforeBase)
+                    ),
+                    h("span", { className: "pb-2 text-sm font-black text-slate-300", "aria-hidden": "true" }, "\u2192"),
+                    h("div", null,
+                      h("div", { className: "text-[8px] font-black uppercase tracking-wide text-slate-500" }, "After"),
+                      h("div", { className: "mt-1 grid h-8 place-items-center rounded-md border font-mono text-[13px] font-black " + (afterGap ? "border-dashed border-slate-300 bg-slate-50 text-slate-400" : tone.border + " " + tone.soft + " " + tone.text), "data-base-state": afterGap ? "gap" : "base" }, entry.afterBase)
+                    )
+                  ),
+                  h("div", { className: "mt-3 flex items-center justify-between gap-2" },
+                    h("span", { className: "text-[9px] font-bold tabular-nums text-slate-500" }, entry.beforeLength + " \u2192 " + entry.afterLength + " bp"),
+                    h("span", { className: "rounded-full border px-2 py-1 text-[8px] font-black " + mutationEffectTone(entry.effect) }, entry.effect)
+                  )
+                )
+              );
+            })
+          ),
+          h("div", { className: "mt-1 grid gap-2 rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-[9px] leading-relaxed text-slate-600 sm:grid-cols-2", "data-dna-history-distinction": true },
+            h("span", null, h("strong", { className: "text-slate-800" }, "Mutation trail: "), "individual edits in this active experiment."),
+            h("span", null, h("strong", { className: "text-slate-800" }, "Experiment history: "), "whole sequence checkpoints you saved for comparison.")
+          )
+        );
+      }
 
       function renderDnaMutationAlignmentRibbon() {
         if (!dnaMutationAlignment) return null;
@@ -3192,6 +3343,35 @@ window.StemLab = window.StemLab || {
         }
         return { sequence: clean, mrna: mrna, protein: protein, codons: codons };
       }
+
+      function buildDnaExperimentCheckpoint(entry) {
+        var safeEntry = entry || {};
+        var sequence = typeof safeEntry.dnaSequence === 'string' ? safeEntry.dnaSequence : '';
+        var analysis = analyzeExperimentSequence(sequence);
+        var mutationLog = Array.isArray(safeEntry.mutationLog) ? safeEntry.mutationLog : [];
+        var mutationTrail = buildDnaMutationTrail(sequence, mutationLog);
+        var latestTrailEntry = mutationTrail.length ? mutationTrail[mutationTrail.length - 1] : null;
+        var gcCount = sequence.split('').filter(function(base) { return base === 'G' || base === 'C'; }).length;
+        return {
+          entry: safeEntry,
+          sequence: sequence,
+          analysis: analysis,
+          length: sequence.length,
+          gcPercent: Math.round((gcCount / Math.max(1, sequence.length)) * 100),
+          proteinLength: analysis.protein.length,
+          mutationCount: mutationLog.length,
+          latestEffect: latestTrailEntry ? latestTrailEntry.effect : 'Baseline'
+        };
+      }
+      function dnaCheckpointEffectTone(effect) {
+        if (effect === 'Frameshift') return 'border-violet-200 bg-violet-50 text-violet-800';
+        if (effect === 'Nonsense') return 'border-rose-200 bg-rose-50 text-rose-800';
+        if (effect === 'Missense') return 'border-amber-200 bg-amber-50 text-amber-900';
+        if (effect === 'Silent') return 'border-slate-200 bg-slate-50 text-slate-700';
+        if (effect === 'In-frame indel') return 'border-indigo-200 bg-indigo-50 text-indigo-800';
+        return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+      }
+      var dnaExperimentCheckpoints = dnaExperimentHistory.map(buildDnaExperimentCheckpoint);
 
       function buildExperimentComparison(left, right) {
         var leftAnalysis = analyzeExperimentSequence(left.dnaSequence);
@@ -4313,6 +4493,7 @@ window.StemLab = window.StemLab || {
                 )
               )
             ),
+            renderDnaMutationTrail(),
             latestMutation && mutationComparison && h("section", { className: "mt-3 rounded-xl border-2 border-amber-200 bg-amber-50/70 p-3", "data-dna-mutation-comparison": true, role: "region", "aria-labelledby": "dna-mutation-comparison-title" },
               h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                 h("div", null,
@@ -4386,34 +4567,94 @@ window.StemLab = window.StemLab || {
                     : "Changed base: " + latestMutation.from + " → " + latestMutation.to + " at position " + (latestMutation.pos + 1) + "."
               )
             ),
-            (d.mutationLog && d.mutationLog.length > 0) && h("div", { className: "mt-2" },
-              h("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, t('stem.dna.mutation_log', "\uD83D\uDCCB Mutation Log:")),
-              h("div", { className: "space-y-1 max-h-32 overflow-y-auto" },
-                (d.mutationLog || []).map(function(m, i) {
-                  var emoji = m.type === 'Substitution' ? '\uD83D\uDD04' : m.type === 'Insertion' ? '\u2795' : '\u2796';
-                  var desc = m.type === 'Substitution' ? m.from + '\u2192' + m.to + ' at pos ' + (m.pos + 1) :
-                             m.type === 'Insertion' ? '+' + m.to + ' at pos ' + (m.pos + 1) :
-                             '-' + m.from + ' at pos ' + (m.pos + 1);
-                  return h("div", { key: i, className: "text-[11px] px-2 py-1 rounded bg-slate-50 text-slate-600" }, emoji + ' ' + m.type + ': ' + desc);
-                })
-              )
-            )
           ),
-          dnaExperimentHistory.length > 0 && h("section", { className: "rounded-xl border border-amber-200 bg-amber-50/60 p-3", "data-dna-experiment-history": true, role: "region", "aria-labelledby": "dna-experiment-history-title" },
-            h("div", { className: "flex flex-wrap items-center justify-between gap-2" },
-              h("h5", { id: "dna-experiment-history-title", className: "text-[11px] font-black uppercase tracking-wide text-amber-900" }, "Experiment history"),
-              h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-bold text-amber-800" }, dnaExperimentHistory.length + "/8 saved")
+          dnaExperimentHistory.length > 0 && h("section", { className: "overflow-hidden rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-indigo-50 p-3 shadow-sm", "data-dna-experiment-history": true, role: "region", "aria-labelledby": "dna-experiment-history-title" },
+            h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+              h("div", { className: "max-w-2xl" },
+                h("div", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-amber-700" }, "Saved sequence checkpoints"),
+                h("h5", { id: "dna-experiment-history-title", className: "mt-1 text-[12px] font-black text-slate-900" }, "Experiment history"),
+                h("p", { className: "mt-1 mb-0 text-[10px] leading-relaxed text-slate-600" }, "Each card freezes a whole sequence state. Inspect its fingerprint and metrics, restore it, or assign it directly to comparison A or B.")
+              ),
+              h("span", { className: "rounded-full border border-amber-200 bg-white px-2.5 py-1 text-[9px] font-black text-amber-800 shadow-sm" }, dnaExperimentHistory.length + "/8 saved")
             ),
-            h("div", { className: "mt-2 space-y-1" },
-              dnaExperimentHistory.slice().reverse().map(function(entry) {
-                return h("div", { key: entry.id, className: "flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-100 bg-white px-2 py-2" },
-                  h("div", null,
-                    h("div", { className: "text-[11px] font-black text-slate-700" }, entry.label || "Saved experiment"),
-                    h("div", { className: "text-[10px] text-slate-500" }, (entry.dnaSequence || '').length + " bp · " + ((entry.mutationLog || []).length) + " mutation" + ((entry.mutationLog || []).length === 1 ? '' : 's'))
-                  ),
-                  h("button", { type: "button", onClick: function() { restoreDnaExperiment(entry); }, className: "rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-900 hover:bg-amber-100" }, "Restore")
+            h("div", { className: "mt-3 flex flex-wrap gap-1.5", "data-dna-checkpoint-legend": true, "aria-label": "Experiment checkpoint legend" },
+              h("span", { className: "rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-[9px] font-bold text-indigo-800" }, "A = first comparison"),
+              h("span", { className: "rounded-full border border-fuchsia-200 bg-fuchsia-50 px-2 py-1 text-[9px] font-bold text-fuchsia-800" }, "B = second comparison"),
+              h("span", { className: "rounded-full border border-slate-200 bg-white px-2 py-1 text-[9px] font-bold text-slate-600" }, "Colors = DNA bases")
+            ),
+            h("ol", { className: "mt-3 flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto pb-3 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2", "data-dna-checkpoint-gallery": true, tabIndex: 0, "aria-label": "Saved DNA experiment checkpoints. Swipe horizontally or use arrow keys to inspect each card." },
+              dnaExperimentCheckpoints.slice().reverse().map(function(checkpoint) {
+                var entry = checkpoint.entry;
+                var isA = entry.id === dnaCompareLeftId;
+                var isB = entry.id === dnaCompareRightId;
+                var slotState = isA && isB ? 'a-b' : isA ? 'a' : isB ? 'b' : 'none';
+                var entryLabel = entry.label || 'Saved experiment';
+                var previewBases = checkpoint.sequence.split('').slice(0, 24);
+                var hiddenBaseCount = Math.max(0, checkpoint.sequence.length - previewBases.length);
+                var fingerprintLabel = entryLabel + ' sequence fingerprint: ' + (checkpoint.sequence ? checkpoint.sequence.split('').join(' ') : 'empty sequence') + '.';
+                var cardLabel = entryLabel + '. ' + checkpoint.length + ' base pairs, ' + checkpoint.gcPercent + ' percent GC, ' + checkpoint.proteinLength + ' amino acids, ' + checkpoint.mutationCount + ' recorded edits. Latest effect ' + checkpoint.latestEffect + (isA ? '. Selected as comparison A' : '') + (isB ? '. Selected as comparison B' : '') + '.';
+                return h("li", { key: entry.id, className: "w-72 shrink-0 snap-start", "data-dna-experiment-card": true, "data-checkpoint-id": entry.id, "data-comparison-slot": slotState, "data-latest-effect": checkpoint.latestEffect.toLowerCase().replace(/\s+/g, '-'), "data-checkpoint-length": String(checkpoint.length), "data-checkpoint-gc": String(checkpoint.gcPercent), "data-checkpoint-protein": String(checkpoint.proteinLength), "data-checkpoint-mutations": String(checkpoint.mutationCount) },
+                  h("article", { className: "flex h-full min-h-[18rem] flex-col rounded-xl border bg-white p-3 shadow-sm transition-colors " + (isA ? "border-indigo-400 ring-2 ring-indigo-100" : isB ? "border-fuchsia-400 ring-2 ring-fuchsia-100" : "border-amber-200"), "aria-label": cardLabel },
+                    h("div", { className: "flex items-start justify-between gap-2" },
+                      h("div", null,
+                        h("div", { className: "text-[9px] font-black uppercase tracking-[0.14em] text-amber-700" }, "Checkpoint"),
+                        h("div", { className: "mt-0.5 text-[12px] font-black text-slate-900" }, entryLabel)
+                      ),
+                      h("div", { className: "flex min-h-6 items-center gap-1", "aria-label": slotState === 'none' ? "Not assigned to comparison" : "Comparison selection " + slotState.toUpperCase() },
+                        isA && h("span", { className: "grid h-6 min-w-6 place-items-center rounded-full bg-indigo-600 px-1.5 text-[9px] font-black text-white shadow-sm", "data-checkpoint-selected": "a" }, "A"),
+                        isB && h("span", { className: "grid h-6 min-w-6 place-items-center rounded-full bg-fuchsia-600 px-1.5 text-[9px] font-black text-white shadow-sm", "data-checkpoint-selected": "b" }, "B"),
+                        !isA && !isB && h("span", { className: "rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[8px] font-black uppercase tracking-wide text-slate-500" }, "Unassigned")
+                      )
+                    ),
+                    h("div", { className: "mt-3 rounded-lg border border-slate-200 bg-slate-950 p-2.5", "data-dna-checkpoint-fingerprint": true, role: "img", "aria-label": fingerprintLabel },
+                      h("div", { className: "mb-1.5 flex items-center justify-between gap-2", "aria-hidden": "true" },
+                        h("span", { className: "text-[8px] font-black uppercase tracking-[0.14em] text-slate-400" }, "Sequence fingerprint"),
+                        h("span", { className: "font-mono text-[8px] font-bold text-slate-500" }, "5' \u2192 3'")
+                      ),
+                      h("div", { className: "flex min-h-7 items-center gap-0.5 overflow-hidden", "aria-hidden": "true" },
+                        previewBases.map(function(base, baseIndex) {
+                          return h("span", { key: baseIndex, className: "grid h-6 min-w-3 flex-1 place-items-center rounded-[3px] font-mono text-[7px] font-black", style: { background: BASE_COLORS[base] || '#334155', color: BASE_TEXT_COLORS[base] || '#ffffff' } }, base);
+                        }),
+                        hiddenBaseCount > 0 && h("span", { className: "ml-1 shrink-0 text-[8px] font-black text-slate-400" }, "+" + hiddenBaseCount)
+                      )
+                    ),
+                    h("dl", { className: "mt-3 grid grid-cols-4 gap-1.5", "data-dna-checkpoint-metrics": true },
+                      [
+                        { label: 'Length', value: checkpoint.length + ' bp' },
+                        { label: 'GC', value: checkpoint.gcPercent + '%' },
+                        { label: 'Protein', value: checkpoint.proteinLength + ' aa' },
+                        { label: 'Edits', value: String(checkpoint.mutationCount) }
+                      ].map(function(metric) {
+                        return h("div", { key: metric.label, className: "rounded-lg border border-slate-200 bg-slate-50 px-1.5 py-2 text-center" },
+                          h("dt", { className: "text-[7px] font-black uppercase tracking-wide text-slate-400" }, metric.label),
+                          h("dd", { className: "mt-1 text-[10px] font-black tabular-nums text-slate-800" }, metric.value)
+                        );
+                      })
+                    ),
+                    h("div", { className: "mt-2 flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5" },
+                      h("span", { className: "text-[8px] font-black uppercase tracking-wide text-slate-400" }, "Latest effect"),
+                      h("span", { className: "rounded-full border px-2 py-1 text-[8px] font-black " + dnaCheckpointEffectTone(checkpoint.latestEffect) }, checkpoint.latestEffect)
+                    ),
+                    h("div", { className: "mt-auto pt-3" },
+                      h("div", { className: "grid grid-cols-2 gap-1.5" },
+                        h("button", { type: "button", onClick: function() { assignDnaExperimentCompareSlot(entry, 'A'); }, disabled: isA, className: "rounded-lg border px-2 py-2 text-[9px] font-black focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:cursor-default " + (isA ? "border-indigo-600 bg-indigo-600 text-white" : "border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100"), "data-comparison-slot-action": "a", "aria-pressed": isA, "aria-label": (isA ? "Comparison A selected: " : "Use as comparison A: ") + entryLabel }, isA ? "A selected" : "Use as A"),
+                        h("button", { type: "button", onClick: function() { assignDnaExperimentCompareSlot(entry, 'B'); }, disabled: isB, className: "rounded-lg border px-2 py-2 text-[9px] font-black focus:outline-none focus:ring-2 focus:ring-fuchsia-400 disabled:cursor-default " + (isB ? "border-fuchsia-600 bg-fuchsia-600 text-white" : "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-800 hover:bg-fuchsia-100"), "data-comparison-slot-action": "b", "aria-pressed": isB, "aria-label": (isB ? "Comparison B selected: " : "Use as comparison B: ") + entryLabel }, isB ? "B selected" : "Use as B")
+                      ),
+                      h("button", { type: "button", onClick: function() { restoreDnaExperiment(entry); }, className: "mt-1.5 w-full rounded-lg border border-amber-300 bg-amber-50 px-2 py-2 text-[9px] font-black text-amber-900 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400", "aria-label": "Restore " + entryLabel + " to the active DNA experiment" }, "Restore checkpoint")
+                    )
+                  )
                 );
               })
+            ),
+            h("div", { className: "mt-1 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2.5 " + (compareLeft && compareRight ? "border-emerald-200 bg-emerald-50" : "border-indigo-200 bg-indigo-50"), "data-dna-comparison-readiness": true, "data-comparison-state": compareLeft && compareRight ? "ready" : compareLeft || compareRight ? "one-selected" : "empty", role: "status" },
+              h("div", null,
+                h("div", { className: "text-[10px] font-black " + (compareLeft && compareRight ? "text-emerald-900" : "text-indigo-900") }, compareLeft && compareRight ? "Ready to compare" : compareLeft || compareRight ? "Choose one more checkpoint" : "Choose comparison A and B"),
+                h("div", { className: "mt-0.5 text-[9px] leading-relaxed text-slate-600" }, compareLeft && compareRight ? (compareLeft.label || "Experiment A") + " \u2194 " + (compareRight.label || "Experiment B") : "Use the card buttons above or the selectors below.")
+              ),
+              h("div", { className: "flex items-center gap-1.5", "aria-label": "Comparison slots" },
+                h("span", { className: "rounded-full px-2 py-1 text-[8px] font-black " + (compareLeft ? "bg-indigo-600 text-white" : "border border-dashed border-indigo-300 bg-white text-indigo-500") }, compareLeft ? "A \u00b7 " + (compareLeft.label || "Selected") : "A \u00b7 empty"),
+                h("span", { className: "rounded-full px-2 py-1 text-[8px] font-black " + (compareRight ? "bg-fuchsia-600 text-white" : "border border-dashed border-fuchsia-300 bg-white text-fuchsia-500") }, compareRight ? "B \u00b7 " + (compareRight.label || "Selected") : "B \u00b7 empty")
+              )
             )
           ),
           dnaExperimentHistory.length > 1 && h("section", { className: "rounded-xl border border-indigo-200 bg-indigo-50/60 p-3", "data-dna-experiment-compare": true, role: "region", "aria-labelledby": "dna-experiment-compare-title" },

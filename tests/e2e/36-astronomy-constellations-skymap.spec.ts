@@ -121,13 +121,15 @@ function collectBrowserIssues(page: Pg) {
   return issues;
 }
 
-async function mount(page: Pg, tab: 'constellations' | 'skymap') {
+async function mount(page: Pg, tab: 'constellations' | 'skymap' | 'seasons') {
   await page.goto(`${base}/__harness`);
   await page.waitForFunction(() => !!(window as any).StemLab?._registry?.astronomy);
   await page.evaluate((activeTab) => (window as any).__mount({ tab: activeTab }), tab);
   await page.waitForSelector(tab === 'constellations'
     ? '#astronomy-constellation-gallery'
-    : '#astronomy-sky-map-diagram');
+    : tab === 'seasons'
+      ? '#astronomy-season-sun-path'
+      : '#astronomy-sky-map-diagram');
   await page.waitForTimeout(120);
 }
 
@@ -366,6 +368,74 @@ test.describe('Astronomy constellation and Sky Map visuals - real Chromium', () 
     await expect(page.locator('#astronomy-sky-map-diagram')).toHaveAttribute('data-bortle-class', '1');
     await expect(page.getByRole('group', { name: 'Sky map layers' }).getByRole('button')).toHaveCount(5);
 
+    await expectNoDocumentOverflow(page);
+    await expectNoRuntimeIssues(page, issues);
+  });
+  test('Seasons Sun path updates for the shared observer and stays contained at 320px', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 1100 });
+    const issues = collectBrowserIssues(page);
+    await mount(page, 'seasons');
+
+    const observer = page.locator('#astronomy-season-observer');
+    const figure = page.locator('#astronomy-season-sun-path');
+    const status = page.locator('#astronomy-season-sun-status');
+    const conciseStatus = page.locator('#astronomy-season-status');
+    await expect(observer).toHaveValue('portland');
+    await expect(observer.locator('option')).toHaveCount(6);
+    await expect(figure).toHaveAttribute('role', 'img');
+    await expect(figure).toHaveAttribute('viewBox', '0 0 360 190');
+    await expect(figure).toHaveAttribute('data-solar-state', 'normal');
+    await expect(figure).toHaveAttribute('data-date', /^\d{4}-06-15$/);
+    await expect(figure.locator('[data-solar-sample]')).toHaveCount(97);
+    await expect(figure.locator('[data-solar-axis="x"]')).toHaveCount(1);
+    await expect(figure.locator('[data-solar-axis="y"]')).toHaveCount(1);
+    await expect(figure.locator('[data-solar-horizon]')).toHaveCount(1);
+    await expect(figure.locator('[data-solar-altitude-path]')).toHaveCount(1);
+    await expect(figure.locator('[data-solar-daylight-fill]')).toHaveCount(1);
+    await expect(figure.locator('[data-solar-noon]')).toHaveCount(1);
+    await expect(figure.locator('[data-solar-sunrise]')).toHaveCount(1);
+    await expect(figure.locator('[data-solar-sunset]')).toHaveCount(1);
+    await expect(status).toContainText(/local solar time/i);
+    await expect(status).toContainText(/geometric/i);
+    await expect(status).not.toHaveAttribute('role', /.+/);
+    await expect(status).not.toHaveAttribute('aria-live', /.+/);
+    await expect(observer).toHaveAttribute('aria-describedby', /\bastronomy-season-sun-status\b/);
+    await expect(conciseStatus).toHaveAttribute('role', 'status');
+    await expect(conciseStatus).toHaveAttribute('aria-live', 'polite');
+    await expect(conciseStatus).toHaveAttribute('aria-atomic', 'true');
+    await expect(conciseStatus).toContainText(/meteorological/i);
+    await expect(page.locator('[aria-live="polite"]')).toHaveCount(1);
+
+    const portlandDaylight = Number(await figure.getAttribute('data-daylight-hours'));
+    const portlandNoon = Number(await figure.getAttribute('data-noon-altitude'));
+    expect(Number.isFinite(portlandDaylight)).toBe(true);
+    expect(Number.isFinite(portlandNoon)).toBe(true);
+
+    await observer.selectOption('sydney');
+    await expect(observer).toHaveValue('sydney');
+    await expect(status).toContainText(/Sydney/i);
+    await expect(figure).toHaveAttribute('data-date', /^\d{4}-06-15$/);
+    const sydneyDaylight = Number(await figure.getAttribute('data-daylight-hours'));
+    const sydneyNoon = Number(await figure.getAttribute('data-noon-altitude'));
+    expect(sydneyDaylight).toBeLessThan(portlandDaylight);
+    expect(sydneyNoon).toBeLessThan(portlandNoon);
+
+    const geometry = await page.evaluate(() => {
+      const bounds = (selector: string) => {
+        const r = document.querySelector(selector)!.getBoundingClientRect();
+        return { left: r.left, right: r.right, width: r.width };
+      };
+      return {
+        observer: bounds('#astronomy-season-observer'),
+        figure: bounds('#astronomy-season-sun-path'),
+        status: bounds('#astronomy-season-sun-status'),
+      };
+    });
+    for (const box of Object.values(geometry)) {
+      expect(box.left).toBeGreaterThanOrEqual(-0.5);
+      expect(box.right).toBeLessThanOrEqual(320.5);
+      expect(box.width).toBeGreaterThan(0);
+    }
     await expectNoDocumentOverflow(page);
     await expectNoRuntimeIssues(page, issues);
   });

@@ -11,6 +11,7 @@ const auditSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'
 const auditMod = readFileSync(resolve(process.cwd(), 'view_pdf_audit_module.js'), 'utf8');
 const auditDeploy = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_pdf_audit_module.js'), 'utf8');
 const golden = JSON.parse(readFileSync(resolve(process.cwd(), 'tests/fixtures/remediation_evidence_dossier.golden.json'), 'utf8'));
+const hostSrc = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 
 const auditArtifacts = [
   ['source', auditSrc],
@@ -18,6 +19,33 @@ const auditArtifacts = [
   ['prismflow', auditDeploy],
 ];
 
+describe('Document Builder remediation edit evidence invalidation', () => {
+  it('keeps the host fallback field-for-field fail-closed with ReviewDocumentSession', () => {
+    const start = hostSrc.indexOf('const _invalidateBuilderRemediationVerification = (updated) => {');
+    const end = hostSrc.indexOf('const _syncBuilderEditsToRemediation = () => {', start);
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    const fallback = hostSrc.slice(start, end);
+
+    [
+      'verificationHtmlBinding: null', 'verificationAudit: null', 'axeAudit: null',
+      'secondEngineAudit: null', 'evidenceManifest: null', 'evidenceManifestDigest: null',
+      'evidenceManifestId: null', 'evidenceDigest: null', 'evidenceId: null',
+      'artifactBinding: null', 'evidenceProvenance: null', 'provenance: null',
+      'scoreEvidence: null', 'afterScore: null', '_scoreIsBlended: false',
+      '_estimatedMinimumScore: null', '_estimatedScoreBasis: null',
+      '_finalAuditRetryAvailable: true', "_scoreSource: 'unavailable'",
+      'knownFindingCount: null', 'knownFindings: null', "verificationState: 'unavailable'",
+      "executionState: 'unavailable'", 'verificationReviewCount: 0', 'reviewCount: 0',
+    ].forEach((claim) => expect(fallback).toContain(claim));
+    [
+      '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest', '_verificationArtifactHash',
+      '_verificationProof', '_verificationProvenance',
+    ].forEach((runtimeKey) => expect(fallback).toContain('delete fallback.' + runtimeKey));
+    expect(fallback).toContain("const reason = 'content-modified-pending-reverification';");
+    expect(hostSrc).toContain("clone.querySelectorAll('[data-allo-semantic-selected]').forEach((n) => n.removeAttribute('data-allo-semantic-selected'));");
+  });
+});
 describe('golden remediation evidence dossier shape', () => {
   it('keeps scores, validators, issue resolution, fidelity evidence, expert-review reason, and caveats together', () => {
     expect(golden.validation.pdfUA.validator).toMatch(/veraPDF/);

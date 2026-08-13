@@ -1,0 +1,57 @@
+/* Shared shell and no-JavaScript refinements for the third promotional pass. */
+
+.footer-link-groups {
+    align-items: flex-start;
+    display: grid;
+    gap: 26px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 920px;
+    text-align: left;
+}
+
+.footer-link-group {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.footer-link-heading {
+    color: #0f172a;
+    font-size: 0.78rem;
+    font-weight: 850;
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+}
+
+.tool-noscript-note {
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    border-radius: 8px;
+    color: #7c2d12;
+    line-height: 1.6;
+    margin: 0 0 20px;
+    padding: 14px 17px;
+}
+
+@media (max-width: 1024px) {
+    .footer-link-groups {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .footer-link-groups {
+        grid-template-columns: 1fr;
+        max-width: 300px;
+    }
+}
+
+@media (forced-colors: active) {
+    .tool-noscript-note {
+        border: 1px solid CanvasText;
+    }
+}

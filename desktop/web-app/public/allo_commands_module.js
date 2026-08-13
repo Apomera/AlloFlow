@@ -846,8 +846,8 @@ function buildAlloCommands(ctx, opts = {}) {
     } },
     // The standalone Screen Coach: a separate top-level page, because the site
     // it coaches is not AlloFlow. Posture is decided HERE, from the app's own
-    // mode, and travels in the URL. The page defaults to learner on its own, so
-    // a lost or malformed parameter lands on the restrictive side; only a
+    // mode, and is bound to the app's opener session. The URL carries only a
+    // launch hint; a lost or malformed handoff stays restrictive. Only a
     // teacher (and not a parent surface, which is not a teacher) gets the
     // unrestricted posture. Distinct from open_screen_coach, which stays with
     // the recorder: that one coaches while you record, this one is the tool you
@@ -865,7 +865,10 @@ function buildAlloCommands(ctx, opts = {}) {
         }
         win = window.open("https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=" + posture, "alloflow-it-coach");
         try {
-          if (win) window.__alloPendingCoachWin = win;
+          if (win) {
+            window.__alloPendingCoachWin = win;
+            window.__alloPendingCoachPosture = posture;
+          }
         } catch (_) {
         }
       }
@@ -1196,6 +1199,10 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "open_lit_lab", opensPanel: "litLab", icon: "\u{1F4DA}", roles: "all", label: t("cmd.open_lit_lab", "Open Lit Lab"), aliases: ["lit lab", "literature lab", "reading lab", "story lab", "literature tools"], hint: t("cmd.open_lit_lab_hint", "Explore literature and reading activities"), run: (c) => {
       c.openLitLab();
       return t("cmd.open_lit_lab_done", "Lit Lab opened.");
+    } },
+    { id: "open_learning_web_explorer", opensPanel: "learningWebExplorer", icon: "\u{1F578}\uFE0F", roles: "all", label: t("cmd.open_learning_web_explorer", "Open Learning Web: Explore"), aliases: ["learning web explorer", "explore learning web", "knowledge graph", "standards graph", "connections map", "learning graph"], hint: t("cmd.open_learning_web_explorer_hint", "Explore standards, concepts, lessons, evidence, and word connections in one map"), run: (c) => {
+      c.openLearningWebExplorer();
+      return t("cmd.open_learning_web_explorer_done", "Learning Web: Explore opened.");
     } },
     { id: "open_mind_map", opensPanel: "mindMap", icon: "\u{1F9ED}", roles: "all", label: t("cmd.open_mind_map", "Open Learning Web: Unit Path"), aliases: ["learning web", "unit path", "throughline", "mind map", "unit map", "lesson map", "concept map", "visual map"], hint: t("cmd.open_mind_map_hint", "Map lessons and explore linked standards, evidence, and unit connections"), run: (c) => {
       c.openMindMap();
@@ -1536,14 +1543,48 @@ function buildAlloCommands(ctx, opts = {}) {
       const item = c.repeatReadThisPageItem();
       return !item ? t("cmd.read_this_page_no_content", "There is no readable content on this screen.") : t("cmd.repeat_read_this_page_done", "Repeating item ") + item.index + t("cmd.read_this_page_of", " of ") + item.total + ".";
     } },
+    { id: "read_media_descriptions", icon: "\u{1F5BC}\uFE0F", roles: "all", when: (c) => typeof c.readAllMediaDescriptions === "function", label: t("cmd.read_media_descriptions", "Read all media descriptions"), aliases: ["read media descriptions", "read image descriptions", "describe all images", "read all alt text", "hear the visual descriptions"], hint: t("cmd.read_media_descriptions_hint", "Read every authored image, video, or audio description in the current resource"), run: (c) => {
+      const result = c.readAllMediaDescriptions();
+      if (!result || !result.ok) return t("cmd.read_media_descriptions_none", "No media is available in the current resource.");
+      return t("cmd.read_media_descriptions_count", "Reading {count} media descriptions.").replace("{count}", result.count);
+    } },
+    { id: "describe_current_media", icon: "\u{1F441}\uFE0F", roles: "all", when: (c) => typeof c.readMediaDescriptions === "function", label: t("cmd.describe_current_media", "Describe the current media"), aliases: ["describe current media", "describe this image", "what is in this picture", "read current alt text", "next media description"], hint: t("cmd.describe_current_media_hint", "Read the current or next media description without leaving the resource"), run: (c) => {
+      const result = c.readMediaDescriptions();
+      if (!result || !result.ok) return t("cmd.describe_current_media_none", "No media is available in the current resource.");
+      return t("cmd.describe_current_media_done", "Reading media {index} of {count}.").replace("{index}", result.mediaIndex).replace("{count}", result.count);
+    } },
     { id: "close_read_this_page", icon: "\u2715", roles: "all", when: (c) => !!c.readThisPageIsOpen && typeof c.closeReadThisPage === "function", label: t("cmd.close_read_this_page", "Close the page reader"), aliases: ["close page reader", "exit page reader", "close read aloud", "stop and close reader"], hint: t("cmd.close_read_this_page_hint", "Stop narration and close the page reader"), run: (c) => {
       c.closeReadThisPage();
       return t("cmd.close_read_this_page_done", "Page reader closed.");
     } }
   );
   cmds.forEach((command) => {
-    if (["read_page_aloud", "read_this_page", "resume_read_this_page", "next_read_this_page", "previous_read_this_page", "repeat_read_this_page"].includes(command.id)) command.suppressVoiceReply = true;
+    if (["read_page_aloud", "read_this_page", "resume_read_this_page", "next_read_this_page", "previous_read_this_page", "repeat_read_this_page", "read_media_descriptions", "describe_current_media"].includes(command.id)) command.suppressVoiceReply = true;
   });
+  const readAllMediaCommand = cmds.find((command) => command.id === "read_media_descriptions");
+  if (readAllMediaCommand) {
+    readAllMediaCommand.suppressVoiceReply = false;
+    readAllMediaCommand.run = (c) => {
+      const result = c.readAllMediaDescriptions();
+      if (!result || !result.ok) return { ok: false, narration: t("cmd.read_media_descriptions_none", "No media is available in the current resource."), suppressVoiceReply: false };
+      return { ok: true, narration: t("cmd.read_media_descriptions_count", "Reading {count} media descriptions.").replace("{count}", result.count), suppressVoiceReply: true };
+    };
+  }
+  const describeMediaCommand = cmds.find((command) => command.id === "describe_current_media");
+  if (describeMediaCommand) {
+    describeMediaCommand.suppressVoiceReply = false;
+    describeMediaCommand.aliases = (describeMediaCommand.aliases || []).filter((alias) => alias !== "next media description");
+    describeMediaCommand.hint = t("cmd.describe_current_media_hint", "Read the current media description without leaving the resource");
+    describeMediaCommand.run = (c) => {
+      const result = c.readMediaDescriptions();
+      if (!result || !result.ok) return { ok: false, narration: t("cmd.describe_current_media_none", "No media is available in the current resource."), suppressVoiceReply: false };
+      return {
+        ok: true,
+        narration: t("cmd.describe_current_media_done", "Reading media {index} of {count}.").replace("{index}", result.mediaIndex).replace("{count}", result.count),
+        suppressVoiceReply: true
+      };
+    };
+  }
   return cmds.reduce((visible, command) => {
     if (!_commandAllowsAudience(command, audience)) return visible;
     const availability = getCommandAvailability(command, ctx);
@@ -1813,10 +1854,9 @@ function createNamedFieldCommandAdapter(options = {}) {
       { id: NAMED_FIELD_COMMAND_IDS.targetHelp, label: "Identify an editable field", params: ["field"], risk: "none", confirmation: "never" }
     ],
     help: (ctx) => normalizeVoiceEditableFields(getRawFields(ctx)).map((field, index) => index + 1 + ", " + field.label),
-    parse: (text, ctx, meta) => {
+    parse: (text, ctx) => {
       const parsed = parseNamedFieldVoiceUtterance(text, getRawFields(ctx), getSelectedId(ctx));
       if (!parsed) return null;
-      if (meta && typeof meta.confidence === "number" && Number.isFinite(meta.confidence)) parsed.confidence = meta.confidence;
       return parsed;
     },
     execute: (commandId, params, ctx) => {
@@ -1851,6 +1891,317 @@ function createNamedFieldCommandAdapter(options = {}) {
       if (result && typeof result === "object" && (result.message || result.narration)) return String(result.message || result.narration);
       if (typeof result === "string" && result.trim()) return result;
       return operation === "clear" ? field.label + " cleared." : operation === "append" ? "Text appended to " + field.label + "." : field.label + " updated.";
+    }
+  });
+}
+function _learnerSurfaceText(value) {
+  return String(value == null ? "" : value).toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
+}
+function createTutorialCommandAdapter(options = {}) {
+  const spec = options || {};
+  const getState = (ctx) => {
+    try {
+      const value = typeof spec.getState === "function" ? spec.getState(ctx || {}) : ctx && typeof ctx.getTutorialVoiceState === "function" ? ctx.getTutorialVoiceState() : null;
+      return value && typeof value === "object" ? value : {};
+    } catch (_) {
+      return {};
+    }
+  };
+  const owner = (ctx, action, params) => {
+    if (typeof spec.invoke === "function") return spec.invoke(action, params || {}, ctx || {});
+    if (ctx && typeof ctx.invokeTutorialVoiceAction === "function") return ctx.invokeTutorialVoiceAction(action, params || {});
+    return false;
+  };
+  return createLearnerCommandAdapter({
+    id: spec.id || "tutorial-surface",
+    priority: Number.isFinite(Number(spec.priority)) ? Number(spec.priority) : 110,
+    isActive: (ctx) => {
+      const state = getState(ctx);
+      return state.kind === "classic" || state.kind === "guided";
+    },
+    getCapabilities: (ctx) => {
+      const state = getState(ctx);
+      return {
+        kind: state.kind || "",
+        describe: true,
+        listActions: true,
+        next: state.canNext !== false,
+        previous: !!state.canPrevious,
+        focus: state.kind === "guided" && state.canFocus !== false,
+        skip: state.kind === "guided" && !!state.canSkip,
+        exit: true,
+        finish: false
+      };
+    },
+    getState: (ctx) => {
+      const state = getState(ctx);
+      return {
+        kind: state.kind || "",
+        stepIndex: Math.max(0, Number(state.stepIndex) || 0),
+        stepTotal: Math.max(0, Number(state.stepTotal) || 0),
+        stepId: String(state.stepId || "").slice(0, 80),
+        stepTitle: String(state.stepTitle || "").slice(0, 160),
+        completed: !!state.completed,
+        busy: !!state.busy,
+        canNext: state.canNext !== false,
+        canPrevious: !!state.canPrevious,
+        canSkip: !!state.canSkip
+      };
+    },
+    getCommands: (ctx) => {
+      const state = getState(ctx);
+      const commands = [
+        { id: "tutorial_describe", label: "Describe the tutorial step", risk: "none", confirmation: "never" },
+        { id: "tutorial_list_actions", label: "List tutorial actions", risk: "none", confirmation: "never" },
+        { id: "tutorial_previous", label: "Go to the previous tutorial step", risk: "state-change", confirmation: "never" },
+        { id: "tutorial_exit", label: "Exit the tutorial", risk: "state-change", confirmation: "never" }
+      ];
+      if (state.kind === "classic") commands.push({ id: "tutorial_next", label: "Go to the next tutorial step", risk: "state-change", confirmation: "never" });
+      if (state.kind === "guided") {
+        commands.push({ id: "tutorial_next", label: "Go to the next guided step", risk: "state-change", confirmation: "never" });
+        commands.push({ id: "tutorial_focus", label: "Focus the current guided tool", risk: "state-change", confirmation: "never" });
+        commands.push({ id: "tutorial_skip", label: "Skip the current guided step", risk: "state-change", confirmation: "low-confidence" });
+        commands.push({ id: "tutorial_review_latest", label: "Review the latest guided resource", risk: "state-change", confirmation: "never" });
+      }
+      return commands;
+    },
+    help: (ctx) => {
+      const state = getState(ctx);
+      return state.kind === "classic" ? ["describe tutorial step", "next", "back", "exit tutorial"] : ["describe guided step", "next guided step", "previous guided step", "focus guided tool", "skip guided step", "review latest guided resource", "exit guided mode"];
+    },
+    parse: (raw, ctx) => {
+      const text = _learnerSurfaceText(raw);
+      const state = getState(ctx);
+      let commandId = "";
+      if (/^(?:describe|read|repeat)(?: the)? (?:tutorial|tour|guided)(?: step)?$/.test(text) || /^(?:where am i in|what is) guided (?:mode|step)$/.test(text) || state.kind === "classic" && /^(?:where am i|what is this step)$/.test(text)) commandId = "tutorial_describe";
+      else if (/^(?:tutorial|tour|guided) (?:help|commands|actions)$/.test(text) || /^what can i (?:say|do) (?:in|during) (?:the )?(?:tutorial|tour|guided mode)$/.test(text)) commandId = "tutorial_list_actions";
+      else if (state.kind === "classic" && /^(?:next|continue|forward|next step)$/.test(text)) commandId = "tutorial_next";
+      else if (state.kind === "classic" && /^(?:back|previous|previous step|go back)$/.test(text)) commandId = "tutorial_previous";
+      else if (/^(?:next|continue) guided step$/.test(text)) commandId = "tutorial_next";
+      else if (/^(?:previous|back|go back) guided step$/.test(text)) commandId = "tutorial_previous";
+      else if (/^(?:focus|show|find) (?:the )?(?:current )?guided (?:tool|target)$/.test(text)) commandId = "tutorial_focus";
+      else if (/^skip (?:the )?(?:current )?guided step$/.test(text)) commandId = "tutorial_skip";
+      else if (/^(?:review|open) (?:the )?(?:latest|last) guided resource$/.test(text)) commandId = "tutorial_review_latest";
+      else if (state.kind === "classic" && /^(?:exit|close|stop|end) (?:the )?(?:tutorial|tour)$/.test(text)) commandId = "tutorial_exit";
+      else if (state.kind === "guided" && /^(?:exit|close|stop|end) guided (?:mode|setup|tutorial)$/.test(text)) commandId = "tutorial_exit";
+      if (!commandId) return null;
+      return { commandId, params: {} };
+    },
+    execute: (commandId, params, ctx) => {
+      const state = getState(ctx);
+      if (state.busy && ["tutorial_next", "tutorial_previous", "tutorial_focus", "tutorial_skip", "tutorial_review_latest"].includes(commandId)) {
+        return "Guided Mode is still working on the current step. Wait for it to finish, then try that command again.";
+      }
+      if (commandId === "tutorial_describe") {
+        const ownerDescription = owner(ctx, "describe", params);
+        if (typeof ownerDescription === "string" && ownerDescription.trim()) return ownerDescription;
+        const position = state.stepTotal ? " Step " + (Math.max(0, Number(state.stepIndex) || 0) + 1) + " of " + state.stepTotal + "." : "";
+        return (state.kind === "guided" ? "Guided Mode." : "App tutorial.") + position + (state.stepTitle ? " " + state.stepTitle + "." : "");
+      }
+      if (commandId === "tutorial_list_actions") {
+        const actions = state.kind === "classic" ? "Say next, back, describe tutorial step, or exit tutorial." : "Say next guided step, previous guided step, focus guided tool, skip guided step, review latest guided resource, or exit guided mode.";
+        return actions;
+      }
+      if (commandId === "tutorial_next" && state.kind === "guided" && state.canNext === false) {
+        return state.nextReason || "Complete the current guided step before moving on. You can say focus guided tool, or skip guided step.";
+      }
+      if (commandId === "tutorial_previous" && !state.canPrevious) return "You are already at the first tutorial step.";
+      if (commandId === "tutorial_skip" && !state.canSkip) return "This guided milestone cannot be skipped.";
+      const action = commandId.replace(/^tutorial_/, "");
+      const result = owner(ctx, action, params);
+      if (result && typeof result === "object" && (result.narration || result.message)) return String(result.narration || result.message);
+      if (typeof result === "string" && result.trim()) return result;
+      if (result === false) return "That tutorial action is not available right now.";
+      return action === "exit" ? "Tutorial closed." : "Tutorial updated.";
+    }
+  });
+}
+function _normalizeLearnerResources(value) {
+  const list = Array.isArray(value) ? value : [];
+  const seen = /* @__PURE__ */ new Set();
+  return list.slice(0, 300).reduce((out, raw) => {
+    if (!raw || typeof raw !== "object") return out;
+    const id = String(raw.id || "").trim();
+    const type = String(raw.type || "").trim();
+    if (!id || !type || seen.has(id)) return out;
+    seen.add(id);
+    out.push({ id, type, title: String(raw.title || raw.name || type.replace(/[-_]/g, " ")).replace(/\s+/g, " ").trim().slice(0, 180) });
+    return out;
+  }, []);
+}
+function _resolveLearnerResource(resources, params) {
+  const list = _normalizeLearnerResources(resources);
+  const position = Number(params && params.position);
+  if (Number.isInteger(position) && position >= 1 && position <= list.length) return { resource: list[position - 1], position, matches: [list[position - 1]] };
+  const title = _learnerSurfaceText(params && params.title);
+  if (!title) return { resource: null, position: 0, matches: [] };
+  const matches = list.filter((item) => _learnerSurfaceText(item.title) === title);
+  if (matches.length === 1) return { resource: matches[0], position: list.indexOf(matches[0]) + 1, matches };
+  return { resource: null, position: 0, matches };
+}
+function createGeneratedResourceCommandAdapter(options = {}) {
+  const spec = options || {};
+  const resourcesFor = (ctx) => {
+    try {
+      const value = typeof spec.listResources === "function" ? spec.listResources(ctx || {}) : ctx && typeof ctx.listLearnerResources === "function" ? ctx.listLearnerResources() : [];
+      return _normalizeLearnerResources(value);
+    } catch (_) {
+      return [];
+    }
+  };
+  const currentFor = (ctx) => {
+    try {
+      const value = typeof spec.getCurrent === "function" ? spec.getCurrent(ctx || {}) : ctx && typeof ctx.getCurrentLearnerResource === "function" ? ctx.getCurrentLearnerResource() : null;
+      return value && typeof value === "object" ? value : null;
+    } catch (_) {
+      return null;
+    }
+  };
+  const discoveryIsActive = (ctx) => {
+    try {
+      if (typeof spec.isDiscoveryActive === "function") return spec.isDiscoveryActive(ctx || {}) === true;
+      return !!(ctx && typeof ctx.isLearnerResourceDiscoveryActive === "function" && ctx.isLearnerResourceDiscoveryActive());
+    } catch (_) {
+      return false;
+    }
+  };
+  const invoke = (ctx, action, params) => {
+    if (typeof spec.invoke === "function") return spec.invoke(action, params || {}, ctx || {});
+    if (ctx && typeof ctx.invokeLearnerResourceAction === "function") return ctx.invokeLearnerResourceAction(action, params || {});
+    return false;
+  };
+  const stateFor = (ctx) => {
+    const resources = resourcesFor(ctx);
+    const current = currentFor(ctx);
+    const currentId = String(current && current.id || "");
+    const index = resources.findIndex((item) => item.id === currentId);
+    return { resources, current, index };
+  };
+  return createLearnerCommandAdapter({
+    id: spec.id || "generated-resource",
+    priority: Number.isFinite(Number(spec.priority)) ? Number(spec.priority) : 30,
+    isActive: (ctx) => {
+      const state = stateFor(ctx);
+      const currentActive = !!(state.current && state.current.frontmost !== false && state.current.type !== "quiz");
+      return currentActive || !state.current && state.resources.length > 0 && discoveryIsActive(ctx);
+    },
+    getCapabilities: (ctx) => {
+      const state = stateFor(ctx);
+      return {
+        discover: state.resources.length > 0,
+        open: state.resources.length > 0,
+        describe: !!state.current,
+        read: !!(state.current && state.current.canRead !== false),
+        readMediaDescription: !!(state.current && state.current.canReadMedia !== false),
+        next: state.index >= 0 && state.index < state.resources.length - 1,
+        previous: state.index > 0,
+        answer: false,
+        submit: false,
+        feedback: !!(state.current && state.current.hasFeedback),
+        exit: !!state.current
+      };
+    },
+    getState: (ctx) => {
+      const state = stateFor(ctx);
+      return {
+        resourceId: String(state.current && state.current.id || "").slice(0, 160),
+        type: String(state.current && state.current.type || "").slice(0, 80),
+        title: String(state.current && state.current.title || "").slice(0, 180),
+        position: state.index >= 0 ? state.index + 1 : 0,
+        total: state.resources.length,
+        canRead: !!(state.current && state.current.canRead !== false),
+        canReadMedia: !!(state.current && state.current.canReadMedia !== false),
+        hasFeedback: !!(state.current && state.current.hasFeedback)
+      };
+    },
+    getCommands: () => [
+      { id: "resource_list", label: "List available resources", risk: "none", confirmation: "never" },
+      { id: "resource_open", label: "Open a resource", params: ["position", "title"], risk: "state-change", confirmation: "never" },
+      { id: "resource_describe", label: "Describe the current resource", risk: "none", confirmation: "never" },
+      { id: "resource_read", label: "Read the current resource", risk: "none", confirmation: "never" },
+      { id: "resource_read_media", label: "Read media descriptions", risk: "none", confirmation: "never" },
+      { id: "resource_next", label: "Open the next resource", risk: "state-change", confirmation: "never" },
+      { id: "resource_previous", label: "Open the previous resource", risk: "state-change", confirmation: "never" },
+      { id: "resource_feedback", label: "Review feedback for this resource", risk: "none", confirmation: "never" },
+      { id: "resource_exit", label: "Exit the current resource", risk: "state-change", confirmation: "never" }
+    ],
+    help: () => ["list resources", "open resource 2", "open resource called Water Cycle", "describe resource", "read resource", "read media descriptions", "next resource", "previous resource", "exit resource"],
+    parse: (raw, ctx) => {
+      const original = String(raw || "").trim();
+      const text = _learnerSurfaceText(original);
+      let commandId = "";
+      let params = {};
+      if (/^(?:list|discover|show|what) (?:available )?(?:learning )?resources$/.test(text) || /^what resources (?:are available|can i open)$/.test(text)) commandId = "resource_list";
+      else {
+        let match = original.match(/^(?:open|choose|select)\s+(?:the\s+)?(?:learning\s+)?resource\s+(?:number\s+)?(\d{1,3})\s*$/i);
+        if (match) {
+          commandId = "resource_open";
+          params = { position: Number(match[1]) };
+        } else {
+          match = original.match(/^(?:open|choose|select)\s+(?:the\s+)?(?:learning\s+)?resource\s+(?:called|named|titled)\s+(.+?)\s*$/i);
+          if (match) {
+            commandId = "resource_open";
+            params = { title: match[1].trim() };
+          }
+        }
+      }
+      if (!commandId && /^(?:describe|what is|where am i in) (?:the )?(?:current )?resource$/.test(text)) commandId = "resource_describe";
+      else if (!commandId && /^(?:read|start reading) (?:the )?(?:current )?resource$/.test(text)) commandId = "resource_read";
+      else if (!commandId && /^(?:read|describe|hear) (?:the )?(?:media|image|visual) descriptions?$/.test(text)) commandId = "resource_read_media";
+      else if (!commandId && /^(?:open )?(?:the )?next resource$/.test(text)) commandId = "resource_next";
+      else if (!commandId && /^(?:open )?(?:the )?(?:previous|prior) resource$/.test(text)) commandId = "resource_previous";
+      else if (!commandId && /^(?:review|read|hear) (?:the )?(?:current resource )?feedback$/.test(text)) commandId = "resource_feedback";
+      else if (!commandId && /^(?:exit|close|leave) (?:the )?(?:current )?resource$/.test(text)) commandId = "resource_exit";
+      if (!commandId) return null;
+      return { commandId, params };
+    },
+    execute: (commandId, params, ctx) => {
+      const state = stateFor(ctx);
+      const current = state.current || {};
+      if (commandId === "resource_list") {
+        if (!state.resources.length) return "No learner resources are available yet.";
+        return "Available resources: " + state.resources.slice(0, 20).map((item, index) => index + 1 + ", " + item.title + ", " + item.type.replace(/[-_]/g, " ")).join("; ") + (state.resources.length > 20 ? "; and " + (state.resources.length - 20) + " more. Open a resource by number or exact title." : ". Open a resource by number or exact title.");
+      }
+      if (commandId === "resource_open") {
+        const resolved = _resolveLearnerResource(state.resources, params || {});
+        if (resolved.matches.length > 1) return "More than one resource has that title. Matching positions are " + resolved.matches.map((item) => state.resources.findIndex((candidate) => candidate.id === item.id) + 1).filter((position) => position > 0).join(", ") + ". Say open resource followed by one of those numbers.";
+        if (!resolved.resource) return "I could not find that resource. Say list resources, then open resource followed by its number or exact title.";
+        const result2 = invoke(ctx, "open", { id: resolved.resource.id });
+        if (result2 === false) return "That resource is no longer available.";
+        return "Opening resource " + resolved.position + " of " + state.resources.length + ", " + resolved.resource.title + ".";
+      }
+      if (!current.id) {
+        return "No resource is open. Say list resources, then open resource followed by its number or exact title.";
+      }
+      if (commandId === "resource_describe") {
+        const position = state.index >= 0 ? " Resource " + (state.index + 1) + " of " + state.resources.length + "." : "";
+        return (current.title ? current.title + "." : "Current resource.") + " Type " + String(current.type || "resource").replace(/[-_]/g, " ") + "." + position + (current.canRead === false ? " Read aloud is not available for this resource yet." : " You can say read resource or read media descriptions.");
+      }
+      if (commandId === "resource_next" || commandId === "resource_previous") {
+        const targetIndex = commandId === "resource_next" ? state.index + 1 : state.index - 1;
+        if (state.index < 0 || targetIndex < 0 || targetIndex >= state.resources.length) return commandId === "resource_next" ? "You are already at the last resource." : "You are already at the first resource.";
+        const target = state.resources[targetIndex];
+        const result2 = invoke(ctx, "open", { id: target.id });
+        if (result2 === false) return "That resource is no longer available.";
+        return "Opening resource " + (targetIndex + 1) + " of " + state.resources.length + ", " + target.title + ".";
+      }
+      if (commandId === "resource_feedback" && !current.hasFeedback) return "There is no feedback attached to this resource yet.";
+      if (commandId === "resource_read" && current.canRead === false || commandId === "resource_read_media" && current.canReadMedia === false) return "That reading capability is not available for this resource yet.";
+      const action = commandId.replace(/^resource_/, "");
+      const result = invoke(ctx, action, params || {});
+      if (result && typeof result === "object" && result.ok === false) {
+        return {
+          ok: false,
+          status: result.status || "unsupported",
+          narration: String(result.narration || result.message || "That resource action is not available right now."),
+          suppressVoiceReply: false
+        };
+      }
+      if (result && typeof result === "object" && (result.narration || result.message)) return String(result.narration || result.message);
+      if (typeof result === "string" && result.trim()) return result;
+      if (result === false) return "That resource action is not available right now.";
+      if (commandId === "resource_read" || commandId === "resource_read_media") return { ok: true, suppressVoiceReply: true, narration: "" };
+      return commandId === "resource_exit" ? "Resource closed." : "Resource updated.";
     }
   });
 }
@@ -1959,12 +2310,14 @@ async function routeScopedUtterance(ctx, rawText, meta = {}) {
     if (!parsed || typeof parsed !== "object" || !parsed.commandId) continue;
     const command = _commandsForLearnerAdapter(adapter, ctx).find((candidate) => candidate.id === String(parsed.commandId));
     if (!command) continue;
+    const parseConfidence = typeof parsed.parseConfidence === "number" && Number.isFinite(parsed.parseConfidence) ? parsed.parseConfidence : typeof parsed.confidence === "number" && Number.isFinite(parsed.confidence) ? parsed.confidence : null;
     return {
       scopeId: adapter.id,
       scopeSerial: registration.serial,
       commandId: command.id,
       params: _sanitizeLearnerScopedParams(command, parsed.params || {}),
-      confidence: typeof parsed.confidence === "number" && Number.isFinite(parsed.confidence) ? parsed.confidence : null,
+      confidence: parseConfidence,
+      parseConfidence,
       confidenceDecision: parsed.confidenceDecision || null,
       via: "scope"
     };
@@ -2018,12 +2371,18 @@ function createCommandKernel(ctxFactory, opts = {}) {
     }
     return String(prompt);
   };
-  const shouldConfirm = (policy, meta) => {
+  const recognitionConfidence = (meta) => {
+    if (meta && typeof meta.recognitionConfidence === "number" && Number.isFinite(meta.recognitionConfidence)) return meta.recognitionConfidence;
+    if (meta && typeof meta.confidence === "number" && Number.isFinite(meta.confidence)) return meta.confidence;
+    return null;
+  };
+  const shouldConfirm = (policy, meta, channel) => {
     if (meta && meta.confirmed) return false;
     if (policy.confirmation === "always") return true;
     if (policy.confirmation !== "low-confidence") return false;
     if (meta && (meta.confidenceDecision === "confirm" || meta.lowConfidence === true)) return true;
-    return !!(meta && typeof meta.confidence === "number" && meta.confidence < lowConfidenceThreshold);
+    const confidence = recognitionConfidence(meta);
+    return confidence == null ? channel === "voice" : confidence < lowConfidenceThreshold;
   };
   const rememberConfirmation = (detail) => {
     pendingConfirmation = Object.assign({}, detail, { expiresAt: now() + confirmationMs });
@@ -2121,7 +2480,7 @@ function createCommandKernel(ctxFactory, opts = {}) {
     if (scoped) {
       const safeParams2 = _sanitizeLearnerScopedParams(scoped.command, params || {});
       const policy2 = getLearnerCommandPolicy(scoped.command);
-      if (shouldConfirm(policy2, meta)) {
+      if (shouldConfirm(policy2, meta, channel)) {
         return rememberConfirmation({
           commandId: scoped.command.id,
           scopeId: scoped.adapter.id,
@@ -2142,7 +2501,7 @@ function createCommandKernel(ctxFactory, opts = {}) {
     if (!command) return null;
     const safeParams = sanitizeCommandParams(command, params || {});
     const policy = getLearnerCommandPolicy(command);
-    if (shouldConfirm(policy, meta)) {
+    if (shouldConfirm(policy, meta, channel)) {
       return rememberConfirmation({ commandId: command.id, scopeId: null, params: safeParams, prompt: confirmationPrompt(command, ctx, channel, safeParams), risk: policy.risk, channel });
     }
     pendingConfirmation = null;
@@ -2158,6 +2517,10 @@ function createCommandKernel(ctxFactory, opts = {}) {
       const pending = pendingConfirmation;
       pendingConfirmation = null;
       return execute(pending.commandId, pending.params, Object.assign({}, meta, { confirmed: true, scopeId: pending.scopeId, scopeSerial: pending.scopeSerial, globalOnly: !pending.scopeId, channel: pending.channel, via: "confirm" }));
+    }
+    if (/^(?:repeat(?: the)? details|repeat|say that again|what will happen|details)$/.test(text)) {
+      pendingConfirmation = Object.assign({}, pendingConfirmation, { expiresAt: now() + confirmationMs });
+      return { handled: true, ok: false, repeated: true, clarification: true, confirmationRequired: true, narration: pendingConfirmation.prompt };
     }
     if (/^(?:no|cancel|never mind|nevermind|stop)$/.test(text)) {
       pendingConfirmation = null;
@@ -2182,12 +2545,27 @@ function createCommandKernel(ctxFactory, opts = {}) {
     const ctx = getCtx() || {};
     const scoped = await routeScopedUtterance(ctx, text, meta);
     if (scoped) {
-      const executionMeta = Object.assign({}, meta, scoped, { channel: meta.channel || defaultChannel });
-      if (scoped.confidence == null && typeof meta.confidence === "number" && Number.isFinite(meta.confidence)) executionMeta.confidence = meta.confidence;
+      const executionMeta = Object.assign({}, meta, {
+        scopeId: scoped.scopeId,
+        scopeSerial: scoped.scopeSerial,
+        commandId: scoped.commandId,
+        via: scoped.via,
+        parseConfidence: scoped.parseConfidence,
+        confidenceDecision: scoped.confidenceDecision || meta.confidenceDecision || null,
+        channel: meta.channel || defaultChannel
+      });
       return execute(scoped.commandId, scoped.params, executionMeta);
     }
     if (!scoped && text.length === 1) return null;
-    const result = await routeUtterance(ctx, text, { allowAi: meta.allowAi !== false, signal: meta.signal || null, confirmed: !!meta.confirmed });
+    const result = await routeUtterance(ctx, text, { allowAi: meta.allowAi !== false, signal: meta.signal || null, confirmed: !!meta.confirmed, routeOnly: true });
+    if (result && result.routed && result.commandId) {
+      return execute(result.commandId, result.params || {}, Object.assign({}, meta, {
+        globalOnly: true,
+        parseConfidence: result.parseConfidence,
+        via: result.via || "voice",
+        channel: meta.channel || defaultChannel
+      }));
+    }
     if (result && result.confirmationRequired) {
       const command = buildAlloCommands(ctx).find((candidate) => candidate.id === result.commandId);
       const policy = getLearnerCommandPolicy(command);
@@ -2220,8 +2598,9 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   const text = String(rawText || "").trim();
   const t = _mkT(ctx && ctx.t);
   const _looksLikeReadingFind = /^(?:find|recommend|suggest|show|get|help me find)\s+(?:me\s+)?(?:a\s+|some\s+|the\s+)?(?:books|book|readings|reading|stories|story|articles|article|sources|source|texts|text)\b/i.test(text);
+  const _looksLikeOrientation = /^where\s+am\s+i\??$/i.test(text);
   const _whereM = text.match(/^(?:where(?:'s| is| are)?|find|locate|show me where)\s+(?:the\s+|my\s+|is\s+|are\s+)?(.{2,60}?)\??$/i);
-  if (_whereM && !_looksLikeReadingFind && !opts.preview && typeof ctx.whereIs === "function") {
+  if (_whereM && !_looksLikeReadingFind && !_looksLikeOrientation && !opts.preview && typeof ctx.whereIs === "function") {
     const narration = ctx.whereIs(_whereM[1].trim());
     if (narration) return { handled: true, narration, commandId: "where_is", via: "where-is" };
   }
@@ -2242,8 +2621,9 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   ];
   let commands = buildAlloCommands(ctx);
   if (opts.preview) commands = commands.filter((c) => !c.chatSkip);
-  const _runCmd = (cmd, via, params) => {
+  const _runCmd = (cmd, via, params, parseConfidence) => {
     const safeParams = sanitizeCommandParams(cmd, params || {});
+    if (opts.routeOnly) return { handled: false, routed: true, commandId: cmd.id, label: cmd.label, params: safeParams, via, parseConfidence: typeof parseConfidence === "number" && Number.isFinite(parseConfidence) ? parseConfidence : null };
     if (opts.preview) return { handled: false, preview: true, commandId: cmd.id, label: cmd.label, params: safeParams, via, destructive: !!cmd.destructive, confirmation: cmd.destructive ? _commandConfirmationText(cmd, ctx, t) : "" };
     return executeCommand(ctx, cmd, safeParams, { confirmed: !!opts.confirmed, via });
   };
@@ -2252,7 +2632,7 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     if (m) {
       const cmd = commands.find((c) => c.id === g.id);
       if (opts.preview && cmd && _deferToPlanner(cmd, text)) return null;
-      if (cmd) return _runCmd(cmd, "grammar", g.params(m));
+      if (cmd) return _runCmd(cmd, "grammar", g.params(m), 1);
     }
   }
   let best = null, bestScore = 0;
@@ -2264,7 +2644,7 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     }
   }
   if (opts.preview && bestScore >= 60 && _deferToPlanner(best, text)) return null;
-  if (bestScore >= 60 && (!opts.preview || bestScore >= 80 && text.length >= 3)) return _runCmd(best, "deterministic");
+  if (bestScore >= 60 && (!opts.preview || bestScore >= 80 && text.length >= 3)) return _runCmd(best, "deterministic", {}, bestScore / 100);
   if (!opts.allowAi || typeof ctx.callGemini !== "function") return null;
   if (text.split(/\s+/).length > 14) return null;
   try {
@@ -2281,7 +2661,7 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     if (j && j.commandId && typeof j.confidence === "number" && j.confidence >= 0.7) {
       const cmd = commands.find((c) => c.id === j.commandId);
       if (opts.preview && cmd && _deferToPlanner(cmd, text)) return null;
-      if (cmd) return _runCmd(cmd, "ai", j.params || {});
+      if (cmd) return _runCmd(cmd, "ai", j.params || {}, j.confidence);
     }
   } catch (error) {
     if (error && error.name === "AbortError") throw error;
@@ -2464,10 +2844,22 @@ function executeCommand(ctx, commandOrId, params, opts = {}) {
     });
   }
   try {
-    const message = cmd.run(ctx, safeParams);
+    const outcome = cmd.run(ctx, safeParams);
+    const structured = !!(outcome && typeof outcome === "object" && !Array.isArray(outcome));
+    const message = structured ? outcome.narration || outcome.message : outcome;
     _recordCommandUse(cmd.id);
     const narration = _rememberCommandNarration(message || t("router.done", "Done."));
-    return { handled: true, narration, commandId: cmd.id, via, suppressVoiceReply: !!cmd.suppressVoiceReply };
+    return Object.assign(
+      {},
+      structured ? outcome : {},
+      {
+        handled: true,
+        narration,
+        commandId: cmd.id,
+        via,
+        suppressVoiceReply: structured && typeof outcome.suppressVoiceReply === "boolean" ? outcome.suppressVoiceReply : !!cmd.suppressVoiceReply
+      }
+    );
   } catch (error) {
     const narration = _rememberCommandNarration(t("router.failed", "That did not work: ") + (error && error.message || "unknown"));
     return { handled: true, ok: false, narration, commandId: cmd.id, via };
@@ -2692,7 +3084,7 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
 var MODEL_NS = "model_cache";
 var MODEL_POLICY_KEY = "allo_model_downloads";
 var MODEL_CHUNK_BYTES = 6 * 1024 * 1024;
-var DEVICE_STORAGE_URL = "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds4-bridge-auth";
+var DEVICE_STORAGE_URL = "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent";
 var WHISPER_BASE = "https://huggingface.co/Xenova/whisper-tiny.en/resolve/main/";
 var WHISPER_FILES = [
   WHISPER_BASE + "config.json",
@@ -3063,7 +3455,7 @@ function detectNavigationIntent(text) {
   return { isNav: true, target };
 }
 function createVoiceLoop(getCtx, opts = {}) {
-  let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null;
+  let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null, muteChangeHandler = null;
   let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
   let paused = false, pauseResumeTimer = null;
   const DEFAULT_SPOKEN_PAUSE_MS = 3e4;
@@ -3078,7 +3470,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     pauseResumeTimer = null;
   };
   let pendingConfirmation = null, confirmationTimer = null;
-  const CONFIRMATION_TIMEOUT_MS = 2e4;
+  const CONFIRMATION_TIMEOUT_MS = 45e3;
   const commandKernel = opts.commandKernel || createCommandKernel(getCtx, { channel: "voice", confirmationMs: CONFIRMATION_TIMEOUT_MS });
   const clearPendingConfirmation = () => {
     if (confirmationTimer) {
@@ -3148,8 +3540,21 @@ function createVoiceLoop(getCtx, opts = {}) {
       pendingTimer = null;
     }
   };
-  let bargeStream = null, bargeAudioCtx = null, bargeTimer = null, activeResume = null;
+  const voiceOutputMuted = (c) => {
+    if (c && typeof c.globalMuteEnabled === "boolean") return c.globalMuteEnabled;
+    try {
+      if (typeof isGlobalMuted === "function") return !!isGlobalMuted();
+    } catch (_) {
+    }
+    try {
+      return typeof localStorage !== "undefined" && localStorage.getItem("alloflow-global-muted") === "true";
+    } catch (_) {
+      return false;
+    }
+  };
+  let bargeStream = null, bargeAudioCtx = null, bargeTimer = null, bargeGeneration = 0, activeResume = null;
   const stopBargeWatch = () => {
+    bargeGeneration++;
     if (bargeTimer) {
       try {
         clearTimeout(bargeTimer);
@@ -3196,12 +3601,13 @@ function createVoiceLoop(getCtx, opts = {}) {
   };
   const startBargeWatch = () => {
     stopBargeWatch();
+    const generation = bargeGeneration;
     const nav = typeof navigator !== "undefined" ? navigator : null;
     const Ctx = typeof window !== "undefined" ? window.AudioContext || window.webkitAudioContext : null;
     if (!nav || !nav.mediaDevices || typeof nav.mediaDevices.getUserMedia !== "function" || !Ctx) return;
     const detector = createBargeDetector({});
     nav.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function(stream) {
-      if (!speaking) {
+      if (generation !== bargeGeneration || !speaking) {
         try {
           stream.getTracks().forEach((tr) => tr.stop());
         } catch (_) {
@@ -3216,6 +3622,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       const buf = new Float32Array(analyser.fftSize);
       let last = Date.now();
       const tick = function() {
+        if (generation !== bargeGeneration) return;
         if (!speaking) {
           stopBargeWatch();
           return;
@@ -3271,6 +3678,30 @@ function createVoiceLoop(getCtx, opts = {}) {
     if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
     return true;
   };
+  const stopReplyOutputForMute = () => {
+    clearPendingReply();
+    ++speakSerial;
+    if (externalSpeech) stopExternalSpeech("global-muted", { suppressResume: true });
+    try {
+      if (replyAudio) replyAudio.pause();
+    } catch (_) {
+    }
+    replyAudio = null;
+    try {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    } catch (_) {
+    }
+    speaking = false;
+    activeResume = null;
+    stopBargeWatch();
+    if (active && !paused && rec) {
+      try {
+        rec.start();
+      } catch (_) {
+      }
+    }
+    if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
+  };
   const beginExternalSpeech = (stopFn, meta = {}) => {
     if (!active || paused || typeof stopFn !== "function") return null;
     if (externalSpeech) stopExternalSpeech("replaced", { suppressResume: true });
@@ -3305,7 +3736,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     });
   };
   const speakReply = (msg, c) => {
-    if (!c || c.voiceSpeakReplies === false) {
+    if (!c || c.voiceSpeakReplies === false || voiceOutputMuted(c)) {
       if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
       return;
     }
@@ -3317,7 +3748,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     speakNow(msg, c);
   };
   const flushPendingReply = () => {
-    if (!pendingReply || !active) {
+    if (!pendingReply || !active || voiceOutputMuted(pendingReply && pendingReply.c)) {
       clearPendingReply();
       return;
     }
@@ -3331,6 +3762,10 @@ function createVoiceLoop(getCtx, opts = {}) {
     speakNow(held.msg, held.c);
   };
   const speakNow = (msg, c) => {
+    if (voiceOutputMuted(c)) {
+      stopReplyOutputForMute();
+      return;
+    }
     if (externalSpeech) stopExternalSpeech("voice-reply", { suppressResume: true });
     const my = ++speakSerial;
     const text = String(msg || "").slice(0, 300);
@@ -3352,6 +3787,10 @@ function createVoiceLoop(getCtx, opts = {}) {
     };
     const speakWithBrowser = () => {
       if (speakSerial !== my) return false;
+      if (voiceOutputMuted(c)) {
+        stopReplyOutputForMute();
+        return false;
+      }
       if (!window.speechSynthesis || typeof SpeechSynthesisUtterance !== "function") {
         if (speaking) resume2();
         else if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
@@ -3407,6 +3846,10 @@ function createVoiceLoop(getCtx, opts = {}) {
         }
         Promise.resolve(window._kokoroTTS.speak(text, kv, voiceRate)).then((url) => {
           if (speakSerial !== my) return;
+          if (voiceOutputMuted(c)) {
+            stopReplyOutputForMute();
+            return;
+          }
           if (!url) {
             speakWithBrowser();
             return;
@@ -3508,6 +3951,13 @@ function createVoiceLoop(getCtx, opts = {}) {
       }
       pageHideHandler = null;
     }
+    if (muteChangeHandler) {
+      try {
+        window.removeEventListener("alloflow-mute-changed", muteChangeHandler);
+      } catch (_) {
+      }
+      muteChangeHandler = null;
+    }
     if (!active) return;
     active = false;
     try {
@@ -3586,8 +4036,20 @@ function createVoiceLoop(getCtx, opts = {}) {
       updateVoiceSession("processing", "Processing your confirmation response.");
       const pending = pendingConfirmation;
       if (/^(?:repeat(?: the)? details|repeat|say that again|what will happen|details)[.!]?$/i.test(text)) {
-        if (pending.kind !== "kernel-command") armPendingConfirmation(pending);
-        announce(pending.prompt);
+        let repeated = null;
+        if (pending.kind === "kernel-command") {
+          try {
+            repeated = commandKernel.confirm("repeat details", { channel: "voice" });
+          } catch (_) {
+          }
+        }
+        if (pending.kind === "kernel-command" && (!repeated || !repeated.confirmationRequired)) {
+          clearPendingConfirmation();
+          announce(repeated && repeated.narration || "That confirmation expired. Please ask again.");
+          return;
+        }
+        armPendingConfirmation(pending);
+        announce(repeated && repeated.narration || pending.prompt);
         return;
       }
       if (/^(?:no|cancel(?: it)?|do not|don['’]?t|never ?mind|stop)[.!]?$/i.test(text)) {
@@ -3784,7 +4246,7 @@ function createVoiceLoop(getCtx, opts = {}) {
         noteUserTurnEnd();
         const alternative = last[0] || {};
         const confidence = typeof alternative.confidence === "number" && Number.isFinite(alternative.confidence) ? alternative.confidence : null;
-        handleUtterance(String(alternative.transcript || ""), { confidence });
+        return handleUtterance(String(alternative.transcript || ""), { recognitionConfidence: confidence });
       };
       rec.onspeechstart = () => noteUserSpeech(true);
       rec.onspeechend = () => noteUserSpeech(false);
@@ -3848,6 +4310,14 @@ function createVoiceLoop(getCtx, opts = {}) {
       window.addEventListener("pagehide", pageHideHandler, { once: true });
     } catch (_) {
       pageHideHandler = null;
+    }
+    muteChangeHandler = (event) => {
+      if (event && event.detail && event.detail.muted) stopReplyOutputForMute();
+    };
+    try {
+      window.addEventListener("alloflow-mute-changed", muteChangeHandler);
+    } catch (_) {
+      muteChangeHandler = null;
     }
     try {
       if (_modelPolicy() === "auto") {
@@ -4108,6 +4578,8 @@ const CMD_GROUP = {
   previous_read_this_page: "accessibility",
   repeat_read_this_page: "accessibility",
   close_read_this_page: "accessibility",
+  read_media_descriptions: "accessibility",
+  describe_current_media: "accessibility",
   toggle_focus_mode: "accessibility",
   toggle_reading_ruler: "accessibility",
   toggle_help_mode: "accessibility",
@@ -4156,6 +4628,7 @@ const CMD_GROUP = {
   open_test_prep_hub: "tools",
   open_research_hub: "tools",
   open_lit_lab: "tools",
+  open_learning_web_explorer: "tools",
   open_mind_map: "tools",
   open_poet_tree: "tools",
   find_reading: "tools",
@@ -4265,6 +4738,7 @@ const CMD_CONTEXT = {
   open_test_prep_hub: ["learningHub", "testPrepHub"],
   open_research_hub: ["learningHub", "content", "researchHub"],
   open_lit_lab: ["learningHub", "litLab"],
+  open_learning_web_explorer: ["learningHub", "content", "learningWebExplorer"],
   open_mind_map: ["learningHub", "content", "mindMap"],
   open_poet_tree: ["learningHub", "poetTree"],
   start_test_prep_hands_free: ["testPrepHub"],
@@ -4380,9 +4854,9 @@ function _recordCommandUse(commandId) {
   } catch (_) {
   }
 }
-const CTX_FLAG = { liveSession: "liveSessionActive", pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", sourceSetup: "sourceSetupOpen", symbolStudio: "symbolStudioOpen", videoStudio: "videoStudioOpen", alloStudio: "alloStudioOpen", cinematicStudio: "cinematicStudioOpen", stemLab: "stemLabOpen", openGroove: "openGrooveOpen", timelineStudio: "timelineStudioOpen", linguaPractice: "linguaPracticeOpen", testPrepHub: "testPrepHubOpen", researchHub: "researchHubOpen", litLab: "litLabOpen", mindMap: "mindMapOpen", poetTree: "poetTreeOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
-const CTX_PRIORITY = ["sourceSetup", "liveSession", "videoStudio", "alloStudio", "cinematicStudio", "symbolStudio", "stemLab", "openGroove", "timelineStudio", "linguaPractice", "testPrepHub", "researchHub", "litLab", "mindMap", "poetTree", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
-const CONTEXT_LABEL_FALLBACK = { sourceSetup: "Here \u2014 Source setup", liveSession: "Here \u2014 Live session", pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", videoStudio: "Here \u2014 Video Studio", alloStudio: "Here \u2014 Page Designer", cinematicStudio: "Here \u2014 Cinematic Studio", stemLab: "Here \u2014 STEAM Lab", openGroove: "Here \u2014 Open Groove Studio", timelineStudio: "Here \u2014 Timeline Studio", linguaPractice: "Here \u2014 Lingua Practice", testPrepHub: "Here \u2014 Test Prep Hub", researchHub: "Here \u2014 Research Hub", litLab: "Here \u2014 Lit Lab", mindMap: "Here \u2014 Learning Web: Unit Path", poetTree: "Here \u2014 Poet Tree", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
+const CTX_FLAG = { liveSession: "liveSessionActive", pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", sourceSetup: "sourceSetupOpen", symbolStudio: "symbolStudioOpen", videoStudio: "videoStudioOpen", alloStudio: "alloStudioOpen", cinematicStudio: "cinematicStudioOpen", stemLab: "stemLabOpen", openGroove: "openGrooveOpen", timelineStudio: "timelineStudioOpen", linguaPractice: "linguaPracticeOpen", testPrepHub: "testPrepHubOpen", researchHub: "researchHubOpen", litLab: "litLabOpen", learningWebExplorer: "learningWebExplorerOpen", mindMap: "mindMapOpen", poetTree: "poetTreeOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
+const CTX_PRIORITY = ["sourceSetup", "liveSession", "videoStudio", "alloStudio", "cinematicStudio", "symbolStudio", "stemLab", "openGroove", "timelineStudio", "linguaPractice", "testPrepHub", "researchHub", "litLab", "learningWebExplorer", "mindMap", "poetTree", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
+const CONTEXT_LABEL_FALLBACK = { sourceSetup: "Here \u2014 Source setup", liveSession: "Here \u2014 Live session", pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", videoStudio: "Here \u2014 Video Studio", alloStudio: "Here \u2014 Page Designer", cinematicStudio: "Here \u2014 Cinematic Studio", stemLab: "Here \u2014 STEAM Lab", openGroove: "Here \u2014 Open Groove Studio", timelineStudio: "Here \u2014 Timeline Studio", linguaPractice: "Here \u2014 Lingua Practice", testPrepHub: "Here \u2014 Test Prep Hub", researchHub: "Here \u2014 Research Hub", litLab: "Here \u2014 Lit Lab", learningWebExplorer: "Here \u2014 Learning Web: Explore", mindMap: "Here \u2014 Learning Web: Unit Path", poetTree: "Here \u2014 Poet Tree", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
 function _activeContexts(ctx) {
   if (!ctx) return [];
   return CTX_PRIORITY.filter((k) => {
@@ -4851,6 +5325,6 @@ const AlloCommandProgress = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { _voicePure: { downsampleAudio: downsampleAudio, detectWakeCommand: detectWakeCommand, createVadSegmenter: createVadSegmenter, createBargeDetector: createBargeDetector }, detectNavigationIntent: detectNavigationIntent, modelCache: modelCache, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan, LEARNER_COMMAND_RISKS: LEARNER_COMMAND_RISKS, LEARNER_CONFIRMATION_POLICIES: LEARNER_CONFIRMATION_POLICIES, getLearnerCommandPolicy: getLearnerCommandPolicy, createLearnerCommandAdapter: createLearnerCommandAdapter, registerCommandScope: registerCommandScope, normalizeVoiceEditableFields: normalizeVoiceEditableFields, resolveVoiceEditableField: resolveVoiceEditableField, parseNamedFieldVoiceUtterance: parseNamedFieldVoiceUtterance, createNamedFieldCommandAdapter: createNamedFieldCommandAdapter, listActiveCommandScopes: listActiveCommandScopes, getLearnerContextSnapshot: getLearnerContextSnapshot, routeScopedUtterance: routeScopedUtterance, createCommandKernel: createCommandKernel };
+  window.AlloModules.AlloCommands = { _voicePure: { downsampleAudio: downsampleAudio, detectWakeCommand: detectWakeCommand, createVadSegmenter: createVadSegmenter, createBargeDetector: createBargeDetector }, detectNavigationIntent: detectNavigationIntent, modelCache: modelCache, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan, LEARNER_COMMAND_RISKS: LEARNER_COMMAND_RISKS, LEARNER_CONFIRMATION_POLICIES: LEARNER_CONFIRMATION_POLICIES, getLearnerCommandPolicy: getLearnerCommandPolicy, createLearnerCommandAdapter: createLearnerCommandAdapter, registerCommandScope: registerCommandScope, normalizeVoiceEditableFields: normalizeVoiceEditableFields, resolveVoiceEditableField: resolveVoiceEditableField, parseNamedFieldVoiceUtterance: parseNamedFieldVoiceUtterance, createNamedFieldCommandAdapter: createNamedFieldCommandAdapter, createTutorialCommandAdapter: createTutorialCommandAdapter, createGeneratedResourceCommandAdapter: createGeneratedResourceCommandAdapter, listActiveCommandScopes: listActiveCommandScopes, getLearnerContextSnapshot: getLearnerContextSnapshot, routeScopedUtterance: routeScopedUtterance, createCommandKernel: createCommandKernel };
   console.log('[CDN] AlloCommands loaded');
 })();

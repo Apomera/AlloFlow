@@ -75,6 +75,18 @@ const UNIVERSAL_GRADE_CHOICES = [
   "College",
   "Graduate Level"
 ];
+const SIDEBAR_PANEL_UI = Object.freeze({
+  settingsSurface: "border-b border-slate-200/80 bg-slate-50/70 p-3.5 flex flex-col gap-3.5",
+  label: "block mb-1.5 text-[11px] font-semibold leading-4 tracking-wide text-slate-700",
+  control: "w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none",
+  textarea: "w-full min-h-20 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none",
+  help: "mt-1.5 text-[11px] leading-relaxed text-slate-500",
+  checkbox: "h-4 w-4 rounded border-slate-300 text-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50",
+  disclosure: "flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs font-semibold transition-colors motion-reduce:transition-none focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 disabled:opacity-70",
+  primaryAction: "group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left transition-colors motion-reduce:transition-none hover:bg-indigo-50/60 focus-visible:z-10 focus-visible:bg-indigo-50/60 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-50",
+  secondaryButton: "inline-flex min-h-11 items-center justify-center rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 shadow-sm transition-colors transition-shadow motion-reduce:transition-none hover:border-indigo-300 hover:bg-indigo-50 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none",
+  iconButton: "inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 transition-colors motion-reduce:transition-none hover:border-indigo-300 hover:bg-indigo-100 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:opacity-70"
+});
 const UNIVERSAL_DIFFERENTIABLE_TYPES = [
   "simplified",
   "glossary",
@@ -114,7 +126,7 @@ function UniversalApplicability({ settingKey, t }) {
   };
   return /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[10px] text-slate-500 cursor-pointer select-none hover:text-indigo-600 transition-colors motion-reduce:transition-none list-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 9, className: "text-emerald-600 shrink-0" }), (t("universal.applies") || "Applies to {n} of {m} resource types").replace("{n}", String(list.length)).replace("{m}", String(total))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 leading-snug mt-1 pl-3 border-l-2 border-slate-200" }, list.map(label).join(", ")));
 }
-function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback, placeholderKey, labelKey, optional = true, disabled = false, wrapperClass = "" }) {
+function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback, placeholderKey, labelKey, optional = true, disabled = false, wrapperClass = "", premium = false }) {
   const label = t(labelKey || "input.custom_instructions");
   const hasValue = !!(value && String(value).trim());
   const [isOpen, setIsOpen] = React.useState(hasValue);
@@ -126,7 +138,7 @@ function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback,
       onClick: () => setIsOpen(!isOpen),
       "aria-expanded": isOpen,
       disabled,
-      className: `w-full flex items-center justify-between gap-2 text-left text-xs font-medium rounded-md px-2 py-1.5 border transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${hasValue ? "border-indigo-200 bg-indigo-50/60 text-indigo-800" : "border-transparent text-slate-600 hover:bg-slate-50"}`
+      className: premium ? `${SIDEBAR_PANEL_UI.disclosure} ${hasValue ? "border-indigo-200 bg-indigo-50/70 text-indigo-800" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"}` : `w-full flex items-center justify-between gap-2 text-left text-xs font-medium rounded-md px-2 py-1.5 border transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${hasValue ? "border-indigo-200 bg-indigo-50/60 text-indigo-800" : "border-transparent text-slate-600 hover:bg-slate-50"}`
     },
     /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5 min-w-0" }, hasValue ? /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "text-indigo-600 shrink-0" }) : /* @__PURE__ */ React.createElement(Plus, { size: 12, className: "text-slate-500 shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, hasValue ? `${label}: "${preview}${String(value).trim().length > 48 ? "\u2026" : ""}"` : label, !hasValue && optional && /* @__PURE__ */ React.createElement("span", { className: "text-slate-400 font-normal" }, " ", t("common.optional")))),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, className: `shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}` })
@@ -139,7 +151,7 @@ function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback,
       placeholder: t(placeholderKey),
       disabled,
       maxLength: 2e3,
-      className: "w-full mt-1 text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 resize-none h-16 bg-white text-slate-800 placeholder:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition-shadow motion-reduce:transition-none duration-300"
+      className: premium ? `${SIDEBAR_PANEL_UI.textarea} mt-2 h-20 resize-y text-xs` : "w-full mt-1 text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 resize-none h-16 bg-white text-slate-800 placeholder:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition-shadow motion-reduce:transition-none duration-300"
     }
   ));
 }
@@ -149,8 +161,6 @@ const SurpriseMeEngine = {
   // else it returns is dropped rather than coerced.
   TONES: ["Informative", "Narrative", "Dialogue", "Persuasive", "Humorous", "Step-by-Step"],
   brief: function(rec) {
-    // Map TeX before truncating: slicing raw TeX at 160 can cut a command in
-    // half and hand the model a fragment.
     const api = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.StandardsProvider : null;
     const body = api && typeof api.toPlainMath === "function" ? api.toPlainMath(rec.label || rec.text) : String(rec.label || rec.text || "");
     return (rec.code ? rec.code + " " : "") + body.slice(0, 160);
@@ -271,7 +281,7 @@ function SurpriseMeCompare(props) {
       onChange: (e) => setEditedBrief(e.target.value),
       rows: 6,
       "aria-label": "Edit the pinned lesson direction before using it",
-      className: "mt-1 w-full rounded border border-violet-200 p-1.5 text-[11px] focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none"
+      className: `${SIDEBAR_PANEL_UI.textarea} mt-2 text-xs focus-visible:border-violet-500 focus-visible:ring-violet-500/20`
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
@@ -280,7 +290,7 @@ function SurpriseMeCompare(props) {
       onClick: function() {
         onUse(directions[pinnedIndex], editedBrief);
       },
-      className: "mt-1 rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800"
+      className: `${SIDEBAR_PANEL_UI.secondaryButton} mt-2 border-violet-200 text-violet-700 hover:border-violet-300 hover:bg-violet-50 focus-visible:ring-violet-500/20`
     },
     "Use this direction"
   )));
@@ -411,24 +421,24 @@ function UniversalSettingsPanel(props) {
     studentInterests.length > 0 ? studentInterests.length + " " + (t("universal.summary_interests") || "interests") : null,
     dokLevel ? dokLevel.split(":")[0] : null
   ].filter(Boolean);
-  return /* @__PURE__ */ React.createElement("div", { id: "tour-universal-settings", "data-help-key": "tool_universal_settings", className: "rounded-3xl border-2 border-indigo-200 bg-white overflow-hidden shadow-sm mb-3" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { id: "tour-universal-settings", "data-help-key": "tool_universal_settings", className: "mb-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       "aria-expanded": isOpen,
       onClick: () => setIsOpen(!isOpen),
-      className: "w-full p-3 bg-indigo-50/60 flex justify-between items-center hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
+      className: "flex min-h-14 w-full items-center justify-between bg-white px-3.5 py-3 transition-colors motion-reduce:transition-none hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-indigo-500/20"
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-left min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-indigo-900 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Settings2, { size: 16, className: "shrink-0" }), " ", t("universal.title") || "Universal Settings"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700/80 mt-0.5 truncate" }, isOpen ? t("universal.subtitle") || "Apply to every resource you generate" : summaryBits.join(" \xB7 "))),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 16, className: `text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}` })
-  ), isOpen && /* @__PURE__ */ React.createElement("div", { className: "p-3 space-y-3 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
+  ), isOpen && /* @__PURE__ */ React.createElement("div", { className: "animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       "data-help-key": "simplified_grade_level",
       value: gradeLevel,
       onChange: (e) => setGradeLevel(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+      className: SIDEBAR_PANEL_UI.control
     },
     /* @__PURE__ */ React.createElement("option", { value: "Kindergarten" }, t("grades.k")),
     /* @__PURE__ */ React.createElement("option", { value: "1st Grade" }, t("grades.g1")),
@@ -445,19 +455,19 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t("grades.g12")),
     /* @__PURE__ */ React.createElement("option", { value: "College" }, t("grades.college")),
     /* @__PURE__ */ React.createElement("option", { value: "Graduate Level" }, t("grades.grad"))
-  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "grade", t })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("wizard.output_language")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "grade", t })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.output_language")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       "data-help-key": "simplified_language",
       value: leveledTextLanguage,
       onChange: (e) => setLeveledTextLanguage(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+      className: SIDEBAR_PANEL_UI.control
     },
     /* @__PURE__ */ React.createElement("option", { value: "English" }, t("languages.english")),
     selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang, value: lang }, lang)),
     selectedLanguages.length > 0 && /* @__PURE__ */ React.createElement("option", { value: "All Selected Languages" }, t("languages.all_selected"))
-  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "language", t }), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "glossary_language_input" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] text-slate-500 mb-1" }, t("glossary.add_languages_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "language", t }), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "glossary_language_input" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("glossary.add_languages_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -466,7 +476,7 @@ function UniversalSettingsPanel(props) {
       onKeyDown: handleKeyDown,
       placeholder: t("glossary.language_placeholder"),
       maxLength: 40,
-      className: "flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300",
+      className: `${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow`,
       "aria-label": t("common.target_language_aria")
     }
   ), /* @__PURE__ */ React.createElement(
@@ -475,18 +485,18 @@ function UniversalSettingsPanel(props) {
       type: "button",
       onClick: addLanguage,
       disabled: !languageInput.trim() || selectedLanguages.length >= 4,
-      className: "bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none",
+      className: SIDEBAR_PANEL_UI.iconButton,
       "aria-label": t("common.add")
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 16 })
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem] mt-2" }, selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("span", { key: lang, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200" }, lang, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeLanguage(lang), className: "hover:text-indigo-900", "aria-label": "Remove " + lang }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), selectedLanguages.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("glossary.no_languages"))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." })), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem] mt-2" }, selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("span", { key: lang, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200" }, lang, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeLanguage(lang), className: "hover:text-indigo-900", "aria-label": "Remove " + lang }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), selectedLanguages.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("glossary.no_languages"))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." })), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       "data-help-key": "simplified_dok",
       value: dokLevel,
       onChange: (e) => setDokLevel(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+      className: SIDEBAR_PANEL_UI.control
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, t("wizard.dok_levels.none")),
     /* @__PURE__ */ React.createElement("option", { value: "Level 1: Recall & Reproduction" }, t("wizard.dok_levels.l1")),
@@ -494,7 +504,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Level 3: Strategic Thinking" }, t("wizard.dok_levels.l3")),
     /* @__PURE__ */ React.createElement("option", { value: "Level 4: Extended Thinking" }, t("wizard.dok_levels.l4")),
     /* @__PURE__ */ React.createElement("option", { value: "Mixed" }, t("wizard.dok_levels.mixed"))
-  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "dok", t }))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2 rounded-lg border border-slate-400", "data-help-key": "simplified_standards" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { id: "simplified-standard-mode-label", className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-indigo-600" }), " Target Standard"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "simplified-standard-mode-label", className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "dok", t }))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border border-slate-200 bg-white p-3 shadow-sm", "data-help-key": "simplified_standards" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { id: "simplified-standard-mode-label", className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-indigo-600" }), " Target Standard"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "simplified-standard-mode-label", className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -521,7 +531,7 @@ function UniversalSettingsPanel(props) {
       onChange: (e) => setAiStandardQuery(e.target.value),
       onKeyDown: (e) => e.key === "Enter" && handleFindStandards(gradeLevel),
       placeholder: `Describe skill (e.g. "identify main idea") for ${gradeLevel}...`,
-      className: "flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+      className: `${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow text-xs`
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
@@ -530,7 +540,7 @@ function UniversalSettingsPanel(props) {
       "aria-label": t("common.refresh"),
       onClick: () => handleFindStandards(gradeLevel),
       disabled: !aiStandardQuery.trim() || isFindingStandards,
-      className: "bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none",
+      className: "inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-indigo-600 bg-indigo-600 text-white shadow-sm transition-colors motion-reduce:transition-none hover:border-indigo-700 hover:bg-indigo-700 focus-visible:ring-4 focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none",
       title: t("common.find_relevant_standards")
     },
     isFindingStandards ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Search, { size: 14 })
@@ -564,7 +574,7 @@ function UniversalSettingsPanel(props) {
       },
       onKeyDown: (e) => e.key === "Enter" && handleAddStandard(),
       placeholder: t("standards.manual_placeholder"),
-      className: "flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+      className: `${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow`
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
@@ -573,7 +583,7 @@ function UniversalSettingsPanel(props) {
       "aria-label": t("common.add"),
       onClick: handleAddStandard,
       disabled: !standardInputValue.trim() || targetStandards.length >= 3,
-      className: "bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed",
+      className: SIDEBAR_PANEL_UI.iconButton,
       title: t("standards.add_button")
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 16 })
@@ -626,7 +636,7 @@ function UniversalSettingsPanel(props) {
       title: t("common.remove_standard")
     },
     /* @__PURE__ */ React.createElement(X, { size: 10 })
-  )))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "simplified_interests" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1 mt-2" }, /* @__PURE__ */ React.createElement(Heart, { size: 12, className: "text-indigo-500" }), " ", t("input.interests_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "simplified_interests" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} mt-2 flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Heart, { size: 12, className: "text-indigo-500" }), " ", t("input.interests_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_interest_input"),
@@ -635,7 +645,7 @@ function UniversalSettingsPanel(props) {
       onChange: (e) => setInterestInput(e.target.value),
       onKeyDown: handleInterestKeyDown,
       placeholder: t("common.interest_placeholder"),
-      className: "flex-grow text-sm px-2 py-1.5 border border-slate-400 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+      className: `${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow`
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
@@ -644,7 +654,7 @@ function UniversalSettingsPanel(props) {
       "aria-label": t("common.add"),
       onClick: addInterest,
       disabled: !interestInput.trim() || studentInterests.length >= 5,
-      className: "bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
+      className: SIDEBAR_PANEL_UI.iconButton
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 16 })
   )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem]" }, studentInterests.map((interest, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200" }, interest, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeInterest(interest), className: "hover:text-indigo-900", "aria-label": t("common.remove") }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), studentInterests.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("input.no_interests"))), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "interests", t })), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "simplified_emojis" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
@@ -655,15 +665,15 @@ function UniversalSettingsPanel(props) {
       type: "checkbox",
       checked: useEmojis,
       onChange: (e) => setUseEmojis(e.target.checked),
-      className: "w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+      className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "useEmojis", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Smile, { size: 12, className: "text-indigo-500" }), " ", t("simplified.use_emojis"))), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "emoji", t })), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200", "data-help-key": "simplified_differentiation" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.diff_label")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "useEmojis", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Smile, { size: 12, className: "text-indigo-500" }), " ", t("simplified.use_emojis"))), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "emoji", t })), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200", "data-help-key": "simplified_differentiation" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.diff_label")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("simplified.diff_label"),
       value: differentiationRange,
       onChange: (e) => setDifferentiationRange(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+      className: SIDEBAR_PANEL_UI.control
     },
     /* @__PURE__ */ React.createElement("option", { value: "None" }, t("simplified.diff_options.none")),
     /* @__PURE__ */ React.createElement("option", { value: "1" }, t("simplified.diff_options.one")),
@@ -703,7 +713,7 @@ function UniversalSettingsPanel(props) {
       },
       universalToolLabel(id, t)
     );
-  })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, (t("universal.diff_cost") || "About {n} generations per run.").replace("{n}", String(Math.max(1, (differentiationTypes || []).length) * universalDiffLevelCount(differentiationRange, differentiationCustomGrades)))))), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "universal_image_style" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-indigo-500" }), " ", t("universal.image_style") || "Image Style (default)", " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, (t("universal.diff_cost") || "About {n} generations per run.").replace("{n}", String(Math.max(1, (differentiationTypes || []).length) * universalDiffLevelCount(differentiationRange, differentiationCustomGrades)))))), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "universal_image_style" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-indigo-500" }), " ", t("universal.image_style") || "Image Style (default)", " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("universal.image_style") || "Default image style",
@@ -712,9 +722,9 @@ function UniversalSettingsPanel(props) {
       onChange: (e) => setUniversalImageStyle(e.target.value),
       placeholder: t("concept_sort.style_placeholder") || "e.g. cartoon, pixel art, watercolor",
       maxLength: 120,
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+      className: SIDEBAR_PANEL_UI.control
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("universal.image_style_hint") || "Used for Visuals, Glossary, Timeline and Concept Sort images unless a tool sets its own style.")))));
+  ), /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, t("universal.image_style_hint") || "Used for Visuals, Glossary, Timeline and Concept Sort images unless a tool sets its own style.")))));
 }
 function AdventurePanel(props) {
   const {
@@ -1154,7 +1164,7 @@ function AdventurePanel(props) {
       onClick: handleStartAdventure,
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-purple-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("adventure.start"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-purple-600" })
@@ -1179,14 +1189,14 @@ function SimplifiedPanel(props) {
     textFormat
   } = props;
   if (!expandedTools || !expandedTools.includes("simplified")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { id: "tour-level-settings", "data-help-key": "tour-simplified-settings", className: "p-3 border-b border-slate-100 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("wizard.output_format")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { id: "tour-level-settings", "data-help-key": "tour-simplified-settings", className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.output_format")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       "data-help-key": "simplified_format",
       value: textFormat,
       onChange: (e) => setTextFormat(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+      className: SIDEBAR_PANEL_UI.control
     },
     /* @__PURE__ */ React.createElement("option", { value: "Standard Text" }, t("simplified.formats.standard")),
     /* @__PURE__ */ React.createElement("option", { value: "Dialogue Script" }, t("simplified.formats.dialogue")),
@@ -1196,14 +1206,14 @@ function SimplifiedPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Social Media Thread" }, t("simplified.formats.social")),
     /* @__PURE__ */ React.createElement("option", { value: "Poetry" }, t("simplified.formats.poetry")),
     /* @__PURE__ */ React.createElement("option", { value: "Narrative Story" }, t("simplified.formats.narrative_story"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("input.length")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("input.length")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       "data-help-key": "simplified_length",
       value: leveledTextLength,
       onChange: (e) => setLeveledTextLength(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+      className: SIDEBAR_PANEL_UI.control
     },
     /* @__PURE__ */ React.createElement("option", { value: "Same as Source" }, t("simplified.length_options.same")),
     /* @__PURE__ */ React.createElement("option", { value: "Condense (50%)" }, t("simplified.length_options.condense")),
@@ -1214,6 +1224,7 @@ function SimplifiedPanel(props) {
   ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
+      premium: true,
       helpKey: "simplified_custom_instructions",
       t,
       ariaFallback: "Custom instructions for simplified text",
@@ -1229,7 +1240,7 @@ function SimplifiedPanel(props) {
       type: "checkbox",
       checked: keepCitations,
       onChange: (e) => setKeepCitations(e.target.checked),
-      className: "w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+      className: SIDEBAR_PANEL_UI.checkbox
     }
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "keepCitations", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Link, { size: 12, className: "text-indigo-500" }), " ", t("simplified.preserve_links"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-2", "data-help-key": "simplified_charts" }, /* @__PURE__ */ React.createElement(
     "input",
@@ -1239,7 +1250,7 @@ function SimplifiedPanel(props) {
       type: "checkbox",
       checked: includeCharts,
       onChange: (e) => setIncludeCharts(e.target.checked),
-      className: "w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+      className: SIDEBAR_PANEL_UI.checkbox
     }
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCharts", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.data_visuals"))))), /* @__PURE__ */ React.createElement(
     "button",
@@ -1249,7 +1260,7 @@ function SimplifiedPanel(props) {
       onClick: () => handleGenerate("simplified"),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("simplified.rewrite"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-indigo-600" })
@@ -1308,14 +1319,14 @@ function MathPanel(props) {
     useMathSourceContext
   } = props;
   if (!expandedTools || !expandedTools.includes("math")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-blue-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("math.subject")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 12, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("math.subject")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 12, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       "data-help-key": "math_subject",
       value: mathSubject,
       onChange: (e) => setMathSubject(e.target.value),
-      className: "w-full pl-7 text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+      className: `${SIDEBAR_PANEL_UI.control} pl-8 focus-visible:border-blue-500 focus-visible:ring-blue-500/20`
     },
     /* @__PURE__ */ React.createElement("option", { value: "General Math" }, t("math.subjects.general")),
     /* @__PURE__ */ React.createElement("option", { value: "Algebra" }, t("math.subjects.algebra")),
@@ -1327,14 +1338,14 @@ function MathPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Earth Science" }, t("math.subjects.earth_science")),
     /* @__PURE__ */ React.createElement("option", { value: "Computer Science" }, t("math.subjects.comp_sci")),
     /* @__PURE__ */ React.createElement("option", { value: "Economics" }, t("math.subjects.economics"))
-  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("math.mode")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(Settings2, { size: 12, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("math.mode")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(Settings2, { size: 12, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       "data-help-key": "math_mode",
       value: mathMode,
       onChange: (e) => setMathMode(e.target.value),
-      className: "w-full pl-7 text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+      className: `${SIDEBAR_PANEL_UI.control} pl-8 focus-visible:border-blue-500 focus-visible:ring-blue-500/20`
     },
     /* @__PURE__ */ React.createElement("option", { value: "Problem Set Generator" }, t("math.modes.problem_set")),
     /* @__PURE__ */ React.createElement("option", { value: "Step-by-Step" }, t("math.modes.step_by_step")),
@@ -1406,7 +1417,7 @@ function MathPanel(props) {
     setCubeShowLayers,
     setExploreDifficulty,
     t
-  }), (mathMode === "Problem Set Generator" || mathMode === "Word Problems from Source" || mathMode === "Freeform Builder") && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("math.quantity")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(ListOrdered, { size: 12, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
+  }), (mathMode === "Problem Set Generator" || mathMode === "Word Problems from Source" || mathMode === "Freeform Builder") && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("math.quantity")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(ListOrdered, { size: 12, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.text_field"),
@@ -1416,9 +1427,9 @@ function MathPanel(props) {
       max: "10",
       value: mathQuantity,
       onChange: (e) => setMathQuantity(parseInt(e.target.value) || 5),
-      className: "w-full pl-7 text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+      className: `${SIDEBAR_PANEL_UI.control} pl-8 focus-visible:border-blue-500 focus-visible:ring-blue-500/20`
     }
-  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, mathMode === "Problem Set Generator" ? t("math.labels.topic_skill") : mathMode === "Word Problems from Source" ? t("math.labels.instructions_opt") : t("math.labels.problem_question")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-2.5 left-2 pointer-events-none" }, /* @__PURE__ */ React.createElement(Calculator, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, mathMode === "Problem Set Generator" ? t("math.labels.topic_skill") : mathMode === "Word Problems from Source" ? t("math.labels.instructions_opt") : t("math.labels.problem_question")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-2.5 left-2 pointer-events-none" }, /* @__PURE__ */ React.createElement(Calculator, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       "aria-label": t("math.labels.problem_question") || "Math problem input",
@@ -1426,7 +1437,7 @@ function MathPanel(props) {
       value: mathInput,
       onChange: (e) => setMathInput(e.target.value),
       placeholder: mathMode === "Problem Set Generator" ? t("math.placeholder_topic") : mathMode === "Word Problems from Source" ? t("math.placeholder_focus") : t("math.placeholder_eq"),
-      className: "w-full pl-8 text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 resize-none h-24 font-mono transition-shadow motion-reduce:transition-none duration-300"
+      className: `${SIDEBAR_PANEL_UI.textarea} h-24 resize-y pl-8 text-xs font-mono focus-visible:border-blue-500 focus-visible:ring-blue-500/20`
     }
   ))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "math_graph" }, /* @__PURE__ */ React.createElement(
     "input",
@@ -1436,7 +1447,7 @@ function MathPanel(props) {
       type: "checkbox",
       checked: isMathGraphEnabled,
       onChange: (e) => setIsMathGraphEnabled(e.target.checked),
-      className: "w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+      className: SIDEBAR_PANEL_UI.checkbox
     }
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathGraph", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, className: "text-blue-500" }), " ", t("math.graph_label"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "math_manipulatives" }, /* @__PURE__ */ React.createElement(
     "input",
@@ -1446,7 +1457,7 @@ function MathPanel(props) {
       type: "checkbox",
       checked: autoAttachManipulatives !== false,
       onChange: (e) => setAutoAttachManipulatives && setAutoAttachManipulatives(e.target.checked),
-      className: "w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+      className: SIDEBAR_PANEL_UI.checkbox
     }
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathManipulatives", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, "\u{1F9E9} Attach manipulatives")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "math_context" }, /* @__PURE__ */ React.createElement(
     "input",
@@ -1458,7 +1469,7 @@ function MathPanel(props) {
       onChange: (e) => setUseMathSourceContext(e.target.checked),
       disabled: !hasSourceOrAnalysis,
       title: !hasSourceOrAnalysis ? "No source text or analysis available to use as context" : "Use source text to contextualize math problems",
-      className: `w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 ${!hasSourceOrAnalysis ? "opacity-40 cursor-not-allowed" : ""}`
+      className: SIDEBAR_PANEL_UI.checkbox
     }
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathContext", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(FileText, { size: 12, className: "text-blue-500" }), " ", t("math.customize_label")))), /* @__PURE__ */ React.createElement(
     "button",
@@ -1469,7 +1480,7 @@ function MathPanel(props) {
       onClick: handleGenerateMath,
       disabled: !mathInput.trim() || isProcessing || mathMode === "Fluency Probe",
       style: mathMode === "Fluency Probe" ? { display: "none" } : {},
-      className: "w-full p-3 bg-gradient-to-r w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed group disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold flex items-center gap-2" }, t("math.solve"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-indigo-600" })
@@ -1968,7 +1979,7 @@ function GlossaryPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("glossary")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100", "data-help-key": "tour-glossary-settings" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "glossary_tier2_count" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center" }, t("glossary.tier2"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: t("glossary.tier2_tooltip") })), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: `${SIDEBAR_PANEL_UI.settingsSurface} !gap-0`, "data-help-key": "tour-glossary-settings" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "glossary_tier2_count" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center` }, t("glossary.tier2"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: t("glossary.tier2_tooltip") })), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_glossary_tier2_count"),
@@ -1977,9 +1988,9 @@ function GlossaryPanel(props) {
       max: "20",
       value: glossaryTier2Count,
       onChange: (e) => setGlossaryTier2Count(parseInt(e.target.value) || 0),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 p-1"
+      className: `${SIDEBAR_PANEL_UI.control} focus-visible:border-sky-500 focus-visible:ring-sky-500/20`
     }
-  )), /* @__PURE__ */ React.createElement("div", { "data-help-key": "glossary_tier3_count" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center" }, t("glossary.tier3"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: t("glossary.tier3_tooltip") })), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { "data-help-key": "glossary_tier3_count" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center` }, t("glossary.tier3"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: t("glossary.tier3_tooltip") })), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_glossary_tier3_count"),
@@ -1988,15 +1999,15 @@ function GlossaryPanel(props) {
       max: "20",
       value: glossaryTier3Count,
       onChange: (e) => setGlossaryTier3Count(parseInt(e.target.value) || 0),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 p-1"
+      className: `${SIDEBAR_PANEL_UI.control} focus-visible:border-sky-500 focus-visible:ring-sky-500/20`
     }
-  )), /* @__PURE__ */ React.createElement("div", { className: "col-span-2", "data-help-key": "glossary_definition_level" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("glossary.def_level")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "col-span-2", "data-help-key": "glossary_definition_level" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("glossary.def_level")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       value: glossaryDefinitionLevel,
       onChange: (e) => setGlossaryDefinitionLevel(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 py-1.5 pl-2 pr-8"
+      className: `${SIDEBAR_PANEL_UI.control} py-1.5 pl-2 pr-8 focus-visible:border-sky-500 focus-visible:ring-sky-500/20`
     },
     /* @__PURE__ */ React.createElement("option", { value: "Same as Source Text" }, t("glossary.def_options.source")),
     /* @__PURE__ */ React.createElement("option", { value: "Same as Global Level" }, t("glossary.def_options.global"), " (", gradeLevel, ")"),
@@ -2018,11 +2029,12 @@ function GlossaryPanel(props) {
       type: "checkbox",
       checked: includeEtymology,
       onChange: (e) => setIncludeEtymology(e.target.checked),
-      className: "rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+      className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), "\u{1F4DC} ", t("glossary.settings.include_etymology") || "Include word roots / etymology"), includeEtymology && /* @__PURE__ */ React.createElement("p", { className: "mt-1 ml-6 text-[11px] text-slate-600 leading-snug" }, t("glossary.settings.etymology_always_all") || "Applied to every term \u2014 shows the actual root morphemes, word history, and related English words that share the root.")), /* @__PURE__ */ React.createElement(
+  ), "\u{1F4DC} ", t("glossary.settings.include_etymology") || "Include word roots / etymology"), includeEtymology && /* @__PURE__ */ React.createElement("p", { className: `${SIDEBAR_PANEL_UI.help} ml-6` }, t("glossary.settings.etymology_always_all") || "Applied to every term \u2014 shows the actual root morphemes, word history, and related English words that share the root.")), /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
+      premium: true,
       helpKey: "glossary_custom_instructions",
       t,
       wrapperClass: "mb-3",
@@ -2038,7 +2050,7 @@ function GlossaryPanel(props) {
       type: "checkbox",
       checked: autoRemoveWords,
       onChange: (e) => setAutoRemoveWords(e.target.checked),
-      className: "rounded border-slate-300 text-indigo-600 focus:ring-sky-500 h-4 w-4"
+      className: SIDEBAR_PANEL_UI.checkbox
     }
   ), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Ban, { size: 12, className: "text-red-600" }), " ", t("glossary.auto_remove"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 font-normal" }, t("glossary.slower")))))), /* @__PURE__ */ React.createElement(
     "button",
@@ -2048,7 +2060,7 @@ function GlossaryPanel(props) {
       onClick: () => handleGenerate("glossary"),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-sky-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("glossary.generate"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-indigo-600" })
@@ -2349,7 +2361,7 @@ function TimelinePanel(props) {
     timelineTopic
   } = props;
   if (!expandedTools || !expandedTools.includes("timeline")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-teal-50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("timeline.topic"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("timeline.topic"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_timeline_topic"),
@@ -2358,9 +2370,9 @@ function TimelinePanel(props) {
       value: timelineTopic,
       onChange: (e) => setTimelineTopic(e.target.value),
       placeholder: t("timeline.topic_placeholder"),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 p-1.5"
+      className: `${SIDEBAR_PANEL_UI.control} focus-visible:border-teal-500 focus-visible:ring-teal-500/20`
     }
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("timeline.count"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("timeline.count"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.text_field"),
@@ -2383,15 +2395,15 @@ function TimelinePanel(props) {
         setTimelineItemCount(String(Math.min(20, Math.max(3, n))));
       },
       placeholder: t("timeline.placeholder_count"),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5"
+      className: SIDEBAR_PANEL_UI.control
     }
-  )), /* @__PURE__ */ React.createElement("div", { "data-help-key": "timeline_mode_info" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("timeline.settings.mode_label") || "Ordering Mode"), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { "data-help-key": "timeline_mode_info" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("timeline.settings.mode_label") || "Ordering Mode"), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("timeline.settings.mode_label") || "Ordering mode",
       value: timelineMode,
       onChange: (e) => setTimelineMode(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5"
+      className: SIDEBAR_PANEL_UI.control
     },
     /* @__PURE__ */ React.createElement("option", { value: "auto" }, t("timeline.settings.mode_auto") || "\u2728 Auto-detect (AI picks best)"),
     /* @__PURE__ */ React.createElement("option", { value: "chronological" }, t("timeline.modes.chronological") || "Chronological \u2014 dates, events"),
@@ -2402,15 +2414,15 @@ function TimelinePanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "cause-effect" }, t("timeline.modes.cause-effect") || "Cause \u2192 Effect chain"),
     /* @__PURE__ */ React.createElement("option", { value: "intensity" }, t("timeline.modes.intensity") || "Intensity / Degree \u2014 least to most"),
     /* @__PURE__ */ React.createElement("option", { value: "narrative" }, t("timeline.modes.narrative") || "Narrative arc \u2014 exposition to resolution")
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-1" }, timelineMode === "auto" ? t("timeline.settings.mode_hint_auto") || "AI examines the text and topic hint to pick the best ordering axis." : TIMELINE_MODE_DEFINITIONS[timelineMode]?.description || "")), /* @__PURE__ */ React.createElement("div", { "data-help-key": "timeline_visuals_info" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, timelineMode === "auto" ? t("timeline.settings.mode_hint_auto") || "AI examines the text and topic hint to pick the best ordering axis." : TIMELINE_MODE_DEFINITIONS[timelineMode]?.description || "")), /* @__PURE__ */ React.createElement("div", { "data-help-key": "timeline_visuals_info" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "checkbox",
       checked: includeTimelineVisuals,
       onChange: (e) => setIncludeTimelineVisuals(e.target.checked),
-      className: "rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+      className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), "\u{1F3A8} ", t("timeline.settings.include_visuals") || "Include sequence visuals"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-1 ml-6" }, t("timeline.settings.visuals_hint") || "Generates an AI icon for each item. Adds ~30-50 seconds."))), /* @__PURE__ */ React.createElement(
+  ), "\u{1F3A8} ", t("timeline.settings.include_visuals") || "Include sequence visuals"), /* @__PURE__ */ React.createElement("p", { className: `${SIDEBAR_PANEL_UI.help} ml-6` }, t("timeline.settings.visuals_hint") || "Generates an AI icon for each item. Adds ~30-50 seconds."))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2418,7 +2430,7 @@ function TimelinePanel(props) {
       onClick: () => handleGenerate("timeline"),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed",
+      className: SIDEBAR_PANEL_UI.primaryAction,
       "data-help-key": "timeline_generate_button"
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-slate-700 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" }), " ", t("timeline.generate")),
@@ -2448,7 +2460,7 @@ function ConceptSortPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("concept-sort")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-amber-50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("concept_sort.categories"), " ", t("concept_sort.max_categories"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("concept_sort.categories"), " ", t("concept_sort.max_categories"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_concept_input"),
@@ -2458,7 +2470,7 @@ function ConceptSortPanel(props) {
       onChange: (e) => setConceptInput(e.target.value),
       onKeyDown: handleConceptKeyDown,
       placeholder: t("concept_sort.placeholder_categories"),
-      className: "flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200"
+      className: `${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow`
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
@@ -2467,10 +2479,10 @@ function ConceptSortPanel(props) {
       "aria-label": t("common.add"),
       onClick: addConcept,
       disabled: !conceptInput.trim() || selectedConcepts.length >= 5,
-      className: "bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
+      className: SIDEBAR_PANEL_UI.iconButton
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 16 })
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem]" }, selectedConcepts.map((c) => /* @__PURE__ */ React.createElement("span", { key: c, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 border border-indigo-200" }, c, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeConcept(c), className: "hover:text-indigo-900", "aria-label": t("common.remove") }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), selectedConcepts.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("concept_sort.auto_detect")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("concept_sort.items"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 font-normal" }, "(optional)")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem]" }, selectedConcepts.map((c) => /* @__PURE__ */ React.createElement("span", { key: c, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 border border-indigo-200" }, c, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeConcept(c), className: "hover:text-indigo-900", "aria-label": t("common.remove") }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), selectedConcepts.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("concept_sort.auto_detect")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("concept_sort.items"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 font-normal" }, "(optional)")), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.text_field"),
@@ -2485,16 +2497,16 @@ function ConceptSortPanel(props) {
         setConceptItemCount(v === "" ? "" : parseInt(v, 10) || "");
       },
       title: t("concept_sort.item_count_tooltip") || "Leave blank to let AI pick the right number based on your source text. Or type 4\u201330 to force a specific count.",
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
+      className: SIDEBAR_PANEL_UI.control
     }
-  )), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("concept_sort.card_visuals_label") || "Card visuals"), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("concept_sort.card_visuals_label") || "Card visuals"), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("concept_sort.card_visuals_label") || "Card visuals",
       "data-help-key": "concept_sort_image_mode",
       value: conceptImageMode,
       onChange: (e) => setConceptImageMode(e.target.value),
-      className: "w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
+      className: `${SIDEBAR_PANEL_UI.control} text-xs`
     },
     /* @__PURE__ */ React.createElement("option", { value: "auto" }, t("concept_sort.card_visuals_auto") || "Auto (only on short items)"),
     /* @__PURE__ */ React.createElement("option", { value: "always" }, t("concept_sort.card_visuals_always") || "Always generate images"),
@@ -2502,6 +2514,7 @@ function ConceptSortPanel(props) {
   )), /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
+      premium: true,
       helpKey: "concept_sort_custom_instructions",
       t,
       ariaFallback: "Custom instructions for concept sort",
@@ -2518,7 +2531,7 @@ function ConceptSortPanel(props) {
       onClick: () => handleGenerate("concept-sort"),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("concept_sort.generate"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-indigo-600" })
@@ -2541,9 +2554,10 @@ function BrainstormPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("brainstorm")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-yellow-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
+      premium: true,
       helpKey: "brainstorm_custom_instructions",
       t,
       labelKey: "brainstorm.instructions",
@@ -2561,7 +2575,7 @@ function BrainstormPanel(props) {
       onClick: () => handleGenerate("brainstorm"),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-700 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2 font-semibold" }, t("brainstorm.generate"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-700 group-hover:text-violet-600" })
@@ -2628,7 +2642,7 @@ function ImagePanel(props) {
     visualStyle
   } = props;
   if (!expandedTools || !expandedTools.includes("image")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3", "data-help-key": "tour-visual-settings" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle"), "data-help-key": "visuals_worksheet_mode", type: "checkbox", checked: fillInTheBlank, onChange: (e) => setFillInTheBlank(e.target.checked), className: "rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4 w-4" }), /* @__PURE__ */ React.createElement(PenTool, { size: 12, className: "text-purple-600" }), " ", t("visuals.worksheet_mode")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle"), "data-help-key": "visuals_creative_mode", type: "checkbox", checked: creativeMode, onChange: (e) => setCreativeMode(e.target.checked), className: "rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 h-4 w-4" }), /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-pink-600" }), " ", t("visuals.enhanced")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle_no_text"), "data-help-key": "visuals_no_text", type: "checkbox", checked: noText, onChange: (e) => setNoText(e.target.checked), className: "rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 h-4 w-4" }), /* @__PURE__ */ React.createElement(Ban, { size: 12, className: "text-red-500" }), " ", t("visuals.text_reduced")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface, "data-help-key": "tour-visual-settings" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle"), "data-help-key": "visuals_worksheet_mode", type: "checkbox", checked: fillInTheBlank, onChange: (e) => setFillInTheBlank(e.target.checked), className: SIDEBAR_PANEL_UI.checkbox }), /* @__PURE__ */ React.createElement(PenTool, { size: 12, className: "text-purple-600" }), " ", t("visuals.worksheet_mode")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle"), "data-help-key": "visuals_creative_mode", type: "checkbox", checked: creativeMode, onChange: (e) => setCreativeMode(e.target.checked), className: SIDEBAR_PANEL_UI.checkbox }), /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-pink-600" }), " ", t("visuals.enhanced")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle_no_text"), "data-help-key": "visuals_no_text", type: "checkbox", checked: noText, onChange: (e) => setNoText(e.target.checked), className: SIDEBAR_PANEL_UI.checkbox }), /* @__PURE__ */ React.createElement(Ban, { size: 12, className: "text-red-500" }), " ", t("visuals.text_reduced")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_use_low_quality_visuals"),
@@ -2636,16 +2650,16 @@ function ImagePanel(props) {
       "data-help-key": "adventure_setup_chk_lowqual",
       checked: useLowQualityVisuals,
       onChange: (e) => setUseLowQualityVisuals(e.target.checked),
-      className: "rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 h-4 w-4"
+      className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), /* @__PURE__ */ React.createElement(MonitorPlay, { size: 12, className: "text-slate-600" }), " ", t("visuals.low_quality_label"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, t("visuals.low_quality_hint")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("visuals.art_style")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(MonitorPlay, { size: 12, className: "text-slate-600" }), " ", t("visuals.low_quality_label"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, t("visuals.low_quality_hint")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("visuals.art_style")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       "data-help-key": "visuals_art_style",
       value: visualStyle,
       onChange: (e) => setVisualStyle(e.target.value),
-      className: "w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-cyan-300 focus:ring focus:ring-cyan-200 p-1"
+      className: `${SIDEBAR_PANEL_UI.control} text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`
     },
     /* @__PURE__ */ React.createElement("option", { value: "Default" }, t("visuals.styles.default")),
     /* @__PURE__ */ React.createElement("option", { value: "Isometric Diagram" }, t("visuals.styles.isometric")),
@@ -2665,7 +2679,7 @@ function ImagePanel(props) {
       placeholder: t("visuals.styles.custom_placeholder") || "e.g. Vintage botanical illustration, Crayon drawing, Stained glass\u2026",
       maxLength: 120,
       "aria-label": t("visuals.styles.custom_aria") || "Custom art style description",
-      className: "w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-cyan-300 focus:ring focus:ring-cyan-200 p-1 mt-1"
+      className: `${SIDEBAR_PANEL_UI.control} mt-2 text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`
     }
   )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, "\u{1F3AC} Layout Mode"), /* @__PURE__ */ React.createElement(
     "select",
@@ -2674,7 +2688,7 @@ function ImagePanel(props) {
       "data-help-key": "visuals_layout_mode",
       value: visualLayoutMode,
       onChange: (e) => setVisualLayoutMode(e.target.value),
-      className: "w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-cyan-300 focus:ring focus:ring-cyan-200 p-1"
+      className: `${SIDEBAR_PANEL_UI.control} text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`
     },
     /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F916} AI Art Director (Auto)"),
     /* @__PURE__ */ React.createElement("option", { value: "single" }, "\u{1F5BC}\uFE0F Single Image"),
@@ -2685,6 +2699,7 @@ function ImagePanel(props) {
   )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
+      premium: true,
       helpKey: "visuals_custom_instructions",
       t,
       ariaFallback: "Custom instructions for visuals",
@@ -2700,7 +2715,7 @@ function ImagePanel(props) {
       onClick: () => handleGenerate("image"),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("visuals.generate"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-cyan-600" })
@@ -2789,14 +2804,14 @@ function OutlinePanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("outline")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-orange-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("outline.structure_label")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("outline.structure_label")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       "data-help-key": "outline_structure",
       value: outlineType,
       onChange: (e) => setOutlineType(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 p-1"
+      className: `${SIDEBAR_PANEL_UI.control} focus-visible:border-orange-500 focus-visible:ring-orange-500/20`
     },
     /* @__PURE__ */ React.createElement("option", { value: "Venn Diagram" }, t("outline.venn")),
     /* @__PURE__ */ React.createElement("option", { value: "T-Chart" }, t("outline.t_chart")),
@@ -2816,6 +2831,7 @@ function OutlinePanel(props) {
   )), /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
+      premium: true,
       helpKey: "outline_custom_instructions",
       t,
       labelKey: "outline.instructions_label",
@@ -2834,7 +2850,7 @@ function OutlinePanel(props) {
       onClick: () => handleGenerate("outline"),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("outline.generate"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-cyan-600" })
@@ -2853,14 +2869,14 @@ function NoteTakingPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("note-taking")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-violet-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("note_taking.template_label") || "Template type"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("note_taking.template_label") || "Template type"), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection") || "Selection",
       "data-help-key": "note_taking_template",
       value: noteTakingTemplateType || "cornell-notes",
       onChange: (e) => setNoteTakingTemplateType(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-violet-300 focus:ring focus:ring-violet-200 p-1"
+      className: `${SIDEBAR_PANEL_UI.control} focus-visible:border-violet-500 focus-visible:ring-violet-500/20`
     },
     /* @__PURE__ */ React.createElement("option", { value: "cornell-notes" }, t("note_taking.cornell") || "Cornell Notes (2-column + summary)"),
     /* @__PURE__ */ React.createElement("option", { value: "lab-report" }, t("note_taking.lab_report") || "Lab Report (Q / Hypothesis / Method / Data / CER / Conclusion)"),
@@ -2871,6 +2887,7 @@ function NoteTakingPanel(props) {
   )), /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
+      premium: true,
       helpKey: "note_taking_custom_instructions",
       t,
       ariaFallback: "Custom instructions for notes",
@@ -2878,7 +2895,7 @@ function NoteTakingPanel(props) {
       onChange: setNoteTakingCustomInstructions,
       placeholderKey: "common.custom_instructions_placeholder"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("note_taking.help") || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons.")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, t("note_taking.help") || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2887,7 +2904,7 @@ function NoteTakingPanel(props) {
       onClick: () => handleGenerate("note-taking"),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("note_taking.generate") || "Generate template", " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-violet-600" })
@@ -2906,14 +2923,14 @@ function AnchorChartPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("anchor-chart")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-amber-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("anchor_chart.type_label") || "Chart type"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("anchor_chart.type_label") || "Chart type"), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection") || "Selection",
       "data-help-key": "anchor_chart_type",
       value: anchorChartType || "auto",
       onChange: (e) => setAnchorChartType(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-amber-400 focus:ring focus:ring-amber-200 p-1"
+      className: `${SIDEBAR_PANEL_UI.control} focus-visible:border-amber-500 focus-visible:ring-amber-500/20`
     },
     /* @__PURE__ */ React.createElement("option", { value: "auto" }, t("anchor_chart.auto") || "Auto-pick best fit"),
     /* @__PURE__ */ React.createElement("option", { value: "reference" }, t("anchor_chart.reference") || "Reference (features / norms / conventions)"),
@@ -2930,6 +2947,7 @@ function AnchorChartPanel(props) {
   )), /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
+      premium: true,
       helpKey: "anchor_chart_custom_instructions",
       t,
       ariaFallback: "Custom instructions for anchor chart",
@@ -2937,7 +2955,7 @@ function AnchorChartPanel(props) {
       onChange: setAnchorChartCustomInstructions,
       placeholderKey: "common.custom_instructions_placeholder"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("anchor_chart.help") || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it.")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, t("anchor_chart.help") || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2946,7 +2964,7 @@ function AnchorChartPanel(props) {
       onClick: () => handleGenerate("anchor-chart"),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-amber-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("anchor_chart.generate") || "Generate anchor chart", " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-amber-600" })
@@ -2965,14 +2983,14 @@ function FaqPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("faq")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-cyan-50/50 flex flex-col gap-3", "data-help-key": "tour-faq-settings" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("faq.count")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface, "data-help-key": "tour-faq-settings" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("faq.count")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       "data-help-key": "faq_count",
       value: faqCount,
       onChange: (e) => setFaqCount(parseInt(e.target.value)),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-cyan-300 focus:ring focus:ring-cyan-200 p-1"
+      className: `${SIDEBAR_PANEL_UI.control} focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`
     },
     /* @__PURE__ */ React.createElement("option", { value: 3 }, t("faq.options.q3")),
     /* @__PURE__ */ React.createElement("option", { value: 5 }, t("faq.options.q5")),
@@ -2981,6 +2999,7 @@ function FaqPanel(props) {
   )), /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
+      premium: true,
       helpKey: "faq_custom_instructions",
       t,
       ariaFallback: "Custom instructions for FAQ",
@@ -2996,7 +3015,7 @@ function FaqPanel(props) {
       onClick: () => handleGenerate("faq"),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("faq.generate"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-indigo-600" })
@@ -3015,14 +3034,14 @@ function SentenceFramesPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("sentence-frames")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-rose-50/50 flex flex-col gap-3", "data-help-key": "tour-scaffolds-settings" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("scaffolds.type")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface, "data-help-key": "tour-scaffolds-settings" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("scaffolds.type")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       "data-help-key": "scaffolds_type",
       value: frameType,
       onChange: (e) => setFrameType(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-rose-300 focus:ring focus:ring-rose-200 p-1"
+      className: `${SIDEBAR_PANEL_UI.control} focus-visible:border-rose-500 focus-visible:ring-rose-500/20`
     },
     /* @__PURE__ */ React.createElement("option", { value: "Sentence Starters" }, t("scaffolds.starters")),
     /* @__PURE__ */ React.createElement("option", { value: "Paragraph Frame" }, t("scaffolds.frame")),
@@ -3030,6 +3049,7 @@ function SentenceFramesPanel(props) {
   )), /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
+      premium: true,
       helpKey: "scaffolds_custom_instructions",
       t,
       optional: false,
@@ -3046,7 +3066,7 @@ function SentenceFramesPanel(props) {
       onClick: () => handleGenerate("sentence-frames"),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("scaffolds.generate"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-cyan-600" })
@@ -3064,9 +3084,10 @@ function LessonPlanPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("lesson-plan")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-indigo-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
+      premium: true,
       helpKey: "lesson_plan_custom_additions",
       t,
       labelKey: "lesson_plan.custom_additions",
@@ -3083,7 +3104,7 @@ function LessonPlanPanel(props) {
       onClick: handleGenerateLessonPlan,
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, isProcessing && activeView === "lesson-plan" ? t("lesson_plan.drafting") : t("lesson_plan.generate"), isProcessing && activeView === "lesson-plan" ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-cyan-600" })
@@ -3100,16 +3121,16 @@ function AnalysisPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("analysis")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-violet-50/50", "data-help-key": "tour-analysis-settings" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none", "data-help-key": "analysis_check_accuracy" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: `${SIDEBAR_PANEL_UI.settingsSurface} !gap-1.5`, "data-help-key": "tour-analysis-settings" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none", "data-help-key": "analysis_check_accuracy" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_check_accuracy_with_search"),
       type: "checkbox",
       checked: checkAccuracyWithSearch,
       onChange: (e) => setCheckAccuracyWithSearch(e.target.checked),
-      className: "rounded border-slate-300 text-violet-600 focus:ring-violet-500 h-4 w-4"
+      className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Globe, { size: 12, className: "text-blue-500" }), " ", t("analysis.check_accuracy"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1 ml-6 mb-2" }, t("analysis.grounding_desc"))), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Globe, { size: 12, className: "text-blue-500" }), " ", t("analysis.check_accuracy"))), /* @__PURE__ */ React.createElement("p", { className: `${SIDEBAR_PANEL_UI.help} ml-6` }, t("analysis.grounding_desc"))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -3118,7 +3139,7 @@ function AnalysisPanel(props) {
       onClick: () => handleGenerate("analysis"),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
-      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("analysis.run"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-violet-600" })

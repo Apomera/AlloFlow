@@ -1172,10 +1172,12 @@ const isRtl = (langCode) => {
 
 const useAudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
+  const [error, setError] = useState('');
   const mediaRecorderRef = useRef(null);
   const sharedResultPromiseRef = useRef(null); // Phase 3v.MR — shared-path result promise
   const chunksRef = useRef([]);
   const startRecording = async () => {
+    setError('');
     // Phase 3v.MR — shared module path with inline fallback. The shared
     // controller exposes result as a Promise that resolves on stop().
     // We store the promise on a ref so stopRecording can await it.
@@ -1188,17 +1190,20 @@ const useAudioRecorder = () => {
         preferredMimeType: 'audio/webm;codecs=opus',
         onError: (err) => {
           console.warn('Microphone access denied:', err);
+          setError('Microphone access is blocked. Allow microphone access in your browser or device settings, then retry.');
           setIsRecording(false);
         }
       });
       if (!ctrl.supported) {
         console.warn('MediaRecorder not supported');
-        return;
+        const message = 'Audio recording is not supported in this browser. You can still use AI narration or continue without audio.';
+        setError(message);
+        return { ok: false, error: message };
       }
       mediaRecorderRef.current = ctrl;
       sharedResultPromiseRef.current = ctrl.result;
       setIsRecording(true);
-      return;
+      return { ok: true };
     }
     // Inline fallback (pre-3v.MR behavior, identical)
     try {
@@ -1211,8 +1216,15 @@ const useAudioRecorder = () => {
       };
       mediaRecorderRef.current.start();
       setIsRecording(true);
+      return { ok: true };
     } catch (err) {
       console.warn('Microphone access denied:', err);
+      const message = err?.name === 'NotAllowedError'
+        ? 'Microphone access is blocked. Allow microphone access in your browser or device settings, then retry.'
+        : 'The microphone could not start. Check that another app is not using it, then retry.';
+      setError(message);
+      setIsRecording(false);
+      return { ok: false, error: message };
     }
   };
   const stopRecording = () => {
@@ -1264,7 +1276,7 @@ const useAudioRecorder = () => {
       mediaRecorderRef.current.stop();
     });
   };
-  return { isRecording, startRecording, stopRecording };
+  return { isRecording, error, clearError: () => setError(''), startRecording, stopRecording };
 };
 
 // ── Speech-to-text dictation hook ──
@@ -1824,6 +1836,24 @@ const getStoryForgeRestoredPhase = (value = {}) => {
   return phase;
 };
 
+const getStoryForgeRecoverySummary = (value = {}, sourceTopic = '') => {
+  const draft = value && typeof value === 'object' ? value : {};
+  const modes = normalizeStoryForgeModeSelection(draft);
+  const artifactLabel = modes.artifactType === 'comic' ? 'Comic' : 'Story';
+  const resumePhase = getStoryForgeRestoredPhase({ ...draft, sourceTopic: sourceTopic || draft.sourceTopic || '' });
+  const savedAt = typeof draft.savedAt === 'string' && Number.isFinite(Date.parse(draft.savedAt))
+    ? new Date(draft.savedAt).toISOString()
+    : '';
+  return {
+    title: String(draft.storyTitle || '').trim().slice(0, 120) || `Untitled ${artifactLabel.toLowerCase()}`,
+    artifactType: modes.artifactType,
+    artifactLabel,
+    savedAt,
+    resumePhase,
+    resumePhaseLabel: PHASE_LABELS[PHASES.indexOf(resumePhase)] || 'Plan',
+  };
+};
+
 
 const sanitizeComicContinuityAudit = (value) => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -1934,6 +1964,179 @@ const sanitizeStoryForgeProject = (value = {}) => {
   };
 };
 
+// ── Class-share privacy allowlist (pure) ──
+// This boundary deliberately rebuilds the public payload field-by-field. Never spread a
+// project snapshot here: snapshots contain assessment, review, reading-level, continuity,
+// draft-history, audio, and raw comic-production data that do not belong in a class gallery.
+const STORYFORGE_CLASS_SHARE_SCHEMA = 'storyforge.class-share';
+const STORYFORGE_CLASS_SHARE_VERSION = 1;
+const STORYFORGE_CLASS_SHARE_MAX_SCENES = 8;
+const STORYFORGE_CLASS_SHARE_MAX_SCENE_TEXT = 5000;
+const STORYFORGE_CLASS_SHARE_MAX_IMAGE_URL = 15000000;
+const isStoryForgeClassShareRecord = (value) => Boolean(value && typeof value === 'object' && !Array.isArray(value));
+const cleanStoryForgeClassShareLabel = (value, maxLength) => typeof value === 'string'
+  ? value.replace(/\s+/g, ' ').trim().slice(0, maxLength)
+  : '';
+const cleanStoryForgeClassShareText = (value, maxLength) => typeof value === 'string'
+  ? value.replace(/\r\n?/g, '\n').trim().slice(0, maxLength)
+  : '';
+const getStoryForgeClassShareImageUrl = (value) => {
+  const raw = typeof value === 'string'
+    ? value
+    : isStoryForgeClassShareRecord(value) && typeof value.imageUrl === 'string'
+      ? value.imageUrl
+      : '';
+  return /^(data:image\/|https?:\/\/)/i.test(raw) && raw.length <= STORYFORGE_CLASS_SHARE_MAX_IMAGE_URL ? raw : '';
+};
+const getStoryForgeClassShareUtf8Bytes = (value) => {
+  let bytes = 0;
+  for (const symbol of String(value || '')) {
+    const codePoint = symbol.codePointAt(0);
+    bytes += codePoint <= 0x7f ? 1 : codePoint <= 0x7ff ? 2 : codePoint <= 0xffff ? 3 : 4;
+  }
+  return bytes;
+};
+const stableStoryForgeClassShareJson = (value) => {
+  if (Array.isArray(value)) return '[' + value.map(stableStoryForgeClassShareJson).join(',') + ']';
+  if (isStoryForgeClassShareRecord(value)) {
+    return '{' + Object.keys(value).sort().map(key => JSON.stringify(key) + ':' + stableStoryForgeClassShareJson(value[key])).join(',') + '}';
+  }
+  const encoded = JSON.stringify(value);
+  return encoded === undefined ? 'null' : encoded;
+};
+const getStoryForgeClassShareFingerprint = (value) => {
+  const input = String(value || '');
+  let first = 0x811c9dc5;
+  let second = 0x9e3779b9;
+  for (const symbol of input) {
+    const codePoint = symbol.codePointAt(0);
+    first = Math.imul(first ^ codePoint, 0x01000193);
+    second = Math.imul(second ^ codePoint, 0x85ebca6b);
+    second ^= second >>> 13;
+  }
+  const hex = number => (number >>> 0).toString(16).padStart(8, '0');
+  return hex(first) + hex(second);
+};
+const countStoryForgeClassShareWords = (value) => {
+  const text = String(value || '').trim();
+  return text ? text.split(/\s+/u).length : 0;
+};
+const buildStoryForgeClassSharePayload = (project = {}, options = {}) => {
+  const source = isStoryForgeClassShareRecord(project) ? project : {};
+  const settings = isStoryForgeClassShareRecord(options) ? options : {};
+  const artifactType = source.artifactType === 'comic' || source.layoutMode === 'comic' ? 'comic' : 'story';
+  const fallbackTitle = artifactType === 'comic' ? 'My Comic' : 'My Story';
+  const title = cleanStoryForgeClassShareLabel(settings.title, 120)
+    || cleanStoryForgeClassShareLabel(source.storyTitle || source.title, 120)
+    || fallbackTitle;
+  // Only an explicitly supplied pen name or an already-designated project penName may cross
+  // this boundary. Generic author/name fields are intentionally ignored.
+  const penName = cleanStoryForgeClassShareLabel(settings.penName, 80)
+    || cleanStoryForgeClassShareLabel(source.penName, 80)
+    || 'Creative Writer';
+  const genre = cleanStoryForgeClassShareLabel(settings.genre || settings.genreLabel, 80)
+    || cleanStoryForgeClassShareLabel(source.genreLabel || source.genre, 80)
+    || 'Creative Writing';
+  const includeCoverArt = settings.includeCoverArt === true;
+  const includeSceneText = settings.includeSceneText === true;
+  const includeIllustrations = settings.includeIllustrations === true;
+  const requestedTextLimit = Number(settings.maxSceneTextLength);
+  const maxSceneTextLength = Number.isFinite(requestedTextLimit)
+    ? Math.max(1, Math.min(STORYFORGE_CLASS_SHARE_MAX_SCENE_TEXT, Math.round(requestedTextLimit)))
+    : 500;
+  const rawScenes = (Array.isArray(source.paragraphs)
+    ? source.paragraphs
+    : Array.isArray(source.scenes)
+      ? source.scenes
+      : Array.isArray(source.fullStory)
+        ? source.fullStory
+        : []).slice(0, STORYFORGE_CLASS_SHARE_MAX_SCENES);
+  const illustrationMap = isStoryForgeClassShareRecord(source.illustrations) ? source.illustrations : {};
+  let wordCount = 0;
+  let sceneIllustrationCount = 0;
+  const scenes = rawScenes.map((rawScene, index) => {
+    const scene = isStoryForgeClassShareRecord(rawScene) ? rawScene : {};
+    const sourceText = cleanStoryForgeClassShareText(scene.text, 50000);
+    wordCount += countStoryForgeClassShareWords(sourceText);
+    const sourceId = typeof scene.id === 'string' ? scene.id : '';
+    const mappedIllustration = sourceId && isStoryForgeClassShareRecord(illustrationMap[sourceId])
+      ? illustrationMap[sourceId].imageUrl
+      : isStoryForgeClassShareRecord(illustrationMap[String(index)])
+        ? illustrationMap[String(index)].imageUrl
+        : isStoryForgeClassShareRecord(illustrationMap[`p-${index}`])
+          ? illustrationMap[`p-${index}`].imageUrl
+          : '';
+    const illustration = getStoryForgeClassShareImageUrl(scene.illustration)
+      || getStoryForgeClassShareImageUrl(scene.imageUrl)
+      || getStoryForgeClassShareImageUrl(mappedIllustration);
+    const sharedScene = {};
+    if (includeSceneText) sharedScene.text = sourceText.slice(0, maxSceneTextLength);
+    if (includeIllustrations && illustration) {
+      sharedScene.illustration = illustration;
+      sceneIllustrationCount += 1;
+    }
+    return sharedScene;
+  });
+  const coverArt = includeCoverArt ? getStoryForgeClassShareImageUrl(source.coverArt || source.cover) : '';
+  const mediaCount = (coverArt ? 1 : 0) + sceneIllustrationCount;
+  const payload = {
+    schema: STORYFORGE_CLASS_SHARE_SCHEMA,
+    schemaVersion: STORYFORGE_CLASS_SHARE_VERSION,
+    type: 'storyforge',
+    visibility: 'class',
+    title,
+    penName,
+    artifactType,
+    genre,
+    counts: {
+      scenes: rawScenes.length,
+      words: wordCount,
+      media: mediaCount,
+    },
+  };
+  if (coverArt) payload.coverArt = coverArt;
+  if (includeSceneText || includeIllustrations) payload.scenes = scenes;
+  const idempotencyScope = cleanStoryForgeClassShareLabel(settings.idempotencyScope, 240);
+  payload.idempotencyKey = `storyforge-class-v${STORYFORGE_CLASS_SHARE_VERSION}-${getStoryForgeClassShareFingerprint(idempotencyScope + '\n' + stableStoryForgeClassShareJson(payload))}`;
+  payload.approximateBytes = 0;
+  // The byte total includes its own field. This converges once the digit width stabilizes.
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const nextBytes = getStoryForgeClassShareUtf8Bytes(JSON.stringify(payload));
+    if (nextBytes === payload.approximateBytes) break;
+    payload.approximateBytes = nextBytes;
+  }
+  return payload;
+};
+const getStoryForgeClassSharePreview = (payload = {}) => {
+  const source = isStoryForgeClassShareRecord(payload) ? payload : {};
+  const scenes = Array.isArray(source.scenes) ? source.scenes.slice(0, STORYFORGE_CLASS_SHARE_MAX_SCENES) : [];
+  const counts = isStoryForgeClassShareRecord(source.counts) ? source.counts : {};
+  const coverIncluded = Boolean(getStoryForgeClassShareImageUrl(source.coverArt));
+  const scenesWithText = scenes.filter(scene => isStoryForgeClassShareRecord(scene) && typeof scene.text === 'string' && scene.text.trim()).length;
+  const scenesWithIllustration = scenes.filter(scene => isStoryForgeClassShareRecord(scene) && Boolean(getStoryForgeClassShareImageUrl(scene.illustration))).length;
+  const cleanCount = (value, max) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? Math.max(0, Math.min(max, Math.round(number))) : 0;
+  };
+  const approximateBytes = getStoryForgeClassShareUtf8Bytes(JSON.stringify(source));
+  return {
+    title: cleanStoryForgeClassShareLabel(source.title, 120) || 'Untitled artifact',
+    penName: cleanStoryForgeClassShareLabel(source.penName, 80) || 'Creative Writer',
+    artifactType: source.artifactType === 'comic' ? 'comic' : 'story',
+    genre: cleanStoryForgeClassShareLabel(source.genre, 80) || 'Creative Writing',
+    sceneCount: cleanCount(counts.scenes, STORYFORGE_CLASS_SHARE_MAX_SCENES),
+    wordCount: cleanCount(counts.words, STORYFORGE_CLASS_SHARE_MAX_SCENES * 50000),
+    mediaCount: (coverIncluded ? 1 : 0) + scenesWithIllustration,
+    scenesWithText,
+    scenesWithIllustration,
+    includesCoverArt: coverIncluded,
+    approximateBytes,
+    approximateKilobytes: Math.max(1, Math.ceil(approximateBytes / 1024)),
+    idempotencyKey: cleanStoryForgeClassShareLabel(source.idempotencyKey, 120),
+  };
+};
+// ── End class-share privacy allowlist ──
+
 const hydrateStoryForgeAudioSegments = (value) => Object.fromEntries(
   Object.entries(sanitizeAudioSegments(value)).map(([key, segment]) => {
     const hydrated = { ...segment };
@@ -2033,6 +2236,7 @@ const StoryForge = React.memo(({
     : (WRITING_VIEWS[writingView]?.layoutMode || 'prose');
   const [showWritingTools, setShowWritingTools] = useState(false);
   const [showReviewTools, setShowReviewTools] = useState(false);
+  const [showComicProduction, setShowComicProduction] = useState(false);
 
   const selectArtifactType = (nextType) => {
     if (!ARTIFACT_TYPES[nextType] || nextType === artifactType) return;
@@ -2670,6 +2874,12 @@ const StoryForge = React.memo(({
   const audioRef = useRef(null);
   const recorder = useAudioRecorder();
   const [recordingParagraphId, setRecordingParagraphId] = useState(null);
+  const [recordingError, setRecordingError] = useState(null);
+  useEffect(() => {
+    if (!recorder.error) return;
+    setRecordingError({ paragraphId: recordingParagraphId, message: recorder.error });
+    setRecordingParagraphId(null);
+  }, [recorder.error]);
 
   // ── Sentence splitter for karaoke narration ──
   const splitSentences = (text) => {
@@ -3175,7 +3385,23 @@ const StoryForge = React.memo(({
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const closeConfirmDialogRef = useRef(null);
   const restorePromptDialogRef = useRef(null);
+  const discardDraftConfirmDialogRef = useRef(null);
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
+  const [showDiscardDraftConfirm, setShowDiscardDraftConfirm] = useState(false);
+  const dismissRestorePrompt = () => {
+    setShowRestorePrompt(false);
+    sfAnnounce('Saved project recovery is still available below the header');
+  };
+  const requestDiscardDraftConfirmation = () => {
+    setShowRestorePrompt(false);
+    setShowDiscardDraftConfirm(true);
+    sfAnnounce('Confirm whether to delete the saved project');
+  };
+  const cancelDiscardDraftConfirmation = () => {
+    setShowDiscardDraftConfirm(false);
+    setShowRestorePrompt(true);
+    sfAnnounce('Saved project kept');
+  };
   const hasMeaningfulDraft = () => isStoryForgeProjectMeaningful(createProjectSnapshot());
   const persistDraftToStorage = async ({ announce = false, allowDuringHydration = false } = {}) => {
     if (!allowDuringHydration && (draftHydrationState !== 'ready' || showRestorePrompt)) {
@@ -3252,7 +3478,6 @@ const StoryForge = React.memo(({
   const restoreRevisionCheckpoint = (revision) => {
     if (!revision?.snapshot) return;
     applySanitizedProject(revision.snapshot);
-    setPhase(revision.snapshot.phase || 'export');
     setIsDirty(true);
     setDraftSaveState('saving');
     if (addToast) addToast(`Checkpoint restored: ${revision.label || 'Production checkpoint'}`, 'success');
@@ -3636,7 +3861,8 @@ const StoryForge = React.memo(({
         if (exportConsent) finishExportConsent(false);
         else if (importConfirmation) finishImportConfirmation(false);
         else if (showCloseConfirm) setShowCloseConfirm(false);
-        else if (showRestorePrompt) setShowRestorePrompt(false);
+        else if (showDiscardDraftConfirm) cancelDiscardDraftConfirmation();
+        else if (showRestorePrompt) dismissRestorePrompt();
         else safeClose();
         e.preventDefault();
       }
@@ -3647,7 +3873,7 @@ const StoryForge = React.memo(({
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, exportConsent, importConfirmation, showCloseConfirm, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, draftHydrationState, comicProductionSnapshotKey, comicCanUndo, comicCanRedo]);
+  }, [isOpen, exportConsent, importConfirmation, showCloseConfirm, showRestorePrompt, showDiscardDraftConfirm, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, draftHydrationState, comicProductionSnapshotKey, comicCanUndo, comicCanRedo]);
 
   // ── Focus management: move focus into the dialog on open, trap Tab inside it, and
   //    restore focus to the trigger on close (WCAG 2.4.3 Focus Order / 2.1.2 No Keyboard Trap escape). ──
@@ -3691,7 +3917,9 @@ const StoryForge = React.memo(({
   // ── Auto-save to localStorage ──
   const saveTimerRef = useRef(null);
   const savedDraftRef = useRef(null);
-  _storyForgeUseFocusTrap(restorePromptDialogRef, showRestorePrompt, () => setShowRestorePrompt(false));
+  const recoverySummary = getStoryForgeRecoverySummary(savedDraftRef.current, sourceTopic);
+  _storyForgeUseFocusTrap(restorePromptDialogRef, showRestorePrompt, dismissRestorePrompt);
+  _storyForgeUseFocusTrap(discardDraftConfirmDialogRef, showDiscardDraftConfirm, cancelDiscardDraftConfirmation);
   _storyForgeUseFocusTrap(closeConfirmDialogRef, showCloseConfirm, () => setShowCloseConfirm(false));
   _storyForgeUseFocusTrap(exportConsentDialogRef, !!exportConsent, () => finishExportConsent(false));
   _storyForgeUseFocusTrap(importConfirmationDialogRef, !!importConfirmation, () => finishImportConfirmation(false));
@@ -3708,6 +3936,7 @@ const StoryForge = React.memo(({
     setLastDraftSavedAt(null);
     setRevisionHistory([]);
     setShowRestorePrompt(false);
+    setShowDiscardDraftConfirm(false);
     (async () => {
       let legacyProject = null;
       try {
@@ -3839,7 +4068,7 @@ const StoryForge = React.memo(({
     setPanelStickers(draft.panelStickers);
     setReviewedDraftSignature(draft.reviewedDraftSignature);
     setFocusParagraphIdx(0);
-    return draft;
+    return { ...draft, phase: restoredPhase };
   };
 
   const applySanitizedProject = (value) => {
@@ -3853,7 +4082,7 @@ const StoryForge = React.memo(({
     storyAudioHydrationSignatureRef.current = '';
     setStoryAudioStorePayload(project.audioStore || null);
     setComicFlowReport(project.comicFlowReport || null);
-    return { ...draft, phase: restoredPhase };
+    return draft;
   };
   const restoreDraft = () => {
     if (!savedDraftRef.current) return;
@@ -3868,11 +4097,14 @@ const StoryForge = React.memo(({
     setDraftSaveError('');
     setIsDirty(false);
     setShowRestorePrompt(false);
+    setShowDiscardDraftConfirm(false);
     if (addToast) addToast(t('toasts.draft_restored_2'), 'success');
     sfAnnounce('Draft restored');
   };
 
   const discardDraft = async () => {
+    setShowDiscardDraftConfirm(false);
+    setDraftHydrationState('checking');
     resetComicHistory();
     let legacyRemoved = false;
     try { localStorage.removeItem(SAVE_KEY); legacyRemoved = true; } catch (error) {}
@@ -3894,6 +4126,10 @@ const StoryForge = React.memo(({
     setShowRestorePrompt(false);
     sfAnnounce(removed ? 'Starting a fresh StoryForge draft' : 'Could not clear the saved project');
   };
+  const confirmDiscardDraft = async () => {
+    await discardDraft();
+  };
+
   // ── Load initial config from teacher assignment ──
   useEffect(() => {
     if (initialConfig && initialConfig.vocabTerms) {
@@ -5492,8 +5728,18 @@ Return ONLY JSON:
   };
 
   const startRecordingParagraph = async (paragraphId) => {
-    setRecordingParagraphId(paragraphId);
-    await recorder.startRecording();
+    setRecordingError(null);
+    recorder.clearError();
+    const result = await recorder.startRecording();
+    if (result?.ok) {
+      setRecordingParagraphId(paragraphId);
+      return;
+    }
+    setRecordingParagraphId(null);
+    setRecordingError({
+      paragraphId,
+      message: result?.error || 'The microphone could not start. Check your browser permissions, then retry.',
+    });
   };
 
   const stopRecordingParagraph = async () => {
@@ -6314,8 +6560,8 @@ Return ONLY JSON:
 
   const getReadinessActionLabel = (issue) => {
     if (!issue) return '';
-    if (issue.code === 'unplaced-lettering' || issue.code === 'gutter-lettering-conflict') return 'Auto-place lettering';
-    if (issue.code === 'missing-print-bleed') return 'Enable bleed';
+    if (issue.code === 'unplaced-lettering' || issue.code === 'gutter-lettering-conflict') return 'Open lettering tools';
+    if (issue.code === 'missing-print-bleed') return 'Open print setup';
     if (issue.code === 'continuity-sheet-incomplete') return onCallGemini ? 'Draft continuity' : 'Add continuity';
     if (issue.code === 'review-not-run') return layoutMode === 'comic' ? 'Open comic review' : 'Open review';
     if (issue.code === 'missing-story-title') return 'Add title';
@@ -6342,6 +6588,8 @@ Return ONLY JSON:
     }
     if (issue.code === 'continuity-sheet-incomplete') return 'sf-comic-continuity';
     if (issue.code === 'review-not-run') return 'sf-review-tools';
+    if (issue.code === 'unplaced-lettering' || issue.code === 'gutter-lettering-conflict') return 'sf-comic-page-composer';
+    if (issue.code === 'missing-print-bleed') return 'sf-comic-print-safety';
     if (issue.code === 'crowded-lettering') {
       const id = firstParagraphId(item => getComicLetteringStats(panelDialogue[item.id] || {}).level === 'crowded');
       return id ? `sf-lettering-${id}` : '';
@@ -6360,13 +6608,13 @@ Return ONLY JSON:
   const resolveReadinessIssue = async (issue) => {
     if (!issue) return;
     if (issue.code === 'unplaced-lettering' || issue.code === 'gutter-lettering-conflict') {
-      applyComicLetteringPlacement(comicPageGroups, 'Comic');
+      setShowComicProduction(true);
+      changePhase('illustrate', 'sf-comic-page-composer');
       return;
     }
     if (issue.code === 'missing-print-bleed') {
-      updateComicPrintSafety('includeBleed', true);
-      if (addToast) addToast('Print bleed enabled.', 'success');
-      sfAnnounce('Comic print bleed enabled');
+      setShowComicProduction(true);
+      changePhase('illustrate', 'sf-comic-print-safety');
       return;
     }
     if (issue.code === 'continuity-sheet-incomplete' && onCallGemini) {
@@ -7301,63 +7549,8 @@ show();
   };
 
   // ═══════════════════════════════════════════════════════════
-  // SHARE TO TEACHER DASHBOARD
+  // CLASS SHOWCASE
   // ═══════════════════════════════════════════════════════════
-
-  const shareToSession = async () => {
-    if (!ensureReadyToPublish()) return;
-    if (!liveSession || !liveSession.push) return;
-    if (isCanvasEnv) {
-      if (addToast) addToast(t('toasts.sharing_disabled_canvas_environment_ferpa'), 'error');
-      return;
-    }
-    try {
-      const title = storyTitle || storyPrompt || sourceTopic || (artifactType === 'comic' ? 'My Comic' : 'My Story');
-      const safePanelDialogue = sanitizePanelDialogue(panelDialogue);
-      const safePanelDirections = sanitizePanelDirections(panelDirections);
-      const safePanelThumbnails = sanitizePanelThumbnails(panelThumbnails);
-      const safePanelLayouts = sanitizePanelLayouts(panelLayouts);
-      const safePanelStickers = sanitizePanelStickers(panelStickers);
-      await liveSession.push({
-        type: 'storyforge',
-        title,
-        author: authorName || 'Student',
-        genre: GENRE_TEMPLATES[genre]?.label || 'Creative Writing',
-        artifactType,
-        writingView,
-        layoutMode,
-        comicPageLayout,
-        comicPageComposer: sanitizeComicPageComposer(comicPageComposer),
-        comicPrintSafety: sanitizeComicPrintSafety(comicPrintSafety),
-        comicContinuity: sanitizeComicContinuity(comicContinuity),
-        comicFlowScore: layoutMode === 'comic' ? (comicFlowReport?.score || null) : null,
-        paragraphCount: paragraphs.length,
-        wordCount: totalWords,
-        vocabUsed: vocabUsedCount,
-        vocabTotal: vocabTerms.length,
-        coverArt: coverArt || null,
-        preview: paragraphs[0]?.text?.substring(0, 200) || '',
-        // Portfolio gallery data
-        fullStory: paragraphs.map(p => ({
-          text: p.text.substring(0, 500),
-          illustration: illustrations[p.id]?.imageUrl || null,
-          panelDialogue: safePanelDialogue[p.id] || null,
-          panelDirection: safePanelDirections[p.id] || null,
-          panelThumbnail: safePanelThumbnails[p.id] || null,
-          panelLayout: safePanelLayouts[p.id] || null,
-          panelSticker: safePanelStickers[p.id] || null,
-        })),
-        gradingScore: gradingResult?.totalScore || null,
-        readingGrade: readingLevel?.grade || null,
-        draftCount,
-      });
-      if (addToast) addToast(`${artifactType === 'comic' ? 'Comic' : 'Storybook'} shared with the class.`, 'success');
-      awardXP(10, 'Shared to class');
-    } catch (err) {
-      console.warn('Share failed:', err);
-      if (addToast) addToast(t('toasts.failed_share_try_again'), 'error');
-    }
-  };
 
   // ═══════════════════════════════════════════════════════════
   // COLLABORATIVE JSON SAVE / LOAD ("Pass the Torch")
@@ -7463,7 +7656,7 @@ show();
   const exportDraftJSON = async () => {
     // FERPA reminder: this draft is de-identified (codename, never a real name), but it still
     // carries the student's full writing, the AI feedback/grade, and progress analytics — so a
-    // local download is a confirmed, informed action. (Network egress stays gated in shareToSession.)
+    // local download is a confirmed, informed action. Shared-session artifact egress is disabled.
     if (!(await requestExportConsent({ title: 'Export full draft?', message: 'This de-identified file uses the student codename, but it contains complete writing, AI feedback or grades, and progress analytics. Save it only to a school-approved location and follow district student-records policy.', confirmLabel: 'Export full draft' }))) return;
     const draft = {
       _storyForgeVersion: 2,
@@ -7577,8 +7770,9 @@ show();
             sfAnnounce('Story Forge import rejected because the package is not supported');
             return;
           }
+          let decision = { accepted: true, action: 'replace', candidate: validated };
           if (hasMeaningfulDraft()) {
-            const decision = await requestImportConfirmation(validated);
+            decision = await requestImportConfirmation(validated);
             if (!decision.accepted || !decision.candidate) {
               sfAnnounce('Story Forge import cancelled');
               return;
@@ -7680,7 +7874,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
       ? `${Math.max(0, projectReadiness.comicStats.artPanels - projectReadiness.comicStats.missingAltText)}/${projectReadiness.comicStats.artPanels}`
       : '0/0'
     : 'n/a';
-  const renderComicPreviewPanel = (p, idx, previewLayout = comicPageLayout, pageIndex = idx, pageForPanel = null) => {
+  const renderComicPreviewPanel = (p, idx, previewLayout = comicPageLayout, pageIndex = idx, pageForPanel = null, editable = false) => {
     const layoutFrame = panelLayouts[p.id] || {};
     const resizingPanel = panelResizeDrag?.pId === p.id;
     const mangaFlow = previewLayout === 'manga';
@@ -7722,36 +7916,40 @@ const comicAltCoverageLabel = layoutMode === 'comic'
             >
               {placedBubbleKind === 'speech' && dialogue.speaker && <div className="text-[10px] font-bold text-blue-600 mb-0.5">{dialogue.speaker}:</div>}
               {placedBubbleKind === 'thought' && <span aria-hidden="true">{'\uD83D\uDCAD'} </span>}{placedBubbleText}
-              <button
-                type="button"
-                onPointerDown={(e) => startBubbleDrag(e, p.id)}
-                onPointerMove={updateBubbleDrag}
-                onPointerUp={endBubbleDrag}
-                onPointerCancel={endBubbleDrag}
-                onKeyDown={(e) => handleBubbleControlKeyDown(e, p.id, 'move')}
-                className={`sf-bubble-drag-handle sf-bubble-move-handle absolute ${resizeBehavior.resizeFromLeft ? '-bottom-3 -right-3' : '-bottom-3 -left-3'} pointer-events-auto w-7 h-7 flex items-center justify-center rounded-full border-2 border-slate-900 bg-white text-slate-900 shadow-md cursor-move touch-none`}
-                title="Move bubble"
-                aria-label={`Move ${placedBubbleKind} bubble for panel ${idx + 1}. Use arrow keys for precise movement.`}
-                data-sf-bubble-control="move"
-                data-sf-focusable
-              >
-                <Move size={13} aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                onPointerDown={(e) => startBubbleResize(e, p.id)}
-                onPointerMove={updateBubbleResize}
-                onPointerUp={endBubbleResize}
-                onPointerCancel={endBubbleResize}
-                onKeyDown={(e) => handleBubbleControlKeyDown(e, p.id, 'resize')}
-                className={`sf-bubble-drag-handle sf-bubble-resize-handle absolute ${resizeBehavior.resizeFromLeft ? '-bottom-3 -left-3' : '-bottom-3 -right-3'} pointer-events-auto w-7 h-7 flex items-center justify-center rounded-full border-2 border-slate-900 bg-white text-slate-900 shadow-md cursor-ew-resize touch-none`}
-                title="Resize bubble"
-                aria-label={`Resize ${placedBubbleKind} bubble for panel ${idx + 1}. Use left and right arrow keys for precise sizing.`}
-                data-sf-bubble-control="resize"
-                data-sf-focusable
-              >
-                <Maximize2 size={13} aria-hidden="true" />
-              </button>
+              {editable && (
+                <>
+                  <button
+                    type="button"
+                    onPointerDown={(e) => startBubbleDrag(e, p.id)}
+                    onPointerMove={updateBubbleDrag}
+                    onPointerUp={endBubbleDrag}
+                    onPointerCancel={endBubbleDrag}
+                    onKeyDown={(e) => handleBubbleControlKeyDown(e, p.id, 'move')}
+                    className={`sf-bubble-drag-handle sf-bubble-move-handle absolute ${resizeBehavior.resizeFromLeft ? '-bottom-3 -right-3' : '-bottom-3 -left-3'} pointer-events-auto w-7 h-7 flex items-center justify-center rounded-full border-2 border-slate-900 bg-white text-slate-900 shadow-md cursor-move touch-none`}
+                    title="Move bubble"
+                    aria-label={`Move ${placedBubbleKind} bubble for panel ${idx + 1}. Use arrow keys for precise movement.`}
+                    data-sf-bubble-control="move"
+                    data-sf-focusable
+                  >
+                    <Move size={13} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    onPointerDown={(e) => startBubbleResize(e, p.id)}
+                    onPointerMove={updateBubbleResize}
+                    onPointerUp={endBubbleResize}
+                    onPointerCancel={endBubbleResize}
+                    onKeyDown={(e) => handleBubbleControlKeyDown(e, p.id, 'resize')}
+                    className={`sf-bubble-drag-handle sf-bubble-resize-handle absolute ${resizeBehavior.resizeFromLeft ? '-bottom-3 -left-3' : '-bottom-3 -right-3'} pointer-events-auto w-7 h-7 flex items-center justify-center rounded-full border-2 border-slate-900 bg-white text-slate-900 shadow-md cursor-ew-resize touch-none`}
+                    title="Resize bubble"
+                    aria-label={`Resize ${placedBubbleKind} bubble for panel ${idx + 1}. Use left and right arrow keys for precise sizing.`}
+                    data-sf-bubble-control="resize"
+                    data-sf-focusable
+                  >
+                    <Maximize2 size={13} aria-hidden="true" />
+                  </button>
+                </>
+              )}
             </div>
           ) : null;
           return (
@@ -7784,7 +7982,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
             {panelDialogue[p.id].sfx}
           </div>
         )}
-        <button
+        {editable && <button
           type="button"
           onPointerDown={(e) => startPanelResizeDrag(e, p.id, idx, previewLayout, pageIndex)}
           onPointerMove={updatePanelResizeDrag}
@@ -7797,7 +7995,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           data-sf-focusable
         >
           <Maximize2 size={15} aria-hidden="true" />
-        </button>
+        </button>}
         <div className="p-2.5 relative space-y-1.5">
           {(p.text || p.scaffoldFrame || '').trim() && (
             <div className="bg-amber-50 border border-amber-200 rounded-md px-2 py-1 text-[11px] text-amber-800 italic leading-snug">
@@ -7917,14 +8115,57 @@ const comicAltCoverageLabel = layoutMode === 'comic'
 
       {/* ── Restore Draft Prompt ── */}
       {showRestorePrompt && (
-        <div ref={restorePromptDialogRef} tabIndex={-1} className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-restore-title" aria-describedby="sf-restore-description">
-          <div className="sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
-            <div className="text-3xl mb-3" aria-hidden="true">📖</div>
-            <h3 id="sf-restore-title" className="text-lg font-black text-slate-800 mb-2">{t("ui_common.continue_where_left")}</h3>
-            <p id="sf-restore-description" className="text-sm text-slate-600 mb-4">A saved draft was found. Would you like to restore it?</p>
-            <div className="flex gap-3 justify-center">
-              <button type="button" data-sf-focusable onClick={discardDraft} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.start_fresh")}</button>
-              <button type="button" data-sf-focusable onClick={restoreDraft} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors">{t("ui_common.restore_draft")}</button>
+        <div
+          ref={restorePromptDialogRef}
+          tabIndex={-1}
+          data-sf-restore-dialog
+          data-sf-recovery-title={recoverySummary.title}
+          data-sf-recovery-artifact={recoverySummary.artifactType}
+          data-sf-recovery-resume-phase={recoverySummary.resumePhase}
+          className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="sf-restore-title"
+          aria-describedby="sf-restore-description sf-restore-summary"
+        >
+          <div className="sf-dialog-card w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="text-center">
+              <div className="text-3xl mb-3" aria-hidden="true">📖</div>
+              <h3 id="sf-restore-title" className="text-lg font-black text-slate-800 mb-2">{t("ui_common.continue_where_left")}</h3>
+              <p id="sf-restore-description" className="text-sm text-slate-600">A saved project is waiting. Review it before deciding whether to restore or delete it.</p>
+            </div>
+            <dl id="sf-restore-summary" data-sf-restore-summary className="mt-4 grid grid-cols-1 gap-2 rounded-xl border border-rose-100 bg-rose-50/50 p-3 text-left text-xs sm:grid-cols-2">
+              <div className="min-w-0 sm:col-span-2"><dt className="font-bold uppercase tracking-wide text-rose-700">Saved project</dt><dd data-sf-recovery-project-title className="mt-1 truncate text-sm font-black text-slate-900">{recoverySummary.title}</dd></div>
+              <div><dt className="font-bold uppercase tracking-wide text-rose-700">Artifact</dt><dd data-sf-recovery-artifact-label className="mt-1 font-bold text-slate-800">{recoverySummary.artifactLabel}</dd></div>
+              <div><dt className="font-bold uppercase tracking-wide text-rose-700">Resume safely at</dt><dd data-sf-recovery-phase-label className="mt-1 font-bold text-slate-800">{recoverySummary.resumePhaseLabel}</dd></div>
+              <div className="sm:col-span-2"><dt className="font-bold uppercase tracking-wide text-rose-700">Last saved</dt><dd className="mt-1 font-bold text-slate-800"><time data-sf-recovery-saved-at dateTime={recoverySummary.savedAt || undefined}>{recoverySummary.savedAt ? new Date(recoverySummary.savedAt).toLocaleString() : 'Time unavailable'}</time></dd></div>
+            </dl>
+            <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button type="button" data-sf-focusable data-sf-request-discard-draft onClick={requestDiscardDraftConfirmation} className="min-h-11 rounded-lg border border-rose-300 bg-white px-4 py-2 text-sm font-bold text-rose-700 transition-colors hover:bg-rose-50">Delete saved project &amp; start new</button>
+              <button type="button" data-sf-focusable data-sf-restore-draft onClick={restoreDraft} className="min-h-11 rounded-lg bg-rose-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-rose-700">Restore and resume at {recoverySummary.resumePhaseLabel}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Confirm destructive recovery deletion ── */}
+      {showDiscardDraftConfirm && (
+        <div role="presentation" className="fixed inset-0 z-[220] flex items-center justify-center bg-black/70 p-4">
+          <div
+            ref={discardDraftConfirmDialogRef}
+            tabIndex={-1}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="sf-discard-draft-title"
+            aria-describedby="sf-discard-draft-description"
+            data-sf-discard-draft-confirmation
+            className="sf-dialog-card w-full max-w-md rounded-2xl border-2 border-rose-300 bg-white p-6 shadow-2xl"
+          >
+            <h3 id="sf-discard-draft-title" className="text-lg font-black text-slate-900">Delete saved project?</h3>
+            <p id="sf-discard-draft-description" className="mt-2 text-sm leading-relaxed text-slate-700">This permanently removes “{recoverySummary.title}” and its saved checkpoints from this browser. This cannot be undone.</p>
+            <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button type="button" data-sf-focusable data-sf-cancel-discard-draft onClick={cancelDiscardDraftConfirmation} className="min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Keep saved project</button>
+              <button type="button" data-sf-focusable data-sf-confirm-discard-draft onClick={() => void confirmDiscardDraft()} className="min-h-11 rounded-lg bg-rose-700 px-4 py-2 text-sm font-bold text-white hover:bg-rose-800">Delete &amp; start new</button>
             </div>
           </div>
         </div>
@@ -7984,17 +8225,25 @@ const comicAltCoverageLabel = layoutMode === 'comic'
             <div className="mt-5 flex flex-wrap justify-end gap-3">
               <button type="button" data-sf-focusable onClick={() => finishImportConfirmation(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Keep current project</button>
               <button type="button" data-sf-focusable onClick={() => finishImportConfirmation('checkpoint')} className="rounded-lg border border-amber-500 bg-white px-4 py-2 text-sm font-bold text-amber-800 hover:bg-amber-50">Save checkpoint &amp; import</button>
-              <button type="button" data-sf-focusable onClick={() => finishImportConfirmation(true)} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">Replace and import</button>
+              <button type="button" data-sf-focusable data-sf-import-confirm-action="replace" onClick={() => finishImportConfirmation(true)} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">Replace and import</button>
             </div>
           </div>
         </div>
       )}
       <div className="bg-gradient-to-r from-rose-600 to-pink-600 p-3 sm:p-4 text-white flex justify-between items-center gap-2 shadow-lg shrink-0">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <BookOpen size={24} />
-          <div>
-            <h2 className="text-lg sm:text-xl font-black">{t("headings.story_forge")}</h2>
-            <p className="hidden sm:block text-rose-100 text-xs font-medium">{t("ui_common.creative_writing_studio")}</p>
+          <div className="min-w-0">
+            <h2 className="truncate text-lg font-black sm:text-xl">{t("headings.story_forge")}</h2>
+            <p className="max-w-[58vw] truncate text-[11px] font-semibold text-rose-100 sm:max-w-[42vw] sm:text-xs" title={`${storyTitle.trim() || `Untitled ${artifactType === 'comic' ? 'comic' : 'story'}`} - ${PHASE_LABELS[phaseIdx]} - ${draftSaveLabel}`}>
+              <span data-sf-header-project-title>{storyTitle.trim() || `Untitled ${artifactType === 'comic' ? 'comic' : 'story'}`}</span>
+              <span aria-hidden="true"> · </span>
+              <span data-sf-header-artifact>{artifactType === 'comic' ? 'Comic' : 'Story'}</span>
+              <span aria-hidden="true"> · </span>
+              <span>{PHASE_LABELS[phaseIdx]}</span>
+              <span aria-hidden="true"> · </span>
+              <span data-sf-header-save-state>{draftSaveLabel}</span>
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-3">
@@ -8017,6 +8266,38 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               {readingLevel && <><span>·</span><span>Grade {readingLevel.grade}</span></>}
             </div>
           )}
+          <details data-sf-project-menu className="relative">
+            <summary
+              data-sf-focusable
+              data-sf-project-menu-trigger
+              className="flex min-h-9 cursor-pointer list-none items-center justify-center gap-1.5 rounded-lg border border-white/30 bg-white/15 px-2 text-xs font-bold transition-colors hover:bg-white/25 sm:px-3 [&::-webkit-details-marker]:hidden"
+              aria-label="Open project menu"
+            >
+              <BookOpen size={15} aria-hidden="true" />
+              <span className="hidden sm:inline">Project</span>
+            </summary>
+            <div className="absolute right-0 z-[260] mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white p-3 text-slate-800 shadow-2xl" role="group" aria-label="Project actions">
+              <div className="border-b border-slate-200 px-2 pb-3">
+                <p className="truncate text-sm font-black" data-sf-project-menu-title>{storyTitle.trim() || `Untitled ${artifactType === 'comic' ? 'comic' : 'story'}`}</p>
+                <p className="mt-0.5 text-xs text-slate-500">{artifactType === 'comic' ? 'Comic' : 'Story'} · {PHASE_LABELS[phaseIdx]} · {draftSaveLabel}</p>
+              </div>
+              {draftHydrationState === 'awaiting' ? (
+                <div className="mt-3 space-y-2">
+                  <p className="px-2 text-xs leading-relaxed text-amber-800">A saved project is waiting. Restore it before using project tools.</p>
+                  <button type="button" data-sf-project-menu-restore onClick={restoreDraft} className="flex min-h-10 w-full items-center gap-2 rounded-lg bg-amber-700 px-3 py-2 text-left text-xs font-bold text-white hover:bg-amber-800"><RefreshCw size={14} aria-hidden="true" /> Restore saved project</button>
+                  <button type="button" data-sf-project-menu-recovery-options onClick={() => setShowRestorePrompt(true)} className="min-h-10 w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-left text-xs font-bold text-amber-900 hover:bg-amber-50">Review recovery options</button>
+                </div>
+              ) : (
+                <div className="mt-3 grid gap-2">
+                  <button type="button" data-sf-project-menu-save onClick={() => void persistDraftToStorage({ announce: true })} disabled={draftHydrationState !== 'ready' || draftSaveState === 'saving'} className="flex min-h-10 w-full items-center gap-2 rounded-lg bg-rose-600 px-3 py-2 text-left text-xs font-bold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"><Save size={14} aria-hidden="true" /> Save project now</button>
+                  <button type="button" data-sf-project-menu-export onClick={() => void exportStoryForgeProject()} disabled={draftHydrationState !== 'ready'} className="flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"><Download size={14} aria-hidden="true" /> Export backup</button>
+                  <button type="button" data-sf-project-menu-import onClick={importDraftJSON} disabled={draftHydrationState !== 'ready'} className="flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"><RefreshCw size={14} aria-hidden="true" /> Import project</button>
+                  <button type="button" data-sf-project-menu-checkpoint onClick={() => void saveRevisionCheckpoint()} disabled={draftHydrationState !== 'ready' || draftSaveState === 'saving'} className="flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"><Star size={14} aria-hidden="true" /> Save checkpoint</button>
+                </div>
+              )}
+              <p className="mt-3 px-2 text-[11px] leading-relaxed text-slate-500">Backups and checkpoints preserve work before an import or major revision.</p>
+            </div>
+          </details>
           <button
             type="button"
             data-sf-focusable
@@ -8046,6 +8327,29 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           </button>
         </div>
       </div>
+
+      {draftHydrationState === 'awaiting' && !showRestorePrompt && !showDiscardDraftConfirm && (
+        <section
+          data-sf-recovery-banner
+          data-sf-recovery-title={recoverySummary.title}
+          data-sf-recovery-artifact={recoverySummary.artifactType}
+          data-sf-recovery-resume-phase={recoverySummary.resumePhase}
+          className="shrink-0 border-b border-amber-300 bg-amber-50 px-3 py-3 sm:px-6"
+          role="region"
+          aria-labelledby="sf-recovery-banner-title"
+        >
+          <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <h2 id="sf-recovery-banner-title" className="text-sm font-black text-amber-950">Saved project waiting: <span className="break-words">{recoverySummary.title}</span></h2>
+              <p className="mt-0.5 text-xs text-amber-900">{recoverySummary.artifactLabel} · Resume safely at {recoverySummary.resumePhaseLabel}{recoverySummary.savedAt ? ' · Saved ' + new Date(recoverySummary.savedAt).toLocaleString() : ''}</p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button type="button" data-sf-focusable data-sf-banner-restore-draft onClick={restoreDraft} className="min-h-11 rounded-lg bg-amber-700 px-4 py-2 text-xs font-bold text-white hover:bg-amber-800">Restore project</button>
+              <button type="button" data-sf-focusable data-sf-open-recovery-options onClick={() => setShowRestorePrompt(true)} className="min-h-11 rounded-lg border border-amber-400 bg-white px-4 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100">Review recovery options</button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Workflow readiness */}
       <div className="sf-workflow-dashboard bg-white border-b border-slate-200 shrink-0">
@@ -8143,7 +8447,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
       </section>
       {/* ── Phase Content ── */}
       <div className="flex-grow overflow-y-auto" ref={phaseContentRef} tabIndex={-1} role="region" aria-label={`${PHASE_LABELS[phaseIdx]} phase`}>
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="max-w-4xl mx-auto px-3 py-4 sm:p-6">
 
           {/* ═══ CONFIGURE PHASE ═══ */}
           {phase === 'configure' && (
@@ -8152,14 +8456,9 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 <h3 className="text-2xl font-black text-slate-800">Plan your {artifactType === 'comic' ? 'comic' : 'story'}</h3>
                 <p className="text-slate-600 text-sm mt-1">Name your {artifactType === 'comic' ? 'comic' : 'story'}, choose a genre, and set vocabulary goals</p>
                 <div className="flex gap-2 justify-center mt-2 flex-wrap">
-                  <button type="button" onClick={importDraftJSON} className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1">
+                  <button type="button" data-sf-import-draft onClick={importDraftJSON} className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1">
                     <Plus size={10} /> Import classmate's draft
                   </button>
-                  {onSaveConfig && (
-                    <button type="button" onClick={saveAsConfig} disabled={vocabTerms.length === 0} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-[11px] font-bold hover:bg-indigo-200 transition-colors inline-flex items-center gap-1 disabled:opacity-40">
-                      <Download size={10} /> Save as Assignment
-                    </button>
-                  )}
                 </div>
               </div>
 
@@ -8306,39 +8605,6 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 )}
               </div>
 
-              {/* Story Shape Picker — Vonnegut-style emotional shapes (optional craft lens) */}
-              <div className="bg-white rounded-2xl border-2 border-violet-100 p-5 shadow-sm">
-                <h4 className="text-sm font-bold text-violet-700 uppercase tracking-wider mb-1 flex items-center gap-2">
-                  <Sparkles size={16} /> Story Shape <span className="text-[10px] font-medium text-slate-500 normal-case tracking-normal">(optional — the emotional ups &amp; downs)</span>
-                </h4>
-                <p className="text-[11px] text-slate-500 mb-3">Pick the shape of your character's fortune over time — a lens to play with. Great stories bend the rules!</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {Object.entries(STORY_SHAPES).map(([key, sh]) => {
-                    const active = storyShape === key;
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        data-sf-focusable
-                        onClick={() => setStoryShape(active ? '' : key)}
-                        aria-pressed={active}
-                        aria-label={`Story shape: ${sh.label}. ${sh.desc}`}
-                        className={`p-2.5 rounded-xl border-2 text-left transition-all ${active ? 'border-violet-500 bg-violet-50 shadow-md' : 'border-slate-200 hover:border-violet-300'}`}
-                      >
-                        <div className="flex items-center justify-between gap-1 mb-1">
-                          <span className={`text-xs font-bold ${active ? 'text-violet-700' : 'text-slate-600'}`}>{sh.emoji} {sh.label}</span>
-                          <svg viewBox="0 0 48 18" width="48" height="18" aria-hidden="true" className="shrink-0">
-                            <polyline fill="none" stroke={active ? '#7c3aed' : '#94a3b8'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                              points={sh.curve.map((v, i) => `${(i / (sh.curve.length - 1)) * 46 + 1},${(1 - v) * 14 + 2}`).join(' ')} />
-                          </svg>
-                        </div>
-                        <div className="text-[10px] text-slate-500 leading-snug">{sh.desc}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
               {/* Vocab Terms */}
               <div className="bg-white rounded-2xl border-2 border-rose-100 p-5 shadow-sm">
                 <h4 className="text-sm font-bold text-rose-700 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -8392,6 +8658,39 @@ const comicAltCoverageLabel = layoutMode === 'comic'
 
               {showAdvancedConfig && (
               <div className="space-y-6">
+
+              {/* Story Shape Picker — Vonnegut-style emotional shapes (optional craft lens) */}
+              <div className="bg-white rounded-2xl border-2 border-violet-100 p-5 shadow-sm">
+                <h4 className="text-sm font-bold text-violet-700 uppercase tracking-wider mb-1 flex items-center gap-2">
+                  <Sparkles size={16} /> Story Shape <span className="text-[10px] font-medium text-slate-500 normal-case tracking-normal">(optional — the emotional ups &amp; downs)</span>
+                </h4>
+                <p className="text-[11px] text-slate-500 mb-3">Pick the shape of your character's fortune over time — a lens to play with. Great stories bend the rules!</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {Object.entries(STORY_SHAPES).map(([key, sh]) => {
+                    const active = storyShape === key;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        data-sf-focusable
+                        onClick={() => setStoryShape(active ? '' : key)}
+                        aria-pressed={active}
+                        aria-label={`Story shape: ${sh.label}. ${sh.desc}`}
+                        className={`p-2.5 rounded-xl border-2 text-left transition-all ${active ? 'border-violet-500 bg-violet-50 shadow-md' : 'border-slate-200 hover:border-violet-300'}`}
+                      >
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className={`text-xs font-bold ${active ? 'text-violet-700' : 'text-slate-600'}`}>{sh.emoji} {sh.label}</span>
+                          <svg viewBox="0 0 48 18" width="48" height="18" aria-hidden="true" className="shrink-0">
+                            <polyline fill="none" stroke={active ? '#7c3aed' : '#94a3b8'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                              points={sh.curve.map((v, i) => `${(i / (sh.curve.length - 1)) * 46 + 1},${(1 - v) * 14 + 2}`).join(' ')} />
+                          </svg>
+                        </div>
+                        <div className="text-[10px] text-slate-500 leading-snug">{sh.desc}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               {/* Art Style */}
               <div className="bg-white rounded-2xl border-2 border-purple-100 p-5 shadow-sm">
@@ -8506,6 +8805,14 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 />
               </div>
 
+              {onSaveConfig && (
+                <div className="flex justify-end rounded-2xl border-2 border-indigo-100 bg-indigo-50/50 p-4">
+                  <button type="button" onClick={saveAsConfig} disabled={vocabTerms.length === 0} className="inline-flex w-full sm:w-auto items-center justify-center gap-1 rounded-lg bg-indigo-100 px-4 py-2 text-xs font-bold text-indigo-700 transition-colors hover:bg-indigo-200 disabled:opacity-40">
+                    <Download size={12} /> Save as Assignment
+                  </button>
+                </div>
+              )}
+
               </div>
               )}
 
@@ -8537,12 +8844,30 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     type="button"
                     onClick={() => setShowWritingTools(value => !value)}
                     aria-expanded={showWritingTools}
+                    aria-controls="sf-writing-tools-panel"
                     className="px-4 py-2 rounded-full border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50"
                   >
                     {showWritingTools ? 'Hide tools' : 'More tools'}
                   </button>
+                </div>
+              </div>
+
                   {showWritingTools && (
-                  <>
+                  <div
+                    id="sf-writing-tools-panel"
+                    role="region"
+                    aria-label="Expanded writing tools"
+                    className="w-full rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm"
+                  >
+                    <div className={`grid gap-4 ${layoutMode === 'comic' && onCallGemini ? 'lg:grid-cols-3' : 'md:grid-cols-2'}`}>
+                      <section
+                        aria-labelledby="sf-writing-setup-heading"
+                        className="rounded-xl border border-rose-100 bg-rose-50/40 p-3"
+                      >
+                        <h4 id="sf-writing-setup-heading" className="text-xs font-black uppercase tracking-wider text-rose-800">
+                          Writing setup
+                        </h4>
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
                   {/* Writing timer */}
                   {timerActive ? (
                     <div className="flex items-center gap-2 bg-rose-100 border border-rose-300 rounded-full px-3 py-1">
@@ -8559,7 +8884,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     </div>
                   )}
                   {artifactType === 'story' ? (
-                    <div data-sf-writing-view-picker className="flex bg-slate-100 rounded-full p-0.5">
+                    <div data-sf-writing-view-picker className="flex flex-wrap bg-slate-100 rounded-full p-0.5">
                       {Object.entries(WRITING_VIEWS).map(([key, item]) => (
                         <button type="button"
                           key={key}
@@ -8579,6 +8904,18 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       Comic · Change in Plan
                     </button>
                   )}
+                        </div>
+                      </section>
+
+                      {layoutMode === 'comic' && onCallGemini && (
+                        <section
+                          aria-labelledby="sf-comic-helpers-heading"
+                          className="rounded-xl border border-blue-100 bg-blue-50/40 p-3"
+                        >
+                          <h4 id="sf-comic-helpers-heading" className="text-xs font-black uppercase tracking-wider text-blue-800">
+                            Comic helpers
+                          </h4>
+                          <div className="mt-3 flex flex-wrap items-center gap-2">
                   {layoutMode === 'comic' && onCallGemini && (
                     <button type="button"
                       onClick={() => draftComicBubbles()}
@@ -8619,6 +8956,18 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <Sparkles size={14} /> Tighten Bubbles
                     </button>
                   )}
+                          </div>
+                        </section>
+                      )}
+
+                      <section
+                        aria-labelledby="sf-focus-feedback-heading"
+                        className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-3"
+                      >
+                        <h4 id="sf-focus-feedback-heading" className="text-xs font-black uppercase tracking-wider text-indigo-800">
+                          Focus &amp; feedback
+                        </h4>
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
                   {/* Focus Mode Toggle — write one paragraph at a time */}
                   <button type="button"
                     onClick={() => { setFocusMode(!focusMode); setFocusParagraphIdx(0); }}
@@ -8640,10 +8989,11 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <CheckCircle2 size={14} /> {grammarLoading ? 'Checking...' : 'Check Writing'}
                     </button>
                   )}
-                  </>
+                        </div>
+                      </section>
+                    </div>
+                  </div>
                   )}
-                </div>
-              </div>
 
               {/* Grammar overall tip */}
               {grammarResults._overallTip && (
@@ -9360,7 +9710,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <h3 className="text-2xl font-black text-slate-800">Design your {artifactType === 'comic' ? 'comic' : 'story'}</h3>
                   <p className="text-slate-600 text-sm mt-1">
                     {layoutMode === 'comic'
-                      ? 'Add consistent artwork to each panel, then check the reading order'
+                      ? 'Add consistent artwork, then open the production workbench to build pages and lettering'
                       : 'Add optional artwork to any scene that benefits from a visual'}
                   </p>
                 </div>
@@ -9528,6 +9878,461 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   )}
                 </div>
               )}
+              {/* Comic production workbench */}
+              {layoutMode === 'comic' && (
+                <details
+                  id="sf-comic-production-workbench"
+                  data-sf-comic-production-workbench
+                  data-sf-focusable
+                  tabIndex={-1}
+                  aria-labelledby="sf-comic-production-summary"
+                  open={showComicProduction}
+                  onToggle={(event) => setShowComicProduction(event.currentTarget.open)}
+                  className="rounded-2xl border-2 border-fuchsia-200 bg-fuchsia-50/40 p-4 shadow-sm"
+                >
+                  <summary id="sf-comic-production-summary" data-sf-focusable className="cursor-pointer list-none rounded-xl focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 text-sm font-black text-fuchsia-900"><Move size={16} aria-hidden="true" /> Comic production workbench</div>
+                        <p className="mt-1 text-xs text-fuchsia-800">Build pages, set print safety, reorder panels, and place lettering before Publish.</p>
+                      </div>
+                      <span className="self-start rounded-full border border-fuchsia-200 bg-white px-2.5 py-1 text-[10px] font-black uppercase text-fuchsia-700 sm:self-auto">
+                        {comicPageGroups.length} page{comicPageGroups.length === 1 ? '' : 's'} &middot; {Object.keys(sanitizePanelLayouts(panelLayouts)).length} custom layout{Object.keys(sanitizePanelLayouts(panelLayouts)).length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                  </summary>
+                  <div className="mt-4 space-y-4" data-sf-comic-production-controls>
+              {layoutMode === 'comic' && (
+                <div className="flex flex-wrap justify-center gap-2 mb-4">
+                  {Object.entries(COMIC_PAGE_LAYOUTS).map(([key, item]) => (
+                    <button type="button"
+                      key={key}
+                      onClick={() => setComicPageLayout(key)}
+                      title={item.desc}
+                      aria-pressed={comicPageLayout === key}
+                      className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${
+                        comicPageLayout === key ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {layoutMode === 'comic' && (
+                <div id="sf-comic-page-composer" data-sf-comic-page-composer tabIndex={-1} data-sf-focusable className="sf-comic-tool-card bg-white border-2 border-blue-100 rounded-2xl p-4 shadow-sm focus:ring-2 focus:ring-blue-400">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                    <div>
+                      <div className="text-[11px] font-black text-blue-700 uppercase tracking-widest flex items-center gap-2">
+                        <BookOpen size={14} /> Page Composer
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1">{comicPageGroups.length} page{comicPageGroups.length === 1 ? '' : 's'} · {paragraphs.length} panel{paragraphs.length === 1 ? '' : 's'}</div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Panels/page</span>
+                      {COMIC_PANELS_PER_PAGE_OPTIONS.map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => updateComicPanelsPerPage(value)}
+                          aria-pressed={sanitizeComicPageComposer(comicPageComposer).panelsPerPage === value}
+                          className={`w-8 h-8 rounded-full text-xs font-black border transition-all ${
+                            sanitizeComicPageComposer(comicPageComposer).panelsPerPage === value ? 'bg-blue-700 border-blue-700 text-white shadow-sm' : 'bg-white border-blue-200 text-blue-700 hover:bg-blue-50'
+                          }`}
+                        >
+                          {value}
+                        </button>
+                      ))}
+                      <select value="" onChange={(e) => applyComicPagePreset(e.target.value)} className="px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700" aria-label="Comic page preset">
+                        <option value="">Page preset</option>
+                        {Object.entries(COMIC_PAGE_PRESETS).map(([key, preset]) => <option key={key} value={key}>{preset.label}</option>)}
+                      </select>                      <button
+                        type="button"
+                        onClick={() => applyComicLetteringPlacement(comicPageGroups, 'Comic')}
+                        className="sf-comic-action px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700 hover:bg-blue-50 flex items-center gap-1"
+                        title="Place bubble anchors across comic pages while avoiding binding gutters"
+                      >
+                        <Sparkles size={12} /> Auto-place lettering
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid gap-3">
+                    {comicPageGroups.map((page) => {
+                      const pageMeta = sanitizeComicPageComposer(comicPageComposer).pages[String(page.page)] || {};
+                      const pageStats = getComicPageProductionStats(page, { panelDialogue, panelThumbnails, panelLayouts, illustrations, comicPrintSafety });
+                      return (
+                        <div key={page.page} className="sf-comic-page-row border border-blue-100 rounded-lg p-3 bg-blue-50/40">
+                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <div>
+                              <div className="font-black text-slate-800 text-sm">Page {page.page}</div>
+                              <div className="text-[10px] font-bold text-slate-500">Panels {page.startPanel}-{page.endPanel}</div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <div className={`text-[11px] font-black px-2 py-1 rounded-full border ${pageStats.status === 'Review' ? 'bg-rose-50 border-rose-200 text-rose-700' : pageStats.status === 'Ready' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
+                                {pageStats.status}
+                              </div>
+                              <div className="text-[11px] font-bold text-blue-700 bg-white border border-blue-100 px-2 py-1 rounded-full">Art {pageStats.artPanels}/{pageStats.total}</div>
+                              <div className="text-[11px] font-bold text-fuchsia-700 bg-white border border-fuchsia-100 px-2 py-1 rounded-full">Lettering {pageStats.placedBubbles}/{pageStats.bubblePanels}</div>
+                              {pageStats.attention > 0 && (
+                                <div className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2 py-1 rounded-full">{pageStats.attention} review</div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <select
+                              value={pageMeta.layout || ''}
+                              onChange={(e) => updateComicPageMeta(page.page, 'layout', e.target.value)}
+                              className="px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 focus:border-blue-400"
+                              aria-label={`Page ${page.page} layout`}
+                            >
+                              <option value="">Use global ({getComicPageLayoutLabel(comicPageLayout)})</option>
+                              {Object.entries(COMIC_PAGE_LAYOUTS).map(([key, item]) => (
+                                <option key={key} value={key}>{item.label}</option>
+                              ))}
+                            </select>
+                            <select
+                              value={pageMeta.turn || ''}
+                              onChange={(e) => updateComicPageMeta(page.page, 'turn', e.target.value)}
+                              className="px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 focus:border-blue-400"
+                              aria-label={`Page ${page.page} turn`}
+                            >
+                              {COMIC_PAGE_TURN_OPTIONS.map((option) => (
+                                <option key={option.value || 'unset'} value={option.value}>{option.label}</option>
+                              ))}
+                            </select>
+                            <input
+                              value={pageMeta.note || ''}
+                              onChange={(e) => updateComicPageMeta(page.page, 'note', e.target.value)}
+                              placeholder="Page note"
+                              className="px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs text-slate-700 focus:border-blue-400"
+                              aria-label={`Page ${page.page} note`}
+                            />
+                          </div>
+                          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                            <div className="text-[10px] font-bold text-slate-500">
+                              {pageStats.bubblePanels ? `${pageStats.placedBubbles} of ${pageStats.bubblePanels} bubble panel${pageStats.bubblePanels === 1 ? '' : 's'} anchored` : 'No bubble panels yet'}
+                              {pageStats.crowdedBubbles > 0 ? ` - ${pageStats.crowdedBubbles} crowded` : ''}
+                              {pageStats.gutterRiskPanels > 0 ? ` - ${pageStats.gutterRiskPanels} near gutter` : ''}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => applyComicLetteringPlacement(page, `Page ${page.page}`)}
+                              className="sf-comic-action px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700 hover:bg-blue-50 flex items-center gap-1"
+                              title={`Place safe bubble anchors for page ${page.page}`}
+                            >
+                              <Sparkles size={12} /> Auto-place this page
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {layoutMode === 'comic' && (() => {
+                const printSafety = sanitizeComicPrintSafety(comicPrintSafety);
+                return (
+                  <div id="sf-comic-print-safety" data-sf-comic-print-safety tabIndex={-1} data-sf-focusable className="sf-comic-tool-card bg-white border-2 border-emerald-100 rounded-2xl p-4 shadow-sm focus:ring-2 focus:ring-emerald-400">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                      <div>
+                        <div className="text-[11px] font-black text-emerald-700 uppercase tracking-widest flex items-center gap-2">
+                          <CheckCircle2 size={14} /> Print Safety
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1">{COMIC_PRINT_FORMATS[printSafety.format]?.trim || 'Screen'} · {COMIC_PRINT_FORMATS[printSafety.format]?.safe || 'Safe area'}</div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => updateComicPrintSafety('showGuides', !printSafety.showGuides)}
+                          aria-pressed={printSafety.showGuides}
+                          className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${printSafety.showGuides ? 'bg-emerald-700 border-emerald-700 text-white' : 'bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-50'}`}
+                        >
+                          Guides {printSafety.showGuides ? 'On' : 'Off'}
+                        </button>
+                        {printSafety.format !== 'digital' && (
+                          <button
+                            type="button"
+                            onClick={() => updateComicPrintSafety('includeBleed', !printSafety.includeBleed)}
+                            aria-pressed={printSafety.includeBleed}
+                            className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${printSafety.includeBleed ? 'bg-emerald-700 border-emerald-700 text-white' : 'bg-white border-amber-200 text-amber-700 hover:bg-amber-50'}`}
+                          >
+                            Bleed {printSafety.includeBleed ? 'On' : 'Off'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Format</div>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(COMIC_PRINT_FORMATS).map(([key, item]) => (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => updateComicPrintSafety('format', key)}
+                              aria-pressed={printSafety.format === key}
+                              className={`px-3 py-2 rounded-lg text-xs font-bold border text-left transition-all ${printSafety.format === key ? 'bg-emerald-700 border-emerald-700 text-white shadow-sm' : 'bg-white border-emerald-100 text-slate-700 hover:border-emerald-300'}`}
+                              title={`${item.trim} · ${item.safe}`}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <label className="block">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Gutter</span>
+                        <select
+                          value={printSafety.gutter}
+                          onChange={(e) => updateComicPrintSafety('gutter', e.target.value)}
+                          disabled={printSafety.format === 'digital'}
+                          className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-xs font-bold text-slate-700 focus:border-emerald-400 disabled:opacity-60"
+                          aria-label="Comic print gutter"
+                        >
+                          {Object.entries(COMIC_PRINT_GUTTERS).map(([key, item]) => (
+                            <option key={key} value={key}>{item.label} {item.width !== 'none' ? `(${item.width})` : ''}</option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+                );
+              })()}
+              {layoutMode === 'comic' && (
+                <div id="sf-comic-layout-studio" data-sf-comic-layout-studio tabIndex={-1} data-sf-focusable className="sf-comic-tool-card bg-white border-2 border-fuchsia-100 rounded-2xl p-4 shadow-sm focus:ring-2 focus:ring-fuchsia-400">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                    <div>
+                      <div className="text-[11px] font-black text-fuchsia-700 uppercase tracking-widest flex items-center gap-2">
+                        <ImageIcon size={14} /> Layout Studio
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1">{Object.keys(sanitizePanelLayouts(panelLayouts)).length} custom layout{Object.keys(sanitizePanelLayouts(panelLayouts)).length === 1 ? '' : 's'}</div>
+                    </div>
+                    <div className="sf-comic-toolbar flex items-center gap-1.5 self-start" role="toolbar" aria-label="Comic edit history">
+                      <button
+                        type="button"
+                        onClick={undoComicProduction}
+                        disabled={!comicCanUndo}
+                        className="sf-comic-action w-9 h-9 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 flex items-center justify-center"
+                        aria-label="Undo comic production edit"
+                        aria-keyshortcuts="Control+Z Meta+Z"
+                        title="Undo comic edit (Ctrl/Cmd+Z)"
+                        data-sf-comic-undo
+                        data-sf-focusable
+                      >
+                        <Undo2 size={16} aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={redoComicProduction}
+                        disabled={!comicCanRedo}
+                        className="sf-comic-action w-9 h-9 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 flex items-center justify-center"
+                        aria-label="Redo comic production edit"
+                        aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
+                        title="Redo comic edit (Ctrl/Cmd+Shift+Z)"
+                        data-sf-comic-redo
+                        data-sf-focusable
+                      >
+                        <Redo2 size={16} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {paragraphs.map((p, idx) => {
+                      const layoutFrame = panelLayouts[p.id] || {};
+                      const frame = layoutFrame.frame || '';
+                      const hasCustomSpans = layoutFrame.colSpan !== undefined || layoutFrame.rowSpan !== undefined;
+                      const panelThumbnail = panelThumbnails[p.id] || {};
+                      const letteringSpace = panelThumbnail.letteringSpace || '';
+                      const hasCustomBubblePosition = hasComicLetteringPosition(panelThumbnail);
+                      const hasCustomBubbleWidth = hasComicLetteringWidth(panelThumbnail);
+                      const customBubbleWidth = hasCustomBubbleWidth ? clampComicLetteringWidth(panelThumbnail.letteringWidth) : 72;
+                      return (
+                        <div
+                          key={p.id}
+                          onDragOver={(e) => updatePanelSequenceDragTarget(e, idx)}
+                          onDragEnter={(e) => updatePanelSequenceDragTarget(e, idx)}
+                          onDrop={(e) => finishPanelSequenceDrop(e, idx)}
+                          className={`sf-comic-layout-row sf-panel-sequence-card border border-fuchsia-100 rounded-lg p-3 bg-fuchsia-50/40 ${panelSequenceDrag?.from === idx ? 'sf-panel-dragging' : panelSequenceDrag?.over === idx ? 'sf-panel-drop-target' : ''}`}
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                            <div>
+                              <div className="font-black text-slate-800 text-sm">Panel {idx + 1}</div>
+                              <div className="text-[10px] font-bold text-slate-500">Sequence {idx + 1} of {paragraphs.length}</div>
+                            </div>
+                            <div className="sf-comic-toolbar flex flex-wrap items-center gap-1.5" role="toolbar" aria-label={`Panel ${idx + 1} layout actions`}>
+                              <button
+                                type="button"
+                                draggable="true"
+                                onDragStart={(e) => startPanelSequenceDrag(e, idx)}
+                                onDragEnd={finishPanelSequenceDrag}
+                                onKeyDown={(e) => handlePanelSequenceKeyDown(e, idx)}
+                                className="sf-comic-action sf-panel-drag-handle w-8 h-8 shrink-0 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 flex items-center justify-center"
+                                style={{ cursor: 'grab' }}
+                                aria-label={`Reorder panel ${idx + 1}. Use arrow keys, Home, or End.`}
+                                title="Drag to reorder panel"
+                                data-sf-panel-drag-handle={p.id}
+                                data-sf-focusable
+                              >
+                                <Move size={14} aria-hidden="true" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => moveParagraph(idx, -1)}
+                                disabled={idx === 0}
+                                className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-slate-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1"
+                                aria-label={`Move panel ${idx + 1} earlier`}
+                                title="Move panel earlier"
+                              >
+                                <ArrowLeft size={11} /> Earlier
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => moveParagraph(idx, 1)}
+                                disabled={idx === paragraphs.length - 1}
+                                className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-slate-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1"
+                                aria-label={`Move panel ${idx + 1} later`}
+                                title="Move panel later"
+                              >
+                                Later <ArrowRight size={11} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => duplicatePanelAfter(idx)}
+                                disabled={paragraphs.length >= maxParagraphs}
+                                className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1"
+                                aria-label={`Duplicate panel ${idx + 1}`}
+                                title={paragraphs.length >= maxParagraphs ? `Panel limit reached (${maxParagraphs})` : 'Duplicate panel'}
+                              >
+                                <Plus size={11} /> Duplicate
+                              </button>
+                              <div className="sf-comic-status-pill text-[11px] font-bold text-fuchsia-700 bg-white border border-fuchsia-100 px-2 py-1 rounded-full">
+                                {getComicPanelFrameLabel(frame)} · {getComicPanelSpanLabel(layoutFrame, comicPageLayout, idx)}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="sf-comic-frame-group flex flex-wrap gap-1.5 mb-2" role="group" aria-label={`Panel ${idx + 1} frame preset`}>
+                            {COMIC_PANEL_FRAME_OPTIONS.map((option) => (
+                              <button
+                                key={option.value || 'auto'}
+                                type="button"
+                                onClick={() => updatePanelLayout(p.id, 'frame', option.value)}
+                                aria-pressed={frame === option.value}
+                                className={`sf-comic-frame-choice px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${frame === option.value ? 'sf-comic-frame-choice-active bg-fuchsia-700 border-fuchsia-700 text-white' : 'bg-white border-fuchsia-100 text-slate-700 hover:border-fuchsia-300'}`}
+                              >
+                                {option.label}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <div className="text-[10px] font-bold text-slate-500">Drag the preview corner to resize</div>
+                            {hasCustomSpans && (
+                              <button
+                                type="button"
+                                onClick={() => updatePanelLayout(p.id, 'resetSpans')}
+                                className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300"
+                              >
+                                Reset size
+                              </button>
+                            )}
+                          </div>
+                          <label className="block">
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Bubble anchor</span>
+                            <select
+                              value={letteringSpace}
+                              onChange={(e) => updatePanelThumbnail(p.id, 'letteringSpace', e.target.value)}
+                              className="w-full px-3 py-2 rounded-lg border border-fuchsia-100 bg-white text-xs font-bold text-slate-700 focus:border-fuchsia-400"
+                              aria-label={`Panel ${idx + 1} bubble anchor`}
+                            >
+                              {COMIC_LETTERING_SPACE_OPTIONS.map((option) => (
+                                <option key={option.value || 'unset'} value={option.value}>{option.label}</option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="mt-3 block">
+                            <span className="flex items-center justify-between gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">
+                              <span>Bubble width</span>
+                              <span>{hasCustomBubbleWidth ? `${customBubbleWidth}%` : 'Auto'}</span>
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="range"
+                                min="28"
+                                max="86"
+                                step="1"
+                                value={customBubbleWidth}
+                                onChange={(e) => updatePanelThumbnail(p.id, 'letteringWidth', e.target.value)}
+                                className="sf-bubble-width-slider flex-1 accent-fuchsia-700"
+                                aria-label={`Panel ${idx + 1} bubble width`}
+                                aria-valuetext={hasCustomBubbleWidth ? `${customBubbleWidth} percent` : 'Auto fit'}
+                                data-sf-bubble-width-slider={p.id}
+                                data-sf-focusable
+                              />
+                              {hasCustomBubbleWidth && (
+                                <button
+                                  type="button"
+                                  onClick={() => updatePanelThumbnail(p.id, 'resetLetteringWidth')}
+                                  className="sf-comic-action h-8 px-2 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300 flex items-center gap-1"
+                                  title="Reset bubble width to auto"
+                                  aria-label={`Reset panel ${idx + 1} bubble width to auto`}
+                                  data-sf-focusable
+                                >
+                                  <RefreshCw size={11} aria-hidden="true" /> Auto
+                                </button>
+                              )}
+                            </div>
+                          </label>
+                          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                            <span className="text-[10px] font-bold text-slate-500">
+                              {hasCustomBubblePosition ? 'Bubble manually placed in preview' : 'Bubble follows selected anchor'}
+                            </span>
+                            {hasCustomBubblePosition && (
+                              <button
+                                type="button"
+                                onClick={() => updatePanelThumbnail(p.id, 'resetLetteringPosition')}
+                                className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300"
+                              >
+                                Reset bubble position
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div data-sf-comic-design-preview className="sf-comic-preview-shell overflow-hidden rounded-2xl border-2 border-slate-700 bg-slate-950 text-white shadow-lg">
+                <div className="flex flex-col gap-2 border-b border-slate-700 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="text-xs font-black uppercase tracking-widest">Interactive page preview</div>
+                    <p className="mt-1 text-[11px] text-slate-300">Drag panel corners and bubble handles here. Publish uses a read-only proof.</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5" aria-label="Design preview page navigation">
+                    <button type="button" onClick={() => setComicPreviewPage(prev => Math.max(1, prev - 1))} disabled={comicPreviewPage <= 1} className="sf-page-nav-button h-9 rounded-md border border-slate-600 px-3 text-xs font-black text-white hover:bg-slate-800 disabled:opacity-40">Previous</button>
+                    {comicPageGroups.map((page) => (
+                      <button
+                        key={`design-preview-tab-${page.page}`}
+                        type="button"
+                        onClick={() => setComicPreviewPage(page.page)}
+                        aria-pressed={comicPreviewPage === page.page}
+                        className={`sf-page-nav-button h-9 min-w-9 rounded-md border text-xs font-black ${comicPreviewPage === page.page ? 'border-fuchsia-300 bg-fuchsia-700 text-white' : 'border-slate-600 bg-slate-900 text-slate-200 hover:bg-slate-800'}`}
+                      >
+                        {page.page}
+                      </button>
+                    ))}
+                    <button type="button" onClick={() => setComicPreviewPage(prev => Math.min(comicPageGroups.length, prev + 1))} disabled={comicPreviewPage >= comicPageGroups.length} className="sf-page-nav-button h-9 rounded-md border border-slate-600 px-3 text-xs font-black text-white hover:bg-slate-800 disabled:opacity-40">Next</button>
+                  </div>
+                </div>
+                {focusedComicPreviewPage && (
+                  <div className={`grid gap-3 p-3 ${focusedComicPreviewPage.layout === 'strip' ? 'grid-cols-1' : 'grid-cols-2'}`} style={{ direction: focusedComicPreviewPage.layout === 'manga' ? 'rtl' : 'ltr' }}>
+                    {focusedComicPreviewPage.panels.map(({ paragraph, idx: panelIdx }, pageIndex) => renderComicPreviewPanel(paragraph, panelIdx, focusedComicPreviewPage.layout, pageIndex, focusedComicPreviewPage, true))}
+                  </div>
+                )}
+              </div>
+
+                  </div>
+                </details>
+              )}
               {/* Image Prompt Preview Modal */}
               {promptPreview && (
                 <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-5 shadow-lg">
@@ -9688,23 +10493,6 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 items-center">
-                  {/* Voice selector */}
-                  <div className="flex items-center gap-1.5">
-                    <label htmlFor="sf-voice" className="text-[11px] font-bold text-indigo-500 uppercase">Voice:</label>
-                    <select
-                      id="sf-voice"
-                      value={narratorVoice}
-                      onChange={(e) => setNarratorVoice(e.target.value)}
-                      className="text-xs p-1 border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-300 font-bold text-indigo-700"
-                    >
-                      {VOICE_POOL.map(v => <option key={v} value={v}>{v}</option>)}
-                    </select>
-                  </div>
-                  {characters.length === 0 && (
-                    <button type="button" onClick={detectCharacters} disabled={isProcessing} className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold hover:bg-indigo-200 transition-colors disabled:opacity-50 flex items-center gap-2">
-                      <Eye size={14} /> Detect Characters
-                    </button>
-                  )}
                   <button type="button" onClick={narrateAll} disabled={isProcessing} className="px-4 py-2 bg-indigo-600 text-white rounded-full text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2">
                     <Volume2 size={14} /> {isProcessing ? 'Narrating...' : (artifactType === 'comic' ? 'Narrate All Captions' : 'Narrate All Scenes')}
                   </button>
@@ -9722,17 +10510,56 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 </div>
               </div>
 
-              {/* Characters detected */}
-              {characters.length > 0 && (
-                <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4">
-                  <div className="text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2">Characters Detected</div>
-                  <div className="flex flex-wrap gap-3">
-                    {characters.map((c, i) => (
-                      <div key={i} className="bg-white border border-indigo-200 rounded-xl px-3 py-2 text-xs">
-                        <span className="font-bold text-indigo-800">{c.name}</span>
-                        <span className="text-slate-500 ml-2">Voice: {c.voice}</span>
+              <details data-sf-narration-settings className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-4">
+                <summary className="cursor-pointer rounded-lg text-sm font-black text-indigo-800 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+                  Narration settings <span className="ml-1 font-medium text-indigo-600">— Voice and character voices</span>
+                </summary>
+                <div className="mt-4 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <label htmlFor="sf-voice" className="text-[11px] font-bold text-indigo-600 uppercase">Narrator voice</label>
+                    <select
+                      id="sf-voice"
+                      value={narratorVoice}
+                      onChange={(e) => setNarratorVoice(e.target.value)}
+                      className="w-full sm:w-auto text-xs p-2 border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-300 font-bold text-indigo-700"
+                    >
+                      {VOICE_POOL.map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                    {characters.length === 0 && (
+                      <button type="button" onClick={detectCharacters} disabled={isProcessing} className="w-full sm:w-auto justify-center px-4 py-2 bg-white text-indigo-700 border border-indigo-200 rounded-full text-xs font-bold hover:bg-indigo-100 transition-colors disabled:opacity-50 flex items-center gap-2">
+                        <Eye size={14} /> Detect character voices
+                      </button>
+                    )}
+                  </div>
+                  {characters.length > 0 && (
+                    <div>
+                      <div className="text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2">Character voices</div>
+                      <div className="flex flex-wrap gap-3">
+                        {characters.map((c, i) => (
+                          <div key={i} className="bg-white border border-indigo-200 rounded-xl px-3 py-2 text-xs">
+                            <span className="font-bold text-indigo-800">{c.name}</span>
+                            <span className="text-slate-500 ml-2">Voice: {c.voice}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+                  )}
+                </div>
+              </details>
+
+              {recordingError && (
+                <div data-sf-microphone-error role="alert" className="rounded-2xl border-2 border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
+                  <div className="font-black">Microphone unavailable</div>
+                  <p className="mt-1">{recordingError.message} You can also use AI narration or continue without audio.</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {recordingError.paragraphId && (
+                      <button type="button" onClick={() => startRecordingParagraph(recordingError.paragraphId)} className="rounded-full bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700">
+                        Retry microphone
+                      </button>
+                    )}
+                    <button type="button" onClick={() => { setRecordingError(null); recorder.clearError(); }} className="rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100">
+                      Dismiss
+                    </button>
                   </div>
                 </div>
               )}
@@ -9743,10 +10570,11 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 const hasSentenceAudio = seg?.sentenceAudios && seg.sentenceAudios.length > 0;
                 const displaySentences = hasSentenceAudio ? seg.sentences : splitSentences(p.text);
                 return (
-                  <div key={p.id} className={`bg-white rounded-2xl border-2 shadow-sm p-5 transition-colors ${isCurrentPlayback ? 'border-green-400 bg-green-50/30' : 'border-indigo-100'}`}>
-                    <div className="flex items-center justify-between mb-2">
+                  <div key={p.id} className={`bg-white rounded-2xl border-2 shadow-sm p-4 sm:p-5 transition-colors ${isCurrentPlayback ? 'border-green-400 bg-green-50/30' : 'border-indigo-100'}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
                       <span className="text-xs font-bold text-indigo-600">{artifactType === 'comic' ? 'Panel' : 'Scene'} {idx + 1} {isCurrentPlayback && '\u25B6 Playing'}</span>
-                      <div className="flex gap-2">
+                      <div className="flex w-full flex-wrap items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 sm:w-auto" aria-label="Narration and voice practice actions">
+                        <span className="w-full text-[10px] font-black uppercase tracking-wider text-indigo-500">Create narration</span>
                         {/* AI Narrate button */}
                         {hasSentenceAudio ? (
                           <span className="text-xs text-green-600 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> AI Narrated ({seg.sentenceAudios.filter(Boolean).length} sentences)</span>
@@ -9769,6 +10597,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                             <Play size={12} /> {isCurrentPlayback ? 'Stop' : 'Play'}
                           </button>
                         )}
+                        <span className="mt-1 w-full border-t border-indigo-200 pt-2 text-[10px] font-black uppercase tracking-wider text-rose-500">Practice or record my voice</span>
                         {/* Record button */}
                         <button type="button"
                           onClick={() => recordingParagraphId === p.id ? stopRecordingParagraph() : startRecordingParagraph(p.id)}
@@ -10685,7 +11514,9 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       : 'Your ' + ARTIFACT_TYPES[artifactType].label.toLowerCase() + ' is ready to publish'}
                 </h3>
                 <p className="text-slate-600 text-sm mt-1">
-                  Preview the finished {ARTIFACT_TYPES[artifactType].label.toLowerCase()} and choose how to share or save it.
+                  {layoutMode === 'comic'
+                    ? 'Review the proof and finished comic, then choose how to save it. Structural production settings stay in Design.'
+                    : 'Preview the finished story and choose how to share or save it.'}
                 </p>
                 <div className="inline-flex mt-3 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">
                   Artifact: {ARTIFACT_TYPES[artifactType].label}
@@ -10693,20 +11524,22 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 </div>
               </div>
               {layoutMode === 'comic' && (
-                <div className="flex flex-wrap justify-center gap-2 mb-4">
-                  {Object.entries(COMIC_PAGE_LAYOUTS).map(([key, item]) => (
-                    <button type="button"
-                      key={key}
-                      onClick={() => setComicPageLayout(key)}
-                      title={item.desc}
-                      aria-pressed={comicPageLayout === key}
-                      className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${
-                        comicPageLayout === key ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
+                <div data-sf-publish-design-route className="flex flex-col gap-3 rounded-2xl border border-fuchsia-200 bg-fuchsia-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="text-sm font-black text-fuchsia-900">Need to change pages, panel order, print setup, or lettering?</div>
+                    <p className="mt-1 text-xs text-fuchsia-800">Make structural changes in Design, then return here to review the updated proof.</p>
+                  </div>
+                  <button
+                    type="button"
+                    data-sf-edit-comic-production
+                    onClick={() => {
+                      setShowComicProduction(true);
+                      changePhase('illustrate', 'sf-comic-production-workbench');
+                    }}
+                    className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-fuchsia-700 px-4 py-2 text-xs font-black text-white hover:bg-fuchsia-800"
+                  >
+                    <ArrowLeft size={14} aria-hidden="true" /> Edit production in Design
+                  </button>
                 </div>
               )}
               <section className={`sf-export-preflight overflow-hidden rounded-lg border-2 bg-white shadow-sm ${projectReadiness.blockers.length ? 'border-rose-200' : projectReadiness.warnings.length ? 'border-amber-200' : 'border-emerald-200'}`} aria-labelledby="sf-export-preflight-title">
@@ -10764,116 +11597,6 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 )}
               </section>
 
-              {layoutMode === 'comic' && (
-                <div className="sf-comic-tool-card bg-white border-2 border-blue-100 rounded-2xl p-4 shadow-sm">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                    <div>
-                      <div className="text-[11px] font-black text-blue-700 uppercase tracking-widest flex items-center gap-2">
-                        <BookOpen size={14} /> Page Composer
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">{comicPageGroups.length} page{comicPageGroups.length === 1 ? '' : 's'} · {paragraphs.length} panel{paragraphs.length === 1 ? '' : 's'}</div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Panels/page</span>
-                      {COMIC_PANELS_PER_PAGE_OPTIONS.map((value) => (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => updateComicPanelsPerPage(value)}
-                          aria-pressed={sanitizeComicPageComposer(comicPageComposer).panelsPerPage === value}
-                          className={`w-8 h-8 rounded-full text-xs font-black border transition-all ${
-                            sanitizeComicPageComposer(comicPageComposer).panelsPerPage === value ? 'bg-blue-700 border-blue-700 text-white shadow-sm' : 'bg-white border-blue-200 text-blue-700 hover:bg-blue-50'
-                          }`}
-                        >
-                          {value}
-                        </button>
-                      ))}
-                      <select value="" onChange={(e) => applyComicPagePreset(e.target.value)} className="px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700" aria-label="Comic page preset">
-                        <option value="">Page preset</option>
-                        {Object.entries(COMIC_PAGE_PRESETS).map(([key, preset]) => <option key={key} value={key}>{preset.label}</option>)}
-                      </select>                      <button
-                        type="button"
-                        onClick={() => applyComicLetteringPlacement(comicPageGroups, 'Comic')}
-                        className="sf-comic-action px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700 hover:bg-blue-50 flex items-center gap-1"
-                        title="Place bubble anchors across comic pages while avoiding binding gutters"
-                      >
-                        <Sparkles size={12} /> Auto-place lettering
-                      </button>
-                    </div>
-                  </div>
-                  <div className="grid gap-3">
-                    {comicPageGroups.map((page) => {
-                      const pageMeta = sanitizeComicPageComposer(comicPageComposer).pages[String(page.page)] || {};
-                      const pageStats = getComicPageProductionStats(page, { panelDialogue, panelThumbnails, panelLayouts, illustrations, comicPrintSafety });
-                      return (
-                        <div key={page.page} className="sf-comic-page-row border border-blue-100 rounded-lg p-3 bg-blue-50/40">
-                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div>
-                              <div className="font-black text-slate-800 text-sm">Page {page.page}</div>
-                              <div className="text-[10px] font-bold text-slate-500">Panels {page.startPanel}-{page.endPanel}</div>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <div className={`text-[11px] font-black px-2 py-1 rounded-full border ${pageStats.status === 'Review' ? 'bg-rose-50 border-rose-200 text-rose-700' : pageStats.status === 'Ready' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
-                                {pageStats.status}
-                              </div>
-                              <div className="text-[11px] font-bold text-blue-700 bg-white border border-blue-100 px-2 py-1 rounded-full">Art {pageStats.artPanels}/{pageStats.total}</div>
-                              <div className="text-[11px] font-bold text-fuchsia-700 bg-white border border-fuchsia-100 px-2 py-1 rounded-full">Lettering {pageStats.placedBubbles}/{pageStats.bubblePanels}</div>
-                              {pageStats.attention > 0 && (
-                                <div className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2 py-1 rounded-full">{pageStats.attention} review</div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                            <select
-                              value={pageMeta.layout || ''}
-                              onChange={(e) => updateComicPageMeta(page.page, 'layout', e.target.value)}
-                              className="px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 focus:border-blue-400"
-                              aria-label={`Page ${page.page} layout`}
-                            >
-                              <option value="">Use global ({getComicPageLayoutLabel(comicPageLayout)})</option>
-                              {Object.entries(COMIC_PAGE_LAYOUTS).map(([key, item]) => (
-                                <option key={key} value={key}>{item.label}</option>
-                              ))}
-                            </select>
-                            <select
-                              value={pageMeta.turn || ''}
-                              onChange={(e) => updateComicPageMeta(page.page, 'turn', e.target.value)}
-                              className="px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 focus:border-blue-400"
-                              aria-label={`Page ${page.page} turn`}
-                            >
-                              {COMIC_PAGE_TURN_OPTIONS.map((option) => (
-                                <option key={option.value || 'unset'} value={option.value}>{option.label}</option>
-                              ))}
-                            </select>
-                            <input
-                              value={pageMeta.note || ''}
-                              onChange={(e) => updateComicPageMeta(page.page, 'note', e.target.value)}
-                              placeholder="Page note"
-                              className="px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs text-slate-700 focus:border-blue-400"
-                              aria-label={`Page ${page.page} note`}
-                            />
-                          </div>
-                          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                            <div className="text-[10px] font-bold text-slate-500">
-                              {pageStats.bubblePanels ? `${pageStats.placedBubbles} of ${pageStats.bubblePanels} bubble panel${pageStats.bubblePanels === 1 ? '' : 's'} anchored` : 'No bubble panels yet'}
-                              {pageStats.crowdedBubbles > 0 ? ` - ${pageStats.crowdedBubbles} crowded` : ''}
-                              {pageStats.gutterRiskPanels > 0 ? ` - ${pageStats.gutterRiskPanels} near gutter` : ''}
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => applyComicLetteringPlacement(page, `Page ${page.page}`)}
-                              className="sf-comic-action px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700 hover:bg-blue-50 flex items-center gap-1"
-                              title={`Place safe bubble anchors for page ${page.page}`}
-                            >
-                              <Sparkles size={12} /> Auto-place this page
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
               {layoutMode === 'comic' && comicExportProof && (
                 <div data-sf-comic-export-proof className="mt-4 border-t-2 border-blue-100 pt-4" aria-label="Comic export proof">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -10883,9 +11606,21 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       </div>
                       <div className="text-xs text-slate-500 mt-1">{comicExportProof.readyPages}/{comicExportProof.pageCount} pages clear · {comicExportProof.issueCount} proof note{comicExportProof.issueCount === 1 ? '' : 's'}</div>
                     </div>
-                    <span className={`self-start sm:self-auto rounded-full border px-2.5 py-1 text-[10px] font-black uppercase ${comicExportProof.status === 'Ready' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
-                      {comicExportProof.status}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                      <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black uppercase ${comicExportProof.status === 'Ready' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
+                        {comicExportProof.status}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowComicProduction(true);
+                          changePhase('illustrate', 'sf-comic-production-workbench');
+                        }}
+                        className="rounded-full border border-blue-200 bg-white px-3 py-1.5 text-[10px] font-black text-blue-700 hover:bg-blue-50"
+                      >
+                        Edit in Design
+                      </button>
+                    </div>
                   </div>
                   {comicExportProof.issueCount > 0 ? (
                     <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -10935,278 +11670,6 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   )}
                 </div>
               )}
-              {layoutMode === 'comic' && (() => {
-                const printSafety = sanitizeComicPrintSafety(comicPrintSafety);
-                return (
-                  <div className="sf-comic-tool-card bg-white border-2 border-emerald-100 rounded-2xl p-4 shadow-sm">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                      <div>
-                        <div className="text-[11px] font-black text-emerald-700 uppercase tracking-widest flex items-center gap-2">
-                          <CheckCircle2 size={14} /> Print Safety
-                        </div>
-                        <div className="text-xs text-slate-500 mt-1">{COMIC_PRINT_FORMATS[printSafety.format]?.trim || 'Screen'} · {COMIC_PRINT_FORMATS[printSafety.format]?.safe || 'Safe area'}</div>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => updateComicPrintSafety('showGuides', !printSafety.showGuides)}
-                          aria-pressed={printSafety.showGuides}
-                          className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${printSafety.showGuides ? 'bg-emerald-700 border-emerald-700 text-white' : 'bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-50'}`}
-                        >
-                          Guides {printSafety.showGuides ? 'On' : 'Off'}
-                        </button>
-                        {printSafety.format !== 'digital' && (
-                          <button
-                            type="button"
-                            onClick={() => updateComicPrintSafety('includeBleed', !printSafety.includeBleed)}
-                            aria-pressed={printSafety.includeBleed}
-                            className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${printSafety.includeBleed ? 'bg-emerald-700 border-emerald-700 text-white' : 'bg-white border-amber-200 text-amber-700 hover:bg-amber-50'}`}
-                          >
-                            Bleed {printSafety.includeBleed ? 'On' : 'Off'}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Format</div>
-                        <div className="flex flex-wrap gap-2">
-                          {Object.entries(COMIC_PRINT_FORMATS).map(([key, item]) => (
-                            <button
-                              key={key}
-                              type="button"
-                              onClick={() => updateComicPrintSafety('format', key)}
-                              aria-pressed={printSafety.format === key}
-                              className={`px-3 py-2 rounded-lg text-xs font-bold border text-left transition-all ${printSafety.format === key ? 'bg-emerald-700 border-emerald-700 text-white shadow-sm' : 'bg-white border-emerald-100 text-slate-700 hover:border-emerald-300'}`}
-                              title={`${item.trim} · ${item.safe}`}
-                            >
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <label className="block">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Gutter</span>
-                        <select
-                          value={printSafety.gutter}
-                          onChange={(e) => updateComicPrintSafety('gutter', e.target.value)}
-                          disabled={printSafety.format === 'digital'}
-                          className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-xs font-bold text-slate-700 focus:border-emerald-400 disabled:opacity-60"
-                          aria-label="Comic print gutter"
-                        >
-                          {Object.entries(COMIC_PRINT_GUTTERS).map(([key, item]) => (
-                            <option key={key} value={key}>{item.label} {item.width !== 'none' ? `(${item.width})` : ''}</option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                  </div>
-                );
-              })()}
-              {layoutMode === 'comic' && (
-                <div className="sf-comic-tool-card bg-white border-2 border-fuchsia-100 rounded-2xl p-4 shadow-sm">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                    <div>
-                      <div className="text-[11px] font-black text-fuchsia-700 uppercase tracking-widest flex items-center gap-2">
-                        <ImageIcon size={14} /> Layout Studio
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">{Object.keys(sanitizePanelLayouts(panelLayouts)).length} custom layout{Object.keys(sanitizePanelLayouts(panelLayouts)).length === 1 ? '' : 's'}</div>
-                    </div>
-                    <div className="sf-comic-toolbar flex items-center gap-1.5 self-start" role="toolbar" aria-label="Comic edit history">
-                      <button
-                        type="button"
-                        onClick={undoComicProduction}
-                        disabled={!comicCanUndo}
-                        className="sf-comic-action w-9 h-9 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 flex items-center justify-center"
-                        aria-label="Undo comic production edit"
-                        aria-keyshortcuts="Control+Z Meta+Z"
-                        title="Undo comic edit (Ctrl/Cmd+Z)"
-                        data-sf-comic-undo
-                        data-sf-focusable
-                      >
-                        <Undo2 size={16} aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={redoComicProduction}
-                        disabled={!comicCanRedo}
-                        className="sf-comic-action w-9 h-9 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 flex items-center justify-center"
-                        aria-label="Redo comic production edit"
-                        aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
-                        title="Redo comic edit (Ctrl/Cmd+Shift+Z)"
-                        data-sf-comic-redo
-                        data-sf-focusable
-                      >
-                        <Redo2 size={16} aria-hidden="true" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {paragraphs.map((p, idx) => {
-                      const layoutFrame = panelLayouts[p.id] || {};
-                      const frame = layoutFrame.frame || '';
-                      const hasCustomSpans = layoutFrame.colSpan !== undefined || layoutFrame.rowSpan !== undefined;
-                      const panelThumbnail = panelThumbnails[p.id] || {};
-                      const letteringSpace = panelThumbnail.letteringSpace || '';
-                      const hasCustomBubblePosition = hasComicLetteringPosition(panelThumbnail);
-                      const hasCustomBubbleWidth = hasComicLetteringWidth(panelThumbnail);
-                      const customBubbleWidth = hasCustomBubbleWidth ? clampComicLetteringWidth(panelThumbnail.letteringWidth) : 72;
-                      return (
-                        <div
-                          key={p.id}
-                          onDragOver={(e) => updatePanelSequenceDragTarget(e, idx)}
-                          onDragEnter={(e) => updatePanelSequenceDragTarget(e, idx)}
-                          onDrop={(e) => finishPanelSequenceDrop(e, idx)}
-                          className={`sf-comic-layout-row sf-panel-sequence-card border border-fuchsia-100 rounded-lg p-3 bg-fuchsia-50/40 ${panelSequenceDrag?.from === idx ? 'sf-panel-dragging' : panelSequenceDrag?.over === idx ? 'sf-panel-drop-target' : ''}`}
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
-                            <div>
-                              <div className="font-black text-slate-800 text-sm">Panel {idx + 1}</div>
-                              <div className="text-[10px] font-bold text-slate-500">Sequence {idx + 1} of {paragraphs.length}</div>
-                            </div>
-                            <div className="sf-comic-toolbar flex flex-wrap items-center gap-1.5" role="toolbar" aria-label={`Panel ${idx + 1} layout actions`}>
-                              <button
-                                type="button"
-                                draggable="true"
-                                onDragStart={(e) => startPanelSequenceDrag(e, idx)}
-                                onDragEnd={finishPanelSequenceDrag}
-                                onKeyDown={(e) => handlePanelSequenceKeyDown(e, idx)}
-                                className="sf-comic-action sf-panel-drag-handle w-8 h-8 shrink-0 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 flex items-center justify-center"
-                                style={{ cursor: 'grab' }}
-                                aria-label={`Reorder panel ${idx + 1}. Use arrow keys, Home, or End.`}
-                                title="Drag to reorder panel"
-                                data-sf-panel-drag-handle={p.id}
-                                data-sf-focusable
-                              >
-                                <Move size={14} aria-hidden="true" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => moveParagraph(idx, -1)}
-                                disabled={idx === 0}
-                                className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-slate-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1"
-                                aria-label={`Move panel ${idx + 1} earlier`}
-                                title="Move panel earlier"
-                              >
-                                <ArrowLeft size={11} /> Earlier
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => moveParagraph(idx, 1)}
-                                disabled={idx === paragraphs.length - 1}
-                                className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-slate-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1"
-                                aria-label={`Move panel ${idx + 1} later`}
-                                title="Move panel later"
-                              >
-                                Later <ArrowRight size={11} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => duplicatePanelAfter(idx)}
-                                disabled={paragraphs.length >= maxParagraphs}
-                                className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1"
-                                aria-label={`Duplicate panel ${idx + 1}`}
-                                title={paragraphs.length >= maxParagraphs ? `Panel limit reached (${maxParagraphs})` : 'Duplicate panel'}
-                              >
-                                <Plus size={11} /> Duplicate
-                              </button>
-                              <div className="sf-comic-status-pill text-[11px] font-bold text-fuchsia-700 bg-white border border-fuchsia-100 px-2 py-1 rounded-full">
-                                {getComicPanelFrameLabel(frame)} · {getComicPanelSpanLabel(layoutFrame, comicPageLayout, idx)}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="sf-comic-frame-group flex flex-wrap gap-1.5 mb-2" role="group" aria-label={`Panel ${idx + 1} frame preset`}>
-                            {COMIC_PANEL_FRAME_OPTIONS.map((option) => (
-                              <button
-                                key={option.value || 'auto'}
-                                type="button"
-                                onClick={() => updatePanelLayout(p.id, 'frame', option.value)}
-                                aria-pressed={frame === option.value}
-                                className={`sf-comic-frame-choice px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${frame === option.value ? 'sf-comic-frame-choice-active bg-fuchsia-700 border-fuchsia-700 text-white' : 'bg-white border-fuchsia-100 text-slate-700 hover:border-fuchsia-300'}`}
-                              >
-                                {option.label}
-                              </button>
-                            ))}
-                          </div>
-                          <div className="flex items-center justify-between gap-2 mb-2">
-                            <div className="text-[10px] font-bold text-slate-500">Drag the preview corner to resize</div>
-                            {hasCustomSpans && (
-                              <button
-                                type="button"
-                                onClick={() => updatePanelLayout(p.id, 'resetSpans')}
-                                className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300"
-                              >
-                                Reset size
-                              </button>
-                            )}
-                          </div>
-                          <label className="block">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Bubble anchor</span>
-                            <select
-                              value={letteringSpace}
-                              onChange={(e) => updatePanelThumbnail(p.id, 'letteringSpace', e.target.value)}
-                              className="w-full px-3 py-2 rounded-lg border border-fuchsia-100 bg-white text-xs font-bold text-slate-700 focus:border-fuchsia-400"
-                              aria-label={`Panel ${idx + 1} bubble anchor`}
-                            >
-                              {COMIC_LETTERING_SPACE_OPTIONS.map((option) => (
-                                <option key={option.value || 'unset'} value={option.value}>{option.label}</option>
-                              ))}
-                            </select>
-                          </label>
-                          <label className="mt-3 block">
-                            <span className="flex items-center justify-between gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">
-                              <span>Bubble width</span>
-                              <span>{hasCustomBubbleWidth ? `${customBubbleWidth}%` : 'Auto'}</span>
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="range"
-                                min="28"
-                                max="86"
-                                step="1"
-                                value={customBubbleWidth}
-                                onChange={(e) => updatePanelThumbnail(p.id, 'letteringWidth', e.target.value)}
-                                className="sf-bubble-width-slider flex-1 accent-fuchsia-700"
-                                aria-label={`Panel ${idx + 1} bubble width`}
-                                aria-valuetext={hasCustomBubbleWidth ? `${customBubbleWidth} percent` : 'Auto fit'}
-                                data-sf-bubble-width-slider={p.id}
-                                data-sf-focusable
-                              />
-                              {hasCustomBubbleWidth && (
-                                <button
-                                  type="button"
-                                  onClick={() => updatePanelThumbnail(p.id, 'resetLetteringWidth')}
-                                  className="sf-comic-action h-8 px-2 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300 flex items-center gap-1"
-                                  title="Reset bubble width to auto"
-                                  aria-label={`Reset panel ${idx + 1} bubble width to auto`}
-                                  data-sf-focusable
-                                >
-                                  <RefreshCw size={11} aria-hidden="true" /> Auto
-                                </button>
-                              )}
-                            </div>
-                          </label>
-                          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                            <span className="text-[10px] font-bold text-slate-500">
-                              {hasCustomBubblePosition ? 'Bubble manually placed in preview' : 'Bubble follows selected anchor'}
-                            </span>
-                            {hasCustomBubblePosition && (
-                              <button
-                                type="button"
-                                onClick={() => updatePanelThumbnail(p.id, 'resetLetteringPosition')}
-                                className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300"
-                              >
-                                Reset bubble position
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
               {/* Preview */}
               <div className="sf-comic-preview-shell bg-gradient-to-b from-amber-50 to-white border-2 border-amber-200 rounded-2xl overflow-hidden shadow-lg">
                 <div className="text-center p-8 border-b border-amber-200 bg-gradient-to-r from-amber-100/50 to-rose-100/50">
@@ -11408,28 +11871,6 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 {artifactType === 'comic' ? 'Comic' : 'Storybook'} and slideshow exports open in new tabs · print or save as PDF
               </p>
 
-              {/* ── Class Portfolio Gallery (teacher view) ── */}
-              {liveSession && !isCanvasEnv && (
-                <div className="bg-white rounded-2xl border-2 border-violet-200 p-5 shadow-sm">
-                  <h4 className="text-sm font-bold text-violet-700 uppercase tracking-wider mb-2 flex items-center gap-2">
-                    <Eye size={16} /> Class Portfolio
-                  </h4>
-                  <p className="text-xs text-slate-600 mb-3">
-                    Share your {artifactType === 'comic' ? 'comic' : 'storybook'} so your teacher and classmates can view it. Shared artifacts appear in the class gallery.
-                  </p>
-                  <button type="button"
-                    data-sf-publish-action="gallery"
-                    data-sf-publish-blocked={publishBlocked}
-                    onClick={shareToSession}
-                    aria-describedby="sf-phase-requirements"
-                    className="px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 transition-colors flex items-center gap-2"
-                  >
-                    <Star size={14} /> Publish to Class Gallery
-                  </button>
-                  <p className="text-[11px] text-violet-700 mt-2">Your cover art, title, word count, and grade will be visible to the class.</p>
-                </div>
-              )}
-
               <details data-sf-project-tools className="bg-white rounded-2xl border border-slate-200 p-4">
                 <summary className="cursor-pointer rounded-lg text-sm font-black text-slate-700 focus-visible:ring-2 focus-visible:ring-rose-500">
                   <span className="inline-flex items-center gap-2"><Save size={16} aria-hidden="true" /> Project files &amp; collaboration</span>
@@ -11447,7 +11888,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <button type="button" onClick={exportStoryForgeProject} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors flex items-center gap-2" aria-label="Export full Story Forge project">
                     <Download size={14} /> Export .storyforge
                   </button>
-                  <button type="button" onClick={importDraftJSON} className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-2" aria-label="Import Story Forge project">
+                  <button type="button" data-sf-import-draft onClick={importDraftJSON} className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-2" aria-label="Import Story Forge project">
                     <Plus size={14} /> Import project
                   </button>
                   <label className="flex-1 min-w-[180px]">
@@ -11463,7 +11904,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Recent checkpoints</div>
                     <div className="flex flex-wrap gap-2">
                       {revisionHistory.slice(0, 6).map((revision) => (
-                        <button key={revision.id} type="button" onClick={() => restoreRevisionCheckpoint(revision)} className="px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-[11px] font-bold text-emerald-800 hover:bg-emerald-100" title={`Restore ${revision.label}`}>
+                        <button key={revision.id} type="button" data-sf-restore-checkpoint={revision.id} onClick={() => restoreRevisionCheckpoint(revision)} className="px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-[11px] font-bold text-emerald-800 hover:bg-emerald-100" title={`Restore ${revision.label}`}>
                           {revision.label} · {new Date(revision.savedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </button>
                       ))}
@@ -11481,7 +11922,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <button type="button" onClick={exportDraftJSON} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors flex items-center gap-2">
                     <Download size={14} /> Export Draft (.json)
                   </button>
-                  <button type="button" onClick={importDraftJSON} className="px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2">
+                  <button type="button" data-sf-import-draft onClick={importDraftJSON} className="px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2">
                     <Plus size={14} /> Import Classmate's Draft
                   </button>
                 </div>

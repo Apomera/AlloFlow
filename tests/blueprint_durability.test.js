@@ -103,7 +103,10 @@ describe('durability wiring guardrails', () => {
     expect(src).toContain("const ALLO_BLUEPRINT_STORE_KEY = 'alloflow-blueprint-run-v1'");
     expect(src).toContain('const ALLO_BLUEPRINT_STORE_VERSION = 2');
     expect(src).toContain('_migrateBlueprintEnvelope(JSON.parse(raw))');
-    expect(src).toContain('if (!env) return;');
+    expect(src).toContain('if (!env) {');
+    expect(src).toContain('safeRemoveItem(ALLO_BLUEPRINT_STORE_KEY);');
+    expect(src).toContain("[Blueprint] discarded invalid saved state.");
+    expect(src).toContain('_isGenerationEnvelopeExpired(env.savedAt, ALLO_BLUEPRINT_RETENTION_MS)');
     // Must not reuse the contract's version constant for storage.
     expect(src).not.toMatch(/ALLO_BLUEPRINT_STORE_VERSION\s*=\s*SCHEMA_VERSION/);
   });

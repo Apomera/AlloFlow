@@ -105,7 +105,7 @@
     },
     {
       "id": "parapro-1755-practice-1",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -127,16 +127,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/parapro_pack.json",
+      "sha256": "04e45afae1f32de51efea3ef5f654fc3368f37682328b46ef40d6a1a29e354da",
       "learningLibraryUrl": "./test_prep/parapro_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/parapro_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/parapro_native_qa.json",
-      "learningLibrarySha256": "df71d51a6a880d992316a382dbef0ac08bbfdefa2f893d79ca1626ec6ec534f7",
-      "learningLibraryQaSha256": "f39128a571d6983dea19ad9eba3fea6595bb5fed0bff7caa502f788d59e12ebe",
-      "nativeQaSha256": "760f4d284984c3b47cf68b4210d4f90fc4ad77c1228f263e4ea68d8b2e0f2807"
+      "learningLibrarySha256": "16aff32e065be4e64f03e133afcb05ae0a5fbf316481dbb1280d4de6c1e6c7b6",
+      "learningLibraryQaSha256": "683c7eb3cf1dfbe838d8b4d10cf39b1d0ac94a20f66b6e033d3b672c55ac2441",
+      "nativeQaSha256": "20da9537ddf85f3003acae3e6e83f6f0e6fba9b8edc2721c63e943abbf7c5cb8"
     },
     {
       "id": "praxis-special-education-5355",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -158,16 +160,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/special_education_5355_pack.json",
+      "sha256": "d607452b4da41ad3d0a39cfd3145b8f2e137e95c6a3a99d479d54a1b03ae4557",
       "learningLibraryUrl": "./test_prep/special_education_5355_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_5355_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_5355_native_qa.json",
-      "learningLibrarySha256": "5fa9a41a5511e08b278498862f37b4421148262831aba666cccccde071b15aa2",
-      "learningLibraryQaSha256": "e017c89a964e88be0969f85a5c4b756ff4aac16391babd335b404af87907c267",
-      "nativeQaSha256": "438629a9e051845c07f10da09065c76426ecb7967eae62019d61eda956375d72"
+      "learningLibrarySha256": "b1359357593aa20f819861ea0f4444ffa19adc58b8adda248e81aed419cbaa6a",
+      "learningLibraryQaSha256": "2092772b2f46a192c48e174886d6297e521e33283861f057af20b563777f07aa",
+      "nativeQaSha256": "cfc1d61bbe2a12a9cff33fa6addf2bf3abe65f3e9743efa469e8e2d5726a3923"
     },
     {
       "id": "praxis-school-counselor-5422",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -189,16 +193,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/school_counselor_5422_pack.json",
+      "sha256": "dc5561407df4f77f06d613369f67fd439f2ac3daf85ce31dd031693414b46696",
       "learningLibraryUrl": "./test_prep/school_counselor_5422_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/school_counselor_5422_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/school_counselor_5422_native_qa.json",
-      "learningLibrarySha256": "5bbcfce6fa5104ea3b916c0380671c661ee06bf7f8b23d2d961acb56c632d175",
-      "learningLibraryQaSha256": "4980caa97eb50b486b5ebebd68ad145a03516c116bfb1928c266b1b4190de367",
-      "nativeQaSha256": "da2a712753817f57b333f2582f3d959a0fe5cbc24625863f65ba5c8db995ed6b"
+      "learningLibrarySha256": "7c7ebb5ab856c700378d0e429d60c195dea7cfbba53d42a8d67c77b69b14344b",
+      "learningLibraryQaSha256": "37235032408976010fad19c0675879841da68e3fe27d7381884f6c998544676d",
+      "nativeQaSha256": "d259c71033fa6ac437bfbfbaa82bc2b07ec473597b8ff9f29cf420127b26cbe2"
     },
     {
       "id": "praxis-school-psychologist-5403",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -220,23 +226,25 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/school_psychologist_5403_pack.json",
+      "sha256": "e06f69a8b525527b76c3e1d28fd38bff7d65a3ff1ae94ea3b51962b23e1a1e53",
       "learningLibraryUrl": "./test_prep/school_psychologist_5403_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/school_psychologist_5403_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/school_psychologist_5403_native_qa.json",
-      "learningLibrarySha256": "19186d061bf843fec24da312220347199894ba79bf8ef6d749d35c7bb34802b3",
-      "learningLibraryQaSha256": "ae9c26b11f0a38150fbe8d5e01533a5a34acd791ecc84083bcd9f678bc171077",
-      "nativeQaSha256": "8d66058a9eaf709fa3bf09b1edcdff64ad916f24be731e088564056fd81e67a2"
+      "learningLibrarySha256": "1780dc6f151fbf699e24490b9584e04aa35d595399d7a2fea76c0d3aba7dad73",
+      "learningLibraryQaSha256": "744bfe813228ea1f01b8276120717b0bdd4dcd05cb1b7ace5a76ff022db66b7b",
+      "nativeQaSha256": "97e209f147b8368e266578bc6fbee5075fc654175ec70ffc7e64bf093ba5e3d8"
     },
     {
       "id": "praxis-speech-language-pathology-5331",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Speech-Language Pathology (5331) — 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Speech-Language Pathology (5331) — 200 Source Questions + 300 Guided Review",
       "shortTitle": "Speech-Language Pathology 5331 diagnostics",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 462 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 132-question timed simulation. The official 5331 test currently has 132 selected-response questions in 150 minutes; AlloFlow practice is not an official form or score.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 132-question timed simulation. The official 5331 test currently has 132 selected-response questions in 150 minutes; AlloFlow practice is not an official form or score.",
       "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS or ASHA. The official Praxis Speech-Language Pathology (5331) test currently has 132 selected-response questions in 150 minutes; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, credentials, clinical evaluations, diagnoses, medical or swallowing-safety decisions, treatment, legal advice, or substitutes for qualified supervision and current federal, state, local, licensure, certification, educational, health-care, privacy, consent, emergency, and reporting requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -251,16 +259,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/speech_language_pathology_5331_pack.json",
+      "sha256": "c828d1ac2df09588695b1dd962a47e73b59dda42ffbce92ebc2b8f90d1400893",
       "learningLibraryUrl": "./test_prep/speech_language_pathology_5331_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/speech_language_pathology_5331_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/speech_language_pathology_5331_native_qa.json",
-      "learningLibrarySha256": "dcb2f058d433845f8ba41b9946f4ede483c918d0f7851ab886964dec1e95e441",
-      "learningLibraryQaSha256": "79d9846a298c98b0309ea2cac8dfbfc1527da801beb678ee1cc336a2ba9ce26c",
-      "nativeQaSha256": "a93c48bf3e40d0f327d5bf1f70cea6727e115546f663dffe271b0cfbe005d338"
+      "learningLibrarySha256": "56aa036745a023e0168cd02adf437d4483475437d99c41ef38d4cb1f36b97574",
+      "learningLibraryQaSha256": "d9e7229f5c4d4c335c0460ded7e3c4bf64e1903d0c5d729ad26c6c872f31561e",
+      "nativeQaSha256": "b26b6eca29729491d6f51080864f8905e02a2f6b18bb07c08fadbb2e52d3970e"
     },
     {
       "id": "praxis-audiology-5343",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -282,23 +292,25 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/audiology_5343_pack.json",
+      "sha256": "a2600ad4ec1ea8096e2f097af121c8fbbdca87524685c300db69f00e438df48f",
       "learningLibraryUrl": "./test_prep/audiology_5343_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/audiology_5343_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/audiology_5343_native_qa.json",
-      "learningLibrarySha256": "7902cb764c537639ef3b489660ed43d9f61198756fc6992cb12460a6729835a5",
-      "learningLibraryQaSha256": "0325f177c01b870da65d053a3f8118c7947630f18662e105a95c69ef00ff6c32",
-      "nativeQaSha256": "33f8fe7369bb12497a83cd6c1494b8e2c052b6b1c77404f241fa9837b822aadb"
+      "learningLibrarySha256": "fdcd1aa5e4eb4e1376456aff23f317fcc45a65aaacf107b51ccbf9e1e58bdf55",
+      "learningLibraryQaSha256": "3c654beb9cf38e3c665475b1b1241854d1dd2fb4e9653d8d74a68e5848d6c7e9",
+      "nativeQaSha256": "1c9e2ddd58209aa0d41ebd02e790fe205324d1cf578d4ddfbd265332192d41f0"
     },
     {
       "id": "praxis-reading-specialist-5302",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Reading Specialist (5302) — 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Reading Specialist (5302) — 200 Source Questions + 300 Guided Review",
       "shortTitle": "Reading Specialist 5302 diagnostics",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 471 distinct independent content kernels. Two independently authored 100-question selected-response diagnostic batches linked to a 12-chapter learning library, six constructed-response workshops, targeted skill practice, and an optional 95-question selected-response timed segment. The official 5302 test currently has 95 selected-response questions and 2 constructed-response questions in 150 minutes.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two independently authored 100-question selected-response diagnostic batches linked to a 12-chapter learning library, six constructed-response workshops, targeted skill practice, and an optional 95-question selected-response timed segment. The official 5302 test currently has 95 selected-response questions and 2 constructed-response questions in 150 minutes.",
       "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS or the International Literacy Association. The official Praxis Reading Specialist (5302) test currently has 95 selected-response and 2 constructed-response questions in 150 minutes; the 100-item diagnostics and 95-item timed segment are not official forms. Practice results and self-checks are not official or scaled Praxis scores, constructed-response scores, pass predictions, credentials, diagnoses of dyslexia or disability, special-education eligibility decisions, legal advice, or substitutes for qualified multidisciplinary evaluation, supervision, and current federal, state, local, certification, licensure, privacy, consent, assessment, and educational requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -313,16 +325,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/reading_specialist_5302_pack.json",
+      "sha256": "258849b0247ae5ccc805c3d1a78bc426dbb51f7fa7965cb744e0de1c7b80e4ee",
       "learningLibraryUrl": "./test_prep/reading_specialist_5302_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/reading_specialist_5302_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/reading_specialist_5302_native_qa.json",
-      "learningLibrarySha256": "acc650af0f90209323cc4979075cafe6ca6c1a80048fb960496d6a335b7e98b8",
-      "learningLibraryQaSha256": "aaa2d620d9b97f51f68c2ca389dcb011907588c3f4972434ec8cfbb979b3e349",
-      "nativeQaSha256": "1a0b8bad4d978e84b6f0038c650ddaa4924426731ab2c9061f969cb904b95b8f"
+      "learningLibrarySha256": "aa54fa24d9dc0e896cadf8170ac910807939e72675c5bcd73d2bf9e355244652",
+      "learningLibraryQaSha256": "31acf6e724d8920f56e48006bfe63dff529401a5f97ccc2cdfbdfa4bf8fcf3b0",
+      "nativeQaSha256": "e541bd04fa02dea8fefe4c107d49ffd213d80d93934de4cdccfcb06bbfbff017"
     },
     {
       "id": "praxis-educational-leadership-5412",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -344,16 +358,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/educational_leadership_5412_pack.json",
+      "sha256": "c00ba9ebbfde1971112e4fe9549358f0886fb585cd7e8a387cd7cad7f87bc72f",
       "learningLibraryUrl": "./test_prep/educational_leadership_5412_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/educational_leadership_5412_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/educational_leadership_5412_native_qa.json",
-      "learningLibrarySha256": "294f1cbc34b1d07b7a70644c0c12bd703ddd69e103ee24db6a51a31535b42f77",
-      "learningLibraryQaSha256": "0d427f6e3088d6879a305856a0ab85bcb8c3cd642fae37164ad6f007294b84f7",
-      "nativeQaSha256": "881875ae809eeb18899a68687291731f97003664180a43312203bfd03a772d34"
+      "learningLibrarySha256": "34896087c0cb6369570b768ecf9d5379203e408cf1eaca89013cbeaa8eae244e",
+      "learningLibraryQaSha256": "a3e4a8c4c024d1adad658cce9205db8015acf07d94e43b5fb9d560847b2a2d70",
+      "nativeQaSha256": "9f561818bbd46e2208836002a562f076ca52b6bd96baecb9dcab1331ff54c3f0"
     },
     {
       "id": "praxis-plt-k6-5622",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -375,16 +391,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/plt_k6_5622_pack.json",
+      "sha256": "85f6d6f6777aa79f5cf94af68157814af384e43de511dcfdf55498bae8f77cfc",
       "learningLibraryUrl": "./test_prep/plt_k6_5622_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_k6_5622_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_k6_5622_native_qa.json",
-      "learningLibrarySha256": "207a9a6736dc093f5a88af5a9afee77da87cb568034deb0ddb9df34db1e15070",
-      "learningLibraryQaSha256": "0cb534955a7dd99736f435b2cdfe86b133627c4bdde260837e84fcaf633cdd6d",
-      "nativeQaSha256": "885d21aa36a9fb41238520aaca0db6647ebb056966778fc80cdc8c5b3e4db497"
+      "learningLibrarySha256": "af2db35afd0685bd78350845f539370459743e10e387615c5368923b0ffed3ba",
+      "learningLibraryQaSha256": "7a0bc920010c55cb3e9d229a70f8e946a6b43bef4bba13c7372c97d653aaa667",
+      "nativeQaSha256": "879e60b6eb080ca5f3233efbb5a87a0e60445ac6e32b28bcfe9d71196d7a8f8f"
     },
     {
       "id": "praxis-core-5752",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -406,16 +424,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/praxis_core_5752_pack.json",
+      "sha256": "5748bf419504c9a1019877aaaa5273f71d283655a897ae5ba9e40f378949b0e4",
       "learningLibraryUrl": "./test_prep/praxis_core_5752_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/praxis_core_5752_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/praxis_core_5752_native_qa.json",
-      "learningLibrarySha256": "10e61ea222ba09e29a3c87ed765fa890942a4a98f0384c312ce88dfe1cd66118",
-      "learningLibraryQaSha256": "a89cf595db42b08879e27a8fe889508b0237adf1f7cd06affb746878ab7f1e43",
-      "nativeQaSha256": "e3e80bae0b5f0ec2077802e57d169869406fde61c1e78579031bd566a1825dd3"
+      "learningLibrarySha256": "21f9cd72a8e62aca365148f7e8cec1dc46182966b04bafb291a0ea8fdfca3cd9",
+      "learningLibraryQaSha256": "40357d3996d4ebcf3faef9e25bf3bbfe0e2896f832d5e6ce2dd47b92b48251fd",
+      "nativeQaSha256": "44dfc4dc2dc8b200f8c4e5463334357646a9616d0ac14e7aedf95e9504d69680"
     },
     {
       "id": "praxis-esol-5362",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -437,16 +457,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/esol_5362_pack.json",
+      "sha256": "f914b9e4bedd0a222e23e975d0db53ba8c1438785b8b3b46949ad07329c83cb4",
       "learningLibraryUrl": "./test_prep/esol_5362_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/esol_5362_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/esol_5362_native_qa.json",
-      "learningLibrarySha256": "602962309ec64e85967d3ee7f40e25ee9f5ae80c12a937e6e22505b21e7a3132",
-      "learningLibraryQaSha256": "9d7e5d0d40bfb2ef7cf03619ff44b21ac6582f6ec1fd7b5ef21b3e117f5f1daa",
-      "nativeQaSha256": "d5472623b980106f2c7b1deebff87e2f85624275e3f8b97acfa9612d19b34416"
+      "learningLibrarySha256": "9db428a7eb98796c9c486595e8fc9b83ead83962bde6915fc942259d736394c3",
+      "learningLibraryQaSha256": "f9ecaf0fcb0c66b27869ff1c83b9029cd7ec241fb85aa69810efac57cf124847",
+      "nativeQaSha256": "8049da30082973b0de1ec6d00af5ad7805212a1451d085db3ff20af315be2bc6"
     },
     {
       "id": "praxis-teaching-reading-5205",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -468,16 +490,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/teaching_reading_5205_pack.json",
+      "sha256": "b5e8a791d103a3a818c4b0aeccf05e53a9b2d4e85f765a4ad254e20ffaf1aaed",
       "learningLibraryUrl": "./test_prep/teaching_reading_5205_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/teaching_reading_5205_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/teaching_reading_5205_native_qa.json",
-      "learningLibrarySha256": "ab83e6d309c32a7e8b68813910e0f587180bd2bf2a44af9a1c7baec43d4b8d63",
-      "learningLibraryQaSha256": "cfac6c0c4a8712aada5555dc9f8baf3d473fbc16d84880485d083e88ffa81648",
-      "nativeQaSha256": "d4cb8faf34394d71f838fb3777bfaa886a8d438c1c0257bf0f3b149c740abcff"
+      "learningLibrarySha256": "1d3a4fcef23eb4e8fef80cbd2d28e46b435dc70936541a56075ae2cda6027ba3",
+      "learningLibraryQaSha256": "1a7c7a0111db3278020a6b8eadc13be854c848534268303a04712c70797481a2",
+      "nativeQaSha256": "d45374acf5606d7583c2eab7016cd421c34a6be8c7b48d03485a1d23eb06929a"
     },
     {
       "id": "praxis-early-childhood-5025",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -499,16 +523,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/early_childhood_5025_pack.json",
+      "sha256": "7563e2cca3148128aad09019e3b87c9920b93d64e891e77551930cee8ef90e7e",
       "learningLibraryUrl": "./test_prep/early_childhood_5025_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/early_childhood_5025_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/early_childhood_5025_native_qa.json",
-      "learningLibrarySha256": "3a589c9b60edd2a35fe4ac3dd829958ceba050fea642e18e5575e660036bea89",
-      "learningLibraryQaSha256": "d5bd07801ef766611ebec054f6f1c16482288c1b4b5b7db79b16ac8627568744",
-      "nativeQaSha256": "adf0f4bf3b314bcd4a2a47d088272c5b6419844a4f571f9cc58fa9900b169d6c"
+      "learningLibrarySha256": "1118f46adc2165f3fc98341b267bd7a4e9f42035a9d3a9d2a11e1fdd5dc30fbd",
+      "learningLibraryQaSha256": "83590db10ab7342197250400578b9494d2c5835ec5bef7f59b3024265ab58701",
+      "nativeQaSha256": "056ea75e3b1f1a0d20ebfab56ea6a6f9e89c768eef073d83ac9eacacfd60dfa8"
     },
     {
       "id": "praxis-plt-early-childhood-5621",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -530,16 +556,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/plt_early_childhood_5621_pack.json",
+      "sha256": "2c1704011e4a290e2ae6a3c455acf90e5284458cca589cc38c412ee45ed3c8cf",
       "learningLibraryUrl": "./test_prep/plt_early_childhood_5621_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_early_childhood_5621_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_early_childhood_5621_native_qa.json",
-      "learningLibrarySha256": "bc3d9be5023581e8b31856902cf31e2d1c628c6acdfc9c24388c807b1b30b8e0",
-      "learningLibraryQaSha256": "fa0c1af89fb2dc044c1b4781d4abb0fed1f53e70bd97d6d09be0b27e78ece4f1",
-      "nativeQaSha256": "20f774359a691cf10748dd4b4294e3d1345963045b709301e2f7e23d544e41ca"
+      "learningLibrarySha256": "e8be113ba815165853f711162e81e44a0294046d514adf3407fc76da0da31c85",
+      "learningLibraryQaSha256": "1cf2c959ff31278e36838fe09f7a89756e2841a580afab68a6408dab8c8cb92a",
+      "nativeQaSha256": "a63962ed7e1728b0ed8057843b7bff87040f38476d7697c0efed5d4e2047d712"
     },
     {
       "id": "praxis-special-education-early-childhood-5692",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -561,16 +589,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/special_education_early_childhood_5692_pack.json",
+      "sha256": "928f145260b0721fa262891bf452702aa5c2af20deb2c00d801bfa69d2ac08bf",
       "learningLibraryUrl": "./test_prep/special_education_early_childhood_5692_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_early_childhood_5692_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_early_childhood_5692_native_qa.json",
-      "learningLibrarySha256": "08cda2acfa0a109ec851ba0b939b9a63ab992b38395792f47aec883bbbfa66e2",
-      "learningLibraryQaSha256": "e953719cece8abf94d47da400d2015739c2e6886c64e3c673a4d7987ba4ba48b",
-      "nativeQaSha256": "df1e0ece63fd064cfc92229dc542438dc27d09fa2927e71d91e5c5705d1f6357"
+      "learningLibrarySha256": "1a818822c9d12531f2d02e529ef8f773c6f4dc23c0d3ec4184981671a7fdcb4f",
+      "learningLibraryQaSha256": "9ff77aa977fb7011421224e238784131936eecf32cc0f70d28873d9201dad5af",
+      "nativeQaSha256": "c268352a96617c33773b697cbf93c4d0fa8cffa66835f8647b1e45a4b9e15bc9"
     },
     {
       "id": "praxis-special-education-severe-profound-5547",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -592,16 +622,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/special_education_severe_profound_5547_pack.json",
+      "sha256": "fc2d4983e22d92e98ff52c5ddb5c2503cab7fd55ba4ee71ef96205ec32bc7c1c",
       "learningLibraryUrl": "./test_prep/special_education_severe_profound_5547_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_severe_profound_5547_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_severe_profound_5547_native_qa.json",
-      "learningLibrarySha256": "80b527b0d3aeb98353c1a5cd6f8dcd31b2fa0a374f5c25775f248a108a66e30e",
-      "learningLibraryQaSha256": "03e0d329fad2d410777a03bab31d091cd470b066b679edf45bf02dbc8766d141",
-      "nativeQaSha256": "68a9e6d1729baab9f790cc755ed20a21835acee50776e557bb75c0b45dda15af"
+      "learningLibrarySha256": "4e6c73548c17ecbf4afed240fd052501e2d97a01471ca6774f95ecf1bfad9d2b",
+      "learningLibraryQaSha256": "108514fff1ddfdb0724054ac944e0ccebc75a5fd2efc25972287dc08dcc4ad8f",
+      "nativeQaSha256": "563d2b59cc947e52927a4e664d42b6dd44ae3cbe4fc1f2fd0d836cf563de6c45"
     },
     {
       "id": "praxis-special-education-learning-disabilities-5383",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -623,16 +655,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/special_education_learning_disabilities_5383_pack.json",
+      "sha256": "267564056f8b125b89330775f9b5cc2bf2678e94844ac7c866e6328733358b47",
       "learningLibraryUrl": "./test_prep/special_education_learning_disabilities_5383_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_learning_disabilities_5383_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_learning_disabilities_5383_native_qa.json",
-      "learningLibrarySha256": "6ba938329773bd9e91d9a8b5b77b2561ec57b1651b0cbd61824f5709df20407d",
-      "learningLibraryQaSha256": "e3f0e3b11ffdbfe9c3968697669a76a3a566a56f15d7c187d08d1728397953ea",
-      "nativeQaSha256": "0c1483757c714ca440e8430a786bea4d3b3b3821c0401a8511c3e8d89f39a2b8"
+      "learningLibrarySha256": "b0c05105198382c6f6d984ebdd31945c6b2dca002a73512ae10f0c71ea575e3a",
+      "learningLibraryQaSha256": "f87571596733d70d843643740a1e24aba8e4442f9c051b192cbb0fbe6c085573",
+      "nativeQaSha256": "6a4d22285ec5a5309ecea428268e4c6a2467d84dd752b77747ce44f79276f4d5"
     },
     {
       "id": "praxis-special-education-behavior-emotional-5372",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -654,16 +688,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/special_education_behavior_emotional_5372_pack.json",
+      "sha256": "5a4b2e33ae55bc150f76bd9d274f57dfe3bca4f8326abec92669944b88d29832",
       "learningLibraryUrl": "./test_prep/special_education_behavior_emotional_5372_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_behavior_emotional_5372_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_behavior_emotional_5372_native_qa.json",
-      "learningLibrarySha256": "060637aa1332deb7d0e999383d5d5b1d9f9db8e1ba97d4dd081be0289ec04af3",
-      "learningLibraryQaSha256": "89a2a68dfcc2157b57dd47f9841cd41ef638fa8ef009671824edbaf775101381",
-      "nativeQaSha256": "7762c1fc605d81037cd3ae95c29f9bcb79b3d7e5b5deb80a12c4e4c51ca16f69"
+      "learningLibrarySha256": "51585c0e4da15a6d4e74bda949ec463de8ee1f36d61eb2c3e10de766c1f05167",
+      "learningLibraryQaSha256": "52b09c08787e05058d3cb7db7fc4cd13ddd916322748c7dbd74fb4c0b818c646",
+      "nativeQaSha256": "f2dbfcee0d32f45f5599a6d46d1aad13ddb457656592944d67e36c1365d2f8a7"
     },
     {
       "id": "praxis-special-education-intellectual-disabilities-5322",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -685,16 +721,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/special_education_intellectual_disabilities_5322_pack.json",
+      "sha256": "d12f6fe3d1301a474b3a1f08f9d74e29785d66620cfddba601b3b6c58d7c6b68",
       "learningLibraryUrl": "./test_prep/special_education_intellectual_disabilities_5322_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_intellectual_disabilities_5322_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_intellectual_disabilities_5322_native_qa.json",
-      "learningLibrarySha256": "2a6036ad20e88faddb236b6355e3aec489ef51083ecaf6a7e7a8366c2eda1b20",
-      "learningLibraryQaSha256": "b21266122accf74dc690af8dd1401e5a5a568f71f9cd18db3900dfc86fa44da4",
-      "nativeQaSha256": "7a488adea2d362dd36bff99ed4731d03095fc7d23ed209d3e07f610aaff931da"
+      "learningLibrarySha256": "f23145bf916c9523f95033c41c3d360fe971935b6e4c97875aa44532fe355661",
+      "learningLibraryQaSha256": "9027a5a7ded35b4bd1755d54c40612704706b96a305322b763d6999a830f1351",
+      "nativeQaSha256": "05bfed34c0e2bdde38eddf87961442aa5df4f610cc2f2fc209677fd3f386c8ed"
     },
     {
       "id": "praxis-plt-grades-5-9-5623",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -716,16 +754,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/plt_5_9_5623_pack.json",
+      "sha256": "a3d45e9116f22e61f3119587e5f4ede9fc917eafdccb1a513f022c991aab4322",
       "learningLibraryUrl": "./test_prep/plt_5_9_5623_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_5_9_5623_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_5_9_5623_native_qa.json",
-      "learningLibrarySha256": "aa86c98a6376e4404474a772eba1d2e1073bf90c48e2012fb4eb541d3d83b098",
-      "learningLibraryQaSha256": "2b4d66cc6cc442182eae5b7eb3fe1ed62be5eb56440a027cd102c13340dd63ee",
-      "nativeQaSha256": "f71c28796d256d9e015c703cd44e4e26fd136a909f1ae5a6cfb56491182229e9"
+      "learningLibrarySha256": "41a0f7a4ca8edcec1d8a4b4390cc16bd0540152c9424164660fb0691a88e10cd",
+      "learningLibraryQaSha256": "e987928de4818da28617a168eec4a8cbf3b8ba0010007de2cb58afea1213b340",
+      "nativeQaSha256": "3c47bcd4b2af1dee490996153fada1e0c93236dff21d508702cf29cfafd71b8c"
     },
     {
       "id": "praxis-plt-grades-7-12-5624",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -747,16 +787,18 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/plt_7_12_5624_pack.json",
+      "sha256": "05cea30aebcc02edd48daa252a4de689ac0631cf1f890d918e421ca324cb0bae",
       "learningLibraryUrl": "./test_prep/plt_7_12_5624_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_7_12_5624_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_7_12_5624_native_qa.json",
-      "learningLibrarySha256": "960b6282170beec63c061915aac4506460484940771d8868730fe25da18f58a3",
-      "learningLibraryQaSha256": "619547cd6f2b2615e4eaabd4164216dabe2ec4fe3910fbf68d3137364abe86d2",
-      "nativeQaSha256": "9aee2bc2f4d160241e9e5279442f40c7709368ec118a58af47dd4df07d880951"
+      "learningLibrarySha256": "dce565c7224ffb3a3ea59851e59fb8be0875f5af8a973f2254342c155fd46189",
+      "learningLibraryQaSha256": "e545048d536078b463b7a786fef6ec69f19fd0d664b58252da56c75787745beb",
+      "nativeQaSha256": "e848e43ba954790813a987acf9de9d4c8b1b761c4842c308394e88922723e76f"
     },
     {
       "id": "praxis-school-librarian-5312",
-      "loadMode": "bundled",
+      "loadMode": "lazy",
       "visibility": "public",
       "portfolioCategories": [
         "professional-school-personnel"
@@ -778,12 +820,14 @@
         "single-choice"
       ],
       "examModes": [],
+      "packUrl": "./test_prep/school_librarian_5312_pack.json",
+      "sha256": "96ef7d4cf8f92f685239e4f0af7f7dbe37cca72cc8a3f26922fdb77a7a2024a3",
       "learningLibraryUrl": "./test_prep/school_librarian_5312_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/school_librarian_5312_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/school_librarian_5312_native_qa.json",
-      "learningLibrarySha256": "1ec162ae62d2abc2a94a97fe88313266c827ee1799ef10624931cc646f7f9b92",
-      "learningLibraryQaSha256": "65310d3a30ea5bf655d16fef3dca35add8f12e407f5374ac9ba180320b3719e7",
-      "nativeQaSha256": "1558001a230c0b0021e7262188abf3660060414b721b2d389631e40b9f8bfa92"
+      "learningLibrarySha256": "67ebf29ec30645e2f7981e7260cd78cea9954bde17e45cc7894c5e58e6e31ce1",
+      "learningLibraryQaSha256": "59bfadffe0b71a8459e3bb9c85d55116dcc3a804423f114bd91223b285824d08",
+      "nativeQaSha256": "315c85532da0452d9a510e2056d3cdbc9715ca5d939232d5c5bfbacbad34afd9"
     },
     {
       "id": "ap-psychology-pilot",

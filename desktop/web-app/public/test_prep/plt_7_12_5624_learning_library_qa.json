@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0", "visibility": "public",
   "schemaVersion": 1,
+  "generatedAt": "2026-08-13T08:45:05.921Z",
   "libraryId": "praxis-plt-grades-7-12-5624-learning-library",
   "packId": "praxis-plt-grades-7-12-5624",
   "standard": {
@@ -25,7 +25,7 @@
       "expectedCode": "5624",
       "expectedPackId": "praxis-plt-grades-7-12-5624",
       "sourceItemsReviewed": 200,
-      "allItemsReviewed": 500,
+      "allItemsReviewed": 200,
       "packIdentityMisses": 0,
       "sourceItemIdentityMisses": 0,
       "foreignCodeOccurrences": 0,
@@ -49,14 +49,5 @@
     },
     "findings": [],
     "status": "pass"
-  },
-  "contentBinding": {
-    "schemaVersion": 1,
-    "algorithm": "sha256",
-    "reviewedAt": "2026-07-18",
-    "sourceItemCount": 200,
-    "sourceItemsSha256": "37b17dfc2228804f22f6b51f52cd828176c62e5a1b731d9dc0c39b4a25e4263a",
-    "learningLibrarySha256": "51e3325e627481e892cf129a49bca04a8607195e368c00cca2bac94396c52aa9",
-    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

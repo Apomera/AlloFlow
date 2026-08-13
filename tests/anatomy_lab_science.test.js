@@ -828,7 +828,7 @@ describe('Anatomy Lab visual hierarchy and canvas legibility', () => {
 
   it('provides accessible zoom, pan, and reset controls with persisted view state', () => {
     const defaultHtml = renderAnatomy({ system: 'nervous', complexity: 3 });
-    expect(defaultHtml).toContain('aria-label="Diagram zoom and pan controls"');
+    expect(defaultHtml).toContain('aria-label="2D diagram controls"');
     expect(defaultHtml).toContain('aria-label="Zoom in on anatomy diagram"');
     expect(defaultHtml).toContain('aria-label="Pan anatomy diagram left"');
     expect(defaultHtml).toContain('aria-label="Reset anatomy diagram view"');

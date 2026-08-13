@@ -3,6 +3,7 @@ const { execSync: systemExecSync } = require('child_process');
 let execSync = systemExecSync;
 const fs = require('fs');
 const path = require('path');
+const { writeGeneratedFile } = require('./dev-tools/write_generated_file.cjs');
 
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'test_prep_hub_source.jsx');
@@ -240,6 +241,7 @@ if (!skipEpppRefresh) {
 // only the AP-pilot generator emits the identity trio itself (2026-07-31).
 execSync(`node "${path.join(ROOT, 'dev-tools', 'stamp_learning_library_identity.cjs')}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${PACK_MANIFEST_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+if (!compileOnly) {
 const paraProPack = JSON.parse(fs.readFileSync(PARAPRO_PACK_SOURCE, 'utf8'));
 if (!paraProPack || paraProPack.id !== 'parapro-1755-practice-1' || paraProPack.batchSize !== 100 || !Array.isArray(paraProPack.items) || paraProPack.items.length !== 500) {
   throw new Error('ParaPro release pack is empty or invalid.');
@@ -297,31 +299,15 @@ const specialEducationIntellectualDisabilities5322Pack=JSON.parse(fs.readFileSyn
 const plt595623Pack=JSON.parse(fs.readFileSync(PLT_5_9_5623_PACK_SOURCE,'utf8'));if(plt595623Pack.id!=='praxis-plt-grades-5-9-5623'||plt595623Pack.items?.length!==500)throw Error('PLT Grades 5–9 5623 pack invalid');
 const plt7125624Pack=JSON.parse(fs.readFileSync(PLT_7_12_5624_PACK_SOURCE,'utf8'));if(plt7125624Pack.id!=='praxis-plt-grades-7-12-5624'||plt7125624Pack.items?.length!==500)throw Error('PLT Grades 7–12 5624 pack invalid');
 const schoolLibrarian5312Pack=JSON.parse(fs.readFileSync(SCHOOL_LIBRARIAN_5312_PACK_SOURCE,'utf8'));if(schoolLibrarian5312Pack.id!=='praxis-school-librarian-5312'||schoolLibrarian5312Pack.items?.length!==500)throw Error('School Librarian 5312 pack invalid');
+}
+// Large exam banks are deployed as digest-bound JSON and loaded through the
+// manifest on explicit learner action. Keep only genuinely small bootstrap
+// data in this size-limited runtime module.
 const bankPrelude = 'const TEST_PREP_REFERENCE_CATALOG = ' + JSON.stringify(referenceCatalog) + ';\n\n'
-  + 'const EPPP_INTEGRATED_2027_PREVIEW_PACK = ' + JSON.stringify(eppp2027PreviewPack) + ';\n\n'
-  + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(paraProPack) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n'
-  + 'const SCHOOL_COUNSELOR_5422_PRACTICE_PACK = ' + JSON.stringify(schoolCounselor5422Pack) + ';\n\n'
-  + 'const SCHOOL_PSYCHOLOGIST_5403_PRACTICE_PACK = ' + JSON.stringify(schoolPsychologist5403Pack) + ';\n\n'
-  + 'const SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK = ' + JSON.stringify(speechLanguagePathology5331Pack) + ';\n\n'
-  + 'const AUDIOLOGY_5343_PRACTICE_PACK = ' + JSON.stringify(audiology5343Pack) + ';\n\n'
-  + 'const READING_SPECIALIST_5302_PRACTICE_PACK = ' + JSON.stringify(readingSpecialist5302Pack) + ';\n\n'
-  + 'const EDUCATIONAL_LEADERSHIP_5412_PRACTICE_PACK = ' + JSON.stringify(educationalLeadership5412Pack) + ';\n\n'
-  + 'const PLT_K6_5622_PRACTICE_PACK = ' + JSON.stringify(pltK65622Pack) + ';\n\n'
-  + 'const PRAXIS_CORE_5752_PRACTICE_PACK = ' + JSON.stringify(praxisCore5752Pack) + ';\n\n'
-  + 'const ESOL_5362_PRACTICE_PACK = ' + JSON.stringify(esol5362Pack) + ';\n\n'
-  + 'const TEACHING_READING_5205_PRACTICE_PACK = ' + JSON.stringify(teachingReading5205Pack) + ';\n\n'
-  + 'const EARLY_CHILDHOOD_5025_PRACTICE_PACK = ' + JSON.stringify(earlyChildhood5025Pack) + ';\n\n'
-  + 'const PLT_EARLY_CHILDHOOD_5621_PRACTICE_PACK = ' + JSON.stringify(pltEarlyChildhood5621Pack) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK = ' + JSON.stringify(specialEducationEarlyChildhood5692Pack) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_PRACTICE_PACK = ' + JSON.stringify(specialEducationSevereProfound5547Pack) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PRACTICE_PACK = ' + JSON.stringify(specialEducationLearningDisabilities5383Pack) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_BEHAVIOR_EMOTIONAL_5372_PRACTICE_PACK = ' + JSON.stringify(specialEducationBehaviorEmotional5372Pack) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_INTELLECTUAL_DISABILITIES_5322_PRACTICE_PACK = ' + JSON.stringify(specialEducationIntellectualDisabilities5322Pack) + ';\n\n'
-  + 'const PLT_5_9_5623_PRACTICE_PACK = ' + JSON.stringify(plt595623Pack) + ';\n\n'
-  + 'const PLT_7_12_5624_PRACTICE_PACK = ' + JSON.stringify(plt7125624Pack) + ';\n\n'
-  + 'const SCHOOL_LIBRARIAN_5312_PRACTICE_PACK = ' + JSON.stringify(schoolLibrarian5312Pack) + ';\n\n';
-fs.writeFileSync(TMP, '/* global React */\n\n' + bankPrelude + source + '\n', 'utf8');
+  + 'const EPPP_INTEGRATED_2027_PREVIEW_PACK = ' + JSON.stringify(eppp2027PreviewPack) + ';\n\n';
+// Compile JSX alone so the JavaScript printer cannot rewrite JSON escapes
+// into JavaScript-only forms that the runtime parity parser cannot consume.
+fs.writeFileSync(TMP, '/* global React */\n\n' + source + '\n', 'utf8');
 
 try {
   execSync(`npx esbuild "${TMP}" --bundle=false --format=esm --jsx=transform --jsx-factory=React.createElement --jsx-fragment=React.Fragment --outfile="${COMPILED}" --target=es2020`, { cwd: ROOT, stdio: 'inherit' });
@@ -347,7 +333,7 @@ const output = `/**
   var React = window.React;
   if (!React) { console.error('[TestPrepHub] React not found on window'); return; }
 
-${compiled}
+${bankPrelude}${compiled}
 
   window.AlloModules.TestPrepHub = Object.assign(TestPrepHub, {
     TestPrepHub: TestPrepHub,
@@ -379,6 +365,8 @@ ${compiled}
     handsFreeHelpText: testPrepHandsFreeHelpText,
     handsFreeStatusText: testPrepHandsFreeStatusText,
     parseHandsFreeCommand: testPrepParseHandsFreeCommand,
+    parsePracticeVoiceCommand: testPrepParsePracticeVoiceCommand,
+    practiceVoiceHelpText: testPrepPracticeVoiceHelpText,
     preAnswerClarificationPolicy: testPrepPreAnswerClarificationPolicy,
     filterPreAnswerClarificationResponse: testPrepFilterPreAnswerClarificationResponse,
     buildClarificationPrompt: testPrepBuildClarificationPrompt,
@@ -426,7 +414,7 @@ ${compiled}
 })();
 `;
 
-fs.writeFileSync(OUTPUT, output, 'utf8');
+writeGeneratedFile(OUTPUT, output);
 fs.mkdirSync(path.dirname(DEPLOY_OUTPUT), { recursive: true });
-fs.writeFileSync(DEPLOY_OUTPUT, output, 'utf8');
+writeGeneratedFile(DEPLOY_OUTPUT, output);
 console.log('Built test_prep_hub_module.js (' + output.split('\n').length + ' lines)');

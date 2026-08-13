@@ -1180,10 +1180,12 @@ const isRtl = (langCode) => {
 };
 const useAudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
+  const [error, setError] = useState("");
   const mediaRecorderRef = useRef(null);
   const sharedResultPromiseRef = useRef(null);
   const chunksRef = useRef([]);
   const startRecording = async () => {
+    setError("");
     if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === "function") {
       const ctrl = window.AlloFlowVoice.recordAudioBlob({
         // No maxDurationMs — caller drives stop. The shared default
@@ -1193,17 +1195,20 @@ const useAudioRecorder = () => {
         preferredMimeType: "audio/webm;codecs=opus",
         onError: (err) => {
           console.warn("Microphone access denied:", err);
+          setError("Microphone access is blocked. Allow microphone access in your browser or device settings, then retry.");
           setIsRecording(false);
         }
       });
       if (!ctrl.supported) {
         console.warn("MediaRecorder not supported");
-        return;
+        const message = "Audio recording is not supported in this browser. You can still use AI narration or continue without audio.";
+        setError(message);
+        return { ok: false, error: message };
       }
       mediaRecorderRef.current = ctrl;
       sharedResultPromiseRef.current = ctrl.result;
       setIsRecording(true);
-      return;
+      return { ok: true };
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1215,8 +1220,13 @@ const useAudioRecorder = () => {
       };
       mediaRecorderRef.current.start();
       setIsRecording(true);
+      return { ok: true };
     } catch (err) {
       console.warn("Microphone access denied:", err);
+      const message = err?.name === "NotAllowedError" ? "Microphone access is blocked. Allow microphone access in your browser or device settings, then retry." : "The microphone could not start. Check that another app is not using it, then retry.";
+      setError(message);
+      setIsRecording(false);
+      return { ok: false, error: message };
     }
   };
   const stopRecording = () => {
@@ -1267,7 +1277,7 @@ const useAudioRecorder = () => {
       mediaRecorderRef.current.stop();
     });
   };
-  return { isRecording, startRecording, stopRecording };
+  return { isRecording, error, clearError: () => setError(""), startRecording, stopRecording };
 };
 const useDictation = (onTranscript, lang) => {
   const [isDictating, setIsDictating] = useState(false);
@@ -1764,6 +1774,21 @@ const getStoryForgeRestoredPhase = (value = {}) => {
   if (phaseIndex >= PHASES.indexOf("illustrate") && !reviewIsCurrent) return "review";
   return phase;
 };
+const getStoryForgeRecoverySummary = (value = {}, sourceTopic = "") => {
+  const draft = value && typeof value === "object" ? value : {};
+  const modes = normalizeStoryForgeModeSelection(draft);
+  const artifactLabel = modes.artifactType === "comic" ? "Comic" : "Story";
+  const resumePhase = getStoryForgeRestoredPhase({ ...draft, sourceTopic: sourceTopic || draft.sourceTopic || "" });
+  const savedAt = typeof draft.savedAt === "string" && Number.isFinite(Date.parse(draft.savedAt)) ? new Date(draft.savedAt).toISOString() : "";
+  return {
+    title: String(draft.storyTitle || "").trim().slice(0, 120) || `Untitled ${artifactLabel.toLowerCase()}`,
+    artifactType: modes.artifactType,
+    artifactLabel,
+    savedAt,
+    resumePhase,
+    resumePhaseLabel: PHASE_LABELS[PHASES.indexOf(resumePhase)] || "Plan"
+  };
+};
 const sanitizeComicContinuityAudit = (value) => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return { status: "Clear", issueCount: 0, referenceCount: 0, usedReferenceCount: 0, referenceNames: [], summary: "", rows: [] };
@@ -1862,6 +1887,140 @@ const sanitizeStoryForgeProject = (value = {}) => {
     comicFlowReport: draft.artifactType === "comic" ? sanitizeComicFlowReport(source.comicFlowReport) : null
   };
 };
+const STORYFORGE_CLASS_SHARE_SCHEMA = "storyforge.class-share";
+const STORYFORGE_CLASS_SHARE_VERSION = 1;
+const STORYFORGE_CLASS_SHARE_MAX_SCENES = 8;
+const STORYFORGE_CLASS_SHARE_MAX_SCENE_TEXT = 5e3;
+const STORYFORGE_CLASS_SHARE_MAX_IMAGE_URL = 15e6;
+const isStoryForgeClassShareRecord = (value) => Boolean(value && typeof value === "object" && !Array.isArray(value));
+const cleanStoryForgeClassShareLabel = (value, maxLength) => typeof value === "string" ? value.replace(/\s+/g, " ").trim().slice(0, maxLength) : "";
+const cleanStoryForgeClassShareText = (value, maxLength) => typeof value === "string" ? value.replace(/\r\n?/g, "\n").trim().slice(0, maxLength) : "";
+const getStoryForgeClassShareImageUrl = (value) => {
+  const raw = typeof value === "string" ? value : isStoryForgeClassShareRecord(value) && typeof value.imageUrl === "string" ? value.imageUrl : "";
+  return /^(data:image\/|https?:\/\/)/i.test(raw) && raw.length <= STORYFORGE_CLASS_SHARE_MAX_IMAGE_URL ? raw : "";
+};
+const getStoryForgeClassShareUtf8Bytes = (value) => {
+  let bytes = 0;
+  for (const symbol of String(value || "")) {
+    const codePoint = symbol.codePointAt(0);
+    bytes += codePoint <= 127 ? 1 : codePoint <= 2047 ? 2 : codePoint <= 65535 ? 3 : 4;
+  }
+  return bytes;
+};
+const stableStoryForgeClassShareJson = (value) => {
+  if (Array.isArray(value)) return "[" + value.map(stableStoryForgeClassShareJson).join(",") + "]";
+  if (isStoryForgeClassShareRecord(value)) {
+    return "{" + Object.keys(value).sort().map((key) => JSON.stringify(key) + ":" + stableStoryForgeClassShareJson(value[key])).join(",") + "}";
+  }
+  const encoded = JSON.stringify(value);
+  return encoded === void 0 ? "null" : encoded;
+};
+const getStoryForgeClassShareFingerprint = (value) => {
+  const input = String(value || "");
+  let first = 2166136261;
+  let second = 2654435769;
+  for (const symbol of input) {
+    const codePoint = symbol.codePointAt(0);
+    first = Math.imul(first ^ codePoint, 16777619);
+    second = Math.imul(second ^ codePoint, 2246822507);
+    second ^= second >>> 13;
+  }
+  const hex = (number) => (number >>> 0).toString(16).padStart(8, "0");
+  return hex(first) + hex(second);
+};
+const countStoryForgeClassShareWords = (value) => {
+  const text = String(value || "").trim();
+  return text ? text.split(/\s+/u).length : 0;
+};
+const buildStoryForgeClassSharePayload = (project = {}, options = {}) => {
+  const source = isStoryForgeClassShareRecord(project) ? project : {};
+  const settings = isStoryForgeClassShareRecord(options) ? options : {};
+  const artifactType = source.artifactType === "comic" || source.layoutMode === "comic" ? "comic" : "story";
+  const fallbackTitle = artifactType === "comic" ? "My Comic" : "My Story";
+  const title = cleanStoryForgeClassShareLabel(settings.title, 120) || cleanStoryForgeClassShareLabel(source.storyTitle || source.title, 120) || fallbackTitle;
+  const penName = cleanStoryForgeClassShareLabel(settings.penName, 80) || cleanStoryForgeClassShareLabel(source.penName, 80) || "Creative Writer";
+  const genre = cleanStoryForgeClassShareLabel(settings.genre || settings.genreLabel, 80) || cleanStoryForgeClassShareLabel(source.genreLabel || source.genre, 80) || "Creative Writing";
+  const includeCoverArt = settings.includeCoverArt === true;
+  const includeSceneText = settings.includeSceneText === true;
+  const includeIllustrations = settings.includeIllustrations === true;
+  const requestedTextLimit = Number(settings.maxSceneTextLength);
+  const maxSceneTextLength = Number.isFinite(requestedTextLimit) ? Math.max(1, Math.min(STORYFORGE_CLASS_SHARE_MAX_SCENE_TEXT, Math.round(requestedTextLimit))) : 500;
+  const rawScenes = (Array.isArray(source.paragraphs) ? source.paragraphs : Array.isArray(source.scenes) ? source.scenes : Array.isArray(source.fullStory) ? source.fullStory : []).slice(0, STORYFORGE_CLASS_SHARE_MAX_SCENES);
+  const illustrationMap = isStoryForgeClassShareRecord(source.illustrations) ? source.illustrations : {};
+  let wordCount = 0;
+  let sceneIllustrationCount = 0;
+  const scenes = rawScenes.map((rawScene, index) => {
+    const scene = isStoryForgeClassShareRecord(rawScene) ? rawScene : {};
+    const sourceText = cleanStoryForgeClassShareText(scene.text, 5e4);
+    wordCount += countStoryForgeClassShareWords(sourceText);
+    const sourceId = typeof scene.id === "string" ? scene.id : "";
+    const mappedIllustration = sourceId && isStoryForgeClassShareRecord(illustrationMap[sourceId]) ? illustrationMap[sourceId].imageUrl : isStoryForgeClassShareRecord(illustrationMap[String(index)]) ? illustrationMap[String(index)].imageUrl : isStoryForgeClassShareRecord(illustrationMap[`p-${index}`]) ? illustrationMap[`p-${index}`].imageUrl : "";
+    const illustration = getStoryForgeClassShareImageUrl(scene.illustration) || getStoryForgeClassShareImageUrl(scene.imageUrl) || getStoryForgeClassShareImageUrl(mappedIllustration);
+    const sharedScene = {};
+    if (includeSceneText) sharedScene.text = sourceText.slice(0, maxSceneTextLength);
+    if (includeIllustrations && illustration) {
+      sharedScene.illustration = illustration;
+      sceneIllustrationCount += 1;
+    }
+    return sharedScene;
+  });
+  const coverArt = includeCoverArt ? getStoryForgeClassShareImageUrl(source.coverArt || source.cover) : "";
+  const mediaCount = (coverArt ? 1 : 0) + sceneIllustrationCount;
+  const payload = {
+    schema: STORYFORGE_CLASS_SHARE_SCHEMA,
+    schemaVersion: STORYFORGE_CLASS_SHARE_VERSION,
+    type: "storyforge",
+    visibility: "class",
+    title,
+    penName,
+    artifactType,
+    genre,
+    counts: {
+      scenes: rawScenes.length,
+      words: wordCount,
+      media: mediaCount
+    }
+  };
+  if (coverArt) payload.coverArt = coverArt;
+  if (includeSceneText || includeIllustrations) payload.scenes = scenes;
+  const idempotencyScope = cleanStoryForgeClassShareLabel(settings.idempotencyScope, 240);
+  payload.idempotencyKey = `storyforge-class-v${STORYFORGE_CLASS_SHARE_VERSION}-${getStoryForgeClassShareFingerprint(idempotencyScope + "\n" + stableStoryForgeClassShareJson(payload))}`;
+  payload.approximateBytes = 0;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const nextBytes = getStoryForgeClassShareUtf8Bytes(JSON.stringify(payload));
+    if (nextBytes === payload.approximateBytes) break;
+    payload.approximateBytes = nextBytes;
+  }
+  return payload;
+};
+const getStoryForgeClassSharePreview = (payload = {}) => {
+  const source = isStoryForgeClassShareRecord(payload) ? payload : {};
+  const scenes = Array.isArray(source.scenes) ? source.scenes.slice(0, STORYFORGE_CLASS_SHARE_MAX_SCENES) : [];
+  const counts = isStoryForgeClassShareRecord(source.counts) ? source.counts : {};
+  const coverIncluded = Boolean(getStoryForgeClassShareImageUrl(source.coverArt));
+  const scenesWithText = scenes.filter((scene) => isStoryForgeClassShareRecord(scene) && typeof scene.text === "string" && scene.text.trim()).length;
+  const scenesWithIllustration = scenes.filter((scene) => isStoryForgeClassShareRecord(scene) && Boolean(getStoryForgeClassShareImageUrl(scene.illustration))).length;
+  const cleanCount = (value, max) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? Math.max(0, Math.min(max, Math.round(number))) : 0;
+  };
+  const approximateBytes = getStoryForgeClassShareUtf8Bytes(JSON.stringify(source));
+  return {
+    title: cleanStoryForgeClassShareLabel(source.title, 120) || "Untitled artifact",
+    penName: cleanStoryForgeClassShareLabel(source.penName, 80) || "Creative Writer",
+    artifactType: source.artifactType === "comic" ? "comic" : "story",
+    genre: cleanStoryForgeClassShareLabel(source.genre, 80) || "Creative Writing",
+    sceneCount: cleanCount(counts.scenes, STORYFORGE_CLASS_SHARE_MAX_SCENES),
+    wordCount: cleanCount(counts.words, STORYFORGE_CLASS_SHARE_MAX_SCENES * 5e4),
+    mediaCount: (coverIncluded ? 1 : 0) + scenesWithIllustration,
+    scenesWithText,
+    scenesWithIllustration,
+    includesCoverArt: coverIncluded,
+    approximateBytes,
+    approximateKilobytes: Math.max(1, Math.ceil(approximateBytes / 1024)),
+    idempotencyKey: cleanStoryForgeClassShareLabel(source.idempotencyKey, 120)
+  };
+};
 const hydrateStoryForgeAudioSegments = (value) => Object.fromEntries(
   Object.entries(sanitizeAudioSegments(value)).map(([key, segment]) => {
     const hydrated = { ...segment };
@@ -1942,6 +2101,7 @@ const StoryForge = React.memo(({
   const layoutMode = artifactType === "comic" ? "comic" : WRITING_VIEWS[writingView]?.layoutMode || "prose";
   const [showWritingTools, setShowWritingTools] = useState(false);
   const [showReviewTools, setShowReviewTools] = useState(false);
+  const [showComicProduction, setShowComicProduction] = useState(false);
   const selectArtifactType = (nextType) => {
     if (!ARTIFACT_TYPES[nextType] || nextType === artifactType) return;
     const hasArtifactContent = paragraphs.some((item) => String(item.text || "").trim()) || Object.keys(panelDialogue || {}).length > 0 || Object.keys(panelDirections || {}).length > 0 || Object.keys(panelThumbnails || {}).length > 0 || Object.values(illustrations || {}).some((item) => Boolean(item?.imageUrl)) || Object.values(audioSegments || {}).some((item) => Boolean(item?.studentAudioUrl || item?.aiAudioUrl));
@@ -2568,6 +2728,12 @@ const StoryForge = React.memo(({
   const audioRef = useRef(null);
   const recorder = useAudioRecorder();
   const [recordingParagraphId, setRecordingParagraphId] = useState(null);
+  const [recordingError, setRecordingError] = useState(null);
+  useEffect(() => {
+    if (!recorder.error) return;
+    setRecordingError({ paragraphId: recordingParagraphId, message: recorder.error });
+    setRecordingParagraphId(null);
+  }, [recorder.error]);
   const splitSentences = (text) => {
     if (!text) return [""];
     try {
@@ -3047,7 +3213,23 @@ const StoryForge = React.memo(({
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const closeConfirmDialogRef = useRef(null);
   const restorePromptDialogRef = useRef(null);
+  const discardDraftConfirmDialogRef = useRef(null);
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
+  const [showDiscardDraftConfirm, setShowDiscardDraftConfirm] = useState(false);
+  const dismissRestorePrompt = () => {
+    setShowRestorePrompt(false);
+    sfAnnounce("Saved project recovery is still available below the header");
+  };
+  const requestDiscardDraftConfirmation = () => {
+    setShowRestorePrompt(false);
+    setShowDiscardDraftConfirm(true);
+    sfAnnounce("Confirm whether to delete the saved project");
+  };
+  const cancelDiscardDraftConfirmation = () => {
+    setShowDiscardDraftConfirm(false);
+    setShowRestorePrompt(true);
+    sfAnnounce("Saved project kept");
+  };
   const hasMeaningfulDraft = () => isStoryForgeProjectMeaningful(createProjectSnapshot());
   const persistDraftToStorage = async ({ announce = false, allowDuringHydration = false } = {}) => {
     if (!allowDuringHydration && (draftHydrationState !== "ready" || showRestorePrompt)) {
@@ -3121,7 +3303,6 @@ const StoryForge = React.memo(({
   const restoreRevisionCheckpoint = (revision) => {
     if (!revision?.snapshot) return;
     applySanitizedProject(revision.snapshot);
-    setPhase(revision.snapshot.phase || "export");
     setIsDirty(true);
     setDraftSaveState("saving");
     if (addToast) addToast(`Checkpoint restored: ${revision.label || "Production checkpoint"}`, "success");
@@ -3152,10 +3333,10 @@ const StoryForge = React.memo(({
     importConfirmationResolveRef.current = resolve;
     setImportConfirmation(candidate.summary);
   });
-  const finishImportConfirmation = (decision2) => {
+  const finishImportConfirmation = (decision) => {
     const resolve = importConfirmationResolveRef.current;
     const candidate = importCandidateRef.current;
-    const action = decision2 === true ? "replace" : decision2 === "checkpoint" ? "checkpoint" : "cancel";
+    const action = decision === true ? "replace" : decision === "checkpoint" ? "checkpoint" : "cancel";
     importConfirmationResolveRef.current = null;
     importCandidateRef.current = null;
     setImportConfirmation(null);
@@ -3444,7 +3625,8 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
         if (exportConsent) finishExportConsent(false);
         else if (importConfirmation) finishImportConfirmation(false);
         else if (showCloseConfirm) setShowCloseConfirm(false);
-        else if (showRestorePrompt) setShowRestorePrompt(false);
+        else if (showDiscardDraftConfirm) cancelDiscardDraftConfirmation();
+        else if (showRestorePrompt) dismissRestorePrompt();
         else safeClose();
         e.preventDefault();
       }
@@ -3455,7 +3637,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, exportConsent, importConfirmation, showCloseConfirm, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, draftHydrationState, comicProductionSnapshotKey, comicCanUndo, comicCanRedo]);
+  }, [isOpen, exportConsent, importConfirmation, showCloseConfirm, showRestorePrompt, showDiscardDraftConfirm, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, draftHydrationState, comicProductionSnapshotKey, comicCanUndo, comicCanRedo]);
   useEffect(() => {
     if (!isOpen) return void 0;
     const root = modalRootRef.current;
@@ -3505,7 +3687,9 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   }, [isOpen]);
   const saveTimerRef = useRef(null);
   const savedDraftRef = useRef(null);
-  _storyForgeUseFocusTrap(restorePromptDialogRef, showRestorePrompt, () => setShowRestorePrompt(false));
+  const recoverySummary = getStoryForgeRecoverySummary(savedDraftRef.current, sourceTopic);
+  _storyForgeUseFocusTrap(restorePromptDialogRef, showRestorePrompt, dismissRestorePrompt);
+  _storyForgeUseFocusTrap(discardDraftConfirmDialogRef, showDiscardDraftConfirm, cancelDiscardDraftConfirmation);
   _storyForgeUseFocusTrap(closeConfirmDialogRef, showCloseConfirm, () => setShowCloseConfirm(false));
   _storyForgeUseFocusTrap(exportConsentDialogRef, !!exportConsent, () => finishExportConsent(false));
   _storyForgeUseFocusTrap(importConfirmationDialogRef, !!importConfirmation, () => finishImportConfirmation(false));
@@ -3519,6 +3703,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     setLastDraftSavedAt(null);
     setRevisionHistory([]);
     setShowRestorePrompt(false);
+    setShowDiscardDraftConfirm(false);
     (async () => {
       let legacyProject = null;
       try {
@@ -3624,7 +3809,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   }, [isOpen, draftHydrationState, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload]);
   const applySanitizedDraft = (value) => {
     const draft = sanitizeStoryForgeDraft(value);
-    const restoredPhase2 = getStoryForgeRestoredPhase({ ...draft, sourceTopic });
+    const restoredPhase = getStoryForgeRestoredPhase({ ...draft, sourceTopic });
     resetComicHistory();
     clearReviewState();
     setStoryTitle(draft.storyTitle);
@@ -3637,7 +3822,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     setParagraphs(draft.paragraphs);
     setScaffoldsGenerated(draft.scaffoldsGenerated);
     setDraftCount(draft.draftCount);
-    setPhase(restoredPhase2);
+    setPhase(restoredPhase);
     setLanguage(draft.language);
     setCustomLanguage(draft.customLanguage);
     setStoryShape(draft.storyShape);
@@ -3655,7 +3840,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     setPanelStickers(draft.panelStickers);
     setReviewedDraftSignature(draft.reviewedDraftSignature);
     setFocusParagraphIdx(0);
-    return draft;
+    return { ...draft, phase: restoredPhase };
   };
   const applySanitizedProject = (value) => {
     const project = sanitizeStoryForgeProject(value);
@@ -3668,7 +3853,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     storyAudioHydrationSignatureRef.current = "";
     setStoryAudioStorePayload(project.audioStore || null);
     setComicFlowReport(project.comicFlowReport || null);
-    return { ...draft, phase: restoredPhase };
+    return draft;
   };
   const restoreDraft = () => {
     if (!savedDraftRef.current) return;
@@ -3683,10 +3868,13 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     setDraftSaveError("");
     setIsDirty(false);
     setShowRestorePrompt(false);
+    setShowDiscardDraftConfirm(false);
     if (addToast) addToast(t("toasts.draft_restored_2"), "success");
     sfAnnounce("Draft restored");
   };
   const discardDraft = async () => {
+    setShowDiscardDraftConfirm(false);
+    setDraftHydrationState("checking");
     resetComicHistory();
     let legacyRemoved = false;
     try {
@@ -3711,6 +3899,9 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     setIsDirty(!removed);
     setShowRestorePrompt(false);
     sfAnnounce(removed ? "Starting a fresh StoryForge draft" : "Could not clear the saved project");
+  };
+  const confirmDiscardDraft = async () => {
+    await discardDraft();
   };
   useEffect(() => {
     if (initialConfig && initialConfig.vocabTerms) {
@@ -5285,8 +5476,18 @@ Return ONLY JSON: { "characters": [{"name": "CharName", "description": "brief 5-
     }
   };
   const startRecordingParagraph = async (paragraphId) => {
-    setRecordingParagraphId(paragraphId);
-    await recorder.startRecording();
+    setRecordingError(null);
+    recorder.clearError();
+    const result = await recorder.startRecording();
+    if (result?.ok) {
+      setRecordingParagraphId(paragraphId);
+      return;
+    }
+    setRecordingParagraphId(null);
+    setRecordingError({
+      paragraphId,
+      message: result?.error || "The microphone could not start. Check your browser permissions, then retry."
+    });
   };
   const stopRecordingParagraph = async () => {
     const result = await recorder.stopRecording();
@@ -6050,8 +6251,8 @@ Return ONLY JSON:
   };
   const getReadinessActionLabel = (issue) => {
     if (!issue) return "";
-    if (issue.code === "unplaced-lettering" || issue.code === "gutter-lettering-conflict") return "Auto-place lettering";
-    if (issue.code === "missing-print-bleed") return "Enable bleed";
+    if (issue.code === "unplaced-lettering" || issue.code === "gutter-lettering-conflict") return "Open lettering tools";
+    if (issue.code === "missing-print-bleed") return "Open print setup";
     if (issue.code === "continuity-sheet-incomplete") return onCallGemini ? "Draft continuity" : "Add continuity";
     if (issue.code === "review-not-run") return layoutMode === "comic" ? "Open comic review" : "Open review";
     if (issue.code === "missing-story-title") return "Add title";
@@ -6077,6 +6278,8 @@ Return ONLY JSON:
     }
     if (issue.code === "continuity-sheet-incomplete") return "sf-comic-continuity";
     if (issue.code === "review-not-run") return "sf-review-tools";
+    if (issue.code === "unplaced-lettering" || issue.code === "gutter-lettering-conflict") return "sf-comic-page-composer";
+    if (issue.code === "missing-print-bleed") return "sf-comic-print-safety";
     if (issue.code === "crowded-lettering") {
       const id = firstParagraphId((item) => getComicLetteringStats(panelDialogue[item.id] || {}).level === "crowded");
       return id ? `sf-lettering-${id}` : "";
@@ -6094,13 +6297,13 @@ Return ONLY JSON:
   const resolveReadinessIssue = async (issue) => {
     if (!issue) return;
     if (issue.code === "unplaced-lettering" || issue.code === "gutter-lettering-conflict") {
-      applyComicLetteringPlacement(comicPageGroups, "Comic");
+      setShowComicProduction(true);
+      changePhase("illustrate", "sf-comic-page-composer");
       return;
     }
     if (issue.code === "missing-print-bleed") {
-      updateComicPrintSafety("includeBleed", true);
-      if (addToast) addToast("Print bleed enabled.", "success");
-      sfAnnounce("Comic print bleed enabled");
+      setShowComicProduction(true);
+      changePhase("illustrate", "sf-comic-print-safety");
       return;
     }
     if (issue.code === "continuity-sheet-incomplete" && onCallGemini) {
@@ -6957,60 +7160,6 @@ show();
       if (addToast) addToast(t("toasts.slideshow_export_failed"), "error");
     }
   };
-  const shareToSession = async () => {
-    if (!ensureReadyToPublish()) return;
-    if (!liveSession || !liveSession.push) return;
-    if (isCanvasEnv) {
-      if (addToast) addToast(t("toasts.sharing_disabled_canvas_environment_ferpa"), "error");
-      return;
-    }
-    try {
-      const title = storyTitle || storyPrompt || sourceTopic || (artifactType === "comic" ? "My Comic" : "My Story");
-      const safePanelDialogue = sanitizePanelDialogue(panelDialogue);
-      const safePanelDirections = sanitizePanelDirections(panelDirections);
-      const safePanelThumbnails = sanitizePanelThumbnails(panelThumbnails);
-      const safePanelLayouts = sanitizePanelLayouts(panelLayouts);
-      const safePanelStickers = sanitizePanelStickers(panelStickers);
-      await liveSession.push({
-        type: "storyforge",
-        title,
-        author: authorName || "Student",
-        genre: GENRE_TEMPLATES[genre]?.label || "Creative Writing",
-        artifactType,
-        writingView,
-        layoutMode,
-        comicPageLayout,
-        comicPageComposer: sanitizeComicPageComposer(comicPageComposer),
-        comicPrintSafety: sanitizeComicPrintSafety(comicPrintSafety),
-        comicContinuity: sanitizeComicContinuity(comicContinuity),
-        comicFlowScore: layoutMode === "comic" ? comicFlowReport?.score || null : null,
-        paragraphCount: paragraphs.length,
-        wordCount: totalWords,
-        vocabUsed: vocabUsedCount,
-        vocabTotal: vocabTerms.length,
-        coverArt: coverArt || null,
-        preview: paragraphs[0]?.text?.substring(0, 200) || "",
-        // Portfolio gallery data
-        fullStory: paragraphs.map((p) => ({
-          text: p.text.substring(0, 500),
-          illustration: illustrations[p.id]?.imageUrl || null,
-          panelDialogue: safePanelDialogue[p.id] || null,
-          panelDirection: safePanelDirections[p.id] || null,
-          panelThumbnail: safePanelThumbnails[p.id] || null,
-          panelLayout: safePanelLayouts[p.id] || null,
-          panelSticker: safePanelStickers[p.id] || null
-        })),
-        gradingScore: gradingResult?.totalScore || null,
-        readingGrade: readingLevel?.grade || null,
-        draftCount
-      });
-      if (addToast) addToast(`${artifactType === "comic" ? "Comic" : "Storybook"} shared with the class.`, "success");
-      awardXP(10, "Shared to class");
-    } catch (err) {
-      console.warn("Share failed:", err);
-      if (addToast) addToast(t("toasts.failed_share_try_again"), "error");
-    }
-  };
   const exportStoryForgeProject = async () => {
     if (!await requestExportConsent({ title: "Export Story Forge project?", message: "This project package contains the complete writing project, visual assets, continuity notes, and any stored narration data. Save it only to a school-approved location.", confirmLabel: "Export project" })) return;
     const exportedAt = (/* @__PURE__ */ new Date()).toISOString();
@@ -7222,9 +7371,10 @@ show();
             sfAnnounce("Story Forge import rejected because the package is not supported");
             return;
           }
+          let decision = { accepted: true, action: "replace", candidate: validated };
           if (hasMeaningfulDraft()) {
-            const decision2 = await requestImportConfirmation(validated);
-            if (!decision2.accepted || !decision2.candidate) {
+            decision = await requestImportConfirmation(validated);
+            if (!decision.accepted || !decision.candidate) {
               sfAnnounce("Story Forge import cancelled");
               return;
             }
@@ -7300,7 +7450,7 @@ show();
   const publishBlocked = !isCurrentDraftReviewed || projectReadiness.blockers.length > 0;
   const artifactTypeLocked = paragraphs.some((item) => String(item.text || "").trim()) || Object.keys(panelDialogue || {}).length > 0 || Object.keys(panelDirections || {}).length > 0 || Object.keys(panelThumbnails || {}).length > 0 || Object.values(illustrations || {}).some((item) => Boolean(item?.imageUrl)) || Object.values(audioSegments || {}).some((item) => Boolean(item?.studentAudioUrl || item?.aiAudioUrl));
   const comicAltCoverageLabel = layoutMode === "comic" ? projectReadiness.comicStats.artPanels > 0 ? `${Math.max(0, projectReadiness.comicStats.artPanels - projectReadiness.comicStats.missingAltText)}/${projectReadiness.comicStats.artPanels}` : "0/0" : "n/a";
-  const renderComicPreviewPanel = (p, idx, previewLayout = comicPageLayout, pageIndex = idx, pageForPanel = null) => {
+  const renderComicPreviewPanel = (p, idx, previewLayout = comicPageLayout, pageIndex = idx, pageForPanel = null, editable = false) => {
     const layoutFrame = panelLayouts[p.id] || {};
     const resizingPanel = panelResizeDrag?.pId === p.id;
     const mangaFlow = previewLayout === "manga";
@@ -7328,7 +7478,7 @@ show();
         placedBubbleKind === "speech" && dialogue.speaker && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-blue-600 mb-0.5" }, dialogue.speaker, ":"),
         placedBubbleKind === "thought" && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4AD}", " "),
         placedBubbleText,
-        /* @__PURE__ */ React.createElement(
+        editable && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
@@ -7344,8 +7494,7 @@ show();
             "data-sf-focusable": true
           },
           /* @__PURE__ */ React.createElement(Move, { size: 13, "aria-hidden": "true" })
-        ),
-        /* @__PURE__ */ React.createElement(
+        ), /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
@@ -7361,10 +7510,10 @@ show();
             "data-sf-focusable": true
           },
           /* @__PURE__ */ React.createElement(Maximize2, { size: 13, "aria-hidden": "true" })
-        )
+        ))
       ) : null;
       return /* @__PURE__ */ React.createElement("div", { className: "relative", "data-sf-comic-art-layer": "true" }, /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: panelThumbnails[p.id]?.altText || `Panel ${idx + 1}`, className: `w-full object-cover ${isComicPanelWideFrame(layoutFrame, previewLayout, pageIndex) ? "aspect-video" : "aspect-square"}` }), showPlacedBubble && (customLetteringPosition ? /* @__PURE__ */ React.createElement("div", { className: "absolute inset-2 z-10 pointer-events-none" }, letteringBubble) : /* @__PURE__ */ React.createElement("div", { className: `absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}` }, letteringBubble)), space && !placedBubbleText && /* @__PURE__ */ React.createElement("div", { className: `absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}` }, /* @__PURE__ */ React.createElement("div", { className: "border-2 border-dashed border-teal-300 bg-white/70 text-teal-700 rounded-xl px-2 py-1 text-[10px] font-black uppercase tracking-widest" }, "Bubble space")));
-    })(), panelStickers[p.id] && /* @__PURE__ */ React.createElement("div", { className: `absolute ${mangaFlow ? "top-11 right-2" : "top-2 right-2"} text-3xl drop-shadow-lg select-none pointer-events-none`, style: { transform: "rotate(12deg)" } }, panelStickers[p.id]), (panelDialogue[p.id] || {}).sfx && /* @__PURE__ */ React.createElement("div", { className: `absolute ${mangaFlow ? "top-3 left-3" : "top-11 left-3"} font-black text-red-500 text-lg drop-shadow-lg select-none pointer-events-none`, style: { transform: "rotate(-8deg)", textShadow: "2px 2px 0 #fff, -1px -1px 0 #fff" } }, panelDialogue[p.id].sfx), /* @__PURE__ */ React.createElement(
+    })(), panelStickers[p.id] && /* @__PURE__ */ React.createElement("div", { className: `absolute ${mangaFlow ? "top-11 right-2" : "top-2 right-2"} text-3xl drop-shadow-lg select-none pointer-events-none`, style: { transform: "rotate(12deg)" } }, panelStickers[p.id]), (panelDialogue[p.id] || {}).sfx && /* @__PURE__ */ React.createElement("div", { className: `absolute ${mangaFlow ? "top-3 left-3" : "top-11 left-3"} font-black text-red-500 text-lg drop-shadow-lg select-none pointer-events-none`, style: { transform: "rotate(-8deg)", textShadow: "2px 2px 0 #fff, -1px -1px 0 #fff" } }, panelDialogue[p.id].sfx), editable && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -7442,7 +7591,38 @@ show();
         .sf-modal-root.theme-contrast .sf-panel-drop-target{outline-color:#0f0!important}
         .sf-modal-root.theme-contrast .sf-comic-status-pill,.sf-modal-root.theme-contrast .sf-comic-frame-choice-active{background:#000!important;color:#ff0!important;border-color:#ff0!important}
         .sf-modal-root.theme-contrast .sf-bubble-width-slider{accent-color:#0f0}
-      `), showRestorePrompt && /* @__PURE__ */ React.createElement("div", { ref: restorePromptDialogRef, tabIndex: -1, className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-restore-title", "aria-describedby": "sf-restore-description" }, /* @__PURE__ */ React.createElement("div", { className: "sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3", "aria-hidden": "true" }, "\u{1F4D6}"), /* @__PURE__ */ React.createElement("h3", { id: "sf-restore-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.continue_where_left")), /* @__PURE__ */ React.createElement("p", { id: "sf-restore-description", className: "text-sm text-slate-600 mb-4" }, "A saved draft was found. Would you like to restore it?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: discardDraft, className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.start_fresh")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: restoreDraft, className: "px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors" }, t("ui_common.restore_draft"))))), showCloseConfirm && /* @__PURE__ */ React.createElement("div", { ref: closeConfirmDialogRef, tabIndex: -1, className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-close-confirm-title", "aria-describedby": "sf-close-confirm-description" }, /* @__PURE__ */ React.createElement("div", { className: "sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("h3", { id: "sf-close-confirm-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.unsaved_changes")), /* @__PURE__ */ React.createElement("p", { id: "sf-close-confirm-description", className: "text-sm text-slate-600 mb-4" }, "Your latest changes have not finished saving. Save before closing, or close and keep the last confirmed draft."), draftSaveError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "mb-4 rounded-lg border border-red-200 bg-red-50 p-2 text-xs font-bold text-red-700" }, draftSaveError), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => setShowCloseConfirm(false), className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.keep_working")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-save-close": true, onClick: async () => {
+      `), showRestorePrompt && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: restorePromptDialogRef,
+      tabIndex: -1,
+      "data-sf-restore-dialog": true,
+      "data-sf-recovery-title": recoverySummary.title,
+      "data-sf-recovery-artifact": recoverySummary.artifactType,
+      "data-sf-recovery-resume-phase": recoverySummary.resumePhase,
+      className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200",
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "sf-restore-title",
+      "aria-describedby": "sf-restore-description sf-restore-summary"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "sf-dialog-card w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3", "aria-hidden": "true" }, "\u{1F4D6}"), /* @__PURE__ */ React.createElement("h3", { id: "sf-restore-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.continue_where_left")), /* @__PURE__ */ React.createElement("p", { id: "sf-restore-description", className: "text-sm text-slate-600" }, "A saved project is waiting. Review it before deciding whether to restore or delete it.")), /* @__PURE__ */ React.createElement("dl", { id: "sf-restore-summary", "data-sf-restore-summary": true, className: "mt-4 grid grid-cols-1 gap-2 rounded-xl border border-rose-100 bg-rose-50/50 p-3 text-left text-xs sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 sm:col-span-2" }, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-rose-700" }, "Saved project"), /* @__PURE__ */ React.createElement("dd", { "data-sf-recovery-project-title": true, className: "mt-1 truncate text-sm font-black text-slate-900" }, recoverySummary.title)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-rose-700" }, "Artifact"), /* @__PURE__ */ React.createElement("dd", { "data-sf-recovery-artifact-label": true, className: "mt-1 font-bold text-slate-800" }, recoverySummary.artifactLabel)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-rose-700" }, "Resume safely at"), /* @__PURE__ */ React.createElement("dd", { "data-sf-recovery-phase-label": true, className: "mt-1 font-bold text-slate-800" }, recoverySummary.resumePhaseLabel)), /* @__PURE__ */ React.createElement("div", { className: "sm:col-span-2" }, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-rose-700" }, "Last saved"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, /* @__PURE__ */ React.createElement("time", { "data-sf-recovery-saved-at": true, dateTime: recoverySummary.savedAt || void 0 }, recoverySummary.savedAt ? new Date(recoverySummary.savedAt).toLocaleString() : "Time unavailable")))), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-request-discard-draft": true, onClick: requestDiscardDraftConfirmation, className: "min-h-11 rounded-lg border border-rose-300 bg-white px-4 py-2 text-sm font-bold text-rose-700 transition-colors hover:bg-rose-50" }, "Delete saved project & start new"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-restore-draft": true, onClick: restoreDraft, className: "min-h-11 rounded-lg bg-rose-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-rose-700" }, "Restore and resume at ", recoverySummary.resumePhaseLabel)))
+  ), showDiscardDraftConfirm && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[220] flex items-center justify-center bg-black/70 p-4" }, /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: discardDraftConfirmDialogRef,
+      tabIndex: -1,
+      role: "alertdialog",
+      "aria-modal": "true",
+      "aria-labelledby": "sf-discard-draft-title",
+      "aria-describedby": "sf-discard-draft-description",
+      "data-sf-discard-draft-confirmation": true,
+      className: "sf-dialog-card w-full max-w-md rounded-2xl border-2 border-rose-300 bg-white p-6 shadow-2xl"
+    },
+    /* @__PURE__ */ React.createElement("h3", { id: "sf-discard-draft-title", className: "text-lg font-black text-slate-900" }, "Delete saved project?"),
+    /* @__PURE__ */ React.createElement("p", { id: "sf-discard-draft-description", className: "mt-2 text-sm leading-relaxed text-slate-700" }, "This permanently removes \u201C", recoverySummary.title, "\u201D and its saved checkpoints from this browser. This cannot be undone."),
+    /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-cancel-discard-draft": true, onClick: cancelDiscardDraftConfirmation, className: "min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, "Keep saved project"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-confirm-discard-draft": true, onClick: () => void confirmDiscardDraft(), className: "min-h-11 rounded-lg bg-rose-700 px-4 py-2 text-sm font-bold text-white hover:bg-rose-800" }, "Delete & start new"))
+  )), showCloseConfirm && /* @__PURE__ */ React.createElement("div", { ref: closeConfirmDialogRef, tabIndex: -1, className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-close-confirm-title", "aria-describedby": "sf-close-confirm-description" }, /* @__PURE__ */ React.createElement("div", { className: "sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("h3", { id: "sf-close-confirm-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.unsaved_changes")), /* @__PURE__ */ React.createElement("p", { id: "sf-close-confirm-description", className: "text-sm text-slate-600 mb-4" }, "Your latest changes have not finished saving. Save before closing, or close and keep the last confirmed draft."), draftSaveError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "mb-4 rounded-lg border border-red-200 bg-red-50 p-2 text-xs font-bold text-red-700" }, draftSaveError), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => setShowCloseConfirm(false), className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.keep_working")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-save-close": true, onClick: async () => {
     if (await persistDraftToStorage({ announce: true, allowDuringHydration: true })) {
       setShowCloseConfirm(false);
       onClose();
@@ -7450,7 +7630,17 @@ show();
   }, className: "px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-colors" }, t("ui_common.save_draft_close")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => {
     setShowCloseConfirm(false);
     onClose();
-  }, className: "px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors" }, t("ui_common.close_anyway"))))), exportConsent && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: exportConsentDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "sf-export-consent-title", "aria-describedby": "sf-export-consent-message", tabIndex: -1, className: "sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-cyan-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("h3", { id: "sf-export-consent-title", className: "text-lg font-black text-slate-900" }, exportConsent.title), /* @__PURE__ */ React.createElement("p", { id: "sf-export-consent-message", className: "mt-2 text-sm leading-relaxed text-slate-700" }, exportConsent.message), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-wrap justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(true), className: "rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800" }, exportConsent.confirmLabel || "Export file")))), importConfirmation && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: importConfirmationDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "sf-import-confirm-title", "aria-describedby": "sf-import-confirm-message", tabIndex: -1, className: "sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-amber-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-full bg-amber-100 p-2 text-amber-700", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 18 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "sf-import-confirm-title", className: "text-lg font-black text-slate-900" }, "Replace current project?"), /* @__PURE__ */ React.createElement("p", { id: "sf-import-confirm-message", className: "mt-2 text-sm leading-relaxed text-slate-700" }, "Importing this file replaces the current writing, artwork, narration, and production details. Save a checkpoint first if you may need the current project later."))), /* @__PURE__ */ React.createElement("dl", { className: "mt-5 grid gap-2 rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-xs sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, "Incoming project"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 truncate font-black text-slate-900" }, importConfirmation.title)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, "Format"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, "v", importConfirmation.version || STORYFORGE_PROJECT_VERSION, " \xB7 ", importConfirmation.layoutMode === "comic" ? "Comic" : "Story")), importConfirmation.layoutMode === "comic" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, "Pages"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, importConfirmation.pageCount)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, "Panels"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, importConfirmation.panelCount))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, "Source"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 truncate font-bold text-slate-800" }, importConfirmation.exportedBy || "Not provided")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, "Exported"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, importConfirmation.exportedAt ? new Date(importConfirmation.exportedAt).toLocaleDateString() : "Not provided"))), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-wrap justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishImportConfirmation(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, "Keep current project"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishImportConfirmation("checkpoint"), className: "rounded-lg border border-amber-500 bg-white px-4 py-2 text-sm font-bold text-amber-800 hover:bg-amber-50" }, "Save checkpoint & import"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishImportConfirmation(true), className: "rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700" }, "Replace and import")))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-rose-600 to-pink-600 p-3 sm:p-4 text-white flex justify-between items-center gap-2 shadow-lg shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 24 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-lg sm:text-xl font-black" }, t("headings.story_forge")), /* @__PURE__ */ React.createElement("p", { className: "hidden sm:block text-rose-100 text-xs font-medium" }, t("ui_common.creative_writing_studio")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "hidden md:flex bg-white/20 px-3 py-1 rounded-full text-xs font-bold items-center gap-2", title: `${xpData.totalXP} XP \xB7 ${currentLevel.name}${xpData.streak > 1 ? ` \xB7 ${xpData.streak}-day streak` : ""}` }, /* @__PURE__ */ React.createElement("span", null, currentLevel.emoji, " ", currentLevel.name), /* @__PURE__ */ React.createElement("span", { className: "text-rose-200" }, xpData.totalXP, " XP"), xpData.streak > 1 && /* @__PURE__ */ React.createElement("span", { className: "text-amber-700" }, "\u{1F525}", xpData.streak), nextLevel && /* @__PURE__ */ React.createElement("div", { className: "w-12 h-1.5 bg-white/20 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-amber-300 rounded-full transition-all", style: { width: `${Math.min(100, (xpData.totalXP - currentLevel.min) / (nextLevel.min - currentLevel.min) * 100)}%` } }))), totalWords > 0 && /* @__PURE__ */ React.createElement("div", { className: "hidden lg:flex bg-white/20 px-3 py-1 rounded-full text-xs font-bold items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, totalWords, " words"), /* @__PURE__ */ React.createElement("span", null, "\xB7"), /* @__PURE__ */ React.createElement("span", null, vocabUsedCount, "/", vocabTerms.length, " terms"), readingLevel && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, "\xB7"), /* @__PURE__ */ React.createElement("span", null, "Grade ", readingLevel.grade))), /* @__PURE__ */ React.createElement(
+  }, className: "px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors" }, t("ui_common.close_anyway"))))), exportConsent && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: exportConsentDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "sf-export-consent-title", "aria-describedby": "sf-export-consent-message", tabIndex: -1, className: "sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-cyan-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("h3", { id: "sf-export-consent-title", className: "text-lg font-black text-slate-900" }, exportConsent.title), /* @__PURE__ */ React.createElement("p", { id: "sf-export-consent-message", className: "mt-2 text-sm leading-relaxed text-slate-700" }, exportConsent.message), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-wrap justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(true), className: "rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800" }, exportConsent.confirmLabel || "Export file")))), importConfirmation && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: importConfirmationDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "sf-import-confirm-title", "aria-describedby": "sf-import-confirm-message", tabIndex: -1, className: "sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-amber-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-full bg-amber-100 p-2 text-amber-700", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 18 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "sf-import-confirm-title", className: "text-lg font-black text-slate-900" }, "Replace current project?"), /* @__PURE__ */ React.createElement("p", { id: "sf-import-confirm-message", className: "mt-2 text-sm leading-relaxed text-slate-700" }, "Importing this file replaces the current writing, artwork, narration, and production details. Save a checkpoint first if you may need the current project later."))), /* @__PURE__ */ React.createElement("dl", { className: "mt-5 grid gap-2 rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-xs sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, "Incoming project"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 truncate font-black text-slate-900" }, importConfirmation.title)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, "Format"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, "v", importConfirmation.version || STORYFORGE_PROJECT_VERSION, " \xB7 ", importConfirmation.layoutMode === "comic" ? "Comic" : "Story")), importConfirmation.layoutMode === "comic" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, "Pages"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, importConfirmation.pageCount)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, "Panels"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, importConfirmation.panelCount))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, "Source"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 truncate font-bold text-slate-800" }, importConfirmation.exportedBy || "Not provided")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, "Exported"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, importConfirmation.exportedAt ? new Date(importConfirmation.exportedAt).toLocaleDateString() : "Not provided"))), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-wrap justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishImportConfirmation(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, "Keep current project"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishImportConfirmation("checkpoint"), className: "rounded-lg border border-amber-500 bg-white px-4 py-2 text-sm font-bold text-amber-800 hover:bg-amber-50" }, "Save checkpoint & import"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-import-confirm-action": "replace", onClick: () => finishImportConfirmation(true), className: "rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700" }, "Replace and import")))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-rose-600 to-pink-600 p-3 sm:p-4 text-white flex justify-between items-center gap-2 shadow-lg shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-1 items-center gap-3" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 24 }), /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { className: "truncate text-lg font-black sm:text-xl" }, t("headings.story_forge")), /* @__PURE__ */ React.createElement("p", { className: "max-w-[58vw] truncate text-[11px] font-semibold text-rose-100 sm:max-w-[42vw] sm:text-xs", title: `${storyTitle.trim() || `Untitled ${artifactType === "comic" ? "comic" : "story"}`} - ${PHASE_LABELS[phaseIdx]} - ${draftSaveLabel}` }, /* @__PURE__ */ React.createElement("span", { "data-sf-header-project-title": true }, storyTitle.trim() || `Untitled ${artifactType === "comic" ? "comic" : "story"}`), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " \xB7 "), /* @__PURE__ */ React.createElement("span", { "data-sf-header-artifact": true }, artifactType === "comic" ? "Comic" : "Story"), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " \xB7 "), /* @__PURE__ */ React.createElement("span", null, PHASE_LABELS[phaseIdx]), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " \xB7 "), /* @__PURE__ */ React.createElement("span", { "data-sf-header-save-state": true }, draftSaveLabel)))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "hidden md:flex bg-white/20 px-3 py-1 rounded-full text-xs font-bold items-center gap-2", title: `${xpData.totalXP} XP \xB7 ${currentLevel.name}${xpData.streak > 1 ? ` \xB7 ${xpData.streak}-day streak` : ""}` }, /* @__PURE__ */ React.createElement("span", null, currentLevel.emoji, " ", currentLevel.name), /* @__PURE__ */ React.createElement("span", { className: "text-rose-200" }, xpData.totalXP, " XP"), xpData.streak > 1 && /* @__PURE__ */ React.createElement("span", { className: "text-amber-700" }, "\u{1F525}", xpData.streak), nextLevel && /* @__PURE__ */ React.createElement("div", { className: "w-12 h-1.5 bg-white/20 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-amber-300 rounded-full transition-all", style: { width: `${Math.min(100, (xpData.totalXP - currentLevel.min) / (nextLevel.min - currentLevel.min) * 100)}%` } }))), totalWords > 0 && /* @__PURE__ */ React.createElement("div", { className: "hidden lg:flex bg-white/20 px-3 py-1 rounded-full text-xs font-bold items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, totalWords, " words"), /* @__PURE__ */ React.createElement("span", null, "\xB7"), /* @__PURE__ */ React.createElement("span", null, vocabUsedCount, "/", vocabTerms.length, " terms"), readingLevel && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, "\xB7"), /* @__PURE__ */ React.createElement("span", null, "Grade ", readingLevel.grade))), /* @__PURE__ */ React.createElement("details", { "data-sf-project-menu": true, className: "relative" }, /* @__PURE__ */ React.createElement(
+    "summary",
+    {
+      "data-sf-focusable": true,
+      "data-sf-project-menu-trigger": true,
+      className: "flex min-h-9 cursor-pointer list-none items-center justify-center gap-1.5 rounded-lg border border-white/30 bg-white/15 px-2 text-xs font-bold transition-colors hover:bg-white/25 sm:px-3 [&::-webkit-details-marker]:hidden",
+      "aria-label": "Open project menu"
+    },
+    /* @__PURE__ */ React.createElement(BookOpen, { size: 15, "aria-hidden": "true" }),
+    /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, "Project")
+  ), /* @__PURE__ */ React.createElement("div", { className: "absolute right-0 z-[260] mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white p-3 text-slate-800 shadow-2xl", role: "group", "aria-label": "Project actions" }, /* @__PURE__ */ React.createElement("div", { className: "border-b border-slate-200 px-2 pb-3" }, /* @__PURE__ */ React.createElement("p", { className: "truncate text-sm font-black", "data-sf-project-menu-title": true }, storyTitle.trim() || `Untitled ${artifactType === "comic" ? "comic" : "story"}`), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs text-slate-500" }, artifactType === "comic" ? "Comic" : "Story", " \xB7 ", PHASE_LABELS[phaseIdx], " \xB7 ", draftSaveLabel)), draftHydrationState === "awaiting" ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "px-2 text-xs leading-relaxed text-amber-800" }, "A saved project is waiting. Restore it before using project tools."), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-restore": true, onClick: restoreDraft, className: "flex min-h-10 w-full items-center gap-2 rounded-lg bg-amber-700 px-3 py-2 text-left text-xs font-bold text-white hover:bg-amber-800" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " Restore saved project"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-recovery-options": true, onClick: () => setShowRestorePrompt(true), className: "min-h-10 w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-left text-xs font-bold text-amber-900 hover:bg-amber-50" }, "Review recovery options")) : /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-save": true, onClick: () => void persistDraftToStorage({ announce: true }), disabled: draftHydrationState !== "ready" || draftSaveState === "saving", className: "flex min-h-10 w-full items-center gap-2 rounded-lg bg-rose-600 px-3 py-2 text-left text-xs font-bold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement(Save, { size: 14, "aria-hidden": "true" }), " Save project now"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-export": true, onClick: () => void exportStoryForgeProject(), disabled: draftHydrationState !== "ready", className: "flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement(Download, { size: 14, "aria-hidden": "true" }), " Export backup"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-import": true, onClick: importDraftJSON, disabled: draftHydrationState !== "ready", className: "flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " Import project"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-checkpoint": true, onClick: () => void saveRevisionCheckpoint(), disabled: draftHydrationState !== "ready" || draftSaveState === "saving", className: "flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement(Star, { size: 14, "aria-hidden": "true" }), " Save checkpoint")), /* @__PURE__ */ React.createElement("p", { className: "mt-3 px-2 text-[11px] leading-relaxed text-slate-500" }, "Backups and checkpoints preserve work before an import or major revision."))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -7490,7 +7680,19 @@ show();
         return "\u2600\uFE0F";
       }
     })())
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: safeClose, className: "hover:bg-white/20 p-2 rounded-full transition-colors", "aria-label": t("a11y.close_story_forge") }, /* @__PURE__ */ React.createElement(X, { size: 24 })))), /* @__PURE__ */ React.createElement("div", { className: "sf-workflow-dashboard bg-white border-b border-slate-200 shrink-0" }, /* @__PURE__ */ React.createElement("nav", { className: "px-2 sm:px-6 pt-3 pb-2 flex items-center justify-start sm:justify-center gap-1 overflow-x-auto", role: "navigation", "aria-label": t("a11y.story_creation_phases") }, PHASES.map((p, i) => {
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: safeClose, className: "hover:bg-white/20 p-2 rounded-full transition-colors", "aria-label": t("a11y.close_story_forge") }, /* @__PURE__ */ React.createElement(X, { size: 24 })))), draftHydrationState === "awaiting" && !showRestorePrompt && !showDiscardDraftConfirm && /* @__PURE__ */ React.createElement(
+    "section",
+    {
+      "data-sf-recovery-banner": true,
+      "data-sf-recovery-title": recoverySummary.title,
+      "data-sf-recovery-artifact": recoverySummary.artifactType,
+      "data-sf-recovery-resume-phase": recoverySummary.resumePhase,
+      className: "shrink-0 border-b border-amber-300 bg-amber-50 px-3 py-3 sm:px-6",
+      role: "region",
+      "aria-labelledby": "sf-recovery-banner-title"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "sf-recovery-banner-title", className: "text-sm font-black text-amber-950" }, "Saved project waiting: ", /* @__PURE__ */ React.createElement("span", { className: "break-words" }, recoverySummary.title)), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs text-amber-900" }, recoverySummary.artifactLabel, " \xB7 Resume safely at ", recoverySummary.resumePhaseLabel, recoverySummary.savedAt ? " \xB7 Saved " + new Date(recoverySummary.savedAt).toLocaleString() : "")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 sm:flex-row" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-banner-restore-draft": true, onClick: restoreDraft, className: "min-h-11 rounded-lg bg-amber-700 px-4 py-2 text-xs font-bold text-white hover:bg-amber-800" }, "Restore project"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-open-recovery-options": true, onClick: () => setShowRestorePrompt(true), className: "min-h-11 rounded-lg border border-amber-400 bg-white px-4 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100" }, "Review recovery options")))
+  ), /* @__PURE__ */ React.createElement("div", { className: "sf-workflow-dashboard bg-white border-b border-slate-200 shrink-0" }, /* @__PURE__ */ React.createElement("nav", { className: "px-2 sm:px-6 pt-3 pb-2 flex items-center justify-start sm:justify-center gap-1 overflow-x-auto", role: "navigation", "aria-label": t("a11y.story_creation_phases") }, PHASES.map((p, i) => {
     const Icon = phaseIcons[i];
     const phaseHealth = readinessByPhase[p] || { status: "attention", score: 0, detail: "" };
     const isCurrent = i === phaseIdx;
@@ -7533,7 +7735,7 @@ show();
       className: "sm:max-w-sm rounded-lg border px-3 py-2 text-xs font-bold " + (canGoNext() || phase === "export" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-900")
     },
     currentPhaseRequirement
-  ))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto", ref: phaseContentRef, tabIndex: -1, role: "region", "aria-label": `${PHASE_LABELS[phaseIdx]} phase` }, /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-6" }, phase === "configure" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Plan your ", artifactType === "comic" ? "comic" : "story"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Name your ", artifactType === "comic" ? "comic" : "story", ", choose a genre, and set vocabulary goals"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center mt-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: importDraftJSON, className: "px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Plus, { size: 10 }), " Import classmate's draft"), onSaveConfig && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveAsConfig, disabled: vocabTerms.length === 0, className: "px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-[11px] font-bold hover:bg-indigo-200 transition-colors inline-flex items-center gap-1 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 10 }), " Save as Assignment"))), lessonResources && lessonResources.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-indigo-50 to-violet-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 12 }), " Import from Lesson Resources"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, lessonResources.filter((r) => ["glossary", "simplified", "sentence-frames", "lesson-plan", "timeline"].includes(r.type)).map((r, ri) => /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto", ref: phaseContentRef, tabIndex: -1, role: "region", "aria-label": `${PHASE_LABELS[phaseIdx]} phase` }, /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-3 py-4 sm:p-6" }, phase === "configure" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Plan your ", artifactType === "comic" ? "comic" : "story"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Name your ", artifactType === "comic" ? "comic" : "story", ", choose a genre, and set vocabulary goals"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center mt-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-import-draft": true, onClick: importDraftJSON, className: "px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Plus, { size: 10 }), " Import classmate's draft"))), lessonResources && lessonResources.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-indigo-50 to-violet-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 12 }), " Import from Lesson Resources"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, lessonResources.filter((r) => ["glossary", "simplified", "sentence-frames", "lesson-plan", "timeline"].includes(r.type)).map((r, ri) => /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -7602,33 +7804,7 @@ show();
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black" }, item.label),
     /* @__PURE__ */ React.createElement("div", { className: "text-[10px] leading-snug opacity-75 mt-0.5" }, item.desc)
-  ))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-violet-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-violet-700 uppercase tracking-wider mb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " Story Shape ", /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-medium text-slate-500 normal-case tracking-normal" }, "(optional \u2014 the emotional ups & downs)")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mb-3" }, "Pick the shape of your character's fortune over time \u2014 a lens to play with. Great stories bend the rules!"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2" }, Object.entries(STORY_SHAPES).map(([key, sh]) => {
-    const active = storyShape === key;
-    return /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key,
-        type: "button",
-        "data-sf-focusable": true,
-        onClick: () => setStoryShape(active ? "" : key),
-        "aria-pressed": active,
-        "aria-label": `Story shape: ${sh.label}. ${sh.desc}`,
-        className: `p-2.5 rounded-xl border-2 text-left transition-all ${active ? "border-violet-500 bg-violet-50 shadow-md" : "border-slate-200 hover:border-violet-300"}`
-      },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-1 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${active ? "text-violet-700" : "text-slate-600"}` }, sh.emoji, " ", sh.label), /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 48 18", width: "48", height: "18", "aria-hidden": "true", className: "shrink-0" }, /* @__PURE__ */ React.createElement(
-        "polyline",
-        {
-          fill: "none",
-          stroke: active ? "#7c3aed" : "#94a3b8",
-          strokeWidth: "2",
-          strokeLinecap: "round",
-          strokeLinejoin: "round",
-          points: sh.curve.map((v, i) => `${i / (sh.curve.length - 1) * 46 + 1},${(1 - v) * 14 + 2}`).join(" ")
-        }
-      ))),
-      /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 leading-snug" }, sh.desc)
-    );
-  }))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-rose-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-rose-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16 }), " Vocabulary Goals (", vocabTerms.length, " terms)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" }, vocabTerms.map((v, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-rose-50 border border-rose-200 rounded-full px-3 py-1 text-sm font-bold text-rose-800 flex items-center gap-2 group" }, /* @__PURE__ */ React.createElement("span", null, v.term), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeVocabTerm(i), className: "text-rose-700 hover:text-rose-600 opacity-60 group-hover:opacity-100 focus:opacity-100 transition-opacity", "aria-label": `Remove ${v.term}` }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vocabTerms.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 text-sm italic" }, "No vocabulary terms yet \u2014 add some below or they'll come from your glossary")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement(
+  ))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-rose-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-rose-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16 }), " Vocabulary Goals (", vocabTerms.length, " terms)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" }, vocabTerms.map((v, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-rose-50 border border-rose-200 rounded-full px-3 py-1 text-sm font-bold text-rose-800 flex items-center gap-2 group" }, /* @__PURE__ */ React.createElement("span", null, v.term), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeVocabTerm(i), className: "text-rose-700 hover:text-rose-600 opacity-60 group-hover:opacity-100 focus:opacity-100 transition-opacity", "aria-label": `Remove ${v.term}` }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vocabTerms.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 text-sm italic" }, "No vocabulary terms yet \u2014 add some below or they'll come from your glossary")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "sf-new-vocab-term",
@@ -7661,7 +7837,33 @@ show();
     },
     /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-left" }, /* @__PURE__ */ React.createElement(Palette, { size: 16 }), " Optional setup & assignment"),
     /* @__PURE__ */ React.createElement("span", { className: `transition-transform ${showAdvancedConfig ? "rotate-180" : ""}` }, "\u25BC")
-  ), /* @__PURE__ */ React.createElement("p", { className: "-mt-4 px-2 text-xs text-slate-500" }, "Story shape, art, language, starting idea, and rubric."), showAdvancedConfig && /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-purple-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-purple-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Palette, { size: 16 }), " Art Style"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-6 gap-2" }, Object.keys(ART_STYLE_MAP).map((style) => /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "-mt-4 px-2 text-xs text-slate-500" }, "Story shape, art, language, starting idea, and rubric."), showAdvancedConfig && /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-violet-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-violet-700 uppercase tracking-wider mb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " Story Shape ", /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-medium text-slate-500 normal-case tracking-normal" }, "(optional \u2014 the emotional ups & downs)")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mb-3" }, "Pick the shape of your character's fortune over time \u2014 a lens to play with. Great stories bend the rules!"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2" }, Object.entries(STORY_SHAPES).map(([key, sh]) => {
+    const active = storyShape === key;
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key,
+        type: "button",
+        "data-sf-focusable": true,
+        onClick: () => setStoryShape(active ? "" : key),
+        "aria-pressed": active,
+        "aria-label": `Story shape: ${sh.label}. ${sh.desc}`,
+        className: `p-2.5 rounded-xl border-2 text-left transition-all ${active ? "border-violet-500 bg-violet-50 shadow-md" : "border-slate-200 hover:border-violet-300"}`
+      },
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-1 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${active ? "text-violet-700" : "text-slate-600"}` }, sh.emoji, " ", sh.label), /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 48 18", width: "48", height: "18", "aria-hidden": "true", className: "shrink-0" }, /* @__PURE__ */ React.createElement(
+        "polyline",
+        {
+          fill: "none",
+          stroke: active ? "#7c3aed" : "#94a3b8",
+          strokeWidth: "2",
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+          points: sh.curve.map((v, i) => `${i / (sh.curve.length - 1) * 46 + 1},${(1 - v) * 14 + 2}`).join(" ")
+        }
+      ))),
+      /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 leading-snug" }, sh.desc)
+    );
+  }))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-purple-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-purple-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Palette, { size: 16 }), " Art Style"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-6 gap-2" }, Object.keys(ART_STYLE_MAP).map((style) => /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -7741,7 +7943,7 @@ show();
       className: "w-full text-xs p-3 border border-slate-400 rounded-lg focus:ring-2 focus:ring-emerald-300 resize-none h-24 font-mono",
       "aria-label": t("a11y.custom_grading_rubric")
     }
-  )))), phase === "write" && /* @__PURE__ */ React.createElement("div", { className: `space-y-4 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, artifactType === "comic" ? "Draft your comic" : "Draft your story"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, artifactType === "comic" ? "Build one clear panel beat at a time" : "Build one clear scene at a time", revisionSnapshot && /* @__PURE__ */ React.createElement("span", { className: "text-indigo-500 ml-2" }, "Draft #", draftCount, " \u2014 revising!"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center flex-wrap sm:justify-end" }, /* @__PURE__ */ React.createElement(
+  )), onSaveConfig && /* @__PURE__ */ React.createElement("div", { className: "flex justify-end rounded-2xl border-2 border-indigo-100 bg-indigo-50/50 p-4" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveAsConfig, disabled: vocabTerms.length === 0, className: "inline-flex w-full sm:w-auto items-center justify-center gap-1 rounded-lg bg-indigo-100 px-4 py-2 text-xs font-bold text-indigo-700 transition-colors hover:bg-indigo-200 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 12 }), " Save as Assignment")))), phase === "write" && /* @__PURE__ */ React.createElement("div", { className: `space-y-4 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, artifactType === "comic" ? "Draft your comic" : "Draft your story"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, artifactType === "comic" ? "Build one clear panel beat at a time" : "Build one clear scene at a time", revisionSnapshot && /* @__PURE__ */ React.createElement("span", { className: "text-indigo-500 ml-2" }, "Draft #", draftCount, " \u2014 revising!"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center flex-wrap sm:justify-end" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -7758,93 +7960,127 @@ show();
       type: "button",
       onClick: () => setShowWritingTools((value) => !value),
       "aria-expanded": showWritingTools,
+      "aria-controls": "sf-writing-tools-panel",
       className: "px-4 py-2 rounded-full border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50"
     },
     showWritingTools ? "Hide tools" : "More tools"
-  ), showWritingTools && /* @__PURE__ */ React.createElement(React.Fragment, null, timerActive ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-rose-100 border border-rose-300 rounded-full px-3 py-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-black tabular-nums ${timerDuration - timerSeconds <= 30 ? "text-red-600 animate-pulse motion-reduce:animate-none" : "text-rose-700"}` }, formatTime(timerSeconds)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
-    setTimerActive(false);
-    clearTimeout(timerRef.current);
-  }, className: "text-[11px] font-bold text-rose-500 hover:text-rose-700" }, t("ui_common.stop"))) : /* @__PURE__ */ React.createElement("div", { className: "flex bg-slate-100 rounded-full p-0.5" }, [3, 5, 10].map((min) => /* @__PURE__ */ React.createElement("button", { type: "button", key: min, onClick: () => startTimer(min), className: "px-2 py-1 rounded-full text-[11px] font-bold text-slate-600 hover:text-rose-600 hover:bg-white transition-all", title: `${min}-minute writing sprint` }, min, "m"))), artifactType === "story" ? /* @__PURE__ */ React.createElement("div", { "data-sf-writing-view-picker": true, className: "flex bg-slate-100 rounded-full p-0.5" }, Object.entries(WRITING_VIEWS).map(([key, item]) => /* @__PURE__ */ React.createElement(
-    "button",
+  ))), showWritingTools && /* @__PURE__ */ React.createElement(
+    "div",
     {
-      type: "button",
-      key,
-      onClick: () => selectWritingView(key),
-      className: `px-3 py-1 rounded-full text-[11px] font-bold transition-all ${writingView === key ? "bg-white text-slate-800 shadow-sm" : "text-slate-600 hover:text-slate-700"}`,
-      "aria-label": item.desc,
-      title: item.desc
+      id: "sf-writing-tools-panel",
+      role: "region",
+      "aria-label": "Expanded writing tools",
+      className: "w-full rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm"
     },
-    item.label
-  ))) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => changePhase("configure"), className: "px-3 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 hover:bg-blue-200", title: "Artifact type is chosen in Plan" }, "Comic \xB7 Change in Plan"), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => draftComicBubbles(),
-      disabled: isProcessing || !paragraphs.some((p) => (p.text || p.scaffoldFrame || "").trim().length > 0),
-      className: "px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-xs font-bold hover:bg-blue-200 transition-colors flex items-center gap-2 disabled:opacity-50",
-      title: "Draft speech, thought, and SFX bubbles from the panel captions"
-    },
-    /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
-    " Draft Bubbles"
-  ), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => draftComicCameraPass(),
-      disabled: isProcessing || !paragraphs.some((p) => (p.text || p.scaffoldFrame || "").trim().length > 0),
-      className: "px-4 py-2 bg-cyan-100 text-cyan-700 rounded-full text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2 disabled:opacity-50",
-      title: "Plan shot, angle, mood, and pacing moves across the comic"
-    },
-    /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
-    " Camera Pass"
-  ), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => draftComicThumbnailPass(),
-      disabled: isProcessing || !paragraphs.some((p) => (p.text || p.scaffoldFrame || "").trim().length > 0),
-      className: "px-4 py-2 bg-teal-100 text-teal-700 rounded-full text-xs font-bold hover:bg-teal-200 transition-colors flex items-center gap-2 disabled:opacity-50",
-      title: "Draft thumbnail roughs with focal point, composition, and lettering space"
-    },
-    /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
-    " Thumbnail Pass"
-  ), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => tightenComicBubbles(),
-      disabled: isProcessing || !paragraphs.some((p) => getComicLetteringStats(panelDialogue[p.id] || {}).words > COMIC_BUBBLE_WORD_WARNING),
-      className: "px-4 py-2 bg-amber-100 text-amber-700 rounded-full text-xs font-bold hover:bg-amber-200 transition-colors flex items-center gap-2 disabled:opacity-50",
-      title: "Tighten crowded comic bubbles without changing the panel beat"
-    },
-    /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
-    " Tighten Bubbles"
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => {
-        setFocusMode(!focusMode);
-        setFocusParagraphIdx(0);
+    /* @__PURE__ */ React.createElement("div", { className: `grid gap-4 ${layoutMode === "comic" && onCallGemini ? "lg:grid-cols-3" : "md:grid-cols-2"}` }, /* @__PURE__ */ React.createElement(
+      "section",
+      {
+        "aria-labelledby": "sf-writing-setup-heading",
+        className: "rounded-xl border border-rose-100 bg-rose-50/40 p-3"
       },
-      className: `px-4 py-2 rounded-full text-xs font-bold transition-colors flex items-center gap-2 ${focusMode ? "bg-indigo-600 text-white hover:bg-indigo-700" : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200"}`,
-      title: focusMode ? "Show all " + (artifactType === "comic" ? "panels" : "scenes") + " at once" : "Focus on one " + (artifactType === "comic" ? "panel" : "scene") + " at a time"
-    },
-    /* @__PURE__ */ React.createElement(Target, { size: 14 }),
-    " ",
-    focusMode ? "Focus ON" : "Focus Mode"
-  ), totalWords >= 30 && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: checkGrammarAndStyle,
-      disabled: grammarLoading || isProcessing,
-      className: "px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-2 disabled:opacity-50"
-    },
-    /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14 }),
-    " ",
-    grammarLoading ? "Checking..." : "Check Writing"
-  )))), grammarResults._overallTip && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-start gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-emerald-500 mt-0.5 shrink-0" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-600 uppercase tracking-widest" }, t("ui_common.writing_coach_tip")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-800 mt-0.5" }, grammarResults._overallTip)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setGrammarResults({}), className: "text-emerald-700 hover:text-emerald-600 ml-auto shrink-0" }, /* @__PURE__ */ React.createElement(X, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-3 sticky top-0 z-30 shadow-sm", style: { backdropFilter: "blur(8px)", background: "rgba(255,241,242,0.92)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-500 uppercase tracking-widest" }, "Vocabulary goals \xB7 click to copy"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700" }, vocabTerms.filter((v) => vocabUsage[v.term]).length, "/", vocabTerms.length, " used")), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 bg-rose-100 rounded-full mb-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: {
+      /* @__PURE__ */ React.createElement("h4", { id: "sf-writing-setup-heading", className: "text-xs font-black uppercase tracking-wider text-rose-800" }, "Writing setup"),
+      /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2" }, timerActive ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-rose-100 border border-rose-300 rounded-full px-3 py-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-black tabular-nums ${timerDuration - timerSeconds <= 30 ? "text-red-600 animate-pulse motion-reduce:animate-none" : "text-rose-700"}` }, formatTime(timerSeconds)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+        setTimerActive(false);
+        clearTimeout(timerRef.current);
+      }, className: "text-[11px] font-bold text-rose-500 hover:text-rose-700" }, t("ui_common.stop"))) : /* @__PURE__ */ React.createElement("div", { className: "flex bg-slate-100 rounded-full p-0.5" }, [3, 5, 10].map((min) => /* @__PURE__ */ React.createElement("button", { type: "button", key: min, onClick: () => startTimer(min), className: "px-2 py-1 rounded-full text-[11px] font-bold text-slate-600 hover:text-rose-600 hover:bg-white transition-all", title: `${min}-minute writing sprint` }, min, "m"))), artifactType === "story" ? /* @__PURE__ */ React.createElement("div", { "data-sf-writing-view-picker": true, className: "flex flex-wrap bg-slate-100 rounded-full p-0.5" }, Object.entries(WRITING_VIEWS).map(([key, item]) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          key,
+          onClick: () => selectWritingView(key),
+          className: `px-3 py-1 rounded-full text-[11px] font-bold transition-all ${writingView === key ? "bg-white text-slate-800 shadow-sm" : "text-slate-600 hover:text-slate-700"}`,
+          "aria-label": item.desc,
+          title: item.desc
+        },
+        item.label
+      ))) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => changePhase("configure"), className: "px-3 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 hover:bg-blue-200", title: "Artifact type is chosen in Plan" }, "Comic \xB7 Change in Plan"))
+    ), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+      "section",
+      {
+        "aria-labelledby": "sf-comic-helpers-heading",
+        className: "rounded-xl border border-blue-100 bg-blue-50/40 p-3"
+      },
+      /* @__PURE__ */ React.createElement("h4", { id: "sf-comic-helpers-heading", className: "text-xs font-black uppercase tracking-wider text-blue-800" }, "Comic helpers"),
+      /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2" }, layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => draftComicBubbles(),
+          disabled: isProcessing || !paragraphs.some((p) => (p.text || p.scaffoldFrame || "").trim().length > 0),
+          className: "px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-xs font-bold hover:bg-blue-200 transition-colors flex items-center gap-2 disabled:opacity-50",
+          title: "Draft speech, thought, and SFX bubbles from the panel captions"
+        },
+        /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
+        " Draft Bubbles"
+      ), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => draftComicCameraPass(),
+          disabled: isProcessing || !paragraphs.some((p) => (p.text || p.scaffoldFrame || "").trim().length > 0),
+          className: "px-4 py-2 bg-cyan-100 text-cyan-700 rounded-full text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2 disabled:opacity-50",
+          title: "Plan shot, angle, mood, and pacing moves across the comic"
+        },
+        /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
+        " Camera Pass"
+      ), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => draftComicThumbnailPass(),
+          disabled: isProcessing || !paragraphs.some((p) => (p.text || p.scaffoldFrame || "").trim().length > 0),
+          className: "px-4 py-2 bg-teal-100 text-teal-700 rounded-full text-xs font-bold hover:bg-teal-200 transition-colors flex items-center gap-2 disabled:opacity-50",
+          title: "Draft thumbnail roughs with focal point, composition, and lettering space"
+        },
+        /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
+        " Thumbnail Pass"
+      ), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => tightenComicBubbles(),
+          disabled: isProcessing || !paragraphs.some((p) => getComicLetteringStats(panelDialogue[p.id] || {}).words > COMIC_BUBBLE_WORD_WARNING),
+          className: "px-4 py-2 bg-amber-100 text-amber-700 rounded-full text-xs font-bold hover:bg-amber-200 transition-colors flex items-center gap-2 disabled:opacity-50",
+          title: "Tighten crowded comic bubbles without changing the panel beat"
+        },
+        /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
+        " Tighten Bubbles"
+      ))
+    ), /* @__PURE__ */ React.createElement(
+      "section",
+      {
+        "aria-labelledby": "sf-focus-feedback-heading",
+        className: "rounded-xl border border-indigo-100 bg-indigo-50/40 p-3"
+      },
+      /* @__PURE__ */ React.createElement("h4", { id: "sf-focus-feedback-heading", className: "text-xs font-black uppercase tracking-wider text-indigo-800" }, "Focus & feedback"),
+      /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            setFocusMode(!focusMode);
+            setFocusParagraphIdx(0);
+          },
+          className: `px-4 py-2 rounded-full text-xs font-bold transition-colors flex items-center gap-2 ${focusMode ? "bg-indigo-600 text-white hover:bg-indigo-700" : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200"}`,
+          title: focusMode ? "Show all " + (artifactType === "comic" ? "panels" : "scenes") + " at once" : "Focus on one " + (artifactType === "comic" ? "panel" : "scene") + " at a time"
+        },
+        /* @__PURE__ */ React.createElement(Target, { size: 14 }),
+        " ",
+        focusMode ? "Focus ON" : "Focus Mode"
+      ), totalWords >= 30 && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: checkGrammarAndStyle,
+          disabled: grammarLoading || isProcessing,
+          className: "px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-2 disabled:opacity-50"
+        },
+        /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14 }),
+        " ",
+        grammarLoading ? "Checking..." : "Check Writing"
+      ))
+    ))
+  ), grammarResults._overallTip && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-start gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-emerald-500 mt-0.5 shrink-0" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-600 uppercase tracking-widest" }, t("ui_common.writing_coach_tip")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-800 mt-0.5" }, grammarResults._overallTip)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setGrammarResults({}), className: "text-emerald-700 hover:text-emerald-600 ml-auto shrink-0" }, /* @__PURE__ */ React.createElement(X, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-3 sticky top-0 z-30 shadow-sm", style: { backdropFilter: "blur(8px)", background: "rgba(255,241,242,0.92)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-500 uppercase tracking-widest" }, "Vocabulary goals \xB7 click to copy"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700" }, vocabTerms.filter((v) => vocabUsage[v.term]).length, "/", vocabTerms.length, " used")), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 bg-rose-100 rounded-full mb-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: {
     width: vocabTerms.length > 0 ? Math.round(vocabTerms.filter((v) => vocabUsage[v.term]).length / vocabTerms.length * 100) + "%" : "0%",
     background: vocabTerms.filter((v) => vocabUsage[v.term]).length === vocabTerms.length ? "linear-gradient(90deg, #22c55e, #16a34a)" : "linear-gradient(90deg, #f43f5e, #e11d48)"
   } })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, vocabTerms.map((v, i) => {
@@ -8288,7 +8524,7 @@ show();
     'Tip: Start the next scene with "',
     suggestTransition(idx + 1),
     '"'
-  )))), !focusMode && paragraphs.length < maxParagraphs && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addParagraph, className: "w-full p-3 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 font-bold text-sm hover:border-rose-400 hover:text-rose-500 transition-colors flex items-center justify-center gap-2" }, /* @__PURE__ */ React.createElement(Plus, { size: 16 }), " ", artifactType === "comic" ? "Add Panel" : "Add Scene")), phase === "illustrate" && /* @__PURE__ */ React.createElement("div", { className: `space-y-4 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Design your ", artifactType === "comic" ? "comic" : "story"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, layoutMode === "comic" ? "Add consistent artwork to each panel, then check the reading order" : "Add optional artwork to any scene that benefits from a visual")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-end" }, /* @__PURE__ */ React.createElement(
+  )))), !focusMode && paragraphs.length < maxParagraphs && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addParagraph, className: "w-full p-3 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 font-bold text-sm hover:border-rose-400 hover:text-rose-500 transition-colors flex items-center justify-center gap-2" }, /* @__PURE__ */ React.createElement(Plus, { size: 16 }), " ", artifactType === "comic" ? "Add Panel" : "Add Scene")), phase === "illustrate" && /* @__PURE__ */ React.createElement("div", { className: `space-y-4 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Design your ", artifactType === "comic" ? "comic" : "story"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, layoutMode === "comic" ? "Add consistent artwork, then open the production workbench to build pages and lettering" : "Add optional artwork to any scene that benefits from a visual")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-end" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -8341,7 +8577,315 @@ show();
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 text-[11px] font-black text-cyan-900" }, /* @__PURE__ */ React.createElement("span", null, row.label), target && /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-cyan-700" }, "Panel ", target.number)),
       /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[10px] leading-relaxed text-cyan-800" }, row.detail)
     );
-  }))), promptPreview && /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border-2 border-purple-300 rounded-2xl p-5 shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-purple-600 uppercase tracking-widest mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " Preview Image Prompt \u2014 ", layoutMode === "comic" ? "Panel" : "Scene", " ", promptPreview.idx + 1), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, "Edit the prompt below before generating, or click Generate to proceed."), /* @__PURE__ */ React.createElement(
+  }))), layoutMode === "comic" && /* @__PURE__ */ React.createElement(
+    "details",
+    {
+      id: "sf-comic-production-workbench",
+      "data-sf-comic-production-workbench": true,
+      "data-sf-focusable": true,
+      tabIndex: -1,
+      "aria-labelledby": "sf-comic-production-summary",
+      open: showComicProduction,
+      onToggle: (event) => setShowComicProduction(event.currentTarget.open),
+      className: "rounded-2xl border-2 border-fuchsia-200 bg-fuchsia-50/40 p-4 shadow-sm"
+    },
+    /* @__PURE__ */ React.createElement("summary", { id: "sf-comic-production-summary", "data-sf-focusable": true, className: "cursor-pointer list-none rounded-xl focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-sm font-black text-fuchsia-900" }, /* @__PURE__ */ React.createElement(Move, { size: 16, "aria-hidden": "true" }), " Comic production workbench"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-fuchsia-800" }, "Build pages, set print safety, reorder panels, and place lettering before Publish.")), /* @__PURE__ */ React.createElement("span", { className: "self-start rounded-full border border-fuchsia-200 bg-white px-2.5 py-1 text-[10px] font-black uppercase text-fuchsia-700 sm:self-auto" }, comicPageGroups.length, " page", comicPageGroups.length === 1 ? "" : "s", " \xB7 ", Object.keys(sanitizePanelLayouts(panelLayouts)).length, " custom layout", Object.keys(sanitizePanelLayouts(panelLayouts)).length === 1 ? "" : "s"))),
+    /* @__PURE__ */ React.createElement("div", { className: "mt-4 space-y-4", "data-sf-comic-production-controls": true }, layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-2 mb-4" }, Object.entries(COMIC_PAGE_LAYOUTS).map(([key, item]) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        key,
+        onClick: () => setComicPageLayout(key),
+        title: item.desc,
+        "aria-pressed": comicPageLayout === key,
+        className: `px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${comicPageLayout === key ? "bg-slate-900 text-white shadow-md" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`
+      },
+      item.label
+    ))), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { id: "sf-comic-page-composer", "data-sf-comic-page-composer": true, tabIndex: -1, "data-sf-focusable": true, className: "sf-comic-tool-card bg-white border-2 border-blue-100 rounded-2xl p-4 shadow-sm focus:ring-2 focus:ring-blue-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-blue-700 uppercase tracking-widest flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 14 }), " Page Composer"), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1" }, comicPageGroups.length, " page", comicPageGroups.length === 1 ? "" : "s", " \xB7 ", paragraphs.length, " panel", paragraphs.length === 1 ? "" : "s")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-widest" }, "Panels/page"), COMIC_PANELS_PER_PAGE_OPTIONS.map((value) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: value,
+        type: "button",
+        onClick: () => updateComicPanelsPerPage(value),
+        "aria-pressed": sanitizeComicPageComposer(comicPageComposer).panelsPerPage === value,
+        className: `w-8 h-8 rounded-full text-xs font-black border transition-all ${sanitizeComicPageComposer(comicPageComposer).panelsPerPage === value ? "bg-blue-700 border-blue-700 text-white shadow-sm" : "bg-white border-blue-200 text-blue-700 hover:bg-blue-50"}`
+      },
+      value
+    )), /* @__PURE__ */ React.createElement("select", { value: "", onChange: (e) => applyComicPagePreset(e.target.value), className: "px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700", "aria-label": "Comic page preset" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Page preset"), Object.entries(COMIC_PAGE_PRESETS).map(([key, preset]) => /* @__PURE__ */ React.createElement("option", { key, value: key }, preset.label))), "                      ", /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => applyComicLetteringPlacement(comicPageGroups, "Comic"),
+        className: "sf-comic-action px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700 hover:bg-blue-50 flex items-center gap-1",
+        title: "Place bubble anchors across comic pages while avoiding binding gutters"
+      },
+      /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }),
+      " Auto-place lettering"
+    ))), /* @__PURE__ */ React.createElement("div", { className: "grid gap-3" }, comicPageGroups.map((page) => {
+      const pageMeta = sanitizeComicPageComposer(comicPageComposer).pages[String(page.page)] || {};
+      const pageStats = getComicPageProductionStats(page, { panelDialogue, panelThumbnails, panelLayouts, illustrations, comicPrintSafety });
+      return /* @__PURE__ */ React.createElement("div", { key: page.page, className: "sf-comic-page-row border border-blue-100 rounded-lg p-3 bg-blue-50/40" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 text-sm" }, "Page ", page.page), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, "Panels ", page.startPanel, "-", page.endPanel)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-black px-2 py-1 rounded-full border ${pageStats.status === "Review" ? "bg-rose-50 border-rose-200 text-rose-700" : pageStats.status === "Ready" ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-blue-50 border-blue-200 text-blue-700"}` }, pageStats.status), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-700 bg-white border border-blue-100 px-2 py-1 rounded-full" }, "Art ", pageStats.artPanels, "/", pageStats.total), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-fuchsia-700 bg-white border border-fuchsia-100 px-2 py-1 rounded-full" }, "Lettering ", pageStats.placedBubbles, "/", pageStats.bubblePanels), pageStats.attention > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2 py-1 rounded-full" }, pageStats.attention, " review"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-2" }, /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          value: pageMeta.layout || "",
+          onChange: (e) => updateComicPageMeta(page.page, "layout", e.target.value),
+          className: "px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 focus:border-blue-400",
+          "aria-label": `Page ${page.page} layout`
+        },
+        /* @__PURE__ */ React.createElement("option", { value: "" }, "Use global (", getComicPageLayoutLabel(comicPageLayout), ")"),
+        Object.entries(COMIC_PAGE_LAYOUTS).map(([key, item]) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.label))
+      ), /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          value: pageMeta.turn || "",
+          onChange: (e) => updateComicPageMeta(page.page, "turn", e.target.value),
+          className: "px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 focus:border-blue-400",
+          "aria-label": `Page ${page.page} turn`
+        },
+        COMIC_PAGE_TURN_OPTIONS.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.value || "unset", value: option.value }, option.label))
+      ), /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          value: pageMeta.note || "",
+          onChange: (e) => updateComicPageMeta(page.page, "note", e.target.value),
+          placeholder: "Page note",
+          className: "px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs text-slate-700 focus:border-blue-400",
+          "aria-label": `Page ${page.page} note`
+        }
+      )), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, pageStats.bubblePanels ? `${pageStats.placedBubbles} of ${pageStats.bubblePanels} bubble panel${pageStats.bubblePanels === 1 ? "" : "s"} anchored` : "No bubble panels yet", pageStats.crowdedBubbles > 0 ? ` - ${pageStats.crowdedBubbles} crowded` : "", pageStats.gutterRiskPanels > 0 ? ` - ${pageStats.gutterRiskPanels} near gutter` : ""), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => applyComicLetteringPlacement(page, `Page ${page.page}`),
+          className: "sf-comic-action px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700 hover:bg-blue-50 flex items-center gap-1",
+          title: `Place safe bubble anchors for page ${page.page}`
+        },
+        /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }),
+        " Auto-place this page"
+      )));
+    }))), layoutMode === "comic" && (() => {
+      const printSafety = sanitizeComicPrintSafety(comicPrintSafety);
+      return /* @__PURE__ */ React.createElement("div", { id: "sf-comic-print-safety", "data-sf-comic-print-safety": true, tabIndex: -1, "data-sf-focusable": true, className: "sf-comic-tool-card bg-white border-2 border-emerald-100 rounded-2xl p-4 shadow-sm focus:ring-2 focus:ring-emerald-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-700 uppercase tracking-widest flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14 }), " Print Safety"), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1" }, COMIC_PRINT_FORMATS[printSafety.format]?.trim || "Screen", " \xB7 ", COMIC_PRINT_FORMATS[printSafety.format]?.safe || "Safe area")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => updateComicPrintSafety("showGuides", !printSafety.showGuides),
+          "aria-pressed": printSafety.showGuides,
+          className: `px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${printSafety.showGuides ? "bg-emerald-700 border-emerald-700 text-white" : "bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-50"}`
+        },
+        "Guides ",
+        printSafety.showGuides ? "On" : "Off"
+      ), printSafety.format !== "digital" && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => updateComicPrintSafety("includeBleed", !printSafety.includeBleed),
+          "aria-pressed": printSafety.includeBleed,
+          className: `px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${printSafety.includeBleed ? "bg-emerald-700 border-emerald-700 text-white" : "bg-white border-amber-200 text-amber-700 hover:bg-amber-50"}`
+        },
+        "Bleed ",
+        printSafety.includeBleed ? "On" : "Off"
+      ))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1" }, "Format"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, Object.entries(COMIC_PRINT_FORMATS).map(([key, item]) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key,
+          type: "button",
+          onClick: () => updateComicPrintSafety("format", key),
+          "aria-pressed": printSafety.format === key,
+          className: `px-3 py-2 rounded-lg text-xs font-bold border text-left transition-all ${printSafety.format === key ? "bg-emerald-700 border-emerald-700 text-white shadow-sm" : "bg-white border-emerald-100 text-slate-700 hover:border-emerald-300"}`,
+          title: `${item.trim} \xB7 ${item.safe}`
+        },
+        item.label
+      )))), /* @__PURE__ */ React.createElement("label", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block" }, "Gutter"), /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          value: printSafety.gutter,
+          onChange: (e) => updateComicPrintSafety("gutter", e.target.value),
+          disabled: printSafety.format === "digital",
+          className: "w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-xs font-bold text-slate-700 focus:border-emerald-400 disabled:opacity-60",
+          "aria-label": "Comic print gutter"
+        },
+        Object.entries(COMIC_PRINT_GUTTERS).map(([key, item]) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.label, " ", item.width !== "none" ? `(${item.width})` : ""))
+      ))));
+    })(), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { id: "sf-comic-layout-studio", "data-sf-comic-layout-studio": true, tabIndex: -1, "data-sf-focusable": true, className: "sf-comic-tool-card bg-white border-2 border-fuchsia-100 rounded-2xl p-4 shadow-sm focus:ring-2 focus:ring-fuchsia-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-fuchsia-700 uppercase tracking-widest flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 14 }), " Layout Studio"), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1" }, Object.keys(sanitizePanelLayouts(panelLayouts)).length, " custom layout", Object.keys(sanitizePanelLayouts(panelLayouts)).length === 1 ? "" : "s")), /* @__PURE__ */ React.createElement("div", { className: "sf-comic-toolbar flex items-center gap-1.5 self-start", role: "toolbar", "aria-label": "Comic edit history" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: undoComicProduction,
+        disabled: !comicCanUndo,
+        className: "sf-comic-action w-9 h-9 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 flex items-center justify-center",
+        "aria-label": "Undo comic production edit",
+        "aria-keyshortcuts": "Control+Z Meta+Z",
+        title: "Undo comic edit (Ctrl/Cmd+Z)",
+        "data-sf-comic-undo": true,
+        "data-sf-focusable": true
+      },
+      /* @__PURE__ */ React.createElement(Undo2, { size: 16, "aria-hidden": "true" })
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: redoComicProduction,
+        disabled: !comicCanRedo,
+        className: "sf-comic-action w-9 h-9 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 flex items-center justify-center",
+        "aria-label": "Redo comic production edit",
+        "aria-keyshortcuts": "Control+Shift+Z Meta+Shift+Z Control+Y",
+        title: "Redo comic edit (Ctrl/Cmd+Shift+Z)",
+        "data-sf-comic-redo": true,
+        "data-sf-focusable": true
+      },
+      /* @__PURE__ */ React.createElement(Redo2, { size: 16, "aria-hidden": "true" })
+    ))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" }, paragraphs.map((p, idx) => {
+      const layoutFrame = panelLayouts[p.id] || {};
+      const frame = layoutFrame.frame || "";
+      const hasCustomSpans = layoutFrame.colSpan !== void 0 || layoutFrame.rowSpan !== void 0;
+      const panelThumbnail = panelThumbnails[p.id] || {};
+      const letteringSpace = panelThumbnail.letteringSpace || "";
+      const hasCustomBubblePosition = hasComicLetteringPosition(panelThumbnail);
+      const hasCustomBubbleWidth = hasComicLetteringWidth(panelThumbnail);
+      const customBubbleWidth = hasCustomBubbleWidth ? clampComicLetteringWidth(panelThumbnail.letteringWidth) : 72;
+      return /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          key: p.id,
+          onDragOver: (e) => updatePanelSequenceDragTarget(e, idx),
+          onDragEnter: (e) => updatePanelSequenceDragTarget(e, idx),
+          onDrop: (e) => finishPanelSequenceDrop(e, idx),
+          className: `sf-comic-layout-row sf-panel-sequence-card border border-fuchsia-100 rounded-lg p-3 bg-fuchsia-50/40 ${panelSequenceDrag?.from === idx ? "sf-panel-dragging" : panelSequenceDrag?.over === idx ? "sf-panel-drop-target" : ""}`
+        },
+        /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 text-sm" }, "Panel ", idx + 1), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, "Sequence ", idx + 1, " of ", paragraphs.length)), /* @__PURE__ */ React.createElement("div", { className: "sf-comic-toolbar flex flex-wrap items-center gap-1.5", role: "toolbar", "aria-label": `Panel ${idx + 1} layout actions` }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            draggable: "true",
+            onDragStart: (e) => startPanelSequenceDrag(e, idx),
+            onDragEnd: finishPanelSequenceDrag,
+            onKeyDown: (e) => handlePanelSequenceKeyDown(e, idx),
+            className: "sf-comic-action sf-panel-drag-handle w-8 h-8 shrink-0 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 flex items-center justify-center",
+            style: { cursor: "grab" },
+            "aria-label": `Reorder panel ${idx + 1}. Use arrow keys, Home, or End.`,
+            title: "Drag to reorder panel",
+            "data-sf-panel-drag-handle": p.id,
+            "data-sf-focusable": true
+          },
+          /* @__PURE__ */ React.createElement(Move, { size: 14, "aria-hidden": "true" })
+        ), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => moveParagraph(idx, -1),
+            disabled: idx === 0,
+            className: "sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-slate-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1",
+            "aria-label": `Move panel ${idx + 1} earlier`,
+            title: "Move panel earlier"
+          },
+          /* @__PURE__ */ React.createElement(ArrowLeft, { size: 11 }),
+          " Earlier"
+        ), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => moveParagraph(idx, 1),
+            disabled: idx === paragraphs.length - 1,
+            className: "sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-slate-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1",
+            "aria-label": `Move panel ${idx + 1} later`,
+            title: "Move panel later"
+          },
+          "Later ",
+          /* @__PURE__ */ React.createElement(ArrowRight, { size: 11 })
+        ), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => duplicatePanelAfter(idx),
+            disabled: paragraphs.length >= maxParagraphs,
+            className: "sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1",
+            "aria-label": `Duplicate panel ${idx + 1}`,
+            title: paragraphs.length >= maxParagraphs ? `Panel limit reached (${maxParagraphs})` : "Duplicate panel"
+          },
+          /* @__PURE__ */ React.createElement(Plus, { size: 11 }),
+          " Duplicate"
+        ), /* @__PURE__ */ React.createElement("div", { className: "sf-comic-status-pill text-[11px] font-bold text-fuchsia-700 bg-white border border-fuchsia-100 px-2 py-1 rounded-full" }, getComicPanelFrameLabel(frame), " \xB7 ", getComicPanelSpanLabel(layoutFrame, comicPageLayout, idx)))),
+        /* @__PURE__ */ React.createElement("div", { className: "sf-comic-frame-group flex flex-wrap gap-1.5 mb-2", role: "group", "aria-label": `Panel ${idx + 1} frame preset` }, COMIC_PANEL_FRAME_OPTIONS.map((option) => /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            key: option.value || "auto",
+            type: "button",
+            onClick: () => updatePanelLayout(p.id, "frame", option.value),
+            "aria-pressed": frame === option.value,
+            className: `sf-comic-frame-choice px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${frame === option.value ? "sf-comic-frame-choice-active bg-fuchsia-700 border-fuchsia-700 text-white" : "bg-white border-fuchsia-100 text-slate-700 hover:border-fuchsia-300"}`
+          },
+          option.label
+        ))),
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, "Drag the preview corner to resize"), hasCustomSpans && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => updatePanelLayout(p.id, "resetSpans"),
+            className: "sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300"
+          },
+          "Reset size"
+        )),
+        /* @__PURE__ */ React.createElement("label", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block" }, "Bubble anchor"), /* @__PURE__ */ React.createElement(
+          "select",
+          {
+            value: letteringSpace,
+            onChange: (e) => updatePanelThumbnail(p.id, "letteringSpace", e.target.value),
+            className: "w-full px-3 py-2 rounded-lg border border-fuchsia-100 bg-white text-xs font-bold text-slate-700 focus:border-fuchsia-400",
+            "aria-label": `Panel ${idx + 1} bubble anchor`
+          },
+          COMIC_LETTERING_SPACE_OPTIONS.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.value || "unset", value: option.value }, option.label))
+        )),
+        /* @__PURE__ */ React.createElement("label", { className: "mt-3 block" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center justify-between gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1" }, /* @__PURE__ */ React.createElement("span", null, "Bubble width"), /* @__PURE__ */ React.createElement("span", null, hasCustomBubbleWidth ? `${customBubbleWidth}%` : "Auto")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "range",
+            min: "28",
+            max: "86",
+            step: "1",
+            value: customBubbleWidth,
+            onChange: (e) => updatePanelThumbnail(p.id, "letteringWidth", e.target.value),
+            className: "sf-bubble-width-slider flex-1 accent-fuchsia-700",
+            "aria-label": `Panel ${idx + 1} bubble width`,
+            "aria-valuetext": hasCustomBubbleWidth ? `${customBubbleWidth} percent` : "Auto fit",
+            "data-sf-bubble-width-slider": p.id,
+            "data-sf-focusable": true
+          }
+        ), hasCustomBubbleWidth && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => updatePanelThumbnail(p.id, "resetLetteringWidth"),
+            className: "sf-comic-action h-8 px-2 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300 flex items-center gap-1",
+            title: "Reset bubble width to auto",
+            "aria-label": `Reset panel ${idx + 1} bubble width to auto`,
+            "data-sf-focusable": true
+          },
+          /* @__PURE__ */ React.createElement(RefreshCw, { size: 11, "aria-hidden": "true" }),
+          " Auto"
+        ))),
+        /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, hasCustomBubblePosition ? "Bubble manually placed in preview" : "Bubble follows selected anchor"), hasCustomBubblePosition && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => updatePanelThumbnail(p.id, "resetLetteringPosition"),
+            className: "sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300"
+          },
+          "Reset bubble position"
+        ))
+      );
+    }))), /* @__PURE__ */ React.createElement("div", { "data-sf-comic-design-preview": true, className: "sf-comic-preview-shell overflow-hidden rounded-2xl border-2 border-slate-700 bg-slate-950 text-white shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 border-b border-slate-700 px-3 py-3 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black uppercase tracking-widest" }, "Interactive page preview"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] text-slate-300" }, "Drag panel corners and bubble handles here. Publish uses a read-only proof.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5", "aria-label": "Design preview page navigation" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setComicPreviewPage((prev) => Math.max(1, prev - 1)), disabled: comicPreviewPage <= 1, className: "sf-page-nav-button h-9 rounded-md border border-slate-600 px-3 text-xs font-black text-white hover:bg-slate-800 disabled:opacity-40" }, "Previous"), comicPageGroups.map((page) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: `design-preview-tab-${page.page}`,
+        type: "button",
+        onClick: () => setComicPreviewPage(page.page),
+        "aria-pressed": comicPreviewPage === page.page,
+        className: `sf-page-nav-button h-9 min-w-9 rounded-md border text-xs font-black ${comicPreviewPage === page.page ? "border-fuchsia-300 bg-fuchsia-700 text-white" : "border-slate-600 bg-slate-900 text-slate-200 hover:bg-slate-800"}`
+      },
+      page.page
+    )), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setComicPreviewPage((prev) => Math.min(comicPageGroups.length, prev + 1)), disabled: comicPreviewPage >= comicPageGroups.length, className: "sf-page-nav-button h-9 rounded-md border border-slate-600 px-3 text-xs font-black text-white hover:bg-slate-800 disabled:opacity-40" }, "Next"))), focusedComicPreviewPage && /* @__PURE__ */ React.createElement("div", { className: `grid gap-3 p-3 ${focusedComicPreviewPage.layout === "strip" ? "grid-cols-1" : "grid-cols-2"}`, style: { direction: focusedComicPreviewPage.layout === "manga" ? "rtl" : "ltr" } }, focusedComicPreviewPage.panels.map(({ paragraph, idx: panelIdx }, pageIndex) => renderComicPreviewPanel(paragraph, panelIdx, focusedComicPreviewPage.layout, pageIndex, focusedComicPreviewPage, true)))))
+  ), promptPreview && /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border-2 border-purple-300 rounded-2xl p-5 shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-purple-600 uppercase tracking-widest mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " Preview Image Prompt \u2014 ", layoutMode === "comic" ? "Panel" : "Scene", " ", promptPreview.idx + 1), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, "Edit the prompt below before generating, or click Generate to proceed."), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: promptPreview.prompt,
@@ -8439,16 +8983,7 @@ show();
     },
     /* @__PURE__ */ React.createElement(Eye, { size: 10 }),
     " Preview Prompt First"
-  ))))))), phase === "narrate" && /* @__PURE__ */ React.createElement("div", { className: `space-y-4 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Add audio to your ", artifactType === "comic" ? "comic" : "story"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, artifactType === "comic" ? "AI reads each panel caption aloud \u2014 or record your own voice" : "AI reads each scene aloud \u2014 or record your own voice")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "sf-voice", className: "text-[11px] font-bold text-indigo-500 uppercase" }, "Voice:"), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      id: "sf-voice",
-      value: narratorVoice,
-      onChange: (e) => setNarratorVoice(e.target.value),
-      className: "text-xs p-1 border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-300 font-bold text-indigo-700"
-    },
-    VOICE_POOL.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))
-  )), characters.length === 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: detectCharacters, disabled: isProcessing, className: "px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold hover:bg-indigo-200 transition-colors disabled:opacity-50 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " Detect Characters"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: narrateAll, disabled: isProcessing, className: "px-4 py-2 bg-indigo-600 text-white rounded-full text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Volume2, { size: 14 }), " ", isProcessing ? "Narrating..." : artifactType === "comic" ? "Narrate All Captions" : "Narrate All Scenes"), isNarrating && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: stopStoryNarration, className: "px-4 py-2 bg-amber-500 text-white rounded-full text-xs font-bold hover:bg-amber-600 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(X, { size: 14 }), " Stop narration"), /* @__PURE__ */ React.createElement(
+  ))))))), phase === "narrate" && /* @__PURE__ */ React.createElement("div", { className: `space-y-4 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Add audio to your ", artifactType === "comic" ? "comic" : "story"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, artifactType === "comic" ? "AI reads each panel caption aloud \u2014 or record your own voice" : "AI reads each scene aloud \u2014 or record your own voice")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 items-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: narrateAll, disabled: isProcessing, className: "px-4 py-2 bg-indigo-600 text-white rounded-full text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Volume2, { size: 14 }), " ", isProcessing ? "Narrating..." : artifactType === "comic" ? "Narrate All Captions" : "Narrate All Scenes"), isNarrating && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: stopStoryNarration, className: "px-4 py-2 bg-amber-500 text-white rounded-full text-xs font-bold hover:bg-amber-600 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(X, { size: 14 }), " Stop narration"), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -8470,12 +9005,24 @@ show();
     /* @__PURE__ */ React.createElement(Play, { size: 14 }),
     " ",
     playbackIdx >= 0 ? "Stop" : "Play All"
-  ))), characters.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2" }, "Characters Detected"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3" }, characters.map((c, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border border-indigo-200 rounded-xl px-3 py-2 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-800" }, c.name), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 ml-2" }, "Voice: ", c.voice))))), paragraphs.map((p, idx) => {
+  ))), /* @__PURE__ */ React.createElement("details", { "data-sf-narration-settings": true, className: "rounded-2xl border border-indigo-200 bg-indigo-50/70 p-4" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer rounded-lg text-sm font-black text-indigo-800 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, "Narration settings ", /* @__PURE__ */ React.createElement("span", { className: "ml-1 font-medium text-indigo-600" }, "\u2014 Voice and character voices")), /* @__PURE__ */ React.createElement("div", { className: "mt-4 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center gap-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "sf-voice", className: "text-[11px] font-bold text-indigo-600 uppercase" }, "Narrator voice"), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      id: "sf-voice",
+      value: narratorVoice,
+      onChange: (e) => setNarratorVoice(e.target.value),
+      className: "w-full sm:w-auto text-xs p-2 border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-300 font-bold text-indigo-700"
+    },
+    VOICE_POOL.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))
+  ), characters.length === 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: detectCharacters, disabled: isProcessing, className: "w-full sm:w-auto justify-center px-4 py-2 bg-white text-indigo-700 border border-indigo-200 rounded-full text-xs font-bold hover:bg-indigo-100 transition-colors disabled:opacity-50 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " Detect character voices")), characters.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2" }, "Character voices"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3" }, characters.map((c, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border border-indigo-200 rounded-xl px-3 py-2 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-800" }, c.name), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 ml-2" }, "Voice: ", c.voice))))))), recordingError && /* @__PURE__ */ React.createElement("div", { "data-sf-microphone-error": true, role: "alert", className: "rounded-2xl border-2 border-rose-200 bg-rose-50 p-4 text-sm text-rose-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-black" }, "Microphone unavailable"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, recordingError.message, " You can also use AI narration or continue without audio."), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, recordingError.paragraphId && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startRecordingParagraph(recordingError.paragraphId), className: "rounded-full bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700" }, "Retry microphone"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    setRecordingError(null);
+    recorder.clearError();
+  }, className: "rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100" }, "Dismiss"))), paragraphs.map((p, idx) => {
     const seg = audioSegments[p.id];
     const isCurrentPlayback = playbackIdx === idx;
     const hasSentenceAudio = seg?.sentenceAudios && seg.sentenceAudios.length > 0;
     const displaySentences = hasSentenceAudio ? seg.sentences : splitSentences(p.text);
-    return /* @__PURE__ */ React.createElement("div", { key: p.id, className: `bg-white rounded-2xl border-2 shadow-sm p-5 transition-colors ${isCurrentPlayback ? "border-green-400 bg-green-50/30" : "border-indigo-100"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, artifactType === "comic" ? "Panel" : "Scene", " ", idx + 1, " ", isCurrentPlayback && "\u25B6 Playing"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, hasSentenceAudio ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-green-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12 }), " AI Narrated (", seg.sentenceAudios.filter(Boolean).length, " sentences)") : seg?.aiLoading ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-indigo-400 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }), " Generating...") : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => narrateParagraph(p.id, p.text), className: "text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Volume2, { size: 12 }), " Narrate"), hasSentenceAudio && /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { key: p.id, className: `bg-white rounded-2xl border-2 shadow-sm p-4 sm:p-5 transition-colors ${isCurrentPlayback ? "border-green-400 bg-green-50/30" : "border-indigo-100"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, artifactType === "comic" ? "Panel" : "Scene", " ", idx + 1, " ", isCurrentPlayback && "\u25B6 Playing"), /* @__PURE__ */ React.createElement("div", { className: "flex w-full flex-wrap items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 sm:w-auto", "aria-label": "Narration and voice practice actions" }, /* @__PURE__ */ React.createElement("span", { className: "w-full text-[10px] font-black uppercase tracking-wider text-indigo-500" }, "Create narration"), hasSentenceAudio ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-green-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12 }), " AI Narrated (", seg.sentenceAudios.filter(Boolean).length, " sentences)") : seg?.aiLoading ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-indigo-400 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }), " Generating...") : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => narrateParagraph(p.id, p.text), className: "text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Volume2, { size: 12 }), " Narrate"), hasSentenceAudio && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -8493,7 +9040,7 @@ show();
       /* @__PURE__ */ React.createElement(Play, { size: 12 }),
       " ",
       isCurrentPlayback ? "Stop" : "Play"
-    ), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", { className: "mt-1 w-full border-t border-indigo-200 pt-2 text-[10px] font-black uppercase tracking-wider text-rose-500" }, "Practice or record my voice"), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -8689,18 +9236,20 @@ show();
     const showCompare = Object.keys(selfAssessment).length > 0 && selfScore != null && aiScoreNum != null;
     const delta = showCompare ? aiScoreNum - selfScore : null;
     return /* @__PURE__ */ React.createElement("div", { key: i, className: "px-4 py-3 flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800" }, s.criteria), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, s.comment)), showCompare ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 text-violet-800 px-2 py-0.5 rounded-full text-xs font-bold", title: t("tooltips.your_self_rating") }, selfScore, "/5"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-xs" }, "\u2192"), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold", title: t("tooltips.ai_score") }, s.score), Math.abs(delta) >= 1 && /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-bold px-1.5 py-0.5 rounded-full ${delta > 0 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`, title: delta > 0 ? "AI rated higher than you did" : "AI rated lower than you did" }, delta > 0 ? "+" : "", delta.toFixed(1))) : /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold" }, s.score));
-  }))), gradingResult.vocabScores && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, t("headings.vocab_usage"))), /* @__PURE__ */ React.createElement("div", { className: "p-4 flex flex-wrap gap-2" }, gradingResult.vocabScores.map((vs, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 ${vs.status === "correct" ? "bg-green-100 border-green-300 text-green-800" : vs.status === "partial" ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-red-100 border-red-300 text-red-800"}`, title: vs.comment }, vs.status === "correct" ? "\u2713" : vs.status === "partial" ? "~" : "\u2717", " ", vs.term)))))), phase === "export" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-8" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, !isCurrentDraftReviewed ? "Review the latest draft before publishing" : publishBlocked ? "Finish required items before publishing" : projectReadiness.warnings.length ? "Your " + ARTIFACT_TYPES[artifactType].label.toLowerCase() + " is ready to export as a draft" : "Your " + ARTIFACT_TYPES[artifactType].label.toLowerCase() + " is ready to publish"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Preview the finished ", ARTIFACT_TYPES[artifactType].label.toLowerCase(), " and choose how to share or save it."), /* @__PURE__ */ React.createElement("div", { className: "inline-flex mt-3 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold" }, "Artifact: ", ARTIFACT_TYPES[artifactType].label, artifactType === "story" ? " \xB7 " + WRITING_VIEWS[writingView].label + " writing view" : "")), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-2 mb-4" }, Object.entries(COMIC_PAGE_LAYOUTS).map(([key, item]) => /* @__PURE__ */ React.createElement(
+  }))), gradingResult.vocabScores && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, t("headings.vocab_usage"))), /* @__PURE__ */ React.createElement("div", { className: "p-4 flex flex-wrap gap-2" }, gradingResult.vocabScores.map((vs, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 ${vs.status === "correct" ? "bg-green-100 border-green-300 text-green-800" : vs.status === "partial" ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-red-100 border-red-300 text-red-800"}`, title: vs.comment }, vs.status === "correct" ? "\u2713" : vs.status === "partial" ? "~" : "\u2717", " ", vs.term)))))), phase === "export" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-8" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, !isCurrentDraftReviewed ? "Review the latest draft before publishing" : publishBlocked ? "Finish required items before publishing" : projectReadiness.warnings.length ? "Your " + ARTIFACT_TYPES[artifactType].label.toLowerCase() + " is ready to export as a draft" : "Your " + ARTIFACT_TYPES[artifactType].label.toLowerCase() + " is ready to publish"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, layoutMode === "comic" ? "Review the proof and finished comic, then choose how to save it. Structural production settings stay in Design." : "Preview the finished story and choose how to share or save it."), /* @__PURE__ */ React.createElement("div", { className: "inline-flex mt-3 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold" }, "Artifact: ", ARTIFACT_TYPES[artifactType].label, artifactType === "story" ? " \xB7 " + WRITING_VIEWS[writingView].label + " writing view" : "")), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { "data-sf-publish-design-route": true, className: "flex flex-col gap-3 rounded-2xl border border-fuchsia-200 bg-fuchsia-50 p-4 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-fuchsia-900" }, "Need to change pages, panel order, print setup, or lettering?"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-fuchsia-800" }, "Make structural changes in Design, then return here to review the updated proof.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
-      key,
-      onClick: () => setComicPageLayout(key),
-      title: item.desc,
-      "aria-pressed": comicPageLayout === key,
-      className: `px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${comicPageLayout === key ? "bg-slate-900 text-white shadow-md" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`
+      "data-sf-edit-comic-production": true,
+      onClick: () => {
+        setShowComicProduction(true);
+        changePhase("illustrate", "sf-comic-production-workbench");
+      },
+      className: "flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-fuchsia-700 px-4 py-2 text-xs font-black text-white hover:bg-fuchsia-800"
     },
-    item.label
-  ))), /* @__PURE__ */ React.createElement("section", { className: `sf-export-preflight overflow-hidden rounded-lg border-2 bg-white shadow-sm ${projectReadiness.blockers.length ? "border-rose-200" : projectReadiness.warnings.length ? "border-amber-200" : "border-emerald-200"}`, "aria-labelledby": "sf-export-preflight-title" }, /* @__PURE__ */ React.createElement("div", { className: `px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${projectReadiness.blockers.length ? "bg-rose-50" : projectReadiness.warnings.length ? "bg-amber-50" : "bg-emerald-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, projectReadiness.blockers.length ? /* @__PURE__ */ React.createElement(HelpCircle, { size: 18, className: "text-rose-700", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(CheckCircle2, { size: 18, className: projectReadiness.warnings.length ? "text-amber-700" : "text-emerald-700", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h4", { id: "sf-export-preflight-title", className: "text-sm font-black text-slate-900" }, "Export preflight"), /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 text-[10px] font-black uppercase ${projectReadiness.blockers.length ? "border-rose-300 bg-white text-rose-700" : projectReadiness.warnings.length ? "border-amber-300 bg-white text-amber-700" : "border-emerald-300 bg-white text-emerald-700"}` }, projectReadiness.blockers.length ? `${projectReadiness.blockers.length} blocker${projectReadiness.blockers.length === 1 ? "" : "s"}` : projectReadiness.warnings.length ? `${projectReadiness.warnings.length} refinement${projectReadiness.warnings.length === 1 ? "" : "s"}` : "Ready")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs font-medium text-slate-600" }, projectReadiness.summary)), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-x-4 gap-y-1 text-[10px] font-bold text-slate-600", "aria-label": "Production coverage" }, /* @__PURE__ */ React.createElement("span", null, "Words ", /* @__PURE__ */ React.createElement("strong", { className: "text-slate-900" }, projectReadiness.metrics.totalWords)), /* @__PURE__ */ React.createElement("span", null, "Art ", /* @__PURE__ */ React.createElement("strong", { className: "text-slate-900" }, projectReadiness.metrics.illustratedSections, "/", projectReadiness.metrics.totalSections)), /* @__PURE__ */ React.createElement("span", null, "Audio ", /* @__PURE__ */ React.createElement("strong", { className: "text-slate-900" }, projectReadiness.metrics.narratedSections, "/", projectReadiness.metrics.totalSections)), /* @__PURE__ */ React.createElement("span", null, "Review ", /* @__PURE__ */ React.createElement("strong", { className: "text-slate-900" }, projectReadiness.metrics.reviewSignalCount ? "Done" : "Open")), artifactType === "comic" && /* @__PURE__ */ React.createElement("span", null, "Alt ", /* @__PURE__ */ React.createElement("strong", { className: "text-slate-900" }, comicAltCoverageLabel)))), exportReadinessIssues.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-200" }, exportReadinessIssues.slice(0, 7).map((issue) => {
+    /* @__PURE__ */ React.createElement(ArrowLeft, { size: 14, "aria-hidden": "true" }),
+    " Edit production in Design"
+  )), /* @__PURE__ */ React.createElement("section", { className: `sf-export-preflight overflow-hidden rounded-lg border-2 bg-white shadow-sm ${projectReadiness.blockers.length ? "border-rose-200" : projectReadiness.warnings.length ? "border-amber-200" : "border-emerald-200"}`, "aria-labelledby": "sf-export-preflight-title" }, /* @__PURE__ */ React.createElement("div", { className: `px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${projectReadiness.blockers.length ? "bg-rose-50" : projectReadiness.warnings.length ? "bg-amber-50" : "bg-emerald-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, projectReadiness.blockers.length ? /* @__PURE__ */ React.createElement(HelpCircle, { size: 18, className: "text-rose-700", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(CheckCircle2, { size: 18, className: projectReadiness.warnings.length ? "text-amber-700" : "text-emerald-700", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h4", { id: "sf-export-preflight-title", className: "text-sm font-black text-slate-900" }, "Export preflight"), /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 text-[10px] font-black uppercase ${projectReadiness.blockers.length ? "border-rose-300 bg-white text-rose-700" : projectReadiness.warnings.length ? "border-amber-300 bg-white text-amber-700" : "border-emerald-300 bg-white text-emerald-700"}` }, projectReadiness.blockers.length ? `${projectReadiness.blockers.length} blocker${projectReadiness.blockers.length === 1 ? "" : "s"}` : projectReadiness.warnings.length ? `${projectReadiness.warnings.length} refinement${projectReadiness.warnings.length === 1 ? "" : "s"}` : "Ready")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs font-medium text-slate-600" }, projectReadiness.summary)), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-x-4 gap-y-1 text-[10px] font-bold text-slate-600", "aria-label": "Production coverage" }, /* @__PURE__ */ React.createElement("span", null, "Words ", /* @__PURE__ */ React.createElement("strong", { className: "text-slate-900" }, projectReadiness.metrics.totalWords)), /* @__PURE__ */ React.createElement("span", null, "Art ", /* @__PURE__ */ React.createElement("strong", { className: "text-slate-900" }, projectReadiness.metrics.illustratedSections, "/", projectReadiness.metrics.totalSections)), /* @__PURE__ */ React.createElement("span", null, "Audio ", /* @__PURE__ */ React.createElement("strong", { className: "text-slate-900" }, projectReadiness.metrics.narratedSections, "/", projectReadiness.metrics.totalSections)), /* @__PURE__ */ React.createElement("span", null, "Review ", /* @__PURE__ */ React.createElement("strong", { className: "text-slate-900" }, projectReadiness.metrics.reviewSignalCount ? "Done" : "Open")), artifactType === "comic" && /* @__PURE__ */ React.createElement("span", null, "Alt ", /* @__PURE__ */ React.createElement("strong", { className: "text-slate-900" }, comicAltCoverageLabel)))), exportReadinessIssues.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-200" }, exportReadinessIssues.slice(0, 7).map((issue) => {
     const isBlocker = projectReadiness.blockers.some((item) => item.code === issue.code);
     return /* @__PURE__ */ React.createElement("div", { key: issue.code, className: "sf-preflight-issue px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: `w-2 h-2 rounded-full shrink-0 ${isBlocker ? "bg-rose-500" : "bg-amber-500"}`, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-800" }, issue.label), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-[11px] leading-relaxed text-slate-500" }, issue.detail)), /* @__PURE__ */ React.createElement(
       "button",
@@ -8714,69 +9263,18 @@ show();
       " ",
       /* @__PURE__ */ React.createElement(ArrowRight, { size: 12, "aria-hidden": "true" })
     ));
-  }), exportReadinessIssues.length > 7 && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 text-[11px] font-bold text-slate-500" }, exportReadinessIssues.length - 7, " additional refinement", exportReadinessIssues.length - 7 === 1 ? "" : "s", " tracked in the phase dashboard.")) : /* @__PURE__ */ React.createElement("div", { className: "px-4 py-4 text-sm font-bold text-emerald-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 18, "aria-hidden": "true" }), " Narrative structure, media, review, and production checks are clear.")), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { className: "sf-comic-tool-card bg-white border-2 border-blue-100 rounded-2xl p-4 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-blue-700 uppercase tracking-widest flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 14 }), " Page Composer"), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1" }, comicPageGroups.length, " page", comicPageGroups.length === 1 ? "" : "s", " \xB7 ", paragraphs.length, " panel", paragraphs.length === 1 ? "" : "s")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-widest" }, "Panels/page"), COMIC_PANELS_PER_PAGE_OPTIONS.map((value) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      key: value,
-      type: "button",
-      onClick: () => updateComicPanelsPerPage(value),
-      "aria-pressed": sanitizeComicPageComposer(comicPageComposer).panelsPerPage === value,
-      className: `w-8 h-8 rounded-full text-xs font-black border transition-all ${sanitizeComicPageComposer(comicPageComposer).panelsPerPage === value ? "bg-blue-700 border-blue-700 text-white shadow-sm" : "bg-white border-blue-200 text-blue-700 hover:bg-blue-50"}`
-    },
-    value
-  )), /* @__PURE__ */ React.createElement("select", { value: "", onChange: (e) => applyComicPagePreset(e.target.value), className: "px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700", "aria-label": "Comic page preset" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Page preset"), Object.entries(COMIC_PAGE_PRESETS).map(([key, preset]) => /* @__PURE__ */ React.createElement("option", { key, value: key }, preset.label))), "                      ", /* @__PURE__ */ React.createElement(
+  }), exportReadinessIssues.length > 7 && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 text-[11px] font-bold text-slate-500" }, exportReadinessIssues.length - 7, " additional refinement", exportReadinessIssues.length - 7 === 1 ? "" : "s", " tracked in the phase dashboard.")) : /* @__PURE__ */ React.createElement("div", { className: "px-4 py-4 text-sm font-bold text-emerald-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 18, "aria-hidden": "true" }), " Narrative structure, media, review, and production checks are clear.")), layoutMode === "comic" && comicExportProof && /* @__PURE__ */ React.createElement("div", { "data-sf-comic-export-proof": true, className: "mt-4 border-t-2 border-blue-100 pt-4", "aria-label": "Comic export proof" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-blue-700 uppercase tracking-widest flex items-center gap-2" }, comicExportProof.status === "Ready" ? /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(HelpCircle, { size: 14, "aria-hidden": "true" }), " Export proof"), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1" }, comicExportProof.readyPages, "/", comicExportProof.pageCount, " pages clear \xB7 ", comicExportProof.issueCount, " proof note", comicExportProof.issueCount === 1 ? "" : "s")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 self-start sm:self-auto" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2.5 py-1 text-[10px] font-black uppercase ${comicExportProof.status === "Ready" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-700"}` }, comicExportProof.status), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
-      onClick: () => applyComicLetteringPlacement(comicPageGroups, "Comic"),
-      className: "sf-comic-action px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700 hover:bg-blue-50 flex items-center gap-1",
-      title: "Place bubble anchors across comic pages while avoiding binding gutters"
+      onClick: () => {
+        setShowComicProduction(true);
+        changePhase("illustrate", "sf-comic-production-workbench");
+      },
+      className: "rounded-full border border-blue-200 bg-white px-3 py-1.5 text-[10px] font-black text-blue-700 hover:bg-blue-50"
     },
-    /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }),
-    " Auto-place lettering"
-  ))), /* @__PURE__ */ React.createElement("div", { className: "grid gap-3" }, comicPageGroups.map((page) => {
-    const pageMeta = sanitizeComicPageComposer(comicPageComposer).pages[String(page.page)] || {};
-    const pageStats = getComicPageProductionStats(page, { panelDialogue, panelThumbnails, panelLayouts, illustrations, comicPrintSafety });
-    return /* @__PURE__ */ React.createElement("div", { key: page.page, className: "sf-comic-page-row border border-blue-100 rounded-lg p-3 bg-blue-50/40" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 text-sm" }, "Page ", page.page), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, "Panels ", page.startPanel, "-", page.endPanel)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-black px-2 py-1 rounded-full border ${pageStats.status === "Review" ? "bg-rose-50 border-rose-200 text-rose-700" : pageStats.status === "Ready" ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-blue-50 border-blue-200 text-blue-700"}` }, pageStats.status), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-700 bg-white border border-blue-100 px-2 py-1 rounded-full" }, "Art ", pageStats.artPanels, "/", pageStats.total), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-fuchsia-700 bg-white border border-fuchsia-100 px-2 py-1 rounded-full" }, "Lettering ", pageStats.placedBubbles, "/", pageStats.bubblePanels), pageStats.attention > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2 py-1 rounded-full" }, pageStats.attention, " review"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-2" }, /* @__PURE__ */ React.createElement(
-      "select",
-      {
-        value: pageMeta.layout || "",
-        onChange: (e) => updateComicPageMeta(page.page, "layout", e.target.value),
-        className: "px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 focus:border-blue-400",
-        "aria-label": `Page ${page.page} layout`
-      },
-      /* @__PURE__ */ React.createElement("option", { value: "" }, "Use global (", getComicPageLayoutLabel(comicPageLayout), ")"),
-      Object.entries(COMIC_PAGE_LAYOUTS).map(([key, item]) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.label))
-    ), /* @__PURE__ */ React.createElement(
-      "select",
-      {
-        value: pageMeta.turn || "",
-        onChange: (e) => updateComicPageMeta(page.page, "turn", e.target.value),
-        className: "px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 focus:border-blue-400",
-        "aria-label": `Page ${page.page} turn`
-      },
-      COMIC_PAGE_TURN_OPTIONS.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.value || "unset", value: option.value }, option.label))
-    ), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        value: pageMeta.note || "",
-        onChange: (e) => updateComicPageMeta(page.page, "note", e.target.value),
-        placeholder: "Page note",
-        className: "px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs text-slate-700 focus:border-blue-400",
-        "aria-label": `Page ${page.page} note`
-      }
-    )), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, pageStats.bubblePanels ? `${pageStats.placedBubbles} of ${pageStats.bubblePanels} bubble panel${pageStats.bubblePanels === 1 ? "" : "s"} anchored` : "No bubble panels yet", pageStats.crowdedBubbles > 0 ? ` - ${pageStats.crowdedBubbles} crowded` : "", pageStats.gutterRiskPanels > 0 ? ` - ${pageStats.gutterRiskPanels} near gutter` : ""), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => applyComicLetteringPlacement(page, `Page ${page.page}`),
-        className: "sf-comic-action px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700 hover:bg-blue-50 flex items-center gap-1",
-        title: `Place safe bubble anchors for page ${page.page}`
-      },
-      /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }),
-      " Auto-place this page"
-    )));
-  }))), layoutMode === "comic" && comicExportProof && /* @__PURE__ */ React.createElement("div", { "data-sf-comic-export-proof": true, className: "mt-4 border-t-2 border-blue-100 pt-4", "aria-label": "Comic export proof" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-blue-700 uppercase tracking-widest flex items-center gap-2" }, comicExportProof.status === "Ready" ? /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(HelpCircle, { size: 14, "aria-hidden": "true" }), " Export proof"), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1" }, comicExportProof.readyPages, "/", comicExportProof.pageCount, " pages clear \xB7 ", comicExportProof.issueCount, " proof note", comicExportProof.issueCount === 1 ? "" : "s")), /* @__PURE__ */ React.createElement("span", { className: `self-start sm:self-auto rounded-full border px-2.5 py-1 text-[10px] font-black uppercase ${comicExportProof.status === "Ready" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-700"}` }, comicExportProof.status)), comicExportProof.issueCount > 0 ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2" }, comicExportProof.globalIssues.map((issue) => /* @__PURE__ */ React.createElement("div", { key: issue.key, className: "rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-black" }, issue.label), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 leading-relaxed" }, issue.detail))), comicExportProof.rows.filter((row) => row.issues.length > 0).slice(0, 6).map((row) => /* @__PURE__ */ React.createElement("div", { key: "proof-page-" + row.page, className: "rounded-lg border border-rose-200 bg-rose-50 px-3 py-2" }, /* @__PURE__ */ React.createElement(
+    "Edit in Design"
+  ))), comicExportProof.issueCount > 0 ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2" }, comicExportProof.globalIssues.map((issue) => /* @__PURE__ */ React.createElement("div", { key: issue.key, className: "rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-black" }, issue.label), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 leading-relaxed" }, issue.detail))), comicExportProof.rows.filter((row) => row.issues.length > 0).slice(0, 6).map((row) => /* @__PURE__ */ React.createElement("div", { key: "proof-page-" + row.page, className: "rounded-lg border border-rose-200 bg-rose-50 px-3 py-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -8802,218 +9300,7 @@ show();
       /* @__PURE__ */ React.createElement("span", null, issue.label),
       target && /* @__PURE__ */ React.createElement("span", { className: "shrink-0 font-black text-rose-600" }, "Panel ", target.number)
     );
-  }))))) : /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-800" }, "Every page clears the current art, lettering, accessibility, pacing, and print checks.")), layoutMode === "comic" && (() => {
-    const printSafety = sanitizeComicPrintSafety(comicPrintSafety);
-    return /* @__PURE__ */ React.createElement("div", { className: "sf-comic-tool-card bg-white border-2 border-emerald-100 rounded-2xl p-4 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-700 uppercase tracking-widest flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14 }), " Print Safety"), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1" }, COMIC_PRINT_FORMATS[printSafety.format]?.trim || "Screen", " \xB7 ", COMIC_PRINT_FORMATS[printSafety.format]?.safe || "Safe area")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => updateComicPrintSafety("showGuides", !printSafety.showGuides),
-        "aria-pressed": printSafety.showGuides,
-        className: `px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${printSafety.showGuides ? "bg-emerald-700 border-emerald-700 text-white" : "bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-50"}`
-      },
-      "Guides ",
-      printSafety.showGuides ? "On" : "Off"
-    ), printSafety.format !== "digital" && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => updateComicPrintSafety("includeBleed", !printSafety.includeBleed),
-        "aria-pressed": printSafety.includeBleed,
-        className: `px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${printSafety.includeBleed ? "bg-emerald-700 border-emerald-700 text-white" : "bg-white border-amber-200 text-amber-700 hover:bg-amber-50"}`
-      },
-      "Bleed ",
-      printSafety.includeBleed ? "On" : "Off"
-    ))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1" }, "Format"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, Object.entries(COMIC_PRINT_FORMATS).map(([key, item]) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key,
-        type: "button",
-        onClick: () => updateComicPrintSafety("format", key),
-        "aria-pressed": printSafety.format === key,
-        className: `px-3 py-2 rounded-lg text-xs font-bold border text-left transition-all ${printSafety.format === key ? "bg-emerald-700 border-emerald-700 text-white shadow-sm" : "bg-white border-emerald-100 text-slate-700 hover:border-emerald-300"}`,
-        title: `${item.trim} \xB7 ${item.safe}`
-      },
-      item.label
-    )))), /* @__PURE__ */ React.createElement("label", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block" }, "Gutter"), /* @__PURE__ */ React.createElement(
-      "select",
-      {
-        value: printSafety.gutter,
-        onChange: (e) => updateComicPrintSafety("gutter", e.target.value),
-        disabled: printSafety.format === "digital",
-        className: "w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-xs font-bold text-slate-700 focus:border-emerald-400 disabled:opacity-60",
-        "aria-label": "Comic print gutter"
-      },
-      Object.entries(COMIC_PRINT_GUTTERS).map(([key, item]) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.label, " ", item.width !== "none" ? `(${item.width})` : ""))
-    ))));
-  })(), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { className: "sf-comic-tool-card bg-white border-2 border-fuchsia-100 rounded-2xl p-4 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-fuchsia-700 uppercase tracking-widest flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 14 }), " Layout Studio"), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1" }, Object.keys(sanitizePanelLayouts(panelLayouts)).length, " custom layout", Object.keys(sanitizePanelLayouts(panelLayouts)).length === 1 ? "" : "s")), /* @__PURE__ */ React.createElement("div", { className: "sf-comic-toolbar flex items-center gap-1.5 self-start", role: "toolbar", "aria-label": "Comic edit history" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: undoComicProduction,
-      disabled: !comicCanUndo,
-      className: "sf-comic-action w-9 h-9 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 flex items-center justify-center",
-      "aria-label": "Undo comic production edit",
-      "aria-keyshortcuts": "Control+Z Meta+Z",
-      title: "Undo comic edit (Ctrl/Cmd+Z)",
-      "data-sf-comic-undo": true,
-      "data-sf-focusable": true
-    },
-    /* @__PURE__ */ React.createElement(Undo2, { size: 16, "aria-hidden": "true" })
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: redoComicProduction,
-      disabled: !comicCanRedo,
-      className: "sf-comic-action w-9 h-9 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 flex items-center justify-center",
-      "aria-label": "Redo comic production edit",
-      "aria-keyshortcuts": "Control+Shift+Z Meta+Shift+Z Control+Y",
-      title: "Redo comic edit (Ctrl/Cmd+Shift+Z)",
-      "data-sf-comic-redo": true,
-      "data-sf-focusable": true
-    },
-    /* @__PURE__ */ React.createElement(Redo2, { size: 16, "aria-hidden": "true" })
-  ))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" }, paragraphs.map((p, idx) => {
-    const layoutFrame = panelLayouts[p.id] || {};
-    const frame = layoutFrame.frame || "";
-    const hasCustomSpans = layoutFrame.colSpan !== void 0 || layoutFrame.rowSpan !== void 0;
-    const panelThumbnail = panelThumbnails[p.id] || {};
-    const letteringSpace = panelThumbnail.letteringSpace || "";
-    const hasCustomBubblePosition = hasComicLetteringPosition(panelThumbnail);
-    const hasCustomBubbleWidth = hasComicLetteringWidth(panelThumbnail);
-    const customBubbleWidth = hasCustomBubbleWidth ? clampComicLetteringWidth(panelThumbnail.letteringWidth) : 72;
-    return /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        key: p.id,
-        onDragOver: (e) => updatePanelSequenceDragTarget(e, idx),
-        onDragEnter: (e) => updatePanelSequenceDragTarget(e, idx),
-        onDrop: (e) => finishPanelSequenceDrop(e, idx),
-        className: `sf-comic-layout-row sf-panel-sequence-card border border-fuchsia-100 rounded-lg p-3 bg-fuchsia-50/40 ${panelSequenceDrag?.from === idx ? "sf-panel-dragging" : panelSequenceDrag?.over === idx ? "sf-panel-drop-target" : ""}`
-      },
-      /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 text-sm" }, "Panel ", idx + 1), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, "Sequence ", idx + 1, " of ", paragraphs.length)), /* @__PURE__ */ React.createElement("div", { className: "sf-comic-toolbar flex flex-wrap items-center gap-1.5", role: "toolbar", "aria-label": `Panel ${idx + 1} layout actions` }, /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          draggable: "true",
-          onDragStart: (e) => startPanelSequenceDrag(e, idx),
-          onDragEnd: finishPanelSequenceDrag,
-          onKeyDown: (e) => handlePanelSequenceKeyDown(e, idx),
-          className: "sf-comic-action sf-panel-drag-handle w-8 h-8 shrink-0 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 flex items-center justify-center",
-          style: { cursor: "grab" },
-          "aria-label": `Reorder panel ${idx + 1}. Use arrow keys, Home, or End.`,
-          title: "Drag to reorder panel",
-          "data-sf-panel-drag-handle": p.id,
-          "data-sf-focusable": true
-        },
-        /* @__PURE__ */ React.createElement(Move, { size: 14, "aria-hidden": "true" })
-      ), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => moveParagraph(idx, -1),
-          disabled: idx === 0,
-          className: "sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-slate-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1",
-          "aria-label": `Move panel ${idx + 1} earlier`,
-          title: "Move panel earlier"
-        },
-        /* @__PURE__ */ React.createElement(ArrowLeft, { size: 11 }),
-        " Earlier"
-      ), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => moveParagraph(idx, 1),
-          disabled: idx === paragraphs.length - 1,
-          className: "sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-slate-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1",
-          "aria-label": `Move panel ${idx + 1} later`,
-          title: "Move panel later"
-        },
-        "Later ",
-        /* @__PURE__ */ React.createElement(ArrowRight, { size: 11 })
-      ), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => duplicatePanelAfter(idx),
-          disabled: paragraphs.length >= maxParagraphs,
-          className: "sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1",
-          "aria-label": `Duplicate panel ${idx + 1}`,
-          title: paragraphs.length >= maxParagraphs ? `Panel limit reached (${maxParagraphs})` : "Duplicate panel"
-        },
-        /* @__PURE__ */ React.createElement(Plus, { size: 11 }),
-        " Duplicate"
-      ), /* @__PURE__ */ React.createElement("div", { className: "sf-comic-status-pill text-[11px] font-bold text-fuchsia-700 bg-white border border-fuchsia-100 px-2 py-1 rounded-full" }, getComicPanelFrameLabel(frame), " \xB7 ", getComicPanelSpanLabel(layoutFrame, comicPageLayout, idx)))),
-      /* @__PURE__ */ React.createElement("div", { className: "sf-comic-frame-group flex flex-wrap gap-1.5 mb-2", role: "group", "aria-label": `Panel ${idx + 1} frame preset` }, COMIC_PANEL_FRAME_OPTIONS.map((option) => /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          key: option.value || "auto",
-          type: "button",
-          onClick: () => updatePanelLayout(p.id, "frame", option.value),
-          "aria-pressed": frame === option.value,
-          className: `sf-comic-frame-choice px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${frame === option.value ? "sf-comic-frame-choice-active bg-fuchsia-700 border-fuchsia-700 text-white" : "bg-white border-fuchsia-100 text-slate-700 hover:border-fuchsia-300"}`
-        },
-        option.label
-      ))),
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, "Drag the preview corner to resize"), hasCustomSpans && /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => updatePanelLayout(p.id, "resetSpans"),
-          className: "sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300"
-        },
-        "Reset size"
-      )),
-      /* @__PURE__ */ React.createElement("label", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block" }, "Bubble anchor"), /* @__PURE__ */ React.createElement(
-        "select",
-        {
-          value: letteringSpace,
-          onChange: (e) => updatePanelThumbnail(p.id, "letteringSpace", e.target.value),
-          className: "w-full px-3 py-2 rounded-lg border border-fuchsia-100 bg-white text-xs font-bold text-slate-700 focus:border-fuchsia-400",
-          "aria-label": `Panel ${idx + 1} bubble anchor`
-        },
-        COMIC_LETTERING_SPACE_OPTIONS.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.value || "unset", value: option.value }, option.label))
-      )),
-      /* @__PURE__ */ React.createElement("label", { className: "mt-3 block" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center justify-between gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1" }, /* @__PURE__ */ React.createElement("span", null, "Bubble width"), /* @__PURE__ */ React.createElement("span", null, hasCustomBubbleWidth ? `${customBubbleWidth}%` : "Auto")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          type: "range",
-          min: "28",
-          max: "86",
-          step: "1",
-          value: customBubbleWidth,
-          onChange: (e) => updatePanelThumbnail(p.id, "letteringWidth", e.target.value),
-          className: "sf-bubble-width-slider flex-1 accent-fuchsia-700",
-          "aria-label": `Panel ${idx + 1} bubble width`,
-          "aria-valuetext": hasCustomBubbleWidth ? `${customBubbleWidth} percent` : "Auto fit",
-          "data-sf-bubble-width-slider": p.id,
-          "data-sf-focusable": true
-        }
-      ), hasCustomBubbleWidth && /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => updatePanelThumbnail(p.id, "resetLetteringWidth"),
-          className: "sf-comic-action h-8 px-2 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300 flex items-center gap-1",
-          title: "Reset bubble width to auto",
-          "aria-label": `Reset panel ${idx + 1} bubble width to auto`,
-          "data-sf-focusable": true
-        },
-        /* @__PURE__ */ React.createElement(RefreshCw, { size: 11, "aria-hidden": "true" }),
-        " Auto"
-      ))),
-      /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, hasCustomBubblePosition ? "Bubble manually placed in preview" : "Bubble follows selected anchor"), hasCustomBubblePosition && /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => updatePanelThumbnail(p.id, "resetLetteringPosition"),
-          className: "sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300"
-        },
-        "Reset bubble position"
-      ))
-    );
-  }))), /* @__PURE__ */ React.createElement("div", { className: "sf-comic-preview-shell bg-gradient-to-b from-amber-50 to-white border-2 border-amber-200 rounded-2xl overflow-hidden shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8 border-b border-amber-200 bg-gradient-to-r from-amber-100/50 to-rose-100/50" }, coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: "Artifact cover art", className: "max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" }), /* @__PURE__ */ React.createElement("h3", { className: "text-3xl font-black text-amber-900" }, storyTitle || storyPrompt || sourceTopic || (artifactType === "comic" ? "My Comic" : "My Story")), authorName && /* @__PURE__ */ React.createElement("p", { className: "text-amber-800 text-sm mt-1 font-bold" }, "By ", authorName), /* @__PURE__ */ React.createElement("p", { className: "text-amber-700 text-sm mt-1 italic" }, GENRE_TEMPLATES[genre]?.label || "Creative Writing", " \xB7 ", vocabTerms.length, " vocabulary terms")), layoutMode === "comic" ? (
+  }))))) : /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-800" }, "Every page clears the current art, lettering, accessibility, pacing, and print checks.")), /* @__PURE__ */ React.createElement("div", { className: "sf-comic-preview-shell bg-gradient-to-b from-amber-50 to-white border-2 border-amber-200 rounded-2xl overflow-hidden shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8 border-b border-amber-200 bg-gradient-to-r from-amber-100/50 to-rose-100/50" }, coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: "Artifact cover art", className: "max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" }), /* @__PURE__ */ React.createElement("h3", { className: "text-3xl font-black text-amber-900" }, storyTitle || storyPrompt || sourceTopic || (artifactType === "comic" ? "My Comic" : "My Story")), authorName && /* @__PURE__ */ React.createElement("p", { className: "text-amber-800 text-sm mt-1 font-bold" }, "By ", authorName), /* @__PURE__ */ React.createElement("p", { className: "text-amber-700 text-sm mt-1 italic" }, GENRE_TEMPLATES[genre]?.label || "Creative Writing", " \xB7 ", vocabTerms.length, " vocabulary terms")), layoutMode === "comic" ? (
     /* Page-aware Comic Preview */
     /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "sf-page-navigator bg-slate-950 text-white px-3 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black uppercase tracking-widest" }, "Page ", focusedComicPreviewPage?.page || 1, " of ", comicPageGroups.length, " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\xB7 Follow the numbered panels")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 max-w-full", "aria-label": "Comic preview page navigation" }, /* @__PURE__ */ React.createElement(
       "button",
@@ -9125,19 +9412,7 @@ show();
     },
     /* @__PURE__ */ React.createElement(Star, { size: 18 }),
     " Save to Portfolio"
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 text-xs text-center" }, artifactType === "comic" ? "Comic" : "Storybook", " and slideshow exports open in new tabs \xB7 print or save as PDF"), liveSession && !isCanvasEnv && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-violet-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-violet-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Eye, { size: 16 }), " Class Portfolio"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, "Share your ", artifactType === "comic" ? "comic" : "storybook", " so your teacher and classmates can view it. Shared artifacts appear in the class gallery."), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-sf-publish-action": "gallery",
-      "data-sf-publish-blocked": publishBlocked,
-      onClick: shareToSession,
-      "aria-describedby": "sf-phase-requirements",
-      className: "px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 transition-colors flex items-center gap-2"
-    },
-    /* @__PURE__ */ React.createElement(Star, { size: 14 }),
-    " Publish to Class Gallery"
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-violet-700 mt-2" }, "Your cover art, title, word count, and grade will be visible to the class.")), /* @__PURE__ */ React.createElement("details", { "data-sf-project-tools": true, className: "bg-white rounded-2xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer rounded-lg text-sm font-black text-slate-700 focus-visible:ring-2 focus-visible:ring-rose-500" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Save, { size: 16, "aria-hidden": "true" }), " Project files & collaboration")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-500" }, "Export or import a portable project, save a checkpoint, or hand a draft to a classmate."), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-4" }, /* @__PURE__ */ React.createElement("div", { "data-sf-project-vault": true, className: "bg-white rounded-2xl border-2 border-emerald-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Save, { size: 16 }), " Project Vault"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, vaultStorageMode === "vault" ? "Your writing, artwork, cover, continuity notes, production audits, and durable narration data are saved in this browser." : "Save a portable project package to preserve artwork and narration across browsers or devices."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 items-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportStoryForgeProject, className: "px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors flex items-center gap-2", "aria-label": "Export full Story Forge project" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " Export .storyforge"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: importDraftJSON, className: "px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-2", "aria-label": "Import Story Forge project" }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }), " Import project"), /* @__PURE__ */ React.createElement("label", { className: "flex-1 min-w-[180px]" }, /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, "Checkpoint name"), /* @__PURE__ */ React.createElement("input", { value: revisionLabel, onChange: (e) => setRevisionLabel(e.target.value.slice(0, 100)), placeholder: "Checkpoint name", className: "w-full px-3 py-2 text-xs rounded-lg border border-emerald-200 bg-emerald-50/40 text-slate-700", "aria-label": "Checkpoint name" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => void saveRevisionCheckpoint(), disabled: draftHydrationState !== "ready" || draftSaveState === "saving", className: "px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 disabled:opacity-50", "aria-label": "Save revision checkpoint" }, /* @__PURE__ */ React.createElement(Save, { size: 14 }), " Checkpoint")), revisionHistory.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 border-t border-emerald-100 pt-3", "aria-label": "Saved project checkpoints" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" }, "Recent checkpoints"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, revisionHistory.slice(0, 6).map((revision) => /* @__PURE__ */ React.createElement("button", { key: revision.id, type: "button", onClick: () => restoreRevisionCheckpoint(revision), className: "px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-[11px] font-bold text-emerald-800 hover:bg-emerald-100", title: `Restore ${revision.label}` }, revision.label, " \xB7 ", new Date(revision.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-cyan-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-cyan-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Pass the Torch"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, "Export your draft as a file and share it with a classmate \u2014 they can continue where you left off!"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:flex-wrap gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportDraftJSON, className: "px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " Export Draft (.json)"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: importDraftJSON, className: "px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }), " Import Classmate's Draft")))))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-t border-slate-200 p-3 sm:p-4 flex flex-wrap sm:flex-nowrap justify-between items-center gap-2 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 text-xs text-center" }, artifactType === "comic" ? "Comic" : "Storybook", " and slideshow exports open in new tabs \xB7 print or save as PDF"), /* @__PURE__ */ React.createElement("details", { "data-sf-project-tools": true, className: "bg-white rounded-2xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer rounded-lg text-sm font-black text-slate-700 focus-visible:ring-2 focus-visible:ring-rose-500" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Save, { size: 16, "aria-hidden": "true" }), " Project files & collaboration")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-500" }, "Export or import a portable project, save a checkpoint, or hand a draft to a classmate."), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-4" }, /* @__PURE__ */ React.createElement("div", { "data-sf-project-vault": true, className: "bg-white rounded-2xl border-2 border-emerald-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Save, { size: 16 }), " Project Vault"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, vaultStorageMode === "vault" ? "Your writing, artwork, cover, continuity notes, production audits, and durable narration data are saved in this browser." : "Save a portable project package to preserve artwork and narration across browsers or devices."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 items-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportStoryForgeProject, className: "px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors flex items-center gap-2", "aria-label": "Export full Story Forge project" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " Export .storyforge"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-import-draft": true, onClick: importDraftJSON, className: "px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-2", "aria-label": "Import Story Forge project" }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }), " Import project"), /* @__PURE__ */ React.createElement("label", { className: "flex-1 min-w-[180px]" }, /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, "Checkpoint name"), /* @__PURE__ */ React.createElement("input", { value: revisionLabel, onChange: (e) => setRevisionLabel(e.target.value.slice(0, 100)), placeholder: "Checkpoint name", className: "w-full px-3 py-2 text-xs rounded-lg border border-emerald-200 bg-emerald-50/40 text-slate-700", "aria-label": "Checkpoint name" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => void saveRevisionCheckpoint(), disabled: draftHydrationState !== "ready" || draftSaveState === "saving", className: "px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 disabled:opacity-50", "aria-label": "Save revision checkpoint" }, /* @__PURE__ */ React.createElement(Save, { size: 14 }), " Checkpoint")), revisionHistory.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 border-t border-emerald-100 pt-3", "aria-label": "Saved project checkpoints" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" }, "Recent checkpoints"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, revisionHistory.slice(0, 6).map((revision) => /* @__PURE__ */ React.createElement("button", { key: revision.id, type: "button", "data-sf-restore-checkpoint": revision.id, onClick: () => restoreRevisionCheckpoint(revision), className: "px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-[11px] font-bold text-emerald-800 hover:bg-emerald-100", title: `Restore ${revision.label}` }, revision.label, " \xB7 ", new Date(revision.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-cyan-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-cyan-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Pass the Torch"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, "Export your draft as a file and share it with a classmate \u2014 they can continue where you left off!"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:flex-wrap gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportDraftJSON, className: "px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " Export Draft (.json)"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-import-draft": true, onClick: importDraftJSON, className: "px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }), " Import Classmate's Draft")))))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-t border-slate-200 p-3 sm:p-4 flex flex-wrap sm:flex-nowrap justify-between items-center gap-2 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

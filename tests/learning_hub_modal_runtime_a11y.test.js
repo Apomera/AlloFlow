@@ -59,6 +59,7 @@ describe('Learning Hub modal runtime accessibility', () => {
         setSelHubTab: setter,
         setShowLearningHub: setOpen,
         setShowLitLab: setter,
+        setShowLearningWebExplorer: setter,
         setShowMindMap: setter,
         setShowPoetTree: setter,
         setShowResearchHub: setter,
@@ -76,13 +77,17 @@ describe('Learning Hub modal runtime accessibility', () => {
 
     const dialog = host.querySelector('[role="dialog"]');
     const buttons = Array.from(dialog.querySelectorAll('button'));
-    expect(dialog.querySelectorAll('button[data-hub-launch="true"]')).toHaveLength(15);
-    expect(dialog.querySelectorAll('button[data-hub-favorite="true"]')).toHaveLength(15);
-    expect(buttons.length).toBeGreaterThan(16);
+    const launchers = Array.from(dialog.querySelectorAll('button[data-hub-launch="true"]'));
+    const favorites = Array.from(dialog.querySelectorAll('button[data-hub-favorite="true"]'));
+    expect(launchers.length).toBeGreaterThanOrEqual(16);
+    expect(favorites).toHaveLength(launchers.length);
+    expect(launchers.some((button) => button.textContent.includes('Learning Web: Explore'))).toBe(true);
+    expect(launchers.some((button) => button.textContent.includes('Learning Web: Unit Path'))).toBe(true);
+    expect(buttons.length).toBeGreaterThan(launchers.length);
     expect(document.activeElement).toBe(buttons[0]);
     expect(dialog.getAttribute('aria-labelledby')).toBe('learning-hub-title');
     expect(dialog.getAttribute('aria-describedby')).toBe('learning-hub-subtitle');
-    expect(Array.from(dialog.querySelectorAll('button[data-hub-launch="true"]')).find((button) => button.textContent.includes('STEM Lab')).querySelector('span[aria-hidden="true"]')).toBeTruthy();
+    expect(Array.from(dialog.querySelectorAll('button[data-hub-launch="true"]')).find((button) => button.textContent.includes('STEAM Lab')).querySelector('span[aria-hidden="true"]')).toBeTruthy();
 
     const results = await axe.run(dialog, { rules: { 'color-contrast': { enabled: false }, region: { enabled: false } } });
     expect(results.violations.filter((item) => item.impact === 'serious' || item.impact === 'critical')).toEqual([]);

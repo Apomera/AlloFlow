@@ -4,8 +4,8 @@
 // Two changes, and one deliberate non-change:
 //   A. Trim the permanent cost. It was p-6 md:py-8 md:px-10 with a text-4xl
 //      title: 64px of vertical padding before a single control.
-//   B. A collapse toggle, remembered per device, defaulting to collapsed on
-//      short viewports where the squeeze actually bites.
+//   B. A compact app-bar default with context and primary actions. The complete
+//      command surface remains available through a remembered More/Less toggle.
 //   -  NO scroll-driven shrinking. Moving hit targets while someone scrolls is
 //      hostile to motor and vestibular needs, which is the opposite of what
 //      this app is for.
@@ -18,12 +18,24 @@ const MODULE = readFileSync('view_header_module.js', 'utf8');
 describe('the header costs less space by default', () => {
   it('no longer carries 64px of padding before any content', () => {
     expect(SRC, 'the old padding is gone').not.toContain('p-6 md:py-8 md:px-10');
-    expect(SRC).toContain("headerCollapsed ? 'p-3 md:py-2 md:px-8' : 'p-4 md:py-4 md:px-8'");
+    expect(SRC).toContain("headerCollapsed ? 'px-3 sm:px-5 md:px-6 py-px' : 'p-4 md:py-4 md:px-8'");
   });
 
   it('drops a step of type scale on the title', () => {
     expect(SRC).not.toContain('text-3xl md:text-4xl font-black tracking-tight');
     expect(SRC).toContain("headerCollapsed ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'");
+  });
+
+  it('keeps context, destinations, session, Setup, and More in the 68px app bar', () => {
+    expect(SRC).toContain('.allo-premium-appbar { min-height: 68px; }');
+    expect(SRC).toContain('.allo-premium-header button { min-height: 44px; }');
+    const compact = SRC.slice(SRC.indexOf('{headerCollapsed && ('), SRC.indexOf('{/* Compact keeps context'));
+    for (const key of ['header_dashboard', 'header_learning_hub', 'header_educator_hub']) {
+      expect(compact).toContain(`data-help-key="${key}"`);
+    }
+    expect(compact).toContain('data-help-key="header_session_start"');
+    expect(compact).toContain('data-help-key="header_rerun_wizard"');
+    expect(compact).toContain("t('common.more_information') || 'More'");
   });
 });
 
@@ -33,17 +45,18 @@ describe('collapsing is explicit and remembered', () => {
     expect(SRC).toContain("localStorage.setItem('allo_header_collapsed', String(next))");
   });
 
-  it('defaults to collapsed only on short viewports', () => {
-    // Where the header's height is the difference between seeing two paragraphs
-    // and seeing five. Tall displays keep the roomy header.
-    expect(SRC).toContain('window.innerHeight < 900');
+  it('defaults to the compact app bar on a first visit', () => {
+    const at = SRC.indexOf("const saved = localStorage.getItem('allo_header_collapsed')");
+    const body = SRC.slice(at, at + 350);
+    expect(body).toContain('return true;');
+    expect(body).not.toContain('window.innerHeight');
+    expect(body).not.toContain('window.innerWidth');
   });
 
-  it('lets an explicit choice beat the viewport default', () => {
-    // Saved value is read first; the height check is only the fallback.
+  it('lets an explicit choice beat the compact default', () => {
     const at = SRC.indexOf("const saved = localStorage.getItem('allo_header_collapsed')");
     const body = SRC.slice(at, at + 400);
-    expect(body.indexOf("saved === 'true'")).toBeLessThan(body.indexOf('window.innerHeight'));
+    expect(body.indexOf("saved === 'true'")).toBeLessThan(body.indexOf('return true;'));
     expect(body).toContain("saved === 'false'");
   });
 
@@ -54,9 +67,12 @@ describe('collapsing is explicit and remembered', () => {
 });
 
 describe('what collapsing may and may not hide', () => {
-  it('hides the tagline and the licence chip, which are read once', () => {
+  it('keeps the one-time brand copy in the expanded surface', () => {
     expect(SRC).toMatch(/\{!headerCollapsed && \([\s\S]{0,600}header\.tagline/);
-    expect(SRC).toMatch(/\{!headerCollapsed && \([\s\S]{0,600}header\.rights/);
+    const expandedMetadata = SRC.slice(SRC.indexOf(") : <div className=\"flex flex-wrap items-center gap-2 mt-2\">"));
+    expect(expandedMetadata).toContain("t('header.rights')");
+    expect(SRC).toContain('{compactRoleLabel}');
+    expect(SRC).toContain('{compactContextLabel}');
   });
 
   it('NEVER hides the privacy notice', () => {
@@ -66,6 +82,7 @@ describe('what collapsing may and may not hide', () => {
     expect(at).toBeGreaterThan(0);
     const before = SRC.slice(Math.max(0, at - 500), at);
     expect(before, 'privacy notice must not sit inside a collapse guard').not.toMatch(/\{!headerCollapsed && \($/);
+    expect(SRC.match(/\{piiWarningText\}/g)?.length).toBeGreaterThanOrEqual(2);
   });
 });
 
