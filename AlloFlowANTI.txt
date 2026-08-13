@@ -5135,10 +5135,53 @@ const _alloEducatorAccessCodeRequirement = () => {
     return 'unavailable';
   }
 };
-const _alloEducatorAccessCodeRequired = () => _alloEducatorAccessCodeRequirement() !== 'off';
+// ONLY a code that demonstrably exists may raise the gate.
+//
+// This read `!== 'off'`, which made BOTH 'pending' and 'unavailable' mean "demand a
+// password" — and neither of them says a code was ever set. The requirement has four
+// states but only two are answers: 'configured' and 'off'. The other two are "not known
+// yet" and "cannot tell".
+//
+// On Canvas that was fatal. `_isCanvasEnv` sends the check down the hydration branch,
+// where it reports 'pending' for the whole prefs-hydration window and sticks on
+// 'unavailable' forever if the device-storage bridge never resolves or a localStorage
+// write throws. So the gate opened on devices where no code had ever been configured,
+// and TeacherGate then reported "No educator access code is configured on this device"
+// with no input that could ever open it: Teacher, Parent and Independent were
+// unreachable and only Student was left. Nothing else showed it, because every non-
+// Canvas surface skips that branch and reads localStorage directly.
+//
+// The requirement and the VERIFIER now agree. The gate is raised only in the one state
+// where DeviceAccessCode.verify() has something to check the answer against, so an
+// unopenable prompt is no longer reachable.
+const _alloEducatorAccessCodeRequired = () => _alloEducatorAccessCodeRequirement() === 'configured';
+// Failing open on 'pending' is right for the lockout but would, on its own, let a boot
+// path decide before hydration could tell it a code IS configured. The auto-entry
+// effects below wait for that instead of guessing. Bounded on purpose: if the bridge
+// never answers, launch proceeds rather than hanging behind a promise that never
+// settles — the same reason this function exists at all.
+const _alloEducatorAccessCodeSettled = (timeoutMs) => {
+  if (_alloEducatorAccessCodeRequirement() !== 'pending') return Promise.resolve();
+  return new Promise((resolve) => {
+    let settled = false;
+    let timer = null;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      try { window.removeEventListener('allo-prefs-hydrated', finish); } catch (_) {}
+      if (timer) clearTimeout(timer);
+      resolve();
+    };
+    try {
+      window.addEventListener('allo-prefs-hydrated', finish);
+      timer = setTimeout(finish, Number.isFinite(timeoutMs) ? timeoutMs : 2500);
+    } catch (_) { finish(); }
+  });
+};
 if (typeof window !== 'undefined') {
   window._alloEducatorAccessCodeRequirement = _alloEducatorAccessCodeRequirement;
   window._alloEducatorAccessCodeRequired = _alloEducatorAccessCodeRequired;
+  window._alloEducatorAccessCodeSettled = _alloEducatorAccessCodeSettled;
 }
 const TEACHER_ONLY_TYPES = [
     'lesson-plan',
@@ -19161,12 +19204,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!wantsFamily) return;
       _alloFamilyLinkHandledRef.current = true;
       setHasSelectedMode(true);
-      if (_alloEducatorAccessCodeRequired()) {
-          setPendingRole('parent');
-          setIsGateOpen(true);
-      } else {
-          executeRoleSelect('parent');
-      }
+      _alloEducatorAccessCodeSettled().then(() => {
+          if (_alloEducatorAccessCodeRequired()) {
+              setPendingRole('parent');
+              setIsGateOpen(true);
+          } else {
+              executeRoleSelect('parent');
+          }
+      });
   }, [hasSelectedRole]);
   // ── Shell-configured role (/allo-shell-config.json) ─────────────────────
   // Same shape as the family deep link above, and deliberately the WEAKEST
@@ -19188,12 +19233,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (_alloShellRoleHandledRef.current || hasSelectedRole) return;
           _alloShellRoleHandledRef.current = true;
           setHasSelectedMode(true);
-          if (_alloEducatorAccessCodeRequired()) {
-              setPendingRole(cfg.forceRole);
-              setIsGateOpen(true);
-          } else {
-              executeRoleSelect(cfg.forceRole);
-          }
+          _alloEducatorAccessCodeSettled().then(() => {
+              if (_alloEducatorAccessCodeRequired()) {
+                  setPendingRole(cfg.forceRole);
+                  setIsGateOpen(true);
+              } else {
+                  executeRoleSelect(cfg.forceRole);
+              }
+          });
       });
       return () => { cancelled = true; };
   }, [hasSelectedRole]);
@@ -19219,12 +19266,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!Number.isFinite(saved.at) || (Date.now() - saved.at) > ALLO_SESSION_RESUME_MS) return;
       _alloSessionResumeHandledRef.current = true;
       setHasSelectedMode(true);
-      if (_alloEducatorAccessCodeRequired()) {
-          setPendingRole(saved.role);
-          setIsGateOpen(true);
-      } else {
-          executeRoleSelect(saved.role);
-      }
+      _alloEducatorAccessCodeSettled().then(() => {
+          if (_alloEducatorAccessCodeRequired()) {
+              setPendingRole(saved.role);
+              setIsGateOpen(true);
+          } else {
+              executeRoleSelect(saved.role);
+          }
+      });
   }, [hasSelectedRole, hasSelectedMode]);
   useEffect(() => {
       if (!hasSelectedRole || (!isTeacherMode && !isParentMode && !isIndependentMode)) return undefined;
