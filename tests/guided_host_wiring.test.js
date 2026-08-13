@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 
 const root = process.cwd();
 const app = readFileSync(resolve(root, 'AlloFlowANTI.txt'), 'utf8');
+const config = readFileSync(resolve(root, 'guided_mode_config_source.jsx'), 'utf8');
 const header = readFileSync(resolve(root, 'view_header_source.jsx'), 'utf8');
 const wizard = readFileSync(resolve(root, 'quickstart_source.jsx'), 'utf8');
 const phaseO = readFileSync(resolve(root, 'phase_o_misc_handlers_source.jsx'), 'utf8');
@@ -13,11 +14,11 @@ const textPipeline = readFileSync(resolve(root, 'text_pipeline_helpers_source.js
 const dispatcher = readFileSync(resolve(root, 'generate_dispatcher_source.jsx'), 'utf8');
 
 function guidedTourMapEntries() {
-  const start = app.indexOf('const GUIDED_TOUR_MAP = {');
+  const start = config.indexOf('const GUIDED_TOUR_MAP = {');
   expect(start).toBeGreaterThan(-1);
-  const end = app.indexOf('};', start);
+  const end = config.indexOf('};', start);
   expect(end).toBeGreaterThan(start);
-  const block = app.slice(start, end);
+  const block = config.slice(start, end);
   return Array.from(block.matchAll(/'([^']+)'\s*:\s*'([^']+)'/g)).map((m) => ({ stepId: m[1], domId: m[2] }));
 }
 
@@ -203,7 +204,7 @@ describe('Guided Mode pause semantics', () => {
 });
 describe('Guided Mode improvement wiring', () => {
   it('wires goal presets and retry recovery into the banner', () => {
-    expect(app).toContain('const GUIDED_PRESETS = [');
+    expect(config).toContain('const GUIDED_PRESETS = [');
     expect(app).toContain('const applyGuidedPreset = (preset) =>');
     expect(app).toContain('const GUIDED_RETRY_TYPES = {');
     expect(app).toContain('const retryGuidedStep = async () =>');
@@ -248,11 +249,11 @@ describe('Guided Mode improvement wiring', () => {
     expect(banner).toContain('className="allo-guided-phase-checkpoint"');
   });
   it('adds outcome phases, assignment directions, and comprehensive delivery as real milestones', () => {
-    expect(app).toContain('const GUIDED_PHASES = [');
-    expect(app).toContain("{ id: 'directions', phase: 'assign'");
-    expect(app).toContain("{ id: 'package-deliver', phase: 'deliver'");
-    expect(app).toContain("'directions': 'tour-tool-directions'");
-    expect(app).toContain("'package-deliver': 'tour-tool-fullpack'");
+    expect(config).toContain('const GUIDED_PHASES = [');
+    expect(config).toContain("{ id: 'directions', phase: 'assign'");
+    expect(config).toContain("{ id: 'package-deliver', phase: 'deliver'");
+    expect(config).toContain("'directions': 'tour-tool-directions'");
+    expect(config).toContain("'package-deliver': 'tour-tool-fullpack'");
     expect(app).toContain("guidedPhases={GUIDED_PHASES}");
     expect(app).toContain("guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS}");
     expect(banner).toContain("const GUIDED_CLICK_STEPS = ['math']");
@@ -268,7 +269,7 @@ describe('Guided Mode improvement wiring', () => {
       'QTI quiz package', 'H5P interactive activity (.h5p)', 'IMS content package',
       'Homework QR / self-contained link', 'Class Mailbox / hosted printable QR', 'Live class session', 'Editable AlloFlow project',
       'Adventure Storybook HTML (optional narration)', 'Persona private-session JSON + HTML transcript',
-    ]) expect(app).toContain(option);
+    ]) expect(config).toContain(option);
     expect(app).toContain("onClick={() => openExportPreview('print')}");
     expect(app).toContain('onClick={createGuidedHomeworkShare}');
     expect(app).toContain('setShowSessionStartOptions(true)');

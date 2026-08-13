@@ -1029,6 +1029,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'GuidedModeConfig',
+        filename: 'guided_mode_config_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'UIPolish',
         filename: 'ui_polish_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1614,6 +1619,13 @@ const COMPILE_PAIRS = [
         modPath: path.join(ROOT, 'shared_activity_module.js'),
         publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'shared_activity_module.js'),
         wrap(src) { return require('./_build_shared_activity_module.js').buildSharedActivityModule(src); },
+    },
+    {
+        name: 'GuidedModeConfig',
+        srcPath: path.join(ROOT, 'guided_mode_config_source.jsx'),
+        modPath: path.join(ROOT, 'guided_mode_config_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'guided_mode_config_module.js'),
+        wrap(src) { return require('./_build_guided_mode_config_module.js').buildGuidedModeConfigModule(src); },
     },
     {
         // ── immersive_reader ── Reading overlays (Focus/Speed/Bionic/Crawl/Karaoke)

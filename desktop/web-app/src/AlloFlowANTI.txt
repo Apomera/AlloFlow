@@ -11873,58 +11873,23 @@ const AlloFlowContent = () => {
   //   action  = the short imperative shown in the banner ("do this now"), pointing
   //             at the highlighted tool. success = the encouraging note shown once
   //             the teacher engages that tool. (English here; banner chrome is i18n.)
-  const GUIDED_PHASES = [
-    { id: 'plan', label: 'Plan', description: 'Choose the source and intended outcome.' },
-    { id: 'understand', label: 'Understand', description: 'Find barriers, concepts, and instructional priorities.' },
-    { id: 'access', label: 'Make accessible', description: 'Build multiple ways for students to perceive and understand the content.' },
-    { id: 'participate', label: 'Build participation', description: 'Add ways to practice, discuss, explore, and create.' },
-    { id: 'assess', label: 'Check learning', description: 'Gather evidence and verify standards and UDL alignment.' },
-    { id: 'organize', label: 'Organize', description: 'Connect the resources into a teachable sequence.' },
-    { id: 'assign', label: 'Assign', description: 'Write clear student-facing directions, goals, and success criteria.' },
-    { id: 'deliver', label: 'Preview & deliver', description: 'Choose the right export, sharing, or live-session route.' },
-    { id: 'finish', label: 'Review & finish', description: 'Review the finished lesson and save the completion summary.' },
-  ];
-  const GUIDED_DELIVERY_GROUPS = [
-    { id: 'print-editable', label: 'Print & editable documents', options: ['PDF / Print', 'Worksheet', 'Slides (.pptx)', 'Accessible Word (.docx)', 'OpenDocument (.odt)'] },
-    { id: 'web-accessible', label: 'Web, reading & accessibility', options: ['Interactive HTML', 'EPUB (.epub)', 'Plain text (.txt)', 'Markdown (.md)', 'NotebookLM source (.md)', 'Electronic Braille (.brf)'] },
-    { id: 'lms-interactive', label: 'LMS & interactive packages', options: ['QTI quiz package', 'H5P interactive activity (.h5p)', 'IMS content package'] },
-    { id: 'assign-share', label: 'Assign & share', options: ['Homework QR / self-contained link', 'Class Mailbox / hosted printable QR', 'Live class session', 'Editable AlloFlow project'] },
-    { id: 'resource-specific', label: 'Resource-specific exports', options: ['Adventure Storybook HTML (optional narration)', 'Persona private-session JSON + HTML transcript'] },
-  ];
-  const GUIDED_STEPS = [
-    { id: 'source-input', phase: 'plan', label: 'Source Material', action: 'Paste or type the text you want to adapt. Everything else builds from it.', success: 'Source captured. Now let us find what students will struggle with.' },
-    { id: 'analysis', phase: 'understand', label: 'Analyze Source Material', action: 'Run Analyze to scan the reading level, key concepts, and tricky vocabulary.', success: 'Analysis done. That shows you where to scaffold.' },
-    { id: 'glossary', phase: 'access', label: 'Glossary & Language Selection', action: 'Generate a glossary of the key terms, in your students’ languages if needed.', success: 'Glossary ready. Front-loading vocabulary helps multilingual learners most.' },
-    { id: 'simplified', phase: 'access', label: 'Text Adaptation', action: 'Create a simplified version at a reading level your students can access.', success: 'Adapted text ready. Keep the original on hand for your stronger readers.' },
-    { id: 'ui-tool-wordsounds', phase: 'access', label: 'Word Sounds', action: 'Build Word Sounds practice for the decoding and phonics targets.', success: 'Word Sounds set. Great support for your emerging readers.' },
-    { id: 'outline', phase: 'access', label: 'Visual Organizer', action: 'Generate a visual organizer so students can see how the ideas connect.', success: 'Organizer ready. Structure helps content stick.' },
-    { id: 'anchor-chart', phase: 'access', label: 'Anchor Charts', action: 'Make an anchor chart of the big ideas to keep on display.', success: 'Anchor chart ready to post.' },
-    { id: 'image', phase: 'access', label: 'Visual Support', action: 'Add a visual so abstract ideas get a concrete picture.', success: 'Visual added. Dual coding helps recall.' },
-    { id: 'faq', phase: 'access', label: 'FAQ Generator', action: 'Generate an FAQ that answers the questions students actually ask.', success: 'FAQ ready.' },
-    { id: 'sentence-frames', phase: 'access', label: 'Writing Scaffolds', action: 'Create writing scaffolds and sentence frames to lower the writing bar.', success: 'Scaffolds ready. They free up working memory for ideas.' },
-    { id: 'note-taking', phase: 'participate', label: 'Note-Taking Templates', action: 'Build a note-taking template students fill in as they read.', success: 'Template ready.' },
-    { id: 'brainstorm', phase: 'participate', label: 'Brainstorm Activity Ideas', action: 'Brainstorm activity ideas tuned to this content.', success: 'Ideas generated. Pick what fits your class.' },
-    { id: 'persona', phase: 'participate', label: 'Interview Mode', action: 'Set up Interview Mode so students can question a historical or expert persona.', success: 'Interview ready. Great for perspective-taking.' },
-    { id: 'timeline', phase: 'participate', label: 'Sequence Builder', action: 'Build a sequence so students can order events or steps.', success: 'Sequence ready.' },
-    { id: 'concept-sort', phase: 'participate', label: 'Concept Sort', action: 'Create a Concept Sort to surface how students group ideas.', success: 'Concept Sort ready.' },
-    { id: 'dbq', phase: 'assess', label: 'Document-Based Question', action: 'Generate a Document-Based Question to push analysis with evidence.', success: 'DBQ ready.' },
-    { id: 'math', phase: 'participate', label: 'STEAM Lab', action: 'Open the STEAM Lab to explore a hands-on math or science tool.', success: 'STEAM Lab explored. Choose the tool that best fits your lesson.' },
-    { id: 'adventure', phase: 'participate', label: 'Adventure Mode', action: 'Turn the lesson into an Adventure students can play through.', success: 'Adventure ready.' },
-    { id: 'quiz', phase: 'assess', label: 'Assess', action: 'Create an assessment to check what stuck.', success: 'Assessment ready. Use it to plan tomorrow.' },
-    { id: 'alignment', phase: 'assess', label: 'Standards & UDL Alignment', action: 'Check Standards and UDL alignment so the lesson maps to your goals.', success: 'Alignment checked.' },
-    { id: 'lesson-plan', phase: 'organize', label: 'Lesson Plan', action: 'Generate a Lesson Plan that ties the pieces together.', success: 'Lesson plan ready.' },
-    { id: 'directions', phase: 'assign', label: 'Assignment Directions & Goals', action: 'Draft the student-facing steps, learning goal, due information, and success criteria. Read them once as a learner.', success: 'Directions reviewed. Students now know what to do and what success looks like.' },
-    { id: 'package-deliver', phase: 'deliver', label: 'Preview, Package & Deliver', action: 'Preview the learner experience, then choose the document, LMS package, QR, mailbox, project, or live-session route that fits this lesson.', success: 'Delivery path reviewed. Use one or more formats below, then continue to the final check.' },
-    { id: '_final', phase: 'finish', label: 'Review & Finish', action: 'Review what you created, revisit anything skipped, and finish when the lesson is ready to use.', success: 'All set. Nice work building this lesson.' },
-  ];
-  const GUIDED_PRESETS = [
-    { id: 'core-lesson', label: 'Build a core lesson', description: 'A balanced path from analysis through directions and delivery.', stepIds: ['analysis', 'glossary', 'simplified', 'image', 'quiz', 'lesson-plan', 'directions'] },
-    { id: 'reading-access', label: 'Adapt a reading', description: 'Analyze, simplify, add vocabulary and writing support, then assign it.', stepIds: ['analysis', 'glossary', 'simplified', 'outline', 'image', 'sentence-frames', 'quiz', 'lesson-plan', 'directions'] },
-    { id: 'assessment', label: 'Build an assessment', description: 'Create questions, evidence tasks, alignment, directions, and a delivery-ready package.', stepIds: ['analysis', 'faq', 'dbq', 'quiz', 'alignment', 'lesson-plan', 'directions'] },
-    { id: 'engagement', label: 'Boost engagement', description: 'Add visual, discussion, interactive, and game-based options, then assign and deliver.', stepIds: ['image', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'math', 'adventure', 'quiz', 'directions'] },
-    { id: 'take-home', label: 'Create take-home work', description: 'Build accessible independent work with directions, assessment, and a shareable delivery path.', stepIds: ['analysis', 'glossary', 'simplified', 'sentence-frames', 'quiz', 'lesson-plan', 'directions'] },
-    { id: 'complete', label: 'Complete lesson pack', description: 'Use every Guided Mode step, including assignment directions and delivery.', stepIds: null },
-  ];  const applyGuidedPreset = (preset) => {
+  // Static Guided Mode catalogs live in guided_mode_config_module.js. The ID/evidence
+  // allowlists and persistence normalizers above remain synchronous so the first React
+  // render can safely sanitize saved progress before the module-loader effect runs.
+  const _alloGuidedModeConfig = () => window.AlloModules && window.AlloModules.GuidedModeConfig;
+  const _guidedModeConfig = _alloGuidedModeConfig();
+  const guidedModeConfigReady = !!(_guidedModeConfig
+    && Array.isArray(_guidedModeConfig.GUIDED_PHASES)
+    && Array.isArray(_guidedModeConfig.GUIDED_DELIVERY_GROUPS)
+    && Array.isArray(_guidedModeConfig.GUIDED_STEPS)
+    && Array.isArray(_guidedModeConfig.GUIDED_PRESETS)
+    && _guidedModeConfig.GUIDED_TOUR_MAP && typeof _guidedModeConfig.GUIDED_TOUR_MAP === 'object');
+  const GUIDED_PHASES = guidedModeConfigReady ? _guidedModeConfig.GUIDED_PHASES : [];
+  const GUIDED_DELIVERY_GROUPS = guidedModeConfigReady ? _guidedModeConfig.GUIDED_DELIVERY_GROUPS : [];
+  const GUIDED_STEPS = guidedModeConfigReady ? _guidedModeConfig.GUIDED_STEPS : [];
+  const GUIDED_PRESETS = guidedModeConfigReady ? _guidedModeConfig.GUIDED_PRESETS : [];
+  const GUIDED_TOUR_MAP = guidedModeConfigReady ? _guidedModeConfig.GUIDED_TOUR_MAP : {};
+  const applyGuidedPreset = (preset) => {
     const ids = Array.isArray(preset?.stepIds) ? Array.from(new Set(['source-input', ...preset.stepIds, 'directions', 'package-deliver', '_final'])) : null;
     setGuidedSelectedIds(ids); setGuidedStep(0); setGuidedCompletedIds([]); setGuidedSkippedIds([]); setGuidedCreatedHistoryIds([]); setGuidedDeliveryEvidence({});
     setGuidedPlanBrief(normalizeGuidedPlanBrief(preset));
@@ -12169,32 +12134,7 @@ Return ONLY JSON:
       return () => clearTimeout(advanceTimer);
     }
   }, [guidedMode, guidedStep, inputText, guidedSelectedIds]);
-  const GUIDED_TOUR_MAP = {
-    'source-input': 'tour-input-panel',
-    'analysis': 'tour-tool-analysis',
-    'glossary': 'ui-tool-glossary',
-    'simplified': 'ui-tool-simplified',
-    'ui-tool-wordsounds': 'tour-tool-wordsounds',
-    'outline': 'tour-tool-outline',
-    'anchor-chart': 'tour-tool-anchor-chart',
-    'image': 'tour-tool-visual',
-    'faq': 'tour-tool-faq',
-    'sentence-frames': 'tour-tool-scaffolds',
-    'note-taking': 'tour-tool-note-taking',
-    'brainstorm': 'tour-tool-brainstorm',
-    'persona': 'tour-tool-persona',
-    'timeline': 'tour-tool-timeline',
-    'concept-sort': 'tour-tool-concept-sort',
-    'dbq': 'tour-tool-dbq',
-    'math': 'tour-tool-math',
-    'adventure': 'tour-tool-adventure',
-    'quiz': 'ui-tool-quiz',
-    'alignment': 'tour-tool-alignment',
-    'lesson-plan': 'tour-tool-lesson-plan',
-    'directions': 'tour-tool-directions',
-    'package-deliver': 'tour-tool-fullpack',
-    '_final': 'tour-tool-fullpack',
-  };
+
   // Hands-on guided tutorial: anchor the active step to its real tool — scroll it into
   // view, ring it, announce it, and notice when the teacher actually uses it (engaged).
   useEffect(() => {
@@ -12271,7 +12211,7 @@ Return ONLY JSON:
     // AlloIcons is populated synchronously during render, so it's a fast
     // no-op check. The hard ceiling guarantees we never hang forever; if it
     // fires, the pill communicates what is still missing.
-    const CORE_BOOT_MODULES = ['AppStyles', 'LiveAac', 'SharedActivity', 'LaunchPadView', 'MiscComponents', 'UtilsPure', 'SidebarTabsNav', 'HistoryPanel'];
+    const CORE_BOOT_MODULES = ['AppStyles', 'LiveAac', 'SharedActivity', 'LaunchPadView', 'MiscComponents', 'UtilsPure', 'SidebarTabsNav', 'HistoryPanel', 'GuidedModeConfig'];
     let splashAutoRetried = false;
     const readinessInterval = setInterval(() => {
       const elapsed = Date.now() - startTs;
@@ -13959,6 +13899,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=1');
     loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=1');
     loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=1');
+    loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=1');
     loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=4b27a096b');
     loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=4b27a096b');
     loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=4b27a096b');
@@ -47778,7 +47719,17 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             style={{ width: isWide ? `${leftWidth}%` : '100%', height: '100%' }}
         >
           {isTeacherMode && <SidebarTabsNav activeSidebarTab={activeSidebarTab} handleSetActiveSidebarTabToCreate={handleSetActiveSidebarTabToCreate} isHistoryPulsing={isHistoryPulsing} setActiveSidebarTab={setActiveSidebarTab} setIsHistoryPulsing={setIsHistoryPulsing} t={t} />}
-          {guidedMode && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} applyGuidedPlanToRemaining={applyGuidedPlanToRemaining} generateGuidedPlanFromGoal={generateGuidedPlanFromGoal} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print')} createGuidedHomeworkShare={createGuidedHomeworkShare} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!latestStudentPreviewShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={guidedDeliveryEvidence} guidedPlanBrief={guidedPlanBrief} guidedAdvanceNotice={guidedAdvanceNotice} clearGuidedAdvanceNotice={() => setGuidedAdvanceNotice(null)} undoGuidedAutoAdvance={undoGuidedAutoAdvance} guidedNavigationUndo={guidedNavigationUndo} undoGuidedNavigation={undoGuidedNavigation} clearGuidedNavigationUndo={() => setGuidedNavigationUndo(null)} guidedStepCostNote={guidedStepCostNote} guidedSettingsSummary={guidedSettingsSummary} openUniversalSettings={openUniversalSettings} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} guidedProgressSaveState={guidedProgressSaveState} retryGuidedProgressSave={retryGuidedProgressSave} openGuidedProjectBackup={history.length > 0 ? initiateSaveTeacherProject : null} />}
+          {guidedMode && !guidedModeConfigReady && (
+            <section role="status" aria-live="polite" aria-labelledby="guided-config-recovery-title" className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 text-slate-800 shadow-sm">
+              <h2 id="guided-config-recovery-title" className="text-sm font-black">Guided Mode needs one more tool</h2>
+              <p className="mt-1 text-xs leading-relaxed">Your saved progress is unchanged. Retry the Guided Mode setup, or exit and continue in the full workspace.</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button type="button" onClick={() => { try { window.__alloRetryFailedModules?.(); } catch (_) {} }} className="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700">Retry loading</button>
+                <button type="button" onClick={handleExitGuidedMode} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs font-bold hover:bg-slate-50">Exit Guided Mode</button>
+              </div>
+            </section>
+          )}
+          {guidedMode && guidedModeConfigReady && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} applyGuidedPlanToRemaining={applyGuidedPlanToRemaining} generateGuidedPlanFromGoal={generateGuidedPlanFromGoal} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print')} createGuidedHomeworkShare={createGuidedHomeworkShare} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!latestStudentPreviewShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={guidedDeliveryEvidence} guidedPlanBrief={guidedPlanBrief} guidedAdvanceNotice={guidedAdvanceNotice} clearGuidedAdvanceNotice={() => setGuidedAdvanceNotice(null)} undoGuidedAutoAdvance={undoGuidedAutoAdvance} guidedNavigationUndo={guidedNavigationUndo} undoGuidedNavigation={undoGuidedNavigation} clearGuidedNavigationUndo={() => setGuidedNavigationUndo(null)} guidedStepCostNote={guidedStepCostNote} guidedSettingsSummary={guidedSettingsSummary} openUniversalSettings={openUniversalSettings} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} guidedProgressSaveState={guidedProgressSaveState} retryGuidedProgressSave={retryGuidedProgressSave} openGuidedProjectBackup={history.length > 0 ? initiateSaveTeacherProject : null} />}
           {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} />}
           {isTeacherMode && activeSidebarTab === 'create' && (
           <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
@@ -53277,6 +53228,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         TC = window.AlloModules && window.AlloModules.TutorialCompiler;
                     }
                     if (!TC || typeof TC.buildTutorialManifest !== 'function') throw new Error('The tutorial compiler is still loading - wait a moment and try again.');
+                    if (!guidedModeConfigReady) throw new Error('Guided Mode setup is still loading - retry the failed module and try again.');
                     const manifest = TC.buildTutorialManifest(GUIDED_STEPS, GUIDED_TOUR_MAP, t, { only: ['source-input', 'simplified'], wpm: 150 });
                     return { generatedFrom: manifest.generatedFrom, steps: manifest.steps };
                 },
