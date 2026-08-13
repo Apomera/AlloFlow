@@ -354,9 +354,12 @@ function LaunchPadView(props) {
             .lp-mode-grid .lp-card { min-height: 178px; padding: 24px 54px 22px 22px; }
             .lp-mode-grid .lp-card[data-emphasis="recommended"] { background: linear-gradient(145deg, rgba(55,48,163,.86), rgba(30,41,82,.96)); border-color: rgba(165,180,252,.62); box-shadow: inset 0 1px 0 rgba(255,255,255,.13), 0 18px 46px rgba(49,46,129,.28); }
             .lp-direct-grid .lp-card { min-height: 104px; padding: 18px 50px 18px 18px; display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: center; gap: 13px; box-shadow: inset 0 1px 0 rgba(255,255,255,.045), 0 10px 26px rgba(2,6,23,.15); }
-            .lp-card-icon { display: inline-grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(165,180,252,.24); border-radius: 13px; color: #c7d2fe; background: rgba(99,102,241,.14); }
+            .lp-card-icon { display: inline-grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(165,180,252,.24); border-radius: 13px; color: #c7d2fe; background: rgba(99,102,241,.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 8px 18px rgba(2,6,23,.14); transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease; }
             .lp-mode-grid .lp-card-icon { width: 46px; height: 46px; margin-bottom: 18px; border-radius: 14px; }
             .lp-card[data-emphasis="recommended"] .lp-card-icon { color: #fff7d6; border-color: rgba(253,230,138,.33); background: rgba(253,230,138,.12); }
+            .lp-card[data-pathway="full"] .lp-card-icon { color: #bae6fd; border-color: rgba(125,211,252,.3); background: rgba(14,165,233,.11); }
+            .lp-card[data-pathway="learning"] .lp-card-icon { color: #a7f3d0; border-color: rgba(110,231,183,.3); background: rgba(16,185,129,.11); }
+            .lp-card[data-pathway="educator"] .lp-card-icon { color: #ddd6fe; border-color: rgba(196,181,253,.3); background: rgba(139,92,246,.11); }
             .lp-card-title { display: block; color: #f8fafc; font-size: 17px; font-weight: 820; line-height: 1.25; letter-spacing: -.2px; }
             .lp-card-desc { display: block; color: #c3cede; font-size: 11px; line-height: 1.55; margin-top: 6px; }
             .lp-direct-copy { min-width: 0; padding-right: 4px; }
@@ -367,6 +370,7 @@ function LaunchPadView(props) {
             @media (hover: hover) {
               .lp-card:hover { transform: translateY(-2px); background: rgba(27,38,63,.98); border-color: rgba(165,180,252,.48); box-shadow: inset 0 1px 0 rgba(255,255,255,.075), 0 18px 42px rgba(2,6,23,.28); }
               .lp-card:hover::after { transform: translate(3px, -50%); color: #fde68a; }
+              .lp-card:hover .lp-card-icon { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 10px 22px rgba(2,6,23,.2); }
             }
             .lp-card:focus-visible { outline: 3px solid #facc15; outline-offset: 4px; background: rgba(30,41,67,.98); border-color: rgba(255,255,255,0.65); box-shadow: 0 0 0 2px #1e1b4b; }
             .lp-card:active { transform: translateY(0) scale(.995); }
@@ -452,7 +456,7 @@ function LaunchPadView(props) {
               aria-disabled={isTranslating}
               style={{ opacity: isTranslating ? 0.6 : 1, cursor: isTranslating ? 'wait' : 'pointer' }}
             >
-              <LaunchPadIcon name="Globe2" size={15} strokeWidth={2} />
+              <LaunchPadIcon name="Globe" size={15} strokeWidth={2} />
               <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lpCurrentLabel()}</span>
               <LaunchPadIcon name={langMenuOpen ? 'ChevronUp' : 'ChevronDown'} size={13} strokeWidth={2.2} />
             </button>
@@ -512,14 +516,14 @@ function LaunchPadView(props) {
           <div className="lp-grid lp-mode-grid">
             {/* setGuidedMode(false) is not redundant: a restored workspace can arrive
                 with guided mode already on, and Full Platform is a non-guided choice. */}
-            <button type="button" className="lp-card" data-emphasis="recommended" aria-labelledby="launch-pad-guided-title" aria-describedby="launch-pad-guided-badge launch-pad-guided-desc" onClick={() => { setHasSelectedMode(true); setGuidedMode(true); }}>
+            <button type="button" className="lp-card" data-emphasis="recommended" data-pathway="guided" aria-labelledby="launch-pad-guided-title" aria-describedby="launch-pad-guided-badge launch-pad-guided-desc" onClick={() => { setHasSelectedMode(true); setGuidedMode(true); }}>
               <span id="launch-pad-guided-badge" className="lp-mode-badge"><span className="lp-badge">{copy('launch_pad.badge_recommended', 'Recommended')}</span></span>
-              <LaunchPadIcon className="lp-card-icon" name="Compass" fallback="G" size={24} />
+              <LaunchPadIcon className="lp-card-icon" name="ListChecks" size={24} />
               <span id="launch-pad-guided-title" className="lp-card-title">{guidedTitle}</span>
               <span id="launch-pad-guided-desc" className="lp-card-desc">{guidedDesc}</span>
             </button>
-            <button type="button" className="lp-card" data-emphasis="standard" aria-labelledby="launch-pad-full-title" aria-describedby="launch-pad-full-desc" onClick={() => { setHasSelectedMode(true); setGuidedMode(false); }}>
-              <LaunchPadIcon className="lp-card-icon" name="LayoutDashboard" fallback="F" size={24} />
+            <button type="button" className="lp-card" data-emphasis="standard" data-pathway="full" aria-labelledby="launch-pad-full-title" aria-describedby="launch-pad-full-desc" onClick={() => { setHasSelectedMode(true); setGuidedMode(false); }}>
+              <LaunchPadIcon className="lp-card-icon" name="Layout" size={24} />
               <span id="launch-pad-full-title" className="lp-card-title">{fullTitle}</span>
               <span id="launch-pad-full-desc" className="lp-card-desc">{fullDesc}</span>
             </button>
@@ -532,16 +536,16 @@ function LaunchPadView(props) {
               <p className="lp-section-copy">{copy('launch_pad.direct_desc', 'Jump straight to a focused collection without opening the full workspace first.')}</p>
             </div>
             <div className="lp-direct-grid">
-            <button type="button" className="lp-card" aria-labelledby="launch-pad-learning-title" aria-describedby="launch-pad-learning-badge launch-pad-learning-desc" onClick={() => { setShowLearningHub(true); setIsTeacherMode(false); setShowWizard(false); setHasSelectedRole(true); setHasSelectedMode(true); }}>
-              <LaunchPadIcon className="lp-card-icon" name="Shapes" fallback="L" size={22} />
+            <button type="button" className="lp-card" data-pathway="learning" aria-labelledby="launch-pad-learning-title" aria-describedby="launch-pad-learning-badge launch-pad-learning-desc" onClick={() => { setShowLearningHub(true); setIsTeacherMode(false); setShowWizard(false); setHasSelectedRole(true); setHasSelectedMode(true); }}>
+              <LaunchPadIcon className="lp-card-icon" name="Backpack" size={22} />
               <span className="lp-direct-copy">
                 <span id="launch-pad-learning-title" className="lp-card-title">{learningToolsTitle}</span>
                 <span id="launch-pad-learning-desc" className="lp-card-desc">{learningToolsDesc}</span>
                 <span id="launch-pad-learning-badge" className="lp-direct-badge"><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #047857, #065f46)' }}>{copy('launch_pad.badge_3_tools', '8 Tools')}</span></span>
               </span>
             </button>
-            <button type="button" className="lp-card" aria-labelledby="launch-pad-educator-title" aria-describedby="launch-pad-educator-badge launch-pad-educator-desc" onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if ((typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key)) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }}>
-              <LaunchPadIcon className="lp-card-icon" name="GraduationCap" fallback="E" size={23} />
+            <button type="button" className="lp-card" data-pathway="educator" aria-labelledby="launch-pad-educator-title" aria-describedby="launch-pad-educator-badge launch-pad-educator-desc" onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if ((typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key)) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }}>
+              <LaunchPadIcon className="lp-card-icon" name="GraduationCap" size={22} />
               <span className="lp-direct-copy">
                 <span id="launch-pad-educator-title" className="lp-card-title">{educatorToolsTitle}</span>
                 <span id="launch-pad-educator-desc" className="lp-card-desc">{educatorToolsDesc}</span>
@@ -553,7 +557,7 @@ function LaunchPadView(props) {
           <section className="lp-voice-setup" aria-labelledby="launch-pad-offline-voice-title">
             <details className="lp-voice-disclosure">
             <summary id="launch-pad-offline-voice-title">
-              <span className="lp-voice-summary-copy"><LaunchPadIcon name="SlidersHorizontal" size={16} />{copy('launch_pad.voice_device_title', 'Voice & device setup')}</span>
+              <span className="lp-voice-summary-copy"><LaunchPadIcon name="Settings2" size={16} />{copy('launch_pad.voice_device_title', 'Voice & device setup')}</span>
               <span className="lp-voice-summary-meta">{voiceAccessActive ? copy('launch_pad.voice_access_active_short', 'Voice active') : copy('launch_pad.optional_label', 'Optional')}</span>
             </summary>
             <div className="lp-setup-panel">
@@ -561,7 +565,7 @@ function LaunchPadView(props) {
                 <>
                 <div className="lp-mic-panel">
                   <div className="lp-mic-title-row">
-                    <span className="lp-mic-icon"><LaunchPadIcon name="Mic2" size={18} /></span>
+                    <span className="lp-mic-icon"><LaunchPadIcon name="Mic" size={18} /></span>
                     <div>
                       <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: '0 0 2px' }}>
                         {copy('launch_pad.voice_access_title', 'Voice Access')}
@@ -594,7 +598,7 @@ function LaunchPadView(props) {
                         boxShadow: '0 4px 20px rgba(99,102,241,0.4)',
                       }}
                     >
-                      <LaunchPadIcon name={voiceAccessStarting ? 'LoaderCircle' : voiceAccessActive ? 'CircleCheck' : 'Mic2'} size={15} />{voiceAccessButtonText}
+                      <LaunchPadIcon name={voiceAccessStarting ? 'Loader2' : voiceAccessActive ? 'CheckCircle2' : 'Mic'} size={15} />{voiceAccessButtonText}
                     </button>
                     <button
                       type="button"
@@ -623,7 +627,7 @@ function LaunchPadView(props) {
               </div>
               <div className="lp-voice-grid">
                 <div className="lp-voice-option">
-                  <div><strong className="lp-voice-option-title"><LaunchPadIcon name="Mic2" size={15} />Whisper speech recognition</strong><span id="launch-pad-whisper-desc" style={{ display: 'block', color: '#e0e7ff', fontSize: '10px', lineHeight: 1.5, marginTop: '3px' }}>Improves private, offline-capable voice input after the model is ready.</span></div>
+                  <div><strong className="lp-voice-option-title"><LaunchPadIcon name="Mic" size={15} />Whisper speech recognition</strong><span id="launch-pad-whisper-desc" style={{ display: 'block', color: '#e0e7ff', fontSize: '10px', lineHeight: 1.5, marginTop: '3px' }}>Improves private, offline-capable voice input after the model is ready.</span></div>
                   <button type="button" className="lp-download-button" aria-describedby="launch-pad-whisper-desc" aria-busy={voiceSetup.whisper.phase === 'loading'} disabled={voiceSetup.whisper.phase === 'loading' || voiceSetup.whisper.phase === 'ready'} onClick={downloadWhisperFromLaunchPad}>{voiceSetup.whisper.phase === 'ready' ? '✓ Whisper ready' : voiceSetup.whisper.phase === 'loading' ? (voiceSetup.whisper.progress == null ? 'Preparing Whisper…' : 'Downloading Whisper · ' + voiceSetup.whisper.progress + '%') : voiceSetup.whisper.phase === 'error' ? 'Retry Whisper download' : 'Download Whisper'}</button>
                 </div>
                 <div className="lp-voice-option">

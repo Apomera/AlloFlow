@@ -20,7 +20,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execFileSync, execSync } = require('child_process');
 const { createHash } = require('crypto');
 
 // ── Parse CLI args ──────────────────────────────────────────────
@@ -548,6 +548,11 @@ const MODULES = [
     {
         name: 'WordSoundsModal',
         filename: 'word_sounds_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'MailboxScriptSource',
+        filename: 'mailbox_script_source_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -1658,6 +1663,13 @@ const COMPILE_PAIRS = [
         wrap(src) { return require('./_build_guided_mode_config_module.js').buildGuidedModeConfigModule(src); },
     },
     {
+        name: 'MailboxScriptSource',
+        srcPath: path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'),
+        modPath: path.join(ROOT, 'mailbox_script_source_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'mailbox_script_source_module.js'),
+        wrap(src) { return require('./_build_mailbox_script_source_module.js').buildMailboxScriptSourceModule(src); },
+    },
+    {
         name: 'VideoRefPlayer',
         srcPath: path.join(ROOT, 'view_video_ref_player_source.jsx'),
         modPath: path.join(ROOT, 'view_video_ref_player_module.js'),
@@ -1735,6 +1747,18 @@ function compileSources() {
     return results;
 }
 
+function syncMailboxScriptArtifacts() {
+    try {
+        execFileSync(process.execPath, [path.join(ROOT, 'dev-tools', 'embed_mailbox_script.cjs')], {
+            cwd: ROOT,
+            stdio: 'inherit',
+        });
+    } catch (error) {
+        console.error('Mailbox script source synchronization failed: ' + error.message);
+        process.exit(1);
+    }
+}
+
 // Publish the postbuild output into the Cloudflare Pages public tree without
 // duplicating the hundreds of megabytes of teaching assets already served there.
 if (hasFlag('copy-student-shell')) {
@@ -1746,6 +1770,9 @@ if (hasFlag('copy-student-shell')) {
         process.exit(1);
     }
 }
+// Keep the generated module, verified inline fallback, and public source mirror
+// synchronized with canonical Code.gs before every compile or application build.
+syncMailboxScriptArtifacts();
 // Standalone compile mode — run just the compilation step and exit.
 if (args.includes('--compile')) {
     console.log('── Compiling source modules ──');

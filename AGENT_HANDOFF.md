@@ -491,3 +491,10 @@ Recent validation from the desktop work:
 - Root owns only `AlloFlowANTI.txt`, shell-focused tests, final generation, and validation. Launch Pad and sidebar-panel work remain isolated in their extracted source/build lanes.
 - The separate Test Prep dataset generator is actively rewriting `test_prep/` and public mirrors; this pass must not edit, restore, stage, or otherwise interfere with those files.
 - Preserve all mode pathways, Guided targets/progress, voice/device setup, translations, accessibility behavior, and existing tool handlers.
+
+### 2026-08-13 - AlloFlow size extraction, Launch Pad icons, and module-order repair (Codex /root)
+- Approved scope: safely reduce `AlloFlowANTI.txt`, replace Launch Pad fallback initials with coherent registered icons, and resolve the attached BehaviorLens dependency-order errors.
+- Root owns `AlloFlowANTI.txt`, `build.js`, the new mailbox-script module/builder/tests, BehaviorLens loader tests, central generation, and final validation.
+- Launch Pad lane owns only `view_launch_pad_source.jsx`, its generated root/public module pair, and focused Launch Pad tests; it must not run `build.js` or edit the canonical shell.
+- The extraction target is the byte-identical embedded `apps_script/session_mailbox/Code.gs` payload because it is isolated from authoring, Guided Mode, generation, and saved-project state. Preserve a clear unavailable/retry path rather than copying an empty string.
+- Do not touch Test Prep, unrelated Mind Map/STEM drift, stage, commit, or deploy.

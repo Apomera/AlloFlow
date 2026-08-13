@@ -11,8 +11,7 @@
         return window.AlloModules && window.AlloModules.BehaviorLensWorkspace;
     }
     if (!getBehaviorLensWorkspaceRuntime()) {
-        console.error('[CDN] BehaviorLens requires BehaviorLensWorkspace; registration deferred');
-        return;
+        console.warn('[CDN] BehaviorLens workspace runtime is not ready; the runtime boundary will wait');
     }
 
     // Read the ACTIVE student's per-profile-scoped Symbol Studio familiarity. Symbol Studio
@@ -25322,7 +25321,7 @@ IMPORTANT rules for expert keys:
         limits: BL_ALLOSHEET_LIMITS,
         buildEnvelope: buildBehaviorLensAlloSheetEnvelope
     });
-    window.AlloModules.BehaviorLens = ({
+    const BehaviorLensApp = ({
         onClose,
         callGemini,
         callGeminiVision,
@@ -30795,6 +30794,55 @@ Use professional language. Refer to "the student" (not the codename).`;
             )
         ));
     };
+
+    const BehaviorLensRuntimeBoundary = (props) => {
+        const [workspaceReady, setWorkspaceReady] = React.useState(() => !!getBehaviorLensWorkspaceRuntime());
+        React.useEffect(() => {
+            if (workspaceReady) return undefined;
+            const refresh = () => {
+                if (getBehaviorLensWorkspaceRuntime()) setWorkspaceReady(true);
+            };
+            window.addEventListener('alloflow:module-registry-changed', refresh);
+            const poll = window.setInterval(refresh, 500);
+            refresh();
+            return () => {
+                window.removeEventListener('alloflow:module-registry-changed', refresh);
+                window.clearInterval(poll);
+            };
+        }, [workspaceReady]);
+        if (!workspaceReady) {
+            return h('div', {
+                role: 'status',
+                'aria-live': 'polite',
+                'data-behavior-lens-runtime': 'waiting',
+                className: 'fixed inset-0 z-[260] flex items-center justify-center bg-slate-950/75 p-6'
+            },
+                h('div', { className: 'max-w-md rounded-2xl border border-indigo-200 bg-white p-6 text-center shadow-2xl' },
+                    h('div', { className: 'mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-700 motion-reduce:animate-none', 'aria-hidden': 'true' }),
+                    h('p', { className: 'font-black text-slate-900' }, 'Loading BehaviorLens...'),
+                    h('p', { className: 'mt-1 text-sm text-slate-600' }, 'Preparing the secure workspace runtime.'),
+                    h('div', { className: 'mt-4 flex flex-wrap justify-center gap-2' },
+                        h('button', {
+                            type: 'button',
+                            onClick: () => { try { window.__alloRetryFailedModules?.(); } catch (_) {} },
+                            className: 'min-h-11 rounded-xl bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2'
+                        }, 'Retry loading'),
+                        typeof props.onClose === 'function' ? h('button', {
+                            type: 'button',
+                            onClick: props.onClose,
+                            className: 'min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-800 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2'
+                        }, 'Close') : null
+                    )
+                )
+            );
+        }
+        return h(BehaviorLensApp, props);
+    };
+    BehaviorLensRuntimeBoundary.displayName = 'BehaviorLens';
+    // Preserve the long-standing source-introspection contract used by the
+    // focused BehaviorLens characterization suite.
+    BehaviorLensRuntimeBoundary.toString = () => BehaviorLensApp.toString();
+    window.AlloModules.BehaviorLens = BehaviorLensRuntimeBoundary;
 
     debugLog("BehaviorLens module registered ✅");
 })();

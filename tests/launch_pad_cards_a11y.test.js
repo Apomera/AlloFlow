@@ -21,6 +21,28 @@ describe('Launch-pad primary mode card accessibility', () => {
     expect(source).toContain('aria-hidden="true" focusable="false"');
   });
 
+  it('uses registered pathway and utility icons without visible letter fallbacks', () => {
+    for (const name of ['ListChecks', 'Layout', 'Backpack', 'GraduationCap']) {
+      expect(source).toContain('className="lp-card-icon" name="' + name + '"');
+    }
+    for (const missingAlias of ['Compass', 'LayoutDashboard', 'Shapes', 'Globe2', 'SlidersHorizontal', 'Mic2', 'LoaderCircle', 'CircleCheck']) {
+      expect(source).not.toContain('name="' + missingAlias + '"');
+      expect(source).not.toContain("'" + missingAlias + "'");
+    }
+    expect(source).not.toMatch(/fallback="[FGLE]"/);
+    expect(source).toContain("voiceAccessStarting ? 'Loader2' : voiceAccessActive ? 'CheckCircle2' : 'Mic'");
+  });
+
+  it('gives each pathway a restrained icon accent without changing card semantics', () => {
+    for (const pathway of ['guided', 'full', 'learning', 'educator']) {
+      expect(source).toContain('data-pathway="' + pathway + '"');
+    }
+    expect(source).toContain('.lp-card[data-pathway="full"] .lp-card-icon');
+    expect(source).toContain('.lp-card[data-pathway="learning"] .lp-card-icon');
+    expect(source).toContain('.lp-card[data-pathway="educator"] .lp-card-icon');
+    expect(source).toContain('.lp-card:hover .lp-card-icon');
+  });
+
   it('uses a calm two-tier hierarchy without changing any pathway callbacks', () => {
     const guided = source.indexOf('data-emphasis="recommended"');
     const full = source.indexOf('data-emphasis="standard"');

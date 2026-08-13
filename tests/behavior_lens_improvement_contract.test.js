@@ -75,7 +75,9 @@ describe('Behavior Lens improvement contracts', () => {
 
   it('extracts bounded workspace normalization into the focused runtime', () => {
     expect(source).not.toContain('function createBehaviorLensHydrationGuard');
-    expect(source).toContain('BehaviorLens requires BehaviorLensWorkspace');
+    expect(source).not.toContain('BehaviorLens requires BehaviorLensWorkspace');
+    expect(source).toContain('const BehaviorLensRuntimeBoundary = (props) =>');
+    expect(source).toContain("'data-behavior-lens-runtime': 'waiting'");
     const normalized = workspaceRuntime.normalizeWorkspace({
       abcEntries: Array.from({ length: 5002 }, (_, index) => ({ index })),
       observationSessions: Array.from({ length: 1002 }, (_, index) => ({ index })),
