@@ -15,7 +15,7 @@ import { readFileSync } from 'node:fs';
 
 let S;
 beforeAll(() => {
-  const src = readFileSync('AlloFlowANTI.txt', 'utf8');
+  const src = readFileSync('shared_activity_source.jsx', 'utf8');
   const names = [
     'alloNormalizeCredentialStore',
     'alloCredentialSlotKey',
@@ -26,7 +26,7 @@ beforeAll(() => {
   // Lift just the helpers out of the monolith by brace matching.
   const parts = names.map((name) => {
     const start = src.indexOf(`function ${name}(`);
-    if (start < 0) throw new Error(`${name} not found in AlloFlowANTI.txt`);
+    if (start < 0) throw new Error(`${name} not found in shared_activity_source.jsx`);
     let depth = 0, seen = false, end = -1;
     for (let i = src.indexOf('{', start); i < src.length; i++) {
       if (src[i] === '{') { depth++; seen = true; }
@@ -144,14 +144,16 @@ describe('two people on one device', () => {
   });
 });
 
-describe('the monolith actually uses it', () => {
+describe('the extracted panel actually uses it', () => {
   it('ensureCredential reads the active slot, not a bare credential', () => {
+    const panel = readFileSync('shared_activity_source.jsx', 'utf8');
+    expect(panel).toContain('const saved = alloActiveCredential(localStorage.getItem(storageKey));');
+    expect(panel).not.toContain("const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');");
+    expect(panel).toContain('const startNewRespondent = React.useCallback(');
     for (const f of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
-      const src = readFileSync(f, 'utf8');
-      expect(src, f).toContain('const saved = alloActiveCredential(localStorage.getItem(storageKey));');
-      // The old shape would silently reintroduce the overwrite bug.
-      expect(src, f).not.toContain("const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');");
-      expect(src, f).toContain('const startNewRespondent = React.useCallback(');
+      const host = readFileSync(f, 'utf8');
+      expect(host, f).toContain("loadModule('SharedActivity'");
+      expect(host, f).toContain('_alloSharedActivityModule().SharedAssignmentActivityPanel');
     }
   });
 });

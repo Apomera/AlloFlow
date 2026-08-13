@@ -395,62 +395,47 @@ describe('the k-anonymity floor is enforced by the SERVER, not the view', () => 
 
 describe('the board is actually reachable from the app', () => {
     const read = p => fs.readFileSync(path.join(ROOT, p), 'utf8');
-    const COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
+    const panelSource = read('shared_activity_source.jsx');
+    const HOST_COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
 
-    it('mounts a board panel from the shared activity panel, in BOTH copies', () => {
-        for (const p of COPIES) {
-            const anti = read(p);
-            expect(anti, p).toContain('const AlloQuestionBoardPanel = React.memo(');
-            expect(anti, p).toContain('if (isQuestionBoard) {');
-            expect(anti, p).toContain('<AlloQuestionBoardPanel activity={activity}');
+    it('mounts a board panel from the extracted shared activity panel and both hosts load it', () => {
+        expect(panelSource).toContain('const AlloQuestionBoardPanel = React.memo(');
+        expect(panelSource).toContain('if (isQuestionBoard) {');
+        expect(panelSource).toContain('<AlloQuestionBoardPanel activity={activity}');
+        for (const p of HOST_COPIES) {
+            const host = read(p);
+            expect(host, p).toContain("loadModule('SharedActivity'");
+            expect(host, p).toContain('Shared activity tools are still loading.');
+            expect(host, p).not.toContain('const AlloQuestionBoardPanel = React.memo(');
         }
     });
 
     it('branches AFTER every hook, so switching activity type cannot reorder hooks', () => {
-        for (const p of COPIES) {
-            const anti = read(p);
-            const panelStart = anti.indexOf('const SharedAssignmentActivityPanel = React.memo(');
-            const branch = anti.indexOf('if (isQuestionBoard) {', panelStart);
-            expect(branch, p).toBeGreaterThan(panelStart);
-            // No hook may appear anywhere AFTER the early return, through to the
-            // end of the component. Stopping at the next `return (` would be
-            // vacuous — the branch contains one of its own 27 characters later,
-            // so that window was 27 characters wide and could never fail.
-            const componentEnd = anti.indexOf(String.fromCharCode(10) + '});', branch);
-            const tail = anti.slice(branch, componentEnd);
-            expect(tail.length, p).toBeGreaterThan(5000);   // the probe sees the real tail
-            expect(tail.match(/React\.use[A-Z]/g), p).toBeNull();
-        }
+        const panelStart = panelSource.indexOf('const SharedAssignmentActivityPanel = React.memo(');
+        const branch = panelSource.indexOf('if (isQuestionBoard) {', panelStart);
+        expect(branch).toBeGreaterThan(panelStart);
+        const componentEnd = panelSource.indexOf(String.fromCharCode(10) + '});', branch);
+        const tail = panelSource.slice(branch, componentEnd);
+        expect(tail.length).toBeGreaterThan(5000);
+        expect(tail.match(/React\.use[A-Z]/g)).toBeNull();
     });
 
-    it('keeps its JSX OUT of the region evaluated as plain JS', () => {
-        // class_mailbox.test.js slices ANTI between these two markers and runs
-        // it through new Function(). A JSX component inside that window stops
-        // the slice parsing — which is exactly what happened.
-        for (const p of COPIES) {
-            const anti = read(p);
-            const start = anti.indexOf('function _alloNormalizeSharedRatingActivity(value)');
-            const end = anti.indexOf('const SharedAssignmentActivityPanel', start);
-            expect(anti.slice(start, end).includes('AlloQuestionBoardPanel'), p).toBe(false);
-        }
+    it('keeps pure helpers before JSX panels for direct deterministic tests', () => {
+        const start = panelSource.indexOf('function _alloNormalizeSharedRatingActivity(value)');
+        const end = panelSource.indexOf('const SharedAssignmentActivityPanel', start);
+        expect(start).toBeGreaterThan(-1);
+        expect(end).toBeGreaterThan(start);
+        expect(panelSource.slice(start, end).includes('AlloQuestionBoardPanel')).toBe(false);
     });
 
-    it('gives the board its own label and dialog id rather than the word cloud\'s', () => {
-        for (const p of COPIES) {
-            expect(read(p), p).toContain("shared-assignment-question-board-title");
-            expect(read(p), p).toContain("title: 'Driving questions board'");
-        }
+    it("gives the board its own label and dialog id rather than the word cloud's", () => {
+        expect(panelSource).toContain('shared-assignment-question-board-title');
+        expect(panelSource).toContain("title: 'Driving questions board'");
     });
 
     it('asks the student for a name, because nothing upstream supplies one', () => {
-        // The server stores a display name and the teacher surface shows it. If
-        // the client never collects one, that whole path is dead and every
-        // question reads as anonymous.
-        for (const p of COPIES) {
-            const anti = read(p);
-            expect(anti, p).toContain("localStorage.setItem('allo_display_name'");
-            expect(anti, p).toContain('transport.setDisplayName(displayName)');
-        }
+        expect(panelSource).toContain("localStorage.setItem('allo_display_name'");
+        expect(panelSource).toContain('transport.setDisplayName(displayName)');
     });
 });
 

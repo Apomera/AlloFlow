@@ -63,7 +63,7 @@ describe('module readiness loader', () => {
     });
 
     it('splash holds for the curated core set with the existing hard ceiling', () => {
-        expect(anti).toMatch(/CORE_BOOT_MODULES = \['AppStyles', 'LiveAac', 'LaunchPadView', 'MiscComponents', 'UtilsPure', 'SidebarTabsNav', 'HistoryPanel'\]/);
+        expect(anti).toMatch(/CORE_BOOT_MODULES = \['AppStyles', 'LiveAac', 'SharedActivity', 'LaunchPadView', 'MiscComponents', 'UtilsPure', 'SidebarTabsNav', 'HistoryPanel'\]/);
         expect(anti).toMatch(/window\.__alloModuleReady\(CORE_BOOT_MODULES\)/);
         expect(anti).toMatch(/MAX_WAIT_MS = 15000/);
     });

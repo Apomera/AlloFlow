@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+const sharedActivitySource = fs.readFileSync(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
 const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
 const headerSource = fs.readFileSync(path.join(ROOT, 'view_header_source.jsx'), 'utf8');
 
@@ -705,16 +706,16 @@ describe('ANTI wiring pins', () => {
     });
 
     it('keeps the shared Word Cloud poll loop stable while students type and renders safe ASCII fallbacks', () => {
-        expect(anti).toContain('setTerm(current => current || result.own.text)');
-        expect(anti).toContain('[activityId, activityScope, admin, applySharedActivitySummary, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId]);');
-        expect(anti).toContain('const requestSequence = ++requestSequenceRef.current;');
-        expect(anti).toContain('_alloNextSharedActivitySummaryOrder');
-        expect(anti).not.toContain('mailboxUrl, packId, term]);');
-        expect(anti).toContain('item.count > 1 ? ` x${item.count}`');
-        expect(anti).toContain("shortLabel: 'WC', title: 'Class word cloud'");
-        expect(anti).not.toContain('<span aria-hidden="true">??</span> Class word cloud');
-        expect(anti).toContain('const refreshed = await refresh({ quiet: true })');
-        expect(anti).toContain('That change saved, but the moderation list could not refresh.');
+        expect(sharedActivitySource).toContain('setTerm(current => current || result.own.text)');
+        expect(sharedActivitySource).toContain('[activityId, activityScope, admin, applySharedActivitySummary, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId]);');
+        expect(sharedActivitySource).toContain('const requestSequence = ++requestSequenceRef.current;');
+        expect(sharedActivitySource).toContain('_alloNextSharedActivitySummaryOrder');
+        expect(sharedActivitySource).not.toContain('mailboxUrl, packId, term]);');
+        expect(sharedActivitySource).toContain('item.count > 1 ? ` x${item.count}`');
+        expect(sharedActivitySource).toContain("shortLabel: 'WC', title: 'Class word cloud'");
+        expect(sharedActivitySource).not.toContain('<span aria-hidden="true">??</span> Class word cloud');
+        expect(sharedActivitySource).toContain('const refreshed = await refresh({ quiet: true })');
+        expect(sharedActivitySource).toContain('That change saved, but the moderation list could not refresh.');
         expect(anti).toContain('sharedActivities: sharedActivities.length ? sharedActivities : undefined');
         expect(anti).toContain('activities: built.sharedActivities');
         expect(anti).toContain('sharedActivity: built.sharedActivities[0] || null');
@@ -726,12 +727,12 @@ describe('ANTI wiring pins', () => {
     });
 
     it('normalizes and labels shared ratings at runtime and keeps them in the existing activity surface', () => {
-        const start = anti.indexOf('function _alloNormalizeSharedRatingActivity(value)');
-        const end = anti.indexOf('const SharedAssignmentActivityPanel', start);
+        const start = sharedActivitySource.indexOf('function _alloNormalizeSharedRatingActivity(value)');
+        const end = sharedActivitySource.indexOf('const SharedAssignmentActivityPanel', start);
         expect(start).toBeGreaterThan(-1);
         expect(end).toBeGreaterThan(start);
         const helpers = new Function(
-            anti.slice(start, end) + '\nreturn { normalize: _alloNormalizeSharedRatingActivity, meta: _alloSharedActivityUiMeta };'
+            sharedActivitySource.slice(start, end) + '\nreturn { normalize: _alloNormalizeSharedRatingActivity, meta: _alloSharedActivityUiMeta };'
         )();
         expect(helpers.normalize({
             type: 'rating',
@@ -753,13 +754,13 @@ describe('ANTI wiring pins', () => {
         expect(helpers.meta({ type: 'rating' })).toMatchObject({ shortLabel: 'RT', title: 'Class rating' });
         expect(helpers.meta({ type: 'word_cloud' })).toMatchObject({ shortLabel: 'WC', title: 'Class word cloud' });
 
-        expect(anti).toContain("callStudentUpdate({ value: ratingValue })");
+        expect(sharedActivitySource).toContain("callStudentUpdate({ value: ratingValue })");
         // The hosted-pack ingest filter now admits every mailbox activity type
         // (surveys landed with v13; availability/signup never passed the old
         // two-type filter, so no student could reach them from a hosted pack).
         expect(anti).toContain("['word_cloud', 'rating', 'availability', 'signup', 'survey'].indexOf(candidate.type) >= 0");
-        expect(anti).toContain('Anonymous aggregate only · not scored');
-        expect(anti).toContain("SharedAssignmentActivityPanel");
+        expect(sharedActivitySource).toContain('Anonymous aggregate only · not scored');
+        expect(sharedActivitySource).toContain("SharedAssignmentActivityPanel");
         // The activity editor moved from the header's Documents dropdown into
         // the Share & Collect dialog (ANTI, @afc130a59) and its rating controls
         // were simplified to defaults; these pins follow the surface that

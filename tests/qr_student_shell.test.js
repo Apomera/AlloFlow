@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { TextDecoder, TextEncoder } from 'node:util';
 
 const rootSource = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const sharedActivitySource = readFileSync(resolve(process.cwd(), 'shared_activity_source.jsx'), 'utf8');
 const mirrorSource = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8');
 const appSource = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/App.jsx'), 'utf8');
 const phaseOSource = readFileSync(resolve(process.cwd(), 'phase_o_misc_handlers_source.jsx'), 'utf8');
@@ -488,12 +489,12 @@ describe('homework QR hardening', () => {
     expect(rootSource).toContain('sharedActivity: built.sharedActivities[0] || null');
     expect(rootSource).toContain('if (sharedAssignmentActivity.enabled) {\n          return hostPackOnMailbox(selectedResourceIds);');
     expect(rootSource).toContain('sharedActivities: sharedActivities.length ? sharedActivities : undefined');
-    expect(rootSource).toContain("a: 'joinactivity'");
-    expect(rootSource).toContain("a: 'activityupsert'");
-    expect(rootSource).toContain("a: 'getactivityadmin', admin, id: packId, aid: activityId");
-    expect(rootSource).toContain("a: 'getactivitysummary', id: packId, aid: activityId");
-    expect(rootSource).toContain("a: 'moderateactivity'");
-    expect(rootSource).toContain('window.AlloModules?.LivePolling?.renderWordCloudItems');
+    expect(sharedActivitySource).toContain("a: 'joinactivity'");
+    expect(sharedActivitySource).toContain("a: 'activityupsert'");
+    expect(sharedActivitySource).toContain("a: 'getactivityadmin', admin, id: packId, aid: activityId");
+    expect(sharedActivitySource).toContain("a: 'getactivitysummary', id: packId, aid: activityId");
+    expect(sharedActivitySource).toContain("a: 'moderateactivity'");
+    expect(sharedActivitySource).toContain('window.AlloModules?.LivePolling?.renderWordCloudItems');
     expect(rootSource).toContain("Manage shared {qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : qrShareModal.sharedActivity.type === 'survey' ? 'survey' : 'class Word Cloud'}");
     expect(rootSource).toContain('Only the anonymous distribution appears after the participation threshold.');
     expect(rootSource).toContain('!isTeacherMode && sharedHostedActivity &&');

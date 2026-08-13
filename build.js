@@ -1024,6 +1024,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'SharedActivity',
+        filename: 'shared_activity_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'UIPolish',
         filename: 'ui_polish_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1602,6 +1607,13 @@ const COMPILE_PAIRS = [
         modPath: path.join(ROOT, 'live_aac_module.js'),
         publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'live_aac_module.js'),
         wrap(src) { return require('./_build_live_aac_module.js').buildLiveAacModule(src); },
+    },
+    {
+        name: 'SharedActivity',
+        srcPath: path.join(ROOT, 'shared_activity_source.jsx'),
+        modPath: path.join(ROOT, 'shared_activity_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'shared_activity_module.js'),
+        wrap(src) { return require('./_build_shared_activity_module.js').buildSharedActivityModule(src); },
     },
     {
         // ── immersive_reader ── Reading overlays (Focus/Speed/Bionic/Crawl/Karaoke)

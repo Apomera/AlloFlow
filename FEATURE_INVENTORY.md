@@ -29,7 +29,7 @@
 
 **Generated:** 2026-05-09 (headline counts last reconciled June 20, 2026 — see §13.12 for the running delta table; the dated entries in §3–§12 are point-in-time snapshots)
 **Codebase scale:** July 3, 2026 local review found ~5.69M physical code lines including generated/deploy mirrors, ~4.07M exact-hash unique code lines, and ~2.70M canonical-ish source lines after excluding deploy mirrors and generated root module pairs. See the current audit note above for caveats.
-**Monolith size:** 55,922 physical lines / 3,365,349 bytes as of August 12, 2026 (`AlloFlowANTI.txt` and the synchronized `desktop/web-app/src/App.jsx`). The first safe extraction batch moved AppStyles and Live AAC into canonical CDN modules, removing 173,138 bytes while `AlloFlowANTI.txt` remains the Gemini Canvas orchestration source.
+**Monolith size:** 55,345 physical lines / 3,307,476 bytes as of August 12, 2026 (`AlloFlowANTI.txt` and the synchronized desktop app shells). The first two safe extraction batches moved AppStyles, Live AAC, and SharedActivity into canonical core CDN modules; SharedActivity alone removed 60,496 bytes / 1,100 physical lines while `AlloFlowANTI.txt` remains the Gemini Canvas orchestration source.
 **Inventory scope:** 720+ grouped and granular entries in this evolving catalog; do not treat this taxonomy count as a count of distinct shipped tools
 - ~95 monolith-level features across 16 categories + 25 deep-dive subsections (§3.17–§3.41)
 - **126 STEM Lab tool files / 127 registered STEM plugin IDs** across math, science, engineering, ecology, life skills, creative, strategy, technology, speech/music, and applied simulation domains. The registered-ID count is higher than the file count because some files preserve aliases or export paired IDs.

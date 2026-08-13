@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const app = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const sharedActivitySource = readFileSync(resolve(process.cwd(), 'shared_activity_source.jsx'), 'utf8');
 const teacher = readFileSync(resolve(process.cwd(), 'teacher_source.jsx'), 'utf8');
 const mailbox = readFileSync(resolve(process.cwd(), 'apps_script/session_mailbox/Code.gs'), 'utf8');
 
@@ -33,11 +34,11 @@ const makeCohortResolver = (sessionData, rosterKey) => new Function(
   app.slice(cohortResolverStart, cohortResolverEnd) + '\nreturn resolveEndSessionCohortUids;'
 )(sessionData, rosterKey, helpers.normalizeRosterSessionCodename, helpers.resolveRosterCodenamesToLiveUids);
 
-const activityOrderStart = app.indexOf('function _alloNextSharedActivitySummaryOrder');
-const activityOrderEnd = app.indexOf('const SharedAssignmentActivityPanel', activityOrderStart);
+const activityOrderStart = sharedActivitySource.indexOf('function _alloNextSharedActivitySummaryOrder');
+const activityOrderEnd = sharedActivitySource.indexOf('const SharedAssignmentActivityPanel', activityOrderStart);
 if (activityOrderStart < 0 || activityOrderEnd < 0) throw new Error('Shared activity ordering helper markers are missing');
 const nextSharedActivityOrder = new Function(
-  app.slice(activityOrderStart, activityOrderEnd)
+  sharedActivitySource.slice(activityOrderStart, activityOrderEnd)
     + '\nreturn _alloNextSharedActivitySummaryOrder;'
 )();
 

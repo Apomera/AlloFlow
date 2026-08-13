@@ -4,6 +4,7 @@ import path from 'node:path';
 
 const ROOT = path.resolve(__dirname, '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+const sharedActivitySource = fs.readFileSync(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
 const copies = [
   anti,
   fs.readFileSync(path.join(ROOT, 'desktop/web-app/src/App.jsx'), 'utf8'),
@@ -19,7 +20,7 @@ function loadHelpers(source) {
 
 describe('Assignment Control Center', () => {
   it('derives active, expired, and revoked lifecycle rows without dropping closed history', () => {
-    const api = loadHelpers(anti);
+    const api = loadHelpers(sharedActivitySource);
     const rows = api.rows([
       { url: 'expired', expiresAt: '2026-01-01T00:00:00.000Z' },
       { url: 'active', expiresAt: '2027-01-01T00:00:00.000Z' },
@@ -31,7 +32,7 @@ describe('Assignment Control Center', () => {
   });
 
   it('reduces teacher summaries to aggregate counts and strips response content and actor ids', () => {
-    const api = loadHelpers(anti);
+    const api = loadHelpers(sharedActivitySource);
     const summary = api.status({
       participantCount: 4,
       revealed: true,
@@ -49,7 +50,7 @@ describe('Assignment Control Center', () => {
   });
 
   it('filters one derived row model without creating another assignment store', () => {
-    const api = loadHelpers(anti);
+    const api = loadHelpers(sharedActivitySource);
     const rows = [
       { lifecycle: 'active', activityState: 'ready', activity: { pending: 2 } },
       { lifecycle: 'active', activityState: 'error', activity: null },
@@ -64,7 +65,7 @@ describe('Assignment Control Center', () => {
   });
 
   it('exports aggregate assignment status without links, capabilities, prompts, actors, or response text', () => {
-    const api = loadHelpers(anti);
+    const api = loadHelpers(sharedActivitySource);
     const csv = api.csv([{
       lifecycle: 'active', activityState: 'ready',
       share: {
