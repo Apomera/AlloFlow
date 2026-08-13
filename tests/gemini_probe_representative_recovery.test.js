@@ -32,7 +32,14 @@ describe('recovery probe is REPRESENTATIVE (tests the throttled volume dimension
 describe('recovery probe is BREAKER-NEUTRAL (a probe result cannot move the real streak)', () => {
   it('runs through the gate directly, bypassing callGemini\'s note-success/fail accounting', () => {
     // Goes through _geminiGate (respects cap + cooldown) with the run signal, labelled gemini-probe.
-    expect(dp).toContain("}, _sig, 'gemini-probe')");
+    //
+    // Matched WITHOUT pinning the argument list. This asserted the exact three-arg
+    // string `}, _sig, 'gemini-probe')` and went red when the remediation pass (fe1eac33d)
+    // added a fourth `owner` argument — the probe was still gate-routed and still
+    // breaker-neutral, so the only thing that had changed was this assertion. A test that
+    // fails on an unrelated signature change reports a regression that is not there, and
+    // the next reader has to re-derive that before they can trust the suite.
+    expect(dp).toMatch(/\}, _sig, 'gemini-probe'[,)]/);
     // The probe body must NOT feed the breaker — assert the two accounting calls are absent between
     // the probe helper's start and the wait-not-stop comment that follows it.
     const start = dp.indexOf('var _geminiProbe = function (opts)');
