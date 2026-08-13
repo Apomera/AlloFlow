@@ -615,6 +615,7 @@
             .lp-utility-bar { position: absolute; top: 18px; right: 20px; z-index: 2147483001; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
             .lp-lang-switcher { position: relative; }
             .lp-logo-block { text-align: center; }
+            .lp-brand-mark { width: 64px; height: 64px; margin: 0 auto 15px; display: block; padding: 3px; border: 0; border-radius: 19px; object-fit: cover; background: linear-gradient(145deg, rgba(253,230,138,.9), rgba(129,140,248,.78) 58%, rgba(56,189,248,.7)); box-shadow: 0 0 0 1px rgba(255,255,255,.16), 0 18px 38px rgba(2,6,23,.42); }
             .lp-voice-setup { width: 100%; }
             .lp-launch-footer { padding-top: 2px; }
             .lp-section-intro { display: grid; gap: 7px; margin-bottom: 14px; }
@@ -635,12 +636,10 @@
             .lp-card[data-pathway="learning"] .lp-card-icon { color: #a7f3d0; border-color: rgba(110,231,183,.3); background: rgba(16,185,129,.11); }
             .lp-card[data-pathway="educator"] .lp-card-icon { color: #ddd6fe; border-color: rgba(196,181,253,.3); background: rgba(139,92,246,.11); }
             .lp-card-title { display: block; color: #f8fafc; font-size: 17px; font-weight: 820; line-height: 1.25; letter-spacing: -.2px; }
-            .lp-card-desc { display: block; color: #c3cede; font-size: 11px; line-height: 1.55; margin-top: 6px; }
+            .lp-card-desc { display: block; color: #c3cede; font-size: 12px; line-height: 1.55; margin-top: 6px; }
             .lp-direct-copy { min-width: 0; padding-right: 4px; }
             .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; font-size: 9px; font-weight: 800; padding: 5px 9px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; text-transform: uppercase; letter-spacing: 1.1px; box-shadow: 0 4px 14px rgba(15,23,42,.2); }
             .lp-mode-badge { position: absolute; top: 14px; right: 14px; }
-            .lp-direct-badge { display: inline-block; margin-top: 8px; color: #a5b4fc; font-size: 9px; font-weight: 800; letter-spacing: .75px; text-transform: uppercase; }
-            .lp-direct-badge .lp-badge { padding: 3px 7px; font-size: 8px; letter-spacing: .8px; box-shadow: none; }
             @media (hover: hover) {
               .lp-card:hover { transform: translateY(-2px); background: rgba(27,38,63,.98); border-color: rgba(165,180,252,.48); box-shadow: inset 0 1px 0 rgba(255,255,255,.075), 0 18px 42px rgba(2,6,23,.28); }
               .lp-card:hover::after { transform: translate(3px, -50%); color: #fde68a; }
@@ -692,6 +691,7 @@
             }
             @media (max-width: 390px) {
               .lp-utility-bar { justify-content: space-between; }
+              .lp-utility-bar > :only-child { margin-inline-start: auto; }
               .lp-lang-trigger > span:nth-child(2) { max-width: 108px !important; }
               .lp-section-title { font-size: 20px; }
             }
@@ -816,21 +816,12 @@
   }, /*#__PURE__*/React.createElement("header", {
     className: "lp-logo-block"
   }, /*#__PURE__*/React.createElement("img", {
+    className: "lp-brand-mark",
     src: "rainbow-book.jpg",
     alt: "",
     "aria-hidden": "true",
     onError: e => {
       e.currentTarget.style.display = 'none';
-    },
-    style: {
-      width: '58px',
-      height: '58px',
-      margin: '0 auto 14px',
-      display: 'block',
-      filter: 'drop-shadow(0 12px 24px rgba(2,6,23,.42))',
-      borderRadius: '16px',
-      border: '1px solid rgba(255,255,255,.2)',
-      objectFit: 'cover'
     }
   }), /*#__PURE__*/React.createElement("h1", {
     style: {
@@ -933,7 +924,7 @@
     className: "lp-card",
     "data-pathway": "learning",
     "aria-labelledby": "launch-pad-learning-title",
-    "aria-describedby": "launch-pad-learning-badge launch-pad-learning-desc",
+    "aria-describedby": "launch-pad-learning-desc",
     onClick: () => {
       setShowLearningHub(true);
       setIsTeacherMode(false);
@@ -953,20 +944,12 @@
   }, learningToolsTitle), /*#__PURE__*/React.createElement("span", {
     id: "launch-pad-learning-desc",
     className: "lp-card-desc"
-  }, learningToolsDesc), /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-learning-badge",
-    className: "lp-direct-badge"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "lp-badge",
-    style: {
-      background: 'linear-gradient(135deg, #047857, #065f46)'
-    }
-  }, copy('launch_pad.badge_3_tools', '8 Tools'))))), /*#__PURE__*/React.createElement("button", {
+  }, learningToolsDesc))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "lp-card",
     "data-pathway": "educator",
     "aria-labelledby": "launch-pad-educator-title",
-    "aria-describedby": "launch-pad-educator-badge launch-pad-educator-desc",
+    "aria-describedby": "launch-pad-educator-desc",
     onClick: () => {
       setHasSelectedMode(true);
       setHasSelectedRole(true);
@@ -991,15 +974,7 @@
   }, educatorToolsTitle), /*#__PURE__*/React.createElement("span", {
     id: "launch-pad-educator-desc",
     className: "lp-card-desc"
-  }, educatorToolsDesc), /*#__PURE__*/React.createElement("span", {
-    id: "launch-pad-educator-badge",
-    className: "lp-direct-badge"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "lp-badge",
-    style: {
-      background: 'linear-gradient(135deg, #7c3aed, #5b21b6)'
-    }
-  }, (typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key) ? copy('launch_pad.badge_educator', 'Educator') : copy('launch_pad.badge_educator_open', 'Educator'))))))), /*#__PURE__*/React.createElement("section", {
+  }, educatorToolsDesc))))), /*#__PURE__*/React.createElement("section", {
     className: "lp-voice-setup",
     "aria-labelledby": "launch-pad-offline-voice-title"
   }, /*#__PURE__*/React.createElement("details", {

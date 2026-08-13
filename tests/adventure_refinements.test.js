@@ -24,6 +24,11 @@ const HANDLERS_MOD = read('adventure_handlers_module.js');
 const SESSION_SRC = read('adventure_session_handlers_source.jsx');
 const SESSION_MOD = read('adventure_session_handlers_module.js');
 const ANTI = read('AlloFlowANTI.txt');
+const HOSTS = [
+  ['canonical', ANTI],
+  ['desktop App', read('desktop/web-app/src/App.jsx')],
+  ['desktop source mirror', read('desktop/web-app/src/AlloFlowANTI.txt')],
+];
 
 describe('A. adventure scene TTS pre-warm', () => {
   for (const [name, s] of [['source', PK_SRC], ['module', PK_MOD]]) {
@@ -32,10 +37,14 @@ describe('A. adventure scene TTS pre-warm', () => {
       expect(s).toContain('resolveAdventureSentenceVoice');
       // playSequence must DELEGATE to the shared resolver (no duplicated fork to drift)
       expect(s).toMatch(/resolveAdventureSentenceVoice\(sentences, index, activeSpeaker, voiceMap, selectedVoice\)/);
-      // Kokoro voices are skipped (urlCache is bypassed for them)
-      expect(s).toMatch(/_kokoroPrewarmSkip\s*=\s*\/\^\(af_\|am_\|bf_\|bm_\)\//);
     });
   }
+  it('source: Kokoro prewarm is allowed and carries the explicit Adventure language', () => {
+    expect(PK_SRC).toMatch(/_kokoroVoicePrefix\s*=\s*\/\^\(af_\|am_\|bf_\|bm_\)\//);
+    expect(PK_SRC).not.toContain('_kokoroPrewarmSkip');
+    expect(PK_SRC).toMatch(/reason:\s*'adventure-prewarm'/);
+    expect(PK_SRC).toMatch(/language:\s*sentenceLanguage/);
+  });
   it('ANTI: prewarm wrapper is de-duped per scene and quota-gated to auto-read + pending scenes', () => {
     expect(ANTI).toMatch(/const prewarmAdventureAudio = \(text, voices\) =>/);
     expect(ANTI).toMatch(/_advPrewarmedRef\.current === key\) return;/);
@@ -44,6 +53,15 @@ describe('A. adventure scene TTS pre-warm', () => {
     // auto-read effect warms before the 500ms handleSpeak timer
     expect(ANTI).toMatch(/prewarmAdventureAudio\(textToSpeak, adventureState\.currentScene && adventureState\.currentScene\.voices\);/);
   });
+  for (const [name, host] of HOSTS) {
+    it(name + ': prewarm identity includes Adventure language and provider', () => {
+      expect(host).toContain('resolveAdventureTtsLanguage(adventureLanguageMode, null, selectedLanguages)');
+      expect(host).toContain('String(language || \'\')');
+      expect(host).toContain('const provider = String((_aiUserConfig && _aiUserConfig.ttsProvider) || \'auto\')');
+      expect(host).toContain('count: isKokoroVoice ? 1 : 2');
+      expect(host).toContain('lastReadTurnRef.current = adventureState.turnCount');
+    });
+  }
   for (const [name, s] of [['source', VIEW_SRC], ['module', VIEW_MOD]]) {
     it(`view ${name}: hover-intent warms both narrative renderers`, () => {
       expect((s.match(/onPointerEnter/g) || []).length).toBeGreaterThanOrEqual(2);

@@ -89,9 +89,9 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 ---
 
-## 🧮 STEM Lab (122 Tool Files / 123 Registered Plugin IDs)
+## 🧮 STEM Lab
 
-The STEM Lab is a dynamically-loaded suite of browser-based interactive tools. As of July 18, 2026, the workspace contains **122 `stem_tool_*.js` files** and **123 unique registered plugin IDs** because a few tools preserve aliases or paired tool IDs.
+The STEM Lab is a dynamically loaded suite of browser-based interactive tools. Its live registry is authoritative; run `npm run audit:docs` when a current catalog total is needed.
 
 | Domain | Tools |
 |--------|-------|
@@ -204,7 +204,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 | UDL Principle | AlloFlow Tools |
 |---------------|----------------|
 | **Engagement** | Adventure Mode, Boss Battle, Escape Room, Democracy Mode, Symbol Quest, Symbol Search, StoryForge, Growth Mindset Workshop, Gamification Engine |
-| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (122 tool files / 123 registered IDs), SEL Hub (70 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
+| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab, SEL Hub, TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
 | **Action & Expression** | Writing Scaffolds, StoryForge, Auto-Grader, Rubrics, Oral Fluency Coach, Dictation, QTI Export, Symbol Studio, Report Writer, PDF Pipeline |
 
 ---
@@ -214,6 +214,8 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 | Resource | Link |
 |----------|------|
 | 📖 Complete User Manual | [AlloFlow Complete User Manual.md](../../AlloFlow%20Complete%20User%20Manual.md) |
+| Searchable Teacher Guide | [guide/index.html](../../guide/index.html) |
+| Teacher Guide (offline / print) | [guide/offline.html](../../guide/offline.html) |
 | 🖨️ Quick Reference Cards | [QuickReferenceCards.md](../../QuickReferenceCards.md) |
 | 🏗️ Architecture Overview | [architecture.md](../../architecture.md) |
 | 🚀 Firebase Deployment | [DEPLOY_YOUR_OWN.md](../../DEPLOY_YOUR_OWN.md) |
@@ -225,7 +227,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 
 ## 🔧 For Developers
 
-AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx` / `AlloFlowANTI.txt`) dynamically loads the top-level modules listed in `build.js` plus large plugin families on demand: STEM Lab (122 tool files / 123 registered IDs), SEL Hub (70 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Cinematic Studio (doc→video), Professional Development, Doc Pipeline, Games, AI Backend, and more. See [CONTRIBUTING.md](../../CONTRIBUTING.md) for architecture rules and [architecture.md](../../architecture.md) for a full technical overview.
+AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx` / `AlloFlowANTI.txt`) dynamically loads the top-level modules listed in `build.js` plus large plugin families on demand: STEM Lab, SEL Hub, BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Cinematic Studio (doc→video), Professional Development, Doc Pipeline, Games, AI Backend, and more. See [CONTRIBUTING.md](../../CONTRIBUTING.md) for architecture rules and [architecture.md](../../architecture.md) for a full technical overview.
 
 ```bash
 # Cloud deployment (Firebase)

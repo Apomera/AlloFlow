@@ -50,6 +50,8 @@
   .stage .placeholder { color: var(--dim); font-size: 14px; padding: 56px 20px; text-align: center; }
   ol#coachSteps { margin: 8px 0 0 18px; padding: 0; }
   ol#coachSteps li { margin: 3px 0; }
+  .walkthrough-controls { padding-top: 4px; border-top: 1px solid var(--line); }
+  #coachVoiceBtn[aria-pressed="true"] { background: #7f1d1d; border-color: #f87171; color: #fff; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
   :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 </style>
@@ -112,9 +114,18 @@
       <button class="action" id="coachSuggestBtn" type="button">💡 Suggest next step</button>
     </div>
     <div class="row">
-      <label><input type="checkbox" id="coachAutoChk"> Send another screenshot every 12s</label>
+      <label><input type="checkbox" id="coachAutoChk"> Guided walkthrough: continue after the screen changes</label>
       <label><input type="checkbox" id="coachSpeakChk"> Read guidance aloud</label>
+      <label><input type="checkbox" id="coachDesktopOverlayChk" disabled> Show guidance over other apps in AlloFlow Desktop</label>
     </div>
+    <div class="row walkthrough-controls">
+      <button id="coachRepeatBtn" type="button" disabled>Repeat step</button>
+      <button id="coachSaveBtn" type="button" disabled>Save highlighted step</button>
+      <button id="coachExportBtn" type="button" disabled>Export walkthrough</button>
+      <button id="coachVoiceBtn" type="button" aria-pressed="false">Start voice commands</button>
+    </div>
+    <label class="status" style="display:block;margin-top:8px"><input type="checkbox" id="coachKeepStepsChk"> Keep annotated step images in this page for export (cleared when this session ends)</label>
+    <p class="status">Voice commands: “Coach next”, “Coach repeat”, “Coach save”, “Coach pause”, or “Coach stop”. The microphone is used only while voice commands are visibly on.</p>
     <p class="status" id="coachStatus" role="status" aria-live="polite" aria-atomic="true"></p>
     <ol id="coachSteps"></ol>
   </section>
@@ -238,6 +249,37 @@
   // share and only finds out 45 seconds later that nothing was listening.
   var openerOrigin = originFromUrl(params.get('allo_origin') || '');
   var bridgeAvailable = !!(opener && !opener.closed && bridgeToken && openerOrigin);
+  // Video Studio uses the same rule before finished recording bytes leave its
+  // popup: first-party destinations are seamless; every other opener is named
+  // and requires a one-time decision. This is DATA-DESTINATION consent only.
+  // It never upgrades posture or treats the opener as an educator authority.
+  var bridgeSendApproved = isTrustedEducatorOpenerOrigin(openerOrigin);
+  var bridgeDeclined = false;
+  function confirmBridgeScreenshotSend() {
+    if (!bridgeAvailable) return true;
+    if (bridgeSendApproved) return true;
+    var target = openerOrigin;
+    if (!target) return false;
+    var ok = false;
+    try {
+      ok = window.confirm('This Screen Coach was opened by:\n\n  ' + target +
+        '\n\nEach suggestion will hand one screenshot of the screen you shared to that site so it can ask its configured AI model for guidance.\n\nSend screenshots to this site for this coach session?');
+    } catch (_) { ok = false; }
+    if (ok) {
+      bridgeSendApproved = true;
+      try { paintBackendForm(); } catch (_) {}
+      return true;
+    }
+    // A refusal is durable for this page. A later ping must not silently
+    // reconnect the same destination after the user said no.
+    bridgeDeclined = true;
+    bridgeAvailable = false;
+    applyPosture('learner');
+    try { paintBackendForm(); } catch (_) {}
+    $('setupPanel').open = true;
+    setStatus($('coachStatus'), 'Nothing was sent. The AlloFlow bridge was disconnected; review the standalone AI destination above, then ask again if you want to use it.', 'warn');
+    return false;
+  }
   // Answer the app's ping, the same way the Studio popup does, and take the
   // opportunity to learn our reply address from the BROWSER (ev.origin) rather
   // than from a URL parameter we were handed. Only ever a real origin: an
@@ -261,13 +303,17 @@
     // ?allo_origin= parameter, which whoever opened us simply asserts.
     if (!bridgeToken && ev.data.bridge && realOrigin) bridgeToken = String(ev.data.bridge);
     if (!openerOrigin && realOrigin) openerOrigin = realOrigin;
-    var nowAvailable = !!(opener && !opener.closed && bridgeToken && openerOrigin);
+    if (isTrustedEducatorOpenerOrigin(realOrigin)) bridgeSendApproved = true;
+    var nowAvailable = !bridgeDeclined && !!(opener && !opener.closed && bridgeToken && openerOrigin);
     if (nowAvailable) {
       // Browser-attested origin plus the session-bound ping is defense in depth,
       // not server authentication. Unknown opener origins always stay learner.
       var pingPosture = ev.data.coachPosture === 'educator' &&
         isTrustedEducatorOpenerOrigin(realOrigin) ? 'educator' : 'learner';
       applyPosture(pingPosture);
+      desktopOverlayAvailable = ev.data.desktopOverlayAvailable === true;
+      $('coachDesktopOverlayChk').disabled = !desktopOverlayAvailable;
+      if (!desktopOverlayAvailable) $('coachDesktopOverlayChk').checked = false;
     }
     if (nowAvailable !== bridgeAvailable) {
       bridgeAvailable = nowAvailable;
@@ -410,7 +456,10 @@
     // this panel is informational only. Nothing to configure, nothing to leak.
     if (bridgeAvailable) {
       $('setupPanel').open = false;
-      setStatus($('beStatus'), 'Using AlloFlow’s AI settings. Suggestions are made by the AlloFlow window that opened this page, so there is no second key to enter here.', 'ok');
+      var destinationNote = bridgeSendApproved
+        ? ' Screenshot destination: ' + openerOrigin + '.'
+        : ' Before the first screenshot is sent, you will be asked to approve this destination: ' + openerOrigin + '.';
+      setStatus($('beStatus'), 'Using the opener’s AI settings. Suggestions are made by the window that opened this page, so there is no second key to enter here.' + destinationNote, bridgeSendApproved ? 'ok' : 'warn');
       $('beKeyWarning').hidden = true;
       $('beFields').disabled = true;
       $('beApiKey').value = '';
@@ -501,9 +550,53 @@
 
   // ── Capture ──────────────────────────────────────────────────────────────
   var watchStream = null, autoTimer = null, busy = false, startingWatch = false;
-  var history = [];
+  var history = [], walkthroughSteps = [];
   var pipWin = null, pipRaf = 0, lastAdvice = null;
+  var currentStepSnapshot = null;
   var contextEpoch = 0, activeRequest = null;
+  var guidedBaseline = null, guidedChangeHits = 0, lastGuidedAskAt = 0;
+  var guidedIgnoreUntil = 0;
+  var voiceRecognition = null, voiceListening = false, voiceShouldRestart = false;
+  var desktopOverlayAvailable = false;
+
+  function sendDesktopOverlay(payload) {
+    if (!bridgeAvailable || !opener || opener.closed || !openerOrigin) return;
+    try {
+      opener.postMessage(Object.assign({
+        type: 'allostudio-coach-overlay',
+        bridge: bridgeToken
+      }, payload || {}), openerOrigin);
+    } catch (_) {}
+  }
+  function clearDesktopOverlay() {
+    sendDesktopOverlay({ visible: false });
+  }
+  function publishDesktopOverlay(advice, guidance) {
+    if (!$('coachDesktopOverlayChk').checked || !advice) return;
+    var displaySurface = '';
+    var sourceLabel = '';
+    try {
+      var track = watchStream && watchStream.getVideoTracks()[0];
+      var settings = track && typeof track.getSettings === 'function' ? track.getSettings() : null;
+      displaySurface = String((settings && settings.displaySurface) || '');
+      sourceLabel = String((track && track.label) || '').slice(0, 260);
+    } catch (_) {}
+    sendDesktopOverlay({
+      visible: true,
+      guidance: String(guidance || '').slice(0, 400),
+      done: !!advice.done,
+      displaySurface: displaySurface,
+      sourceLabel: sourceLabel,
+      target: (displaySurface === 'monitor' || displaySurface === 'window') ? (advice.target || null) : null
+    });
+  }
+
+  function updateWalkthroughControls() {
+    var hasAdvice = !!(lastAdvice && lastAdvice.guidance);
+    $('coachRepeatBtn').disabled = !hasAdvice;
+    $('coachSaveBtn').disabled = !hasAdvice || !captureActive();
+    $('coachExportBtn').disabled = walkthroughSteps.length === 0;
+  }
 
   function setSuggestBusy(on) {
     busy = !!on;
@@ -531,13 +624,20 @@
     contextEpoch += 1;
     cancelActiveRequest();
     history = [];
+    walkthroughSteps = [];
     lastAdvice = null;
+    currentStepSnapshot = null;
+    guidedBaseline = null;
+    guidedChangeHits = 0;
+    guidedIgnoreUntil = 0;
     while ($('coachSteps').firstChild) $('coachSteps').removeChild($('coachSteps').firstChild);
     hideOverlay();
+    clearDesktopOverlay();
     try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
     if (pipWin && pipWin.__coachBar) pipWin.__coachBar.textContent = '🧭 Screen Coach: suggestions appear here.';
     if (opts.stopAuto !== false) stopAuto();
     if (opts.resetConsent) $('coachPrivacyAck').checked = false;
+    updateWalkthroughControls();
   }
 
   function captureActive() {
@@ -579,6 +679,7 @@
     if (!watchStream || (expectedStream && watchStream !== expectedStream)) return;
     var endingStream = watchStream;
     watchStream = null;
+    stopVoiceCommands();
     resetCoachContext({ resetConsent: true });
     $('coachPrivacyAck').disabled = true;
     try {
@@ -702,8 +803,98 @@
     var dataUrl = c.toDataURL('image/jpeg', 0.7);
     return dataUrl.split(',')[1] || null;
   }
-  function speak(text) {
-    if (!$('coachSpeakChk').checked) return;
+  function drawSnapshotTarget(g, box, width, height) {
+    if (!box) return;
+    var line = Math.max(3, width / 320);
+    g.strokeStyle = '#000'; g.lineWidth = line + 6;
+    g.strokeRect(box.x * width, box.y * height, box.w * width, box.h * height);
+    g.strokeStyle = '#fff'; g.lineWidth = line + 3;
+    g.strokeRect(box.x * width, box.y * height, box.w * width, box.h * height);
+    g.strokeStyle = '#f59e0b'; g.lineWidth = line;
+    g.strokeRect(box.x * width, box.y * height, box.w * width, box.h * height);
+    g.fillStyle = 'rgba(245,158,11,0.15)';
+    g.fillRect(box.x * width, box.y * height, box.w * width, box.h * height);
+  }
+  function makeAnnotatedSnapshot(advice, guidance, stepNumber) {
+    if (!captureActive()) return null;
+    var v = $('previewVideo');
+    var scale = Math.min(1, 1280 / v.videoWidth);
+    var width = Math.max(2, Math.round(v.videoWidth * scale));
+    var imageHeight = Math.max(2, Math.round(v.videoHeight * scale));
+    var footerHeight = 104;
+    var c = document.createElement('canvas');
+    c.width = width; c.height = imageHeight + footerHeight;
+    var g = c.getContext('2d');
+    g.drawImage(v, 0, 0, width, imageHeight);
+    drawSnapshotTarget(g, advice && advice.target, width, imageHeight);
+    g.fillStyle = '#111a2e';
+    g.fillRect(0, imageHeight, width, footerHeight);
+    if (typeof g.fillText === 'function') {
+      g.fillStyle = '#f8fafc';
+      g.font = '700 20px system-ui, sans-serif';
+      g.fillText('Step ' + stepNumber, 18, imageHeight + 30);
+      g.font = '16px system-ui, sans-serif';
+      var words = String(guidance || '').split(/\s+/), line = '', y = imageHeight + 58;
+      words.forEach(function (word) {
+        var next = line ? line + ' ' + word : word;
+        var tooWide = typeof g.measureText === 'function' && g.measureText(next).width > width - 36;
+        if (tooWide && line) { g.fillText(line, 18, y); line = word; y += 22; }
+        else line = next;
+      });
+      if (line && y <= c.height - 10) g.fillText(line, 18, y);
+    }
+    try { return c.toDataURL('image/png'); } catch (_) { return null; }
+  }
+  function safeFileStem() {
+    var stem = String($('coachGoal').value || 'screen-coach-walkthrough').trim().toLowerCase();
+    stem = stem.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+    return stem || 'screen-coach-walkthrough';
+  }
+  function downloadUrl(url, filename, revoke) {
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    try { a.click(); } finally {
+      a.remove();
+      if (revoke) setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 0);
+    }
+  }
+  function saveCurrentStep() {
+    if (!lastAdvice) return;
+    var snapshot = currentStepSnapshot || makeAnnotatedSnapshot(lastAdvice, lastAdvice.guidance, walkthroughSteps.length || 1);
+    if (!snapshot) { setStatus($('coachStatus'), 'The highlighted step could not be saved from this screen.', 'warn'); return; }
+    downloadUrl(snapshot, safeFileStem() + '-step-' + Math.max(1, walkthroughSteps.length) + '.png', false);
+    setStatus($('coachStatus'), 'Saved the current highlighted step to your device.', 'ok');
+  }
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+      return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[ch];
+    });
+  }
+  function exportWalkthrough() {
+    if (!walkthroughSteps.length) return;
+    var goal = String($('coachGoal').value || 'Screen Coach walkthrough').slice(0, 300);
+    var sections = walkthroughSteps.map(function (step, index) {
+      var image = step.snapshot ? '<img alt="Screenshot for step ' + (index + 1) + '" src="' + step.snapshot + '">' : '';
+      return '<section><h2>Step ' + (index + 1) + (step.done ? ' — Complete' : '') + '</h2><p>' +
+        escapeHtml(step.guidance) + '</p>' + image + '</section>';
+    }).join('');
+    var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + escapeHtml(goal) +
+      '</title><style>body{font:16px/1.5 system-ui;max-width:960px;margin:auto;padding:24px;color:#172033}section{border-top:1px solid #cbd5e1;padding:18px 0}img{max-width:100%;height:auto;border:1px solid #64748b}small{color:#475569}</style></head><body><h1>' +
+      escapeHtml(goal) + '</h1><small>Exported locally from AlloBot Screen Coach. Review screenshots for private information before sharing.</small>' +
+      sections + '</body></html>';
+    try {
+      var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      downloadUrl(url, safeFileStem() + '.html', true);
+      setStatus($('coachStatus'), 'Exported the walkthrough to your device.', 'ok');
+    } catch (_) {
+      setStatus($('coachStatus'), 'This browser could not export the walkthrough.', 'warn');
+    }
+  }
+  function speak(text, force) {
+    if (!force && !$('coachSpeakChk').checked) return;
     if (!window.speechSynthesis || typeof SpeechSynthesisUtterance !== 'function') return;
     try {
       window.speechSynthesis.cancel();
@@ -715,6 +906,113 @@
   function stopAuto() {
     if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
     $('coachAutoChk').checked = false;
+    guidedBaseline = null;
+    guidedChangeHits = 0;
+    guidedIgnoreUntil = 0;
+  }
+  function screenSignature() {
+    if (!captureActive()) return null;
+    try {
+      var c = document.createElement('canvas');
+      c.width = 24; c.height = 14;
+      var g = c.getContext('2d');
+      g.drawImage($('previewVideo'), 0, 0, c.width, c.height);
+      var pixels = g.getImageData(0, 0, c.width, c.height).data;
+      var result = [];
+      for (var i = 0; i < pixels.length; i += 16) {
+        result.push(Math.round((pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3));
+      }
+      return result;
+    } catch (_) { return null; }
+  }
+  function signatureDifference(a, b) {
+    if (!a || !b || a.length !== b.length) return 0;
+    var total = 0;
+    for (var i = 0; i < a.length; i += 1) total += Math.abs(a[i] - b[i]);
+    return total / a.length;
+  }
+  function checkGuidedProgress() {
+    if (!$('coachAutoChk').checked || !captureActive() || busy || !lastAdvice || lastAdvice.done) return;
+    var now = Date.now();
+    if (guidedIgnoreUntil && now < guidedIgnoreUntil) return;
+    var signature = screenSignature();
+    if (!signature) {
+      if (now - lastGuidedAskAt >= 12000) suggest(true);
+      return;
+    }
+    if (!guidedBaseline) { guidedBaseline = signature; return; }
+    if (signatureDifference(guidedBaseline, signature) >= 14) guidedChangeHits += 1;
+    else guidedChangeHits = 0;
+    // Three consecutive samples debounce animations and transient menus. At
+    // 1.2 seconds per sample this also prevents rapid-fire model requests
+    // without depending on different realms sharing the same Date clock.
+    if (guidedChangeHits >= 3) {
+      guidedBaseline = signature;
+      guidedChangeHits = 0;
+      suggest(true);
+    }
+  }
+  function stopVoiceCommands() {
+    voiceShouldRestart = false;
+    voiceListening = false;
+    if (voiceRecognition) { try { voiceRecognition.stop(); } catch (_) {} }
+    $('coachVoiceBtn').setAttribute('aria-pressed', 'false');
+    $('coachVoiceBtn').textContent = 'Start voice commands';
+  }
+  function handleVoiceCommand(transcript) {
+    var command = String(transcript || '').toLowerCase().replace(/[^a-z\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (command.indexOf('coach ') === -1) return;
+    if (/coach (stop|end|quit)/.test(command)) {
+      stopAuto(); stopVoiceCommands();
+      setStatus($('coachStatus'), 'Hands-free guidance stopped.', 'ok');
+    } else if (/coach pause/.test(command)) {
+      stopAuto();
+      setStatus($('coachStatus'), 'Guided walkthrough paused. Say “Coach next” when you are ready.', 'ok');
+    } else if (/coach repeat/.test(command)) {
+      if (lastAdvice) speak(lastAdvice.guidance, true);
+    } else if (/coach save/.test(command)) {
+      saveCurrentStep();
+    } else if (/coach (next|continue|ready|done)/.test(command)) {
+      suggest(false);
+    }
+  }
+  function startVoiceCommands() {
+    if (voiceListening) { stopVoiceCommands(); return; }
+    var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (typeof Recognition !== 'function') {
+      setStatus($('coachStatus'), 'Voice commands are not available in this browser. Spoken guidance still works.', 'warn');
+      return;
+    }
+    try {
+      voiceRecognition = new Recognition();
+      voiceRecognition.continuous = true;
+      voiceRecognition.interimResults = false;
+      voiceRecognition.lang = document.documentElement.lang || 'en-US';
+      voiceRecognition.onresult = function (event) {
+        for (var i = event.resultIndex || 0; i < event.results.length; i += 1) {
+          if (event.results[i].isFinal !== false) handleVoiceCommand(event.results[i][0] && event.results[i][0].transcript);
+        }
+      };
+      voiceRecognition.onerror = function (event) {
+        if (event && (event.error === 'not-allowed' || event.error === 'service-not-allowed')) {
+          stopVoiceCommands();
+          setStatus($('coachStatus'), 'Microphone access was not granted. Voice commands are off.', 'warn');
+        }
+      };
+      voiceRecognition.onend = function () {
+        if (voiceShouldRestart) setTimeout(function () { try { voiceRecognition.start(); } catch (_) {} }, 350);
+      };
+      voiceShouldRestart = true;
+      voiceListening = true;
+      $('coachSpeakChk').checked = true;
+      voiceRecognition.start();
+      $('coachVoiceBtn').setAttribute('aria-pressed', 'true');
+      $('coachVoiceBtn').textContent = 'Stop voice commands';
+      setStatus($('coachStatus'), 'Voice commands are on. Say “Coach next”, “Coach repeat”, “Coach save”, “Coach pause”, or “Coach stop”.', 'ok');
+    } catch (_) {
+      stopVoiceCommands();
+      setStatus($('coachStatus'), 'Voice commands could not start in this browser.', 'warn');
+    }
   }
 
   // ── Ask ──────────────────────────────────────────────────────────────────
@@ -727,6 +1025,10 @@
     }
     if (!captureActive()) {
       setStatus($('coachStatus'), 'Press “Start watching” and pick the tab or window you want help with.', 'warn');
+      stopAuto();
+      return;
+    }
+    if (bridgeAvailable && !confirmBridgeScreenshotSend()) {
       stopAuto();
       return;
     }
@@ -761,8 +1063,21 @@
       stopAuto();
       return;
     }
+    // Do not feed the previous desktop highlight back into vision. A protected
+    // full-screen transparent Electron window can turn black in OS captures,
+    // so the authenticated host hides it briefly instead.
+    if ($('coachDesktopOverlayChk').checked) {
+      clearDesktopOverlay();
+      await new Promise(function (resolve) { setTimeout(resolve, 160); });
+      if (!captureActive()) return;
+    }
     var frame = grabFrame();
     if (!frame) { setStatus($('coachStatus'), 'Could not read a picture from the share.', 'warn'); return; }
+    if (fromAuto && walkthroughSteps.length >= 12) {
+      setStatus($('coachStatus'), 'The guided walkthrough paused after 12 steps. Review the goal, then continue manually if needed.', 'warn');
+      stopAuto();
+      return;
+    }
 
     var goal = String($('coachGoal').value || '').slice(0, 300);
     var priorHistory = history.slice(-3).join('\n');
@@ -772,6 +1087,7 @@
       controller: new AbortController()
     };
     activeRequest = req;
+    lastGuidedAskAt = Date.now();
     setSuggestBusy(true);
     setStatus($('coachStatus'), 'Asking the coach…');
     var resp;
@@ -821,16 +1137,36 @@
     // itself every 12 seconds at a student doing their homework.
     if (resp.refused) {
       lastAdvice = null;
+      currentStepSnapshot = null;
       hideOverlay();
       if (pipWin && pipWin.__coachBar) pipWin.__coachBar.textContent = '📓 ' + guidance;
       setStatus($('coachStatus'), '📓 ' + guidance, 'warn');
       speak(guidance);
       stopAuto();
+      updateWalkthroughControls();
       return;
     }
 
+    var normalizedGuidance = guidance.toLowerCase().replace(/\s+/g, ' ').trim();
+    var recentSame = history.slice(-2).filter(function (item) {
+      return String(item || '').toLowerCase().replace(/\s+/g, ' ').trim() === normalizedGuidance;
+    }).length;
+    if (fromAuto && recentSame >= 2) {
+      setStatus($('coachStatus'), 'The walkthrough paused because the same step was repeated. Complete it, adjust the goal, or press Suggest next step.', 'warn');
+      stopAuto();
+      return;
+    }
     history.push(guidance);
-    lastAdvice = resp;
+    lastAdvice = Object.assign({}, resp, { guidance: guidance });
+    var stepNumber = walkthroughSteps.length + 1;
+    currentStepSnapshot = makeAnnotatedSnapshot(lastAdvice, guidance, stepNumber);
+    walkthroughSteps.push({
+      guidance: guidance,
+      target: resp.target || null,
+      done: !!resp.done,
+      snapshot: $('coachKeepStepsChk').checked ? currentStepSnapshot : null,
+      createdAt: new Date().toISOString()
+    });
     if (pipWin && pipWin.__coachBar) pipWin.__coachBar.textContent = (resp.done ? '✅ ' : '👉 ') + guidance;
     var li = document.createElement('li');
     li.className = 'status';
@@ -840,24 +1176,52 @@
     var where = describeTarget(resp.target);
     setStatus($('coachStatus'), (resp.done ? '✅ ' : '👉 ') + guidance + (where ? ' Look at the ' + where + ' — highlighted below, and an estimate.' : ''), resp.done ? 'ok' : undefined);
     drawTarget(resp.target);
+    publishDesktopOverlay(lastAdvice, guidance);
     speak(guidance + (where ? '. Look at the ' + where + '.' : ''));
+    // A native overlay appearing is itself a screen change. Let it settle,
+    // then establish a new baseline so guided mode does not mistake its own
+    // highlight for the user completing the step.
+    guidedIgnoreUntil = $('coachDesktopOverlayChk').checked ? Date.now() + 2500 : 0;
+    guidedBaseline = guidedIgnoreUntil ? null : screenSignature();
+    guidedChangeHits = 0;
+    updateWalkthroughControls();
     if (resp.done) stopAuto();
   }
 
   $('coachSuggestBtn').addEventListener('click', function () { suggest(false); });
   $('coachWatchBtn').addEventListener('click', startWatch);
   $('coachPipBtn').addEventListener('click', togglePip);
+  $('coachRepeatBtn').addEventListener('click', function () {
+    if (lastAdvice) speak(lastAdvice.guidance, true);
+  });
+  $('coachSaveBtn').addEventListener('click', saveCurrentStep);
+  $('coachExportBtn').addEventListener('click', exportWalkthrough);
+  $('coachVoiceBtn').addEventListener('click', startVoiceCommands);
+  $('coachKeepStepsChk').addEventListener('change', function () {
+    if (!this.checked) {
+      walkthroughSteps.forEach(function (step) { step.snapshot = null; });
+      setStatus($('coachStatus'), 'Saved step images were cleared from this page. Text steps remain available to export.', 'ok');
+    } else if (walkthroughSteps.length) {
+      setStatus($('coachStatus'), 'Future steps will keep an annotated image in this page until the session ends.', 'ok');
+    }
+  });
+  $('coachDesktopOverlayChk').addEventListener('change', function () {
+    if (this.checked && lastAdvice) publishDesktopOverlay(lastAdvice, lastAdvice.guidance);
+    else clearDesktopOverlay();
+  });
   if (!window.documentPictureInPicture) $('coachPipBtn').hidden = true;
   $('coachAutoChk').addEventListener('change', function () {
     if (this.checked) {
       if (!captureActive()) { this.checked = false; setStatus($('coachStatus'), 'Start watching first, then turn this on.', 'warn'); return; }
       if (!$('coachPrivacyAck').checked) {
         this.checked = false;
-        setStatus($('coachStatus'), 'Check the privacy acknowledgement first. Automatic mode sends a new screenshot now and every 12 seconds.', 'warn');
+        setStatus($('coachStatus'), 'Check the privacy acknowledgement first. Guided mode sends one screenshot now, then waits for a meaningful screen change before asking again.', 'warn');
         $('coachPrivacyAck').focus();
         return;
       }
-      autoTimer = setInterval(function () { suggest(true); }, 12000);
+      guidedBaseline = null;
+      guidedChangeHits = 0;
+      autoTimer = setInterval(checkGuidedProgress, 1200);
       suggest(true);
     } else {
       stopAuto();
@@ -869,7 +1233,8 @@
   $('coachSpeakChk').addEventListener('change', function () {
     if (!this.checked) { try { window.speechSynthesis.cancel(); } catch (_) {} }
   });
-  window.addEventListener('pagehide', function () { try { cancelActiveRequest(); stopWatch(); } catch (_) {} });
+  updateWalkthroughControls();
+  window.addEventListener('pagehide', function () { try { cancelActiveRequest(); stopWatch(); } finally { stopVoiceCommands(); } });
 })();
 </script>
 </body>

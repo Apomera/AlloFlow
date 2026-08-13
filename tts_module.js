@@ -1004,7 +1004,17 @@ const createTTS = deps => {
               console.warn('[Canvas TTS] Gemini timed out; using local fallback:', msg);
               break;
             }
-            const isTransient = msg.includes('401') || msg.includes('403') || msg.includes('503') || msg.includes('model refused') || msg.includes('Transient Error') || msg.includes('empty result');
+            // finishReason=OTHER is a completed model refusal, not a
+            // transport failure. Repeating the same text/voice
+            // immediately produced another 5-10 second refusal in
+            // the field trace; fall through to local/browser audio
+            // after the first response instead.
+            if (msg.includes('model refused')) {
+              _ttsTrace('calltts:canvas-model-refusal-fallback', null);
+              console.warn('[Canvas TTS] Gemini refused this utterance; using local fallback');
+              break;
+            }
+            const isTransient = msg.includes('401') || msg.includes('403') || msg.includes('503') || msg.includes('Transient Error') || msg.includes('empty result');
             if (isTransient && canvasAttempt < canvasMaxAttempts - 1) {
               const backoffMs = 800 * Math.pow(2, canvasAttempt);
               console.warn(`[Canvas TTS] Transient error "${msg}" — retrying in ${backoffMs}ms (attempt ${canvasAttempt + 2}/${canvasMaxAttempts})`);
@@ -1047,7 +1057,17 @@ const createTTS = deps => {
             // ('Kore') passed through raw made the engine return
             // nothing, SILENTLY, while ready (field log 2026-07-20).
             const kokoroVoice = _kokoroVoicePrefix.test(String(voiceName || '')) ? voiceName : 'af_heart';
-            const kokoroController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            // Preserve the loader's ownership contract: a signal-free
+            // prewarm owns shareable background work, while an active
+            // request with an upstream signal remains cancellable.
+            // Manufacturing a controller for prewarm made every call
+            // look signal-owned, so Kokoro could not register it in
+            // its background in-flight map and active playback ran a
+            // duplicate generation.
+            const kokoroController = _signal && typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const kokoroSpeakOptions = _signal ? {
+              signal: kokoroController?.signal || _signal
+            } : undefined;
             let kokoroTimedOut = false;
             const relayKokoroAbort = () => {
               try {
@@ -1061,9 +1081,7 @@ const createTTS = deps => {
             }
             let kokoroTimer = null;
             try {
-              const url = await Promise.race([window._kokoroTTS.speak(localTtsText, kokoroVoice, speed, {
-                signal: kokoroController?.signal || _signal
-              }), new Promise((_, reject) => {
+              const url = await Promise.race([window._kokoroTTS.speak(localTtsText, kokoroVoice, speed, kokoroSpeakOptions), new Promise((_, reject) => {
                 kokoroTimer = setTimeout(() => {
                   kokoroTimedOut = true;
                   relayKokoroAbort();

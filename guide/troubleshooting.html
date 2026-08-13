@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Recover work and diagnose common classroom problems.">
+  <title>Troubleshooting ? AlloFlow Teacher Guide</title>
+  <link rel="stylesheet" href="guide.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="brand" href="index.html" aria-label="AlloFlow Teacher Guide home">
+        <span class="brand__mark" aria-hidden="true">A</span>
+        <span>AlloFlow Teacher Guide</span>
+      </a>
+      <nav class="utility-nav" aria-label="Guide utilities">
+        <a href="../launch.html">Open AlloFlow</a>
+        <a href="tool-reference.html">Guide tool reference</a>
+        <a href="../tools.html">Find a tool</a>
+        <a href="offline.html">Offline and print edition</a>
+      </nav>
+    </div>
+  </header>
+  <div class="page-shell">
+    <aside class="sidebar">
+      <nav class="chapter-nav" aria-label="Teacher guide chapters">
+        <p class="chapter-nav__title">Teacher guide</p>
+        <ol>
+          <li><a href="start-here.html">Start here: prepare your first student-ready resource</a></li>
+          <li><a href="prepare-a-lesson.html">Prepare a purposeful, differentiated lesson</a></li>
+          <li><a href="live-sessions.html">Run a live lesson safely and calmly</a></li>
+          <li><a href="accessibility-and-udl.html">Accessibility and UDL: verify the learner experience</a></li>
+          <li><a href="review-and-next-steps.html">Review evidence and plan next steps</a></li>
+          <li><a href="classroom-workflows.html">Classroom workflows</a></li>
+          <li><a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a></li>
+          <li><a href="troubleshooting.html" aria-current="page">Troubleshooting</a></li>
+          <li><a href="specialist-reference.html">Specialist and product reference</a></li>
+          <li><a href="school-rollout-and-coaching.html">School rollout and coaching</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <main id="main-content" class="guide-main" tabindex="-1">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="index.html">Guide home</a></li>
+          <li aria-current="page">Troubleshooting</li>
+        </ol>
+      </nav>
+      <article class="guide-article">
+<h1 id="troubleshooting">Troubleshooting</h1>
+        <p class="chapter-summary">Recover work and diagnose common classroom problems.</p>
+        <dl class="chapter-cues" aria-label="Chapter at a glance">
+          <div>
+            <dt>Best for</dt>
+            <dd>Teacher or support lead</dd>
+          </div>
+          <div>
+            <dt>Typical use</dt>
+            <dd>First 90 seconds</dd>
+          </div>
+        </dl>
+        <p class="chapter-meta">Chapter 8 of 10 ? Verified <time datetime="2026-08-13">2026-08-13</time></p>
+        <nav class="section-nav" aria-labelledby="section-nav-title">
+          <p id="section-nav-title" class="section-nav__title">On this page</p>
+          <ol>
+            <li><a href="#use-the-first-90-seconds-well">Use the first 90 seconds well</a></li>
+            <li><a href="#preserve-work-before-reloading">Preserve work before reloading</a></li>
+            <li><a href="#identify-the-environment">Identify the environment</a></li>
+            <li><a href="#the-app-or-a-tool-will-not-open">The app or a tool will not open</a></li>
+            <li><a href="#ai-generation-is-unavailable-slow-or-wrong">AI generation is unavailable, slow, or wrong</a></li>
+            <li><a href="#a-source-file-will-not-import">A source file will not import</a></li>
+            <li><a href="#students-cannot-join-a-live-session">Students cannot join a Live Session</a></li>
+            <li><a href="#students-joined-but-did-not-receive-the-resource">Students joined but did not receive the resource</a></li>
+            <li><a href="#responses-or-evidence-are-missing">Responses or evidence are missing</a></li>
+            <li><a href="#audio-speech-or-microphone-features-do-not-work">Audio, speech, or microphone features do not work</a></li>
+            <li><a href="#save-project-or-load-project-fails">Save Project or Load Project fails</a></li>
+            <li><a href="#an-export-qr-code-or-shared-package-fails">An export, QR code, or shared package fails</a></li>
+            <li><a href="#accessibility-controls-are-difficult-to-use">Accessibility controls are difficult to use</a></li>
+            <li><a href="#a-specialist-tool-shows-a-loading-or-compatibility-message">A specialist tool shows a loading or compatibility message</a></li>
+            <li><a href="#report-a-useful-privacy-safe-issue">Report a useful, privacy-safe issue</a></li>
+            <li><a href="#know-when-to-stop-troubleshooting">Know when to stop troubleshooting</a></li>
+          </ol>
+        </nav>
+      <section class="guide-search" aria-labelledby="guide-search-title" data-guide-search data-search-index="search-index.json">
+        <h2 id="guide-search-title">Search the guide</h2>
+        <form class="guide-search__form" role="search" action="index.html" method="get" data-guide-search-form>
+          <label for="guide-search-input">What do you need help with?</label>
+          <div class="guide-search__controls">
+            <input id="guide-search-input" name="q" type="search" autocomplete="off" spellcheck="true" placeholder="Try live session, glossary, privacy, or audio" data-guide-search-input>
+            <button type="submit">Search</button>
+          </div>
+        </form>
+        <p id="guide-search-status" class="guide-search__status" role="status" aria-live="polite" data-guide-search-status>Type one or more words to search every chapter.</p>
+        <div class="guide-search__results" data-guide-search-results></div>
+          <noscript>
+            <div class="search-no-script">
+              <p>Search needs JavaScript. Browse the complete chapter list instead:</p>
+              <ul>
+              <li><a href="start-here.html">Start here: prepare your first student-ready resource</a></li>
+              <li><a href="prepare-a-lesson.html">Prepare a purposeful, differentiated lesson</a></li>
+              <li><a href="live-sessions.html">Run a live lesson safely and calmly</a></li>
+              <li><a href="accessibility-and-udl.html">Accessibility and UDL: verify the learner experience</a></li>
+              <li><a href="review-and-next-steps.html">Review evidence and plan next steps</a></li>
+              <li><a href="classroom-workflows.html">Classroom workflows</a></li>
+              <li><a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a></li>
+              <li><a href="troubleshooting.html">Troubleshooting</a></li>
+              <li><a href="specialist-reference.html">Specialist and product reference</a></li>
+              <li><a href="school-rollout-and-coaching.html">School rollout and coaching</a></li>
+              </ul>
+            </div>
+          </noscript>
+      </section>
+<p>When something breaks during class, protect student learning first and diagnose second. Move students to the prepared fallback, preserve unsaved work, and avoid turning a connection problem into a participation or behavior judgment.</p>
+<p>If the issue involves identifying or sensitive information, stop sharing and follow the incident steps in <a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a>.</p>
+<h2 id="use-the-first-90-seconds-well">Use the first 90 seconds well</h2>
+<ol>
+<li><strong>Keep the current tab open.</strong> Do not reload until you have protected work that exists only on screen.</li>
+<li><strong>Move students to the fallback.</strong> Use the printed source, saved PDF, screenshot sequence, independent reading, partner explanation, or non-AI task you prepared.</li>
+<li><strong>Name the scope.</strong> Is the problem one student, one group, the whole class, one tool, all AI features, or the entire site?</li>
+<li><strong>Name the stage.</strong> Did it fail while opening, importing, generating, previewing, delivering, responding, saving, or exporting?</li>
+<li><strong>Check visible status.</strong> Look for offline, sync, AI backend, microphone, loading, or retry indicators.</li>
+<li><strong>Turn on Help Mode.</strong> Press <strong>?</strong> to reveal contextual help. Use Help Search when it is available.</li>
+<li><strong>Try one controlled recovery.</strong> Repeated clicking can create duplicate jobs or make the state harder to interpret.</li>
+</ol>
+<h2 id="preserve-work-before-reloading">Preserve work before reloading</h2>
+<p>Use the safest available option:</p>
+<ul>
+<li>Select Save Project and download the AlloFlow project file to an approved location.</li>
+<li>Copy teacher-authored directions or unsaved text into an approved temporary document.</li>
+<li>Download an available export.</li>
+<li>Record the current step, resource title, and error message.</li>
+<li>Take a redacted screenshot that does not expose student names, responses, or sensitive content.</li>
+</ul>
+<p>If Save Project is unavailable, keep the tab open while you test a second approved browser tab or device. Do not copy student data into a public chatbot, personal email, or unapproved note service.</p>
+<h2 id="identify-the-environment">Identify the environment</h2>
+<p>The right fix depends on where AlloFlow is running.</p>
+<div class="table-scroll" role="region" aria-label="Scrollable table" tabindex="0">
+<table>
+<thead>
+<tr>
+<th scope="col">Environment</th>
+<th scope="col">First checks</th>
+<th scope="col">Escalate when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>District-hosted web app</td>
+<td>approved URL, sign-in, online indicator, browser support, district service notice</td>
+<td>several users or features fail on the approved site</td>
+</tr>
+<tr>
+<td>Desktop or local-network app</td>
+<td>desktop runtime is open, local engine status, teacher host is reachable, devices are on the intended network</td>
+<td>the runtime will not start or school security controls block the local host</td>
+</tr>
+<tr>
+<td>Canvas-style or provider-hosted authoring</td>
+<td>school account, platform availability, correct shared artifact, provider limits</td>
+<td>the surrounding platform fails or student live use is not part of the approved design</td>
+</tr>
+<tr>
+<td>LMS launch</td>
+<td>course and role context, pop-up or new-tab behavior, third-party cookie restrictions, assignment link</td>
+<td>the launch has the wrong role/course or repeatedly loses context</td>
+</tr>
+<tr>
+<td>Student live-session page</td>
+<td>correct environment, active code, approved codename, connection status</td>
+<td>multiple students cannot join, receive, or return responses</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="deployment-specific-recovery-paths">Deployment-specific recovery paths</h3>
+<p>Use one path at a time. Do not mix a browser-hosted URL, a Desktop LAN address, and a School Box address in the same class session.</p>
+<h4 id="district-hosted-browser-app">District-hosted browser app</h4>
+<ul>
+<li>Start from the district-approved URL and confirm the teacher and student roles.</li>
+<li>Test one harmless teacher preview before opening student access.</li>
+<li>If the shell opens but generation or a specialist tool fails, record the feature name and visible status; do not switch to a personal provider.</li>
+<li>If several users fail at once, check the district service notice and escalate with the approved URL and timestamp.</li>
+</ul>
+<h4 id="gemini-canvas-or-lms-launched-use">Gemini Canvas or LMS-launched use</h4>
+<ul>
+<li>Return through the assigned Canvas/LMS link so course and role context are restored.</li>
+<li>Confirm that the activity or shared artifact is the current one, not an old tab or copied link.</li>
+<li>Treat provider availability, account eligibility, quota, and school administrator settings as separate from AlloFlow content problems.</li>
+<li>If live student participation is not part of the approved Canvas design, use the teacher-led or offline fallback.</li>
+</ul>
+<h4 id="alloflow-desktop-and-desktop-lan">AlloFlow Desktop and Desktop LAN</h4>
+<ul>
+<li>Keep the teacher runtime open while students connect.</li>
+<li>Confirm that students are on the intended classroom network and that the displayed LAN address is current.</li>
+<li>Use the Desktop LAN / Local Network mode for a same-room session; do not substitute a cloud URL midway through class.</li>
+<li>If the runtime or local engine is unavailable, preserve the project and move to the prepared offline activity.</li>
+</ul>
+<h4 id="optional-school-box-server">Optional School Box server</h4>
+<ul>
+<li>Treat School Box as a separate school-owned server/appliance path, not as a synonym for Desktop LAN.</li>
+<li>In the Desktop Command Center, check the configured mode, address, server status, and service health before class.</li>
+<li>Start or prepare the optional server only when the stack is installed and the device is authorized to host it.</li>
+<li>If the server is missing, stopped, or unreachable, use Desktop LAN or the offline fallback rather than repeatedly changing ports during instruction.</li>
+<li>Ask IT to review server logs and network policy; do not expose server credentials or student data in a general support ticket.</li>
+</ul>
+<p>After identifying the path, repeat the same controlled test: one teacher action, one fictional or low-risk resource, and one student/device. If that test fails, stop changing variables and escalate.
+Do not change firewall, proxy, certificate, device-management, or account settings on your own. Give district IT the deployment and symptom details.</p>
+<h2 id="the-app-or-a-tool-will-not-open">The app or a tool will not open</h2>
+<h3 id="what-to-check">What to check</h3>
+<ol>
+<li>Confirm that the main AlloFlow shell loaded.</li>
+<li>Try Help Mode or Find a Tool to make sure you are using the current route.</li>
+<li>Wait for the visible loading state to finish. Some specialist and studio surfaces load on demand.</li>
+<li>Use the tool card’s Retry action if one appears.</li>
+<li>Check whether other tools in the same hub open.</li>
+<li>Save the project, then perform one normal browser reload.</li>
+<li>Reopen the project and return to the tool.</li>
+</ol>
+<h3 id="what-the-pattern-means">What the pattern means</h3>
+<ul>
+<li><strong>One tool fails:</strong> likely a tool-specific loading or compatibility issue.</li>
+<li><strong>A whole hub fails:</strong> likely a blocked or unavailable asset family.</li>
+<li><strong>Everything except the shell fails:</strong> likely network, content-filter, CDN, or deployment configuration.</li>
+<li><strong>Only one device fails:</strong> likely browser cache, extension, device policy, or local resource pressure.</li>
+</ul>
+<p>If a content filter or network rule is suspected, report the approved site URL, the visible tool name, the time, and the error. IT can inspect the request without receiving student content.</p>
+<h2 id="ai-generation-is-unavailable-slow-or-wrong">AI generation is unavailable, slow, or wrong</h2>
+<h3 id="if-generation-does-not-start">If generation does not start</h3>
+<ol>
+<li>Check AI Backend Settings on the Launch Pad or the backend/status area in your deployment.</li>
+<li>Confirm that the selected backend is approved and reports available.</li>
+<li>Try a short, de-identified test prompt such as “Create three questions about the water cycle.”</li>
+<li>If the test works, reduce the original source to one relevant section and retry once.</li>
+<li>If the test fails, switch only to another district-approved backend or use the non-AI fallback.</li>
+</ol>
+<p>Possible causes include provider availability, account or quota restrictions, local-engine status, a network interruption, an oversized or unsupported source, or a deployment configuration problem.</p>
+<h3 id="if-generation-finishes-but-is-low-quality">If generation finishes but is low quality</h3>
+<p>Do not solve the problem by repeatedly requesting “make it better.” Tighten the task:</p>
+<ul>
+<li>state the learning target and grade band;</li>
+<li>identify the exact source section;</li>
+<li>specify the desired output and length;</li>
+<li>name required vocabulary or evidence;</li>
+<li>provide a model or success criteria; and</li>
+<li>ask the system not to add facts beyond the source.</li>
+</ul>
+<p>Then perform the human review in <a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a>. A fluent answer can still be inaccurate.</p>
+<h2 id="a-source-file-will-not-import">A source file will not import</h2>
+<ol>
+<li>Confirm that the file type is supported by the source input shown in your deployment.</li>
+<li>Give the file a simple filename and verify that it opens normally outside AlloFlow.</li>
+<li>Remove passwords or encryption only if you are authorized to create a working copy.</li>
+<li>If the PDF is scanned, run an approved OCR workflow and check the recognized text.</li>
+<li>Split a very long file into the section needed for the lesson.</li>
+<li>Copy clean, permitted text into Direct Paste as a fallback.</li>
+<li>Review tables, formulas, columns, footnotes, and image-only content after import.</li>
+</ol>
+<p>Do not upload secure tests or copyrighted material that the school is not permitted to process or redistribute.</p>
+<h2 id="students-cannot-join-a-live-session">Students cannot join a Live Session</h2>
+<p>Check in this order:</p>
+<ol>
+<li>The teacher session is still active.</li>
+<li>Teacher and students are using the intended deployment, not two look-alike URLs or a mix of web and local environments.</li>
+<li>Students entered the current code without extra spaces and used the approved codename or roster flow.</li>
+<li>The teacher can see the connection or roster entry.</li>
+<li>The student browser is online and not stuck on an old session.</li>
+<li>A second student can join from another device.</li>
+</ol>
+<h3 id="deployment-specific-checks">Deployment-specific checks</h3>
+<ul>
+<li><strong>Desktop or local network:</strong> verify that the teacher runtime remains open, student devices are on the intended network, and district network isolation is not preventing device-to-host traffic.</li>
+<li><strong>District-hosted live service:</strong> check the district service status, configured authentication, backend rules, and approved URL.</li>
+<li><strong>Peer-connected live path:</strong> school firewalls, VPNs, filtering, or network address translation can affect peer connections. Ask IT to test the approved configuration.</li>
+<li><strong>LMS launch:</strong> have the student return through the assigned LMS link so the correct course context is restored.</li>
+</ul>
+<p>If several students cannot join, stop cycling codes during instruction. Use the fallback and test a new session after class.</p>
+<h2 id="students-joined-but-did-not-receive-the-resource">Students joined but did not receive the resource</h2>
+<ol>
+<li>Confirm the teacher actually sent or activated the resource.</li>
+<li>Check the target: individual, group, or whole class.</li>
+<li>Check Teacher-Paced versus Student-Paced mode.</li>
+<li>Look at delivery state in the live controls or Activity Pulse.</li>
+<li>Ask one affected student to return to the live-session home or current activity.</li>
+<li>Resend once to the correct target.</li>
+<li>If one student still cannot receive it, provide the approved independent share or offline copy and document the access issue.</li>
+</ol>
+<p>Do not publicly identify a support group while troubleshooting. Verify group membership privately.</p>
+<h2 id="responses-or-evidence-are-missing">Responses or evidence are missing</h2>
+<p>Missing data is not proof that a student did not work.</p>
+<ol>
+<li>Confirm the student received and opened the activity.</li>
+<li>Ask where the student responded: live tool, paper, oral response, AAC, exported file, or another approved space.</li>
+<li>Check whether the student reconnected, changed devices, or used a different codename.</li>
+<li>Keep the session open long enough for a permitted retry or follow-up.</li>
+<li>Capture an alternate evidence sample when the transport remains unreliable.</li>
+<li>Mark the record as an access or collection issue rather than assigning a zero.</li>
+</ol>
+<p>Use <a href="review-and-next-steps.html">Review evidence and plan next steps</a> before interpreting an incomplete Activity Pulse or end-session summary.</p>
+<h2 id="audio-speech-or-microphone-features-do-not-work">Audio, speech, or microphone features do not work</h2>
+<ol>
+<li>Check AlloFlow’s global mute control.</li>
+<li>Check the browser’s site permission for microphone or audio.</li>
+<li>Check the Windows or device-level input and output selection.</li>
+<li>Disconnect unused Bluetooth audio devices.</li>
+<li>Test with headphones to prevent feedback.</li>
+<li>Reload only after saving the project.</li>
+<li>Provide a typed, selected, or non-recording route.</li>
+</ol>
+<p>Microphone permission does not guarantee that a recording or speech service is available. Local browser speech support, the selected voice provider, and district network policy can differ by device.</p>
+<p>Never require a student to record a face or voice when the workflow, consent, or storage path is not approved.</p>
+<h2 id="save-project-or-load-project-fails">Save Project or Load Project fails</h2>
+<h3 id="save-problems">Save problems</h3>
+<ul>
+<li>Choose a local or district-approved folder where downloads are allowed.</li>
+<li>Check available device storage and browser download permissions.</li>
+<li>Use a neutral filename.</li>
+<li>Keep the tab open until the download completes.</li>
+<li>Verify the file exists and has the expected AlloFlow project extension.</li>
+</ul>
+<h3 id="load-problems">Load problems</h3>
+<ol>
+<li>Make a copy of the project file before troubleshooting.</li>
+<li>Use Load Project rather than opening the file as a normal document.</li>
+<li>Confirm that it is an AlloFlow project and was not renamed, manually edited, partially synced, or converted by another app.</li>
+<li>Try the project in the same approved deployment that created it.</li>
+<li>If it still fails, create a new project and re-import the original source. Do not repeatedly overwrite the only copy.</li>
+</ol>
+<p>A project may contain sensitive instructional state. Do not attach it to a general support ticket. Provide a de-identified reproduction when possible.</p>
+<h2 id="an-export-qr-code-or-shared-package-fails">An export, QR code, or shared package fails</h2>
+<ol>
+<li>Preview the output outside teacher mode.</li>
+<li>Test every link and media item.</li>
+<li>Check whether the output depends on an active Live Session.</li>
+<li>Confirm that the recipient has permission to open the destination.</li>
+<li>For print or PDF, inspect page breaks, headings, reading order, contrast, answer-key visibility, and background graphics.</li>
+<li>For offline use, confirm that required scripts, fonts, audio, video, or external links are actually included or have an alternative.</li>
+<li>Re-export after fixing the source rather than editing several inconsistent copies.</li>
+</ol>
+<p>If a public or overly broad share was created, revoke it and follow the privacy incident procedure.</p>
+<h2 id="accessibility-controls-are-difficult-to-use">Accessibility controls are difficult to use</h2>
+<ol>
+<li>Press <strong>Tab</strong> to locate focus and <strong>Shift+Tab</strong> to move backward.</li>
+<li>Press <strong>Escape</strong> to close the current modal or overlay when supported.</li>
+<li>Press <strong>?</strong> for Help Mode and check the control’s accessible name.</li>
+<li>Test browser zoom before using a page-specific text-size control.</li>
+<li>Turn on reduced motion or the app’s motion controls when animation is a barrier.</li>
+<li>Use the global mute control if sound is interfering.</li>
+<li>Try Immersive Reader or the relevant reading support after content is loaded.</li>
+<li>If keyboard focus disappears, stop and provide an alternate route rather than requiring mouse use.</li>
+</ol>
+<p>Run Accessibility Lab when available, but also test the real student path. Report the exact control label and the keyboard step where the barrier occurs.</p>
+<h2 id="a-specialist-tool-shows-a-loading-or-compatibility-message">A specialist tool shows a loading or compatibility message</h2>
+<p>Educator Tools such as BehaviorLens, Report Writer, Symbol Studio, Accessibility Lab, document pipelines, and media studios may load additional components.</p>
+<ol>
+<li>Wait for the tool’s own loading state.</li>
+<li>Use its Retry action if shown.</li>
+<li>Confirm that the main app and another Educator Tool work.</li>
+<li>Check whether the feature requires a configured AI, media, OCR, audio, or local service.</li>
+<li>Do not begin an identifiable clinical or record-writing workflow until the approved service and storage path are confirmed.</li>
+<li>Save a de-identified project or reproduce the issue with fictional content before contacting support.</li>
+</ol>
+<h2 id="report-a-useful-privacy-safe-issue">Report a useful, privacy-safe issue</h2>
+<p>Include:</p>
+<ul>
+<li>date, time, and time zone;</li>
+<li>deployment type and approved URL or desktop version;</li>
+<li>teacher or student role;</li>
+<li>browser and device type;</li>
+<li>visible feature and control labels;</li>
+<li>exact steps to reproduce with fictional content;</li>
+<li>expected result and actual result;</li>
+<li>the full error text;</li>
+<li>whether the problem affects one device, a group, or everyone; and</li>
+<li>a redacted screenshot if needed.</li>
+</ul>
+<p>Do not include names, session rosters, live codes, student responses, project files, assessment records, disability information, API keys, or unredacted screenshots.</p>
+<h2 id="know-when-to-stop-troubleshooting">Know when to stop troubleshooting</h2>
+<p>Move fully to the fallback and contact the appropriate school support when:</p>
+<ul>
+<li>multiple students are blocked from the learning target;</li>
+<li>a privacy, security, or safety concern is possible;</li>
+<li>the workaround would bypass district controls;</li>
+<li>a student needs an access method you cannot provide safely;</li>
+<li>the local runtime, backend, LMS, or district-hosted service repeatedly fails; or</li>
+<li>continued retries risk losing work.</li>
+</ul>
+<p>After class, reproduce the issue with fictional content and one controlled variable at a time. For routes and terminology that can help you describe the problem, see <a href="specialist-reference.html">Specialist and product reference</a>.</p>
+      </article>
+      <nav class="chapter-pager" aria-label="Previous and next chapters">
+        <a class="chapter-pager__previous" href="privacy-and-responsible-ai.html"><span>Previous</span>Privacy and responsible AI</a>
+        <a class="chapter-pager__next" href="specialist-reference.html"><span>Next</span>Specialist and product reference</a>
+      </nav>
+    </main>
+  </div>
+  <footer class="site-footer">
+    <p>Teacher guidance, not a substitute for district policy or professional judgment.</p>
+    <p>Guide version 2026.08 &#183; Content verified <time datetime="2026-08-13">2026-08-13</time>.</p>
+  </footer>
+
+  <script src="guide-search.js" defer></script>
+</body>
+</html>

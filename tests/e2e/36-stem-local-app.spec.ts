@@ -113,44 +113,86 @@ for (const viewport of viewports) {
       expect(computedScrollContract.flexBasis).toBe('0%');
       expect(computedScrollContract.touchAction).toContain('pan-y');
 
-      const overflowProbe = await scrollRegion.evaluate((element) => {
+      // Exercise the real workspace content. A synthetic spacer used to make
+      // this test pass even though active tools were rendered as siblings of
+      // the scroll region and clipped by the modal shell.
+      const regionOwnsLab = await labRoot.evaluate((element) => {
+        const region = element.closest('[data-stem-scroll-region="true"]');
+        return !!region && region.getAttribute('data-stem-scroll-contract') === 'vertical';
+      });
+      expect(regionOwnsLab).toBe(true);
+
+      const naturalOverflow = await scrollRegion.evaluate((element) => {
         const region = element as HTMLElement;
-        const probe = document.createElement('div');
-        probe.dataset.stemScrollProbe = 'true';
-        probe.setAttribute('aria-hidden', 'true');
-        probe.style.height = '1400px';
-        probe.style.minHeight = '1400px';
-        probe.style.width = '1px';
-        region.appendChild(probe);
-        region.scrollTop = 320;
         return {
           clientHeight: region.clientHeight,
           scrollHeight: region.scrollHeight,
-          scrollTop: region.scrollTop,
         };
       });
-      expect(overflowProbe.scrollHeight).toBeGreaterThan(overflowProbe.clientHeight);
-      expect(overflowProbe.scrollTop).toBeGreaterThan(0);
+      expect(naturalOverflow.scrollHeight).toBeGreaterThan(naturalOverflow.clientHeight);
+
+      // Overflow belongs to the inner workspace, not the locked modal shell.
+      const shellOverflow = await shell.evaluate((element) => {
+        const shellElement = element as HTMLElement;
+        return {
+          clientHeight: shellElement.clientHeight,
+          scrollHeight: shellElement.scrollHeight,
+        };
+      });
+      expect(shellOverflow.scrollHeight).toBeLessThanOrEqual(shellOverflow.clientHeight + 1);
 
       await scrollRegion.evaluate((element) => ((element as HTMLElement).scrollTop = 0));
       const scrollBox = await scrollRegion.boundingBox();
       expect(scrollBox).not.toBeNull();
-      await page.mouse.move(
-        scrollBox!.x + scrollBox!.width - 10,
-        scrollBox!.y + Math.min(120, scrollBox!.height / 2),
-      );
-      await page.mouse.wheel(0, 500);
-      await expect.poll(() => scrollRegion.evaluate((element) => (element as HTMLElement).scrollTop)).toBeGreaterThan(0);
+      if (viewport.name === 'desktop') {
+        await page.mouse.move(
+          scrollBox!.x + scrollBox!.width - 16,
+          scrollBox!.y + Math.min(120, scrollBox!.height / 2),
+        );
+        await page.mouse.wheel(0, 500);
+        await expect.poll(() => scrollRegion.evaluate((element) => (element as HTMLElement).scrollTop)).toBeGreaterThan(0);
+      } else {
+        // A resized desktop page is not a mobile interaction test. Send a
+        // trusted Chromium touch sequence and verify that the browser itself
+        // scrolls the real tool workspace.
+        const cdp = await page.context().newCDPSession(page);
+        try {
+          await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+          await scrollRegion.evaluate((element) => {
+            element.setAttribute('data-stem-touch-seen', 'false');
+            element.addEventListener('touchstart', (event) => {
+              element.setAttribute('data-stem-touch-seen', event.isTrusted ? 'trusted' : 'untrusted');
+            }, { once: true, capture: true });
+          });
+          const x = Math.round(scrollBox!.x + scrollBox!.width - 16);
+          const startY = Math.round(scrollBox!.y + scrollBox!.height * 0.78);
+          const endY = Math.round(scrollBox!.y + scrollBox!.height * 0.22);
+          await cdp.send('Input.dispatchTouchEvent', {
+            type: 'touchStart',
+            touchPoints: [{ x, y: startY, radiusX: 4, radiusY: 4, force: 1 }],
+          });
+          for (let step = 1; step <= 8; step += 1) {
+            const y = Math.round(startY + ((endY - startY) * step) / 8);
+            await cdp.send('Input.dispatchTouchEvent', {
+              type: 'touchMove',
+              touchPoints: [{ x, y, radiusX: 4, radiusY: 4, force: 1 }],
+            });
+            await page.waitForTimeout(24);
+          }
+          await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+          await expect(scrollRegion).toHaveAttribute('data-stem-touch-seen', 'trusted');
+          await expect.poll(() => scrollRegion.evaluate((element) => (element as HTMLElement).scrollTop)).toBeGreaterThan(0);
+        } finally {
+          await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false }).catch(() => {});
+          await cdp.detach();
+        }
+      }
 
       await scrollRegion.evaluate((element) => ((element as HTMLElement).scrollTop = 0));
       await scrollRegion.focus();
       await page.keyboard.press('PageDown');
       await expect.poll(() => scrollRegion.evaluate((element) => (element as HTMLElement).scrollTop)).toBeGreaterThan(0);
-      await scrollRegion.evaluate((element) => {
-        const region = element as HTMLElement;
-        region.querySelector('[data-stem-scroll-probe="true"]')?.remove();
-        region.scrollTop = 0;
-      });
+      await scrollRegion.evaluate((element) => ((element as HTMLElement).scrollTop = 0));
 
       expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden');
 

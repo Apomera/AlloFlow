@@ -278,6 +278,22 @@ describe('bridge transport', () => {
     expect(handler).not.toContain('creq.posture');
   });
 
+  it('relays desktop overlay guidance only from the exact coach window and leaves native matching to Desktop', () => {
+    expect(moduleText).toContain("'allostudio-coach-overlay',");
+    const handler = moduleText.slice(
+      moduleText.indexOf("ev.data.type === 'allostudio-coach-overlay'"),
+      moduleText.indexOf("ev.data.type === 'allostudio-ai-cancel'")
+    );
+    expect(handler).toContain('ev.source !== vsTakeStore.coachWin');
+    expect(handler).toContain('vsSanitizeCoachAdvice');
+    expect(handler).toContain("overlaySurface === 'monitor' || overlaySurface === 'window'");
+    expect(handler).toContain("sourceLabel: String(ev.data.sourceLabel || '').slice(0, 260)");
+    expect(handler).toContain('desktopCoachApi.updateCoachOverlay');
+    expect(html).toContain("type: 'allostudio-coach-overlay'");
+    expect(html).toContain("displaySurface === 'monitor' || displaySurface === 'window'");
+    expect(html.indexOf('clearDesktopOverlay();')).toBeLessThan(html.indexOf('var frame = grabFrame();'));
+  });
+
   describe('sender check', () => {
     let VS;
     beforeAll(() => { loadAlloModule('video_studio_module.js'); VS = window.AlloModules.VideoStudio; });
@@ -367,6 +383,32 @@ describe('canvas hardening', () => {
     }
   });
 
+  it('reuses the Video Studio outbound-origin confirmation pattern for screenshots', () => {
+    const consent = html.slice(html.indexOf('var bridgeSendApproved'), html.indexOf('// Answer the app\'s ping'));
+    expect(consent).toContain('function confirmBridgeScreenshotSend()');
+    expect(consent).toContain('window.confirm');
+    expect(consent).toContain('target');
+    expect(consent).toContain('bridgeDeclined = true');
+    expect(consent).toContain('bridgeAvailable = false');
+    expect(consent).toContain("applyPosture('learner')");
+    expect(consent).toContain('Nothing was sent');
+    const suggest = html.slice(html.indexOf('async function suggest(fromAuto)'), html.indexOf("$('coachSuggestBtn').addEventListener"));
+    expect(suggest).toContain('if (bridgeAvailable && !confirmBridgeScreenshotSend())');
+    expect(suggest.indexOf('confirmBridgeScreenshotSend()')).toBeLessThan(suggest.indexOf('var frame = grabFrame();'));
+  });
+
+  it('keeps an open coach synchronized with app role transitions', () => {
+    expect(moduleText).toContain('function vsSetCoachPosture(posture)');
+    expect(moduleText).toContain('VS_HELPERS.setCoachPosture = vsSetCoachPosture');
+    const app = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/App.jsx'), 'utf-8');
+    const sync = app.slice(app.indexOf('A coach popup can outlive a role transition'), app.indexOf('// stripUndefined'));
+    expect(sync).toContain("isTeacherMode && !isParentMode ? 'educator' : 'learner'");
+    expect(sync).toContain('window.__alloPendingCoachPosture = posture');
+    expect(sync).toContain("typeof VS.setCoachPosture === 'function'");
+    expect(sync).toContain('VS.setCoachPosture(posture)');
+    expect(sync).toContain('[isTeacherMode, isParentMode]');
+  });
+
   // usercontent.goog is the origin Canvas actually serves from, and it was
   // missing, so teachers on the primary surface were warned their own app was
   // an unrecognised site before every first Send.
@@ -424,6 +466,7 @@ describe('canvas hardening', () => {
     const listener = html.slice(html.indexOf("ev.data.type !== 'allostudio-ping'") - 400, html.indexOf('// ── Backend settings'));
     expect(listener).toContain("var realOrigin = (ev.origin && ev.origin !== 'null') ? ev.origin : '';");
     expect(listener).toContain('if (!openerOrigin && realOrigin) openerOrigin = realOrigin;');
+    expect(listener).toContain('if (isTrustedEducatorOpenerOrigin(realOrigin)) bridgeSendApproved = true;');
     expect(listener).toContain("ev.data.bridge !== bridgeToken");
     // No wildcard target anywhere on this page.
     expect(html).not.toMatch(/postMessage\([^\n]*['"]\*['"]/);

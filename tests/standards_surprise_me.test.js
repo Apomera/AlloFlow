@@ -64,7 +64,8 @@ describe('robustness', () => {
   it('model output is clamped and validated, and failure is a toast not a crash', () => {
     expect(source).toContain('.slice(0, 3)');
     expect(source).toContain("throw new Error('no usable directions')");
-    expect(source).toContain('Could not propose lesson directions');
+    expect(source).toContain('fallbackDirections');
+    expect(source).toContain('AI directions were unavailable, so AlloFlow prepared three editable starters.');
   });
 
   it('"Use this direction" attaches the RESOLVED standard context', () => {

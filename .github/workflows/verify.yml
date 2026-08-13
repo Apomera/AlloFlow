@@ -41,6 +41,8 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
+      - name: Searchable teacher guide is current
+        run: npm run verify:teacher-guide
       - name: Maintained documentation accuracy and local links
         run: npm run audit:docs
       - name: Promotional-site accuracy, accessibility, and local links

@@ -42,12 +42,13 @@ const Contracts = require(path.join(__dirname, '..', '..', 'agent_core_contracts
 const BlueprintServiceModule = require(path.join(__dirname, '..', '..', 'agent_core_blueprint_service_module.js'));
 const MediaContracts = require(path.join(__dirname, '..', '..', 'agent_core_media_contracts_module.js'));
 const MediaPlanner = require(path.join(__dirname, '..', '..', 'agent_core_media_planner_module.js'));
+const ResourcePackService = require(path.join(__dirname, '..', '..', 'agent_core_resource_pack_module.js'));
 
-const SERVER_INFO = { name: 'alloflow-agent-core', title: 'AlloFlow Agent Core (local)', version: '0.3.0' };
+const SERVER_INFO = { name: 'alloflow-agent-core', title: 'AlloFlow Agent Core (local)', version: '0.4.0' };
 const SUPPORTED_PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const MAX_LINE_CHARS = 4000000;
 const MAX_JOBS = 256;
-const AUDITED_TOOLS = new Set(['blueprint_create', 'blueprint_revise', 'job_cancel']);
+const AUDITED_TOOLS = new Set(['blueprint_create', 'blueprint_revise', 'resource_pack_generate', 'resource_pack_export', 'job_cancel']);
 
 function log(msg) {
   process.stderr.write('[alloflow-mcp] ' + msg + '\n');
@@ -375,6 +376,18 @@ const MEDIA_BATCH_INPUT_SCHEMA = {
   }, additionalProperties: false
 };
 
+const RESOURCE_PACK_REQUEST_INPUT_SCHEMA = {
+  type: 'object', required: ['requestId', 'sourceTopic', 'learningGoal', 'history', 'privacy'],
+  properties: {
+    requestId: { type: 'string', minLength: 1, maxLength: 128 }, title: { type: 'string', maxLength: 240 },
+    sourceTopic: { type: 'string', minLength: 1, maxLength: 1000 }, gradeLevel: { type: 'string', maxLength: 200 },
+    language: { type: 'string', maxLength: 100 }, standards: { type: 'string', maxLength: 4000 },
+    learningGoal: { type: 'string', minLength: 1, maxLength: 1000 }, author: { type: 'string', maxLength: 200 },
+    history: { type: 'array', minItems: 1, maxItems: 24, items: { type: 'object', required: ['id', 'type', 'title', 'data'], properties: { id: { type: 'string', maxLength: 200 }, type: { type: 'string', enum: ResourcePackService.MAX_TYPES }, title: { type: 'string', maxLength: 240 }, timestamp: { type: 'string', maxLength: 80 }, data: {}, meta: { type: 'string', maxLength: 500 } }, additionalProperties: true } },
+    privacy: { type: 'object', required: ['confirmNoStudentPii', 'confirmSourcePermission'], properties: { confirmNoStudentPii: { type: 'boolean', const: true }, confirmSourcePermission: { type: 'boolean', const: true } }, additionalProperties: false }
+  }, additionalProperties: false
+};
+const RESOURCE_PACK_INPUT_SCHEMA = { type: 'object', description: 'A normalized AlloPack envelope.', required: ['allopack', 'sourceTopic', 'history'], properties: { allopack: { type: 'object' }, sourceTopic: { type: 'string' }, history: { type: 'array' } }, additionalProperties: true };
 const TOOLS = [
   toolEntry(
     'capabilities',
@@ -423,6 +436,26 @@ const TOOLS = [
       required: ['artifact'],
       additionalProperties: false
     }
+  ),
+  toolEntry(
+    'resource_pack_generate',
+    'Finalize agent-authored resources into a validated AlloPack draft. The calling agent supplies the generated history; this connector performs no model call, network request, or hidden data transfer. Returns a completed local job; call job_get_result for the pack.',
+    { type: 'object', properties: { request: RESOURCE_PACK_REQUEST_INPUT_SCHEMA }, required: ['request'], additionalProperties: false }
+  ),
+  toolEntry(
+    'resource_pack_validate',
+    'Validate an AlloPack against renderer shapes, privacy safeguards, size limits, and teacher-review warnings. Read-only.',
+    { type: 'object', properties: { pack: RESOURCE_PACK_INPUT_SCHEMA }, required: ['pack'], additionalProperties: false }
+  ),
+  toolEntry(
+    'resource_pack_preview',
+    'Create a side-effect-free teacher review preview of an AlloPack, including resource order, types, warnings, and approval checklist.',
+    { type: 'object', properties: { pack: RESOURCE_PACK_INPUT_SCHEMA }, required: ['pack'], additionalProperties: false }
+  ),
+  toolEntry(
+    'resource_pack_export',
+    'Serialize a validated AlloPack as a downloadable .allopack.json payload. The connector does not write arbitrary filesystem paths.',
+    { type: 'object', properties: { pack: RESOURCE_PACK_INPUT_SCHEMA }, required: ['pack'], additionalProperties: false }
   )
 ];
 
@@ -494,7 +527,34 @@ const TOOL_HANDLERS = {
     assertObject(args.blueprint, 'arguments.blueprint');
     const payload = reportPayload(Contracts.validateBlueprint(args.blueprint)); if (payload.ok) payload.requiredCapabilities = payload.value.requiredCapabilities; return payload;
   },
-  artifact_validate(args) {
+  resource_pack_generate(args) {
+    assertAllowedKeys(args, ['request'], 'arguments');
+    assertObject(args.request, 'arguments.request');
+    const report = ResourcePackService.compose(args.request);
+    if (!report.ok) throw invalidParams('Resource-pack draft failed validation: ' + report.errors.map((e) => e.code).join(', '));
+    const job = createCompletedJob(args.request.requestId);
+    const record = { job, operation: 'resource_pack_generate', result: { kind: 'resource-pack', pack: report.value, warnings: report.warnings, preview: ResourcePackService.previewPack(report.value) } };
+    return pendingWrite({ job: copyValue(job), resultAvailable: true }, { jobId: job.jobId, blueprintId: args.request.requestId }, () => storeJob(record));
+  },
+  resource_pack_validate(args) {
+    assertAllowedKeys(args, ['pack'], 'arguments');
+    assertObject(args.pack, 'arguments.pack');
+    return reportPayload(ResourcePackService.validatePack(args.pack, { strict: true }));
+  },
+  resource_pack_preview(args) {
+    assertAllowedKeys(args, ['pack'], 'arguments');
+    assertObject(args.pack, 'arguments.pack');
+    const report = ResourcePackService.previewPack(args.pack);
+    if (!report.ok) return report;
+    return report;
+  },
+  resource_pack_export(args) {
+    assertAllowedKeys(args, ['pack'], 'arguments');
+    assertObject(args.pack, 'arguments.pack');
+    const result = ResourcePackService.exportPack(args.pack);
+    if (!result.ok) throw invalidParams('Resource-pack export failed validation: ' + result.errors.map((e) => e.code).join(', '));
+    return pendingWrite(result, { blueprintId: args.pack.allopack && args.pack.allopack.title ? String(args.pack.allopack.title) : '' }, () => {});
+  },  artifact_validate(args) {
     assertAllowedKeys(args, ['artifact'], 'arguments');
     assertObject(args.artifact, 'arguments.artifact');
     return reportPayload(Contracts.validateArtifact(args.artifact));
@@ -542,7 +602,7 @@ async function handleRequest(msg) {
         protocolVersion,
         capabilities: { tools: { listChanged: false } },
         serverInfo: SERVER_INFO,
-        instructions: 'AlloFlow Agent Core local connector. Call `capabilities` first; validate or create, revise, and preview deterministic Blueprint drafts, or use `media_plan` for a read-only provider-aware media dry run. These calls do not invoke AI or spend quota. Execution tools are intentionally unavailable.'
+        instructions: 'AlloFlow Agent Core local connector. Call `capabilities` first; validate or create, revise, and preview deterministic Blueprint drafts, compose and validate agent-authored AlloPacks, or use `media_plan` for a read-only provider-aware media dry run. Resource-pack tools do not invoke AI or spend quota; the connector never makes hidden network requests. Execution and publication tools are intentionally unavailable.'
       });
       return;
     }

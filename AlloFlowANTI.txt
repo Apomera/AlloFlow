@@ -2088,7 +2088,7 @@ function _upgradeTTS() {
     const api = factory({
         state: _ttsState,
         apiKey: _alloEffectiveGeminiApiKey(), GEMINI_MODELS, AVAILABLE_VOICES, _isCanvasEnv,
-        languageToTTSCode, isGlobalMuted,
+        languageToTTSCode: (...args) => languageToTTSCode(...args), isGlobalMuted,
         warnLog, debugLog,
         getLeveledTextLanguage: () => _ttsLiveRef.current.leveledTextLanguage,
         getCurrentUiLanguage: () => _ttsLiveRef.current.currentUiLanguage,
@@ -2999,6 +2999,17 @@ const safeSetItem = (key, value) => {
 };
 const safeRemoveItem = (key) => {
     try { localStorage.removeItem(key); } catch(e) { /* silent */ }
+};
+const ALLO_EVALUATION_PORTAL_URL_KEY = 'allo_evaluation_portal_url_v1';
+const normalizeAlloEvaluationPortalUrl = (value) => {
+    try {
+        const url = new URL(String(value || '').trim());
+        if (url.protocol !== 'https:' || url.hostname !== 'script.google.com' || url.port || url.username || url.password || url.search || url.hash) return '';
+        if (!/^\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url.pathname)) return '';
+        return url.origin + url.pathname;
+    } catch (_) {
+        return '';
+    }
 };
 const _applyTextSurgery = (prevHtml, effectiveText) => {
     const _m = window.AlloModules && window.AlloModules.PureHelpers;
@@ -9279,6 +9290,14 @@ const AlloFlowContent = () => {
   });
   const [isParentMode, setIsParentMode] = useState(false);
   const [isIndependentMode, setIsIndependentMode] = useState(false);
+  // A coach popup can outlive a role transition, so keep its permissions in
+  // sync with the current app posture and leave a handoff for a lazy module.
+  useEffect(() => {
+      const posture = isTeacherMode && !isParentMode ? 'educator' : 'learner';
+      window.__alloPendingCoachPosture = posture;
+      const VS = window.AlloModules && window.AlloModules.VideoStudio;
+      if (VS && typeof VS.setCoachPosture === 'function') VS.setCoachPosture(posture);
+  }, [isTeacherMode, isParentMode]);
   // stripUndefined + sanitizeHistoryForCloud extracted to firestore_sync_module.js;
   // top-level shims at file head (line ~130) get upgraded on CDN load.
   const mergeCloudAndLocal = (localItems, cloudItems) => {
@@ -9684,10 +9703,13 @@ Return ONLY JSON:
     if (guidedProgressSaveState.status === 'error') addToast(t('guided.progress_not_saved_exit') || 'Guided Mode closed, but this device could not save your progress.', 'warning');
     else addToast(t('guided.progress_saved') || 'Guided progress saved. Resume anytime from Setup.', 'success');
   };
+  const [isGeneratingSource, setIsGeneratingSource] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
   const [showGuidedTip, setShowGuidedTip] = useState(false);
   const [guidedEngaged, setGuidedEngaged] = useState(false); // has the teacher interacted with the current step's tool?
   useEffect(() => {
     if (guidedMode && guidedStep === 0 && inputText && inputText.trim().length > 20 && guidedActiveSteps.length > 1) {
+    if (isGeneratingSource || isExtracting) return;
       // Convenience skip for teachers who pasted text before entering guided
       // mode — but ONLY once they have completed a guided run before. A
       // first-run teacher must keep step 0 on screen long enough to see the
@@ -9699,7 +9721,7 @@ Return ONLY JSON:
       const advanceTimer = setTimeout(() => setGuidedStep(1), 1500);
       return () => clearTimeout(advanceTimer);
     }
-  }, [guidedMode, guidedStep, inputText, guidedSelectedIds]);
+  }, [guidedMode, guidedStep, inputText, guidedSelectedIds, isGeneratingSource, isExtracting]);
 
   // Hands-on guided tutorial: anchor the active step to its real tool — scroll it into
   // view, ring it, announce it, and notice when the teacher actually uses it (engaged).
@@ -11370,7 +11392,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=f9da7b839');
     loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=f9da7b839');
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=f9da7b839');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=7fc4bd32');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=d9c805c4');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=4ced3dc7');
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=f9da7b839');
@@ -11431,6 +11453,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Leadership Hub (Aug 3 2026) — container shell for the admin suite;
     // Meeting Documentation is its third tool (needs callGemini).
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=ah080304'); }; })();
+    // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=ee081301'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
     window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=f9da7b839'); }; })();
@@ -11569,7 +11593,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=fdf46ad3');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=5bba32e1');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=f9da7b839');
     loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=f9da7b839');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
@@ -11646,7 +11670,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=f9da7b839');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=f9da7b839');
     loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=f9da7b839');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=c1009b85');
+    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=2e1c0ff3');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=f9da7b839');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=f9da7b839');
     loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=f9da7b839');
@@ -11659,7 +11683,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=f9da7b839');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=f9da7b839');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=f9da7b839');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=0315c93c');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=e6ad41eb');
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=f9da7b839');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=f9da7b839');
     loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=f9da7b839');
@@ -13556,6 +13580,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isUdlWalkthroughOpen, setIsUdlWalkthroughOpen] = useState(false);
   const [isDisproAnalyzerOpen, setIsDisproAnalyzerOpen] = useState(false);
   const [isAdminHubOpen, setIsAdminHubOpen] = useState(false);
+  const [isEducatorEvaluationOpen, setIsEducatorEvaluationOpen] = useState(false);
+  const [evaluationPortalUrl, setEvaluationPortalUrl] = useState(() => normalizeAlloEvaluationPortalUrl(safeGetItem(ALLO_EVALUATION_PORTAL_URL_KEY, '')));
   const [isDiagnosisEligibilityOpen, setIsDiagnosisEligibilityOpen] = useState(false);
   const [diagnosisEligibilityFocusSection, setDiagnosisEligibilityFocusSection] = useState(null);
   const [isMeetingDocsOpen, setIsMeetingDocsOpen] = useState(false);
@@ -17261,6 +17287,47 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleSetIsTranslateModalOpenToFalse = React.useCallback(() => setIsTranslateModalOpen(false), []);
   const handleSetShowCloudWarningToFalse = React.useCallback(() => setShowCloudWarning(false), []);
   const handleSetIsProjectSettingsOpenToFalse = React.useCallback(() => setIsProjectSettingsOpen(false), []);
+  const handleSaveEvaluationPortalUrl = React.useCallback((value) => {
+    const raw = String(value || '').trim();
+    if (!raw) {
+      safeRemoveItem(ALLO_EVALUATION_PORTAL_URL_KEY);
+      setEvaluationPortalUrl('');
+      addToast('District evaluation portal disconnected on this device.', 'success');
+      return { ok: true, url: '', connected: false };
+    }
+    const normalized = normalizeAlloEvaluationPortalUrl(raw);
+    if (!normalized) {
+      const error = 'Use the HTTPS Apps Script deployment URL ending in /macros/s/{deployment}/exec.';
+      addToast(error, 'error');
+      return { ok: false, error };
+    }
+    safeSetItem(ALLO_EVALUATION_PORTAL_URL_KEY, normalized);
+    setEvaluationPortalUrl(normalized);
+    addToast('District evaluation portal connected on this device.', 'success');
+    return { ok: true, url: normalized, connected: true };
+  }, [addToast]);
+  const handleOpenPrincipalEvaluationFromSettings = React.useCallback(() => {
+    setIsProjectSettingsOpen(false);
+    setIsAdminHubOpen(false);
+    const portalUrl = normalizeAlloEvaluationPortalUrl(evaluationPortalUrl);
+    if (portalUrl) {
+      try {
+        const portalWindow = window.open(portalUrl, '_blank', 'noopener,noreferrer');
+        if (!portalWindow) {
+          if (!_isDesktopBundledApp) addToast('The district portal was blocked. Allow pop-ups for AlloFlow and try again.', 'error');
+          return;
+        }
+        portalWindow.opener = null;
+      } catch (_) {
+        addToast('The district portal could not open. Check your pop-up settings and try again.', 'error');
+      }
+      return;
+    }
+    if (typeof window.__alloLazyEducatorEvaluation === 'function') {
+      try { window.__alloLazyEducatorEvaluation(); } catch (_) {}
+    }
+    setIsEducatorEvaluationOpen(true);
+  }, [evaluationPortalUrl, addToast]);
   const handleSetShowStudyTimerModalToFalse = React.useCallback(() => setShowStudyTimerModal(false), []);
   const handleSetShowAdventureConfirmationToFalse = React.useCallback(() => setShowAdventureConfirmation(false), []);
   const handleToggleIsFullscreen = React.useCallback(() => setIsFullscreen(prev => !prev), []);
@@ -23184,13 +23251,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [qrShareModal, mbConfig, appId, addToast]);
   const [includeSourceCitations, setIncludeSourceCitations] = useState(false);
   const [saveOriginalOnAdjust, setSaveOriginalOnAdjust] = useState(false);
-  const [isGeneratingSource, setIsGeneratingSource] = useState(false);
+
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlToFetch, setUrlToFetch] = useState('');
   const [urlSearchQuery, setUrlSearchQuery] = useState('');
   const [isUrlSearchMode, setIsUrlSearchMode] = useState(false);
   const [searchOptions, setSearchOptions] = useState([]);
-  const [isExtracting, setIsExtracting] = useState(false);
+
   const [showLargeFileModal, setShowLargeFileModal] = useState(false);
   const [pendingLargeFile, setPendingLargeFile] = useState(null);
   const [pdfAuditResult, setPdfAuditResult] = useState(null);
@@ -25093,11 +25160,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isAutoConfigEnabled, setIsAutoConfigEnabled] = useState(true);
   const [expandedTools, setExpandedTools] = useState(['source-input']);
   const toggleTool = (id) => {
-    setExpandedTools(prev =>
-      prev.includes(id)
-        ? prev.filter(t => t !== id)
-        : (guidedMode ? Array.from(new Set([...prev, id])) : [id])
-    );
+    const isOpening = !expandedTools.includes(id);
+    setExpandedTools(prev => prev.includes(id)
+      ? prev.filter(t => t !== id)
+      : (guidedMode ? Array.from(new Set([...prev, id])) : [id]));
+    if (isOpening && id !== 'source-input' && !guidedMode) {
+      setSelectedToolCatalogId(id);
+      setIsToolCatalogExpanded(false);
+    }
   };
   // The full catalog remains available, but the default rail shows a focused
   // set instead of presenting every generator with equal visual weight.
@@ -25134,13 +25204,29 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   };
   const [toolCatalogGroup, setToolCatalogGroup] = useState('essentials');
   const [toolCatalogQuery, setToolCatalogQuery] = useState('');
+  const [isToolCatalogExpanded, setIsToolCatalogExpanded] = useState(true);
+  const [selectedToolCatalogId, setSelectedToolCatalogId] = useState('');
+  const selectedToolCatalogLabel = selectedToolCatalogId
+    ? ((GUIDED_STEPS.find(step => step.id === selectedToolCatalogId) || {}).label
+      || selectedToolCatalogId.replace(/^ui-tool-/, '').replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase()))
+    : '';
+  const selectToolFromCatalog = (id) => {
+    if (guidedMode || !id) return;
+    setSelectedToolCatalogId(id);
+    setIsToolCatalogExpanded(false);
+  };
+  const openToolCatalog = () => {
+    setIsToolCatalogExpanded(true);
+    requestAnimationFrame(() => document.getElementById('tool-catalog-search')?.focus());
+  };
   const isToolCatalogItemVisible = (id) => {
     if (guidedMode) return true;
     const query = String(toolCatalogQuery || '').trim().toLowerCase();
     if (query) return (`${id} ${TOOL_CATALOG_SEARCH[id] || ''}`).toLowerCase().includes(query);
     return toolCatalogGroup === 'all' || (TOOL_CATALOG_GROUPS[toolCatalogGroup] || TOOL_CATALOG_GROUPS.essentials).includes(id);
   };
-  const hiddenToolCatalogSelector = guidedMode ? '' : TOOL_CATALOG_GROUPS.all
+  const hasToolCatalogControls = !!(window.AlloModules && window.AlloModules.ToolCatalogControls);
+  const hiddenToolCatalogSelector = (guidedMode || !hasToolCatalogControls) ? '' : TOOL_CATALOG_GROUPS.all
     .filter(id => !isToolCatalogItemVisible(id))
     .map(id => GUIDED_TOUR_MAP[id])
     .filter(Boolean)
@@ -28867,65 +28953,124 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       const sentenceText = sentences[chunkReaderIdx] || '';
       if (!sentenceText) return;
       let cancelled = false;
+      const requestController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const stopSweepRaf = () => {
+          if (chunkReaderSweepRafRef.current) {
+              cancelAnimationFrame(chunkReaderSweepRafRef.current);
+              chunkReaderSweepRafRef.current = null;
+          }
+      };
       setChunkReaderSweepPct(0);
       if (chunkReaderSweepAudioRef.current) { try { chunkReaderSweepAudioRef.current.pause(); } catch (e) {} chunkReaderSweepAudioRef.current = null; }
-      if (chunkReaderSweepRafRef.current) { cancelAnimationFrame(chunkReaderSweepRafRef.current); chunkReaderSweepRafRef.current = null; }
+      stopSweepRaf();
       (async () => {
           let url = null;
+          const speechLanguage = leveledTextLanguage || currentUiLanguage || 'English';
           // Pass the selected voice + language: a bare callTTS(text) falls back
           // to the hardcoded default voice (Puck) even when the user chose
-          // another one in settings.
-          try { url = await callTTS(sentenceText, selectedVoice, voiceSpeed || 1, { language: leveledTextLanguage || currentUiLanguage || 'English' }); } catch (e) { url = null; }
-          if (cancelled) { if (url) { try { URL.revokeObjectURL(url); } catch (e) {} } return; }
+          // another one in settings. Read Along is foreground work: do not let
+          // it queue behind warmups or retry a refused cloud model while the
+          // learner waits. The signal also frees the lane when they move on.
+          try {
+              url = await callTTS(sentenceText, selectedVoice, voiceSpeed || 1, {
+                  language: speechLanguage,
+                  maxRetries: 0,
+                  priority: 'interactive',
+                  reason: 'immersive-read-along',
+                  signal: requestController ? requestController.signal : undefined,
+              });
+          } catch (e) {
+              if (e && e.name === 'AbortError') return;
+              url = null;
+          }
+          if (cancelled) return;
           if (url) {
               const audio = new Audio(url);
+              audio.playbackRate = Math.max(0.5, Math.min(2, Number(voiceSpeed) || 1));
               chunkReaderSweepAudioRef.current = audio;
-              audio.addEventListener('timeupdate', () => {
-                  if (chunkReaderSweepAudioRef.current !== audio) return;
+              const updateAudioSweep = () => {
+                  if (cancelled || chunkReaderSweepAudioRef.current !== audio) return;
                   const dur = audio.duration;
                   let pct;
                   if (isFinite(dur) && dur > 0) pct = Math.min(100, (audio.currentTime / dur) * 100);
                   else pct = Math.min(100, (audio.currentTime / Math.max(1.5, sentenceText.length / 15)) * 100);
                   setChunkReaderSweepPct(pct);
+                  if (!audio.paused && !audio.ended) {
+                      chunkReaderSweepRafRef.current = requestAnimationFrame(updateAudioSweep);
+                  }
+              };
+              audio.addEventListener('playing', () => {
+                  stopSweepRaf();
+                  chunkReaderSweepRafRef.current = requestAnimationFrame(updateAudioSweep);
               });
               audio.addEventListener('ended', () => {
+                  stopSweepRaf();
                   setChunkReaderSweepPct(100);
                   if (chunkReaderAutoPlay) {
                       setChunkReaderIdx(prev => prev + 1);
                   }
               });
-              audio.addEventListener('error', () => { setChunkReaderSweepPct(0); });
+              audio.addEventListener('error', () => { stopSweepRaf(); setChunkReaderSweepPct(0); });
               try { await audio.play(); } catch (e) { /* autoplay blocked — user can hit play again */ }
           } else if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
               try {
                   const u = new SpeechSynthesisUtterance(sentenceText);
-                  u.rate = 0.95; u.volume = 0.95;
-                  const estMs = Math.max(1500, sentenceText.length * 60);
-                  const startTs = performance.now();
+                  const fallbackRate = Math.max(0.5, Math.min(2, 0.95 * (Number(voiceSpeed) || 1)));
+                  u.rate = fallbackRate; u.volume = 0.95;
+                  try { u.lang = getSpeechLangCode(speechLanguage); } catch (e) {}
+                  const estMs = Math.max(1000, sentenceText.length * 60) / fallbackRate;
+                  let startTs = null;
+                  let lastBoundaryIndex = -1;
+                  let lastBoundaryEnd = 0;
+                  let lastBoundaryAt = 0;
+                  let hasWordBoundary = false;
                   const tick = () => {
-                      if (cancelled) return;
-                      const elapsed = performance.now() - startTs;
-                      const pct = Math.min(100, (elapsed / estMs) * 100);
+                      if (cancelled || startTs == null) return;
+                      const now = performance.now();
+                      const elapsed = now - startTs;
+                      const boundaryFresh = hasWordBoundary && (now - lastBoundaryAt) <= 750;
+                      const pct = boundaryFresh
+                          ? Math.min(99, (lastBoundaryEnd / Math.max(1, sentenceText.length)) * 100)
+                          : Math.min(99, (elapsed / estMs) * 100);
                       setChunkReaderSweepPct(pct);
                       if (pct < 100) chunkReaderSweepRafRef.current = requestAnimationFrame(tick);
                   };
+                  u.onstart = () => {
+                      startTs = performance.now();
+                      stopSweepRaf();
+                      chunkReaderSweepRafRef.current = requestAnimationFrame(tick);
+                  };
+                  u.onboundary = (event) => {
+                      const boundaryName = String(event && (event.name || event.boundaryType) || '').toLowerCase();
+                      const charIndex = Number(event && event.charIndex);
+                      const charLength = Math.max(0, Number(event && event.charLength) || 0);
+                      if (!Number.isFinite(charIndex) || boundaryName === 'sentence') return;
+                      const isWordBoundary = boundaryName === 'word'
+                          || (!boundaryName && charIndex > lastBoundaryIndex && (charIndex > 0 || charLength > 0));
+                      if (!isWordBoundary) return;
+                      hasWordBoundary = true;
+                      lastBoundaryIndex = charIndex;
+                      lastBoundaryEnd = Math.max(lastBoundaryEnd, charIndex + charLength);
+                      lastBoundaryAt = performance.now();
+                  };
                   u.onend = () => {
-                      if (chunkReaderSweepRafRef.current) { cancelAnimationFrame(chunkReaderSweepRafRef.current); chunkReaderSweepRafRef.current = null; }
+                      stopSweepRaf();
                       setChunkReaderSweepPct(100);
                       if (chunkReaderAutoPlay) setChunkReaderIdx(prev => prev + 1);
                   };
+                  u.onerror = () => { stopSweepRaf(); setChunkReaderSweepPct(0); };
                   window.speechSynthesis.speak(u);
-                  chunkReaderSweepRafRef.current = requestAnimationFrame(tick);
               } catch (e) { /* silent */ }
           }
       })();
       return () => {
           cancelled = true;
+          try { requestController && requestController.abort(); } catch (e) {}
           if (chunkReaderSweepAudioRef.current) { try { chunkReaderSweepAudioRef.current.pause(); } catch (e) {} chunkReaderSweepAudioRef.current = null; }
-          if (chunkReaderSweepRafRef.current) { cancelAnimationFrame(chunkReaderSweepRafRef.current); chunkReaderSweepRafRef.current = null; }
+          stopSweepRaf();
           try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
       };
-  }, [isChunkReaderActive, chunkReaderReadAlong, chunkReaderIdx, chunkReaderAutoPlay, callTTS, generatedContent?.data]);
+  }, [isChunkReaderActive, chunkReaderReadAlong, chunkReaderIdx, chunkReaderAutoPlay, callTTS, generatedContent?.data, selectedVoice, voiceSpeed, leveledTextLanguage, currentUiLanguage]);
   const imagenQueueRef = React.useRef(Promise.resolve());
   const imagenRateLimitedRef = React.useRef(false);
   const imagenKeyNoticeShownRef = React.useRef(false);
@@ -30276,7 +30421,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // current across host re-mounts (theme/lang/profile swaps). One line of
   // host code; all imperative speech routing lives in the CDN helper.
   window.AlloModules = window.AlloModules || {}; window.AlloModules.AlloBotRef = alloBotRef;
-  window.__contentEngineState = {
+  const contentEngineStateRef = useRef(null);
+  contentEngineStateRef.current = {
     inputText, gradeLevel, sourceTopic, generatedContent, currentUiLanguage,
     leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts,
     conceptInput, interestInput, languageInput, activeView, showSourceGen,
@@ -30298,12 +30444,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     setPlayingContentId, setPlaybackState, setIsPlaying, setIsPaused,
   };
   const _contentEngineRef = { current: null };
+  window.__contentEngineState = contentEngineStateRef.current;
   const _getContentEngine = () => {
     if (_contentEngineRef.current) return _contentEngineRef.current;
     const factory = window.AlloModules && window.AlloModules.createContentEngine;
     if (!factory) { console.warn('[ContentEngine] Factory not found on window.AlloModules'); return null; }
     try {
-      _contentEngineRef.current = factory({ callGemini, addToast, t, getBilingualPromptInstruction, flyToElement, callTTS });
+      _contentEngineRef.current = factory({ callGemini, addToast, t, getBilingualPromptInstruction, flyToElement, callTTS, getState: () => contentEngineStateRef.current });
       console.log('[ContentEngine] Factory created successfully:', Object.keys(_contentEngineRef.current || {}));
     } catch(err) {
       console.error('[ContentEngine] Factory creation FAILED:', err);
@@ -38094,10 +38241,22 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           // prefix + narrator + voice map), not text alone: a voice change on
           // the same scene must re-warm (2026-07-17).
           const effectiveVoices = Object.assign({}, (adventureState && adventureState.voiceMap) || {}, voices || {});
-          const key = String(text || '').slice(0, 80) + '|' + String(selectedVoice || '') + '|' + JSON.stringify(effectiveVoices);
+          const language = typeof _pk.resolveAdventureTtsLanguage === 'function'
+              ? _pk.resolveAdventureTtsLanguage(adventureLanguageMode, null, selectedLanguages)
+              : (adventureLanguageMode || 'English');
+          const provider = String((_aiUserConfig && _aiUserConfig.ttsProvider) || 'auto');
+          const isKokoroVoice = /^(af_|am_|bf_|bm_)/i.test(String(selectedVoice || ''));
+          const key = String(text || '') + '|' + String(selectedVoice || '') + '|' + String(language || '') + '|' + provider + '|' + JSON.stringify(effectiveVoices);
           if (!String(text || '') || _advPrewarmedRef.current === key) return;
           _advPrewarmedRef.current = key;
-          _pk.prewarmSequenceAudio(text, { count: 2, voiceMap: effectiveVoices, deps: { callTTS, splitTextToSentences, selectedVoice } });
+          _pk.prewarmSequenceAudio(text, {
+              count: isKokoroVoice ? 1 : 2,
+              voiceMap: effectiveVoices,
+              language,
+              adventureLanguageMode,
+              selectedLanguages,
+              deps: { callTTS, splitTextToSentences, selectedVoice },
+          });
       } catch (_) { /* pre-warm is best-effort; playback synthesizes on demand */ }
   };
   // Warm the PENDING scene while the dice modal / image generation runs (the
@@ -38118,12 +38277,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           // then start the sequenced read on the existing 500ms delay.
           prewarmAdventureAudio(textToSpeak, adventureState.currentScene && adventureState.currentScene.voices);
           const _readTimer = setTimeout(() => {
+              // Mark the turn at dispatch time so a voice/language dependency
+              // change cannot schedule the same scene a second time.
+              lastReadTurnRef.current = adventureState.turnCount;
               handleSpeak(textToSpeak, 'adventure-active');
           }, 500);
           return () => clearTimeout(_readTimer);
       }
       lastReadTurnRef.current = adventureState.turnCount;
-  }, [adventureState.turnCount, adventureState.isLoading, adventureAutoRead, adventureState.history, adventureState.currentScene]);
+  }, [adventureState.turnCount, adventureState.isLoading, adventureAutoRead, adventureState.history, adventureState.currentScene, adventureLanguageMode, selectedLanguages, selectedVoice, _aiUserConfig?.ttsProvider]);
   // Shared deps for every AdventureSessionHandlers wrapper (deduped 2026-07-20;
   // was repeated inline per wrapper — ~3 copies). Built fresh per
   // call so it always reads current state; module destructuring ignores
@@ -47064,49 +47226,34 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) { border: 1px solid CanvasText !important; }
               }
             `}</style>
-            {!guidedMode && (
-              <section data-testid="tool-catalog-controls" aria-labelledby="tool-catalog-title" className="sticky top-0 z-20 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur motion-reduce:backdrop-blur-none">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 id="tool-catalog-title" className="text-sm font-black text-slate-900">Create a resource</h2>
-                    <p className="mt-0.5 text-xs leading-relaxed text-slate-600">Choose a purpose or find the tool you need.</p>
+            {!guidedMode && (() => {
+              const ToolCatalogControls = window.AlloModules && window.AlloModules.ToolCatalogControls;
+              if (ToolCatalogControls) return React.createElement(ToolCatalogControls, {
+                allEditorsExpanded: expandedTools.length >= 16,
+                group: toolCatalogGroup,
+                isExpanded: isToolCatalogExpanded,
+                onCollapse: () => setIsToolCatalogExpanded(false),
+                onGroupChange: (id) => { setToolCatalogQuery(''); setToolCatalogGroup(id); },
+                onOpen: openToolCatalog,
+                onQueryChange: setToolCatalogQuery,
+                onToggleAll: handleToggleAllTools,
+                query: toolCatalogQuery,
+                selectedLabel: selectedToolCatalogLabel,
+                shownCount: TOOL_CATALOG_GROUPS.all.filter(isToolCatalogItemVisible).length,
+                t,
+              });
+              return (
+                <section data-testid="tool-catalog-controls-fallback" aria-labelledby="tool-catalog-fallback-title" className="sticky top-0 z-20 rounded-2xl border border-amber-200 bg-amber-50/95 px-3 py-2 shadow-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <h2 id="tool-catalog-fallback-title" className="text-sm font-black text-slate-900">Create a resource</h2>
+                      <p className="mt-0.5 text-xs leading-relaxed text-slate-700">Catalog filters are still loading. All creation tools remain available below.</p>
+                    </div>
+                    <button type="button" onClick={() => { setToolCatalogQuery(''); setToolCatalogGroup('all'); setIsToolCatalogExpanded(true); }} className="inline-flex min-h-11 shrink-0 items-center rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Show all tools</button>
                   </div>
-                  <span className="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600" aria-live="polite">
-                    {TOOL_CATALOG_GROUPS.all.filter(isToolCatalogItemVisible).length} shown
-                  </span>
-                </div>
-                <label htmlFor="tool-catalog-search" className="mt-3 block text-xs font-bold text-slate-700">Find a tool</label>
-                <div className="relative mt-1">
-                  <Search size={16} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  <input
-                    id="tool-catalog-search"
-                    type="search"
-                    value={toolCatalogQuery}
-                    onChange={(event) => setToolCatalogQuery(event.target.value)}
-                    placeholder="Search glossary, visuals, assessment..."
-                    className="min-h-11 w-full rounded-xl border border-slate-300 bg-white py-2 ps-9 pe-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 sm:text-sm"
-                  />
-                </div>
-                <div role="group" aria-label="Filter creation tools by purpose" className="mt-3 flex flex-wrap gap-2">
-                  {[
-                    ['essentials', 'Recommended'],
-                    ['access', 'Make accessible'],
-                    ['engage', 'Engage'],
-                    ['assess', 'Assess & deliver'],
-                    ['all', 'All tools'],
-                  ].map(([id, label]) => (
-                    <button key={id} type="button" aria-pressed={!toolCatalogQuery && toolCatalogGroup === id} onClick={() => { setToolCatalogQuery(''); setToolCatalogGroup(id); }} className={`min-h-10 rounded-xl border px-3 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${!toolCatalogQuery && toolCatalogGroup === id ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50'}`}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-2 flex justify-end">
-                  <button type="button" onClick={handleToggleAllTools} className="min-h-10 rounded-lg px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" title={expandedTools.length >= 16 ? t('sidebar.collapse_tooltip') : t('sidebar.expand_tooltip')}>
-                    {expandedTools.length >= 16 ? (t('sidebar.collapse_all') || 'Collapse editors') : (t('sidebar.expand_all') || 'Expand all editors')}
-                  </button>
-                </div>
-              </section>
-            )}
+                </section>
+              );
+            })()}
             {/* -- UniversalSettingsPanel (CDN): cross-resource settings (grade, language, standards, interests, DoK, emoji) extracted from the Text Adaptation card 2026-07-28. Mounts ONCE above the tool accordion; per-control applicability is measured (docs/resource_setting_coverage.json). -- */}
             {window.AlloModules && window.AlloModules.UniversalSettingsPanel && React.createElement(window.AlloModules.UniversalSettingsPanel, {
           InfoTooltip, addInterest, addToast, aiStandardQuery, dokLevel,
@@ -47440,7 +47587,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
+                    onClick={() => { selectToolFromCatalog('math'); setShowStemLab(true); setStemLabTab('explore'); }}
                     className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm"
                     aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEAM Lab Explore'}
                   >
@@ -47539,7 +47686,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             <div style={{display: (isTeacherMode && (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'directions')) ? undefined : 'none'}} id="tour-tool-directions" data-help-key="tool_directions" className="rounded-3xl border-2 border-slate-200 hover:border-amber-300 shadow-lg shadow-amber-500/10 transition-all bg-white overflow-hidden">
               <button
                   data-help-key="tool_directions"
-                  onClick={() => { setMbDirectionsDraft(p => p || {}); setShowDirectionsComposer(true); }}
+                  onClick={() => { selectToolFromCatalog('directions'); setMbDirectionsDraft(p => p || {}); setShowDirectionsComposer(true); }}
                   className="w-full p-3 bg-slate-50 flex justify-between items-center hover:bg-amber-50 transition-colors"
               >
                 <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
@@ -47617,21 +47764,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     )}
                 </div>
                 <button
-                    aria-label={fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_original_aria') || 'Generate original Full Pack plan') : (t('fullpack.action_plan_aria') || 'Plan Full Pack')}
+                    aria-label={fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_pack_aria') || 'Generate full pack from the reviewed plan') : (t('fullpack.action_plan_aria') || 'Plan Full Pack')}
                     data-help-key="fullpack_generate"
                     data-testid="full-pack-primary-action"
-                    onClick={fullPackRun?.status === 'ready' ? handleApproveFullPack : handlePlanFullPack}
+                    onClick={() => { selectToolFromCatalog('package-deliver'); return fullPackRun?.status === 'ready' ? handleApproveFullPack() : handlePlanFullPack(); }}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                    className="w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
+                    className={`group w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${fullPackRun?.status === 'ready' ? 'ring-2 ring-indigo-300/80 shadow-md shadow-indigo-200/70' : ''}`}
                 >
                     <div>
                         <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 to-purple-700 group-hover:from-indigo-600 group-hover:to-purple-600 flex items-center gap-2">
                             {isProcessing ? <RefreshCw className="animate-spin text-indigo-600" size={18} /> : <Sparkles size={18} className="text-yellow-600 fill-yellow-600" />}
-                            {fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_original') || 'Generate original plan') : (t('fullpack.action_plan') || 'Plan full pack')}
+                            {fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_pack') || 'Generate full pack') : (t('fullpack.action_plan') || 'Plan full pack')}
                         </span>
-                        <span className="text-[11px] text-slate-600 block mt-0.5">{fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_help') || 'Plan reviewed? Generate these exact resources.') : (t('fullpack.action_plan_help') || 'Review resources, settings, and estimated generations before creating them.')}</span>
+                        <span className="text-[11px] text-slate-600 block mt-0.5">{fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_pack_help') || 'Plan reviewed? Generate the full pack with these exact resources.') : (t('fullpack.action_plan_help') || 'Review resources, settings, and estimated generations before creating them.')}</span>
                     </div>
-                    <ArrowRight size={16} className="text-indigo-300 group-hover:text-indigo-600" />
+                    <ArrowRight aria-hidden="true" size={18} className={`shrink-0 transition-all duration-200 motion-reduce:transition-none group-hover:translate-x-1 ${fullPackRun?.status === 'ready' ? 'text-indigo-700 drop-shadow-sm' : 'text-indigo-300 group-hover:text-indigo-600'}`} />
                 </button>
                 {['running', 'retrying', 'planning'].includes(fullPackRun?.status) && (
                     <button
@@ -47841,7 +47988,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'alignment') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all group">
                 <button
                     data-help-key="tool_alignment"
-                    onClick={() => handleGenerate('alignment-report')}
+                    onClick={() => { selectToolFromCatalog('alignment'); handleGenerate('alignment-report'); }}
                     disabled={!hasSourceOrAnalysis || isProcessing}
                     className="w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
                     title={t('alignment.generate')}
@@ -48029,10 +48176,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 </div>
             </div>
           )}
-          <div className={`px-4 sm:px-6 ${isOutputHeaderCollapsed ? 'py-1.5' : 'py-2 sm:py-4'} border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0 transition-all ${isZenMode || activeView === 'adventure' ? 'hidden' : ''} ${isProcessing ? 'hidden md:flex' : ''}`}>
+          <div className={`px-4 sm:px-6 ${isOutputHeaderCollapsed ? 'py-1.5' : 'py-2 sm:py-4'} border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0 transition-all ${isZenMode || activeView === 'adventure' ? 'hidden' : ''} ${(isProcessing || isGeneratingSource) ? 'hidden md:flex' : ''}`}>
             <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
                 <h3 className={`text-lg font-bold text-slate-700 flex items-center gap-2 truncate ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}>
-                {isProcessing ? <><RefreshCw className="animate-spin text-indigo-600" size={20} /> {generationStep}</> :
+                {(isProcessing || isGeneratingSource) ? <><RefreshCw className="animate-spin text-indigo-600" size={20} /> {generationStep}</> :
                 (activeView === 'input' || activeView === 'analysis') ? <><Sparkles className="text-indigo-600" size={20} /> {t('common.ready') || 'Ready'}</> :
                 activeView === 'glossary' ? <><Globe className="text-blue-600" size={20} /> {t('glossary.title') || 'Glossary'}</> :
                 activeView === 'simplified' ? <><BookOpen className="text-green-600" size={20} /> {t('common.tool_simplified') || 'Text Adaptation'}</> :
@@ -48310,7 +48457,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               onChange={handleAnnotationImportFile}
               aria-hidden="true"
             />
-            {isProcessing && (!generatedContent || !generatedContent?.data) ? (
+            {(isProcessing || isGeneratingSource) && (!generatedContent || !generatedContent?.data) ? (
                 <div data-help-key="gen_loading_screen" className="absolute inset-0 bg-white/95 z-10 flex flex-col items-center justify-center">
                     <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden p-8">
                         <SkeletonLoader type={activeView} />
@@ -51371,7 +51518,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           t,
           openTool: (toolId) => {
             setIsAdminHubOpen(false);
-            if (toolId === 'walkthrough') { if (typeof window.__alloLazyUdlWalkthrough === 'function') { try { window.__alloLazyUdlWalkthrough(); } catch (_) {} } setIsUdlWalkthroughOpen(true); }
+            if (toolId === 'evaluation') { handleOpenPrincipalEvaluationFromSettings(); }
+            else if (toolId === 'walkthrough') { if (typeof window.__alloLazyUdlWalkthrough === 'function') { try { window.__alloLazyUdlWalkthrough(); } catch (_) {} } setIsUdlWalkthroughOpen(true); }
             else if (toolId === 'dispro') { if (typeof window.__alloLazyDisproAnalyzer === 'function') { try { window.__alloLazyDisproAnalyzer(); } catch (_) {} } setIsDisproAnalyzerOpen(true); }
             else if (toolId === 'meetings') { if (typeof window.__alloLazyMeetingDocs === 'function') { try { window.__alloLazyMeetingDocs(); } catch (_) {} } setIsMeetingDocsOpen(true); }
             else if (toolId === 'timelines') { if (typeof window.__alloLazySpedTimelines === 'function') { try { window.__alloLazySpedTimelines(); } catch (_) {} } setIsSpedTimelinesOpen(true); }
@@ -51379,6 +51527,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             else if (toolId === 'mtss') { if (typeof window.__alloLazyMtssTriage === 'function') { try { window.__alloLazyMtssTriage(); } catch (_) {} } setIsMtssTriageOpen(true); }
             else if (toolId === 'diagnosisEligibility') { if (typeof window.__alloLazyDiagnosisEligibility === 'function') { try { window.__alloLazyDiagnosisEligibility(); } catch (_) {} } setDiagnosisEligibilityFocusSection(null); setIsDiagnosisEligibilityOpen(true); }
           },
+        })}
+      </CDNModuleGate>
+      <CDNModuleGate moduleKey="EducatorEvaluation.EducatorEvaluationPanel" isOpen={isEducatorEvaluationOpen} onClose={() => setIsEducatorEvaluationOpen(false)} icon={'\u2705'} displayName="Educator Growth & Evaluation" t={t}>
+        {(EducatorEvaluationPanel) => React.createElement(EducatorEvaluationPanel, {
+          isOpen: true,
+          onClose: () => setIsEducatorEvaluationOpen(false),
+          t,
+          addToast,
         })}
       </CDNModuleGate>
       <CDNModuleGate moduleKey="DiagnosisEligibility.DiagnosisEligibilityPanel" isOpen={isDiagnosisEligibilityOpen} onClose={() => { setIsDiagnosisEligibilityOpen(false); setDiagnosisEligibilityFocusSection(null); }} icon={'\uD83E\uDDE9'} displayName="Diagnosis, Evaluation & School Eligibility" t={t}>
@@ -51777,7 +51933,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       </ErrorBoundary>
       {isProjectSettingsOpen && window.AlloModules && window.AlloModules.ProjectSettingsView && React.createElement(window.AlloModules.ProjectSettingsView, {
           t, studentProjectSettings, setStudentProjectSettings, isTeacherMode,
-          handleSetIsProjectSettingsOpenToFalse
+          handleSetIsProjectSettingsOpenToFalse,
+          onOpenPrincipalEvaluation: handleOpenPrincipalEvaluationFromSettings,
+          evaluationPortalUrl,
+          isEvaluationPortalConnected: !!evaluationPortalUrl,
+          onSaveEvaluationPortalUrl: handleSaveEvaluationPortalUrl
       })}
       {/* --- AI Backend: Canvas-Only Minimal Config --- */}
       {/* Canvas users can't pick a backend or supply an API key (Google injects the key

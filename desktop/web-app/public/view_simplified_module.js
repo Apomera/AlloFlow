@@ -1714,6 +1714,11 @@ function SimplifiedView(props) {
     // Resets when we encounter the first token of the active sentence; each token in
     // the active sentence contributes wordData.text.length to the rolling offset.
     let activeChunkCharOffset = 0;
+    // Read-along uses its own whitespace-free weight clock. The host supplies
+    // chunkReaderSweepPct from the playing clip; convert that sentence-level
+    // percentage into a local fill for each word instead of lighting the whole
+    // sentence at once.
+    let activeSweepCharOffset = 0;
     let lastWasActiveSentence = false;
     const reduceMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     return generatedContent.immersiveData.map((wordData, i) => {
@@ -1744,10 +1749,20 @@ function SimplifiedView(props) {
       const isChunkDimmed = isChunkReaderActive && assignedIdx !== chunkReaderIdx;
       // Track word's char-offset within the active sentence for typewriter mood
       let wordStartChar = -1;
+      let wordSweepStart = -1;
+      let wordSweepWeight = 0;
+      let sentenceSweepWeight = 1;
       if (isChunkHighlight) {
-        if (!lastWasActiveSentence) activeChunkCharOffset = 0;
+        if (!lastWasActiveSentence) {
+          activeChunkCharOffset = 0;
+          activeSweepCharOffset = 0;
+        }
         wordStartChar = activeChunkCharOffset;
         activeChunkCharOffset += (wordData.text || '').length;
+        wordSweepStart = activeSweepCharOffset;
+        wordSweepWeight = Math.max(1, tokenStr.length);
+        activeSweepCharOffset += wordSweepWeight;
+        sentenceSweepWeight = Math.max(1, cleanSentenceForAudio(sentences[assignedIdx] || '').replace(/\s+/g, '').length);
         lastWasActiveSentence = true;
       } else {
         lastWasActiveSentence = false;
@@ -1756,7 +1771,17 @@ function SimplifiedView(props) {
       let moodOpacity = isChunkDimmed ? 0.45 : 1;
       let moodAnimation = '';
       let showHighlight = isChunkHighlight;
-      if (isChunkReaderActive && chunkReaderMood === 'typewriter') {
+      let readAlongWordProgress = null;
+      let readAlongWordState = null;
+      if (isChunkHighlight && chunkReaderReadAlong) {
+        const sweep = Math.max(0, Math.min(100, Number(chunkReaderSweepPct) || 0));
+        const wordStartPct = wordSweepStart / sentenceSweepWeight * 100;
+        const wordEndPct = (wordSweepStart + wordSweepWeight) / sentenceSweepWeight * 100;
+        readAlongWordProgress = Math.max(0, Math.min(100, (sweep - wordStartPct) / Math.max(0.0001, wordEndPct - wordStartPct) * 100));
+        readAlongWordState = readAlongWordProgress >= 100 ? 'complete' : readAlongWordProgress > 0 ? 'current' : 'pending';
+        showHighlight = readAlongWordProgress > 0;
+        moodOpacity = 1;
+      } else if (isChunkReaderActive && chunkReaderMood === 'typewriter') {
         if (isChunkDimmed) moodOpacity = 0.2;
         if (isChunkHighlight) {
           moodOpacity = wordStartChar < chunkTypewriterCharIdx ? 1 : 0;
@@ -1770,6 +1795,8 @@ function SimplifiedView(props) {
       return /*#__PURE__*/React.createElement("span", {
         key: wordData.id || i,
         "data-sentence-idx": assignedIdx,
+        "data-read-along-state": readAlongWordState || undefined,
+        "data-read-along-progress": readAlongWordProgress == null ? undefined : Math.round(readAlongWordProgress),
         style: {
           opacity: moodOpacity,
           transition: chunkReaderMood === 'typewriter' ? 'opacity 0.05s linear' : 'all 0.3s ease',
@@ -1781,7 +1808,12 @@ function SimplifiedView(props) {
           ...(moodAnimation ? {
             animation: moodAnimation
           } : {}),
-          ...(showHighlight || isPlaying && playbackState.currentIdx === assignedIdx ? {
+          ...(readAlongWordProgress != null ? {
+            backgroundImage: `linear-gradient(to right, rgba(250, 204, 21, 0.58) 0%, rgba(250, 204, 21, 0.58) ${readAlongWordProgress}%, transparent ${readAlongWordProgress}%, transparent 100%)`,
+            borderRadius: '4px',
+            boxDecorationBreak: 'clone',
+            WebkitBoxDecorationBreak: 'clone'
+          } : showHighlight || isPlaying && playbackState.currentIdx === assignedIdx ? {
             backgroundColor: 'rgba(250, 204, 21, 0.35)',
             borderRadius: '4px',
             boxDecorationBreak: 'clone',
@@ -1791,7 +1823,7 @@ function SimplifiedView(props) {
       }, /*#__PURE__*/React.createElement(ImmersiveWord, {
         wordData: wordData,
         settings: immersiveSettings,
-        isActive: isPlaying && playbackState.currentIdx === assignedIdx || isChunkHighlight,
+        isActive: isPlaying && playbackState.currentIdx === assignedIdx || isChunkHighlight && (!chunkReaderReadAlong || readAlongWordProgress > 0),
         onClick: e => {
           e.stopPropagation();
           if (interactionMode === 'define') {
@@ -1805,7 +1837,14 @@ function SimplifiedView(props) {
           if (isChunkReaderActive) {
             setChunkReaderIdx(assignedIdx);
           } else {
-            handleSpeak(simplifiedReadAloudText, 'simplified-main', assignedIdx);
+            // ImmersiveWord is an atomic tap target: speak the word that
+            // was tapped through handleSpeak's direct, interactive lane.
+            // A unique non-sequence content id avoids rebuilding and
+            // synthesizing the entire resource from this sentence.
+            const spokenWord = String(wordData.text || '').replace(/\s+/g, ' ').trim();
+            if (spokenWord && typeof handleSpeak === 'function') {
+              handleSpeak(spokenWord, `immersive-word-${wordData.id || i}`, 0, true);
+            }
           }
         }
       }));

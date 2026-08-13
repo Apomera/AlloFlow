@@ -151,7 +151,7 @@ function PdfDiffViewer(props) {
     setPdfFixResult,
     setRangeRejected,
     toggleDiffChunk,
-    warnLog
+    warnLog: warnLog2
   } = props;
   const theme = ["light", "dark", "contrast"].includes(props.theme) ? props.theme : "light";
   const diffDialogRef = React.useRef(null);
@@ -466,13 +466,13 @@ function PdfDiffViewer(props) {
             surgeryCoverage = surg.coverage;
             if (surg.reason) surgeryFailReason = surg.reason;
             if (surgeryCoverage < 0.95) {
-              warnLog("[Diff] Surgery coverage below threshold:", Math.round(surgeryCoverage * 100) + "%", "\u2014 falling back to Gemini");
+              warnLog2("[Diff] Surgery coverage below threshold:", Math.round(surgeryCoverage * 100) + "%", "\u2014 falling back to Gemini");
               newHtml = null;
               surgeryFailReason = "coverage-low-" + Math.round(surgeryCoverage * 100);
             }
           }
         } catch (surgErr) {
-          warnLog("[Diff] Text surgery threw, falling back to Gemini:", surgErr?.message || surgErr);
+          warnLog2("[Diff] Text surgery threw, falling back to Gemini:", surgErr?.message || surgErr);
           surgeryFailReason = "surgery-error-" + (surgErr?.message || "unknown");
         }
         if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
@@ -498,7 +498,7 @@ ${_effectiveText}`;
             remarkedHtml = (raw || "").replace(/^```(?:html)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
           } catch (gErr) {
             if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
-            warnLog("[Diff] Gemini fallback remarkup failed:", gErr?.message || gErr);
+            warnLog2("[Diff] Gemini fallback remarkup failed:", gErr?.message || gErr);
           }
           if (remarkedHtml) {
             const _stripTags = (h) => h.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
@@ -513,7 +513,7 @@ ${_effectiveText}`;
             if (cov >= 0.9) {
               newHtml = remarkedHtml;
             } else {
-              warnLog("[Diff] Gemini fallback coverage too low:", Math.round(cov * 100) + "%");
+              warnLog2("[Diff] Gemini fallback coverage too low:", Math.round(cov * 100) + "%");
             }
           }
         }
@@ -539,7 +539,7 @@ ${_effectiveText}`;
           } catch (_) {
           }
         } else {
-          warnLog("[Diff] Apply failed \u2014 both surgery and Gemini paths could not produce acceptable output. surgeryReason:", surgeryFailReason);
+          warnLog2("[Diff] Apply failed \u2014 both surgery and Gemini paths could not produce acceptable output. surgeryReason:", surgeryFailReason);
           const committed = commitRemarkupOperation(_remarkupOwner, (prev) => prev ? {
             ...prev,
             finalText: _effectiveText,
@@ -609,7 +609,7 @@ ${_effectiveText}`;
           rewritten = (raw || "").replace(/^```\w*\s*/i, "").replace(/\s*```\s*$/, "").trim();
         } catch (e) {
           if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
-          warnLog("[Diff] refine callGemini failed: " + (e && e.message || e));
+          warnLog2("[Diff] refine callGemini failed: " + (e && e.message || e));
         }
         if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
         if (!rewritten) {
@@ -624,7 +624,7 @@ ${_effectiveText}`;
           else failReason = "coverage-" + Math.round((surg && surg.coverage || 0) * 100);
         } catch (e) {
           failReason = "surgery-error";
-          warnLog("[Diff] refine surgery threw: " + (e && e.message || e));
+          warnLog2("[Diff] refine surgery threw: " + (e && e.message || e));
         }
         if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
         if (!newHtml) {
@@ -645,7 +645,7 @@ ${_effectiveText}`;
           } catch (e) {
             if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
             failReason = "gemini-error";
-            warnLog("[Diff] refine gemini fallback failed: " + (e && e.message || e));
+            warnLog2("[Diff] refine gemini fallback failed: " + (e && e.message || e));
           }
         }
         if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
@@ -905,7 +905,7 @@ function GroupSessionModal(props) {
     showGroupModal,
     t,
     updateDoc,
-    warnLog
+    warnLog: warnLog2
   } = props;
   const groupDialogRef = React.useRef(null);
   const groupCloseRef = React.useRef(null);
@@ -955,7 +955,7 @@ function GroupSessionModal(props) {
       await updateDoc(sessionRef, { resources });
       addToast((item.title || "Resource") + (delta < 0 ? " moved earlier" : " moved later"), "success");
     } catch (err) {
-      warnLog("Failed to reorder resource:", err);
+      warnLog2("Failed to reorder resource:", err);
       addToast(t("common.error") || "Could not reorder resource", "error");
     }
   };
@@ -992,7 +992,7 @@ function GroupSessionModal(props) {
         await updateDoc(sessionRef, { resources });
         addToast(t("groups.resources_reordered") || "Resources reordered", "success");
       } catch (err) {
-        warnLog("Failed to reorder resources:", err);
+        warnLog2("Failed to reorder resources:", err);
       }
     }
     setDraggedResourceId(null);
@@ -1018,7 +1018,7 @@ function GroupSessionModal(props) {
       if (r.type === "brainstorm" && Array.isArray(r.data)) return `${r.data.length} ideas`;
       if (r.type === "adventure" && r.data?.scenes) return `${Object.keys(r.data.scenes).length} scenes`;
     } catch (e) {
-      warnLog("Caught error:", e?.message || e);
+      warnLog2("Caught error:", e?.message || e);
     }
     return "";
   };
@@ -1452,7 +1452,6 @@ function plainStandardText(value, limit) {
   const mapped = api && typeof api.toPlainMath === "function" ? api.toPlainMath(value) : String(value == null ? "" : value);
   return limit && mapped.length > limit ? mapped.slice(0, limit) : mapped;
 }
-
 function SurpriseTopicLauncher(props) {
   const { addToast, gradeLevel, setSourceTopic, setSourceTone, setSourceVocabulary, setStandardInputValue, sourceVocabulary, studentInterests } = props;
   const [surpriseQuery, setSurpriseQuery] = React.useState("");
@@ -1461,9 +1460,6 @@ function SurpriseTopicLauncher(props) {
   const [surpriseState, setSurpriseState] = React.useState("idle");
   const [directions, setDirections] = React.useState([]);
   const [hood, setHood] = React.useState(null);
-  // Rung 3: when the snapshot has no lexical hook for a seed, ask the model to
-  // NAME codes, then verify each against the snapshot before it goes near a
-  // proposal. The model is a lookup of last resort, never a source of truth.
   const [codeState, setCodeState] = React.useState("idle");
   const [codeHits, setCodeHits] = React.useState([]);
   const [codeMisses, setCodeMisses] = React.useState([]);
@@ -1475,15 +1471,18 @@ function SurpriseTopicLauncher(props) {
   const proposeFor = async (match) => {
     setSurpriseState("loading");
     setDirections([]);
+    let nextHood = null;
     try {
-      const nextHood = engine.buildHood(provider, match.id);
+      nextHood = engine.buildHood(provider, match.id);
       setHood(nextHood);
-      const raw = await surpriseAi(engine.buildPrompt(match, nextHood, { gradeLevel, studentInterests }), false, false, 0.8);
+      const raw = await surpriseAi(engine.buildPrompt(match, nextHood, { gradeLevel, studentInterests }), true, false, 0.8);
       setDirections(engine.parseDirections(raw));
       setSurpriseState("ready");
     } catch (error) {
-      setSurpriseState("error");
-      if (addToast) addToast("Could not propose lesson directions. Try again.", "error");
+      setDirections(engine.fallbackDirections(match, nextHood));
+      setSurpriseState("ready");
+      warnLog("[SurpriseMe] AI proposal unavailable; using built-in starters:", error && error.message ? error.message : "unknown error");
+      if (addToast) addToast("AI directions were unavailable, so AlloFlow prepared three editable starters.", "info");
     }
   };
   const rollTheDice = () => {
@@ -1545,7 +1544,9 @@ function SurpriseTopicLauncher(props) {
         try {
           const r = provider.resolveStandard(code);
           resolved = r && r.status === "resolved" ? r.match : null;
-        } catch (e) { resolved = null; }
+        } catch (e) {
+          resolved = null;
+        }
         if (resolved) hits.push({ match: resolved, why: String(entry && entry.why || "").slice(0, 90) });
         else misses.push({ code: code.slice(0, 40), why: String(entry && entry.why || "").slice(0, 90) });
       }
@@ -1575,10 +1576,30 @@ function SurpriseTopicLauncher(props) {
       setSourceVocabulary(direction.vocabulary.join(", "));
       changed.push("Key vocabulary");
     }
-    if (addToast) addToast("Set " + changed.join(", ") + ". The standard code is prefilled in Universal Settings.", "success");
+    if (addToast) {
+      addToast("Set " + changed.join(", ") + ". The standard code is prefilled in Universal Settings.", "success");
+    }
   };
   const resolvedMatch = resolution && resolution.status === "resolved" && resolution.match;
-  return /* @__PURE__ */ React.createElement("div", { className: "rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: rollTheDice, disabled: surpriseState === "loading", className: "rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50" }, surpriseState === "loading" ? "Drawing\u2026" : "\u2728 Surprise me"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "a standard" + (gradeLevel ? " for " + gradeLevel : "") + ", at random"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSeedOpen(!seedOpen), "aria-expanded": seedOpen, className: "ml-auto underline text-violet-800 hover:text-violet-900" }, seedOpen ? "Hide" : "Start from a standard or idea")), seedOpen && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex gap-1" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: rollTheDice,
+      disabled: surpriseState === "loading",
+      className: "rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
+    },
+    surpriseState === "loading" ? "Drawing\u2026" : "\u2728 Surprise me"
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "a standard", gradeLevel ? " for " + gradeLevel : "", ", at random"), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => setSeedOpen(!seedOpen),
+      "aria-expanded": seedOpen,
+      className: "ml-auto underline text-violet-800 hover:text-violet-900"
+    },
+    seedOpen ? "Hide" : "Start from a standard or idea"
+  )), seedOpen && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex gap-1" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -1609,7 +1630,48 @@ function SurpriseTopicLauncher(props) {
     candidate.code,
     " \xB7 ",
     candidate.framework || candidate.jurisdiction || candidate.id
-  ))), resolution && resolution.status === "not-found" && (resolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "Closest standards in the loaded snapshots \u2014 pick one to ground the proposals:", (resolution.candidates || []).slice(0, 4).map((candidate) => /* @__PURE__ */ React.createElement("button", { type: "button", key: candidate.id, onClick: () => chooseCandidate(candidate), className: "ml-1 mt-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-left font-bold hover:bg-violet-100" }, candidate.code, /* @__PURE__ */ React.createElement("span", { className: "font-normal" }, " \u00b7 " + plainStandardText(candidate.label || candidate.text, 60))))), resolution && resolution.status === "not-found" && !(resolution.candidates || []).length && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "No word-for-word match in the loaded snapshots, so I asked the AI which standard this is. If it turns out to be a ", /* @__PURE__ */ React.createElement("strong", null, "context"), " \u2014 a gecko, a World Cup, a school garden \u2014 put it in the topic field above and choose a standard; the proposals will use it as the hook.", /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: askForCodes, disabled: codeState === "loading", className: "rounded border border-violet-400 bg-white px-2 py-1 font-bold hover:bg-violet-100 disabled:opacity-50" }, codeState === "loading" ? "Looking\u2026" : "Ask again"))), codeState === "done" && codeHits.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "Found in the loaded snapshots \u2014 pick one to ground the proposals:", codeHits.map((hit) => /* @__PURE__ */ React.createElement("button", { type: "button", key: hit.match.id, onClick: () => chooseCandidate(hit.match), className: "ml-1 mt-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-left font-bold hover:bg-violet-100" }, hit.match.code, /* @__PURE__ */ React.createElement("span", { className: "font-normal" }, " \u00b7 " + plainStandardText(hit.match.label, 55))))), codeState === "done" && codeMisses.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1 text-slate-600" }, "Also suggested, but ", /* @__PURE__ */ React.createElement("strong", null, "not in the loaded snapshots"), " \u2014 unverified, check before relying on it:", codeMisses.map((miss) => /* @__PURE__ */ React.createElement("button", { type: "button", key: miss.code, onClick: () => { if (setStandardInputValue) setStandardInputValue(miss.code); if (addToast) addToast("Code " + miss.code + " prefilled in Universal Settings \u2014 verify it before use.", "info"); }, className: "ml-1 mt-1 rounded border border-slate-300 bg-white px-1.5 py-0.5 font-bold hover:bg-slate-100" }, miss.code)), /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5" }, "No graph is available for these, so no grounded directions can be proposed from them.")), codeState === "done" && !codeHits.length && !codeMisses.length && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1 text-slate-600" }, "No standard code came back for that seed either."), resolution && resolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mt-1 text-red-700" }, "The local snapshot could not resolve this entry."), surpriseState === "ready" && resolvedMatch && hood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, "Graph context: ", hood.prerequisites.length, " prerequisite(s), ", hood.leadsTo.length, " next, ", hood.related.length, " related", hood.dataset && hood.dataset.provider ? " \u2014 " + hood.dataset.provider : "", ". Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && directions.length > 0 && window.AlloModules && window.AlloModules.SurpriseMeCompare && React.createElement(window.AlloModules.SurpriseMeCompare, { directions, hood, onUse: useDirection }));
+  ))), resolution && resolution.status === "not-found" && (resolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "Closest standards in the loaded snapshots \u2014 pick one to ground the proposals:", (resolution.candidates || []).slice(0, 4).map((candidate) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      key: candidate.id,
+      onClick: () => chooseCandidate(candidate),
+      className: "ml-1 mt-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-left font-bold hover:bg-violet-100"
+    },
+    candidate.code,
+    /* @__PURE__ */ React.createElement("span", { className: "font-normal" }, " \xB7 ", plainStandardText(candidate.label || candidate.text, 60))
+  ))), resolution && resolution.status === "not-found" && !(resolution.candidates || []).length && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "No word-for-word match in the loaded snapshots, so I asked the AI which standard this is. If it turns out to be a", /* @__PURE__ */ React.createElement("strong", null, "context"), " rather than a skill \u2014 a gecko, a World Cup, a school garden \u2014 put it in the topic field above and choose a standard; the proposals will use it as the hook.", /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: askForCodes,
+      disabled: codeState === "loading",
+      className: "rounded border border-violet-400 bg-white px-2 py-1 font-bold hover:bg-violet-100 disabled:opacity-50"
+    },
+    codeState === "loading" ? "Looking\u2026" : "Ask again"
+  ))), codeState === "done" && codeHits.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "Found in the loaded snapshots \u2014 pick one to ground the proposals:", codeHits.map((hit) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      key: hit.match.id,
+      onClick: () => chooseCandidate(hit.match),
+      className: "ml-1 mt-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-left font-bold hover:bg-violet-100"
+    },
+    hit.match.code,
+    /* @__PURE__ */ React.createElement("span", { className: "font-normal" }, " \xB7 ", plainStandardText(hit.match.label, 55))
+  ))), codeState === "done" && codeMisses.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1 text-slate-600" }, "Also suggested, but ", /* @__PURE__ */ React.createElement("strong", null, "not in the loaded snapshots"), " \u2014 unverified, check before relying on it:", codeMisses.map((miss) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      key: miss.code,
+      onClick: () => {
+        if (setStandardInputValue) setStandardInputValue(miss.code);
+        if (addToast) addToast("Code " + miss.code + " prefilled in Universal Settings \u2014 verify it before use.", "info");
+      },
+      className: "ml-1 mt-1 rounded border border-slate-300 bg-white px-1.5 py-0.5 font-bold hover:bg-slate-100"
+    },
+    miss.code
+  )), /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5" }, "No graph is available for these, so no grounded directions can be proposed from them.")), codeState === "done" && !codeHits.length && !codeMisses.length && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1 text-slate-600" }, "No standard code came back for that seed either."), resolution && resolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mt-1 text-red-700" }, "The local snapshot could not resolve this entry."), surpriseState === "ready" && resolvedMatch && hood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, "Graph context: ", hood.prerequisites.length, " prerequisite(s), ", hood.leadsTo.length, " next, ", hood.related.length, " related", hood.dataset && hood.dataset.provider ? " \u2014 " + hood.dataset.provider : "", ". Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && directions.length > 0 && window.AlloModules && window.AlloModules.SurpriseMeCompare && React.createElement(window.AlloModules.SurpriseMeCompare, { directions, hood, onUse: useDirection }));
 }
 function SourceGenPanel(props) {
   const {
@@ -1666,7 +1728,7 @@ function SourceGenPanel(props) {
       onKeyDown: (e) => e.key === "Enter" && handleGenerateSource(),
       autoFocus: true
     }
-  )), /* @__PURE__ */ React.createElement(SurpriseTopicLauncher, { addToast, gradeLevel, setSourceTopic, setSourceTone, setSourceVocabulary, setStandardInputValue, sourceVocabulary, studentInterests }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.tone")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(SurpriseTopicLauncher, { addToast, gradeLevel: sourceLevel, setSourceTopic, setSourceTone, setSourceVocabulary, setStandardInputValue, sourceVocabulary, studentInterests }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.tone")), /* @__PURE__ */ React.createElement(
     "select",
     {
       value: sourceTone,

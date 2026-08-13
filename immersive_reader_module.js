@@ -1440,7 +1440,12 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       const audio = new Audio(url);
       audio.playbackRate = playbackSpeedRef.current || 1;
       audioRef.current = audio;
-      audio.addEventListener("playing", () => finishAudioLoad(audioLoadOwner));
+      const stopGeneratedSweepClock = () => {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+        }
+      };
       const updateSweep = () => {
         if (!audioRef.current || audioRef.current !== audio) return;
         const WT = window.AlloModules && window.AlloModules.WordTiming;
@@ -1457,8 +1462,24 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         }
         setSweepPct(reducedMotion ? pct > 5 ? 100 : 0 : pct);
       };
-      audio.addEventListener("timeupdate", updateSweep);
+      const tickGeneratedSweep = () => {
+        if (token !== playTokenRef.current || audioRef.current !== audio || audio.paused || audio.ended) {
+          rafRef.current = null;
+          return;
+        }
+        updateSweep();
+        rafRef.current = requestAnimationFrame(tickGeneratedSweep);
+      };
+      const startGeneratedSweepClock = () => {
+        finishAudioLoad(audioLoadOwner);
+        stopGeneratedSweepClock();
+        updateSweep();
+        rafRef.current = requestAnimationFrame(tickGeneratedSweep);
+      };
+      audio.addEventListener("playing", startGeneratedSweepClock);
+      audio.addEventListener("pause", stopGeneratedSweepClock);
       audio.addEventListener("ended", () => {
+        stopGeneratedSweepClock();
         setSweepPct(100);
         if (autoAdvance && idx < sentences.length - 1) {
           setTimeout(() => {
@@ -1469,6 +1490,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         }
       });
       audio.addEventListener("error", () => {
+        stopGeneratedSweepClock();
         if (token === playTokenRef.current) {
           finishAudioLoad(audioLoadOwner);
           console.warn("[Karaoke] Generated audio element reported a playback error.");
@@ -1505,6 +1527,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         karaokeTrace("karaoke:audio-start-fail", { idx, error: String(e?.message || e).substring(0, 140) });
         console.warn("[Karaoke] Generated audio could not start; using browser speech fallback.", e?.message || e);
         setPlaybackFallbackNotice(captureOn ? "Using this device's voice. Browser fallback audio cannot be saved; retry when generated audio is available." : "Using this device's voice because generated audio is unavailable.");
+        stopGeneratedSweepClock();
         try {
           audio.pause();
         } catch (_) {
@@ -1519,13 +1542,40 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       setPlaybackFallbackNotice((captureOn ? "Using this device's voice. Browser fallback audio cannot be saved; retry when generated audio is available." : "Using this device's voice because generated audio is unavailable.") + (resolveTimedOut ? " Audio generation timed out \u2014 press Play to retry." : ""));
       try {
         const u = new SpeechSynthesisUtterance(sentenceText);
-        u.onstart = () => finishAudioLoad(audioLoadOwner);
         let boundarySeen = false;
+        let lastWordBoundaryAt = 0;
+        let startTs = null;
+        const estMs = Math.max(1500, sentenceText.length * 60) / (playbackSpeedRef.current || 1);
+        const tick = () => {
+          if (token !== playTokenRef.current || startTs == null) {
+            rafRef.current = null;
+            return;
+          }
+          const now = performance.now();
+          const elapsed = now - startTs;
+          const pct = Math.min(100, elapsed / estMs * 100);
+          if (!boundarySeen || now - lastWordBoundaryAt > 750) {
+            setSweepPct(reducedMotion ? pct > 5 ? 100 : 0 : pct);
+          }
+          if (pct < 100) rafRef.current = requestAnimationFrame(tick);
+          else rafRef.current = null;
+        };
+        u.onstart = () => {
+          if (token !== playTokenRef.current) return;
+          finishAudioLoad(audioLoadOwner);
+          startTs = performance.now();
+          if (rafRef.current) cancelAnimationFrame(rafRef.current);
+          rafRef.current = requestAnimationFrame(tick);
+        };
         u.onboundary = (event) => {
           try {
             const WT = window.AlloModules && window.AlloModules.WordTiming;
             if (!WT || typeof event.charIndex !== "number" || token !== playTokenRef.current) return;
+            const boundaryKind = String(event.name || event.boundaryType || "").toLowerCase();
+            if (boundaryKind && boundaryKind !== "word") return;
+            if (!boundaryKind && event.charIndex === 0 && !(Number(event.charLength) > 0)) return;
             boundarySeen = true;
+            lastWordBoundaryAt = performance.now();
             const pct = WT.weightPctAtCharIndex(sentenceText, event.charIndex);
             setSweepPct(reducedMotion ? pct > 5 ? 100 : 0 : pct);
           } catch (e) {
@@ -1534,14 +1584,6 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         u.rate = 0.95 * (playbackSpeedRef.current || 1);
         u.pitch = 1;
         u.volume = 0.95;
-        const estMs = Math.max(1500, sentenceText.length * 60) / (playbackSpeedRef.current || 1);
-        const startTs = performance.now();
-        const tick = () => {
-          const elapsed = performance.now() - startTs;
-          const pct = Math.min(100, elapsed / estMs * 100);
-          if (!boundarySeen) setSweepPct(reducedMotion ? pct > 5 ? 100 : 0 : pct);
-          if (pct < 100) rafRef.current = requestAnimationFrame(tick);
-        };
         u.onend = () => {
           if (rafRef.current) {
             cancelAnimationFrame(rafRef.current);
@@ -1559,12 +1601,14 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         };
         u.onerror = () => {
           finishAudioLoad(audioLoadOwner);
-          if (rafRef.current) cancelAnimationFrame(rafRef.current);
+          if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
+          }
           setIsPlaying(false);
         };
         window.speechSynthesis.speak(u);
         setTimeout(() => finishAudioLoad(audioLoadOwner), 2e3);
-        rafRef.current = requestAnimationFrame(tick);
       } catch (e) {
         finishAudioLoad(audioLoadOwner);
         setIsPlaying(false);

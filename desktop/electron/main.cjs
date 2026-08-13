@@ -4,7 +4,8 @@ const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
-const { app, BrowserWindow, dialog, ipcMain, Menu, safeStorage, shell } = require('electron');
+const { spawn } = require('child_process');
+const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, safeStorage, screen, shell } = require('electron');
 const runtime = require('../runtime/alloflow-desktop-runtime.cjs');
 const {
   applyAlloSheetRequestAuth,
@@ -12,6 +13,7 @@ const {
   isTrustedAlloSheetGristFrameRequest,
 } = require('./allosheet-request-auth.cjs');
 const { assertTrustedIpcSender, isSameOrigin } = require('./security.cjs');
+const { selectUniqueWindowSource } = require('./coach-window-tracker.cjs');
 
 // ── Build edition ('desktop' | 'admin' | 'remediation' | '' = unflavored) ───
 // Baked at package time by scripts/build-edition.cjs via electron-builder
@@ -127,6 +129,13 @@ const MAX_PORT_ATTEMPTS = 20;
 const PRIVATE_API_TOKEN = crypto.randomBytes(32).toString('base64url');
 
 let mainWindow = null;
+let coachOverlayWindow = null;
+let coachWindowTracker = null;
+let coachTrackedHandle = '';
+let coachTrackedBounds = null;
+let coachTrackedSourceLabel = '';
+let coachTrackedActive = false;
+let coachOverlayEpoch = 0;
 let focusRequestedBySecondInstance = false;
 const trustedAlloSheetWebContents = new Map();
 const knownAlloSheetSessionCookies = new Set();
@@ -745,6 +754,241 @@ function configurePrivateApiRequestHeaders(targetWindow) {
   });
 }
 
+function clampOverlayNumber(value, fallback) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : fallback;
+}
+
+function escapeOverlayHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, (ch) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[ch]);
+}
+
+function validCoachWindowBounds(value) {
+  if (!value || typeof value !== 'object' || value.visible !== true) return null;
+  const bounds = {
+    x: Math.round(Number(value.x)), y: Math.round(Number(value.y)),
+    width: Math.round(Number(value.width)), height: Math.round(Number(value.height)),
+  };
+  if (!Object.values(bounds).every(Number.isFinite)) return null;
+  if (bounds.width < 40 || bounds.height < 40 || bounds.width > 20000 || bounds.height > 20000) return null;
+  if (Math.abs(bounds.x) > 100000 || Math.abs(bounds.y) > 100000) return null;
+  return bounds;
+}
+
+function stopCoachWindowTracker() {
+  const child = coachWindowTracker;
+  coachWindowTracker = null;
+  coachTrackedHandle = '';
+  coachTrackedBounds = null;
+  coachTrackedSourceLabel = '';
+  coachTrackedActive = false;
+  if (child && !child.killed) {
+    try { child.kill(); } catch (_) {}
+  }
+}
+
+function closeCoachOverlay() {
+  coachOverlayEpoch += 1;
+  stopCoachWindowTracker();
+  const win = coachOverlayWindow;
+  coachOverlayWindow = null;
+  if (win && !win.isDestroyed()) {
+    try { win.close(); } catch (_) {}
+  }
+}
+
+function startCoachWindowTracker(handle) {
+  if (process.platform !== 'win32' || !/^[0-9]+$/.test(String(handle || ''))) return Promise.resolve(null);
+  if (coachWindowTracker && coachTrackedHandle === handle) return Promise.resolve(coachTrackedBounds);
+  stopCoachWindowTracker();
+  const powershell = path.join(String(process.env.SystemRoot || 'C:\\Windows'),
+    'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+  const packedScript = path.join(__dirname, 'coach-window-bounds-windows.ps1');
+  const script = app.isPackaged
+    ? packedScript.replace(
+      path.sep + 'app.asar' + path.sep,
+      path.sep + 'app.asar.unpacked' + path.sep
+    )
+    : packedScript;
+  let child;
+  try {
+    child = spawn(powershell, [
+      '-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+      '-File', script, '-Handle', handle,
+    ], { windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] });
+  } catch (_) {
+    return Promise.resolve(null);
+  }
+  coachWindowTracker = child;
+  coachTrackedHandle = handle;
+  let buffer = '', settled = false, settleFirst;
+  const firstBounds = new Promise((resolve) => { settleFirst = resolve; });
+  const settle = (bounds) => {
+    if (settled) return;
+    settled = true;
+    settleFirst(bounds || null);
+  };
+  const timeout = setTimeout(() => settle(null), 1600);
+  const acceptLine = (line) => {
+    let event;
+    try { event = JSON.parse(String(line || '').trim()); } catch (_) { return; }
+    if (event.closed) {
+      settle(null);
+      if (coachWindowTracker === child) closeCoachOverlay();
+      return;
+    }
+    if (event.visible === false) {
+      if (coachOverlayWindow && !coachOverlayWindow.isDestroyed()) coachOverlayWindow.hide();
+      return;
+    }
+    const bounds = validCoachWindowBounds(event);
+    if (!bounds) return;
+    coachTrackedBounds = bounds;
+    coachTrackedActive = event.active !== false;
+    settle(bounds);
+    if (coachOverlayWindow && !coachOverlayWindow.isDestroyed()) {
+      coachOverlayWindow.setBounds(bounds, false);
+      if (event.active === false) coachOverlayWindow.hide();
+      else coachOverlayWindow.showInactive();
+    }
+  };
+  child.stdout.on('data', (chunk) => {
+    buffer += String(chunk || '');
+    const lines = buffer.split(/\r?\n/);
+    buffer = lines.pop() || '';
+    lines.forEach(acceptLine);
+  });
+  child.once('error', () => settle(null));
+  child.once('close', () => {
+    clearTimeout(timeout);
+    settle(null);
+    if (coachWindowTracker === child) {
+      coachWindowTracker = null;
+      coachTrackedHandle = '';
+      coachTrackedBounds = null;
+      coachTrackedSourceLabel = '';
+      coachTrackedActive = false;
+      if (coachOverlayWindow && !coachOverlayWindow.isDestroyed()) coachOverlayWindow.hide();
+    }
+  });
+  return firstBounds.finally(() => clearTimeout(timeout));
+}
+
+async function resolveTrackedCoachWindow(sourceLabel) {
+  if (process.platform !== 'win32') return null;
+  const label = String(sourceLabel || '').slice(0, 260);
+  if (!label) { stopCoachWindowTracker(); return null; }
+  if (coachWindowTracker && coachTrackedSourceLabel === label && coachTrackedBounds) {
+    return { bounds: coachTrackedBounds, sourceId: '', handle: coachTrackedHandle, active: coachTrackedActive };
+  }
+  let sources;
+  try {
+    sources = await desktopCapturer.getSources({
+      types: ['window'], thumbnailSize: { width: 0, height: 0 }, fetchWindowIcons: false,
+    });
+  } catch (_) {
+    stopCoachWindowTracker();
+    return null;
+  }
+  const selected = selectUniqueWindowSource(sources, label);
+  if (!selected || !selected.handle) { stopCoachWindowTracker(); return null; }
+  const bounds = await startCoachWindowTracker(selected.handle);
+  if (!bounds) { stopCoachWindowTracker(); return null; }
+  coachTrackedSourceLabel = label;
+  return { bounds, sourceId: selected.id, handle: selected.handle, active: coachTrackedActive };
+}
+
+async function updateCoachOverlay(rawPayload) {
+  const requestEpoch = ++coachOverlayEpoch;
+  const payload = rawPayload && typeof rawPayload === 'object' ? rawPayload : {};
+  const guidance = String(payload.guidance || '').replace(/[\u0000-\u001F\u007F]+/g, ' ').trim().slice(0, 400);
+  if (!guidance) { closeCoachOverlay(); return { visible: false }; }
+  const displaySurface = ['monitor', 'window', 'browser'].includes(payload.displaySurface)
+    ? payload.displaySurface : '';
+  let trackedWindow = null;
+  if (displaySurface === 'window') {
+    trackedWindow = await resolveTrackedCoachWindow(payload.sourceLabel);
+    if (requestEpoch !== coachOverlayEpoch) {
+      stopCoachWindowTracker();
+      return { visible: false, stale: true };
+    }
+  } else {
+    stopCoachWindowTracker();
+  }
+  const rawTarget = payload.target && typeof payload.target === 'object' ? payload.target : null;
+  const target = (displaySurface === 'monitor' || trackedWindow) && rawTarget ? {
+    x: clampOverlayNumber(rawTarget.x, 0),
+    y: clampOverlayNumber(rawTarget.y, 0),
+    w: clampOverlayNumber(rawTarget.w, 0),
+    h: clampOverlayNumber(rawTarget.h, 0),
+  } : null;
+  if (target) {
+    target.w = Math.min(target.w, 1 - target.x);
+    target.h = Math.min(target.h, 1 - target.y);
+    if (target.w <= 0 || target.h <= 0) target.w = target.h = 0;
+  }
+  const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+  if (!display || !display.bounds) return { visible: false };
+  const bounds = trackedWindow ? trackedWindow.bounds : display.bounds;
+  if (!coachOverlayWindow || coachOverlayWindow.isDestroyed()) {
+    coachOverlayWindow = new BrowserWindow({
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height,
+      frame: false,
+      transparent: true,
+      backgroundColor: '#00000000',
+      alwaysOnTop: true,
+      focusable: false,
+      resizable: false,
+      movable: false,
+      skipTaskbar: true,
+      hasShadow: false,
+      show: false,
+      webPreferences: {
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+        devTools: false,
+      },
+    });
+    coachOverlayWindow.setIgnoreMouseEvents(true, { forward: true });
+    coachOverlayWindow.setAlwaysOnTop(true, 'floating');
+    coachOverlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    coachOverlayWindow.on('closed', () => { coachOverlayWindow = null; });
+  } else {
+    coachOverlayWindow.setBounds(bounds, false);
+  }
+  const box = target && target.w > 0 && target.h > 0
+    ? '<div class="target" style="left:' + (target.x * 100) + '%;top:' + (target.y * 100) +
+      '%;width:' + (target.w * 100) + '%;height:' + (target.h * 100) + '%"></div>'
+    : '';
+  const surfaceNote = target
+    ? (trackedWindow ? 'Highlighted on the uniquely matched shared window' : 'Highlighted on the shared monitor')
+    : (displaySurface === 'window'
+      ? 'Guidance HUD — the shared window could not be matched uniquely'
+      : 'Guidance HUD — exact overlay requires a shared monitor or matched native window');
+  const html = '<!doctype html><html><head><meta charset="utf-8"><style>' +
+    'html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;font-family:system-ui,-apple-system,Segoe UI,sans-serif}' +
+    '.target{position:absolute;box-sizing:border-box;border:5px solid #f59e0b;outline:3px solid #fff;box-shadow:0 0 0 8px #000,0 0 28px 12px rgba(245,158,11,.55);border-radius:10px}' +
+    '.hud{position:absolute;right:24px;top:24px;width:min(430px,calc(100% - 48px));box-sizing:border-box;padding:14px 16px;border:2px solid #93c5fd;border-radius:14px;background:rgba(10,18,34,.94);color:#f8fafc;box-shadow:0 10px 34px rgba(0,0,0,.45)}' +
+    '.label{font-size:12px;font-weight:800;letter-spacing:.04em;color:#93c5fd;text-transform:uppercase}.text{font-size:18px;font-weight:700;line-height:1.35;margin-top:5px}.note{font-size:11px;color:#cbd5e1;margin-top:6px}' +
+    '</style></head><body>' + box + '<aside class="hud" role="status"><div class="label">' +
+    (payload.done ? 'Screen Coach — complete' : 'Screen Coach — next step') + '</div><div class="text">' +
+    escapeOverlayHtml(guidance) + '</div><div class="note">' + escapeOverlayHtml(surfaceNote) +
+    '</div></aside></body></html>';
+  const win = coachOverlayWindow;
+  win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html)).then(() => {
+    if (requestEpoch !== coachOverlayEpoch || coachOverlayWindow !== win || win.isDestroyed()) return;
+    if (trackedWindow && trackedWindow.active === false) win.hide();
+    else win.showInactive();
+  }).catch(() => {});
+  return { visible: true, exactTarget: !!target, trackedWindow: !!trackedWindow, displayId: display.id };
+}
+
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1320,
@@ -770,6 +1014,10 @@ function createMainWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     publishUpdateState();
+  });
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+    closeCoachOverlay();
   });
 
   mainWindow.on('enter-full-screen', () => notifyFullScreenChange(true));
@@ -934,6 +1182,15 @@ handleTrustedIpc('alloflow-desktop:set-full-screen', async (_event, enabled) => 
 handleTrustedIpc('alloflow-desktop:is-full-screen', async () => (
   mainWindow ? mainWindow.isFullScreen() : false
 ));
+
+handleTrustedIpc('alloflow-desktop:coach-overlay-update', async (_event, payload) => (
+  updateCoachOverlay(payload)
+));
+
+handleTrustedIpc('alloflow-desktop:coach-overlay-hide', async () => {
+  closeCoachOverlay();
+  return { visible: false };
+});
 
 // ── Save remediated documents to a local folder ─────────────────────────────
 // Ported from the AlloFlow Admin app (the doc pipeline's batch export checks
@@ -1114,6 +1371,7 @@ app.whenReady().then(async () => {
 
 let engineTorndown = false;
 app.on('before-quit', (event) => {
+  closeCoachOverlay();
   // Never orphan child servers: the AI, speech, and spreadsheet companions
   // each own local resources and randomized loopback listeners.
   const canTeardown = typeof runtime.stopLocalEngine === 'function'

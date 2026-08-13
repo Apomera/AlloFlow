@@ -7043,7 +7043,7 @@
                 className: "mt-2 text-xs text-indigo-500 hover:text-indigo-700 font-bold transition-colors"
               }, "Clear filters")
               ));
-          })()),
+          })(),
         /* base10: removed -- see stem_tool_manipulatives.js */
         /* moneyMath: removed -- see stem_tool_money.js */
         /* lifeSkills: removed -- see stem_tool_lifeskills.js */
@@ -7759,7 +7759,7 @@
               }, '← Back to Tools')
             );
           }
-        })()
+        })())
       ));
     };
   }

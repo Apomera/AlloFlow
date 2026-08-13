@@ -9,6 +9,7 @@ const files = [
   path.join(__dirname, 'main.cjs'),
   path.join(__dirname, 'preload.cjs'),
   path.join(__dirname, 'security.cjs'),
+  path.join(__dirname, 'coach-window-tracker.cjs'),
   path.join(__dirname, '..', '..', 'desktop/web-app', 'public', 'alloflow_desktop_bridge.js'),
   path.join(__dirname, '..', 'runtime', 'alloflow-desktop-runtime.cjs'),
   path.join(__dirname, '..', 'runtime', 'web-source-fetch.cjs'),
@@ -45,6 +46,63 @@ for (const requiredBoundary of [
 ]) {
   if (!mainSource.includes(requiredBoundary)) {
     throw new Error('Electron private API boundary is missing: ' + requiredBoundary);
+  }
+}
+
+for (const requiredCoachOverlayBoundary of [
+  "handleTrustedIpc('alloflow-desktop:coach-overlay-update'",
+  "handleTrustedIpc('alloflow-desktop:coach-overlay-hide'",
+  'transparent: true',
+  'alwaysOnTop: true',
+  'focusable: false',
+  'coachOverlayWindow.setIgnoreMouseEvents(true',
+  "displaySurface === 'monitor'",
+  'screen.getDisplayNearestPoint(screen.getCursorScreenPoint())',
+  'resolveTrackedCoachWindow(payload.sourceLabel)',
+  "process.platform !== 'win32'",
+  'coach-window-bounds-windows.ps1',
+]) {
+  if (!mainSource.includes(requiredCoachOverlayBoundary)) {
+    throw new Error('Electron coach overlay boundary is missing: ' + requiredCoachOverlayBoundary);
+  }
+}
+const {
+  parseWindowHandle,
+  selectUniqueWindowSource,
+} = require('./coach-window-tracker.cjs');
+if (parseWindowHandle('window:12345:0') !== '12345') {
+  throw new Error('Coach window tracker did not parse a decimal HWND source id.');
+}
+if (parseWindowHandle('window:0x2a:0') !== '42' || parseWindowHandle('screen:1:0') !== '') {
+  throw new Error('Coach window tracker accepted an invalid source or rejected a hexadecimal HWND.');
+}
+const uniqueSource = selectUniqueWindowSource([
+  { id: 'window:101:0', name: 'Example Settings' },
+  { id: 'window:202:0', name: 'Other Window' },
+], 'Example Settings');
+if (!uniqueSource || uniqueSource.handle !== '101') {
+  throw new Error('Coach window tracker did not select a unique exact title match.');
+}
+if (selectUniqueWindowSource([
+  { id: 'window:101:0', name: 'Duplicate' },
+  { id: 'window:202:0', name: 'Duplicate' },
+], 'Duplicate') !== null) {
+  throw new Error('Coach window tracker guessed between duplicate window titles.');
+}
+if (selectUniqueWindowSource([
+  { id: 'window:101:0', name: 'Settings for Student A' },
+], 'Settings') !== null) {
+  throw new Error('Coach window tracker used unsafe fuzzy title matching.');
+}
+const preloadSource = fs.readFileSync(path.join(__dirname, 'preload.cjs'), 'utf8');
+for (const requiredCoachOverlayBridge of [
+  'updateCoachOverlay:',
+  'hideCoachOverlay:',
+  "ipcRenderer.invoke('alloflow-desktop:coach-overlay-update'",
+  "ipcRenderer.invoke('alloflow-desktop:coach-overlay-hide'",
+]) {
+  if (!preloadSource.includes(requiredCoachOverlayBridge)) {
+    throw new Error('Electron coach overlay preload bridge is missing: ' + requiredCoachOverlayBridge);
   }
 }
 
@@ -125,6 +183,10 @@ if (runtime.resolveStaticAppDir(packagedResourcesRoot) !== path.join(packagedRes
 }
 
 const builderConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'electron-builder.json'), 'utf8'));
+if (!Array.isArray(builderConfig.asarUnpack)
+    || !builderConfig.asarUnpack.includes('electron/coach-window-bounds-windows.ps1')) {
+  throw new Error('The native coach window bounds helper must be unpacked from app.asar for PowerShell.');
+}
 const packagingFiles = Array.isArray(builderConfig.files) ? builderConfig.files : [];
 if (packagingFiles.includes('**/*')) {
   for (const resource of ['app-build', 'schoolbox', 'build-resources']) {
@@ -223,4 +285,3 @@ for (const unsafePatch of [
   if (!rejected) throw new Error('Browser configuration allowlist accepted a privileged field.');
 }
 console.log('[AlloFlow Desktop] Electron scaffold check passed');
-

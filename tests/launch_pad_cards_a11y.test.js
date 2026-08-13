@@ -14,8 +14,8 @@ describe('Launch-pad primary mode card accessibility', () => {
   it('provides visible-title names and descriptions for every card', () => {
     expect(source).toContain('aria-labelledby="launch-pad-full-title" aria-describedby="launch-pad-full-desc"');
     expect(source).toContain('aria-labelledby="launch-pad-guided-title" aria-describedby="launch-pad-guided-badge launch-pad-guided-desc"');
-    expect(source).toContain('aria-labelledby="launch-pad-learning-title" aria-describedby="launch-pad-learning-badge launch-pad-learning-desc"');
-    expect(source).toContain('aria-labelledby="launch-pad-educator-title" aria-describedby="launch-pad-educator-badge launch-pad-educator-desc"');
+    expect(source).toContain('aria-labelledby="launch-pad-learning-title" aria-describedby="launch-pad-learning-desc"');
+    expect(source).toContain('aria-labelledby="launch-pad-educator-title" aria-describedby="launch-pad-educator-desc"');
     expect(source.match(/className="lp-card-icon"/g)).toHaveLength(4);
     expect(source).toContain('function LaunchPadIcon(iconProps)');
     expect(source).toContain('aria-hidden="true" focusable="false"');
@@ -72,7 +72,11 @@ describe('Launch-pad primary mode card accessibility', () => {
     expect(source).toContain('.lp-card { appearance: none; width: 100%; min-height: 44px;');
     expect(source).toContain('.lp-card:focus-visible { outline: 3px solid #facc15; outline-offset: 4px;');
     expect(source).toContain("color: '#e0e7ff'");
-    expect(source).toContain("linear-gradient(135deg, #047857, #065f46)");
+    expect(source).not.toContain("copy('launch_pad.badge_3_tools', '8 Tools')");
+    expect(source).not.toContain('id="launch-pad-educator-badge"');
+    expect(source).toContain('.lp-brand-mark { width: 64px; height: 64px;');
+    expect(source).toContain('.lp-card-desc { display: block; color: #c3cede; font-size: 12px;');
+    expect(source).toContain('.lp-utility-bar > :only-child { margin-inline-start: auto; }');
     expect(source).toContain('@media (prefers-reduced-motion: reduce)');
     expect(source).toContain('.lp-root, .lp-card, .lp-card:hover, .lp-card:active, .lp-card-icon, .lp-badge');
     expect(source).toContain('.lp-grid { grid-template-columns: 1fr !important;');

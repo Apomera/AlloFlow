@@ -1205,15 +1205,19 @@ function HeaderBar(props) {
                             )}
                         </div>
                         {isTeacherMode && (
-                        <div className="relative">
+                        <div
+                            data-header-utility-cluster="teacher"
+                            className={`w-full xl:w-auto xl:ml-auto flex flex-wrap items-center gap-1.5 rounded-xl border p-1 ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'border-white/15 bg-slate-950/20 shadow-sm'}`}
+                        >
                             <button type="button"
                                 onClick={handleSetIsTranslateModalOpenToTrue}
-                                className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 mr-2"
+                                className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30"
                                 title={t('header.translate_tooltip')}
                                 data-help-key="header_translate"
                             >
                                 <Languages size={14} /> <span className="hidden lg:inline">{t('header.translate_button')}</span>
                             </button>
+                            <div className="relative shrink-0">
                             <button type="button"
                                 aria-label={t('header.documents_menu_aria') || 'Documents menu'}
                                 aria-haspopup="menu"
@@ -1328,8 +1332,6 @@ function HeaderBar(props) {
                             )}
                             {showExportMenu && <div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleSetShowExportMenuToFalse}></div>}
                         </div>
-                        )}
-                            {isTeacherMode && (
                             <button type="button"
                                 onClick={() => setShowClassAnalytics(true)}
                                 className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40"
@@ -1338,6 +1340,7 @@ function HeaderBar(props) {
                             >
                                 <ClipboardList size={14} /> <span className="hidden lg:inline">{t('common.assessment_center') || 'Assessment Center'}</span>
                             </button>
+                        </div>
                             )}
                         {!isTeacherMode && (
                             <button type="button"

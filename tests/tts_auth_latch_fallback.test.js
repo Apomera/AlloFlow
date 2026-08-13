@@ -68,9 +68,7 @@ describe('Canvas auth latch: doomed Gemini calls are skipped', () => {
 
     expect(url).toBe('blob:kokoro-af_heart');
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(speak).toHaveBeenCalledWith(
-      expect.any(String), 'af_heart', 1, expect.objectContaining({ signal: expect.anything() }),
-    );
+    expect(speak).toHaveBeenCalledWith(expect.any(String), 'af_heart', 1, undefined);
     expect(traceEvents()).toContain('calltts:canvas-skip-authfailed');
     expect(traceEvents()).toContain('calltts:kokoro-fallback-ok');
   });
@@ -87,9 +85,7 @@ describe('Canvas auth latch: doomed Gemini calls are skipped', () => {
     const url = await callTTS('A local voice was chosen on purpose.', 'af_bella', 1, 2, 'English');
 
     expect(url).toBe('blob:kokoro-af_bella');
-    expect(speak).toHaveBeenCalledWith(
-      expect.any(String), 'af_bella', 1, expect.objectContaining({ signal: expect.anything() }),
-    );
+    expect(speak).toHaveBeenCalledWith(expect.any(String), 'af_bella', 1, undefined);
   });
 
   it('latched + cooldown expired: exactly ONE probe attempt, then cooldown re-arms', async () => {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { parse } from 'acorn';
 
 const HOSTS = [
   'stem_lab/stem_lab_module.js',
@@ -8,6 +9,40 @@ const HOSTS = [
   'desktop/web-app/build/stem_lab/stem_lab_module.js',
   'desktop/web-app/build/stem_lab_module.js',
 ];
+
+function findScrollRegionCall(source) {
+  const ast = parse(source, { ecmaVersion: 'latest', sourceType: 'script' });
+  const pending = [ast];
+
+  while (pending.length > 0) {
+    const node = pending.pop();
+    if (
+      node.type === 'CallExpression'
+      && node.callee?.type === 'MemberExpression'
+      && node.callee.object?.name === 'React'
+      && node.callee.property?.name === 'createElement'
+    ) {
+      const props = node.arguments[1];
+      const hasScrollMarker = props?.type === 'ObjectExpression' && props.properties.some((property) => {
+        const key = property.key;
+        return key?.name === 'data-stem-scroll-region' || key?.value === 'data-stem-scroll-region';
+      });
+      if (hasScrollMarker) return node;
+    }
+
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const child of value) {
+          if (child && typeof child === 'object' && typeof child.type === 'string') pending.push(child);
+        }
+      } else if (value && typeof value === 'object' && typeof value.type === 'string') {
+        pending.push(value);
+      }
+    }
+  }
+
+  return null;
+}
 
 describe.each(HOSTS)('shared STEM scrolling contract — %s', (host) => {
   const source = readFileSync(host, 'utf8');
@@ -41,5 +76,15 @@ describe.each(HOSTS)('shared STEM scrolling contract — %s', (host) => {
     // The page remains intentionally locked while the modal is open, so this
     // inner contract is the required escape path for every STEM workspace.
     expect(source).toContain("body.style.overflow = 'hidden'");
+  });
+
+  it('nests active plugin tools inside that scrollable workspace', () => {
+    const regionCall = findScrollRegionCall(source);
+    const pluginRenderer = source.indexOf("stemLabTab === 'explore' && stemLabTool && window.StemLab && (function _pluginFallback()");
+
+    expect(regionCall).not.toBeNull();
+    expect(pluginRenderer).toBeGreaterThan(-1);
+    expect(regionCall.start).toBeLessThan(pluginRenderer);
+    expect(regionCall.end).toBeGreaterThan(pluginRenderer);
   });
 });

@@ -25,6 +25,7 @@ var BookOpen = _lazyIcon('BookOpen');
 var CheckCircle = _lazyIcon('CheckCircle');
 var CheckCircle2 = _lazyIcon('CheckCircle2');
 var ChevronDown = _lazyIcon('ChevronDown');
+var ChevronUp = _lazyIcon('ChevronUp');
 var Download = _lazyIcon('Download');
 var ExternalLink = _lazyIcon('ExternalLink');
 var FileText = _lazyIcon('FileText');
@@ -87,6 +88,14 @@ const SIDEBAR_PANEL_UI = Object.freeze({
   secondaryButton: "inline-flex min-h-11 items-center justify-center rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 shadow-sm transition-colors transition-shadow motion-reduce:transition-none hover:border-indigo-300 hover:bg-indigo-50 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none",
   iconButton: "inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 transition-colors motion-reduce:transition-none hover:border-indigo-300 hover:bg-indigo-100 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:opacity-70"
 });
+const TOOL_CATALOG_PURPOSE_FILTERS = [["essentials", "Recommended"], ["access", "Make accessible"], ["engage", "Engage"], ["assess", "Assess & deliver"], ["all", "All tools"]];
+function ToolCatalogControls(props) {
+  const { allEditorsExpanded, group, isExpanded, onCollapse, onGroupChange, onOpen, onQueryChange, onToggleAll, query, selectedLabel, shownCount, t } = props;
+  const translate = typeof t === "function" ? t : () => "";
+  const toggleAllLabel = allEditorsExpanded ? translate("sidebar.collapse_all") || "Collapse editors" : translate("sidebar.expand_all") || "Expand all editors";
+  const toggleAllTitle = allEditorsExpanded ? translate("sidebar.collapse_tooltip") : translate("sidebar.expand_tooltip");
+  return /* @__PURE__ */ React.createElement("section", { "data-testid": "tool-catalog-controls", "aria-labelledby": "tool-catalog-title", className: `sticky top-0 z-20 rounded-2xl border border-slate-200 bg-white/95 shadow-sm backdrop-blur motion-reduce:backdrop-blur-none ${isExpanded ? "p-3" : "px-3 py-2"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "tool-catalog-title", className: "text-sm font-black text-slate-900" }, "Create a resource"), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 truncate text-xs leading-relaxed text-slate-600", "aria-live": "polite" }, isExpanded ? "Choose a purpose or find the tool you need." : selectedLabel ? /* @__PURE__ */ React.createElement(React.Fragment, null, "Selected: ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-700" }, selectedLabel)) : "Browse the complete tool catalog.")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-expanded": isExpanded, "aria-controls": "tool-catalog-discovery-controls", onClick: isExpanded ? onCollapse : onOpen, className: "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 transition-colors hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, isExpanded ? "Collapse" : selectedLabel ? "Change tool" : "Browse tools", /* @__PURE__ */ React.createElement(ChevronDown, { size: 15, "aria-hidden": "true", className: isExpanded ? "rotate-180" : "" }))), /* @__PURE__ */ React.createElement("div", { id: "tool-catalog-discovery-controls", hidden: !isExpanded }, /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex justify-end" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600", "aria-live": "polite" }, shownCount, " shown")), /* @__PURE__ */ React.createElement("label", { htmlFor: "tool-catalog-search", className: "mt-2 block text-xs font-bold text-slate-700" }, "Find a tool"), /* @__PURE__ */ React.createElement("div", { className: "relative mt-1" }, /* @__PURE__ */ React.createElement(Search, { size: 16, "aria-hidden": "true", className: "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" }), /* @__PURE__ */ React.createElement("input", { id: "tool-catalog-search", type: "search", value: query, onChange: (event) => onQueryChange(event.target.value), placeholder: "Search glossary, visuals, assessment...", className: "min-h-11 w-full rounded-xl border border-slate-300 bg-white py-2 ps-9 pe-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 sm:text-sm" })), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": "Filter creation tools by purpose", className: "mt-3 flex flex-wrap gap-2" }, TOOL_CATALOG_PURPOSE_FILTERS.map(([id, label]) => /* @__PURE__ */ React.createElement("button", { key: id, type: "button", "aria-pressed": !query && group === id, onClick: () => onGroupChange(id), className: `min-h-10 rounded-xl border px-3 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${!query && group === id ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50"}` }, label))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex justify-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onToggleAll, className: "min-h-10 rounded-lg px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500", title: toggleAllTitle }, toggleAllLabel))));
+}
 const UNIVERSAL_DIFFERENTIABLE_TYPES = [
   "simplified",
   "glossary",
@@ -202,7 +211,7 @@ const SurpriseMeEngine = {
       opts && opts.gradeLevel ? "Grade level: " + opts.gradeLevel : "",
       opts && opts.studentInterests && opts.studentInterests.length ? "Student interests to consider: " + opts.studentInterests.slice(0, 6).join(", ") : "",
       "Each direction must be meaningfully different (different phenomenon or entry point).",
-      "Return ONLY a JSON array of exactly 3 objects, no prose, each with keys: ",
+      'Return ONLY one JSON object with a "directions" array containing exactly 3 objects, no prose. Each direction must have keys: ',
       '"title" (<=10 words), "phenomenon" (real-world hook, <=25 words), "essentialQuestion" (<=20 words), ',
       '"activity" (one concrete suggested activity, <=35 words), "evidence" (proposed evidence of learning, <=25 words), ',
       '"udlSupports" (array of 2-3 short supports), ',
@@ -211,10 +220,24 @@ const SurpriseMeEngine = {
     ].filter(Boolean).join("\n");
   },
   parseDirections: function(raw) {
-    const jsonText = String(raw || "").replace(/^[\s\S]*?(\[)/, "$1").replace(/(\])[\s\S]*$/, "$1");
-    const parsed = JSON.parse(jsonText);
+    let parsed = raw;
+    if (typeof parsed === "string") {
+      const unfenced = String(parsed || "").trim().replace(/^\x60\x60\x60(?:json)?\s*/i, "").replace(/\s*\x60\x60\x60\s*$/i, "");
+      const objectStart = unfenced.indexOf("{");
+      const arrayStart = unfenced.indexOf("[");
+      let jsonText = unfenced;
+      if (objectStart >= 0 && (arrayStart < 0 || objectStart < arrayStart)) {
+        const objectEnd = unfenced.lastIndexOf("}");
+        if (objectEnd >= objectStart) jsonText = unfenced.slice(objectStart, objectEnd + 1);
+      } else if (arrayStart >= 0) {
+        const arrayEnd = unfenced.lastIndexOf("]");
+        if (arrayEnd >= arrayStart) jsonText = unfenced.slice(arrayStart, arrayEnd + 1);
+      }
+      parsed = JSON.parse(jsonText);
+    }
     const clamp = (v, n) => String(v || "").slice(0, n);
-    const directions = (Array.isArray(parsed) ? parsed : []).slice(0, 3).map((d) => ({
+    const list = Array.isArray(parsed) ? parsed : parsed && Array.isArray(parsed.directions) ? parsed.directions : [];
+    const directions = list.slice(0, 3).map((d) => ({
       title: clamp(d.title, 90),
       phenomenon: clamp(d.phenomenon, 220),
       essentialQuestion: clamp(d.essentialQuestion, 180),
@@ -228,6 +251,55 @@ const SurpriseMeEngine = {
     })).filter((d) => d.title && d.essentialQuestion);
     if (!directions.length) throw new Error("no usable directions");
     return directions;
+  },
+  fallbackDirections: function(match, hood) {
+    const safeBrief = (record, fallback, limit) => {
+      try {
+        const value = SurpriseMeEngine.brief(record || {}).trim();
+        return (value || fallback).slice(0, limit);
+      } catch (e) {
+        return fallback;
+      }
+    };
+    const target = safeBrief(match, "the selected standard", 80);
+    const prior = hood && hood.prerequisites && hood.prerequisites[0] ? safeBrief(hood.prerequisites[0], "", 60) : "";
+    const related = hood && hood.related && hood.related[0] ? safeBrief(hood.related[0], "", 60) : "";
+    const vocabulary = Array.from(new Set(target.replace(/[^A-Za-z0-9'-]+/g, " ").split(/\s+/).filter((word) => word.length > 2))).slice(0, 5);
+    ["evidence", "example", "explanation", "pattern", "reasoning"].forEach((word) => {
+      if (vocabulary.length < 3 && vocabulary.indexOf(word) < 0) vocabulary.push(word);
+    });
+    return [
+      {
+        title: "Connect prior knowledge",
+        phenomenon: prior ? `A bridge from ${prior} to ${target}.` : `Examples and non-examples of ${target}.`,
+        essentialQuestion: prior ? `How does ${prior} help us understand ${target}?` : `What makes an example demonstrate ${target}?`,
+        activity: "Sort examples and non-examples, then annotate the evidence for each choice.",
+        evidence: "An annotated example and a brief evidence-based explanation.",
+        udlSupports: ["Offer visual, spoken, and written examples", "Allow drawing, speaking, or writing"],
+        tone: "Step-by-Step",
+        vocabulary: vocabulary.slice()
+      },
+      {
+        title: "Compare and justify",
+        phenomenon: related ? `A choice involving ${target} and the source-listed related idea ${related}.` : `Two plausible approaches to ${target}.`,
+        essentialQuestion: `Which approach best demonstrates ${target}, and why?`,
+        activity: "Compare two approaches, choose or revise one, and justify the decision with evidence.",
+        evidence: "A comparison that names specific features and supports a choice.",
+        udlSupports: ["Use a side-by-side organizer", "Provide sentence starters for justification"],
+        tone: "Dialogue",
+        vocabulary: vocabulary.slice()
+      },
+      {
+        title: "Create and teach",
+        phenomenon: `A design challenge that makes ${target} clear to someone else.`,
+        essentialQuestion: `How can we create and teach a clear example of ${target}?`,
+        activity: "Create a model, explanation, or demonstration, then improve it with peer feedback.",
+        evidence: "A student-created example plus a reflection on how it meets the target.",
+        udlSupports: ["Offer model, audio, video, or text options", "Use a short feedback checklist"],
+        tone: "Informative",
+        vocabulary: vocabulary.slice()
+      }
+    ];
   },
   directionBrief: function(direction) {
     return [
@@ -363,15 +435,20 @@ function UniversalSettingsPanel(props) {
     if (!match || !localStandardsProvider || !surpriseAi) return;
     setSurpriseState("loading");
     setSurpriseDirections([]);
+    let hood = null;
     try {
-      const hood = SurpriseMeEngine.buildHood(localStandardsProvider, match.id);
+      hood = SurpriseMeEngine.buildHood(localStandardsProvider, match.id);
       setSurpriseHood(hood);
-      const raw = await surpriseAi(SurpriseMeEngine.buildPrompt(match, hood, { gradeLevel, studentInterests }), false, false, 0.8);
+      const raw = await surpriseAi(SurpriseMeEngine.buildPrompt(match, hood, { gradeLevel, studentInterests }), true, false, 0.8);
       setSurpriseDirections(SurpriseMeEngine.parseDirections(raw));
       setSurpriseState("ready");
     } catch (error) {
-      setSurpriseState("error");
-      addToast("Could not propose lesson directions. Try again.", "error");
+      setSurpriseDirections(SurpriseMeEngine.fallbackDirections(match, hood));
+      setSurpriseState("ready");
+      if (typeof console !== "undefined" && typeof console.warn === "function") {
+        console.warn("[SurpriseMe] AI proposal unavailable; using built-in starters:", error && error.message ? error.message : "unknown error");
+      }
+      addToast("AI directions were unavailable, so AlloFlow prepared three editable starters.", "info");
     }
   };
   const useSurpriseDirection = (direction, editedBrief) => {
@@ -3187,6 +3264,7 @@ window.AlloModules.SentenceFramesPanel = (typeof SentenceFramesPanel !== 'undefi
 window.AlloModules.LessonPlanPanel = (typeof LessonPlanPanel !== 'undefined') ? LessonPlanPanel : null;
 window.AlloModules.AnalysisPanel = (typeof AnalysisPanel !== 'undefined') ? AnalysisPanel : null;
 window.AlloModules.UiToolWordsoundsPanel = (typeof UiToolWordsoundsPanel !== 'undefined') ? UiToolWordsoundsPanel : null;
+window.AlloModules.ToolCatalogControls = (typeof ToolCatalogControls !== 'undefined') ? ToolCatalogControls : null;
 window.AlloModules.SurpriseMeEngine = (typeof SurpriseMeEngine !== 'undefined') ? SurpriseMeEngine : null;
 window.AlloModules.SurpriseMeCompare = (typeof SurpriseMeCompare !== 'undefined') ? SurpriseMeCompare : null;
 window.AlloModules.ViewSidebarPanelsModule = true;

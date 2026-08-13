@@ -20,6 +20,7 @@
 import { validAudioBase64 } from './lib/audio_fixtures.js';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
@@ -33,6 +34,7 @@ let KaraokeReaderOverlay;
 let createTTS;
 let TPH; // TextPipelineHelpers registry
 let PK;  // PhaseKHelpers registry
+let PKSource; // source-under-test; generated modules are intentionally not rebuilt here
 let KS;  // KaraokeAudioStore namespace
 let root;
 let host;
@@ -92,7 +94,7 @@ function makePlaySequenceDeps(overrides = {}) {
   };
 }
 
-beforeAll(() => {
+beforeAll(async () => {
   React = require(resolve(MODULES_DIR, 'react'));
   ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
   ({ act } = require(resolve(MODULES_DIR, 'react-dom/test-utils')));
@@ -112,10 +114,24 @@ beforeAll(() => {
   TPH = window.AlloModules.createTextPipelineHelpers();
   window.AlloModules.TextPipelineHelpers = TPH;
   PK = window.AlloModules.PhaseKHelpers;
+  const generatedPK = PK;
+  const babel = require(resolve(MODULES_DIR, '@babel/core'));
+  const presetReact = require(resolve(MODULES_DIR, '@babel/preset-react'));
+  const sourceCode = readFileSync(resolve(process.cwd(), 'phase_k_helpers_source.jsx'), 'utf8');
+  const transformedSource = babel.transformSync(sourceCode, {
+    babelrc: false,
+    configFile: false,
+    sourceType: 'script',
+    presets: [[presetReact, { runtime: 'classic' }]],
+  }).code;
+  // eslint-disable-next-line no-new-func
+  new Function(transformedSource)();
+  PKSource = window.AlloModules.PhaseKHelpers;
+  window.AlloModules.PhaseKHelpers = generatedPK;
   KS = window.AlloModules.KaraokeAudioStore;
   createTTS = window.AlloModules.createTTS;
   KaraokeReaderOverlay = window.AlloModules.KaraokeReaderOverlay;
-  if (!TPH || !PK || !KS || !createTTS || !KaraokeReaderOverlay) {
+  if (!TPH || !PK || !PKSource || !KS || !createTTS || !KaraokeReaderOverlay) {
     throw new Error('A target module did not register');
   }
 });
@@ -436,6 +452,19 @@ describe('general Leveled Text stalled-preload promotion (2026-08-03)', () => {
 });
 
 describe('adventure prewarm/live request parity', () => {
+  it('does not expose an Adventure sentence as active until its audio starts', () => {
+    const source = readFileSync(resolve(process.cwd(), 'phase_k_helpers_source.jsx'), 'utf8');
+    const sequenceStart = source.indexOf('const playSequence = async');
+    const handleSpeakStart = source.indexOf('const handleSpeak = async');
+    const sequence = source.slice(sequenceStart, handleSpeakStart);
+    const handleSpeak = source.slice(handleSpeakStart);
+
+    expect(sequence).toContain('loadingIdx: index');
+    expect(sequence).toMatch(/audio\.play\(\)[\s\S]{0,800}currentIdx: index,[\s\S]{0,120}loadingIdx: -1/);
+    expect(handleSpeak).toContain('currentIdx: -1');
+    expect(handleSpeak).toContain('loadingIdx: effectiveStartIndex');
+  });
+
   it('warms with the sanitized text and the exact voice playback will resolve', () => {
     const PH = window.AlloModules.PureHelpers;
     const split = (t) => PH.splitTextToSentences(t, {});
@@ -469,6 +498,104 @@ describe('adventure prewarm/live request parity', () => {
     for (const [text] of calls) {
       expect(text).not.toMatch(/https?:|⁽|\[|\]/);
     }
+  });
+});
+
+describe('Adventure-owned TTS language and local Kokoro handoff', () => {
+  it('resolves monolingual modes directly and lets bilingual descriptors override the safe English fallback', () => {
+    expect(PKSource.resolveAdventureTtsLanguage('English', null, ['Spanish'])).toBe('English');
+    expect(PKSource.resolveAdventureTtsLanguage('Spanish', null, ['Spanish'])).toBe('Spanish');
+    expect(PKSource.resolveAdventureTtsLanguage('Spanish + English', null, ['Spanish'])).toBe('English');
+    expect(PKSource.resolveAdventureTtsLanguage(
+      'Spanish + English',
+      { text: 'La puerta se abre.', language: 'Spanish' },
+      ['Spanish']
+    )).toBe('Spanish');
+  });
+
+  it('keeps an English Adventure on English when the global Leveled Text language is Spanish', async () => {
+    localStorage.removeItem('alloflow_ai_config');
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const callTTS = vi.fn(async () => 'blob:english-adventure');
+    const deps = makePlaySequenceDeps({
+      callTTS,
+      selectedVoice: 'af_heart',
+      leveledTextLanguage: 'Spanish',
+      adventureLanguageMode: 'English',
+      selectedLanguages: ['Spanish'],
+    });
+
+    await PKSource.playSequence(
+      0, ['The hidden door opens.'], 17, 'adventure', {}, 'af_heart', null, 0, null, deps, 'adventure-active'
+    );
+
+    expect(callTTS).toHaveBeenCalledTimes(1);
+    expect(callTTS.mock.calls[0][1]).toBe('af_heart');
+    expect(callTTS.mock.calls[0][3]).toMatchObject({
+      language: 'English',
+      priority: 'interactive',
+      reason: 'read-aloud-active',
+    });
+    expect(audioInstances.map((audio) => audio.src)).toEqual(['blob:english-adventure']);
+  });
+
+  it('prewarms English af_heart exactly once with the canonical Adventure language', () => {
+    const splitTextToSentences = (text) => [text];
+    const callTTS = vi.fn(async () => 'blob:warm');
+
+    const warmed = PKSource.prewarmSequenceAudio('The bridge is safe.', {
+      count: 1,
+      voiceMap: {},
+      adventureLanguageMode: 'English',
+      selectedLanguages: ['Spanish'],
+      deps: { callTTS, splitTextToSentences, selectedVoice: 'af_heart' },
+    });
+
+    expect(warmed).toBe(1);
+    expect(callTTS).toHaveBeenCalledTimes(1);
+    expect(callTTS.mock.calls[0][1]).toBe('af_heart');
+    expect(callTTS.mock.calls[0][3]).toEqual({
+      language: 'English',
+      priority: 'normal',
+      reason: 'adventure-prewarm',
+    });
+  });
+
+  it('joins a pending English Kokoro buffer past two seconds without launching a duplicate request', async () => {
+    vi.useFakeTimers();
+    localStorage.removeItem('alloflow_ai_config');
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+
+    let resolvePending;
+    const pending = new Promise((resolve) => { resolvePending = resolve; });
+    const deps = makePlaySequenceDeps({
+      selectedVoice: 'af_heart',
+      leveledTextLanguage: 'Spanish',
+      adventureLanguageMode: 'English',
+      selectedLanguages: ['Spanish'],
+    });
+    const sentence = 'The lantern glows.';
+    const key = PKSource.sequenceBufferKey(0, 'af_heart', sentence, `1\u241fEnglish`);
+    deps.audioBufferRef.current[key] = pending;
+
+    let completed = false;
+    const run = PKSource.playSequence(
+      0, [sentence], 17, 'adventure', {}, 'af_heart', null, 0, null, deps, 'adventure-active'
+    ).then(() => { completed = true; });
+
+    await vi.advanceTimersByTimeAsync(2100);
+    expect(completed).toBe(false);
+    expect(deps.playSequence).not.toHaveBeenCalled();
+    expect(deps.callTTS).not.toHaveBeenCalled();
+
+    resolvePending('blob:joined-kokoro');
+    await run;
+
+    expect(deps.playSequence).not.toHaveBeenCalled();
+    expect(deps.callTTS).not.toHaveBeenCalled();
+    expect(audioInstances.map((audio) => audio.src)).toEqual(['blob:joined-kokoro']);
   });
 });
 

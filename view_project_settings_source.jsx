@@ -4,6 +4,20 @@ function ProjectSettingsView(props) {
   var setStudentProjectSettings = props.setStudentProjectSettings;
   var isTeacherMode = props.isTeacherMode;
   var handleSetIsProjectSettingsOpenToFalse = props.handleSetIsProjectSettingsOpenToFalse;
+  var onOpenPrincipalEvaluation = props.onOpenPrincipalEvaluation;
+  var evaluationPortalUrl = props.evaluationPortalUrl || '';
+  var isEvaluationPortalConnected = props.isEvaluationPortalConnected === true;
+  var onSaveEvaluationPortalUrl = props.onSaveEvaluationPortalUrl;
+  // This view intentionally remains hook-free because it is also invoked by
+  // project export/test renderers. The uncontrolled input updates this
+  // render-closure draft; the host owns persistence, validation, and toasts.
+  var portalUrlDraft = evaluationPortalUrl;
+  var applyEvaluationPortalUrl = function(value) {
+    if (typeof onSaveEvaluationPortalUrl !== 'function') return;
+    var result = onSaveEvaluationPortalUrl(value);
+    if (result && result.ok !== false && typeof result.url === 'string') portalUrlDraft = result.url;
+    return result;
+  };
   var permissions = studentProjectSettings.adventurePermissions || {};
 
   var tx = function(key, fallback) {
@@ -198,6 +212,50 @@ function ProjectSettingsView(props) {
         </header>
 
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
+          {isTeacherMode && typeof onOpenPrincipalEvaluation === 'function' && (
+            <section aria-labelledby="principal-evaluation-title" className="rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-4 shadow-sm sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wider text-indigo-700">{isEvaluationPortalConnected ? 'District portal connected' : 'Local preview available'}</p>
+                  <h4 id="principal-evaluation-title" className="mt-1 text-base font-black text-slate-900">Principal Evaluation</h4>
+                  <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
+                    {isEvaluationPortalConnected ? 'Open the Google-authenticated district portal for walkthroughs, formal observations, SPM/SLO workflow, feedback, and trends.' : 'Connect the district Apps Script portal below. Until then, this button opens the local demonstration workspace only.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onOpenPrincipalEvaluation}
+                  className="shrink-0 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-black text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                >{isEvaluationPortalConnected ? 'Open district portal' : 'Open local preview'}</button>
+              </div>
+              {typeof onSaveEvaluationPortalUrl === 'function' && (
+                <form className="mt-4 border-t border-indigo-100 pt-4" onSubmit={function(event) { event.preventDefault(); applyEvaluationPortalUrl(portalUrlDraft); }}>
+                  <label htmlFor="principal-evaluation-portal-url" className="block text-xs font-black text-slate-700">District Apps Script web-app URL</label>
+                  <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                    <input
+                      id="principal-evaluation-portal-url"
+                      type="url"
+                      inputMode="url"
+                      autoComplete="off"
+                      spellCheck={false}
+                      defaultValue={portalUrlDraft}
+                      onChange={function(event) { portalUrlDraft = event.target.value; }}
+                      aria-describedby="principal-evaluation-portal-help"
+
+                      placeholder="https://script.google.com/macros/s/…/exec"
+                      className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    />
+                    <button type="submit" className="min-h-11 rounded-xl border border-indigo-600 bg-white px-4 py-2 text-sm font-black text-indigo-700 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{isEvaluationPortalConnected ? 'Update connection' : 'Connect portal'}</button>
+                    {isEvaluationPortalConnected && <button type="button" onClick={function() { applyEvaluationPortalUrl(''); }} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Disconnect</button>}
+                  </div>
+                  <p id="principal-evaluation-portal-help" className="mt-2 text-xs leading-relaxed text-slate-500">
+                    {isEvaluationPortalConnected ? 'This device will open the exact district /exec deployment in a separate tab. Google sign-in and server assignments control access; emailed links do not.' : 'Paste the district-owned HTTPS Apps Script deployment URL ending in /exec. AlloFlow stores only this launcher address on this device.'}
+                  </p>
+
+                </form>
+              )}
+            </section>
+          )}
           <fieldset>
             <legend className="text-xs font-black uppercase tracking-wider text-slate-600">
               {tx('project_settings.starting_point', 'Starting point')}

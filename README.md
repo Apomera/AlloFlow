@@ -40,6 +40,10 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 >
 > 🏫 **District decision-maker?** See the 2-page [Admin Brief](./AdminBrief.md) — cost comparison, privacy/compliance, and pilot-path summary.
 
+### Agent-authored AlloPacks
+
+An agent can author the same portable resource-pack structure without opening the AlloFlow UI. The local Agent Core MCP accepts agent-generated resource history, validates renderer-critical shapes and privacy safeguards, creates a teacher-review preview, and exports a .allopack.json payload. It does not silently call a model, read API keys, upload source text, publish content, or write arbitrary paths. See the [MCP connector guide](./desktop/mcp/README.md), the [AlloPack specification](./docs/ALLOPACK_FORMAT_SPEC.md), and the reusable [AlloFlow resource-pack authoring skill](./agent_skills/alloflow-resource-pack-authoring/SKILL.md).
+
 ---
 
 ## Product tour
@@ -249,6 +253,8 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 | ♿ Current WCAG 2.2 audit | [a11y-audit/WCAG-2.2-current-audit.md](./a11y-audit/WCAG-2.2-current-audit.md) |
 | ♿ Historical WCAG AA audit | [alloflow_wcag_aa_audit_report.md](./alloflow_wcag_aa_audit_report.md) |
 | 📖 Complete User Manual | [AlloFlow Complete User Manual.md](./AlloFlow%20Complete%20User%20Manual.md) |
+| Teacher Guide (searchable) | [guide/index.html](./guide/index.html) |
+| Teacher Guide (offline / print) | [guide/offline.html](./guide/offline.html) |
 | 🖨️ Quick Reference Cards | [QuickReferenceCards.md](./QuickReferenceCards.md) |
 | 🏗️ Architecture Overview | [architecture.md](./architecture.md) |
 | 🚀 Firebase Deployment | [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) |

@@ -96,6 +96,15 @@ function AdminHubPanel(props) {
       descCls: "text-emerald-800"
     },
     {
+      id: "evaluation",
+      icon: "✅",
+      title: tt("adminhub.evaluation_title", "Educator Evaluation"),
+      desc: tt("adminhub.evaluation_desc", "Opens your connected district evaluation portal; otherwise opens a local preview with Pennsylvania Act 13 completion and weighting pies, walkthroughs, formal observations, SPM / SLO, dialogue, receipts, and audit history."),
+      accent: "from-blue-50 to-indigo-50 border-blue-700",
+      titleCls: "text-blue-900",
+      descCls: "text-blue-800"
+    },
+    {
       id: "walkthrough",
       icon: "🚪",
       title: tt("adminhub.walkthrough_title", "UDL Walkthrough"),
@@ -152,7 +161,7 @@ function AdminHubPanel(props) {
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, tool.icon),
     /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold " + tool.titleCls }, tool.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1 " + tool.descCls }, tool.desc))
-  ))), /* @__PURE__ */ React.createElement("p", { className: "mt-5 text-[11px] text-slate-500 border-t border-slate-200 pt-3" }, tt("adminhub.covenant", "How this suite handles information: reference guides ask for no student data. Analysis tools use aggregate counts or de-identified codes and disclose when a feature uses AI. Results are descriptive and growth-framed - a prompt for professional judgment and root-cause review, never an automated verdict about a teacher or a student."))));
+  ))), /* @__PURE__ */ React.createElement("p", { className: "mt-5 text-[11px] text-slate-500 border-t border-slate-200 pt-3" }, tt("adminhub.covenant", "How this suite handles information: analysis tools use aggregate counts or de-identified codes. Official evaluation records belong only in a district-authorized authenticated portal. The local preview must not contain real personnel or student information. Human review stays in control—never an automated verdict about a teacher or student."))));
 }
 
   window.AlloModules = window.AlloModules || {};

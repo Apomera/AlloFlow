@@ -11,6 +11,290 @@
   var React = window.React;
   if (!React) { console.error('[HistoryPanel] React not found on window'); return; }
 
+const HistoryThemeFallbackContext = window.React && window.React.createContext ? window.React.createContext({ theme: "light" }) : null;
+const HISTORY_PANEL_THEME_CSS = `
+  #tour-history-panel.allo-premium-history {
+    --rp-shell-start: #ffffff;
+    --rp-shell-end: #f8fafc;
+    --rp-surface: #ffffff;
+    --rp-surface-translucent: rgba(255, 255, 255, 0.78);
+    --rp-subtle: #f8fafc;
+    --rp-hover: #f1f5f9;
+    --rp-border: #e2e8f0;
+    --rp-border-strong: #cbd5e1;
+    --rp-text: #1e293b;
+    --rp-text-strong: #020617;
+    --rp-muted: #64748b;
+    --rp-faint: #94a3b8;
+    --rp-accent: #4338ca;
+    --rp-accent-soft: #eef2ff;
+    --rp-accent-hover: #e0e7ff;
+    --rp-accent-border: #c7d2fe;
+    --rp-primary: #4338ca;
+    --rp-primary-hover: #3730a3;
+    --rp-on-primary: #ffffff;
+    --rp-success: #047857;
+    --rp-success-soft: #ecfdf5;
+    --rp-success-border: #a7f3d0;
+    --rp-warning: #b45309;
+    --rp-warning-soft: #fffbeb;
+    --rp-danger: #b91c1c;
+    --rp-danger-soft: #fef2f2;
+    --rp-violet: #6d28d9;
+    --rp-violet-soft: #f5f3ff;
+    --rp-violet-border: #ddd6fe;
+    --rp-sel: #be185d;
+    --rp-sel-soft: #fdf2f8;
+    --rp-focus: #4f46e5;
+    --rp-focus-offset: #ffffff;
+    --rp-shadow: rgba(15, 23, 42, 0.08);
+    --rp-shadow-strong: rgba(15, 23, 42, 0.16);
+    color-scheme: light;
+  }
+
+  #tour-history-panel[data-history-theme="dark"] {
+    --rp-shell-start: #172033;
+    --rp-shell-end: #0f172a;
+    --rp-surface: #162032;
+    --rp-surface-translucent: rgba(22, 32, 50, 0.90);
+    --rp-subtle: #111827;
+    --rp-hover: #263449;
+    --rp-border: #334155;
+    --rp-border-strong: #475569;
+    --rp-text: #e2e8f0;
+    --rp-text-strong: #f8fafc;
+    --rp-muted: #cbd5e1;
+    --rp-faint: #94a3b8;
+    --rp-accent: #a5b4fc;
+    --rp-accent-soft: rgba(49, 46, 129, 0.38);
+    --rp-accent-hover: rgba(67, 56, 202, 0.48);
+    --rp-accent-border: #6366f1;
+    --rp-primary: #6366f1;
+    --rp-primary-hover: #818cf8;
+    --rp-success: #6ee7b7;
+    --rp-success-soft: rgba(6, 78, 59, 0.42);
+    --rp-success-border: #047857;
+    --rp-warning: #fcd34d;
+    --rp-warning-soft: rgba(120, 53, 15, 0.36);
+    --rp-danger: #fca5a5;
+    --rp-danger-soft: rgba(127, 29, 29, 0.38);
+    --rp-violet: #ddd6fe;
+    --rp-violet-soft: rgba(76, 29, 149, 0.34);
+    --rp-violet-border: #7c3aed;
+    --rp-sel: #f9a8d4;
+    --rp-sel-soft: rgba(131, 24, 67, 0.32);
+    --rp-focus: #a5b4fc;
+    --rp-focus-offset: #0f172a;
+    --rp-shadow: rgba(2, 6, 23, 0.44);
+    --rp-shadow-strong: rgba(2, 6, 23, 0.62);
+    color-scheme: dark;
+  }
+
+  #tour-history-panel[data-history-theme="contrast"] {
+    --rp-shell-start: #000000;
+    --rp-shell-end: #000000;
+    --rp-surface: #000000;
+    --rp-surface-translucent: #000000;
+    --rp-subtle: #000000;
+    --rp-hover: #1a1a00;
+    --rp-border: #ffffff;
+    --rp-border-strong: #ffff00;
+    --rp-text: #ffffff;
+    --rp-text-strong: #ffff00;
+    --rp-muted: #ffffff;
+    --rp-faint: #ffffff;
+    --rp-accent: #00ffff;
+    --rp-accent-soft: #001a1a;
+    --rp-accent-hover: #003333;
+    --rp-accent-border: #00ffff;
+    --rp-primary: #ffff00;
+    --rp-primary-hover: #ffffff;
+    --rp-on-primary: #000000;
+    --rp-success: #00ff00;
+    --rp-success-soft: #001a00;
+    --rp-success-border: #00ff00;
+    --rp-warning: #ffff00;
+    --rp-warning-soft: #1a1a00;
+    --rp-danger: #ff6666;
+    --rp-danger-soft: #260000;
+    --rp-violet: #00ffff;
+    --rp-violet-soft: #001a1a;
+    --rp-violet-border: #00ffff;
+    --rp-sel: #ff99ff;
+    --rp-sel-soft: #260026;
+    --rp-focus: #ffff00;
+    --rp-focus-offset: #000000;
+    --rp-shadow: transparent;
+    --rp-shadow-strong: transparent;
+    color-scheme: dark;
+  }
+
+  #tour-history-panel.allo-premium-history {
+    background: linear-gradient(180deg, var(--rp-shell-start) 0%, var(--rp-shell-end) 100%) !important;
+    border-color: var(--rp-border) !important;
+    color: var(--rp-text) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 18px 46px var(--rp-shadow) !important;
+  }
+  #tour-history-panel[data-history-theme="contrast"] {
+    background: #000000 !important;
+    border-color: var(--rp-border-strong) !important;
+    border-width: 2px !important;
+    box-shadow: none !important;
+  }
+  #tour-history-panel[data-history-theme="contrast"] :where(div, span, p, label, h3, h4, time) {
+    color: inherit !important;
+  }
+
+  #tour-history-panel .bg-white { background-color: var(--rp-surface) !important; box-shadow: none !important; }
+  #tour-history-panel [class~="bg-white/70"] { background-color: var(--rp-surface-translucent) !important; box-shadow: none !important; }
+  #tour-history-panel [class~="bg-slate-50/90"] { background-color: var(--rp-subtle) !important; }
+  #tour-history-panel .bg-slate-100 { background-color: var(--rp-hover) !important; }
+  #tour-history-panel .bg-slate-200 { background-color: var(--rp-border) !important; }
+  #tour-history-panel .bg-indigo-50,
+  #tour-history-panel [class~="bg-indigo-50/70"],
+  #tour-history-panel [class~="bg-indigo-50/80"] { background-color: var(--rp-accent-soft) !important; }
+  #tour-history-panel .bg-indigo-100 { background-color: var(--rp-accent-hover) !important; }
+  #tour-history-panel .bg-indigo-700 { background-color: var(--rp-primary) !important; }
+  #tour-history-panel .bg-emerald-50,
+  #tour-history-panel .bg-emerald-100 { background-color: var(--rp-success-soft) !important; }
+  #tour-history-panel .bg-violet-50,
+  #tour-history-panel .bg-violet-100 { background-color: var(--rp-violet-soft) !important; }
+  #tour-history-panel .bg-pink-50 { background-color: var(--rp-sel-soft) !important; }
+
+  #tour-history-panel .text-slate-950,
+  #tour-history-panel .text-slate-900 { color: var(--rp-text-strong) !important; }
+  #tour-history-panel .text-slate-800,
+  #tour-history-panel .text-slate-700 { color: var(--rp-text) !important; }
+  #tour-history-panel .text-slate-600,
+  #tour-history-panel .text-slate-500 { color: var(--rp-muted) !important; }
+  #tour-history-panel .text-slate-400 { color: var(--rp-faint) !important; }
+  #tour-history-panel .text-indigo-600,
+  #tour-history-panel .text-indigo-700 { color: var(--rp-accent) !important; }
+  #tour-history-panel .text-emerald-700,
+  #tour-history-panel .text-emerald-800 { color: var(--rp-success) !important; }
+  #tour-history-panel .text-amber-700 { color: var(--rp-warning) !important; }
+  #tour-history-panel .text-red-700 { color: var(--rp-danger) !important; }
+  #tour-history-panel .text-violet-700 { color: var(--rp-violet) !important; }
+  #tour-history-panel .text-pink-700 { color: var(--rp-sel) !important; }
+  #tour-history-panel .text-white { color: var(--rp-on-primary) !important; }
+  #tour-history-panel input::placeholder { color: var(--rp-faint) !important; opacity: 1; }
+
+  #tour-history-panel .border-slate-200 { border-color: var(--rp-border) !important; }
+  #tour-history-panel .border-slate-300 { border-color: var(--rp-border-strong) !important; }
+  #tour-history-panel .border-indigo-200,
+  #tour-history-panel .border-indigo-300 { border-color: var(--rp-accent-border) !important; }
+  #tour-history-panel .border-indigo-700 { border-color: var(--rp-primary) !important; }
+  #tour-history-panel .border-violet-200,
+  #tour-history-panel .border-violet-300 { border-color: var(--rp-violet-border) !important; }
+  #tour-history-panel .border-transparent,
+  #tour-history-panel .border-l-transparent { border-color: transparent !important; }
+  #tour-history-panel .border-l-indigo-600 { border-left-color: var(--rp-accent) !important; }
+
+  #tour-history-panel [class~="hover:bg-slate-50"]:hover,
+  #tour-history-panel [class~="hover:bg-slate-50/70"]:hover,
+  #tour-history-panel [class~="hover:bg-slate-100"]:hover { background-color: var(--rp-hover) !important; }
+  #tour-history-panel [class~="hover:bg-indigo-50"]:hover,
+  #tour-history-panel [class~="hover:bg-indigo-100"]:hover { background-color: var(--rp-accent-hover) !important; }
+  #tour-history-panel [class~="hover:bg-indigo-800"]:hover { background-color: var(--rp-primary-hover) !important; }
+  #tour-history-panel [class~="hover:bg-emerald-50"]:hover,
+  #tour-history-panel [class~="hover:bg-emerald-50/60"]:hover { background-color: var(--rp-success-soft) !important; }
+  #tour-history-panel [class~="hover:bg-amber-50"]:hover { background-color: var(--rp-warning-soft) !important; }
+  #tour-history-panel [class~="hover:bg-red-50"]:hover { background-color: var(--rp-danger-soft) !important; }
+  #tour-history-panel [class~="hover:bg-pink-50/60"]:hover { background-color: var(--rp-sel-soft) !important; }
+  #tour-history-panel [class~="hover:bg-white"]:hover { background-color: var(--rp-surface) !important; }
+  #tour-history-panel [class~="hover:border-slate-300"]:hover,
+  #tour-history-panel [class~="hover:border-slate-400"]:hover { border-color: var(--rp-border-strong) !important; }
+  #tour-history-panel [class~="hover:border-indigo-200"]:hover { border-color: var(--rp-accent-border) !important; }
+  #tour-history-panel [class~="hover:border-emerald-300"]:hover { border-color: var(--rp-success-border) !important; }
+  #tour-history-panel [class~="hover:border-pink-300"]:hover { border-color: var(--rp-sel) !important; }
+  #tour-history-panel [class~="hover:text-slate-700"]:hover,
+  #tour-history-panel [class~="hover:text-slate-800"]:hover,
+  #tour-history-panel [class~="hover:text-slate-900"]:hover { color: var(--rp-text-strong) !important; }
+
+  #tour-history-panel button[aria-expanded="true"]:not(.rp-dismiss-layer) {
+    background-color: var(--rp-accent-soft) !important;
+    border-color: var(--rp-accent-border) !important;
+  }
+  #tour-history-panel button:disabled,
+  #tour-history-panel [aria-disabled="true"] { opacity: 0.58 !important; filter: saturate(0.55); }
+  #tour-history-panel .shadow-sm { box-shadow: 0 1px 3px var(--rp-shadow) !important; }
+  #tour-history-panel .rp-menu-surface { box-shadow: 0 18px 42px var(--rp-shadow-strong) !important; }
+  #tour-history-panel .rp-dismiss-layer {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: transparent !important;
+    padding: 0 !important;
+  }
+
+  #tour-history-panel button:focus-visible,
+  #tour-history-panel input:focus-visible,
+  #tour-history-panel select:focus-visible {
+    outline: 3px solid var(--rp-focus) !important;
+    outline-offset: 2px !important;
+    --tw-ring-color: var(--rp-focus) !important;
+    --tw-ring-offset-color: var(--rp-focus-offset) !important;
+  }
+  #tour-history-panel[data-history-theme="contrast"] button:focus-visible,
+  #tour-history-panel[data-history-theme="contrast"] input:focus-visible,
+  #tour-history-panel[data-history-theme="contrast"] select:focus-visible {
+    outline-width: 4px !important;
+    box-shadow: 0 0 0 2px var(--rp-focus-offset) !important;
+  }
+  #tour-history-panel[data-history-theme="contrast"] .shadow-sm,
+  #tour-history-panel[data-history-theme="contrast"] .shadow-xl,
+  #tour-history-panel[data-history-theme="contrast"] .shadow-2xl,
+  #tour-history-panel[data-history-theme="contrast"] .rp-menu-surface { box-shadow: none !important; }
+
+  @media (forced-colors: active) {
+    #tour-history-panel.allo-premium-history {
+      --rp-shell-start: Canvas;
+      --rp-shell-end: Canvas;
+      --rp-surface: Canvas;
+      --rp-surface-translucent: Canvas;
+      --rp-subtle: Canvas;
+      --rp-hover: Highlight;
+      --rp-border: CanvasText;
+      --rp-border-strong: CanvasText;
+      --rp-text: CanvasText;
+      --rp-text-strong: CanvasText;
+      --rp-muted: CanvasText;
+      --rp-faint: GrayText;
+      --rp-accent: LinkText;
+      --rp-accent-soft: Canvas;
+      --rp-accent-hover: Highlight;
+      --rp-accent-border: LinkText;
+      --rp-primary: Highlight;
+      --rp-primary-hover: Highlight;
+      --rp-on-primary: HighlightText;
+      --rp-success: LinkText;
+      --rp-success-soft: Canvas;
+      --rp-success-border: LinkText;
+      --rp-warning: CanvasText;
+      --rp-warning-soft: Canvas;
+      --rp-danger: Mark;
+      --rp-danger-soft: Canvas;
+      --rp-violet: LinkText;
+      --rp-violet-soft: Canvas;
+      --rp-violet-border: LinkText;
+      --rp-sel: LinkText;
+      --rp-sel-soft: Canvas;
+      --rp-focus: Highlight;
+      --rp-focus-offset: Canvas;
+      background: Canvas !important;
+      border: 2px solid CanvasText !important;
+      box-shadow: none !important;
+      forced-color-adjust: auto;
+    }
+    #tour-history-panel [aria-current="page"] { border-left: 4px solid Highlight !important; }
+    #tour-history-panel .rp-dismiss-layer { border: 0 !important; background: transparent !important; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #tour-history-panel,
+    #tour-history-panel * { transition-duration: 0.01ms !important; }
+  }
+`;
 function HistoryPanel(props) {
   const noop = () => null;
   const AlertCircle = window.AlertCircle || noop;
@@ -108,6 +392,8 @@ function HistoryPanel(props) {
     setActiveSelStation = (() => {
     })
   } = props;
+  const historyThemeContext = React.useContext(window.AlloThemeContext || HistoryThemeFallbackContext);
+  const historyTheme = historyThemeContext && (historyThemeContext.theme === "dark" || historyThemeContext.theme === "contrast") ? historyThemeContext.theme : "light";
   const shareResourcePackToCommunity = () => {
     const visibleItems = (typeof getFilteredHistory === "function" ? getFilteredHistory() : history) || [];
     if (visibleItems.length === 0) {
@@ -220,11 +506,7 @@ function HistoryPanel(props) {
     clearResourceFilters();
     setIsMoreActionsOpen(false);
   }, [activeUnitId]);
-  return /* @__PURE__ */ React.createElement("div", { id: "tour-history-panel", "data-help-key": "history_panel", className: `allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? "fixed inset-4 z-[190] h-auto" : !isTeacherMode ? "h-full" : "flex-grow min-h-[500px]"}` }, /* @__PURE__ */ React.createElement("style", null, `
-                  .allo-premium-history { background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 18px 46px rgba(15,23,42,.08); }
-                  .allo-premium-history button:focus-visible, .allo-premium-history input:focus-visible, .allo-premium-history select:focus-visible { outline: 3px solid #4f46e5; outline-offset: 2px; }
-                  @media (prefers-reduced-motion: reduce) { .allo-premium-history, .allo-premium-history * { transition-duration: .01ms !important; } }
-                `), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 mb-3 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-col" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-base text-slate-950 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-700" }, /* @__PURE__ */ React.createElement(History, { size: 16 })), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 truncate" }, isTeacherMode ? t("sidebar.resource_pack_history") : t("sidebar.my_resources")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { id: "tour-history-panel", "data-help-key": "history_panel", "data-history-theme": historyTheme, className: `allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? "fixed inset-4 z-[190] h-auto" : !isTeacherMode ? "h-full" : "flex-grow min-h-[500px]"}` }, /* @__PURE__ */ React.createElement("style", null, HISTORY_PANEL_THEME_CSS), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 mb-3 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-col" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-base text-slate-950 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-700" }, /* @__PURE__ */ React.createElement(History, { size: 16 })), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 truncate" }, isTeacherMode ? t("sidebar.resource_pack_history") : t("sidebar.my_resources")), /* @__PURE__ */ React.createElement(
     "span",
     {
       className: "rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-600",
@@ -272,7 +554,7 @@ function HistoryPanel(props) {
       type: "button",
       tabIndex: -1,
       "aria-label": t("history.close_more_actions_aria"),
-      className: "fixed inset-0 z-[80] cursor-default bg-transparent",
+      className: "rp-dismiss-layer fixed inset-0 z-[80] cursor-default bg-transparent",
       onClick: () => closeMoreActions(true)
     }
   ), /* @__PURE__ */ React.createElement(
@@ -283,7 +565,7 @@ function HistoryPanel(props) {
       role: "menu",
       "aria-label": t("history.more_actions_aria"),
       onKeyDown: handleMoreActionsMenuKeyDown,
-      className: "absolute right-0 top-full z-[90] mt-1 w-64 rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-2xl shadow-slate-900/15"
+      className: "rp-menu-surface absolute right-0 top-full z-[90] mt-1 w-64 rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-2xl shadow-slate-900/15"
     },
     !isCanvas && /* @__PURE__ */ React.createElement(
       "button",
@@ -673,7 +955,7 @@ function HistoryPanel(props) {
           title: t("history.tooltips.move_to_unit")
         },
         /* @__PURE__ */ React.createElement(FolderInput, { size: 12, "aria-hidden": "true" })
-      ), movingItemId === item.id && /* @__PURE__ */ React.createElement("div", { id: `history-move-menu-${item.id}`, role: "menu", className: "absolute left-0 top-12 z-[100] w-48 origin-top-left rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 animate-in fade-in zoom-in-95" }, /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-500" }, t("history.move_to_label")), /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar" }, /* @__PURE__ */ React.createElement(
+      ), movingItemId === item.id && /* @__PURE__ */ React.createElement("div", { id: `history-move-menu-${item.id}`, role: "menu", className: "rp-menu-surface absolute left-0 top-12 z-[100] w-48 origin-top-left rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 animate-in fade-in zoom-in-95" }, /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-500" }, t("history.move_to_label")), /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",

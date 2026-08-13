@@ -142,7 +142,7 @@ describe('Persona auto-read TTS warming', () => {
     expect((phaseSource.match(/preparePersonaTtsText\(/g) || []).length).toBeGreaterThanOrEqual(3);
     expect(phaseSource).toContain('const resolvePersonaTtsLanguage =');
     expect(phaseSource).toContain('const resolvePersonaTtsSpeed =');
-    expect(phaseSource).toContain('personaSynthesisIdentity');
+    expect(phaseSource).toContain('const synthesisIdentity = `${personaTtsSpeed}\\u241f${segmentLanguage}`');
     expect(phaseSource).toContain("stopPlayback('ended', contentId, sessionId)");
     expect(phaseSource).toContain("stopPlayback('superseded')");
     expect(appSource).toContain("typeof phaseKPersonaTts.prewarmPersonaMessageAudio !== 'function'");

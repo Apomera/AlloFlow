@@ -150,6 +150,11 @@ const CLOUDFLARE_CDN_BASE = 'https://alloflow-cdn.pages.dev';
 // Each module: { name, filename, cdnTemplate }
 const MODULES = [
     {
+        name: 'EducatorEvaluation',
+        filename: 'educator_evaluation_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'AlloData',
         filename: 'allo_data_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1467,7 +1472,19 @@ function simplePureCompilePair(name, fileBase, guardKey) {
 }
 
 const COMPILE_PAIRS = [
-    simplePureCompilePair('AccessibilityEvidence', 'accessibility_evidence', 'AccessibilityEvidenceModule'),
+    {
+        name: 'EducatorEvaluation',
+        srcPath: path.join(ROOT, 'educator_evaluation_source.jsx'),
+        modPath: path.join(ROOT, 'educator_evaluation_module.js'),
+        publicPath: path.join(ROOT, 'desktop', 'web-app', 'public', 'educator_evaluation_module.js'),
+        wrap() {
+            execFileSync(process.execPath, [path.join(ROOT, '_build_educator_evaluation_module.js')], {
+                cwd: ROOT,
+                stdio: 'inherit',
+            });
+            return fs.readFileSync(path.join(ROOT, 'educator_evaluation_module.js'), 'utf8');
+        },
+    },    simplePureCompilePair('AccessibilityEvidence', 'accessibility_evidence', 'AccessibilityEvidenceModule'),
     simplePureCompilePair('VerificationPolicy', 'verification_policy', 'VerificationPolicyModule'),
     simplePureCompilePair('ReviewDocumentSession', 'review_document_session', 'ReviewDocumentSessionModule'),
     simplePureCompilePair('SemanticReview', 'semantic_review', 'SemanticReviewModule'),

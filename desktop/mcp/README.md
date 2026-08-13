@@ -8,6 +8,10 @@ Claude Code, and other MCP-compatible tools) talk to the AlloFlow Agent Core.
 | `capabilities` | Report the deployment CapabilityManifest | read-only |
 | `blueprint_validate` | Contract-validate a lesson Blueprint | read-only |
 | `artifact_validate` | Structurally validate an artifact/AlloPack envelope | read-only |
+| `resource_pack_generate` | Assemble and validate an agent-authored AlloPack draft | external-effect |
+| `resource_pack_validate` | Validate renderer shapes, privacy, and size | read-only |
+| `resource_pack_preview` | Create a teacher-review preview | read-only |
+| `resource_pack_export` | Serialize a validated .allopack.json payload | external-effect |
 | `blueprint_create` | Create a deterministic draft from an explicit plan | draft-writing |
 | `blueprint_revise` | Apply explicit pure changes to a draft | draft-writing |
 | `blueprint_preview` | Preview ordered steps and missing capabilities | read-only |
@@ -16,7 +20,7 @@ Claude Code, and other MCP-compatible tools) talk to the AlloFlow Agent Core.
 | `job_cancel` | Request cancellation of an unfinished job | external-effect |
 | `job_get_result` | Read a completed job result | read-only |
 
-The connector has no network listener and makes no outbound request. `media_plan`
+The connector has no network listener and makes no outbound request. The resource-pack tools are intentionally provider-neutral: the calling agent supplies generated history, and this connector only assembles, validates, previews, and exports it. `media_plan`
 uses a separately configured, credential-free ProviderInventory and never executes
 its result or accepts agent-supplied pricing. The Task C
 draft operations use the deterministic headless service: they do not invoke a

@@ -1,6 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
 
 const kokoroSource = readFileSync(resolve(process.cwd(), 'kokoro_tts_loader.js'), 'utf8');
 const piperSource = readFileSync(resolve(process.cwd(), 'piper_tts_loader.js'), 'utf8');
@@ -9,6 +10,13 @@ let createObjectURL;
 let revokeObjectURL;
 let originalCreateDescriptor;
 let originalRevokeDescriptor;
+let createTTS;
+
+beforeAll(() => {
+  loadAlloModule('tts_module.js');
+  createTTS = window.AlloModules.createTTS;
+  if (!createTTS) throw new Error('createTTS did not register');
+});
 
 class FakeWorker {
   static instances = [];
@@ -196,6 +204,110 @@ describe('Kokoro local loader resilience', () => {
     expect(batches).toHaveLength(3);
     expect(batches.every((item) => item.speed === 1)).toBe(true);
     expect(api.synthesisRate).toBe(1);
+  });
+
+  it('shares a background batch with a signalled waiter without transferring cancellation', async () => {
+    const api = loadKokoro();
+    await api.init();
+    createObjectURL.mockClear();
+    FakeWorker.batchMode = 'hold';
+    const worker = FakeWorker.instances[0];
+    const text = 'The same Adventure sentence is warmed and then played.';
+
+    const prewarm = api.speak(text, 'af_heart', 1);
+    const controller = new AbortController();
+    const active = api.speak(text, 'af_heart', 1, { signal: controller.signal });
+    const activeRejection = expect(active).rejects.toMatchObject({ name: 'AbortError' });
+
+    const batches = worker.messages.filter((item) => item.type === 'generate_batch');
+    expect(batches).toHaveLength(1);
+    controller.abort('reader moved on');
+    await activeRejection;
+
+    worker.emit({
+      type: 'audio',
+      id: batches[0].id,
+      buffer: new ArrayBuffer(8),
+      elapsed: 1,
+      chunks: 1,
+      expectedChunks: 1,
+    });
+    const prewarmUrl = await prewarm;
+    expect(prewarmUrl).toBeTruthy();
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
+    await expect(api.speak(text, 'af_heart', 1)).resolves.toBe(prewarmUrl);
+    expect(worker.messages.filter((item) => item.type === 'generate_batch')).toHaveLength(1);
+  });
+
+  it('carries callTTS Adventure prewarm into Kokoro as the owner and lets active playback join it', async () => {
+    const api = loadKokoro();
+    await api.init();
+    createObjectURL.mockClear();
+    FakeWorker.batchMode = 'hold';
+    const worker = FakeWorker.instances[0];
+    const speakSpy = vi.spyOn(api, 'speak');
+    const text = 'The Adventure lantern glows beside the hidden door.';
+    const state = {
+      queue: Promise.resolve(),
+      botQueue: Promise.resolve(),
+      urlCache: new Map(),
+      rateLimitedUntil: 0,
+    };
+    const { callTTS } = createTTS({
+      state,
+      apiKey: 'test-key',
+      GEMINI_MODELS: { tts: 'test-tts-model' },
+      AVAILABLE_VOICES: ['af_heart'],
+      _isCanvasEnv: true,
+      languageToTTSCode: () => 'en',
+      isGlobalMuted: () => false,
+      warnLog: () => {},
+      debugLog: () => {},
+      getLeveledTextLanguage: () => 'Spanish',
+      getCurrentUiLanguage: () => 'English',
+      getAiUserConfig: () => ({}),
+      getAi: () => null,
+      setShowKokoroOfferModal: () => {},
+    });
+
+    const prewarm = callTTS(text, 'af_heart', 1, {
+      language: 'English', priority: 'normal', reason: 'adventure-prewarm', maxRetries: 0,
+    });
+    await vi.waitFor(() => {
+      expect(worker.messages.filter((item) => item.type === 'generate_batch')).toHaveLength(1);
+    });
+    expect(speakSpy.mock.calls[0][3]).toBeUndefined();
+
+    const controller = new AbortController();
+    const active = callTTS(text, 'af_heart', 1, {
+      language: 'English', priority: 'interactive', reason: 'read-aloud-active',
+      maxRetries: 1, signal: controller.signal,
+    });
+    await vi.waitFor(() => {
+      expect(speakSpy).toHaveBeenCalledTimes(2);
+      expect(worker.messages.filter((item) => item.type === 'generate_batch')).toHaveLength(1);
+    });
+    expect(speakSpy.mock.calls[1][3]?.signal).toBeTruthy();
+
+    // Cancelling the active reader cancels only its wait. The signal-free
+    // prewarm remains the batch owner and still fills the reusable cache.
+    controller.abort('reader moved on');
+    await expect(active).rejects.toMatchObject({ name: 'AbortError' });
+
+    const batch = worker.messages.find((item) => item.type === 'generate_batch');
+    worker.emit({
+      type: 'audio', id: batch.id, buffer: new ArrayBuffer(8), elapsed: 1,
+      chunks: 1, expectedChunks: 1,
+    });
+    const prewarmUrl = await prewarm;
+    expect(prewarmUrl).toBeTruthy();
+
+    const replayUrl = await callTTS(text, 'af_heart', 1, {
+      language: 'English', priority: 'interactive', reason: 'read-aloud-active', maxRetries: 1,
+    });
+    expect(replayUrl).toBe(prewarmUrl);
+    expect(worker.messages.filter((item) => item.type === 'generate_batch')).toHaveLength(1);
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
   });
 
   it('owns cached URLs, invalidates them exactly once, and regenerates after invalidation', async () => {

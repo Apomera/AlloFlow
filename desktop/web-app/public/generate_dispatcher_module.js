@@ -2461,7 +2461,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           type,
           data: "",
           meta: metaInfo,
-          title: type === 'simplified' ? `Leveled Text (${effectiveGrade})` : getDefaultTitle(type),
+          title: type === 'simplified' ? `Adapted Text (${effectiveGrade})` : getDefaultTitle(type),
           timestamp: new Date(),
           config: _itemConfig
       };
@@ -2472,6 +2472,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       }
       let fullTargetText = "";
       let fullEnglishText = "";
+      let finalAdaptedItem = tempItem;
       let bilingualTranslationValid = true;
       let citationWarningShown = false;
       const cleanModelText = (value) => String(value || "")
@@ -2615,6 +2616,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               data: currentTotal,
               config: { ..._itemConfig, citationAudit: citationAuditSnapshot() }
           };
+          finalAdaptedItem = updatedItem;
           if (switchView || (generatedContent && generatedContent.id === newId)) {
               setGeneratedContent(updatedItem);
           }
@@ -2701,6 +2703,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                   meta: metaInfo,
                   config: { ..._itemConfig, citationAudit: citationAuditSnapshot() }
               };
+              finalAdaptedItem = refinedItem;
               if (switchView || (generatedContent && generatedContent.id === newId)) {
                   setGeneratedContent(refinedItem);
               }
@@ -2709,7 +2712,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       }
       addToast(`${getDefaultTitle(type)} generated!`, "success");
       if (switchView) flyToElement('ui-tool-simplified');
-      return;
+      return finalAdaptedItem;
       } else if (type === 'outline') {
         let promptInstructions = "";
         let structureHint = "";
@@ -5911,7 +5914,7 @@ Return ONLY JSON:
           }
       }
       if (type === 'simplified') {
-          itemTitle = `Leveled Text (${effectiveGrade})`;
+          itemTitle = `Adapted Text (${effectiveGrade})`;
       }
       const newItem = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),

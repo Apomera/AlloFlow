@@ -56,6 +56,7 @@ afterEach(() => {  vi.restoreAllMocks();
     configurable: true, writable: true, value: originalRevokeObjectURL,
   });
   delete window._piperTTS;
+  delete window._kokoroTTS;
   delete window.__ttsGeminiQuotaFailed;
   delete window.__ttsGeminiAuthFailed;
 });
@@ -200,6 +201,62 @@ describe('provider-level multilingual TTS resilience', () => {
     })).resolves.toBe('blob:piper-fr');
     expect(piperLanguage).toHaveBeenCalledWith('French');
     expect(piperSpeak).toHaveBeenCalledWith('Encore une fois.', 'fr', 1, expect.any(Object));
+  });
+
+  it('uses a language mapper upgraded after the TTS factory initializes', async () => {
+    const liveDelegate = 'languageToTTSCode: (...args) => languageToTTSCode(...args), isGlobalMuted';
+    expect(read('AlloFlowANTI.txt')).toContain(liveDelegate);
+    expect(read('desktop/web-app/src/App.jsx')).toContain(liveDelegate);
+    expect(read('desktop/web-app/src/AlloFlowANTI.txt')).toContain(liveDelegate);
+
+    const fetchMock = vi.fn(async () => ({
+      ok: false, status: 503, statusText: 'Service Unavailable', text: async () => '',
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    const piperSpeak = vi.fn(async () => 'blob:piper-es');
+    const supportsLanguage = vi.fn((language) => language === 'es');
+    const kokoroSpeak = vi.fn(async () => 'blob:stale-english-kokoro');
+    window._piperTTS = { supportsLanguage, speak: piperSpeak };
+    window._kokoroTTS = { ready: true, speak: kokoroSpeak };
+
+    let liveLanguageToTTSCode = () => 'en';
+    const state = {
+      queue: Promise.resolve(), interactiveQueue: Promise.resolve(), botQueue: Promise.resolve(),
+      urlCache: new Map(), rateLimitedUntil: 0,
+    };
+    const tts = makeSourceTts(state, (...args) => liveLanguageToTTSCode(...args));
+    liveLanguageToTTSCode = (language) => (/^spanish$/i.test(language) ? 'es' : 'en');
+
+    await expect(tts.callTTS('Hola, mundo.', 'Kore', 1, {
+      language: 'Spanish', maxRetries: 0, priority: 'interactive',
+    })).resolves.toBe('blob:piper-es');
+    expect(supportsLanguage).toHaveBeenCalledWith('es');
+    expect(piperSpeak).toHaveBeenCalledWith('Hola, mundo.', 'es', 1, expect.any(Object));
+    expect(kokoroSpeak).not.toHaveBeenCalled();
+  });
+
+  it('falls through after one completed Gemini model refusal instead of retrying it', async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        candidates: [{ finishReason: 'OTHER', content: { parts: [] } }],
+      }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    const piperSpeak = vi.fn(async () => 'blob:piper-es-after-refusal');
+    window._piperTTS = { supportsLanguage: () => true, speak: piperSpeak };
+    const state = {
+      queue: Promise.resolve(), interactiveQueue: Promise.resolve(), botQueue: Promise.resolve(),
+      urlCache: new Map(), rateLimitedUntil: 0,
+    };
+    const tts = makeSourceTts(state, (language) => (/^spanish$/i.test(language) ? 'es' : 'en'));
+
+    await expect(tts.callTTS('Una frase breve.', 'Kore', 1, {
+      language: 'Spanish', maxRetries: 2, priority: 'interactive',
+    })).resolves.toBe('blob:piper-es-after-refusal');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(piperSpeak).toHaveBeenCalledTimes(1);
   });
 
   it('reports the actual resolver route without changing the URL return contract', async () => {

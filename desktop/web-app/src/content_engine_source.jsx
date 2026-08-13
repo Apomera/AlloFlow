@@ -647,7 +647,7 @@ var createContentEngine = function(deps) {
       'Do not add a translation or bilingual second block. For JSON output, keep schema keys as specified but write every human-readable value in ' + lang + '.';
   };
 
-  var _s = function() { return window.__contentEngineState || {}; };
+  var _s = function() { return (typeof deps.getState === 'function' ? deps.getState() : null) || window.__contentEngineState || {}; };
   var _bindState;
   var inputText, gradeLevel, sourceTopic, generatedContent,
       currentUiLanguage, leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts,
@@ -2382,7 +2382,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
   };
   const stopPlayback = () => {
     // Read refs from window state bag (they're React refs in the main component)
-    var _state = window.__contentEngineState || window.__docPipelineState || {};
+    var _state = _s() || window.__docPipelineState || {};
     var _playbackRef = _state.playbackSessionRef || (typeof playbackSessionRef !== 'undefined' ? playbackSessionRef : null);
     var _audioRef = _state.audioRef || (typeof audioRef !== 'undefined' ? audioRef : null);
     var _blobUrlsRef = _state.activeBlobUrlsRef || (typeof activeBlobUrlsRef !== 'undefined' ? activeBlobUrlsRef : null);

@@ -6,6 +6,8 @@ This directory contains both maintained guidance and dated review artifacts. Use
 
 - [Project overview](../README.md)
 - [Complete user manual](../AlloFlow%20Complete%20User%20Manual.md)
+- [Teacher-guide source](teacher-guide/guide.json)
+- [Searchable teacher guide](../guide/index.html)
 - [Architecture](../architecture.md)
 - [Feature inventory](../FEATURE_INVENTORY.md)
 - [Contributing guide](../CONTRIBUTING.md)
@@ -31,4 +33,8 @@ Files with a date in their filename, including the July 3, 2026 codebase and com
 - Describe FERPA, COPPA, privacy, and security as deployment-dependent. Product design can support compliance, but does not establish it by itself.
 - Keep deployment claims conditional: available hosts, AI providers, quotas, and district agreements vary by configuration.
 
-Run `npm run audit:docs` after changing maintained documentation.
+Edit the chapter Markdown under `docs/teacher-guide/chapters/`, then run
+`npm run build:teacher-guide`. The HTML guide and complete single-file manual
+are generated outputs and should not be edited directly.
+
+Run `npm run verify:teacher-guide` and `npm run audit:docs` after changing maintained teacher guidance.

@@ -260,6 +260,90 @@ describe('Project Settings progressive disclosure', () => {
     expect(html).toContain('aria-pressed="true"');
   });
 
+  it('shows the local Principal Evaluation preview to teachers and invokes its callback', () => {
+    const onOpenPrincipalEvaluation = vi.fn();
+    const tree = ProjectSettingsView({
+      t: (key) => key,
+      studentProjectSettings: defaultSettings(),
+      setStudentProjectSettings() {},
+      isTeacherMode: true,
+      handleSetIsProjectSettingsOpenToFalse() {},
+      onOpenPrincipalEvaluation,
+      evaluationPortalUrl: '',
+      isEvaluationPortalConnected: false,
+      onSaveEvaluationPortalUrl: vi.fn()
+    });
+    const launcher = find(
+      tree,
+      (node) => node.type === 'button' && textOf(node).includes('Open local preview')
+    );
+
+    expect(textOf(tree)).toContain('Principal Evaluation');
+    expect(textOf(tree)).toContain('Local preview available');
+    expect(launcher).toBeTruthy();
+    launcher.props.onClick();
+    expect(onOpenPrincipalEvaluation).toHaveBeenCalledOnce();
+  });
+
+  it('shows a connected district portal and routes update, disconnect, and invalid URL feedback', () => {
+    const url = 'https://script.google.com/macros/s/AKfycb-example/exec';
+    const savePortal = vi.fn((value) => value === 'bad-url'
+      ? { ok: false, error: 'Use the district Apps Script /exec URL.' }
+      : { ok: true, url: value, connected: !!value });
+    const tree = ProjectSettingsView({
+      t: (key) => key,
+      studentProjectSettings: defaultSettings(),
+      setStudentProjectSettings() {},
+      isTeacherMode: true,
+      handleSetIsProjectSettingsOpenToFalse() {},
+      onOpenPrincipalEvaluation: vi.fn(),
+      evaluationPortalUrl: url,
+      isEvaluationPortalConnected: true,
+      onSaveEvaluationPortalUrl: savePortal
+    });
+
+    expect(textOf(tree)).toContain('District portal connected');
+    expect(textOf(tree)).toContain('Open district portal');
+    const form = find(tree, (node) => node.type === 'form');
+    form.props.onSubmit({ preventDefault: vi.fn() });
+    expect(savePortal).toHaveBeenCalledWith(url);
+    const disconnect = find(tree, (node) => node.type === 'button' && textOf(node).includes('Disconnect'));
+    disconnect.props.onClick();
+    expect(savePortal).toHaveBeenCalledWith('');
+    const input = find(tree, (node) => node.props?.id === 'principal-evaluation-portal-url');
+    input.props.onChange({ target: { value: 'bad-url' } });
+    form.props.onSubmit({ preventDefault: vi.fn() });
+    expect(savePortal).toHaveBeenCalledWith('bad-url');
+    const rerender = ProjectSettingsView({
+      t: (key) => key,
+      studentProjectSettings: defaultSettings(),
+      setStudentProjectSettings() {},
+      isTeacherMode: true,
+      handleSetIsProjectSettingsOpenToFalse() {},
+      onOpenPrincipalEvaluation: vi.fn(),
+      evaluationPortalUrl: '',
+      isEvaluationPortalConnected: false,
+      onSaveEvaluationPortalUrl: savePortal
+    });
+    expect(textOf(rerender)).toContain('Connect portal');
+  });
+
+  it('does not show the Principal Evaluation launcher outside teacher mode', () => {
+    const tree = ProjectSettingsView({
+      t: (key) => key,
+      studentProjectSettings: defaultSettings(),
+      setStudentProjectSettings() {},
+      isTeacherMode: false,
+      handleSetIsProjectSettingsOpenToFalse() {},
+      onOpenPrincipalEvaluation: vi.fn()
+    });
+
+    expect(textOf(tree)).not.toContain('Principal Evaluation');
+    expect(find(
+      tree,
+      (node) => node.type === 'button' && (textOf(node).includes('Open local preview') || textOf(node).includes('Open district portal'))
+    )).toBeNull();
+  });
   it('lets teachers hide student AI tools with one project-level control', () => {
     let settings = defaultSettings();
     const tree = ProjectSettingsView({

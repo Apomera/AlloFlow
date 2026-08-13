@@ -1844,15 +1844,18 @@ function SurpriseTopicLauncher(props) {
   const proposeFor = async (match) => {
     setSurpriseState('loading');
     setDirections([]);
+    let nextHood = null;
     try {
-      const nextHood = engine.buildHood(provider, match.id);
+      nextHood = engine.buildHood(provider, match.id);
       setHood(nextHood);
-      const raw = await surpriseAi(engine.buildPrompt(match, nextHood, { gradeLevel, studentInterests }), false, false, 0.8);
+      const raw = await surpriseAi(engine.buildPrompt(match, nextHood, { gradeLevel, studentInterests }), true, false, 0.8);
       setDirections(engine.parseDirections(raw));
       setSurpriseState('ready');
     } catch (error) {
-      setSurpriseState('error');
-      if (addToast) addToast('Could not propose lesson directions. Try again.', 'error');
+      setDirections(engine.fallbackDirections(match, nextHood));
+      setSurpriseState('ready');
+      warnLog('[SurpriseMe] AI proposal unavailable; using built-in starters:', error && error.message ? error.message : 'unknown error');
+      if (addToast) addToast('AI directions were unavailable, so AlloFlow prepared three editable starters.', 'info');
     }
   };
   // A surprise the teacher had to describe first is not a surprise. Draw a
@@ -2115,7 +2118,7 @@ function SourceGenPanel(props) {
                           autoFocus
                         />
                       </div>
-                      <SurpriseTopicLauncher addToast={addToast} gradeLevel={gradeLevel} setSourceTopic={setSourceTopic} setSourceTone={setSourceTone} setSourceVocabulary={setSourceVocabulary} setStandardInputValue={setStandardInputValue} sourceVocabulary={sourceVocabulary} studentInterests={studentInterests} />
+                      <SurpriseTopicLauncher addToast={addToast} gradeLevel={sourceLevel} setSourceTopic={setSourceTopic} setSourceTone={setSourceTone} setSourceVocabulary={setSourceVocabulary} setStandardInputValue={setStandardInputValue} sourceVocabulary={sourceVocabulary} studentInterests={studentInterests} />
                       <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="block text-xs font-medium text-indigo-900 mb-1">{t('input.tone')}</label>

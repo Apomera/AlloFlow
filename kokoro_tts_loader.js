@@ -405,6 +405,7 @@
     const _pendingMessages = new Map(); // id -> { resolve, reject }
     const _audioCache = new Map(); // exact request key -> { url, text, voice }
     const _ownedUrls = new Map(); // blob URL -> { kind, key?, stream? }
+    const _backgroundBatchInFlight = new Map(); // exact batch key -> { promise }
     const SYNTHESIS_SPEED = 1.0;
 
     // Streaming is request-scoped. The public queue helpers still address the
@@ -666,6 +667,7 @@
         _ready = false;
         _initPromise = null;
         _rejectAllPending(error);
+        _backgroundBatchInFlight.clear();
         if (_activeStream) _cancelStream(_activeStream, error, true);
 
         if (worker) {
@@ -945,6 +947,33 @@
         return _initPromise;
     }
 
+    async function _generateBatchAudio(text, voice, cacheKey, signal) {
+        const result = await _sendToWorker(
+            'generate_batch',
+            { text, voice, speed: SYNTHESIS_SPEED },
+            { signal }
+        );
+        if (signal && signal.aborted) throw _signalAbortError(signal);
+        if (!result.buffer ||
+            !Number.isInteger(result.chunks) ||
+            !Number.isInteger(result.expectedChunks) ||
+            result.chunks < 1 ||
+            result.chunks !== result.expectedChunks) {
+            console.warn('[Kokoro TTS] Incomplete batch; refusing partial audio');
+            return null;
+        }
+
+        // Another identical request may have completed while this worker
+        // request was queued. Reuse it instead of replacing a live URL.
+        const raced = _cacheGet(cacheKey, text, voice);
+        if (raced) return raced;
+
+        const audioBlob = new Blob([result.buffer], { type: 'audio/wav' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        _cacheSet(cacheKey, text, voice, audioUrl);
+        return audioUrl;
+    }
+
     // ─── Generate Speech (batch — waits for all chunks) ─────────────────
     async function speak(text, voice, speed, options) {
         if (!text || typeof text !== 'string' || text.trim().length === 0) return null;
@@ -969,33 +998,40 @@
         const cached = _cacheGet(cacheKey, text, voice);
         if (cached) return cached;
 
+        // A signal-free prewarm owns shareable background work. A later active
+        // caller may cancel only its wait; the owner keeps generating and fills
+        // the cache. Signal-owned requests remain independent so their existing
+        // AbortSignal still cancels the worker request when no owner exists.
+        const batchKey = JSON.stringify(['kokoro-batch-v1', text, voice, SYNTHESIS_SPEED, _currentDtype]);
+        const sharedEntry = _backgroundBatchInFlight.get(batchKey);
+        if (sharedEntry) {
+            try {
+                return await _awaitWithSignal(sharedEntry.promise, signal);
+            } catch (e) {
+                if (e && e.name === 'AbortError') throw e;
+                console.warn('[Kokoro TTS] Generation failed:', e);
+                return null;
+            }
+        }
+
+        let batchPromise;
+        if (!signal) {
+            const entry = { promise: null };
+            entry.promise = _generateBatchAudio(text, voice, cacheKey, null).finally(() => {
+                if (_backgroundBatchInFlight.get(batchKey) === entry) {
+                    _backgroundBatchInFlight.delete(batchKey);
+                }
+            });
+            _backgroundBatchInFlight.set(batchKey, entry);
+            batchPromise = entry.promise;
+        } else {
+            batchPromise = _generateBatchAudio(text, voice, cacheKey, signal);
+        }
+
         try {
             // Speed is deliberately applied by the Audio element, not baked
             // into reusable bytes. Callers already set playbackRate.
-            const result = await _sendToWorker(
-                'generate_batch',
-                { text, voice, speed: SYNTHESIS_SPEED },
-                { signal }
-            );
-            if (signal && signal.aborted) throw _signalAbortError(signal);
-            if (!result.buffer ||
-                !Number.isInteger(result.chunks) ||
-                !Number.isInteger(result.expectedChunks) ||
-                result.chunks < 1 ||
-                result.chunks !== result.expectedChunks) {
-                console.warn('[Kokoro TTS] Incomplete batch; refusing partial audio');
-                return null;
-            }
-
-            // Another identical request may have completed while this worker
-            // request was queued. Reuse it instead of replacing a live URL.
-            const raced = _cacheGet(cacheKey, text, voice);
-            if (raced) return raced;
-
-            const audioBlob = new Blob([result.buffer], { type: 'audio/wav' });
-            const audioUrl = URL.createObjectURL(audioBlob);
-            _cacheSet(cacheKey, text, voice, audioUrl);
-            return audioUrl;
+            return await batchPromise;
         } catch (e) {
             if (e && e.name === 'AbortError') throw e;
             console.warn('[Kokoro TTS] Generation failed:', e);

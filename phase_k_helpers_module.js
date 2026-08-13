@@ -50,6 +50,18 @@ const readAloudUnitLanguage = (unit, fallback = "English") => {
   const language = unit && typeof unit === "object" && !Array.isArray(unit) ? unit.language : null;
   return String(language || fallback || "English").trim() || "English";
 };
+const resolveAdventureTtsLanguage = (adventureLanguageMode, unit = null, selectedLanguages = []) => {
+  const explicitLanguage = unit && typeof unit === "object" && !Array.isArray(unit) ? String(unit.language || "").trim() : "";
+  if (explicitLanguage) return explicitLanguage;
+  const mode = String(adventureLanguageMode || "English").replace(/\s+/g, " ").trim() || "English";
+  if (/^English$/i.test(mode)) return "English";
+  if (/\+\s*English$/i.test(mode)) {
+    void selectedLanguages;
+    return "English";
+  }
+  return mode;
+};
+const _pkIsEnglishTtsLanguage = (language) => /^(?:English\b|en(?:[-_]|$))/i.test(String(language || "").trim());
 const readAloudUnitOccurrence = (unit, fallback = 0) => {
   const occurrence = unit && typeof unit === "object" && !Array.isArray(unit) ? Number(unit.occurrence) : Number(fallback);
   return Number.isInteger(occurrence) && occurrence >= 0 ? occurrence : 0;
@@ -415,7 +427,7 @@ const resolveAdventureSentenceVoice = (sentences, index, activeSpeaker, voiceMap
   }
   return { currentVoice, nextSpeaker };
 };
-const _kokoroPrewarmSkip = /^(af_|am_|bf_|bm_)/i;
+const _kokoroVoicePrefix = /^(af_|am_|bf_|bm_)/i;
 const sanitizeTtsText = (text) => String(text || "").replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1").replace(/\[?\u207D[\u2070\u00B9\u00B2\u00B3\u2074-\u2079]+\u207E\]?/g, "").replace(/\[Source\s+\d+\]/gi, "").replace(/\[\d+\]/g, "").replace(/^#{1,6}\s+/gm, "").replace(/\*\*/g, "").replace(/\*/g, "").replace(/__|_/g, "").replace(/~~/g, "").replace(/`/g, "").replace(/^>\s?/gm, "").replace(/^[-*+]\s/gm, "").replace(/^\d+\.\s/gm, "").replace(/\s+/g, " ").trim();
 const createReadAloudDescriptors = (units, options = {}) => {
   const counts = options.occurrenceByText instanceof Map ? options.occurrenceByText : /* @__PURE__ */ new Map();
@@ -524,7 +536,7 @@ const prewarmPersonaMessageAudio = (text, messageIndex, opts) => {
     const resolved = resolvePersonaMessageVoice(personaState, messageIndex, selectedVoice, AVAILABLE_VOICES);
     const ttsLanguage = resolvePersonaTtsLanguage(currentUiLanguage, leveledTextLanguage);
     const ttsSpeed = resolvePersonaTtsSpeed(voiceSpeed);
-    if (_kokoroPrewarmSkip.test(String(resolved.voice || ""))) return 0;
+    if (_kokoroVoicePrefix.test(String(resolved.voice || ""))) return 0;
     let warmed = 0;
     chunks.slice(0, Math.max(0, count)).forEach((chunk) => {
       if (typeof shouldContinue === "function" && !shouldContinue()) return;
@@ -544,20 +556,40 @@ const prewarmPersonaMessageAudio = (text, messageIndex, opts) => {
 };
 const prewarmSequenceAudio = (text, opts) => {
   try {
-    const { count = 2, voiceMap = {}, deps = {} } = opts || {};
+    const {
+      count = 2,
+      voiceMap = {},
+      deps = {},
+      language = null,
+      adventureLanguageMode = null,
+      selectedLanguages = []
+    } = opts || {};
     const { callTTS, splitTextToSentences, selectedVoice } = deps;
     if (typeof callTTS !== "function" || typeof splitTextToSentences !== "function" || !text) return 0;
     const sentences = splitTextToSentences(String(text)).filter((s) => s && s.trim());
+    const fallbackLanguage = String(language || resolveAdventureTtsLanguage(
+      adventureLanguageMode || "English",
+      null,
+      selectedLanguages
+    )).trim() || "English";
     let activeSpeaker = selectedVoice || null;
     let warmed = 0;
     for (let i = 0; i < Math.min(count, sentences.length); i++) {
       const r = resolveAdventureSentenceVoice(sentences, i, activeSpeaker, voiceMap, selectedVoice);
       activeSpeaker = r.nextSpeaker;
-      if (_kokoroPrewarmSkip.test(String(r.currentVoice || ""))) continue;
+      const sentenceLanguage = resolveAdventureTtsLanguage(
+        adventureLanguageMode || fallbackLanguage,
+        sentences[i],
+        selectedLanguages
+      );
       const spokenText = sanitizeTtsText(sentences[i]);
       if (!spokenText) continue;
       try {
-        Promise.resolve(callTTS(spokenText, r.currentVoice)).catch(() => {
+        Promise.resolve(callTTS(spokenText, r.currentVoice, 1, {
+          language: sentenceLanguage,
+          priority: "normal",
+          reason: "adventure-prewarm"
+        })).catch(() => {
         });
         warmed++;
       } catch (_) {
@@ -633,17 +665,10 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       }
       return;
     }
-    setPlaybackState((prev) => {
-      const personaRange = mode === "persona" && prev.chunkRanges ? prev.chunkRanges[index] : null;
-      return {
-        ...prev,
-        currentIdx: index,
-        ...personaRange ? { currentSentenceIdx: personaRange[0] } : {}
-      };
-    });
     if (!preloadedAudio) setIsGeneratingAudio(true);
-    const fallbackTtsLanguage = mode === "persona" ? resolvePersonaTtsLanguage(currentUiLanguage, leveledTextLanguage) : leveledTextLanguage || "English";
-    const segmentLanguage = readAloudUnitLanguage(currentUnit, fallbackTtsLanguage);
+    setPlaybackState((prev) => ({ ...prev, currentIdx: -1, loadingIdx: index }));
+    const fallbackTtsLanguage = mode === "persona" ? resolvePersonaTtsLanguage(currentUiLanguage, leveledTextLanguage) : mode === "adventure" ? resolveAdventureTtsLanguage(adventureLanguageMode, null, selectedLanguages) : leveledTextLanguage || "English";
+    const segmentLanguage = mode === "adventure" ? resolveAdventureTtsLanguage(adventureLanguageMode, currentUnit, selectedLanguages) : readAloudUnitLanguage(currentUnit, fallbackTtsLanguage);
     const personaTtsSpeed = mode === "persona" ? resolvePersonaTtsSpeed(voiceSpeed) : 1;
     const synthesisIdentity = `${personaTtsSpeed}\u241F${segmentLanguage}`;
     const segmentOccurrence = readAloudUnitOccurrence(currentUnit, 0);
@@ -669,6 +694,7 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
     }) : null;
     const storedReadAloudUrl = storedReadAloud && storedReadAloud.url;
     const _browserTtsFallbackEnabled = ttsConfig.provider === "browser" || ttsConfig.provider !== "off" && ttsConfig.browserFallback;
+    const shouldJoinAdventureKokoro = mode === "adventure" && _kokoroVoicePrefix.test(String(currentVoice || "")) && _pkIsEnglishTtsLanguage(segmentLanguage);
     let _errorHandled = false;
     const terminatePlayback = (reason, error) => {
       if (playbackSessionRef.current !== sessionId) return;
@@ -703,7 +729,15 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
         audioRef,
         sessionValid: () => playbackSessionRef.current === sessionId && !(sessionSignal && sessionSignal.aborted),
         onStart: () => {
-          setPlaybackState((prev) => ({ ...prev, currentIdx: index }));
+          setPlaybackState((prev) => {
+            const personaRange = mode === "persona" && prev.chunkRanges ? prev.chunkRanges[index] : null;
+            return {
+              ...prev,
+              currentIdx: index,
+              loadingIdx: -1,
+              ...personaRange ? { currentSentenceIdx: personaRange[0] } : {}
+            };
+          });
           setIsPlaying(true);
           setIsPaused(false);
           setIsGeneratingAudio(false);
@@ -820,11 +854,11 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       audio = preloadedAudio;
       if (audio instanceof Promise) {
         try {
-          const _tOut = Math.min(_pkAudioLoadTimeoutMs(), READ_ALOUD_PRELOAD_PROMOTION_MS);
+          const _tOut = shouldJoinAdventureKokoro ? _pkAudioLoadTimeoutMs() : Math.min(_pkAudioLoadTimeoutMs(), READ_ALOUD_PRELOAD_PROMOTION_MS);
           audio = await _pkAwaitWithTimeout(audio, _tOut, sessionSignal);
         } catch (e) {
           _pkTrace("pk:resolve-timeout", { idx: index, source: "preloaded" });
-          if (retryCount < 1 && String(e && e.name || "") !== "AbortError") {
+          if (!shouldJoinAdventureKokoro && retryCount < 1 && String(e && e.name || "") !== "AbortError") {
             delete audioBufferRef.current[bufferKey];
             _pkTrace("pk:preload-promoted", { idx: index, source: "preloaded" });
             playSequence2(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName, deps, contentId);
@@ -859,11 +893,11 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       } else if (audioBufferRef.current[bufferKey]) {
         _pkTrace("pk:seq", { idx: index, mode, contentId: _pkTraceId(contentId), source: "buffer" });
         try {
-          const _tOut2 = Math.min(_pkAudioLoadTimeoutMs(), READ_ALOUD_PRELOAD_PROMOTION_MS);
+          const _tOut2 = shouldJoinAdventureKokoro ? _pkAudioLoadTimeoutMs() : Math.min(_pkAudioLoadTimeoutMs(), READ_ALOUD_PRELOAD_PROMOTION_MS);
           audioUrl = await _pkAwaitWithTimeout(audioBufferRef.current[bufferKey], _tOut2, sessionSignal);
         } catch (e) {
           _pkTrace("pk:resolve-timeout", { idx: index, source: "buffer" });
-          if (retryCount < 1 && String(e && e.name || "") !== "AbortError") {
+          if (!shouldJoinAdventureKokoro && retryCount < 1 && String(e && e.name || "") !== "AbortError") {
             delete audioBufferRef.current[bufferKey];
             _pkTrace("pk:preload-promoted", { idx: index, source: "buffer" });
             playSequence2(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName, deps, contentId);
@@ -934,7 +968,7 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
     let simulatedSpeaker = nextSpeaker;
     let nextAudioElementPromise = null;
     const isReadAloudStorePlayback = shouldUseReadAloudStore(contentId, mode);
-    const maxPreloadAhead = mode === "persona" || isReadAloudStorePlayback ? 1 : 3;
+    const maxPreloadAhead = mode === "persona" || isReadAloudStorePlayback || shouldJoinAdventureKokoro ? 1 : 3;
     for (let offset = 1; offset <= maxPreloadAhead; offset++) {
       const targetIdx = index + offset;
       if (targetIdx >= sentences.length) break;
@@ -1137,6 +1171,15 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
           }
           return;
         }
+        setPlaybackState((prev) => {
+          const personaRange = mode === "persona" && prev.chunkRanges ? prev.chunkRanges[index] : null;
+          return {
+            ...prev,
+            currentIdx: index,
+            loadingIdx: -1,
+            ...personaRange ? { currentSentenceIdx: personaRange[0] } : {}
+          };
+        });
         if (!isPaused) setIsPlaying(true);
         setIsGeneratingAudio(false);
         if (!usingStoredReadAloud) {
@@ -1387,6 +1430,12 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
       const chunkIndex = personaChunkRanges.findIndex((range) => effectiveStartIndex >= range[0] && effectiveStartIndex < range[1]);
       effectiveStartIndex = chunkIndex < 0 ? 0 : chunkIndex;
       cleanSentences = personaChunks.chunks;
+    } else if (mode === "adventure") {
+      cleanSentences = createReadAloudDescriptors(cleanSentences, {
+        language: resolveAdventureTtsLanguage(adventureLanguageMode, null, selectedLanguages),
+        scope: "adventure",
+        occurrenceByText: /* @__PURE__ */ new Map()
+      });
     } else if (mode === "standard" || mode === "script") {
       const occurrenceByText = /* @__PURE__ */ new Map();
       if (sourceSentenceCount != null) {
@@ -1416,7 +1465,8 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
     setIsPaused(false);
     setPlaybackState({
       sentences: cleanSentences.map(readAloudUnitText),
-      currentIdx: effectiveStartIndex,
+      currentIdx: -1,
+      loadingIdx: effectiveStartIndex,
       chunkRanges: personaChunkRanges,
       chunkSentenceWeights: personaChunkWeights,
       currentSentenceIdx: personaChunkRanges ? personaChunkRanges[effectiveStartIndex]?.[0] ?? startIndex : effectiveStartIndex
@@ -3474,6 +3524,7 @@ window.AlloModules.PhaseKHelpers = {
   readAloudUnitText,
   readAloudUnitLanguage,
   readAloudUnitOccurrence,
+  resolveAdventureTtsLanguage,
   browserLanguageTag: _pkBrowserLanguageTag,
   resolveAdventureSentenceVoice,
   resolvePersonaMessageVoice,

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const app = readFileSync('AlloFlowANTI.txt', 'utf8');
 const generatedApp = readFileSync('desktop/web-app/src/App.jsx', 'utf8');
+const sidebarSource = readFileSync('view_sidebar_panels_source.jsx', 'utf8');
 
 describe('AlloFlow focused workspace shell', () => {
   it('uses one 1100px controller for split and single-pane layouts', () => {
@@ -29,13 +30,15 @@ describe('AlloFlow focused workspace shell', () => {
     expect(app).toContain("if (!isWide && workspacePane !== 'create')");
     expect(app).toContain("window.requestAnimationFrame(() => window.requestAnimationFrame(focusTarget))");
     expect(app).toContain("disabled={guidedMode}");
-    expect(app).toContain("const hiddenToolCatalogSelector = guidedMode ? ''");
+    expect(app).toContain("const hiddenToolCatalogSelector = (guidedMode || !hasToolCatalogControls) ? ''");
   });
 
   it('reduces catalog noise without removing tools or Guided targets', () => {
-    expect(app).toContain('data-testid="tool-catalog-controls"');
-    expect(app).toContain('<label htmlFor="tool-catalog-search"');
-    expect(app).toContain('id="tool-catalog-search"');
+    expect(sidebarSource).toContain('data-testid="tool-catalog-controls"');
+    expect(sidebarSource).toContain('<label htmlFor="tool-catalog-search"');
+    expect(sidebarSource).toContain('id="tool-catalog-search"');
+    expect(app).toContain('window.AlloModules && window.AlloModules.ToolCatalogControls');
+    expect(app).toContain('data-testid="tool-catalog-controls-fallback"');
     expect(app).toContain("toolCatalogGroup === 'all'");
     expect(app).toContain("guidedMode ? Array.from(new Set([...prev, id])) : [id]");
     expect(app).toContain('${hiddenToolCatalogSelector ? `${hiddenToolCatalogSelector}{display:none!important;}` : \'\'}');
@@ -47,7 +50,7 @@ describe('AlloFlow focused workspace shell', () => {
     expect(app).toContain("['ArrowLeft', 'ArrowRight', 'Home', 'End']");
     expect(app).toContain("setLeftWidth(width => Math.max(20, Math.min(70");
     expect(generatedApp).toContain('id="workspace-preview-pane"');
-    expect(generatedApp).toContain('data-testid="tool-catalog-controls"');
+    expect(generatedApp).toContain('window.AlloModules && window.AlloModules.ToolCatalogControls');
   });
 
   it('keeps notifications readable, dismissible, and clear of variable-height chrome', () => {

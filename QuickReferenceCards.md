@@ -25,8 +25,8 @@
 | 🖼️ | **Visual Support** | AI-generated diagrams (Isometric, Watercolor, Comic, Blueprint styles) |
 | ☑️ | **Exit Ticket / Quiz** | Multiple choice, T/F, free response with AI fact-check |
 | ⚔️ | **Adventure Mode** | Choose-your-own-path RPG with XP, inventory, and dynamic scenes |
-| 🗣️ | **Word Sounds** | Phonemic awareness drills (8 activity types, K–5) |
-| 🧮 | **STEM Lab** | 55 interactive science, math, coding, and arts simulations |
+| 🗣️ | **Word Sounds** | Literacy practice across phonemic awareness, rhyme, phonics, spelling, and handwriting |
+| 🧮 | **STEM Lab** | Interactive science, math, coding, and arts simulations |
 | 📋 | **Lesson Plan** | Auto-generated scripted lesson from all created resources |
 | ✍️ | **Writing Scaffolds** | Sentence frames, rubrics, auto-grader |
 | 👁️ | **BehaviorLens** | Clinical FBA/BIP data collection *(TeacherGate required)* |
@@ -142,6 +142,8 @@
 - **In-app:** Click the 🤖 AlloBot icon for contextual guidance
 - **Tour:** Click "Start Tour" in the help menu for a guided walkthrough
 - **Full Manual:** [AlloFlow Complete User Manual.md](./AlloFlow%20Complete%20User%20Manual.md)
+- **Searchable Teacher Guide:** [guide/index.html](./guide/index.html)
+- **Offline / print guide:** [guide/offline.html](./guide/offline.html)
 - **Issues:** [github.com/Apomera/AlloFlow/issues](https://github.com/Apomera/AlloFlow/issues)
 - **Email:** aaron.pomeranz@maine.edu
 

@@ -1062,166 +1062,175 @@ function HeaderBar(props) {
       className: "bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 transition-colors"
     },
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16 })
-  ))))), isJoinPopoverOpen && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetIsJoinPopoverOpenToFalse })))), isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
-    "button",
+  ))))), isJoinPopoverOpen && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetIsJoinPopoverOpenToFalse })))), isTeacherMode && /* @__PURE__ */ React.createElement(
+    "div",
     {
-      type: "button",
-      onClick: handleSetIsTranslateModalOpenToTrue,
-      className: "bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 mr-2",
-      title: t("header.translate_tooltip"),
-      "data-help-key": "header_translate"
+      "data-header-utility-cluster": "teacher",
+      className: `w-full xl:w-auto xl:ml-auto flex flex-wrap items-center gap-1.5 rounded-xl border p-1 ${theme === "contrast" ? "border-yellow-400 bg-black" : "border-white/15 bg-slate-950/20 shadow-sm"}`
     },
-    /* @__PURE__ */ React.createElement(Languages, { size: 14 }),
-    " ",
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.translate_button"))
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-label": t("header.documents_menu_aria") || "Documents menu",
-      "aria-haspopup": "menu",
-      "aria-expanded": showExportMenu,
-      onClick: handleToggleShowExportMenu,
-      className: `bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border ${showExportMenu ? "border-white/50 bg-white/20" : "border-white/10 hover:border-white/30"}`,
-      "data-help-key": "header_export",
-      title: t("header.export_tooltip")
-    },
-    /* @__PURE__ */ React.createElement(FileText, { size: 14 }),
-    " ",
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_documents") || "Documents"),
-    " ",
-    showExportMenu ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
-  ), showExportMenu && /* @__PURE__ */ React.createElement("div", { role: "menu", "aria-label": t("header.documents_menu_aria") || "Documents menu", onKeyDown: (e) => {
-    const items = e.currentTarget.querySelectorAll('[role="menuitem"]:not([disabled])');
-    const idx = Array.from(items).indexOf(document.activeElement);
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      items[(idx + 1) % items.length]?.focus();
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      items[(idx - 1 + items.length) % items.length]?.focus();
-    } else if (e.key === "Escape") {
+    /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: handleSetIsTranslateModalOpenToTrue,
+        className: "bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30",
+        title: t("header.translate_tooltip"),
+        "data-help-key": "header_translate"
+      },
+      /* @__PURE__ */ React.createElement(Languages, { size: 14 }),
+      " ",
+      /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.translate_button"))
+    ),
+    /* @__PURE__ */ React.createElement("div", { className: "relative shrink-0" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "aria-label": t("header.documents_menu_aria") || "Documents menu",
+        "aria-haspopup": "menu",
+        "aria-expanded": showExportMenu,
+        onClick: handleToggleShowExportMenu,
+        className: `bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border ${showExportMenu ? "border-white/50 bg-white/20" : "border-white/10 hover:border-white/30"}`,
+        "data-help-key": "header_export",
+        title: t("header.export_tooltip")
+      },
+      /* @__PURE__ */ React.createElement(FileText, { size: 14 }),
+      " ",
+      /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_documents") || "Documents"),
+      " ",
+      showExportMenu ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
+    ), showExportMenu && /* @__PURE__ */ React.createElement("div", { role: "menu", "aria-label": t("header.documents_menu_aria") || "Documents menu", onKeyDown: (e) => {
+      const items = e.currentTarget.querySelectorAll('[role="menuitem"]:not([disabled])');
+      const idx = Array.from(items).indexOf(document.activeElement);
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        items[(idx + 1) % items.length]?.focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        items[(idx - 1 + items.length) % items.length]?.focus();
+      } else if (e.key === "Escape") {
+        setShowExportMenu(false);
+        document.querySelector('[data-help-key="header_export"]')?.focus();
+      }
+    }, ref: (el) => {
+      if (el) {
+        const first = el.querySelector('[role="menuitem"]');
+        if (first) first.focus();
+      }
+    }, className: "absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl p-2 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 flex flex-col gap-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-800 px-2 py-1 flex items-center gap-1.5" }, "\u{1F4C4}", " Documents"), /* @__PURE__ */ React.createElement("button", { type: "button", role: "menuitem", onClick: () => openExportPreview("print"), className: "w-full px-3 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mb-1" }, "\u{1F6E0}\uFE0F", " Document Builder"), customExportCSS && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-green-600 font-medium px-2 mb-1" }, "\u2713 Custom style active"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F4C4}", " Print & PDF"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        "aria-label": t("header.open_doc_builder_pdf_aria") || "Open Document Builder for PDF",
+        onClick: () => openExportPreview("print"),
+        className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-green-50 text-green-700 text-xs font-bold transition-colors",
+        "data-help-key": "export_pdf"
+      },
+      /* @__PURE__ */ React.createElement(FileDown, { size: 14 }),
+      " PDF / ",
+      t("export_menu.print")
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => openExportPreview("worksheet"),
+        className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors",
+        "data-help-key": "export_worksheet"
+      },
+      /* @__PURE__ */ React.createElement(FileText, { size: 14 }),
+      " ",
+      t("export_menu.worksheet")
+    ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F4BB}", " Digital Formats"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => openExportPreview("html"),
+        className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-indigo-50 text-indigo-700 text-xs font-bold transition-colors",
+        "data-help-key": "export_html"
+      },
+      /* @__PURE__ */ React.createElement(Code, { size: 14 }),
+      " ",
+      t("export_menu.html")
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        "aria-label": t("common.export_as_slides"),
+        onClick: () => openExportPreview("slides"),
+        disabled: !pptxLoaded,
+        title: t("header.export_slides_tooltip") || "Opens Document Builder in Slides mode",
+        className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-orange-50 text-orange-700 text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+        "data-help-key": "export_slides"
+      },
+      !pptxLoaded ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(MonitorPlay, { size: 14 }),
+      t("export_menu.slides")
+    ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "Student QR"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => {
+          if (typeof createHomeworkAssignmentLink === "function") createHomeworkAssignmentLink();
+          setShowExportMenu(false);
+        },
+        className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50 text-cyan-700 text-xs font-bold transition-colors",
+        "data-help-key": "homework_qr"
+      },
+      /* @__PURE__ */ React.createElement(Share2, { size: 14 }),
+      " Homework QR"
+    ), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600", htmlFor: "homework-qr-expiry" }, "Homework link length"), /* @__PURE__ */ React.createElement("select", { id: "homework-qr-expiry", value: homeworkExpiryDays || 14, onChange: (event) => setHomeworkExpiryDays(Number(event.target.value) || 14), className: "mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500" }, /* @__PURE__ */ React.createElement("option", { value: 1 }, "1 day"), /* @__PURE__ */ React.createElement("option", { value: 7 }, "1 week"), /* @__PURE__ */ React.createElement("option", { value: 14 }, "2 weeks"), /* @__PURE__ */ React.createElement("option", { value: 30 }, "30 days"), /* @__PURE__ */ React.createElement("option", { value: 90 }, "90 days (quarter)"), /* @__PURE__ */ React.createElement("option", { value: 180 }, "180 days (semester)"), /* @__PURE__ */ React.createElement("option", { value: 365 }, "365 days (school year)")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      if (typeof openRecentQrShares === "function") openRecentQrShares();
       setShowExportMenu(false);
-      document.querySelector('[data-help-key="header_export"]')?.focus();
-    }
-  }, ref: (el) => {
-    if (el) {
-      const first = el.querySelector('[role="menuitem"]');
-      if (first) first.focus();
-    }
-  }, className: "absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl p-2 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 flex flex-col gap-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-800 px-2 py-1 flex items-center gap-1.5" }, "\u{1F4C4}", " Documents"), /* @__PURE__ */ React.createElement("button", { type: "button", role: "menuitem", onClick: () => openExportPreview("print"), className: "w-full px-3 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mb-1" }, "\u{1F6E0}\uFE0F", " Document Builder"), customExportCSS && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-green-600 font-medium px-2 mb-1" }, "\u2713 Custom style active"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F4C4}", " Print & PDF"), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      role: "menuitem",
-      "aria-label": t("header.open_doc_builder_pdf_aria") || "Open Document Builder for PDF",
-      onClick: () => openExportPreview("print"),
-      className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-green-50 text-green-700 text-xs font-bold transition-colors",
-      "data-help-key": "export_pdf"
-    },
-    /* @__PURE__ */ React.createElement(FileDown, { size: 14 }),
-    " PDF / ",
-    t("export_menu.print")
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      role: "menuitem",
-      onClick: () => openExportPreview("worksheet"),
-      className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors",
-      "data-help-key": "export_worksheet"
-    },
-    /* @__PURE__ */ React.createElement(FileText, { size: 14 }),
-    " ",
-    t("export_menu.worksheet")
-  ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F4BB}", " Digital Formats"), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      role: "menuitem",
-      onClick: () => openExportPreview("html"),
-      className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-indigo-50 text-indigo-700 text-xs font-bold transition-colors",
-      "data-help-key": "export_html"
-    },
-    /* @__PURE__ */ React.createElement(Code, { size: 14 }),
-    " ",
-    t("export_menu.html")
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      role: "menuitem",
-      "aria-label": t("common.export_as_slides"),
-      onClick: () => openExportPreview("slides"),
-      disabled: !pptxLoaded,
-      title: t("header.export_slides_tooltip") || "Opens Document Builder in Slides mode",
-      className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-orange-50 text-orange-700 text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
-      "data-help-key": "export_slides"
-    },
-    !pptxLoaded ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(MonitorPlay, { size: 14 }),
-    t("export_menu.slides")
-  ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "Student QR"), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      role: "menuitem",
-      onClick: () => {
-        if (typeof createHomeworkAssignmentLink === "function") createHomeworkAssignmentLink();
-        setShowExportMenu(false);
+    }, className: "mt-2 flex w-full items-center gap-2 rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-left text-[11px] font-bold text-sky-900 hover:bg-sky-100" }, "Set up a poll, sign-up sheet or class activity"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      if (typeof openRecentQrShares === "function") openRecentQrShares();
+      setShowExportMenu(false);
+    }, className: "mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800" }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " Polls, sign-ups & shared links", recentQrShareCount ? ` (${recentQrShareCount})` : "")), /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-500" }, studentAiPolicyForShare === "student-byok" ? "Teacher-prepared resources open with optional personal AI. Students supply and test their own provider." : "Teacher-prepared resources open for students with AI generation off."), !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " LMS Integration"), activeView === "quiz" && !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => {
+          handleExportQTI();
+          setShowExportMenu(false);
+        },
+        className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-teal-50 text-teal-700 text-xs font-bold transition-colors",
+        "data-help-key": "export_qti"
       },
-      className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50 text-cyan-700 text-xs font-bold transition-colors",
-      "data-help-key": "homework_qr"
-    },
-    /* @__PURE__ */ React.createElement(Share2, { size: 14 }),
-    " Homework QR"
-  ), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600", htmlFor: "homework-qr-expiry" }, "Homework link length"), /* @__PURE__ */ React.createElement("select", { id: "homework-qr-expiry", value: homeworkExpiryDays || 14, onChange: (event) => setHomeworkExpiryDays(Number(event.target.value) || 14), className: "mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500" }, /* @__PURE__ */ React.createElement("option", { value: 1 }, "1 day"), /* @__PURE__ */ React.createElement("option", { value: 7 }, "1 week"), /* @__PURE__ */ React.createElement("option", { value: 14 }, "2 weeks"), /* @__PURE__ */ React.createElement("option", { value: 30 }, "30 days"), /* @__PURE__ */ React.createElement("option", { value: 90 }, "90 days (quarter)"), /* @__PURE__ */ React.createElement("option", { value: 180 }, "180 days (semester)"), /* @__PURE__ */ React.createElement("option", { value: 365 }, "365 days (school year)")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
-    if (typeof openRecentQrShares === "function") openRecentQrShares();
-    setShowExportMenu(false);
-  }, className: "mt-2 flex w-full items-center gap-2 rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-left text-[11px] font-bold text-sky-900 hover:bg-sky-100" }, "Set up a poll, sign-up sheet or class activity"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
-    if (typeof openRecentQrShares === "function") openRecentQrShares();
-    setShowExportMenu(false);
-  }, className: "mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800" }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " Polls, sign-ups & shared links", recentQrShareCount ? ` (${recentQrShareCount})` : "")), /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-500" }, studentAiPolicyForShare === "student-byok" ? "Teacher-prepared resources open with optional personal AI. Students supply and test their own provider." : "Teacher-prepared resources open for students with AI generation off."), !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " LMS Integration"), activeView === "quiz" && !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      role: "menuitem",
-      onClick: () => {
-        handleExportQTI();
-        setShowExportMenu(false);
+      /* @__PURE__ */ React.createElement(FolderDown, { size: 14 }),
+      " ",
+      t("export_menu.qti")
+    ), !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => {
+          handleExportIMS();
+          setShowExportMenu(false);
+        },
+        className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-yellow-50 text-yellow-700 text-xs font-bold transition-colors",
+        "data-help-key": "export_ims"
       },
-      className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-teal-50 text-teal-700 text-xs font-bold transition-colors",
-      "data-help-key": "export_qti"
-    },
-    /* @__PURE__ */ React.createElement(FolderDown, { size: 14 }),
-    " ",
-    t("export_menu.qti")
-  ), !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      role: "menuitem",
-      onClick: () => {
-        handleExportIMS();
-        setShowExportMenu(false);
+      /* @__PURE__ */ React.createElement(FolderDown, { size: 14 }),
+      " ",
+      t("export_menu.ims")
+    )), showExportMenu && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetShowExportMenuToFalse })),
+    /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => setShowClassAnalytics(true),
+        className: "bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40",
+        title: t("common.assessment_center") || "Assessment Center",
+        "data-help-key": "header_analytics"
       },
-      className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-yellow-50 text-yellow-700 text-xs font-bold transition-colors",
-      "data-help-key": "export_ims"
-    },
-    /* @__PURE__ */ React.createElement(FolderDown, { size: 14 }),
-    " ",
-    t("export_menu.ims")
-  )), showExportMenu && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetShowExportMenuToFalse })), isTeacherMode && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setShowClassAnalytics(true),
-      className: "bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40",
-      title: t("common.assessment_center") || "Assessment Center",
-      "data-help-key": "header_analytics"
-    },
-    /* @__PURE__ */ React.createElement(ClipboardList, { size: 14 }),
-    " ",
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("common.assessment_center") || "Assessment Center")
+      /* @__PURE__ */ React.createElement(ClipboardList, { size: 14 }),
+      " ",
+      /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("common.assessment_center") || "Assessment Center")
+    )
   ), !isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {

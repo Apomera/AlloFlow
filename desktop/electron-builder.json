@@ -47,6 +47,9 @@
     }
   ],
   "asar": true,
+  "asarUnpack": [
+    "electron/coach-window-bounds-windows.ps1"
+  ],
   "npmRebuild": false,
   "extraMetadata": {
     "main": "electron/main.cjs"

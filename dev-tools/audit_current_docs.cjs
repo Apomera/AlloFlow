@@ -4,7 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
 const root = process.cwd();
-const maintained = ['README.md','AdminBrief.md','AlloFlow Complete User Manual.md','architecture.md','FEATURE_INVENTORY.md','COMPETITOR_COMPARISON.md','CONTRIBUTING.md','ORIENTATION.md','DEPLOY_YOUR_OWN.md','SECURITY.md','VPAT-2.5-WCAG-AlloFlow.md','docs/README.md','docs/accessibility-manual-test-plan.md','docs/release-evidence-template.md','docs/test-prep-ap-expansion.md','desktop/README.md','desktop/web-app/README.md'];
+const guideManifest = JSON.parse(fs.readFileSync(path.join(root, 'docs/teacher-guide/guide.json'), 'utf8'));
+const maintained = ['README.md','AdminBrief.md','AlloFlow Complete User Manual.md','architecture.md','FEATURE_INVENTORY.md','COMPETITOR_COMPARISON.md','CONTRIBUTING.md','ORIENTATION.md','DEPLOY_YOUR_OWN.md','SECURITY.md','VPAT-2.5-WCAG-AlloFlow.md','docs/README.md','docs/teacher-guide/guide.json', ...guideManifest.chapters.map((chapter) => `docs/teacher-guide/${chapter.source}`), 'docs/accessibility-manual-test-plan.md','docs/release-evidence-template.md','docs/test-prep-ap-expansion.md','desktop/README.md','desktop/web-app/README.md'];
 const errors = [];
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 for (const file of maintained) {
@@ -23,8 +24,12 @@ const stemMatch = registryOutput.match(/StemLab tools:\s+(\d+)/);
 const stemIds = stemMatch ? Number(stemMatch[1]) : NaN;
 const selFiles = fs.readdirSync(path.join(root, 'sel_hub')).filter((name) => /^sel_tool_.*\.js$/i.test(name)).length;
 const totals = { stemFiles: stemNames.length, stemIds, selFiles };
-for (const [key, expected] of Object.entries({ stemFiles: 129, stemIds: 130, selFiles: 70 })) {
-  if (totals[key] !== expected) errors.push(`registry freshness: ${key} expected ${expected}, found ${totals[key]}; update maintained docs and this audit together`);
+const overview = read('README.md');
+if (!overview.includes(`STEM Lab (${totals.stemFiles} plugin files / ${totals.stemIds} registered IDs)`)) {
+  errors.push(`README.md: STEM catalog totals do not match the live registry (${totals.stemFiles} files / ${totals.stemIds} IDs)`);
+}
+if (!overview.includes(`SEL Hub (${totals.selFiles} tools)`)) {
+  errors.push(`README.md: SEL catalog total does not match the live registry (${totals.selFiles} tools)`);
 }
 for (const file of ['README.md','AdminBrief.md','AlloFlow Complete User Manual.md','CONTRIBUTING.md','ORIENTATION.md']) {
   if (/111\s+(?:STEM\s+)?tool files?\s*\/\s*116|111 STEM files \/ 116/i.test(read(file))) errors.push(`${file}: stale 111-file / 116-ID STEM count`);

@@ -3068,6 +3068,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       // window; the coach page treats missing posture as learner.
       if (store && win === store.coachWin) {
         ping.coachPosture = store.coachPosture === 'educator' ? 'educator' : 'learner';
+        ping.desktopOverlayAvailable = !!(window.alloflowDesktop &&
+          typeof window.alloflowDesktop.updateCoachOverlay === 'function');
       }
       if (!vsPostToStudio(win, ping)) return;
       attempts += 1;
@@ -3098,7 +3100,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return w;
   }
 
+  // Keep an already-open coach aligned with live app role changes. This is the
+  // same app-derived session posture used at launch; it is not authentication.
+  function vsSetCoachPosture(posture) {
+    var normalizedPosture = posture === 'educator' ? 'educator' : 'learner';
+    var store = (typeof vsTakeStore !== 'undefined' && vsTakeStore) ? vsTakeStore : null;
+    if (!store) return normalizedPosture;
+    store.coachPosture = normalizedPosture;
+    if (store.coachWin && !store.coachWin.closed) vsPingBridgeWindow(store.coachWin);
+    return normalizedPosture;
+  }
+
   var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsParsePronunciationGlossary: vsParsePronunciationGlossary, vsApplyPronunciationGlossary: vsApplyPronunciationGlossary, vsScriptTextToNarrationCues: vsScriptTextToNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsBuildDemoPreflight: vsBuildDemoPreflight, vsDemoContinuationPlan: vsDemoContinuationPlan, vsAnalyzeDemoTakeQuality: vsAnalyzeDemoTakeQuality, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues, vsSanitizeDemoAudit: vsSanitizeDemoAudit, vsSanitizeCoachAdvice: vsSanitizeCoachAdvice, openCoachWindow: vsOpenCoachWindow, coachUrlWithBridge: coachUrlWithBridge, vsIsKnownBridgeWindow: vsIsKnownBridgeWindow };
+  VS_HELPERS.setCoachPosture = vsSetCoachPosture;
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -3708,6 +3722,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     'allostudio-narrate-request',
     'allostudio-describe-request',
     'allostudio-coach-request',
+    'allostudio-coach-overlay',
     'allostudio-lesson-request',
     'allostudio-localize-request',
     'allostudio-teaching-inserts-request',
@@ -3772,6 +3787,42 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var T = vsHostT;
       var studioWinRef = { current: (ev.source && typeof ev.source.postMessage === 'function') ? ev.source : vsTakeStore.studioWin };
 
+      if (ev.data.type === 'allostudio-coach-overlay') {
+        // Optional desktop-only presentation. The external coach cannot call
+        // Electron IPC directly, so it asks its authenticated app opener. Only
+        // the exact coach handle may update this click-through overlay.
+        if (ev.source !== vsTakeStore.coachWin) return;
+        var desktopCoachApi = (typeof window !== 'undefined') ? window.alloflowDesktop : null;
+        if (!desktopCoachApi) return;
+        if (!ev.data.visible) {
+          if (typeof desktopCoachApi.hideCoachOverlay === 'function') {
+            Promise.resolve(desktopCoachApi.hideCoachOverlay()).catch(function () {});
+          }
+          return;
+        }
+        if (typeof desktopCoachApi.updateCoachOverlay !== 'function') return;
+        var overlayPosture = vsTakeStore.coachPosture === 'educator' ? 'educator' : 'learner';
+        var overlayAdvice = vsSanitizeCoachAdvice({
+          guidance: ev.data.guidance,
+          target: ev.data.target,
+          done: ev.data.done,
+          kind: 'navigation'
+        }, { posture: overlayPosture });
+        var overlaySurface = ['monitor', 'window', 'browser'].indexOf(ev.data.displaySurface) >= 0
+          ? ev.data.displaySurface : '';
+        Promise.resolve(desktopCoachApi.updateCoachOverlay({
+          guidance: overlayAdvice.guidance,
+          done: !!overlayAdvice.done,
+          displaySurface: overlaySurface,
+          sourceLabel: String(ev.data.sourceLabel || '').slice(0, 260),
+          // Monitor coordinates map directly. Window coordinates are forwarded
+          // only so Desktop can bind them to a unique tracked native handle;
+          // an unmatched/ambiguous window still receives the HUD without a box.
+          target: (overlaySurface === 'monitor' || overlaySurface === 'window')
+            ? overlayAdvice.target : null
+        })).catch(function () {});
+        return;
+      }
       if (ev.data.type === 'allostudio-ai-cancel') {
         var cancelId = String(ev.data.requestId || ev.data.id || '');
         var cancelController = vsAiAbortControllers.get(cancelId);

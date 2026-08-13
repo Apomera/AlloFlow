@@ -34,6 +34,7 @@ beforeAll(() => {
   globalThis.React = React;
   window.AlloModules = window.AlloModules || {};
   delete window.AlloModules.AdminHub;
+  delete window.AlloModules.EducatorEvaluation;
   delete window.AlloModules.UdlWalkthrough;
   delete window.AlloModules.DisproAnalyzer;
   delete window.AlloModules.MeetingDocs;
@@ -41,6 +42,7 @@ beforeAll(() => {
   delete window.AlloModules.FamilyAnnouncements;
   delete window.AlloModules.MtssTriage;
   loadModule('admin_hub_module.js');
+  loadModule('educator_evaluation_module.js');
   loadModule('udl_walkthrough_module.js');
   loadModule('dispro_analyzer_module.js');
   loadModule('meeting_docs_module.js');
@@ -48,7 +50,7 @@ beforeAll(() => {
   loadModule('family_announcements_module.js');
   loadModule('mtss_triage_module.js');
   Mods = window.AlloModules;
-  for (const k of ['AdminHub', 'UdlWalkthrough', 'DisproAnalyzer', 'MeetingDocs', 'SpedTimelines', 'FamilyAnnouncements', 'MtssTriage']) {
+  for (const k of ['AdminHub', 'EducatorEvaluation', 'UdlWalkthrough', 'DisproAnalyzer', 'MeetingDocs', 'SpedTimelines', 'FamilyAnnouncements', 'MtssTriage']) {
     if (!Mods[k]) throw new Error(k + ' did not register');
   }
 });
@@ -85,6 +87,7 @@ describe('AdminHubPanel', () => {
     const c = mount(Mods.AdminHub.AdminHubPanel, { ...baseProps(), openTool: (id) => opened.push(id) });
     expect(c.textContent).toContain('Leadership Hub');
     expect(c.textContent).toContain('never an automated verdict');
+    clickText(c, 'Educator Evaluation');
     clickText(c, 'MTSS Triage');
     clickText(c, 'Family Announcements');
     clickText(c, 'UDL Walkthrough');
@@ -92,7 +95,7 @@ describe('AdminHubPanel', () => {
     clickText(c, 'SpEd Timelines');
     clickText(c, 'Diagnosis, Evaluation & School Eligibility');
     clickText(c, 'Meeting Documentation');
-    expect(opened).toEqual(['mtss', 'announcements', 'walkthrough', 'dispro', 'timelines', 'diagnosisEligibility', 'meetings']);
+    expect(opened).toEqual(['evaluation', 'mtss', 'announcements', 'walkthrough', 'dispro', 'timelines', 'diagnosisEligibility', 'meetings']);
   });
 });
 

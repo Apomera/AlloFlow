@@ -53,6 +53,7 @@ var BookOpen = _lazyIcon('BookOpen');
 var CheckCircle = _lazyIcon('CheckCircle');
 var CheckCircle2 = _lazyIcon('CheckCircle2');
 var ChevronDown = _lazyIcon('ChevronDown');
+var ChevronUp = _lazyIcon('ChevronUp');
 var Download = _lazyIcon('Download');
 var ExternalLink = _lazyIcon('ExternalLink');
 var FileText = _lazyIcon('FileText');
@@ -100,6 +101,7 @@ window.AlloModules.SentenceFramesPanel = (typeof SentenceFramesPanel !== 'undefi
 window.AlloModules.LessonPlanPanel = (typeof LessonPlanPanel !== 'undefined') ? LessonPlanPanel : null;
 window.AlloModules.AnalysisPanel = (typeof AnalysisPanel !== 'undefined') ? AnalysisPanel : null;
 window.AlloModules.UiToolWordsoundsPanel = (typeof UiToolWordsoundsPanel !== 'undefined') ? UiToolWordsoundsPanel : null;
+window.AlloModules.ToolCatalogControls = (typeof ToolCatalogControls !== 'undefined') ? ToolCatalogControls : null;
 window.AlloModules.SurpriseMeEngine = (typeof SurpriseMeEngine !== 'undefined') ? SurpriseMeEngine : null;
 window.AlloModules.SurpriseMeCompare = (typeof SurpriseMeCompare !== 'undefined') ? SurpriseMeCompare : null;
 window.AlloModules.ViewSidebarPanelsModule = true;

@@ -35,6 +35,9 @@ function makeContext() {
     drawImage: vi.fn(),
     fillRect: vi.fn(),
     strokeRect: vi.fn(),
+    fillText: vi.fn(),
+    measureText: vi.fn((text) => ({ width: String(text || '').length * 8 })),
+    getImageData: vi.fn(() => ({ data: new Uint8ClampedArray(24 * 14 * 4) })),
     fillStyle: '',
     lineWidth: 0,
     strokeStyle: ''
@@ -64,6 +67,8 @@ function bootCoach(options = {}) {
 
   const { window } = dom;
   const { document } = window;
+  const confirm = options.confirm || vi.fn(() => true);
+  window.confirm = confirm;
   if (options.storedBackend !== undefined) {
     const stored = typeof options.storedBackend === 'string'
       ? options.storedBackend
@@ -72,9 +77,16 @@ function bootCoach(options = {}) {
   }
 
   const contexts = new WeakMap();
+  let signatureLevel = Number(options.signatureLevel || 0);
   const contextFor = (canvas) => {
     if (!contexts.has(canvas)) contexts.set(canvas, makeContext());
-    return contexts.get(canvas);
+    const context = contexts.get(canvas);
+    context.getImageData = vi.fn(() => {
+      const data = new Uint8ClampedArray(24 * 14 * 4);
+      data.fill(signatureLevel);
+      return { data };
+    });
+    return context;
   };
   Object.defineProperty(window.HTMLCanvasElement.prototype, 'getContext', {
     configurable: true,
@@ -84,6 +96,15 @@ function bootCoach(options = {}) {
     configurable: true,
     value: () => 'data:image/jpeg;base64,RUNTIME_FRAME'
   });
+  const downloads = [];
+  Object.defineProperty(window.HTMLAnchorElement.prototype, 'click', {
+    configurable: true,
+    value: vi.fn(function click() {
+      downloads.push({ download: this.download, href: this.href });
+    })
+  });
+  window.URL.createObjectURL = vi.fn(() => 'blob:https://coach.example/walkthrough-export');
+  window.URL.revokeObjectURL = vi.fn();
 
   const preview = document.getElementById('previewVideo');
   Object.defineProperties(preview, {
@@ -102,6 +123,8 @@ function bootCoach(options = {}) {
     const track = {
       onended: null,
       stopped: false,
+      label: options.sourceLabel || '',
+      getSettings: () => ({ displaySurface: options.displaySurface || '' }),
       stop: vi.fn(function stop() { track.stopped = true; })
     };
     const stream = {
@@ -148,6 +171,14 @@ function bootCoach(options = {}) {
   window.SpeechSynthesisUtterance = function SpeechSynthesisUtterance(text) {
     this.text = text;
   };
+  const recognitions = [];
+  if (options.withVoice) {
+    window.SpeechRecognition = function SpeechRecognition() {
+      this.start = vi.fn();
+      this.stop = vi.fn();
+      recognitions.push(this);
+    };
+  }
 
   const animationFrames = [];
   window.requestAnimationFrame = vi.fn((callback) => {
@@ -190,6 +221,7 @@ function bootCoach(options = {}) {
     window,
     document,
     opener,
+    confirm,
     bridgeOrigin,
     bridgeToken,
     analyzeImage,
@@ -202,6 +234,9 @@ function bootCoach(options = {}) {
     pipContext,
     pipWindow,
     contextFor,
+    downloads,
+    recognitions,
+    setSignatureLevel: (value) => { signatureLevel = Number(value || 0); },
     currentTrack: () => tracks.at(-1),
     privacy: document.getElementById('coachPrivacyAck'),
     watch: document.getElementById('coachWatchBtn'),
@@ -240,6 +275,7 @@ afterEach(() => {
   for (const dom of openDoms) dom.window.close();
   openDoms.clear();
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 describe('IT Coach runtime backend disclosure', () => {
@@ -353,6 +389,94 @@ describe('IT Coach posture session binding', () => {
 
     expect(coach.document.getElementById('postureBadge').textContent).toMatch(/learner/i);
     expect(coach.document.getElementById('posturePledge').hidden).toBe(false);
+  });
+});
+
+describe('IT Coach bridge destination consent', () => {
+  it('uses an exact first-party bridge without an extra confirmation', async () => {
+    const coach = bootCoach({
+      bridge: true,
+      bridgeOrigin: 'https://alloflow-cdn.pages.dev'
+    });
+    await startShare(coach);
+    coach.privacy.checked = true;
+    await ask(coach);
+
+    expect(coach.confirm).not.toHaveBeenCalled();
+    expect(coach.opener.postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'allostudio-coach-request', imageBase64: 'RUNTIME_FRAME' }),
+      'https://alloflow-cdn.pages.dev'
+    );
+  });
+
+  it('keeps a late first-party token handoff seamless', async () => {
+    const coach = bootCoach({
+      bridge: true,
+      bridgeOrigin: 'https://prismflow-911fe.web.app',
+      query: '?posture=learner'
+    });
+    await pingCoach(coach, 'educator');
+    await startShare(coach);
+    coach.privacy.checked = true;
+    await ask(coach);
+
+    expect(coach.confirm).not.toHaveBeenCalled();
+    expect(coach.opener.postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'allostudio-coach-request', imageBase64: 'RUNTIME_FRAME' }),
+      'https://prismflow-911fe.web.app'
+    );
+  });
+
+  it('names and confirms a non-first-party bridge before its first screenshot', async () => {
+    const confirm = vi.fn(() => true);
+    const coach = bootCoach({
+      bridge: true,
+      bridgeOrigin: 'https://canvas-school.example',
+      confirm
+    });
+
+    expect(coach.document.getElementById('beStatus').textContent)
+      .toContain('https://canvas-school.example');
+    await startShare(coach);
+    coach.privacy.checked = true;
+    await ask(coach);
+
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(confirm.mock.calls[0][0]).toContain('https://canvas-school.example');
+    expect(coach.opener.postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'allostudio-coach-request', imageBase64: 'RUNTIME_FRAME' }),
+      'https://canvas-school.example'
+    );
+  });
+
+  it('sends nothing and stays disconnected after destination consent is declined', async () => {
+    const confirm = vi.fn(() => false);
+    const coach = bootCoach({
+      bridge: true,
+      bridgeOrigin: 'https://unrecognised-opener.example',
+      confirm
+    });
+    await startShare(coach);
+    coach.privacy.checked = true;
+    await ask(coach);
+
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(coach.opener.postMessage).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'allostudio-coach-request' }),
+      expect.any(String)
+    );
+    expect(coach.status.textContent).toMatch(/nothing was sent/i);
+    expect(coach.document.getElementById('beFields').disabled).toBe(false);
+    expect(coach.document.getElementById('postureBadge').textContent).toMatch(/learner/i);
+
+    await pingCoach(coach, 'educator');
+    coach.privacy.checked = true;
+    await ask(coach);
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(coach.opener.postMessage).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'allostudio-coach-request' }),
+      expect.any(String)
+    );
   });
 });
 
@@ -531,5 +655,138 @@ describe('IT Coach pending-request lifecycle', () => {
     expect(coach.steps.children).toHaveLength(0);
     expect(coach.overlay.hidden).toBe(true);
     expect(coach.speech.speak).not.toHaveBeenCalled();
+  });
+});
+
+describe('IT Coach guided walkthrough', () => {
+  it.each([
+    ['monitor', true],
+    ['window', true],
+    ['browser', false]
+  ])('publishes a desktop %s overlay and only forwards trackable targets', async (displaySurface, exact) => {
+    vi.useFakeTimers();
+    const target = { x: 0.25, y: 0.2, w: 0.3, h: 0.15 };
+    const coach = bootCoach({
+      bridge: true,
+      bridgeOrigin: 'https://alloflow-cdn.pages.dev',
+      displaySurface,
+      sourceLabel: 'Example Settings'
+    });
+    await startShare(coach);
+    coach.privacy.checked = true;
+    coach.document.getElementById('coachDesktopOverlayChk').checked = true;
+    coach.suggest.click();
+    vi.advanceTimersByTime(160);
+    await flushMicrotasks();
+
+    const request = coach.opener.postMessage.mock.calls
+      .map(([message]) => message)
+      .find((message) => message.type === 'allostudio-coach-request');
+    coach.window.dispatchEvent(new coach.window.MessageEvent('message', {
+      source: coach.opener,
+      origin: coach.bridgeOrigin,
+      data: {
+        type: 'allostudio-coach-response',
+        id: request.id,
+        bridge: coach.bridgeToken,
+        ...advice('Open the highlighted menu.', target)
+      }
+    }));
+    await flushMicrotasks();
+
+    const update = coach.opener.postMessage.mock.calls
+      .map(([message]) => message)
+      .findLast((message) => message.type === 'allostudio-coach-overlay' && message.visible);
+    expect(update).toEqual(expect.objectContaining({
+      displaySurface,
+      sourceLabel: 'Example Settings',
+      guidance: 'Open the highlighted menu.',
+      target: exact ? target : null
+    }));
+  });
+
+  it('saves a highlighted step and exports explicitly retained walkthrough images locally', async () => {
+    const coach = bootCoach({
+      analyzeImage: vi.fn().mockResolvedValue(JSON.stringify(advice(
+        'Open the captions menu.',
+        { x: 0.6, y: 0.1, w: 0.25, h: 0.16 }
+      )))
+    });
+    await startShare(coach);
+    coach.privacy.checked = true;
+    coach.document.getElementById('coachKeepStepsChk').checked = true;
+    await ask(coach);
+
+    const save = coach.document.getElementById('coachSaveBtn');
+    const exportButton = coach.document.getElementById('coachExportBtn');
+    expect(save.disabled).toBe(false);
+    expect(exportButton.disabled).toBe(false);
+
+    save.click();
+    exportButton.click();
+
+    expect(coach.downloads.map((item) => item.download)).toEqual([
+      'screen-coach-walkthrough-step-1.png',
+      'screen-coach-walkthrough.html'
+    ]);
+    expect(coach.window.URL.createObjectURL).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits for a meaningful screen change before asking for the next guided step', async () => {
+    vi.useFakeTimers();
+    const analyzeImage = vi.fn()
+      .mockResolvedValueOnce(JSON.stringify(advice('Open the profile menu.')))
+      .mockResolvedValueOnce(JSON.stringify(advice('Choose account settings.')));
+    const coach = bootCoach({ analyzeImage, signatureLevel: 0 });
+    await startShare(coach);
+    coach.privacy.checked = true;
+
+    const guided = coach.document.getElementById('coachAutoChk');
+    guided.click();
+    await flushMicrotasks();
+    expect(analyzeImage).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(5000);
+    await flushMicrotasks();
+    expect(analyzeImage).toHaveBeenCalledTimes(1);
+
+    coach.setSignatureLevel(255);
+    vi.advanceTimersByTime(3600);
+    await flushMicrotasks();
+    expect(analyzeImage).toHaveBeenCalledTimes(2);
+    expect(coach.steps.children).toHaveLength(2);
+  });
+
+  it('supports explicit hands-free repeat, next, pause, and stop commands', async () => {
+    const analyzeImage = vi.fn()
+      .mockResolvedValueOnce(JSON.stringify(advice('Open the toolbar.')))
+      .mockResolvedValueOnce(JSON.stringify(advice('Choose the captions button.')));
+    const coach = bootCoach({ analyzeImage, withVoice: true });
+    await startShare(coach);
+    coach.privacy.checked = true;
+    await ask(coach);
+
+    coach.document.getElementById('coachVoiceBtn').click();
+    const recognition = coach.recognitions[0];
+    expect(recognition.start).toHaveBeenCalled();
+    const say = async (transcript) => {
+      const result = [{ transcript }];
+      result.isFinal = true;
+      recognition.onresult({ resultIndex: 0, results: [result] });
+      await flushMicrotasks();
+    };
+
+    await say('Coach repeat');
+    expect(coach.speech.speak).toHaveBeenCalledWith(
+      expect.objectContaining({ text: 'Open the toolbar.' })
+    );
+
+    await say('Coach next');
+    expect(analyzeImage).toHaveBeenCalledTimes(2);
+    await say('Coach pause');
+    expect(coach.document.getElementById('coachAutoChk').checked).toBe(false);
+    await say('Coach stop');
+    expect(recognition.stop).toHaveBeenCalled();
+    expect(coach.document.getElementById('coachVoiceBtn').getAttribute('aria-pressed')).toBe('false');
   });
 });

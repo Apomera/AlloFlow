@@ -11,6 +11,8 @@ contextBridge.exposeInMainWorld('alloflowDesktop', {
   installUpdate: () => ipcRenderer.invoke('alloflow-desktop:install-update'),
   setFullScreen: (enabled) => ipcRenderer.invoke('alloflow-desktop:set-full-screen', Boolean(enabled)),
   isFullScreen: () => ipcRenderer.invoke('alloflow-desktop:is-full-screen'),
+  updateCoachOverlay: (payload) => ipcRenderer.invoke('alloflow-desktop:coach-overlay-update', payload),
+  hideCoachOverlay: () => ipcRenderer.invoke('alloflow-desktop:coach-overlay-hide'),
   onFullScreenChange: (callback) => {
     if (typeof callback !== 'function') return () => {};
     const listener = (_event, enabled) => callback(Boolean(enabled));

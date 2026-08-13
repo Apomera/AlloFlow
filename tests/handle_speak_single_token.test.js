@@ -157,8 +157,8 @@ describe('handleSpeak: a one-token sentence must never crash the click', () => {
       const sentences = call[1];
       expect(sentences).toHaveLength(6);
       expect(startIndex).toBe(5);                       // starts where the teacher clicked
-      expect(sentences[0]).toContain('How do plants eat'); // ...within the WHOLE FAQ list
-      expect(sentences[5]).toContain('Amazing');
+      expect(sentences[0].text).toContain('How do plants eat'); // ...within the WHOLE FAQ list
+      expect(sentences[5].text).toContain('Amazing');
     });
   });
 

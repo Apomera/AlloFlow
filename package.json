@@ -14,6 +14,8 @@
     "build:test-prep-hub": "node dev-tools/build_test_prep_hub_release.cjs",
     "verify:eppp-archive": "node dev-tools/build_eppp_migration_source_archive.cjs --verify",
     "test:watch": "vitest",
+    "build:evaluation-portal": "node _build_educator_evaluation_apps_script.js",
+    "verify:evaluation-portal": "node _build_educator_evaluation_apps_script.js --check",
     "test:ci:shard": "node dev-tools/run_unit_shard.cjs",
     "test:coverage": "vitest run --coverage",
     "build:adventure": "node _build_adventure_module.js",
@@ -110,6 +112,8 @@
     "audit:a11y:runtime": "cd a11y-audit && node runtime-audit.js",
     "audit:promo": "node dev-tools/audit_promo_site.cjs",
     "audit:docs": "node dev-tools/audit_current_docs.cjs",
+    "build:teacher-guide": "node dev-tools/build_teacher_guide.cjs",
+    "verify:teacher-guide": "node dev-tools/build_teacher_guide.cjs --check && vitest run tests/teacher_guide_build.test.js --maxWorkers=1",
     "desktop": "node desktop/runtime/alloflow-desktop-runtime.cjs",
     "desktop:check": "node desktop/runtime/alloflow-desktop-runtime.cjs --check",
     "desktop:smoke": "node desktop/runtime/alloflow-desktop-runtime.cjs --smoke --port 0",
@@ -141,6 +145,7 @@
     "eslint-scope": "^9.1.2",
     "jsdom": "^29.1.0",
     "jszip": "^3.10.1",
+    "markdown-it": "15.0.0",
     "playwright": "^1.59.1",
     "vitest": "^4.1.5"
   }

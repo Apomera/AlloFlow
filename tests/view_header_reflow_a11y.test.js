@@ -16,6 +16,20 @@ describe('header narrow-viewport reflow', () => {
     expect(source).toContain('id="tour-header-actions" className={`w-full flex flex-wrap');
     expect(source).toContain('max-w-full scale-90 origin-left');
   });
+  it('keeps teacher utilities together without hiding them in an overflow menu', () => {
+    const start = source.indexOf('data-header-utility-cluster="teacher"');
+    const end = source.indexOf('{!isTeacherMode && (', start);
+    const cluster = source.slice(start, end);
+
+    expect(start).toBeGreaterThan(0);
+    expect(cluster).toContain('w-full xl:w-auto xl:ml-auto flex flex-wrap items-center');
+    expect(cluster).toContain('className="relative shrink-0"');
+    for (const key of ['header_translate', 'header_export', 'header_analytics']) {
+      expect(cluster).toContain(`data-help-key="${key}"`);
+    }
+    expect(cluster.indexOf('header_translate')).toBeLessThan(cluster.indexOf('header_export'));
+    expect(cluster.indexOf('header_export')).toBeLessThan(cluster.indexOf('header_analytics'));
+  });
   it('wraps source-panel actions instead of clipping Generate and Books', () => {
     const app = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
     expect(app).toContain('flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0');

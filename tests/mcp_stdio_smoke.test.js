@@ -100,13 +100,13 @@ describe('MCP stdio local connector', () => {
   it('lists the validation and Task C job slice with correct annotations', async () => {
     const res = await request('tools/list', {});
     const tools = res.result.tools;
-    expect(tools.map((t) => t.name).sort()).toEqual(['artifact_validate', 'blueprint_create', 'blueprint_preview', 'blueprint_revise', 'blueprint_validate', 'capabilities', 'job_cancel', 'job_get', 'job_get_result', 'media_plan']);
+    expect(tools.map((t) => t.name).sort()).toEqual(['artifact_validate', 'blueprint_create', 'blueprint_preview', 'blueprint_revise', 'blueprint_validate', 'capabilities', 'job_cancel', 'job_get', 'job_get_result', 'media_plan', 'resource_pack_export', 'resource_pack_generate', 'resource_pack_preview', 'resource_pack_validate']);
     expect(tools.map((t) => t.name)).not.toContain('blueprint_execute');
     for (const t of tools) {
       expect(t.name).toMatch(/^[a-zA-Z0-9_-]{1,64}$/);
       expect(t.name).not.toContain('.');
       expect(t.annotations.title).toBeTruthy();
-      const isReadOnly = ['capabilities', 'blueprint_validate', 'blueprint_preview', 'media_plan', 'job_get', 'job_get_result', 'artifact_validate'].includes(t.name);
+      const isReadOnly = ['capabilities', 'blueprint_validate', 'blueprint_preview', 'media_plan', 'job_get', 'job_get_result', 'artifact_validate', 'resource_pack_validate', 'resource_pack_preview'].includes(t.name);
       expect(t.annotations.readOnlyHint).toBe(isReadOnly);
       expect(t.annotations.destructiveHint).toBe(false);
       expect(t.inputSchema.type).toBe('object');
@@ -234,6 +234,43 @@ describe('MCP stdio local connector', () => {
   });
 
 
+  it('composes, validates, previews, and exports an agent-authored AlloPack without network or secret egress', async () => {
+    const request = {
+      requestId: 'mcp-pack-1', title: 'Water cycle pack', sourceTopic: 'Water cycle', gradeLevel: '6th Grade',
+      standards: 'NGSS MS-ESS2-4 (water cycles and weather)', learningGoal: 'Explain state changes in a repeating cycle.',
+      privacy: { confirmNoStudentPii: true, confirmSourcePermission: true },
+      history: [
+        { id: 'directions-1', type: 'directions', title: 'Directions', data: 'Read the source and explain two state changes with evidence.', meta: 'Directions' },
+        { id: 'glossary-1', type: 'glossary', title: 'Vocabulary', data: [
+          { term: 'evaporation', def: 'Liquid water becomes vapor.', tier: 'Domain-Specific' },
+          { term: 'condensation', def: 'Water vapor becomes liquid.', tier: 'Domain-Specific' },
+          { term: 'cycle', def: 'A repeating process.', tier: 'Academic' },
+          { term: 'evidence', def: 'Information that supports an explanation.', tier: 'Academic' },
+        ], meta: 'Words' },
+        { id: 'quiz-1', type: 'quiz', title: 'Quick check', data: { questions: [
+          { type: 'shortAnswer', question: 'What repeats?', expectedAnswer: 'Water changes state in a cycle.', conceptLabel: 'cycle' },
+          { type: 'shortAnswer', question: 'What supports an answer?', expectedAnswer: 'Evidence from the source.', conceptLabel: 'evidence' },
+          { type: 'shortAnswer', question: 'Name one state change.', expectedAnswer: 'Evaporation or condensation.', conceptLabel: 'state change' },
+        ], reflections: [] }, meta: 'Check' },
+      ],
+    };
+    const generated = await callTool('resource_pack_generate', { request });
+    expect(generated.isError).toBe(false);
+    expect(generated.structuredContent.job.status).toBe('completed');
+    const jobId = generated.structuredContent.job.jobId;
+    const result = await callTool('job_get_result', { jobId });
+    const pack = result.structuredContent.result.pack;
+    expect(pack.allopack.spec).toBe('0.1');
+    const validated = await callTool('resource_pack_validate', { pack });
+    expect(validated.structuredContent.ok).toBe(true);
+    const preview = await callTool('resource_pack_preview', { pack });
+    expect(preview.structuredContent.resources.map((item) => item.type)).toEqual(['directions', 'glossary', 'quiz']);
+    const exported = await callTool('resource_pack_export', { pack });
+    expect(exported.isError).toBe(false);
+    expect(exported.structuredContent.filename).toBe('water-cycle-pack.allopack.json');
+    expect(exported.structuredContent.json).toContain('"allopack"');
+    expect(readFileSync(auditPath, 'utf8')).not.toContain('sourceTopic');
+  });
   it('runs create, revise, preview, and job tools with redacted append-only audit records', async () => {
     const created = await callTool('blueprint_create', {
       request: { blueprintId: 'bp-task-c', gradeLevel: '5th Grade', standards: 'NGSS 5-ESS2-1', plan: ['analysis', 'quiz', 'lesson-plan'] },
@@ -270,12 +307,14 @@ describe('MCP stdio local connector', () => {
     expect(rejected.error.code).toBe(-32602);
 
     const lines = readFileSync(auditPath, 'utf8').trim().split('\n').map((line) => JSON.parse(line));
-    expect(lines.map((entry) => [entry.tool, entry.outcome])).toEqual([['blueprint_create', 'succeeded'], ['blueprint_revise', 'succeeded'], ['job_cancel', 'rejected'], ['blueprint_create', 'rejected']]);
-    expect(lines[0]).toMatchObject({ schemaVersion: '1.0', classification: 'draft-writing', jobId: createJobId });
+    expect(lines.map((entry) => [entry.tool, entry.outcome])).toEqual([['resource_pack_generate', 'succeeded'], ['resource_pack_export', 'succeeded'], ['blueprint_create', 'succeeded'], ['blueprint_revise', 'succeeded'], ['job_cancel', 'rejected'], ['blueprint_create', 'rejected']]);
+    expect(lines[0]).toMatchObject({ schemaVersion: '1.0', classification: 'external-effect' });
     expect(lines[0].blueprintRef).toMatch(/^sha256:[a-f0-9]{16}$/);
-    expect(lines[2]).toMatchObject({ classification: 'external-effect', errorCode: 'job-not-cancellable' });
-    expect(lines[3]).toMatchObject({ errorCode: 'invalid-params' });
-    expect(lines[3].blueprintRef).toMatch(/^sha256:[a-f0-9]{16}$/);
+    expect(lines[2]).toMatchObject({ schemaVersion: '1.0', classification: 'draft-writing', jobId: createJobId });
+    expect(lines[2].blueprintRef).toMatch(/^sha256:[a-f0-9]{16}$/);
+    expect(lines[4]).toMatchObject({ classification: 'external-effect', errorCode: 'job-not-cancellable' });
+    expect(lines[5]).toMatchObject({ errorCode: 'invalid-params' });
+    expect(lines[5].blueprintRef).toMatch(/^sha256:[a-f0-9]{16}$/);
     expect(readFileSync(auditPath, 'utf8')).not.toContain('sentinel-secret');
     for (const entry of lines) {
       expect(Object.keys(entry).every((key) => ['schemaVersion', 'eventId', 'recordedAt', 'tool', 'classification', 'outcome', 'jobId', 'blueprintRef', 'errorCode'].includes(key))).toBe(true);
