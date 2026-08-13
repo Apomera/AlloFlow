@@ -48,6 +48,67 @@ describe('throttle telemetry — wiring', () => {
   });
 });
 
+describe('throttle telemetry — says when its own numbers are untrustworthy', () => {
+  // Every duration in this log is timer-derived, and Chrome clamps timers to roughly
+  // once a minute in a hidden tab. A run made with the tab minimised therefore records
+  // cooldowns several times longer than the constants that produced them — and nothing
+  // else in the log distinguishes that from the server throttling harder, which is the
+  // exact wrong conclusion to draw when the log exists to tune those constants.
+  let build;
+  beforeAll(async () => {
+    const { runInNewContext } = await import('node:vm');
+    const start = src.indexOf('  var _pipeThrottleSummary = function(owner) {');
+    const end = src.indexOf('\n  };', start) + 5;
+    const fn = src.slice(start, end);
+    build = (over) => {
+      const logged = [];
+      const sandbox = Object.assign({
+        Math, Object, Date,
+        _pipeLog: (tag, line, data) => logged.push({ tag, line, data }),
+        _throttleTrace: [{ kind: 'auth_trip', inFlight: 3, cooldownMs: 12000 }],
+        _throttleCooldownMsTotal: 12000,
+        _geminiEffectiveMax: 3, _GEMINI_STORM_MIN: 1, _GEMINI_STORM_TRIP: 2,
+        _GEMINI_TRANSIENT_TRIP: 3, _GEMINI_COOLDOWN_MS: 12000, _geminiStaggerMs: 0,
+        _throttleRunStartedAt: Date.now() - 600000,
+        _throttleHiddenDecisions: 0,
+        _throttleHiddenTotalMs: () => 0,
+      }, over || {});
+      runInNewContext(fn + '\n_out = _pipeThrottleSummary(null);', sandbox);
+      return { out: sandbox._out, logged };
+    };
+  });
+
+  it('marks a run made with the tab visible as tuneable', () => {
+    const r = build();
+    expect(r.out.tuneable).toBe(1);
+    expect(r.out.hiddenMs).toBe(0);
+    expect(r.logged[0].line).not.toMatch(/TAB WAS HIDDEN/);
+  });
+
+  it('refuses to certify a run where the tab was hidden', () => {
+    const r = build({ _throttleHiddenTotalMs: () => 300000, _throttleHiddenDecisions: 2 });
+    expect(r.out.tuneable, 'a half-hidden run must not be presented as tuneable').toBe(0);
+    expect(r.out.hiddenPctOfRun).toBeGreaterThan(40);
+    expect(r.out.hiddenDecisions).toBe(2);
+    expect(r.logged[0].line, 'the warning belongs in the human-readable line, not only a field')
+      .toMatch(/TAB WAS HIDDEN/);
+    expect(r.logged[0].line).toMatch(/do NOT tune the constants/);
+  });
+
+  it('does not certify a run where any decision was taken hidden, however brief', () => {
+    // A short hide that happens to straddle a trip still contaminates that trip's timing.
+    const r = build({ _throttleHiddenTotalMs: () => 1000, _throttleHiddenDecisions: 1 });
+    expect(r.out.tuneable).toBe(0);
+  });
+
+  it('reports hidden time as numbers only, carrying no content', () => {
+    const r = build({ _throttleHiddenTotalMs: () => 5000, _throttleHiddenDecisions: 1 });
+    for (const k of ['hiddenMs', 'hiddenDecisions', 'hiddenPctOfRun', 'tuneable']) {
+      expect(typeof r.out[k], k + ' must be a number').toBe('number');
+    }
+  });
+});
+
 describe('throttle telemetry — records carry no content', () => {
   it('logs only numeric and enum fields', () => {
     const start = src.indexOf('var _pipeThrottleEvent = function');
@@ -95,6 +156,12 @@ describe('throttle telemetry — computes what the constants rest on', () => {
       _GEMINI_TRANSIENT_TRIP: 3,
       _GEMINI_COOLDOWN_MS: 12000,
       _geminiStaggerMs: 0,
+      // Hidden-tab accounting, stubbed as a clean (fully visible) run. Chrome clamps
+      // timers in a hidden tab, so the summary now reports whether its own durations
+      // can be trusted; see the dedicated describe block below.
+      _throttleRunStartedAt: Date.now() - 600000,
+      _throttleHiddenDecisions: 0,
+      _throttleHiddenTotalMs: () => 0,
     };
     runInNewContext(fn + '\n_out = _pipeThrottleSummary(null);', sandbox);
     summary = { out: sandbox._out, logged };

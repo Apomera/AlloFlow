@@ -28,6 +28,10 @@ not writing more code.
 There are two unrelated things called "throttling" around this app, and conflating them wastes
 a lot of time.
 
+(Corrected 2026-08-13: an earlier draft of this section claimed the pipeline was
+timer-free and therefore indifferent to minimising. It is not — see §5. Network calls are
+indifferent; the pacing around them is not.)
+
 **Server-side Gemini rate limiting.** This is what all the machinery below fights. Symptoms:
 HTTP 401/403 on a key that works seconds later, empty-body HTTP 200s, and timeouts. In Canvas
 the app never holds an API key — Canvas injects it — so **a 401 there is almost always a brief
@@ -36,10 +40,25 @@ throttle, not a credential problem** (see `feedback_canvas_transient_401`, and
 is entirely indifferent to whether anyone is looking at the tab.
 
 **Browser background-tab throttling.** Chrome suspends `requestAnimationFrame` and slows
-`setTimeout`/`setInterval` when a tab is hidden — which minimising definitely causes. It has
-**nothing to do with the storms above**, and no part of this subsystem is affected by it,
-because the pipeline is driven by in-flight `fetch` promises rather than by timers. `fetch` is
-not throttled when hidden; a request already issued completes and its `.then` runs.
+`setTimeout`/`setInterval` when a tab is hidden — which minimising definitely causes. It does
+not cause the storms above and cannot be mistaken for their cause by the server, but it very
+much affects this pipeline:
+
+- **Network calls are fine.** `fetch` is not throttled when hidden; a request already issued
+  completes and its `.then` runs. A minimised run still finishes and still produces correct
+  output.
+- **Canvas rasterization is not fine.** `pdf.js` `page.render` stalls outright in a hidden
+  tab. This is already guarded: `_alloWaitForVisibleTab(45000, 'page.render pN')` waits for
+  the tab to come back before rendering a page, then proceeds anyway so an unattended run
+  still terminates. That guard is applied at exactly one site — the page render — which is
+  the one that genuinely suspends.
+- **All pacing stretches.** The cooldown sleep and the stagger pump are both `setTimeout`, so
+  a hidden run paces itself at Chrome's clamp rather than at the configured intervals, and
+  timeout-based failure messages arrive long after the deadline they name. The field log of
+  2026-07-27 recorded a 20s render timeout taking about 136 seconds of wall clock.
+
+So: minimising does not corrupt a run's *output*, but it makes it much slower and makes its
+*timing data* meaningless — which is why §5 now refuses to certify such a run.
 
 Only the second one is relevant to the "relay desktop AI calls through an open Canvas tab"
 idea, and there the distinction reverses: a relay built on a **polling loop** would be
@@ -120,8 +139,35 @@ Canvas throttling **does not reproduce synthetically**. Do not try to write a te
 2. Run the PDF remediation pipeline on a **heavy or scanned** document. Scanned PDFs trip it
    soonest; the 8-page scanned "App-E" case is the known reproducer from the July regression.
 3. Let it run to completion, storms and all. Do not cancel — the recovery data is the point.
-4. Copy the pipeline log out (the existing copy affordance in the remediation panel).
-5. Hand back the whole thing. It is numbers and enums only, so it is safe to paste.
+4. **Keep the tab visible for the whole run.** Do not minimise it, and do not bury it
+   behind another maximised window. See the warning below — this is not politeness, it
+   silently invalidates the data.
+5. Copy the pipeline log out (the existing copy affordance in the remediation panel).
+6. Hand back the whole thing. It is numbers and enums only, so it is safe to paste.
+
+### Why step 4 matters, and how the log now enforces it
+
+Every duration in this log is timer-derived — the cooldown sleep (`_sleep`, a `setTimeout`)
+and the stagger pump that releases queued calls (`_geminiStaggerTimer`, also `setTimeout`).
+Chrome clamps timers to roughly once a second in a hidden tab and once a **minute** after
+about five minutes hidden. A run made minimised therefore records cooldowns several times
+longer than the constants that produced them, and **nothing else in the log distinguishes
+that from the server throttling harder** — which is precisely the wrong conclusion to draw
+when the whole point is to tune those constants. It would argue for shortening a cooldown
+that was never actually that long.
+
+As of 2026-08-13 the rollup measures its own contamination. Every throttle event carries
+`hidden` (0/1) and `hiddenMs`; the summary adds `hiddenMs`, `hiddenDecisions`,
+`hiddenPctOfRun` and `tuneable` (0/1). A contaminated run prints, in the human-readable
+line:
+
+> ⚠ TAB WAS HIDDEN for N% of this run (M decision(s) taken while hidden). Chrome clamps
+> timers in a hidden tab, so every duration above is inflated by an unknown amount — do
+> NOT tune the constants from this run. Repeat it with the tab visible.
+
+`tuneable: 1` requires hidden time ≤5% of the run **and** zero decisions taken while
+hidden. If you get back a log with `tuneable: 0`, ask for the run again rather than tuning
+from it.
 
 ---
 

@@ -6296,6 +6296,40 @@ var createDocPipeline = function(deps) {
   var _throttleCooldownMsTotal = 0; // wall-clock deliberately spent backing off
   var _throttlePendingProbe = null; // set when a cooldown ends, resolved by the next outcome
   var _THROTTLE_TRACE_MAX = 400;
+  // ── Hidden-tab accounting (2026-08-13) ──────────────────────────────────────
+  // Chrome clamps timers to roughly once a minute in a hidden tab. Every duration
+  // this log reports is timer-derived — the cooldown sleep, the stagger pump — so a
+  // run made with the tab minimised records cooldowns several times longer than the
+  // constants that produced them. Nothing here could tell that apart from the server
+  // throttling more aggressively, which is exactly the wrong conclusion to draw when
+  // the point of the log is to tune those constants.
+  //
+  // So the log measures its own contamination: how long the tab was hidden, and how
+  // many decisions were taken while it was. A rollup carrying hiddenMs near zero is
+  // clean data; one where it is a large share of the run is not tuneable and says so.
+  var _throttleHiddenMs = 0;
+  var _throttleHiddenSince = 0;
+  var _throttleHiddenDecisions = 0;
+  var _throttleTabHidden = function () {
+    try { return typeof document !== 'undefined' && document.visibilityState === 'hidden'; }
+    catch (_) { return false; }
+  };
+  var _throttleHiddenTotalMs = function () {
+    var live = (_throttleHiddenSince && _throttleTabHidden())
+      ? (((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) - _throttleHiddenSince)
+      : 0;
+    return _throttleHiddenMs + Math.max(0, live);
+  };
+  try {
+    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+      if (_throttleTabHidden()) _throttleHiddenSince = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
+      document.addEventListener('visibilitychange', function () {
+        var now = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
+        if (_throttleTabHidden()) { if (!_throttleHiddenSince) _throttleHiddenSince = now; }
+        else if (_throttleHiddenSince) { _throttleHiddenMs += Math.max(0, now - _throttleHiddenSince); _throttleHiddenSince = 0; }
+      });
+    }
+  } catch (_) {}
   var _pipeThrottleEvent = function(kind, fields, owner) {
     try {
       var rec = Object.assign({
@@ -6306,8 +6340,13 @@ var createDocPipeline = function(deps) {
         queued: (_geminiWaiters && _geminiWaiters.length) || 0,
         authStreak: _geminiAuthStreak,
         transientStreak: _geminiTransientStreak,
-        okStreak: _geminiOkStreak
+        okStreak: _geminiOkStreak,
+        // Both numbers, per the no-content rule. `hidden` is 0/1, not a boolean, so the
+        // rollup can sum it without special-casing.
+        hidden: _throttleTabHidden() ? 1 : 0,
+        hiddenMs: _throttleHiddenTotalMs()
       }, fields || {});
+      if (rec.hidden) _throttleHiddenDecisions++;
       _throttleTrace.push(rec);
       if (_throttleTrace.length > _THROTTLE_TRACE_MAX) _throttleTrace.splice(0, _throttleTrace.length - _THROTTLE_TRACE_MAX);
       // One compact line into the copyable log. Decisions only — see header.
@@ -6349,6 +6388,13 @@ var createDocPipeline = function(deps) {
         ? Math.round((tripInFlight.reduce(function (a, b) { return a + b; }, 0) / tripInFlight.length) * 10) / 10
         : 0;
       var maxInFlight = tripInFlight.length ? Math.max.apply(null, tripInFlight) : 0;
+      var _hiddenMs = _throttleHiddenTotalMs();
+      var _runMs = _throttleRunStartedAt
+        ? Math.max(1, (((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) - _throttleRunStartedAt))
+        : 0;
+      var _hiddenPct = _runMs ? Math.round((_hiddenMs / _runMs) * 100) : 0;
+      // 5% is slack for a teacher glancing at another window, not a licence to minimise.
+      var _tuneable = (_hiddenPct <= 5 && _throttleHiddenDecisions === 0);
       var summary = {
         events: _throttleTrace.length,
         byKind: byKind,
@@ -6363,12 +6409,24 @@ var createDocPipeline = function(deps) {
         authTrip: _GEMINI_STORM_TRIP,
         transientTrip: _GEMINI_TRANSIENT_TRIP,
         baseCooldownMs: _GEMINI_COOLDOWN_MS,
-        staggerMs: _geminiStaggerMs
+        staggerMs: _geminiStaggerMs,
+        // Is this run's timing trustworthy enough to tune constants from? See the
+        // hidden-tab note above _pipeThrottleEvent.
+        hiddenMs: _hiddenMs,
+        hiddenDecisions: _throttleHiddenDecisions,
+        hiddenPctOfRun: _hiddenPct,
+        tuneable: _tuneable ? 1 : 0
       };
       var line = "run rollup — " + _throttleTrace.length + " throttle event(s); "
         + "trips at in-flight avg " + avgInFlight + " / max " + maxInFlight + " (cap ceiling " + _geminiEffectiveMax + "); "
         + "cooldown total " + Math.round(_throttleCooldownMsTotal / 1000) + "s; "
-        + "first call after cooldown: " + cooldownOk + " ok / " + cooldownFail + " still failing.";
+        + "first call after cooldown: " + cooldownOk + " ok / " + cooldownFail + " still failing."
+        + (_tuneable
+            ? ""
+            : " ⚠ TAB WAS HIDDEN for " + _hiddenPct + "% of this run (" + _throttleHiddenDecisions
+              + " decision(s) taken while hidden). Chrome clamps timers in a hidden tab, so every"
+              + " duration above is inflated by an unknown amount — do NOT tune the constants from"
+              + " this run. Repeat it with the tab visible.");
       _pipeLog("ThrottleSummary", line, summary, owner);
       return summary;
     } catch (_) { return null; }
