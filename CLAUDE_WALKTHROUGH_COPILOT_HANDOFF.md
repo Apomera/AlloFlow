@@ -37,7 +37,24 @@ Two consequences for the build:
 - Do not ship a claim that walkthrough output is formative and outside evaluation. That is why the formative sentence in the disclosure is separately editable and why only the school can assert it.
 - The documentation requirements are a better product fit than generic drafting. A copilot that helps produce written feedback which names the evidence, references the district's framework, marks the collection type, and lands inside 48 hours is solving a real compliance burden. Build toward that shape, and treat the collection-type tag as a first-class field rather than an afterthought.
 
-**Currency caveat:** the guidebook consulted is an early gradual-implementation version and may be superseded. The current Educator Handbook for Professional Growth and Evaluation and the current PEA collective bargaining agreement are the authorities. Confirm against those, not against this note. Performance levels in that guidebook were unsatisfactory, novice/needs improvement, proficient, and excellent, which differ from Danielson's own level names; an administrator arriving from a Danielson state will expect different labels.
+**Currency caveat:** the guidebook consulted is an early gradual-implementation version and may be superseded. Performance levels in it were unsatisfactory, novice/needs improvement, proficient, and excellent, which differ from Danielson's own level names; an administrator arriving from a Danielson state will expect different labels.
+
+### What the current contract actually says
+
+The controlling document is the agreement between the Portland Board of Public Education and the Portland Education Association, September 1 2025 to August 31 2028. Two parts govern this tool.
+
+**Appendix F, Educator Evaluation.** Educators "shall be evaluated periodically by principals or persons designated by the Superintendent or designee," so the principal is the evaluator. The system comprises professional goal setting, a collection of evidence and written feedback, and a summative effectiveness rating. Critically, the observations, review of evidence, and feedback in an evaluation cycle must "involve communications between the evaluator and educator, be documented, and be evidence-based." An unsatisfactory rating triggers a written improvement plan developed with the educator's input. Appendix F points to the district's **Performance Evaluation and Professional Growth System Guidebook** for detail. Appendix F is itself educational policy rather than a contractual obligation and is not grievable, though the Association reserves the right to bargain the impact of changes.
+
+That last clause matters here. Introducing AI assistance into the evaluation workflow is plausibly an impact the Association could bargain, which is another reason the decision belongs to the district rather than to this tool's author.
+
+**Article 16, Educator Personnel Records.** Two provisions bear directly on the design:
+
+- No material may be placed in an educator's personnel file after original employment "unless the educator has had an opportunity to review the material," and the educator may submit a responding statement. Sharing written feedback with the observed teacher is therefore a required step in the workflow, not a courtesy. Build it as a first-class stage alongside disclosure, not as an export afterthought.
+- Observations and evaluation reports "are professional appraisals ... not subject to the grievance procedure unless such reports are used to discipline, dismiss or non-renew." So the moment an observation supports an adverse action, it can be litigated.
+
+That second point is the strongest argument for the truth rules in this document. A fabricated quote, an inferred student behavior, or an unsupported generalization does not merely embarrass the tool; it can surface in a grievance or arbitration as the evaluator's own written appraisal, with the principal defending words the principal did not write. Every citation-to-source-span requirement, every insufficient-evidence result, and every unsupported-generalization warning exists to keep that from happening. Treat those as load-bearing, not as polish.
+
+**Not yet located.** The Performance Evaluation and Professional Growth System Guidebook is not published on the district website, and neither the Human Resources nor Professional Development pages link it or any rubric or walkthrough form. Obtain it from the district before building to any assumed process detail. Note also that district Human Resources currently describes itself as "creating updated, fair evaluation tools across roles" and "reinstating clear evaluation timelines and expectations," so the surrounding process may be actively changing.
 
 Build the product so the safe use is the easy one and the unsafe use requires a deliberate, visible act. Do not rely on this document to hold the line; a reader of the interface will never see it.
 
