@@ -814,9 +814,19 @@ window.StemLab = window.StemLab || {
       var dnaReportNote = d.dnaReportNote || '';
       var dnaEvidenceClaim = d.dnaEvidenceClaim || '';
       var dnaEvidenceCitation = d.dnaEvidenceCitation || '';
+      var dnaEvidenceCitationDetail = d.dnaEvidenceCitationDetail || '';
+      var dnaEvidenceCitationSequenceKey = d.dnaEvidenceCitationSequenceKey || '';
       var dnaEvidenceReasoning = d.dnaEvidenceReasoning || '';
       var dnaEvidenceFeedback = d.dnaEvidenceFeedback || '';
       var dnaEvidenceScore = parseInt(d.dnaEvidenceScore, 10) || 0;
+      var dnaImpactCodonIndex = parseInt(d.dnaImpactCodonIndex, 10) || 0;
+      var dnaReadingFrame = parseInt(d.dnaReadingFrame, 10);
+      if (isNaN(dnaReadingFrame) || dnaReadingFrame < 1 || dnaReadingFrame > 3) dnaReadingFrame = 1;
+      var dnaScenarioId = d.dnaScenarioId || 'frameshift_deletion';
+      var dnaScenarioPrediction = d.dnaScenarioPrediction || '';
+      var dnaScenarioFeedback = d.dnaScenarioFeedback || '';
+      var dnaScenarioScore = parseInt(d.dnaScenarioScore, 10) || 0;
+      var dnaScenarioRun = d.dnaScenarioRun === true;
 
       // ═══ DERIVED VALUES ═══
       var complementStrand = dnaSeq.split('').map(function(b) { return BASE_COMPLEMENT[b] || 'N'; }).join('');
@@ -858,6 +868,82 @@ window.StemLab = window.StemLab || {
       }
       var fullProtein = translateMRNA(fullMRNA);
       var translationStop = fullProtein.stop || null;
+
+      function analyzeReadingFrame(mrna, frameNumber) {
+        var safeFrame = Math.min(3, Math.max(1, parseInt(frameNumber, 10) || 1));
+        var offset = safeFrame - 1;
+        var codons = [];
+        for (var i = offset; i <= mrna.length - 3; i += 3) {
+          var codon = mrna.substring(i, i + 3);
+          codons.push({
+            index: codons.length + 1,
+            codon: codon,
+            aa: CODON_TABLE[codon] || '?',
+            pos: i
+          });
+        }
+        var startIndex = -1;
+        var stopIndex = -1;
+        for (var ci = 0; ci < codons.length; ci++) {
+          if (startIndex < 0 && codons[ci].codon === 'AUG') {
+            startIndex = ci;
+          } else if (startIndex >= 0 && codons[ci].aa === 'Stop') {
+            stopIndex = ci;
+            break;
+          }
+        }
+        var frameProtein = [];
+        if (startIndex >= 0) {
+          for (var pi = startIndex; pi < codons.length; pi++) {
+            if (codons[pi].aa === 'Stop') break;
+            frameProtein.push({ codon: codons[pi].codon, aa: codons[pi].aa, pos: codons[pi].pos });
+          }
+        }
+        var status = startIndex < 0 ? 'no-start' : stopIndex >= 0 ? 'complete' : 'open';
+        return {
+          frame: safeFrame,
+          offset: offset,
+          codons: codons,
+          startIndex: startIndex,
+          stopIndex: stopIndex,
+          startBase: startIndex >= 0 ? codons[startIndex].pos + 1 : null,
+          stopBase: stopIndex >= 0 ? codons[stopIndex].pos + 1 : null,
+          stopCodon: stopIndex >= 0 ? codons[stopIndex].codon : '',
+          protein: frameProtein,
+          status: status,
+          statusLabel: status === 'complete' ? 'Complete ORF' : status === 'open' ? 'Open ORF' : 'No AUG',
+          trailingBases: Math.max(0, (mrna.length - offset) % 3)
+        };
+      }
+
+      var dnaReadingFrames = [1, 2, 3].map(function(frameNumber) {
+        return analyzeReadingFrame(fullMRNA, frameNumber);
+      });
+      var dnaSelectedReadingFrame = dnaReadingFrames[dnaReadingFrame - 1] || dnaReadingFrames[0];
+      var dnaTranslationCodons = dnaSelectedReadingFrame.startIndex >= 0
+        ? dnaSelectedReadingFrame.codons.slice(
+            dnaSelectedReadingFrame.startIndex,
+            dnaSelectedReadingFrame.stopIndex >= 0 ? dnaSelectedReadingFrame.stopIndex + 1 : dnaSelectedReadingFrame.codons.length
+          )
+        : [];
+      var dnaSelectedFrameProteinText = proteinSignature(dnaSelectedReadingFrame.protein) || 'none';
+      var dnaSelectedFrameInterpretation = '';
+      var dnaSelectedFrameEvidenceDetail = 'Reading frame +' + dnaSelectedReadingFrame.frame + ' groups codons beginning at base ' + (dnaSelectedReadingFrame.offset + 1) + '. ';
+      if (dnaSelectedReadingFrame.status === 'complete') {
+        dnaSelectedFrameInterpretation = 'Translation begins at AUG at base ' + dnaSelectedReadingFrame.startBase + ' and reaches the in-frame ' + dnaSelectedReadingFrame.stopCodon + ' stop codon at bases ' + dnaSelectedReadingFrame.stopBase + '-' + (dnaSelectedReadingFrame.stopBase + 2) + '.';
+        dnaSelectedFrameEvidenceDetail += 'Complete ORF: AUG starts at base ' + dnaSelectedReadingFrame.startBase + '; ' + dnaSelectedReadingFrame.stopCodon + ' stops translation at bases ' + dnaSelectedReadingFrame.stopBase + '-' + (dnaSelectedReadingFrame.stopBase + 2) + '; protein ' + dnaSelectedFrameProteinText + ' (' + dnaSelectedReadingFrame.protein.length + ' aa).';
+      } else if (dnaSelectedReadingFrame.status === 'open') {
+        dnaSelectedFrameInterpretation = 'Translation can begin at AUG at base ' + dnaSelectedReadingFrame.startBase + ', but this fragment ends before an in-frame stop codon appears.';
+        dnaSelectedFrameEvidenceDetail += 'Open ORF: AUG starts at base ' + dnaSelectedReadingFrame.startBase + '; no in-frame stop appears in this fragment; protein preview ' + dnaSelectedFrameProteinText + ' (' + dnaSelectedReadingFrame.protein.length + ' aa).';
+      } else {
+        dnaSelectedFrameInterpretation = 'This frame has no AUG start codon, so a ribosome would not begin the modeled translation within this fragment.';
+        dnaSelectedFrameEvidenceDetail += 'No AUG start codon appears in this frame, so this fragment has no translatable ORF.';
+      }
+      function selectDnaReadingFrame(frameNumber) {
+        var nextFrame = Math.min(3, Math.max(1, parseInt(frameNumber, 10) || 1));
+        updMulti({ dnaReadingFrame: nextFrame, transStep: 0, builtProtein: [], transPlaying: false, protein: [] });
+        announceToSR('Reading frame plus ' + nextFrame + ' selected. Translation reset.');
+      }
       var guidedActions = d.guidedActions || {};
 
       function isGuidedActionReady(step) {
@@ -1003,6 +1089,8 @@ window.StemLab = window.StemLab || {
           'Visible strand: ' + strandLabel,
           'mRNA (5\' -> 3\'): ' + fullMRNA,
           'Protein: ' + proteinText,
+          'Selected reading frame: +' + dnaSelectedReadingFrame.frame + ' (' + dnaSelectedReadingFrame.statusLabel + ')',
+          'Reading-frame evidence: ' + dnaSelectedFrameEvidenceDetail,
           'GC content: ' + gcPercent + '%',
           '',
           'Guided investigation',
@@ -1024,8 +1112,15 @@ window.StemLab = window.StemLab || {
           'Evidence & Reasoning',
           'Claim: ' + (dnaEvidenceClaim || 'Not selected'),
           'Evidence citation: ' + (dnaEvidenceCitation || 'Not selected'),
+          'Evidence detail: ' + (dnaEvidenceCitationDetail || 'Not captured'),
+          'Evidence freshness: ' + (dnaEvidenceCitationDetail ? (dnaEvidenceCitationStale ? 'Earlier sequence - refresh recommended' : 'Current sequence') : 'Not applicable'),
           'Reasoning: ' + (dnaEvidenceReasoning || 'Not entered'),
           'Evidence check score: ' + dnaEvidenceScore + '/3',
+          'Scenario Challenge',
+          'Scenario: ' + dnaScenarioId,
+          'Prediction: ' + (dnaScenarioPrediction || 'Not selected'),
+          'Scenario score: ' + dnaScenarioScore + '/2',
+          'Scenario feedback: ' + (dnaScenarioFeedback || 'Not entered'),
           '',
           'XP: ' + getStemXP('dnaLab')
         ].join('\n');
@@ -1559,7 +1654,7 @@ window.StemLab = window.StemLab || {
           var codonW = 42;
           var startX = w / 2; // P-site align
 
-          var codons = (fullMRNA.match(/.{1,3}/g) || []);
+          var codons = dnaTranslationCodons.map(function(entry) { return entry.codon; });
           codons.forEach(function(codon, idx) {
             // codon horizontal center
             var cx = startX + (idx - transStep - pct) * codonW;
@@ -1738,31 +1833,25 @@ window.StemLab = window.StemLab || {
 
       React.useEffect(function() {
       if (tab === 'translate' && transPlaying) {
-        var tPos = transStep * 3;
-        if (tPos + 3 > fullMRNA.length) {
-          updMulti({ transPlaying: false });
-        } else {
-          var tCodon = fullMRNA.substring(tPos, tPos + 3);
-          var tAA = CODON_TABLE[tCodon];
-          if (!tAA || tAA === 'Stop') {
-            updMulti({ transPlaying: false, protein: builtProtein });
-            var completionKey = fullMRNA + ':' + builtProtein.length;
-            if (dnaCompletionRef.current.translate !== completionKey) {
-              dnaCompletionRef.current.translate = completionKey;
-            announceToSR('Translation complete. Protein has ' + builtProtein.length + ' amino acids.');
+        var tEntry = dnaTranslationCodons[transStep] || null;
+        if (!tEntry || tEntry.aa === 'Stop') {
+          updMulti({ transPlaying: false, protein: builtProtein });
+          var completionKey = fullMRNA + ':frame' + dnaReadingFrame + ':' + builtProtein.length;
+          if (dnaCompletionRef.current.translate !== completionKey) {
+            dnaCompletionRef.current.translate = completionKey;
+            announceToSR('Translation complete in reading frame plus ' + dnaReadingFrame + '. Protein has ' + builtProtein.length + ' amino acids.');
             awardStemXP('dnaLab', 15, 'Completed translation');
             checkBadge('ribosomePro');
-            }
-          } else {
-            var timer = setTimeout(function() {
-              updMulti({ transStep: transStep + 1, builtProtein: builtProtein.concat([{ codon: tCodon, aa: tAA, pos: tPos }]) });
-              announceToSR('Codon ' + tCodon + ' = ' + (AA_PROPS[tAA] ? AA_PROPS[tAA].full : tAA));
-            }, 800 / speed);
-            return function() { clearTimeout(timer); };
           }
+        } else {
+          var timer = setTimeout(function() {
+            updMulti({ transStep: transStep + 1, builtProtein: builtProtein.concat([{ codon: tEntry.codon, aa: tEntry.aa, pos: tEntry.pos }]) });
+            announceToSR('Codon ' + tEntry.codon + ' = ' + (AA_PROPS[tEntry.aa] ? AA_PROPS[tEntry.aa].full : tEntry.aa));
+          }, 800 / speed);
+          return function() { clearTimeout(timer); };
         }
       }
-      }, [tab, transPlaying, transStep, fullMRNA, builtProtein, speed]);
+      }, [tab, transPlaying, transStep, fullMRNA, builtProtein, speed, dnaReadingFrame]);
 
       // ═══ CHALLENGE HELPERS ═══
       var challengeTier = d.challengeTier || 0;
@@ -1792,6 +1881,105 @@ window.StemLab = window.StemLab || {
         }
       }
 
+      var DNA_SCENARIO_OPTIONS = [
+        {
+          id: 'frameshift_deletion',
+          label: 'Delete one base',
+          prompt: 'Predict what will happen when one base is deleted from the coding sequence.',
+          mutationType: 'Deletion',
+          choices: ['Frameshift', 'In-frame indel', 'Silent', 'Missense', 'Nonsense']
+        },
+        {
+          id: 'frameshift_insertion',
+          label: 'Insert one base',
+          prompt: 'Predict what will happen when one extra base is inserted into the coding sequence.',
+          mutationType: 'Insertion',
+          choices: ['Frameshift', 'In-frame indel', 'Silent', 'Missense', 'Nonsense']
+        },
+        {
+          id: 'substitution',
+          label: 'Substitute one base',
+          prompt: 'Predict whether a one-base substitution will change the coding effect.',
+          mutationType: 'Substitution',
+          choices: ['Silent', 'Missense', 'Nonsense', 'Frameshift', 'In-frame indel']
+        }
+      ];
+      function getDnaScenario() {
+        return DNA_SCENARIO_OPTIONS.filter(function(option) { return option.id === dnaScenarioId; })[0] || DNA_SCENARIO_OPTIONS[0];
+      }
+      function selectDnaScenario(nextId) {
+        var valid = DNA_SCENARIO_OPTIONS.filter(function(option) { return option.id === nextId; })[0];
+        if (!valid) return;
+        updMulti({ dnaScenarioId: valid.id, dnaScenarioPrediction: '', dnaScenarioFeedback: '', dnaScenarioScore: 0, dnaScenarioRun: false });
+        announceToSR(valid.label + ' scenario selected.');
+      }
+      function runDnaScenario() {
+        var scenario = getDnaScenario();
+        if (!dnaScenarioPrediction) {
+          upd('dnaScenarioFeedback', 'Choose a prediction before running the scenario.');
+          announceToSR('Choose a prediction before running the scenario.');
+          return;
+        }
+        if (dnaScenarioRun) {
+          upd('dnaScenarioFeedback', 'This scenario is already complete. Compare the result below, then check your prediction.');
+          return;
+        }
+        var seq = dnaSeq.split('');
+        var pos = Math.min(3, Math.max(1, seq.length - 2));
+        var original = seq[pos];
+        var replacement = 'A';
+        if (original === replacement) replacement = 'T';
+        if (original === replacement) replacement = 'G';
+        var newLog = (d.mutationLog || []).slice();
+        if (scenario.mutationType === 'Deletion') {
+          var removed = seq.splice(pos, 1)[0];
+          newLog.push({ type: 'Deletion', pos: pos, from: removed, scenario: scenario.id });
+        } else if (scenario.mutationType === 'Insertion') {
+          seq.splice(pos, 0, replacement);
+          newLog.push({ type: 'Insertion', pos: pos, to: replacement, scenario: scenario.id });
+        } else {
+          seq[pos] = replacement;
+          newLog.push({ type: 'Substitution', pos: pos, from: original, to: replacement, scenario: scenario.id });
+        }
+        var nextVisited = Object.assign({}, visitedTabs || {});
+        nextVisited.mutate = true;
+        updMulti({
+          dnaSequence: seq.join(''),
+          mRNA: '',
+          protein: [],
+          animStep: 0,
+          mutationLog: newLog,
+          dnaScenarioRun: true,
+          dnaScenarioScore: 0,
+          dnaScenarioFeedback: 'Scenario run complete. Inspect the actual effect, then check your prediction.',
+          tab: 'mutate',
+          visitedTabs: nextVisited
+        });
+        awardStemXP('dnaLab', 3, 'Ran DNA scenario');
+        announceToSR('Scenario run complete. Inspect the actual mutation effect.');
+      }
+      function checkDnaScenarioPrediction() {
+        if (!dnaScenarioRun) {
+          upd('dnaScenarioFeedback', 'Run the scenario before checking your prediction.');
+          return;
+        }
+        var actual = latestMutationEffect || 'Unknown';
+        var predictionCorrect = dnaScenarioPrediction === actual;
+        var explanationComplete = dnaEvidenceScore >= 3;
+        var score = (predictionCorrect ? 1 : 0) + (explanationComplete ? 1 : 0);
+        var feedback = predictionCorrect
+          ? 'Prediction correct: the actual effect is ' + actual + '.'
+          : 'Prediction not yet supported: the actual effect is ' + actual + '. Review the before/after codons.';
+        feedback += explanationComplete
+          ? ' Your Evidence & Reasoning response also earns the explanation point.'
+          : ' Complete the Evidence & Reasoning check for the explanation point.';
+        updMulti({ dnaScenarioScore: score, dnaScenarioFeedback: feedback });
+        announceToSR('Scenario score ' + score + ' out of 2. ' + feedback);
+        if (score === 2) {
+          awardStemXP('dnaLab', 10, 'Completed DNA scenario challenge');
+          if (typeof stemCelebrate === 'function') stemCelebrate();
+        }
+      }
       // ═══ MUTATION HELPERS ═══
       function applyMutation(type) {
         var bases = 'ATGC'; var seq = dnaSeq.split('');
@@ -2543,11 +2731,12 @@ window.StemLab = window.StemLab || {
             prompt: 'Connect complementary base pairing to the DNA evidence.',
             claims: [
               { id: 'base_pairing', label: 'Complementary base pairing keeps the two DNA strands matched.' },
-              { id: 'sequence_to_rna', label: 'The coding DNA sequence can be transcribed into mRNA.' }
+              { id: 'sequence_to_rna', label: 'The coding DNA sequence can be transcribed into mRNA.' },
+              { id: 'reading_frame', label: 'A reading frame determines how the mRNA is grouped into codons.' }
             ],
-            validClaims: ['base_pairing', 'sequence_to_rna'],
-            validCitations: ['pairing', 'sequence', 'mrna'],
-            focus: 'base pairing or the DNA-to-mRNA connection'
+            validClaims: ['base_pairing', 'sequence_to_rna', 'reading_frame'],
+            validCitations: ['pairing', 'sequence', 'mrna', 'frame'],
+            focus: 'base pairing, the DNA-to-mRNA connection, or codon grouping'
           };
         }
         if (latestMutationEffect === 'Frameshift') {
@@ -2558,7 +2747,7 @@ window.StemLab = window.StemLab || {
               { id: 'protein_change', label: 'The sequence change affected the protein output.' }
             ],
             validClaims: ['frameshift', 'protein_change'],
-            validCitations: ['sequence', 'codon', 'protein'],
+            validCitations: ['sequence', 'codon', 'protein', 'frame'],
             focus: 'the indel position, changed codons, or protein output'
           };
         }
@@ -2570,7 +2759,7 @@ window.StemLab = window.StemLab || {
               { id: 'codon_change_same_protein', label: 'A codon changed without changing the amino acid.' }
             ],
             validClaims: ['silent_change', 'codon_change_same_protein'],
-            validCitations: ['sequence', 'codon', 'protein'],
+            validCitations: ['sequence', 'codon', 'protein', 'frame'],
             focus: 'the changed codon and unchanged amino-acid evidence'
           };
         }
@@ -2581,29 +2770,410 @@ window.StemLab = window.StemLab || {
             { id: 'sequence_change', label: 'The mutation changed the sequence and at least one codon.' }
           ],
           validClaims: ['protein_change', 'sequence_change'],
-          validCitations: ['sequence', 'codon', 'protein'],
+          validCitations: ['sequence', 'codon', 'protein', 'frame'],
           focus: 'the changed base, codon, or protein output'
         };
       }
       var dnaEvidenceRubric = buildDnaEvidenceRubric();
-      var dnaEvidenceChangedCodon = mutationComparison && mutationComparison.codons.filter(function(row) { return row.changed; })[0];
+      var dnaEvidenceChangedCodons = mutationComparison ? mutationComparison.codons.filter(function(row) { return row.changed; }) : [];
+      var dnaEvidenceChangedCodon = dnaEvidenceChangedCodons[0] || null;
+      var dnaImpactSelectedCodon = null;
+      if (mutationComparison && mutationComparison.codons.length) {
+        dnaImpactSelectedCodon = mutationComparison.codons.filter(function(row) { return row.index === dnaImpactCodonIndex; })[0]
+          || dnaEvidenceChangedCodon
+          || mutationComparison.codons[0];
+      }
+      var dnaEvidenceMutationKey = latestMutation ? [
+        latestMutation.type || '',
+        isNaN(parseInt(latestMutation.pos, 10)) ? '' : parseInt(latestMutation.pos, 10),
+        latestMutation.from || '',
+        latestMutation.to || ''
+      ].join(':') : '';
+      var dnaEvidenceSequenceKey = [dnaSeq, (d.mutationLog || []).length, dnaEvidenceMutationKey].join('|');
+      var dnaSelectedCodonEvidenceDetail = '';
+      if (dnaImpactSelectedCodon && mutationComparison) {
+        var dnaSelectedEvidenceBaseStart = ((dnaImpactSelectedCodon.index - 1) * 3) + 1;
+        var dnaSelectedEvidenceBaseEnd = Math.min(dnaImpactSelectedCodon.index * 3, Math.max(mutationComparison.beforeMRNA.length, mutationComparison.afterMRNA.length));
+        dnaSelectedCodonEvidenceDetail = 'Codon ' + dnaImpactSelectedCodon.index + ' (bases ' + dnaSelectedEvidenceBaseStart + '-' + dnaSelectedEvidenceBaseEnd + '): mRNA ' + dnaImpactSelectedCodon.beforeCodon + ' -> ' + dnaImpactSelectedCodon.afterCodon + '; amino acid ' + dnaImpactSelectedCodon.beforeAA + ' -> ' + dnaImpactSelectedCodon.afterAA + '; predicted effect ' + (latestMutationEffect || 'not classified') + '.';
+      }
+      var dnaEvidenceHasSnapshot = ['codon', 'frame'].indexOf(dnaEvidenceCitation) >= 0 && !!dnaEvidenceCitationDetail;
+      var dnaEvidenceSourceLabel = dnaEvidenceCitation === 'frame' ? 'reading frame' : 'codon';
+      var dnaEvidenceCitationStale = !!(dnaEvidenceHasSnapshot && dnaEvidenceCitationSequenceKey !== dnaEvidenceSequenceKey);
+      var dnaSelectedCodonEvidenceSaved = !!(dnaSelectedCodonEvidenceDetail && dnaEvidenceCitation === 'codon' && dnaEvidenceCitationDetail === dnaSelectedCodonEvidenceDetail && !dnaEvidenceCitationStale);
+      var dnaSelectedFrameEvidenceSaved = !!(dnaEvidenceCitation === 'frame' && dnaEvidenceCitationDetail === dnaSelectedFrameEvidenceDetail && !dnaEvidenceCitationStale);
+      function useSelectedDnaCodonAsEvidence() {
+        if (!dnaSelectedCodonEvidenceDetail) return;
+        updMulti({
+          dnaEvidenceCitation: 'codon',
+          dnaEvidenceCitationDetail: dnaSelectedCodonEvidenceDetail,
+          dnaEvidenceCitationSequenceKey: dnaEvidenceSequenceKey,
+          dnaEvidenceScore: 0,
+          dnaEvidenceFeedback: '',
+          dnaReportOpen: true
+        });
+        addToast('Codon ' + dnaImpactSelectedCodon.index + ' added to your evidence report.', 'success');
+        announceToSR('Codon ' + dnaImpactSelectedCodon.index + ' evidence added to the lab report.');
+      }
+      function useSelectedDnaFrameAsEvidence() {
+        updMulti({
+          dnaEvidenceCitation: 'frame',
+          dnaEvidenceCitationDetail: dnaSelectedFrameEvidenceDetail,
+          dnaEvidenceCitationSequenceKey: dnaEvidenceSequenceKey,
+          dnaEvidenceScore: 0,
+          dnaEvidenceFeedback: '',
+          dnaReportOpen: true
+        });
+        addToast('Reading frame +' + dnaSelectedReadingFrame.frame + ' added to your evidence report.', 'success');
+        announceToSR('Reading frame plus ' + dnaSelectedReadingFrame.frame + ' evidence added to the lab report.');
+      }
+      function refreshSelectedDnaEvidence() {
+        if (dnaEvidenceCitation === 'frame') useSelectedDnaFrameAsEvidence();
+        else useSelectedDnaCodonAsEvidence();
+      }
+      var dnaEvidenceChain = latestMutation && mutationComparison ? {
+        dnaBefore: latestMutation.type === 'Insertion' ? '\u2014' : (latestMutation.from || mutationComparison.beforeSeq[mutationComparison.pos] || '\u2014'),
+        dnaAfter: latestMutation.type === 'Deletion' ? '\u2014' : (latestMutation.to || mutationComparison.afterSeq[mutationComparison.pos] || '\u2014'),
+        basePosition: latestMutation.pos + 1,
+        codonIndex: dnaEvidenceChangedCodon ? dnaEvidenceChangedCodon.index : Math.floor(mutationComparison.pos / 3) + 1,
+        codonBefore: dnaEvidenceChangedCodon ? dnaEvidenceChangedCodon.beforeCodon : '\u2014',
+        codonAfter: dnaEvidenceChangedCodon ? dnaEvidenceChangedCodon.afterCodon : '\u2014',
+        aminoBefore: dnaEvidenceChangedCodon ? dnaEvidenceChangedCodon.beforeAA : '\u2014',
+        aminoAfter: dnaEvidenceChangedCodon ? dnaEvidenceChangedCodon.afterAA : '\u2014',
+        changedCodonCount: dnaEvidenceChangedCodons.length,
+        effect: latestMutationEffect
+      } : null;
+
+      function buildDnaMutationAlignment(comparison, mutation) {
+        if (!comparison || !mutation) return null;
+        var gap = '\u2014';
+        var editIndex = Math.max(0, Math.min(comparison.pos, Math.max(comparison.beforeSeq.length, comparison.afterSeq.length)));
+        var beforeBases = comparison.beforeSeq.split('');
+        var afterBases = comparison.afterSeq.split('');
+        if (mutation.type === 'Insertion') beforeBases.splice(editIndex, 0, gap);
+        if (mutation.type === 'Deletion') afterBases.splice(editIndex, 0, gap);
+        var columnCount = Math.max(beforeBases.length, afterBases.length);
+        var beforeCursor = 0;
+        var afterCursor = 0;
+        var isFrameshift = latestMutationEffect === 'Frameshift';
+        var columns = [];
+        for (var columnIndex = 0; columnIndex < columnCount; columnIndex++) {
+          var beforeBase = columnIndex < beforeBases.length ? beforeBases[columnIndex] : gap;
+          var afterBase = columnIndex < afterBases.length ? afterBases[columnIndex] : gap;
+          var beforeIndex = beforeBase === gap ? null : ++beforeCursor;
+          var afterIndex = afterBase === gap ? null : ++afterCursor;
+          var isEdit = columnIndex === editIndex;
+          var state = 'same';
+          if (isEdit) {
+            state = mutation.type === 'Insertion' ? 'inserted' : mutation.type === 'Deletion' ? 'deleted' : 'changed';
+          }
+          columns.push({
+            index: columnIndex,
+            beforeBase: beforeBase,
+            afterBase: afterBase,
+            beforeIndex: beforeIndex,
+            afterIndex: afterIndex,
+            beforeCodonStart: beforeIndex !== null && (beforeIndex - 1) % 3 === 0,
+            afterCodonStart: afterIndex !== null && (afterIndex - 1) % 3 === 0,
+            edit: isEdit,
+            downstream: isFrameshift && columnIndex > editIndex,
+            state: state
+          });
+        }
+        var beforeEditBase = mutation.from || comparison.beforeSeq[comparison.pos] || gap;
+        var afterEditBase = mutation.to || comparison.afterSeq[comparison.pos] || gap;
+        var editLabel = 'Substitution \u00b7 ' + beforeEditBase + ' \u2192 ' + afterEditBase + ' at base ' + (comparison.pos + 1);
+        if (mutation.type === 'Insertion') editLabel = 'Insertion \u00b7 +' + afterEditBase + ' at base ' + (comparison.pos + 1);
+        if (mutation.type === 'Deletion') editLabel = 'Deletion \u00b7 \u2212' + beforeEditBase + ' at base ' + (comparison.pos + 1);
+        return {
+          columns: columns,
+          beforeAligned: beforeBases.join(''),
+          afterAligned: afterBases.join(''),
+          editIndex: editIndex,
+          editLabel: editLabel,
+          isFrameshift: isFrameshift,
+          gap: gap
+        };
+      }
+      var dnaMutationAlignment = buildDnaMutationAlignment(mutationComparison, latestMutation);
+
+      function renderDnaMutationAlignmentRibbon() {
+        if (!dnaMutationAlignment) return null;
+        var alignment = dnaMutationAlignment;
+        var frameStatusTitle = alignment.isFrameshift ? 'Reading frame shifted after base ' + (mutationComparison.pos + 1) : 'Reading frame preserved';
+        var frameStatusDetail = alignment.isFrameshift
+          ? 'The nucleotide identities line up around the gap, but the slim codon-start bars separate downstream because the triplets are regrouped.'
+          : 'Both rows keep the same codon-start positions; the highlighted column is a local sequence change.';
+        var readableBefore = alignment.beforeAligned.split('').map(function(base) { return base === alignment.gap ? 'gap' : base; }).join(' ');
+        var readableAfter = alignment.afterAligned.split('').map(function(base) { return base === alignment.gap ? 'gap' : base; }).join(' ');
+        var alignmentLabel = 'Nucleotide alignment. ' + alignment.editLabel + '. Before: ' + readableBefore + '. After: ' + readableAfter + '. ' + frameStatusTitle + '.';
+
+        function renderAlignmentRow(side, label, sequenceLength) {
+          var isBefore = side === 'before';
+          return h("div", { className: "grid grid-cols-[4.75rem_1fr] items-stretch gap-2", "data-dna-mutation-alignment-row": side },
+            h("div", { className: "sticky left-0 z-10 flex flex-col justify-center rounded-lg border border-slate-700 bg-slate-900/95 px-2 py-1 shadow-[8px_0_12px_rgba(2,6,23,0.75)]" },
+              h("span", { className: "text-[9px] font-black uppercase tracking-[0.14em] " + (isBefore ? "text-sky-300" : "text-amber-300") }, label),
+              h("span", { className: "mt-0.5 text-[8px] font-bold text-slate-400" }, sequenceLength + " bp")
+            ),
+            h("div", { className: "flex gap-1" },
+              alignment.columns.map(function(column) {
+                var base = isBefore ? column.beforeBase : column.afterBase;
+                var baseIndex = isBefore ? column.beforeIndex : column.afterIndex;
+                var codonStart = isBefore ? column.beforeCodonStart : column.afterCodonStart;
+                var isGap = base === alignment.gap;
+                var cellTone = column.edit
+                  ? 'border-rose-400 bg-rose-500/20 ring-1 ring-rose-400/70'
+                  : column.downstream
+                    ? 'border-violet-500/60 bg-violet-500/10'
+                    : 'border-slate-700 bg-slate-900';
+                var baseTone = isGap ? 'border border-dashed border-rose-400/80 bg-slate-800 text-rose-300' : 'border border-white/10';
+                var baseStyle = isGap ? null : { background: BASE_COLORS[base] || '#334155', color: BASE_TEXT_COLORS[base] || '#ffffff' };
+                return h("div", { key: side + '-' + column.index, className: "relative w-9 shrink-0 rounded-lg border px-1 py-1.5 " + cellTone, "data-base-state": isGap ? "gap" : "base", "data-frame-region": column.downstream ? "shifted" : "aligned", "aria-hidden": "true" },
+                  codonStart && h("span", { className: "absolute -left-[3px] inset-y-1 w-0.5 rounded-full " + (isBefore ? "bg-sky-400" : "bg-amber-400"), "data-codon-start": "true" }),
+                  h("span", { className: "block text-center text-[7px] font-black tabular-nums text-slate-400" }, baseIndex === null ? "gap" : String(baseIndex)),
+                  h("span", { className: "mt-1 grid h-6 place-items-center rounded-md font-mono text-[12px] font-black shadow-sm " + baseTone, style: baseStyle }, base)
+                );
+              })
+            )
+          );
+        }
+
+        return h("section", { className: "mt-3 overflow-hidden rounded-xl border border-rose-200 bg-gradient-to-br from-white via-rose-50/60 to-violet-50 p-3 shadow-sm", "data-dna-mutation-alignment": true, role: "region", "aria-labelledby": "dna-mutation-alignment-title" },
+          h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+            h("div", { className: "max-w-2xl" },
+              h("div", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-rose-700" }, "Nucleotide alignment"),
+              h("h6", { id: "dna-mutation-alignment-title", className: "mt-1 text-[12px] font-black text-slate-900" }, "Locate the exact edit"),
+              h("p", { className: "mt-1 mb-0 text-[10px] leading-relaxed text-slate-600" }, alignment.isFrameshift ? "Follow the gap, then compare where each row begins its next three-base codon." : "The two sequences stay aligned, so the highlighted column isolates the changed nucleotide.")
+            ),
+            h("span", { className: "rounded-full border border-rose-200 bg-white px-2.5 py-1 text-[9px] font-black text-rose-800 shadow-sm", "data-dna-mutation-edit-label": true }, alignment.editLabel)
+          ),
+          h("div", { className: "mt-3 flex flex-wrap gap-1.5", "data-dna-mutation-alignment-legend": true, "aria-label": "Nucleotide alignment legend" },
+            h("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 text-[9px] font-bold text-slate-700" }, h("span", { className: "h-2 w-2 rounded-sm bg-slate-500", "aria-hidden": "true" }), "Aligned base"),
+            h("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-2 py-1 text-[9px] font-bold text-rose-800" }, h("span", { className: "h-2 w-2 rounded-sm bg-rose-500", "aria-hidden": "true" }), "Edit column"),
+            h("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2 py-1 text-[9px] font-bold text-sky-800" }, h("span", { className: "h-3 w-0.5 rounded-full bg-sky-500", "aria-hidden": "true" }), "Codon start"),
+            alignment.isFrameshift && h("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-[9px] font-bold text-violet-800" }, h("span", { className: "h-2 w-2 rounded-sm bg-violet-500", "aria-hidden": "true" }), "Shifted downstream")
+          ),
+          h("div", { className: "mt-3 overflow-x-auto rounded-xl border border-slate-700 bg-slate-950 p-3 pb-4 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2", "data-dna-mutation-alignment-board": true, role: "img", tabIndex: 0, "aria-label": alignmentLabel },
+            h("div", { className: "min-w-max space-y-2" },
+              h("div", { className: "grid grid-cols-[4.75rem_1fr] items-end gap-2", "aria-hidden": "true" },
+                h("div", { className: "px-1 text-[8px] font-black uppercase tracking-[0.14em] text-slate-500" }, "Alignment"),
+                h("div", { className: "flex gap-1" },
+                  alignment.columns.map(function(column) {
+                    return h("div", { key: 'marker-' + column.index, className: "flex h-5 w-9 shrink-0 items-end justify-center", "data-alignment-state": column.state, "data-edit-site": column.edit ? "true" : "false" },
+                      column.edit
+                        ? h("span", { className: "rounded-t bg-rose-500 px-1 py-0.5 text-[7px] font-black uppercase tracking-wide text-white" }, "Edit")
+                        : column.downstream
+                          ? h("span", { className: "h-1 w-full rounded-full bg-violet-500/60" })
+                          : null
+                    );
+                  })
+                )
+              ),
+              renderAlignmentRow('before', 'Before', mutationComparison.beforeSeq.length),
+              h("div", { className: "ml-[5.25rem] h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent", "aria-hidden": "true" }),
+              renderAlignmentRow('after', 'After', mutationComparison.afterSeq.length)
+            )
+          ),
+          h("div", { className: "mt-2 flex items-center justify-between gap-3 text-[9px] text-slate-500" },
+            h("span", null, "Scroll horizontally to inspect every nucleotide."),
+            h("span", { className: "hidden font-bold sm:inline" }, "Numbers show each row's original base position.")
+          ),
+          h("div", { id: "dna-mutation-frame-status", className: "mt-3 flex items-start gap-3 rounded-xl border px-3 py-2.5 " + (alignment.isFrameshift ? "border-violet-200 bg-violet-50" : "border-emerald-200 bg-emerald-50"), "data-frame-status": alignment.isFrameshift ? "shifted" : "preserved" },
+            h("span", { className: "grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-black " + (alignment.isFrameshift ? "bg-violet-600 text-white" : "bg-emerald-600 text-white"), "aria-hidden": "true" }, alignment.isFrameshift ? "\u21af" : "\u2713"),
+            h("div", null,
+              h("div", { className: "text-[11px] font-black " + (alignment.isFrameshift ? "text-violet-900" : "text-emerald-900") }, frameStatusTitle),
+              h("p", { className: "mt-0.5 mb-0 text-[10px] leading-relaxed text-slate-600" }, frameStatusDetail)
+            )
+          )
+        );
+      }
+
+      function renderDnaEvidenceChain() {
+        if (!dnaEvidenceChain) return null;
+        var aminoChanged = dnaEvidenceChain.aminoBefore !== dnaEvidenceChain.aminoAfter;
+        var aminoResultText = aminoChanged ? 'Amino acid changed from ' + dnaEvidenceChain.aminoBefore + ' to ' + dnaEvidenceChain.aminoAfter + '.' : 'Amino acid stayed ' + dnaEvidenceChain.aminoAfter + '.';
+        var chainStages = [
+          { id: 'dna', step: '1', label: 'DNA change', before: dnaEvidenceChain.dnaBefore, after: dnaEvidenceChain.dnaAfter, meta: 'Base ' + dnaEvidenceChain.basePosition, tone: 'border-rose-200', badge: 'bg-rose-100 text-rose-800', value: 'bg-rose-50 text-rose-900 ring-rose-200' },
+          { id: 'mrna', step: '2', label: 'mRNA codon', before: dnaEvidenceChain.codonBefore, after: dnaEvidenceChain.codonAfter, meta: 'Codon ' + dnaEvidenceChain.codonIndex, tone: 'border-sky-200', badge: 'bg-sky-100 text-sky-800', value: 'bg-sky-50 text-sky-900 ring-sky-200' },
+          { id: 'protein', step: '3', label: 'Protein effect', before: dnaEvidenceChain.aminoBefore, after: dnaEvidenceChain.aminoAfter, meta: aminoChanged ? 'Amino acid changed' : 'Amino acid unchanged', tone: 'border-violet-200', badge: 'bg-violet-100 text-violet-800', value: 'bg-violet-50 text-violet-900 ring-violet-200' }
+        ];
+        var chainLabel = 'Evidence chain. DNA base ' + dnaEvidenceChain.basePosition + ' changed from ' + dnaEvidenceChain.dnaBefore + ' to ' + dnaEvidenceChain.dnaAfter + '. mRNA codon ' + dnaEvidenceChain.codonIndex + ' changed from ' + dnaEvidenceChain.codonBefore + ' to ' + dnaEvidenceChain.codonAfter + '. ' + aminoResultText + ' Predicted effect: ' + dnaEvidenceChain.effect + '.';
+        return h("section", { className: "mt-3 overflow-hidden rounded-xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-violet-50 p-3", "data-dna-evidence-chain": true, role: "region", "aria-label": chainLabel },
+          h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+            h("div", null,
+              h("div", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-sky-700" }, "Evidence chain"),
+              h("h6", { className: "mt-1 text-[12px] font-black text-slate-900" }, "Follow the molecular change"),
+              h("p", { className: "mt-1 mb-0 text-[10px] leading-relaxed text-slate-600" }, "The same highlighted change is traced from DNA to mRNA to the amino-acid result.")
+            ),
+            h("span", { className: "rounded-full border border-sky-200 bg-white px-2 py-1 text-[10px] font-black text-sky-800" }, dnaEvidenceChain.changedCodonCount + " changed codon" + (dnaEvidenceChain.changedCodonCount === 1 ? "" : "s"))
+          ),
+          h("ol", { className: "mt-3 grid gap-3 md:grid-cols-3", "aria-label": "DNA to protein evidence stages" },
+            chainStages.map(function(stage, stageIndex) {
+              return h("li", { key: stage.id, className: "relative rounded-xl border bg-white p-3 shadow-sm " + stage.tone, "data-dna-evidence-stage": stage.id },
+                h("div", { className: "flex items-center gap-2" },
+                  h("span", { className: "grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-black " + stage.badge, "aria-hidden": "true" }, stage.step),
+                  h("span", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, stage.label)
+                ),
+                h("div", { className: "mt-3 grid grid-cols-[1fr_auto_1fr] items-end gap-2", "aria-label": stage.label + ": " + stage.before + " to " + stage.after },
+                  h("div", null,
+                    h("div", { className: "text-[9px] font-black uppercase tracking-wide text-slate-400" }, "Before"),
+                    h("div", { className: "mt-1 rounded-md bg-slate-100 px-2 py-2 text-center font-mono text-[12px] font-black text-slate-600 line-through decoration-slate-400" }, stage.before)
+                  ),
+                  h("span", { className: "pb-2 text-sm font-black text-slate-400", "aria-hidden": "true" }, "\u2192"),
+                  h("div", null,
+                    h("div", { className: "text-[9px] font-black uppercase tracking-wide text-slate-500" }, "After"),
+                    h("div", { className: "mt-1 rounded-md px-2 py-2 text-center font-mono text-[12px] font-black ring-1 " + stage.value }, stage.after)
+                  )
+                ),
+                h("div", { className: "mt-2 text-[10px] font-bold text-slate-600" }, stage.meta),
+                stageIndex < chainStages.length - 1 && h("span", { className: "mt-2 grid h-6 w-6 place-items-center rounded-full border border-sky-200 bg-white text-sm font-black text-sky-700 md:absolute md:-right-[18px] md:top-1/2 rotate-90 md:z-10 md:mt-0 md:-translate-y-1/2 md:rotate-0", "aria-hidden": "true" }, "\u2192")
+              );
+            })
+          ),
+          h("div", { className: "mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-white/90 px-3 py-2" },
+            h("span", { className: "text-[9px] font-black uppercase tracking-wide text-violet-700" }, "Predicted coding effect"),
+            h("strong", { className: "rounded-full bg-violet-100 px-2 py-1 text-[10px] text-violet-900" }, dnaEvidenceChain.effect),
+            h("span", { className: "text-[10px] leading-relaxed text-slate-600" }, aminoChanged ? "The first affected amino acid changed; inspect the table for downstream effects." : "The codon changed, but this amino acid stayed the same.")
+          )
+        );
+      }
+      function renderDnaCodonImpactMap() {
+        if (!mutationComparison || !mutationComparison.codons.length) return null;
+        var codonRows = mutationComparison.codons;
+        var changedRows = codonRows.filter(function(row) { return row.changed; });
+        var firstChanged = changedRows.length ? changedRows[0] : null;
+        var selectedRow = dnaImpactSelectedCodon || firstChanged || codonRows[0];
+        var selectedBaseStart = ((selectedRow.index - 1) * 3) + 1;
+        var selectedBaseEnd = Math.min(selectedRow.index * 3, Math.max(mutationComparison.beforeMRNA.length, mutationComparison.afterMRNA.length));
+        var selectedAminoChanged = selectedRow.beforeAA !== selectedRow.afterAA;
+        var selectedInterpretation = 'This codon and its amino-acid output stayed the same.';
+        if (selectedRow.changed && !selectedAminoChanged) {
+          selectedInterpretation = 'The codon changed, but the genetic code still produced the same amino acid.';
+        } else if (selectedRow.afterAA === 'Stop' && selectedRow.beforeAA !== 'Stop') {
+          selectedInterpretation = 'This changed codon introduces a stop signal that can shorten the protein.';
+        } else if (selectedRow.beforeAA === 'Stop' && selectedRow.afterAA !== 'Stop') {
+          selectedInterpretation = 'This changed codon removes a stop signal and can extend the protein.';
+        } else if (selectedRow.changed && selectedAminoChanged) {
+          selectedInterpretation = 'The changed codon now specifies ' + selectedRow.afterAA + ' instead of ' + selectedRow.beforeAA + '.';
+        }
+        if (latestMutationEffect === 'Frameshift' && firstChanged && selectedRow.index > firstChanged.index) {
+          selectedInterpretation += ' This codon is downstream of the shifted reading frame.';
+        }
+        var changedPercent = Math.round((changedRows.length / Math.max(1, codonRows.length)) * 100);
+        var patternTitle = 'Localized coding change';
+        var patternDescription = 'The effect is concentrated near codon ' + (firstChanged ? firstChanged.index : 1) + '.';
+        if (latestMutationEffect === 'Frameshift') {
+          patternTitle = 'Cascade pattern';
+          patternDescription = 'The reading frame changes at codon ' + (firstChanged ? firstChanged.index : 1) + ' and the affected footprint continues downstream.';
+        } else if (latestMutationEffect === 'Silent') {
+          patternTitle = 'Silent pattern';
+          patternDescription = 'The codon changed, but the amino-acid output stayed the same.';
+        } else if (latestMutationEffect === 'Nonsense') {
+          patternTitle = 'Stop signal introduced';
+          patternDescription = 'A changed codon creates an earlier stop signal, which can shorten the protein.';
+        } else if (latestMutationEffect === 'Missense') {
+          patternTitle = 'Amino-acid substitution';
+          patternDescription = 'A changed codon produces a different amino acid while the reading frame stays aligned.';
+        } else if (latestMutationEffect === 'In-frame indel') {
+          patternTitle = 'Reading frame preserved';
+          patternDescription = 'Bases were added or removed in a complete codon group, so downstream triplets stay aligned.';
+        }
+        var mapLabel = 'Codon impact map. ' + changedRows.length + ' of ' + codonRows.length + ' codons changed. ' + patternTitle + '. ' + patternDescription;
+        return h("section", { className: "mt-3 rounded-xl border border-amber-200 bg-white/90 p-3", "data-dna-codon-impact-map": true, role: "region", "aria-labelledby": "dna-codon-impact-title" },
+          h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+            h("div", null,
+              h("div", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-amber-700" }, "Mutation impact map"),
+              h("h6", { id: "dna-codon-impact-title", className: "mt-1 text-[12px] font-black text-slate-900" }, patternTitle),
+              h("p", { className: "mt-1 mb-0 max-w-2xl text-[10px] leading-relaxed text-slate-600" }, patternDescription)
+            ),
+            h("div", { className: "flex flex-wrap gap-1.5", "aria-label": "Impact map legend" },
+              h("span", { className: "rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] font-black text-emerald-800" }, "Same"),
+              h("span", { className: "rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-[9px] font-black text-amber-900" }, "Changed")
+            )
+          ),
+          h("div", { className: "mt-3 rounded-lg border border-slate-200 bg-slate-50 p-2" },
+            h("div", { className: "flex items-center justify-between gap-2 text-[10px] font-bold text-slate-600" },
+              h("span", null, changedRows.length + " of " + codonRows.length + " codons changed"),
+              h("span", null, changedPercent + "% footprint")
+            ),
+            h("div", { className: "mt-2 h-2 overflow-hidden rounded-full bg-emerald-100", role: "progressbar", "aria-label": "Changed codon footprint", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": changedPercent },
+              h("div", { className: "h-full rounded-full bg-amber-500", style: { width: changedPercent + "%" } })
+            )
+          ),
+          h("ol", { className: "mt-3 flex min-w-0 gap-2 overflow-x-auto pb-2 focus:outline-none focus:ring-2 focus:ring-amber-300", tabIndex: 0, "aria-label": mapLabel },
+            codonRows.map(function(row) {
+              var isFirstImpact = !!(firstChanged && row.index === firstChanged.index);
+              var aminoChanged = row.beforeAA !== row.afterAA;
+              var stateLabel = row.changed ? 'Changed' : 'Same';
+              var isSelected = !!(selectedRow && row.index === selectedRow.index);
+              var rowLabel = 'Codon ' + row.index + '. ' + stateLabel + '. mRNA ' + row.beforeCodon + ' to ' + row.afterCodon + '. Amino acid ' + row.beforeAA + ' to ' + row.afterAA + (isFirstImpact ? '. Impact begins here.' : '.');
+              return h("li", { key: row.index, className: "w-28 shrink-0", "data-state": row.changed ? "changed" : "same", "data-selected": isSelected ? "true" : "false" },
+                h("button", { type: "button", onClick: function() { upd('dnaImpactCodonIndex', row.index); announceToSR('Codon ' + row.index + ' spotlight selected.'); }, className: "h-full w-full rounded-lg border p-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 " + (isSelected ? "border-sky-500 bg-sky-50 ring-2 ring-sky-200" : row.changed ? "border-amber-300 bg-amber-50" : "border-emerald-200 bg-emerald-50"), "aria-pressed": isSelected, "aria-label": rowLabel },
+                  h("div", { className: "flex items-center justify-between gap-1" },
+                    h("span", { className: "grid h-5 w-5 place-items-center rounded-full bg-white text-[9px] font-black text-slate-700", "aria-hidden": "true" }, String(row.index)),
+                    h("span", { className: "rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide " + (row.changed ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900") }, stateLabel)
+                  ),
+                  isFirstImpact && h("div", { className: "mt-1 text-[8px] font-black uppercase tracking-wide text-rose-700" }, "Impact begins"),
+                  h("div", { className: "mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-1 font-mono text-[10px] font-black text-slate-700" },
+                    h("span", { className: "rounded bg-white px-1 py-1 text-center" }, row.beforeCodon),
+                    h("span", { className: "text-slate-400", "aria-hidden": "true" }, "\u2192"),
+                    h("span", { className: "rounded px-1 py-1 text-center " + (row.changed ? "bg-amber-200 text-amber-950" : "bg-white text-emerald-900") }, row.afterCodon)
+                  ),
+                  h("div", { className: "mt-2 rounded-md bg-white/80 px-1.5 py-1 text-center text-[9px] font-bold " + (aminoChanged ? "text-violet-800" : "text-slate-600") },
+                    aminoChanged ? row.beforeAA + " \u2192 " + row.afterAA : "AA " + row.afterAA
+                  )
+                )
+              );
+            })
+          ),
+          h("div", { className: "mt-2 rounded-xl border border-sky-200 bg-gradient-to-r from-sky-50 to-indigo-50 p-3", "data-dna-codon-spotlight": true, role: "group", "aria-labelledby": "dna-codon-spotlight-title" },
+            h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+              h("div", null,
+                h("div", { className: "text-[9px] font-black uppercase tracking-[0.16em] text-sky-700" }, "Codon spotlight"),
+                h("h6", { id: "dna-codon-spotlight-title", className: "mt-1 text-[12px] font-black text-slate-900" }, "Codon " + selectedRow.index + " \u00b7 bases " + selectedBaseStart + "\u2013" + selectedBaseEnd)
+              ),
+              h("div", { className: "flex flex-wrap items-center justify-end gap-2" },
+                h("span", { className: "rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide " + (selectedRow.changed ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900") }, selectedRow.changed ? "Changed" : "Same"),
+                h("button", { type: "button", onClick: useSelectedDnaCodonAsEvidence, className: "rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-[9px] font-black text-sky-800 hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-500", "data-dna-use-codon-evidence": true, "aria-pressed": dnaSelectedCodonEvidenceSaved }, dnaSelectedCodonEvidenceSaved ? "Added to report" : dnaEvidenceCitationStale ? "Refresh report evidence" : dnaEvidenceCitation === "codon" && dnaEvidenceCitationDetail ? "Replace report evidence" : "Use as evidence")
+              )
+            ),
+            h("div", { className: "mt-3 grid gap-2 sm:grid-cols-3" },
+              h("div", { className: "rounded-lg border border-sky-200 bg-white p-2" },
+                h("div", { className: "text-[8px] font-black uppercase tracking-wide text-sky-700" }, "mRNA codon"),
+                h("div", { className: "mt-1 font-mono text-[11px] font-black text-slate-800" }, selectedRow.beforeCodon + " \u2192 " + selectedRow.afterCodon)
+              ),
+              h("div", { className: "rounded-lg border border-violet-200 bg-white p-2" },
+                h("div", { className: "text-[8px] font-black uppercase tracking-wide text-violet-700" }, "Amino acid"),
+                h("div", { className: "mt-1 text-[11px] font-black text-slate-800" }, selectedRow.beforeAA + " \u2192 " + selectedRow.afterAA)
+              ),
+              h("div", { className: "rounded-lg border border-indigo-200 bg-white p-2" },
+                h("div", { className: "text-[8px] font-black uppercase tracking-wide text-indigo-700" }, "Reading frame"),
+                h("div", { className: "mt-1 text-[11px] font-black text-slate-800" }, latestMutationEffect === "Frameshift" && firstChanged && selectedRow.index >= firstChanged.index ? "Shifted" : "Aligned")
+              )
+            ),
+            h("p", { className: "mt-2 mb-0 text-[10px] leading-relaxed text-slate-700", role: "status" }, selectedInterpretation)
+          ),          h("p", { className: "mt-1 mb-0 text-[9px] leading-relaxed text-slate-500" }, "Scroll horizontally to inspect every codon. The detailed evidence table remains below.")
+        );
+      }
       var dnaEvidenceCitationOptions = [
         { id: 'sequence', label: 'DNA sequence: ' + dnaSeq },
         { id: 'codon', label: dnaEvidenceChangedCodon ? 'Codon ' + dnaEvidenceChangedCodon.index + ': ' + dnaEvidenceChangedCodon.beforeCodon + ' -> ' + dnaEvidenceChangedCodon.afterCodon : 'Codon evidence: group the mRNA into triplets' },
+        { id: 'frame', label: 'Reading frame +' + dnaSelectedReadingFrame.frame + ': ' + dnaSelectedReadingFrame.statusLabel },
         { id: 'protein', label: mutationComparison ? 'Protein: ' + (proteinSignature(mutationComparison.beforeProtein) || 'none') + ' -> ' + (proteinSignature(mutationComparison.afterProtein) || 'none') : 'Protein output: ' + (proteinSignature(fullProtein) || 'not translated yet') },
         { id: 'mrna', label: 'mRNA sequence: ' + (fullMRNA || 'not transcribed yet') },
         { id: 'pairing', label: 'Base-pair rule: A-T and G-C' }
       ];
       function checkDnaEvidence() {
         var claimCorrect = dnaEvidenceRubric.validClaims.indexOf(dnaEvidenceClaim) >= 0;
-        var citationCorrect = dnaEvidenceRubric.validCitations.indexOf(dnaEvidenceCitation) >= 0;
+        var citationCorrect = dnaEvidenceRubric.validCitations.indexOf(dnaEvidenceCitation) >= 0
+          && !(dnaEvidenceHasSnapshot && dnaEvidenceCitationStale);
         var reasoningText = String(dnaEvidenceReasoning || '').trim();
         var reasoningWords = reasoningText ? reasoningText.split(/\s+/).length : 0;
-        var reasoningCorrect = reasoningWords >= 8 && /because|shows|therefore|so|changed|same|shift|codon|protein|base|pair/i.test(reasoningText);
+        var reasoningCorrect = reasoningWords >= 8 && /because|shows|therefore|so|changed|same|shift|codon|protein|base|pair|frame|orf|start|stop/i.test(reasoningText);
         var score = (claimCorrect ? 1 : 0) + (citationCorrect ? 1 : 0) + (reasoningCorrect ? 1 : 0);
         var feedback = [];
         if (!claimCorrect) feedback.push('Choose a claim that matches ' + dnaEvidenceRubric.focus + '.');
-        if (!citationCorrect) feedback.push('Choose evidence that directly shows ' + dnaEvidenceRubric.focus + '.');
+        if (dnaEvidenceHasSnapshot && dnaEvidenceCitationStale) feedback.push('Your cited ' + dnaEvidenceSourceLabel + ' comes from an earlier sequence. Refresh it from the ' + (dnaEvidenceCitation === 'frame' ? 'reading-frame explorer' : 'codon spotlight') + '.');
+        else if (!citationCorrect) feedback.push('Choose evidence that directly shows ' + dnaEvidenceRubric.focus + '.');
         if (!reasoningCorrect) feedback.push('Write at least 8 words that connect your evidence with because, shows, so, or therefore.');
         if (score === 3) feedback.unshift('Strong claim-evidence-reasoning link. Your explanation connects the molecular evidence to the conclusion.');
         updMulti({ dnaEvidenceScore: score, dnaEvidenceFeedback: feedback.join(' ') });
@@ -2758,7 +3328,22 @@ window.StemLab = window.StemLab || {
             action: 'Resume checkpoint'
           };
         }
-        if (dnaExperimentHistory.length > 1 && !experimentComparison) {
+        if (dnaEvidenceCitationStale) {
+          return {
+            title: 'Refresh your cited ' + dnaEvidenceSourceLabel + ' evidence',
+            reason: 'The DNA sequence changed after you saved this ' + dnaEvidenceSourceLabel + '. Reopen the ' + (dnaEvidenceCitation === 'frame' ? 'reading-frame explorer' : 'codon spotlight') + ' and refresh the report so your evidence matches the current experiment.',
+            target: dnaEvidenceCitation === 'frame' ? 'translate' : 'mutate',
+            action: 'Refresh evidence'
+          };
+        }
+        if (!dnaScenarioRun && visitedTabs.mutate) {
+          return {
+            title: 'Try the Scenario Challenge',
+            reason: 'Predict the mutation effect first, then run a controlled change and compare the actual codon or protein evidence.',
+            target: 'mutate',
+            action: 'Open challenge'
+          };
+        }        if (dnaExperimentHistory.length > 1 && !experimentComparison) {
           return {
             title: 'Compare your saved experiments',
             reason: 'You have more than one checkpoint saved. Comparing them can reveal which codons and protein evidence changed.',
@@ -3099,7 +3684,69 @@ window.StemLab = window.StemLab || {
             h("button", { type: "button", onClick: function() { switchDnaTab(dnaRecommendation.target); }, className: "rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-black text-white hover:bg-indigo-800" }, dnaRecommendation.action)
           )
         ),
-        h("details", { className: "rounded-xl border border-violet-200 bg-violet-50/60", open: guidedStarted && !guidedComplete, 'data-dna-guided': true },
+        h("section", { className: "rounded-xl border-2 border-fuchsia-200 bg-gradient-to-br from-fuchsia-50 to-violet-50 p-4 shadow-sm", "data-dna-scenario-challenge": true, role: "region", "aria-labelledby": "dna-scenario-title" },
+          h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+            h("div", null,
+              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-700" }, "Scenario Challenge"),
+              h("h4", { id: "dna-scenario-title", className: "mt-1 text-sm font-black text-slate-900" }, "Predict before you experiment"),
+              h("p", { className: "mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-700" }, "Make a prediction, run one controlled mutation, then use the comparison and Evidence & Reasoning tools to explain what happened.")
+            ),
+            h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black text-fuchsia-800" }, "Score: " + dnaScenarioScore + "/2")
+          ),
+          h("ol", { className: "mt-3 grid gap-2 sm:grid-cols-3", "data-dna-scenario-steps": true, "aria-label": "Scenario Challenge progress" },
+            [
+              { label: "Predict", complete: !!dnaScenarioPrediction, current: !dnaScenarioPrediction, hint: "Choose an effect" },
+              { label: "Run", complete: dnaScenarioRun, current: !!dnaScenarioPrediction && !dnaScenarioRun, hint: "Apply one mutation" },
+              { label: "Explain", complete: dnaScenarioRun && dnaEvidenceScore >= 3, current: dnaScenarioRun && dnaEvidenceScore < 3, hint: "Connect the evidence" }
+            ].map(function(step, stepIndex) {
+              var stepState = step.complete ? "complete" : step.current ? "current" : "upcoming";
+              return h("li", { key: step.label, className: "rounded-lg border px-3 py-2 " + (stepState === "complete" ? "border-emerald-200 bg-emerald-50" : stepState === "current" ? "border-fuchsia-400 bg-white ring-2 ring-fuchsia-100" : "border-slate-200 bg-white/70"), "data-state": stepState, "aria-current": stepState === "current" ? "step" : undefined },
+                h("div", { className: "flex items-center gap-2" },
+                  h("span", { className: "grid h-6 w-6 place-items-center rounded-full text-[10px] font-black " + (stepState === "complete" ? "bg-emerald-600 text-white" : stepState === "current" ? "bg-fuchsia-700 text-white" : "bg-slate-200 text-slate-600"), "aria-hidden": "true" }, stepState === "complete" ? "\u2713" : String(stepIndex + 1)),
+                  h("div", null,
+                    h("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-800" }, step.label),
+                    h("div", { className: "mt-0.5 text-[9px] font-bold text-slate-500" }, stepState === "complete" ? "Complete" : stepState === "current" ? "Current \u00b7 " + step.hint : step.hint)
+                  )
+                )
+              );
+            })
+          ),          h("div", { className: "mt-3 grid gap-3 md:grid-cols-2" },
+            h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-fuchsia-800" },
+              "Scenario",
+              h("select", { value: dnaScenarioId, onChange: function(e) { selectDnaScenario(e.target.value); }, className: "mt-1 w-full rounded-md border border-fuchsia-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", "aria-label": "Choose a DNA scenario" },
+                DNA_SCENARIO_OPTIONS.map(function(option) { return h("option", { key: option.id, value: option.id }, option.label); })
+              )
+            ),
+            h("div", { className: "rounded-lg border border-fuchsia-200 bg-white p-3" },
+              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Prompt"),
+              h("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, getDnaScenario().prompt)
+            )
+          ),
+          h("label", { className: "mt-3 block rounded-lg border border-fuchsia-200 bg-white p-3" },
+            h("span", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Your prediction"),
+            h("select", { value: dnaScenarioPrediction, onChange: function(e) { updMulti({ dnaScenarioPrediction: e.target.value, dnaScenarioFeedback: '', dnaScenarioScore: 0, dnaScenarioRun: false }); }, className: "mt-2 w-full rounded-md border border-slate-300 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", "aria-label": "Predict the mutation effect" },
+              h("option", { value: "" }, "Choose the predicted effect"),
+              getDnaScenario().choices.map(function(choice) { return h("option", { key: choice, value: choice }, choice); })
+            )
+          ),
+          h("div", { className: "mt-3 flex flex-wrap items-center gap-2" },
+            h("button", { type: "button", onClick: runDnaScenario, disabled: dnaScenarioRun, className: "rounded-lg bg-fuchsia-700 px-3 py-2 text-[11px] font-black text-white hover:bg-fuchsia-800 disabled:cursor-not-allowed disabled:opacity-50" }, dnaScenarioRun ? "Scenario run complete" : "Run scenario"),
+            h("button", { type: "button", onClick: checkDnaScenarioPrediction, disabled: !dnaScenarioRun, className: "rounded-lg border border-fuchsia-300 bg-white px-3 py-2 text-[11px] font-black text-fuchsia-900 hover:bg-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-50" }, "Check prediction"),
+            dnaScenarioFeedback && h("span", { className: "text-[11px] leading-relaxed text-slate-700", role: "status" }, dnaScenarioFeedback)
+          ),
+          dnaScenarioRun && h("div", { className: "mt-3 grid gap-2 sm:grid-cols-2", "data-dna-scenario-result": true },
+            h("div", { className: "rounded-lg border border-fuchsia-200 bg-white p-3" },
+              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Actual effect"),
+              h("div", { className: "mt-1 text-sm font-black text-slate-900" }, latestMutationEffect || "Calculating"),
+              h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, "Use the mutation comparison below to inspect the changed codons and protein output.")
+            ),
+            h("div", { className: "rounded-lg border border-violet-200 bg-white p-3" },
+              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-violet-800" }, "Evidence checkpoint"),
+              h("div", { className: "mt-1 text-sm font-black text-slate-900" }, dnaEvidenceScore >= 3 ? "Explanation complete" : "Explanation pending"),
+              h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, "A full Evidence & Reasoning check adds the second challenge point.")
+            )
+          )
+        ),        h("details", { className: "rounded-xl border border-violet-200 bg-violet-50/60", open: guidedStarted && !guidedComplete, 'data-dna-guided': true },
           h("summary", { className: "flex cursor-pointer items-center gap-2 px-3 py-2 text-[11px] font-black text-violet-900" },
             h("span", { 'aria-hidden': 'true' }, '\uD83E\uDDED'),
             h("span", null, 'Guided DNA investigation'),
@@ -3152,7 +3799,8 @@ window.StemLab = window.StemLab || {
               h("div", { className: "text-[10px] font-black uppercase tracking-wide text-amber-700" }, "Evidence to cite"),
               h("p", { className: "mt-2 break-all text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Coding DNA: "), dnaSeq),
               h("p", { className: "mt-1 break-all text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "mRNA: "), fullMRNA || "Not transcribed yet"),
-              h("p", { className: "mt-1 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Protein: "), proteinSignature(fullProtein) || "Not translated yet")
+              h("p", { className: "mt-1 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Protein: "), proteinSignature(fullProtein) || "Not translated yet"),
+              h("p", { className: "mt-1 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Reading frame: "), "+" + dnaSelectedReadingFrame.frame + " · " + dnaSelectedReadingFrame.statusLabel)
             ),
             h("div", { className: "rounded-lg border border-orange-200 bg-white p-3" },
               h("div", { className: "text-[10px] font-black uppercase tracking-wide text-orange-700" }, "Interpretation"),
@@ -3177,22 +3825,32 @@ window.StemLab = window.StemLab || {
             h("div", { className: "mt-3 grid gap-3 md:grid-cols-2" },
               h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-violet-800" },
                 "Claim",
-                h("select", { value: dnaEvidenceClaim, onChange: function(e) { upd('dnaEvidenceClaim', e.target.value); }, className: "mt-1 w-full rounded-md border border-violet-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose an evidence-based claim" },
+                h("select", { value: dnaEvidenceClaim, onChange: function(e) { updMulti({ dnaEvidenceClaim: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose an evidence-based claim" },
                   h("option", { value: "" }, "Choose a claim"),
                   dnaEvidenceRubric.claims.map(function(claim) { return h("option", { key: claim.id, value: claim.id }, claim.label); })
                 )
               ),
               h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-violet-800" },
                 "Evidence citation",
-                h("select", { value: dnaEvidenceCitation, onChange: function(e) { upd('dnaEvidenceCitation', e.target.value); }, className: "mt-1 w-full rounded-md border border-violet-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose evidence to cite" },
+                h("select", { value: dnaEvidenceCitation, onChange: function(e) { var nextCitation = e.target.value; var keepSnapshot = nextCitation === dnaEvidenceCitation && ['codon', 'frame'].indexOf(nextCitation) >= 0; updMulti({ dnaEvidenceCitation: nextCitation, dnaEvidenceCitationDetail: keepSnapshot ? dnaEvidenceCitationDetail : '', dnaEvidenceCitationSequenceKey: keepSnapshot ? dnaEvidenceCitationSequenceKey : '', dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose evidence to cite" },
                   h("option", { value: "" }, "Choose evidence"),
                   dnaEvidenceCitationOptions.map(function(option) { return h("option", { key: option.id, value: option.id }, option.label); })
                 )
               )
             ),
+            dnaEvidenceHasSnapshot && h("div", { className: "mt-3 rounded-lg border p-3 " + (dnaEvidenceCitationStale ? "border-amber-300 bg-amber-50" : "border-emerald-200 bg-emerald-50"), "data-dna-evidence-citation-detail": true, "data-evidence-source": dnaEvidenceCitation, "data-stale": dnaEvidenceCitationStale ? "true" : "false", role: "status" },
+              h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                h("div", null,
+                  h("div", { className: "text-[9px] font-black uppercase tracking-wide " + (dnaEvidenceCitationStale ? "text-amber-800" : "text-emerald-800") }, dnaEvidenceCitationStale ? "Earlier sequence" : "Current sequence"),
+                  h("p", { className: "mt-1 mb-0 text-[10px] font-bold leading-relaxed text-slate-700" }, dnaEvidenceCitationDetail)
+                ),
+                dnaEvidenceCitationStale && h("button", { type: "button", onClick: refreshSelectedDnaEvidence, className: "rounded-lg border border-amber-400 bg-white px-2.5 py-1.5 text-[9px] font-black text-amber-900 hover:bg-amber-100" }, dnaEvidenceCitation === 'frame' ? "Refresh from frame explorer" : "Refresh from spotlight")
+              ),
+              dnaEvidenceCitationStale && h("p", { className: "mt-2 mb-0 text-[10px] leading-relaxed text-amber-900" }, "The DNA changed after this " + dnaEvidenceSourceLabel + " was saved. Refresh it before checking your reasoning.")
+            ),
             h("label", { className: "mt-3 block rounded-lg border border-violet-200 bg-white p-3" },
               h("span", { className: "text-[10px] font-black uppercase tracking-wide text-violet-800" }, "Reasoning"),
-              h("textarea", { value: dnaEvidenceReasoning, onChange: function(e) { upd('dnaEvidenceReasoning', e.target.value); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[11px] text-slate-700 outline-none focus:border-violet-500", 'aria-label': "Explain how the evidence supports the claim", placeholder: "Use because, shows, so, or therefore to connect the evidence to your claim." })
+              h("textarea", { value: dnaEvidenceReasoning, onChange: function(e) { updMulti({ dnaEvidenceReasoning: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[11px] text-slate-700 outline-none focus:border-violet-500", 'aria-label': "Explain how the evidence supports the claim", placeholder: "Use because, shows, so, or therefore to connect the evidence to your claim." })
             ),
             h("div", { className: "mt-3 flex flex-wrap items-center gap-2" },
               h("button", { type: "button", onClick: checkDnaEvidence, className: "rounded-lg bg-violet-700 px-3 py-2 text-[11px] font-black text-white hover:bg-violet-800" }, "Check reasoning"),
@@ -3467,13 +4125,118 @@ window.StemLab = window.StemLab || {
         // TRANSLATION TAB
         // ═══════════════════════════════════════════
         tab === 'translate' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-translate", "data-dna-workspace": "translate" },
-          h("div", { className: "bg-white rounded-xl border border-slate-400 p-4" },
-            h("h4", { className: "text-sm font-bold text-slate-700 mb-3" }, t('stem.dna.ribosome_translation', "\uD83D\uDD2C Ribosome Translation")),
+          h("section", { className: "overflow-hidden rounded-xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-emerald-50 p-4", "data-dna-reading-frame-explorer": true, role: "region", "aria-labelledby": "dna-reading-frame-title" },
+            h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+              h("div", null,
+                h("div", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-indigo-700" }, "Reading Frame Explorer"),
+                h("h4", { id: "dna-reading-frame-title", className: "mt-1 text-sm font-black text-slate-900" }, "One mRNA, three possible groupings"),
+                h("p", { className: "mt-1 mb-0 max-w-3xl text-[11px] leading-relaxed text-slate-700" }, "Shift the starting base to compare forward reading frames. A modeled ORF begins at AUG and continues to the first in-frame stop codon.")
+              ),
+              h("span", { className: "rounded-full border border-indigo-200 bg-white px-2 py-1 text-[10px] font-black text-indigo-800" }, "Selected: +" + dnaSelectedReadingFrame.frame)
+            ),
+            h("div", { className: "mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible md:pb-0", role: "radiogroup", "aria-label": "Choose a forward mRNA reading frame" },
+              dnaReadingFrames.map(function(frame) {
+                var isSelected = frame.frame === dnaSelectedReadingFrame.frame;
+                var statusTone = frame.status === 'complete' ? "bg-emerald-100 text-emerald-800" : frame.status === 'open' ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700";
+                return h("button", { key: frame.frame, type: "button", role: "radio", "aria-checked": isSelected, "aria-pressed": isSelected, onClick: function() { selectDnaReadingFrame(frame.frame); }, className: "relative min-w-[210px] flex-1 snap-start overflow-hidden rounded-xl border p-3 pt-4 text-left shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 md:min-w-0 " + (isSelected ? "border-indigo-500 bg-white ring-2 ring-indigo-100" : "border-slate-200 bg-white/80 hover:border-indigo-300 hover:shadow-md"), "data-dna-reading-frame": frame.frame, "data-frame-status": frame.status, "data-frame-selected": isSelected ? "true" : "false" },
+                  h("span", { className: "absolute inset-x-0 top-0 h-1 " + (frame.status === 'complete' ? "bg-emerald-500" : frame.status === 'open' ? "bg-amber-500" : "bg-slate-300"), "aria-hidden": "true" }),
+                  h("div", { className: "flex items-center justify-between gap-2" },
+                    h("span", { className: "text-[12px] font-black text-slate-900" }, "Frame +" + frame.frame),
+                    h("span", { className: "rounded-full px-2 py-1 text-[8px] font-black uppercase tracking-wide " + statusTone }, frame.statusLabel)
+                  ),
+                  h("div", { className: "mt-2 font-mono text-[10px] font-bold text-slate-600" }, "Starts at base " + (frame.offset + 1)),
+                  h("div", { className: "mt-1 text-[10px] text-slate-600" }, frame.startIndex >= 0 ? "AUG at base " + frame.startBase : "No in-frame AUG"),
+                  h("div", { className: "mt-1 text-[10px] text-slate-600" }, frame.stopIndex >= 0 ? frame.stopCodon + " stop at base " + frame.stopBase : "No downstream stop in fragment"),
+                  h("div", { className: "mt-2 text-[10px] font-black text-indigo-800" }, frame.protein.length + " amino acid" + (frame.protein.length === 1 ? "" : "s"))
+                );
+              })
+            ),
+            h("section", { className: "mt-3 rounded-xl border border-slate-200 bg-slate-950 p-3 text-white shadow-inner", "data-dna-frame-alignment": true, role: "region", "aria-labelledby": "dna-frame-alignment-title" },
+              h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                h("div", null,
+                  h("h5", { id: "dna-frame-alignment-title", className: "m-0 text-[10px] font-black uppercase tracking-[0.14em] text-sky-200" }, "Triplet alignment ruler"),
+                  h("p", { className: "mt-1 mb-0 text-[9px] leading-relaxed text-slate-300" }, "Each row shifts one base to the right, regrouping every codon that follows.")
+                ),
+                h("div", { className: "flex flex-wrap gap-1.5", role: "group", "aria-label": "Reading frame color legend" },
+                  h("span", { className: "rounded-full border border-emerald-500/60 bg-emerald-950 px-2 py-1 text-[8px] font-black text-emerald-200" }, "AUG start"),
+                  h("span", { className: "rounded-full border border-indigo-400/60 bg-indigo-950 px-2 py-1 text-[8px] font-black text-indigo-200" }, "Coding ORF"),
+                  h("span", { className: "rounded-full border border-rose-500/60 bg-rose-950 px-2 py-1 text-[8px] font-black text-rose-200" }, "Stop"),
+                  h("span", { className: "rounded-full border border-slate-600 bg-slate-900 px-2 py-1 text-[8px] font-black text-slate-300" }, "Outside ORF")
+                )
+              ),
+              h("div", { className: "mt-3 overflow-x-auto rounded-lg pb-1 focus:outline-none focus:ring-2 focus:ring-sky-400", tabIndex: 0, role: "img", "aria-label": "Reading-frame alignment. Frame plus " + dnaSelectedReadingFrame.frame + " is selected. The same mRNA bases are grouped into different triplets in frames plus one, plus two, and plus three." },
+                h("div", { className: "space-y-2", style: { minWidth: Math.max(580, 54 + fullMRNA.length * 28) + "px" }, "aria-hidden": "true" },
+                  h("div", { className: "grid items-end gap-1", style: { gridTemplateColumns: "46px repeat(" + fullMRNA.length + ", 24px)" } },
+                    h("div", { className: "pb-1 text-right text-[8px] font-black uppercase tracking-wide text-slate-500" }, "Base"),
+                    fullMRNA.split('').map(function(base, baseIndex) {
+                      return h("div", { key: baseIndex, className: "text-center" },
+                        h("div", { className: "text-[7px] font-bold text-slate-500" }, String(baseIndex + 1)),
+                        h("div", { className: "mt-0.5 grid h-6 place-items-center rounded font-mono text-[10px] font-black text-white", style: { background: BASE_DARK_COLORS[base] || '#334155' } }, base)
+                      );
+                    })
+                  ),
+                  dnaReadingFrames.map(function(frame) {
+                    var frameSelected = frame.frame === dnaSelectedReadingFrame.frame;
+                    return h("div", { key: frame.frame, className: "grid items-center gap-1 rounded-lg border py-1.5 pr-1 " + (frameSelected ? "border-sky-400 bg-sky-400/10 ring-1 ring-sky-400/40" : "border-slate-800 bg-slate-900/70"), style: { gridTemplateColumns: "46px repeat(" + fullMRNA.length + ", 24px)" }, "data-dna-frame-alignment-row": frame.frame, "data-frame-selected": frameSelected ? "true" : "false" },
+                      h("div", { className: "pl-2 text-[10px] font-black " + (frameSelected ? "text-sky-200" : "text-slate-400") }, "+" + frame.frame),
+                      frame.codons.map(function(entry, entryIndex) {
+                        var alignmentState = frame.startIndex < 0 ? "untranslated" : entryIndex === frame.startIndex ? "start" : entryIndex === frame.stopIndex ? "stop" : entryIndex < frame.startIndex ? "before-start" : "coding";
+                        var alignmentTone = alignmentState === "start" ? "border-emerald-400 bg-emerald-500 text-emerald-950" : alignmentState === "stop" ? "border-rose-400 bg-rose-500 text-rose-950" : alignmentState === "coding" ? "border-indigo-400 bg-indigo-500 text-white" : "border-slate-700 bg-slate-800 text-slate-400";
+                        return h("div", { key: entry.pos, className: "grid h-7 place-items-center rounded border font-mono text-[9px] font-black shadow-sm " + alignmentTone, style: { gridColumn: (entry.pos + 2) + " / span 3" }, "data-frame-codon-state": alignmentState }, entry.codon);
+                      })
+                    );
+                  })
+                )
+              ),
+              h("p", { className: "mt-2 mb-0 text-[8px] leading-relaxed text-slate-400" }, "Swipe or use Shift + mouse wheel to inspect longer sequences.")
+            ),
+            h("div", { className: "mt-3 rounded-xl border border-indigo-200 bg-white p-3", "data-dna-reading-frame-detail": true, "data-frame": dnaSelectedReadingFrame.frame, "data-frame-status": dnaSelectedReadingFrame.status },
+              h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                h("div", null,
+                  h("div", { className: "text-[9px] font-black uppercase tracking-wide text-indigo-700" }, "Frame +" + dnaSelectedReadingFrame.frame + " evidence"),
+                  h("p", { className: "mt-1 mb-0 text-[11px] font-bold leading-relaxed text-slate-800" }, dnaSelectedFrameInterpretation)
+                ),
+                h("button", { type: "button", onClick: useSelectedDnaFrameAsEvidence, className: "rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-[10px] font-black text-indigo-900 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", "data-dna-use-frame-evidence": true, "aria-pressed": dnaSelectedFrameEvidenceSaved }, dnaSelectedFrameEvidenceSaved ? "Added to report" : dnaEvidenceCitation === "frame" && dnaEvidenceCitationDetail ? "Replace report evidence" : "Use frame as evidence")
+              ),
+              h("div", { className: "mt-3 overflow-x-auto rounded-lg bg-slate-50 p-2 pb-2 focus:outline-none focus:ring-2 focus:ring-indigo-400", tabIndex: 0, "aria-label": "Scrollable codon rail for reading frame plus " + dnaSelectedReadingFrame.frame },
+                h("div", { className: "flex min-w-max gap-1.5 font-mono", role: "list", "aria-label": "Codons in reading frame plus " + dnaSelectedReadingFrame.frame },
+                  dnaSelectedReadingFrame.codons.map(function(entry, entryIndex) {
+                    var codonState = dnaSelectedReadingFrame.startIndex < 0 ? "untranslated" : entryIndex === dnaSelectedReadingFrame.startIndex ? "start" : entryIndex === dnaSelectedReadingFrame.stopIndex ? "stop" : entryIndex < dnaSelectedReadingFrame.startIndex ? "before-start" : "coding";
+                    var codonTone = codonState === "start" ? "border-emerald-400 bg-emerald-100 text-emerald-900" : codonState === "stop" ? "border-rose-400 bg-rose-100 text-rose-900" : codonState === "coding" ? "border-indigo-200 bg-indigo-50 text-indigo-900" : "border-slate-200 bg-white text-slate-500";
+                    return h("span", { key: entry.pos, role: "listitem", className: "min-w-[66px] snap-start rounded-md border px-2 py-1.5 text-center text-[10px] font-black shadow-sm " + codonTone, "data-codon-state": codonState, title: "Bases " + (entry.pos + 1) + "-" + (entry.pos + 3) + ": " + entry.codon + " -> " + entry.aa },
+                      h("span", { className: "block" }, entry.codon),
+                      h("span", { className: "mt-0.5 block font-sans text-[8px] opacity-80" }, entry.aa)
+                    );
+                  }),
+                  dnaSelectedReadingFrame.codons.length === 0 && h("span", { className: "text-[10px] italic text-slate-500" }, "Not enough bases for a complete codon in this frame.")
+                )
+              ),
+              h("div", { className: "mt-3 grid gap-2 sm:grid-cols-3" },
+                h("div", { className: "rounded-lg bg-slate-50 p-2" }, h("div", { className: "text-[8px] font-black uppercase tracking-wide text-slate-500" }, "Start"), h("div", { className: "mt-1 text-[10px] font-black text-slate-800" }, dnaSelectedReadingFrame.startIndex >= 0 ? "AUG · base " + dnaSelectedReadingFrame.startBase : "Not found")),
+                h("div", { className: "rounded-lg bg-slate-50 p-2" }, h("div", { className: "text-[8px] font-black uppercase tracking-wide text-slate-500" }, "Stop"), h("div", { className: "mt-1 text-[10px] font-black text-slate-800" }, dnaSelectedReadingFrame.stopIndex >= 0 ? dnaSelectedReadingFrame.stopCodon + " · bases " + dnaSelectedReadingFrame.stopBase + "-" + (dnaSelectedReadingFrame.stopBase + 2) : "Not in fragment")),
+                h("div", { className: "rounded-lg bg-slate-50 p-2" }, h("div", { className: "text-[8px] font-black uppercase tracking-wide text-slate-500" }, "Protein preview"), h("div", { className: "mt-1 text-[10px] font-black text-slate-800" }, dnaSelectedFrameProteinText))
+              ),
+              dnaSelectedReadingFrame.trailingBases > 0 && h("p", { className: "mt-2 mb-0 text-[9px] leading-relaxed text-slate-500" }, dnaSelectedReadingFrame.trailingBases + " trailing base" + (dnaSelectedReadingFrame.trailingBases === 1 ? "" : "s") + " cannot form a complete codon in this frame.")
+            )
+          ),
+          h("div", { className: "rounded-xl border border-emerald-200 bg-white p-4 shadow-sm", "data-dna-ribosome-stage": true },
+            h("div", { className: "mb-3 flex flex-wrap items-start justify-between gap-2" },
+              h("div", { className: "flex items-start gap-2" },
+                h("span", { className: "grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-100 text-[10px] font-black text-emerald-800", "aria-hidden": "true" }, "3"),
+                h("div", null,
+                  h("h4", { className: "m-0 text-sm font-black text-slate-800" }, t('stem.dna.ribosome_translation', "\uD83D\uDD2C Ribosome Translation")),
+                  h("p", { className: "mt-1 mb-0 text-[10px] leading-relaxed text-slate-600" }, dnaSelectedReadingFrame.startIndex >= 0 ? "Run the selected ORF from its first AUG to its first in-frame stop." : "Choose a frame with an AUG start codon to run translation.")
+                )
+              ),
+              h("span", { className: "rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] font-black text-emerald-800" }, "Frame +" + dnaSelectedReadingFrame.frame + " · " + dnaSelectedReadingFrame.statusLabel)
+            ),
             h("div", { className: "font-mono text-xs break-all mb-3 p-3 bg-slate-50 rounded-lg" },
               h("span", { className: "text-[11px] font-bold text-violet-600 block mb-1" }, "mRNA:"),
-              (fullMRNA.match(/.{1,3}/g) || []).map(function(codon, idx) {
-                var isActive = idx === transStep && transPlaying;
-                var isPast = idx < transStep;
+              dnaSelectedReadingFrame.codons.map(function(entry, idx) {
+                var codon = entry.codon;
+                var runIndex = dnaSelectedReadingFrame.startIndex >= 0 ? idx - dnaSelectedReadingFrame.startIndex : -1;
+                var isActive = runIndex === transStep && transPlaying;
+                var isPast = runIndex >= 0 && runIndex < transStep;
                 return h("span", { key: idx, className: "inline-block px-1 py-0.5 mx-0.5 rounded text-xs font-bold " + (isActive ? "bg-violet-600 text-white scale-110" : isPast ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-600"), title: codon + ' \u2192 ' + (CODON_TABLE[codon] || '?') }, codon);
               })
             ),
@@ -3487,7 +4250,7 @@ window.StemLab = window.StemLab || {
               "Watch codons slide through E/P/A sites as the amino acid chain grows.",
               "#10b981",
               [
-                { label: "Codon", value: Math.min(transStep + 1, Math.max(1, Math.ceil(fullMRNA.length / 3))) + "/" + Math.max(1, Math.ceil(fullMRNA.length / 3)), tone: "#10b981" },
+                { label: "Codon", value: Math.min(transStep + 1, Math.max(1, dnaTranslationCodons.length)) + "/" + Math.max(1, dnaTranslationCodons.length), tone: "#10b981" },
                 { label: "Built", value: builtProtein.length + " aa", tone: "#06b6d4" },
                 { label: "State", value: transPlaying ? "running" : "ready", tone: transPlaying ? "#f59e0b" : "#64748b" }
               ],
@@ -3495,7 +4258,7 @@ window.StemLab = window.StemLab || {
               t('stem.dna.ribosome_translation_simulator', 'Ribosome Translation Simulator')
             ),
             h("div", { className: "flex items-center gap-3 mt-4" },
-              h("button", { onClick: function() { if (transPlaying) updMulti({ transPlaying: false }); else { updMulti({ transStep: 0, builtProtein: [], transPlaying: true }); } }, className: "px-4 py-2 text-sm font-bold rounded-xl " + (transPlaying ? "bg-amber-700 text-white" : "transition-colors bg-emerald-700 text-white hover:bg-emerald-700 active:scale-[0.97]") }, transPlaying ? "\u23F8 Pause" : "\u25B6 Translate"),
+              h("button", { onClick: function() { if (transPlaying) updMulti({ transPlaying: false }); else if (dnaSelectedReadingFrame.startIndex >= 0) { updMulti({ transStep: 0, builtProtein: [], transPlaying: true, protein: [] }); } }, disabled: dnaSelectedReadingFrame.startIndex < 0, className: "px-4 py-2 text-sm font-bold rounded-xl disabled:cursor-not-allowed disabled:opacity-45 " + (transPlaying ? "bg-amber-700 text-white" : "transition-colors bg-emerald-700 text-white hover:bg-emerald-700 active:scale-[0.97]") }, transPlaying ? "\u23F8 Pause" : dnaSelectedReadingFrame.startIndex >= 0 ? "\u25B6 Translate frame +" + dnaSelectedReadingFrame.frame : "No AUG in frame +" + dnaSelectedReadingFrame.frame),
               h("button", { onClick: function() { updMulti({ transStep: 0, builtProtein: [], transPlaying: false }); }, className: "px-3 py-2 text-sm font-bold bg-slate-200 text-slate-600 rounded-xl" }, t('stem.dna.reset_3', "\u21BA Reset"))
             )
           )
@@ -3558,6 +4321,9 @@ window.StemLab = window.StemLab || {
                 ),
                 h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black uppercase tracking-wide text-amber-800" }, latestMutationEffect)
               ),
+              renderDnaMutationAlignmentRibbon(),
+              renderDnaEvidenceChain(),
+              renderDnaCodonImpactMap(),
               h("div", { className: "mt-3 grid gap-3 lg:grid-cols-2" },
                 [
                   { label: "Before mutation", sequence: mutationComparison.beforeSeq, mrna: mutationComparison.beforeMRNA, side: "before", protein: mutationComparison.beforeProtein, tone: "border-slate-200 bg-white" },
@@ -3600,7 +4366,8 @@ window.StemLab = window.StemLab || {
                   ),
                   h("tbody", null,
                     mutationComparison.codons.map(function(row) {
-                      return h("tr", { key: row.index, className: row.changed ? "border-b border-amber-100 bg-amber-50/60" : "border-b border-slate-100" },
+                      var isSelected = !!(dnaImpactSelectedCodon && row.index === dnaImpactSelectedCodon.index);
+                      return h("tr", { key: row.index, className: isSelected ? "border-b border-sky-200 bg-sky-50 ring-2 ring-inset ring-sky-300" : row.changed ? "border-b border-amber-100 bg-amber-50/60" : "border-b border-slate-100", "data-dna-impact-selected": isSelected ? true : undefined, "aria-current": isSelected ? "true" : undefined },
                         h("th", { scope: "row", className: "px-2 py-2 font-black text-slate-600" }, String(row.index)),
                         h("td", { className: "px-2 py-2 font-mono text-slate-700" }, row.beforeCodon),
                         h("td", { className: "px-2 py-2 font-mono font-black text-amber-800" }, row.afterCodon),

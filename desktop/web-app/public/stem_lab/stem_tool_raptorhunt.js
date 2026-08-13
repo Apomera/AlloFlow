@@ -87,7 +87,6 @@
     '.rh-flight-settings{position:relative;}.rh-flight-settings>summary{list-style:none;}.rh-flight-settings>summary::-webkit-details-marker{display:none;}.rh-flight-settings-panel{position:absolute;right:0;bottom:calc(100% + 10px);z-index:30;display:flex;flex-wrap:wrap;gap:8px;width:min(330px,calc(100vw - 24px));padding:10px;border:1px solid #67e8f9;border-radius:11px;background:rgba(2,6,23,.98);box-shadow:0 18px 50px rgba(0,0,0,.45);}.rh-flight-quality{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:1 1 100%;color:#cffafe;font:800 11px/1.2 ui-sans-serif,system-ui;}.rh-flight-quality select{min-height:44px;border:1px solid #67e8f9;border-radius:9px;background:#0f172a;padding:8px 30px 8px 10px;color:#fff;font:800 12px/1.2 ui-sans-serif,system-ui;}',
     '.rh-flight-result{position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,23,.66);backdrop-filter:blur(4px);}.rh-flight-result-card{max-width:460px;border:2px solid #fbbf24;border-radius:16px;background:rgba(15,23,42,.98);padding:22px;color:#f8fafc;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5);}',
     '.rh-flight-coach{position:absolute;left:10px;bottom:12px;z-index:18;width:min(330px,calc(100% - 20px));border:2px solid #67e8f9;border-radius:12px;background:rgba(2,6,23,.95);padding:12px;color:#f8fafc;box-shadow:0 14px 40px rgba(0,0,0,.4);}.rh-flight-coach-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#a5f3fc;font:800 11px/1.2 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.06em;}.rh-flight-coach-title{margin-top:5px;color:#fff;font:800 15px/1.25 ui-sans-serif,system-ui;}.rh-flight-coach-copy{margin-top:4px;color:#dbeafe;font:600 12px/1.4 ui-sans-serif,system-ui;}.rh-flight-coach-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:9px;}.rh-flight-target-cue{position:absolute;left:50%;top:58px;z-index:14;transform:translateX(-50%);max-width:calc(100% - 24px);border:1px solid #fca5a5;border-radius:9px;background:rgba(15,23,42,.9);padding:6px 10px;color:#fee2e2;font:800 11px/1.25 ui-sans-serif,system-ui;text-align:center;pointer-events:none;}.rh-flight-target-cue[data-target-state="ready"]{border-color:#86efac;color:#dcfce7;background:rgba(20,83,45,.94);}.rh-flight-target-cue[data-target-state="close"]{border-color:#fde047;color:#fef9c3;}',
-    '.rh-flight-telemetry,.rh-flight-status,.rh-flight-weather,.rh-flight-energy{display:none!important;}',
     '.rh-flight-marker{position:absolute;left:50%;top:50%;z-index:7;width:88px;height:32px;transform:translate(-50%,-50%);pointer-events:none;}',
     '.rh-flight-marker::before{content:"";position:absolute;left:0;right:0;top:15px;border-top:2px solid rgba(254,240,138,.9);box-shadow:0 1px 3px rgba(0,0,0,.8);}',
     '.rh-flight-marker::after{content:"";position:absolute;left:43px;top:5px;height:20px;border-left:2px solid rgba(254,240,138,.95);}',
@@ -97,10 +96,10 @@
     '[data-raptor-sim-shell="true"]:fullscreen .rh-flight-controls,[data-raptor-sim-shell="true"]:-webkit-full-screen .rh-flight-controls,[data-raptor-sim-shell="true"][data-allo-fullscreen-active="true"] .rh-flight-controls{flex:0 0 auto;}',
     '[data-raptor-flight-stage="true"]:fullscreen,[data-raptor-flight-stage="true"]:-webkit-full-screen,[data-raptor-flight-stage="true"][data-allo-fullscreen-active="true"]{width:100vw!important;height:100vh!important;min-height:0!important;max-height:none!important;background:#020617;}',
     '[data-raptor-flight-stage="true"]:fullscreen canvas,[data-raptor-flight-stage="true"]:-webkit-full-screen canvas,[data-raptor-flight-stage="true"][data-allo-fullscreen-active="true"] canvas{width:100%!important;height:100%!important;}',
-    '@media(max-width:760px){[data-raptor-flight-stage="true"]{height:58vh;min-height:390px;}.rh-flight-controls{display:grid;grid-template-columns:1fr;align-items:stretch;gap:8px;max-height:42vh;overflow-y:auto;overscroll-behavior:contain;}.rh-flight-controls-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:7px;}.rh-flight-controls-run{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-flight-control-label{grid-column:1/-1;}.rh-flight-btn{width:100%;min-width:0;padding-left:6px;padding-right:6px;}.rh-flight-mission-hud{top:104px;left:auto;right:8px;bottom:auto;max-width:min(280px,calc(100% - 16px));}.rh-flight-coach{left:8px;right:8px;bottom:8px;width:auto;}.rh-flight-weather{display:none!important;}.rh-flight-status{display:none!important;}}',
-    '@media(max-width:760px){.rh-flight-telemetry-strip{top:8px;}.rh-flight-metric{min-width:68px;padding:6px 7px;}.rh-flight-metric:nth-child(5){display:none;}.rh-flight-settings{width:100%;}.rh-flight-settings>summary{width:100%;}.rh-flight-settings-panel{position:static;width:100%;margin-top:8px;}.rh-active-flight-bar{align-items:flex-start;}}',
-    '@media(max-width:430px){[data-raptor-flight-stage="true"]{height:54vh;min-height:350px;}.rh-flight-telemetry{transform:scale(.86);transform-origin:top left;}.rh-flight-energy{display:none!important;}.rh-flight-btn{font-size:11px;padding:8px 4px;}.rh-flight-target-cue{top:54px;font-size:10px;}.rh-flight-mission-hud{top:91px;font-size:10px;}.rh-flight-coach-copy{font-size:11px;}.rh-flight-coach-actions .rh-flight-btn{width:auto;min-width:68px;}}',
-    '@media(max-width:430px){.rh-flight-metric{min-width:61px}.rh-flight-metric:nth-child(4){display:none;}.rh-flight-metric-value{font-size:12px;}}',
+    '@media(max-width:760px){[data-raptor-flight-stage="true"]{height:58vh;min-height:390px;}.rh-flight-controls{display:grid;grid-template-columns:1fr;align-items:stretch;gap:8px;max-height:42vh;overflow-y:auto;overscroll-behavior:contain;}.rh-flight-controls-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:7px;}.rh-flight-controls-run{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-flight-control-label{grid-column:1/-1;}.rh-flight-btn{width:100%;min-width:0;padding-left:6px;padding-right:6px;}.rh-flight-mission-hud{top:104px;left:auto;right:8px;bottom:auto;max-width:min(280px,calc(100% - 16px));}.rh-flight-coach{left:8px;right:8px;bottom:8px;width:auto;}}',
+    '@media(max-width:760px){.rh-flight-telemetry-strip{top:8px;}.rh-flight-metric{min-width:68px;padding:6px 7px;}.rh-flight-metric:nth-child(6){display:none;}.rh-flight-settings{width:100%;}.rh-flight-settings>summary{width:100%;}.rh-flight-settings-panel{position:static;width:100%;margin-top:8px;}.rh-active-flight-bar{align-items:flex-start;}}',
+    '@media(max-width:430px){[data-raptor-flight-stage="true"]{height:54vh;min-height:350px;}.rh-flight-btn{font-size:11px;padding:8px 4px;}.rh-flight-target-cue{top:54px;font-size:10px;}.rh-flight-mission-hud{top:91px;font-size:10px;}.rh-flight-coach-copy{font-size:11px;}.rh-flight-coach-actions .rh-flight-btn{width:auto;min-width:68px;}}',
+    '@media(max-width:430px){.rh-flight-metric{min-width:61px}.rh-flight-metric:nth-child(4),.rh-flight-metric:nth-child(6){display:none;}.rh-flight-metric-value{font-size:12px;}}',
     '@media(prefers-reduced-motion:reduce){.rh-flight-btn{transition:none;}.rh-flight-pause{backdrop-filter:none;}}'
   ].join('');
   if (document.head) document.head.appendChild(st);
@@ -8638,9 +8637,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var disposed = false;
         var graphicsQuality = /^(low|balanced|high)$/.test(qualitySetting || '') ? qualitySetting : 'balanced';
         var qualityProfile = {
-          low: { pixelRatio: 1, bloom: false, particles: 0.35, clouds: 0.5, stars: 0.35, waterSegments: 32 },
-          balanced: { pixelRatio: 1.5, bloom: true, particles: 0.7, clouds: 0.75, stars: 0.65, waterSegments: 48 },
-          high: { pixelRatio: 2, bloom: true, particles: 1, clouds: 1, stars: 1, waterSegments: 64 }
+          low: { pixelRatio: 1, bloom: false, particles: 0.35, precipitation: 0.45, clouds: 0.5, stars: 0.35, waterSegments: 32, waterHz: 10 },
+          balanced: { pixelRatio: 1.5, bloom: true, particles: 0.7, precipitation: 0.72, clouds: 0.75, stars: 0.65, waterSegments: 48, waterHz: 16 },
+          high: { pixelRatio: 2, bloom: true, particles: 1, precipitation: 1, clouds: 1, stars: 1, waterSegments: 64, waterHz: 24 }
         }[graphicsQuality];
         function dampingAlpha(response, deltaSeconds) {
           return 1 - Math.exp(-response * Math.max(0, deltaSeconds));
@@ -8735,37 +8734,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var skCtx = skyCanvas.getContext('2d');
         var skGrad = skCtx.createLinearGradient(0, 0, 0, 512);
         // Zenith → middle → horizon
-        var skyHex = '#' + new THREE.Color(bc.sky).getHexString();
-        var fogHex = '#' + new THREE.Color(bc.fog).getHexString();
-        if (species.biome === 'forest-night') {
-          skGrad.addColorStop(0, '#020617');     // dark zenith
-          skGrad.addColorStop(0.5, '#1e1b4b');   // deep indigo
-          skGrad.addColorStop(0.85, '#4338ca');  // lighter near horizon
-          skGrad.addColorStop(1, '#312e81');     // horizon glow
-        } else if (species.biome === 'tundra') {
-          skGrad.addColorStop(0, '#7dd3fc');     // pale arctic zenith
-          skGrad.addColorStop(0.6, '#bae6fd');
-          skGrad.addColorStop(1, '#e0f2fe');     // very pale horizon
-        } else if (species.biome === 'cliff' || species.biome === 'urban-cliff') {
-          skGrad.addColorStop(0, '#1e40af');     // deep blue zenith
-          skGrad.addColorStop(0.5, '#3b82f6');
-          skGrad.addColorStop(1, '#bfdbfe');     // pale horizon
-        } else if (species.biome === 'rainforest') {
-          skGrad.addColorStop(0, '#7dd3fc');     // tropical blue
-          skGrad.addColorStop(0.5, '#a7f3d0');   // hazy green-tint
-          skGrad.addColorStop(1, '#d9f99d');     // hazy horizon
-        } else {
-          // Default day-sky gradient (grassland, lake, forest, boreal, mountain)
-          skGrad.addColorStop(0, '#1e3a8a');     // deep blue zenith
-          skGrad.addColorStop(0.4, skyHex);      // mid sky uses biome color
-          skGrad.addColorStop(0.85, fogHex);     // horizon fades to fog color
-          skGrad.addColorStop(1, '#fef3c7');     // warm amber at horizon
-        }
+        // Static luminance only: biome, time, twilight, and weather color come
+        // from skyDome.material.color, so this texture never needs repainting.
+        skGrad.addColorStop(0, '#94a3b8');
+        skGrad.addColorStop(0.58, '#cbd5e1');
+        skGrad.addColorStop(0.88, '#e2e8f0');
+        skGrad.addColorStop(1, '#f8fafc');
         skCtx.fillStyle = skGrad;
         skCtx.fillRect(0, 0, 16, 512);
         var skyTex = new THREE.CanvasTexture(skyCanvas);
+        var skyDomeRadius = 900;
         var skyDome = new THREE.Mesh(
-          new THREE.SphereGeometry(900, 32, 16),
+          new THREE.SphereGeometry(skyDomeRadius, 32, 16),
           new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, depthWrite: false, fog: false })
         );
         scene.add(skyDome);
@@ -8790,11 +8770,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // random offstage angle.
         sun.position.set(120, 180, 80);
         scene.add(sun);
-        if (isNight) {
-          var moonGlow = new THREE.DirectionalLight(0xb0c4ff, 0.35);
-          moonGlow.position.set(-60, 90, -30);
-          scene.add(moonGlow);
-        }
+        var moonGlow = new THREE.DirectionalLight(0xb0c4ff, 0);
+        moonGlow.position.set(-60, 90, -30);
+        scene.add(moonGlow);
 
         // ─── NEW v0.27: Starfield for night biome ───
         var starsList = null;
@@ -8820,38 +8798,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           starsList = { points: stars, twinkle: starTwinkle, count: starCount };
         }
 
-        // ─── NEW v0.25: Visible sun disc (or moon at night) ───
-        var sunDiscCanvas = document.createElement('canvas');
-        sunDiscCanvas.width = 128; sunDiscCanvas.height = 128;
-        var sdc = sunDiscCanvas.getContext('2d');
-        var sdGrad = sdc.createRadialGradient(64, 64, 8, 64, 64, 60);
-        if (isNight) {
-          sdGrad.addColorStop(0, 'rgba(248, 250, 252, 1)');
-          sdGrad.addColorStop(0.5, 'rgba(226, 232, 240, 0.6)');
-          sdGrad.addColorStop(1, 'rgba(148, 163, 184, 0)');
-        } else {
-          sdGrad.addColorStop(0, 'rgba(255, 250, 200, 1)');
-          sdGrad.addColorStop(0.3, 'rgba(254, 240, 138, 0.85)');
-          sdGrad.addColorStop(0.6, 'rgba(252, 211, 77, 0.4)');
-          sdGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+        // ─── Complementary sun + moon discs for the complete day cycle ───
+        function makeCelestialTexture(stops) {
+          var discCanvas = document.createElement('canvas');
+          discCanvas.width = 128; discCanvas.height = 128;
+          var discContext = discCanvas.getContext('2d');
+          var discGradient = discContext.createRadialGradient(64, 64, 8, 64, 64, 60);
+          stops.forEach(function(stop) { discGradient.addColorStop(stop[0], stop[1]); });
+          discContext.fillStyle = discGradient;
+          discContext.fillRect(0, 0, 128, 128);
+          return new THREE.CanvasTexture(discCanvas);
         }
-        sdc.fillStyle = sdGrad;
-        sdc.fillRect(0, 0, 128, 128);
-        var sunTex = new THREE.CanvasTexture(sunDiscCanvas);
-        var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: sunTex, transparent: true, depthWrite: false, fog: false }));
-        // Sun is conceptually at infinity — store *direction* (unit vector × big
-        // radius) rather than a world-space position. The animation loop
-        // re-anchors it relative to the raptor every frame so the sun never
-        // drifts across the sky as the bird moves, and never enters the fog
-        // band even if the bird flies near the world edge.
+        var sunTex = makeCelestialTexture([
+          [0, 'rgba(255, 250, 200, 1)'],
+          [0.3, 'rgba(254, 240, 138, 0.85)'],
+          [0.6, 'rgba(252, 211, 77, 0.4)'],
+          [1, 'rgba(251, 191, 36, 0)']
+        ]);
+        var moonTex = makeCelestialTexture([
+          [0, 'rgba(248, 250, 252, 1)'],
+          [0.45, 'rgba(226, 232, 240, 0.72)'],
+          [0.72, 'rgba(148, 163, 184, 0.28)'],
+          [1, 'rgba(100, 116, 139, 0)']
+        ]);
+        var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: sunTex, transparent: true, opacity: 0, depthWrite: false, fog: false }));
+        var moonSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: moonTex, transparent: true, opacity: 0, depthWrite: false, fog: false }));
         var sunDir = new THREE.Vector3(120, 180, 80).normalize();
+        var moonDir = sunDir.clone().multiplyScalar(-1);
         var sunDistance = 700;
+        var moonDistance = 690;
         sunSprite.position.copy(sunDir).multiplyScalar(sunDistance);
+        moonSprite.position.copy(moonDir).multiplyScalar(moonDistance);
         sunSprite.scale.set(70, 70, 1);
+        moonSprite.scale.set(54, 54, 1);
         scene.add(sunSprite);
-
-        // ─── NEW v0.25: Cloud sprites (skip in night biome) ───
-        if (!isNight) {
+        scene.add(moonSprite);
+        // ─── Weather cloud pool in every biome and every time of day ───
+        var cloudList = [];
+        {
           var cloudCanvas = document.createElement('canvas');
           cloudCanvas.width = 256; cloudCanvas.height = 128;
           var cc = cloudCanvas.getContext('2d');
@@ -8872,7 +8856,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var numClouds = Math.max(3, Math.round((species.biome === 'cliff' || species.biome === 'mountain' ? 6 : 12) * qualityProfile.clouds));
           var clouds = [];
           for (var clI = 0; clI < numClouds; clI++) {
-            var cloud = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, transparent: true, depthWrite: false, opacity: 0.55 + Math.random() * 0.35 }));
+            var cloudOpacity = 0.55 + Math.random() * 0.35;
+            var cloud = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, transparent: true, depthWrite: false, opacity: cloudOpacity }));
             var clTheta = Math.random() * Math.PI * 2;
             var clRadius = 200 + Math.random() * 250;
             cloud.position.set(
@@ -8883,9 +8868,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var clScale = 40 + Math.random() * 50;
             cloud.scale.set(clScale * 2, clScale, 1);
             scene.add(cloud);
-            clouds.push({ sprite: cloud, driftSpeed: 0.2 + Math.random() * 0.3 });
+            clouds.push({
+              sprite: cloud,
+              driftSpeed: 0.2 + Math.random() * 0.3,
+              baseOpacity: cloudOpacity,
+              baseY: cloud.position.y,
+              phase: Math.random() * Math.PI * 2
+            });
           }
-          var cloudList = clouds; // exposed for animation
+          cloudList = clouds;
         }
 
         // ─── Terrain: large displaced plane ───
@@ -8970,7 +8961,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         // ─── NEW v0.26: Animated water for lake biome (vertex-displaced ripples) ───
         var lake = null;
+        var lakeSheen = null;
         var lakeOriginalY = null;
+        var lastWaterUpdate = 0;
+        var waterUpdateInterval = 1000 / qualityProfile.waterHz;
+        var waterUpdateCount = 0;
         if (species.biome === 'lake') {
           var lakeGeo = new THREE.CircleGeometry(110, qualityProfile.waterSegments);  // higher segment count for vertex animation
           // Save original Y of each vertex (all 0 initially since it's a circle, but we add noise)
@@ -8989,13 +8984,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           lake.position.y = -1.5;
           scene.add(lake);
           // Add a brighter "sheen" highlight near the sun position — gives reflection feel
-          var sheen = new THREE.Mesh(
+          lakeSheen = new THREE.Mesh(
             new THREE.CircleGeometry(35, 24),
             new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.20, depthWrite: false })
           );
-          sheen.rotation.x = -Math.PI / 2;
-          sheen.position.set(20, -1.45, 15);  // offset toward sun direction
-          scene.add(sheen);
+          lakeSheen.rotation.x = -Math.PI / 2;
+          lakeSheen.position.set(20, -1.45, 15);
+          scene.add(lakeSheen);
         }
 
         // ─── Trees + obstacles ───
@@ -9101,39 +9096,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
         }
 
-        // ─── NEW v0.28: Distant horizon mountains (silhouette ring beyond playable terrain) ───
-        // 5-8 mountain peaks at radius ~720m on far edge of fog
+        // Layered distant terrain: readable inside fog and centered on the flight world.
+        var distantTerrainGroup = new THREE.Group();
+        distantTerrainGroup.name = 'raptor-distant-terrain';
         var mountainCount = species.biome === 'rainforest' || species.biome === 'cliff' || species.biome === 'mountain' || species.biome === 'tundra' ? 8 : 5;
         var mountainColor = species.biome === 'tundra' ? 0x94a3b8 :
                             species.biome === 'rainforest' ? 0x166534 :
                             species.biome === 'forest-night' ? 0x1e1b4b :
                             0x475569;
+        var farMountainMaterial = new THREE.MeshBasicMaterial({ color: mountainColor, transparent: true, opacity: 0.62, fog: true });
+        var nearMountainMaterial = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(mountainColor).offsetHSL(0, -0.04, -0.08),
+          transparent: true,
+          opacity: 0.82,
+          fog: true
+        });
+        var snowCapMaterial = new THREE.MeshBasicMaterial({ color: 0xe2e8f0, transparent: true, opacity: 0.78, fog: true });
         for (var mti = 0; mti < mountainCount; mti++) {
-          var mtTheta = (mti / mountainCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
-          var mtRadius = 700 + Math.random() * 100;
-          var mtHeight = 40 + Math.random() * 80;
-          var mtWidth = 80 + Math.random() * 60;
-          var mtX = Math.cos(mtTheta) * mtRadius;
-          var mtZ = Math.sin(mtTheta) * mtRadius;
-          // Cone for mountain peak
-          var mtGeo = new THREE.ConeGeometry(mtWidth, mtHeight, 5);  // pentagonal for jagged look
-          var mtMat = new THREE.MeshBasicMaterial({ color: mountainColor, fog: true });
-          var mt = new THREE.Mesh(mtGeo, mtMat);
-          mt.position.set(mtX, mtHeight * 0.4, mtZ);
+          var mtTheta = (mti / mountainCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.24;
+          var mtRadius = 435 + Math.random() * 115;
+          var mtHeight = 44 + Math.random() * 72;
+          var mtWidth = 72 + Math.random() * 58;
+          var mt = new THREE.Mesh(
+            new THREE.ConeGeometry(mtWidth, mtHeight, 5),
+            mti % 2 ? nearMountainMaterial : farMountainMaterial
+          );
+          mt.position.set(Math.cos(mtTheta) * mtRadius, mtHeight * 0.4, Math.sin(mtTheta) * mtRadius);
           mt.rotation.y = Math.random() * Math.PI * 2;
-          scene.add(mt);
-          // Snow cap (lighter cone on top) for tundra + mountain biomes
+          distantTerrainGroup.add(mt);
           if (species.biome === 'tundra' || species.biome === 'mountain' || species.biome === 'cliff') {
-            var snowCap = new THREE.Mesh(
-              new THREE.ConeGeometry(mtWidth * 0.4, mtHeight * 0.4, 5),
-              new THREE.MeshBasicMaterial({ color: 0xf1f5f9, fog: true })
-            );
-            snowCap.position.set(mtX, mtHeight * 0.75, mtZ);
+            var snowCap = new THREE.Mesh(new THREE.ConeGeometry(mtWidth * 0.4, mtHeight * 0.4, 5), snowCapMaterial);
+            snowCap.position.set(mt.position.x, mtHeight * 0.75, mt.position.z);
             snowCap.rotation.y = mt.rotation.y;
-            scene.add(snowCap);
+            distantTerrainGroup.add(snowCap);
           }
         }
-
+        scene.add(distantTerrainGroup);
         // ─── NEW v0.28: Distant flock silhouettes (3-5 dark V-shapes drifting across the sky) ───
         var flockCanvas = document.createElement('canvas');
         flockCanvas.width = 32; flockCanvas.height = 16;
@@ -9427,7 +9425,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // ── NEW v0.27: Catch FX particle pool (feathers/dust burst on strike) ──
         var catchFxList = [];  // {particles, lifetime, maxLifetime}
         function spawnCatchFx(x, y, z, preyColor) {
-          var fxCount = 28;
+          var fxCount = _rmFX ? 4 : Math.max(10, Math.round(28 * qualityProfile.particles));
           var fxGeo = new THREE.BufferGeometry();
           var fxPos = new Float32Array(fxCount * 3);
           var fxVel = [];
@@ -9476,25 +9474,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         birdShadow.position.y = 0.05;
         scene.add(birdShadow);
 
-        // ─── NEW v0.25: Biome ambient particles (snow/leaves/dust) ───
+        // ─── NEW v0.25: Biome ambient particles (leaves/dust); weather precipitation uses its own pool ───
         var particleSystem = null;
         var particleData = null;
-        if (species.biome === 'tundra' || species.biome === 'boreal-forest') {
-          // Snow particles
-          var snowCount = Math.max(80, Math.round(400 * qualityProfile.particles));
-          var snowGeo = new THREE.BufferGeometry();
-          var snowPos = new Float32Array(snowCount * 3);
-          particleData = { type: 'snow', velocities: [] };
-          for (var spi = 0; spi < snowCount; spi++) {
-            snowPos[spi * 3] = (Math.random() - 0.5) * 400;
-            snowPos[spi * 3 + 1] = Math.random() * 200;
-            snowPos[spi * 3 + 2] = (Math.random() - 0.5) * 400;
-            particleData.velocities.push({ vx: (Math.random() - 0.5) * 0.4, vy: -0.3 - Math.random() * 0.4, vz: (Math.random() - 0.5) * 0.2 });
-          }
-          snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPos, 3));
-          particleSystem = new THREE.Points(snowGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, transparent: true, opacity: 0.85, depthWrite: false }));
-          scene.add(particleSystem);
-        } else if (species.biome === 'forest' || species.biome === 'rainforest') {
+        if (species.biome === 'forest' || species.biome === 'rainforest') {
           // Drifting leaves
           var leafCount = Math.max(50, Math.round(200 * qualityProfile.particles));
           var leafGeo = new THREE.BufferGeometry();
@@ -9732,9 +9715,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           );
           beaconCap.position.y = Math.max(0.9, size);
           preyGroup.add(beaconCap);
-          var assistVisible = targetLockOn !== false;
-          beacon.visible = assistVisible;
-          beaconCap.visible = assistVisible;
+          beacon.visible = false;
+          beaconCap.visible = false;
           preyGroup.position.set(px, py + size * 0.5, pz);
           scene.add(preyGroup);
           return {
@@ -9763,16 +9745,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
 
         // ─── NEW v0.30: Weather System ───
+        var climateProfile = {
+          rainforest: { tempC: 28, precipitation: 1.0 },
+          lake: { tempC: 14, precipitation: 0.95 },
+          forest: { tempC: 15, precipitation: 0.85 },
+          'forest-night': { tempC: 11, precipitation: 0.85 },
+          'boreal-forest': { tempC: -4, precipitation: 0.90 },
+          tundra: { tempC: -10, precipitation: 0.82 },
+          mountain: { tempC: 2, precipitation: 0.75 },
+          cliff: { tempC: 9, precipitation: 0.72 },
+          grassland: { tempC: 17, precipitation: 0.58 }
+        }[species.biome] || { tempC: 15, precipitation: 0.72 };
         var weather = {
-          windDir: Math.random() * Math.PI * 2,   // wind direction in radians (world bearing)
-          windSpeed: 3 + Math.random() * 6,        // m/s base wind
+          windDir: Math.random() * Math.PI * 2,   // direction the wind travels toward
+          windSpeed: 3 + Math.random() * 6,
           gustPhase: 0,
-          cloudCover: 0.3 + Math.random() * 0.4,   // 0-1, affects thermal strength
-          thermalQuality: 0.5 + Math.random() * 0.4, // multiplier for free-lift from thermals
-          tempC: species.biome === 'tundra' ? -10 : species.biome === 'rainforest' ? 28 : 18,
-          changeTimer: 30 + Math.random() * 60     // seconds until next weather shift
+          cloudCover: 0.3 + Math.random() * 0.4,
+          thermalQuality: 0.5 + Math.random() * 0.4,
+          tempC: climateProfile.tempC,
+          precipitationPotential: climateProfile.precipitation,
+          precipitationTypeOverride: null,
+          precipitationIntensityOverride: null,
+          changeTimer: 30 + Math.random() * 60
         };
-        // ─── NEW v0.30: Time-of-day cycle (visual + gameplay) ───
+        var precipitationMode = 'none';
+        var precipitationIntensity = 0;
+        var activePrecipitationCount = 0;
+        var precipitationUpdates = 0;
+        var precipitationDriftX = 0;
+        var precipitationDriftZ = 0;        // ─── NEW v0.30: Time-of-day cycle (visual + gameplay) ───
         // dayPhase 0-1: 0 = midnight, 0.25 = dawn, 0.5 = noon, 0.75 = dusk
         var dayPhase = species.biome === 'forest-night' ? 0.0 : (species.id === 'kestrel' || species.id === 'snowyOwl' ? 0.35 : 0.5);
         var dayCycleSpeed = 0.0025;  // % per second — full day = ~400 seconds
@@ -9784,29 +9785,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var skyFrameColor = new THREE.Color();
         var fogFrameColor = new THREE.Color();
         var skyTintColor = new THREE.Color();
-        var daylightTintColor = new THREE.Color(0xffffff);
+        var overcastSkyColor = new THREE.Color(0x64748b);
+        var overcastFogColor = new THREE.Color(0x64748b);
+        var visualCloudCover = weather.cloudCover;
         var starVisibility = 0;
         function updateEnvironmentalLight(phase) {
           var solarAngle = (phase - 0.25) * Math.PI * 2;
           var sunHeight = Math.sin(solarAngle);
+          var moonHeight = -sunHeight;
           var daylight = Math.max(0, Math.min(1, (sunHeight + 0.16) / 0.76));
+          var moonlight = Math.max(0, Math.min(1, (moonHeight + 0.10) / 0.70));
           var twilight = Math.max(0, 1 - Math.abs(sunHeight) / 0.28) * (1 - daylight * 0.35);
+          var cloudShade = 1 - visualCloudCover * 0.58;
+          moonDir.copy(sunDir).multiplyScalar(-1);
           skyFrameColor.copy(nightSkyColor).lerp(daySkyColor, daylight).lerp(twilightColor, twilight * 0.28);
           fogFrameColor.copy(nightFogColor).lerp(dayFogColor, daylight).lerp(twilightColor, twilight * 0.18);
+          skyFrameColor.lerp(overcastSkyColor, visualCloudCover * (0.18 + daylight * 0.32));
+          fogFrameColor.lerp(overcastFogColor, visualCloudCover * (0.24 + daylight * 0.30));
           scene.background.copy(skyFrameColor);
           scene.fog.color.copy(fogFrameColor);
-          skyTintColor.setHex(0x263244).lerp(daylightTintColor, daylight);
+          scene.fog.near = 34 - visualCloudCover * 10;
+          scene.fog.far = 600 - visualCloudCover * 150;
+          renderer.toneMappingExposure = (0.78 + daylight * 0.28 + twilight * 0.04) * (1 - visualCloudCover * 0.12);
+          skyTintColor.copy(skyFrameColor);
           skyDome.material.color.copy(skyTintColor);
-          ambient.intensity = 0.14 + daylight * 0.43;
-          skyFill.intensity = 0.16 + daylight * 0.26;
-          rimLight.intensity = 0.18 + daylight * 0.22 + twilight * 0.22;
+          ambient.intensity = (0.14 + daylight * 0.43) * (0.92 + visualCloudCover * 0.08);
+          skyFill.intensity = (0.16 + daylight * 0.26) * (0.95 + visualCloudCover * 0.12);
+          rimLight.intensity = (0.18 + daylight * 0.22 + twilight * 0.22) * cloudShade;
           rimLight.color.setHex(twilight > 0.25 ? 0xfdba74 : (daylight < 0.25 ? 0xa5b4fc : 0xffedd5));
-          sun.intensity = 0.08 + daylight * 0.92;
+          sun.intensity = daylight * 0.96 * cloudShade;
           sun.color.setHex(twilight > 0.25 ? 0xfbbf24 : 0xfff8e1);
-          sunDir.set(Math.cos(solarAngle) * 0.72, Math.max(-0.12, sunHeight), Math.sin(solarAngle) * 0.62).normalize();
+          sunDir.set(Math.cos(solarAngle) * 0.72, sunHeight, Math.sin(solarAngle) * 0.62).normalize();
+          moonDir.copy(sunDir).multiplyScalar(-1);
           sun.position.copy(sunDir).multiplyScalar(180);
-          sunSprite.material.opacity = Math.max(0.06, daylight + twilight * 0.55);
-          starVisibility = Math.max(0, Math.min(1, 1 - daylight * 1.35));
+          moonGlow.position.copy(moonDir).multiplyScalar(150);
+          moonGlow.intensity = moonlight * 0.34 * cloudShade;
+          sunSprite.material.opacity = Math.max(0, (daylight + twilight * 0.38) * cloudShade);
+          moonSprite.material.opacity = Math.max(0, moonlight * 0.86 * cloudShade);
+          if (lakeSheen) {
+            lakeSheen.material.opacity = daylight * cloudShade * 0.22;
+            lakeSheen.position.x = sunDir.x * 32;
+            lakeSheen.position.z = sunDir.z * 32;
+          }
+          starVisibility = Math.max(0, Math.min(1, 1 - daylight * 1.35)) * (1 - visualCloudCover * 0.90);
         }
         updateEnvironmentalLight(dayPhase);
 
@@ -9925,6 +9946,135 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           raptor.y + 0.3,
           raptor.z - Math.cos(raptor.yaw) * 3
         );
+        // Universal, quality-scaled precipitation pools. Geometry is allocated once;
+        // intensity changes only visibility and draw ranges.
+        var rainCapacity = Math.max(72, Math.round(320 * qualityProfile.precipitation));
+        var snowCapacity = Math.max(56, Math.round(220 * qualityProfile.precipitation));
+        var rainPositions = new Float32Array(rainCapacity * 6);
+        var rainFallSpeeds = new Float32Array(rainCapacity);
+        var snowPositions = new Float32Array(snowCapacity * 3);
+        var snowFallSpeeds = new Float32Array(snowCapacity);
+        var snowPhases = new Float32Array(snowCapacity);
+        var rainGeometry = new THREE.BufferGeometry();
+        var rainPositionAttribute = new THREE.BufferAttribute(rainPositions, 3);
+        if (rainPositionAttribute.setUsage && THREE.DynamicDrawUsage) rainPositionAttribute.setUsage(THREE.DynamicDrawUsage);
+        rainGeometry.setAttribute('position', rainPositionAttribute);
+        rainGeometry.setDrawRange(0, 0);
+        var rainSystem = new THREE.LineSegments(
+          rainGeometry,
+          new THREE.LineBasicMaterial({ color: 0xc7e9ff, transparent: true, opacity: 0.58, depthWrite: false })
+        );
+        rainSystem.name = 'raptor-rain';
+        rainSystem.visible = false;
+        rainSystem.frustumCulled = false;
+        scene.add(rainSystem);
+        var snowGeometry = new THREE.BufferGeometry();
+        var snowPositionAttribute = new THREE.BufferAttribute(snowPositions, 3);
+        if (snowPositionAttribute.setUsage && THREE.DynamicDrawUsage) snowPositionAttribute.setUsage(THREE.DynamicDrawUsage);
+        snowGeometry.setAttribute('position', snowPositionAttribute);
+        snowGeometry.setDrawRange(0, 0);
+        var snowSystem = new THREE.Points(
+          snowGeometry,
+          new THREE.PointsMaterial({ color: 0xf8fafc, size: 0.24, transparent: true, opacity: 0.82, depthWrite: false, sizeAttenuation: true })
+        );
+        snowSystem.name = 'raptor-snow';
+        snowSystem.visible = false;
+        snowSystem.frustumCulled = false;
+        scene.add(snowSystem);
+
+        function resetRainDrop(index, randomHeight) {
+          var base = index * 6;
+          rainPositions[base] = camera.position.x + (Math.random() - 0.5) * 120;
+          rainPositions[base + 1] = camera.position.y + (randomHeight ? -30 + Math.random() * 80 : 48 + Math.random() * 8);
+          rainPositions[base + 2] = camera.position.z + (Math.random() - 0.5) * 120;
+          rainFallSpeeds[index] = 28 + Math.random() * 18;
+          rainPositions[base + 3] = rainPositions[base];
+          rainPositions[base + 4] = rainPositions[base + 1] + 1.8;
+          rainPositions[base + 5] = rainPositions[base + 2];
+        }
+        function resetSnowFlake(index, randomHeight) {
+          var base = index * 3;
+          snowPositions[base] = camera.position.x + (Math.random() - 0.5) * 120;
+          snowPositions[base + 1] = camera.position.y + (randomHeight ? -30 + Math.random() * 80 : 48 + Math.random() * 8);
+          snowPositions[base + 2] = camera.position.z + (Math.random() - 0.5) * 120;
+          snowFallSpeeds[index] = 2.1 + Math.random() * 2.6;
+          snowPhases[index] = Math.random() * Math.PI * 2;
+        }
+        for (var rainSeed = 0; rainSeed < rainCapacity; rainSeed++) resetRainDrop(rainSeed, true);
+        for (var snowSeed = 0; snowSeed < snowCapacity; snowSeed++) resetSnowFlake(snowSeed, true);
+
+        function updatePrecipitation(dt, effWindSpeed) {
+          var cloudSignal = Math.max(0, Math.min(1, (visualCloudCover - 0.58) / 0.32));
+          var targetIntensity = typeof weather.precipitationIntensityOverride === 'number'
+            ? weather.precipitationIntensityOverride
+            : cloudSignal * weather.precipitationPotential;
+          targetIntensity = Math.max(0, Math.min(1, targetIntensity));
+          var desiredMode = weather.precipitationTypeOverride === 'rain' || weather.precipitationTypeOverride === 'snow' || weather.precipitationTypeOverride === 'none'
+            ? weather.precipitationTypeOverride
+            : (weather.tempC <= 1 ? 'snow' : 'rain');
+          if (targetIntensity < 0.025) desiredMode = 'none';
+          precipitationIntensity += (targetIntensity - precipitationIntensity) *
+            dampingAlpha(targetIntensity > precipitationIntensity ? 1.8 : 0.65, dt);
+          if (Math.abs(targetIntensity - precipitationIntensity) < 0.001) precipitationIntensity = targetIntensity;
+          if (desiredMode !== 'none') precipitationMode = desiredMode;
+          else if (precipitationIntensity < 0.025) precipitationMode = 'none';
+
+          precipitationDriftX = Math.sin(weather.windDir) * effWindSpeed;
+          precipitationDriftZ = -Math.cos(weather.windDir) * effWindSpeed;
+          if (_rmFX || precipitationMode === 'none' || precipitationIntensity < 0.025) {
+            rainSystem.visible = false;
+            snowSystem.visible = false;
+            rainGeometry.setDrawRange(0, 0);
+            snowGeometry.setDrawRange(0, 0);
+            activePrecipitationCount = 0;
+            return;
+          }
+
+          precipitationUpdates += 1;
+          if (precipitationMode === 'rain') {
+            activePrecipitationCount = Math.max(1, Math.round(rainCapacity * (0.14 + precipitationIntensity * 0.86)));
+            rainSystem.visible = true;
+            snowSystem.visible = false;
+            rainSystem.material.opacity = 0.28 + precipitationIntensity * 0.42;
+            rainGeometry.setDrawRange(0, activePrecipitationCount * 2);
+            snowGeometry.setDrawRange(0, 0);
+            for (var rainIndex = 0; rainIndex < activePrecipitationCount; rainIndex++) {
+              var rainBase = rainIndex * 6;
+              rainPositions[rainBase] += precipitationDriftX * dt * 0.72;
+              rainPositions[rainBase + 1] -= rainFallSpeeds[rainIndex] * dt;
+              rainPositions[rainBase + 2] += precipitationDriftZ * dt * 0.72;
+              if (rainPositions[rainBase + 1] < camera.position.y - 35 ||
+                  Math.abs(rainPositions[rainBase] - camera.position.x) > 62 ||
+                  Math.abs(rainPositions[rainBase + 2] - camera.position.z) > 62) {
+                resetRainDrop(rainIndex, false);
+              }
+              rainPositions[rainBase + 3] = rainPositions[rainBase] - precipitationDriftX * 0.055;
+              rainPositions[rainBase + 4] = rainPositions[rainBase + 1] + rainFallSpeeds[rainIndex] * 0.055;
+              rainPositions[rainBase + 5] = rainPositions[rainBase + 2] - precipitationDriftZ * 0.055;
+            }
+            rainPositionAttribute.needsUpdate = true;
+          } else {
+            activePrecipitationCount = Math.max(1, Math.round(snowCapacity * (0.18 + precipitationIntensity * 0.82)));
+            snowSystem.visible = true;
+            rainSystem.visible = false;
+            snowSystem.material.opacity = 0.48 + precipitationIntensity * 0.42;
+            snowGeometry.setDrawRange(0, activePrecipitationCount);
+            rainGeometry.setDrawRange(0, 0);
+            for (var snowIndex = 0; snowIndex < activePrecipitationCount; snowIndex++) {
+              var snowBase = snowIndex * 3;
+              snowPhases[snowIndex] += dt * (0.8 + snowFallSpeeds[snowIndex] * 0.18);
+              snowPositions[snowBase] += (precipitationDriftX * 0.36 + Math.sin(snowPhases[snowIndex]) * 0.72) * dt;
+              snowPositions[snowBase + 1] -= snowFallSpeeds[snowIndex] * dt;
+              snowPositions[snowBase + 2] += (precipitationDriftZ * 0.36 + Math.cos(snowPhases[snowIndex] * 0.7) * 0.48) * dt;
+              if (snowPositions[snowBase + 1] < camera.position.y - 35 ||
+                  Math.abs(snowPositions[snowBase] - camera.position.x) > 62 ||
+                  Math.abs(snowPositions[snowBase + 2] - camera.position.z) > 62) {
+                resetSnowFlake(snowIndex, false);
+              }
+            }
+            snowPositionAttribute.needsUpdate = true;
+          }
+        }
         var gravity = 9.81;
         var runStart = performance.now();
         var runElapsed = 0;
@@ -9943,6 +10093,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var lastSpawn = performance.now();
         // NEW v0.29: Track recent flight state for energy burn
         var energyEventLog = [];  // pulse events for HUD ("+120 kcal Pigeon", "-5 cal flapping")
+        var strikeFeedback = { kind: 'idle', message: '', startedAt: 0, duration: 0 };
+        function beginStrikeFeedback(kind, message, atTime) {
+          strikeFeedback.kind = kind;
+          strikeFeedback.message = message;
+          strikeFeedback.startedAt = atTime;
+          strikeFeedback.duration = kind === 'hit' ? 900 : 720;
+        }
+        function strikeMissReason(targetInfo) {
+          if (!targetInfo) return { code: 'NO TARGET', detail: 'Scan ahead for prey' };
+          if (targetInfo.distance > targetInfo.reach) {
+            return { code: 'TOO FAR', detail: 'Close another ' + Math.max(1, Math.ceil(targetInfo.distance - targetInfo.reach)) + ' m' };
+          }
+          if (targetInfo.verticalOffset > 2) return { code: 'PULL UP', detail: 'Bring the target down into the reticle' };
+          if (targetInfo.verticalOffset < -2) return { code: 'DIVE LOWER', detail: 'Bring the target up into the reticle' };
+          return { code: 'ALIGN', detail: 'Center the target before striking' };
+        }
 
         var pendingTimers = [];
         function queueTimer(callback, delay) {
@@ -10046,11 +10212,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           });
         }
         function setPaused(nextPaused, announcement) {
+          var wasPaused = simPaused;
           simPaused = !!nextPaused;
           clearHeldInputs();
           pauseOverlay.setAttribute('data-visible', simPaused ? 'true' : 'false');
           pauseOverlay.setAttribute('aria-hidden', simPaused ? 'false' : 'true');
           if (windGain && simPaused) windGain.gain.value = 0;
+          if (simPaused) speedLineMat.opacity = 0;
+          if (simPaused && animId) {
+            cancelAnimationFrame(animId);
+            animId = 0;
+          } else if (wasPaused && !simPaused && !disposed && !animId) {
+            lastT = performance.now();
+            animId = requestAnimationFrame(loop);
+          }
           publishControlState();
           if (announcement !== false) rhAnnounce(simPaused ? 'Flight paused' : 'Flight resumed');
         }
@@ -10075,8 +10250,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function toggleAssist() {
           targetLockOn = !targetLockOn;
           preyMeshes.forEach(function(prey) {
-            if (prey.beacon) prey.beacon.visible = targetLockOn;
-            if (prey.beaconCap) prey.beaconCap.visible = targetLockOn;
+            if (prey.beacon) prey.beacon.visible = false;
+            if (prey.beaconCap) prey.beaconCap.visible = false;
           });
           publishControlState();
           rhAnnounce(targetLockOn ? 'Target assist on' : 'Target assist off');
@@ -10265,10 +10440,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             toggleAssist();
           } else if (action === 'sound') {
             toggleSound();
+          } else if (action === 'environment' && value) {
+            if (Number.isFinite(value.dayPhase)) dayPhase = Math.max(0, Math.min(1, value.dayPhase));
+            if (Number.isFinite(value.cloudCover)) {
+              weather.cloudCover = Math.max(0.05, Math.min(0.95, value.cloudCover));
+              visualCloudCover = weather.cloudCover;
+            }
+            if (Number.isFinite(value.windDir)) weather.windDir = value.windDir;
+            if (Number.isFinite(value.windSpeed)) weather.windSpeed = Math.max(0, Math.min(20, value.windSpeed));
+            if (Number.isFinite(value.tempC)) weather.tempC = Math.max(-30, Math.min(45, value.tempC));
+            if (value.precipitationType === 'rain' || value.precipitationType === 'snow' || value.precipitationType === 'none') {
+              weather.precipitationTypeOverride = value.precipitationType;
+              precipitationMode = value.precipitationType;
+            } else if (value.precipitationType === 'auto') {
+              weather.precipitationTypeOverride = null;
+            }
+            if (Number.isFinite(value.precipitationIntensity)) {
+              weather.precipitationIntensityOverride = Math.max(0, Math.min(1, value.precipitationIntensity));
+              precipitationIntensity = weather.precipitationIntensityOverride;
+            } else if (value.precipitationIntensity === 'auto') {
+              weather.precipitationIntensityOverride = null;
+            }
+            weather.gustPhase = 0;
+            updateEnvironmentalLight(dayPhase);
           } else if (action === 'resetTutorial') {
             tutorialSignals = {};
             notifyUI({ tutorialSignals: {} });
           }
+        };
+        function countVisiblePreyBeacons() {
+          var count = 0;
+          preyMeshes.forEach(function(prey) {
+            if (prey.beacon && prey.beacon.visible) count += 1;
+          });
+          return count;
+        }
+        canvasEl._rhSnapshot = function() {
+          var snapshotTarget = targetLockOn ? acquireTarget() : null;
+          var sampleRelativeY = 0;
+          if (precipitationMode === 'rain' && activePrecipitationCount > 0) sampleRelativeY = rainPositions[1] - camera.position.y;
+          else if (precipitationMode === 'snow' && activePrecipitationCount > 0) sampleRelativeY = snowPositions[1] - camera.position.y;
+          return {
+            dayPhase: dayPhase,
+            cloudCover: visualCloudCover,
+            fogNear: scene.fog.near,
+            fogFar: scene.fog.far,
+            exposure: renderer.toneMappingExposure,
+            skyColorHex: skyDome.material.color.getHexString(),
+            backgroundColorHex: scene.background.getHexString(),
+            fogColorHex: scene.fog.color.getHexString(),
+            skyBrightness: (skyDome.material.color.r * 0.2126 + skyDome.material.color.g * 0.7152 + skyDome.material.color.b * 0.0722) * renderer.toneMappingExposure,
+            sunOpacity: sunSprite.material.opacity,
+            moonOpacity: moonSprite.material.opacity,
+            sunAltitude: (sunSprite.position.y - camera.position.y) / sunDistance,
+            moonAltitude: (moonSprite.position.y - camera.position.y) / moonDistance,
+            sunCameraDistance: sunSprite.position.distanceTo(camera.position),
+            moonCameraDistance: moonSprite.position.distanceTo(camera.position),
+            starVisibility: starsList ? starsList.points.material.opacity : 0,
+            thermalQuality: weather.thermalQuality,
+            cloudOpacity: cloudList.length ? cloudList[0].sprite.material.opacity : 0,
+            waterUpdates: waterUpdateCount,
+            renderFrames: renderFrameCount,
+            snapshotTimeMs: performance.now(),
+            waterHz: qualityProfile.waterHz,
+            cameraAltitude: camera.position.y,
+            skyDomeMargin: skyDomeRadius - camera.position.distanceTo(skyDome.position),
+            lakeSheenOpacity: lakeSheen ? lakeSheen.material.opacity : 0,
+            assistEnabled: targetLockOn,
+            preyCount: preyMeshes.length,
+            activeTargetIndex: snapshotTarget ? snapshotTarget.index : -1,
+            visibleBeaconCount: countVisiblePreyBeacons(),
+            precipitationMode: precipitationMode,
+            precipitationIntensity: precipitationIntensity,
+            activePrecipitationCount: activePrecipitationCount,
+            precipitationUpdates: precipitationUpdates,
+            precipitationDriftX: precipitationDriftX,
+            precipitationDriftZ: precipitationDriftZ,
+            precipitationSampleRelativeY: sampleRelativeY,
+            rainVisible: rainSystem.visible,
+            snowVisible: snowSystem.visible,
+            rainCapacity: rainCapacity,
+            snowCapacity: snowCapacity,
+            tempC: weather.tempC,
+            windSpeed: weather.windSpeed,
+            windDir: weather.windDir,
+            reducedMotion: _rmFX,
+            graphicsQuality: graphicsQuality,
+            distantTerrainCount: distantTerrainGroup.children.length,
+            distantTerrainOffsetX: distantTerrainGroup.position.x - raptor.x,
+            distantTerrainOffsetZ: distantTerrainGroup.position.z - raptor.z,
+            distantTerrainWorldY: distantTerrainGroup.position.y
+          };
         };
         publishControlState();
 
@@ -10349,8 +10611,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             missionCalories += caloriesGained;
             raptor.calories = Math.min(raptor.caloriesMax * 1.5, raptor.calories + caloriesGained);
             raptor.starving = false;
-            energyEventLog.push({ msg: '+' + Math.round(caloriesGained) + ' kcal - ' + caught.data.label, t: now, color: '#10b981' });
-            rhAnnounce('Strike! Caught ' + caught.data.label + ' for ' + Math.round(caloriesGained) + ' calories');
+            var catchFeedback = 'CATCH - ' + caught.data.label + ' · +' + Math.round(caloriesGained) + ' kcal';
+            energyEventLog.push({ msg: '✓ ' + catchFeedback, t: now, color: '#34d399' });
+            beginStrikeFeedback('hit', catchFeedback, now);
+            rhAnnounce('Strike! ' + catchFeedback);
             playSpeciesCall('strike');
             queueTimer(function() { playSpeciesCall('screech'); }, 200);
             if (ctx.awardXP) ctx.awardXP(caught.data.points, 'Raptor Hunt: caught ' + caught.data.label);
@@ -10371,7 +10635,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
             evaluateMission();
           } else {
-            rhAnnounce(targetInfo ? 'Target is not yet in the strike envelope' : 'No target ahead');
+            var missFeedback = strikeMissReason(targetInfo);
+            var missMessage = missFeedback.code + ' - ' + missFeedback.detail;
+            beginStrikeFeedback('miss', missMessage, now);
+            energyEventLog.push({ msg: '× MISS - ' + missMessage, t: now, color: '#fdba74' });
+            rhAnnounce('Miss. ' + missMessage);
             setRH(function(prev) {
               var stats = (prev.huntStats && prev.huntStats[species.id]) || { catches: 0, attempts: 0, bestRun: 0 };
               var nextStats = { catches: stats.catches, attempts: stats.attempts + 1, bestRun: Math.max(stats.bestRun, runCatches) };
@@ -10399,7 +10667,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         } catch (reducedMotionError) {}
         function onReducedMotionChange(event) {
           _rmFX = !!event.matches;
-          if (_rmFX) speedLineMat.opacity = 0;
+          if (_rmFX) {
+            speedLineMat.opacity = 0;
+            raptor.cameraRoll = 0;
+            if (diveVig) diveVig.style.opacity = '0';
+            if (strikeFeedbackEl) strikeFeedbackEl.style.transform = 'translate(-50%,-50%)';
+            rainSystem.visible = false;
+            snowSystem.visible = false;
+            rainGeometry.setDrawRange(0, 0);
+            snowGeometry.setDrawRange(0, 0);
+            activePrecipitationCount = 0;
+          }
         }
         if (reducedMotionMedia && reducedMotionMedia.addEventListener) {
           reducedMotionMedia.addEventListener('change', onReducedMotionChange);
@@ -10407,20 +10685,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var diveVig = document.createElement('div');
         diveVig.style.cssText = 'position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center, rgba(0,0,0,0) 52%, rgba(6,10,22,0.62) 100%);';
         hudParent.appendChild(diveVig);
-        var hud = document.createElement('div');
-        hud.className = 'rh-flight-telemetry';
-        hud.setAttribute('role', 'group');
-        hud.setAttribute('aria-label', 'Flight telemetry HUD');
-        hud.style.cssText = 'position:absolute;top:10px;left:10px;background:rgba(15,23,42,0.92);border:2px solid #fbbf24;border-radius:10px;padding:10px 14px;color:#fef3c7;font-family:ui-monospace,Menlo,monospace;font-size:12px;pointer-events:none;line-height:1.5;text-shadow:0 0 4px rgba(0,0,0,0.85);min-width:210px;font-weight:500';
-        hudParent.appendChild(hud);
-        var crossHair = document.createElement('div');
-        crossHair.setAttribute('aria-hidden', 'true');
-        crossHair.style.cssText = 'position:absolute;top:50%;left:50%;width:28px;height:28px;margin:-14px 0 0 -14px;border:3px solid #fde047;border-radius:50%;pointer-events:none;box-shadow:0 0 8px rgba(0,0,0,0.7), inset 0 0 8px rgba(0,0,0,0.5)';
-        hudParent.appendChild(crossHair);
-        var crossHairDot = document.createElement('div');
-        crossHairDot.setAttribute('aria-hidden', 'true');
-        crossHairDot.style.cssText = 'position:absolute;top:50%;left:50%;width:4px;height:4px;margin:-2px 0 0 -2px;background:#fde047;border-radius:50%;pointer-events:none;box-shadow:0 0 4px rgba(0,0,0,0.8)';
-        hudParent.appendChild(crossHairDot);
+        var strikeFeedbackEl = document.createElement('div');
+        strikeFeedbackEl.className = 'rh-strike-feedback';
+        strikeFeedbackEl.setAttribute('aria-hidden', 'true');
+        strikeFeedbackEl.dataset.raptorStrikeFeedback = 'idle';
+        strikeFeedbackEl.style.cssText = 'position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);opacity:0;pointer-events:none;z-index:6;min-width:min(78%,360px);padding:9px 16px;border:2px solid #34d399;border-radius:999px;background:rgba(2,6,23,0.88);color:#ecfdf5;text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:clamp(13px,2.2vw,18px);font-weight:900;letter-spacing:.08em;text-shadow:0 1px 3px #020617;box-shadow:0 10px 28px rgba(2,6,23,.38);will-change:transform,opacity';
+        hudParent.appendChild(strikeFeedbackEl);
         // ── NEW: Target-lock reticle (red square that snaps to nearest forward prey) ──
         var reticle = document.createElement('div');
         reticle.setAttribute('aria-hidden', 'true');
@@ -10441,36 +10711,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           reticle.appendChild(c);
         });
         hudParent.appendChild(reticle);
-        // Status panel (top-right)
-        var status = document.createElement('div');
-        status.className = 'rh-flight-status';
-        status.setAttribute('role', 'group');
-        status.setAttribute('aria-label', 'Run statistics + nearest prey');
-        status.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(15,23,42,0.92);border:2px solid #10b981;border-radius:10px;padding:10px 14px;color:#d1fae5;font-family:ui-monospace,Menlo,monospace;font-size:12px;pointer-events:none;line-height:1.5;text-shadow:0 0 4px rgba(0,0,0,0.85);min-width:180px;font-weight:500';
-        hudParent.appendChild(status);
-        // ── NEW v0.30: Weather panel (top-center, below event log) ──
-        var weatherPanel = document.createElement('div');
-        weatherPanel.className = 'rh-flight-weather';
-        weatherPanel.setAttribute('role', 'group');
-        weatherPanel.setAttribute('aria-label', 'Weather + time of day');
-        weatherPanel.style.cssText = 'position:absolute;top:80px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.92);border:2px solid #67e8f9;border-radius:10px;padding:6px 12px;color:#cffafe;font-family:ui-monospace,Menlo,monospace;font-size:11px;pointer-events:none;line-height:1.4;text-shadow:0 0 4px rgba(0,0,0,0.85);font-weight:500;display:flex;gap:14px';
-        hudParent.appendChild(weatherPanel);
-
-        // ── NEW v0.30: Sound toggle button ──
-        var energyPanel = document.createElement('div');
-        energyPanel.className = 'rh-flight-energy';
-        energyPanel.setAttribute('role', 'group');
-        energyPanel.setAttribute('aria-label', 'Energy + stamina bars');
-        energyPanel.style.cssText = 'position:absolute;bottom:110px;left:10px;background:rgba(15,23,42,0.92);border:2px solid #f97316;border-radius:10px;padding:10px 14px;color:#fed7aa;font-family:ui-monospace,Menlo,monospace;font-size:11px;pointer-events:none;line-height:1.4;text-shadow:0 0 4px rgba(0,0,0,0.85);min-width:200px;font-weight:500';
-        hudParent.appendChild(energyPanel);
-        // ── NEW v0.29: Event log (transient calorie + state messages, top-center) ──
         var telemetryStrip = document.createElement('div');
         telemetryStrip.className = 'rh-flight-telemetry-strip';
         telemetryStrip.setAttribute('role', 'group');
-        telemetryStrip.setAttribute('aria-label', 'Flight telemetry');
-        function addTelemetryMetric(label) {
+        telemetryStrip.setAttribute('aria-label', 'Flight and weather telemetry');
+        function addTelemetryMetric(label, key) {
           var metric = document.createElement('div');
           metric.className = 'rh-flight-metric';
+          metric.dataset.raptorMetric = key;
           var labelNode = document.createElement('span');
           labelNode.className = 'rh-flight-metric-label';
           labelNode.textContent = label;
@@ -10482,11 +10730,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           telemetryStrip.appendChild(metric);
           return valueNode;
         }
-        var telemetrySpeed = addTelemetryMetric('Speed');
-        var telemetryAltitude = addTelemetryMetric('Altitude');
-        var telemetryEnergy = addTelemetryMetric('Energy');
-        var telemetryTarget = addTelemetryMetric('Target');
-        var telemetryMission = addTelemetryMetric('Mission');
+        var telemetrySpeed = addTelemetryMetric('Speed', 'speed');
+        var telemetryAltitude = addTelemetryMetric('Altitude', 'altitude');
+        var telemetryEnergy = addTelemetryMetric('Energy', 'energy');
+        var telemetryTarget = addTelemetryMetric('Target', 'target');
+        var telemetryWeather = addTelemetryMetric('Weather', 'weather');
+        telemetryWeather.parentElement.dataset.raptorWeather = 'true';
+        var telemetryMission = addTelemetryMetric('Mission', 'mission');
+        telemetryMission.parentElement.dataset.raptorMissionMetric = 'true';
         hudParent.appendChild(telemetryStrip);
 
         // Visual event messages are not a live region; discrete events already
@@ -10497,7 +10748,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         // ─── Animate ───
         var lastT = performance.now();
-        var animId;
+        var animId = 0;
+        var renderFrameCount = 0;
         var lastHudPaint = 0;
         function loop() {
           // Stop the rAF chain (and tear down the whole sim) once the
@@ -10516,7 +10768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             try { if (canvasEl._rhCleanup) { canvasEl._rhCleanup(); canvasEl._rhCleanup = null; canvasEl._rhInit = false; } } catch (e) {}
             return;
           }
-          animId = requestAnimationFrame(loop);
+          animId = 0;
           var now = performance.now();
           var dt = Math.min(0.05, (now - lastT) / 1000);
           lastT = now;
@@ -10527,13 +10779,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // both are held together.
           if (simPaused) {
             speedLineMat.opacity = 0;
-            if (composer) {
-              try { composer.render(); } catch (pausedRenderError) { composer = null; renderer.render(scene, camera); }
-            } else {
-              renderer.render(scene, camera);
-            }
             return;
           }
+          animId = requestAnimationFrame(loop);
+          renderFrameCount++;
           runElapsed += dt;
           missionElapsed += dt;
 
@@ -10627,12 +10876,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             weather.windDir += (Math.random() - 0.5) * 0.4;
             weather.windSpeed = Math.max(1, Math.min(15, weather.windSpeed + (Math.random() - 0.5) * 2));
             weather.cloudCover = Math.max(0.05, Math.min(0.95, weather.cloudCover + (Math.random() - 0.5) * 0.15));
-            // Thermal quality strongest at midday with low cloud
-            weather.thermalQuality = (1 - weather.cloudCover) * (1 - Math.abs(dayPhase - 0.5) * 2);
-            weather.thermalQuality = Math.max(0.1, weather.thermalQuality);
+            // Atmosphere and thermal strength ease toward the new weather below.
             weather.changeTimer = 40 + Math.random() * 60;
             energyEventLog.push({ msg: '🌤 Weather shift — wind ' + weather.windSpeed.toFixed(1) + ' m/s, clouds ' + Math.round(weather.cloudCover * 100) + '%', t: now, color: '#67e8f9' });
           }
+          visualCloudCover += (weather.cloudCover - visualCloudCover) * dampingAlpha(0.65, dt);
+          var thermalDaylight = Math.max(0, 1 - Math.abs(dayPhase - 0.5) * 2);
+          weather.thermalQuality = Math.max(0.1, (1 - visualCloudCover) * thermalDaylight);
           // Apply wind drift to raptor position
           var windPushX = Math.sin(weather.windDir) * effWindSpeed * 0.3 * dt;
           var windPushZ = -Math.cos(weather.windDir) * effWindSpeed * 0.3 * dt;
@@ -10843,6 +11093,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // (a separate writer would fight the zoom lerp). Same 0..1 normalization
           // the speed-lines use. Vignette opacity rides the same intensity. Both
           // disabled under prefers-reduced-motion (_rmFX); zoom always wins.
+          var strikeAge = now - strikeFeedback.startedAt;
+          var strikeFeedbackActive = strikeFeedback.kind !== 'idle' && strikeAge >= 0 && strikeAge < strikeFeedback.duration;
+          var strikeEnvelope = strikeFeedbackActive ? Math.sin(Math.min(1, strikeAge / 420) * Math.PI) : 0;
+          if (strikeFeedbackActive) {
+            var feedbackFade = Math.min(1, strikeAge / 90) * Math.min(1, (strikeFeedback.duration - strikeAge) / 170);
+            var feedbackScale = _rmFX ? 1 : (0.96 + Math.min(1, strikeAge / 150) * 0.04);
+            strikeFeedbackEl.dataset.raptorStrikeFeedback = strikeFeedback.kind;
+            strikeFeedbackEl.textContent = (strikeFeedback.kind === 'hit' ? '✓ ' : '× MISS - ') + strikeFeedback.message;
+            strikeFeedbackEl.style.opacity = String(Math.max(0, feedbackFade));
+            strikeFeedbackEl.style.transform = 'translate(-50%,-50%) scale(' + feedbackScale.toFixed(3) + ')';
+            strikeFeedbackEl.style.borderColor = strikeFeedback.kind === 'hit' ? '#34d399' : '#fb923c';
+            strikeFeedbackEl.style.color = strikeFeedback.kind === 'hit' ? '#ecfdf5' : '#fff7ed';
+            strikeFeedbackEl.style.background = strikeFeedback.kind === 'hit' ? 'rgba(6,78,59,0.90)' : 'rgba(124,45,18,0.90)';
+          } else {
+            strikeFeedback.kind = 'idle';
+            strikeFeedbackEl.dataset.raptorStrikeFeedback = 'idle';
+            strikeFeedbackEl.style.opacity = '0';
+          }
+          var talonStrikeAmount = !_rmFX && strikeFeedbackActive ? Math.max(0, 1 - strikeAge / 360) : 0;
+          talonGroup.scale.x += ((1 + talonStrikeAmount * 0.06) - talonGroup.scale.x) * dampingAlpha(18, dt);
+          talonGroup.scale.y += ((1 + talonStrikeAmount * 0.16) - talonGroup.scale.y) * dampingAlpha(18, dt);
+          talonGroup.scale.z += ((1 + talonStrikeAmount * 0.44) - talonGroup.scale.z) * dampingAlpha(18, dt);
+
           var tailSteerTarget = Math.max(-0.34, Math.min(0.34, -visualTurnRate * flightAnimationProfile.tailGain));
           tail.rotation.y += (tailSteerTarget - tail.rotation.y) * dampingAlpha(10, dt);
           var tailSpreadTarget = pullUpKey ? 1.35 : diveKey ? 0.70 : 1;
@@ -10856,7 +11129,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
             if (diveVig) diveVig.style.opacity = String(_diveFrac * 0.85);
           } catch (e) { _diveFrac = 0; }
-          var targetFov = zoomActive ? 25 : (70 + _diveFrac * 16);
+          var impactFovKick = (!_rmFX && camMode !== 'fp' && strikeFeedbackActive)
+            ? strikeEnvelope * (strikeFeedback.kind === 'hit' ? 5 : 2)
+            : 0;
+          var targetFov = zoomActive ? 25 : (70 + _diveFrac * 16 + impactFovKick);
           if (Math.abs(camera.fov - targetFov) > 0.1) {
             camera.fov += (targetFov - camera.fov) * dampingAlpha(12, dt);
             camera.updateProjectionMatrix();
@@ -10883,7 +11159,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           } else {
             // Third-person chase camera (behind + above)
             raptorGroup.visible = true;
-            var camDist = diveKey ? 3.5 : 6;
+            var impactCameraPush = (!_rmFX && strikeFeedbackActive)
+              ? strikeEnvelope * (strikeFeedback.kind === 'hit' ? 0.65 : -0.25)
+              : 0;
+            var camDist = (diveKey ? 3.5 : 6) - impactCameraPush;
             var camHeight = diveKey ? 1.0 : 2.2;
             var camTargetX = raptor.x - Math.sin(raptor.yaw) * camDist;
             var camTargetY = raptor.y + camHeight + Math.sin(raptor.pitch) * camDist;
@@ -10921,8 +11200,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var targetInfo = targetLockOn ? acquireTarget() : null;
           var lockTarget = targetInfo ? targetInfo.prey : null;
           if (targetInfo) markTutorialSignal('target');
-          var nextTargetState = !targetLockOn ? 'off' : !targetInfo ? 'search' : targetInfo.canStrike ? 'ready' : targetInfo.distance > targetInfo.reach ? 'close' : 'align';
-          var nextTargetHint = nextTargetState === 'off' ? 'Target assist is off' : nextTargetState === 'search' ? 'Scan ahead for prey' : nextTargetState === 'ready' ? 'Strike ready - press Strike' : nextTargetState === 'close' ? 'Close distance - ' + targetInfo.distance.toFixed(0) + ' m' : (targetInfo.verticalOffset > 0 ? 'Pull up to align' : 'Dive to align');
+          var targetDistanceDisplay = targetInfo ? Math.max(1, Math.round(targetInfo.distance / 5) * 5) : 0;
+          var nextTargetState = strikeFeedbackActive ? strikeFeedback.kind :
+            !targetLockOn ? 'off' :
+            !targetInfo ? 'search' :
+            targetInfo.canStrike && !strikeReady ? 'recovering' :
+            targetInfo.canStrike ? 'ready' :
+            targetInfo.distance > targetInfo.reach ? 'close' : 'align';
+          var highlightedPrey = targetInfo ? targetInfo.prey : null;
+          preyMeshes.forEach(function(pm2) {
+            var selected = !!(targetLockOn && highlightedPrey === pm2);
+            if (pm2.beacon) {
+              pm2.beacon.visible = selected;
+              if (selected) pm2.beacon.material.color.setHex(nextTargetState === 'ready' ? 0x22c55e : nextTargetState === 'close' ? 0xfbbf24 : 0xf87171);
+            }
+            if (pm2.beaconCap) {
+              pm2.beaconCap.visible = selected;
+              if (selected) pm2.beaconCap.material.color.setHex(nextTargetState === 'ready' ? 0x4ade80 : nextTargetState === 'close' ? 0xfde047 : 0xfca5a5);
+            }
+          });          var nextTargetHint = nextTargetState === 'hit' || nextTargetState === 'miss' ? strikeFeedback.message :
+            nextTargetState === 'off' ? 'Target assist is off' :
+            nextTargetState === 'search' ? 'SEARCH - scan ahead for prey' :
+            nextTargetState === 'recovering' ? 'RECOVERING - talons resetting' :
+            nextTargetState === 'ready' ? 'READY - press Strike' :
+            nextTargetState === 'close' ? 'CLOSE - ' + targetDistanceDisplay + ' m' :
+            (targetInfo.verticalOffset > 0 ? 'ALIGN - pull up' : 'ALIGN - dive lower');
           if (nextTargetState !== lastTargetState || nextTargetHint !== lastTargetHint) {
             lastTargetState = nextTargetState;
             lastTargetHint = nextTargetHint;
@@ -10940,7 +11242,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var screenH = canvasEl.clientHeight;
               var screenX = (targetVector.x * 0.5 + 0.5) * screenW;
               var screenY = (-targetVector.y * 0.5 + 0.5) * screenH;
-              var inStrikeRange = targetInfo.canStrike;
+              var inStrikeRange = targetInfo.canStrike && strikeReady;
+              reticle.dataset.lockState = nextTargetState;
+              reticle.style.borderStyle = nextTargetState === 'close' ? 'dashed' : 'solid';
               reticle.style.display = 'block';
               reticle.style.left = screenX + 'px';
               reticle.style.top = screenY + 'px';
@@ -10952,7 +11256,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 }
               }
               var targetName = lockTarget.data ? lockTarget.data.label : 'prey';
-              reticleLabel.textContent = (inStrikeRange ? 'STRIKE READY - ' : '') + targetName + ' - ' + targetInfo.distance.toFixed(0) + 'm';
+              var reticlePrefix = inStrikeRange ? 'READY - ' : nextTargetState === 'close' ? 'CLOSE - ' : 'ALIGN - ';
+              reticleLabel.textContent = reticlePrefix + targetName + ' - ' + targetDistanceDisplay + 'm';
               reticleLabel.style.color = inStrikeRange ? '#bbf7d0' : '#fee2e2';
             } else {
               reticle.style.display = 'none';
@@ -10988,7 +11293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           birdShadow.scale.set(shadowScale, shadowScale * 0.55, 1);
           birdShadow.material.opacity = Math.max(0.05, 0.5 - altAboveGround * 0.005);
 
-          // ── NEW v0.27: Catch-FX particles animation (gravity + fade) ──
+          // ── Catch-FX particles animation (quality + reduced-motion aware) ──
           for (var cfi = catchFxList.length - 1; cfi >= 0; cfi--) {
             var fx = catchFxList[cfi];
             fx.lifetime += dt;
@@ -10999,46 +11304,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               catchFxList.splice(cfi, 1);
               continue;
             }
-            // Update particle positions with gravity
-            var fxPosArr = fx.points.geometry.attributes.position.array;
-            for (var pi5 = 0; pi5 < fx.velocities.length; pi5++) {
-              var fv = fx.velocities[pi5];
-              fxPosArr[pi5 * 3]     += fv.vx * dt;
-              fxPosArr[pi5 * 3 + 1] += fv.vy * dt;
-              fxPosArr[pi5 * 3 + 2] += fv.vz * dt;
-              // Apply gravity
-              fv.vy -= 12 * dt;
+            if (!_rmFX) {
+              var fxPosArr = fx.points.geometry.attributes.position.array;
+              for (var pi5 = 0; pi5 < fx.velocities.length; pi5++) {
+                var fv = fx.velocities[pi5];
+                fxPosArr[pi5 * 3]     += fv.vx * dt;
+                fxPosArr[pi5 * 3 + 1] += fv.vy * dt;
+                fxPosArr[pi5 * 3 + 2] += fv.vz * dt;
+                fv.vy -= 12 * dt;
+              }
+              fx.points.geometry.attributes.position.needsUpdate = true;
+              fx.flash.scale.setScalar(1 + fxFrac * 4);
             }
-            fx.points.geometry.attributes.position.needsUpdate = true;
             fx.points.material.opacity = Math.max(0, 1 - fxFrac);
-            // Flash quickly fades + expands
-            fx.flash.scale.setScalar(1 + fxFrac * 4);
-            fx.flash.material.opacity = Math.max(0, 0.85 - fxFrac * 1.5);
+            fx.flash.material.opacity = Math.max(0, (_rmFX ? 0.28 : 0.85) - fxFrac * 1.5);
           }
 
           // ── NEW v0.27: Star twinkle for night biome ──
           if (starsList) {
             // Twinkle by modulating opacity of the entire points material with a slow flicker
             // (per-vertex opacity needs custom shader; simple amplitude pulse is fine)
-            starsList.points.material.opacity = starVisibility * (0.7 + Math.sin(now * 0.002) * 0.2);
+            starsList.points.material.opacity = starVisibility * (_rmFX ? 0.78 : (0.7 + Math.sin(now * 0.002) * 0.2));
             // Keep stars positioned around raptor (so they stay visible)
             starsList.points.position.set(raptor.x, raptor.y - 50, raptor.z);
           }
 
-          // ── Sky-dome + sun follow the raptor horizontally ──
-          // These represent the sky-sphere + the sun-at-infinity, so they must
-          // always be centered on the camera. Otherwise the raptor "flies away"
-          // from the sun (sun visibly moves across the sky) and the sky-dome
-          // becomes asymmetric (one horizon close, the opposite horizon far).
-          // We only follow horizontally — vertical motion would make the
-          // horizon line slide up/down with altitude, which looks broken.
-          skyDome.position.x = raptor.x;
-          skyDome.position.z = raptor.z;
+          // ── Camera-centered sky dome + celestial discs ──
+          // The sky dome and celestial discs stay centered on the camera at
+          // every altitude. The distant terrain follows horizontally so its
+          // horizon remains grounded while high-stoop flights stay inside the dome.
+          skyDome.position.copy(camera.position);
           horizonGroup.position.x = raptor.x;
           horizonGroup.position.z = raptor.z;
-          sunSprite.position.x = raptor.x + sunDir.x * sunDistance;
-          sunSprite.position.y = sunDir.y * sunDistance;  // sun y stays absolute
-          sunSprite.position.z = raptor.z + sunDir.z * sunDistance;
+          distantTerrainGroup.position.x = raptor.x;
+          distantTerrainGroup.position.z = raptor.z;
+          sunSprite.position.copy(camera.position).addScaledVector(sunDir, sunDistance);
+          moonSprite.position.copy(camera.position).addScaledVector(moonDir, moonDistance);
 
           // ── NEW v0.27: Bird head tracks nearest prey ──
           if (headMesh && preyMeshes.length > 0) {
@@ -11067,7 +11368,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
 
           // ── NEW v0.26: Animated lake water (vertex sin-wave ripples) ──
-          if (lake && lakeOriginalY) {
+          if (!_rmFX && lake && lakeOriginalY && now - lastWaterUpdate >= waterUpdateInterval) {
+            lastWaterUpdate = now;
+            waterUpdateCount++;
             var lakePos2 = lake.geometry.attributes.position.array;
             var tnow = now / 1000;
             for (var lpi2 = 0; lpi2 < lakeOriginalY.length; lpi2++) {
@@ -11086,24 +11389,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Forest instances remain static, avoiding hundreds of per-frame
           // matrix writes while preserving the biome silhouette.
 
-          // ── NEW v0.25: Drifting clouds ──
+          // Clouds reveal the current weather instead of drifting as decoration.
           if (typeof cloudList !== 'undefined' && cloudList) {
+            var cloudWindX = Math.sin(weather.windDir) * effWindSpeed;
+            var cloudWindZ = -Math.cos(weather.windDir) * effWindSpeed;
+            var cloudDaylight = Math.max(0.15, 1 - Math.abs(dayPhase - 0.5) * 2);
+            var cloudTone = 0.56 + cloudDaylight * 0.32 - visualCloudCover * 0.14;
             cloudList.forEach(function(c) {
-              c.sprite.position.x += c.driftSpeed * dt;
-              if (c.sprite.position.x > 400) c.sprite.position.x = -400;
+              var cloudTargetOpacity = Math.min(0.92, c.baseOpacity * (0.22 + visualCloudCover * 1.02));
+              c.sprite.material.opacity += (cloudTargetOpacity - c.sprite.material.opacity) * dampingAlpha(1.4, dt);
+              c.sprite.material.color.setRGB(cloudTone, cloudTone, Math.min(1, cloudTone + 0.05));
+              if (!_rmFX) {
+                c.sprite.position.x += cloudWindX * (0.12 + c.driftSpeed) * dt;
+                c.sprite.position.z += cloudWindZ * (0.12 + c.driftSpeed) * dt;
+                c.sprite.position.y = c.baseY + Math.sin(now * 0.00025 + c.phase) * 1.6;
+              } else {
+                c.sprite.position.y = c.baseY;
+              }
+              if (c.sprite.position.x - raptor.x > 450) c.sprite.position.x -= 900;
+              else if (c.sprite.position.x - raptor.x < -450) c.sprite.position.x += 900;
+              if (c.sprite.position.z - raptor.z > 450) c.sprite.position.z -= 900;
+              else if (c.sprite.position.z - raptor.z < -450) c.sprite.position.z += 900;
             });
           }
 
-          // ── NEW v0.25: Ambient particles drift ──
+          updatePrecipitation(dt, effWindSpeed);
+
+          // Ambient weather motion is frame-rate independent and follows the wind.
+          if (particleSystem && particleData && particleSystem.material) {
+            particleSystem.material.opacity = _rmFX ? 0 : (particleData.type === 'snow' ? 0.28 + visualCloudCover * 0.62 : 0.72);
+          }
           if (!_rmFX && particleSystem && particleData) {
             var pos = particleSystem.geometry.attributes.position.array;
             var vels = particleData.velocities;
+            var particleFrame = Math.min(3, dt * 60);
+            var particleWindX = Math.sin(weather.windDir) * effWindSpeed * dt * 0.08;
+            var particleWindZ = -Math.cos(weather.windDir) * effWindSpeed * dt * 0.08;
             for (var ppi = 0; ppi < vels.length; ppi++) {
               var v = vels[ppi];
               if (particleData.type === 'snow') {
-                pos[ppi * 3]     += v.vx;
-                pos[ppi * 3 + 1] += v.vy;
-                pos[ppi * 3 + 2] += v.vz;
+                pos[ppi * 3]     += v.vx * particleFrame + particleWindX;
+                pos[ppi * 3 + 1] += v.vy * particleFrame;
+                pos[ppi * 3 + 2] += v.vz * particleFrame + particleWindZ;
                 // Wrap when reaches ground
                 if (pos[ppi * 3 + 1] < 0) {
                   pos[ppi * 3 + 1] = 180 + Math.random() * 20;
@@ -11112,18 +11439,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 }
               } else if (particleData.type === 'leaves') {
                 v.swayPhase += dt * 2;
-                pos[ppi * 3]     += v.vx + Math.sin(v.swayPhase) * 0.3;
-                pos[ppi * 3 + 1] += v.vy;
-                pos[ppi * 3 + 2] += v.vz + Math.cos(v.swayPhase) * 0.2;
+                pos[ppi * 3]     += (v.vx + Math.sin(v.swayPhase) * 0.3) * particleFrame + particleWindX;
+                pos[ppi * 3 + 1] += v.vy * particleFrame;
+                pos[ppi * 3 + 2] += (v.vz + Math.cos(v.swayPhase) * 0.2) * particleFrame + particleWindZ;
                 if (pos[ppi * 3 + 1] < 0) {
                   pos[ppi * 3 + 1] = 60 + Math.random() * 30;
                   pos[ppi * 3] = raptor.x + (Math.random() - 0.5) * 400;
                   pos[ppi * 3 + 2] = raptor.z + (Math.random() - 0.5) * 400;
                 }
               } else { // dust
-                pos[ppi * 3]     += v.vx;
-                pos[ppi * 3 + 1] += v.vy;
-                pos[ppi * 3 + 2] += v.vz;
+                pos[ppi * 3]     += v.vx * particleFrame + particleWindX;
+                pos[ppi * 3 + 1] += v.vy * particleFrame;
+                pos[ppi * 3 + 2] += v.vz * particleFrame + particleWindZ;
                 // Recenter occasionally
                 var pd2x = pos[ppi * 3] - raptor.x, pd2z = pos[ppi * 3 + 2] - raptor.z;
                 if (pd2x * pd2x + pd2z * pd2z > 150 * 150) {
@@ -11237,7 +11564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 pm2.animation.tail.rotation.z = _rmFX ? 0 : Math.sin(motionPhase * 0.8) * 0.22;
               }
             }
-            if (pm2.beaconCap) {
+            if (pm2.beaconCap && pm2.beaconCap.visible) {
               var pulse = _rmFX ? 1 : 0.6 + Math.sin(now * 0.005 + pm2.bobPhase) * 0.4;
               pm2.beaconCap.scale.set(pulse, pulse, pulse);
             }
@@ -11262,41 +11589,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             missionPanel.textContent = mission.name + ': ' + missionProgressText();
             var mph = (raptor.speed * 2.237).toFixed(0);
           var alt = (raptor.y - groundY).toFixed(0);
-          var stateLabel = diveKey ? 'STOOP' : pullUpKey ? 'PULL UP' : raptor.exhausted ? 'EXHAUSTED' : 'GLIDE';
-          var stateColor = diveKey ? '#fca5a5' : pullUpKey ? '#67e8f9' : raptor.exhausted ? '#f87171' : '#fcd34d';
-          hud.innerHTML =
-            '<div style="font-weight:bold;border-bottom:1px solid #fbbf24;padding-bottom:4px;margin-bottom:6px;color:#fbbf24">' + species.emoji + ' ' + species.name + '</div>' +
-            '<div style="display:grid;grid-template-columns:80px 1fr;gap:4px 8px">' +
-              '<span style="color:#fde047">Airspeed:</span><span aria-label="' + mph + ' miles per hour">' + mph + ' mph</span>' +
-              '<span style="color:#fde047">Altitude:</span><span aria-label="' + alt + ' meters above ground">' + alt + ' m</span>' +
-              '<span style="color:#fde047">State:</span><span style="color:' + stateColor + ';font-weight:bold" aria-label="Flight state: ' + stateLabel + '">' + stateLabel + '</span>' +
-              '<span style="color:#fde047">Peak:</span><span>' + (runMaxSpeed * 2.237).toFixed(0) + ' mph</span>' +
-            '</div>';
-          // ── NEW v0.29: Energy + Stamina bars ──
           var calPct = Math.max(0, Math.min(100, (raptor.calories / raptor.caloriesMax) * 100));
           var stamPct = Math.max(0, Math.min(100, (raptor.stamina / raptor.staminaMax) * 100));
           var telemetryTargetInfo = targetLockOn ? acquireTarget() : null;
           telemetrySpeed.textContent = mph + ' mph';
           telemetryAltitude.textContent = alt + ' m';
-          telemetryEnergy.textContent = Math.round(calPct) + '%';
+          telemetryEnergy.textContent = Math.round(calPct) + '% / ' + Math.round(stamPct) + '%';
+          telemetryEnergy.parentElement.setAttribute('aria-label', 'Energy: calories ' + Math.round(calPct) + ' percent, stamina ' + Math.round(stamPct) + ' percent');
           telemetryTarget.textContent = telemetryTargetInfo ? telemetryTargetInfo.distance.toFixed(0) + ' m' : 'None';
           telemetryMission.textContent = missionProgressText();
-          var calColor = calPct > 50 ? '#10b981' : calPct > 25 ? '#fbbf24' : '#fca5a5';
-          var stamColor = stamPct > 50 ? '#06b6d4' : stamPct > 25 ? '#fbbf24' : '#fca5a5';
-          energyPanel.innerHTML =
-            '<div style="font-weight:bold;border-bottom:1px solid #f97316;padding-bottom:4px;margin-bottom:6px;color:#fdba74">⚡ Energy + Stamina</div>' +
-            '<div style="margin-bottom:6px">' +
-              '<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>🍖 Calories</span><span style="color:' + calColor + '" aria-label="' + Math.round(raptor.calories) + ' of ' + raptor.caloriesMax + ' kilocalories">' + Math.round(raptor.calories) + ' / ' + raptor.caloriesMax + '</span></div>' +
-              '<div role="progressbar" aria-valuenow="' + Math.round(calPct) + '" aria-valuemin="0" aria-valuemax="100" aria-label="Calories ' + Math.round(calPct) + ' percent" style="background:#1e293b;height:8px;border-radius:4px;overflow:hidden;border:1px solid #475569"><div style="height:100%;width:' + calPct + '%;background:' + calColor + ';transition:width 0.3s"></div></div>' +
-            '</div>' +
-            '<div>' +
-              '<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>💨 Stamina</span><span style="color:' + stamColor + '" aria-label="' + Math.round(raptor.stamina) + ' of ' + raptor.staminaMax + ' stamina">' + Math.round(raptor.stamina) + ' / ' + raptor.staminaMax + '</span></div>' +
-              '<div role="progressbar" aria-valuenow="' + Math.round(stamPct) + '" aria-valuemin="0" aria-valuemax="100" aria-label="Stamina ' + Math.round(stamPct) + ' percent" style="background:#1e293b;height:8px;border-radius:4px;overflow:hidden;border:1px solid #475569"><div style="height:100%;width:' + stamPct + '%;background:' + stamColor + ';transition:width 0.3s"></div></div>' +
-            '</div>' +
-            '<div style="font-size:9px;color:#94a3b8;margin-top:6px;font-style:italic">' +
-              'Glide regenerates. Flap burns 15× faster than glide.' +
-            '</div>';
-          // ── NEW v0.30: Weather + time panel ──
           var dayLabel = dayPhase < 0.18 ? '🌑 Night' :
                          dayPhase < 0.30 ? '🌅 Dawn' :
                          dayPhase < 0.62 ? '☀ Day' :
@@ -11306,12 +11607,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                             windDirDeg < 67 ? 'NE' : windDirDeg < 112 ? 'E' :
                             windDirDeg < 157 ? 'SE' : windDirDeg < 202 ? 'S' :
                             windDirDeg < 247 ? 'SW' : windDirDeg < 292 ? 'W' : 'NW';
-          weatherPanel.innerHTML =
-            '<span aria-label="Time of day ' + dayLabel + '">' + dayLabel + '</span>' +
-            '<span aria-label="Wind speed ' + weather.windSpeed.toFixed(1) + ' meters per second from ' + windCompass + '">💨 ' + weather.windSpeed.toFixed(1) + ' m/s ' + windCompass + '</span>' +
-            '<span aria-label="Cloud cover ' + Math.round(weather.cloudCover * 100) + ' percent">☁ ' + Math.round(weather.cloudCover * 100) + '%</span>' +
-            '<span aria-label="Thermal quality ' + Math.round(weather.thermalQuality * 100) + ' percent">🌀 ' + Math.round(weather.thermalQuality * 100) + '%</span>';
-
+          var dayPeriod = dayPhase < 0.18 || dayPhase >= 0.78 ? 'night' :
+                          dayPhase < 0.30 ? 'dawn' : dayPhase < 0.62 ? 'day' : 'dusk';
+          var cloudBand = weather.cloudCover < 0.3 ? 'clear' : weather.cloudCover < 0.7 ? 'mixed' : 'overcast';
+          var precipitationGlyph = precipitationMode === 'rain' ? '🌧' : precipitationMode === 'snow' ? '🌨' : '☁';
+          var precipitationLabel = precipitationMode === 'none'
+            ? 'no precipitation'
+            : precipitationMode + ' at ' + Math.round(precipitationIntensity * 100) + ' percent intensity';
+          telemetryWeather.textContent = dayLabel.split(' ')[0] + ' · ' + precipitationGlyph + Math.round(weather.cloudCover * 100) + '%';
+          telemetryWeather.parentElement.dataset.dayPeriod = dayPeriod;
+          telemetryWeather.parentElement.dataset.cloudBand = cloudBand;
+          telemetryWeather.parentElement.dataset.precipitation = precipitationMode;
+          telemetryWeather.parentElement.dataset.windDirection = windCompass;
+          telemetryWeather.parentElement.setAttribute(
+            'aria-label',
+            'Weather: ' + dayPeriod + ', ' + cloudBand + ', ' + precipitationLabel + ', ' +
+            Math.round(weather.tempC) + ' degrees Celsius, wind ' + weather.windSpeed.toFixed(1) +
+            ' meters per second toward ' + windCompass + ', thermal quality ' +
+            Math.round(weather.thermalQuality * 100) + ' percent'
+          );
           // ── Event log: render transient messages ──
           eventLogEl.innerHTML = '';
           energyEventLog.slice(-3).forEach(function(ev) {
@@ -11322,43 +11636,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             msgEl.textContent = ev.msg;
             eventLogEl.appendChild(msgEl);
           });
-          // ── NEW v0.24: Find nearest prey + distance for HUD ──
-          var nearestDist = Infinity, nearestPrey = null, nearestBearing = 0;
-          for (var npi = 0; npi < preyMeshes.length; npi++) {
-            var npp = preyMeshes[npi];
-            var ndx = npp.mesh.position.x - raptor.x;
-            var ndz = npp.mesh.position.z - raptor.z;
-            var nd = Math.sqrt(ndx * ndx + ndz * ndz);
-            if (nd < nearestDist) {
-              nearestDist = nd;
-              nearestPrey = npp;
-              // Bearing relative to raptor's yaw (0 = directly ahead, +deg = right, -deg = left)
-              var preyAngle = Math.atan2(ndx, -ndz);  // world bearing
-              var rel = preyAngle - raptor.yaw;
-              while (rel > Math.PI) rel -= Math.PI * 2;
-              while (rel < -Math.PI) rel += Math.PI * 2;
-              nearestBearing = rel;
-            }
-          }
-          var bearingDeg = nearestBearing * 180 / Math.PI;
-          var arrowChar = Math.abs(bearingDeg) < 15 ? '↑' :
-                          bearingDeg > 15 && bearingDeg < 75 ? '↗' :
-                          bearingDeg >= 75 && bearingDeg <= 105 ? '→' :
-                          bearingDeg > 105 && bearingDeg < 165 ? '↘' :
-                          Math.abs(bearingDeg) >= 165 ? '↓' :
-                          bearingDeg < -15 && bearingDeg > -75 ? '↖' :
-                          bearingDeg <= -75 && bearingDeg >= -105 ? '←' :
-                          '↙';
-          var nearestColor = nearestDist < 50 ? '#fde047' : nearestDist < 150 ? '#fbbf24' : '#94a3b8';
-          status.innerHTML =
-            '<div style="font-weight:bold;border-bottom:1px solid rgba(16,185,129,0.4);padding-bottom:4px;margin-bottom:4px">RUN</div>' +
-            'CATCHES &nbsp;<span style="color:#fff;font-weight:bold">' + runCatches + '</span><br/>' +
-            'TIME &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#fff">' + runElapsed.toFixed(0) + 's</span><br/>' +
-            'PREY &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#fff">' + preyMeshes.length + '</span><br/>' +
-            (nearestPrey
-              ? '<div style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(16,185,129,0.4)">NEAREST &nbsp;<span style="color:' + nearestColor + ';font-size:14px;font-weight:bold">' + arrowChar + ' ' + nearestDist.toFixed(0) + 'm</span></div>'
-              : '');
-
           }
           if (composer) { try { composer.render(); } catch (e) { composer = null; renderer.render(scene, camera); } }
           else { renderer.render(scene, camera); }
@@ -11411,22 +11688,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             reducedMotionMedia.removeEventListener('change', onReducedMotionChange);
           }
           canvasEl._rhCommand = null;
+          canvasEl._rhSnapshot = null;
           canvasEl._rhInit = false;
 
           [
             pauseOverlay,
             flightMarker,
             missionPanel,
-            hud,
-            crossHair,
-            crossHairDot,
             reticle,
-            status,
-            energyPanel,
             diveVig,
+            strikeFeedbackEl,
             eventLogEl,
-            telemetryStrip,
-            weatherPanel
+            telemetryStrip
           ].forEach(function(node) {
             if (node && node.parentElement) node.parentElement.removeChild(node);
           });

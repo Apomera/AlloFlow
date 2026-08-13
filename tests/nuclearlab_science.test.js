@@ -321,9 +321,13 @@ describe('Honesty about contested and unfinished claims', () => {
     expect(SRC).toMatch(/genuinely disputed/i);
   });
 
-  it('reports Fukushima evacuation deaths alongside the radiation toll', () => {
+  it('keeps Fukushima health, compensation, and disaster-death categories separate', () => {
     expect(SRC).toMatch(/No deaths from acute radiation/i);
-    expect(SRC).toMatch(/2,200 deaths/);
+    expect(SRC).toMatch(/no adverse health effects among residents.{0,80}directly attributed/i);
+    expect(SRC).toMatch(/2,350 disaster-related deaths/i);
+    expect(SRC).toMatch(/award does not prove that radiation caused an individual cancer/i);
+    expect(SRC).not.toMatch(/2,200 people died because of the Fukushima evacuation/i);
+    expect(SRC).not.toMatch(/one from radiation/i);
   });
 
   it('does not oversell SMRs', () => {
@@ -777,8 +781,12 @@ const muEnAir = new Function(
   'MU_EN_AIR', 'return ' + SRC.slice(SRC.indexOf('function nkMuEnAir'), SRC.indexOf('// mSv per hour at 1 m'))
 )(MU_EN_AIR);
 const gammaConst = new Function(
-  'nkMuEnAir', 'return ' + SRC.slice(SRC.indexOf('function nkGammaConst'), SRC.indexOf('// Energies in MeV, yields per decay'))
+  'nkMuEnAir', 'return ' + SRC.slice(SRC.indexOf('function nkGammaConst'), SRC.indexOf('// Integrate a source'))
 )(muEnAir);
+const decayHelpers = new Function(
+  SRC.slice(SRC.indexOf('function nkIntegratedDose'), SRC.indexOf('// Energies in MeV, yields per decay')) +
+  '\nreturn { nkIntegratedDose, nkTimeToDose };'
+)();
 
 // Classic specific gamma-ray constants, R*cm^2/(mCi*h), converted once:
 // 1 mCi = 27.027 per GBq, 1 m = 100 cm, 1 R = 8.76 mGy in air.
@@ -904,6 +912,32 @@ describe('the three levers', () => {
     expect(byId.worker).toBe(DOSES.find((d) => d.name.includes('radiation worker')).mSv);
     expect(byId.sick).toBe(DOSES.find((d) => d.name.includes('Radiation sickness')).mSv);
   });
+
+  it('integrates a falling activity instead of extending the initial rate forever', () => {
+    const rate = 2;
+    const halfLife = 6;
+    const oneHalfLife = decayHelpers.nkIntegratedDose(rate, halfLife, halfLife);
+    expect(oneHalfLife).toBeCloseTo(rate * halfLife / (2 * Math.LN2), 10);
+    expect(oneHalfLife).toBeLessThan(rate * halfLife);
+    const lifetime = rate * halfLife / Math.LN2;
+    expect(decayHelpers.nkIntegratedDose(rate, 100 * halfLife, halfLife)).toBeCloseTo(lifetime, 10);
+  });
+
+  it('returns no finite time when physical decay keeps lifetime dose below the target', () => {
+    const rate = 0.05;
+    const halfLife = 6;
+    const lifetime = rate * halfLife / Math.LN2;
+    expect(decayHelpers.nkTimeToDose(rate, lifetime * 1.01, halfLife)).toBe(Infinity);
+    const target = lifetime * 0.75;
+    const time = decayHelpers.nkTimeToDose(rate, target, halfLife);
+    expect(decayHelpers.nkIntegratedDose(rate, time, halfLife)).toBeCloseTo(target, 10);
+  });
+
+  it('qualifies one-eighth as a steady-rate shortcut and states the product correctly', () => {
+    expect(SRC).toContain('1/2 × 1/2 × 1/2 = 1/8');
+    expect(SRC).toMatch(/source whose rate is effectively steady during a visit/i);
+    expect(SRC).not.toMatch(/quarter of a quarter.{0,20}one eighth/i);
+  });
 });
 
 describe('the protection section renders', () => {
@@ -913,7 +947,7 @@ describe('the protection section renders', () => {
     expect(html).toContain('⏱️ TIME');
     expect(html).toContain('📏 DISTANCE');
     expect(html).toContain('🧱 SHIELDING');
-    expect(html).toContain('Dose rate here');
+    expect(html).toContain('Initial dose rate');
   });
 
   it('states the buildup simplification rather than hiding it', () => {
@@ -1059,12 +1093,13 @@ describe('The section renders honestly', () => {
   });
 
   it('states what the arithmetic leaves out, in the section itself', () => {
-    // The 2,200 deaths were not dose. A calculator that quietly implied
-    // otherwise would be the most misleading thing in the whole tool.
+    // The official disaster-related-death category is not a radiation tally
+    // or a count attributable to one evacuation order. The dose calculator
+    // must keep that distinction visible beside its simplified comparison.
     const html = renderTool('nuclearLab', {});
-    expect(html).toMatch(/dose was not what killed people at Fukushima/i);
-    // Quote marks are HTML-escaped in the render, so match the phrase itself.
-    expect(html).toMatch(/was not .{0,12}never evacuate/i);
+    expect(html).toMatch(/radiation dose was not identified as the cause/i);
+    expect(html).toMatch(/legal category does not assign every case/i);
+    expect(html).toMatch(/lesson was not never evacuate/i);
     expect(html).toMatch(/per population rather than per map/i);
   });
 

@@ -106,6 +106,27 @@ describe('Full Pack failure diagnostics and resilience', () => {
     expect(deps.addToast).toHaveBeenCalledWith(expect.stringContaining('failed resource'), 'warning');
   });
 
+  it('redacts credentials from Error Reporter text and stack', async () => {
+    const prior = window.AlloModules.ErrorReporter;
+    const record = vi.fn();
+    window.AlloModules.ErrorReporter = { record };
+    const secret = 'SENTINEL_FULL_PACK_TOKEN';
+    const deps = makeDeps({
+      handleGenerate: vi.fn(async () => {
+        const error = new Error('Bearer ' + secret + ' was rejected');
+        error.stack = 'Error: authorization=' + secret + '\n at full-pack';
+        throw error;
+      }),
+    });
+    try { await GenerationHelpers.handleGenerateFullPack(null, deps); }
+    finally { window.AlloModules.ErrorReporter = prior; }
+    const [, message, stack] = record.mock.calls[0];
+    expect(message).toContain('resource=quiz');
+    expect(message).toContain('[REDACTED]');
+    expect(stack).toContain('[REDACTED]');
+    expect(message + stack).not.toContain(secret);
+  });
+
   it('passes the selected Universal Settings into each resource request', async () => {
     vi.useFakeTimers();
     const deps = makeDeps({
@@ -500,5 +521,175 @@ describe('Full Pack compatibility and retry policy', () => {
       failureCategory: 'configuration',
       retryable: false,
     });
+  });
+});
+describe('Full Pack provider-aware capacity estimates', () => {
+  it('adapts duration and warnings to local versus hosted providers', () => {
+    const hosted = GenerationHelpers.estimateFullPackCapacity(12, 1, { backend: 'gemini', model: 'gemini-fast' });
+    const local = GenerationHelpers.estimateFullPackCapacity(12, 1, { backend: 'ollama', model: 'local-8b', isLocal: true });
+    expect(local.estimatedMinutes).toBeGreaterThan(hosted.estimatedMinutes);
+    expect(local).toMatchObject({ provider: 'ollama', model: 'local-8b', isLocal: true, requestConcurrency: 1 });
+    expect(local.warningCodes).toContain('local-serial');
+    expect(hosted.warningCodes).toContain('image-quota');
+  });
+
+  it('uses aggregate device timing history only after enough samples exist', () => {
+    const defaults = GenerationHelpers.estimateFullPackCapacity(8, 0, { backend: 'gemini' });
+    const observed = GenerationHelpers.estimateFullPackCapacity(8, 0, {
+      backend: 'gemini',
+      metricsSnapshot: { resources: { quiz: { durationMsTotal: 24000, durationSamples: 4 } } },
+    });
+    expect(defaults.estimateBasis).toBe('provider-defaults');
+    expect(observed.estimateBasis).toBe('observed-device-history');
+    expect(observed.estimatedMinutes).toBeLessThan(defaults.estimatedMinutes);
+    expect(observed.observedSamples.text).toBe(4);
+  });
+});
+
+describe('Full Pack stress and soak resilience', () => {
+  it('finishes a bounded forty-resource pack without losing rows', async () => {
+    vi.useFakeTimers();
+    let latestRun = null;
+    const resourcePlan = Array.from({ length: 40 }, (_, index) => ({ tool: 'quiz', directive: `item-${index}` }));
+    const deps = makeDeps({
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan })),
+    });
+    try {
+      const run = GenerationHelpers.handleGenerateFullPack(null, deps);
+      await vi.runAllTimersAsync();
+      await run;
+    } finally { vi.useRealTimers(); }
+    expect(deps.handleGenerate).toHaveBeenCalledTimes(40);
+    expect(Object.keys(latestRun.resources)).toHaveLength(40);
+    expect(Object.values(latestRun.resources).every(row => row.status === 'landed')).toBe(true);
+    expect(latestRun.status).toBe('completed');
+  });
+
+  it('serializes twenty-five roster groups and preserves every group profile', async () => {
+    vi.useFakeTimers();
+    let latestRun = null;
+    const groups = Object.fromEntries(Array.from({ length: 25 }, (_, index) => [
+      `group-${index}`,
+      { name: `Group ${index}`, profile: { gradeLevel: `${index + 1}th Grade` } },
+    ]));
+    const grades = [];
+    const deps = makeDeps({
+      fullPackTargetGroup: 'all',
+      rosterKey: { groups },
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async (_source, grade) => {
+        grades.push(grade);
+        return { resourcePlan: [{ tool: 'quiz', directive: '' }] };
+      }),
+    });
+    try {
+      const run = GenerationHelpers.handleGenerateFullPack(null, deps);
+      await vi.runAllTimersAsync();
+      await run;
+    } finally { vi.useRealTimers(); }
+    expect(grades).toHaveLength(25);
+    expect(grades[0]).toBe('1th Grade');
+    expect(grades[24]).toBe('25th Grade');
+    expect(Object.keys(latestRun.groups)).toHaveLength(25);
+    expect(deps.handleGenerate).toHaveBeenCalledTimes(25);
+    expect(latestRun.status).toBe('completed');
+  });
+
+  it('attempts a repeatedly transient resource exactly twice, then records exhaustion', async () => {
+    vi.useFakeTimers();
+    let latestRun = null;
+    const record = vi.fn();
+    const previousMetrics = window.AlloGenerationMetrics;
+    window.AlloGenerationMetrics = { record };
+    const deps = makeDeps({
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      handleGenerate: vi.fn(async () => { throw new Error('503 temporary provider overload'); }),
+    });
+    try {
+      const run = GenerationHelpers.handleGenerateFullPack(null, deps);
+      await vi.runAllTimersAsync();
+      await run;
+    } finally {
+      window.AlloGenerationMetrics = previousMetrics;
+      vi.useRealTimers();
+    }
+    expect(deps.handleGenerate).toHaveBeenCalledTimes(2);
+    expect(Object.values(latestRun.resources)[0]).toMatchObject({ status: 'failed', attempts: 2, failureCategory: 'transient' });
+    expect(record).toHaveBeenCalledWith('retry-scheduled', { type: 'quiz' });
+    expect(record).toHaveBeenCalledWith('retry-exhausted', { type: 'quiz' });
+  });
+
+  it('cancels during transient backoff without issuing the retry', async () => {
+    vi.useFakeTimers();
+    let latestRun = null;
+    const deps = makeDeps({
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      handleGenerate: vi.fn(async () => { throw new Error('429 rate limit'); }),
+    });
+    try {
+      const run = GenerationHelpers.handleGenerateFullPack(null, deps);
+      for (let index = 0; index < 20 && Object.values(latestRun?.resources || {})[0]?.status !== 'retrying'; index += 1) await Promise.resolve();
+      expect(Object.values(latestRun.resources)[0].status).toBe('retrying');
+      expect(GenerationHelpers.handleStopFullPack()).toBe(true);
+      await run;
+    } finally { vi.useRealTimers(); }
+    expect(deps.handleGenerate).toHaveBeenCalledTimes(1);
+    expect(latestRun.status).toBe('stopped');
+    expect(Object.values(latestRun.resources)[0].status).toBe('stopped');
+  });
+
+  it('stops a slow image request through its abort signal', async () => {
+    let latestRun = null;
+    let startedResolve;
+    const started = new Promise(resolve => { startedResolve = resolve; });
+    const deps = makeDeps({
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'image', directive: '' }] })),
+      handleGenerate: vi.fn((_type, _lang, _keep, _source, _config, _switch, override) => new Promise((resolve, reject) => {
+        startedResolve();
+        override.generationSignal.addEventListener('abort', () => {
+          const error = new Error('image request stopped');
+          error.name = 'AbortError';
+          reject(error);
+        }, { once: true });
+      })),
+    });
+    const run = GenerationHelpers.handleGenerateFullPack(null, deps);
+    await started;
+    GenerationHelpers.handleStopFullPack();
+    await run;
+    expect(deps.handleGenerate).toHaveBeenCalledTimes(1);
+    expect(latestRun.status).toBe('stopped');
+    expect(Object.values(latestRun.resources)[0]).toMatchObject({ type: 'image', status: 'stopped' });
+  });
+
+  it('records only aggregate runtime fields during recovery', async () => {
+    vi.useFakeTimers();
+    const calls = [];
+    const previousMetrics = window.AlloGenerationMetrics;
+    window.AlloGenerationMetrics = { record: (event, payload) => calls.push({ event, payload }) };
+    let attempt = 0;
+    const deps = makeDeps({
+      studentInterests: ['SENTINEL_STUDENT'],
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: 'SENTINEL_DIRECTIVE' }] })),
+      handleGenerate: vi.fn(async type => {
+        attempt += 1;
+        if (attempt === 1) throw new Error('429 SENTINEL_ERROR');
+        return { id: 'SENTINEL_RESOURCE_ID', type, data: {} };
+      }),
+    });
+    try {
+      const run = GenerationHelpers.handleGenerateFullPack(null, deps);
+      await vi.runAllTimersAsync();
+      await run;
+    } finally {
+      window.AlloGenerationMetrics = previousMetrics;
+      vi.useRealTimers();
+    }
+    const serialized = JSON.stringify(calls);
+    expect(serialized).not.toMatch(/SENTINEL_/);
+    expect(calls.some(call => call.event === 'retry-recovered')).toBe(true);
+    expect(calls.some(call => call.event === 'resource-finish' && call.payload.status === 'landed')).toBe(true);
   });
 });

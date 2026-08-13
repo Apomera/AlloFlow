@@ -56,6 +56,7 @@ const hailJourney = {
       updraft: 96,
       cloudDepth: 12,
       terrain: 'plains',
+      stormDistanceKm: 0.5,
       showAirflow: true,
       paused: false,
     },
@@ -182,6 +183,22 @@ test.describe('Water Cycle storm chamber - real browser rendering', () => {
       return el?.dataset.hydrometeorMode === 'hail' &&
         el.dataset.stormColumnAlignment === 'cloud-to-ground-synced';
     });
+    await expect(canvas).toHaveAttribute('data-storm-anatomy', 'visible');
+    await expect(canvas).toHaveAttribute('data-charge-separation', 'strong');
+    await expect(canvas).toHaveAttribute('data-charge-upper-polarity', 'positive');
+    await expect(canvas).toHaveAttribute('data-charge-lower-polarity', 'negative');
+    await expect(canvas).toHaveAttribute('data-lightning-pathway', 'cloud-to-ground');
+    await expect(canvas).toHaveAttribute('data-storm-distance-km', '0.5');
+    await expect(canvas).toHaveAttribute(
+      'data-lightning-sequence',
+      'charge-separation>stepped-leader>upward-streamer>return-stroke>pressure-wave',
+    );
+    await expect.poll(
+      async () => Number(await canvas.getAttribute('data-lightning-flash-count')),
+      { timeout: 15_000 },
+    ).toBeGreaterThan(0);
+    expect(['expanding', 'arrived'])
+      .toContain(await canvas.getAttribute('data-thunder-wave'));
 
     const live = await page.evaluate(() => (window as any).__glLive());
     expect(live, 'no Water Cycle GL canvas mounted').not.toBeNull();
@@ -198,6 +215,12 @@ test.describe('Water Cycle storm chamber - real browser rendering', () => {
       hydrometeorMode: el.dataset.hydrometeorMode,
       columnAlignment: el.dataset.stormColumnAlignment,
       updraftMotion: el.dataset.updraftMotion,
+      charge: el.dataset.chargeSeparation,
+      chargeIndex: Number(el.dataset.chargeSeparationIndex),
+      upperPolarity: el.dataset.chargeUpperPolarity,
+      lowerPolarity: el.dataset.chargeLowerPolarity,
+      lightningPathway: el.dataset.lightningPathway,
+      lightningFlashCount: Number(el.dataset.lightningFlashCount),
       webglFallback: el.dataset.webglFallback || '',
     }));
     expect(state).toMatchObject({
@@ -207,8 +230,40 @@ test.describe('Water Cycle storm chamber - real browser rendering', () => {
       hydrometeorMode: 'hail',
       columnAlignment: 'cloud-to-ground-synced',
       updraftMotion: 'rising-markers',
+      charge: 'strong',
+      upperPolarity: 'positive',
+      lowerPolarity: 'negative',
+      lightningPathway: 'cloud-to-ground',
       webglFallback: '',
     });
+    expect(state.chargeIndex).toBeGreaterThanOrEqual(72);
+    expect(state.lightningFlashCount).toBeGreaterThan(0);
+
+    await canvas.evaluate((el) => { el.dataset.lightningStudyStep = 'pressure-wave'; });
+    await expect(canvas).toHaveAttribute('data-lightning-study-mode', 'guided');
+    await expect(canvas).toHaveAttribute('data-lightning-phase', 'pressure-wave');
+    await expect(canvas).toHaveAttribute('data-lightning-mode', 'guided-static');
+    await expect(canvas).toHaveAttribute('data-thunder-status', 'suppressed-study');
+    await expect(canvas).toHaveAttribute('data-thunder-wave', 'study-static');
+    const studySnapshot = await canvas.evaluate((el) => ({
+      radiusKm: Number(el.dataset.thunderWaveRadiusKm),
+      progress: Number(el.dataset.thunderWaveProgress),
+      flashCount: Number(el.dataset.lightningFlashCount),
+    }));
+    expect(studySnapshot.radiusKm).toBeCloseTo(0.25, 1);
+    expect(studySnapshot.progress).toBeGreaterThan(0.45);
+    expect(studySnapshot.progress).toBeLessThan(0.56);
+
+    await page.waitForTimeout(6_200);
+    expect(Number(await canvas.getAttribute('data-lightning-flash-count'))).toBe(studySnapshot.flashCount);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(canvas).toHaveAttribute('data-thunder-wave', 'study-static');
+    await expect(canvas).toHaveAttribute('data-lightning-phase', 'pressure-wave');
+    await expect(canvas).toHaveAttribute('data-updraft-motion', 'static-markers');
+
+    const reducedMotionLive = await page.evaluate(() => (window as any).__glLive());
+    expect(reducedMotionLive, 'no Water Cycle GL canvas mounted after reduced-motion change').not.toBeNull();
+    expect(reducedMotionLive.lost, 'Water Cycle GL context was lost after reduced-motion change').toBe(false);
 
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });

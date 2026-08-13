@@ -284,6 +284,9 @@ describe('evidence integrity, response statuses, and redacted exports', () => {
     expect(M.validateImportedSession(Object.assign({}, session, {
       itemResults: itemResults.concat([{ phase: 'posttest', itemId: 'a', finalCorrect: true, responseStatus: 'correct' }])
     })).valid).toBe(false);
+    expect(M.validateImportedSession(Object.assign({}, session, {
+      auditTrail: [{ eventId: 'audit-1234abcd', eventVersion: '1.0.0', sequence: 1, type: 'session-completed', occurredAt: '2026-07-12T10:00:00.000Z', details: { privateNote: 'sensitive' } }]
+    }))).toMatchObject({ valid: false, reason: 'invalid-audit-detail-key' });
   });
 
   it('archives incomplete evidence without interpretation and accepts it for restore', () => {
@@ -309,6 +312,7 @@ describe('evidence integrity, response statuses, and redacted exports', () => {
     expect(record.modifiabilityTier.label).toBe('Incomplete?no interpretation');
     expect(record.incompleteReasons).toEqual(['fatigue', 'refusal']);
     expect(record.dateCompleted).toBeUndefined();
+    expect(record.auditTrail[0]).toMatchObject({ type: 'session-archived-incomplete', sequence: 1, details: { recordStatus: 'incomplete', reason: 'fatigue' } });
     expect(M.validateImportedSession(record)).toMatchObject({ valid: true, recordStatus: 'incomplete' });
     expect(M.isSufficientSession(record)).toBe(false);
     expect(M.aggregateItemStatistics([record], 1)).toEqual([]);
@@ -659,6 +663,41 @@ describe('aggregateItemStatistics — psychometric quality flags', () => {
   });
 });
 
+describe('privacy-safe audit history', () => {
+  it('appends immutable, sequential events and strips unapproved detail fields', () => {
+    const source = { id: 'audit-session', auditTrail: [] };
+    const first = M.appendAuditEvent(source, 'session-completed', '2026-07-12T10:00:00.000Z', {
+      recordStatus: 'complete', itemCount: 3, privateNote: 'must not persist'
+    });
+    expect(source.auditTrail).toEqual([]);
+    expect(first.auditTrailVersion).toBe('1.0.0');
+    expect(first.auditTrail[0]).toMatchObject({ sequence: 1, type: 'session-completed', occurredAt: '2026-07-12T10:00:00.000Z' });
+    expect(first.auditTrail[0].eventId).toMatch(/^audit-[a-f0-9]{8}$/);
+    expect(first.auditTrail[0].details).toEqual({ recordStatus: 'complete', itemCount: 3 });
+    const second = M.appendAuditEvent(first, 'primary-review-marked', '2026-07-12T10:05:00.000Z', { status: 'reviewed' });
+    expect(first.auditTrail).toHaveLength(1);
+    expect(second.auditTrail).toHaveLength(2);
+    expect(second.auditTrail[1]).toMatchObject({ sequence: 2, type: 'primary-review-marked', details: { status: 'reviewed' } });
+    expect(M.validateAuditTrail(second.auditTrail)).toMatchObject({ valid: true, legacy: false });
+  });
+
+  it('rejects malformed or privacy-unsafe imported audit events', () => {
+    const baseEvent = { eventId: 'audit-1234abcd', eventVersion: '1.0.0', sequence: 1, type: 'session-completed', occurredAt: '2026-07-12T10:00:00.000Z', details: {} };
+    expect(M.validateAuditTrail([Object.assign({}, baseEvent, { sequence: 2 })])).toMatchObject({ valid: false, reason: 'invalid-audit-sequence' });
+    expect(M.validateAuditTrail([Object.assign({}, baseEvent, { type: 'private-student-name' })])).toMatchObject({ valid: false, reason: 'invalid-audit-event-type' });
+    expect(M.validateAuditTrail([Object.assign({}, baseEvent, { details: { privateNote: 'sensitive' } })])).toMatchObject({ valid: false, reason: 'invalid-audit-detail-key' });
+  });
+
+  it('sanitizes audit history in safe exports', () => {
+    const redacted = M.redactSessionForExport({
+      id: 'audit-redact', studentNickname: 'Bright Fox', itemResults: [],
+      auditTrail: [{ eventId: 'not-safe-identifying-text', sequence: 1, type: 'session-completed', occurredAt: '2026-07-12T10:00:00.000Z', details: { recordStatus: 'complete', privateNote: 'sensitive' } }]
+    });
+    expect(redacted.auditTrail[0].eventId).toMatch(/^audit-[a-f0-9]{8}$/);
+    expect(redacted.auditTrail[0].details).toEqual({ recordStatus: 'complete' });
+    expect(JSON.stringify(redacted.auditTrail)).not.toContain('sensitive');
+  });
+});
 describe('probe and form version metadata', () => {
   const customItem = {
     id: 'custom-version-1', construct: 'Quantity comparison', difficulty: 'custom', gradeBand: '2-3',
@@ -691,5 +730,43 @@ describe('probe and form version metadata', () => {
     expect(M.compareSessionVersions([base, Object.assign({}, base, { sessionItemIds: ["b"], itemVersionManifest: [Object.assign({}, manifest[0], { itemId: "b", itemFingerprint: "item-b" })] })])).toMatchObject({ comparable: true, mismatch: false });
     expect(M.compareSessionVersions([base, Object.assign({}, base, { probeVersion: 'built-in-2.0.0' })])).toMatchObject({ comparable: false, mismatch: true });
     expect(M.compareSessionVersions([base, Object.assign({}, base, { itemVersionManifest: undefined })])).toMatchObject({ comparable: false, legacy: true, mismatch: true });
+  });
+});
+
+
+describe('encrypted Dynamic Assessment backup integration', () => {
+  const SharedCrypto = require('../allo_crypto_module.js');
+  const fastCrypto = {
+    encryptJSON: (value, password) => SharedCrypto.encryptJSON(value, password, SharedCrypto.MIN_PBKDF2_ITERATIONS),
+    decryptJSON: (envelope, password) => SharedCrypto.decryptJSON(envelope, password),
+    isEncryptedEnvelope: (envelope) => SharedCrypto.isEncryptedEnvelope(envelope),
+  };
+
+  it('delegates authenticated encryption to AlloCrypto and round-trips the DA payload', async () => {
+    const payload = M.buildBackupPayload([
+      { id: 'encrypted-da-1', studentNickname: 'Private Sentinel', recordStatus: 'complete' },
+    ], '2026-08-12T12:00:00.000Z');
+
+    const envelope = await M.encryptBackupPayload(payload, 'correct horse battery', fastCrypto, '2026-08-12T12:01:00.000Z');
+    expect(envelope).toMatchObject({
+      _exportFormat: 'alloflow-da-encrypted-backup',
+      _exportVersion: '2.0.0',
+      encryption: { kind: 'alloenc', alg: 'AES-256-GCM', kdf: 'PBKDF2-SHA256' },
+    });
+    expect(JSON.stringify(envelope)).not.toContain('Private Sentinel');
+    expect(M.validateEncryptedBackupEnvelope(envelope, fastCrypto)).toEqual({ valid: true });
+    await expect(M.decryptBackupEnvelope(envelope, 'correct horse battery', fastCrypto)).resolves.toEqual(payload);
+    await expect(M.decryptBackupEnvelope(envelope, 'wrong password', fastCrypto)).rejects.toMatchObject({ code: 'decrypt-failed' });
+  });
+
+  it('rejects non-AlloCrypto and unsupported DA envelopes before import', async () => {
+    const malformed = {
+      _exportFormat: 'alloflow-da-encrypted-backup',
+      _exportVersion: '2.0.0',
+      _encryptedAt: '2026-08-12T12:00:00.000Z',
+      encryption: { kind: 'homegrown-ciphertext' },
+    };
+    expect(M.validateEncryptedBackupEnvelope(malformed, fastCrypto)).toMatchObject({ valid: false, reason: 'unsupported-encryption' });
+    await expect(M.decryptBackupEnvelope(malformed, 'correct horse battery', fastCrypto)).rejects.toMatchObject({ code: 'invalid-envelope' });
   });
 });

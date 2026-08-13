@@ -62,6 +62,7 @@ beforeEach(() => {
   window.sessionStorage.clear();
   delete window.__alloStudentAiSetupAllowed;
   delete window.__alloQrStudentMode;
+  delete window.__alloOpenDeviceStorageProbe;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = ReactDOMClient.createRoot(container);
@@ -78,12 +79,25 @@ describe('guided default', () => {
     expect(byHelpKey('ai_backend_guided_card_gemini')).toBeTruthy();
     expect(byHelpKey('ai_backend_guided_card_private')).toBeTruthy();
     expect(byHelpKey('ai_backend_guided_card_connect')).toBeTruthy();
+    expect(byHelpKey('ai_backend_guided_storage_btn')).toBeTruthy();
+    expect(container.querySelector('#ai-platform-diagnostics-section')).toBeNull();
     // Legacy controls live behind Advanced only
     expect(container.querySelector('#ai-backend-provider')).toBeNull();
     expect(container.querySelector('#ai-backend-wolfram')).toBeNull();
     expect(container.querySelector('#ai-backend-model-default')).toBeNull();
     // No Test button on the picker view — nothing to test yet
     expect(container.querySelector('#ai-backend-test')).toBeNull();
+  });
+
+  it('opens local storage directly from the default guided view', async () => {
+    let openCount = 0;
+    window.__alloOpenDeviceStorageProbe = () => { openCount += 1; };
+    await render();
+    const storageButton = byHelpKey('ai_backend_guided_storage_btn');
+    expect(storageButton.textContent).toContain('Manage local storage');
+    expect(container.textContent).toContain('offline models such as Whisper and Kokoro');
+    await click(storageButton);
+    expect(openCount).toBe(1);
   });
 
   it('Gemini card leads to the key step with the AI Studio link', async () => {
@@ -146,7 +160,7 @@ describe('advanced surface', () => {
       'ai-backend-wolfram', 'ai-backend-test', 'ai-backend-status',
       'ai-backend-model-default', 'ai-backend-model-fallback',
       'ai-backend-tts-provider', 'ai-backend-image-provider',
-      'ai-backend-device-storage-section', 'ai-backend-diagnostics-section']) {
+      'ai-backend-device-storage-section', 'ai-backend-diagnostics-section', 'ai-platform-diagnostics-section']) {
       expect(container.querySelector('#' + id), id).toBeTruthy();
     }
     // provider select still offers the full catalog incl. cloud + custom

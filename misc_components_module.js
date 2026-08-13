@@ -333,6 +333,8 @@ const WordSoundsReviewPanel = ({
   const [playingAudioKey, setPlayingAudioKey] = React.useState(null);
   const [audioProgress, setAudioProgress] = React.useState({ ready: 0, total: 0 });
   const [reviewError, setReviewError] = React.useState(null);
+  const [isCountingGuideOpen, setIsCountingGuideOpen] = React.useState(false);
+  const [deletedWordUndo, setDeletedWordUndo] = React.useState(null);
   const [showProbeEndConfirm, setShowProbeEndConfirm] = React.useState(false);
   const reviewDialogRef = React.useRef(null);
   const reviewBackRef = React.useRef(null);
@@ -613,11 +615,63 @@ const WordSoundsReviewPanel = ({
     onReorderWords(newList);
     setExpandedIndex(null);
   };
-  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { ref: reviewDialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "word-sounds-review-title", "aria-describedby": "word-sounds-review-description", tabIndex: -1, onKeyDown: (event) => {
+  const focusReviewDeleteControl = (preferredIndex) => {
+    setTimeout(() => {
+      if (unmountedRef.current) return;
+      const buttons = reviewDialogRef.current?.querySelectorAll("[data-word-delete-button]");
+      const targetIndex = buttons?.length ? Math.min(preferredIndex, buttons.length - 1) : -1;
+      const target = targetIndex >= 0 ? buttons[targetIndex] : reviewBackRef.current;
+      target?.focus?.();
+    }, 0);
+  };
+  const deleteReviewWord = (event, word, index) => {
+    event.stopPropagation();
+    if (typeof onDeleteWord !== "function") {
+      warnLog("onDeleteWord is not a function");
+      return;
+    }
+    const label = word?.targetWord || word?.word || (t("common.word") || "Word") + " " + (index + 1);
+    setDeletedWordUndo({ word, index, label });
+    setExpandedIndex(null);
+    onDeleteWord(index);
+    focusReviewDeleteControl(index);
+  };
+  const undoReviewWordDelete = () => {
+    if (!deletedWordUndo || typeof onReorderWords !== "function") return;
+    const currentWords = Array.isArray(latestWordsRef.current) ? [...latestWordsRef.current] : [];
+    const deletedId = deletedWordUndo.word?.id;
+    const isAlreadyPresent = currentWords.some((item) => item === deletedWordUndo.word || deletedId != null && item?.id === deletedId);
+    if (!isAlreadyPresent) {
+      currentWords.splice(Math.min(deletedWordUndo.index, currentWords.length), 0, deletedWordUndo.word);
+      onReorderWords(currentWords);
+    }
+    const restoredIndex = Math.min(deletedWordUndo.index, Math.max(currentWords.length - 1, 0));
+    setDeletedWordUndo(null);
+    focusReviewDeleteControl(restoredIndex);
+  };
+  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-2 sm:p-4 animate-in motion-reduce:animate-none fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { ref: reviewDialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "word-sounds-review-title", "aria-describedby": "word-sounds-review-description", tabIndex: -1, onKeyDown: (event) => {
     const nested = event.target?.closest?.('[role="alertdialog"]');
     if (nested) return;
     trapReviewFocus(event, reviewDialogRef.current, requestBackToSetup);
-  }, className: "bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "p-6 border-b bg-gradient-to-r from-pink-500 to-violet-500 text-white flex-shrink-0" }, /* @__PURE__ */ React.createElement("h2", { id: "word-sounds-review-title", className: "text-2xl font-black flex items-center gap-2" }, t("word_sounds.pre_activity_review") || "\u{1F4CB} Pre-Activity Review", /* @__PURE__ */ React.createElement("span", { className: "relative group ml-2" }, /* @__PURE__ */ React.createElement("span", { className: "cursor-help text-white/70 hover:text-white text-base" }, "\u2139\uFE0F"), /* @__PURE__ */ React.createElement("div", { className: "absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity motion-reduce:transition-none z-50 pointer-events-none" }, /* @__PURE__ */ React.createElement("strong", { className: "block mb-1" }, t("word_sounds.phonics_counting_guide_title") || "\u{1F4D6} Phonics Counting Guide"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, t("word_sounds.r_controlled_explanation_prefix") || "R-controlled vowels (ar, er, ir, or, ur) are counted as ", /* @__PURE__ */ React.createElement("strong", null, t("word_sounds.single_sounds") || "single sounds"), t("word_sounds.r_controlled_explanation_suffix") || " because the vowel and R blend together."), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600" }, t("word_sounds.r_controlled_example") || 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.')))), /* @__PURE__ */ React.createElement("p", { id: "word-sounds-review-description", className: "text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, t("word_sounds.review_and_edit_words") || "Review and edit words", " \u2022 ", preloadedWords.length, " ", t("word_sounds.words_ready") || "words ready"), isLoading && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 bg-white rounded-full animate-bounce motion-reduce:animate-none" }), " ", t("word_sounds.generating_more") || "Generating more..."), !isLoading && preloadedWords.some((w) => w && w._ttsFailed) && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F507} Audio missing for ", preloadedWords.filter((w) => w && w._ttsFailed).length, " word", preloadedWords.filter((w) => w && w._ttsFailed).length === 1 ? "" : "s"), typeof onRetryFailedTTS === "function" && /* @__PURE__ */ React.createElement(
+  }, className: "bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-4xl w-full max-h-[calc(100dvh-1rem)] sm:max-h-[90vh] overflow-hidden flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "p-4 sm:p-6 border-b bg-gradient-to-r from-pink-500 to-violet-500 text-white flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("h2", { id: "word-sounds-review-title", className: "text-xl sm:text-2xl font-black" }, t("word_sounds.pre_activity_review") || "\u{1F4CB} Pre-Activity Review"), /* @__PURE__ */ React.createElement("div", { className: "relative ml-1 sm:ml-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "aria-label": t("word_sounds.phonics_counting_guide_title") || "Phonics Counting Guide",
+      "aria-expanded": isCountingGuideOpen,
+      "aria-controls": "word-sounds-counting-guide",
+      onClick: () => setIsCountingGuideOpen((open) => !open),
+      onKeyDown: (event) => {
+        if (event.key === "Escape" && isCountingGuideOpen) {
+          event.preventDefault();
+          event.stopPropagation();
+          setIsCountingGuideOpen(false);
+        }
+      },
+      className: "min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-violet-500 text-base"
+    },
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2139\uFE0F")
+  ), isCountingGuideOpen && /* @__PURE__ */ React.createElement("div", { id: "word-sounds-counting-guide", role: "note", className: "absolute right-0 sm:left-0 sm:right-auto top-full mt-2 w-[min(18rem,calc(100vw-2rem))] p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl z-50" }, /* @__PURE__ */ React.createElement("strong", { className: "block mb-1" }, t("word_sounds.phonics_counting_guide_title") || "\u{1F4D6} Phonics Counting Guide"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, t("word_sounds.r_controlled_explanation_prefix") || "R-controlled vowels (ar, er, ir, or, ur) are counted as ", /* @__PURE__ */ React.createElement("strong", null, t("word_sounds.single_sounds") || "single sounds"), t("word_sounds.r_controlled_explanation_suffix") || " because the vowel and R blend together."), /* @__PURE__ */ React.createElement("p", { className: "text-slate-200" }, t("word_sounds.r_controlled_example") || 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.')))), /* @__PURE__ */ React.createElement("p", { id: "word-sounds-review-description", className: "text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, t("word_sounds.review_and_edit_words") || "Review and edit words", " \u2022 ", preloadedWords.length, " ", t("word_sounds.words_ready") || "words ready"), isLoading && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 bg-white rounded-full animate-bounce motion-reduce:animate-none" }), " ", t("word_sounds.generating_more") || "Generating more..."), !isLoading && preloadedWords.some((w) => w && w._ttsFailed) && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F507} Audio missing for ", preloadedWords.filter((w) => w && w._ttsFailed).length, " word", preloadedWords.filter((w) => w && w._ttsFailed).length === 1 ? "" : "s"), typeof onRetryFailedTTS === "function" && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -629,7 +683,7 @@ const WordSoundsReviewPanel = ({
       title: t("word_sounds.retry_audio_tooltip") || "Retry audio generation for words that failed"
     },
     t("word_sounds.retry_audio") || "Retry audio"
-  ))), reviewError && /* @__PURE__ */ React.createElement("p", { id: "word-sounds-review-error", role: "alert", className: "mt-3 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-800" }, reviewError.message)), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" }, !isLoading && preloadedWords.length > 0 && (() => {
+  ))), reviewError && /* @__PURE__ */ React.createElement("p", { id: "word-sounds-review-error", role: "alert", className: "mt-3 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-800" }, reviewError.message)), deletedWordUndo && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 sm:mx-6 sm:mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950" }, /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true" }, "\u201C", deletedWordUndo.label, "\u201D ", t("word_sounds.word_removed") || "removed."), typeof onReorderWords === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: undoReviewWordDelete, className: "min-h-11 rounded-lg px-3 py-2 font-bold text-amber-900 underline decoration-2 underline-offset-2 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-700" }, t("common.undo") || "Undo")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 custom-scrollbar" }, !isLoading && preloadedWords.length > 0 && (() => {
     const norm = (v) => String(v || "").trim().toLowerCase().replace(/\s+/g, " ");
     const portableKeys = /* @__PURE__ */ new Set();
     const imageKeys = /* @__PURE__ */ new Set();
@@ -796,7 +850,7 @@ const WordSoundsReviewPanel = ({
       key: word.id || `word-${word.targetWord || word.word}-${idx}`,
       className: `border-2 rounded-2xl transition-all motion-reduce:transition-none ${expandedIndex === idx ? "border-pink-300 bg-pink-50/50" : "border-slate-100 hover:border-pink-200"}`
     },
-    /* @__PURE__ */ React.createElement("div", { className: "p-4 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "relative z-50" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "relative z-50" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -862,26 +916,11 @@ const WordSoundsReviewPanel = ({
       "button",
       {
         type: "button",
-        onMouseDown: (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          e.nativeEvent.stopImmediatePropagation();
-          debugLog("\u{1F5D1}\uFE0F DELETE pressed for idx:", idx);
-          if (typeof onDeleteWord === "function") {
-            onDeleteWord(idx);
-            debugLog("\u2705 Called onDeleteWord for idx:", idx);
-          } else {
-            warnLog("\u274C onDeleteWord is not a function");
-          }
-          return false;
-        },
-        onClick: (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          return false;
-        },
-        className: "w-8 h-8 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 transition-colors motion-reduce:transition-none border-2 border-red-200 hover:border-red-400",
+        onClick: (event) => deleteReviewWord(event, word, idx),
+        "aria-label": (t("common.delete_word") || "Delete word") + ": " + (word.targetWord || word.word || (t("common.word") || "Word") + " " + (idx + 1)),
+        className: "min-w-10 min-h-10 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 transition-colors motion-reduce:transition-none border-2 border-red-200 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2",
         style: { pointerEvents: "auto", cursor: "pointer", position: "relative", zIndex: 100 },
+        "data-word-delete-button": "true",
         "data-help-key": "word_sounds_review_delete_word",
         title: t("common.delete_word")
       },
@@ -985,10 +1024,10 @@ const WordSoundsReviewPanel = ({
         title: t("common.generate_image_for_this_word")
       },
       generatingImageIndex === idx ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("word_sounds.generating_image") || "Generating...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ImageIcon, { size: 16, "aria-hidden": "true" }), " ", t("word_sounds.add_image_button") || "+ Image")
-    )), /* @__PURE__ */ React.createElement("span", { className: "text-xl font-bold text-slate-800" }, word.targetWord || word.word), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words text-xl font-bold text-slate-800" }, word.targetWord || word.word), /* @__PURE__ */ React.createElement(
       "select",
       {
-        "aria-label": t("common.selection"),
+        "aria-label": (t("word_sounds.difficulty") || "Difficulty") + ": " + (word.targetWord || word.word || (t("common.word") || "Word") + " " + (idx + 1)),
         value: word.difficulty || "medium",
         onClick: (e) => e.stopPropagation(),
         onChange: (e) => onUpdateWord(idx, { ...word, difficulty: e.target.value }),
@@ -1515,28 +1554,28 @@ const WordSoundsReviewPanel = ({
       },
       generatingImageIndex === idx ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Send, { size: 12 })
     )), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, t("word_sounds.nano_mode_hint") || '\u2728 Nano Mode: Type custom edits like "make it blue" or "add a hat"'))))))
-  ))), /* @__PURE__ */ React.createElement("div", { className: "p-4 border-t bg-slate-50 flex justify-between items-center flex-shrink-0" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4 border-t bg-slate-50 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 flex-shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       ref: reviewBackRef,
       type: "button",
-      "aria-label": t("common.previous"),
+      "aria-label": t("word_sounds.back_to_setup") || "Back to Setup",
       onClick: requestBackToSetup,
       "data-help-key": "word_sounds_review_back",
-      className: "px-4 py-2 text-slate-600 hover:text-slate-800 font-medium flex items-center gap-2 hover:bg-slate-100 rounded-lg transition-colors motion-reduce:transition-none"
+      className: "w-full sm:w-auto min-h-11 px-4 py-2 text-slate-600 hover:text-slate-800 font-medium flex items-center justify-center gap-2 hover:bg-slate-100 rounded-lg transition-colors motion-reduce:transition-none"
     },
-    /* @__PURE__ */ React.createElement(ChevronLeft, { size: 18 }),
+    /* @__PURE__ */ React.createElement(ChevronLeft, { size: 18, "aria-hidden": "true" }),
     t("word_sounds.back_to_setup") || "Back to Setup"
-  ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-auto flex gap-3" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
-      "aria-label": t("common.play"),
+      "aria-label": t("word_sounds.start_activity") || "Start Activity",
       onClick: onStartActivity,
       "data-help-key": "word_sounds_review_start",
-      className: "px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center gap-2"
+      className: "w-full sm:w-auto min-h-11 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center justify-center gap-2"
     },
-    /* @__PURE__ */ React.createElement(Play, { size: 18 }),
+    /* @__PURE__ */ React.createElement(Play, { size: 18, "aria-hidden": "true" }),
     " ",
     t("word_sounds.start_activity") || "Start Activity"
   )))), showProbeEndConfirm && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[220] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: probeConfirmRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "probe-end-title", "aria-describedby": "probe-end-message", tabIndex: -1, onKeyDown: (event) => {

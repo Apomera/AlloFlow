@@ -52,12 +52,246 @@ function resolveAssetsRoot() {
 const ASSETS_ROOT = resolveAssetsRoot();
 const HEADLESS_AUDITOR_COUNT = 5;
 
+// A terminal primary/round checkpoint will never feed another fix pass: the
+// persisted loop boundary says autoContinueDone=true and the resume path honors
+// that fence before entering the loop. Persist only the fields consumed by
+// final publication/verification in that state. Unfinished checkpoints retain
+// the full remediation result because their audit node evidence, source text,
+// issue-resolution baseline, and OCR state can all affect the next accepted
+// round. Schema-1 full snapshots remain valid and resumable.
+const TERMINAL_CHECKPOINT_CAPSULE_SCHEMA = 1;
+const TERMINAL_CHECKPOINT_REMEDIATION_FIELDS = Object.freeze([
+  'accessibleHtml',
+  'verificationHtmlBinding',
+  'verificationCoverage',
+  'verificationState',
+  'executionState',
+  'outcomeState',
+  'verificationScope',
+  'testedScopeComplete',
+  'engineExecutionComplete',
+  'fullyVerifiedSuccess',
+  'success',
+  'afterScoreVerified',
+  'requiresManualReview',
+  'verificationReviewCount',
+  'verificationReasons',
+  'knownFindingCount',
+  'knownFindings',
+  'scoreEvidence',
+  'evidenceSchemaVersion',
+  'evidenceProfile',
+  'evidenceProvenance',
+  'evidenceManifest',
+  'afterScore',
+  '_aiVerificationIncomplete',
+  '_scoreSource',
+  '_estimatedMinimumScore',
+  'integrityCoverage',
+  'integrityWarning',
+  'fidelityNotes',
+  'needsExpertReview',
+  'expertReviewReason',
+  'activeContent',
+  'documentLanguage',
+  'sourceKind',
+  'isScanned',
+  'groundTruthMethod',
+  'groundTruthPages',
+  'sourceStructTree',
+  'finalText',
+  'ocrAccuracy',
+  '_experimentEarlyGetPages',
+  '_perLeafScannedOptOut',
+  'runId',
+  '_runId',
+]);
+
+function checkpointPlainObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function checkpointHasExactKeys(value, expected) {
+  if (!checkpointPlainObject(value)) return false;
+  const actual = Object.keys(value).sort();
+  const wanted = [...expected].sort();
+  return actual.length === wanted.length && actual.every((key, index) => (
+    key === wanted[index]
+  ));
+}
+
+function checkpointVerificationBinding(value, accessibleHtml) {
+  if (!checkpointHasExactKeys(value, [
+    'version',
+    'algorithm',
+    'digest',
+    'utf8ByteLength',
+  ]) || typeof accessibleHtml !== 'string') return false;
+  const html = Buffer.from(accessibleHtml, 'utf8');
+  return value.version === 1
+    && value.algorithm === 'SHA-256'
+    && /^[a-f0-9]{64}$/.test(String(value.digest || ''))
+    && Number.isSafeInteger(value.utf8ByteLength)
+    && value.utf8ByteLength > 0
+    && value.utf8ByteLength === html.length
+    && value.digest === crypto.createHash('sha256').update(html).digest('hex');
+}
+
+function checkpointActiveContent(value) {
+  const types = new Set([
+    'open-action',
+    'javascript',
+    'launch',
+    'embedded-files',
+    'additional-actions',
+    'other-actions',
+    'multimedia',
+  ]);
+  return checkpointHasExactKeys(value, [
+    'schema',
+    'complete',
+    'pageScanFailures',
+    'unexaminedStructures',
+    'any',
+    'findings',
+    'externalLinks',
+  ])
+    && value.schema === 1
+    && value.complete === true
+    && value.pageScanFailures === 0
+    && value.unexaminedStructures === 0
+    && typeof value.any === 'boolean'
+    && Number.isSafeInteger(value.externalLinks)
+    && value.externalLinks >= 0
+    && Array.isArray(value.findings)
+    && value.findings.every((finding) => checkpointHasExactKeys(finding, [
+      'type',
+      'count',
+      'label',
+    ])
+      && types.has(finding.type)
+      && Number.isSafeInteger(finding.count)
+      && finding.count > 0
+      && typeof finding.label === 'string'
+      && finding.label.length > 0)
+    && value.any === (value.findings.length > 0);
+}
+
+function terminalCheckpointAuditSummary(value, countKey) {
+  const audit = checkpointPlainObject(value) ? value : {};
+  const score = audit.score === undefined || audit.score === null
+    ? null : audit.score;
+  const count = audit[countKey] === undefined || audit[countKey] === null
+    ? null : audit[countKey];
+  if (
+    !(score === null ||
+      (typeof score === 'number' &&
+        Number.isFinite(score) &&
+        score >= 0 &&
+        score <= 100)) ||
+    !(count === null ||
+      (Number.isSafeInteger(count) && count >= 0))
+  ) return null;
+  return { score, [countKey]: count };
+}
+
+function terminalCheckpointRemediationCapsule(remediation) {
+  const axeAudit = terminalCheckpointAuditSummary(
+    remediation && remediation.axeAudit,
+    'totalViolations',
+  );
+  const secondEngineAudit = terminalCheckpointAuditSummary(
+    remediation && remediation.secondEngineAudit,
+    'failViolations',
+  );
+  if (
+    !checkpointPlainObject(remediation) ||
+    !axeAudit ||
+    !secondEngineAudit ||
+    typeof remediation.accessibleHtml !== 'string' ||
+    remediation.accessibleHtml.length === 0 ||
+    !checkpointVerificationBinding(
+      remediation.verificationHtmlBinding,
+      remediation.accessibleHtml,
+    ) ||
+    !checkpointPlainObject(remediation.verificationCoverage) ||
+    !checkpointActiveContent(remediation.activeContent) ||
+    typeof remediation.sourceKind !== 'string' ||
+    remediation.sourceKind.length === 0 ||
+    !(remediation.groundTruthMethod === null ||
+      typeof remediation.groundTruthMethod === 'string') ||
+    !(remediation.groundTruthPages === null ||
+      Array.isArray(remediation.groundTruthPages)) ||
+    !(remediation.sourceStructTree === null ||
+      checkpointPlainObject(remediation.sourceStructTree)) ||
+    typeof remediation.finalText !== 'string' ||
+    remediation.finalText.length === 0 ||
+    !(remediation.ocrAccuracy === null ||
+      checkpointPlainObject(remediation.ocrAccuracy)) ||
+    !/^(?:complete|complete-for-tested-scope|review-required|partial|unavailable)$/.test(
+      String(remediation.verificationState || ''),
+    ) ||
+    typeof remediation.afterScoreVerified !== 'boolean' ||
+    typeof remediation.requiresManualReview !== 'boolean'
+  ) return null;
+
+  const capsule = { checkpointCapsuleSchema: TERMINAL_CHECKPOINT_CAPSULE_SCHEMA };
+  for (const key of TERMINAL_CHECKPOINT_REMEDIATION_FIELDS) {
+    capsule[key] = Object.hasOwn(remediation, key) && remediation[key] !== undefined
+      ? remediation[key] : null;
+  }
+  capsule.isScanned = remediation.isScanned === true
+    || /tesseract|vision|ocr/i.test(String(remediation.groundTruthMethod || ''));
+  capsule._experimentEarlyGetPages =
+    remediation._experimentEarlyGetPages === true;
+  capsule._perLeafScannedOptOut =
+    remediation._perLeafScannedOptOut === true;
+  capsule.axeAudit = axeAudit;
+  capsule.secondEngineAudit = secondEngineAudit;
+  return capsule;
+}
+
+function compactTerminalCheckpointSnapshot(snapshot) {
+  if (
+    !checkpointPlainObject(snapshot) ||
+    snapshot.schema !== 1 ||
+    !['primary', 'round'].includes(snapshot.stage) ||
+    snapshot.autoContinueDone !== true
+  ) return snapshot;
+  const capsule = terminalCheckpointRemediationCapsule(snapshot.remediation);
+  return capsule ? Object.assign({}, snapshot, { remediation: capsule }) : snapshot;
+}
+
 // Browser dependencies are vendored so a remote job never sends document content to a
 // public asset CDN. The manifest is checked before any input is opened and every response
 // is served from memory over the loopback origin used by the pipeline page.
 const VENDOR_BOOT_PATH = '/__alloflow_mcp_vendor/';
 const VENDOR_BOOT_URL = 'http://127.0.0.1/__alloflow_mcp_boot__';
 let vendorBundleCache = null;
+const NORMALIZED_VENDOR_TEXT_PATHS = Object.freeze(['THIRD_PARTY_NOTICES.md']);
+const NORMALIZED_VENDOR_TEXT_PATH_SET = new Set(NORMALIZED_VENDOR_TEXT_PATHS);
+
+// Most vendor files are executable/binary payloads whose hashes bind their exact bytes. The
+// notices file is the sole text payload: Git can leave an older Windows checkout with CRLF bytes
+// even after an `eol=lf` rule is added, while the index and manifest correctly contain LF. An
+// explicit per-entry normalization policy keeps that non-executable provenance text stable
+// without weakening byte-exact verification for any runtime asset. The packager materializes
+// these canonical bytes into the MCPB before it verifies the staged bundle.
+function normalizeVendorAssetBytes(entry, input) {
+  const bytes = Buffer.isBuffer(input) ? input : Buffer.from(input || '');
+  if (!entry || entry.normalization === undefined) return bytes;
+  if (!NORMALIZED_VENDOR_TEXT_PATH_SET.has(entry.path)) {
+    throw new Error('AlloFlow MCP vendor normalization is allowed only for an explicitly identified text asset: ' + String(entry.path || 'unknown'));
+  }
+  if (entry.normalization !== 'lf') {
+    throw new Error('AlloFlow MCP vendor manifest contains an unsupported normalization policy: ' + String(entry.normalization));
+  }
+  const text = bytes.toString('utf8');
+  if (!Buffer.from(text, 'utf8').equals(bytes)) {
+    throw new Error('AlloFlow MCP vendor text asset is not valid UTF-8: ' + String(entry.path || 'unknown'));
+  }
+  return Buffer.from(text.replace(/\r\n?/g, '\n'), 'utf8');
+}
 
 function resolveVendorRoot() {
   const candidates = [
@@ -89,6 +323,7 @@ function loadVendorBundle() {
   for (const entry of manifest.files) {
     if (!entry || typeof entry.path !== 'string' || entry.path.startsWith('/') || entry.path.includes('..')
       || !/^[A-Za-z0-9._/-]+$/.test(entry.path) || !Number.isSafeInteger(entry.bytes)
+      || (entry.normalization !== undefined && entry.normalization !== 'lf')
       || !/^[a-f0-9]{64}$/u.test(entry.sha256)) {
       throw new Error('AlloFlow MCP vendor manifest contains an unsafe entry: ' + JSON.stringify(entry));
     }
@@ -97,7 +332,7 @@ function loadVendorBundle() {
       throw new Error('AlloFlow MCP vendor manifest contains a duplicate or out-of-root entry: ' + entry.path);
     }
     let bytes;
-    try { bytes = fs.readFileSync(absolute); } catch (error) {
+    try { bytes = normalizeVendorAssetBytes(entry, fs.readFileSync(absolute)); } catch (error) {
       throw new Error('AlloFlow MCP vendor asset is missing: ' + entry.path + ' (' + error.message + ')');
     }
     const sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
@@ -541,6 +776,7 @@ async function geminiCallWithFallback(opts) {
 function createDriver(options) {
   const o = options || {};
   const log = typeof o.log === 'function' ? o.log : defaultLog;
+  const spawnProcess = typeof o.spawnProcess === 'function' ? o.spawnProcess : require('child_process').spawn;
   let browser = null;
   let activeRun = null; // context + abortable Node transports for the single in-flight run
   let documentEpochSeq = 0; // one document-ownership epoch per run page (see newPipelinePage)
@@ -755,7 +991,7 @@ function createDriver(options) {
     await page.exposeFunction('__mcpProgress', async (line) => { rlog('progress: ' + String(line).slice(0, 300)); });
     if (typeof runOpts.onCheckpoint === 'function') {
       await page.exposeFunction('__mcpCheckpoint', async (snapshot) => {
-        return runOpts.onCheckpoint(snapshot);
+        return runOpts.onCheckpoint(compactTerminalCheckpointSnapshot(snapshot));
       });
     }
 
@@ -1457,84 +1693,194 @@ function createDriver(options) {
     });
   }
 
-  // Offline PDF/UA-1 validation for the remote runner. The browser validator above is kept for
-  // local interactive use, but it needs CheerpJ/CDN resources. Production calls the pinned
-  // veraPDF CLI JAR directly through Java so no document bytes or executable dependencies leave
-  // the container. Only bounded counts/status are returned to the caller.
+  const VALIDATION_HEARTBEAT_MS = 12000;
+
+  function validationCancelledError(signal) {
+    const reason = signal && signal.reason;
+    const detail = reason && reason.message ? ': ' + String(reason.message).slice(0, 200) : '';
+    const error = new Error('veraPDF validation cancelled' + detail);
+    error.name = 'AbortError';
+    error.code = 'ALLOFLOW_VALIDATION_CANCELLED';
+    if (reason !== undefined) error.cause = reason;
+    return error;
+  }
+
+  function validationTelemetry(opts, label) {
+    const o = opts || {};
+    const sink = typeof o.onProgress === 'function' ? o.onProgress
+      : (typeof o.onLog === 'function' ? o.onLog : log);
+    const startedAt = Date.now();
+    let settled = false;
+    let pulse = null;
+    const emit = (message) => {
+      try { sink(String(message)); } catch (_) {}
+    };
+    emit('veraPDF validation started: ' + label);
+    pulse = setInterval(() => {
+      emit('veraPDF validation still running (' + Math.max(1, Math.round((Date.now() - startedAt) / 1000)) + 's elapsed)');
+    }, VALIDATION_HEARTBEAT_MS);
+    pulse.unref?.();
+    return {
+      startedAt,
+      finish(message) {
+        if (settled) return;
+        settled = true;
+        if (pulse) clearInterval(pulse);
+        emit(message);
+      },
+    };
+  }
+
+  // Read once, then validate that immutable snapshot rather than reopening the caller's path.
+  // Besides removing the path-change/TOCTOU window, this lets every verdict identify the exact
+  // bytes it covered. The bounded allocation happens only after fstat on the opened handle.
+  function snapshotPdfForValidation(inputPath, maxBytes) {
+    const filePath = path.resolve(String(inputPath || ''));
+    let fd;
+    try { fd = fs.openSync(filePath, 'r'); } catch (_) { throw new Error('veraPDF input is not a regular file'); }
+    try {
+      const stat = fs.fstatSync(fd);
+      const limit = Number(maxBytes) || 50 * 1024 * 1024;
+      if (!stat.isFile()) throw new Error('veraPDF input is not a regular file');
+      if (stat.size < 5 || stat.size > limit) throw new Error('veraPDF input is outside the bounded size range');
+      const bytes = Buffer.allocUnsafe(stat.size);
+      let offset = 0;
+      while (offset < bytes.length) {
+        const read = fs.readSync(fd, bytes, offset, bytes.length - offset, offset);
+        if (!read) break;
+        offset += read;
+      }
+      if (offset !== bytes.length) throw new Error('veraPDF input changed while its immutable validation snapshot was being read');
+      if (bytes.subarray(0, 5).toString('latin1') !== '%PDF-') throw new Error('veraPDF input is not a PDF');
+      return {
+        filePath,
+        fileName: path.basename(filePath),
+        bytes,
+        inputBytes: bytes.length,
+        inputSha256: crypto.createHash('sha256').update(bytes).digest('hex'),
+      };
+    } finally {
+      try { fs.closeSync(fd); } catch (_) {}
+    }
+  }
+
+  function bindValidationResult(result, snapshot, startedAt, overrides) {
+    return Object.assign({}, result || {}, overrides || {}, {
+      inputSha256: snapshot.inputSha256,
+      inputBytes: snapshot.inputBytes,
+      profile: 'ua1',
+      validatorVersion: (overrides && Object.prototype.hasOwnProperty.call(overrides, 'validatorVersion'))
+        ? overrides.validatorVersion
+        : ((result && result.validatorVersion) || null),
+      validatedAt: new Date().toISOString(),
+      validationDurationMs: Math.max(0, Date.now() - startedAt),
+    });
+  }
+
+  // Offline PDF/UA-1 validation for the remote runner. Production calls the pinned veraPDF CLI
+  // JAR directly through Java so neither document bytes nor executable dependencies leave the
+  // container. The caller may cancel via AbortSignal; cancellation terminates the Java process.
   async function validatePdfUaCli(opts) {
     const o = opts || {};
-    const filePath = path.resolve(String(o.filePath || ''));
-    const jarPath = path.resolve(process.env.ALLOFLOW_MCP_VERAPDF_CLI || path.join(ASSETS_ROOT, 'verapdf', 'verapdf-cli.jar'));
-    const stat = fs.statSync(filePath, { throwIfNoEntry: false });
-    if (!stat || !stat.isFile()) throw new Error('veraPDF input is not a regular file');
-    if (stat.size < 5 || stat.size > (Number(o.maxBytes) || 50 * 1024 * 1024)) throw new Error('veraPDF input is outside the bounded size range');
-    const fd = fs.openSync(filePath, 'r');
-    try {
-      const head = Buffer.alloc(5); fs.readSync(fd, head, 0, 5, 0);
-      if (head.toString('latin1') !== '%PDF-') throw new Error('veraPDF input is not a PDF');
-    } finally { fs.closeSync(fd); }
-    if (!fs.existsSync(jarPath)) throw new Error('veraPDF CLI JAR is not packaged: ' + jarPath);
-    const timeoutMs = Math.max(1000, Math.min(300000, Number(o.timeoutMs) || 120000));
-    const javaBin = process.env.ALLOFLOW_MCP_JAVA_BIN || 'java';
-    const args = ['-jar', jarPath, '--format', 'json', '--flavour', 'ua1', '--maxfailuresdisplayed', '25', '--loglevel', '1', filePath];
     const signal = o.signal;
-    return new Promise((resolve, reject) => {
-      const child = require('child_process').spawn(javaBin, args, { stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
-      let stdout = '';
-      let timer = null;
-      let settled = false;
-      const cleanup = () => {
-        if (timer) clearTimeout(timer);
-        if (signal && typeof signal.removeEventListener === 'function') signal.removeEventListener('abort', onAbort);
-      };
-      const finish = (fn, value) => { if (settled) return; settled = true; cleanup(); fn(value); };
-      const onAbort = () => { try { child.kill(); } catch (_) {} finish(reject, new Error('veraPDF validation cancelled')); };
-      if (signal && signal.aborted) return onAbort();
-      if (signal && typeof signal.addEventListener === 'function') signal.addEventListener('abort', onAbort, { once: true });
-      child.stdout.on('data', (chunk) => {
-        stdout += String(chunk);
-        if (stdout.length > 4 * 1024 * 1024) { try { child.kill(); } catch (_) {} finish(reject, new Error('veraPDF output exceeded the bounded limit')); }
-      });
-      child.on('error', (error) => finish(reject, new Error('veraPDF CLI could not start: ' + error.message)));
-      child.on('close', (code) => {
-        if (settled) return;
-        let parsed;
-        try { parsed = JSON.parse(stdout); } catch (_) {
-          return finish(reject, new Error('veraPDF CLI returned no valid JSON (exit ' + code + ')'));
-        }
-        const report = parsed && parsed.report;
-        const job = report && Array.isArray(report.jobs) ? report.jobs[0] : null;
-        const validation = job && Array.isArray(job.validationResult) ? job.validationResult[0] : null;
-        const details = validation && validation.details;
-        if (!validation || !details || typeof validation.compliant !== 'boolean') {
-          return finish(reject, new Error('veraPDF CLI returned an incomplete validation result'));
-        }
-        const releases = report && report.buildInformation && Array.isArray(report.buildInformation.releaseDetails)
-          ? report.buildInformation.releaseDetails : [];
-        const core = releases.find((item) => item && item.id === 'core');
-        const count = (value) => Number.isSafeInteger(value) && value >= 0 && value <= 1000000 ? value : 0;
-        const safeText = (value, max) => typeof value === 'string' ? value.slice(0, max) : '';
-        const failedRuleSummaries = (Array.isArray(details.ruleSummaries) ? details.ruleSummaries : [])
-          .filter((item) => item && item.ruleStatus === 'FAILED')
-          .slice(0, 25)
-          .map((item) => ({
-            specification: safeText(item.specification, 64),
-            clause: safeText(item.clause, 32),
-            testNumber: count(item.testNumber),
-            description: safeText(item.description, 400),
-            failedChecks: count(item.failedChecks),
-          }));
-        finish(resolve, {
-          status: validation.compliant ? 'compliant' : 'noncompliant',
-          validator: 'veraPDF', profile: 'ua1', validatorVersion: core && typeof core.version === 'string' ? core.version : null,
-          failedRules: count(details.failedRules), failedChecks: count(details.failedChecks),
-          passedRules: count(details.passedRules), passedChecks: count(details.passedChecks),
-          failedRuleSummaries,
+    if (signal && signal.aborted) throw validationCancelledError(signal);
+    const snapshot = snapshotPdfForValidation(o.filePath, o.maxBytes);
+    const telemetry = validationTelemetry(o, snapshot.fileName + ' (' + snapshot.inputBytes + ' bytes; local Java CLI)');
+    const jarPath = path.resolve(process.env.ALLOFLOW_MCP_VERAPDF_CLI || path.join(ASSETS_ROOT, 'verapdf', 'verapdf-cli.jar'));
+    const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-verapdf-'));
+    const immutablePath = path.join(scratch, 'input-' + snapshot.inputSha256.slice(0, 16) + '.pdf');
+    try {
+      if (!fs.existsSync(jarPath)) throw new Error('veraPDF CLI JAR is not packaged: ' + jarPath);
+      fs.writeFileSync(immutablePath, snapshot.bytes, { flag: 'wx', mode: 0o600 });
+      // veraPDF is normally much faster, but cold JVM/classloading on a busy CI or synced Windows
+      // profile can exceed two minutes. Progress pulses keep the wider fail-safe observable.
+      const timeoutMs = Math.max(1000, Math.min(300000, Number(o.timeoutMs) || 300000));
+      const javaBin = process.env.ALLOFLOW_MCP_JAVA_BIN || 'java';
+      const args = ['-jar', jarPath, '--format', 'json', '--flavour', 'ua1', '--maxfailuresdisplayed', '25', '--loglevel', '1', immutablePath];
+      const result = await new Promise((resolve, reject) => {
+        const child = spawnProcess(javaBin, args, { stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+        let stdout = '';
+        let timer = null;
+        let forcedFinish = null;
+        let settled = false;
+        let terminationError = null;
+        const cleanup = () => {
+          if (timer) clearTimeout(timer);
+          if (forcedFinish) clearTimeout(forcedFinish);
+          signal?.removeEventListener?.('abort', onAbort);
+        };
+        const finish = (fn, value) => { if (settled) return; settled = true; cleanup(); fn(value); };
+        const terminate = (error) => {
+          if (settled || terminationError) return;
+          terminationError = error;
+          try { child.kill('SIGKILL'); } catch (_) {}
+          // `close` normally follows immediately. Bound the wait so a platform-specific failed
+          // kill cannot leave the RPC pending forever; the child handle is already unreferenced.
+          forcedFinish = setTimeout(() => finish(reject, terminationError), 5000);
+          forcedFinish.unref?.();
+        };
+        const onAbort = () => terminate(validationCancelledError(signal));
+        if (signal && signal.aborted) onAbort();
+        else signal?.addEventListener?.('abort', onAbort, { once: true });
+        child.stdout.on('data', (chunk) => {
+          stdout += String(chunk);
+          if (stdout.length > 4 * 1024 * 1024) terminate(new Error('veraPDF output exceeded the bounded limit'));
         });
+        child.on('error', (error) => finish(reject, new Error('veraPDF CLI could not start: ' + error.message)));
+        child.on('close', (code) => {
+          if (terminationError) return finish(reject, terminationError);
+          if (settled) return;
+          let parsed;
+          try { parsed = JSON.parse(stdout); } catch (_) {
+            return finish(reject, new Error('veraPDF CLI returned no valid JSON (exit ' + code + ')'));
+          }
+          const report = parsed && parsed.report;
+          const job = report && Array.isArray(report.jobs) ? report.jobs[0] : null;
+          const validation = job && Array.isArray(job.validationResult) ? job.validationResult[0] : null;
+          const details = validation && validation.details;
+          if (!validation || !details || typeof validation.compliant !== 'boolean') {
+            return finish(reject, new Error('veraPDF CLI returned an incomplete validation result'));
+          }
+          const releases = report && report.buildInformation && Array.isArray(report.buildInformation.releaseDetails)
+            ? report.buildInformation.releaseDetails : [];
+          const core = releases.find((item) => item && item.id === 'core');
+          const count = (value) => Number.isSafeInteger(value) && value >= 0 && value <= 1000000 ? value : 0;
+          const safeText = (value, max) => typeof value === 'string' ? value.slice(0, max) : '';
+          const failedRuleSummaries = (Array.isArray(details.ruleSummaries) ? details.ruleSummaries : [])
+            .filter((item) => item && item.ruleStatus === 'FAILED')
+            .slice(0, 25)
+            .map((item) => ({
+              specification: safeText(item.specification, 64),
+              clause: safeText(item.clause, 32),
+              testNumber: count(item.testNumber),
+              description: safeText(item.description, 400),
+              failedChecks: count(item.failedChecks),
+            }));
+          finish(resolve, {
+            status: validation.compliant ? 'compliant' : 'noncompliant',
+            validator: 'veraPDF',
+            validatorVersion: core && typeof core.version === 'string' ? core.version : null,
+            failedRules: count(details.failedRules), failedChecks: count(details.failedChecks),
+            passedRules: count(details.passedRules), passedChecks: count(details.passedChecks),
+            failedRuleSummaries,
+          });
+        });
+        timer = setTimeout(() => terminate(new Error('veraPDF validation timed out')), timeoutMs);
+        timer.unref?.();
       });
-      timer = setTimeout(() => { try { child.kill(); } catch (_) {} finish(reject, new Error('veraPDF validation timed out')); }, timeoutMs);
-      timer.unref?.();
-    });
+      const bound = bindValidationResult(result, snapshot, telemetry.startedAt);
+      telemetry.finish('veraPDF validation complete: ' + bound.status + ' (' + bound.validationDurationMs + 'ms)');
+      return bound;
+    } catch (error) {
+      const finalError = signal && signal.aborted && (!error || error.code !== 'ALLOFLOW_VALIDATION_CANCELLED')
+        ? validationCancelledError(signal) : error;
+      telemetry.finish(finalError && finalError.code === 'ALLOFLOW_VALIDATION_CANCELLED'
+        ? 'veraPDF validation cancelled'
+        : 'veraPDF validation failed: ' + String(finalError && finalError.message || finalError).slice(0, 240));
+      throw finalError;
+    } finally {
+      try { fs.rmSync(scratch, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); } catch (_) {}
+    }
   }
 
   // Independent PDF/UA-1 (ISO 14289-1) validation via the SAME in-browser veraPDF the app
@@ -1546,34 +1892,67 @@ function createDriver(options) {
   // pipeline globals, so it runs in its own context OUTSIDE the single-flight lane and
   // deliberately never occupies activeRun (a job cancel must not kill a validation).
   async function validatePdfUa(opts) {
-    const rlog = typeof opts.onLog === 'function' ? opts.onLog : log;
-    const fileName = path.basename(opts.filePath);
-    const b64 = readPdfBase64(opts.filePath);
-    rlog('veraPDF: validating ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB; JVM boot typically 40-90s cold)');
-    const b = await getBrowser();
-    const validatorUrl = await getVerapdfUrl();
-    // CheerpJ's boot occasionally races itself ("Java code still running") — observed ~1 in 3
-    // cold boots headless. A fresh page reliably recovers, so one retry is part of the contract.
-    let lastErr = null;
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      if (attempt > 1) rlog('veraPDF: boot hiccup (' + String(lastErr && lastErr.message).slice(0, 120) + ') — retrying on a fresh page');
-      try {
-        return await _validateOnFreshPage(b, validatorUrl, b64, rlog);
-      } catch (e) {
-        lastErr = e;
-        if (!/Java code still running|not ready within|Boot failed/i.test(String(e && e.message))) throw e;
-      }
+    const o = opts || {};
+    const signal = o.signal;
+    if (signal && signal.aborted) throw validationCancelledError(signal);
+    // This compatibility path loads CheerpJ and pdf-lib from public CDNs. It receives document
+    // bytes only through postMessage on the loopback page, but it is still network-dependent and
+    // therefore must never silently replace the fully local Java CLI.
+    if (process.env.ALLOFLOW_MCP_ALLOW_BROWSER_VERAPDF_EGRESS !== '1') {
+      const error = new Error('veraPDF browser fallback is disabled because it downloads public runtime dependencies. Install local Java for the offline CLI, or explicitly set ALLOFLOW_MCP_ALLOW_BROWSER_VERAPDF_EGRESS=1.');
+      error.code = 'ALLOFLOW_BROWSER_VERAPDF_EGRESS_DISABLED';
+      throw error;
     }
-    throw lastErr;
+    const snapshot = snapshotPdfForValidation(o.filePath, o.maxBytes);
+    const b64 = snapshot.bytes.toString('base64');
+    const telemetry = validationTelemetry(o, snapshot.fileName + ' (' + snapshot.inputBytes + ' bytes; browser compatibility fallback)');
+    const rlog = typeof o.onProgress === 'function' ? o.onProgress
+      : (typeof o.onLog === 'function' ? o.onLog : log);
+    try {
+      const b = await getBrowser(signal);
+      const validatorUrl = await abortablePromise(getVerapdfUrl(), signal);
+      // CheerpJ's boot occasionally races itself ("Java code still running") — observed ~1 in 3
+      // cold boots headless. A fresh page reliably recovers, so one retry is part of the contract.
+      let lastErr = null;
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        if (attempt > 1) rlog('veraPDF: boot hiccup (' + String(lastErr && lastErr.message).slice(0, 120) + ') — retrying on a fresh page');
+        try {
+          const result = await _validateOnFreshPage(b, validatorUrl, b64, rlog, signal);
+          const bound = bindValidationResult(result, snapshot, telemetry.startedAt, {
+            status: result && result.compliant ? 'compliant' : 'noncompliant',
+            validator: 'veraPDF browser',
+            validatorVersion: (result && result.validatorVersion) || null,
+          });
+          telemetry.finish('veraPDF validation complete: ' + bound.status + ' (' + bound.validationDurationMs + 'ms)');
+          return bound;
+        } catch (e) {
+          lastErr = signal && signal.aborted ? validationCancelledError(signal) : e;
+          if (lastErr.code === 'ALLOFLOW_VALIDATION_CANCELLED'
+            || !/Java code still running|not ready within|Boot failed/i.test(String(lastErr && lastErr.message))) throw lastErr;
+        }
+      }
+      throw lastErr;
+    } catch (error) {
+      const finalError = signal && signal.aborted && (!error || error.code !== 'ALLOFLOW_VALIDATION_CANCELLED')
+        ? validationCancelledError(signal) : error;
+      telemetry.finish(finalError && finalError.code === 'ALLOFLOW_VALIDATION_CANCELLED'
+        ? 'veraPDF validation cancelled'
+        : 'veraPDF validation failed: ' + String(finalError && finalError.message || finalError).slice(0, 240));
+      throw finalError;
+    }
   }
 
-  async function _validateOnFreshPage(b, validatorUrl, b64, rlog) {
-    const context = await b.newContext();
-    const page = await context.newPage();
-    if (process.env.ALLOFLOW_MCP_VERBOSE === '1') page.on('console', (m) => rlog('verapdf console: ' + m.text().slice(0, 300)));
+  async function _validateOnFreshPage(b, validatorUrl, b64, rlog, signal) {
+    let context = null;
+    let closeOnAbort = null;
     try {
-      await page.goto(validatorUrl, { waitUntil: 'domcontentloaded' });
-      const result = await page.evaluate(({ b64, bootMs, validateMs }) => new Promise((resolve, reject) => {
+      context = await abortablePromise(b.newContext(), signal, (lateContext) => lateContext?.close?.());
+      const page = await abortablePromise(context.newPage(), signal);
+      if (process.env.ALLOFLOW_MCP_VERBOSE === '1') page.on('console', (m) => rlog('verapdf console: ' + m.text().slice(0, 300)));
+      closeOnAbort = () => { try { context.close().catch(() => {}); } catch (_) {} };
+      signal?.addEventListener?.('abort', closeOnAbort, { once: true });
+      await abortablePromise(page.goto(validatorUrl, { waitUntil: 'domcontentloaded' }), signal);
+      const result = await abortablePromise(page.evaluate(({ b64, bootMs, validateMs }) => new Promise((resolve, reject) => {
         const t0 = Date.now();
         window.addEventListener('message', (ev) => {
           const d = ev.data || {};
@@ -1596,11 +1975,12 @@ function createDriver(options) {
           if (Date.now() - t0 > bootMs) { reject(new Error('veraPDF validator not ready within ' + Math.round(bootMs / 1000) + 's — last status: ' + s.slice(0, 150))); return; }
           setTimeout(waitReady, 1000);
         })();
-      }), { b64, bootMs: 180000, validateMs: 240000 });
+      }), { b64, bootMs: 180000, validateMs: 240000 }), signal);
       rlog('veraPDF: ' + (result && result.compliant ? 'COMPLIANT' : (result ? result.failedChecks + ' failed check(s) across ' + (result.failedRules || []).length + ' rule(s)' : 'no result')));
       return result;
     } finally {
-      try { await context.close(); } catch (_) {}
+      if (closeOnAbort) signal?.removeEventListener?.('abort', closeOnAbort);
+      try { if (context) await context.close(); } catch (_) {}
     }
   }
 
@@ -1686,6 +2066,7 @@ function createDriver(options) {
   function classifySelfTestFailure(message) {
     const m = String(message || '');
     if (/Pipeline module file\(s\) missing/i.test(m)) return { stage: 'assets', hint: 'The pipeline module files are missing from the assets directory. Reinstall the connector, or set ALLOFLOW_MCP_ASSETS_DIR.' };
+    if (/vendor (?:manifest|asset|bundle)|hash verification|integrity/i.test(m)) return { stage: 'assets', hint: 'A bundled vendor asset is missing or failed its integrity hash. Reinstall or rebuild the connector; do not bypass the integrity gate.' };
     if (/executable doesn't exist|Executable doesn't exist|browserType\.launch|playwright/i.test(m)) return { stage: 'browser', hint: 'Chromium could not launch. Run remediation_setup once (a ~200MB one-time download).' };
     if (/ALLO_DOCUMENT_EPOCH_REQUIRED|DocumentOwnershipError|ownership epoch/i.test(m)) return { stage: 'ownership-gate', hint: 'The pipeline refused an unstamped run: the driver is not publishing a document-ownership epoch this pipeline build accepts. Connector and pipeline are out of sync.' };
     if (/BASELINE_AUDIT_REQUIRED|BaselineAuditRequiredError|baseline accessibility audit/i.test(m)) return { stage: 'audit-contract', hint: 'The audit produced no usable evidence, so remediation refused to start. The pipeline\'s strict audit-reply contract has almost certainly changed underneath the connector.' };
@@ -2321,6 +2702,10 @@ async function verifyGeminiApiKey({ timeoutMs = 15000 } = {}) {
 
 module.exports = {
   createDriver,
+  compactTerminalCheckpointSnapshot,
+  terminalCheckpointRemediationCapsule,
+  TERMINAL_CHECKPOINT_CAPSULE_SCHEMA,
+  TERMINAL_CHECKPOINT_REMEDIATION_FIELDS,
   classifyHttpFailure,
   providerRetryAfterMs,
   geminiGenerate,
@@ -2329,6 +2714,8 @@ module.exports = {
   resolveChromium,
   installChromium,
   verifyVendorBundle,
+  normalizeVendorAssetBytes,
+  NORMALIZED_VENDOR_TEXT_PATHS,
   REPO_ROOT,
   ASSETS_ROOT,
   MODULE_FILES,

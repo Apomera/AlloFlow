@@ -198,7 +198,7 @@ const _dsBridge = () => {
       ? Promise.resolve(window.alloDeviceStorage)
       : new Promise((resolve, reject) => {
           const s = document.createElement('script');
-          s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds3-storage-manager';
+          s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds4-bridge-auth';
           s.onload = () => {
             // Pages answers missing files with its SPA index as HTML 200 —
             // verify the global actually appeared (lame.min.js lesson).
@@ -226,24 +226,45 @@ const _dsMirrorSet = (key, storedValue) => {
 // the allo-prefs-hydrated event let the monolith's mount gate hold first
 // paint briefly so boot-time reads (theme, a11y) see restored values.
 if (_dsBridgeWanted && typeof window !== 'undefined') {
-  const _finishPrefsHydration = (applied) => {
+  let _prefsHydrationPromise = null;
+  const _finishPrefsHydration = (applied, available, skippedExisting = 0, replacedExisting = false) => {
     window.__alloPrefsHydrated = true;
-    try { window.dispatchEvent(new CustomEvent('allo-prefs-hydrated', { detail: { applied } })); } catch (_) {}
+    window.__alloPrefsHydrationStatus = available ? 'ready' : 'unavailable';
+    try { window.dispatchEvent(new CustomEvent('allo-prefs-hydrated', { detail: { applied, available: !!available, skippedExisting, replacedExisting } })); } catch (_) {}
   };
-  _dsBridge().then((ds) => ds.get('ls_prefs', 'all')).then((snap) => {
-    let applied = 0;
-    if (snap && typeof snap === 'object') {
-      Object.keys(snap).forEach((k) => {
-        try {
-          if (typeof snap[k] === 'string' && localStorage.getItem(k) === null) {
-            localStorage.setItem(k, snap[k]);
-            applied++;
-          }
-        } catch (_) {}
-      });
-    }
-    _finishPrefsHydration(applied);
-  }).catch(() => _finishPrefsHydration(0));
+  const _hydratePrefs = (options = {}) => {
+    if (_prefsHydrationPromise) return _prefsHydrationPromise;
+    const replaceExisting = options?.replaceExisting === true;
+    window.__alloPrefsHydrationStatus = 'pending';
+    _prefsHydrationPromise = _dsBridge().then((ds) => ds.get('ls_prefs', 'all')).then((snap) => {
+      let applied = 0;
+      let skippedExisting = 0;
+      let writeFailed = false;
+      if (snap && typeof snap === 'object') {
+        Object.keys(snap).forEach((k) => {
+          try {
+            if (typeof snap[k] !== 'string') return;
+            const currentValue = localStorage.getItem(k);
+            if (currentValue === snap[k]) return;
+            if (currentValue === null || replaceExisting) {
+              localStorage.setItem(k, snap[k]);
+              applied++;
+            } else {
+              skippedExisting++;
+            }
+          } catch (_) { writeFailed = true; }
+        });
+      }
+      _finishPrefsHydration(applied, !writeFailed, skippedExisting, replaceExisting);
+      return { applied, available: !writeFailed, skippedExisting, replacedExisting: replaceExisting };
+    }).catch(() => {
+      _finishPrefsHydration(0, false, 0, replaceExisting);
+      return { applied: 0, available: false, skippedExisting: 0, replacedExisting: replaceExisting };
+    }).finally(() => { _prefsHydrationPromise = null; });
+    return _prefsHydrationPromise;
+  };
+  window.__alloRetryPrefsHydration = _hydratePrefs;
+  _hydratePrefs();
   // Dirty-check before sending: whole-store payloads can be MBs (AlloHaven
   // keeps its entire world in alloflow_allohaven_v1), so only cross the
   // bridge when something actually changed since the last snapshot.
@@ -264,6 +285,7 @@ if (_dsBridgeWanted && typeof window !== 'undefined') {
   };
   setInterval(_lsSnapshot, 30000);
   window.addEventListener('pagehide', _lsSnapshot);
+  window.addEventListener('alloflow:educator-access-code-changed', _lsSnapshot);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') _lsSnapshot();
   });

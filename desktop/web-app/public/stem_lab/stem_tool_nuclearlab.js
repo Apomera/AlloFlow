@@ -26,6 +26,8 @@
     nudat: { label: 'NNDC NuDat 3', url: 'https://www.nndc.bnl.gov/nudat3/' },
     nist: { label: 'NIST XCOM', url: 'https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html' },
     unscear: { label: 'UNSCEAR Fukushima 2020/21', url: 'https://www.unscear.org/unscear/en/publications/2020_2021_2.html' },
+    reconstruction: { label: 'Japan Reconstruction Agency disaster-related deaths (2026)', url: 'https://www.reconstruction.go.jp/files/user/topics/main-cat2/sub-cat2-6/20260213_kanrenshi.pdf' },
+    mhlw: { label: 'Japan MHLW Fukushima worker health report (2024)', url: 'https://www.mhlw.go.jp/english/topics/2011eq/workers/ri/ar/rat_12th.pdf' },
     nrc: { label: 'NRC radiological-emergency guidance', url: 'https://www.nrc.gov/about-nrc/emerg-preparedness/in-radiological-emerg' },
     iter: { label: 'ITER 2024 baseline', url: 'https://www.iter.org/node/20687/new-baseline-prioritize-robust-start-exploitation' },
     nif: { label: 'LLNL NIF 2022 result', url: 'https://annual.llnl.gov/fy-2022/national-ignition-facility-2022' },
@@ -351,7 +353,8 @@
 
   // ── The three accidents everyone names. Figures from UNSCEAR 2008 (Chernobyl)
   //    and UNSCEAR 2020/2021 (Fukushima), plus the Japanese government's own
-  //    count of evacuation-related deaths. ──
+  //    disaster-related-death count and worker-compensation reports. These are
+  //    different evidence categories and are not presented as a causal tally. ──
   var INCIDENTS = [
     { id: 'tmi', name: 'Three Mile Island', year: 1979, place: 'Pennsylvania, USA', level: 'INES 5',
       what: 'A stuck valve and a misread indicator let coolant escape. Half the core melted, but the containment building held.',
@@ -363,7 +366,7 @@
       changed: 'Positive void coefficients were designed out; remaining RBMKs were modified. It also established that the health effects of the disruption — evacuation, poverty, alcohol, fear — can rival the radiation itself.' },
     { id: 'fukushima', name: 'Fukushima Daiichi', year: 2011, place: 'Japan', level: 'INES 7',
       what: 'A magnitude 9.0 earthquake and a 14 m tsunami flooded the backup generators, which sat too low. Without power the cores could not be cooled.',
-      toll: 'No deaths from acute radiation. One worker death was attributed to radiation exposure in 2018. Around 2,200 deaths have been attributed to the evacuation itself — mostly elderly patients moved too fast — and roughly 18,500 people were killed by the tsunami.',
+      toll: 'No deaths from acute radiation. UNSCEAR has documented no adverse health effects among residents that can be directly attributed to radiation exposure. Japan has granted workers’ compensation for several cancers after the accident, including fatal cases; the health ministry explicitly says an award does not prove that radiation caused an individual cancer. Separately, Japan’s Reconstruction Agency records 2,350 disaster-related deaths in Fukushima Prefecture through 2025, a legal category covering illness after injury or the physical burden of evacuation life. It is not a count of radiation deaths, nor can every case be assigned to one evacuation decision.',
       changed: 'Backup power moved above flood level worldwide, and portable emergency equipment stockpiled. It also prompted a hard rethink of whether rapid mass evacuation is always the safer choice.' }
   ];
 
@@ -576,20 +579,39 @@
     return (1e9 * 1.602e-13 * acc / (4 * Math.PI)) * 3600 * 1000;
   }
 
+  // Integrate a source whose activity falls exponentially. Treating a short-
+  // lived medical isotope as a constant rate makes its lifetime dose grow
+  // without limit and can produce a misleading time-to-dose result.
+  function nkIntegratedDose(initialRate, hours, halfLifeHours) {
+    if (!(initialRate > 0) || !(hours > 0)) return 0;
+    if (!(halfLifeHours > 0) || !isFinite(halfLifeHours)) return initialRate * hours;
+    var lambda = Math.LN2 / halfLifeHours;
+    return initialRate * (-Math.expm1(-lambda * hours)) / lambda;
+  }
+  function nkTimeToDose(initialRate, targetDose, halfLifeHours) {
+    if (!(targetDose > 0)) return 0;
+    if (!(initialRate > 0)) return Infinity;
+    if (!(halfLifeHours > 0) || !isFinite(halfLifeHours)) return targetDose / initialRate;
+    var lambda = Math.LN2 / halfLifeHours;
+    var lifetimeDose = initialRate / lambda;
+    if (targetDose >= lifetimeDose) return Infinity;
+    return -Math.log1p(-targetDose / lifetimeDose) / lambda;
+  }
+
   // Energies in MeV, yields per decay, including the K X-rays — leaving those
   // out puts technetium 25% low, because μ_en/ρ for air at 18 keV is twenty
   // times what it is at 140 keV.
   var PROTECT_SOURCES = [
-    { id: 'tc99m', name: 'Someone who has just had a bone scan', nuclide: 'Tc-99m', gbq: 0.8,
+    { id: 'tc99m', name: 'Someone who has just had a bone scan', nuclide: 'Tc-99m', gbq: 0.8, halfLifeH: 6.01,
       lines: [[0.1405, 0.885], [0.0185, 0.074]], colour: '#22d3ee',
       note: 'A routine diagnostic injection. The question people actually ask — can I sit next to them, can they hug their child — has a number, and it is a reassuring one. Its 6-hour physical half-life and 1-day biological one (section 9) do the rest within a day.' },
-    { id: 'i131', name: 'A patient treated for thyroid cancer', nuclide: 'I-131', gbq: 5.5,
+    { id: 'i131', name: 'A patient treated for thyroid cancer', nuclide: 'I-131', gbq: 5.5, halfLifeH: 8.02 * 24,
       lines: [[0.3645, 0.817], [0.6370, 0.072], [0.2843, 0.061], [0.7229, 0.018], [0.0296, 0.039]], colour: '#fbbf24',
       note: 'Seven times the activity of the scan above and a harder gamma, which is why these patients are kept in a shielded room for a few days and sent home with rules about distance and time. This is the one case where a hospital hands a family the same three levers this section is about.' },
-    { id: 'cs137', name: 'An industrial thickness gauge', nuclide: 'Cs-137', gbq: 37,
+    { id: 'cs137', name: 'An industrial thickness gauge', nuclide: 'Cs-137', gbq: 37, halfLifeH: 30.05 * 365.25 * 24,
       lines: [[0.6617, 0.851], [0.032, 0.058]], colour: '#a78bfa',
       note: 'A sealed 1-curie source in a steel housing on a production line, measuring how thick the sheet passing under it is. Perfectly safe shuttered; the accidents happen when a source is left unshuttered and someone works next to it not knowing.' },
-    { id: 'co60', name: 'A sterilisation source', nuclide: 'Co-60', gbq: 37,
+    { id: 'co60', name: 'A sterilisation source', nuclide: 'Co-60', gbq: 37, halfLifeH: 5.27 * 365.25 * 24,
       lines: [[1.1732, 0.9985], [1.3325, 0.9998]], colour: '#f87171',
       note: 'Same activity in becquerels as the gauge above and four times the dose rate, because cobalt emits two hard gammas per decay rather than one soft one — the becquerel-versus-dose distinction from section 13, now in units that matter. A real irradiator holds tens of thousands of times this, behind metres of concrete.' }
   ];
@@ -600,11 +622,10 @@
     { id: 'sick', name: 'Radiation sickness begins', mSv: 1000 }
   ];
 
-  // ── Shelter or evacuate. The accidents section states that about 2,200
-  //    people died because of the Fukushima evacuation and one from radiation,
-  //    and that this "prompted a hard rethink of whether rapid mass evacuation
-  //    is always the safer choice". It then leaves the reader with a striking
-  //    fact and no way to think about it.
+  // ── Shelter or evacuate. Fukushima's radiation-health findings, worker
+  //    compensation decisions and disaster-related-death count are different
+  //    evidence categories. The section keeps them separate, then gives the
+  //    reader a way to compare the narrower dose paths in a classroom model.
   //
   //    This is the one place in the tool where the honest answer is genuinely
   //    "it depends", and the thing it depends on is arithmetic a student can
@@ -1182,11 +1203,24 @@
         return ptGamma * ptSrc.gbq * Math.exp(-ptShield.mu * (thickCm === undefined ? ptThick : thickCm)) / (m * m);
       }
       var ptBare = ptRateAt(ptDist, 0);                                 // mSv/h, no shield
-      var ptRate = ptRateAt(ptDist);                                    // mSv/h as configured
-      var ptStayH = ptRate > 0 ? ptLimit.mSv / ptRate : Infinity;       // hours to the limit
-      // Each lever, sized so it halves the dose — the same answer three ways.
+      var ptRate = ptRateAt(ptDist);                                    // initial mSv/h as configured
+      var ptFirstHourDose = nkIntegratedDose(ptRate, 1, ptSrc.halfLifeH);
+      var ptMaxDose = ptRate > 0 ? ptRate * ptSrc.halfLifeH / Math.LN2 : 0;
+      var ptStayH = nkTimeToDose(ptRate, ptLimit.mSv, ptSrc.halfLifeH);
+      var ptHalfDoseH = isFinite(ptStayH)
+        ? nkTimeToDose(ptRate, ptLimit.mSv / 2, ptSrc.halfLifeH)
+        : ptSrc.halfLifeH;
+      // Distance and shielding halve the initial rate in this idealised model;
+      // the time card instead solves the integrated, decay-aware dose exactly.
       var ptHalfDist = ptDist * Math.SQRT2;
       var ptHvl = ptShield.mu > 0 ? Math.LN2 / ptShield.mu : Infinity;  // cm
+      function ptTimeLabel(hours) {
+        if (hours > 8760) return nkFmt(hours / 8760, 1) + ' years';
+        if (hours >= 24) return nkFmt(hours / 24, hours < 240 ? 1 : 0) + ' days';
+        if (hours >= 1) return nkFmt(hours, hours < 10 ? 1 : 0) + ' hours';
+        if (hours >= 1 / 60) return nkFmt(hours * 60, 1) + ' minutes';
+        return nkFmt(hours * 3600, 0) + ' seconds';
+      }
 
       // ── 6. gray → sievert ──
       var wrId = d.wrId || 'gamma';
@@ -2284,10 +2318,15 @@
         }, label);
       };
       var slider = function (id, label, min, max, stepv, value, onChange, suffix) {
-        return h('div', { className: 'flex items-center gap-2 mt-1.5' },
+        var valueText = suffix == null ? String(value) : String(suffix);
+        return h('div', { className: 'nk-slider flex items-center gap-2 mt-1.5' },
           h('label', { htmlFor: id, className: 'text-[11px] font-bold w-28 flex-shrink-0', style: { color: isDark ? '#cbd5e1' : '#475569' } }, label),
-          h('input', { id: id, type: 'range', min: min, max: max, step: stepv, value: value, onChange: onChange, className: 'flex-1 h-6 accent-violet-500' }),
-          h('span', { className: 'text-[11px] font-bold w-24 text-right', style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, suffix));
+          h('input', {
+            id: id, type: 'range', min: min, max: max, step: stepv, value: value,
+            onChange: onChange, 'aria-valuetext': valueText,
+            className: 'nk-slider-input flex-1 min-w-0 min-h-11 accent-violet-500'
+          }),
+          h('output', { htmlFor: id, className: 'text-[11px] font-bold w-24 text-right', style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, valueText));
       };
       var stat = function (label, value, colour) {
         return h('div', { key: label, className: 'rounded-lg p-2 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(167,139,250,0.09)', border: '1px solid ' + colour + '50' } },
@@ -2574,14 +2613,20 @@
             }
           }, dir === 'prev' ? '← ' + s.label : s.label + ' →');
         };
-        return h('div', {
+        return h('nav', {
           key: 'routefoot',
+          'aria-label': nkPath.q + ', route progress',
           className: 'flex flex-wrap items-center gap-2 mt-3 pt-2',
           style: { borderTop: '1px dashed ' + accent + '66' }
         },
           h('span', { className: 'text-[10px] font-black', style: { color: ink('#22d3ee') } },
             nkPath.icon + ' STEP ' + (at + 1) + ' OF ' + nkPath.steps.length),
-          h('span', { className: 'flex-1' }),
+          h('progress', {
+            value: at + 1, max: nkPath.steps.length,
+            'aria-label': 'Step ' + (at + 1) + ' of ' + nkPath.steps.length,
+            className: 'nk-route-progress flex-1 min-w-[7rem] h-2',
+            style: { accentColor: accent }
+          }),
           prev ? stepBtn(prev, 'prev') : null,
           next ? stepBtn(next, 'next')
             : h('span', { className: 'text-[11px] font-bold', style: { color: ink('#34d399') } },
@@ -2636,7 +2681,7 @@
               border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')
             }
           }),
-          h('span', { className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } },
             nkPath ? 'route: ' + nkVisible.length + ' steps'
               : (nkVisible.length === NK_SECTIONS.length ? 'showing all' : 'showing ' + nkVisible.length))
         ),
@@ -2718,7 +2763,17 @@
       );
 
       return h('div', { 'data-nuclear-lab': 'true', className: 'nk-readable max-w-5xl mx-auto animate-in fade-in duration-200' },
-        h('style', null, '@media (max-width:640px){.nk-readable .text-\\[11px\\]{font-size:.875rem!important;line-height:1.35rem!important}.nk-readable .text-\\[10px\\]{font-size:.75rem!important;line-height:1.1rem!important}.nk-readable canvas{min-height:220px}}'),
+        h('style', null,
+          '@media (max-width:640px){' +
+          '.nk-readable .text-\\[11px\\]{font-size:.875rem!important;line-height:1.35rem!important}' +
+          '.nk-readable .text-\\[10px\\]{font-size:.75rem!important;line-height:1.1rem!important}' +
+          '.nk-readable canvas{min-height:220px}' +
+          '.nk-readable .nk-slider{display:grid!important;grid-template-columns:minmax(0,1fr) auto;column-gap:.75rem;row-gap:.1rem}' +
+          '.nk-readable .nk-slider label{grid-column:1;grid-row:1;width:auto!important;min-width:0}' +
+          '.nk-readable .nk-slider input{grid-column:1/-1;grid-row:2;width:100%;min-width:0}' +
+          '.nk-readable .nk-slider output{grid-column:2;grid-row:1;width:auto!important;min-width:0}' +
+          '.nk-readable .nk-route-progress{flex-basis:100%;order:2}' +
+          '}'),
 
         h('div', { className: 'relative overflow-hidden rounded-xl border mb-1 px-3 py-2.5', style: { background: 'linear-gradient(115deg, #1a0f2e 0%, #2e1065 46%, #0b1a2e 100%)', borderColor: 'rgba(167,139,250,0.4)' } },
           h('div', { className: 'flex flex-wrap items-center gap-3' },
@@ -2739,9 +2794,9 @@
 
         // ── 1. decay ──
         sec('halflife', '#a78bfa',
-          heading(ink('#c4b5fd'), '⏳ 1. Half-life: the one rule that never changes'),
+          heading(ink('#c4b5fd'), '⏳ 1. Half-life: stable under ordinary conditions'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-            'Every half-life, exactly half of what is left decays. Not half the original — half of what remains. Nothing changes the rate: not heat, not pressure, not chemistry.'),
+            'For a large sample, each half-life leaves half of what was there before — not half the original amount. Under ordinary laboratory and environmental conditions, temperature, pressure and chemistry do not measurably change most nuclear decay rates. Tiny exceptions exist for a few decay modes, especially electron capture, so “unchangeable” is an excellent practical rule rather than a universal law.'),
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
             ISOTOPES.map(function (x) {
               return pill(isoId === x.id, '#a78bfa', x.name, function () {
@@ -2812,8 +2867,10 @@
               style: { background: '#0e7490', border: '1px solid #0e7490' } }, ageShown ? 'Recalculate' : 'Reveal')
           ),
           ageShown ? h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(34,211,238,0.5)', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(236,254,255,0.9)' } },
-            h('p', { className: 'text-sm font-black', style: { color: ink('#0891b2') } }, 'About ' + nkFmt(c14Age, 0) + ' years old'),
+            h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-sm font-black', style: { color: ink('#0891b2') } }, 'About ' + nkFmt(c14Age, 0) + ' radiocarbon years old'),
             h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'age = 5730 × ln(100 / ' + c14Frac + ') / ln 2'),
+            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              'This is the idealised radiocarbon age from the measured fraction, not yet a calendar date. Real laboratories correct for contamination and reservoir effects, then use a calibration curve because atmospheric carbon-14 has varied over time.'),
             // Revealing the answer beside a guess and saying nothing about the
             // gap wastes the guess. The margin is the feedback.
             shownGuess != null ? (function () {
@@ -2998,7 +3055,7 @@
             return h('div', { className: 'mt-2' },
               h('div', { className: 'h-4 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
                 h('div', { style: { height: '100%', width: nkClamp(through, 0, 100).toFixed(1) + '%', background: rad.colour, borderRadius: '999px', transition: 'width 160ms linear' } })),
-              h('p', { className: 'text-[11px] font-black mt-1', style: { color: ink(rad.colour) } },
+              h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[11px] font-black mt-1', style: { color: ink(rad.colour) } },
                 nkFmt(through, through < 1 ? 3 : 1) + '% of the ' + rad.name.toLowerCase() + ' gets through ' + nkFmt(thick, 1) + ' cm of ' + shield.name.toLowerCase()),
               // Neutrons are the one case where a single "% through" bar is not
               // enough to be honest, because two different mechanisms have to
@@ -3196,7 +3253,7 @@
         sec('biohalf', '#f472b6',
           heading(ink('#f472b6'), '🫀 9. Half-life inside a body is a different number'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-            'Every half-life so far has been PHYSICAL — how fast the nuclei fall apart, which nothing can change. But a nuclide inside a person is also being excreted, and the two processes run at once. Decay and excretion are rates, so they add: 1/T' + 'ₑ' + ' = 1/T' + 'ₚ' + ' + 1/T' + 'ᵦ' + '. That makes the effective half-life shorter than EITHER of them — always. When the two are far apart the shorter one very nearly sets it on its own; when they are close, as they are for strontium and polonium below, neither number will do and only the formula gets you there.'),
+            'Every half-life so far has been PHYSICAL — how fast the nuclei fall apart, a rate that is effectively fixed under ordinary conditions. But a nuclide inside a person is also being excreted, and the two processes run at once. Decay and excretion are rates, so they add: 1/T' + 'ₑ' + ' = 1/T' + 'ₚ' + ' + 1/T' + 'ᵦ' + '. That makes the effective half-life shorter than EITHER of them — always. When the two are far apart the shorter one very nearly sets it on its own; when they are close, as they are for strontium and polonium below, neither number will do and only the formula gets you there.'),
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
             BIO_NUCLIDES.map(function (x) {
               return pill(bioId === x.id, x.colour, x.name, function () {
@@ -3279,7 +3336,7 @@
             })
           ),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(34,211,238,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(236,254,255,0.9)' } },
-            h('p', { className: 'text-sm font-black mb-1.5', style: { color: ink('#0891b2') } }, 'About ' + nkFmt(dsTotal, 2) + ' mSv this year'),
+            h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-sm font-black mb-1.5', style: { color: ink('#0891b2') } }, 'About ' + nkFmt(dsTotal, 2) + ' mSv this year'),
             h('div', { role: 'list', className: 'space-y-1' },
               dsParts.filter(function (p) { return p.v > 0; }).sort(function (x, y) { return y.v - x.v; }).map(function (p) {
                 return h('div', { key: p.name, role: 'listitem', 'aria-label': p.name + ', ' + p.v.toFixed(2) + ' millisieverts', className: 'flex items-center gap-2' },
@@ -3578,7 +3635,7 @@
           heading(ink('#38bdf8'), '⏱️ 14. Time, distance, shielding — all three levers'),
           safetyNotice('medical'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-            'Section 5 covered what stops radiation and section 13 covered distance. There is a third lever, it is free, and it is the one a radiation worker reaches for first: leave sooner. Every dose in this tool is a rate multiplied by a time, and you can pull on any of the three.'),
+            'Section 5 covered what stops radiation and section 13 covered distance. There is a third lever, it is free, and it is the one a radiation worker reaches for first: leave sooner. Dose is dose rate accumulated over time. A steady rate is simple multiplication; when a radionuclide is decaying, the rate must be integrated as it falls.'),
 
           h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'What are you standing near?'),
           h('div', { className: 'flex flex-wrap gap-1 mb-1' },
@@ -3591,7 +3648,7 @@
             })
           ),
           h('p', { className: 'text-[11px] mb-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
-            ptSrc.nuclide + ', ' + nkFmt(ptSrc.gbq, 1) + ' GBq — ' + nkFmt(ptGamma, 4) + ' mSv/h at 1 metre per GBq, worked out from its decay scheme.'),
+            ptSrc.nuclide + ', ' + nkFmt(ptSrc.gbq, 1) + ' GBq — initially ' + nkFmt(ptGamma, 4) + ' mSv/h at 1 metre per GBq, worked out from its decay scheme. Physical half-life: ' + ptTimeLabel(ptSrc.halfLifeH) + '.'),
 
           slider('pt-dist', 'Your distance', 0.3, 10, 0.1, ptDist,
             function (e) { upd({ ptDist: parseFloat(e.target.value) }); }, nkFmt(ptDist, 1) + ' m'),
@@ -3610,7 +3667,7 @@
             h('canvas', { ref: protectRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-protect-summary',
-              'aria-label': 'Dose rate against distance for ' + ptSrc.nuclide + ' at ' + ptSrc.gbq +
+              'aria-label': 'Initial dose rate against distance for ' + ptSrc.nuclide + ' at ' + ptSrc.gbq +
                 ' gigabecquerels. Unshielded it is ' + nkFmt(ptRateAt(1, 0), 3) + ' millisieverts per hour at 1 metre and ' +
                 nkFmt(ptRateAt(5, 0), 4) + ' at 5 metres. At your chosen ' + nkFmt(ptDist, 1) + ' metres behind ' +
                 nkFmt(ptThick, 1) + ' centimetres of ' + ptShield.name.toLowerCase() + ' it is ' + nkFmt(ptRate, 4) +
@@ -3618,9 +3675,9 @@
               style: { width: '100%', height: '100%', display: 'block' } })),
 
           h('div', { id: 'nk-protect-summary', className: 'grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2' },
-            stat('Dose rate here', nkFmt(ptRate, ptRate < 1 ? 4 : 2) + ' mSv/h', ink(ptSrc.colour)),
+            stat('Initial dose rate', nkFmt(ptRate, ptRate < 1 ? 4 : 2) + ' mSv/h', ink(ptSrc.colour)),
             stat('Shield cuts it to', ptThick > 0 ? nkFmt(ptAtten * 100, ptAtten < 0.01 ? 3 : 1) + '%' : 'no shield', ink('#94a3b8')),
-            stat('An hour here costs', nkFmt(ptRate, ptRate < 1 ? 4 : 2) + ' mSv', ink('#fbbf24'))
+            stat('Dose in first hour', nkFmt(ptFirstHourDose, ptFirstHourDose < 1 ? 4 : 2) + ' mSv', ink('#fbbf24'))
           ),
 
           h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'How long until you reach…'),
@@ -3634,14 +3691,15 @@
           ),
           h('div', { className: 'rounded-lg border p-2.5', style: { borderColor: 'rgba(56,189,248,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(240,249,255,0.9)' } },
             h('p', { className: 'text-sm font-black', style: { color: ink('#0284c7') } },
-              !isFinite(ptStayH) ? 'Indefinitely — nothing is getting through'
-                : (ptStayH > 8760 ? 'Over a year of standing there'
-                  : (ptStayH >= 1 ? nkFmt(ptStayH, ptStayH < 10 ? 1 : 0) + ' hours'
-                    : (ptStayH >= 1 / 60 ? nkFmt(ptStayH * 60, 1) + ' minutes'
-                      : nkFmt(ptStayH * 3600, 0) + ' seconds')))),
+              isFinite(ptStayH) ? ptTimeLabel(ptStayH) : 'Selected limit not reached'),
             h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-              'to accumulate ' + ptLimit.mSv + ' mSv at ' + nkFmt(ptDist, 1) + ' m'
-              + (ptThick > 0 ? ' behind ' + nkFmt(ptThick, 1) + ' cm of ' + ptShield.name.toLowerCase() : ', unshielded') + '.'),
+              isFinite(ptStayH)
+                ? 'to accumulate ' + ptLimit.mSv + ' mSv at ' + nkFmt(ptDist, 1) + ' m'
+                  + (ptThick > 0 ? ' behind ' + nkFmt(ptThick, 1) + ' cm of ' + ptShield.name.toLowerCase() : ', unshielded')
+                  + ', after physical decay is included.'
+                : 'The source is not harmless: it starts at ' + nkFmt(ptRate, ptRate < 1 ? 4 : 2) + ' mSv/h here. But all of its remaining physical activity would deliver about ' + nkFmt(ptMaxDose, ptMaxDose < 1 ? 3 : 1) + ' mSv at this fixed position, below the selected ' + ptLimit.mSv + ' mSv.'),
+            (ptSrcId === 'tc99m' || ptSrcId === 'i131') ? h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              'Conservative simplification: this integrates physical decay only. A patient also clears the nuclide biologically, so a measured external dose rate normally falls faster. Follow the nuclear-medicine team’s written instructions, not this classroom estimate.') : null,
             h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               ptSrcId === 'tc99m'
                 ? 'This is the number families are never given. Sitting an arm\'s length from someone who has just had a scan, all day, does not get near a year\'s background — and the isotope is largely gone by tomorrow anyway. The honest advice is ordinary caution for a day, not distance from the people who need you.'
@@ -3649,16 +3707,16 @@
                   ? 'Seven times the activity and a harder gamma, which is why this patient sleeps alone and keeps their distance from children for a few days. Not because the risk is dramatic, but because the cost of the precaution is a few days and the cost of skipping it is avoidable dose to someone who gets no benefit from it.'
                   : 'Sealed sources like this are safe because of the housing, not the isotope. Every serious accident with one has the same shape: the source came out of its shielding, or never went back in, and the person nearby had no way to know.')),
             h('p', { className: 'text-[11px] mt-1.5 font-bold', style: { color: ink('#fbbf24') } },
-              '⏱️ Halve your time and you halve your dose. There is no equipment to buy and nothing to carry, which is exactly why it gets forgotten.')
+              '⏱️ With a steady source, halve your time and you halve your dose. A short-lived source changes while you wait, so this calculator integrates the falling rate.')
           ),
 
           h('div', { className: 'mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2' },
-            [{ k: '⏱️ TIME', v: 'Leave at ' + nkFmt(ptStayH >= 1 ? ptStayH / 2 : ptStayH * 30, 1) + (ptStayH >= 1 ? ' hours' : ' minutes'),
-               w: 'Halving the time halves the dose, exactly, always. It is the only lever that costs nothing.', c: '#fbbf24' },
+            [{ k: '⏱️ TIME', v: (isFinite(ptStayH) ? 'Half target at ' : 'Half lifetime dose by ') + ptTimeLabel(ptHalfDoseH),
+               w: 'Time is the free lever. This value includes radioactive decay instead of assuming the initial rate lasts forever.', c: '#fbbf24' },
              { k: '📏 DISTANCE', v: 'Move to ' + nkFmt(ptHalfDist, 1) + ' m',
-               w: 'Multiply your distance by 1.41 and the dose rate halves, because the same photons spread over twice the sphere.', c: '#34d399' },
+               w: 'In the point-source, open-air model, multiply distance by 1.41 and the initial dose rate halves. Nearby extended sources and scattered radiation depart from this rule.', c: '#34d399' },
              { k: '🧱 SHIELDING', v: isFinite(ptHvl) ? '+' + nkFmt(ptHvl, ptHvl < 1 ? 2 : 1) + ' cm of ' + ptShield.name.toLowerCase() : 'not with air',
-               w: 'One half-value layer halves it again, and every further layer halves what is left. It never reaches zero.', c: '#60a5fa' }
+               w: 'In this narrow-beam model, one half-value layer halves the initial rate again. Scattered photons make real thick shields perform less neatly.', c: '#60a5fa' }
             ].map(function (x) {
               return h('div', { key: x.k, className: 'rounded-lg border p-2', style: { borderColor: x.c + '60', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.9)' } },
                 h('p', { className: 'text-[10px] font-black', style: { color: ink(x.c) } }, x.k),
@@ -3667,9 +3725,9 @@
             })
           ),
           h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-            'Three levers, one halving each, and they multiply. Step back to ' + nkFmt(ptHalfDist, 1) + ' m, add a half-value layer, and leave in half the time, and you have taken a quarter of a quarter — one eighth of the dose, for a shield, a step and a glance at the clock.'),
+            'For a source whose rate is effectively steady during a visit, the three halves multiply: 1/2 × 1/2 × 1/2 = 1/8 of the starting dose. The time card above uses decay-aware integration instead of forcing that shortcut onto short-lived medical isotopes.'),
           h('p', { className: 'text-[10px] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
-            'Dose rate computed from each nuclide\'s decay scheme with NIST mass energy-absorption coefficients for air, not from a quoted constant; the results sit within 3% of the published R·cm²/(mCi·h) values. Two simplifications, both in the same direction: the shield uses the 1 MeV attenuation coefficients from section 5, and this is narrow-beam attenuation with no buildup factor, so a thick shield in the real world performs somewhat worse than the figure above. Treat it as the right order of magnitude and the right SHAPE, which is what the three levers are about.')
+            'Initial dose rate is computed from each nuclide\'s decay scheme with NIST mass energy-absorption coefficients for air, and time-to-dose integrates its physical half-life. The results sit within 3% of published gamma constants. The shield still uses the 1 MeV coefficients from section 5 and narrow-beam attenuation with no buildup factor, so a real thick shield performs somewhat worse. Patient geometry and biological clearance are also simplified. Treat this as the right order of magnitude and the right shape, never as a stay-time instruction.')
         ),
 
         // ── 6. accidents ──
@@ -3694,7 +3752,8 @@
             })
           ),
           h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-            'A pattern worth noticing: at both Fukushima and Chernobyl, the disruption caused by the response — evacuation, dislocation, fear, lost livelihoods — did comparable or greater harm than the radiation. That is not an argument that radiation is harmless. It is an argument that emergency planning has to weigh both, and historically it has not.')
+            'The evidence supports a narrower pattern: emergency responses can cause substantial non-radiological harm through evacuation, displacement, lost care and psychological distress. At Fukushima that harm is well documented; at Chernobyl its scale relative to projected radiation effects remains model-dependent. This is not an argument that radiation is harmless. It is why emergency planning has to weigh both kinds of harm.'),
+          sourceNote(['unscear', 'reconstruction', 'mhlw'])
         ),
 
         // ── 7. reactors and SMRs ──
@@ -3703,9 +3762,9 @@
           heading(ink('#84cc16'), '🏠 16. Shelter or evacuate? Work the numbers'),
           safetyNotice('emergency'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-            'Around 2,200 people died because of the Fukushima evacuation and one from radiation. That is a fact, not an argument — and the wrong lesson to draw from it is that evacuating is a mistake. The right lesson is that it is a CHOICE with a cost on both sides, and which side is cheaper depends on numbers you can work out.'),
+            'Fukushima Prefecture records 2,350 disaster-related deaths through 2025, a broad legal category that includes illness after injury and the physical burden of evacuation life. No acute radiation deaths occurred, and UNSCEAR has documented no resident health effects directly attributable to radiation. Worker compensation decisions are a separate category and do not prove individual causation. These figures cannot be reduced to a simple evacuation-versus-radiation score; they show why emergency choices have costs on both sides.'),
           h('p', { className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-            'Sheltering is not a third option. It is two of the three levers from section 14: a building is shielding, and staying put costs less time in the open than driving through a plume. So the question is only ever which arithmetic is smaller.'),
+            'In this deliberately limited dose model, sheltering combines two levers from section 14: a building is shielding, and staying put means less time in the open than driving through a plume. The arithmetic compares those dose paths only; medical vulnerability, changing plume direction and official measurements still govern a real decision.'),
 
           slider('sh-rate', 'Outdoor dose rate', 0.1, 30, 0.1, shRate,
             function (e) { upd({ shRate: parseFloat(e.target.value) }); }, nkFmt(shRate, 1) + ' mSv/h'),
@@ -3756,7 +3815,7 @@
             h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'Push the release out to several days and watch the answer flip: sheltering is a way of waiting out a plume, not a way of living somewhere contaminated. This classroom comparison cannot issue real guidance: officials may order sheltering or evacuation as measurements and travel conditions change.')
           ),
-          sourceNote(['nrc']),
+          sourceNote(['nrc', 'unscear', 'reconstruction', 'mhlw']),
 
           h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Where does that land against the published thresholds?'),
           h('div', { role: 'list', className: 'space-y-1' },
@@ -3775,7 +3834,7 @@
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(248,113,113,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(254,242,242,0.9)' } },
             h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#dc2626') } }, 'What this calculation leaves out, and it is the important part'),
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-              'Everything above is dose, and dose was not what killed people at Fukushima. Moving a hospital ward or a care home has a mortality cost that has nothing to do with radiation and does not appear anywhere in this arithmetic: patients on ventilators, people with dementia moved somewhere unfamiliar, days on a bus. That is where most of the 2,200 came from. The lesson drawn afterwards was not "never evacuate" — it was that the decision has to be made per population rather than per map, because for a fit adult a few hours in a car is nearly free, and for a frail patient it can be the most dangerous thing that happens to them all year.'),
+              'Everything above is dose, and radiation dose was not identified as the cause of deaths in Fukushima’s disaster-related-death total. Moving a hospital ward or a care home has risks that do not appear anywhere in this arithmetic: disrupted treatment, patients on ventilators, people with dementia moved somewhere unfamiliar, and prolonged displacement. Those stresses contributed to the official 2,350 total, but the legal category does not assign every case to one evacuation order. The lesson was not never evacuate; it was to decide per population rather than per map, because moving a frail patient can be more dangerous than moving a healthy adult.'),
             h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'It also leaves out everything after the plume: contaminated ground, food and water controls, and whether people can return. A dose comparison over the first few days is one input to that decision, not the decision.')
           ),

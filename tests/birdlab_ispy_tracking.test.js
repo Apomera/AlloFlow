@@ -19,14 +19,21 @@ describe('BirdLab I-Spy binocular tracking', () => {
     expect(source).toContain('Not a bird');
   });
 
-  it('requires a sustained binocular dwell before a scene bird is identified', () => {
+  it('uses a learner-selected binocular hold independent of hints and field conditions', () => {
     const source = birdLabRenderSource();
-    const dwellMatch = source.match(/(?:var|const)\s+ISPY_DWELL_MS\s*=\s*(\d+)/);
     const graceMatch = source.match(/(?:var|const)\s+ISPY_DWELL_GRACE_MS\s*=\s*(\d+)/);
+    const durationStart = source.indexOf('BINOCULAR_HOLD_DURATIONS');
+    expect(durationStart).toBeGreaterThan(-1);
+    const durationSource = source.slice(durationStart, durationStart + 1400);
+    for (const [mode, milliseconds] of [['steady', 1000], ['standard', 1500], ['extended', 2500]]) {
+      expect(durationSource, mode + ' hold duration').toMatch(new RegExp(mode + '[\\s\\S]{0,260}' + milliseconds));
+    }
+    expect(source).toContain('var binocularHoldMode_state');
+    expect(source).toContain('d.blBinocularHoldMode');
+    expect(source).toMatch(/ISPY_DWELL_MS\s*=\s*BINOCULAR_HOLD_DURATIONS\s*\[\s*binocularHoldMode\s*\](?:\.ms)?/);
+    expect(source).not.toContain('ISPY_DWELL_BY_DIFFICULTY');
+    expect(source).not.toContain('conditionConfig.dwellScale');
 
-    expect(dwellMatch).toBeTruthy();
-    expect(Number(dwellMatch?.[1])).toBeGreaterThanOrEqual(1000);
-    expect(Number(dwellMatch?.[1])).toBeLessThanOrEqual(3000);
     expect(graceMatch).toBeTruthy();
     expect(Number(graceMatch?.[1])).toBeGreaterThanOrEqual(150);
     expect(Number(graceMatch?.[1])).toBeLessThanOrEqual(500);
@@ -44,6 +51,8 @@ describe('BirdLab I-Spy binocular tracking', () => {
     expect(tickSource).not.toContain("handleBirdClick(bird, 'spotted')");
     expect(source).toContain("'data-birdlab-binocular-progress': 'true'");
     expect(source).toContain("'aria-label': 'Binocular focus progress'");
+    expect(source).toContain("'data-birdlab-binocular-hold': binocularHoldMode");
+    expect(source).toContain("'data-birdlab-binocular-hold-option':");
   });
 
   it('clears partial binocular focus when the scene leaves the viewport', () => {
@@ -376,7 +385,7 @@ describe('BirdLab I-Spy binocular tracking', () => {
 
     const hotspotBirdStart = source.indexOf('habitat.birds.filter(sceneBirdVisible).map');
     const hotspotFaunaStart = source.indexOf('visibleSceneFauna.map(function(animal)', hotspotBirdStart);
-    const hotspotEnd = source.indexOf('// ── Hint banner', hotspotFaunaStart);
+    const hotspotEnd = source.indexOf("className: 'birdlab-observation-rail'", hotspotFaunaStart);
     expect(source.slice(hotspotBirdStart, hotspotFaunaStart)).toContain('sceneActorMotionStyle(travelStyle.animationDelay, targetFacing)');
     expect(source.slice(hotspotFaunaStart, hotspotEnd)).toContain('sceneActorMotionStyle(travelStyle.animationDelay, targetFacing)');
 
@@ -562,6 +571,117 @@ describe('BirdLab I-Spy binocular tracking', () => {
     }
   });
 
+  it('freezes the acquired scripted behavior descriptor until focus is cancelled', () => {
+    const source = birdLabRenderSource();
+    const rawSource = fs.readFileSync('stem_lab/stem_tool_birdlab.js', 'utf8');
+    const behaviorStart = rawSource.indexOf('function sceneBirdBehaviorState');
+    const behaviorEnd = rawSource.indexOf('function sceneBirdMotionName', behaviorStart);
+    expect(behaviorStart).toBeGreaterThan(-1);
+    expect(behaviorEnd).toBeGreaterThan(behaviorStart);
+    const behaviorSource = rawSource.slice(behaviorStart, behaviorEnd);
+    expect(behaviorSource).toContain('frozenBehavior');
+    const staticPrecedence = behaviorSource.indexOf('if (position.static)');
+    const frozenPrecedence = behaviorSource.indexOf('if (frozenBehavior');
+    const pinnedPrecedence = behaviorSource.indexOf('if (position.pinned)');
+    expect(staticPrecedence).toBeGreaterThan(-1);
+    expect(frozenPrecedence).toBeGreaterThan(staticPrecedence);
+    expect(pinnedPrecedence).toBeGreaterThan(frozenPrecedence);
+    const frozenBranch = behaviorSource.slice(frozenPrecedence, pinnedPrecedence);
+    expect(frozenBranch).toContain('frozenBehavior.script === script');
+    expect(frozenBranch).toContain('frozenBehavior.state');
+    expect(frozenBranch).toContain('frozenBehavior.pose');
+    expect(frozenBranch).toContain('frozen: true');
+
+    const positionStart = source.indexOf('function sceneBirdPosition');
+    const positionEnd = source.indexOf('function sceneDistractorPosition', positionStart);
+    expect(source.slice(positionStart, positionEnd)).toContain('var staticScene = prefersReducedMotion || sceneLifecycleClock == null;');
+    expect(source).toContain('var qaFrozenBehavior = birdLabVisualQa && birdLabVisualQa.frozenBehavior');
+    expect(source).toContain('var binocularBehaviorFreezeRef = useRef(qaTargetId && qaFrozenBehavior ? {');
+    expect(source).toContain('script: qaFrozenBehavior.script, state: qaFrozenBehavior.state, pose: qaFrozenBehavior.pose');
+    expect(source).toContain('} : null);');
+
+    const runtimeStart = source.indexOf('function frozenBehaviorForBird');
+    const runtimeEnd = source.indexOf('function registerBinocularSubject', runtimeStart);
+    expect(runtimeStart).toBeGreaterThan(-1);
+    expect(runtimeEnd).toBeGreaterThan(runtimeStart);
+    const runtimeSource = source.slice(runtimeStart, runtimeEnd);
+    expect(runtimeSource).toContain('frozen.habitatId !== habitatId');
+    expect(runtimeSource).toContain('frozen.targetId !== binocularUi.targetId');
+    expect(runtimeSource).toContain("return frozen.targetId === 'bird-' + runtimeIndex ? frozen : null;");
+    expect(runtimeSource).not.toContain('runtimeBird.groupId');
+    expect(runtimeSource).toContain('var sceneBirdRuntimeStates = habitat.birds.map');
+    expect(runtimeSource).toMatch(/sceneBirdBehaviorState\([^;]+frozenBehavior\)/);
+
+    const beginStart = source.indexOf('function beginBinocularFocus');
+    const beginEnd = source.indexOf('function cancelBinocularFocus', beginStart);
+    expect(beginStart).toBeGreaterThan(-1);
+    expect(beginEnd).toBeGreaterThan(beginStart);
+    const beginSource = source.slice(beginStart, beginEnd);
+    expect(beginSource).toContain("if (track.kind === 'bird')");
+    for (const attribute of [
+      'data-birdlab-behavior',
+      'data-birdlab-behavior-state',
+      'data-birdlab-behavior-pose',
+    ]) expect(beginSource).toContain("node.getAttribute('" + attribute + "')");
+    expect(beginSource).toContain("frozenScript !== 'field-mark-loop'");
+    expect(beginSource).not.toContain("node.getAttribute('data-birdlab-group-id')");
+    expect(beginSource).toContain('else binocularBehaviorFreezeRef.current = null;');
+
+    const cancelStart = beginEnd;
+    const cancelEnd = source.indexOf('function requireFreshBinocularAcquisition', cancelStart);
+    expect(cancelEnd).toBeGreaterThan(cancelStart);
+    expect(source.slice(cancelStart, cancelEnd)).toContain('binocularBehaviorFreezeRef.current = null;');
+
+    const actorStart = source.indexOf('function renderSceneBirds(');
+    const actorEnd = source.indexOf('function renderSceneDistractors', actorStart);
+    const hotspotStart = source.indexOf('habitat.birds.filter(sceneBirdVisible).map');
+    const hotspotEnd = source.indexOf('visibleSceneFauna.map(function(animal)', hotspotStart);
+    const actorSource = source.slice(actorStart, actorEnd);
+    const hotspotSource = source.slice(hotspotStart, hotspotEnd);
+    expect(actorSource).toContain('var behaviorState = runtimeState.behavior;');
+    expect(hotspotSource).toContain('var behaviorState = runtimeState.behavior;');
+    for (const marker of [
+      "'data-birdlab-behavior': behaviorState.script",
+      "'data-birdlab-behavior-state': behaviorState.state",
+      "'data-birdlab-behavior-pose': behaviorState.pose",
+      "'data-birdlab-behavior-frozen': behaviorState.frozen ? 'true' : undefined",
+    ]) {
+      expect(actorSource).toContain(marker);
+      expect(hotspotSource).toContain(marker);
+    }
+
+    const renderFrozenCheckpoint = (sceneMotion) => renderTool('birdLab', {
+      birdLab: { view: 'ispy', activeHabitat: 'backyard', blSceneMotion: sceneMotion },
+    }, {
+      props: {
+        birdLabVisualQa: {
+          targetId: 'bird-2',
+          lifecycleMs: sceneMotion ? 13000 : undefined,
+          frozenBehavior: { script: 'feeder-grab-go', state: 'seed-dip', pose: 'chickadee-feeder' },
+        },
+      },
+    });
+    const frozenHost = document.createElement('div');
+    frozenHost.innerHTML = renderFrozenCheckpoint(true);
+    const frozenNodes = [...frozenHost.querySelectorAll('[data-birdlab-behavior="feeder-grab-go"]')];
+    const frozenActor = frozenNodes.find((node) => node.querySelector('.birdlab-scene-actor'));
+    const frozenHotspot = frozenNodes.find((node) => node.querySelector('[data-birdlab-kind="bird"]'));
+    expect(frozenActor).toBeTruthy();
+    expect(frozenHotspot).toBeTruthy();
+    for (const attribute of ['data-birdlab-behavior-state', 'data-birdlab-behavior-pose', 'data-birdlab-behavior-frozen']) {
+      expect(frozenActor.getAttribute(attribute)).toBe(frozenHotspot.getAttribute(attribute));
+    }
+    expect(frozenActor.getAttribute('data-birdlab-behavior-state')).toBe('seed-dip');
+    expect(frozenActor.getAttribute('data-birdlab-behavior-frozen')).toBe('true');
+
+    const staticHost = document.createElement('div');
+    staticHost.innerHTML = renderFrozenCheckpoint(false);
+    const staticActor = [...staticHost.querySelectorAll('[data-birdlab-behavior="feeder-grab-go"]')]
+      .find((node) => node.querySelector('.birdlab-scene-actor'));
+    expect(staticActor.getAttribute('data-birdlab-behavior-state')).toBe('observe');
+    expect(staticActor.hasAttribute('data-birdlab-behavior-frozen')).toBe(false);
+  });
+
   it('keeps final pose placements, pivots, contacts, and habitat anchors aligned', () => {
     birdLabRenderSource();
     const rawSource = fs.readFileSync('stem_lab/stem_tool_birdlab.js', 'utf8');
@@ -724,7 +844,7 @@ describe('BirdLab I-Spy binocular tracking', () => {
 
     const hotspotBirdStart = source.indexOf('habitat.birds.filter(sceneBirdVisible).map');
     const hotspotFaunaStart = source.indexOf('visibleSceneFauna.map(function(animal)', hotspotBirdStart);
-    const hotspotEnd = source.indexOf('// \u2500\u2500 Hint banner', hotspotFaunaStart);
+    const hotspotEnd = source.indexOf("'data-birdlab-observation-rail': 'true'", hotspotFaunaStart);
     expect(hotspotBirdStart).toBeGreaterThan(-1);
     expect(hotspotFaunaStart).toBeGreaterThan(hotspotBirdStart);
     expect(hotspotEnd).toBeGreaterThan(hotspotFaunaStart);
@@ -760,7 +880,11 @@ describe('BirdLab I-Spy binocular tracking', () => {
     const tickSource = loopSource.slice(tickStart);
     expect(tickSource).not.toContain('requestAnimationFrame(tickBinocular)');
     expect(tickSource).toContain('scheduleBinocularTick()');
-    expect(loopSource).toContain('[habitatId, difficulty, binocularLoopAwake, sceneLens, foundCount]');
+    const dependencyMatches = [...loopSource.matchAll(/\}, \[([^\]]+)\]\);/g)];
+    const dependencies = dependencyMatches.at(-1)?.[1] || '';
+    expect(dependencies).toContain('binocularHoldMode');
+    expect(dependencies).not.toContain('difficulty');
+    expect(dependencies).not.toContain('fieldCondition');
   });
 
   it('tracks live reduced motion independently and pins keyboard-focused targets', () => {
@@ -786,9 +910,189 @@ describe('BirdLab I-Spy binocular tracking', () => {
     expect(source).toContain('|| keyboardFocusTarget === targetId');
     expect(source).toContain('onFocus: function() { setKeyboardFocusTarget(subjectId); }');
   });
+  it('keeps Target Search deliberate, accessible, and idempotent', () => {
+    const source = birdLabRenderSource();
+    const modeStart = source.indexOf('function setAssignmentSearchMode(nextActive)');
+    const modeEnd = source.indexOf('var habitatHintsUsed =', modeStart);
+    expect(modeStart).toBeGreaterThan(-1);
+    expect(modeEnd).toBeGreaterThan(modeStart);
+    const modeSource = source.slice(modeStart, modeEnd);
+    expect(modeSource).toContain('var enabled = !!nextActive && !assignmentComplete;');
+    expect(modeSource).toContain('cancelBinocularFocus(');
+    expect(modeSource).toContain('binocularPointerRef.current.active = false;');
+    expect(modeSource).toContain('binocularPointerRef.current.down = false;');
+    expect(modeSource).toContain('setBinocularActive(false);');
+    expect(modeSource).toContain("upd('blAssignmentSearchActive', enabled)");
+    for (const sideEffect of ['fireHint(', 'setSceneLens(', 'setPicked(', 'beginBinocularFocus(']) {
+      expect(modeSource, 'Target Search activation must not trigger ' + sideEffect).not.toContain(sideEffect);
+    }
+
+    const clickStart = source.indexOf('function handleBirdClick(bird, source)');
+    const clickEnd = source.indexOf('// The tracking RAF is long-lived', clickStart);
+    expect(clickStart).toBeGreaterThan(-1);
+    expect(clickEnd).toBeGreaterThan(clickStart);
+    const clickSource = source.slice(clickStart, clickEnd);
+    expect(clickSource).toContain('var assignmentWasActive = assignmentSearchActive && !assignmentComplete;');
+    expect(clickSource).toContain('var isAssignmentTarget = assignmentWasActive && bird.species === assignmentBird.species;');
+    expect(clickSource).toContain("isAssignmentTarget && (src === 'spotted' || src === 'hinted')");
+    expect(clickSource).toContain("awardFieldXp(assignmentKey, 18, 'Target Search: ' + species.name)");
+    expect(clickSource).toContain('setAssignmentSearchActive(false);');
+    expect(clickSource.indexOf('awardFieldXp(assignmentKey')).toBeLessThan(clickSource.indexOf('var isFirstFind ='));
+
+    const awardStart = source.indexOf('function awardFieldXp(rewardKey, amount, label)');
+    const awardEnd = source.indexOf('function checkRankProgress', awardStart);
+    const awardSource = source.slice(awardStart, awardEnd);
+    expect(awardSource).toContain('if (current.ledger[rewardKey]) return false;');
+
+    const recordStart = source.indexOf('visibleRecordBirds.map(function(b, i)');
+    const recordEnd = source.indexOf('h(TeacherNotes', recordStart);
+    const recordSource = source.slice(recordStart, recordEnd);
+    expect(recordSource).toContain('var targetObservationRequired = assignmentSearchActive && !assignmentComplete');
+    expect(recordSource).toContain("else handleBirdClick(b, 'hinted'); // accessibility direct-identify");
+    expect(recordSource).toContain('isFound && !targetObservationRequired');
+  });
+
+  it('spends one hint per new clue and reserves scene changes for the final spatial clue', () => {
+    const source = birdLabRenderSource();
+    const functionSlice = (name) => {
+      const start = source.indexOf('function ' + name + '(');
+      expect(start, name + ' is missing').toBeGreaterThan(-1);
+      const rest = source.slice(start + 12);
+      const nextFunction = rest.search(/\n\s*function\s+[A-Za-z0-9_]+\s*\(/);
+      return nextFunction < 0 ? source.slice(start) : source.slice(start, start + 12 + nextFunction);
+    };
+    const consumeSource = functionSlice('consumeHintUse');
+    const revealSource = functionSlice('revealNextAssignmentClue');
+    const spatialSource = functionSlice('activateSpatialHint');
+
+    expect(consumeSource).toContain('habitatHintsUsed');
+    expect(consumeSource).toContain('HINT_BUDGET');
+    expect(consumeSource.match(/habitatHintsUsed\s*\+\s*1/g) || []).toHaveLength(1);
+    expect(consumeSource).toContain("upd('blHintsUsed'");
+    expect(consumeSource).toContain("upd('blHabitatHinted'");
+    expect(consumeSource).toContain("upd('blSpotStreak', 0)");
+
+    expect(revealSource).toContain('assignmentSearchActive');
+    expect(revealSource).toContain('assignmentComplete');
+    expect(revealSource).toContain('TARGET_SEARCH_CLUE_LADDERS[difficulty]');
+    expect(revealSource).toContain('TARGET_SEARCH_CLUE_ORDER');
+    expect(revealSource.match(/consumeHintUse\(/g) || []).toHaveLength(1);
+    expect(revealSource).toContain('assignmentKey');
+    expect(revealSource).toContain("upd('blAssignmentClueProgress'");
+    expect(revealSource).toContain('activateSpatialHint');
+    expect(revealSource).toMatch(/(?:nextClueId|clueId)\s*===\s*'spatial'[\s\S]{0,500}activateSpatialHint/);
+    for (const directSceneEffect of ['fireHint(', 'setSceneLens(', 'setHintActive(', 'setPicked(', 'cancelBinocularFocus(', 'requireFreshBinocularAcquisition(']) {
+      expect(revealSource, 'text clue path must not directly trigger ' + directSceneEffect).not.toContain(directSceneEffect);
+    }
+    expect(revealSource).not.toContain('announce(');
+
+    expect(spatialSource.match(/fireHint\(/g) || []).toHaveLength(1);
+    expect(spatialSource).toContain('fireHint(bird, { announceLocation: false })');
+    expect(spatialSource).not.toContain('announce(');
+    const fireSource = functionSlice('fireHint');
+    expect(fireSource).toContain('function fireHint(bird, options)');
+    expect(fireSource).toContain('options = options || {};');
+    expect(fireSource).toContain("if (options.announceLocation !== false) announce('Location clue: ' + bird.hint);");
+    expect(source).toContain('else fireHint(b);');
+    expect(spatialSource).not.toContain('consumeHintUse(');
+    expect(spatialSource).not.toContain("upd('blHintsUsed'");
+
+    const cardStart = source.indexOf("'data-birdlab-target-search': assignmentSearchState");
+    const cardEnd = source.indexOf("h('section', { className: 'rounded-2xl border-2 border-sky-300", cardStart);
+    expect(cardStart).toBeGreaterThan(-1);
+    expect(cardEnd).toBeGreaterThan(cardStart);
+    const cardSource = source.slice(cardStart, cardEnd);
+    expect(cardSource).toContain('revealNextAssignmentClue');
+    expect(cardSource).toContain("'data-birdlab-target-clue-stage'");
+    expect(cardSource).toContain("'data-birdlab-target-clue-kind'");
+    expect(cardSource).toContain("'data-birdlab-target-clue-spatial'");
+    expect(cardSource).toMatch(/aria-live['"]?\s*:\s*['"]polite/);
+    expect(cardSource).toContain("role: 'status'");
+    expect(cardSource).toContain("'aria-atomic': 'true'");
+    expect(cardSource).toContain("'data-birdlab-target-clue-status': 'true'");
+    expect(cardSource.match(/'data-birdlab-target-clue-status'/g) || []).toHaveLength(1);
+    expect(cardSource).toContain(".label + ' clue: ' + assignmentCluesVisible[assignmentCluesVisible.length - 1].text");
+  });
+  it('requires fresh acquisition after completed subjects, route resets, or hold changes', () => {
+    const source = birdLabRenderSource();
+    const freshStart = source.indexOf('function requireFreshBinocularAcquisition()');
+    const freshEnd = source.indexOf('function handleDistractorFocus', freshStart);
+    const freshSource = source.slice(freshStart, freshEnd);
+    expect(freshStart).toBeGreaterThan(-1);
+    expect(freshSource).toContain('binocularPointerRef.current.active = false;');
+    expect(freshSource).toContain('binocularPointerRef.current.down = false;');
+    expect(freshSource).toContain('setBinocularActive(false);');
+
+    const tickStart = source.indexOf('function tickBinocular(now)');
+    const tickEnd = source.indexOf('var sceneLensStats =', tickStart);
+    const tickSource = source.slice(tickStart, tickEnd);
+    const birdCompletionStart = tickSource.indexOf("if (track.kind === 'bird' && elapsed >= ISPY_DWELL_MS)");
+    const faunaCompletionStart = tickSource.indexOf("} else if (track.kind === 'distractor' && elapsed >= requiredMs)", birdCompletionStart);
+    expect(birdCompletionStart).toBeGreaterThan(-1);
+    expect(faunaCompletionStart).toBeGreaterThan(birdCompletionStart);
+    const birdCompletion = tickSource.slice(birdCompletionStart, faunaCompletionStart);
+    const faunaCompletion = tickSource.slice(faunaCompletionStart);
+    expect(birdCompletion).toContain('requireFreshBinocularAcquisition();');
+    expect(faunaCompletion).toContain('requireFreshBinocularAcquisition();');
+
+    const habitatStart = source.indexOf('function switchHabitat(newId)');
+    const roundStart = source.indexOf('function startNewRound(nextDifficulty)', habitatStart);
+    const difficultyStart = source.indexOf('function changeDifficulty(nextDifficulty)', roundStart);
+    const habitatSource = source.slice(habitatStart, roundStart);
+    const roundSource = source.slice(roundStart, difficultyStart);
+    expect(habitatSource).toContain('binocularTrackRef.current.cooldowns = {};');
+    expect(habitatSource).toContain('requireFreshBinocularAcquisition();');
+    expect(roundSource).toContain('binocularTrackRef.current.cooldowns = {};');
+    expect(roundSource).toContain('requireFreshBinocularAcquisition();');
+
+    const holdStart = source.indexOf('function changeBinocularHoldMode(nextMode)');
+    expect(holdStart).toBeGreaterThan(-1);
+    const holdSource = source.slice(holdStart, holdStart + 1200);
+    expect(holdSource).toContain('cancelBinocularFocus(');
+    expect(holdSource).toContain('requireFreshBinocularAcquisition();');
+    expect(holdSource).toContain('setBinocularHoldMode(');
+    expect(holdSource).toContain("upd('blBinocularHoldMode'");
+    expect(holdSource.indexOf('requireFreshBinocularAcquisition();')).toBeLessThan(holdSource.indexOf('setBinocularHoldMode('));
+
+    // Semantic scene changes invalidate the current subject lock, but must
+    // not rewrite or derive the learner's independently selected hold.
+    const conditionStart = source.indexOf('function switchFieldCondition(nextCondition)');
+    const conditionEnd = source.indexOf('function formatTime', conditionStart);
+    const conditionSource = source.slice(conditionStart, conditionEnd);
+    expect(conditionSource).toContain('cancelBinocularFocus(');
+    expect(conditionSource).toContain('requireFreshBinocularAcquisition();');
+    expect(conditionSource).not.toContain('setBinocularHoldMode(');
+    expect(conditionSource).not.toContain('blBinocularHoldMode');
+
+    const difficultyEnd = source.indexOf('// Make sure the current habitat', difficultyStart);
+    const difficultySource = source.slice(difficultyStart, difficultyEnd);
+    expect(difficultySource).toContain('cancelBinocularFocus(');
+    expect(difficultySource).toContain('requireFreshBinocularAcquisition();');
+    expect(difficultySource).not.toContain('setBinocularHoldMode(');
+    expect(difficultySource).not.toContain('blBinocularHoldMode');
+  });
+
+  it('uses timestamped hint clearing and drops transient hints on habitat and round changes', () => {
+    const source = birdLabRenderSource();
+    const hintStart = source.indexOf('function fireHint(');
+    const hintEnd = source.indexOf('function toggleHintMode()', hintStart);
+    const hintSource = source.slice(hintStart, hintEnd);
+    expect(hintSource).toContain('var hintStamp = Date.now();');
+    expect(hintSource).toContain('setHintActive({ species: bird.species, ts: hintStamp });');
+    expect(hintSource).toContain('setHintActive(function(cur)');
+    expect(hintSource).toContain('cur.ts === hintStamp');
+
+    const habitatStart = source.indexOf('function switchHabitat(newId)');
+    const roundStart = source.indexOf('function startNewRound(nextDifficulty)', habitatStart);
+    const difficultyStart = source.indexOf('function changeDifficulty(nextDifficulty)', roundStart);
+    expect(source.slice(habitatStart, roundStart)).toContain('setHintActive(null);');
+    expect(source.slice(roundStart, difficultyStart)).toContain('setHintActive(null);');
+  });
+
   it('retains the unlimited direct-identify accessibility path', () => {
     const source = birdLabRenderSource();
-    expect(source).toContain("if (hintMode) fireHint(b)");
+    expect(source).toContain("if (targetObservationRequired) revealNextAssignmentClue();");
+    expect(source).toContain("else fireHint(b);");
     expect(source).toContain("else handleBirdClick(b, 'hinted'); // accessibility direct-identify");
 
     const html = renderTool('birdLab', {
@@ -805,7 +1109,11 @@ describe('BirdLab I-Spy binocular tracking', () => {
       birdLab: { view: 'ispy', activeHabitat: 'coast' },
     });
 
-    expect(html).toContain('0/4 birds identified');
-    expect(html).not.toContain('0/5 birds identified');
+    const host = document.createElement('div');
+    host.innerHTML = html;
+    const statusSummary = host.querySelector('[data-birdlab-mission="true"] [aria-label="I-Spy status summary"]');
+    expect(statusSummary).toBeTruthy();
+    const birdProgress = statusSummary.querySelector('.birdlab-status-chip strong');
+    expect(birdProgress?.textContent.trim()).toBe('0/4');
   });
 });

@@ -30,7 +30,8 @@ describe('Typing Practice focus order and visibility', () => {
     expect(introEffect).not.toContain('setTimeout');
     expect(introEffect).toContain("if (typingPracticeIsInteractiveTarget(e.target)) return");
     expect(introEffect).toContain('e.preventDefault()');
-    expect(introEffect).toContain("updMulti({ view: 'drill' })");
+    expect(introEffect).toContain("beginPreparedDrill({ view: 'drill' })");
+    expect(introEffect).not.toContain("updMulti({ view: 'drill' })");
   });
 
   it('gives links and disclosure summaries theme-aware focus rings', () => {

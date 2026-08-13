@@ -12,8 +12,8 @@ import { extname, join, normalize } from 'node:path';
  * SwiftShader, so this drives the actual scene in a real browser.
  *
  * It serves the WORKING TREE (not the deployed site) on an ephemeral port, so
- * it tests the code you just changed. The three.js the module lazy-loads still
- * comes from its usual CDN.
+ * it tests the code you just changed. The harness preloads the project-vendored
+ * Three.js build, keeping real-WebGL validation deterministic and offline.
  *
  * The bugs this class of test exists to catch are the ones that reached Aaron by
  * hand in earlier rounds: a canvas that mounts at ~60% width because the
@@ -48,6 +48,7 @@ const HARNESS = `<!doctype html>
 <style>html,body{margin:0;height:100%;background:#0f172a}
 #wrap{width:900px;height:560px;position:relative}</style></head>
 <body><div id="wrap"></div>
+<script src="/vendor/three-r128/three.min.js"></script>
 <script src="/memory_palace_module.js"></script>
 <script>
   window.__events = { locus: [], floor: [], errors: [] };
@@ -69,6 +70,30 @@ const HARNESS = `<!doctype html>
     if (!c) return null;
     var gl = c.getContext('webgl2') || c.getContext('webgl');
     return { hasCanvas: true, lost: gl ? gl.isContextLost() : null, w: c.clientWidth, h: c.clientHeight };
+  };
+  window.__captureScene = function () {
+    if (!window.THREE || window.__capturePatched) return;
+    var OriginalRenderer = window.THREE.WebGLRenderer;
+    function CapturingRenderer(parameters) {
+      var renderer = new OriginalRenderer(parameters);
+      var originalRender = renderer.render;
+      renderer.render = function (scene, camera) { window.__lastScene = scene; window.__lastCamera = camera; return originalRender.apply(renderer, arguments); };
+      return renderer;
+    }
+    CapturingRenderer.prototype = OriginalRenderer.prototype;
+    try { Object.setPrototypeOf(CapturingRenderer, OriginalRenderer); } catch (e) {}
+    window.THREE.WebGLRenderer = CapturingRenderer;
+    window.__capturePatched = true;
+  };
+  window.__palaceVisualMetrics = function () {
+    var out = { captions: [], roles: {} };
+    if (!window.__lastScene) return out;
+    window.__lastScene.traverse(function (o) {
+      var role = o.userData && o.userData.visualRole;
+      if (role) out.roles[role] = (out.roles[role] || 0) + 1;
+      if (role === 'locus-caption') out.captions.push({ id: o.userData.locusId, width: o.userData.baseScale && o.userData.baseScale.x, height: o.userData.baseScale && o.userData.baseScale.y, typographyKey: o.userData.typographyKey, depthTest: o.material && o.material.depthTest, renderOrder: o.renderOrder, visible: o.visible });
+    });
+    return out;
   };
 </script></body></html>`;
 
@@ -109,6 +134,10 @@ test.afterAll(async () => {
 async function mount(page: import('@playwright/test').Page, data: unknown = SAMPLE, opts: unknown = {}) {
   await page.goto(`${base}/__harness`);
   await page.waitForFunction(() => !!(window as any).AlloModules?.MemoryPalace);
+  await page.evaluate(async () => {
+    await (window as any).AlloModules.MemoryPalace.loadThree({});
+    (window as any).__captureScene();
+  });
   await page.evaluate(([d, o]) => (window as any).__mount(d, o), [data, opts] as [unknown, unknown]);
   await page.waitForSelector('#wrap canvas', { timeout: 20000 });
   await page.waitForTimeout(900);   // let three.js settle a few frames
@@ -164,6 +193,38 @@ test.describe('Memory Palace — real WebGL walk', () => {
     const locus = await page.evaluate(() => (window as any).__events.locus);
     expect(locus.length).toBeGreaterThan(0);
     expect(locus[locus.length - 1].idx).toBe(3);
+  });
+
+  test('keeps multilingual captions bounded while rendering richer gallery depth', async ({ page }) => {
+    const longData = {
+      main: 'Multilingual memory gallery',
+      branches: [
+        { title: 'Long terms', items: ['Pneumonoultramicroscopicsilicovolcanoconiosis'.repeat(4)] },
+        { title: '多言語', items: ['記憶の宮殿で学習内容を鮮明に整理して長期記憶へ結び付ける'.repeat(4)] },
+      ],
+    };
+    await mount(page, longData);
+    await page.evaluate(() => { document.body.classList.add('theme-contrast'); document.documentElement.style.fontSize = '24px'; (window as any).__handle.goTo(1); });
+    await page.waitForTimeout(1200);
+    const metrics = await page.evaluate(() => (window as any).__palaceVisualMetrics());
+    expect(metrics.roles['sky-dome']).toBe(1);
+    expect(metrics.roles['frame-molding']).toBe(8);
+    expect(metrics.roles['frame-contact-shadow']).toBe(2);
+    expect(metrics.roles['architectural-trim']).toBeGreaterThanOrEqual(12);
+    expect(metrics.roles['directional-runner']).toBe(2);
+    expect(metrics.roles['active-room-light']).toBe(1);
+    expect(metrics.captions).toHaveLength(2);
+    metrics.captions.forEach((caption: any) => {
+      expect(caption.width).toBeGreaterThan(80);
+      expect(caption.width).toBeLessThan(370);
+      expect(caption.typographyKey).toMatch(/\|1$/);
+      expect(caption.visible).toBe(true);
+    });
+    const active = metrics.captions.find((caption: any) => caption.id === 'b0_i0');
+    const distant = metrics.captions.find((caption: any) => caption.id === 'b1_i0');
+    expect(active.depthTest).toBe(false); expect(active.renderOrder).toBe(24);
+    expect(distant.depthTest).toBe(true); expect(distant.renderOrder).toBe(12);
+    expect((await page.evaluate(() => (window as any).__glLive())).lost).toBe(false);
   });
 
   test('publishes an accessible route list covering every locus', async ({ page }) => {
@@ -257,4 +318,74 @@ test.describe('Memory Palace — real WebGL walk', () => {
     const ours = consoleErrors.filter((e) => !/sourcemap|favicon/i.test(e));
     expect(ours).toEqual([]);
   });
+
+  test('keeps compact controls clear, accessible, zoomable, and wall-aware', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await mount(page);
+    await page.evaluate(() => {
+      const wrap = document.getElementById('wrap') as HTMLElement;
+      wrap.style.width = '390px'; wrap.style.height = '640px';
+      document.documentElement.style.fontSize = '24px';
+    });
+    await page.waitForTimeout(700);
+
+    const wrap = page.locator('#wrap');
+    const viewport = wrap.locator('[data-memory-palace-viewport]');
+    await expect(viewport).toHaveAttribute('data-palace-layout', 'compact');
+    const helpButton = viewport.locator('[data-palace-action="help"]');
+    const routeButton = viewport.locator('[data-palace-action="route"]');
+    const zoomIn = viewport.locator('[data-palace-action="zoom-in"]');
+    const zoomOut = viewport.locator('[data-palace-action="zoom-out"]');
+    const reset = viewport.locator('[data-palace-action="reset-view"]');
+    for (const control of [helpButton, routeButton, zoomIn, zoomOut, reset]) {
+      const box = await control.boundingBox();
+      expect(box).not.toBeNull(); expect(box!.width).toBeGreaterThanOrEqual(44); expect(box!.height).toBeGreaterThanOrEqual(44);
+    }
+
+    await routeButton.click();
+    const routePanel = viewport.locator('[data-palace-overlay="route"]');
+    await expect(routePanel).toBeVisible();
+    await helpButton.click();
+    const helpPanel = viewport.locator('[data-palace-overlay="help"]');
+    await expect(helpPanel).toBeVisible();
+    await expect(routePanel).toBeHidden();
+    await expect(helpButton).toHaveAttribute('aria-expanded', 'true');
+    const panelBox = (await helpPanel.boundingBox())!;
+    const dockBox = (await viewport.locator('[data-palace-overlay="dock"]').boundingBox())!;
+    expect(panelBox.y + panelBox.height).toBeLessThanOrEqual(dockBox.y - 2);
+
+    await page.keyboard.press('Escape');
+    await expect(helpPanel).toBeHidden();
+    await expect(helpButton).toBeFocused();
+
+    const baseFov = await page.evaluate(() => (window as any).__lastCamera.fov);
+    await zoomIn.click();
+    expect(await page.evaluate(() => (window as any).__lastCamera.fov)).toBeLessThan(baseFov);
+    await zoomOut.click();
+    await reset.click();
+    expect(await page.evaluate(() => (window as any).__lastCamera.fov)).toBe(58);
+
+    await page.evaluate(() => (window as any).__handle.goTo(1));
+    const canvas = wrap.locator('canvas');
+    await canvas.focus();
+    await page.keyboard.down('w');
+    await page.waitForTimeout(2200);
+    const collisionState = await page.evaluate((data) => {
+      const MP = (window as any).AlloModules.MemoryPalace;
+      const palace = MP.buildPalace(data);
+      const cue = document.querySelector('[data-palace-overlay="free-nav"]');
+      return {
+        local: MP.worldToRoomLocal(palace.rooms[1], (window as any).__lastCamera.position.x, (window as any).__lastCamera.position.z),
+        blocked: cue?.getAttribute('data-blocked'),
+        text: cue?.textContent || '',
+      };
+    }, SAMPLE);
+    await page.keyboard.up('w');
+    const clearance = -360 + 5 + 28;
+    expect(collisionState.local.lz).toBeGreaterThanOrEqual(clearance - 0.2);
+    expect(collisionState.blocked).toBe('true');
+    expect(collisionState.text).toMatch(/Wall ahead/i);
+    expect((await page.evaluate(() => (window as any).__glLive())).lost).toBe(false);
+  });
+
 });

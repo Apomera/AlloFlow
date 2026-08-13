@@ -108,7 +108,10 @@ describe('Typing Practice Battle visual contrast and zoom reflow', () => {
     expect(source).toContain("className: 'tp-battle-hud-metrics'");
     expect(source).toContain('.tp-root .tp-battle-menu-hero { flex-direction: column;');
     expect(source).toContain('.tp-root .tp-battle-hud-metrics { width: 100%; margin-left: 0 !important;');
-    expect(source).toContain('.tp-root .tp-battle-stage, .tp-root .tp-battle-menu { padding: 12px !important; }');
+    expect(source).toContain('.tp-root .tp-drill-stage, .tp-root .tp-battle-stage, .tp-root .tp-battle-menu { padding: max(12px, env(safe-area-inset-top))');
+    expect(source).toContain('env(safe-area-inset-right)');
+    expect(source).toContain('env(safe-area-inset-bottom)');
+    expect(source).toContain('env(safe-area-inset-left)');
   });
 
   it('keeps the desktop mirror identical', () => {

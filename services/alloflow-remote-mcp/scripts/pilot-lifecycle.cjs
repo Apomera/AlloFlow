@@ -37,13 +37,24 @@ function readLifecyclePolicy(policyPath = DEFAULT_POLICY_PATH) {
 }
 
 function validateLifecyclePolicy(policy) {
-  if (!isDeepStrictEqual(policy, EXPECTED_POLICY)) {
+  if (!isDeepStrictEqual(normalizeLifecyclePolicy(policy), EXPECTED_POLICY)) {
     return [
       "R2 lifecycle policy must exactly retain the versioned tenant/ " +
         "two-day object-expiry and one-day multipart-abort rules",
     ];
   }
   return [];
+}
+
+function normalizeLifecyclePolicy(policy) {
+  if (!policy || !Array.isArray(policy.rules)) {
+    return policy;
+  }
+  const normalized = JSON.parse(JSON.stringify(policy));
+  normalized.rules.sort((left, right) =>
+    String(left?.id || "").localeCompare(String(right?.id || "")),
+  );
+  return normalized;
 }
 
 function resolveDocumentsBucket(config) {
@@ -89,7 +100,55 @@ function buildApplyCommand(configPath, policyPath, config) {
   };
 }
 
-function applyLifecyclePolicy(configPath, policyPath, options = {}) {
+async function readRemoteLifecyclePolicy(config, bucket, options = {}) {
+  const accountId = options.accountId || process.env.CLOUDFLARE_ACCOUNT_ID;
+  const token = options.token || process.env.CLOUDFLARE_API_TOKEN;
+  if (!/^[a-f0-9]{32}$/iu.test(accountId || "")) {
+    throw new Error("cloudflare_account_id_required_for_lifecycle_readback");
+  }
+  if (typeof token !== "string" || token.length < 20) {
+    throw new Error("cloudflare_api_token_required_for_lifecycle_readback");
+  }
+  const binding = config.r2_buckets.find(
+    (entry) => entry.binding === "DOCUMENTS",
+  );
+  const headers = { Authorization: `Bearer ${token}` };
+  if (binding.jurisdiction) {
+    headers["cf-r2-jurisdiction"] = binding.jurisdiction;
+  }
+  const fetchImpl = options.fetchImpl || globalThis.fetch;
+  const response = await fetchImpl(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}` +
+      `/r2/buckets/${encodeURIComponent(bucket)}/lifecycle`,
+    {
+      headers,
+      signal: AbortSignal.timeout(15_000),
+    },
+  );
+  const declaredLength = Number(response.headers.get("Content-Length"));
+  if (Number.isFinite(declaredLength) && declaredLength > 256 * 1024) {
+    throw new Error("r2_lifecycle_readback_too_large");
+  }
+  const text = await response.text();
+  if (text.length > 256 * 1024) {
+    throw new Error("r2_lifecycle_readback_too_large");
+  }
+  if (!response.ok) {
+    throw new Error(`r2_lifecycle_readback_failed_${response.status}`);
+  }
+  let payload;
+  try {
+    payload = JSON.parse(text);
+  } catch {
+    throw new Error("r2_lifecycle_readback_invalid");
+  }
+  if (payload?.success !== true || !Array.isArray(payload?.result?.rules)) {
+    throw new Error("r2_lifecycle_readback_invalid");
+  }
+  return normalizeLifecyclePolicy({ rules: payload.result.rules });
+}
+
+async function applyLifecyclePolicy(configPath, policyPath, options = {}) {
   if (/\.example\./u.test(path.basename(configPath))) {
     throw new Error("refusing_to_apply_example_configuration");
   }
@@ -112,7 +171,15 @@ function applyLifecyclePolicy(configPath, policyPath, options = {}) {
   if (result.status !== 0) {
     throw new Error(`wrangler_lifecycle_set_failed_${result.status ?? "signal"}`);
   }
-  return resolveDocumentsBucket(config);
+  const bucket = resolveDocumentsBucket(config);
+  const readback = await readRemoteLifecyclePolicy(config, bucket, options);
+  const readbackErrors = validateLifecyclePolicy(readback);
+  if (readbackErrors.length > 0) {
+    throw new Error(
+      `r2_lifecycle_readback_mismatch: ${readbackErrors.join("; ")}`,
+    );
+  }
+  return bucket;
 }
 
 function optionValue(argv, name, fallback) {
@@ -122,7 +189,7 @@ function optionValue(argv, name, fallback) {
     : fallback;
 }
 
-function main(argv) {
+async function main(argv) {
   const policyPath = optionValue(
     argv,
     "--policy",
@@ -145,7 +212,7 @@ function main(argv) {
     "--config",
     path.resolve("wrangler.pilot.local.jsonc"),
   );
-  const bucket = applyLifecyclePolicy(configPath, policyPath);
+  const bucket = await applyLifecyclePolicy(configPath, policyPath);
   process.stdout.write(
     `Applied the checked R2 lifecycle policy to ${bucket}.\n`,
   );
@@ -156,18 +223,18 @@ module.exports = {
   EXPECTED_POLICY,
   applyLifecyclePolicy,
   buildApplyCommand,
+  normalizeLifecyclePolicy,
   readLifecyclePolicy,
+  readRemoteLifecyclePolicy,
   resolveDocumentsBucket,
   validateLifecyclePolicy,
 };
 
 if (require.main === module) {
-  try {
-    main(process.argv.slice(2));
-  } catch (error) {
+  main(process.argv.slice(2)).catch((error) => {
     process.stderr.write(
       `lifecycle: ${error instanceof Error ? error.message : "failed"}\n`,
     );
     process.exitCode = 1;
-  }
+  });
 }

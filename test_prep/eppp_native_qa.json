@@ -1,6 +1,6 @@
 {
   "schemaVersion": 5,
-  "generatedAt": "2026-07-28T00:00:00.000Z",
+  "generatedAt": "2026-08-12T00:00:00.000Z",
   "packId": "eppp-part-one",
   "packVersion": "3.1.0",
   "standard": {
@@ -19590,7 +19590,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.ncbi.nlm.nih.gov/books/NBK448293/"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3124084/"
       ]
     },
     {
@@ -21574,7 +21574,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.itl.nist.gov/div898/handbook/eda/section3/eda33a6.htm"
+        "https://www.itl.nist.gov/div898/handbook/eda/section3/eda33d6.htm"
       ]
     },
     {
@@ -36521,7 +36521,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/8-introduction"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4304641/"
       ]
     },
     {
@@ -55252,7 +55252,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.itl.nist.gov/div898/handbook/glossary.htm"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12326564/"
       ]
     },
     {

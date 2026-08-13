@@ -78,9 +78,9 @@ describe('Anatomy Clinical Atlas integration', () => {
     expect(source).toContain('silhouetteGroup.visible = !importedVisible;');
     expect(source).toContain('syncSelectedStructureLeader(showBodyMarkers ? selectedId : null);');
     expect(source).toContain("selectedClinicalAtlasPack.focusLabel + ' \\u00b7 organ focus'");
-    expect(source).toContain('var nextPack = clinicalAtlasPacks.find');
-    expect(source).toContain("var atlasPatch = { _clinicalAtlasPackId: nextPackId, _clinicalAtlasConceptId: '', search: '' };");
-    expect(source).toContain('updMulti(atlasPatch);');
+    expect(source).toContain('var nextPack = registeredClinicalAtlasPacks.find');
+    expect(source).toContain("updMulti(clinicalAtlasPackTransitionPatch(nextPack, 'clinical-pack-selector'));");
+    expect(source).toContain('_clinicalFtuCellId: null, _clinicalFtuAtlasId: null, _regionalAtlasOpen: null');
     expect(source).not.toContain('if (imported && imported.parent) imported.parent.remove(imported);');
     expect(source).not.toContain('dispose3dResources(imported);');
   });

@@ -7,6 +7,16 @@ const { spawn, spawnSync } = require('child_process');
 const crypto = require('crypto');
 
 const DEFAULT_BUNDLE = path.resolve(__dirname, '..', 'dist', 'mcpb', 'alloflow-remediation.mcpb');
+const DEFAULT_RPC_TIMEOUT_MS = 60000;
+
+function validatedToolNames(tools, label) {
+  const source = String(label || 'Tool registry');
+  if (!Array.isArray(tools) || !tools.length) throw new Error(source + ' must advertise at least one tool');
+  const names = tools.map((tool) => tool && tool.name);
+  if (names.some((name) => typeof name !== 'string' || !name.trim())) throw new Error(source + ' contains a tool without a valid name');
+  if (new Set(names).size !== names.length) throw new Error(source + ' contains duplicate tool names');
+  return names.slice().sort();
+}
 
 function extractArchive(bundle, destination) {
   const attempts = process.platform === 'win32'
@@ -25,7 +35,7 @@ function extractArchive(bundle, destination) {
   throw new Error('Could not extract MCPB archive. ' + failures.join(' | '));
 }
 
-function rpcClient(proc) {
+function rpcClient(proc, defaultTimeoutMs = DEFAULT_RPC_TIMEOUT_MS) {
   let buffer = '';
   let stderr = '';
   const pending = new Map();
@@ -45,11 +55,12 @@ function rpcClient(proc) {
       if (reply) { pending.delete(message.id); reply(message); }
     }
   });
-  return (id, method, params) => new Promise((resolve, reject) => {
+  return (id, method, params, timeoutMs = defaultTimeoutMs) => new Promise((resolve, reject) => {
+    const boundedTimeoutMs = Math.max(1000, Math.min(300000, Number(timeoutMs) || DEFAULT_RPC_TIMEOUT_MS));
     const timer = setTimeout(() => {
       pending.delete(id);
       reject(new Error('Extracted MCPB timed out on ' + method + ': ' + stderr.slice(-1000)));
-    }, 20000);
+    }, boundedTimeoutMs);
     pending.set(id, (message) => {
       clearTimeout(timer);
       if (message.error) reject(new Error(method + ' failed: ' + JSON.stringify(message.error)));
@@ -68,7 +79,7 @@ async function verifyArtifact(bundlePath = DEFAULT_BUNDLE, options = {}) {
     extractArchive(bundle, extraction);
     const manifest = JSON.parse(fs.readFileSync(path.join(extraction, 'manifest.json'), 'utf8'));
     if (manifest.manifest_version !== '0.4') throw new Error('Unexpected manifest version: ' + manifest.manifest_version);
-    if (!Array.isArray(manifest.tools) || manifest.tools.length !== 28) throw new Error('Artifact manifest must advertise exactly 28 tools');
+    const manifestNames = validatedToolNames(manifest.tools, 'Artifact manifest');
     const entry = path.join(extraction, manifest.server.entry_point);
     if (!fs.existsSync(entry)) throw new Error('Artifact server entry point is missing: ' + manifest.server.entry_point);
     const env = {
@@ -102,9 +113,7 @@ async function verifyArtifact(bundlePath = DEFAULT_BUNDLE, options = {}) {
     const promptText = prompt && prompt.messages && prompt.messages[0] && prompt.messages[0].content && prompt.messages[0].content.text;
     if (!promptText || !promptText.includes('## Inspect capabilities before choosing a path') || !promptText.includes('Document reference: the user-attached PDF')) throw new Error('Extracted artifact prompt is not backed by the canonical skill');
     const listed = await rpc(6, 'tools/list', {});
-    if (!listed.tools || listed.tools.length !== 28) throw new Error('Extracted server must serve exactly 28 tools');
-    const manifestNames = manifest.tools.map((tool) => tool.name).sort();
-    const servedNames = listed.tools.map((tool) => tool.name).sort();
+    const servedNames = validatedToolNames(listed && listed.tools, 'Extracted server');
     if (JSON.stringify(manifestNames) !== JSON.stringify(servedNames)) throw new Error('Artifact manifest and extracted server tool registries differ');
     const called = await rpc(7, 'tools/call', { name: 'remediation_capabilities', arguments: {} });
     const capabilities = called.structuredContent;
@@ -143,5 +152,5 @@ async function main() {
   process.stdout.write('MCPB ARTIFACT: PASS (' + result.tools + ' tools, ' + result.skills + ' skill, ' + result.prompts + ' prompt, ' + result.vendorFiles + ' hashed vendor files, ' + result.bytes + ' bytes)\n');
 }
 
-module.exports = { extractArchive, verifyArtifact, DEFAULT_BUNDLE };
+module.exports = { extractArchive, verifyArtifact, validatedToolNames, DEFAULT_BUNDLE, DEFAULT_RPC_TIMEOUT_MS };
 if (require.main === module) main().catch((error) => { console.error('[verify-mcpb] ERROR: ' + error.stack); process.exitCode = 1; });

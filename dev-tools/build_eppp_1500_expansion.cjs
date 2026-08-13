@@ -56,6 +56,7 @@ const runLatestEditorialReplay=()=>{
   runReplayScript('./repair_eppp_native_quality_wave_20.cjs');
   runReplayScript('./repair_eppp_native_quality_wave_21.cjs');
   runReplayScript('./repair_eppp_native_quality_wave_22.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_23.cjs');
   runDistractorHalvingCampaign();
   runReplayScript('./audit_eppp_option_feedback.cjs');
   runFeedbackHalvingCampaign();

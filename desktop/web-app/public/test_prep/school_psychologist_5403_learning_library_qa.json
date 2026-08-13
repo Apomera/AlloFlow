@@ -1,7 +1,6 @@
 {
   "packId": "praxis-school-psychologist-5403", "version": "1.0.0", "visibility": "public",
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T17:24:12.045Z",
   "libraryId": "praxis-school-psychologist-5403-learning-library",
   "standard": {
     "label": "AlloFlow Praxis School Psychologist 5403 learning-library source and editorial review v1",

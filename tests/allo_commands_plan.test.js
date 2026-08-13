@@ -417,7 +417,7 @@ describe('AlloBot plan recovery wiring', () => {
     for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       // 2026-07-20: the planning layer lives ONCE in UdlChat (udl_chat_source),
       // shared by every host — assert host + module together.
-      const app = readFileSync(path, 'utf-8') + readFileSync('udl_chat_source.jsx', 'utf-8');
+      const app = (readFileSync(path, 'utf-8') + readFileSync('udl_chat_source.jsx', 'utf-8')).replace(/\r\n/g, '\n');
       expect(app).toContain('const _cancelBotCommandPlanning = () => {');
       expect(app).toContain('if (!showUDLGuide) _cancelBotCommandPlanning();');
       expect(app).toContain('useEffect(() => () => {\n    _cancelBotCommandPlanning();\n  }, []);');
@@ -560,8 +560,34 @@ describe('AlloBot hands-free agent button', () => {
     expect(src).toMatch(/t\('chat_guide\.talk_on'\) \|\| 'Listening'/);
     expect(src).toContain("t('chat_guide.talk') || 'Talk'");
     expect(src).toContain('aria-pressed');
-    // Legacy state stays in step for one release so nothing downstream breaks.
-    expect(src).toContain('setIsConversationMode(next);');
+    // Talk owns command listening only. Legacy free-form dictation must be
+    // entered explicitly so two recognizers never compete for the microphone.
+    const talk = src.slice(src.indexOf('chat_talk'), src.indexOf('</button>', src.indexOf('chat_talk')));
+    expect(talk).toContain('setIsConversationMode(false);');
+    expect(talk).not.toContain('setIsDictationMode(true)');
+  });
+
+  it('hands microphone ownership to command mode before Talk starts', () => {
+    const src = readFileSync('view_misc_modals_source.jsx', 'utf-8');
+    const helper = src.slice(src.indexOf('const stopLegacyDictation'), src.indexOf('const closeGuide'));
+    expect(helper).toContain('stopActiveDictation(true)');
+    expect(helper).toContain('setIsDictationMode(false)');
+
+    const start = src.indexOf('chat_talk');
+    const talk = src.slice(start, src.indexOf('</button>', start));
+    expect(talk.indexOf('stopLegacyDictation();')).toBeLessThan(talk.indexOf('onToggleVoiceAgent()'));
+  });
+
+  it('stops legacy dictation when Talk is paused or the guide closes', () => {
+    const src = readFileSync('view_misc_modals_source.jsx', 'utf-8');
+    const pauseStart = src.indexOf('chat_talk_pause');
+    const pause = src.slice(pauseStart, src.indexOf('</button>', pauseStart));
+    expect(pause.indexOf('stopLegacyDictation();')).toBeLessThan(pause.indexOf('window.__alloVoiceLoop'));
+
+    const close = src.slice(src.indexOf('const closeGuide'), src.indexOf('React.useEffect', src.indexOf('const closeGuide')));
+    expect(close).toContain('stopLegacyDictation();');
+    expect(close).toContain('setIsConversationMode(false);');
+    expect((src.match(/onClick={closeGuide}/g) || []).length).toBe(2);
   });
 
   // Momentary pause (2026-08-05): a teacher stepping aside to talk with a
@@ -569,7 +595,7 @@ describe('AlloBot hands-free agent button', () => {
   // re-tap; wake-word standby keeps the mic hot. Neither is a pause.
   it('pause releases the microphone and keeps the session, resume re-acquires it', () => {
     const src = readFileSync('allo_commands_source.jsx', 'utf-8');
-    const pause = src.slice(src.indexOf('const pause = () => {'), src.indexOf('const resume = async'));
+    const pause = src.slice(src.indexOf('const pause = '), src.indexOf('const resume = async'));
     // Tracks are STOPPED, not merely disabled — the dark browser indicator is
     // the honest signal. A muted-but-held mic is not a pause a teacher trusts.
     expect(pause).toContain('whisperState.stream.getTracks().forEach');
@@ -593,8 +619,12 @@ describe('AlloBot hands-free agent button', () => {
     // "pause listening" is handled next to the kill phrase, before routing,
     // so it can never be swallowed as a command.
     const handler = src.slice(src.indexOf('const handleUtterance'), src.indexOf('const startWhisperEngine'));
-    expect(handler.indexOf('stop listening|stop voice')).toBeLessThan(handler.indexOf('pause listening|pause voice'));
-    expect(handler.indexOf('pause listening|pause voice')).toBeLessThan(handler.indexOf('routeUtterance('));
+    const stopRoute = handler.indexOf('stop listening|stop voice');
+    const pauseRoute = handler.indexOf('const pauseRequest =');
+    const kernelRoute = handler.indexOf('commandKernel.handleUtterance(');
+    expect(stopRoute).toBeGreaterThan(-1);
+    expect(stopRoute).toBeLessThan(pauseRoute);
+    expect(kernelRoute).toBeGreaterThan(-1);
     // A full stop clears the flag so the next start is clean.
     expect(src).toMatch(/standby = false;\s*paused = false;/);
   });
@@ -625,8 +655,12 @@ describe('AlloBot hands-free agent button', () => {
 
   it('the first-enable hint teaches both voice and typed agentic control', () => {
     const src = readFileSync('view_misc_modals_source.jsx', 'utf-8');
+    expect(src).toContain('Listening for app commands.');
     expect(src).toContain('stop listening');
     expect(src).toContain('plan card you review before anything runs');
+    expect(src).toContain('A browser speech service may send command audio to its provider');
+    expect(src).not.toContain('Ask a question or say what you want done');
+    expect(src).not.toContain('Send as soon as I stop talking');
   });
 });
 
@@ -678,8 +712,10 @@ describe('voice loop spoken replies and language', () => {
   it('the enable hint now carries the privacy disclosure', () => {
     for (const path of ['view_misc_modals_source.jsx', 'view_misc_modals_module.js']) {
       const code = readFileSync(path, 'utf-8');
-      expect(code, path).toContain('sends microphone audio to your browser');
-      expect(code, path).toContain('both stay on this device');
+      expect(code, path).toContain('uses your selected recognition engine');
+      expect(code, path).toContain('may send command audio to its provider');
+      expect(code, path).toContain('on-device Whisper keeps recognition audio on this device');
+      expect(code, path).not.toContain('both stay on this device');
     }
   });
 });
@@ -885,9 +921,12 @@ describe('model cache', () => {
   it('replies prefer Kokoro (neural, on-device) and only fall back to speechSynthesis', () => {
     const mod = readFileSync('allo_commands_source.jsx', 'utf-8');
     const speak = mod.slice(mod.indexOf('const speakReply'), mod.indexOf('const announce'));
-    // Kokoro branch comes FIRST and returns; speechSynthesis is the fallback.
-    expect(speak.indexOf('_kokoroTTS')).toBeGreaterThan(-1);
-    expect(speak.indexOf('_kokoroTTS')).toBeLessThan(speak.indexOf('speechSynthesis.cancel'));
+    // Kokoro executes first; the browser helper may be declared earlier, but
+    // is invoked only when Kokoro is unavailable or fails.
+    const kokoroBranch = speak.indexOf('if (window._kokoroTTS');
+    const browserFallback = speak.lastIndexOf('speakWithBrowser();');
+    expect(kokoroBranch).toBeGreaterThan(-1);
+    expect(browserFallback).toBeGreaterThan(kokoroBranch);
     // Only when the model is actually loaded — a reply must never trigger a download.
     expect(speak).toContain('window._kokoroTTS.ready');
     // Mic-mute handshake keys off the Audio element lifecycle + a hard ceiling.

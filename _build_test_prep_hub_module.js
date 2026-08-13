@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-const { execSync } = require('child_process');
+const { execSync: systemExecSync } = require('child_process');
+let execSync = systemExecSync;
 const fs = require('fs');
 const path = require('path');
 
@@ -124,6 +125,15 @@ const WRITE_TEST_PREP_ASSISTANT_REVIEW_SCRIPT = path.join(ROOT, 'dev-tools', 'wr
 const VERIFY_TEST_PREP_ASSISTANT_REVIEW_SCRIPT = path.join(ROOT, 'dev-tools', 'verify_test_prep_assistant_review.cjs');
 const EXPAND_TEST_PREP_PACKS_SCRIPT = path.join(ROOT, 'dev-tools', 'expand_test_prep_packs_to_500.cjs');
 const skipEpppRefresh = process.argv.includes('--skip-eppp-refresh');
+const compileOnly = process.argv.includes('--compile-only');
+
+// A normal release build refreshes and validates every Test Prep asset first.
+// In a busy worktree, compile-only deliberately reads the existing validated
+// assets and runs just esbuild + root/desktop writes, avoiding broad pack edits.
+if (compileOnly) execSync = (command, options) => {
+  if (/\bnpx\s+esbuild\b/.test(String(command || ''))) return systemExecSync(command, options);
+  return Buffer.from('');
+};
 
 if (!fs.existsSync(SOURCE)) {
   console.error('Source not found:', SOURCE);

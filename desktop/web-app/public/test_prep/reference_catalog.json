@@ -281,7 +281,6 @@
     "metadataSource": "explicit-override"
   },
   "https://clep.collegeboard.org/for-educators/for-colleges/clep-scores/understanding-scores/reliability-and-validity": {
-    "url": "https://clep.collegeboard.org/for-educators/for-colleges/clep-scores/understanding-scores/reliability-and-validity",
     "title": "Reliability and Validity: Understanding CLEP Scores",
     "organization": "College Board",
     "summary": "College Board explains that the standard error of measurement is inversely related to a reliability coefficient and approaches zero as reliability approaches perfect score consistency.",
@@ -492,7 +491,6 @@
     "metadataSource": "page-metadata"
   },
   "https://dictionary.apa.org/flooding": {
-    "url": "https://dictionary.apa.org/flooding",
     "title": "Flooding - APA Dictionary of Psychology",
     "organization": "APA Dictionary of Psychology, American Psychological Association",
     "summary": "The professional dictionary defines flooding as direct exposure to a maximum-intensity anxiety-producing situation or stimulus without preliminary relaxation training.",
@@ -684,7 +682,6 @@
     "metadataSource": "pack-authored"
   },
   "https://dictionary.apa.org/systematic-desensitization": {
-    "url": "https://dictionary.apa.org/systematic-desensitization",
     "title": "Systematic desensitization - APA Dictionary of Psychology",
     "organization": "APA Dictionary of Psychology, American Psychological Association",
     "summary": "The professional dictionary defines systematic desensitization as gradual exposure to increasingly anxiety-provoking stimuli while using relaxation to inhibit anxiety.",
@@ -816,7 +813,6 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1002/cphy.c150015": {
-    "url": "https://doi.org/10.1002/cphy.c150015",
     "title": "Regulation of the Hypothalamic‐Pituitary‐Adrenocortical Stress Response",
     "organization": "Comprehensive Physiology",
     "summary": "ABSTRACT The hypothalamo‐pituitary‐adrenocortical (HPA) axis is required for stress adaptation. Activation of the HPA axis causes secretion of glucocorticoids, which act on multiple organ systems to redirect energy resources to meet real or anticipated demand.…",
@@ -838,7 +834,6 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1002/ejsp.2420010202": {
-    "url": "https://doi.org/10.1002/ejsp.2420010202",
     "title": "Social Categorization and Intergroup Behaviour",
     "organization": "European Journal of Social Psychology",
     "summary": "Tajfel, Billig, Bundy, and Flament report minimal-group experiments in which arbitrary classification influenced allocation of real rewards, including choices favoring one's assigned category over another category.",
@@ -1033,7 +1028,6 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/0749-5978(85)90049-4": {
-    "url": "https://doi.org/10.1016/0749-5978(85)90049-4",
     "title": "The Psychology of Sunk Cost",
     "organization": "Organizational Behavior and Human Decision Processes",
     "summary": "Arkes and Blumer define the sunk-cost effect as a greater tendency to continue an endeavor after investing money, effort, or time and demonstrate the effect across field and experimental studies of consequential decisions.",
@@ -1065,7 +1059,6 @@
     "doi": "10.1016/j.brat.2008.10.014"
   },
   "https://doi.org/10.1016/j.brat.2014.04.006": {
-    "url": "https://doi.org/10.1016/j.brat.2014.04.006",
     "title": "Maximizing Exposure Therapy: An Inhibitory Learning Approach",
     "organization": "Behaviour Research and Therapy, Elsevier",
     "summary": "Craske and colleagues review exposure mechanisms and strategies that emphasize expectancy violation, inhibitory learning, contextual variability, and retrieval rather than requiring within-session fear reduction as the marker of successful learning.",
@@ -1126,10 +1119,10 @@
     "doi": "10.1016/j.jneumeth.2005.02.005"
   },
   "https://doi.org/10.1016/j.nbd.2009.07.030": {
-    "title": "Abbott, N. J., Patabendige, A. A. K., Dolman, D. E. M., Yusof, S. R., & Begley, D. J. (2010). Structure and function of the blood–brain barrier. Neurobiology of Disease, 37(1), 13–25",
-    "organization": "",
-    "summary": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
-    "credibility": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
+    "title": "Structure and function of the blood-brain barrier",
+    "organization": "Neurobiology of Disease",
+    "summary": "This peer-reviewed review describes endothelial tight junctions as the physical blood-brain barrier and explains how membrane transporters, vesicular mechanisms, and associated cells regulate exchange between blood and the central nervous system.",
+    "credibility": "The article is a peer-reviewed synthesis by blood-brain barrier researchers and is indexed by PubMed under PMID 19664713. Its mechanistic discussion directly supports the item distinction between passive transcellular penetration and transporter-mediated entry.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/j.neuroimage.2010.06.016": {
@@ -1218,7 +1211,6 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/S0022-5371(77)80016-9": {
-    "url": "https://doi.org/10.1016/S0022-5371(77)80016-9",
     "title": "Levels of Processing versus Transfer Appropriate Processing",
     "organization": "Journal of Verbal Learning and Verbal Behavior",
     "summary": "Morris, Bransford, and Franks compared semantic and rhyme-oriented encoding with standard and rhyming recognition tests, demonstrating that test performance depends on compatibility between acquisition and retrieval operations.",
@@ -1272,7 +1264,6 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/S1364-6613(00)01538-2": {
-    "url": "https://doi.org/10.1016/S1364-6613(00)01538-2",
     "title": "The Episodic Buffer: A New Component of Working Memory?",
     "organization": "Trends in Cognitive Sciences, Elsevier",
     "summary": "Baddeley proposes a fourth working-memory component that temporarily stores multimodal information and binds subsidiary-system and long-term-memory inputs into integrated episodic representations.",
@@ -1358,7 +1349,6 @@
     "doi": "10.1037/0003-066X.50.9.741"
   },
   "https://doi.org/10.1037/0003-066X.52.6.613": {
-    "url": "https://doi.org/10.1037/0003-066X.52.6.613",
     "title": "A threat in the air: How stereotypes shape intellectual identity and performance.",
     "organization": "American Psychologist",
     "summary": "This scholarly work focuses on “A threat in the air: How stereotypes shape intellectual identity and performance..” Open the source to review its methods, scope, findings, and limitations in context.",
@@ -1396,7 +1386,6 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/0003-066X.61.4.271": {
-    "url": "https://doi.org/10.1037/0003-066X.61.4.271",
     "title": "Evidence-Based Practice in Psychology",
     "organization": "American Psychological Association Presidential Task Force",
     "summary": "The APA task-force report defines evidence-based psychological practice as integrating the best available research with clinical expertise in the context of patient characteristics, culture, and preferences.",
@@ -1546,7 +1535,6 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/0022-3514.74.6.1464": {
-    "url": "https://doi.org/10.1037/0022-3514.74.6.1464",
     "title": "Greenwald, A. G., McGhee, D. E., & Schwartz, J. L. K. (1998). Measuring individual differences in implicit cognition: The Implicit Association Test. Journal of Personality and Social Psychology, 74(6), 1464–1480",
     "organization": "American Psychological Association",
     "summary": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
@@ -1885,10 +1873,10 @@
     "doi": "10.1037/a0023304"
   },
   "https://doi.org/10.1037/a0029889": {
-    "title": "Specialty guidelines for forensic psychology.",
-    "organization": "American Psychologist",
-    "summary": "This scholarly work focuses on “Specialty guidelines for forensic psychology..” Open the source to review its methods, scope, findings, and limitations in context.",
-    "credibility": "The DOI provides a persistent link to the publisher metadata for this scholarly work. Evidentiary strength still depends on the publication type, methods, sample, analysis, and fit to the claim.",
+    "title": "Specialty Guidelines for Forensic Psychology",
+    "organization": "American Psychological Association",
+    "summary": "Guideline 4.02.01 explains that providing therapeutic and forensic services to the same person creates a multiple relationship that may impair objectivity or cause harm, and it recommends disclosure and reasonable referral efforts.",
+    "credibility": "The American Psychology-Law Society is APA Division 41 and publishes the specialty guidelines for forensic psychology. This is the primary professional guidance for concurrent and sequential therapeutic-forensic role conflicts.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/a0032734": {
@@ -2068,7 +2056,6 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/h0045106": {
-    "url": "https://doi.org/10.1037/h0045106",
     "title": "The serial position effect of free recall.",
     "organization": "Journal of Experimental Psychology",
     "summary": "This scholarly work focuses on “The serial position effect of free recall..” Open the source to review its methods, scope, findings, and limitations in context.",
@@ -2176,7 +2163,6 @@
     "doi": "10.1037/h0074524"
   },
   "https://doi.org/10.1037/h0076284": {
-    "url": "https://doi.org/10.1037/h0076284",
     "title": "Reciprocal Concessions Procedure for Inducing Compliance: The Door-in-the-Face Technique",
     "organization": "Journal of Personality and Social Psychology, American Psychological Association",
     "summary": "Cialdini and colleagues report three experiments comparing an extreme-request-then-smaller-request sequence with a smaller-request-only procedure and additional control conditions designed to evaluate reciprocal concessions.",
@@ -2191,7 +2177,6 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/h0085885": {
-    "url": "https://doi.org/10.1037/h0085885",
     "title": "The Generalizability of the Psychoanalytic Concept of the Working Alliance",
     "organization": "Psychotherapy: Theory, Research & Practice, American Psychological Association",
     "summary": "Bordin presents the working alliance as involving agreement on therapeutic goals, agreement on the tasks used to pursue them, and the interpersonal bond, allowing alliance strain to be understood through the component in which disagreement occurs.",
@@ -2381,7 +2366,6 @@
     "doi": "10.1080/00031305.2016.1154108"
   },
   "https://doi.org/10.1080/00223980.1939.9917671": {
-    "url": "https://doi.org/10.1080/00223980.1939.9917671",
     "title": "Projective Methods for the Study of Personality",
     "organization": "The Journal of Psychology",
     "summary": "This scholarly work focuses on “Projective Methods for the Study of Personality.” Open the source to review its methods, scope, findings, and limitations in context.",
@@ -2577,10 +2561,10 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x": {
-    "title": "Berry, J. W. (1997). Immigration, acculturation, and adaptation. Applied Psychology, 46(1), 5–34",
-    "organization": "",
-    "summary": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
-    "credibility": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
+    "title": "Immigration, Acculturation, and Adaptation",
+    "organization": "Applied Psychology",
+    "summary": "Berry presents a framework for acculturation and adaptation in which orientation toward heritage culture and participation in the receiving society are treated as distinct dimensions, while adaptation varies with personal and social context.",
+    "credibility": "This peer-reviewed foundational article in Applied Psychology is the primary source for Berry’s bidimensional framework. It supports both classification of an integration strategy and the separate evaluation of psychological or sociocultural adaptation.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1111/j.1467-6494.1966.tb00543.x": {
@@ -3251,7 +3235,6 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.4103/2229-3485.83221": {
-    "url": "https://doi.org/10.4103/2229-3485.83221",
     "title": "Intention-to-treat concept: A review",
     "organization": "Perspectives in Clinical Research",
     "summary": "This scholarly work focuses on “Intention-to-treat concept: A review.” Open the source to review its methods, scope, findings, and limitations in context.",
@@ -3975,7 +3958,6 @@
     "metadataSource": "pack-authored"
   },
   "https://openstax.org/books/psychology-2e/pages/3-4-the-brain-and-spinal-cord": {
-    "url": "https://openstax.org/books/psychology-2e/pages/3-4-the-brain-and-spinal-cord",
     "title": "3.4 The Brain and Spinal Cord - Psychology 2e",
     "organization": "OpenStax, Rice University",
     "summary": "This reviewed introductory psychology chapter describes the conventional association between left frontal language systems and effortful expressive language, contrasting that pattern with fluent receptive-language impairment.",
@@ -4061,7 +4043,6 @@
     "metadataSource": "page-metadata"
   },
   "https://openstax.org/books/psychology-2e/pages/7-introduction": {
-    "url": "https://openstax.org/books/psychology-2e/pages/7-introduction",
     "title": "Ch. 7 Introduction - Psychology 2e | OpenStax",
     "organization": "OpenStax, Rice University",
     "summary": "What is the best way to solve a problem? How does a person who has never seen or touched snow in real life develop an understanding of the concept of sn...",
@@ -4223,6 +4204,13 @@
     "summary": "This pmc.ncbi.nlm.nih.gov resource addresses Pmc.Ncbi.Nlm.Nih.Gov Resource. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
     "credibility": "pmc.ncbi.nlm.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
     "metadataSource": "page-metadata"
+  },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC12326564/": {
+    "title": "How to construct analysis of covariance in clinical trials: ANCOVA with one covariate in a completely randomized design structure",
+    "organization": "Korean Journal of Anesthesiology",
+    "summary": "This peer-reviewed statistical tutorial explains ANCOVA for randomized clinical trials, including adjustment for prognostic baseline covariates, interpretation of adjusted treatment effects, and the role of model assumptions.",
+    "credibility": "The article is a peer-reviewed, worked methodological tutorial archived in PubMed Central. It directly addresses continuous posttreatment outcomes, prespecified baseline adjustment, precision, and treatment-by-covariate considerations.",
+    "metadataSource": "pack-authored"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC12372704/": {
     "title": "Checking your browser - reCAPTCHA",
@@ -4411,6 +4399,13 @@
     "credibility": "Psychological Bulletin is an APA peer-reviewed review journal, and PubMed Central is the U.S. National Library of Medicine full-text archive. A meta-analysis is particularly appropriate for testing the conditional pattern rather than presenting the sleeper effect as inevitable.",
     "metadataSource": "pack-authored"
   },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC3124084/": {
+    "title": "Behavioral Activation for the Treatment of Atypical Depression: A Pilot Open Trial",
+    "organization": "Behavior Modification",
+    "summary": "This peer-reviewed clinical article describes behavioral activation using activity monitoring, functional analysis, values and goals, graded task assignment, and modification of avoidance patterns to increase contact with reinforcing activity.",
+    "credibility": "The full peer-reviewed article is archived in PubMed Central and reports a manual-guided behavioral activation intervention. Its procedural description directly supports adapting activity plans from monitoring and functional information.",
+    "metadataSource": "pack-authored"
+  },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC3151309/": {
     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3151309/",
     "title": "Measuring Motor Speed Through Typing: A Surrogate for the Finger Tapping Test",
@@ -4566,6 +4561,13 @@
     "organization": "pmc.ncbi.nlm.nih.gov",
     "summary": "This pmc.ncbi.nlm.nih.gov resource addresses Pmc.Ncbi.Nlm.Nih.Gov Resource. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
     "credibility": "pmc.ncbi.nlm.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+    "metadataSource": "pack-authored"
+  },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC4304641/": {
+    "title": "“Utilizing” Signal Detection Theory",
+    "organization": "Psychological Science via PubMed Central",
+    "summary": "This Psychological Science tutorial explains signal detection theory as decision making under perceptual uncertainty and behavioral risk, including the distinct roles of sensitivity, response bias, and the utilities attached to decision outcomes.",
+    "credibility": "Psychological Science is a peer-reviewed journal of the Association for Psychological Science. The tutorial is authored by signal-detection researchers and directly addresses how changing costs can shift a decision criterion independently of sensitivity.",
     "metadataSource": "pack-authored"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC4318770/": {
@@ -6674,7 +6676,6 @@
     "metadataSource": "pack-authored"
   },
   "https://www.apa.org/ethics/": {
-    "url": "https://www.apa.org/ethics/",
     "title": "American Psychological Association Ethics Office",
     "organization": "American Psychological Association",
     "summary": "The APA Ethics Office page provides the code's adoption and amendment history and identifies the code currently published by the association while revision work continues.",
@@ -6682,7 +6683,6 @@
     "metadataSource": "pack-authored"
   },
   "https://www.apa.org/ethics/code": {
-    "url": "https://www.apa.org/ethics/code",
     "title": "Ethical Principles of Psychologists and Code of Conduct",
     "organization": "American Psychological Association",
     "summary": "The APA Ethics Code states enforceable professional standards spanning competence, human relations, privacy and confidentiality, records and fees, assessment, research and publication, and therapy.",
@@ -7759,7 +7759,6 @@
     "metadataSource": "page-metadata"
   },
   "https://www.hhs.gov/ohrp/regulations-and-policy/regulations/45-cfr-46/index.html": {
-    "url": "https://www.hhs.gov/ohrp/regulations-and-policy/regulations/45-cfr-46/index.html",
     "title": "U.S. Department Of Health And Human Services Resource",
     "organization": "U.S. Department of Health and Human Services",
     "summary": "This U.S. Department of Health and Human Services resource addresses U.S. Department Of Health And Human Services Resource. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
@@ -7828,6 +7827,13 @@
     "summary": "This itl.nist.gov resource addresses Itl.Nist.Gov Resource. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
     "credibility": "itl.nist.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
     "metadataSource": "page-metadata"
+  },
+  "https://www.itl.nist.gov/div898/handbook/eda/section3/eda33d6.htm": {
+    "title": "Histogram Interpretation: Skewed (Non-Normal) Right",
+    "organization": "National Institute of Standards and Technology",
+    "summary": "The NIST Exploratory Data Analysis handbook defines a right-skewed distribution by its extended positive tail and discusses how skewness complicates the meaning and selection of mean, median, and mode as measures of typical value.",
+    "credibility": "NIST is a U.S. federal scientific standards agency, and its statistical handbook is an authoritative methodological reference. The page directly supports interpretation of a sparse high-value tail and comparison of center measures.",
+    "metadataSource": "pack-authored"
   },
   "https://www.itl.nist.gov/div898/handbook/eda/section3/eda35.htm": {
     "url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda35.htm",
@@ -8318,11 +8324,11 @@
     "metadataSource": "page-metadata"
   },
   "https://www.ncbi.nlm.nih.gov/books/NBK448206/": {
-    "title": "Piaget - StatPearls - NCBI Bookshelf",
-    "organization": "ncbi.nlm.nih.gov",
-    "summary": "Jean Piaget (1896-1980) was a renowned 20th-century psychologist and a pioneer in developmental child psychology. Piaget did not accept the prevailing theory that knowledge was innate or a priori. Instead, he believed a child’s knowledge and understanding of the world developed empirically over time through the child’s interaction with the world.…",
-    "credibility": "ncbi.nlm.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
-    "metadataSource": "page-metadata"
+    "title": "Piaget: Cognitive Development - StatPearls",
+    "organization": "National Center for Biotechnology Information",
+    "summary": "The NCBI Bookshelf review describes formal operations as movement beyond concrete facts toward hypothetical-deductive thought, propositional reasoning, isolation of variables, and examination of variable combinations.",
+    "credibility": "NCBI Bookshelf is maintained by the U.S. National Library of Medicine. This clinician-oriented review identifies the exact formal-operational processes illustrated by Piaget’s pendulum task and distinguishes them from concrete observation.",
+    "metadataSource": "pack-authored"
   },
   "https://www.ncbi.nlm.nih.gov/books/NBK448293/": {
     "title": "Introduction - Cost and Outcome of BehaviouRal Activation (COBRA): a randomised controlled trial of behavioural activation versus cognitive–behavioural therapy for depression -…",
@@ -9427,7 +9433,6 @@
     "metadataSource": "pack-authored"
   },
   "https://www.ptsd.va.gov/professional/treat/txessentials/cpt_for_ptsd_pro.asp": {
-    "url": "https://www.ptsd.va.gov/professional/treat/txessentials/cpt_for_ptsd_pro.asp",
     "title": "Cognitive Processing Therapy for PTSD",
     "organization": "U.S. Department of Veterans Affairs, National Center for PTSD",
     "summary": "The VA treatment overview explains assimilated and over-accommodated stuck points, contrasts them with balanced accommodation, and identifies cognitive restructuring toward accurate beliefs as a primary CPT goal.",
@@ -9442,7 +9447,6 @@
     "metadataSource": "pack-authored"
   },
   "https://www.ptsd.va.gov/professional/treat/txessentials/prolonged_exposure_pro.asp": {
-    "url": "https://www.ptsd.va.gov/professional/treat/txessentials/prolonged_exposure_pro.asp",
     "title": "Prolonged Exposure for PTSD",
     "organization": "National Center for PTSD, U.S. Department of Veterans Affairs",
     "summary": "This clinician resource describes PE as a manualized treatment and identifies psychoeducation, repeated in-vivo approach to avoided trauma reminders, repeated imaginal revisiting of the trauma memory, and processing as key procedures.",
@@ -9612,11 +9616,10 @@
     "metadataSource": "pack-authored"
   },
   "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf": {
-    "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
     "title": "Standards for Educational and Psychological Testing",
-    "organization": "AERA, American Psychological Association, and NCME",
-    "summary": "The joint professional Standards organize validity evidence around the intended interpretation and use of scores, including evidence from internal structure and relations with other variables such as convergent and discriminant patterns.",
-    "credibility": "AERA, APA, and NCME jointly publish the principal U.S. professional consensus standards for educational and psychological testing. This primary source is authoritative for the validity-evidence framework used in the item.",
+    "organization": "AERA, APA, and NCME",
+    "summary": "The joint testing standards address score interpretation, intended uses, comparison groups, norms, and the evidence required to support interpretations, including the distinction between norm-based and criterion-based meaning.",
+    "credibility": "AERA, APA, and NCME jointly publish the principal U.S. professional standards for educational and psychological testing, making this the authoritative consensus source for test-score interpretation and use.",
     "metadataSource": "pack-authored"
   },
   "https://www.thebowencenter.org/differentiation-of-self": {

@@ -26,11 +26,13 @@ describe('device storage bridge — file contracts', () => {
     expect(moduleSrc).toContain("var DIRECT_DB = 'allo_device_storage'");
   });
 
-  it('bridge authenticates by nonce + source reference and supports iframe mode', () => {
+  it('bridge authenticates by approved source + origin + nonce and supports iframe mode', () => {
     expect(bridgeSrc).toContain('msg.nonce !== nonce');
     expect(bridgeSrc).toContain('event.source !== client');
     expect(bridgeSrc).toContain('window.opener || (window.parent !== window ? window.parent : null)');
-    expect(bridgeSrc).toContain('allo-ds=');
+    expect(bridgeSrc).toContain("bridgeParams.get('allo-ds')");
+    expect(bridgeSrc).toContain("'allo/approval-required'");
+    expect(moduleSrc).toContain('event.source !== self.win || event.origin !== self.bridgeOrigin');
   });
 
   it('module targets the CDN origin, never prismflow', () => {
@@ -102,7 +104,8 @@ describe('device storage bridge — file contracts', () => {
     const connectEnd = moduleSrc.indexOf('BridgeTransport.prototype.request', connectStart);
     const connect = moduleSrc.slice(connectStart, connectEnd);
     expect(connect).toContain('if (self.connectPromise) return self.connectPromise');
-    expect(connect).toContain('self.connectTimer = timer');
+    expect(connect).toContain('self.connectTimer = setTimeout');
+    expect(connect).toContain('self.helloTimer = setInterval(sendHello, 250)');
     expect(connect).toContain('self.connectReject = reject');
 
     const flushStart = moduleSrc.indexOf('function flushQueue()');
@@ -129,8 +132,10 @@ describe('device storage bridge — file contracts', () => {
       expect(src).toContain("'ls_prefs'");
       expect(src).toContain('__alloPrefsHydrated');
       expect(src).toContain('allo-prefs-hydrated');
-      // hydration must never clobber values the session already wrote
-      expect(src).toContain('localStorage.getItem(k) === null');
+      // Default hydration preserves current-session values; the explicit
+      // approval path may replace boot defaults before workspace entry.
+      expect(src).toContain("const replaceExisting = options?.replaceExisting === true");
+      expect(src).toContain('if (currentValue === null || replaceExisting)');
     }
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
     expect(anti).toContain('_isCanvasEnv && !window.__alloPrefsHydrated');
@@ -162,17 +167,17 @@ describe('device storage bridge — file contracts', () => {
     expect(tuDeployed).toBe(tuModule);
   });
 
-  // 2026-07-20: slots 3 → 8 with a size budget. The eviction rule lives in
+  // Standard now keeps up to 20 snapshots with a size budget. The eviction rule lives in
   // THREE independent copies (app monolith, this adapter, the bridge page);
   // drift means the bridge silently discards workspaces the app still shows.
   it('all three copies agree on Standard, Compact, and pin-aware caps', () => {
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-    expect(anti).toContain('const MAX_SNAPSHOTS = 8;');
+    expect(anti).toContain('const MAX_SNAPSHOTS = 20;');
     expect(anti).toContain('const MAX_TOTAL_BYTES = 150 * 1024 * 1024;');
     expect(anti).toContain('const COMPACT_MAX_SNAPSHOTS = 4;');
     expect(anti).toContain('const COMPACT_MAX_TOTAL_BYTES = 50 * 1024 * 1024;');
     for (const src of [moduleSrc, bridgeSrc]) {
-      expect(src).toContain('var RECOVERY_MAX_SNAPSHOTS = 8;');
+      expect(src).toContain('var RECOVERY_MAX_SNAPSHOTS = 20;');
       expect(src).toContain('var RECOVERY_MAX_TOTAL_BYTES = 150 * 1024 * 1024;');
       expect(src).toContain('var RECOVERY_COMPACT_MAX_SNAPSHOTS = 4;');
       expect(src).toContain('var RECOVERY_COMPACT_MAX_TOTAL_BYTES = 50 * 1024 * 1024;');
@@ -190,10 +195,10 @@ describe('device storage bridge — file contracts', () => {
   it('the bridge cache-buster was bumped so caches refetch the manager protocol', () => {
     // The bridge is loaded from the CDN, so a stale ?v= would keep enforcing
     // the prior fixed-only policy for anyone whose browser cached the page.
-    expect(moduleSrc).toContain('storage_bridge.html?v=ds3-storage-manager');
+    expect(moduleSrc).toContain('storage_bridge.html?v=ds4-bridge-auth');
     expect(moduleSrc).not.toContain('ds2-slots8');
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-    expect(anti).toContain('allo_device_storage_module.js?v=ds3-storage-manager');
+    expect(anti).toContain('allo_device_storage_module.js?v=ds4-bridge-auth');
     expect(anti).not.toContain('ds2-slots8');
     const sharedLoaders = [
       'utils_pure_source.jsx',
@@ -207,7 +212,7 @@ describe('device storage bridge — file contracts', () => {
     ];
     for (const file of sharedLoaders) {
       const loaderSource = readFileSync(resolve(process.cwd(), file), 'utf8');
-      expect(loaderSource).toContain('allo_device_storage_module.js?v=ds3-storage-manager');
+      expect(loaderSource).toContain('allo_device_storage_module.js?v=ds4-bridge-auth');
       expect(loaderSource).not.toContain('allo_device_storage_module.js?v=ds1');
     }
   });
@@ -302,10 +307,10 @@ describe('device storage adapter — behavior', () => {
     await api.set(ns, key, { version: 1, legacyMigrationComplete: false, removedSnapshotIds: {}, snapshots: [] });
     const snapshot = (id, savedAt, marker) => ({ version: 1, id, savedAt, marker, workspace: { history: [{ id: marker }] } });
 
-    // 2026-07-20: nine saves against the 8-slot cap — only the oldest goes.
-    const days = ['01', '02', '03', '04', '05', '06', '07', '08', '09'];
+    // Twenty-one saves against the current 20-slot Standard cap: only the oldest goes.
+    const days = Array.from({ length: 21 }, (_, index) => String(index + 1).padStart(2, '0'));
     for (let i = 0; i < days.length; i++) {
-      const id = 'workspace-' + String.fromCharCode(97 + i); // a..i
+      const id = 'workspace-' + String.fromCharCode(97 + i); // a..u
       const result = await api.mutateRecovery(ns, key, {
         version: 1,
         action: 'upsert',
@@ -314,18 +319,18 @@ describe('device storage adapter — behavior', () => {
       expect(result).toMatchObject({ applied: true, reason: 'upserted' });
     }
     const capped = await api.get(ns, key);
-    expect(capped.snapshots).toHaveLength(8);
-    expect(capped.snapshots.map(item => item.id)).toEqual([
-      'workspace-i', 'workspace-h', 'workspace-g', 'workspace-f',
-      'workspace-e', 'workspace-d', 'workspace-c', 'workspace-b'
-    ]);
+    expect(capped.snapshots).toHaveLength(20);
+    expect(capped.snapshots.map(item => item.id)).toEqual(
+      Array.from({ length: 20 }, (_, index) =>
+        'workspace-' + String.fromCharCode('u'.charCodeAt(0) - index))
+    );
     expect(capped.snapshots.some(item => item.id === 'workspace-a')).toBe(false);
     // every stored record carries its measured size for byte-aware eviction
     expect(capped.snapshots.every(item => Number(item.approximateBytes) > 0)).toBe(true);
 
     // A workspace bigger than the whole budget still lands, and still evicts
     // older ones rather than being refused (the newest is never dropped).
-    const huge = snapshot('workspace-huge', '2026-07-10T12:00:00.000Z', 'huge');
+    const huge = snapshot('workspace-huge', '2026-07-22T12:00:00.000Z', 'huge');
     huge.approximateBytes = 400 * 1024 * 1024;
     const heavy = await api.mutateRecovery(ns, key, { version: 1, action: 'upsert', snapshot: huge }, { queue: false });
     expect(heavy).toMatchObject({ applied: true, reason: 'upserted' });

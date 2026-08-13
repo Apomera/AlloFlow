@@ -9,6 +9,7 @@ var CheckCircle2 = _lazyIcon('CheckCircle2');
 var ChevronDown = _lazyIcon('ChevronDown');
 var ChevronUp = _lazyIcon('ChevronUp');
 var GripVertical = _lazyIcon('GripVertical');
+var Copy = _lazyIcon('Copy');
 var Download = _lazyIcon('Download');
 var Lock = _lazyIcon('Lock');
 var Pencil = _lazyIcon('Pencil');
@@ -156,7 +157,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
     );
 };
 
-const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun, onRebuildStep, onDownloadDiagnostics, onPreviewStep, onSaveTemplate, onUpdate, onConfirm, onCancel }) => {
+const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun, onRebuildStep, onCopyDiagnostics, onDownloadDiagnostics, summarizeFailureReason, onPreviewStep, onSaveTemplate, onUpdate, onConfirm, onCancel }) => {
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
@@ -340,14 +341,26 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
             row's status vanishes while its resource still generates, and added
             rows render as never-run under a "running" banner. */}
         <div className="flex items-center gap-1.5">
+        {run && typeof onCopyDiagnostics === 'function' && (
+            <button
+                type="button"
+                data-testid="bp-copy-diagnostics"
+                onClick={onCopyDiagnostics}
+                className="p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                title={t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'}
+                aria-label={t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'}
+            >
+                <Copy size={14} aria-hidden="true" />
+            </button>
+        )}
         {run && typeof onDownloadDiagnostics === 'function' && (
             <button
                 type="button"
                 data-testid="bp-download-diagnostics"
                 onClick={onDownloadDiagnostics}
                 className="p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                title="Download a sanitized Blueprint diagnostic report"
-                aria-label="Download Blueprint diagnostic report"
+                title={t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'}
+                aria-label={t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'}
             >
                 <Download size={14} aria-hidden="true" />
             </button>
@@ -367,8 +380,8 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
         </div>
       </div>
       {run?.persistenceWarning && (
-          <div role="status" className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950">
-              <span className="font-bold">Saved-run warning:</span> {run.persistenceWarning}
+          <div data-testid="bp-storage-warning" role="status" className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950">
+              <span className="font-bold">{t('blueprint.saved_run_warning') || 'Saved-run warning'}:</span> {run.persistenceWarning}
           </div>
       )}
       <GoldenThreadPanel config={config} isEditing={isEditing} onUpdate={onUpdate} />
@@ -506,6 +519,20 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                       failed:      { label: t('blueprint.status_failed') || 'Failed',          cls: 'bg-red-50 text-red-700 border-red-200' },
                       interrupted: { label: t('blueprint.status_interrupted') || 'Interrupted', cls: 'bg-amber-50 text-amber-800 border-amber-200' },
                   }[_status] || null;
+                  // Raw provider text can include credentials, prompt excerpts,
+                  // or student context. Keep it in the credential-redacted local
+                  // Error Reporter; this shared classifier is the only text the
+                  // visible card or portable diagnostics may expose.
+                  const _safeFailure = (() => {
+                      if (!_rowRun || !_rowRun.failReason) return null;
+                      try {
+                          const summary = typeof summarizeFailureReason === 'function'
+                              ? summarizeFailureReason(_rowRun.failReason)
+                              : null;
+                          if (summary && typeof summary.summary === 'string') return summary;
+                      } catch (_) {}
+                      return { code: 'generation-failure', summary: 'Generation failed; detailed text remains only in the on-device error log.' };
+                  })();
                   // Audit coverage. Only meaningful once an audit has actually
                   // run, so nothing is shown before that — a plan-wide "not
                   // audited" would be noise, not information.
@@ -566,7 +593,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                   className={`ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${_statusStyle.cls}`}
                                   role="status"
                                   aria-live={_status === 'running' ? 'polite' : 'off'}
-                                  title={(_rowRun && _rowRun.failReason) || undefined}
+                                  title={(_safeFailure && _safeFailure.summary) || undefined}
                               >
                                   {_statusStyle.label}
                               </span>
@@ -579,7 +606,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                   {_auditBadge.label}
                               </span>
                           )}
-                          {/* "What is this resource?" — a real <button>, so it is
+                          {/* "What is this resource?" — a real button element, so it is
                               keyboard-operable by construction. A div with
                               role="button" + tabIndex and no onKeyDown is the
                               announce-but-dead defect class this repo has a
@@ -644,25 +671,18 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                   {getToolDesc(item.type)}
                               </p>
                           )}
-                          {/* WHY a step failed, visible in the panel.
-                              Until now the reason existed only as a title tooltip
-                              and a warnLog line — so the teacher who reported
-                              "nine failed and the console is clean" still had no
-                              way to see it without devtools. A tooltip is not
-                              reliably announced and cannot be found by someone who
-                              does not already know to hover the badge.
-                              Plain-language lead first, raw reason after it: the
-                              lead is actionable ("add a source"), the raw string is
-                              what makes a bug report diagnosable. */}
-                          {(_status === 'failed' || _status === 'interrupted') && _rowRun && _rowRun.failReason && (
+                          {/* Explain the failure without rendering raw provider
+                              text. The category remains actionable and portable;
+                              credential-redacted technical details stay in the
+                              on-device Error Reporter for deeper diagnosis. */}
+                          {(_status === 'failed' || _status === 'interrupted') && _safeFailure && (
                               <p data-testid="bp-fail-reason"
+                                 data-failure-code={_safeFailure.code}
                                  className="mb-1 text-[11px] leading-snug text-red-800 bg-red-50 border border-red-200 rounded p-2">
-                                  <span className="font-bold">
-                                      {String(_rowRun.failReason).indexOf('threw:') === 0
-                                          ? (t('blueprint.fail_threw') || 'This step hit an error.')
-                                          : (t('blueprint.fail_empty') || 'This step produced nothing. If there is no source text yet, add or generate one and rebuild. If a source is present, the generator was likely blocked or rate-limited — wait a moment and rebuild.')}
+                                  <span className="font-bold">{_safeFailure.summary}</span>
+                                  <span className="block mt-1 opacity-80 break-words">
+                                      {t('blueprint.failure_log_help') || 'Technical details remain in the on-device error log; copied and downloaded diagnostics are sanitized.'}
                                   </span>
-                                  <span className="block mt-1 opacity-80 break-words">{_rowRun.failReason}</span>
                               </p>
                           )}
                           <p className="text-sm text-slate-700 leading-relaxed italic">

@@ -17,11 +17,11 @@ function readyPayload(overrides = {}) {
     service: "alloflow-remediation-remote-mcp",
     release: {
       workerVersionId: "worker-version-123",
-      databaseSchema: 5,
+      databaseSchema: 7,
       checkpointSchema: 1,
       runnerProtocol: "remediation-run-v1",
     },
-    database: { ok: true, schema: 5 },
+    database: { ok: true, schema: 7, admissionsOpen: false },
     runner: {
       service: "alloflow-remediation-runner",
       version: "0.3.0",
@@ -57,6 +57,13 @@ test("ready payload requires deployed Worker and exact runner ABI", () => {
   const unmigrated = readyPayload();
   unmigrated.database = { ok: false, schema: null };
   assert.ok(validateReadyPayload(unmigrated).includes("database_schema_incompatible"));
+  const prematurelyOpen = readyPayload();
+  prematurelyOpen.database.admissionsOpen = true;
+  assert.ok(
+    validateReadyPayload(prematurelyOpen).includes(
+      "admissions_not_paused_during_release",
+    ),
+  );
 });
 
 test("canary rejects an internally coherent runner that is stale against the local release contract", async () => {

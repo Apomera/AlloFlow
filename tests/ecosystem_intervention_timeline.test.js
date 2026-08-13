@@ -103,7 +103,7 @@ describe('Ecosystem controlled intervention timeline', () => {
     expect(result.intensity).toBe(0.5);
     expect(result.baselineData).toHaveLength(101);
     expect(result.scenarioData).toHaveLength(101);
-    expect(result.baselineData[0]).toEqual({ step: 0, prey: 80, pred: 12 });
+    expect(result.baselineData[0]).toEqual({ step: 0, time: 0, prey: 80, pred: 12 });
     expect(result.baselineData.slice(0, 50)).toEqual(result.scenarioData.slice(0, 50));
     expect(result.scenarioData.slice(50)).not.toEqual(result.baselineData.slice(50));
     expect(latestEcosystemState.replayStep).toBe(50);

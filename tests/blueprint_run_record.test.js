@@ -249,6 +249,30 @@ describe('no-source-text runs do not fail silently', () => {
     expect(message).toContain('uiId=row-image-2');
     expect(message).toContain('returned no resource');
   });
+
+  it('redacts credentials in Error Reporter text and stack while retaining row context', async () => {
+    const prior = window.AlloModules.ErrorReporter;
+    const record = vi.fn();
+    window.AlloModules.ErrorReporter = { record };
+    const secret = 'SENTINEL_BLUEPRINT_TOKEN';
+    try {
+      await PhaseO.executeOneBlueprint(PLAN, {
+        handleGenerate: vi.fn(async () => {
+          const error = new Error('Bearer ' + secret + ' was rejected');
+          error.stack = 'Error: apiKey=' + secret + '\n at blueprint';
+          throw error;
+        }),
+        historyOverride: [], warnLog: () => {},
+      }).catch(() => {});
+    } finally {
+      window.AlloModules.ErrorReporter = prior;
+    }
+    const [, message, stack] = record.mock.calls[0];
+    expect(message).toContain('tool=analysis');
+    expect(message).toContain('[REDACTED]');
+    expect(stack).toContain('[REDACTED]');
+    expect(message + stack).not.toContain(secret);
+  });
 });
 
 // ── Stop: the abort capability is finally WIRED (2026-07-29) ──

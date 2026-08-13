@@ -3,7 +3,7 @@ name: mcpb-release
 # Builds the local-first Claude Desktop extension. No Worker, Cloudflare account, hosted
 # document processing, Gemini key, or student document is used by this workflow.
 on:
-workflow_dispatch:
+  workflow_dispatch:
   push:
     tags:
       - 'mcpb-v*'
@@ -14,12 +14,23 @@ workflow_dispatch:
       - 'desktop/mcp/**'
       - 'verification_policy_module.js'
       - 'doc_builder_renderer_module.js'
+      - 'doc_pipeline_source.jsx'
       - 'doc_pipeline_module.js'
+      - '_build_doc_pipeline_module.js'
       - 'view_pdf_validator_module.js'
       - 'view_pdf_audit_module.js'
       - 'verapdf/**'
       - 'dev-tools/mcp_capability_inventory.cjs'
       - 'tests/mcp_remediation_stdio_smoke.test.js'
+      - 'tests/desktop_mcp_durable_jobs.test.js'
+      - 'tests/desktop_mcp_residual_hardening.test.js'
+      - 'tests/desktop_mcp_runtime_build_drift.test.js'
+      - 'tests/desktop_mcp_completion_manifest_race.test.js'
+      - 'tests/batch_checkpoint_boundary_commit.test.js'
+      - 'tests/doc_pipeline_build_parity.test.js'
+      - 'tests/mcp_verifier_packaging_hardening.test.js'
+      - 'tests/mcp_call_cli.test.js'
+      - 'tests/mcpb_release_workflow.test.js'
       - 'package.json'
       - 'package-lock.json'
 
@@ -50,6 +61,20 @@ jobs:
         run: npx playwright install chromium
       - name: Verify canonical app-to-MCP parity
         run: npm run verify:mcp-parity
+      - name: Verify MCP durability, cancellation, packaging, and release triggers
+        run: >-
+          npx vitest run
+          tests/desktop_mcp_durable_jobs.test.js
+          tests/desktop_mcp_residual_hardening.test.js
+          tests/desktop_mcp_runtime_build_drift.test.js
+          tests/desktop_mcp_completion_manifest_race.test.js
+          tests/batch_checkpoint_boundary_commit.test.js
+          tests/doc_pipeline_build_parity.test.js
+          tests/mcp_verifier_packaging_hardening.test.js
+          tests/mcp_call_cli.test.js
+          tests/mcpb_release_workflow.test.js
+          --maxWorkers=1
+          --testTimeout=70000
       - name: Require release tag to match the MCPB manifest version
         if: startsWith(github.ref, 'refs/tags/mcpb-v')
         shell: pwsh

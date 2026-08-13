@@ -81,6 +81,64 @@ describe('Geology Explorer guided missions', () => {
     }
   });
 
+  it('builds a three-stage formation timeline for every scene', () => {
+    for (const id of P.scenes()) {
+      const timeline = P.sceneTimeline(id);
+      expect(timeline, id).toHaveLength(3);
+      expect(timeline.map((item) => item.index)).toEqual([0, 1, 2]);
+      expect(timeline.every((item) => item.label && item.body && item.beaconId && item.cueLabel)).toBe(true);
+    }
+  });
+
+  it('isolates only the selected material when the focus lens is active', () => {
+    expect(P.focusLensIncludes('sandstone', 'sandstone', true)).toBe(true);
+    expect(P.focusLensIncludes('shale', 'sandstone', true)).toBe(false);
+    expect(P.focusLensIncludes('shale', 'sandstone', false)).toBe(true);
+    expect(P.focusLensIncludes('shale', null, true)).toBe(true);
+  });
+
+  it('describes and clamps the front-to-back cutaway without calling it geological depth', () => {
+    expect(P.cutawayReadout(0, 14)).toEqual({ step: 0, max: 13, percent: 0, label: 'Full block' });
+    expect(P.cutawayReadout(13, 14)).toEqual({ step: 13, max: 13, percent: 93, label: '93% cut away from front · final section' });
+    expect(P.cutawayReadout(99, 14).step).toBe(13);
+    expect(P.cutawayReadout(-4, 14).step).toBe(0);
+  });
+
+  it('skips voids and already removed voxels when finding the next excavatable layer', () => {
+    const voxels = {
+      '2,0,3': { key: 'void' },
+      '2,1,3': { key: 'agate' },
+      '2,2,3': { key: 'quartz' }
+    };
+    expect(P.firstSolidVoxelY(voxels, {}, 2, 3, 3)).toBe(1);
+    expect(P.firstSolidVoxelY(voxels, { '2,1,3': 1 }, 2, 3, 3)).toBe(2);
+    expect(P.firstSolidVoxelY(voxels, { '2,1,3': 1, '2,2,3': 1 }, 2, 3, 3)).toBeNull();
+  });
+
+  it('previews only the latest removed voxel that is visible in the current presentation', () => {
+    const target = { x: 1, y: 2, z: 4, key: 'shale' };
+    const lookup = { '1,2,4': target };
+    const history = ['stale', '1,2,4'];
+    const removed = { '1,2,4': 1 };
+    expect(P.undoPreviewTarget(history, lookup, removed, 0, false, 3, { shale: 2 })).toBe(target);
+    expect(P.undoPreviewTarget(history, lookup, removed, 5, false, 3, { shale: 2 })).toBeNull();
+    expect(P.undoPreviewTarget(history, lookup, removed, 0, true, 3, { shale: 2 })).toBeNull();
+    expect(P.undoPreviewTarget(history, lookup, removed, 0, false, 1, { shale: 2 })).toBeNull();
+    expect(P.undoPreviewTarget(history, lookup, {}, 0, false, 3, { shale: 2 })).toBeNull();
+  });
+
+  it('restores material, lens, and camera presentation after an engine rebuild', () => {
+    const calls = [];
+    const engine = {
+      setHighlight(value) { calls.push(['highlight', value]); },
+      setFocusLens(value) { calls.push(['lens', value]); },
+      setView(value) { calls.push(['view', value]); }
+    };
+    expect(P.restoreEnginePresentation(engine, 'shale', true, 'top')).toBe(true);
+    expect(calls).toEqual([['highlight', 'shale'], ['lens', true], ['view', 'top']]);
+    expect(P.restoreEnginePresentation(null, 'shale', true, 'top')).toBe(false);
+  });
+
   it('tracks evidence-linked progress for the visual journey', () => {
     expect(P.sceneJourneyProgress('geode', { sceneSignals: { geode: 1 } })).toEqual([true, true, false]);
     expect(P.sceneJourneyProgress('crust', {
@@ -99,8 +157,33 @@ describe('Geology Explorer guided missions', () => {
     expect(source).toContain('function startBeaconTour');
     expect(source).toContain('function processCuePanel');
     expect(source).toContain('function cameraOrientationPanel');
+    expect(source).toContain('function formationTimelinePanel');
+    expect(source).toContain('data-geology-formation-timeline');
+    expect(source).toContain('sceneTimeline: sceneTimelineFor');
     expect(source).toContain('data-geology-camera-compass');
     expect(source).toContain('data-geology-process-overlay');
+    expect(source).toContain('data-geology-focus-lens');
+    expect(source).toContain('data-geology-focus-state');
+    expect(source).toContain('eng.setFocusLens');
+    expect(source).toContain('focusLensIncludes: focusLensIncludes');
+    expect(source).toContain('restoreEnginePresentation: restoreEnginePresentation');
+    expect(source).toContain('restoreEnginePresentation(window[ENGINE_KEY]');
+    expect(source).toContain('eng.undoExcavate');
+    expect(source).toContain('eng.setUndoPreview');
+    expect(source).toContain('data-geology-undo-preview-control');
+    expect(source).toContain('undoPreviewSourceGeo.dispose()');
+    expect(source).toContain('hoverSourceGeo.dispose()');
+    expect(source).toContain('eng.excavateAt');
+    expect(source).toContain('if (!excavate || focusLens || !isFinite(x)');
+    expect(source).toContain('formedAt > showStage');
+    expect(source).toContain('onExcavateChange');
+    expect(source).toContain('data-geology-undo-excavation');
+    expect(source).toContain('data-geology-cutaway-readout');
+    expect(source).toContain('waterMesh.scale.y = (NZ - sliceZ) / NZ');
+    expect(source).not.toContain('waterMesh.scale.z');
+    expect(source).toContain('SCENE.palette[v.key] || ROCKS[v.key]');
+    expect(source).not.toContain('rockFacts(rockKeyAt(v.x, below, v.z), below)');
+    expect(source).not.toContain('ROCKS[v.key].name');
     expect(source).toContain('processCues: sceneProcessCueFor');
     expect(source).toContain('data-geology-evidence-trail');
     expect(source).toContain('Carry trail into CER');
@@ -114,6 +197,19 @@ describe('Geology Explorer guided missions', () => {
     expect(source).toContain("palette = SCENE.palette || ROCKS");
     expect(source).toContain('Explain your evidence');
     expect(source).toContain('Export field note');
+  });
+
+  it('keeps timeline, tour, and camera controls synchronized without stealing focus', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    expect(source).toContain('setBeaconTourStep(stage)');
+    expect(source).toContain('if (beacon.view) setCameraView(beacon.view)');
+    expect(source).toContain("'aria-valuetext': 'Stage '");
+    expect(source).toContain("'data-geology-camera-view': vw[0]");
+    expect(source).toContain('pointer-events-none absolute bottom-12 left-2');
+    expect(source).toContain("style: { maxWidth: 'min(19rem, calc(100% - 6rem))' }");
+    expect(source).toContain('flex min-h-11 min-w-11 items-center justify-center');
+    expect(source).not.toContain('max-w-[min(19rem,calc(100%-4rem))]');
+    expect(source).not.toContain("document.querySelector('[data-geology-target=\"beacons\"]')");
   });
 
   it('keeps every scene?s pure generator selectable for content-level smoke tests', () => {

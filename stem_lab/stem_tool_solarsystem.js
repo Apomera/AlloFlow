@@ -934,7 +934,7 @@ const d = labToolData.solarSystem || {};
 
           var PLANETS = [
 
-            { key: 'Mercury', name: t('stem.periodic.mercury'), emoji: '\u2638', color: 'var(--allo-stem-text-soft, #94a3b8)', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: __alloT('stem.solarsystem.smallest_planet_no_atmosphere_to_retai', 'Smallest planet; no atmosphere to retain heat.'), gravity: '0.38g', atmosphere: 'Virtually none \u2014 exosphere of O\u2082, Na, H\u2082, He', surface: 'Cratered surface similar to the Moon', notableFeatures: ['Caloris Basin (1,550 km impact crater)', 'Water ice in permanently shadowed polar craters', 'Most cratered planet in the solar system'], skyColor: '#000000', terrainColor: '#8a8278', terrainType: 'cratered', surfaceDesc: 'Dark airless surface pocked with ancient craters beneath a pitch-black sky. The Sun blazes 3\u00D7 larger than on Earth.' },
+            { key: 'Mercury', name: t('stem.solar_sys.mercury'), emoji: '\u2638', color: 'var(--allo-stem-text-soft, #94a3b8)', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: __alloT('stem.solarsystem.smallest_planet_no_atmosphere_to_retai', 'Smallest planet; no atmosphere to retain heat.'), gravity: '0.38g', atmosphere: 'Virtually none \u2014 exosphere of O\u2082, Na, H\u2082, He', surface: 'Cratered surface similar to the Moon', notableFeatures: ['Caloris Basin (1,550 km impact crater)', 'Water ice in permanently shadowed polar craters', 'Most cratered planet in the solar system'], skyColor: '#000000', terrainColor: '#8a8278', terrainType: 'cratered', surfaceDesc: 'Dark airless surface pocked with ancient craters beneath a pitch-black sky. The Sun blazes 3\u00D7 larger than on Earth.' },
 
             { key: 'Venus', name: t('stem.solar_sys.venus'), emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 11, speed: 1.62, tilt: 2.64, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: __alloT('stem.solarsystem.hottest_planet_due_to_runaway_greenhou', 'Hottest planet due to runaway greenhouse effect. Rotates backwards!'), gravity: '0.91g', atmosphere: '96.5% CO\u2082 \u2014 crushingly thick (90x Earth pressure)', surface: 'Volcanic plains with lava flows and pancake domes', notableFeatures: ['Maxwell Montes (11 km high)', 'Thousand+ volcanoes', 'Surface hot enough to melt lead'], skyColor: '#c9803a', terrainColor: '#d4723a', terrainType: 'volcanic', surfaceDesc: 'Orange volcanic hellscape with dense sulfuric acid clouds. Surface pressure would crush a submarine.' },
 
@@ -10428,6 +10428,18 @@ const d = labToolData.solarSystem || {};
 
                         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setSize(W, H);
 
+                        // Three r128 still exposes the pre-colorSpace API. Keep the drone
+                        // scene on the same display transform as the orrery so metallic rover
+                        // parts retain midtone detail while emissive instruments roll off
+                        // instead of clipping to flat white.
+                        if ('outputEncoding' in renderer && THREE.sRGBEncoding !== undefined) {
+                          renderer.outputEncoding = THREE.sRGBEncoding;
+                        }
+                        if ('toneMapping' in renderer && THREE.ACESFilmicToneMapping !== undefined) {
+                          renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                          renderer.toneMappingExposure = 1.05;
+                        }
+
                         renderer.setClearColor(new THREE.Color(isOcean ? '#041830' : sel.skyColor || '#000000'));
 
                         // ── Bloom post-processing for the surface vehicle ──
@@ -11098,9 +11110,16 @@ const d = labToolData.solarSystem || {};
                           scene.add(ventSmokeMesh);
 
                         } else if (!isFluid) {
-                          var terrainGeo = new THREE.PlaneGeometry(250, 250, 150, 150);
+                          var terrainWorldSize = 250;
+                          var terrainGridSegments = 150;
+                          var terrainGridSize = terrainGridSegments + 1;
+                          var terrainHalfSize = terrainWorldSize * 0.5;
+                          var terrainCellSize = terrainWorldSize / terrainGridSegments;
+                          var terrainGeo = new THREE.PlaneGeometry(terrainWorldSize, terrainWorldSize, terrainGridSegments, terrainGridSegments);
                           var posArr = terrainGeo.attributes.position.array;
-                          var heightMap = {};
+                          // Cache the exact Float32 vertex values written to the mesh. Rover,
+                          // suspension, dust, and chase-camera queries all share this grid.
+                          var heightMap = new Float32Array(terrainGridSize * terrainGridSize);
                           for (var vi = 0; vi < posArr.length; vi += 3) {
                             var px = posArr[vi], py = posArr[vi + 1];
                             var h = 0;
@@ -11138,6 +11157,7 @@ const d = labToolData.solarSystem || {};
                               }
                             }
                             posArr[vi + 2] = h;
+                            heightMap[vi / 3] = posArr[vi + 2];
                           }
                           terrainGeo.computeVertexNormals();
 
@@ -11171,12 +11191,32 @@ const d = labToolData.solarSystem || {};
                           terrain.rotation.x = -Math.PI / 2; scene.add(terrain);
                           _terrainMesh = terrain;
 
-                          // Build height lookup via raycaster for rover ground-following
-                          var _terrainRay = new THREE.Raycaster();
+                          // Allocation-free height lookup that follows PlaneGeometry's actual
+                          // indexed triangle split. Before rotation, rows run from local +Y to
+                          // -Y; rotation by -PI/2 maps that to world Z from -125 to +125.
+                          // Using the same a-b-d / b-c-d diagonal as PlaneGeometry makes this
+                          // agree with the rendered triangles rather than merely interpolating
+                          // the four cell corners as a curved bilinear patch would.
                           _terrainHeightAt = function(x, z) {
-                            _terrainRay.set(new THREE.Vector3(x, 50, z), new THREE.Vector3(0, -1, 0));
-                            var hits = _terrainRay.intersectObject(_terrainMesh);
-                            return hits.length > 0 ? hits[0].point.y : 0;
+                            if (!isFinite(x) || !isFinite(z)) return 0;
+                            var terrainX = Math.max(-terrainHalfSize, Math.min(terrainHalfSize, x));
+                            var terrainZ = Math.max(-terrainHalfSize, Math.min(terrainHalfSize, z));
+                            var gridX = (terrainX + terrainHalfSize) / terrainCellSize;
+                            var gridZ = (terrainZ + terrainHalfSize) / terrainCellSize;
+                            var cellX = Math.min(terrainGridSegments - 1, Math.max(0, Math.floor(gridX)));
+                            var cellZ = Math.min(terrainGridSegments - 1, Math.max(0, Math.floor(gridZ)));
+                            var fracX = Math.max(0, Math.min(1, gridX - cellX));
+                            var fracZ = Math.max(0, Math.min(1, gridZ - cellZ));
+                            var rowOffset = cellZ * terrainGridSize;
+                            var nextRowOffset = rowOffset + terrainGridSize;
+                            var h00 = heightMap[rowOffset + cellX];
+                            var h10 = heightMap[rowOffset + cellX + 1];
+                            var h01 = heightMap[nextRowOffset + cellX];
+                            var h11 = heightMap[nextRowOffset + cellX + 1];
+                            if (fracX + fracZ <= 1) {
+                              return h00 + fracX * (h10 - h00) + fracZ * (h01 - h00);
+                            }
+                            return h11 + (1 - fracX) * (h01 - h11) + (1 - fracZ) * (h10 - h11);
                           };
 
                           // Add scattered rocks and boulders for visual detail
@@ -11672,6 +11712,24 @@ const d = labToolData.solarSystem || {};
                         // â"€â"€ 3D Rover / Probe / Submarine Model â"€â"€
 
                         var roverGroup = new THREE.Group();
+                        var rockyWheelRigs = [];
+                        var roverPoseReady = false;
+                        var roverVisualGround = 0;
+                        var roverTrackMesh = null;
+                        var roverTrackCapacity = 96;
+                        var roverTrackCursor = 0;
+                        var roverTrackVisibleCount = 0;
+                        var roverTrackDistanceCarry = 0;
+                        var roverTrackDummy = new THREE.Object3D();
+                        var roverTrackNormal = new THREE.Vector3();
+                        var roverTrackForwardTangent = new THREE.Vector3();
+                        var roverTrackRightTangent = new THREE.Vector3();
+                        var roverTrackBasis = new THREE.Matrix4();
+                        var roverTrackQuaternion = new THREE.Quaternion();
+
+                        // Technical design inspiration: winchxyz/moon-rover, audited at
+                        // 8a72604adf2ca465c8a8529effd12803129c3531. This is an original
+                        // AlloFlow/Three r128 implementation, not copied upstream source.
 
                         if (isOcean) {
                           // ═══ DEEP-SEA SUBMERSIBLE ROV ═══
@@ -11827,11 +11885,18 @@ const d = labToolData.solarSystem || {};
 
                           roverGroup.add(panel);
 
-                          // 6 wheels (3 per side)
+                          // Six independently articulated wheels. Each rig owns a wheel and
+                          // a telescoping strut, allowing the visual suspension to follow the
+                          // sampled ground beneath that contact patch instead of floating as
+                          // one rigid block above uneven terrain.
 
-                          var wheelGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.08, 12);
+                          var wheelGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.08, 16);
 
-                          var wheelMat = new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.4, roughness: 0.8 });
+                          var wheelMat = new THREE.MeshStandardMaterial({ color: 0x34373b, metalness: 0.45, roughness: 0.78 });
+
+                          var strutGeo = new THREE.CylinderGeometry(0.018, 0.024, 1, 8);
+
+                          var strutMat = new THREE.MeshStandardMaterial({ color: 0xa7adb4, metalness: 0.75, roughness: 0.32 });
 
                           var wheelPositions = [
 
@@ -11843,13 +11908,29 @@ const d = labToolData.solarSystem || {};
 
                           wheelPositions.forEach(function (wp) {
 
+                            var wheelRig = new THREE.Group();
+                            wheelRig.position.set(wp[0], wp[1], wp[2]);
+
                             var wheel = new THREE.Mesh(wheelGeo, wheelMat);
-
-                            wheel.position.set(wp[0], wp[1], wp[2]);
-
                             wheel.rotation.z = Math.PI / 2;
+                            wheelRig.add(wheel);
 
-                            roverGroup.add(wheel);
+                            var strut = new THREE.Mesh(strutGeo, strutMat);
+                            strut.position.set(wp[0], 0.27, wp[2]);
+                            strut.scale.y = 0.24;
+                            roverGroup.add(strut);
+                            roverGroup.add(wheelRig);
+
+                            rockyWheelRigs.push({
+                              rig: wheelRig,
+                              wheel: wheel,
+                              strut: strut,
+                              localX: wp[0],
+                              localZ: wp[2],
+                              restY: wp[1],
+                              spin: 0,
+                              steerFactor: wp[2] < -0.2 ? 1 : (wp[2] > 0.2 ? -0.35 : 0)
+                            });
 
                           });
 
@@ -11914,9 +11995,28 @@ const d = labToolData.solarSystem || {};
                           }
                           dustTrailGeo.setAttribute('position', new THREE.BufferAttribute(dustTrailPos, 3));
                           var dustColor = sel.terrainType === 'iceworld' ? 0xccddee : sel.terrainType === 'volcanic' ? 0x664422 : sel.terrainType === 'earthlike' ? 0x886633 : 0xaa9966;
-                          var dustTrailMesh = new THREE.Points(dustTrailGeo, new THREE.PointsMaterial({ color: dustColor, size: 0.12, transparent: true, opacity: 0.35 }));
+                          var dustTrailMat = new THREE.PointsMaterial({ color: dustColor, size: 0.12, transparent: true, opacity: 0.35 });
+                          var dustTrailMesh = new THREE.Points(dustTrailGeo, dustTrailMat);
                           scene.add(dustTrailMesh);
                           var dustTrailIdx = 0;
+
+                          // Fixed wheel-track pool: two rear contact marks are overwritten in
+                          // a ring, so driving forever never grows the scene or allocates new
+                          // meshes. Tracks are static evidence of distance, so reduced motion
+                          // can omit them without removing any control or science content.
+                          if (!droneReduceMotion && THREE.InstancedMesh) {
+                            var trackGeo = new THREE.PlaneGeometry(0.24, 0.42);
+                            var trackColor = sel.terrainType === 'iceworld' ? 0x70869a : sel.terrainType === 'volcanic' ? 0x160d08 : sel.terrainType === 'desert' ? 0x6b5231 : 0x302a24;
+                            var trackMat = new THREE.MeshBasicMaterial({ color: trackColor, transparent: true, opacity: 0.34, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, side: THREE.DoubleSide });
+                            roverTrackMesh = new THREE.InstancedMesh(trackGeo, trackMat, roverTrackCapacity);
+                            roverTrackMesh.frustumCulled = false;
+                            roverTrackDummy.position.set(0, -999, 0);
+                            roverTrackDummy.rotation.x = -Math.PI / 2;
+                            roverTrackDummy.updateMatrix();
+                            for (var trackInit = 0; trackInit < roverTrackCapacity; trackInit++) roverTrackMesh.setMatrixAt(trackInit, roverTrackDummy.matrix);
+                            roverTrackMesh.instanceMatrix.needsUpdate = true;
+                            scene.add(roverTrackMesh);
+                          }
 
                         } else {
 
@@ -12713,6 +12813,154 @@ const d = labToolData.solarSystem || {};
                         var yaw = 0, pitch = 0, playerPos = new THREE.Vector3(0, isFluid ? 5 : 1.6, 0);
 
                         var speed3d = isFluid ? 0.12 : 0.08;
+
+                        // Rocky-world driving is integrated in units/second. Fluid vehicles
+                        // intentionally retain their established free-flight tuning below.
+                        var droneFrameDt = 1 / 60;
+                        var droneLastFrameMs = null;
+                        var roverDrive = {
+                          speed: 0,
+                          steering: 0,
+                          maxForward: 2.6,
+                          maxReverse: 1.5,
+                          acceleration: 2.1,
+                          brake: 4.4,
+                          coastDrag: 0.9,
+                          turnRate: 1.15,
+                          velocity: new THREE.Vector3(),
+                          dustCarry: 0
+                        };
+                        var roverForward = new THREE.Vector3();
+
+                        function approachRoverValue(value, target, maxDelta) {
+                          if (value < target) return Math.min(target, value + maxDelta);
+                          if (value > target) return Math.max(target, value - maxDelta);
+                          return target;
+                        }
+
+                        function roverDamping(rate) {
+                          return droneReduceMotion ? 1 : 1 - Math.exp(-rate * droneFrameDt);
+                        }
+
+                        // Scene-owned, opt-in procedural rover nodes on Solar's shared audio
+                        // context. Cleanup owns only these nodes/master and never suspends or
+                        // closes the shared context used by other Solar feedback.
+                        var roverSoundEnabled = false;
+                        var roverSoundButton = null;
+                        var roverAudio = null;
+                        var roverPageHidden = !!document.hidden;
+                        canvasEl.dataset.roverSound = 'off';
+                        canvasEl.dataset.roverAudioLevel = '0.000';
+                        canvasEl.dataset.roverTrackCount = '0';
+                        canvasEl.dataset.roverTrackCapacity = !isFluid && !droneReduceMotion && THREE.InstancedMesh ? String(roverTrackCapacity) : '0';
+
+                        function updateRoverSoundButton() {
+                          if (!roverSoundButton) return;
+                          roverSoundButton.setAttribute('aria-pressed', roverSoundEnabled ? 'true' : 'false');
+                          roverSoundButton.textContent = roverSoundEnabled ? '\uD83D\uDD0A Rover audio: On' : '\uD83D\uDD07 Rover audio: Off';
+                          roverSoundButton.title = roverSoundEnabled ? 'Mute drive sonification (B)' : 'Sonify rover speed and traction (B)';
+                        }
+
+                        function createRoverAudio() {
+                          if (roverAudio || isFluid) return roverAudio;
+                          try {
+                            var context = getSolarAC();
+                            if (!context) return null;
+                            var master = context.createGain();
+                            var motor = context.createOscillator();
+                            var motorGain = context.createGain();
+                            var traction = context.createOscillator();
+                            var tractionGain = context.createGain();
+                            var tractionFilter = context.createBiquadFilter();
+                            motor.type = 'sawtooth';
+                            traction.type = 'triangle';
+                            tractionFilter.type = 'lowpass';
+                            master.gain.value = 0;
+                            motorGain.gain.value = 0.45;
+                            tractionGain.gain.value = 0.10;
+                            motor.connect(motorGain); motorGain.connect(master);
+                            traction.connect(tractionGain); tractionGain.connect(tractionFilter); tractionFilter.connect(master);
+                            master.connect(context.destination);
+                            motor.start(); traction.start();
+                            roverAudio = { context: context, master: master, motor: motor, motorGain: motorGain, traction: traction, tractionGain: tractionGain, tractionFilter: tractionFilter };
+                          } catch (audioError) {
+                            roverAudio = null;
+                          }
+                          return roverAudio;
+                        }
+
+                        function setRoverSound(enabled) {
+                          if (isFluid) return;
+                          if (!enabled) {
+                            roverSoundEnabled = false;
+                            canvasEl.dataset.roverSound = 'off';
+                            canvasEl.dataset.roverAudioLevel = '0.000';
+                            if (roverAudio) {
+                              try {
+                                var offNow = roverAudio.context.currentTime;
+                                roverAudio.master.gain.cancelScheduledValues(offNow);
+                                roverAudio.master.gain.setTargetAtTime(0, offNow, 0.025);
+                              } catch (e) {}
+                            }
+                            updateRoverSoundButton();
+                            return;
+                          }
+                          var audio = createRoverAudio();
+                          if (!audio) return;
+                          roverSoundEnabled = true;
+                          canvasEl.dataset.roverSound = 'on';
+                          try { if (audio.context.state === 'suspended') audio.context.resume(); } catch (e) {}
+                          updateRoverSoundButton();
+                        }
+
+                        function toggleRoverSound() {
+                          setRoverSound(!roverSoundEnabled);
+                          return roverSoundEnabled;
+                        }
+
+                        function updateRoverAudio(throttleInput, steeringInput) {
+                          if (!roverSoundEnabled || !roverAudio) return;
+                          try {
+                            var audioNow = roverAudio.context.currentTime;
+                            if (roverPageHidden) {
+                              roverAudio.master.gain.setTargetAtTime(0, audioNow, 0.025);
+                              canvasEl.dataset.roverAudioLevel = '0.000';
+                              return;
+                            }
+                            var audioSpeedRatio = Math.min(1, Math.abs(roverDrive.speed) / roverDrive.maxForward);
+                            var audioSlip = Math.min(1, Math.abs(steeringInput) * (0.25 + audioSpeedRatio * 0.75) + (throttleInput !== 0 && Math.sign(throttleInput) !== Math.sign(roverDrive.speed) ? 0.45 : 0));
+                            var audioLevel = 0.006 + audioSpeedRatio * 0.022 + Math.abs(throttleInput) * 0.006 + audioSlip * 0.010;
+                            roverAudio.motor.frequency.setTargetAtTime(52 + audioSpeedRatio * 92 + Math.abs(throttleInput) * 18, audioNow, 0.04);
+                            roverAudio.motorGain.gain.setTargetAtTime(0.36 + audioSpeedRatio * 0.22, audioNow, 0.05);
+                            roverAudio.traction.frequency.setTargetAtTime(31 + audioSpeedRatio * 58 + audioSlip * 48, audioNow, 0.035);
+                            roverAudio.tractionGain.gain.setTargetAtTime(0.04 + audioSlip * 0.30, audioNow, 0.04);
+                            roverAudio.tractionFilter.frequency.setTargetAtTime(180 + audioSpeedRatio * 620 + audioSlip * 360, audioNow, 0.06);
+                            roverAudio.master.gain.setTargetAtTime(audioLevel, audioNow, 0.04);
+                            canvasEl.dataset.roverAudioLevel = audioLevel.toFixed(3);
+                          } catch (e) {}
+                        }
+
+                        function disposeRoverAudio() {
+                          roverSoundEnabled = false;
+                          canvasEl.dataset.roverSound = 'off';
+                          canvasEl.dataset.roverAudioLevel = '0.000';
+                          if (!roverAudio) return;
+                          try { roverAudio.motor.stop(); } catch (e) {}
+                          try { roverAudio.traction.stop(); } catch (e) {}
+                          ['motor', 'motorGain', 'traction', 'tractionGain', 'tractionFilter', 'master'].forEach(function (nodeName) {
+                            try { roverAudio[nodeName].disconnect(); } catch (e) {}
+                          });
+                          roverAudio = null;
+                        }
+
+                        function onRoverVisibilityChange() {
+                          roverPageHidden = !!document.hidden;
+                          if (roverPageHidden && roverAudio) {
+                            try { roverAudio.master.gain.setTargetAtTime(0, roverAudio.context.currentTime, 0.025); } catch (e) {}
+                            canvasEl.dataset.roverAudioLevel = '0.000';
+                          }
+                        }
+                        document.addEventListener('visibilitychange', onRoverVisibilityChange);
 
 
 
@@ -13735,11 +13983,11 @@ const d = labToolData.solarSystem || {};
 
                           // Planet-specific unique facts
 
-                          sel.name === t('stem.periodic.mercury') ? '\uD83D\uDE80 MESSENGER orbited Mercury 2011\u20132015, mapping the entire surface and discovering ice in polar craters.' : sel.name === t('stem.solar_sys.venus') ? '\uD83D\uDE80 Soviet Venera 13 survived 127 minutes on Venus\u2019s surface in 1982 \u2014 still a record.' : sel.name === t('stem.solar_sys.earth') ? '\uD83C\uDF0A The ocean covers 71% of Earth\u2019s surface but only 5% has been explored. We know more about the Moon\u2019s surface than our own ocean floor.' : sel.name === t('stem.solar_sys.mars') ? '\uD83D\uDE80 Perseverance landed Feb 2021 in Jezero Crater, searching for signs of ancient microbial life.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83D\uDE80 Juno has been orbiting Jupiter since 2016, peering beneath the cloud tops with microwave sensors.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83D\uDE80 Cassini orbited Saturn for 13 years (2004\u20132017) before its grand finale plunge into the atmosphere.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83D\uDE80 Only Voyager 2 has visited Uranus, flying by in January 1986 and discovering 10 new moons.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83D\uDE80 Voyager 2 is the only spacecraft to visit Neptune, flying by in August 1989.' : '\uD83D\uDE80 NASA\u2019s New Horizons flew past Pluto in July 2015, revealing a geologically active world.',
+                          sel.name === t('stem.solar_sys.mercury') ? '\uD83D\uDE80 MESSENGER orbited Mercury 2011\u20132015, mapping the entire surface and discovering ice in polar craters.' : sel.name === t('stem.solar_sys.venus') ? '\uD83D\uDE80 Soviet Venera 13 survived 127 minutes on Venus\u2019s surface in 1982 \u2014 still a record.' : sel.name === t('stem.solar_sys.earth') ? '\uD83C\uDF0A The ocean covers 71% of Earth\u2019s surface but only 5% has been explored. We know more about the Moon\u2019s surface than our own ocean floor.' : sel.name === t('stem.solar_sys.mars') ? '\uD83D\uDE80 Perseverance landed Feb 2021 in Jezero Crater, searching for signs of ancient microbial life.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83D\uDE80 Juno has been orbiting Jupiter since 2016, peering beneath the cloud tops with microwave sensors.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83D\uDE80 Cassini orbited Saturn for 13 years (2004\u20132017) before its grand finale plunge into the atmosphere.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83D\uDE80 Only Voyager 2 has visited Uranus, flying by in January 1986 and discovering 10 new moons.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83D\uDE80 Voyager 2 is the only spacecraft to visit Neptune, flying by in August 1989.' : '\uD83D\uDE80 NASA\u2019s New Horizons flew past Pluto in July 2015, revealing a geologically active world.',
 
                           // More planet-specific facts
 
-                          sel.name === t('stem.solar_sys.mars') ? '\uD83C\uDF21 Mars has the largest dust storms in the solar system \u2014 they can engulf the entire planet for months.' : sel.name === t('stem.solar_sys.venus') ? '\uD83C\uDF21 Venus rotates backwards (retrograde) so slowly that its day is longer than its year.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83E\uDEA8 Jupiter\u2019s core may be a fuzzy mix of metallic hydrogen and dissolved rocky material.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83C\uDF0D Saturn\u2019s density is 0.687 g/cm\u00B3 \u2014 it would float in a bathtub big enough to hold it.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83C\uDF21 Scientists think an ancient collision with an object at least as big as Earth knocked Uranus on its side.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83E\uDEA8 Neptune radiates 2.6x more energy than it receives from the Sun \u2014 its own internal heat drives supersonic winds.' : sel.name === t('stem.solar_sys.pluto') ? '\uD83C\uDF0D Pluto and its moon Charon are tidally locked \u2014 they always show the same face to each other.' : sel.name === t('stem.periodic.mercury') ? '\uD83C\uDF0D Mercury has virtually no atmosphere \u2014 just a thin exosphere of atoms blasted off the surface by solar wind.' : '\uD83E\uDDE0 Every atom in your body was forged inside a star.',
+                          sel.name === t('stem.solar_sys.mars') ? '\uD83C\uDF21 Mars has the largest dust storms in the solar system \u2014 they can engulf the entire planet for months.' : sel.name === t('stem.solar_sys.venus') ? '\uD83C\uDF21 Venus rotates backwards (retrograde) so slowly that its day is longer than its year.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83E\uDEA8 Jupiter\u2019s core may be a fuzzy mix of metallic hydrogen and dissolved rocky material.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83C\uDF0D Saturn\u2019s density is 0.687 g/cm\u00B3 \u2014 it would float in a bathtub big enough to hold it.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83C\uDF21 Scientists think an ancient collision with an object at least as big as Earth knocked Uranus on its side.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83E\uDEA8 Neptune radiates 2.6x more energy than it receives from the Sun \u2014 its own internal heat drives supersonic winds.' : sel.name === t('stem.solar_sys.pluto') ? '\uD83C\uDF0D Pluto and its moon Charon are tidally locked \u2014 they always show the same face to each other.' : sel.name === t('stem.solar_sys.mercury') ? '\uD83C\uDF0D Mercury has virtually no atmosphere \u2014 just a thin exosphere of atoms blasted off the surface by solar wind.' : '\uD83E\uDDE0 Every atom in your body was forged inside a star.',
 
                           // Chemistry / science
 
@@ -14224,14 +14472,26 @@ const d = labToolData.solarSystem || {};
                         var thirdPerson = false;
 
                         var tpOffset = new THREE.Vector3(0, 3, 6);
+                        var chaseCameraPos = new THREE.Vector3();
+                        var chaseLookAt = new THREE.Vector3();
+                        var chaseCameraReady = false;
+                        var chaseDesired = new THREE.Vector3();
+                        var chaseDesiredLook = new THREE.Vector3();
                         var currentHeadingLabel = 'N';
                         var currentHeadingDeg = 0;
 
                         var onDroneShortcutKeydown = function (e) {
 
+                          if (!isFluid && (e.key === 'b' || e.key === 'B') && !e.repeat) {
+                            e.preventDefault();
+                            var soundIsOn = toggleRoverSound();
+                            if (typeof announceToSR === 'function') announceToSR(soundIsOn ? 'Rover drive sonification on.' : 'Rover drive sonification off.');
+                          }
+
                           if (e.key === 'v' || e.key === 'V') {
 
                             thirdPerson = !thirdPerson;
+                            chaseCameraReady = false;
 
                             var label = document.getElementById('hud-mode');
 
@@ -14411,6 +14671,25 @@ const d = labToolData.solarSystem || {};
                         });
 
                         canvasEl.parentElement.appendChild(actionDock);
+
+                        // Keep the opt-in motor control separate from the already dense
+                        // science action dock. It is present only for rocky rovers, defaults
+                        // off, and the B shortcut invokes the exact same state transition.
+                        if (!isFluid) {
+                          roverSoundButton = document.createElement('button');
+                          roverSoundButton.type = 'button';
+                          roverSoundButton.setAttribute('data-rover-sound-toggle', 'true');
+                          roverSoundButton.setAttribute('aria-keyshortcuts', 'B');
+                          roverSoundButton.setAttribute('aria-pressed', 'false');
+                          roverSoundButton.style.cssText = 'position:absolute;top:8px;right:120px;z-index:16;min-height:48px;padding:7px 11px;border:1px solid rgba(56,189,248,0.38);border-radius:8px;background:rgba(2,6,23,0.82);color:#bae6fd;font:700 11px system-ui;cursor:pointer;backdrop-filter:blur(6px);box-shadow:0 4px 12px rgba(2,6,23,0.4)';
+                          roverSoundButton.addEventListener('click', function () {
+                            var soundIsOn = toggleRoverSound();
+                            if (typeof announceToSR === 'function') announceToSR(soundIsOn ? 'Rover drive sonification on.' : 'Rover drive sonification off.');
+                            canvasEl.focus();
+                          });
+                          updateRoverSoundButton();
+                          canvasEl.parentElement.appendChild(roverSoundButton);
+                        }
 
 
 
@@ -14919,8 +15198,8 @@ const d = labToolData.solarSystem || {};
 
                         // ── Entry descent animation state ──
                         var _descentPhase = 0; // 0 = descending, 1 = arrived, 2 = playing
-                        var _descentTick = 0;
-                        var _descentDuration = 180; // ~3 sec at 60fps
+                        var _descentStartedAtMs = null;
+                        var _descentDurationSec = 3;
                         var _descentStartY = isOcean ? 30 : isGas ? 25 : 20;
                         var _descentTargetY = isFluid ? 5 : 1.6;
                         // Descent overlay
@@ -14938,7 +15217,7 @@ const d = labToolData.solarSystem || {};
 
                         // â"€â"€ Animation loop with 3rd-person + compass â"€â"€
 
-                        function animate3dV2() {
+                        function animate3dV2(frameMs) {
 
                           // Self-terminate + tear down when the drone canvas detaches (tab switch /
                           // planet change / Back). Previously the ref-null path bailed before calling
@@ -14950,20 +15229,32 @@ const d = labToolData.solarSystem || {};
                             return;
                           }
 
+                          var safeFrameMs = typeof frameMs === 'number' && isFinite(frameMs) ? frameMs : Date.now();
+                          if (droneLastFrameMs == null) {
+                            droneFrameDt = 1 / 60;
+                          } else {
+                            droneFrameDt = Math.max(0, Math.min(0.05, (safeFrameMs - droneLastFrameMs) / 1000));
+                          }
+                          droneLastFrameMs = safeFrameMs;
+
                           animId3d = requestAnimationFrame(animate3dV2);
 
                           tick3d++;
 
                           // ── Descent intro sequence ──
                           if (_descentPhase === 0) {
-                            _descentTick++;
-                            var t2 = Math.min(1, _descentTick / _descentDuration);
+                            // Wall-clock progress keeps the cinematic at three seconds on
+                            // both high-refresh displays and slow software/classroom GPUs.
+                            // Vehicle physics below still uses the separately clamped delta.
+                            if (_descentStartedAtMs == null) _descentStartedAtMs = safeFrameMs;
+                            var _descentElapsedSec = Math.max(0, (safeFrameMs - _descentStartedAtMs) / 1000);
+                            var t2 = Math.min(1, _descentElapsedSec / _descentDurationSec);
                             // Ease-out cubic
                             var eased = 1 - Math.pow(1 - t2, 3);
                             var curY = _descentStartY + (_descentTargetY - _descentStartY) * eased;
                             playerPos.y = curY;
-                            playerPos.x = Math.sin(_descentTick * 0.01) * 2 * (1 - eased); // gentle spiral
-                            playerPos.z = Math.cos(_descentTick * 0.01) * 2 * (1 - eased);
+                            playerPos.x = Math.sin(_descentElapsedSec * 0.6) * 2 * (1 - eased); // gentle spiral
+                            playerPos.z = Math.cos(_descentElapsedSec * 0.6) * 2 * (1 - eased);
                             pitch = -0.3 * (1 - eased); // look down during descent
                             camera.rotation.order = 'YXZ';
                             // Update altitude readout
@@ -15011,7 +15302,7 @@ const d = labToolData.solarSystem || {};
                             // old code span the camera at 0.003 rad/frame and then jumped to
                             // yaw anyway, so this removes a lurch that was already there.)
                             var descHold = new THREE.Vector3(roverGroup.position.x, roverGroup.position.y, roverGroup.position.z);
-                            var descArc = _descentTick * 0.011;
+                            var descArc = _descentElapsedSec * 0.66;
                             var descDist = 4.5 + 6.5 * (1 - eased);
                             var descLift = 1.8 + 4.5 * (1 - eased);
                             var descChase = new THREE.Vector3(
@@ -15046,28 +15337,49 @@ const d = labToolData.solarSystem || {};
                           // slower than a mouse flick on purpose: this is the only aiming
                           // method some students have, and overshooting a sample you are
                           // trying to line up is worse than turning a little slowly.
-                          if (lookState.left) yaw += 0.028;
-                          if (lookState.right) yaw -= 0.028;
-                          if (lookState.up) pitch = Math.min(1.2, pitch + 0.022);
-                          if (lookState.down) pitch = Math.max(-1.2, pitch - 0.022);
+                          var keyboardYawStep = isFluid ? 0.028 : 1.68 * droneFrameDt;
+                          var keyboardPitchStep = isFluid ? 0.022 : 1.32 * droneFrameDt;
+                          if (lookState.left) yaw += keyboardYawStep;
+                          if (lookState.right) yaw -= keyboardYawStep;
+                          if (lookState.up) pitch = Math.min(1.2, pitch + keyboardPitchStep);
+                          if (lookState.down) pitch = Math.max(-1.2, pitch - keyboardPitchStep);
 
                           // Movement
 
-                          var dir = new THREE.Vector3();
+                          if (isFluid) {
+                            // Preserve the established six-axis probe/submersible controls.
+                            var dir = new THREE.Vector3();
+                            if (moveState.forward) dir.z -= 1;
+                            if (moveState.back) dir.z += 1;
+                            if (moveState.left) dir.x -= 1;
+                            if (moveState.right) dir.x += 1;
+                            dir.normalize().multiplyScalar(speed3d);
+                            dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                            playerPos.add(dir);
+                          } else {
+                            // Surface rover: W/S command traction, A/D command skid-steer.
+                            // Acceleration, braking, and rolling resistance produce actual
+                            // velocity rather than translating a fixed amount every frame.
+                            var throttleInput = (moveState.forward ? 1 : 0) - (moveState.back ? 1 : 0);
+                            var steeringInput = (moveState.left ? 1 : 0) - (moveState.right ? 1 : 0);
+                            roverDrive.steering += (steeringInput - roverDrive.steering) * roverDamping(8);
 
-                          if (moveState.forward) dir.z -= 1;
+                            var targetSpeed = throttleInput > 0 ? roverDrive.maxForward : (throttleInput < 0 ? -roverDrive.maxReverse : 0);
+                            var driveRate = roverDrive.coastDrag;
+                            if (throttleInput !== 0) {
+                              driveRate = roverDrive.speed !== 0 && Math.sign(roverDrive.speed) !== Math.sign(targetSpeed) ? roverDrive.brake : roverDrive.acceleration;
+                            }
+                            roverDrive.speed = approachRoverValue(roverDrive.speed, targetSpeed, driveRate * droneFrameDt);
 
-                          if (moveState.back) dir.z += 1;
+                            var speedRatio = Math.min(1, Math.abs(roverDrive.speed) / roverDrive.maxForward);
+                            var pivotAuthority = 0.42 + speedRatio * 0.58;
+                            yaw += roverDrive.steering * roverDrive.turnRate * pivotAuthority * droneFrameDt;
 
-                          if (moveState.left) dir.x -= 1;
-
-                          if (moveState.right) dir.x += 1;
-
-                          dir.normalize().multiplyScalar(speed3d);
-
-                          dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-
-                          playerPos.add(dir);
+                            roverForward.set(-Math.sin(yaw), 0, -Math.cos(yaw));
+                            roverDrive.velocity.copy(roverForward).multiplyScalar(roverDrive.speed);
+                            playerPos.addScaledVector(roverDrive.velocity, droneFrameDt);
+                            updateRoverAudio(throttleInput, steeringInput);
+                          }
 
                           if (isOcean) {
                             // Underwater sub: free-swimming with ocean floor collision
@@ -15105,7 +15417,8 @@ const d = labToolData.solarSystem || {};
                           } else {
                             // Rocky planet rover: ground-following, no vertical flight
                             var groundH = _terrainHeightAt(playerPos.x, playerPos.z);
-                            playerPos.y = groundH + 1.6; // rover camera height above terrain
+                            var targetRoverEyeY = groundH + 1.6;
+                            playerPos.y += (targetRoverEyeY - playerPos.y) * roverDamping(12);
                           }
 
                           // ── World edge ──
@@ -15119,10 +15432,12 @@ const d = labToolData.solarSystem || {};
                           // keeps them on real ground. Gas giants have no terrain but their
                           // cloud decks are 400 wide, so they get their own bound.
                           var edgeLimit = isGas ? 180 : 115;
-                          if (playerPos.x > edgeLimit) playerPos.x = edgeLimit;
-                          else if (playerPos.x < -edgeLimit) playerPos.x = -edgeLimit;
-                          if (playerPos.z > edgeLimit) playerPos.z = edgeLimit;
-                          else if (playerPos.z < -edgeLimit) playerPos.z = -edgeLimit;
+                          var hitWorldEdge = false;
+                          if (playerPos.x > edgeLimit) { playerPos.x = edgeLimit; hitWorldEdge = true; }
+                          else if (playerPos.x < -edgeLimit) { playerPos.x = -edgeLimit; hitWorldEdge = true; }
+                          if (playerPos.z > edgeLimit) { playerPos.z = edgeLimit; hitWorldEdge = true; }
+                          else if (playerPos.z < -edgeLimit) { playerPos.z = -edgeLimit; hitWorldEdge = true; }
+                          if (hitWorldEdge && !isFluid) roverDrive.speed *= 0.2;
 
                           // Carry the shadow frustum with the vehicle. The sun keeps its own
                           // direction — the offset below is the same vector it was placed at,
@@ -15139,13 +15454,67 @@ const d = labToolData.solarSystem || {};
 
                           if (thirdPerson) {
 
-                            // 3rd person: camera behind and above
+                            if (!isFluid) {
+                              // Speed-responsive chase camera: distance, look-ahead, and FOV
+                              // grow gently with velocity. Exponential damping is stable at
+                              // different refresh rates and is bypassed for reduced motion.
+                              var chaseSpeedRatio = Math.min(1, Math.abs(roverDrive.speed) / roverDrive.maxForward);
+                              var chaseDistance = 5.4 + chaseSpeedRatio * 2.4;
+                              var chaseHeight = 2.45 + chaseSpeedRatio * 0.75;
+                              var travelSign = roverDrive.speed < -0.05 ? -1 : 1;
+                              var roverGroundForCamera = _terrainHeightAt(playerPos.x, playerPos.z);
 
-                            var behind = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw).multiplyScalar(6);
+                              chaseDesired.set(
+                                playerPos.x - roverForward.x * chaseDistance,
+                                roverGroundForCamera + chaseHeight,
+                                playerPos.z - roverForward.z * chaseDistance
+                              );
+                              chaseDesiredLook.set(
+                                playerPos.x + roverForward.x * chaseSpeedRatio * 1.8 * travelSign,
+                                roverGroundForCamera + 0.72,
+                                playerPos.z + roverForward.z * chaseSpeedRatio * 1.8 * travelSign
+                              );
 
-                            camera.position.set(playerPos.x + behind.x, playerPos.y + 3, playerPos.z + behind.z);
+                              // Keep the camera above its local terrain and raise it when an
+                              // intervening ridge would cross the target-to-camera sightline.
+                              var chaseOwnGround = _terrainHeightAt(chaseDesired.x, chaseDesired.z);
+                              if (isFinite(chaseOwnGround)) chaseDesired.y = Math.max(chaseDesired.y, chaseOwnGround + 1.35);
+                              for (var chaseSample = 1; chaseSample <= 4; chaseSample++) {
+                                var chaseT = chaseSample / 5;
+                                var chaseX = chaseDesiredLook.x + (chaseDesired.x - chaseDesiredLook.x) * chaseT;
+                                var chaseZ = chaseDesiredLook.z + (chaseDesired.z - chaseDesiredLook.z) * chaseT;
+                                var chaseGround = _terrainHeightAt(chaseX, chaseZ);
+                                if (isFinite(chaseGround)) {
+                                  var requiredCameraY = (chaseGround + 1.05 - chaseDesiredLook.y * (1 - chaseT)) / chaseT;
+                                  chaseDesired.y = Math.max(chaseDesired.y, requiredCameraY);
+                                }
+                              }
 
-                            camera.lookAt(playerPos.x, playerPos.y, playerPos.z);
+                              if (!chaseCameraReady) {
+                                chaseCameraPos.copy(chaseDesired);
+                                chaseLookAt.copy(chaseDesiredLook);
+                                chaseCameraReady = true;
+                              } else {
+                                chaseCameraPos.lerp(chaseDesired, roverDamping(6.5));
+                                chaseLookAt.lerp(chaseDesiredLook, roverDamping(8.5));
+                              }
+                              var smoothedCameraGround = _terrainHeightAt(chaseCameraPos.x, chaseCameraPos.z);
+                              if (isFinite(smoothedCameraGround)) chaseCameraPos.y = Math.max(chaseCameraPos.y, smoothedCameraGround + 1.25);
+                              camera.position.copy(chaseCameraPos);
+                              camera.lookAt(chaseLookAt);
+
+                              var targetChaseFov = droneReduceMotion ? 70 : 68 + chaseSpeedRatio * 8;
+                              var nextChaseFov = camera.fov + (targetChaseFov - camera.fov) * roverDamping(5);
+                              if (Math.abs(nextChaseFov - camera.fov) > 0.01) {
+                                camera.fov = nextChaseFov;
+                                camera.updateProjectionMatrix();
+                              }
+                            } else {
+                              // Fluid modes keep their familiar fixed chase composition.
+                              var behind = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw).multiplyScalar(6);
+                              camera.position.set(playerPos.x + behind.x, playerPos.y + 3, playerPos.z + behind.z);
+                              camera.lookAt(playerPos.x, playerPos.y, playerPos.z);
+                            }
 
                           } else {
 
@@ -15156,6 +15525,11 @@ const d = labToolData.solarSystem || {};
                             camera.rotation.y = yaw;
 
                             camera.rotation.x = pitch;
+
+                            if (!isFluid && Math.abs(camera.fov - 70) > 0.01) {
+                              camera.fov += (70 - camera.fov) * roverDamping(7);
+                              camera.updateProjectionMatrix();
+                            }
 
                           }
 
@@ -16106,35 +16480,34 @@ const d = labToolData.solarSystem || {};
                           // ── Rover dust trail animation (rocky planets) ──
                           if (!isGas && typeof dustTrailMesh !== 'undefined' && dustTrailMesh) {
                             var dtArr = dustTrailMesh.geometry.attributes.position.array;
-                            // Spawn dust when moving
-                            var isMoving = moveState.forward || moveState.back || moveState.left || moveState.right;
-                            if (isMoving && tick3d % 3 === 0) {
+                            var roverMotionRatio = Math.min(1, Math.abs(roverDrive.speed) / roverDrive.maxForward);
+                            roverDrive.dustCarry += roverMotionRatio * droneFrameDt * 18;
+                            var dustSpawnCount = Math.min(4, Math.floor(roverDrive.dustCarry));
+                            roverDrive.dustCarry -= dustSpawnCount;
+                            while (dustSpawnCount-- > 0 && roverMotionRatio > 0.05) {
                               var dIdx = dustTrailIdx * 3;
-                              dtArr[dIdx] = playerPos.x + (Math.random() - 0.5) * 0.8;
-                              dtArr[dIdx + 1] = _terrainHeightAt(playerPos.x, playerPos.z) + 0.1;
-                              dtArr[dIdx + 2] = playerPos.z + (Math.random() - 0.5) * 0.8;
-                              dustTrailLife[dustTrailIdx] = 60;
+                              var dustTravelSign = roverDrive.speed < 0 ? -1 : 1;
+                              var dustRearX = playerPos.x - roverForward.x * dustTravelSign * 0.48;
+                              var dustRearZ = playerPos.z - roverForward.z * dustTravelSign * 0.48;
+                              dtArr[dIdx] = dustRearX + (Math.random() - 0.5) * 0.8;
+                              dtArr[dIdx + 1] = _terrainHeightAt(dustRearX, dustRearZ) + 0.1;
+                              dtArr[dIdx + 2] = dustRearZ + (Math.random() - 0.5) * 0.8;
+                              dustTrailLife[dustTrailIdx] = 1;
                               dustTrailIdx = (dustTrailIdx + 1) % 60;
                             }
-                            // Age and rise dust particles
+                            // Age and rise dust in seconds so plume persistence does not
+                            // change between 60 Hz and high-refresh displays.
                             for (var dti2 = 0; dti2 < 60; dti2++) {
                               if (dustTrailLife[dti2] > 0) {
-                                dustTrailLife[dti2]--;
-                                dtArr[dti2 * 3 + 1] += 0.01; // rise
-                                dtArr[dti2 * 3] += (Math.random() - 0.5) * 0.02; // drift
+                                dustTrailLife[dti2] = Math.max(0, dustTrailLife[dti2] - droneFrameDt * 0.9);
+                                dtArr[dti2 * 3 + 1] += droneFrameDt * 0.6;
+                                dtArr[dti2 * 3] += (Math.random() - 0.5) * droneFrameDt * 0.65;
+                                dtArr[dti2 * 3 + 2] += (Math.random() - 0.5) * droneFrameDt * 0.45;
+                                if (dustTrailLife[dti2] <= 0) dtArr[dti2 * 3 + 1] = -999;
                               }
                             }
                             dustTrailMesh.geometry.attributes.position.needsUpdate = true;
-                            dustTrailMesh.material.opacity = 0.3;
-
-                            // Animate rover wheels (spin them when moving)
-                            if (isMoving) {
-                              roverGroup.children.forEach(function(child) {
-                                if (child.geometry && child.geometry.type === 'CylinderGeometry' && child.geometry.parameters && Math.abs(child.geometry.parameters.radiusTop - 0.15) < 0.01) {
-                                  child.rotation.x += 0.15;
-                                }
-                              });
-                            }
+                            dustTrailMesh.material.opacity = 0.12 + roverMotionRatio * 0.34;
 
                             // ── Geological Sample Collection (rocky planets) ──
                             if (typeof geoSampleOrbs !== 'undefined' && geoSampleOrbs.length > 0) {
@@ -16253,7 +16626,7 @@ const d = labToolData.solarSystem || {};
                               }
                             }
 
-                            lastSpeed = frameDist * 20; // ~60fps/3 = 20 updates/s
+                            lastSpeed = isFluid ? frameDist * 20 : Math.abs(roverDrive.speed) * scaleFactor;
 
                             prevPos.copy(playerPos);
 
@@ -16666,18 +17039,83 @@ const d = labToolData.solarSystem || {};
                           if (!isFluid) {
 
                             var roverGround = _terrainHeightAt(playerPos.x, playerPos.z);
-                            roverGroup.position.y = roverGround; // wheels follow terrain
-
-                            roverGroup.rotation.y = yaw + Math.PI; // face movement direction
-
                             var fwdX = -Math.sin(yaw), fwdZ = -Math.cos(yaw);
                             var rightX = Math.cos(yaw), rightZ = -Math.sin(yaw);
                             var frontH = _terrainHeightAt(playerPos.x + fwdX, playerPos.z + fwdZ);
                             var backH = _terrainHeightAt(playerPos.x - fwdX, playerPos.z - fwdZ);
                             var rightH = _terrainHeightAt(playerPos.x + rightX, playerPos.z + rightZ);
                             var leftH = _terrainHeightAt(playerPos.x - rightX, playerPos.z - rightZ);
-                            roverGroup.rotation.x = Math.max(-0.22, Math.min(0.22, (backH - frontH) * 0.10));
-                            roverGroup.rotation.z = Math.max(-0.18, Math.min(0.18, (rightH - leftH) * 0.10));
+                            var targetRoverPitch = Math.max(-0.22, Math.min(0.22, (frontH - backH) * 0.10));
+                            var targetRoverRoll = Math.max(-0.18, Math.min(0.18, (rightH - leftH) * 0.10));
+                            var targetRoverYaw = yaw;
+
+                            if (!roverPoseReady) {
+                              roverVisualGround = roverGround;
+                              roverGroup.rotation.set(targetRoverPitch, targetRoverYaw, targetRoverRoll);
+                              roverPoseReady = true;
+                            } else {
+                              roverVisualGround += (roverGround - roverVisualGround) * roverDamping(11);
+                              roverGroup.rotation.x += (targetRoverPitch - roverGroup.rotation.x) * roverDamping(9);
+                              roverGroup.rotation.z += (targetRoverRoll - roverGroup.rotation.z) * roverDamping(9);
+                              var roverYawDelta = Math.atan2(Math.sin(targetRoverYaw - roverGroup.rotation.y), Math.cos(targetRoverYaw - roverGroup.rotation.y));
+                              roverGroup.rotation.y += roverYawDelta * roverDamping(11);
+                            }
+                            roverGroup.position.y = roverVisualGround;
+
+                            // Sample the terrain beneath each contact patch. Wheel travel is
+                            // bounded like a real suspension stop, then damped independently.
+                            var vehicleRotY = yaw;
+                            var vehicleCos = Math.cos(vehicleRotY), vehicleSin = Math.sin(vehicleRotY);
+                            for (var rwi = 0; rwi < rockyWheelRigs.length; rwi++) {
+                              var wheelRigData = rockyWheelRigs[rwi];
+                              var wheelWorldX = playerPos.x + wheelRigData.localX * vehicleCos + wheelRigData.localZ * vehicleSin;
+                              var wheelWorldZ = playerPos.z - wheelRigData.localX * vehicleSin + wheelRigData.localZ * vehicleCos;
+                              var wheelGround = _terrainHeightAt(wheelWorldX, wheelWorldZ);
+                              var wheelTravel = Math.max(-0.11, Math.min(0.13, (wheelGround - roverGround) * 0.68));
+                              var targetWheelY = wheelRigData.restY + wheelTravel;
+                              wheelRigData.rig.position.y += (targetWheelY - wheelRigData.rig.position.y) * roverDamping(14);
+                              wheelRigData.rig.rotation.y = roverDrive.steering * wheelRigData.steerFactor * 0.34;
+                              wheelRigData.spin += roverDrive.speed * droneFrameDt / 0.15;
+                              wheelRigData.wheel.rotation.y = wheelRigData.spin;
+
+                              var strutTop = 0.34;
+                              var strutLength = Math.max(0.05, strutTop - wheelRigData.rig.position.y);
+                              wheelRigData.strut.position.y = wheelRigData.rig.position.y + strutLength * 0.5;
+                              wheelRigData.strut.scale.y = strutLength;
+                            }
+
+                            // Emit pooled rear-wheel tracks by distance travelled, independent
+                            // of frame rate. The cached sampler supplies height and two tangent
+                            // slopes; all transforms reuse the temporaries declared at setup.
+                            if (roverTrackMesh && Math.abs(roverDrive.speed) > 0.08) {
+                              roverTrackDistanceCarry += Math.abs(roverDrive.speed) * droneFrameDt;
+                              while (roverTrackDistanceCarry >= 0.24) {
+                                roverTrackDistanceCarry -= 0.24;
+                                for (var trackSide = -1; trackSide <= 1; trackSide += 2) {
+                                  var trackX = playerPos.x + rightX * trackSide * 0.45 - roverForward.x * 0.38;
+                                  var trackZ = playerPos.z + rightZ * trackSide * 0.45 - roverForward.z * 0.38;
+                                  var trackHeight = _terrainHeightAt(trackX, trackZ);
+                                  var trackForwardHeight = _terrainHeightAt(trackX + roverForward.x * 0.22, trackZ + roverForward.z * 0.22);
+                                  var trackRightHeight = _terrainHeightAt(trackX + rightX * 0.22, trackZ + rightZ * 0.22);
+                                  roverTrackForwardTangent.set(roverForward.x * 0.22, trackForwardHeight - trackHeight, roverForward.z * 0.22).normalize();
+                                  roverTrackRightTangent.set(rightX * 0.22, trackRightHeight - trackHeight, rightZ * 0.22).normalize();
+                                  roverTrackNormal.crossVectors(roverTrackRightTangent, roverTrackForwardTangent).normalize();
+                                  if (roverTrackNormal.y < 0) roverTrackNormal.multiplyScalar(-1);
+                                  roverTrackRightTangent.crossVectors(roverTrackForwardTangent, roverTrackNormal).normalize();
+                                  roverTrackBasis.makeBasis(roverTrackRightTangent, roverTrackForwardTangent, roverTrackNormal);
+                                  roverTrackQuaternion.setFromRotationMatrix(roverTrackBasis);
+                                  roverTrackDummy.position.set(trackX, trackHeight + 0.012, trackZ);
+                                  roverTrackDummy.quaternion.copy(roverTrackQuaternion);
+                                  roverTrackDummy.scale.set(1, 1, 1);
+                                  roverTrackDummy.updateMatrix();
+                                  roverTrackMesh.setMatrixAt(roverTrackCursor, roverTrackDummy.matrix);
+                                  roverTrackCursor = (roverTrackCursor + 1) % roverTrackCapacity;
+                                  roverTrackVisibleCount = Math.min(roverTrackCapacity, roverTrackVisibleCount + 1);
+                                  canvasEl.dataset.roverTrackCount = String(roverTrackVisibleCount);
+                                }
+                              }
+                              roverTrackMesh.instanceMatrix.needsUpdate = true;
+                            }
 
                           } else {
 
@@ -16751,11 +17189,15 @@ const d = labToolData.solarSystem || {};
 
                           cancelAnimationFrame(animId3d);
 
+                          disposeRoverAudio();
+
                           clearInterval(factTimer);
 
                           clearInterval(hazardTimer);
 
                           document.removeEventListener('mousemove', onMouseMove);
+
+                          document.removeEventListener('visibilitychange', onRoverVisibilityChange);
 
                           canvasEl.removeEventListener('keydown', onDroneShortcutKeydown);
 
@@ -16808,6 +17250,28 @@ const d = labToolData.solarSystem || {};
                           if (journalPanel.parentElement) journalPanel.parentElement.removeChild(journalPanel);
 
                           if (actionDock.parentElement) actionDock.parentElement.removeChild(actionDock);
+
+                          if (roverSoundButton && roverSoundButton.parentElement) roverSoundButton.parentElement.removeChild(roverSoundButton);
+
+                          if (roverTrackMesh) {
+                            scene.remove(roverTrackMesh);
+                            try { roverTrackMesh.geometry.dispose(); } catch (e) {}
+                            try { roverTrackMesh.material.dispose(); } catch (e) {}
+                            roverTrackMesh = null;
+                          }
+
+                          if (typeof dustTrailMesh !== 'undefined' && dustTrailMesh) {
+                            scene.remove(dustTrailMesh);
+                            dustTrailMesh = null;
+                          }
+                          if (typeof dustTrailGeo !== 'undefined' && dustTrailGeo) {
+                            try { dustTrailGeo.dispose(); } catch (e) {}
+                            dustTrailGeo = null;
+                          }
+                          if (typeof dustTrailMat !== 'undefined' && dustTrailMat) {
+                            try { dustTrailMat.dispose(); } catch (e) {}
+                            dustTrailMat = null;
+                          }
 
                           if (discTimeout) clearTimeout(discTimeout);
 

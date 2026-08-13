@@ -27,7 +27,7 @@ function UDLGuideModal(props) {
   const {
     InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult,
     isExecutingBlueprint, handleStopBlueprintRun, archiveLivePlan, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan,
-    handleRebuildBlueprintStep, handleDownloadBlueprintDiagnostics,
+    handleRebuildBlueprintStep, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, getSafeGenerationFailureReason,
     lessonTemplates, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate,
     handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview,
     aiStandardQuery, aiStandardRegion, autoSendVoice, chatStyles,
@@ -44,6 +44,28 @@ function UDLGuideModal(props) {
     t, theme, udlInput, udlInputRef,
     udlMessages, udlScrollRef, udlStandardFramework, udlStandardGrade
   } = props;
+  // The global command listener and legacy free-form dictation are separate
+  // microphone owners. Talk is command mode only: always tear down dictation
+  // before starting, pausing, stopping, or hiding the Talk surface. The shared
+  // controller abort is synchronous, while the state update also covers the
+  // host's older Web Speech fallback on the next render.
+  const stopLegacyDictation = React.useCallback(() => {
+      try {
+          const voice = window.AlloFlowVoice;
+          if (voice && typeof voice.stopActiveDictation === 'function') voice.stopActiveDictation(true);
+      } catch (_) {}
+      setIsDictationMode(false);
+  }, [setIsDictationMode]);
+  const closeGuide = React.useCallback(() => {
+      stopLegacyDictation();
+      setIsConversationMode(false);
+      handleSetShowUDLGuideToFalse();
+  }, [handleSetShowUDLGuideToFalse, setIsConversationMode, stopLegacyDictation]);
+  React.useEffect(() => {
+      if (alloVoiceActive || voicePaused || !showUDLGuide) stopLegacyDictation();
+      if (!alloVoiceActive || !showUDLGuide) setIsConversationMode(false);
+      if (!alloVoiceActive) setVoicePaused(false);
+  }, [alloVoiceActive, setIsConversationMode, showUDLGuide, stopLegacyDictation, voicePaused]);
   // The standards finder + framework consult are power-user tools that were
   // pinned open above the input box, leaving the transcript ~40% of a 24rem
   // panel — cramped enough that a guided-flow question and its answer pills
@@ -82,7 +104,7 @@ function UDLGuideModal(props) {
               </button>
               <button
                   type="button"
-                  onClick={handleSetShowUDLGuideToFalse}
+                  onClick={closeGuide}
                   className="hover:bg-white/20 p-1 rounded transition-colors"
                   aria-label={t('common.close')}
               >
@@ -99,10 +121,10 @@ function UDLGuideModal(props) {
                <HelpCircle size={18} /> {t('chat_guide.header')}
             </div>
             <div className="flex items-center gap-1">
-                {/* ONE talk control. Users should not have to pre-declare
-                    whether they are about to ask a question or give a command:
-                    what they say routes by intent underneath. Labelled, not
-                    icon-only — a tooltip is unreachable on touch. */}
+                {/* ONE Talk control owns global app commands. Free-form
+                    dictation is a separate semantic action; starting both
+                    recognizers here would make microphone state unreliable.
+                    Labelled, not icon-only — a tooltip is unreachable on touch. */}
                 <button
                     type="button"
                     data-help-key="chat_talk"
@@ -110,43 +132,44 @@ function UDLGuideModal(props) {
                     onClick={(e) => {
                         if (isHelpMode) return;
                         e.preventDefault();
+                        const next = !alloVoiceActive;
+                        stopLegacyDictation();
                         if (typeof onToggleVoiceAgent === 'function') onToggleVoiceAgent();
                         setVoicePaused(false);
-                        // Keep the legacy conversational flags in step so any
-                        // surface still reading them behaves as before.
-                        const next = !alloVoiceActive;
-                        setIsConversationMode(next);
-                        if (next) { setIsDictationMode(true); setIsBotVisible(true); }
+                        // Command listening does not imply free-form dictation.
+                        // A future semantic dictation action must opt in
+                        // explicitly and coordinate ownership through one service.
+                        setIsConversationMode(false);
+                        if (next) setIsBotVisible(true);
                         let seenHint = false;
                         try { seenHint = !!localStorage.getItem('allo_agent_voice_hint_v1'); } catch (_) {}
                         if (next && !seenHint) {
                             try { localStorage.setItem('allo_agent_voice_hint_v1', '1'); } catch (_) {}
-                            setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.talk_hint') || 'Listening. Ask a question or say what you want done — “open the learning hub”, “simplify this to grade 3 then make a quiz”, or “where is the export button?”. Say “stop listening” to finish. Typing works exactly the same way: single actions get a confirm chip, and multi-step asks get a plan card you review before anything runs. Privacy note: speech recognition sends microphone audio to your browser’s speech service (Google on Chrome) while listening — best to keep it off during student conversations. Prefer fully on-device? Say or type “download voice models” for a one-time download, after which recognition and the spoken voice both stay on this device.' }]);
+                            setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.talk_hint') || 'Listening for app commands. Try “open the learning hub”, “read this page”, or “where is the export button?”. Say “pause listening” to pause AlloBot commands or “stop listening” to finish. To ask a question or request several steps, type below; typed multi-step requests get a plan card you review before anything runs. Privacy note: AlloBot uses your selected recognition engine. A browser speech service may send command audio to its provider; on-device Whisper keeps recognition audio on this device.' }]);
                         }
                     }}
-                    className={`hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${alloVoiceActive ? 'bg-red-600 text-white border-red-400 animate-pulse' : 'border-white/40'}`}
-                    title={alloVoiceActive ? t('chat_guide.talk_stop_tooltip', 'Stop listening') : t('chat_guide.talk_start_tooltip', 'Talk to AlloBot: ask a question or say what you want done')}
+                    className={`hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${alloVoiceActive ? (voicePaused ? 'bg-amber-400 text-indigo-900 border-amber-500' : 'bg-red-600 text-white border-red-400 animate-pulse') : 'border-white/40'}`}
+                    title={alloVoiceActive ? (voicePaused ? t('chat_guide.talk_stop_paused_tooltip', 'Stop the paused AlloBot voice session') : t('chat_guide.talk_stop_tooltip', 'Stop AlloBot command listening')) : t('chat_guide.talk_start_tooltip', 'Start AlloBot command listening')}
                 >
-                    <Headphones size={12}/> {alloVoiceActive ? (t('chat_guide.talk_on') || 'Listening') : (t('chat_guide.talk') || 'Talk')}
+                    <Headphones size={12}/> {alloVoiceActive ? (voicePaused ? t('chat_guide.talk_paused', 'Paused') : (t('chat_guide.talk_on') || 'Listening')) : (t('chat_guide.talk') || 'Talk')}
                 </button>
-                {/* Momentary pause. Appears only while listening, and releases
-                    the microphone rather than muting it — the browser's
-                    recording indicator going dark is the honest signal when a
-                    teacher steps aside to talk with a student. The session
-                    survives, so resuming is one tap and no permission prompt. */}
+                {/* Momentary pause stops AlloBot's command listener and any
+                    legacy dictation session. It deliberately does not claim
+                    that unrelated recording tools elsewhere in the app stop. */}
                 {alloVoiceActive && (
                 <button
                     type="button"
                     data-help-key="chat_talk_pause"
                     aria-pressed={voicePaused ? 'true' : 'false'}
                     onClick={() => {
+                        stopLegacyDictation();
                         const loop = window.__alloVoiceLoop;
                         if (!loop) return;
                         if (voicePaused) { Promise.resolve(loop.resume()).then((ok) => setVoicePaused(!ok)); }
                         else { loop.pause(); setVoicePaused(true); }
                     }}
                     className={`hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${voicePaused ? 'bg-amber-400 text-indigo-900 border-amber-500' : 'border-white/40'}`}
-                    title={voicePaused ? t('chat_guide.resume_tooltip', 'Turn the microphone back on') : t('chat_guide.pause_tooltip', 'Pause listening — releases the microphone but keeps your session')}
+                    title={voicePaused ? t('chat_guide.resume_tooltip', 'Resume AlloBot command listening') : t('chat_guide.pause_tooltip', 'Pause AlloBot command listening and release its microphone session')}
                 >
                     {voicePaused ? (t('chat_guide.resume', 'Resume')) : (t('chat_guide.pause', 'Pause'))}
                 </button>
@@ -177,17 +200,6 @@ function UDLGuideModal(props) {
                                     <span className="block text-[11px] text-slate-500">{isShowMeMode ? t('common.on', 'On') : t('common.off', 'Off')} — {t('chat_guide.show_me_desc', 'Asking “where is…” always points, with or without this.')}</span>
                                 </span>
                             </button>
-                            {alloVoiceActive && (
-                                <button role="menuitemcheckbox" aria-checked={autoSendVoice ? 'true' : 'false'} type="button"
-                                    onClick={() => { handleToggleAutoSendVoice(); setChatMenuOpen(false); }}
-                                    className="flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100">
-                                    <Zap size={14} className="mt-0.5 shrink-0"/>
-                                    <span>
-                                        <span className="font-bold">{t('chat_guide.auto_send_on', 'Send as soon as I stop talking')}</span>
-                                        <span className="block text-[11px] text-slate-500">{autoSendVoice ? t('common.on', 'On') : t('common.off', 'Off')}</span>
-                                    </span>
-                                </button>
-                            )}
                             <button role="menuitem" type="button"
                                 onClick={() => { saveFullChat(); setChatMenuOpen(false); }}
                                 className="flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100">
@@ -216,7 +228,7 @@ function UDLGuideModal(props) {
                 >
                     <ChevronDown size={18}/>
                 </button>
-                <button data-help-key="chat_close" onClick={handleSetShowUDLGuideToFalse} className="hover:bg-white/20 p-1 rounded" aria-label={t('common.close')}><X size={18}/></button>
+                <button data-help-key="chat_close" onClick={closeGuide} className="hover:bg-white/20 p-1 rounded" aria-label={t('common.close')}><X size={18}/></button>
           </div>
         </div>
         <div className={`flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`} ref={udlScrollRef}>
@@ -235,7 +247,9 @@ function UDLGuideModal(props) {
                           isRunning={!!isExecutingBlueprint}
                           onStopRun={handleStopBlueprintRun}
                           onRebuildStep={handleRebuildBlueprintStep}
+                          onCopyDiagnostics={handleCopyBlueprintDiagnostics}
                           onDownloadDiagnostics={handleDownloadBlueprintDiagnostics}
+                          summarizeFailureReason={getSafeGenerationFailureReason}
                           onSaveTemplate={handleSaveLessonTemplate}
                           onPreviewStep={handlePreviewBlueprintStep}
                           onUpdate={handleBlueprintUIUpdate}
@@ -414,7 +428,9 @@ function UDLGuideModal(props) {
                   isRunning={!!isExecutingBlueprint}
                   onStopRun={handleStopBlueprintRun}
                   onRebuildStep={handleRebuildBlueprintStep}
+                  onCopyDiagnostics={handleCopyBlueprintDiagnostics}
                   onDownloadDiagnostics={handleDownloadBlueprintDiagnostics}
+                  summarizeFailureReason={getSafeGenerationFailureReason}
                   onSaveTemplate={handleSaveLessonTemplate}
                   onPreviewStep={handlePreviewBlueprintStep}
                   onUpdate={handleBlueprintUIUpdate}
@@ -1698,6 +1714,9 @@ function AIBackendModalBody(props) {
   };
   const guidedTestVisible = advancedOpen
     || guidedView === 'gemini' || guidedView === 'private' || guidedView.startsWith('connect-detail:');
+  const openDeviceStorageManager = () => {
+    if (typeof window.__alloOpenDeviceStorageProbe === 'function') window.__alloOpenDeviceStorageProbe();
+  };
   return (
         <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
           <div data-help-key="ai_backend_modal_panel" data-student-ai-setup={isStudentAiSetup ? 'true' : 'false'} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') setShowAIBackendModal(false); }} onClick={e => e.stopPropagation()}>
@@ -1730,6 +1749,19 @@ function AIBackendModalBody(props) {
                      that choice needs. The full surface lives behind Advanced;
                      students always get the trimmed legacy layout instead. ─── */}
                 {!advancedOpen && !isStudentAiSetup && renderGuidedStep()}
+                {!advancedOpen && !isStudentAiSetup && (
+                  <section id="ai-backend-guided-storage-shortcut" className="rounded-xl border border-cyan-200 bg-cyan-50 p-3" aria-labelledby="ai-backend-guided-storage-title">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h4 id="ai-backend-guided-storage-title" className="text-xs font-black text-cyan-950">Local storage & downloads</h4>
+                        <p className="mt-1 text-[11px] leading-relaxed text-cyan-900">Review space used by saved work and offline models such as Whisper and Kokoro, export a backup, or erase local data.</p>
+                      </div>
+                      <button type="button" data-help-key="ai_backend_guided_storage_btn" onClick={openDeviceStorageManager} className="min-h-11 shrink-0 rounded-xl border-2 border-cyan-600 bg-white px-4 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
+                        Manage local storage
+                      </button>
+                    </div>
+                  </section>
+                )}
                 {advancedOpen && (<>
                 <div>
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.provider_label') || 'Provider'}</label>
@@ -2022,7 +2054,7 @@ function AIBackendModalBody(props) {
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.device_storage_label') || 'Device Storage'}</label>
                     <p className="text-[11px] text-slate-600 mb-2">{t('canvas_settings.device_storage_hint') || 'Work and settings are saved on this device only — nothing goes to a server. Review, export, or erase what is stored here.'}</p>
                     <button
-                        onClick={() => { if (typeof window.__alloOpenDeviceStorageProbe === 'function') window.__alloOpenDeviceStorageProbe(); }}
+                        onClick={openDeviceStorageManager}
                         className="bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
                     >
                         🔌 {t('canvas_settings.device_storage_btn') || 'Manage device storage'}

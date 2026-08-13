@@ -1188,6 +1188,53 @@ try {
   // ── End Probe Overlay ──────────────────────────────────────────
 
   // @section STUDENT_ANALYTICS — RTI probes and student analytics
+  const finalizeWordSoundsProbeForm = (items, grade, activity, form = 'A') => {
+    const sourceItems = Array.isArray(items) ? items : [];
+    const probeGrade = String(grade || 'K');
+    const probeActivity = String(activity || 'segmentation');
+    const probeForm = String(form || 'A');
+    const runtimeActivity = probeActivity === 'spelling' ? 'spelling_bee' : probeActivity;
+    const formId = [probeGrade, probeForm, probeActivity].join(':');
+    const itemCount = sourceItems.length;
+    const stampedItems = sourceItems.map((item, index) => ({
+      ...item,
+      probeIndex: index,
+      probeItemId: formId + ':' + String(index + 1).padStart(2, '0'),
+      probeFormId: formId,
+      probeGrade,
+      probeForm,
+      probeActivity,
+      probeRuntimeActivity: runtimeActivity,
+      probeItemCount: itemCount,
+      probeFixedForm: true
+    }));
+    return {
+      items: stampedItems,
+      config: {
+        schema: 'alloflow-word-sounds-probe/v1',
+        version: 1,
+        grade: probeGrade,
+        probeGrade,
+        form: probeForm,
+        probeForm,
+        activity: probeActivity,
+        probeActivity,
+        runtimeActivity,
+        formId,
+        fixedForm: true,
+        itemCount,
+        probeItemCount: itemCount,
+        sessionGoal: itemCount,
+        itemIds: stampedItems.map((item) => item.probeItemId)
+      }
+    };
+  };
+  try {
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {};
+    window.AlloModules.StudentAnalyticsInternals.finalizeWordSoundsProbeForm = finalizeWordSoundsProbeForm;
+  } catch (e) {}
+
   const StudentAnalyticsPanel = React.memo(({
     isOpen,
     onClose,
@@ -1222,6 +1269,7 @@ try {
     setWsPreloadedWords,
     setWordSoundsActivity,
     setIsWordSoundsMode,
+    prepareWordSoundsSession,
     setActiveView,
     setGeneratedContent,
     setIsFluencyMode,
@@ -1349,6 +1397,7 @@ try {
     // Probe overlay: track whether countdown is done and timer should start
     const [probeTimerPending, setProbeTimerPending] = React.useState(null); // null or {type, ...params}
     const [mathProbeForm, setMathProbeForm] = React.useState("A");
+    const wordSoundsProbeForm = probeForm || 'A';
     const [mathProbeStudent, setMathProbeStudent] = React.useState(null);
     // Unified active student for all probes
     const [activeStudent, setActiveStudent] = React.useState(null);
@@ -4552,16 +4601,47 @@ try {
           probeIndex: idx
         };
       });
-      setIsProbeMode(true);
-      setProbeGradeLevel(grade);
-      setProbeActivity(activity);
-      if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false);
-      const activityMap = {
-        spelling: 'spelling_bee'
+      const fixedProbe = finalizeWordSoundsProbeForm(probeWords, grade, activity, form);
+      const fixedProbeWords = fixedProbe.items;
+      const persistedProbeConfig = {
+        ...fixedProbe.config,
+        studentLocked: true,
+        imageVisibilityMode: 'off',
+        orthoSessionGoal: 0
       };
-      const wsActivity = activityMap[activity] || activity;
-      setWsPreloadedWords(probeWords);
-      setWordSoundsActivity(wsActivity);
+      const probeConfig = {
+        ...persistedProbeConfig,
+        learnerId: probeTargetStudent || null
+      };
+      setIsProbeMode(true);
+      setProbeGradeLevel(probeConfig.grade);
+      setProbeActivity(probeConfig.activity);
+      if (typeof setProbeForm === 'function') setProbeForm(probeConfig.form);
+      if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false);
+      setWsPreloadedWords(fixedProbeWords);
+      if (typeof prepareWordSoundsSession === 'function') {
+        prepareWordSoundsSession(probeConfig);
+      }
+      if (typeof setGeneratedContent === 'function') {
+        setGeneratedContent({
+          id: 'ws-probe-' + probeConfig.formId.replace(/:/g, '-') + '-' + Date.now(),
+          type: 'word-sounds',
+          title: 'Word Sounds ' + probeConfig.activity + ' — Grade ' + probeConfig.grade + ' Form ' + probeConfig.form,
+          data: fixedProbeWords,
+          wsPreloadedWords: fixedProbeWords,
+          isProbeMode: true,
+          probeActivity: probeConfig.activity,
+          probeGradeLevel: probeConfig.grade,
+          probeForm: probeConfig.form,
+          // Learner identity is an administration detail, not portable resource
+          // metadata. Keep saved/shared fixed forms anonymous and pass the local
+          // learner only through prepareWordSoundsSession above.
+          wordSoundsProbeConfig: persistedProbeConfig,
+          sessionConfig: persistedProbeConfig,
+          configSummary: 'Fixed ' + probeConfig.formId + ' probe · ' + probeConfig.itemCount + ' items'
+        });
+      }
+      setWordSoundsActivity(probeConfig.runtimeActivity);
       setIsWordSoundsMode(true);
       setActiveView('word-sounds');
     };
@@ -4594,7 +4674,7 @@ try {
       setRosterQueue(rest);
       setScreenerSession(null);
       setTimeout(() => {
-        launchScreeningSession(probeGradeLevel, mathProbeForm, nextStudent);
+        launchScreeningSession(probeGradeLevel, wordSoundsProbeForm, nextStudent);
       }, 500);
     };
     // Multi-subtest battery auto-advance. When a subtest finishes, the host's
@@ -5625,7 +5705,13 @@ try {
       const level = sessionData?.globalLevel || 1;
       const badges = sessionData?.wordSoundsBadges || {};
       const badgeCount = Object.keys(badges).length;
-      const masteredPhonemes = Object.entries(sessionData?.phonemeMastery || {}).filter(([_, v]) => v.accuracy >= 80);
+      const masteredPhonemes = Object.entries(sessionData?.phonemeMastery || {}).filter(([_, v]) => {
+        const independentAttempts = Number(v?.independentAttempts) || 0;
+        const independentAccuracy = Number(v?.independentAccuracy);
+        return independentAttempts >= 5 &&
+          Number.isFinite(independentAccuracy) &&
+          independentAccuracy >= 80;
+      });
       const allSnapshots = sessionData?.progressSnapshots || [];
       const dateRange = sessionData?.dateRange || {};
       const snapshots = allSnapshots.filter(s => {
@@ -6479,8 +6565,10 @@ try {
       value: "3-5"
     }, "Grade 3-5")), /*#__PURE__*/React.createElement("select", {
       "aria-label": t('common.probe_form'),
-      value: mathProbeForm,
-      onChange: e => setMathProbeForm(e.target.value),
+      value: wordSoundsProbeForm,
+      onChange: e => {
+        if (typeof setProbeForm === 'function') setProbeForm(e.target.value);
+      },
       className: "text-xs font-bold border border-violet-600 rounded-lg px-3 py-2 bg-violet-50 text-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
@@ -6499,7 +6587,7 @@ try {
       key: s.id || s.nickname,
       value: s.nickname || s.name
     }, s.nickname || s.name))), /*#__PURE__*/React.createElement("button", {
-      onClick: () => launchBenchmarkProbe(probeGradeLevel, probeActivity, mathProbeForm),
+      onClick: () => launchBenchmarkProbe(probeGradeLevel, probeActivity, wordSoundsProbeForm),
       "aria-label": t('common.run_benchmark_probe'),
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-lg font-bold text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md"
     }, "\u25B6 Start Battery")), /*#__PURE__*/React.createElement("div", {

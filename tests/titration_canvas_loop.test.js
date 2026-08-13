@@ -11,12 +11,15 @@ describe('titration animation canvas loop', () => {
     TITRATION_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('if (window.__alloTitrationAnimCleanup) window.__alloTitrationAnimCleanup();');
+      expect(source).toContain('var titrAnimCanvases = new Set();');
       expect(source).toContain('if (cvEl._ttCleanup) cvEl._ttCleanup();');
       expect(source).toContain('function cleanupTitrationAnim()');
       expect(source).toContain('if (ro) ro.disconnect();');
-      expect(source).toContain('cvEl._ttCleanup = null;');
-      expect(source).toContain('window.__alloTitrationAnimCleanup = cvEl._ttCleanup;');
+      expect(source).toContain('titrAnimCanvases.delete(cvEl);');
+      expect(source).toContain('titrAnimCanvases.add(cvEl);');
+      expect(source).not.toContain('window.__alloTitrationAnimCleanup');
+      expect(source).toContain("event.currentTarget.closest('[data-titration-instance]')");
+      expect(source).toContain("instance.querySelector('[data-titration-anim=\"true\"]')");
 
       expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
       expect(source).toContain('function isTitrationHidden()');

@@ -32,20 +32,50 @@
   }
 
   var PROTO = 'ds1';
-  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds3-storage-manager';
+  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds4-bridge-auth';
   var NS_RE = /^[a-z0-9_.-]{1,64}$/i;
   var REQUEST_TIMEOUT_MS = 8000;
   var CONNECT_TIMEOUT_MS = 12000;
+  var APPROVAL_TIMEOUT_MS = 120000;
 
   function validateNs(ns) { return typeof ns === 'string' && NS_RE.test(ns); }
   function validateKey(key) { return typeof key === 'string' && key.length > 0 && key.length <= 512; }
+  function isLoopbackHostname(hostname) {
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+  }
+  function parseBridgeUrl(value) {
+    var parsed;
+    try { parsed = new URL(String(value || '')); }
+    catch (_) { throw storageError('allo/bridge-url-invalid', 'The device storage bridge URL is invalid.'); }
+    var secure = parsed.protocol === 'https:';
+    var localDevelopment = parsed.protocol === 'http:' && isLoopbackHostname(parsed.hostname);
+    if ((!secure && !localDevelopment) || parsed.username || parsed.password) {
+      throw storageError('allo/bridge-url-insecure',
+        'The device storage bridge must use HTTPS (HTTP is allowed only on loopback during local development).');
+    }
+    parsed.hash = '';
+    return { href: parsed.href, origin: parsed.origin };
+  }
+  function currentClientOrigin() {
+    try {
+      var origin = window.location && window.location.origin;
+      if (!origin || origin === 'null') return 'null';
+      return new URL(origin).origin;
+    } catch (_) { return 'null'; }
+  }
   function makeNonce() {
+    var random = window.crypto;
+    if (!random || typeof random.getRandomValues !== 'function') {
+      throw storageError('allo/secure-random-unavailable',
+        'Secure randomness is unavailable, so device storage cannot connect safely.');
+    }
     try {
       var bytes = new Uint8Array(16);
-      crypto.getRandomValues(bytes);
+      random.getRandomValues(bytes);
       return Array.prototype.map.call(bytes, function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
     } catch (_) {
-      return 'n' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+      throw storageError('allo/secure-random-unavailable',
+        'Secure randomness failed, so device storage cannot connect safely.');
     }
   }
   function buildEnvelope(nonce, id, op, params) {
@@ -54,18 +84,85 @@
       if (params.ns !== undefined) msg.ns = params.ns;
       if (params.key !== undefined) msg.key = params.key;
       if (params.value !== undefined) msg.value = params.value;
+      if (params.expected !== undefined) msg.expected = params.expected;
+      if (params.nextValue !== undefined) msg.nextValue = params.nextValue;
       if (params.mutation !== undefined) msg.mutation = params.mutation;
       if (params.channel !== undefined) msg.channel = params.channel;
     }
     return msg;
   }
-  function isValidResponse(msg, nonceIgnored) {
-    return !!(msg && msg.allo === PROTO && typeof msg.id === 'string' && typeof msg.ok === 'boolean');
+  function isValidResponse(msg, nonce) {
+    return !!(msg && msg.allo === PROTO && msg.nonce === nonce &&
+      typeof msg.id === 'string' && typeof msg.ok === 'boolean');
   }
   function storageError(code, message) {
     var err = new Error(message || code);
     err.code = code;
     return err;
+  }
+  function isSafeRevision(value) {
+    return typeof value === 'number' && isFinite(value) &&
+      Math.floor(value) === value && value >= 0 && value <= Number.MAX_SAFE_INTEGER;
+  }
+  function casMetadata(current, exists) {
+    return {
+      exists: !!exists,
+      revision: exists && current && isSafeRevision(current.revision) ? current.revision : null
+    };
+  }
+  function exactLegacyValue(current, expected) {
+    try {
+      return JSON.stringify(current) === JSON.stringify(expected);
+    } catch (_) {
+      return false;
+    }
+  }
+  function nextCasValue(nextValue, revision) {
+    if (!nextValue || typeof nextValue !== 'object' || Array.isArray(nextValue)) {
+      throw storageError('allo/cas-next-invalid', 'Compare-and-swap nextValue must be an object.');
+    }
+    var stored = {};
+    Object.keys(nextValue).forEach(function (name) {
+      if (name === 'revision') return;
+      Object.defineProperty(stored, name, {
+        value: nextValue[name], enumerable: true, configurable: true, writable: true
+      });
+    });
+    stored.revision = revision;
+    return stored;
+  }
+  function applyCompareAndSwap(current, exists, expected, nextValue) {
+    var currentMeta = casMetadata(current, exists);
+    var matches = false;
+    var nextRevision = 1;
+    if (isSafeRevision(expected)) {
+      matches = expected === 0
+        ? !exists
+        : !!(exists && currentMeta.revision === expected);
+      nextRevision = expected + 1;
+    } else if (expected && expected.mode === 'revision' && isSafeRevision(expected.revision)) {
+      matches = expected.revision === 0
+        ? !exists
+        : !!(exists && currentMeta.revision === expected.revision);
+      nextRevision = expected.revision + 1;
+    } else if (expected && expected.mode === 'absent') {
+      matches = !exists;
+      nextRevision = 1;
+    } else if (expected && expected.mode === 'value' &&
+               Object.prototype.hasOwnProperty.call(expected, 'value')) {
+      matches = !!(exists && currentMeta.revision === null &&
+        exactLegacyValue(current, expected.value));
+      nextRevision = 1;
+    } else {
+      throw storageError('allo/cas-expected-invalid',
+        'Expected must be a revision number, {mode:"revision"}, {mode:"absent"}, or {mode:"value"}.');
+    }
+    if (!isSafeRevision(nextRevision)) {
+      throw storageError('allo/cas-revision-overflow', 'The stored revision cannot be incremented safely.');
+    }
+    if (!matches) return { applied: false, current: currentMeta };
+    var stored = nextCasValue(nextValue, nextRevision);
+    return { applied: true, revision: nextRevision, value: stored };
   }
   var RECOVERY_NAMESPACE = 'workspace_recovery';
   var RECOVERY_KEY = 'store_v1';
@@ -447,10 +544,13 @@
     this.win = null;             // target Window
     this.frameEl = null;         // iframe element (iframe kind)
     this.nonce = null;
+    this.bridgeOrigin = null;
+    this.clientOrigin = null;
     this.ready = false;
     this.pending = {};           // id -> {resolve, reject, timer}
     this.seq = 0;
     this.onMessage = null;
+    this.helloTimer = null;
     this.connectPromise = null;
     this.connectTimer = null;
     this.connectReject = null;
@@ -465,11 +565,22 @@
     if (self.ready && self.alive()) return Promise.resolve(self);
     if (self.connectPromise) return self.connectPromise;
     self.connectPromise = new Promise(function (resolve, reject) {
-      self.nonce = makeNonce();
-      var url = bridgeUrl + '#allo-ds=' + self.nonce;
+      var bridge;
+      try {
+        bridge = parseBridgeUrl(bridgeUrl);
+        self.nonce = makeNonce();
+      } catch (error) {
+        reject(error);
+        return;
+      }
+      self.bridgeOrigin = bridge.origin;
+      self.clientOrigin = currentClientOrigin();
+      var target = new URL(bridge.href);
+      target.hash = 'allo-ds=' + encodeURIComponent(self.nonce);
+      var url = target.href;
       if (self.kind === 'popup') {
         var win = null;
-        try { win = window.open(url, 'alloflow_device_storage', 'width=380,height=460,popup=yes'); } catch (_) {}
+        try { win = window.open(url, 'alloflow_device_storage', 'width=420,height=520,popup=yes'); } catch (_) {}
         if (!win) {
           reject(storageError('allo/popup-blocked', 'The storage window was blocked. Allow popups for this site and try again.'));
           return;
@@ -485,33 +596,43 @@
         self.frameEl = frame;
         self.win = frame.contentWindow;
       }
+
       var settled = false;
-      self.connectReject = reject;
-      var timer = setTimeout(function () {
+      var fail = function (error) {
         if (settled) return;
         settled = true;
+        if (self.connectTimer) clearTimeout(self.connectTimer);
+        if (self.helloTimer) clearInterval(self.helloTimer);
         self.connectTimer = null;
+        self.helloTimer = null;
         self.connectReject = null;
         self.teardown();
-        reject(storageError('allo/bridge-timeout', 'The storage bridge did not answer (offline, blocked, or CSP-denied).'));
-      }, CONNECT_TIMEOUT_MS);
-      self.connectTimer = timer;
+        reject(error);
+      };
+      self.connectReject = reject;
       self.onMessage = function (event) {
+        if (event.source !== self.win || event.origin !== self.bridgeOrigin) return;
         var msg = event.data;
-        if (!msg || msg.allo !== PROTO) return;
-        if (event.source !== self.win) return;
-        if (msg.type === 'allo-bridge-ready' && msg.nonce === self.nonce) {
+        if (!msg || msg.allo !== PROTO || msg.nonce !== self.nonce) return;
+        if (msg.type === 'allo-bridge-error') {
+          fail(storageError((msg.error && msg.error.code) || 'allo/bridge-rejected',
+            (msg.error && msg.error.message) || 'The storage bridge rejected this connection.'));
+          return;
+        }
+        if (msg.type === 'allo-bridge-ready') {
           if (!settled) {
             settled = true;
-            clearTimeout(timer);
+            if (self.connectTimer) clearTimeout(self.connectTimer);
+            if (self.helloTimer) clearInterval(self.helloTimer);
             self.connectTimer = null;
+            self.helloTimer = null;
             self.connectReject = null;
             self.ready = true;
             resolve(self);
           }
           return;
         }
-        if (isValidResponse(msg) && self.pending[msg.id]) {
+        if (isValidResponse(msg, self.nonce) && self.pending[msg.id]) {
           var entry = self.pending[msg.id];
           delete self.pending[msg.id];
           clearTimeout(entry.timer);
@@ -521,6 +642,29 @@
         }
       };
       window.addEventListener('message', self.onMessage);
+
+      var timeoutMs = self.kind === 'popup' ? APPROVAL_TIMEOUT_MS : CONNECT_TIMEOUT_MS;
+      self.connectTimer = setTimeout(function () {
+        fail(storageError('allo/bridge-timeout',
+          self.kind === 'popup'
+            ? 'The storage bridge was not approved in time.'
+            : 'The storage bridge did not answer (offline, blocked, or approval is required).'));
+      }, timeoutMs);
+
+      var sendHello = function () {
+        if (settled || !self.alive()) return;
+        try {
+          self.win.postMessage({
+            allo: PROTO,
+            type: 'allo-bridge-hello',
+            nonce: self.nonce,
+            clientOrigin: self.clientOrigin,
+            channel: self.kind
+          }, self.bridgeOrigin);
+        } catch (_) {}
+      };
+      sendHello();
+      self.helloTimer = setInterval(sendHello, 250);
     });
     return self.connectPromise.then(function (value) {
       self.connectPromise = null; return value;
@@ -530,7 +674,7 @@
   };
   BridgeTransport.prototype.request = function (op, params) {
     var self = this;
-    if (!self.ready || !self.alive()) {
+    if (!self.ready || !self.alive() || !self.bridgeOrigin) {
       return Promise.reject(storageError('allo/storage-disconnected', 'Device storage is not connected.'));
     }
     var id = 'r' + (++self.seq) + '-' + Date.now().toString(36);
@@ -542,7 +686,7 @@
       }, REQUEST_TIMEOUT_MS);
       self.pending[id] = { resolve: resolve, reject: reject, timer: timer };
       try {
-        self.win.postMessage(msg, '*');
+        self.win.postMessage(msg, self.bridgeOrigin);
       } catch (e) {
         delete self.pending[id];
         clearTimeout(timer);
@@ -553,7 +697,9 @@
   BridgeTransport.prototype.teardown = function () {
     var connectReject = this.connectReject;
     if (this.connectTimer) clearTimeout(this.connectTimer);
+    if (this.helloTimer) clearInterval(this.helloTimer);
     this.connectTimer = null;
+    this.helloTimer = null;
     this.connectReject = null;
     if (this.onMessage) { window.removeEventListener('message', this.onMessage); this.onMessage = null; }
     Object.keys(this.pending).forEach(function (id) {
@@ -565,6 +711,9 @@
     if (this.frameEl) { try { this.frameEl.remove(); } catch (_) {} }
     this.win = null;
     this.frameEl = null;
+    this.nonce = null;
+    this.bridgeOrigin = null;
+    this.clientOrigin = null;
     this.connectPromise = null;
     this.ready = false;
     if (connectReject) connectReject(storageError('allo/storage-disconnected', 'Bridge closed before it connected.'));
@@ -623,6 +772,28 @@
           } else if (op === 'set') {
             store.put({ k: k, ns: params.ns, key: params.key, value: params.value, updatedAt: new Date().toISOString() });
             result = true;
+          } else if (op === 'compareAndSwap') {
+            var casGet = store.get(k);
+            casGet.onsuccess = function () {
+              try {
+                var casExists = !!casGet.result;
+                result = applyCompareAndSwap(
+                  casExists ? casGet.result.value : undefined,
+                  casExists,
+                  params.expected,
+                  params.nextValue
+                );
+                if (result.applied) {
+                  store.put({
+                    k: k, ns: params.ns, key: params.key,
+                    value: result.value, updatedAt: new Date().toISOString()
+                  });
+                }
+              } catch (error) {
+                operationError = error;
+                try { t.abort(); } catch (_) {}
+              }
+            };
           } else if (op === 'mutateRecovery') {
             var recoveryGet = store.get(k);
             recoveryGet.onsuccess = function () {
@@ -696,6 +867,18 @@
       switch (op) {
         case 'get': return Promise.resolve(key in bucket ? bucket[key] : null);
         case 'set': bucket[key] = params.value; return Promise.resolve(true);
+        case 'compareAndSwap':
+          try {
+            var casExists = Object.prototype.hasOwnProperty.call(bucket, key);
+            var casResult = applyCompareAndSwap(
+              casExists ? bucket[key] : undefined,
+              casExists,
+              params.expected,
+              params.nextValue
+            );
+            if (casResult.applied) bucket[key] = casResult.value;
+            return Promise.resolve(casResult);
+          } catch (error) { return Promise.reject(error); }
         case 'mutateRecovery':
           try {
             var recoveryResult = applyRecoveryMutation(key in bucket ? bucket[key] : null, params.mutation);
@@ -759,7 +942,7 @@
     if (params && params.ns !== undefined && !validateNs(params.ns)) {
       return Promise.reject(storageError('allo/bad-namespace', 'Namespace must match ' + NS_RE));
     }
-    if ((op === 'get' || op === 'set' || op === 'delete' || op === 'mutateRecovery') && !validateKey(params.key)) {
+    if ((op === 'get' || op === 'set' || op === 'delete' || op === 'compareAndSwap' || op === 'mutateRecovery') && !validateKey(params.key)) {
       return Promise.reject(storageError('allo/bad-key', 'Key must be a 1-512 char string.'));
     }
     if (op === 'mutateRecovery' && (params.ns !== RECOVERY_NAMESPACE || params.key !== RECOVERY_KEY)) {
@@ -771,8 +954,9 @@
       if (state.flushPromise) return state.flushPromise.then(function () { return guarded(op, params, opts); });
       return backend.request(op, params);
     }
-    var isWrite = op === 'set' || op === 'delete' || op === 'clearNamespace' || op === 'mutateRecovery';
-    if (isWrite && (!opts || opts.queue !== false)) {
+    var isWrite = op === 'set' || op === 'delete' || op === 'clearNamespace' ||
+      op === 'compareAndSwap' || op === 'mutateRecovery';
+    if (isWrite && op !== 'compareAndSwap' && (!opts || opts.queue !== false)) {
       state.writeQueue.push({ op: op, params: params });
       return Promise.resolve({ queued: true });
     }
@@ -793,7 +977,7 @@
      */
     init: function (opts) {
       opts = opts || {};
-      if (opts.bridgeUrl) state.bridgeUrl = opts.bridgeUrl;
+      if (opts.bridgeUrl) state.bridgeUrl = parseBridgeUrl(opts.bridgeUrl).href;
       var surface = opts.surface || detectSurface();
       if (surface === 'stable') {
         state.backendName = 'direct';
@@ -820,6 +1004,16 @@
         return flushQueue();
       }).then(function () { return api.status(); });
     },
+    /**
+     * Switch a Canvas session to the visible popup channel. Call this directly
+     * from a user gesture after an iframe reports allo/approval-required.
+     */
+    connectWithApproval: function () {
+      if (state.backendName === 'direct') return Promise.resolve(api.status());
+      if (state.transport) { state.transport.teardown(); state.transport = null; }
+      state.backendName = 'bridge-popup';
+      return api.connect();
+    },
     disconnect: function () {
       if (state.transport) { state.transport.teardown(); state.transport = null; }
       return api.status();
@@ -835,6 +1029,11 @@
     },
     get: function (ns, key) { return guarded('get', { ns: ns, key: key }); },
     set: function (ns, key, value, opts) { return guarded('set', { ns: ns, key: key, value: value }, opts); },
+    compareAndSwap: function (ns, key, expected, nextValue, opts) {
+      return guarded('compareAndSwap', {
+        ns: ns, key: key, expected: expected, nextValue: nextValue
+      }, opts);
+    },
     mutateRecovery: function (ns, key, mutation, opts) {
       return guarded('mutateRecovery', { ns: ns, key: key, mutation: mutation }, opts);
     },
@@ -897,6 +1096,10 @@
     _internal: {
       buildEnvelope: buildEnvelope,
       isValidResponse: isValidResponse,
+      makeNonce: makeNonce,
+      parseBridgeUrl: parseBridgeUrl,
+      currentClientOrigin: currentClientOrigin,
+      applyCompareAndSwap: applyCompareAndSwap,
       validateNs: validateNs,
       validateKey: validateKey,
       applyRecoveryMutation: applyRecoveryMutation,

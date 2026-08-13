@@ -238,6 +238,7 @@ async function publicResponse(
         database: {
           ok: database.ok,
           schema: database.schema,
+          admissionsOpen: database.admissionsOpen,
         },
         runner: runnerResult.runner,
         compatibility: {

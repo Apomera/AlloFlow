@@ -865,6 +865,64 @@
     return { title: cue.title, summary: cue.summary, depth: cue.depth, steps: cue.steps.map(function (item) { return Object.assign({}, item); }) };
   }
 
+  function focusLensIncludes(materialKey, selectedKey, enabled) {
+    return !enabled || !selectedKey || materialKey === selectedKey;
+  }
+  function cutawayReadout(slice, totalSections) {
+    var total = Math.max(1, Math.round(Number(totalSections) || 1));
+    var max = Math.max(0, total - 1);
+    var raw = Number(slice); if (!isFinite(raw)) raw = 0;
+    var step = Math.max(0, Math.min(max, Math.round(raw)));
+    var percent = Math.round(step / total * 100);
+    return {
+      step: step,
+      max: max,
+      percent: percent,
+      label: step === 0 ? 'Full block' : percent + '% cut away from front' + (step === max ? ' · final section' : '')
+    };
+  }
+  function firstSolidVoxelY(voxelByKey, removed, x, z, height) {
+    for (var y = 0; y < height; y++) {
+      var id = x + ',' + y + ',' + z;
+      var voxel = voxelByKey[id];
+      if (voxel && voxel.key !== 'void' && !(removed && removed[id])) return y;
+    }
+    return null;
+  }
+  function undoPreviewTarget(history, voxelByKey, removed, slice, focusOn, stage, formedAt) {
+    if (!Array.isArray(history) || !history.length || focusOn || !removed) return null;
+    var id = null, voxel = null;
+    for (var i = history.length - 1; i >= 0; i--) {
+      if (!removed[history[i]]) continue;
+      id = history[i]; voxel = voxelByKey && voxelByKey[id]; break;
+    }
+    if (!voxel || voxel.key === 'void') return null;
+    var cutaway = Number(slice); if (!isFinite(cutaway)) cutaway = 0;
+    cutaway = Math.max(0, Math.round(cutaway));
+    if (Number(voxel.z) < cutaway) return null;
+    var formed = formedAt && formedAt[voxel.key]; if (formed == null) formed = 0;
+    var maxStage = stage == null ? 99 : Number(stage); if (!isFinite(maxStage)) maxStage = 99;
+    return formed <= maxStage ? voxel : null;
+  }
+  function restoreEnginePresentation(engine, selectedKey, focusOn, cameraView) {
+    if (!engine) return false;
+    var view = cameraView === 'front' || cameraView === 'top' ? cameraView : 'iso';
+    if (engine.setHighlight) engine.setHighlight(selectedKey || null);
+    if (engine.setFocusLens) engine.setFocusLens(!!focusOn);
+    if (engine.setView) engine.setView(view);
+    return true;
+  }
+
+
+  function sceneTimelineFor(sceneId) {
+    var journey = sceneJourneyFor(sceneId), beacons = sceneBeaconsFor(sceneId), cue = sceneProcessCueFor(sceneId);
+    return journey.map(function (stage, index) {
+      var beacon = beacons.filter(function (item) { return Number(item.stage) === index; })[0] || beacons[index];
+      var cueStep = cue.steps[index] || {};
+      return { index: index, key: stage.key, label: stage.label, body: stage.body, beaconId: beacon ? beacon.id : null, beaconLabel: beacon ? beacon.label : stage.label, cueLabel: cueStep.label || stage.label };
+    });
+  }
+
   function sceneJourneyProgressFor(sceneId, data) {
     var source = data || {};
     var mission = SCENE_MISSIONS[sceneId] || SCENE_MISSIONS.crust;
@@ -1212,8 +1270,10 @@
 
     var voxels = [];
     for (var y = 0; y < NY; y++) for (var x = 0; x < NX; x++) for (var z = 0; z < NZ; z++) voxels.push({ x: x, y: y, z: z, key: SCENE.gen(x, y, z), j: 0.87 + (((x * 41 + y * 71 + z * 13) % 100) / 100) * 0.26 });
-    var removed = {};
     function vkey(v) { return v.x + ',' + v.y + ',' + v.z; }
+    var voxelByKey = {};
+    for (var vi = 0; vi < voxels.length; vi++) voxelByKey[vkey(voxels[vi])] = voxels[vi];
+    var removed = {}, excavationHistory = [];
     function worldPos(v) { return [(v.x - (NX - 1) / 2) * VOXEL, ((NY - 1) / 2 - v.y) * VOXEL, (v.z - (NZ - 1) / 2) * VOXEL]; }
 
     var geo = new THREE.BoxGeometry(VOXEL, VOXEL, VOXEL);
@@ -1223,9 +1283,14 @@
     scene.add(mesh);
     var dummy = new THREE.Object3D(), col = new THREE.Color(), WHITE = new THREE.Color(0xffffff);
     var instanceToVoxel = [];
-    var sliceZ = 0, excavate = false, highlightKey = null, showStage = 99;
-    var hoverBox = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(VOXEL * 1.04, VOXEL * 1.04, VOXEL * 1.04)), new THREE.LineBasicMaterial({ color: 0xfff0c0, transparent: true, opacity: 0.85 }));
+    var sliceZ = 0, excavate = false, highlightKey = null, focusLens = false, waterTableOn = false, showStage = 99;
+    var hoverSourceGeo = new THREE.BoxGeometry(VOXEL * 1.04, VOXEL * 1.04, VOXEL * 1.04);
+    var hoverBox = new THREE.LineSegments(new THREE.EdgesGeometry(hoverSourceGeo), new THREE.LineBasicMaterial({ color: 0xfff0c0, transparent: true, opacity: 0.85 }));
     hoverBox.visible = false; hoverBox.renderOrder = 2; scene.add(hoverBox);
+    var undoPreviewSourceGeo = new THREE.BoxGeometry(VOXEL * 1.1, VOXEL * 1.1, VOXEL * 1.1);
+    var undoPreviewBox = new THREE.LineSegments(new THREE.EdgesGeometry(undoPreviewSourceGeo), new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false }));
+    var undoPreviewRequested = false, undoPreviewKey = null;
+    undoPreviewBox.visible = false; undoPreviewBox.renderOrder = 3; scene.add(undoPreviewBox);
     var treeMeshes = [], lastHover = 0;
     var WATER_Y = ((NY - 1) / 2 - 1.8 * NY / 12) * VOXEL; // water table perched in the sandstone, above the shale (depth scales with detail)
     var waterMesh = new THREE.Mesh(new THREE.PlaneGeometry(WORLD.w, WORLD.d), new THREE.MeshStandardMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.4, roughness: 0.25, metalness: 0.15, side: THREE.DoubleSide }));
@@ -1289,7 +1354,7 @@
       if (eruptT > 7.2) { eruptT = -1; lavaPts.visible = false; ashPts.visible = false; ventLight.visible = false; craterGlow.visible = false; erupted = true; lavaFlow.visible = true; }
     }
 
-    function visible(v) { if (v.key === 'void') return false; var fa = FORMED_AT[v.key]; if (fa == null) fa = 0; return !removed[vkey(v)] && v.z >= sliceZ && fa <= showStage; }
+    function visible(v) { if (v.key === 'void') return false; var fa = FORMED_AT[v.key]; if (fa == null) fa = 0; return !removed[vkey(v)] && v.z >= sliceZ && fa <= showStage && focusLensIncludes(v.key, highlightKey, focusLens); }
     function rebuild() {
       var i = 0; instanceToVoxel.length = 0;
       // presence pass first → per-voxel ambient occlusion (depth/structure cue)
@@ -1313,8 +1378,10 @@
         instanceToVoxel[i] = v; i++;
       }
       mesh.count = i; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-      for (var ti = 0; ti < treeMeshes.length; ti++) { var tu = treeMeshes[ti].userData; treeMeshes[ti].visible = (tu.z >= sliceZ) && !removed[tu.x + ',0,' + tu.z] && (FORMED_AT.soil <= showStage); }
-      volcano.visible = (FORMED_AT.soil <= showStage) && (sliceZ <= 7);
+      for (var ti = 0; ti < treeMeshes.length; ti++) { var tu = treeMeshes[ti].userData; treeMeshes[ti].visible = !focusLens && (tu.z >= sliceZ) && !removed[tu.x + ',0,' + tu.z] && (FORMED_AT.soil <= showStage); }
+      volcano.visible = !focusLens && (FORMED_AT.soil <= showStage) && (sliceZ <= 7);
+      waterMesh.visible = waterTableOn && !focusLens;
+      updateUndoPreview();
     }
     rebuild();
 
@@ -1352,7 +1419,41 @@
     })();
 
     var raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(), down = null;
-    function shallowest(x, z) { for (var yy = 0; yy < NY; yy++) { if (!removed[x + ',' + yy + ',' + z]) return yy; } return null; }
+    function notifyExcavationChange() {
+      if (opts.onExcavateChange) opts.onExcavateChange(excavationHistory.length);
+    }
+    function updateUndoPreview() {
+      var target = undoPreviewRequested && !fp.active ? undoPreviewTarget(excavationHistory, voxelByKey, removed, sliceZ, focusLens, showStage, FORMED_AT) : null;
+      undoPreviewKey = target ? vkey(target) : null;
+      if (target) { var p = worldPos(target); undoPreviewBox.position.set(p[0], p[1], p[2]); }
+      undoPreviewBox.visible = !!target;
+      return undoPreviewBox.visible;
+    }
+    function shallowest(x, z) { return firstSolidVoxelY(voxelByKey, removed, x, z, NY); }
+    function excavateVoxel(v) {
+      if (!v || v.key === 'void') return null;
+      var id = vkey(v); if (removed[id]) return null;
+      removed[id] = 1; excavationHistory.push(id); rebuild(); notifyExcavationChange();
+      if (opts.onUncover && SED_FOSSIL[v.key] && hasFossilAt(v.x, v.y, v.z)) opts.onUncover(v.key);
+      var below = shallowest(v.x, v.z);
+      var belowVoxel = below == null ? null : voxelByKey[v.x + ',' + below + ',' + v.z];
+      if (belowVoxel && opts.onSelect) opts.onSelect(rockFacts(belowVoxel.key, belowVoxel.y));
+      var material = SCENE.palette[v.key] || ROCKS[v.key] || { name: v.key || 'material' };
+      if (opts.onFlash) opts.onFlash('Excavated ' + material.name + '. ' + (belowVoxel ? 'The layer beneath is now exposed.' : 'That column is now fully excavated.'));
+      return { removedKey: v.key, removedY: v.y, exposedKey: belowVoxel ? belowVoxel.key : null, count: excavationHistory.length };
+    }
+    function undoExcavation() {
+      while (excavationHistory.length) {
+        var id = excavationHistory.pop();
+        if (!removed[id]) continue;
+        delete removed[id];
+        var restored = voxelByKey[id]; rebuild(); notifyExcavationChange();
+        if (!restored) return null;
+        var material = SCENE.palette[restored.key] || ROCKS[restored.key] || { name: restored.key || 'material' };
+        return { key: restored.key, y: restored.y, name: material.name, remaining: excavationHistory.length };
+      }
+      notifyExcavationChange(); return null;
+    }
     function pick(ev) {
       var rect = cnv.getBoundingClientRect();
       pointer.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
@@ -1363,11 +1464,7 @@
       if (excavate) {
         var top = shallowest(v.x, v.z);
         if (v.y !== top) { if (opts.onFlash) opts.onFlash('Dig the layers above first — deeper = older (superposition).'); if (opts.onSelect) opts.onSelect(rockFacts(v.key, v.y)); return; }
-        removed[vkey(v)] = 1; rebuild();
-        if (opts.onUncover && SED_FOSSIL[v.key] && hasFossilAt(v.x, v.y, v.z)) opts.onUncover(v.key);
-        var below = shallowest(v.x, v.z);
-        if (below != null && opts.onSelect) opts.onSelect(rockFacts(rockKeyAt(v.x, below, v.z), below));
-        if (opts.onFlash) opts.onFlash('Excavated ' + ROCKS[v.key].name + '. The layer beneath is now exposed.');
+        excavateVoxel(v);
       } else {
         if (opts.onUncover && SED_FOSSIL[v.key] && hasFossilAt(v.x, v.y, v.z)) opts.onUncover(v.key);
         if (opts.onSelect) opts.onSelect(rockFacts(v.key, v.y));
@@ -1403,6 +1500,7 @@
     function enterFP(o) {
       if (fp.active) return;                                  // idempotent — no double-binding
       fp.active = true; fp.reduced = !!(o && o.reduced);
+      undoPreviewRequested = false; updateUndoPreview();
       fp.savedPos = camera.position.clone();
       fp.savedTgt = controls ? controls.target.clone() : TARGET.clone();
       fp.savedEnabled = controls ? controls.enabled : true;
@@ -1521,20 +1619,31 @@
 
     eng.setView = function (name) {
       if (fp.active) return;   // camera is owned by first-person mode
-      if (!controls) return;
       var V = { iso: [[NX * 1.15, NY * 1.05, NZ * 1.4], [0, -NY * 0.18, 0]], front: [[0, -NY * 0.1, NZ * 1.75], [0, -NY * 0.18, 0]], top: [[0.01, NY * 2.4, 0.02], [0, 0, 0]] }[name];
       if (!V) return;
       camera.position.set(V[0][0], V[0][1], V[0][2]);
-      controls.target.set(V[1][0], V[1][1], V[1][2]);
-      controls.update();
+      TARGET.set(V[1][0], V[1][1], V[1][2]);
+      if (controls) { controls.target.copy(TARGET); controls.update(); }
+      else camera.lookAt(TARGET);
     };
-    eng.setSlice = function (z) { sliceZ = z | 0; waterMesh.scale.z = (NZ - sliceZ) / NZ; waterMesh.position.z = sliceZ / 2 * VOXEL; rebuild(); };
-    eng.setExcavate = function (b) { excavate = !!b; };
-    eng.setWaterTable = function (b) { waterMesh.visible = !!b; };
+    eng.setSlice = function (z) { sliceZ = cutawayReadout(z, NZ).step; waterMesh.scale.y = (NZ - sliceZ) / NZ; waterMesh.position.z = sliceZ / 2 * VOXEL; rebuild(); };
+    eng.setExcavate = function (b) { excavate = !!b && !focusLens; return excavate; };
+    eng.excavateAt = function (x, z) {
+      x = Math.round(Number(x)); z = Math.round(Number(z));
+      if (!excavate || focusLens || !isFinite(x) || !isFinite(z) || x < 0 || x >= NX || z < sliceZ || z >= NZ) return null;
+      var y = shallowest(x, z), voxel = y == null ? null : voxelByKey[x + ',' + y + ',' + z];
+      var formedAt = voxel ? FORMED_AT[voxel.key] : null; if (formedAt == null) formedAt = 0;
+      return !voxel || formedAt > showStage ? null : excavateVoxel(voxel);
+    };
+    eng.undoExcavate = function () { return undoExcavation(); };
+    eng.setUndoPreview = function (b) { undoPreviewRequested = !!b; return updateUndoPreview(); };
+    eng.setWaterTable = function (b) { waterTableOn = !!b; waterMesh.visible = waterTableOn && !focusLens; };
     eng.erupt = function () { startEruption(); };
-    eng.setHighlight = function (k) { highlightKey = (k && SCENE.voxelKeys && SCENE.voxelKeys.indexOf(k) >= 0) ? k : null; rebuild(); };
+    eng.setHighlight = function (k) { highlightKey = (k && SCENE.voxelKeys && SCENE.voxelKeys.indexOf(k) >= 0) ? k : null; hoverBox.visible = false; rebuild(); };
+    eng.setFocusLens = function (b) { focusLens = !!b; if (focusLens) { excavate = false; undoPreviewRequested = false; } hoverBox.visible = false; rebuild(); };
+    eng.getVisualState = function () { return { focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, sliceZ: sliceZ, excavate: excavate, excavatedCount: excavationHistory.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey }; };
     eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); };
-    eng.reset = function () { removed = {}; sliceZ = 0; rebuild(); };
+    eng.reset = function () { removed = {}; excavationHistory = []; undoPreviewRequested = false; undoPreviewKey = null; sliceZ = 0; waterMesh.scale.y = 1; waterMesh.position.z = 0; rebuild(); notifyExcavationChange(); };
     eng.setFirstPerson = function (on, o) { if (on) enterFP(o || {}); else exitFP(); };
     eng.fpInput = function (cmd, v) { if (cmd === 'move' && v) fp.input = Object.assign(fp.input, v); else if (cmd === 'look' && v) fp.turn = Object.assign(fp.turn, v); };
     eng.fpActive = function () { return !!fp.active; };
@@ -1547,9 +1656,10 @@
       cnv.removeEventListener('pointerdown', onDown); cnv.removeEventListener('pointerup', onUp); cnv.removeEventListener('webglcontextlost', onLost);
       cnv.removeEventListener('pointermove', onMoveHover); cnv.removeEventListener('pointerleave', onLeaveHover);
       if (ro) try { ro.disconnect(); } catch (e) {}
-      try { geo.dispose(); mat.dispose(); renderer.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose(); waterMesh.geometry.dispose(); waterMesh.material.dispose(); if (eng._treeGeo) eng._treeGeo.forEach(function (g) { g.dispose(); }); if (eng._treeMat) eng._treeMat.forEach(function (m) { m.dispose(); }); if (eng._volcanoDispose) eng._volcanoDispose.forEach(function (x) { x.dispose(); }); if (bgTex) bgTex.dispose(); underGlowGeo.dispose(); underGlowMat.dispose(); } catch (e) {}
+      try { geo.dispose(); mat.dispose(); renderer.dispose(); hoverSourceGeo.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose(); undoPreviewSourceGeo.dispose(); undoPreviewBox.geometry.dispose(); undoPreviewBox.material.dispose(); waterMesh.geometry.dispose(); waterMesh.material.dispose(); if (eng._treeGeo) eng._treeGeo.forEach(function (g) { g.dispose(); }); if (eng._treeMat) eng._treeMat.forEach(function (m) { m.dispose(); }); if (eng._volcanoDispose) eng._volcanoDispose.forEach(function (x) { x.dispose(); }); if (bgTex) bgTex.dispose(); underGlowGeo.dispose(); underGlowMat.dispose(); } catch (e) {}
       if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
     };
+    notifyExcavationChange();
     return eng;
   }
 
@@ -1562,7 +1672,7 @@
       crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
       fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel,
       fpSeedPose: fpSeedPose, fpBob: fpBob, layerChanged: layerChanged, fpBlurb: fpBlurb, fpBust: fpBust, fpProbe: fpProbe, fpAnnounceText: fpAnnounceText, easeInOutCubic: easeInOutCubic,
-      scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; }, quizBanks: function () { return QUIZ_BANKS; }, quizRemediation: quizRemediation, missions: function () { return SCENE_MISSIONS; }, lessonGuide: function () { return LESSON_GUIDE; }, evaluateCER: evaluateCER, evidenceMapDraft: evidenceMapDraft, nextMissionHint: nextMissionHint, missionAction: missionActionFor, sceneComparisons: function () { return SCENE_COMPARISONS; }, sceneComparisonInsight: sceneComparisonInsight, sceneProgress: sceneProgressFor, orientation: function () { return SCENE_ORIENTATION; }, vocabulary: function () { return SCENE_VOCABULARY; }, sequenceChallenges: function () { return SCENE_SEQUENCE_CHALLENGES; }, sequenceInitialOrder: sequenceInitialOrder, sequenceIsCorrect: sequenceIsCorrect, sequenceMoveBefore: sequenceMoveBefore, sceneJourney: sceneJourneyFor, sceneBeacons: sceneBeaconsFor, processCues: sceneProcessCueFor, sceneJourneyProgress: sceneJourneyProgressFor, evidenceMapRoles: function () { return EVIDENCE_MAP_ROLES; }, evidenceMapForScene: evidenceMapForScene, evidenceMapStatus: evidenceMapStatus,
+      scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; }, quizBanks: function () { return QUIZ_BANKS; }, quizRemediation: quizRemediation, missions: function () { return SCENE_MISSIONS; }, lessonGuide: function () { return LESSON_GUIDE; }, evaluateCER: evaluateCER, evidenceMapDraft: evidenceMapDraft, nextMissionHint: nextMissionHint, missionAction: missionActionFor, sceneComparisons: function () { return SCENE_COMPARISONS; }, sceneComparisonInsight: sceneComparisonInsight, sceneProgress: sceneProgressFor, orientation: function () { return SCENE_ORIENTATION; }, vocabulary: function () { return SCENE_VOCABULARY; }, sequenceChallenges: function () { return SCENE_SEQUENCE_CHALLENGES; }, sequenceInitialOrder: sequenceInitialOrder, sequenceIsCorrect: sequenceIsCorrect, sequenceMoveBefore: sequenceMoveBefore, sceneJourney: sceneJourneyFor, sceneBeacons: sceneBeaconsFor, processCues: sceneProcessCueFor, sceneTimeline: sceneTimelineFor, focusLensIncludes: focusLensIncludes, cutawayReadout: cutawayReadout, firstSolidVoxelY: firstSolidVoxelY, undoPreviewTarget: undoPreviewTarget, restoreEnginePresentation: restoreEnginePresentation, sceneJourneyProgress: sceneJourneyProgressFor, evidenceMapRoles: function () { return EVIDENCE_MAP_ROLES; }, evidenceMapForScene: evidenceMapForScene, evidenceMapStatus: evidenceMapStatus,
       grid: function () { return { NX: NX, NY: NY, NZ: NZ, KM_PER_VOXEL: KM_PER_VOXEL, VOXEL: VOXEL }; }
     };
   } catch (e) {}
@@ -1607,8 +1717,11 @@
       var identifiedRef = React.useRef(d.identified || {}); identifiedRef.current = d.identified || {};
       var st = React.useState(false); var webglError = st[0], setWebglError = st[1];
       var ss = React.useState(null); var selected = ss[0], setSelected = ss[1];
+      var fln = React.useState(false); var focusLensOn = fln[0], setFocusLensOn = fln[1];
       var slc = React.useState(0); var slice = slc[0], setSlice = slc[1];
       var exc = React.useState(false); var excavate = exc[0], setExcavate = exc[1];
+      var dgc = React.useState(0); var digCount = dgc[0], setDigCount = dgc[1];
+      var undoPreviewIntentRef = React.useRef({ hover: false, focus: false });
       var cph = React.useState([]); var cyclePath = cph[0], setCyclePath = cph[1];
       var hst = React.useState(-1); var histStage = hst[0], setHistStage = hst[1];
       var histTimer = React.useRef(null);
@@ -1643,6 +1756,9 @@
       var bto = React.useState(false); var beaconTourOn = bto[0], setBeaconTourOn = bto[1];
       var bts = React.useState(0); var beaconTourStep = bts[0], setBeaconTourStep = bts[1];
       var cvs = React.useState('iso'); var cameraViewState = cvs[0], setCameraViewState = cvs[1];
+      var selectedKeyRef = React.useRef(null); selectedKeyRef.current = selected ? selected.key : null;
+      var focusLensRef = React.useRef(false); focusLensRef.current = focusLensOn;
+      var cameraViewRef = React.useRef('iso'); cameraViewRef.current = cameraViewState;
       var tts = React.useState(false); var ttsSpeaking = tts[0], setTtsSpeaking = tts[1];
       var ttsAudioRef = React.useRef(null);
       var ttsSessionRef = React.useRef(0);
@@ -1667,6 +1783,7 @@
       var fpToggleRef = React.useRef(null); var fpPrevFocusRef = React.useRef(null); var fpAnnAtRef = React.useRef(0);   // SR announce debounce clock
       setScene(scene); setGrid(res);   // sync active scene + module grid (NX/NY/NZ/VOXEL/KM_PER_VOXEL) before render + effects read them
       var feat = SCENE.features;
+      var cutaway = cutawayReadout(slice, NZ);
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
       function routeTargetClass(target) { return routeTarget === target ? ' ring-2 ring-amber-400 ring-offset-2 ' : ''; }
@@ -1844,8 +1961,8 @@
       function motionReduced() { try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } }
       function playHistory() {
         clearHistTimer();
-        setSelected(null); setSlice(0); setExcavate(false);
-        try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); window[ENGINE_KEY].setHighlight(null); } } catch (e) {}
+        setSelected(null); setFocusLensOn(false); setSlice(0); setExcavate(false);
+        try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); window[ENGINE_KEY].setHighlight(null); if (window[ENGINE_KEY].setFocusLens) window[ENGINE_KEY].setFocusLens(false); } } catch (e) {}
         var n = 0; goStage(0);
         if (motionReduced()) { goStage(HISTORY.length - 1); return; }
         function tick() { n++; if (n >= HISTORY.length) { histTimer.current = null; return; } goStage(n); histTimer.current = setTimeout(tick, 2600); }
@@ -1857,8 +1974,8 @@
       function eruptGo(n) { setEruptStage(n); var s = ERUPT[n]; if (s) announce(s.fb); }
       function playEruption() {
         if (eruptTimer.current) clearTimeout(eruptTimer.current);
-        setSelected(null); setSlice(0); setExcavate(false);
-        try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].setExcavate(false); window[ENGINE_KEY].setSlice(0); window[ENGINE_KEY].setHighlight(null); if (!motionReduced()) window[ENGINE_KEY].erupt(); } } catch (e) {}
+        setSelected(null); setFocusLensOn(false); setSlice(0); setExcavate(false);
+        try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].setExcavate(false); window[ENGINE_KEY].setSlice(0); window[ENGINE_KEY].setHighlight(null); if (window[ENGINE_KEY].setFocusLens) window[ENGINE_KEY].setFocusLens(false); if (!motionReduced()) window[ENGINE_KEY].erupt(); } } catch (e) {}
         var n = 0; eruptGo(0);
         if (motionReduced()) { eruptGo(ERUPT.length - 1); setTimeout(function () { setEruptStage(-1); selectRock(rockFacts('basalt', 0)); }, 0); return; }
         function tick() {
@@ -1977,9 +2094,11 @@
             onSelect: function (facts) { selectRock(facts); },
             onUncover: function (k) { uncoverFossil(k); },
             onFlash: function (m) { addToast(m, 'info'); },
+            onExcavateChange: function (count) { if (!count) undoPreviewIntentRef.current = { hover: false, focus: false }; setDigCount(count); },
             onFpProbe: function (p) { if (!p) return; setFpHud(p); var nw = (window.performance && performance.now) ? performance.now() : Date.now(); if (nw - fpAnnAtRef.current > 1200) { fpAnnAtRef.current = nw; announce(fpAnnounceText(p)); } },   // HUD every layer change; SR debounced so fast flight can't flood it
-            onContextLost: function () { setWebglError(true); try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].dispose(); window[ENGINE_KEY] = null; } } catch (e) {} }
+            onContextLost: function () { setWebglError(true); setDigCount(0); try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].dispose(); window[ENGINE_KEY] = null; } } catch (e) {} }
           });
+          restoreEnginePresentation(window[ENGINE_KEY], selectedKeyRef.current, focusLensRef.current, cameraViewRef.current);
         } catch (e) { setWebglError(true); }
         return function () { try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].dispose(); window[ENGINE_KEY] = null; } } catch (e) {} };
       }, [threeReady, webglError, res, scene]);
@@ -2033,11 +2152,49 @@
       var ink = isDark ? 'text-slate-100' : 'text-slate-800';
 
       // ── selected info panel (shared by 3D + list) ──
+      function toggleFocusLens() {
+        if (!selected) return;
+        var next = !focusLensOn, pausedDigging = next && excavate;
+        if (next) clearUndoPreviewIntent();
+        setFocusLensOn(next);
+        if (pausedDigging) setExcavate(false);
+        try {
+          if (window[ENGINE_KEY]) {
+            if (pausedDigging && window[ENGINE_KEY].setExcavate) window[ENGINE_KEY].setExcavate(false);
+            if (window[ENGINE_KEY].setFocusLens) window[ENGINE_KEY].setFocusLens(next);
+          }
+        } catch (e) {}
+        announce(next ? 'Focus lens on. Showing ' + selected.R.name + ' apart from surrounding materials.' + (pausedDigging ? ' Excavation was turned off while surrounding layers are hidden.' : '') : 'Focus lens off. Full scene context restored.');
+      }
+      function previewLastExcavation(on) {
+        try { return !!(window[ENGINE_KEY] && window[ENGINE_KEY].setUndoPreview && window[ENGINE_KEY].setUndoPreview(!!on)); } catch (e) { return false; }
+      }
+      function setUndoPreviewIntent(kind, on) {
+        var intent = undoPreviewIntentRef.current || { hover: false, focus: false };
+        intent[kind] = !!on; undoPreviewIntentRef.current = intent;
+        return previewLastExcavation(intent.hover || intent.focus);
+      }
+      function clearUndoPreviewIntent() {
+        undoPreviewIntentRef.current = { hover: false, focus: false };
+        return previewLastExcavation(false);
+      }
+      function undoLastExcavation() {
+        var engine = window[ENGINE_KEY];
+        clearUndoPreviewIntent();
+        if (!engine || !engine.undoExcavate) return;
+        var restored = engine.undoExcavate();
+        if (!restored) { announce('There is no excavation to undo.'); return; }
+        var facts = rockFacts(restored.key, restored.y);
+        selectRock(facts, false, 'Restored ' + restored.name + '. ' + (restored.remaining ? restored.remaining + ' excavated blocks remain.' : 'The outcrop is back to its original surface.'));
+      }
       function infoPanel() {
         if (!selected) return h('div', { className: 'text-xs ' + muted + ' p-3 rounded-xl border ' + cardBg }, t('stem.geology.pick_hint', 'Pick a rock — in the 3D block or the list below — to see its type, depth, temperature/pressure, how it forms, and its age relationship.'));
         var f = selected, R = f.R, tc = TYPE_COLOR[R.type] || '#64748b', F = FOSSILS[f.key];
         return h('div', { className: 'p-3 rounded-xl border ' + cardBg, style: { borderLeft: '3px solid ' + tc }, role: 'region', 'aria-label': 'Selected rock details' },
-          h('div', { className: 'text-base font-extrabold tracking-tight ' + ink }, R.name),
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, [
+            h('div', { key: 'name', className: 'text-base font-extrabold tracking-tight ' + ink }, R.name),
+            h('button', { key: 'lens', type: 'button', 'aria-pressed': focusLensOn ? 'true' : 'false', 'aria-label': 'Isolate selected material in the scene', 'data-geology-focus-lens': 'true', onClick: toggleFocusLens, className: 'rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ' + (focusLensOn ? 'border-cyan-400 bg-cyan-600 text-white' : (isDark ? 'border-slate-600 bg-slate-900/60 text-slate-100 hover:border-cyan-400' : 'border-slate-300 bg-white text-slate-700 hover:border-cyan-500')) }, focusLensOn ? '◉ Focus lens: ON' : '◎ Focus lens: OFF')
+          ]),
           h('span', { className: 'inline-block text-[11px] font-bold px-2 py-0.5 rounded-full mt-1 mb-2', style: { color: tc, background: tc + '22', border: '1px solid ' + tc + '55' } }, R.type),
           h('div', { className: 'grid gap-1 text-[12px] ' + ink, style: { gridTemplateColumns: '64px 1fr' } },
             h('span', { className: muted }, t('stem.geology.depth', 'Depth')), h('span', null, '≈ ' + f.depthKm + ' km'),
@@ -2651,7 +2808,7 @@
                 var done = !!journeyComplete[index];
                 return h('button', { key: item.key, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': 'Stage ' + (index + 1) + ': ' + item.label, 'data-geology-journey-step': item.key, 'data-geology-journey-complete': done ? 'true' : 'false', onClick: function () { chooseJourneyStep(index); }, className: 'min-w-0 rounded-lg border px-1.5 py-2 text-center transition-colors ' + (on ? 'border-violet-500 bg-violet-600 text-white shadow-sm' : (done ? (isDark ? 'border-emerald-500/60 bg-emerald-950/20 text-emerald-200 hover:border-emerald-400' : 'border-emerald-300 bg-emerald-50 text-emerald-800 hover:border-emerald-400') : (isDark ? 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-violet-400' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-violet-400'))) }, [
                   h('span', { key: 'number', className: 'mx-auto flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-black ' + (on ? 'border-white/60 bg-white/15' : (done ? (isDark ? 'border-emerald-400 text-emerald-200' : 'border-emerald-500 text-emerald-700') : (isDark ? 'border-slate-600 bg-slate-800' : 'border-slate-300 bg-white'))) }, done ? '✓' : index + 1),
-                  h('span', { key: 'label', className: 'mt-1 block text-[10px] font-bold leading-tight' }, item.label),
+                  h('span', { key: 'label', className: 'mt-1 block text-[10px] font-bold leading-tight' }, item.cueLabel),
                   h('span', { key: 'status', className: 'mt-0.5 block text-[10px] font-semibold opacity-80', 'aria-hidden': 'true' }, done ? 'Evidence linked' : 'Explore next')
                 ]);
               }))
@@ -2851,9 +3008,12 @@
       // ── accessible cross-section: SVG diagram + keyboard strata list (the non-3D core) ──
       function crossSectionSVG() {
         var bands = ['soil', 'sandstone', 'shale', 'limestone', 'basement', 'magma'];
+        var focusKey = focusLensOn && selected ? selected.key : null;
+        var crossFocus = !!focusKey && (bands.indexOf(focusKey) >= 0 || focusKey === 'intrusion');
         var bh = 26, W = 150, rows = bands.map(function (k, i) {
-          return h('g', { key: k },
-            h('rect', { x: 0, y: i * bh, width: W, height: bh, fill: hex(ROCKS[k].color), stroke: 'rgba(0,0,0,0.25)' }),
+          var focusState = !crossFocus ? 'context' : (focusKey === k ? 'match' : 'muted');
+          return h('g', { key: k, opacity: focusState === 'muted' ? 0.2 : 1, 'data-geology-focus-state': focusState },
+            h('rect', { x: 0, y: i * bh, width: W, height: bh, fill: hex(ROCKS[k].color), stroke: focusState === 'match' ? '#fbbf24' : 'rgba(0,0,0,0.25)', strokeWidth: focusState === 'match' ? 2 : 1 }),
             h('text', { x: 6, y: i * bh + 17, fontSize: 10, fill: i >= 4 ? '#fff' : '#1e293b', style: { fontWeight: 600 } }, ROCKS[k].name)
           );
         });
@@ -2866,17 +3026,21 @@
             h('line', { x1: 0, y1: 1.55 * bh, x2: W, y2: 1.55 * bh, stroke: '#1d4ed8', strokeWidth: 1.5, strokeDasharray: '5 2' }),
             h('text', { x: W - 5, y: 1.55 * bh - 3, fontSize: 10, fill: '#1d4ed8', textAnchor: 'end', style: { fontWeight: 700 } }, '💧')
           ) : null,
-          h('polygon', { points: (W / 2) + ',' + (bands.length * bh) + ' ' + (W / 2 - 14) + ',' + (2 * bh) + ' ' + (W / 2 + 14) + ',' + (2 * bh), fill: hex(ROCKS.intrusion.color), opacity: 0.92, stroke: 'rgba(255,255,255,0.4)' })
+          h('polygon', { points: (W / 2) + ',' + (bands.length * bh) + ' ' + (W / 2 - 14) + ',' + (2 * bh) + ' ' + (W / 2 + 14) + ',' + (2 * bh), fill: hex(ROCKS.intrusion.color), opacity: crossFocus && focusKey !== 'intrusion' ? 0.2 : 0.92, stroke: crossFocus && focusKey === 'intrusion' ? '#fbbf24' : 'rgba(255,255,255,0.4)', strokeWidth: crossFocus && focusKey === 'intrusion' ? 2 : 1, 'data-geology-focus-state': !crossFocus ? 'context' : (focusKey === 'intrusion' ? 'match' : 'muted') })
         );
       }
       function strataList() {
         return h('div', { role: 'group', 'aria-label': 'Rock types ? select to learn more', tabIndex: -1, 'data-geology-target': 'materials', className: 'grid grid-cols-2 gap-1.5' + routeTargetClass('materials') },
           SCENE.order.map(function (k) {
             var R = SCENE.palette[k];
+            var focusState = !focusLensOn || !selected ? 'context' : (selected.key === k ? 'match' : 'muted');
             return h('button', {
               key: k, type: 'button',
+              'aria-pressed': selected && selected.key === k ? 'true' : 'false',
+              'data-geology-material': k,
+              'data-geology-focus-state': focusState,
               onClick: function () { selectRock(rockFacts(k, DEPTH_GUESS[k] || 4)); },
-              className: 'transition active:scale-[0.97] hover:-translate-y-px flex items-center gap-2 text-left px-2 py-1.5 rounded-lg border text-[11.5px] ' + (selected && selected.key === k ? 'ring-2 ring-amber-400 ' : '') + cardBg + ' ' + ink + ' hover:border-amber-400 hover:shadow-md'
+              className: 'transition active:scale-[0.97] hover:-translate-y-px flex items-center gap-2 text-left px-2 py-1.5 rounded-lg border text-[11.5px] ' + (focusState === 'muted' ? 'opacity-40 ' : '') + (selected && selected.key === k ? 'ring-2 ring-amber-400 ' : '') + cardBg + ' ' + ink + ' hover:border-amber-400 hover:shadow-md'
             },
               h('span', { 'aria-hidden': 'true', className: 'w-3.5 h-3.5 rounded flex-none', style: { background: hex(R.color), boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.15)' } }),
               h('span', { className: 'truncate font-semibold' }, R.name)
@@ -2888,21 +3052,52 @@
 
 
 
-      function cameraViewLabel(view) { return view === 'front' ? 'Front cross-section' : (view === 'top' ? 'Top-down map' : '3D overview'); }
+      function normalizeCameraView(view) { return view === 'front' || view === 'top' ? view : 'iso'; }
+      function cameraViewLabel(view) { var next = normalizeCameraView(view); return next === 'front' ? 'Front cross-section' : (next === 'top' ? 'Top-down map' : '3D overview'); }
       function setCameraView(view) {
-        setCameraViewState(view); announce('Camera view: ' + cameraViewLabel(view) + '.');
-        try { if (window[ENGINE_KEY] && window[ENGINE_KEY].setView) window[ENGINE_KEY].setView(view); } catch (e) {}
+        var next = normalizeCameraView(view);
+        setCameraViewState(next); announce('Camera view: ' + cameraViewLabel(next) + '.');
+        try { if (window[ENGINE_KEY] && window[ENGINE_KEY].setView) window[ENGINE_KEY].setView(next); } catch (e) {}
       }
+
+      function formationTimelinePanel() {
+        var timeline = sceneTimelineFor(SCENE.id), activeIndex = Math.max(0, Math.min(sceneJourneyStep, timeline.length - 1)), active = timeline[activeIndex];
+        function chooseStage(index) {
+          var next = timeline[Math.max(0, Math.min(index, timeline.length - 1))], beacon = sceneBeaconsFor(SCENE.id).filter(function (item) { return item.id === next.beaconId; })[0];
+          if (beacon) activateBeacon(beacon); else { setSceneJourneyStep(next.index); announce(next.label + '. ' + next.body); }
+        }
+        return h('section', { className: 'rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Formation timeline', 'data-geology-formation-timeline': 'true' },
+          h('div', { className: 'p-3' }, [
+            h('div', { key: 'head', className: 'flex flex-wrap items-start justify-between gap-2' }, [
+              h('div', { key: 'copy' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-sky-300' : 'text-sky-700') }, 'Formation timeline'), h('h3', { className: 'mt-1 text-[12px] font-extrabold ' + ink }, 'Scrub the scene story'), h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + muted }, 'Move through the three events to see the matching landmark and process cue.')),
+              h('span', { key: 'count', className: 'text-[10px] font-bold ' + muted, 'data-geology-timeline-position': 'true' }, 'Stage ' + (activeIndex + 1) + ' of ' + timeline.length)
+            ]),
+            h('input', { key: 'range', type: 'range', min: 0, max: timeline.length - 1, step: 1, value: activeIndex, 'aria-label': 'Formation timeline stage', 'aria-valuetext': 'Stage ' + (activeIndex + 1) + ': ' + active.cueLabel, 'data-geology-timeline-range': 'true', onChange: function (e) { chooseStage(Number(e.target.value)); }, className: 'mt-3 w-full' }),
+            h('div', { key: 'stages', className: 'mt-2 grid grid-cols-3 gap-1.5' }, timeline.map(function (item, index) {
+              var on = index === activeIndex;
+              return h('button', { key: item.key, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': 'Timeline stage ' + (index + 1) + ': ' + item.cueLabel, 'data-geology-timeline-stage': item.key, onClick: function () { chooseStage(index); }, className: 'min-w-0 rounded-lg border px-1.5 py-2 text-center transition-colors ' + (on ? 'border-sky-500 bg-sky-600 text-white shadow-sm' : btnIdle) }, [
+                h('span', { key: 'number', className: 'mx-auto flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-black' }, index + 1),
+                h('span', { key: 'label', className: 'mt-1 block text-[10px] font-bold leading-tight' }, item.cueLabel),
+                h('span', { key: 'beacon', className: 'mt-0.5 block truncate text-[10px] font-semibold opacity-80' }, item.beaconLabel)
+              ]);
+            })),
+            h('div', { key: 'detail', className: 'mt-3 rounded-lg border-l-2 border-sky-400 bg-sky-500/10 p-2.5', role: 'status', 'data-geology-timeline-detail': 'true' }, [
+              h('div', { key: 'title', className: 'text-[11px] font-extrabold ' + ink }, active.cueLabel + ' · ' + active.beaconLabel),
+              h('p', { key: 'body', className: 'mt-0.5 text-[11px] leading-relaxed ' + ink }, active.body)
+            ])
+          ]));
+      }
+
       function cameraCompassOverlay() {
         if (fpOn) return null;
-        return h('div', { className: 'absolute bottom-2 right-2 z-10 flex items-center gap-2 rounded-lg border border-white/20 bg-slate-950/80 px-2 py-1.5 text-white shadow-lg', role: 'group', 'aria-label': 'Camera compass', 'data-geology-camera-compass': 'true' }, [
+        return h('div', { className: 'pointer-events-none absolute bottom-2 right-2 z-10 hidden items-center gap-2 rounded-lg border border-white/20 bg-slate-950/80 px-2 py-1.5 text-white shadow-lg sm:flex', 'aria-hidden': 'true', 'data-geology-camera-compass': 'true' }, [
           h('div', { key: 'compass', className: 'relative flex h-8 w-8 items-center justify-center rounded-full border border-slate-400/70 text-[10px] font-black' }, [
-            h('span', { key: 'north', className: 'absolute -top-1.5 text-[8px] text-amber-200' }, 'N'),
-            h('span', { key: 'west', className: 'absolute -left-1.5 text-[8px] text-slate-300' }, 'W'),
-            h('span', { key: 'east', className: 'absolute -right-1.5 text-[8px] text-slate-300' }, 'E'),
+            h('span', { key: 'north', className: 'absolute -top-2 text-[10px] text-amber-200' }, 'N'),
+            h('span', { key: 'west', className: 'absolute -left-2 text-[10px] text-slate-300' }, 'W'),
+            h('span', { key: 'east', className: 'absolute -right-2 text-[10px] text-slate-300' }, 'E'),
             h('span', { key: 'needle', className: 'text-amber-300 motion-safe:transition-transform motion-reduce:transition-none', style: { transform: cameraViewState === 'top' ? 'rotate(90deg)' : (cameraViewState === 'front' ? 'rotate(180deg)' : 'rotate(35deg)') } }, '↗')
           ]),
-          h('div', { key: 'label', className: 'min-w-0' }, h('div', { className: 'text-[9px] font-black uppercase tracking-wider text-amber-200' }, 'Orientation'), h('div', { className: 'text-[10.5px] font-bold' }, cameraViewLabel(cameraViewState)))
+          h('div', { key: 'label', className: 'min-w-0' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wider text-amber-200' }, 'Orientation'), h('div', { className: 'text-[10.5px] font-bold' }, cameraViewLabel(cameraViewState)))
         ]);
       }
       function cameraOrientationPanel() {
@@ -2921,8 +3116,8 @@
       function processCueOverlay() {
         if (fpOn) return null;
         var cue = sceneProcessCueFor(SCENE.id), index = Math.max(0, Math.min(sceneJourneyStep, cue.steps.length - 1)), step = cue.steps[index];
-        return h('div', { className: 'absolute bottom-2 left-2 z-10 max-w-[min(19rem,calc(100%-4rem))] rounded-lg border border-white/20 bg-slate-950/85 p-2 text-white shadow-lg', role: 'group', 'aria-label': 'Active process cue', 'data-geology-process-overlay': 'true' }, [
-          h('div', { key: 'title', className: 'flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-200' }, [h('span', { key: 'pulse', className: 'h-2 w-2 rounded-full bg-amber-300 motion-safe:animate-pulse motion-reduce:animate-none', 'aria-hidden': 'true' }), cue.title]),
+        return h('div', { className: 'pointer-events-none absolute bottom-12 left-2 z-10 hidden rounded-lg border border-white/20 bg-slate-950/85 p-2 text-white shadow-lg sm:block', style: { maxWidth: 'min(19rem, calc(100% - 6rem))' }, 'aria-hidden': 'true', 'data-geology-process-overlay': 'true' }, [
+          h('div', { key: 'title', className: 'flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-200' }, [h('span', { key: 'pulse', className: 'h-2 w-2 rounded-full bg-amber-300 ring-2 ring-amber-300/30', 'aria-hidden': 'true' }), cue.title]),
           h('div', { key: 'step', className: 'mt-1 text-[11px] font-bold' }, 'Stage ' + (index + 1) + ': ' + step.label),
           h('p', { key: 'detail', className: 'mt-0.5 text-[10.5px] leading-snug text-slate-200' }, step.detail)
         ]);
@@ -2950,14 +3145,15 @@
 
       function activateBeacon(beacon) {
         if (!beacon) return;
-        setActiveBeaconId(beacon.id); setSceneJourneyStep(Number.isFinite(beacon.stage) ? beacon.stage : 0); setModeState('investigate'); upd('mode', 'investigate');
-        setRouteTarget('beacons'); setHintShown(false);
-        try { if (window[ENGINE_KEY]) { if (beacon.view) setCameraView(beacon.view); if (beacon.key && window[ENGINE_KEY].setHighlight) window[ENGINE_KEY].setHighlight(beacon.key); } } catch (e) {}
+        var stage = Number.isFinite(beacon.stage) ? beacon.stage : 0;
+        setActiveBeaconId(beacon.id); setSceneJourneyStep(stage); setBeaconTourStep(stage); setModeState('investigate'); upd('mode', 'investigate');
+        setRouteTarget(null); setHintShown(false);
+        if (beacon.view) setCameraView(beacon.view);
+        try { if (window[ENGINE_KEY] && beacon.key && window[ENGINE_KEY].setHighlight) window[ENGINE_KEY].setHighlight(beacon.key); } catch (e) {}
         if (missionForScene().signal && Number.isFinite(beacon.stage)) revealSignalStep(beacon.stage);
         else if (beacon.key && SCENE.palette && SCENE.palette[beacon.key]) selectRock(rockFacts(beacon.key, DEPTH_GUESS[beacon.key] || 4), false, beacon.detail);
         addNotebookEvidence('landmark', beacon.label, beacon.detail, 'beacon-' + beacon.id);
         announce(beacon.label + '. ' + beacon.detail);
-        setTimeout(function () { try { var node = document.querySelector('[data-geology-target="beacons"]'); if (node) { node.scrollIntoView({ behavior: motionReduced() ? 'auto' : 'smooth', block: 'center' }); try { node.focus({ preventScroll: true }); } catch (e) { node.focus(); } } } catch (e) {} }, 80);
       }
 
       function startBeaconTour() {
@@ -2999,7 +3195,7 @@
         if (fpOn) return null;
         return h('div', { className: 'absolute right-2 top-14 z-10 grid gap-1', role: 'group', 'aria-label': '3D evidence beacons', 'data-geology-beacon-overlay': 'true' }, sceneBeaconsFor(SCENE.id).map(function (beacon, index) {
           var on = beacon.id === activeBeaconId;
-          return h('button', { key: beacon.id, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': 'Highlight ' + beacon.label, 'data-geology-beacon-overlay-item': beacon.id, 'data-tooltip': beacon.label, onClick: function () { activateBeacon(beacon); }, className: 'flex h-7 w-7 items-center justify-center rounded-full border text-[10px] font-black shadow-sm ' + (on ? 'border-amber-200 bg-amber-400 text-amber-950' : (isDark ? 'border-slate-500 bg-slate-900/90 text-amber-200' : 'border-slate-300 bg-white/90 text-amber-700')) }, String(index + 1));
+          return h('button', { key: beacon.id, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': 'Highlight ' + beacon.label, 'data-geology-beacon-overlay-item': beacon.id, 'data-tooltip': beacon.label, onClick: function () { activateBeacon(beacon); }, className: 'flex min-h-11 min-w-11 items-center justify-center rounded-full border text-[10px] font-black shadow-sm ' + (on ? 'border-amber-200 bg-amber-400 text-amber-950' : (isDark ? 'border-slate-500 bg-slate-900/90 text-amber-200' : 'border-slate-300 bg-white/90 text-amber-700')) }, String(index + 1));
         }));
       }
 
@@ -3033,12 +3229,13 @@
           h('div', { ref: containerRef, tabIndex: fpOn ? 0 : undefined, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: 320, background: '#060913', cursor: fpOn ? 'move' : (excavate ? 'crosshair' : 'grab') }, className: fpOn ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-inset' : undefined, role: fpOn ? 'application' : 'img', 'aria-label': fpOn ? 'First-person geology explorer. W A S D or arrow keys to fly, Q and E for up and down, I J K L or drag to look, Escape to exit.' : 'Interactive 3D voxel cross-section of the crust. Use the rock list below for a non-visual version.' }),
           h('div', { className: 'absolute top-2 left-2 z-10 flex gap-1' },
             [['iso', '3D'], ['front', 'Front'], ['top', 'Top']].map(function (vw) {
-              return h('button', { key: vw[0], type: 'button', disabled: fpOn, onClick: function () { setCameraView(vw[0]); }, 'aria-label': 'Camera view: ' + vw[1], className: 'transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'opacity-40 cursor-not-allowed ' : '') + (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white') }, vw[1]);
+              var activeView = cameraViewState === vw[0];
+              return h('button', { key: vw[0], type: 'button', disabled: fpOn, 'aria-pressed': activeView ? 'true' : 'false', 'data-geology-camera-view': vw[0], onClick: function () { setCameraView(vw[0]); }, 'aria-label': 'Camera view: ' + vw[1], className: 'min-h-9 transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'opacity-40 cursor-not-allowed ' : '') + (activeView ? 'border-sky-400 bg-sky-600 text-white' : (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white')) }, vw[1]);
             }).concat([
               h('button', { key: 'fp', ref: fpToggleRef, type: 'button', 'aria-pressed': fpOn ? 'true' : 'false', 'aria-label': fpOn ? 'Exit first-person explorer' : 'Drop into the world — first-person explorer', onClick: function () { setFpOn(function (v) { return !v; }); }, className: 'transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'bg-emerald-500 border-emerald-400 text-emerald-950' : (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white')) }, fpOn ? ('🚪 ' + t('stem.geology.fp_exit', 'Exit')) : ('🚶 ' + t('stem.geology.fp_enter', 'Drop in')))
             ])),
           h('button', { ref: fsToggleRef, type: 'button', 'data-geology-fullscreen-toggle': 'true', onClick: toggleFullscreen, title: isFs ? t('stem.geology.exit_fullscreen', 'Exit fullscreen') : t('stem.geology.fullscreen', 'Fullscreen'), 'aria-label': isFs ? 'Exit fullscreen 3D view' : 'Fullscreen 3D view', className: 'absolute top-2 right-2 z-10 min-h-11 min-w-11 transition-colors active:scale-[0.97] text-base leading-none px-2 py-1.5 rounded-lg border ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/85 border-slate-300 text-slate-700 hover:bg-white') }, isFs ? '✕' : '⛶'),
-          fpOn ? null : h('select', { value: res, 'aria-label': t('stem.geology.detail', 'Voxel detail level'), title: t('stem.geology.detail_tip', 'Higher detail = smaller, sharper voxels (heavier on weak devices)'), onChange: function (e) { var v = e.target.value; setRes(v); upd('res', v); setSlice(0); setExcavate(false); }, className: 'absolute bottom-2 left-2 z-10 text-[10px] font-bold px-1.5 py-1 rounded-md border cursor-pointer ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100' : 'bg-white/85 border-slate-300 text-slate-700') },
+          fpOn ? null : h('select', { value: res, 'aria-label': t('stem.geology.detail', 'Voxel detail level'), title: t('stem.geology.detail_tip', 'Higher detail = smaller, sharper voxels (heavier on weak devices)'), onChange: function (e) { var v = e.target.value; setRes(v); upd('res', v); setSlice(0); setExcavate(false); setDigCount(0); }, className: 'absolute bottom-2 left-2 z-10 text-[10px] font-bold px-1.5 py-1 rounded-md border cursor-pointer ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100' : 'bg-white/85 border-slate-300 text-slate-700') },
             h('option', { value: 'low' }, t('stem.geology.detail_low', 'Detail: Low')),
             h('option', { value: 'standard' }, t('stem.geology.detail_std', 'Detail: Standard')),
             h('option', { value: 'high' }, t('stem.geology.detail_high', 'Detail: High'))),
@@ -3048,7 +3245,7 @@
             padBtn('◀', 'strafe', -1, 'Move left'), padBtn('▼', 'fwd', -1, 'Move back'), padBtn('▶', 'strafe', 1, 'Move right'),
             padBtn('⤒', 'vert', 1, 'Move up'), emptyCell('c'), padBtn('⤓', 'vert', -1, 'Move down')) : null,
           // on-screen key legend (visual; SR gets layer announcements via the live region)
-          fpOn ? h('div', { className: 'absolute bottom-2 left-1/2 -translate-x-1/2 z-10 text-[9.5px] px-2 py-1 rounded-md whitespace-nowrap ' + (isDark ? 'bg-slate-900/70 text-slate-300' : 'bg-white/80 text-slate-600'), 'aria-hidden': 'true' }, t('stem.geology.fp_keys', 'WASD / arrows fly · Q E up·down · IJKL / drag look · Esc exit')) : null,
+          fpOn ? h('div', { className: 'absolute bottom-2 left-1/2 -translate-x-1/2 z-10 text-[10px] px-2 py-1 rounded-md whitespace-nowrap ' + (isDark ? 'bg-slate-900/70 text-slate-300' : 'bg-white/80 text-slate-600'), 'aria-hidden': 'true' }, t('stem.geology.fp_keys', 'WASD / arrows fly · Q E up·down · IJKL / drag look · Esc exit')) : null,
           // live "you are here" science HUD (announced separately via the polite live region)
           (fpOn && fpHud) ? h('div', { className: 'absolute bottom-2 right-2 z-10 max-w-[220px] p-2.5 rounded-xl border ' + (isDark ? 'bg-slate-900/85 border-slate-600 text-slate-100' : 'bg-white/90 border-slate-300 text-slate-800'), role: 'status', 'aria-hidden': 'true' },
             h('div', { className: 'text-[12px] font-extrabold' }, '📍 ' + fpHud.layerName),
@@ -3168,7 +3365,7 @@
               'aria-selected': on ? 'true' : 'false',
               tabIndex: on ? 0 : -1,
               onKeyDown: function(e) { geologySceneTabKeyDown(e, sceneIndex); },
-              onClick: function () { if (sid === scene) return; setSceneState(sid); upd('scene', sid); setCompareSceneId(defaultComparisonScene(sid)); setModeState('explore'); upd('mode', 'explore'); setHintShown(false); setVocabularyOpen(false); setSequenceOrder(sequenceInitialOrder(sid)); setSequenceFeedback(null); setSequenceDragKey(null); setSequenceTapKey(null); setSceneJourneyStep(0); setCompareStage(0); setActiveBeaconId(null); setBeaconTourOn(false); setBeaconTourStep(0); setCameraViewState('iso'); setRouteTarget(null); setSignalStep((d.sceneSignals && Number.isFinite(d.sceneSignals[sid])) ? d.sceneSignals[sid] : 0); setSlice(0); setExcavate(false); setSelected(null); setCompareList([]); setCore(null); setWaterOn(false); setQuizI(0); setQuizAns(null); },
+              onClick: function () { if (sid === scene) return; setSceneState(sid); upd('scene', sid); setCompareSceneId(defaultComparisonScene(sid)); setModeState('explore'); upd('mode', 'explore'); setHintShown(false); setVocabularyOpen(false); setSequenceOrder(sequenceInitialOrder(sid)); setSequenceFeedback(null); setSequenceDragKey(null); setSequenceTapKey(null); setSceneJourneyStep(0); setCompareStage(0); setActiveBeaconId(null); setBeaconTourOn(false); setBeaconTourStep(0); setCameraViewState('iso'); setFocusLensOn(false); setRouteTarget(null); setSignalStep((d.sceneSignals && Number.isFinite(d.sceneSignals[sid])) ? d.sceneSignals[sid] : 0); setSlice(0); setExcavate(false); setDigCount(0); setSelected(null); setCompareList([]); setCore(null); setWaterOn(false); setQuizI(0); setQuizAns(null); },
               className: 'transition-colors active:scale-[0.97] text-xs font-bold px-3 py-1.5 rounded-lg border ' + (on ? 'bg-violet-600 border-violet-500 text-white' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'))
             }, SCENES[sid].label);
           })),
@@ -3181,19 +3378,22 @@
             inInvestigation && feat.volcano ? eruptionBar() : null,
             viewport(),
             cameraOrientationPanel(),
+            formationTimelinePanel(),
             sceneBeaconPanel(),
             processCuePanel(),
             // controls
             h('div', { className: 'flex flex-wrap items-center gap-2' },
-              h('label', { className: 'flex items-center gap-2 text-xs ' + ink },
-                h('span', { className: muted }, t('stem.geology.slice', 'Slice')),
-                h('input', { type: 'range', min: 0, max: NZ - 1, value: slice, disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, 'aria-label': 'Cross-section slice depth', onChange: function (e) { var v = +e.target.value; setSlice(v); if (window[ENGINE_KEY]) window[ENGINE_KEY].setSlice(v); } })),
-              inInvestigation && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { var nv = !excavate; setExcavate(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setExcavate(nv); }, 'aria-pressed': excavate ? 'true' : 'false', className: btn + (excavate ? 'bg-amber-500 border-amber-400 text-amber-950' : btnIdle) }, '⛏️ ' + t('stem.geology.excavate', 'Excavate') + ': ' + (excavate ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
-              h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { setSlice(0); setExcavate(false); if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); } }, className: btn + btnIdle }, '↺ ' + t('stem.geology.reset', 'Reset')),
+              h('label', { className: 'flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ' + ink },
+                h('span', { className: muted }, t('stem.geology.cutaway', 'Cutaway')),
+                h('input', { type: 'range', min: 0, max: NZ - 1, value: cutaway.step, disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, 'aria-label': 'Cutaway from front', 'aria-valuetext': cutaway.label, title: 'Remove front sections to inspect structures inside the block', onChange: function (e) { var v = +e.target.value; setSlice(v); if (window[ENGINE_KEY]) window[ENGINE_KEY].setSlice(v); } }),
+                h('span', { 'data-geology-cutaway-readout': 'true', 'aria-hidden': 'true', className: 'min-w-[7rem] text-[11px] font-semibold tabular-nums ' + muted }, cutaway.label)),
+              inInvestigation && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError || focusLensOn, title: focusLensOn ? 'Turn off the Focus lens before excavating hidden layers' : 'Click a top block to remove it and expose the material below', onClick: function () { if (focusLensOn) return; var nv = !excavate; setExcavate(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setExcavate(nv); }, 'aria-pressed': excavate ? 'true' : 'false', className: btn + (excavate ? 'bg-amber-500 border-amber-400 text-amber-950' : btnIdle) }, '⛏️ ' + t('stem.geology.excavate', 'Excavate') + ': ' + (excavate ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
+              inInvestigation && digCount > 0 && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError || focusLensOn, 'data-geology-undo-excavation': 'true', 'data-geology-undo-preview-control': 'true', 'aria-label': 'Undo last excavation. ' + digCount + (digCount === 1 ? ' block removed.' : ' blocks removed.'), title: focusLensOn ? 'Turn off the Focus lens to restore the last block' : 'Hover or focus to preview the block; activate to restore it', onMouseEnter: function () { setUndoPreviewIntent('hover', true); }, onMouseLeave: function () { setUndoPreviewIntent('hover', false); }, onFocus: function () { setUndoPreviewIntent('focus', true); }, onBlur: function () { setUndoPreviewIntent('focus', false); }, onClick: undoLastExcavation, className: btn + (isDark ? 'border-amber-500/70 bg-amber-950/40 text-amber-100 hover:bg-amber-900/60' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, '↶ Undo dig (' + digCount + ')'),
+              h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { setSlice(0); setExcavate(false); setDigCount(0); setFocusLensOn(false); if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); if (window[ENGINE_KEY].setFocusLens) window[ENGINE_KEY].setFocusLens(false); } }, className: btn + btnIdle }, '↺ ' + t('stem.geology.reset', 'Reset')),
               inInvestigation && feat.history && h('button', { type: 'button', disabled: eruptStage >= 0, onClick: function () { if (histStage >= 0) { stopHistory(); } else { playHistory(); } }, 'aria-pressed': histStage >= 0 ? 'true' : 'false', title: t('stem.geology.play_history_tip', 'Watch the cross-section build in the order it formed'), className: btn + (histStage >= 0 ? 'bg-violet-600 border-violet-700 text-violet-50' : btnIdle) }, histStage >= 0 ? '■ ' + t('stem.geology.stop', 'Stop') : '▶ ' + t('stem.geology.play_history', 'Play history')),
-              inInvestigation && feat.water && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0, onClick: function () { var nv = !waterOn; setWaterOn(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setWaterTable(nv); if (nv) announce('Water table on. Rain soaks through permeable rock like sandstone and is trapped by the impermeable shale; the water table is the top of the saturated zone. Slice the block or read the cross-section to see it.'); }, 'aria-pressed': waterOn ? 'true' : 'false', title: t('stem.geology.water_tip', 'Show the water table and which layers hold groundwater'), className: btn + (waterOn ? 'bg-blue-700 border-blue-800 text-blue-50' : btnIdle) }, '💧 ' + t('stem.geology.water', 'Water table') + ': ' + (waterOn ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
+              inInvestigation && feat.water && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0, onClick: function () { var nv = !waterOn; setWaterOn(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setWaterTable(nv); if (nv) announce('Water table on. Rain soaks through permeable rock like sandstone and is trapped by the impermeable shale; the water table is the top of the saturated zone. Use the cutaway or read the cross-section to see it.'); }, 'aria-pressed': waterOn ? 'true' : 'false', title: t('stem.geology.water_tip', 'Show the water table and which layers hold groundwater'), className: btn + (waterOn ? 'bg-blue-700 border-blue-800 text-blue-50' : btnIdle) }, '💧 ' + t('stem.geology.water', 'Water table') + ': ' + (waterOn ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
               inInvestigation && feat.volcano && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { playEruption(); }, title: t('stem.geology.erupt_tip', 'Watch a volcano erupt — magma reaches the surface and cools fast into basalt'), className: btn + (eruptStage >= 0 ? 'bg-orange-700 border-orange-800 text-orange-50' : btnIdle) }, eruptStage >= 0 ? '🌋 ' + t('stem.geology.erupting_short', 'Erupting…') : '🌋 ' + t('stem.geology.erupt', 'Erupt')),
-              h('span', { className: 'text-[11px] ' + muted }, threeReady && !webglError ? t('stem.geology.tip', 'Drag to orbit · click a block to identify') : '')),
+              h('span', { className: 'text-[11px] ' + muted }, threeReady && !webglError ? (focusLensOn ? 'Focus lens isolates one material · turn it off to excavate' : (excavate ? 'Click a top block to dig · Undo restores it' : t('stem.geology.tip', 'Drag to orbit · click a block to identify'))) : '')),
             infoPanel(),
             inInvestigation && feat.dating ? datingPanel() : null,
             inInvestigation && feat.cycle ? cyclePanel() : null,

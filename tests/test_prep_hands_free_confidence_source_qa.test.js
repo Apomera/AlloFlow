@@ -18,11 +18,20 @@ function loadConfidenceDecision() {
 }
 
 describe('Test Prep hands-free confidence and lifecycle source QA', () => {
-  it('rejects every consequential command below the documented meaningful-confidence threshold', () => {
+  it('confirms low-confidence answer choices while rejecting other consequential commands', () => {
     const decide = loadConfidenceDecision();
-    for (const type of ['choose', 'submit', 'next', 'save-review', 'remove-review', 'confidence', 'add-time']) {
+    expect(decide({ type: 'choose' }, 0.59)).toMatchObject({
+      reject: false,
+      confirm: true,
+      consequential: true,
+      confidenceAvailable: true,
+      minimum: 0.6,
+    });
+    expect(decide({ type: 'choose' }, 0.6)).toMatchObject({ reject: false, confirm: false });
+    for (const type of ['submit', 'next', 'save-review', 'remove-review', 'confidence', 'add-time']) {
       expect(decide({ type }, 0.59), type).toMatchObject({
         reject: true,
+        confirm: false,
         consequential: true,
         confidenceAvailable: true,
         minimum: 0.6,
@@ -66,11 +75,14 @@ describe('Test Prep hands-free confidence and lifecycle source QA', () => {
 
   it('provides an accessible narrated repeat prompt and documents the current language boundary', () => {
     expect(source).toContain("const message = 'For safety, that state-changing command was not carried out because speech-recognition confidence was below '");
+    expect(source).toContain("'I heard ' + choiceLabel + '. Say yes to confirm.'");
+    expect(source).toContain("command.type === 'confirm-yes'");
     expect(source).toContain('setHandsFreeError(message);');
     expect(source).toContain('speakTestPrepText(message);');
     expect(source).toContain('role="alert">{handsFreeError}');
-    expect(source).toContain('Except for the exact stop command, state-changing commands require at least 60 percent recognition confidence');
-    expect(source).toContain('a score of zero or no score is treated as unavailable.');
+    expect(source).toContain('answer choices below 60 percent confidence wait for a yes or no confirmation');
+    expect(source).toContain('other state-changing commands below 60 percent are not carried out');
+    expect(source).toContain('A score of zero or no score is treated as unavailable.');
     expect(source).toContain("recognition.lang = 'en-US'");
     expect(source).toContain("utterance.lang = 'en-US'");
     expect(source).toContain("language: 'English'");
@@ -82,7 +94,7 @@ describe('Test Prep hands-free confidence and lifecycle source QA', () => {
     expect(source).toContain('if (failures >= 3)');
     expect(source).toContain("setHandsFreeError('Voice recognition paused. Retry ' + failures + ' of 2 will start automatically.')");
     expect(source).toContain('Math.min(2000, 250 * Math.pow(2, handsFreeRecognitionErrorStreakRef.current))');
-    expect(source).toContain('disableHandsFree(false);');
+    expect(source).toContain('disableHandsFree(false, false);');
     expect(source).toMatch(/function disableHandsFree[\s\S]{0,500}stopHandsFreeRecognition\(true\);[\s\S]{0,200}stopReadAloud\(updateState\);[\s\S]{0,200}clearHandsFreeAudioCache\(\);/);
     expect(source).toMatch(/function clearHandsFreeAudioCache[\s\S]{0,400}entry\.controller\.abort\(\)/);
   });

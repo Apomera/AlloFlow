@@ -24,8 +24,15 @@ const HOSTS = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desk
 
 // The host hydration logic lives inside the React component, so exercise the
 // pure part of it here against the same rules the host applies.
-const REHYDRATE = (env, storeVersion = 1) => {
-  if (!env || env.v !== storeVersion) return null;
+const REHYDRATE = (input, storeVersion = 2) => {
+  if (!input || typeof input !== 'object') return null;
+  const hasVersion = Object.prototype.hasOwnProperty.call(input, 'v');
+  const numericVersion = Number(input.v);
+  if (hasVersion && (!Number.isInteger(numericVersion) || numericVersion < 0 || numericVersion > storeVersion)) return null;
+  const hasEnvelopeShape = Object.prototype.hasOwnProperty.call(input, 'plan') || Object.prototype.hasOwnProperty.call(input, 'run');
+  let env = input;
+  if (!hasEnvelopeShape && Array.isArray(input.resourcePlan)) env = { plan: input, run: null };
+  else if (!hasEnvelopeShape) return null;
   if (!env.run || !env.run.rows) return { plan: env.plan || null, run: null };
   const rows = {};
   Object.keys(env.run.rows).forEach((k) => {
@@ -75,9 +82,10 @@ describe('rehydration rules', () => {
     expect(out.restored).toBe(true);
   });
 
-  it('ignores an envelope from a different version rather than mis-reading it', () => {
-    expect(REHYDRATE(Object.assign({}, ENVELOPE, { v: 2 }))).toBeNull();
-    expect(REHYDRATE(Object.assign({}, ENVELOPE, { v: '1.0' }))).toBeNull();
+  it('migrates v1 but ignores future or malformed envelopes', () => {
+    expect(REHYDRATE(ENVELOPE).plan).toBeTruthy();
+    expect(REHYDRATE(Object.assign({}, ENVELOPE, { v: 3 }))).toBeNull();
+    expect(REHYDRATE(Object.assign({}, ENVELOPE, { v: 'unknown' }))).toBeNull();
     expect(REHYDRATE(null)).toBeNull();
     expect(REHYDRATE({})).toBeNull();
   });
@@ -93,8 +101,9 @@ describe('durability wiring guardrails', () => {
   it.each(HOSTS)('%s versions the envelope independently of the contract', (file) => {
     const src = read(file);
     expect(src).toContain("const ALLO_BLUEPRINT_STORE_KEY = 'alloflow-blueprint-run-v1'");
-    expect(src).toContain('const ALLO_BLUEPRINT_STORE_VERSION = 1');
-    expect(src).toContain('env.v !== ALLO_BLUEPRINT_STORE_VERSION');
+    expect(src).toContain('const ALLO_BLUEPRINT_STORE_VERSION = 2');
+    expect(src).toContain('_migrateBlueprintEnvelope(JSON.parse(raw))');
+    expect(src).toContain('if (!env) return;');
     // Must not reuse the contract's version constant for storage.
     expect(src).not.toMatch(/ALLO_BLUEPRINT_STORE_VERSION\s*=\s*SCHEMA_VERSION/);
   });

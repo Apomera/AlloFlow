@@ -13,7 +13,7 @@ const targets = [
 ];
 const catalogStartMarker = 'const TEST_PREP_REFERENCE_CATALOG = ';
 const startMarker = 'const EPPP_NATIVE_ITEMS = ';
-const nextMarker = 'const EPPP_INTEGRATED_2027_PREVIEW_PACK = ';
+const previewMarker = 'const EPPP_INTEGRATED_2027_PREVIEW_PACK = ';
 
 function writeFileWithRetry(filePath, contents) {
   let lastError;
@@ -36,8 +36,8 @@ function replaceEmbeddedBank(moduleText, filePath, serializedBank) {
     throw new Error(filePath + ' must contain exactly one EPPP native-bank marker.');
   }
   const dataStart = markerIndex + startMarker.length;
-  const nextIndex = moduleText.indexOf(nextMarker, dataStart);
-  if (nextIndex < 0 || moduleText.indexOf(nextMarker, nextIndex + 1) >= 0) {
+  const nextIndex = moduleText.indexOf(previewMarker, dataStart);
+  if (nextIndex < 0 || moduleText.indexOf(previewMarker, nextIndex + 1) >= 0) {
     throw new Error(filePath + ' must contain exactly one EPPP 2027 preview marker after the native bank.');
   }
   const separatorStart = moduleText.lastIndexOf(';', nextIndex);
@@ -45,7 +45,7 @@ function replaceEmbeddedBank(moduleText, filePath, serializedBank) {
     throw new Error(filePath + ' has an unexpected separator between the EPPP bank and preview pack.');
   }
   const updated = moduleText.slice(0, dataStart) + serializedBank + moduleText.slice(separatorStart);
-  const updatedNextIndex = updated.indexOf(nextMarker, dataStart);
+  const updatedNextIndex = updated.indexOf(previewMarker, dataStart);
   const updatedSeparatorStart = updated.lastIndexOf(';', updatedNextIndex);
   const embedded = JSON.parse(updated.slice(dataStart, updatedSeparatorStart));
   if (!Array.isArray(embedded) || embedded.length !== 1500) {
@@ -60,16 +60,19 @@ function replaceEmbeddedCatalog(moduleText, filePath, serializedCatalog) {
     throw new Error(filePath + ' must contain exactly one Test Prep reference-catalog marker.');
   }
   const dataStart = markerIndex + catalogStartMarker.length;
-  const nextIndex = moduleText.indexOf(startMarker, dataStart);
-  if (nextIndex < 0 || moduleText.indexOf(startMarker, nextIndex + 1) >= 0) {
-    throw new Error(filePath + ' must contain exactly one EPPP native-bank marker after the reference catalog.');
+  const nativeBankIndex = moduleText.indexOf(startMarker, dataStart);
+  const previewIndex = moduleText.indexOf(previewMarker, dataStart);
+  const nextIndex = nativeBankIndex >= 0 ? nativeBankIndex : previewIndex;
+  const selectedNextMarker = nativeBankIndex >= 0 ? startMarker : previewMarker;
+  if (nextIndex < 0 || moduleText.indexOf(selectedNextMarker, nextIndex + 1) >= 0) {
+    throw new Error(filePath + ' must contain exactly one EPPP native-bank or preview marker after the reference catalog.');
   }
   const separatorStart = moduleText.lastIndexOf(';', nextIndex);
   if (separatorStart < dataStart || moduleText.slice(separatorStart + 1, nextIndex).trim()) {
     throw new Error(filePath + ' has an unexpected separator between the reference catalog and EPPP bank.');
   }
   const updated = moduleText.slice(0, dataStart) + serializedCatalog + moduleText.slice(separatorStart);
-  const updatedNextIndex = updated.indexOf(startMarker, dataStart);
+  const updatedNextIndex = updated.indexOf(selectedNextMarker, dataStart);
   const updatedSeparatorStart = updated.lastIndexOf(';', updatedNextIndex);
   const embedded = JSON.parse(updated.slice(dataStart, updatedSeparatorStart));
   if (!embedded || typeof embedded !== 'object' || Array.isArray(embedded) || Object.keys(embedded).length < 1000) {
@@ -91,8 +94,10 @@ const serializedCatalog = JSON.stringify(catalog);
 for (const target of targets) {
   const current = fs.readFileSync(target, 'utf8');
   const withCatalog = replaceEmbeddedCatalog(current, target, serializedCatalog);
-  const updated = replaceEmbeddedBank(withCatalog, target, serializedBank);
+  const updated = withCatalog.includes(startMarker)
+    ? replaceEmbeddedBank(withCatalog, target, serializedBank)
+    : withCatalog;
   if (updated !== current) writeFileWithRetry(target, updated);
 }
 
-console.log('Synchronized the reviewed 1,500-item EPPP bank and shared reference catalog into both Test Prep Hub runtime modules without rebuilding unrelated packs.');
+console.log('Synchronized the shared reference catalog and any legacy embedded EPPP bank into both Test Prep Hub runtime modules without rebuilding unrelated packs.');

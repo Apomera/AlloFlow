@@ -299,6 +299,40 @@ describe('reduced motion', () => {
   });
 });
 
+describe('locked viewpoint comparison', () => {
+  it('renders three accessible placeholders even before WebGL is ready', () => {
+    const html = renderTool(ID, {
+      [ID]: { view: 'sensory', sensoryActive: true, _threeLoaded: true, sensorySpecies: 'human' },
+    });
+    expect(html).toContain('Locked viewpoint comparison for human, dog, and cat vision');
+    expect(html).toContain('Compare one place, three visual systems');
+    expect((html.match(/Frame not captured/g) || []).length).toBe(3);
+    for (const s of SPECIES) {
+      expect(html).toContain(s.name + ' comparison frame not captured yet');
+      expect(html).toContain('Eye ' + s.eyeHeight.toFixed(2) + ' m');
+      expect(html).toContain(s.acuity);
+      expect(html).toContain(String(s.totalFieldDeg));
+    }
+  });
+
+  it('bakes the live CSS optics into bounded JPEG snapshots', () => {
+    // Raw WebGL toDataURL omits the CSS blur and dusk filters. The off-DOM
+    // 2D copy is the contract that keeps captured animal views honest.
+    expect(SRC).toMatch(/ctx2\.filter = source\.style\.filter \|\| 'none'/);
+    expect(SRC).toMatch(/toDataURL\('image\/jpeg', 0\.84\)/);
+    expect(SRC).toMatch(/Math\.min\(640, Number\(maxWidth\) \|\| 480\)/);
+    expect(SRC).not.toMatch(/preserveDrawingBuffer\s*:\s*true/);
+  });
+
+  it('locks navigation and clears ephemeral frames when the room closes', () => {
+    expect(SRC).toMatch(/setInputLocked: function \(on\)/);
+    expect(SRC).toMatch(/if \(!S \|\| inputLocked\) return;/);
+    expect(SRC).toMatch(/view !== 'sensory' \|\| !sensoryActive \|\| sensoryCompareActive/);
+    expect(SRC).toMatch(/\[view, sensoryActive, sensoryCompareActive\]/);
+    expect(SRC).toMatch(/if \(view === 'sensory' && sensoryActive\) return;/);
+  });
+});
+
 describe('sensory viewer lifecycle', () => {
   it('tears down the RAF loop and WebGL context on detach', () => {
     expect(SRC).toMatch(/cancelAnimationFrame\(S\.raf\)/);

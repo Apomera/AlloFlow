@@ -117,22 +117,37 @@ async function startHandsFree(callTTS, mocks) {
 }
 
 describe('Test Prep hands-free runtime safeguards', () => {
-  it('rejects low-confidence consequential speech but permits low-confidence reading and confidence-zero actions', async () => {
+  it('confirms a low-confidence answer with yes while preserving other confidence safeguards', async () => {
     const mocks = installVoiceMocks();
     const callTTS = vi.fn(async (text) => 'blob:' + text.slice(0, 28));
     try {
       await startHandsFree(callTTS, mocks);
       await act(async () => {
-        mocks.recognitionInstances[0].onresult({ results: [[{ transcript: 'choose option B', confidence: 0.4 }]] });
+        mocks.recognitionInstances[0].onresult({ results: [[{ transcript: 'B', confidence: 0.4 }]] });
         await new Promise((resolveWait) => setTimeout(resolveWait, 30));
       });
       expect(Array.from(host.querySelectorAll('input[type="radio"]')).some((input) => input.checked)).toBe(false);
-      expect(host.querySelector('[role="alert"]').textContent).toContain('below 60 percent');
-      expect(callTTS.mock.calls.at(-1)[0]).toContain('state-changing command was not carried out');
+      expect(host.textContent).toContain('Waiting for confirmation: option B.');
+      expect(host.querySelector('[role="alert"]')).toBeNull();
+      expect(host.textContent).toContain('Say yes to accept it');
+      expect(callTTS.mock.calls.at(-1)[0]).toContain('Is that your answer? Say yes to confirm');
 
-      const rejectionAudio = mocks.audioInstances.at(-1);
+      const confirmationAudio = mocks.audioInstances.at(-1);
       await act(async () => {
-        rejectionAudio.onended();
+        confirmationAudio.onended();
+        await new Promise((resolveWait) => setTimeout(resolveWait, 150));
+      });
+      const yesRecognition = mocks.recognitionInstances.at(-1);
+      await act(async () => {
+        yesRecognition.onresult({ results: [[{ transcript: 'yes', confidence: 0.2 }]] });
+        await new Promise((resolveWait) => setTimeout(resolveWait, 30));
+      });
+      expect(host.querySelectorAll('input[type="radio"]')[1].checked).toBe(true);
+      expect(callTTS.mock.calls.at(-1)[0]).toContain('Confirmed. Selected B');
+
+      const selectedAudio = mocks.audioInstances.at(-1);
+      await act(async () => {
+        selectedAudio.onended();
         await new Promise((resolveWait) => setTimeout(resolveWait, 150));
       });
       const readRecognition = mocks.recognitionInstances.at(-1);
@@ -149,16 +164,46 @@ describe('Test Prep hands-free runtime safeguards', () => {
       });
       const unavailableConfidenceRecognition = mocks.recognitionInstances.at(-1);
       await act(async () => {
-        unavailableConfidenceRecognition.onresult({ results: [[{ transcript: 'choose option B', confidence: 0 }]] });
+        unavailableConfidenceRecognition.onresult({ results: [[{ transcript: '3', confidence: 0 }]] });
         await new Promise((resolveWait) => setTimeout(resolveWait, 30));
       });
-      expect(host.querySelectorAll('input[type="radio"]')[1].checked).toBe(true);
+      expect(host.querySelectorAll('input[type="radio"]')[2].checked).toBe(true);
     } finally {
       mocks.restoreRecognition();
       mocks.restoreAudio();
     }
   });
 
+  it('persists Quick Prompts and accepts a bare number without repeated command coaching', async () => {
+    const mocks = installVoiceMocks();
+    const callTTS = vi.fn(async (text) => 'blob:' + text.slice(0, 28));
+    try {
+      await mount({ callTTS });
+      await clickButton('Open practice pack');
+      await clickButton('Quick prompts');
+      expect(localStorage.getItem('alloflow_test_prep_hands_free_prompt_mode_v1')).toBe('quick');
+      await clickButton('Hands-free mode');
+      await waitFor(() => mocks.audioInstances.length >= 1, 'quick initial narration');
+      const initialPlayback = callTTS.mock.calls.find((call) => call[3] && call[3].reason === 'test-prep-playback');
+      expect(initialPlayback[0]).toContain('Answer choices.');
+      expect(initialPlayback[0]).not.toContain('Say A');
+
+      await act(async () => {
+        mocks.audioInstances[0].onended();
+        await new Promise((resolveWait) => setTimeout(resolveWait, 150));
+      });
+      await waitFor(() => mocks.recognitionInstances.length >= 1, 'quick recognition session');
+      await act(async () => {
+        mocks.recognitionInstances[0].onresult({ results: [[{ transcript: '2', confidence: 0.9 }]] });
+        await new Promise((resolveWait) => setTimeout(resolveWait, 30));
+      });
+      expect(host.querySelectorAll('input[type="radio"]')[1].checked).toBe(true);
+      expect(callTTS.mock.calls.at(-1)[0]).toBe('Selected B.');
+    } finally {
+      mocks.restoreRecognition();
+      mocks.restoreAudio();
+    }
+  });
   it('stops safely and clears speculative audio after microphone permission denial', async () => {
     const mocks = installVoiceMocks();
     const callTTS = vi.fn(async (text) => 'blob:' + text.slice(0, 28));

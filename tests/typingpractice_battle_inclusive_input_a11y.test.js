@@ -122,16 +122,19 @@ describe('Typing Practice Battle Mode inclusive input', () => {
   });
 
   it('keeps assisted multi-character matches as practice without changing records', () => {
-    expect(source).toContain("next.assistedInput = !!battleSt.assistedInput || inputKind === 'paste' || insertedCount > 1");
+    expect(source).toContain("next.assistedInput = !!battleSt.assistedInput || inputKind === 'paste' || inputKind === 'dictation'");
+    expect(source).not.toContain('insertedCount > 1');
+    expect(source).toContain("inputKind = typingPracticeInputKindFromType('', rawText, inputKind)");
     expect(source).toContain('var comparableBattle = result.measurementComparable !== false');
     expect(source).toContain('var newPb = comparableBattle ?');
-    expect(source).toContain('var newPbBot = isVsBot && comparableBattle ?');
+    expect(source).toContain("var newPbBot = state.battle.mode === 'vs-bot' && comparableBattle ?");
     expect(source).toContain("h('strong', { style: { color: palette.text } }, 'Practice result · ')");
     expect(source).toContain('excluded from Battle records');
   });
 
   it('reflows Battle columns and preserves boundaries in forced colors', () => {
-    expect(source).toContain('.tp-root .tp-battle-stage, .tp-root .tp-battle-menu { padding: 12px !important; }');
+    expect(source).toContain('.tp-root .tp-drill-stage, .tp-root .tp-battle-stage, .tp-root .tp-battle-menu { padding: max(12px, env(safe-area-inset-top))');
+    expect(source).toContain('env(safe-area-inset-bottom)');
     expect(source).toContain('.tp-root .tp-stack-col { min-width: 0 !important; width: 100%; min-height: 300px !important; }');
     expect(source).toContain('.tp-root .tp-battle-target, .tp-root .tp-stack-col { border-color: CanvasText !important; }');
   });

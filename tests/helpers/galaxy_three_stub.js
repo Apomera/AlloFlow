@@ -335,13 +335,14 @@ export function installLoopStubs() {
     return io;
   };
 
-  // Hand back an id and REMEMBER the callback rather than invoking it: animate()
-  // then runs for exactly one frame at init, and a test can advance further
-  // frames deliberately via step().
+  // Hand back ids and retain every callback scheduled for the next frame.
+  // Browsers allow several rAF callbacks at once (for example the Galaxy render
+  // loop plus an observing-mode transition), so the stub must not let the last
+  // callback overwrite the animation loop.
   let rafId = 0;
-  let pending = null;
-  window.requestAnimationFrame = (cb) => { pending = cb; return ++rafId; };
-  window.cancelAnimationFrame = () => { pending = null; };
+  let pending = new Map();
+  window.requestAnimationFrame = (cb) => { const id = ++rafId; pending.set(id, cb); return id; };
+  window.cancelAnimationFrame = (id) => { pending.delete(id); };
   globalThis.requestAnimationFrame = window.requestAnimationFrame;
   globalThis.cancelAnimationFrame = window.cancelAnimationFrame;
 
@@ -353,12 +354,13 @@ export function installLoopStubs() {
     globalThis.requestAnimationFrame = prevRAF;
     globalThis.cancelAnimationFrame = prevCAF;
   };
-  /** Runs one more animation frame. Returns false if nothing was scheduled. */
+  /** Runs every callback queued for one animation frame. */
   api.step = function step() {
-    const cb = pending;
-    if (!cb) return false;
-    pending = null;
-    cb(performance.now());
+    const callbacks = Array.from(pending.values());
+    if (!callbacks.length) return false;
+    pending = new Map();
+    const now = performance.now();
+    callbacks.forEach((cb) => cb(now));
     return true;
   };
   /** Every IntersectionObserver created since install, newest last. */

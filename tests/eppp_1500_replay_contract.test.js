@@ -55,6 +55,7 @@ describe('EPPP 1,500-item editorial replay orchestration', () => {
       './repair_eppp_native_quality_wave_20.cjs',
       './repair_eppp_native_quality_wave_21.cjs',
       './repair_eppp_native_quality_wave_22.cjs',
+      './repair_eppp_native_quality_wave_23.cjs',
       'runDistractorHalvingCampaign',
       './audit_eppp_option_feedback.cjs',
       'runFeedbackHalvingCampaign',
@@ -75,12 +76,12 @@ describe('EPPP 1,500-item editorial replay orchestration', () => {
     ]);
   });
 
-  it('covers native waves 07 through 22 on both the full and 1,500-item fast paths', () => {
+  it('covers native waves 07 through 23 on both the full and 1,500-item fast paths', () => {
     const latestCalls = collectReplayCalls(extractArrowBody(buildSource, 'runLatestEditorialReplay'));
     const coveredWaves = latestCalls
-      .map((call) => call.match(/repair_eppp_native_quality_wave_(0[7-9]|1[0-9]|2[0-2])\.cjs$/)?.[1])
+      .map((call) => call.match(/repair_eppp_native_quality_wave_(0[7-9]|1[0-9]|2[0-3])\.cjs$/)?.[1])
       .filter(Boolean);
-    expect(coveredWaves).toEqual(['07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22']);
+    expect(coveredWaves).toEqual(['07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']);
     expect(buildSource).toMatch(
       /if\(existingBank\.length===1500&&existingBank\.filter[\s\S]*?\)\{\s*runLatestEditorialReplay\(\);/,
     );

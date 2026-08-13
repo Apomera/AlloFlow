@@ -31,6 +31,7 @@
   var setWordSoundsActivity = props.setWordSoundsActivity;
   var setIsWordSoundsMode = props.setIsWordSoundsMode;
   var setWordSoundsAutoReview = props.setWordSoundsAutoReview;
+  var prepareWordSoundsSession = props.prepareWordSoundsSession;
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, /*#__PURE__*/React.createElement("div", {
@@ -44,30 +45,61 @@
   }, generatedContent?.configSummary || 'Ready to practice'), generatedContent?.data && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-violet-500 font-medium"
   }, generatedContent.data.length, " words loaded"), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col sm:flex-row gap-3 justify-center mt-5"
+    className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       const initialActivity = wsActivitySequence && wsActivitySequence.length > 0 ? wsActivitySequence[0] : 'counting';
+      if (typeof prepareWordSoundsSession === 'function') {
+        prepareWordSoundsSession({
+          ...(generatedContent?.sessionConfig || {}),
+          resourceId: generatedContent?.id || null,
+          initialActivity
+        });
+      }
       setWordSoundsActivity(initialActivity);
       setIsWordSoundsMode(true);
       setWordSoundsAutoReview(true);
     },
-    className: "flex items-center justify-center gap-2 px-6 py-3 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 shadow-lg hover:shadow-xl transition-all hover:scale-105"
+    className: "min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-white text-violet-800 font-bold rounded-xl border-2 border-violet-300 hover:bg-violet-100 hover:border-violet-500 shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2"
   }, /*#__PURE__*/React.createElement(BookOpen, {
-    size: 18
-  }), " Pre-Activity Review"), /*#__PURE__*/React.createElement("button", {
+    size: 20,
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-left"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "block"
+  }, "Teacher: Review Words & Audio"), /*#__PURE__*/React.createElement("span", {
+    className: "block text-xs font-medium text-violet-600"
+  }, "Check or edit the lesson before students begin"))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       // Honor the lesson-plan sequence exactly like the
       // Review button above — 'counting' is only the
       // no-sequence fallback.
       const initialActivity = wsActivitySequence && wsActivitySequence.length > 0 ? wsActivitySequence[0] : 'counting';
+      if (typeof prepareWordSoundsSession === 'function') {
+        prepareWordSoundsSession({
+          ...(generatedContent?.sessionConfig || {}),
+          resourceId: generatedContent?.id || null,
+          initialActivity
+        });
+      }
       setWordSoundsActivity(initialActivity);
+      setWordSoundsAutoReview(false);
       setIsWordSoundsMode(true);
     },
-    className: "flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all hover:scale-105"
+    className: "min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2"
   }, /*#__PURE__*/React.createElement(Play, {
-    size: 18
-  }), " Launch Word Sounds Studio"))));
+    size: 20,
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-left"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "block"
+  }, "Student: Start Practice"), /*#__PURE__*/React.createElement("span", {
+    className: "block text-xs font-medium text-indigo-100"
+  }, "Begin the prepared activities now"))))));
 }
 
   window.AlloModules = window.AlloModules || {};

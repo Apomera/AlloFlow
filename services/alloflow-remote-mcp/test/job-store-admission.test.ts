@@ -10,9 +10,11 @@ import {
   createJob,
   createUpload,
   failJob,
+  failCurrentWorkflowAttempt,
   getInternalJob,
   listCleanupJobs,
   markJobRunning,
+  markJobThrottleWait,
   rejectUpload,
   renewJobLease,
   type RemediationJobOptions,
@@ -166,6 +168,18 @@ function testDatabase(): {
       "utf8",
     ),
   );
+  sqlite.exec(
+    readFileSync(
+      `${migrationDirectory}0006_throttle_wait_and_verification.sql`,
+      "utf8",
+    ),
+  );
+  sqlite.exec(
+    readFileSync(
+      `${migrationDirectory}0007_admission_control.sql`,
+      "utf8",
+    ),
+  );
   databases.push(sqlite);
   const db = new SqliteD1Database(sqlite);
   return {
@@ -213,6 +227,69 @@ afterEach(() => {
 });
 
 describe("D1 workload admission and immutable remediation options", () => {
+  it("migration 7 defaults open and atomically pauses new uploads and jobs", async () => {
+    const { env, db } = testDatabase();
+    const limits = config();
+    const state = db.sqlite
+      .prepare(
+        `SELECT admissions_open, changed_by, change_reason, paused_at, pause_token
+         FROM pilot_admission_control WHERE singleton = 1`,
+      )
+      .get();
+    expect(state).toMatchObject({
+      admissions_open: 1,
+      changed_by: "migration-0007",
+      change_reason: "default-open admission control",
+      paused_at: null,
+      pause_token: null,
+    });
+
+    const uploadId = await createUploadedInput(env, db, limits);
+    db.sqlite
+      .prepare(
+        `UPDATE pilot_admission_control
+         SET admissions_open = 0,
+             changed_at = unixepoch(),
+             changed_by = 'release-operator',
+             change_reason = 'staging deploy',
+             paused_at = unixepoch(),
+             pause_token = '880e8400-e29b-41d4-a716-446655440000'
+         WHERE singleton = 1`,
+      )
+      .run();
+
+    await expectPilotError(
+      createUpload(env, limits, principal),
+      "admissions_paused",
+      503,
+    );
+    await expectPilotError(
+      createJob(env, limits, principal, uploadId, standardOptions),
+      "admissions_paused",
+      503,
+    );
+
+    db.sqlite
+      .prepare(
+        `UPDATE pilot_admission_control
+         SET admissions_open = 1,
+             changed_at = unixepoch(),
+             changed_by = 'release-operator',
+             change_reason = 'deploy complete',
+             paused_at = NULL,
+             pause_token = NULL
+         WHERE singleton = 1`,
+      )
+      .run();
+    await expect(createJob(
+      env,
+      limits,
+      principal,
+      uploadId,
+      standardOptions,
+    )).resolves.toMatchObject({ created: true });
+  });
+
   it("atomically denies a fourth open upload at an owner cap of three", async () => {
     const { env } = testDatabase();
     const limits = config({ maxOpenUploadsPerOwner: 3 });
@@ -514,6 +591,7 @@ describe("D1 remediation attempt leases and fencing", () => {
       autoContinueRoundsRun: 0,
       reportSizeBytes: 64,
       reportSha256: "b".repeat(64),
+      verificationState: "complete",
       beforeScore: 70,
       afterScore: 98,
     };
@@ -538,8 +616,108 @@ describe("D1 remediation attempt leases and fencing", () => {
       status: "completed",
       attempt_id: attemptId,
       result_sha256: result.resultSha256,
+      verification_state: "complete",
       run_stage: "completed",
       lease_expires_at: null,
+    });
+  });
+
+  it("extends a throttled attempt lease beyond provider backoff and fences stale owners", async () => {
+    const { env, db } = testDatabase();
+    const limits = config();
+    const uploadId = await createUploadedInput(env, db, limits);
+    const created = await createJob(
+      env,
+      limits,
+      principal,
+      uploadId,
+      standardOptions,
+    );
+    const jobId = created.job.id;
+    const firstAttempt = `${jobId}:run-1:attempt-1`;
+    const secondAttempt = `${jobId}:run-1:attempt-2`;
+    await markJobRunning(env, jobId, created.job.workflow_id);
+    await claimJobAttempt(
+      env,
+      jobId,
+      created.job.workflow_id,
+      firstAttempt,
+      1,
+    );
+
+    const wait = await markJobThrottleWait(
+      env,
+      jobId,
+      firstAttempt,
+      10 * 60 * 1000,
+    );
+    expect(wait.leaseExpiresAt).toBeGreaterThanOrEqual(
+      wait.waitUntil + 2 * 60,
+    );
+    expect(await getInternalJob(env, jobId)).toMatchObject({
+      throttle_wait_until: wait.waitUntil,
+      lease_expires_at: wait.leaseExpiresAt,
+    });
+
+    await claimJobAttempt(
+      env,
+      jobId,
+      created.job.workflow_id,
+      secondAttempt,
+      2,
+    );
+    await expectPilotError(
+      markJobThrottleWait(env, jobId, firstAttempt, 15_000),
+      "job_attempt_lost",
+      409,
+    );
+    expect(await getInternalJob(env, jobId)).toMatchObject({
+      attempt_id: secondAttempt,
+      throttle_wait_until: null,
+    });
+  });
+
+  it("resolves terminal ownership durably and never fails another workflow", async () => {
+    const { env, db } = testDatabase();
+    const limits = config();
+    const uploadId = await createUploadedInput(env, db, limits);
+    const created = await createJob(
+      env,
+      limits,
+      principal,
+      uploadId,
+      standardOptions,
+    );
+    const attemptId = `${created.job.id}:run-1:attempt-1`;
+    await markJobRunning(env, created.job.id, created.job.workflow_id);
+    await claimJobAttempt(
+      env,
+      created.job.id,
+      created.job.workflow_id,
+      attemptId,
+      1,
+    );
+
+    await expect(
+      failCurrentWorkflowAttempt(
+        env,
+        created.job.id,
+        "different-workflow",
+        "late_failure",
+      ),
+    ).resolves.toEqual({ owned: false, attemptId: null });
+    await expect(
+      failCurrentWorkflowAttempt(
+        env,
+        created.job.id,
+        created.job.workflow_id,
+        "runner_failed",
+      ),
+    ).resolves.toEqual({ owned: true, attemptId });
+    expect(await getInternalJob(env, created.job.id)).toMatchObject({
+      status: "failed",
+      attempt_id: attemptId,
+      error_code: "runner_failed",
     });
   });
 

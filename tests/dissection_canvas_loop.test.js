@@ -112,7 +112,15 @@ describe('dissection canvas animation loop', () => {
       expect(source).toMatch(/if \(!d\.quizMode\) \{\s*var leaderStartX/);
       expect(source).toContain('!d.quizMode && React.createElement("button", { type: "button", tabIndex: d.toolbarToolsOpen');
       expect(source).toContain('!d.quizMode && React.createElement(React.Fragment, null,');
-      expect(source).toContain("touchAction: d.quizMode && (d.canvasZoom || 1) <= 1.01 ? 'pan-y'");
+      expect(source).toContain("touchAction: (d.canvasZoom || 1) <= 1.01 && (d.quizMode || guidedMode || currentLearningGate.required || !currentToolReadiness.safeToAct || procedureNext.action === 'complete') ? 'pan-y'");
+      expect(source).toContain('function canvasPointerModeData(canvas, hit)');
+      expect(source).toContain('function syncCanvasPointerPresentation(canvas, hit)');
+      expect(source).toContain('canvas.style.cursor = pointerMode.cursor;');
+      expect(source).toContain('"data-diss-pointer-guide": true');
+      expect(source).toContain("'data-cursor-mode': pointerGuideData.mode");
+      expect(source).toContain('cursor: pointerGuideData.cursor');
+      expect(source).not.toContain("canvas.style.cursor = 'none'");
+      expect(source).not.toContain('canvas.style.cursor = "none"');
       expect(source).not.toContain('if (denseHotspotView && compactHotspotCount > 0) {');
       expect(source).toContain('var clickDisplayMin = Math.max(1, Math.min(rect.width || 1, rect.height || 1));');
       expect(source).toContain('var minimumCssHitRadius = (clickPointerCoarse ? 22 : 14) / clickDisplayMin / Math.max(1, _z);');

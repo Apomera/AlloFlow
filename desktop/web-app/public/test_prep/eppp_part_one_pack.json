@@ -2847,35 +2847,58 @@
     },
     {
       "type": "single-choice",
-      "difficulty": "foundation",
+      "difficulty": "advanced",
       "reviewStatus": "source-reviewed",
       "qaStatus": "qa-passed",
-      "qaReviewedAt": "2026-07-15",
+      "qaReviewedAt": "2026-08-12",
       "migrationStatus": "re-authored-source-reviewed",
       "id": "eppp-b004-social-1",
       "domainId": "social-cultural",
       "legacySourceId": "legacy-70d52e2c03b5c8e7",
-      "prompt": "In Berry’s bidimensional acculturation framework, maintaining one’s heritage culture while also participating in the larger receiving society is called:",
+      "prompt": "A recent immigrant regularly speaks the heritage language at home, participates in cultural traditions, works in local civic groups, and builds friendships in the receiving society. The client nevertheless reports substantial stress related to discrimination. Which interpretation is most consistent with Berry’s bidimensional acculturation framework?",
       "choices": [
-        "Integration",
-        "Assimilation",
-        "Separation",
-        "Marginalization"
+        "The pattern reflects integration, while adaptation can still vary with discrimination and other contextual conditions",
+        "The pattern reflects assimilation because participation in the receiving society outweighs heritage-culture maintenance",
+        "The pattern reflects separation because discrimination prevents participation from counting as engagement with the receiving society",
+        "The pattern reflects marginalization because elevated stress indicates weak orientation to both cultural contexts"
       ],
       "answerIndex": 0,
-      "rationale": "Integration combines cultural maintenance with participation in the receiving society. Assimilation emphasizes the receiving culture, separation emphasizes heritage maintenance without broader participation, and marginalization reflects low orientation to both.",
+      "rationale": "Berry’s integration strategy combines maintenance of heritage culture with participation in the receiving society, both of which are present. Acculturation strategy and adaptation are related but distinct: discrimination and other contextual conditions can contribute to stress even when a person shows an integration pattern.",
       "references": [
         "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x"
       ],
       "legacySourceFile": "js/data_batch15.js",
       "choiceRationales": [
-        "Integration combines cultural maintenance with participation in the receiving society. Assimilation emphasizes the receiving culture, separation emphasizes heritage maintenance without broader participation, and marginalization reflects low orientation to both.",
-        "Assimilation is one of Berry's strategies — adopting the dominant culture. In this item, “Integration” is supported because the reviewed explanation states: Assimilation emphasizes the receiving culture, separation emphasizes heritage maintenance without broader participation, and marginalization reflects low orientation to both.",
-        "“Separation” does not meet the defining condition or distinction in this question. Assimilation emphasizes the receiving culture, separation emphasizes heritage maintenance without broader participation, and marginalization reflects low orientation to both. The supported response is “Integration.”",
-        "Marginalization is one of Berry's strategies — rejecting both cultures. In this item, “Integration” is supported because the reviewed explanation states: Assimilation emphasizes the receiving culture, separation emphasizes heritage maintenance without broader participation, and marginalization reflects low orientation to both."
+        "Berry’s integration strategy combines maintenance of heritage culture with participation in the receiving society, both of which are present. Acculturation strategy and adaptation are related but distinct: discrimination and other contextual conditions can contribute to stress even when a person shows an integration pattern.",
+        "Assimilation involves participation in the receiving society alongside reduced maintenance of heritage culture. This client remains active in both contexts, so receiving-society involvement does not erase the clearly described heritage orientation.",
+        "Separation combines heritage-culture maintenance with limited participation in the receiving society. Discrimination may worsen adaptation, but it does not negate the client’s actual civic involvement and friendships in that society.",
+        "Marginalization describes weak orientation toward both heritage and receiving cultural contexts. Elevated stress is an adaptation outcome, not evidence that the client lacks the strong behavioral engagement described in each context."
       ],
       "optionFeedbackReviewWave": "eppp-option-feedback-wave-01",
-      "optionFeedbackReviewedAt": "2026-07-16"
+      "optionFeedbackReviewedAt": "2026-07-16",
+      "sourceDetails": [
+        {
+          "url": "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x",
+          "title": "Immigration, Acculturation, and Adaptation",
+          "organization": "Applied Psychology",
+          "summary": "Berry presents a framework for acculturation and adaptation in which orientation toward heritage culture and participation in the receiving society are treated as distinct dimensions, while adaptation varies with personal and social context.",
+          "credibility": "This peer-reviewed foundational article in Applied Psychology is the primary source for Berry’s bidimensional framework. It supports both classification of an integration strategy and the separate evaluation of psychological or sociocultural adaptation."
+        }
+      ],
+      "learningObjectiveId": "social-cultural-integrate-acculturation-strategy-and-adaptation-context",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "let-receiving-participation-override-heritage-maintenance",
+        "let-discrimination-erase-observed-receiving-engagement",
+        "equate-distress-with-low-orientation-to-both-cultures"
+      ],
+      "wordingReviewStatus": "editorial-deep-rewrite-pass",
+      "wordingReviewWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinementWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinedAt": "2026-08-12",
+      "sourceReviewBasis": "item-specific-authoritative-source-review",
+      "clueReviewStatus": "editorial-pass-after-manual-option-review",
+      "biasAccessibilityStatus": "editorial-pass"
     },
     {
       "type": "single-choice",
@@ -13422,32 +13445,32 @@
     },
     {
       "type": "single-choice",
-      "difficulty": "foundation",
+      "difficulty": "advanced",
       "reviewStatus": "source-reviewed",
       "qaStatus": "qa-passed",
-      "qaReviewedAt": "2026-07-15",
+      "qaReviewedAt": "2026-08-12",
       "migrationStatus": "re-authored-source-reviewed",
       "id": "eppp-b019-intervention-1",
       "domainId": "intervention",
       "legacySourceId": "legacy-e4d924cf2e4a126f",
       "legacySourceFile": "js/data_batch21.js",
-      "prompt": "Behavioral activation for depression primarily seeks to interrupt withdrawal and low reinforcement by:",
+      "prompt": "A client with depression completes few activities from a dense schedule of chores chosen by the therapist. Activity monitoring shows that brief walks with a friend produce modest mastery and pleasure, whereas avoidance increases before unstructured evenings. What is the best behavioral-activation adjustment?",
       "choices": [
-        "Waiting for motivation and mood to improve before scheduling any activity",
-        "Increasing planned engagement in valued or potentially rewarding activities",
-        "Analyzing dreams without examining patterns of avoidance in everyday routines",
-        "Eliminating all unpleasant emotion before the client resumes ordinary responsibilities"
+        "Pause activity planning until the client reports enough motivation to complete the original schedule",
+        "Use the records to build a graded, collaborative plan around personally meaningful activities and vulnerable periods",
+        "Make cognitive restructuring a prerequisite for further behavioral tasks because activation depends on corrected beliefs",
+        "Add more chores to the existing schedule while keeping task selection and pacing unchanged"
       ],
       "answerIndex": 1,
-      "rationale": "Behavioral activation uses monitoring, functional analysis, and planned action to reduce avoidance and increase contact with valued or rewarding activity. Action need not wait for motivation to return; the intervention targets the cycle linking low mood, withdrawal, and reduced reinforcement.",
+      "rationale": "Behavioral activation uses monitoring and functional analysis to identify patterns linking behavior, context, avoidance, and reinforcement. A graded collaborative plan built around valued, feasible activities and the vulnerable evening period uses those data to increase contact with mastery and pleasure while reducing avoidance.",
       "references": [
-        "https://www.ncbi.nlm.nih.gov/books/NBK448293/"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3124084/"
       ],
       "choiceRationales": [
-        "This alternative applies the clinical formulation, intervention target, or treatment procedure represented by “Waiting for motivation and mood to improve before scheduling any activity.” It would become relevant if the case actually established that description. The rationale instead emphasizes: Action need not wait for motivation to return; the intervention targets the cycle linking low mood, withdrawal, and reduced reinforcement.",
-        "Behavioral activation uses monitoring, functional analysis, and planned action to reduce avoidance and increase contact with valued or rewarding activity. Action need not wait for motivation to return; the intervention targets the cycle linking low mood, withdrawal, and reduced reinforcement.",
-        "The inference behind “Analyzing dreams without examining patterns of avoidance in everyday routines” concerns another clinical formulation, intervention target, or treatment procedure. Its defining facts would have to be present for it to control the decision. In this item, the rationale identifies the operative evidence: Behavioral activation uses monitoring, functional analysis, and planned action to reduce avoidance and increase contact with valued or rewarding activity.",
-        "This response interprets the facts through “Eliminating all unpleasant emotion before the client resumes ordinary responsibilities,” a neighboring clinical formulation, intervention target, or treatment procedure. That interpretation would apply only when its stated features governed the case. The current rationale instead explains: Behavioral activation uses monitoring, functional analysis, and planned action to reduce avoidance and increase contact with valued or rewarding activity."
+        "Behavioral activation does not require motivation to precede planned action. Waiting for readiness can preserve the withdrawal cycle, whereas small feasible actions are selected and tested to help behavior create opportunities for reinforcement and mood change.",
+        "Behavioral activation uses monitoring and functional analysis to identify patterns linking behavior, context, avoidance, and reinforcement. A graded collaborative plan built around valued, feasible activities and the vulnerable evening period uses those data to increase contact with mastery and pleasure while reducing avoidance.",
+        "Cognitive work can be useful in broader treatment, but behavioral activation can proceed by changing behavior and environmental contingencies directly. Requiring corrected beliefs first would abandon the intervention logic the question asks the clinician to apply.",
+        "Increasing the volume of therapist-selected chores ignores evidence that the current plan is poorly matched and difficult to complete. Grading, collaboration, values, and the observed avoidance context are more relevant than simply making the schedule denser."
       ],
       "optionFeedbackReviewWave": "eppp-option-feedback-wave-01",
       "optionFeedbackReviewedAt": "2026-07-16",
@@ -13457,7 +13480,30 @@
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
         "3": "rationale-grounded-option-contrast-draft"
-      }
+      },
+      "sourceDetails": [
+        {
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3124084/",
+          "title": "Behavioral Activation for the Treatment of Atypical Depression: A Pilot Open Trial",
+          "organization": "Behavior Modification",
+          "summary": "This peer-reviewed clinical article describes behavioral activation using activity monitoring, functional analysis, values and goals, graded task assignment, and modification of avoidance patterns to increase contact with reinforcing activity.",
+          "credibility": "The full peer-reviewed article is archived in PubMed Central and reports a manual-guided behavioral activation intervention. Its procedural description directly supports adapting activity plans from monitoring and functional information."
+        }
+      ],
+      "learningObjectiveId": "intervention-adjust-behavioral-activation-from-functional-monitoring",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "wait-for-motivation-before-action",
+        "make-cognitive-change-a-gate-for-activation",
+        "increase-activity-volume-without-functional-tailoring"
+      ],
+      "wordingReviewStatus": "editorial-deep-rewrite-pass",
+      "wordingReviewWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinementWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinedAt": "2026-08-12",
+      "sourceReviewBasis": "item-specific-authoritative-source-review",
+      "clueReviewStatus": "editorial-pass-after-manual-option-review",
+      "biasAccessibilityStatus": "editorial-pass"
     },
     {
       "type": "single-choice",
@@ -15063,32 +15109,32 @@
     },
     {
       "type": "single-choice",
-      "difficulty": "foundation",
+      "difficulty": "advanced",
       "reviewStatus": "source-reviewed",
       "qaStatus": "qa-passed",
-      "qaReviewedAt": "2026-07-15",
+      "qaReviewedAt": "2026-08-12",
       "migrationStatus": "re-authored-source-reviewed",
       "id": "eppp-b021-assessment-3",
       "domainId": "assessment",
       "legacySourceId": "legacy-f594ef198545b7bf",
       "legacySourceFile": "js/questions_bank.js",
-      "prompt": "A positively skewed distribution is defined by a:",
+      "prompt": "Scores from a timed task cluster between 18 and 30, with a small number between 75 and 95. The mean is 34 and the median is 24. Which interpretation best integrates the distribution’s shape with selection of a descriptive center?",
       "choices": [
-        "Longer tail extending toward lower or more negative values",
-        "Perfectly symmetric shape with equal tails on both sides",
-        "Longer tail extending toward higher or more positive values",
-        "Requirement that its mean equal its median in every sample"
+        "The distribution is left-skewed, and the mean best represents the typical score because the low tail pulls it downward",
+        "The distribution is approximately symmetric, and the mean–median difference is sampling noise that can be ignored",
+        "The distribution is right-skewed, and the median is less affected than the mean by the sparse high-score tail",
+        "The distribution is bimodal, and the mode must replace both the mean and median when two score ranges appear"
       ],
       "answerIndex": 2,
-      "rationale": "Positive skew means right skew: relatively extreme high values extend the right tail. Such values often pull the mean rightward, but tail direction is the defining feature and simple mean–median ordering is not an exceptionless mathematical criterion for every distribution.",
+      "rationale": "The sparse scores from 75 to 95 extend the distribution’s tail in the positive direction, creating right skew. Those high values pull the mean upward, whereas the median depends on rank and is less affected by their magnitude, making 24 a more resistant summary of the clustered typical performance.",
       "references": [
-        "https://www.itl.nist.gov/div898/handbook/eda/section3/eda33a6.htm"
+        "https://www.itl.nist.gov/div898/handbook/eda/section3/eda33d6.htm"
       ],
       "choiceRationales": [
-        "This alternative applies the assessment purpose, score meaning, or psychometric inference represented by “Longer tail extending toward lower or more negative values.” It would become relevant if the case actually established that description. The rationale instead emphasizes: Positive skew means right skew: relatively extreme high values extend the right tail.",
-        "Choosing “Perfectly symmetric shape with equal tails on both sides” would shift the question to a different assessment purpose, score meaning, or psychometric inference. That alternative belongs in a case defined by its own conditions; here, the item rationale states: Positive skew means right skew: relatively extreme high values extend the right tail.",
-        "Positive skew means right skew: relatively extreme high values extend the right tail. Such values often pull the mean rightward, but tail direction is the defining feature and simple mean–median ordering is not an exceptionless mathematical criterion for every distribution.",
-        "This response interprets the facts through “Requirement that its mean equal its median in every sample,” a neighboring assessment purpose, score meaning, or psychometric inference. That interpretation would apply only when its stated features governed the case. The current rationale instead explains: Such values often pull the mean rightward, but tail direction is the defining feature and simple mean–median ordering is not an exceptionless mathematical criterion for every distribution."
+        "A left-skewed distribution has an extended low-value tail, but the unusual observations here are high values. Those values pull the mean upward rather than downward, so both the proposed shape and the stated effect on the mean are reversed.",
+        "The large separation between the mean and median is consistent with the described high-value tail rather than approximate symmetry. Treating that difference as ignorable would discard information already supplied about the distribution’s shape.",
+        "The sparse scores from 75 to 95 extend the distribution’s tail in the positive direction, creating right skew. Those high values pull the mean upward, whereas the median depends on rank and is less affected by their magnitude, making 24 a more resistant summary of the clustered typical performance.",
+        "A few separated high observations can form a tail without producing a second peak, so the description does not establish bimodality. Even if a mode were reported, the shape would not create a rule requiring it to replace both other center measures."
       ],
       "optionFeedbackReviewWave": "eppp-option-feedback-wave-01",
       "optionFeedbackReviewedAt": "2026-07-16",
@@ -15098,7 +15144,30 @@
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
         "3": "rationale-grounded-option-contrast-draft"
-      }
+      },
+      "sourceDetails": [
+        {
+          "url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda33d6.htm",
+          "title": "Histogram Interpretation: Skewed (Non-Normal) Right",
+          "organization": "National Institute of Standards and Technology",
+          "summary": "The NIST Exploratory Data Analysis handbook defines a right-skewed distribution by its extended positive tail and discusses how skewness complicates the meaning and selection of mean, median, and mode as measures of typical value.",
+          "credibility": "NIST is a U.S. federal scientific standards agency, and its statistical handbook is an authoritative methodological reference. The page directly supports interpretation of a sparse high-value tail and comparison of center measures."
+        }
+      ],
+      "learningObjectiveId": "assessment-interpret-right-skew-and-resistant-center",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "reverse-tail-direction-and-mean-displacement",
+        "ignore-distribution-evidence-and-assume-symmetry",
+        "infer-bimodality-from-a-sparse-tail"
+      ],
+      "wordingReviewStatus": "editorial-deep-rewrite-pass",
+      "wordingReviewWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinementWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinedAt": "2026-08-12",
+      "sourceReviewBasis": "item-specific-authoritative-source-review",
+      "clueReviewStatus": "editorial-pass-after-manual-option-review",
+      "biasAccessibilityStatus": "editorial-pass"
     },
     {
       "type": "single-choice",
@@ -15760,32 +15829,32 @@
     },
     {
       "type": "single-choice",
-      "difficulty": "foundation",
+      "difficulty": "advanced",
       "reviewStatus": "source-reviewed",
       "qaStatus": "qa-passed",
-      "qaReviewedAt": "2026-07-15",
+      "qaReviewedAt": "2026-08-12",
       "migrationStatus": "re-authored-source-reviewed",
       "id": "eppp-b019-lifespan-2",
       "domainId": "lifespan",
       "legacySourceId": "legacy-245b977f407ed949",
       "legacySourceFile": "js/data_batch23.js",
-      "prompt": "In Piaget’s theory, formal-operational reasoning is distinguished by the ability to:",
+      "prompt": "Two adolescents investigate what determines a pendulum’s rate. One changes string length, weight, and release height together, then describes the observed result. The other proposes several possible causes, varies one factor at a time, and uses the pattern to test each hypothesis. Which feature most specifically reflects formal-operational reasoning in Piaget’s account?",
       "choices": [
-        "Learn exclusively through reflexes and direct sensorimotor action",
-        "Use symbols while remaining unable to reason about transformations",
-        "Apply logical operations only to tangible objects presently in view",
-        "Reason systematically about abstractions, hypotheses, and possible outcomes"
+        "Remembering the outcome of each observed trial",
+        "Using familiar objects to represent the parts of the apparatus",
+        "Ordering the pendulums by their directly observed string lengths",
+        "Constructing predictions and conducting controlled comparisons to evaluate rival explanations"
       ],
       "answerIndex": 3,
-      "rationale": "Formal operations permit abstract, propositional, and hypothetical-deductive reasoning, including systematic isolation and combination of variables. Piaget proposed an approximate developmental progression, not a guarantee that every adolescent uses formal reasoning equally in every context.",
+      "rationale": "Formal-operational reasoning includes hypothetical-deductive thought and systematic isolation and combination of variables. The second adolescent considers possible causes, controls competing variables, and evaluates hypotheses from the resulting pattern, which goes beyond remembering, symbolic representation, or ordering visible properties.",
       "references": [
         "https://www.ncbi.nlm.nih.gov/books/NBK448206/"
       ],
       "choiceRationales": [
-        "This alternative applies the developmental process, age-linked pattern, or contextual influence represented by “Learn exclusively through reflexes and direct sensorimotor action.” It would become relevant if the case actually established that description. The rationale instead emphasizes: Formal operations permit abstract, propositional, and hypothetical-deductive reasoning, including systematic isolation and combination of variables.",
-        "Choosing “Use symbols while remaining unable to reason about transformations” would shift the question to a different developmental process, age-linked pattern, or contextual influence. That alternative belongs in a case defined by its own conditions; here, the item rationale states: Formal operations permit abstract, propositional, and hypothetical-deductive reasoning, including systematic isolation and combination of variables.",
-        "The inference behind “Apply logical operations only to tangible objects presently in view” concerns another developmental process, age-linked pattern, or contextual influence. Its defining facts would have to be present for it to control the decision. In this item, the rationale identifies the operative evidence: Formal operations permit abstract, propositional, and hypothetical-deductive reasoning, including systematic isolation and combination of variables.",
-        "Formal operations permit abstract, propositional, and hypothetical-deductive reasoning, including systematic isolation and combination of variables. Piaget proposed an approximate developmental progression, not a guarantee that every adolescent uses formal reasoning equally in every context."
+        "Remembering outcomes contributes information to the task, but memory for observed events does not demonstrate hypothetical-deductive reasoning or systematic control of variables. A learner at an earlier developmental level could recall each trial.",
+        "Representing apparatus parts with familiar objects is compatible with symbolic thought, which emerges before formal operations. The critical evidence here concerns how the adolescent generates and tests causal possibilities, not whether objects can stand for other objects.",
+        "Seriating objects by an observable dimension is associated with concrete-operational logic. Ordering string lengths can be useful, but it does not by itself show coordinated hypothesis testing across weight, length, and release height.",
+        "Formal-operational reasoning includes hypothetical-deductive thought and systematic isolation and combination of variables. The second adolescent considers possible causes, controls competing variables, and evaluates hypotheses from the resulting pattern, which goes beyond remembering, symbolic representation, or ordering visible properties."
       ],
       "optionFeedbackReviewWave": "eppp-option-feedback-wave-01",
       "optionFeedbackReviewedAt": "2026-07-16",
@@ -15795,7 +15864,30 @@
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft"
-      }
+      },
+      "sourceDetails": [
+        {
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK448206/",
+          "title": "Piaget: Cognitive Development - StatPearls",
+          "organization": "National Center for Biotechnology Information",
+          "summary": "The NCBI Bookshelf review describes formal operations as movement beyond concrete facts toward hypothetical-deductive thought, propositional reasoning, isolation of variables, and examination of variable combinations.",
+          "credibility": "NCBI Bookshelf is maintained by the U.S. National Library of Medicine. This clinician-oriented review identifies the exact formal-operational processes illustrated by Piaget’s pendulum task and distinguishes them from concrete observation."
+        }
+      ],
+      "learningObjectiveId": "lifespan-analyze-formal-operational-hypothesis-testing",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "confuse-memory-for-trials-with-formal-reasoning",
+        "confuse-symbolic-representation-with-formal-operations",
+        "confuse-concrete-seriation-with-variable-isolation"
+      ],
+      "wordingReviewStatus": "editorial-deep-rewrite-pass",
+      "wordingReviewWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinementWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinedAt": "2026-08-12",
+      "sourceReviewBasis": "item-specific-authoritative-source-review",
+      "clueReviewStatus": "editorial-pass-after-manual-option-review",
+      "biasAccessibilityStatus": "editorial-pass"
     },
     {
       "type": "single-choice",
@@ -16308,32 +16400,32 @@
     },
     {
       "type": "single-choice",
-      "difficulty": "foundation",
+      "difficulty": "advanced",
       "reviewStatus": "source-reviewed",
       "qaStatus": "qa-passed",
-      "qaReviewedAt": "2026-07-15",
+      "qaReviewedAt": "2026-08-12",
       "migrationStatus": "re-authored-source-reviewed",
       "id": "eppp-b022-professional-2",
       "domainId": "professional",
       "legacySourceId": "legacy-80542eeaa35d0db5",
       "legacySourceFile": "js/data_batch21.js",
-      "prompt": "Why is serving simultaneously as a defendant’s treating therapist and neutral forensic evaluator generally problematic?",
+      "prompt": "A treating psychologist is asked by defense counsel to conduct a neutral competency evaluation of the same client. Counsel argues that the therapist’s longitudinal knowledge will improve the opinion and that a detailed waiver will resolve role concerns. What is the best initial response?",
       "choices": [
-        "Treatment providers are never permitted to work with anyone involved in legal proceedings",
-        "Forensic assessment cannot use clinical interviewing or psychological test information",
-        "The roles have different aims and loyalties, creating conflicts and threatening objectivity",
-        "A therapeutic relationship automatically makes every client communication public"
+        "Accept the evaluation because longitudinal treatment knowledge provides a stronger basis than an independent examination",
+        "Accept after obtaining a waiver that describes the differing purposes and reduced confidentiality of forensic work",
+        "Explain the therapeutic-forensic conflict and make reasonable efforts to refer the evaluation to a qualified independent examiner",
+        "Terminate treatment and begin the forensic evaluation soon afterward because sequential roles remove the objectivity concern"
       ],
       "answerIndex": 2,
-      "rationale": "Therapeutic and forensic roles differ in purpose, alliance, confidentiality, and the intended user of information. Combining them can impair objectivity, confuse consent, and risk harm; separate professionals are generally preferable unless circumstances require careful role management.",
+      "rationale": "Therapeutic and neutral forensic roles with the same person create a multiple relationship that may impair objectivity or cause harm. The forensic guidelines recommend disclosing the risk and making reasonable referral efforts. A waiver can inform the client but does not resolve the structural conflict, and a rapid sequential role change retains similar concerns.",
       "references": [
         "https://doi.org/10.1037/a0029889"
       ],
       "choiceRationales": [
-        "This alternative applies the ethical duty, legal authority, or professional decision rule represented by “Treatment providers are never permitted to work with anyone involved in legal proceedings.” It would become relevant if the case actually established that description. The rationale instead emphasizes: Therapeutic and forensic roles differ in purpose, alliance, confidentiality, and the intended user of information.",
-        "Choosing “Forensic assessment cannot use clinical interviewing or psychological test information” would shift the question to a different ethical duty, legal authority, or professional decision rule. That alternative belongs in a case defined by its own conditions; here, the item rationale states: Therapeutic and forensic roles differ in purpose, alliance, confidentiality, and the intended user of information.",
-        "Therapeutic and forensic roles differ in purpose, alliance, confidentiality, and the intended user of information. Combining them can impair objectivity, confuse consent, and risk harm; separate professionals are generally preferable unless circumstances require careful role management.",
-        "This response interprets the facts through “A therapeutic relationship automatically makes every client communication public,” a neighboring ethical duty, legal authority, or professional decision rule. That interpretation would apply only when its stated features governed the case. The current rationale instead explains: Therapeutic and forensic roles differ in purpose, alliance, confidentiality, and the intended user of information."
+        "Longitudinal knowledge can add context, but treatment information was gathered for a different purpose within a therapeutic alliance. It does not outweigh the objectivity and harm concerns created when the treating psychologist also claims a neutral forensic role.",
+        "A detailed waiver can clarify purpose, confidentiality, and foreseeable risks, but informed agreement does not remove the competing obligations or threat to impartiality. The guidelines still encourage reasonable efforts to refer the forensic request.",
+        "Therapeutic and neutral forensic roles with the same person create a multiple relationship that may impair objectivity or cause harm. The forensic guidelines recommend disclosing the risk and making reasonable referral efforts. A waiver can inform the client but does not resolve the structural conflict, and a rapid sequential role change retains similar concerns.",
+        "The specialty guidelines address concurrent and sequential therapeutic-forensic services because objectivity and harm concerns can persist after treatment ends. A short interval does not transform the therapist into an independent neutral examiner."
       ],
       "optionFeedbackReviewWave": "eppp-option-feedback-wave-01",
       "optionFeedbackReviewedAt": "2026-07-16",
@@ -16343,7 +16435,30 @@
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
         "3": "rationale-grounded-option-contrast-draft"
-      }
+      },
+      "sourceDetails": [
+        {
+          "url": "https://doi.org/10.1037/a0029889",
+          "title": "Specialty Guidelines for Forensic Psychology",
+          "organization": "American Psychological Association",
+          "summary": "Guideline 4.02.01 explains that providing therapeutic and forensic services to the same person creates a multiple relationship that may impair objectivity or cause harm, and it recommends disclosure and reasonable referral efforts.",
+          "credibility": "The American Psychology-Law Society is APA Division 41 and publishes the specialty guidelines for forensic psychology. This is the primary professional guidance for concurrent and sequential therapeutic-forensic role conflicts."
+        }
+      ],
+      "learningObjectiveId": "professional-respond-to-therapeutic-forensic-role-conflict",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "treat-longitudinal-knowledge-as-superior-to-independence",
+        "treat-informed-waiver-as-cure-for-role-conflict",
+        "treat-brief-sequencing-as-removal-of-objectivity-risk"
+      ],
+      "wordingReviewStatus": "editorial-deep-rewrite-pass",
+      "wordingReviewWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinementWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinedAt": "2026-08-12",
+      "sourceReviewBasis": "item-specific-authoritative-source-review",
+      "clueReviewStatus": "editorial-pass-after-manual-option-review",
+      "biasAccessibilityStatus": "editorial-pass"
     },
     {
       "type": "single-choice",
@@ -24054,10 +24169,10 @@
       "sourceDetails": [
         {
           "url": "https://doi.org/10.1037/a0029889",
-          "title": "Specialty guidelines for forensic psychology.",
-          "organization": "American Psychologist",
-          "summary": "This scholarly work focuses on “Specialty guidelines for forensic psychology..” Open the source to review its methods, scope, findings, and limitations in context.",
-          "credibility": "The DOI provides a persistent link to the publisher metadata for this scholarly work. Evidentiary strength still depends on the publication type, methods, sample, analysis, and fit to the claim."
+          "title": "Specialty Guidelines for Forensic Psychology",
+          "organization": "American Psychological Association",
+          "summary": "Guideline 4.02.01 explains that providing therapeutic and forensic services to the same person creates a multiple relationship that may impair objectivity or cause harm, and it recommends disclosure and reasonable referral efforts.",
+          "credibility": "The American Psychology-Law Society is APA Division 41 and publishes the specialty guidelines for forensic psychology. This is the primary professional guidance for concurrent and sequential therapeutic-forensic role conflicts."
         }
       ],
       "qualityCampaignReview": {
@@ -36248,29 +36363,31 @@
       "type": "single-choice",
       "domainId": "research",
       "difficulty": "advanced",
-      "prompt": "Complete the statement: Analysis of covariance (ANCOVA) is used to:",
+      "prompt": "A randomized trial compares two interventions on a continuous posttreatment symptom score. Baseline symptom severity was prespecified, strongly predicts the outcome, and shows approximately parallel outcome slopes across groups. Which analysis most directly estimates the group difference while adjusting for baseline severity?",
       "choices": [
-        "Compare correlation coefficients",
-        "Adjust group means for a covariate",
-        "Analyze categorical data only",
-        "Replace random assignment"
+        "A paired-samples t test within each group followed by comparison of the two p values",
+        "An ANCOVA with treatment condition as the factor and the pretreatment measure as a covariate",
+        "A chi-square test after classifying each participant as improved or not improved",
+        "A pooled correlation between baseline and posttreatment scores with treatment group omitted"
       ],
       "answerIndex": 1,
-      "rationale": "ANCOVA adjusts group means for differences on a covariate (a continuous variable that correlates with the DV), reducing error variance and increasing statistical power.",
+      "rationale": "An ANCOVA can model the continuous posttreatment score as a function of treatment group and the prespecified baseline severity covariate, yielding an adjusted group comparison. Strong prognostic value can improve precision, and the approximately parallel slopes support the common-slope specification described in the vignette.",
       "choiceRationales": [
-        "This alternative applies the design, measurement, or statistical inference represented by “Compare correlation coefficients.” It would become relevant if the case actually established that description. The rationale instead emphasizes: ANCOVA adjusts group means for differences on a covariate (a continuous variable that correlates with the DV), reducing error variance and increasing statistical power.",
-        "ANCOVA adjusts group means for differences on a covariate (a continuous variable that correlates with the DV), reducing error variance and increasing statistical power.",
-        "ANCOVA uses continuous covariates with categorical IVs — it's not limited to categorical data The rationale sharpens that contrast by noting: ANCOVA adjusts group means for differences on a covariate (a continuous variable that correlates with the DV), reducing error variance and increasing statistical power.",
-        "ANCOVA can adjust for pre-existing differences, but it doesn't replace random assignment's causal inference strength The rationale sharpens that contrast by noting: ANCOVA adjusts group means for differences on a covariate (a continuous variable that correlates with the DV), reducing error variance and increasing statistical power."
+        "Separate within-group significance tests do not directly estimate the between-group treatment contrast, and comparing their p values is not a valid test of whether the interventions differ. This approach also fails to use baseline severity as a covariate.",
+        "An ANCOVA can model the continuous posttreatment score as a function of treatment group and the prespecified baseline severity covariate, yielding an adjusted group comparison. Strong prognostic value can improve precision, and the approximately parallel slopes support the common-slope specification described in the vignette.",
+        "Dichotomizing a continuous outcome discards information, and chi-square would test an association between categories rather than estimate the adjusted mean difference requested. It also provides no direct adjustment for continuous baseline severity.",
+        "A pooled baseline-outcome correlation describes association across participants but omits the randomized treatment indicator. It therefore cannot estimate the intervention contrast, adjusted or otherwise, that constitutes the trial’s comparison."
       ],
       "references": [
-        "https://www.itl.nist.gov/div898/handbook/glossary.htm"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12326564/"
       ],
       "sourceDetails": [
         {
-          "url": "https://www.itl.nist.gov/div898/handbook/glossary.htm",
-          "title": "NIST/SEMATECH e-Handbook of Statistical Methods - Statistical Glossary",
-          "credibility": "NIST is the U.S. federal measurement-science agency. Its statistical handbook provides technically reviewed definitions and methods appropriate to this research-methods item."
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12326564/",
+          "title": "How to construct analysis of covariance in clinical trials: ANCOVA with one covariate in a completely randomized design structure",
+          "organization": "Korean Journal of Anesthesiology",
+          "summary": "This peer-reviewed statistical tutorial explains ANCOVA for randomized clinical trials, including adjustment for prognostic baseline covariates, interpretation of adjusted treatment effects, and the role of model assumptions.",
+          "credibility": "The article is a peer-reviewed, worked methodological tutorial archived in PubMed Central. It directly addresses continuous posttreatment outcomes, prespecified baseline adjustment, precision, and treatment-by-covariate considerations."
         }
       ],
       "reviewStatus": "source-reviewed",
@@ -36279,11 +36396,11 @@
       "authoredSourceId": null,
       "migrationStatus": "re-authored-source-reviewed",
       "qaStatus": "qa-passed",
-      "qaReviewedAt": "2026-07-15",
+      "qaReviewedAt": "2026-08-12",
       "expansionBatch": "native-501-1000",
-      "sourceReviewBasis": "authoritative-topic-reference",
+      "sourceReviewBasis": "item-specific-authoritative-source-review",
       "domainAlignmentStatus": "editorial-pass",
-      "clueReviewStatus": "automated-pass",
+      "clueReviewStatus": "editorial-pass-after-manual-option-review",
       "biasAccessibilityStatus": "editorial-pass",
       "feedbackHalvingCampaign": "eppp-feedback-halving-campaign",
       "feedbackHalvingCampaignAt": "2026-07-25",
@@ -36291,7 +36408,18 @@
         "0": "rationale-grounded-option-contrast-draft",
         "2": "source-reviewed-legacy-reason-expanded",
         "3": "source-reviewed-legacy-reason-expanded"
-      }
+      },
+      "learningObjectiveId": "research-select-ancova-for-adjusted-randomized-group-comparison",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "compare-within-group-significance-instead-of-groups",
+        "discard-continuous-information-and-covariate-adjustment",
+        "omit-treatment-group-from-the-analysis"
+      ],
+      "wordingReviewStatus": "editorial-deep-rewrite-pass",
+      "wordingReviewWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinementWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinedAt": "2026-08-12"
     },
     {
       "id": "eppp-v2-professional-035",
@@ -39486,29 +39614,31 @@
       "type": "single-choice",
       "domainId": "cognitive-affective",
       "difficulty": "advanced",
-      "prompt": "Complete the statement: Signal detection theory differs from classical psychophysics in that it:",
+      "prompt": "Two clinicians review the same set of faint auditory signals embedded in noise. After the cost of a miss is increased, Clinician 2 calls more trials “signal present,” producing more hits and more false alarms; d-prime is unchanged. Under signal detection theory, what best explains the pattern?",
       "choices": [
-        "Ignores sensory capacity",
-        "Only applies to visual stimuli",
-        "Assumes a fixed absolute threshold",
-        "Separates sensitivity from response bias"
+        "Clinician 2’s sensory sensitivity improved because the hit rate increased",
+        "Clinician 2’s sensory sensitivity declined because the false-alarm rate increased",
+        "The auditory threshold became lower, so response strategy no longer affects performance",
+        "Clinician 2 adopted a more liberal decision criterion while discriminability remained stable"
       ],
       "answerIndex": 3,
-      "rationale": "SDT separates two independent factors: d' (sensitivity — ability to discriminate signal from noise) and criterion (response bias — tendency to say 'yes' or 'no'). This allows analysis of both perceptual ability and decision strategy.",
+      "rationale": "A shift toward saying “signal present” raises both the hit rate and the false-alarm rate. When d-prime remains unchanged, signal-noise discriminability has not changed; the altered miss cost has moved the decision criterion in a more liberal direction. Signal detection theory separates this response bias from sensory sensitivity.",
       "choiceRationales": [
-        "SDT explicitly measures sensory capacity through d'",
-        "SDT applies to ALL modalities — auditory, visual, medical diagnosis, memory recognition, any detection task",
-        "SDT REJECTS the idea of a fixed threshold — instead, it models detection as a probabilistic decision under uncertainty",
-        "SDT separates two independent factors: d' (sensitivity — ability to discriminate signal from noise) and criterion (response bias — tendency to say 'yes' or 'no'). This allows analysis of both perceptual ability and decision strategy."
+        "A higher hit rate can result from better sensitivity or from a more liberal response criterion. The simultaneous rise in false alarms and stable d-prime show that this hit-rate increase cannot be interpreted as improved discriminability.",
+        "A higher false-alarm rate can reflect a liberal response policy rather than poorer sensitivity. Stable d-prime indicates that the clinician’s ability to distinguish signal from noise remained constant while the willingness to endorse signal changed.",
+        "Signal detection theory was developed in part to separate sensory discriminability from response strategy under uncertainty. Changing the relative cost of misses can alter the criterion even when the underlying sensory evidence distributions stay stable.",
+        "A shift toward saying “signal present” raises both the hit rate and the false-alarm rate. When d-prime remains unchanged, signal-noise discriminability has not changed; the altered miss cost has moved the decision criterion in a more liberal direction. Signal detection theory separates this response bias from sensory sensitivity."
       ],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/8-introduction"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4304641/"
       ],
       "sourceDetails": [
         {
-          "url": "https://openstax.org/books/psychology-2e/pages/8-introduction",
-          "title": "Chapter 8: Memory - Psychology 2e, OpenStax, Rice University",
-          "credibility": "OpenStax is a Rice University nonprofit publisher. Psychology 2e is openly peer reviewed, cites its evidence base, and is maintained through an editorial revision process; this section directly covers the tested foundational concept."
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4304641/",
+          "title": "“Utilizing” Signal Detection Theory",
+          "organization": "Psychological Science via PubMed Central",
+          "summary": "This Psychological Science tutorial explains signal detection theory as decision making under perceptual uncertainty and behavioral risk, including the distinct roles of sensitivity, response bias, and the utilities attached to decision outcomes.",
+          "credibility": "Psychological Science is a peer-reviewed journal of the Association for Psychological Science. The tutorial is authored by signal-detection researchers and directly addresses how changing costs can shift a decision criterion independently of sensitivity."
         }
       ],
       "reviewStatus": "source-reviewed",
@@ -39517,12 +39647,23 @@
       "authoredSourceId": null,
       "migrationStatus": "re-authored-source-reviewed",
       "qaStatus": "qa-passed",
-      "qaReviewedAt": "2026-07-15",
+      "qaReviewedAt": "2026-08-12",
       "expansionBatch": "native-501-1000",
-      "sourceReviewBasis": "authoritative-topic-reference",
+      "sourceReviewBasis": "item-specific-authoritative-source-review",
       "domainAlignmentStatus": "editorial-pass",
-      "clueReviewStatus": "automated-pass",
-      "biasAccessibilityStatus": "editorial-pass"
+      "clueReviewStatus": "editorial-pass-after-manual-option-review",
+      "biasAccessibilityStatus": "editorial-pass",
+      "learningObjectiveId": "cognitive-affective-distinguish-sensitivity-from-response-criterion",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "infer-sensitivity-from-hit-rate-alone",
+        "infer-sensitivity-loss-from-false-alarms-alone",
+        "collapse-decision-bias-into-a-fixed-sensory-threshold"
+      ],
+      "wordingReviewStatus": "editorial-deep-rewrite-pass",
+      "wordingReviewWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinementWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinedAt": "2026-08-12"
     },
     {
       "id": "eppp-v2-lifespan-036",
@@ -56466,20 +56607,20 @@
       "type": "single-choice",
       "domainId": "biological",
       "difficulty": "advanced",
-      "prompt": "The blood-brain barrier is MOST permeable to:",
+      "prompt": "A research team compares four compounds with similar molecular size and equal unbound plasma concentration. None uses a specific influx transporter. Which compound would be expected to show the greatest passive penetration of an intact blood-brain barrier?",
       "choices": [
-        "Large, water-soluble molecules",
-        "Lipid-soluble substances",
-        "Ionized medications",
-        "Proteins and antibodies"
+        "A highly water-soluble compound carrying several charged groups at physiologic pH",
+        "A more lipid-soluble compound that remains predominantly unionized at physiologic pH",
+        "A polar compound with low lipid solubility and strong hydrogen-bonding capacity",
+        "A peptide compound that lacks a receptor-mediated or carrier-mediated transport pathway"
       ],
       "answerIndex": 1,
-      "rationale": "The blood-brain barrier selectively allows lipid-soluble (fat-soluble) substances to pass while blocking large, water-soluble molecules. This is why lipophilic drugs like benzodiazepines cross readily.",
+      "rationale": "Endothelial tight junctions sharply restrict paracellular movement at the blood-brain barrier, so passive transcellular penetration generally favors a more lipid-soluble compound that is predominantly unionized. Holding size and unbound concentration similar and excluding influx transport isolates that physicochemical advantage, although efflux and metabolism can still affect net exposure.",
       "choiceRationales": [
-        "\"Large, water-soluble molecules\" is not best because Large water-soluble molecules are BLOCKED by the BBB's tight junctions",
-        "The blood-brain barrier selectively allows lipid-soluble (fat-soluble) substances to pass while blocking large, water-soluble molecules. This is why lipophilic drugs like benzodiazepines cross readily.",
-        "\"Ionized medications\" is not best because Ionized medications cannot easily cross the lipid bilayer of the BBB",
-        "\"Proteins and antibodies\" is not best because Proteins and antibodies are too large to cross — this is why the brain is an 'immune-privileged' site"
+        "Multiple charged groups and high water solubility make passive movement through endothelial lipid membranes less favorable. Such a compound could reach the brain through a suitable transport process, but the vignette removes specific influx transport from the comparison.",
+        "Endothelial tight junctions sharply restrict paracellular movement at the blood-brain barrier, so passive transcellular penetration generally favors a more lipid-soluble compound that is predominantly unionized. Holding size and unbound concentration similar and excluding influx transport isolates that physicochemical advantage, although efflux and metabolism can still affect net exposure.",
+        "Polarity, low lipid solubility, and strong hydrogen bonding reduce passive partitioning into and movement across endothelial cell membranes. Similar molecular size does not offset those properties when the question specifies passive penetration.",
+        "Peptides generally have poor passive membrane permeability and often require receptor-mediated or carrier-mediated pathways for meaningful brain entry. The stated absence of such a pathway therefore weakens, rather than strengthens, this option."
       ],
       "references": [
         "https://doi.org/10.1016/j.nbd.2009.07.030"
@@ -56487,8 +56628,10 @@
       "sourceDetails": [
         {
           "url": "https://doi.org/10.1016/j.nbd.2009.07.030",
-          "title": "Abbott, N. J., Patabendige, A. A. K., Dolman, D. E. M., Yusof, S. R., & Begley, D. J. (2010). Structure and function of the blood–brain barrier. Neurobiology of Disease, 37(1), 13–25",
-          "credibility": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept."
+          "title": "Structure and function of the blood-brain barrier",
+          "organization": "Neurobiology of Disease",
+          "summary": "This peer-reviewed review describes endothelial tight junctions as the physical blood-brain barrier and explains how membrane transporters, vesicular mechanisms, and associated cells regulate exchange between blood and the central nervous system.",
+          "credibility": "The article is a peer-reviewed synthesis by blood-brain barrier researchers and is indexed by PubMed under PMID 19664713. Its mechanistic discussion directly supports the item distinction between passive transcellular penetration and transporter-mediated entry."
         }
       ],
       "reviewStatus": "source-reviewed",
@@ -56497,14 +56640,23 @@
       "authoredSourceId": null,
       "migrationStatus": "re-authored-source-reviewed",
       "qaStatus": "qa-passed",
-      "qaReviewedAt": "2026-07-15",
+      "qaReviewedAt": "2026-08-12",
       "expansionBatch": "native-1001-1500",
-      "sourceReviewBasis": "legacy-citation-url-reviewed",
-      "sourceAnchorItemId": null,
-      "sourceMatchScore": 1,
+      "sourceReviewBasis": "item-specific-authoritative-source-review",
       "domainAlignmentStatus": "editorial-pass",
-      "clueReviewStatus": "automated-pass",
-      "biasAccessibilityStatus": "editorial-pass"
+      "clueReviewStatus": "editorial-pass-after-manual-option-review",
+      "biasAccessibilityStatus": "editorial-pass",
+      "learningObjectiveId": "biological-analyze-passive-blood-brain-barrier-penetration",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "confuse-aqueous-solubility-with-membrane-permeability",
+        "overvalue-molecular-size-while-ignoring-polarity",
+        "assume-peptide-entry-despite-missing-transport-pathway"
+      ],
+      "wordingReviewStatus": "editorial-deep-rewrite-pass",
+      "wordingReviewWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinementWave": "eppp-native-quality-wave-23",
+      "optionFeedbackRefinedAt": "2026-08-12"
     },
     {
       "id": "eppp-v3-cognitive-affective-015",

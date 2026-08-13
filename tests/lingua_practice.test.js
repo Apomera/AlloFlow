@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
@@ -24,6 +24,31 @@ function requireLinguaHelper(name) {
   expect(typeof helper, `${name} must be exported for focused regression coverage`).toBe('function');
   return helper;
 }
+
+describe('Lingua Practice bounded text requests', () => {
+  it('clamps timeouts and settles stalled or rejected providers without late mutation hooks', async () => {
+    const timeoutFor = requireLinguaHelper('_textRequestTimeout');
+    const boundedRequest = requireLinguaHelper('_boundedTextRequest');
+    expect(timeoutFor()).toBe(30000);
+    expect(timeoutFor(1)).toBe(10);
+    expect(timeoutFor(999999)).toBe(60000);
+
+    vi.useFakeTimers();
+    try {
+      let resolveLate;
+      const lateProvider = new Promise((resolveLateRequest) => { resolveLate = resolveLateRequest; });
+      const stalled = boundedRequest(() => lateProvider, 10);
+      await vi.advanceTimersByTimeAsync(10);
+      await expect(stalled).resolves.toEqual({ status: 'timeout' });
+      resolveLate('late response');
+      await Promise.resolve();
+      await expect(boundedRequest(() => Promise.reject(new Error('offline')), 10))
+        .resolves.toMatchObject({ status: 'network' });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
 
 describe('Lingua Practice lesson helpers', () => {
   it('parses a fenced AI practice set and limits collection sizes', () => {
@@ -94,15 +119,24 @@ describe('Lingua Practice lesson helpers', () => {
 
   it('derives bounded typing characters and inserts them at the current selection', () => {
     expect(Lingua._normalizeInputCharacters(' \u00e9, \u00e7 \u00e9 \u0153 ')).toEqual(['\u00e9', '\u00e7', '\u0153']);
+    expect(Lingua._normalizeInputCharacters(['e\u0301', '\u00e9', '\ud83d\udc69\u200d\ud83c\udfeb', '\u0000', '\u096d']))
+      .toEqual(['\u00e9', '\ud83d\udc69\u200d\ud83c\udfeb', '\u096d']);
     const characters = Lingua._deriveInputCharacters({
       inputCharacters: ['\u00e9', '\u00e7'],
-      vocabulary: [{ term: 'o\u00f9 ?', example: 'L\u2019\u0153uvre', forms: [{ label: 'variant', form: '\u00e0' }] }],
+      vocabulary: [{ term: 'o\u00f9 ?', example: 'L\u2019\u0153uvre', forms: [{ label: 'variant', form: '\u00e0', example: 'm\u0101 \u096d' }] }],
       phrases: [{ target: '\u00a1Hola!' }],
       conversation: [{ coach: '\u00c7a va ?', sample: 'tr\u00e8s bien' }],
     });
     expect(characters.slice(0, 2)).toEqual(['\u00e9', '\u00e7']);
-    expect(characters).toEqual(expect.arrayContaining(['\u00f9', '?', '\u2019', '\u0153', '\u00e0', '\u00a1', '!', '\u00c7', '\u00e8']));
+    expect(characters).toEqual(expect.arrayContaining(['\u00f9', '?', '\u2019', '\u0153', '\u00e0', '\u0101', '\u096d', '\u00a1', '!', '\u00c7', '\u00e8']));
     expect(characters).not.toContain('H');
+
+    const priority = Lingua._deriveInputCharacters({
+      inputCharacters: Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv'),
+      vocabulary: [{ term: '\u00e7', meaning: 'fallback' }],
+    }, ['\u1eaf', '\u096d'], { includeLesson: false });
+    expect(priority.slice(0, 2)).toEqual(['\u1eaf', '\u096d']);
+    expect(priority).toHaveLength(48);
 
     expect(Lingua._insertTextAtSelection('caf', 3, 3, '\u00e9', 20)).toEqual({ value: 'caf\u00e9', caret: 4 });
     expect(Lingua._insertTextAtSelection('garcon', 3, 4, '\u00e7', 20)).toEqual({ value: 'gar\u00e7on', caret: 4 });

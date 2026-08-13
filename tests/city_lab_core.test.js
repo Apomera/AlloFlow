@@ -1,6 +1,13 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+
+// Every edit clones the whole 144-parcel plan, which is the price of the
+// immutability contract, and several tests build reference plans across three
+// towns and score them under three assumption sets. That is comfortably fast
+// on an idle machine and has intermittently blown the 5 s default on a busy
+// one. A suite that fails when the box is loaded gets ignored.
+vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 });
 
 let P;
 let registered;
@@ -334,6 +341,45 @@ describe('City Planning Lab - the contested tier reappears as argument', () => {
   });
 });
 
+describe('City Planning Lab - grouping the scorecard cannot lose an indicator', () => {
+  // Grouping nineteen rows for readability introduces exactly one new way to
+  // fail: an indicator nobody put in a group renders nowhere, silently.
+  const flat = (groups) => groups.flatMap((g) => g.ids);
+
+  it('places every measured indicator in exactly one group', () => {
+    const grouped = flat(P.TIER1_GROUPS);
+    P.TIER1_IDS.forEach((id) => {
+      expect(grouped.filter((x) => x === id).length, id + ' is not in exactly one group').toBe(1);
+    });
+    grouped.forEach((id) => expect(P.TIER1_IDS, id + ' is grouped but not an indicator').toContain(id));
+  });
+
+  it('places every modelled indicator in exactly one group', () => {
+    const grouped = flat(P.TIER2_GROUPS);
+    P.TIER2_IDS.forEach((id) => {
+      expect(grouped.filter((x) => x === id).length, id + ' is not in exactly one group').toBe(1);
+    });
+    grouped.forEach((id) => expect(P.TIER2_IDS, id + ' is grouped but not an indicator').toContain(id));
+  });
+
+  it('gives every group a label and no group a tier it does not own', () => {
+    P.TIER1_GROUPS.concat(P.TIER2_GROUPS).forEach((g) => {
+      expect(g.label).toBeTruthy();
+      expect(g.ids.length).toBeGreaterThan(0);
+    });
+    // Grouping is presentation. It must not blur the tier boundary.
+    const t1 = new Set(flat(P.TIER1_GROUPS));
+    flat(P.TIER2_GROUPS).forEach((id) => expect(t1.has(id), id + ' spans both tiers').toBe(false));
+  });
+
+  it('leaves a label for every indicator it renders', () => {
+    P.renderedIndicatorIds().forEach((id) => {
+      expect(P.TIER1_GROUPS.concat(P.TIER2_GROUPS).some((g) => g.ids.indexOf(id) !== -1),
+        id + ' would render with no group').toBe(true);
+    });
+  });
+});
+
 describe('City Planning Lab - the slack bar means one thing everywhere', () => {
   // The first version showed "allowance used", which read as full-is-good on
   // an at-least target and full-is-nearly-broken on an at-most limit, one row
@@ -386,6 +432,294 @@ describe('City Planning Lab - the slack bar means one thing everywhere', () => {
     const src = fs.readFileSync(sourcePath, 'utf8');
     expect(src).not.toMatch(/your binding constraint is/i);
     expect(src).not.toMatch(/tightest constraint:/i);
+  });
+});
+
+describe('City Planning Lab - the reading layer is record, not simulation', () => {
+  // These clear an integrity bar a modelled rent number does not, for exactly
+  // one reason: they are archival record. Every rule that keeps them on the
+  // right side of that line is guarded here.
+  it('ships case studies at all', () => {
+    expect(P.CASE_STUDIES.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('separates what is documented from what is argued about, on every entry', () => {
+    // An entry with only `what` reads as settled. An entry with only
+    // `contested` reads as opinion. Both, always.
+    P.CASE_STUDIES.forEach((c) => {
+      expect(c.what, c.id + ' has no record').toBeTruthy();
+      expect(c.contested, c.id + ' does not say what is argued about').toBeTruthy();
+      expect(c.record, c.id + ' does not say where the record is').toBeTruthy();
+      expect(c.what.length).toBeGreaterThan(80);
+      expect(c.contested.length).toBeGreaterThan(80);
+    });
+  });
+
+  it('names the limit of the simulation on every entry', () => {
+    // The adjacency guard: history beside a model invites the reader to
+    // assume the model explains it.
+    P.CASE_STUDIES.forEach((c) => {
+      expect(c.toolSays, c.id + ' does not disclaim the simulation').toBeTruthy();
+      expect(c.toolSays.length).toBeGreaterThan(60);
+    });
+  });
+
+  it('quotes no statistic and cites no study', () => {
+    // A fabricated figure is worse here than anywhere else in this tool,
+    // because a made-up historical number is the kind that gets repeated.
+    P.CASE_STUDIES.forEach((c) => {
+      const text = [c.what, c.record, c.contested, c.toolSays].join(' ');
+      expect(text, c.id + ' quotes a statistic').not.toMatch(/\b\d[\d,.]*\s?(percent|%|million|thousand|families|households|people|homes)\b/i);
+      expect(text, c.id + ' cites a study').not.toMatch(/\b(et al|study found|research shows|according to|survey of)\b/i);
+    });
+  });
+
+  it('anchors each entry to a place and a period', () => {
+    P.CASE_STUDIES.forEach((c) => {
+      expect(c.place, c.id + ' has no place').toBeTruthy();
+      expect(c.period, c.id + ' has no period').toBeTruthy();
+      expect(c.title).toBeTruthy();
+    });
+  });
+
+  it('draws on more than one country, so the record is not one story', () => {
+    const places = new Set(P.CASE_STUDIES.map((c) => c.place));
+    expect(places.size).toBeGreaterThan(1);
+  });
+
+  it('keeps the invented towns out of the record', () => {
+    // The towns are fiction and these places are not. Naming a scenario in a
+    // case study would blur precisely the line this tab exists to hold.
+    const townNames = P.SCENARIO_IDS.map((sid) => P.SCENARIOS[sid].town);
+    P.CASE_STUDIES.forEach((c) => {
+      const factual = [c.what, c.record, c.contested].join(' ');
+      townNames.forEach((t) => {
+        expect(factual, c.id + ' puts ' + t + ' into the historical record').not.toContain(t);
+      });
+    });
+  });
+
+  it('stays separate from the present-tense discussion prompts', () => {
+    const caseIds = P.CASE_STUDIES.map((c) => c.id);
+    P.SCENARIO_IDS.forEach((sid) => {
+      P.discussionFor(sid).forEach((d) => {
+        expect(caseIds, 'a case study leaked into the prompts').not.toContain(d.id);
+      });
+    });
+  });
+});
+
+describe('City Planning Lab - the parcel label is legible on every fill', () => {
+  // The code drawn in each parcel was white on all eleven land-use fills and
+  // on a ten-step terrain ramp. On the low-density housing yellow that
+  // measured about 2.2 to 1. Matching the RATIO is the requirement; deciding
+  // by eye which fill looks light is exactly how the yellow got missed.
+  const AA_SMALL = 4.5;
+
+  it('clears 4.5 to 1 on every land use, with the ink the tool actually picks', () => {
+    P.USES.forEach((u) => {
+      const ink = P.readableInk(u.fill);
+      const r = P.contrastRatio(ink, u.fill);
+      expect(r, u.id + ' (' + u.fill + ') only reaches ' + r.toFixed(2)).toBeGreaterThanOrEqual(AA_SMALL);
+    });
+  });
+
+  it('clears 4.5 to 1 on every step of the terrain ramp', () => {
+    P.TERRAIN_RAMP.forEach((c, i) => {
+      const r = P.contrastRatio(P.readableInk(c), c);
+      expect(r, 'ramp step ' + i + ' (' + c + ') only reaches ' + r.toFixed(2))
+        .toBeGreaterThanOrEqual(AA_SMALL);
+    });
+  });
+
+  it('picks whichever ink genuinely has more contrast, not a fixed one', () => {
+    expect(P.readableInk('#000000')).toBe(P.INK_LIGHT);
+    expect(P.readableInk('#ffffff')).toBe(P.INK_DARK);
+    // And it really does vary across the palette rather than always answering
+    // the same way, which would mean the chooser is doing nothing.
+    const inks = new Set(P.USES.map((u) => P.readableInk(u.fill)));
+    expect(inks.size).toBe(2);
+  });
+
+  it('keeps a walking path visible on ground of any lightness', () => {
+    // A lime dash with see-through gaps measured 1.01 to 1 against the palest
+    // terrain, which is invisible. The gaps are dark now, so whichever way the
+    // ground goes, one of the two dash tones contrasts against it.
+    const NON_TEXT = 3.0;   // WCAG 1.4.11 for a graphical object
+    const backgrounds = P.USES.map((u) => [u.id, u.fill])
+      .concat(P.TERRAIN_RAMP.map((c, i) => ['terrain step ' + i, c]));
+    backgrounds.forEach(([id, bg]) => {
+      const best = Math.max(P.contrastRatio(P.PATH_INK, bg), P.contrastRatio(P.PATH_GAP, bg));
+      expect(best, 'a path on ' + id + ' only reaches ' + best.toFixed(2))
+        .toBeGreaterThanOrEqual(NON_TEXT);
+    });
+  });
+
+  it('distinguishes a path from a road by shape, not only by colour', () => {
+    // Hue plus one pixel of thickness disappears for a colourblind reader and
+    // on a printout. The dash is a difference a photocopier keeps.
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toMatch(/repeating-linear-gradient/);
+    expect(src).toContain('PATH_GAP');
+  });
+
+  it('computes contrast by the standard formula', () => {
+    expect(P.contrastRatio('#ffffff', '#000000')).toBeCloseTo(21, 1);
+    expect(P.contrastRatio('#ffffff', '#ffffff')).toBeCloseTo(1, 5);
+  });
+});
+
+describe('City Planning Lab - the 3D model is a view, not a source of truth', () => {
+  // Massing is built as a plain list of boxes with no Three.js in sight, so
+  // the geometry can be checked here. The renderer is a thin thing that reads
+  // this list, and a browser harness drives it against real WebGL.
+  it('gives every parcel ground, in every town', () => {
+    P.SCENARIO_IDS.forEach((sid) => {
+      const m = P.buildMassing(P.basePlan(sid), 'central', 'D6');
+      expect(m.ground, sid).toHaveLength(144);
+    });
+  });
+
+  it('raises a block only where something is actually built', () => {
+    const m = P.buildMassing(planCompactWest().plan, 'central', null);
+    m.buildings.forEach((b) => expect(b.storeys).toBeGreaterThan(0));
+    const built = m.ground.filter((g) => {
+      const u = P.USE_BY_ID[planCompactWest().plan.uses[g.id]];
+      return u.storeys > 0;
+    });
+    expect(m.buildings).toHaveLength(built.length);
+  });
+
+  it('keeps storeys out of every number the tool reports', () => {
+    // storeys is display data in the same category as fill and code. If it
+    // ever reached an indicator it would be a modelled quantity wearing a
+    // presentation label.
+    const { plan } = planCompactWest();
+    const before = JSON.stringify(P.scorecard(plan, 'central'));
+    const saved = P.USES.map((u) => u.storeys);
+    P.USES.forEach((u) => { u.storeys = 99; });
+    const after = JSON.stringify(P.scorecard(plan, 'central'));
+    P.USES.forEach((u, i) => { u.storeys = saved[i]; });
+    expect(after, 'a scorecard number moved when storeys changed').toBe(before);
+  });
+
+  it('floods more ground as the sea-level allowance grows', () => {
+    // The claim the coastal town rests on, and the reason the 3D view marks
+    // parcels rather than relying on a translucent sheet: a sheet seen from
+    // above tints everything behind it whatever the depth.
+    const dryUnder = (set) => P.buildMassing(P.basePlan('harborlight'), set, null)
+      .ground.filter((g) => !g.water && !g.underToday && !g.underFuture).length;
+    expect(dryUnder('optimistic')).toBeGreaterThan(dryUnder('central'));
+    expect(dryUnder('central')).toBeGreaterThan(dryUnder('conservative'));
+    expect(dryUnder('conservative')).toBeGreaterThan(0);
+  });
+
+  it('marks no ground as submerged in a town with no coast', () => {
+    ['riverbend', 'mesahollow'].forEach((sid) => {
+      const m = P.buildMassing(P.basePlan(sid), 'conservative', null);
+      expect(m.sheets, sid + ' floated a water sheet').toEqual([]);
+      m.ground.forEach((g) => {
+        expect(g.underToday).toBe(false);
+        expect(g.underFuture).toBe(false);
+      });
+    });
+  });
+
+  it('rebuilds on a plan change and not on a camera move', () => {
+    // The signature is what the viewer compares. If it moved with the camera
+    // the scene would be torn down and rebuilt on every drag frame.
+    const base = P.basePlan('riverbend');
+    const sigA = P.massingSignature(base, 'central', 'D6');
+    expect(P.massingSignature(base, 'central', 'D6')).toBe(sigA);
+    expect(P.massingSignature(P.setUse(base, 'A1', 'mixed'), 'central', 'D6')).not.toBe(sigA);
+    expect(P.massingSignature(base, 'conservative', 'D6')).not.toBe(sigA);
+    expect(P.massingSignature(base, 'central', 'A1')).not.toBe(sigA);
+  });
+
+  it('applies one vertical exaggeration to everything', () => {
+    // Terrain and buildings differ by more than an order of magnitude in
+    // these towns. Scaling them differently would be a lie about which is
+    // taller, so there is a single factor and the panel states it.
+    expect(P.metresToWorld(10)).toBeCloseTo(P.metresToWorld(1) * 10, 9);
+    expect(P.VERT_EXAG).toBeGreaterThan(1);
+    const m = P.buildMassing(planCompactWest().plan, 'central', null);
+    expect(m.verticalExaggeration).toBe(P.VERT_EXAG);
+    expect(m.metresPerStorey).toBe(P.METRES_PER_STOREY);
+  });
+
+  it('builds a scene without touching Three.js', () => {
+    // buildMassing must stay renderer-free, or it cannot be tested here.
+    const m = P.buildMassing(planCompactWest().plan, 'central', 'A9');
+    expect(() => JSON.parse(JSON.stringify(m))).not.toThrow();
+    expect(m.marks.map((x) => x.id)).toEqual(['A9']);
+  });
+});
+
+describe('City Planning Lab - the memo carries the plan, not just the numbers', () => {
+  // The memo is the deliverable and the thing the rubric grades. A teacher
+  // reading a set of them has to be able to see what each student built.
+  it('draws every parcel, self-contained, with no external anything', () => {
+    const svg = P.planSvg(P.basePlan('riverbend'), 'central');
+    expect((svg.match(/<rect/g) || []).length).toBeGreaterThanOrEqual(144);
+    // The xmlns is a namespace identifier, not a fetch, so it is excluded.
+    // What matters is that nothing is loaded from anywhere.
+    const withoutNs = svg.replace(/xmlns="[^"]*"/g, '');
+    expect(withoutNs, 'the map references something external').not.toMatch(/https?:/);
+    expect(svg).not.toMatch(/<image/);
+    expect(svg).not.toMatch(/xlink:href/);
+    expect(svg).not.toMatch(/@import/);
+    expect(svg, 'SVG attributes cannot take var(), the same as canvas').not.toContain('var(');
+  });
+
+  it('gives the map a title and a description, and a table that does not need it', () => {
+    const svg = P.planSvg(P.basePlan('harborlight'), 'central');
+    expect(svg).toMatch(/<title id="planTitle">/);
+    expect(svg).toMatch(/<desc id="planDesc">/);
+    expect(svg).toMatch(/aria-labelledby="planTitle planDesc"/);
+  });
+
+  it('picks a legible ink for the code on every fill it draws', () => {
+    const svg = P.planSvg(P.basePlan('riverbend'), 'central');
+    // Both inks appear, which means the chooser ran rather than defaulting.
+    expect(svg).toContain(P.INK_LIGHT);
+    expect(svg).toContain(P.INK_DARK);
+  });
+
+  it('keeps no legend text inside the SVG, because SVG text does not wrap', () => {
+    // The first version ran the legend off the right-hand edge.
+    const svg = P.planSvg(P.basePlan('riverbend'), 'central');
+    const texts = svg.match(/<text[^>]*>([^<]*)<\/text>/g) || [];
+    texts.forEach((t) => {
+      const body = t.replace(/<[^>]+>/g, '');
+      expect(body.length, 'long text in an SVG will clip: ' + body).toBeLessThanOrEqual(3);
+    });
+  });
+
+  it('lists what changed rather than all 144 rows', () => {
+    const base = P.basePlan('riverbend');
+    expect(P.planChanges(base), 'an untouched plan has no changes').toEqual([]);
+    let p2 = P.setUse(base, 'A9', 'housing_mid');
+    p2 = P.toggleGreenInfra(p2, 'A9');
+    p2 = P.setUse(p2, 'B9', 'park');
+    const rows = P.planChanges(p2);
+    expect(rows).toHaveLength(2);
+    const a9 = rows.find((r) => r.id === 'A9');
+    expect(a9.from).toBe('field');
+    expect(a9.to).toBe('housing_mid');
+    expect(a9.greenInfra).toBe(true);
+    expect(a9.units).toBe(45);
+  });
+
+  it('records a rezone back to the original use as no change', () => {
+    let p2 = P.setUse(P.basePlan('riverbend'), 'A9', 'housing_mid');
+    p2 = P.setUse(p2, 'A9', 'field');
+    expect(P.planChanges(p2).filter((r) => r.id === 'A9')).toEqual([]);
+  });
+
+  it('draws the map for every town without throwing', () => {
+    P.SCENARIO_IDS.forEach((sid) => {
+      expect(() => P.planSvg(P.basePlan(sid), 'central'), sid).not.toThrow();
+    });
   });
 });
 

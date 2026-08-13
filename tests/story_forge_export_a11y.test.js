@@ -15,9 +15,10 @@ describe('Story Forge export accessibility', () => {
   it('routes all protected exports through awaited consent', () => {
     expect(source).not.toMatch(/\bwindow\.confirm\s*\(/);
     expect(source.match(/await requestExportConsent\(/g)).toHaveLength(5);
-    for (const label of ['Export storybook', 'Export comic script', 'Export production pack', 'Export full draft', 'Export project']) {
+    for (const label of ['Export comic script', 'Export production pack', 'Export full draft', 'Export project']) {
       expect(source).toContain(`confirmLabel: '${label}'`);
     }
+    expect(source).toContain("confirmLabel: isComic ? 'Export comic' : 'Export storybook'");
   });
 
   it('uses a focus-managed named and described alert dialog', () => {

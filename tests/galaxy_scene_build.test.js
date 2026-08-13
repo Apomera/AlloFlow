@@ -21,7 +21,7 @@ import { installCanvas2DStub, installThreeStub, installLoopStubs } from './helpe
 
 // Scene construction is allocation-heavy under the stubs; the default 5s budget
 // is not enough on a loaded machine and produced flaky timeouts.
-const SCENE_TIMEOUT = 30000;
+const SCENE_TIMEOUT = 90000;
 
 const FILE = 'stem_lab/stem_tool_galaxy.js';
 
@@ -157,10 +157,40 @@ describe('galaxy 3-D scene builder', () => {
     expect(host.textContent).toContain('velocity dispersion');
     assertClean();
   }, SCENE_TIMEOUT);
+
+  it('keeps the irregular morphology clumpy and free of spiral fallbacks', async () => {
+    await mountGalaxy({ ...LIGHT, galaxyType: 'irregular', galaxyQuality: 'high' });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    const morphology = canvas._galaxyGetMorphologyVisualState();
+
+    expect(morphology.morphology).toBe('irregular');
+    expect(morphology.sharedIrregularAnchorCount).toBe(5);
+    expect(morphology.spiralRidgeCount).toBe(0);
+    expect(morphology.radioRingCount).toBe(0);
+    expect(morphology.orderedRadioFieldVisible).toBe(false);
+    expect(morphology.coreFlareVisible).toBe(false);
+    expect(morphology.coherentIrregularMotion).toBe(true);
+    expect(morphology.morphologySignatureCount).toBe(7);
+    expect(morphology.armScatteringCount).toBe(32);
+    expect(morphology.molecularFilamentCount).toBe(28);
+    expect(morphology.remnantArcCount).toBe(15);
+    expect(morphology.ionizedShellCount).toBe(13);
+    expect(canvas._isLayerAllowed('bulge')).toBe(false);
+    expect(canvas._layers.bulge.visible).toBe(false);
+    expect(host.querySelector('[data-galaxy-toggle="bulge"]').disabled).toBe(true);
+    expect(host.querySelector('[data-galaxy-toggle="bulge"]').getAttribute('aria-label')).toContain('irregular galaxies');
+
+    for (const mode of ['visible', 'infrared', 'radio', 'xray', 'gravity']) {
+      expect(() => canvas._setObserveMode(mode), mode).not.toThrow();
+      expect(canvas._galaxyGetMorphologyVisualState().orderedRadioFieldVisible, mode).toBe(false);
+    }
+    assertClean();
+  }, SCENE_TIMEOUT);
+
   it('exposes working scene handles after building', async () => {
     await mountGalaxy({ ...LIGHT, galaxyQuality: 'high' });
     const canvas = host.querySelector('[data-galaxy-canvas]');
-    for (const handle of ['_setStarCount', '_setRotMode', '_setObserveMode', '_updateAge', '_triggerSupernova', '_galaxyWarp', '_galaxyResetView', '_galaxyZoom', '_galaxyGetAdaptiveVisualState']) {
+    for (const handle of ['_setStarCount', '_setRotMode', '_setObserveMode', '_updateAge', '_triggerSupernova', '_galaxyWarp', '_galaxyResetView', '_galaxyZoom', '_galaxyGetAdaptiveVisualState', '_galaxyGetInstrumentVisualState', '_galaxyGetMorphologyVisualState']) {
       expect(typeof canvas[handle], handle).toBe('function');
     }
     // Each observing filter re-tunes dozens of materials; a typo in any branch
@@ -178,29 +208,107 @@ describe('galaxy 3-D scene builder', () => {
     assertClean();
   }, SCENE_TIMEOUT);
 
-  it('separates particles as the camera zooms out in every observing mode', async () => {
+  it('uses soft instrument profiles and preserves each observing mode hierarchy', async () => {
     await mountGalaxy({ ...LIGHT, galaxyQuality: 'high' });
     const canvas = host.querySelector('[data-galaxy-canvas]');
-    const before = canvas._galaxyGetAdaptiveVisualState();
-    expect(before.pointScale).toBeGreaterThan(0.95);
-    expect(before.opacity).toBeGreaterThan(0.95);
+    const built = canvas._galaxyGetInstrumentVisualState();
+    expect(built.softInstrumentPointCount).toBe(4);
+    expect(built.nonFiniteAdaptiveMaterialCount).toBe(0);
+    expect(built.materials.infrared).toMatchObject({ baseSize: 0.014, baseOpacity: 0.68, hasAlphaMap: true });
+    expect(built.materials.radio).toMatchObject({ baseSize: 0.008, baseOpacity: 0.32, hasAlphaMap: true });
+    expect(built.materials.doppler).toMatchObject({ baseSize: 0.008, baseOpacity: 0.42, hasAlphaMap: true });
+    expect(built.materials.xray).toMatchObject({ baseSize: 0.0095, baseOpacity: 0.52, hasAlphaMap: true });
 
-    for (let i = 0; i < 7; i += 1) canvas._galaxyZoom('out');
-    for (let frame = 0; frame < 75; frame += 1) expect(restoreLoops.step()).toBe(true);
-    const distant = canvas._galaxyGetAdaptiveVisualState();
-    expect(distant.distance).toBeCloseTo(3, 4);
-    expect(distant.pointScale).toBeLessThan(0.72);
-    expect(distant.opacity).toBeLessThan(0.8);
+    canvas._setObserveMode('infrared');
+    for (let frame = 0; frame < 8; frame += 1) expect(restoreLoops.step()).toBe(true);
+    const infrared = canvas._galaxyGetInstrumentVisualState();
+    expect(infrared).toMatchObject({ thermalCloudCount: 38, nonFiniteThermalOpacityCount: 0, opticalPsf: 0.22 });
+    expect(infrared.thermalCloudOpacity).toBeGreaterThan(0);
 
-    for (const mode of ['visible', 'infrared', 'radio', 'xray', 'gravity']) {
+    const modeScales = { visible: 1, infrared: 0.5, radio: 0.06, xray: 0.04, gravity: 0.1 };
+    for (const [mode, scale] of Object.entries(modeScales)) {
       canvas._setObserveMode(mode);
-      const state = canvas._galaxyGetAdaptiveVisualState();
-      expect(state.pointScale, mode).toBeLessThan(0.72);
-      expect(state.opacity, mode).toBeLessThan(0.8);
+      for (let frame = 0; frame < 40; frame += 1) expect(restoreLoops.step()).toBe(true);
+      const active = canvas._galaxyGetInstrumentVisualState();
+      expect(active.microStarModeScale, mode).toBeCloseTo(scale, 6);
+      expect(active.opticalPsf, mode).toBe(mode === 'visible' ? 1 : mode === 'infrared' ? 0.22 : 0);
+      expect(active.nonFiniteAdaptiveMaterialCount, mode).toBe(0);
     }
+
+    canvas._setObserveMode('visible');
+    for (let frame = 0; frame < 12; frame += 1) expect(restoreLoops.step()).toBe(true);
+    const visible = canvas._galaxyGetInstrumentVisualState();
+    expect(visible.depthOfField).toBeGreaterThan(0);
+    expect(visible.nebulaMaxOpacity).toBeGreaterThan(0.1);
+
+    canvas._setObserveMode('gravity');
+    for (let frame = 0; frame < 5; frame += 1) expect(restoreLoops.step()).toBe(true);
+    const gravity = canvas._galaxyGetInstrumentVisualState();
+    expect(gravity.depthOfField).toBe(0);
+    expect(gravity.gasOpacity).toBeLessThan(0.008);
+    expect(gravity.dustOpacity).toBeCloseTo(0.006, 6);
+    expect(gravity.nebulaMaxOpacity).toBeLessThanOrEqual(0.0161);
+    expect(gravity.nebulaWispMaxOpacityScale).toBeLessThanOrEqual(0.0601);
+    expect(visible.nebulaMaxOpacity / gravity.nebulaMaxOpacity).toBeGreaterThan(6);
+    canvas._updateAge(0.4);
+    expect(canvas._galaxyGetInstrumentVisualState().nebulaMaxOpacity).toBeLessThanOrEqual(0.0161);
+    expect(restoreLoops.step()).toBe(true);
+    expect(canvas._galaxyGetInstrumentVisualState().nebulaMaxOpacity).toBeLessThanOrEqual(0.0161);
     assertClean();
   }, SCENE_TIMEOUT);
 
+  it('separates every dense particle layer at the widest overview in every observing mode', async () => {
+    await mountGalaxy({ ...LIGHT, galaxyQuality: 'high' });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    for (let frame = 0; frame < 120; frame += 1) expect(restoreLoops.step()).toBe(true);
+    const near = canvas._galaxyGetAdaptiveVisualState();
+    expect(near.pointScale).toBeGreaterThan(0.985);
+    expect(near.opacity).toBeGreaterThan(0.985);
+    expect(near.overlayMaterialCount).toBe(3);
+    expect(near.denseMaterialCount).toBe(6);
+
+    const bases = (materials) => Object.fromEntries(Object.entries(materials).map(([name, material]) => [
+      name, { baseSize: material.baseSize, baseOpacity: material.baseOpacity },
+    ]));
+    const initialBases = bases(canvas._galaxyGetInstrumentVisualState().materials);
+    for (let i = 0; i < 7; i += 1) canvas._galaxyZoom('out');
+    for (let frame = 0; frame < 180; frame += 1) expect(restoreLoops.step()).toBe(true);
+    const distant = canvas._galaxyGetAdaptiveVisualState();
+    expect(distant.distance).toBeCloseTo(3, 4);
+    expect(distant.pointScale).toBeGreaterThanOrEqual(0.53);
+    expect(distant.pointScale).toBeLessThanOrEqual(0.55);
+    expect(distant.opacity).toBeGreaterThanOrEqual(0.59);
+    expect(distant.opacity).toBeLessThanOrEqual(0.61);
+
+    let visuals = canvas._galaxyGetInstrumentVisualState();
+    for (const name of ['microStars', 'armGlow', 'gas', 'openClusters', 'thickDisk']) {
+      expect(visuals.materials[name].sizeScale, name + ' size').toBeCloseTo(distant.pointScale, 6);
+      expect(visuals.materials[name].opacityScale, name + ' opacity').toBeCloseTo(distant.opacity, 6);
+      expect(visuals.materials[name].finite, name + ' finite').toBe(true);
+    }
+
+    for (const mode of ['visible', 'infrared', 'radio', 'xray', 'gravity']) {
+      canvas._setObserveMode(mode);
+      for (let frame = 0; frame < 40; frame += 1) expect(restoreLoops.step()).toBe(true);
+      const adaptive = canvas._galaxyGetAdaptiveVisualState();
+      visuals = canvas._galaxyGetInstrumentVisualState();
+      expect(adaptive.pointScale, mode).toBeGreaterThanOrEqual(0.53);
+      expect(adaptive.pointScale, mode).toBeLessThanOrEqual(0.55);
+      expect(adaptive.opacity, mode).toBeGreaterThanOrEqual(0.59);
+      expect(adaptive.opacity, mode).toBeLessThanOrEqual(0.61);
+      if (['infrared', 'radio', 'xray'].includes(mode)) {
+        expect(visuals.materials[mode].sizeScale, mode + ' size').toBeCloseTo(adaptive.pointScale, 6);
+        expect(visuals.materials[mode].opacityScale, mode + ' opacity').toBeCloseTo(adaptive.opacity, 6);
+      }
+      if (mode === 'radio') {
+        expect(visuals.materials.doppler.sizeScale).toBeCloseTo(adaptive.pointScale, 6);
+        expect(visuals.materials.doppler.opacityScale).toBeCloseTo(adaptive.opacity, 6);
+      }
+      expect(visuals.nonFiniteAdaptiveMaterialCount, mode).toBe(0);
+    }
+    expect(bases(canvas._galaxyGetInstrumentVisualState().materials)).toEqual(initialBases);
+    assertClean();
+  }, SCENE_TIMEOUT);
   it('tears the scene down cleanly', async () => {
     await mountGalaxy(LIGHT);
     const canvas = host.querySelector('[data-galaxy-canvas]');

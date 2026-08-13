@@ -95,7 +95,18 @@ describe('Test Prep hands-free source QA', () => {
     expect(source).toContain('configured AI provider may process clarification requests');
     expect(source).toContain('Processing may be local or remote depending on the AlloFlow setup.');
     expect(source).toContain('Do not speak or enter personally identifiable information.');
-    expect(source).toContain('Except for the exact stop command, state-changing commands require at least 60 percent recognition confidence');
+    expect(source).toContain('answer choices below 60 percent confidence wait for a yes or no confirmation');
+    expect(source).toContain('other state-changing commands below 60 percent are not carried out');
+  });
+
+  it('offers persisted quick prompts, direct answer aliases, and visible pending confirmation', () => {
+    expect(source).toContain("TEST_PREP_HANDS_FREE_PROMPT_MODE_KEY = 'alloflow_test_prep_hands_free_prompt_mode_v1'");
+    expect(source).toContain("if (promptMode === 'quick') return base;");
+    expect(source).toContain("window.localStorage.setItem(TEST_PREP_HANDS_FREE_PROMPT_MODE_KEY, next)");
+    expect(source).toContain("aria-pressed={handsFreePromptMode === 'quick'}");
+    expect(source).toContain('Say a letter such as B or a number such as 2');
+    expect(source).toContain('Waiting for confirmation: option');
+    expect(source).toContain("command.type === 'confirm-yes'");
   });
 
   it('limits speculative audio to eligible visible, online, unconstrained upcoming items', () => {

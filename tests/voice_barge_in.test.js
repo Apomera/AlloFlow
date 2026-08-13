@@ -211,6 +211,58 @@ it('cuts the reply when the user actually talks over it', async () => {
     } finally { h.restore(); }
   });
 
+  it('defers recognition while an external narration lease is active', async () => {
+    const h = harness();
+    try {
+      const loop = AC.createVoiceLoop(() => ({ addToast: vi.fn(), setVoiceActive: vi.fn() }));
+      loop.start();
+      const rec = h.instances[0];
+      rec.start.mockClear();
+      rec.stop.mockClear();
+      const stopExternal = vi.fn();
+
+      const lease = loop.beginExternalSpeech(stopExternal, { source: 'read-this-page' });
+      await flush();
+
+      expect(lease, 'external speech acquired deference').toBeTruthy();
+      expect(rec.stop, 'command recognition stopped during narration').toHaveBeenCalled();
+      expect(h.getUserMedia, 'barge-in remains available').toHaveBeenCalled();
+      expect(loop.getState().speaking).toBe(true);
+
+      expect(lease.end()).toBe(true);
+      expect(rec.start, 'command recognition resumed after narration').toHaveBeenCalled();
+      expect(h.tracks[0].stop, 'barge watcher released with narration').toHaveBeenCalled();
+      expect(stopExternal, 'normal completion does not stop the surface').not.toHaveBeenCalled();
+      expect(loop.getState().speaking).toBe(false);
+      loop.stop();
+    } finally { h.restore(); }
+  });
+
+  it('uses learner speech to interrupt an external narration surface', async () => {
+    vi.useFakeTimers();
+    const h = harness();
+    try {
+      const loop = AC.createVoiceLoop(() => ({ addToast: vi.fn(), setVoiceActive: vi.fn() }));
+      loop.start();
+      const rec = h.instances[0];
+      rec.start.mockClear();
+      const stopExternal = vi.fn();
+      loop.beginExternalSpeech(stopExternal, { source: 'read-this-page' });
+      await flush();
+
+      h.level.rms = 0.005;
+      await vi.advanceTimersByTimeAsync(500);
+      h.level.rms = 0.2;
+      await vi.advanceTimersByTimeAsync(600);
+
+      expect(stopExternal).toHaveBeenCalledWith('barge-in');
+      expect(rec.start, 'the learner immediately gets the microphone back').toHaveBeenCalled();
+      expect(h.tracks[0].stop).toHaveBeenCalled();
+      expect(loop.getState().speaking).toBe(false);
+      loop.stop();
+    } finally { h.restore(); }
+  });
+
   it('degrades silently where there is no mic or AudioContext', async () => {
     const h = harness();
     try {

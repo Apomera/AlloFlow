@@ -659,9 +659,19 @@ const getBlueprintResourcePlan = (blueprint) => {
 // ring (via warnLog) and the user-facing Error Reporter (via record). The latter
 // does not capture console.warn unless the teacher opts in, so unattended
 // blueprint failures must record themselves explicitly.
+const _redactBlueprintDiagnosticText = (value, maxLength = 8000) => {
+    const raw = String(value || '');
+    const clipped = raw.length > maxLength ? raw.slice(0, maxLength) + ' [truncated]' : raw;
+    return clipped
+        .replace(/\b(Bearer)\s+[A-Za-z0-9._~+\/=-]{6,}/gi, '$1 [REDACTED]')
+        .replace(/\b(?:AIza[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9_-]{12,}|xox[baprs]-[A-Za-z0-9-]{12,})\b/g, '[REDACTED]')
+        .replace(/((?:api[ _-]?key|access[ _-]?token|authorization|credential|secret|password)\s*[:=]\s*)[^\s,;]+/gi, '$1[REDACTED]')
+        .replace(/([?&](?:key|api_key|token|access_token)=)[^&#\s]+/gi, '$1[REDACTED]');
+};
+
 const recordBlueprintResourceFailure = (details, warnLog) => {
     const d = details || {};
-    const reason = String(d.reason || 'unknown generation failure');
+    const reason = _redactBlueprintDiagnosticText(d.reason || 'unknown generation failure', 4000);
     const message = '[Blueprint] resource generation failed'
         + ' tool=' + String(d.tool || 'unknown')
         + ' uiId=' + String(d.uiId || 'unknown')
@@ -675,7 +685,7 @@ const recordBlueprintResourceFailure = (details, warnLog) => {
         if (typeof warnLog === 'function') warnLog(message);
         else if (typeof console !== 'undefined' && console.warn) console.warn(message);
     } catch (_) {}
-    const stack = d.error && d.error.stack ? String(d.error.stack) : '';
+    const stack = d.error && d.error.stack ? _redactBlueprintDiagnosticText(d.error.stack, 12000) : '';
     try {
         const reporter = typeof window !== 'undefined'
             && window.AlloModules

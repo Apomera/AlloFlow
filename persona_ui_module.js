@@ -23,6 +23,7 @@ var CheckCircle2 = _lazyIcon('CheckCircle2');
 var ChevronDown = _lazyIcon('ChevronDown');
 var ChevronUp = _lazyIcon('ChevronUp');
 var GripVertical = _lazyIcon('GripVertical');
+var Copy = _lazyIcon('Copy');
 var Download = _lazyIcon('Download');
 var Lock = _lazyIcon('Lock');
 var Pencil = _lazyIcon('Pencil');
@@ -148,7 +149,7 @@ const GoldenThreadPanel = ({
         concept: c
       }) || 'Remove concept ' + c,
       className: "ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -182,7 +183,7 @@ const GoldenThreadPanel = ({
         term: term
       }) || 'Remove term ' + term,
       className: "ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -209,7 +210,9 @@ const InteractiveBlueprintCard = React.memo(({
   isRunning,
   onStopRun,
   onRebuildStep,
+  onCopyDiagnostics,
   onDownloadDiagnostics,
+  summarizeFailureReason,
   onPreviewStep,
   onSaveTemplate,
   onUpdate,
@@ -430,13 +433,23 @@ const InteractiveBlueprintCard = React.memo(({
     className: "text-xs text-slate-600"
   }, isEditing ? t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.') : t('blueprint.review_instruction')))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1.5"
-  }, run && typeof onDownloadDiagnostics === 'function' && /*#__PURE__*/React.createElement("button", {
+  }, run && typeof onCopyDiagnostics === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-testid": "bp-copy-diagnostics",
+    onClick: onCopyDiagnostics,
+    className: "p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+    title: t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics',
+    "aria-label": t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'
+  }, /*#__PURE__*/React.createElement(Copy, {
+    size: 14,
+    "aria-hidden": "true"
+  })), run && typeof onDownloadDiagnostics === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-testid": "bp-download-diagnostics",
     onClick: onDownloadDiagnostics,
     className: "p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
-    title: "Download a sanitized Blueprint diagnostic report",
-    "aria-label": "Download Blueprint diagnostic report"
+    title: t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report',
+    "aria-label": t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'
   }, /*#__PURE__*/React.createElement(Download, {
     size: 14,
     "aria-hidden": "true"
@@ -453,11 +466,12 @@ const InteractiveBlueprintCard = React.memo(({
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
   }), isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')))), run?.persistenceWarning && /*#__PURE__*/React.createElement("div", {
+    "data-testid": "bp-storage-warning",
     role: "status",
     className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950"
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-bold"
-  }, "Saved-run warning:"), " ", run.persistenceWarning), /*#__PURE__*/React.createElement(GoldenThreadPanel, {
+  }, t('blueprint.saved_run_warning') || 'Saved-run warning', ":"), " ", run.persistenceWarning), /*#__PURE__*/React.createElement(GoldenThreadPanel, {
     config: config,
     isEditing: isEditing,
     onUpdate: onUpdate
@@ -614,6 +628,21 @@ const InteractiveBlueprintCard = React.memo(({
         cls: 'bg-amber-50 text-amber-800 border-amber-200'
       }
     }[_status] || null;
+    // Raw provider text can include credentials, prompt excerpts,
+    // or student context. Keep it in the credential-redacted local
+    // Error Reporter; this shared classifier is the only text the
+    // visible card or portable diagnostics may expose.
+    const _safeFailure = (() => {
+      if (!_rowRun || !_rowRun.failReason) return null;
+      try {
+        const summary = typeof summarizeFailureReason === 'function' ? summarizeFailureReason(_rowRun.failReason) : null;
+        if (summary && typeof summary.summary === 'string') return summary;
+      } catch (_) {}
+      return {
+        code: 'generation-failure',
+        summary: 'Generation failed; detailed text remains only in the on-device error log.'
+      };
+    })();
     // Audit coverage. Only meaningful once an audit has actually
     // run, so nothing is shown before that — a plan-wide "not
     // audited" would be noise, not information.
@@ -692,7 +721,7 @@ const InteractiveBlueprintCard = React.memo(({
       className: `ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${_statusStyle.cls}`,
       role: "status",
       "aria-live": _status === 'running' ? 'polite' : 'off',
-      title: _rowRun && _rowRun.failReason || undefined
+      title: _safeFailure && _safeFailure.summary || undefined
     }, _statusStyle.label), _auditBadge && /*#__PURE__*/React.createElement("span", {
       className: `ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${_auditBadge.cls}`,
       "data-testid": "bp-audit-badge"
@@ -726,14 +755,15 @@ const InteractiveBlueprintCard = React.memo(({
       id: `bp-desc-${item.id}`,
       "data-testid": "bp-desc-body",
       className: "mb-1 text-[11px] leading-snug text-slate-600 bg-white border border-slate-200 rounded p-2"
-    }, getToolDesc(item.type)), (_status === 'failed' || _status === 'interrupted') && _rowRun && _rowRun.failReason && /*#__PURE__*/React.createElement("p", {
+    }, getToolDesc(item.type)), (_status === 'failed' || _status === 'interrupted') && _safeFailure && /*#__PURE__*/React.createElement("p", {
       "data-testid": "bp-fail-reason",
+      "data-failure-code": _safeFailure.code,
       className: "mb-1 text-[11px] leading-snug text-red-800 bg-red-50 border border-red-200 rounded p-2"
     }, /*#__PURE__*/React.createElement("span", {
       className: "font-bold"
-    }, String(_rowRun.failReason).indexOf('threw:') === 0 ? t('blueprint.fail_threw') || 'This step hit an error.' : t('blueprint.fail_empty') || 'This step produced nothing. If there is no source text yet, add or generate one and rebuild. If a source is present, the generator was likely blocked or rate-limited — wait a moment and rebuild.'), /*#__PURE__*/React.createElement("span", {
+    }, _safeFailure.summary), /*#__PURE__*/React.createElement("span", {
       className: "block mt-1 opacity-80 break-words"
-    }, _rowRun.failReason)), /*#__PURE__*/React.createElement("p", {
+    }, t('blueprint.failure_log_help') || 'Technical details remain in the on-device error log; copied and downloaded diagnostics are sanitized.')), /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-700 leading-relaxed italic"
     }, "\"", item.directive || "No specific instructions.", "\"")));
   }), items.length === 0 && /*#__PURE__*/React.createElement("p", {
@@ -790,7 +820,7 @@ const InteractiveBlueprintCard = React.memo(({
       className: "font-bold"
     }, getToolLabel(it.type)), /*#__PURE__*/React.createElement("span", {
       className: keep ? 'text-slate-700' : 'text-slate-500 line-through'
-    }, " \u2014 \"", it.directive, "\"")));
+    }, " — \"", it.directive, "\"")));
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {

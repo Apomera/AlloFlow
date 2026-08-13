@@ -1450,3 +1450,76 @@ describe('Tree Life Lab — response curves', () => {
     expect(html, 'an old factor hue survived').not.toMatch(/#60a5fa|#facc15/);
   });
 });
+
+describe('Tree Life Lab — the comparison chart', () => {
+  function cmp(over) {
+    const E = engine();
+    return render({
+      treeLab: Object.assign(
+        { view: 'compare', bandOverride: 'g912', speciesId: 'oak', tree: E.newTree('oak'),
+          compareYears: 150, light: 0.85, soilWater: 0.75, tempC: 22, co2ppm: 420 },
+        over || {}),
+    });
+  }
+  const hues = (html) => Object.fromEntries(
+    [...html.matchAll(/data-species="(\w+)"[^>]*stroke="([^"]+)"/g)].map((m) => [m[1], m[2]]));
+
+  it('overlays all five species on one pair of axes', () => {
+    // They used to be five sparklines in five boxes, each stretched to its own width.
+    // Comparing five pictures is the one thing a comparison view must not require.
+    const html = cmp();
+    const found = hues(html);
+    expect(Object.keys(found).sort()).toEqual(['aspen', 'oak', 'pine', 'redwood', 'willow']);
+    // All of them inside a single <svg>, or they are not sharing axes.
+    const firstSvg = html.slice(html.indexOf('<svg'), html.indexOf('</svg>'));
+    expect([...firstSvg.matchAll(/data-species=/g)].length).toBe(5);
+  });
+
+  it('colours follow the species, never its rank', () => {
+    // The named anti-pattern: assigning by current order means changing the years
+    // slider repaints every survivor, and a reader who learned "oak is blue" is misled.
+    const short = hues(cmp({ compareYears: 60 }));
+    const long = hues(cmp({ compareYears: 400 }));
+    for (const id of Object.keys(short)) {
+      expect(long[id], `${id} changed colour when the run length changed`).toBe(short[id]);
+    }
+    // And the same holds when the student switches their own species.
+    const asAspen = hues(cmp({ speciesId: 'aspen' }));
+    expect(asAspen.oak).toBe(short.oak);
+  });
+
+  it('marks where a run ended and says when in the legend', () => {
+    const html = cmp({ compareYears: 400 });
+    const died = [...html.matchAll(/data-died="(\w+)"/g)].map((m) => m[1]);
+    expect(died.length, 'nothing died in a 400-year run of five species').toBeGreaterThan(0);
+    // The legend has to carry the AGE, because a cross on a crowded chart is easy to
+    // miss and impossible to read a number off.
+    //
+    // A regex literal, not `new RegExp('...\d+')`: inside a JS string literal `\d` is
+    // just the letter d, so the first version of this asserted the page contained the
+    // text "d+" and would have passed against almost anything.
+    expect(html, 'no death age in the legend').toMatch(/[\u2715\u00d7][0-9]+/);
+  });
+
+  it('keeps five identities when high contrast collapses every hue', () => {
+    const html = cmp({}, );
+    const contrast = render({
+      treeLab: { view: 'compare', bandOverride: 'g912', speciesId: 'oak',
+        tree: engine().newTree('oak'), compareYears: 150 },
+    }, { isContrast: true });
+    // Every decorative hue becomes the one accent, so the dash pattern is the only
+    // identity channel left. Five series need five distinguishable patterns.
+    const dashes = [...contrast.matchAll(/data-species="\w+"[^>]*stroke-dasharray="([^"]*)"/g)]
+      .map((m) => m[1]);
+    const solid = [...contrast.matchAll(/data-species="\w+"(?![^>]*stroke-dasharray)/g)].length;
+    expect(dashes.length + solid, 'not every species is drawn in contrast mode').toBe(5);
+    expect(new Set(dashes).size, `dash patterns repeat: ${dashes.join(' | ')}`).toBe(dashes.length);
+    expect(html).toBeTruthy();
+  });
+
+  it('describes the whole chart for a reader who cannot see it', () => {
+    const html = cmp();
+    expect(html).toMatch(/Height against age for five species/);
+    expect(html).toMatch(/Coast Redwood (reached|died)/);
+  });
+});

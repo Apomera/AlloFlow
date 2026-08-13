@@ -1,6 +1,7 @@
 (function() {
 'use strict';
-if (window.AlloModules && window.AlloModules.GenerationHelpersModule) { console.log('[CDN] GenerationHelpersModule already loaded, skipping'); return; }// generation_helpers_source.jsx - Phase H.2 of CDN modularization.
+if (window.AlloModules && window.AlloModules.GenerationHelpersModule) { console.log('[CDN] GenerationHelpersModule already loaded, skipping'); return; }
+// generation_helpers_source.jsx - Phase H.2 of CDN modularization.
 // handleGenerateMath + handleGenerateFullPack + handleComplexityAdjustment
 // extracted from AlloFlowANTI.txt 2026-04-25.
 const FULL_PACK_FALLBACK_TYPES = new Set([
@@ -107,6 +108,68 @@ const _waitForFullPackDelay = (delayMs, signal) => new Promise((resolve, reject)
   if (signal) signal.addEventListener('abort', onAbort, { once: true });
   timer = setTimeout(() => { cleanup(); resolve(); }, Math.max(0, delayMs));
 });
+
+const _recordFullPackMetric = (event, payload = {}) => {
+  try {
+    const metrics = typeof window !== 'undefined' && window.AlloGenerationMetrics;
+    if (!metrics || typeof metrics.record !== 'function') return;
+    const safe = {};
+    if (payload.status && ['landed', 'completed', 'partial', 'failed', 'stopped'].includes(payload.status)) safe.status = payload.status;
+    if (payload.category && ['transient', 'configuration', 'unknown'].includes(payload.category)) safe.category = payload.category;
+    if (payload.type && /^[a-z0-9-]{1,40}$/i.test(String(payload.type))) safe.type = String(payload.type);
+    if (Number.isFinite(Number(payload.durationMs))) safe.durationMs = Math.max(0, Number(payload.durationMs));
+    metrics.record(event, safe);
+  } catch (_) {}
+};
+
+const _estimateFullPackCapacity = (aiCalls, imageCalls, profile = {}) => {
+  const totalCalls = Math.max(0, Number(aiCalls) || 0);
+  const visualCalls = Math.max(0, Math.min(totalCalls, Number(imageCalls) || 0));
+  const textCalls = Math.max(0, totalCalls - visualCalls);
+  const provider = String(profile.backend || 'gemini').toLowerCase();
+  const isLocal = profile.isLocal === true || ['alloflow-local', 'ollama', 'localai', 'lmstudio'].includes(provider);
+  const defaults = isLocal
+    ? { textMs: 26000, imageMs: 55000 }
+    : (/openai|anthropic|claude/.test(provider)
+        ? { textMs: 15000, imageMs: 45000 }
+        : (/gemini|google/.test(provider) ? { textMs: 12000, imageMs: 40000 } : { textMs: 20000, imageMs: 45000 }));
+  const resources = profile.metricsSnapshot && profile.metricsSnapshot.resources || {};
+  const imageMetric = resources.image || {};
+  const textAggregate = Object.entries(resources).reduce((out, [type, metric]) => {
+    if (type === 'image' || !metric) return out;
+    out.total += Math.max(0, Number(metric.durationMsTotal) || 0);
+    out.samples += Math.max(0, Number(metric.durationSamples) || 0);
+    return out;
+  }, { total: 0, samples: 0 });
+  const imageSamples = Math.max(0, Number(imageMetric.durationSamples) || 0);
+  const observedTextMs = textAggregate.samples >= 3 ? Math.round(textAggregate.total / textAggregate.samples) : null;
+  const observedImageMs = imageSamples >= 3 ? Math.round((Number(imageMetric.durationMsTotal) || 0) / imageSamples) : null;
+  const textMs = observedTextMs || defaults.textMs;
+  const imageMs = observedImageMs || defaults.imageMs;
+  // Full Pack currently dispatches sequentially, including roster groups.
+  const estimatedMs = (textCalls * textMs) + (visualCalls * imageMs) + (Math.max(0, totalCalls - 1) * 800);
+  const warnings = [];
+  const warningCodes = [];
+  if (isLocal && totalCalls >= 8) { warningCodes.push('local-serial'); warnings.push('Local models run this pack sequentially; keep the app open and consider a smaller pack for faster completion.'); }
+  if (totalCalls >= 20) { warningCodes.push('large-pack'); warnings.push('Large pack: provider rate limits are more likely. Consider fewer resources or groups.'); }
+  if (visualCalls > 0 && totalCalls >= 12) { warningCodes.push('image-quota'); warnings.push('Image generation may extend the run and consume additional provider quota.'); }
+  return {
+    aiCalls: totalCalls,
+    textCalls,
+    imageCalls: visualCalls,
+    estimatedMinutes: Math.max(1, Math.ceil(estimatedMs / 60000)),
+    provider,
+    model: String(profile.model || ''),
+    imageProvider: String(profile.imageProvider || 'auto'),
+    imageModel: String(profile.imageModel || ''),
+    isLocal,
+    requestConcurrency: 1,
+    estimateBasis: (observedTextMs || observedImageMs) ? 'observed-device-history' : 'provider-defaults',
+    observedSamples: { text: textAggregate.samples, image: imageSamples },
+    warningCodes,
+    warnings,
+  };
+};
 
 const handleGenerateMath = async (inputOverride = null, switchView = true, modeOverride = null, deps) => {
   const { mathInput, history, inputText, useMathSourceContext, studentInterests, gradeLevel, mathMode, mathSubject, mathQuantity, autoAttachManipulatives, leveledTextLanguage, isMathGraphEnabled, autoSnapshotManipulatives, setIsProcessing, setGenerationStep, setError, setGeneratedContent, setActiveView, setShowMathAnswers, setHistory, setToolSnapshots, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, verifyMathProblems, flyToElement } = deps;
@@ -394,13 +457,24 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
 };
 
 const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
-  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, studentInterests, dokLevel, differentiationRange, differentiationTypes, differentiationCustomGrades, generationSignal, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, standardsContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setFullPackRun, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest, getDifferentiationGrades } = deps;
+  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, studentInterests, dokLevel, differentiationRange, differentiationTypes, differentiationCustomGrades, generationSignal, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, standardsContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setFullPackRun, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest, getDifferentiationGrades, aiProviderProfile } = deps;
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleGenerateFullPack fired"); } catch(_) {}
     const _fullPackStartedAt = Date.now();
     const _fullPackRunId = 'full-pack-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+    const redactFullPackDiagnosticText = (value, maxLength = 8000) => {
+        const raw = String(value || '');
+        const clipped = raw.length > maxLength ? raw.slice(0, maxLength) + ' [truncated]' : raw;
+        return clipped
+            .replace(/\b(Bearer)\s+[A-Za-z0-9._~+\/=-]{6,}/gi, '$1 [REDACTED]')
+            .replace(/\b(?:AIza[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9_-]{12,}|xox[baprs]-[A-Za-z0-9-]{12,})\b/g, '[REDACTED]')
+            .replace(/((?:api[ _-]?key|access[ _-]?token|authorization|credential|secret|password)\s*[:=]\s*)[^\s,;]+/gi, '$1[REDACTED]')
+            .replace(/([?&](?:key|api_key|token|access_token)=)[^&#\s]+/gi, '$1[REDACTED]');
+    };
     const recordFullPackFailure = (details) => {
         const d = details || {};
-        const reason = String(d.reason || 'unknown generation failure');
+        const reason = redactFullPackDiagnosticText(d.reason || 'unknown generation failure', 4000);
+        const metricPolicy = _fullPackFailurePolicy(reason);
+        _recordFullPackMetric('failure', { category: d.category || metricPolicy.category });
         const message = '[FullPack] resource generation failed'
             + ' resource=' + String(d.type || 'unknown')
             + ' step=' + String(Number.isFinite(d.index) ? d.index + 1 : '?')
@@ -409,7 +483,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             + ' runId=' + _fullPackRunId
             + ' elapsedMs=' + String(Math.max(0, Date.now() - _fullPackStartedAt));
         try { if (typeof warnLog === 'function') warnLog(message); else if (typeof console !== 'undefined' && console.warn) console.warn(message); } catch (_) {}
-        const stack = d.error && d.error.stack ? String(d.error.stack) : '';
+        const stack = d.error && d.error.stack ? redactFullPackDiagnosticText(d.error.stack, 12000) : '';
         try {
             const reporter = typeof window !== 'undefined'
                 && window.AlloModules
@@ -435,6 +509,8 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     const _approvedRun = _fullPackRequest.__fullPackApprovedRun || null;
     const _groupRetryRun = _fullPackRequest.__fullPackGroupRetryRun || null;
     const _preflightOnly = _fullPackRequest.__fullPackPreflightOnly === true;
+    const _recordTopLevelMetrics = _ownsFullPackAbort && !_preflightOnly;
+    if (_recordTopLevelMetrics) _recordFullPackMetric('run-start');
     const _planSourceRun = _approvedRun || _retryRun;
     const _fullPackRunAbortCtl = _ownsFullPackAbort && typeof AbortController !== 'undefined' ? new AbortController() : null;
     const _fullPackSignal = generationSignal || (_fullPackRunAbortCtl && _fullPackRunAbortCtl.signal) || null;
@@ -466,6 +542,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     const targetGroup = (_approvedRun && _approvedRun.targetMode === 'all-groups') || _groupRetryRun ? 'all' : fullPackTargetGroup;
     if (targetGroup === 'all' && rosterKey?.groups && Object.keys(rosterKey.groups).length > 0) {
         const groupEntries = Object.entries(rosterKey.groups);
+        let _hadGroupFailures = false;
         updateFullPackRun(prev => Object.assign({}, prev, {
             targetMode: 'all-groups',
             groups: Object.fromEntries(groupEntries.map(([gid, group]) => [gid, {
@@ -526,20 +603,23 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                         ? { __fullPackApprovedRun: _approvedRun.groups[gid] }
                         : (_preflightOnly ? { __fullPackPreflightOnly: true } : chatContextOverride));
                 await handleGenerateFullPack(childRequest, groupDeps);
+                if (childRun && ['failed', 'partial', 'interrupted'].includes(childRun.status)) _hadGroupFailures = true;
             }
             const _allStopped = !!(_fullPackSignal && _fullPackSignal.aborted);
+            const _groupFinalStatus = _allStopped ? 'stopped' : (_preflightOnly ? 'ready' : (_hadGroupFailures ? 'partial' : 'completed'));
             updateFullPackRun(prev => {
                 const groups = prev.groups || {};
                 const childRuns = Object.values(groups);
                 const hasChildFailures = childRuns.some(run => run && (run.status === 'failed' || run.status === 'partial' || run.status === 'interrupted'));
                 const finishedAt = new Date().toISOString();
                 return Object.assign({}, prev, {
-                    status: _allStopped ? 'stopped' : (_preflightOnly ? 'ready' : (hasChildFailures ? 'partial' : 'completed')),
+                    status: _groupFinalStatus,
                     finishedAt: _preflightOnly ? null : finishedAt,
                     readyAt: _preflightOnly ? finishedAt : null,
                     elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt),
                 });
             });
+            if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: _groupFinalStatus });
             addToast(_allStopped
                 ? `Full Pack generation stopped. Finished group resources were kept.`
                 : (_preflightOnly
@@ -576,6 +656,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         recordFullPackFailure({ type: 'preflight', index: 0, reason: noSourceError.message, error: noSourceError, sourceTextChars: 0 });
         addToast(t('process.source_missing'), "error");
         updateFullPackRun(prev => Object.assign({}, prev, { status: 'failed', finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt) }));
+        if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'failed' });
         if (_fullPackAbortCtl === _fullPackRunAbortCtl) _fullPackAbortCtl = null;
         if (_ownsFullPackAbort) _fullPackRunInFlight = false;
         return false;
@@ -587,6 +668,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         recordFullPackFailure({ type: 'preflight', index: 0, reason: changedSourceError.message, error: changedSourceError, sourceTextChars: batchSourceText.length });
         updateFullPackRun(prev => Object.assign({}, prev, { status: 'failed', reason: changedSourceError.message, finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt) }));
         addToast(changedSourceError.message, 'warning');
+        if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'failed' });
         if (_fullPackAbortCtl === _fullPackRunAbortCtl) _fullPackAbortCtl = null;
         if (_ownsFullPackAbort) _fullPackRunInFlight = false;
         return false;
@@ -743,6 +825,9 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         const _diffTypeSet = new Set(Array.isArray(differentiationTypes) ? differentiationTypes : ['simplified']);
         const _estimatedResourceGenerations = runnableResources.reduce((total, item) =>
             total + (_diffTypeSet.has(item.type) ? Math.max(1, _diffLevels.length) : 1), 0);
+        const _imageCalls = runnableResources.reduce((sum, item) =>
+            sum + (item.type === 'image' ? (_diffTypeSet.has(item.type) ? Math.max(1, _diffLevels.length) : 1) : 0), 0);
+        const _capacity = _estimateFullPackCapacity(_estimatedResourceGenerations, _imageCalls, aiProviderProfile || {});
         const _fullPackPreflight = {
             createdAt: new Date().toISOString(),
             sourceTextChars: batchSourceText.length,
@@ -754,15 +839,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             estimatedResourceGenerations: _estimatedResourceGenerations,
             planSchemaVersion: FULL_PACK_PLAN_SCHEMA_VERSION,
             capabilityFingerprint: FULL_PACK_CAPABILITY_FINGERPRINT,
-            capacity: {
-                aiCalls: _estimatedResourceGenerations,
-                imageCalls: runnableResources.reduce((sum, item) => sum + (item.type === 'image' ? (_diffTypeSet.has(item.type) ? Math.max(1, _diffLevels.length) : 1) : 0), 0),
-                estimatedMinutes: Math.max(1, Math.ceil(_estimatedResourceGenerations * 0.35)),
-                warnings: [].concat(
-                    _estimatedResourceGenerations >= 20 ? ['Large pack: provider rate limits are more likely. Consider fewer resources or groups.'] : [],
-                    runnableResources.some(item => item.type === 'image') && _estimatedResourceGenerations >= 12 ? ['Image generation may extend the run and consume additional provider quota.'] : []
-                ),
-            },
+            capacity: _capacity,
         };
         const _planPayload = {
             batchConfig: _compactFullPackBatchConfig(batchConfig),
@@ -877,16 +954,19 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 let failurePolicy = _fullPackFailurePolicy(failureReason);
                 if (!_isFullPackAbort(finalError, _fullPackSignal) && failurePolicy.retryable) {
                     updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, { [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], { status: 'retrying', attempts: 2, failureCategory: failurePolicy.category, suggestedDelayMs: failurePolicy.delayMs }) }) }));
+                    _recordFullPackMetric('retry-scheduled', { type });
                     warnLog('[FullPack] transient failure; retrying resource=' + type + ' afterMs=' + failurePolicy.delayMs + ' reason=' + failureReason);
                     try {
                         await _waitForFullPackDelay(failurePolicy.delayMs, _fullPackSignal);
                         resultItem = await handleGenerate(type, generationLanguageOverride, !isLast, batchSourceText, stepConfig, false, generationDepsOverride);
                         if (!isUsableGeneratedResource(resultItem, type)) throw new Error('handleGenerate retry returned an unusable ' + type + ' resource');
+                        _recordFullPackMetric('retry-recovered', { type });
                     } catch (retryError) {
                         finalError = retryError;
                         resultItem = null;
                         failureReason = (finalError && (finalError.message || finalError.name)) || String(finalError);
                         failurePolicy = _fullPackFailurePolicy(failureReason);
+                        if (!_isFullPackAbort(finalError, _fullPackSignal)) _recordFullPackMetric('retry-exhausted', { type });
                     }
                 }
                 if (!resultItem) {
@@ -907,12 +987,15 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                         };
                         fullPackFailures.push(failure);
                         recordFullPackFailure(failure);
+                        _recordFullPackMetric('resource-finish', { type, status: 'failed', durationMs: _resourceElapsedMs });
                         updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, { [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], { key: resourceKey, type, index: i, directive: directive || '', status: 'failed', reason: failure.reason, failureCategory: failure.category, retryable: failure.retryable, suggestedDelayMs: failure.suggestedDelayMs, finishedAt: _resourceFinishedAt, elapsedMs: _resourceElapsedMs }) }) }));
                     }
                 }
             }
             if (resultItem) {
-                updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, { [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], { key: resourceKey, type, index: i, directive: directive || '', status: 'landed', resourceId: resultItem.id || null, finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _resourceStartedAt) }) }) }));
+                const _landedElapsedMs = Math.max(0, Date.now() - _resourceStartedAt);
+                _recordFullPackMetric('resource-finish', { type, status: 'landed', durationMs: _landedElapsedMs });
+                updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, { [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], { key: resourceKey, type, index: i, directive: directive || '', status: 'landed', resourceId: resultItem.id || null, finishedAt: new Date().toISOString(), elapsedMs: _landedElapsedMs }) }) }));
                 currentSessionHistory.push(resultItem);
                 if (resultItem.data) {
                     if (type === 'analysis') {
@@ -942,24 +1025,29 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         const _fullPackStopped = !!(_fullPackSignal && _fullPackSignal.aborted);
         if (_fullPackStopped) {
             updateFullPackRun(prev => Object.assign({}, prev, { status: 'stopped', finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt) }));
+            if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'stopped' });
             addToast('Full Pack generation stopped. Finished resources were kept.', 'info');
         } else if (fullPackFailures.length > 0) {
             const failedTypes = fullPackFailures.map(f => f.type).join(', ');
             const partialMessage = `Full Pack finished with ${fullPackFailures.length} failed resource${fullPackFailures.length === 1 ? '' : 's'}: ${failedTypes}. See Diagnostics & Logs for details.`;
             updateFullPackRun(prev => Object.assign({}, prev, { status: 'partial', finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt), failureCount: fullPackFailures.length }));
             warnLog('[FullPack] completed with failures=' + fullPackFailures.length + ' types=' + failedTypes);
+            if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'partial' });
             addToast(partialMessage, "warning");
         } else {
             updateFullPackRun(prev => Object.assign({}, prev, { status: 'completed', finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt) }));
+            if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'completed' });
             addToast(t('process.pack_complete'), "success");
         }
     } catch (e) {
         if (_isFullPackAbort(e, _fullPackSignal)) {
             updateFullPackRun(prev => Object.assign({}, prev, { status: 'stopped', finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt) }));
+            if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'stopped' });
             addToast('Full Pack generation stopped. Finished resources were kept.', 'info');
         } else {
             updateFullPackRun(prev => Object.assign({}, prev, { status: 'failed', finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt), reason: (e && (e.message || e.name)) || String(e) }));
             recordFullPackFailure({ type: 'run', index: 0, reason: (e && (e.message || e.name)) || String(e), error: e, sourceTextChars: batchSourceText ? batchSourceText.length : 0 });
+            if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'failed' });
             setError(t('errors.default_desc'));
             addToast(t('errors.default_desc'), "error");
         }
@@ -1300,6 +1388,7 @@ window.AlloModules.GenerationHelpers = {
   handleApproveFullPack,
   handleRetryFailedFullPack,
   handleStopFullPack,
+  estimateFullPackCapacity: _estimateFullPackCapacity,
   handleComplexityAdjustment,
 };
 

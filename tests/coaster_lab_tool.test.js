@@ -1041,6 +1041,213 @@ describe('coaster lab — build-your-own discovery and visual feedback', () => {
     ]) expect(src).toContain(marker);
   });
 });
+describe('coaster lab — adaptive mastery and evidence freshness', () => {
+  function loadMarkedBlock(p, startMarker, endMarker, returnSource, parameters = []) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const start = src.indexOf(startMarker);
+    const end = src.indexOf(endMarker, start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    return new Function(...parameters, src.slice(start, end) + '\n' + returnSource);
+  }
+
+  it.each(TOOL_PATHS)('%s retains enough runs for three validated goals and exposes terminal mastery', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('const GUIDED_HISTORY_LIMIT = 12;');
+    expect((src.match(/slice\(-GUIDED_HISTORY_LIMIT\)/g) || [])).toHaveLength(3);
+    expect(src).toContain('function guidedAdaptiveMilestones(history){');
+    expect(src).toContain('function guidedAdaptiveMastered(items){');
+    expect(src).toContain('Pathway mastered: all three goals validated');
+    expect(src).toContain("stage: 'mastery'");
+    expect(src).toContain('mastered: progress.mastered');
+  });
+
+  it.each(TOOL_PATHS)('%s keeps validated milestones across interleaved investigations', (p) => {
+    const factory = loadMarkedBlock(
+      p,
+      '/* @clab-adaptive-mastery-start',
+      '/* @clab-adaptive-mastery-end',
+      'return { guidedAdaptiveMastered, guidedAdaptiveNextChallenge, guidedAdaptiveMilestones };',
+      ['guidedExperimentQuality'],
+    );
+    const quality = (history, fromIndex, toIndex) => ({
+      level: history[fromIndex].pair === history[toIndex].pair ? 'valid' : 'partial',
+      score: history[fromIndex].pair === history[toIndex].pair ? 2 : 1,
+    });
+    const { guidedAdaptiveMastered, guidedAdaptiveNextChallenge, guidedAdaptiveMilestones } = factory(quality);
+    const history = [
+      { goal: 'hill20', pair: 'hill', goalPassed: false },
+      { goal: 'airtime3', pair: 'air', goalPassed: false },
+      { goal: 'hill20', pair: 'hill', goalPassed: true },
+      { goal: 'gentle4', pair: 'gentle', goalPassed: false },
+      { goal: 'airtime3', pair: 'air', goalPassed: true },
+      { goal: 'gentle4', pair: 'gentle', goalPassed: true },
+    ];
+    const milestones = guidedAdaptiveMilestones(history);
+    expect(milestones.map(item => ({ goal: item.goal, runs: item.runs, passed: item.passed, evidence: item.evidence }))).toEqual([
+      { goal: 'hill20', runs: 2, passed: true, evidence: true },
+      { goal: 'airtime3', runs: 2, passed: true, evidence: true },
+      { goal: 'gentle4', runs: 2, passed: true, evidence: true },
+    ]);
+    expect(guidedAdaptiveMastered(milestones)).toBe(true);
+    expect(guidedAdaptiveNextChallenge('gentle4', milestones)).toBeNull();
+    const unfinished = milestones.map(item => item.goal === 'airtime3' ? { ...item, evidence: false } : item);
+    expect(guidedAdaptiveNextChallenge('gentle4', unfinished)).toBe('airtime3');
+    const isolatedPass = guidedAdaptiveMilestones([
+      { goal: 'hill20', pair: 'comparison', goalPassed: false },
+      { goal: 'hill20', pair: 'comparison', goalPassed: false },
+      { goal: 'hill20', pair: 'isolated', goalPassed: true },
+    ])[0];
+    expect(isolatedPass).toMatchObject({ passed: true, evidence: false });
+  });
+
+  it.each(TOOL_PATHS)('%s targets evidence according to the active engineering goal', (p) => {
+    const factory = loadMarkedBlock(
+      p,
+      '/* @clab-adaptive-evidence-start',
+      '/* @clab-adaptive-evidence-end',
+      'return guidedEvidenceTarget;',
+    );
+    const guidedEvidenceTarget = factory();
+    const trace = [
+      { s: 0, g: 1.1 },
+      { s: 10, g: 0.1 },
+      { s: 20, g: -0.1 },
+      { s: 30, g: 0.2 },
+      { s: 40, g: 1.4 },
+      { s: 50, g: 3.2 },
+      { s: 60, g: -4.5 },
+    ];
+    expect(guidedEvidenceTarget(trace, 'hill20', 52)).toMatchObject({ s: 50, evidenceKind: 'hill', evidenceStartS: 50, evidenceEndS: 50 });
+    expect(guidedEvidenceTarget(trace, 'airtime3')).toMatchObject({ s: 20, evidenceKind: 'airtime', evidenceStartS: 10, evidenceEndS: 30 });
+    expect(guidedEvidenceTarget(trace, 'gentle4')).toMatchObject({ s: 50, evidenceKind: 'force', evidenceStartS: 50, evidenceEndS: 50 });
+  });
+
+  it.each(TOOL_PATHS)('%s invalidates evidence when any experiment dimension changes', (p) => {
+    const factory = loadMarkedBlock(
+      p,
+      '/* @clab-experiment-signature-start',
+      '/* @clab-experiment-signature-end',
+      'return guidedExperimentSignature;',
+    );
+    const signature = factory();
+    const points = [
+      { x: 0, y: 5, z: 0, bank: 0 },
+      { x: 20, y: 22, z: 4, bank: 12 },
+    ];
+    const settings = { friction: 'realistic', cars: 3, propulsion: 'chain', accel: 7.5, challenge: 'hill20' };
+    const baseline = signature(points, settings);
+    const variants = [
+      signature([{ ...points[0] }, { ...points[1], y: 23 }], settings),
+      signature(points, { ...settings, friction: 'ideal' }),
+      signature(points, { ...settings, cars: 4 }),
+      signature(points, { ...settings, propulsion: 'launch' }),
+      signature(points, { ...settings, accel: 8 }),
+      signature(points, { ...settings, challenge: 'airtime3' }),
+    ];
+    expect(new Set(variants).size).toBe(variants.length);
+    for (const variant of variants) expect(variant).not.toBe(baseline);
+  });
+
+  it.each(TOOL_PATHS)('%s persists signatures through run history, packets, and live readiness', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'sim.tele.experimentSignature = guidedExperimentSignature',
+      'experimentSignature: tele.experimentSignature',
+      'experimentSignature: expectedExperimentSignature',
+      'function packetTelemetryRestore(raw, expectedDesignKey, expectedFingerprint, expectedExperimentSignature){',
+      'if(tele.experimentSignature !== expectedExperimentSignature) return null;',
+      'lastTele.experimentSignature !== guidedCurrentExperimentSignature()',
+      'packetEvidenceReady: !!guidedCurrentTelemetry()',
+      'adaptiveEvidenceTarget:',
+      "experimentSignature: typeof t.experimentSignature === 'string'",
+    ]) expect(src).toContain(marker);
+  });
+});
+
+describe('coaster lab - visual inquiry and evidence storytelling', () => {
+  function loadMarkedBlock(p, startMarker, endMarker, returnSource) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const start = src.indexOf(startMarker);
+    const end = src.indexOf(endMarker, start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    return new Function(src.slice(start, end) + '\n' + returnSource);
+  }
+
+  it.each(TOOL_PATHS)('%s sequences the visible Predict-Test-Explain-Revise cycle from learner evidence', (p) => {
+    const factory = loadMarkedBlock(
+      p,
+      '/* @clab-inquiry-phase-start',
+      '/* @clab-inquiry-phase-end',
+      'return guidedInquiryPhase;',
+    );
+    const guidedInquiryPhase = factory();
+    expect(guidedInquiryPhase('new', [], '', false)).toBe('predict');
+    expect(guidedInquiryPhase('testing', [{}], '', true)).toBe('test');
+    expect(guidedInquiryPhase('tested', [{}], 'Short note', false)).toBe('explain');
+    expect(guidedInquiryPhase('tested', [{}], 'My measured evidence supports the claim, and I identified a single next revision.', false)).toBe('revise');
+  });
+
+  it.each(TOOL_PATHS)('%s builds a goal-specific visual evidence story from measured results', (p) => {
+    const factory = loadMarkedBlock(
+      p,
+      '/* @clab-evidence-story-model-start',
+      '/* @clab-evidence-story-model-end',
+      'return guidedEvidenceStoryModel;',
+    );
+    const guidedEvidenceStoryModel = factory();
+    const points = [
+      { x: 0, y: 5, z: 0, bank: 0 },
+      { x: 20, y: 22, z: 4, bank: 12 },
+      { x: 40, y: 8, z: 0, bank: 0 },
+    ];
+    const telemetry = { status: 'complete', maxV: 20, maxGV: 4.5, minGV: 0.1, airtime: 2.4 };
+    const focus = { s: 20, g: 0.1, evidenceLabel: 'longest measured airtime region', evidenceStartS: 10, evidenceEndS: 30 };
+
+    const hill = guidedEvidenceStoryModel(telemetry, 'hill20', points, focus);
+    expect(hill).toMatchObject({ goal: 'hill20', value: 22, target: 20, unit: 'm', pass: true });
+    expect(hill.steps).toHaveLength(3);
+    expect(hill.steps.map(step => step.label)).toEqual(['Track shape', 'Motion', 'Rider effect']);
+
+    const airtime = guidedEvidenceStoryModel(telemetry, 'airtime3', points, focus);
+    expect(airtime).toMatchObject({ goal: 'airtime3', value: 2.4, target: 3, unit: 's', pass: false, startS: 10, endS: 30 });
+    expect(airtime.reasoning).toMatch(/crest/i);
+
+    const gentle = guidedEvidenceStoryModel(telemetry, 'gentle4', points, focus);
+    expect(gentle).toMatchObject({ goal: 'gentle4', value: 4.5, target: 4, unit: 'g', pass: false });
+    expect(gentle.reasoning).toMatch(/centripetal acceleration/i);
+    expect(guidedEvidenceStoryModel({ ...telemetry, maxGV: 3.8 }, 'gentle4', points, focus).pass).toBe(true);
+  });
+
+  it.each(TOOL_PATHS)('%s wires an accessible, responsive evidence narrative into the report and charts', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      '/* @clab-inquiry-visuals-start */',
+      'id="clab-inquiryLoop"',
+      'data-clab-inquiry-phase="predict"',
+      'clab-inquiry-step is-current',
+      'data-clab-evidence-story="true"',
+      'class="clab-goal-meter" role="img"',
+      'Physics connection:',
+      'data-clab-explain-scaffold',
+      'data-clab-start-explanation',
+      'function guidedCerStarter(model){',
+      'function bindGuidedEvidenceStory(tele){',
+      '/* @clab-evidence-chart-focus-start */',
+      "focusLabel: evidencePoint ? 'GOAL EVIDENCE' : ''",
+      'learningJourney: () =>',
+      '@media (max-width:720px)',
+      '@media (forced-colors:active)',
+    ]) expect(src).toContain(marker);
+
+    const storyCall = src.indexOf('html += renderGuidedEvidenceStory(tele);');
+    expect(storyCall).toBeGreaterThan(-1);
+    expect(src.indexOf('Park rating', storyCall)).toBeGreaterThan(storyCall);
+    expect(src).toContain('bindGuidedEvidenceStory(tele);');
+    expect(src).toContain("label.includes('Goal evidence highlighted')");
+  });
+});
 describe('coaster lab — AI "any topic" Ride & Solve questions', () => {
   // The AI response parser is the risky part (models return messy text), so it is
   // pure and exercised for real. The buffering/fallback wiring is pinned.

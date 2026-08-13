@@ -12,8 +12,8 @@
     },
     "learningLibrary": {
       "path": "test_prep/ap_psychology_pilot_learning_library.json",
-      "byteLength": 107332,
-      "sha256": "5604d19e32b89905f6a06f6f0683ff738937a3796a0d5966f57dfe76196d900f"
+      "byteLength": 107301,
+      "sha256": "f874242e9fff4fefccff1c491cebbe03ae3d2d1a395125f462ed5b948f7378fc"
     }
   },
   "standard": {
@@ -226,8 +226,8 @@
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "5604d19e32b89905f6a06f6f0683ff738937a3796a0d5966f57dfe76196d900f",
-      "deploySha256": "5604d19e32b89905f6a06f6f0683ff738937a3796a0d5966f57dfe76196d900f",
+      "sourceSha256": "f874242e9fff4fefccff1c491cebbe03ae3d2d1a395125f462ed5b948f7378fc",
+      "deploySha256": "f874242e9fff4fefccff1c491cebbe03ae3d2d1a395125f462ed5b948f7378fc",
       "note": "Source and deployment bytes are identical."
     }
   ],

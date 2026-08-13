@@ -4469,6 +4469,14 @@ const LearnerProgressView = React.memo(({
             sessionCount: rosterKey?.progressHistory?.[name]?.length || 0
         }));
     }, [isParentMode, rosterKey]);
+    const isPhonemeMastered = (value) => {
+        if (!value || typeof value !== 'object') return false;
+        const independentAttempts = Number(value.independentAttempts || 0);
+        const independentAccuracy = Number(
+            value.independentAccuracy != null ? value.independentAccuracy : value.accuracy
+        );
+        return independentAttempts >= 5 && Number.isFinite(independentAccuracy) && independentAccuracy >= 80;
+    };
     const stats = useMemo(() => {
         const quizzes = history.filter(h => h.type === 'quiz');
         // Word Sounds writes two kinds of row. Graded rows are items the child
@@ -4493,8 +4501,8 @@ const LearnerProgressView = React.memo(({
         const wsFirstTryCorrect = wsGraded.filter(h => h.correct && (h.attempts || 1) === 1).length;
         const wsFirstTryAccuracy = wsGradedTotal > 0 ? Math.round((wsFirstTryCorrect / wsGradedTotal) * 100) : 0;
         const wsHasPracticeOnly = wsTotal > wsGradedTotal;
-        const masteredPhonemes = Object.entries(phonemeMastery).filter(([_, v]) => v.accuracy >= 80);
-        const practicingPhonemes = Object.entries(phonemeMastery).filter(([_, v]) => v.accuracy > 0 && v.accuracy < 80);
+        const masteredPhonemes = Object.entries(phonemeMastery).filter(([_, v]) => isPhonemeMastered(v));
+        const practicingPhonemes = Object.entries(phonemeMastery).filter(([_, v]) => (v.total || 0) > 0 && !isPhonemeMastered(v));
         const totalActivities = history.length + (wsTotal > 0 ? 1 : 0) + (gameCompletions?.length || 0);
         const recentSessions = studentProgressLog.slice(-5);
         const trend = recentSessions.length >= 2
@@ -4958,8 +4966,8 @@ const LearnerProgressView = React.memo(({
                             const barColor = pct >= 80 ? '#16a34a' : pct >= 50 ? '#d97706' : '#e11d48';
                             return `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:13px;font-weight:600;color:#334155">${icon} ${label}</span><span style="font-size:14px;font-weight:800;color:${barColor}">${value}${unit}</span></div><div style="background:#f1f5f9;border-radius:6px;height:10px;overflow:hidden"><div style="background:${barColor};height:100%;border-radius:6px;width:${pct}%"></div></div></div>`;
                         };
-                        const masteredCount = Object.entries(phonemeMastery).filter(([_,v]) => v.accuracy >= 80).length;
-                        const masteredList = Object.entries(phonemeMastery).filter(([_,v]) => v.accuracy >= 80).map(([p]) => '/' + p + '/').join(', ');
+                        const masteredCount = Object.entries(phonemeMastery).filter(([_,v]) => isPhonemeMastered(v)).length;
+                        const masteredList = Object.entries(phonemeMastery).filter(([_,v]) => isPhonemeMastered(v)).map(([p]) => '/' + p + '/').join(', ');
                         const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">` +
                           `<title>${t('learner.progress_report')}</title>` +
                           `<style>` +
@@ -5001,7 +5009,7 @@ const LearnerProgressView = React.memo(({
                           `${metricBar('Total Activities', stats.totalActivities, 20, '', '📊')}` +
                           `<div class="section-title">🎯 Skills Mastered</div>` +
                           `<div style="font-size:13px;color:#475569;margin-bottom:8px"><strong>${masteredCount}</strong> phoneme sounds mastered${masteredCount > 0 ? ':' : ''}</div>` +
-                          `${masteredCount > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">' + Object.entries(phonemeMastery).filter(([_,v]) => v.accuracy >= 80).map(([p]) => '<span style="padding:4px 12px;background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:20px;font-size:12px;font-weight:700">/' + p + '/</span>').join('') + '</div>' : '<p style="font-size:13px;color:#94a3b8;font-style:italic">Keep practicing to master sounds!</p>'}` +
+                          `${masteredCount > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">' + Object.entries(phonemeMastery).filter(([_,v]) => isPhonemeMastered(v)).map(([p]) => '<span style="padding:4px 12px;background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:20px;font-size:12px;font-weight:700">/' + p + '/</span>').join('') + '</div>' : '<p style="font-size:13px;color:#94a3b8;font-style:italic">Keep practicing to master sounds!</p>'}` +
                           `<div class="section-title">🏅 Achievements Earned</div>` +
                           `<div class="badge-row">` +
                           `${globalPoints >= 10 ? '<div class="badge">👣 First Steps</div>' : ''}` +

@@ -96,6 +96,48 @@ function installVersionedFirebase(initialRemote) {
     readStudentRemote: () => JSON.parse(JSON.stringify(studentRemote))
   };
 }
+function installDelayedSaveFirebase(initialRemote) {
+  let studentRemote = JSON.parse(JSON.stringify(initialRemote));
+  const commitGate = deferred();
+  let gateUsed = false;
+  const getDoc = vi.fn(async (docRef) => cloudSnapshot(
+    docRef.path.endsWith('/studenta001') ? studentRemote : null
+  ));
+  const runTransaction = vi.fn(async (_firestore, updateFunction) => {
+    let pendingWrite = null;
+    const result = await updateFunction({
+      get: getDoc,
+      set: (docRef, data, options) => { pendingWrite = { docRef, data, options }; }
+    });
+    if (pendingWrite && pendingWrite.docRef.path.endsWith('/studenta001') && !gateUsed) {
+      gateUsed = true;
+      await commitGate.promise;
+    }
+    if (pendingWrite && pendingWrite.docRef.path.endsWith('/studenta001')) {
+      studentRemote = pendingWrite.options && pendingWrite.options.merge
+        ? Object.assign({}, studentRemote || {}, pendingWrite.data)
+        : pendingWrite.data;
+    }
+    return result;
+  });
+  window.__alloFirebase = {
+    onAuthStateChanged: (_auth, listener) => {
+      listener({ uid: 'behavior-lens-test-user' });
+      return () => {};
+    },
+    signInAnonymously: vi.fn(),
+    doc: (_firestore, ...parts) => ({ path: parts.join('/') }),
+    getDoc,
+    setDoc: vi.fn(async () => {}),
+    runTransaction
+  };
+  return {
+    commitGate,
+    studentCommitStarted: () => gateUsed,
+    readStudentRemote: () => JSON.parse(JSON.stringify(studentRemote))
+  };
+}
+
 function installRetryFirebase(initialRemote) {
   let studentRemote = JSON.parse(JSON.stringify(initialRemote));
   let studentAttempts = 0;
@@ -589,6 +631,49 @@ describe('Behavior Lens mounted workspace lifecycle', () => {
     }
   });
 
+  it('warns and offers export before projected browser storage reaches capacity', async () => {
+    const remote = Object.assign(workspace('Student A', 1), { revision: 1 });
+    installVersionedFirebase(remote);
+    localStorage.setItem('behaviorLens_capacity_fixture', 'x'.repeat(1_700_000));
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = await mountBehaviorLens(host, 'Student A');
+
+    try {
+      await waitForCondition(
+        () => Array.from(host.querySelectorAll('[role="alert"]')).some((alert) =>
+          alert.textContent.includes('Workspace storage is growing large.')
+        ),
+        'Proactive workspace capacity warning did not appear'
+      );
+      const warning = Array.from(host.querySelectorAll('[role="alert"]')).find((alert) =>
+        alert.textContent.includes('Workspace storage is growing large.')
+      );
+      expect(warning.textContent).toContain('Estimated browser storage after this save:');
+      expect(warning.textContent).toContain('Export backup now');
+      expect(Array.from(host.querySelectorAll('[role="status"]')).some((status) =>
+        status.textContent.trim() === 'Storage near limit'
+      )).toBe(true);
+
+      const dismiss = Array.from(warning.querySelectorAll('button')).find((button) =>
+        button.textContent.includes('Dismiss for now')
+      );
+      await React.act(async () => {
+        dismiss.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await Promise.resolve();
+      });
+      await waitForCondition(
+        () => !Array.from(host.querySelectorAll('[role="alert"]')).some((alert) =>
+          alert.textContent.includes('Workspace storage is growing large.')
+        ),
+        'Capacity warning did not dismiss'
+      );
+    } finally {
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+    }
+  });
+
   it('surfaces a durable export action when browser workspace storage fails', async () => {
     const remote = Object.assign(workspace('Student A', 1), { revision: 1 });
     installVersionedFirebase(remote);
@@ -641,4 +726,149 @@ describe('Behavior Lens mounted workspace lifecycle', () => {
       host.remove();
     }
   });
+  it('preserves a newer local edit when an older cloud save finishes late', async () => {
+    const initialRemote = Object.assign(workspace('Student A', 1), {
+      revision: 1,
+      updatedAt: '2026-08-09T12:00:00.000Z'
+    });
+    const firebase = installDelayedSaveFirebase(initialRemote);
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = await mountBehaviorLens(host, 'Student A');
+
+    try {
+      await waitForCondition(() => abcMetric(host) === '1', 'Delayed-save workspace did not hydrate');
+      const profileToggle = Array.from(host.querySelectorAll('button[aria-label="Toggle is expanded"]')).find(
+        (button) => button.textContent.includes('Student Profile')
+      );
+      await React.act(async () => {
+        profileToggle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await Promise.resolve();
+      });
+      const interests = profileToggle.parentElement.querySelector('textarea');
+      const setTextareaValue = Object.getOwnPropertyDescriptor(
+        window.HTMLTextAreaElement.prototype,
+        'value'
+      ).set;
+
+      await React.act(async () => {
+        setTextareaValue.call(interests, 'First edit sent to cloud');
+        interests.dispatchEvent(new Event('input', { bubbles: true }));
+        await new Promise((resolvePromise) => window.setTimeout(resolvePromise, 2100));
+      });
+      await waitForCondition(() => firebase.studentCommitStarted(), 'Delayed cloud save did not start');
+
+      await React.act(async () => {
+        setTextareaValue.call(interests, 'Newer local edit must survive');
+        interests.dispatchEvent(new Event('input', { bubbles: true }));
+        await new Promise((resolvePromise) => window.setTimeout(resolvePromise, 350));
+      });
+      const dirtyBeforeAck = JSON.parse(localStorage.getItem('behaviorLens_workspace_dirty_studenta001'));
+      const localBeforeAck = JSON.parse(localStorage.getItem('behaviorLens_workspace_studenta001'));
+      expect(localBeforeAck.studentProfile.interests).toBe('Newer local edit must survive');
+      expect(dirtyBeforeAck.snapshotId).toBe(localBeforeAck.snapshotId);
+
+      firebase.commitGate.resolve();
+      await waitForCondition(
+        () => firebase.readStudentRemote().revision === 2,
+        'Delayed cloud save did not finish'
+      );
+
+      const localAfterAck = JSON.parse(localStorage.getItem('behaviorLens_workspace_studenta001'));
+      expect(localAfterAck.studentProfile.interests).toBe('Newer local edit must survive');
+      expect(localAfterAck.snapshotId).toBe(localBeforeAck.snapshotId);
+      expect(JSON.parse(localStorage.getItem('behaviorLens_workspace_dirty_studenta001')).snapshotId)
+        .toBe(localBeforeAck.snapshotId);
+      expect(Array.from(host.querySelectorAll('[role="status"]')).some((status) =>
+        status.textContent.includes('Local changes pending')
+      )).toBe(true);
+    } finally {
+      firebase.commitGate.resolve();
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+    }
+  }, 15000);
+
+  it('paginates a large ABC table without dropping filtered records', async () => {
+    const largeWorkspace = workspace('Student A', 120);
+    localStorage.setItem('behaviorLens_workspace_studenta001', JSON.stringify(largeWorkspace));
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = await mountBehaviorLens(host, 'Student A');
+
+    try {
+      await waitForCondition(() => abcMetric(host) === '120', 'Large local workspace did not hydrate');
+      const openAbc = Array.from(host.querySelectorAll('button')).find((button) =>
+        button.textContent.trim() === 'Open ABC Data Collection'
+      );
+      expect(openAbc).toBeTruthy();
+      await React.act(async () => {
+        openAbc.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await Promise.resolve();
+      });
+      await waitForCondition(() => !!host.querySelector('[aria-label="ABC entry pages"]'), 'ABC pagination controls did not render');
+      const table = host.querySelector('table');
+      expect(table).toBeTruthy();
+      expect(table.querySelectorAll('tbody > tr').length).toBe(50);
+      expect(host.querySelector('[aria-label="ABC entry pages"]').textContent).toContain('Showing 1–50 of 120 matching entries');
+      expect(host.querySelector('[aria-label="ABC entry pages"]').textContent).toContain('Page 1 of 3');
+
+      const next = host.querySelector('button[aria-label="Next ABC entries page"]');
+      await React.act(async () => {
+        next.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await Promise.resolve();
+      });
+      await waitForCondition(
+        () => host.querySelector('[aria-label="ABC entry pages"]').textContent.includes('Showing 51–100 of 120 matching entries'),
+        'ABC pagination did not advance to page two'
+      );
+      expect(table.querySelectorAll('tbody > tr').length).toBe(50);
+
+      const rowsPerPage = host.querySelector('select[aria-label="ABC rows per page"]');
+      await React.act(async () => {
+        rowsPerPage.value = '100';
+        rowsPerPage.dispatchEvent(new Event('change', { bubbles: true }));
+        await Promise.resolve();
+      });
+      await waitForCondition(
+        () => host.querySelector('[aria-label="ABC entry pages"]').textContent.includes('Showing 1–100 of 120 matching entries'),
+        'Changing the page size did not reset to the first page'
+      );
+      expect(table.querySelectorAll('tbody > tr').length).toBe(100);
+
+      expect(host.querySelectorAll('#behavior-lens-abc-behavior-suggestions option').length).toBe(50);
+      const behaviorSort = Array.from(host.querySelectorAll('button[aria-label^="Sort ABC entries by "]')).find((button) =>
+        button.getAttribute('aria-label').includes('Behavior')
+      );
+      expect(behaviorSort).toBeTruthy();
+      await React.act(async () => {
+        behaviorSort.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await Promise.resolve();
+      });
+      expect(behaviorSort.closest('th').getAttribute('aria-sort')).toBe('descending');
+      await React.act(async () => {
+        behaviorSort.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await Promise.resolve();
+      });
+      expect(behaviorSort.closest('th').getAttribute('aria-sort')).toBe('ascending');
+
+      const behaviorFilter = host.querySelector('input[aria-label="Filter ABC entries by behavior"]');
+      const setInputValue = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+      await React.act(async () => {
+        setInputValue.call(behaviorFilter, 'behavior 120');
+        behaviorFilter.dispatchEvent(new Event('input', { bubbles: true }));
+        await Promise.resolve();
+      });
+      await waitForCondition(
+        () => host.querySelector('[aria-label="ABC entry pages"]').textContent.includes('of 1 matching entries'),
+        'Behavior text filtering did not search the full collection'
+      );
+      expect(table.querySelectorAll('tbody > tr').length).toBe(1);
+      expect(table.querySelector('tbody').textContent).toContain('Student A behavior 120');
+    } finally {
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+    }
+  }, 15000);
+
 });

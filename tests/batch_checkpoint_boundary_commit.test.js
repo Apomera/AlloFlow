@@ -68,7 +68,7 @@ function makeRuntime(options = {}) {
     source.slice(runtimeStart, runtimeEnd) +
       '\nreturn {' +
       ' saveFiles: _saveBatchFiles, saveStatusNow: _saveBatchStatusNow, saveStatus: _saveBatchStatus,' +
-      ' commitBoundary: _commitBatchCheckpointBoundary, clearActive: _clearActiveBatch, statusKeyFor: _batchStatusKeyFor,' +
+      ' commitBoundary: _commitBatchCheckpointBoundary, startRoot: _startBatchCheckpointRoot, clearActive: _clearActiveBatch, statusKeyFor: _batchStatusKeyFor,' +
       ' resultKeyFor: _batchResultKeyFor, degraded: function () { return _batchCheckpointDegraded; }' +
       ' };'
   );
@@ -259,6 +259,38 @@ describe('post-file batch checkpoint boundaries', () => {
     await expect(runtime.api.saveFiles(files, {}, 100, 'batch_without_lock')).resolves.toBe(false);
     expect(runtime.values.has('pdf_active_batch_files_v1')).toBe(false);
     expect(runtime.api.degraded()).toBe(true);
+  });
+
+  it('tombstones a root write that completes after initialization timed out', async () => {
+    let releaseRoot;
+    let rootWriteStarted = false;
+    const rootGate = new Promise((resolveGate) => { releaseRoot = resolveGate; });
+    const runtime = makeRuntime({
+      beforeSet: async (key) => {
+        if (key !== 'pdf_active_batch_files_v1') return;
+        rootWriteStarted = true;
+        await rootGate;
+      },
+    });
+    const batchId = 'batch_late_root';
+    const files = [makeFile('late-root-file', 'pending')];
+    const startWrite = runtime.api.saveFiles(files, {}, 100, batchId);
+    const outcome = runtime.api.startRoot({
+      startWrite,
+      batchId,
+      isCurrent: () => true,
+      timeoutMs: 20,
+    });
+    for (let i = 0; i < 20 && !rootWriteStarted; i++) await Promise.resolve();
+    expect(rootWriteStarted).toBe(true);
+    await expect(outcome).resolves.toBe(false);
+    releaseRoot();
+    await startWrite;
+    for (let i = 0; i < 20 && runtime.values.get('pdf_active_batch_files_v1'); i++) {
+      await new Promise((resolveWait) => setTimeout(resolveWait, 5));
+    }
+    expect(runtime.values.get('pdf_active_batch_files_v1')).toBeNull();
+    expect(runtime.values.has(runtime.api.statusKeyFor(batchId))).toBe(false);
   });
 
   it('uses an independent boundary deadline and awaits commits before cooldown/next-file work', () => {

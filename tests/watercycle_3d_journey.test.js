@@ -185,7 +185,8 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain('dropletGroup3d.quaternion.slerp');
       expect(source).toContain('var rainBasePositions3d = new Float32Array');
       expect(source).toContain('var snowMode3d = tempVisual3d < 0;');
-      expect(source).toContain('if (!motionReduced3d && !journeyPaused3d) visualTime3d += frameDelta3d;');
+      expect(source).toContain('var rawFrameDelta3d = lastElapsed3d ? Math.max(0, elapsed3d - lastElapsed3d) : 0;');
+      expect(source).toContain('stormSequenceTime3d += Math.min(1, rawFrameDelta3d);');
       expect(source).toContain('function makeProcessLabel3d');
       expect(source).toContain('new THREE.CanvasTexture(labelCanvas3d)');
       expect(source).toContain('var stateLabelKey3d = {');

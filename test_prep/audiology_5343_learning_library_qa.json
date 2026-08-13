@@ -1,7 +1,6 @@
 {
   "packId": "praxis-audiology-5343", "version": "1.0.0", "visibility": "public",
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T17:24:35.227Z",
   "libraryId": "praxis-audiology-5343-learning-library",
   "standard": {
     "label": "AlloFlow Praxis Audiology 5343 learning-library source and editorial review v1",

@@ -36,11 +36,17 @@ const harness = new GlHarness({
       try { gl = c.getContext('webgl2') || c.getContext('webgl'); lost = gl ? gl.isContextLost() : null; } catch (e) {}
       var stepsEl = document.getElementById('eva-steps');
       var o2El = document.getElementById('eva-o2');
+      var soundEl = document.getElementById('eva-lrv-sound');
       return {
         lost: lost,
         focused: document.activeElement === c,
         steps: stepsEl ? parseInt(String(stepsEl.textContent), 10) : null,
         o2: o2El ? String(o2El.textContent) : null,
+        lrvSound: c.dataset.lrvSound || null,
+        lrvAudioLevel: Number(c.dataset.lrvAudioLevel || 0),
+        lrvTrackCount: Number(c.dataset.lrvTrackCount || 0),
+        lrvTrackCap: Number(c.dataset.lrvTrackCap || 0),
+        lrvSoundPressed: soundEl ? soundEl.getAttribute('aria-pressed') : null,
         box: { w: Math.round(r.width), h: Math.round(r.height) },
         parentBox: { w: Math.round(p.width), h: Math.round(p.height) }
       };
@@ -130,6 +136,30 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     expect(walked, 'ArrowUp does not walk').not.toBeNull();
   });
 
+  test('LRV drive sonification is opt-in and B exposes stable UI state', async ({ page }) => {
+    await harness.mount(page, AT_EVA, EVA_READY);
+    expect(await page.evaluate(() => (window as any).__focusEva())).toBe(true);
+
+    const before = await page.evaluate(() => (window as any).__eva());
+    expect(before.lrvSound).toBe('off');
+    expect(before.lrvSoundPressed).toBe('false');
+    expect(before.lrvAudioLevel).toBe(0);
+    expect(before.lrvTrackCount).toBe(0);
+    expect(before.lrvTrackCap).toBeGreaterThan(0);
+
+    await page.keyboard.press('KeyB');
+    await page.waitForFunction(() => {
+      const e = (window as any).__eva();
+      return e && e.lrvSound === 'on' && e.lrvSoundPressed === 'true';
+    }, null, { timeout: 5000 });
+
+    await page.keyboard.press('KeyB');
+    await page.waitForFunction(() => {
+      const e = (window as any).__eva();
+      return e && e.lrvSound === 'off' && e.lrvSoundPressed === 'false';
+    }, null, { timeout: 5000 });
+  });
+
   test('every rock you pick up stays in the bag', async ({ page }) => {
     // THE state bug. The collection handler lives inside the EVA render loop, whose
     // closure captures ctx.toolData ONCE at canvas mount and never sees a later
@@ -201,6 +231,49 @@ test.describe('Moon Mission — real WebGL EVA', () => {
 
   test('mounts the EVA without throwing', async ({ page }) => {
     await harness.mount(page, AT_EVA, EVA_READY);
+    const errs: string[] = (await page.evaluate(() => (window as any).__events.errors))
+      .filter((m: string) => !/ResizeObserver loop/.test(m));
+    expect(errs).toEqual([]);
+  });
+
+  test('the optional LRV can be reached, boarded, driven, and exited by keyboard', async ({ page }) => {
+    await harness.mount(page, AT_EVA, EVA_READY);
+    expect(await page.evaluate(() => (window as any).__focusEva())).toBe(true);
+
+    // From the EVA spawn, W+D follows a diagonal that passes within the rover's
+    // three-metre boarding radius. Wait on the accessible control, not a fixed
+    // duration, so SwiftShader frame rate cannot make this flaky.
+    await page.keyboard.down('KeyW');
+    await page.keyboard.down('KeyD');
+    const reached = await page.waitForFunction(() => {
+      const action = document.getElementById('eva-lrv-action');
+      return action && /Board LRV/i.test(String(action.textContent)) ? true : false;
+    }, null, { timeout: 30000 }).then(() => true).catch(() => false);
+    await page.keyboard.up('KeyD');
+    await page.keyboard.up('KeyW');
+    expect(reached, 'the visible LRV control never reported boarding range').toBe(true);
+
+    await page.keyboard.press('KeyV');
+    await expect(page.locator('#eva-mode')).toContainText('LRV');
+    await expect(page.locator('#eva-lrv-action')).toContainText('Exit LRV');
+
+    await page.keyboard.down('KeyW');
+    const drove = await page.waitForFunction(() => {
+      const speed = document.getElementById('eva-lrv-speed');
+      const text = speed ? String(speed.textContent) : '';
+      return text && !/^Parked$/i.test(text) && Number.parseFloat(text) > 0 ? text : false;
+    }, null, { timeout: 8000 }).catch(() => null);
+    await page.keyboard.up('KeyW');
+    expect(drove, 'the boarded LRV never reported forward speed').not.toBeNull();
+
+    await page.keyboard.press('KeyF');
+    const sampleGuard = await page.evaluate(() => (window as any).__events.toasts
+      .some((t: any) => /on-foot|exit before collecting|samples stay/i.test(String(t.message))));
+    expect(sampleGuard, 'F while boarded did not explain that sampling is on foot').toBe(true);
+
+    await page.keyboard.press('KeyV');
+    await expect(page.locator('#eva-mode')).toContainText('On foot');
+
     const errs: string[] = (await page.evaluate(() => (window as any).__events.errors))
       .filter((m: string) => !/ResizeObserver loop/.test(m));
     expect(errs).toEqual([]);

@@ -655,7 +655,7 @@ Upload an inaccessible PDF (or DOCX/PPTX) and get back a remediated accessible d
 - **Dynamic Assessment** — guided test-teach-retest "assessment of learning potential" workflow.
 - **Research Hub + Research Lanes** — structured engineering / humanities / scientific research scaffolds with source grounding.
 - **Lumen** — a STEM Lab tool (light/optics-oriented); accessible from the STEM Lab grid.
-- **Generate-Unit / Throughline** — spatial unit builder with an AI co-author (Mind Map module).
+- **Learning Web: Unit Path** — spatial unit builder with an AI co-author; the legacy Throughline/Mind Map runtime aliases remain for compatibility.
 - **Footnotes + APA/MLA/Chicago doc modes** — citation-aware document generation in the Doc Builder.
 
 ---

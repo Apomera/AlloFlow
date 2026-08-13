@@ -93,7 +93,7 @@ describe('command coverage drift guards', () => {
 
   it('keeps every registry command explicitly grouped for palette browsing', () => {
     const source = readRoot('allo_commands_source.jsx');
-    const registry = source.match(/const cmds = \[([\s\S]*?)\r?\n\s*\];\r?\n\s*\/\/ opts\.includeGated/);
+    const registry = source.match(/function buildAlloCommands\([\s\S]*?const cmds = \[([\s\S]*?)return cmds\.reduce/);
     const groupBlock = source.match(/const CMD_GROUP = \{([\s\S]*?)\n\};/);
     expect(registry).toBeTruthy();
     expect(groupBlock).toBeTruthy();

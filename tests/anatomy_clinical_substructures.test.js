@@ -98,7 +98,11 @@ describe('Anatomy Clinical Atlas substructures', () => {
     const list = root.querySelector('[data-anatomy-clinical-structure-list]');
 
     expect(list).not.toBeNull();
-    expect(list.getAttribute('aria-label')).toBe('Clinical Atlas structures');
+    expect(list.getAttribute('data-anatomy-clinical-pack')).toBe('hra-kidney-female-left-v1.3');
+    const labelledBy = list.getAttribute('aria-labelledby');
+    expect(labelledBy).toBe('anatomy-clinical-structures-title-hra-kidney-female-left-v1.3');
+    const labelElement = [...list.querySelectorAll('[id]')].find((element) => element.id === labelledBy);
+    expect(labelElement?.textContent).toMatch(/Explore (?:left )?kidney structures/i);
     const controls = [...list.querySelectorAll('button[data-anatomy-clinical-concept]')];
     expect(controls).toHaveLength(9);
     expect(new Set(controls.map((control) => control.dataset.anatomyClinicalConcept))).toEqual(

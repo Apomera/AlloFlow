@@ -232,6 +232,52 @@
     e -= 2260000;
     return { phase: 'Steam', temp: 100 + e / 2010, frac: 0 };
   }
+  function heatCoolingTemperature(material, mm, minutes) {
+    // Exact Newton cooling for a 350 ml mug at 90 C in a 20 C room. Using the
+    // analytical exponential keeps the result independent of an arbitrary
+    // one-minute integration step, while the wrap and outside air film remain
+    // resistances in series.
+    var conductivity = material && Number(material.k);
+    if (!(conductivity > 0)) return NaN;
+    var area = 0.045;                       // m^2 of mug wall
+    var rWrap = (Math.max(0, Number(mm) || 0) / 1000) / conductivity;
+    var rSurface = 0.12;
+    var conductance = area / (rWrap + rSurface); // W/K
+    var heatCapacity = 0.35 * 4186;         // J/K
+    var seconds = Math.max(0, Number(minutes) || 0) * 60;
+    return 20 + (90 - 20) * Math.exp(-(conductance * seconds) / heatCapacity);
+  }
+  function heatCoolingCurve(material, mm, totalMinutes) {
+    var end = totalMinutes == null ? 60 : Math.max(0, Math.floor(totalMinutes));
+    var points = [];
+    for (var minute = 0; minute <= end; minute++) {
+      points.push(heatCoolingTemperature(material, mm, minute));
+    }
+    return points;
+  }
+  var HEAT_SIGMA = 5.670374419e-8;
+  function heatRadiationModel(surfaceC, roomC, area, emissivity) {
+    var surfaceK = Number(surfaceC) + 273.15;
+    var roomK = Number(roomC) + 273.15;
+    var a = area == null ? 1.8 : Number(area);
+    var eps = emissivity == null ? 0.98 : Number(emissivity);
+    if (!(surfaceK > 0) || !(roomK > 0) || !(a >= 0) || !(eps >= 0 && eps <= 1)) {
+      return { valid: false, emittedW: NaN, absorbedW: NaN, netToRoomW: NaN, peakUm: NaN };
+    }
+    var scale = eps * HEAT_SIGMA * a;
+    var emittedW = scale * Math.pow(surfaceK, 4);
+    var absorbedW = scale * Math.pow(roomK, 4);
+    return {
+      valid: true,
+      emittedW: emittedW,
+      absorbedW: absorbedW,
+      // Positive means the surface warms the room; negative means the room
+      // radiatively warms the colder surface. Keeping the sign prevents a cold
+      // object from being described as sending a negative amount into the room.
+      netToRoomW: emittedW - absorbedW,
+      peakUm: 2897.771955 / surfaceK
+    };
+  }
   function heatPumpModel(outdoorC, indoorC) {
     var liftK = indoorC - outdoorC;
     if (!isFinite(liftK) || liftK <= 0) {
@@ -448,6 +494,9 @@
       mixTemperature: heatMixTemperature,
       mixExplanation: heatMixExplanation,
       waterState: heatWaterState,
+      coolingTemperature: heatCoolingTemperature,
+      coolingCurve: heatCoolingCurve,
+      radiation: heatRadiationModel,
       heatPump: heatPumpModel
     },
 
@@ -496,15 +545,14 @@
       var curveRef = React.useRef(null);
       var entropyRef = React.useRef(null);
       var hpRef = React.useRef(null);
-      var hpRef = React.useRef(null);
       var stPredict = React.useState('');
       var predictText = stPredict[0], setPredictText = stPredict[1];
       var stReveal = React.useState(false);
       var revealed = stReveal[0], setRevealed = stReveal[1];
       var st3d = React.useState(HEAT_VIEWER.status ? HEAT_VIEWER.status() : 'idle');
       var view3dStatus = st3d[0], setView3dStatus = st3d[1];
-      var stTable = React.useState(false);
-      var showTables = stTable[0], setShowTables = stTable[1];
+      var stTables = React.useState({});
+      var tableVisibility = stTables[0], setTableVisibility = stTables[1];
       var stRaceStatus = React.useState('Bars begin at 20 °C. The finish line is ' + HEAT_FINISH_C + ' °C at the midpoint.');
       var raceStatus = stRaceStatus[0], setRaceStatus = stRaceStatus[1];
       var prefersReducedMotion = !!(typeof window !== 'undefined' && window.matchMedia &&
@@ -1295,19 +1343,7 @@
       var insMat = MATERIALS.filter(function (m) { return m.id === insMatId; })[0] || MATERIALS[6];
       var thickness = typeof d.thickness === 'number' ? d.thickness : 10;   // mm
       function coolingCurve(mat, mm) {
-        // A 350 ml mug at 90 C in a 20 C room, wrapped in `mm` of `mat`.
-        var area = 0.045;                       // m^2 of mug wall
-        var rWrap = (mm / 1000) / mat.k;        // R = L / k
-        var rSurface = 0.12;                    // still-air film on the outside
-        var U = 1 / (rWrap + rSurface);         // W/m^2-K
-        var mass = 0.35, cW = 4186;
-        var pts = [], temp = 90;
-        for (var min = 0; min <= 60; min++) {
-          pts.push(temp);
-          var q = U * area * (temp - 20);       // watts
-          temp -= (q * 60) / (mass * cW);       // one minute
-        }
-        return pts;
+        return heatCoolingCurve(mat, mm, 60);
       }
       var curve = coolingCurve(insMat, thickness);
       var after60 = curve[curve.length - 1];
@@ -1523,15 +1559,15 @@
       // 33 C is SKIN temperature. Core body temperature is 37 C, but skin is what
       // actually radiates, and using the core figure overstates the loss by a third.
       var radT = typeof d.radT === 'number' ? d.radT : 33;
-      var SIGMA = 5.670374419e-8;
-      function radiatedW(celsius, area, emissivity) {
-        var K = celsius + 273.15;
-        return (emissivity || 0.95) * SIGMA * (area || 1.8) * Math.pow(K, 4);
-      }
-      var radGross = radiatedW(radT, 1.8, 0.98);
-      var radNet = radGross - radiatedW(20, 1.8, 0.98);
+      var radiationModel = heatRadiationModel(radT, 20, 1.8, 0.98);
+      var radGross = radiationModel.emittedW;
+      var radNet = radiationModel.netToRoomW;
+      var radNetMagnitude = Math.abs(radNet);
+      var radNetLabel = radNet > 0
+        ? 'Net to a 20 °C room'
+        : radNet < 0 ? 'Net absorbed from a 20 °C room' : 'Net exchange with a 20 °C room';
       // Wien's displacement law: where the emitted spectrum peaks
-      var wienUm = 2897.77 / (radT + 273.15);
+      var wienUm = radiationModel.peakUm;
 
       // ── Module 7: thermal expansion ──────────────────────────────────
       var expMatId = d.expMatId || 'steel';
@@ -1585,31 +1621,45 @@
             : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
         }, label);
       };
-      var slider = function (id, label, min, max, step, value, onChange, suffix) {
-        return h('div', { className: 'flex items-center gap-2 mt-1.5' },
-          h('label', { htmlFor: id, className: 'text-[11px] font-bold w-28 flex-shrink-0', style: { color: isDark ? '#cbd5e1' : '#475569' } }, label),
+      var slider = function (id, label, min, max, step, value, onChange, suffix, controlsId) {
+        // On a phone, keep the label and live value together and give the range
+        // control a full row. At the small breakpoint the familiar one-line
+        // layout returns.
+        return h('div', { className: 'grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[7rem_minmax(0,1fr)_5rem] items-center gap-x-2 gap-y-1 mt-1.5' },
+          h('label', { htmlFor: id, className: 'col-start-1 row-start-1 text-[11px] font-bold min-w-0', style: { color: isDark ? '#cbd5e1' : '#475569' } }, label),
           h('input', {
             id: id, type: 'range', min: min, max: max, step: step, value: value,
             'aria-valuetext': String(suffix),
-            onChange: onChange, className: 'flex-1 h-6 accent-orange-500'
+            'aria-controls': controlsId || undefined,
+            onChange: onChange,
+            className: 'col-span-2 row-start-2 sm:col-span-1 sm:col-start-2 sm:row-start-1 w-full min-w-0 h-11 accent-orange-500'
           }),
-          h('span', { className: 'text-[11px] font-bold w-20 text-right', style: { color: isDark ? '#fdba74' : '#c2410c' } }, suffix)
+          h('output', { htmlFor: id, id: id + '-value', className: 'col-start-2 row-start-1 sm:col-start-3 text-[11px] font-bold text-right whitespace-nowrap', style: { color: isDark ? '#fdba74' : '#c2410c' } }, suffix)
         );
       };
 
       // A prose aria-label describes a chart's shape but never its numbers. This
       // gives the same data as a real table, for a screen reader or for anyone who
       // would rather read values than squint at a line.
-      var dataTable = function (caption, cols, rows) {
+      var dataTable = function (id, caption, cols, rows) {
+        var expanded = !!tableVisibility[id];
+        var panelId = 'ht-table-' + id;
         return h('div', { className: 'mt-2' },
           h('button', {
             type: 'button',
-            'aria-expanded': showTables ? 'true' : 'false',
-            onClick: function () { setShowTables(!showTables); },
+            'aria-expanded': expanded ? 'true' : 'false',
+            'aria-controls': panelId,
+            onClick: function () {
+              setTableVisibility(function (prev) {
+                var next = Object.assign({}, prev);
+                next[id] = !prev[id];
+                return next;
+              });
+            },
             className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
             style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
-          }, showTables ? '▾ Hide the numbers' : '▸ Show the numbers'),
-          showTables ? h('div', { className: 'mt-2 overflow-x-auto' },
+          }, expanded ? '▾ Hide the numbers' : '▸ Show the numbers'),
+          expanded ? h('div', { id: panelId, role: 'region', 'aria-label': caption, className: 'mt-2 overflow-x-auto' },
             h('table', { className: 'w-full text-[11px]', style: { borderCollapse: 'collapse' } },
               h('caption', { className: 'text-left text-[11px] mb-1', style: { color: isDark ? '#94a3b8' : '#64748b' } }, caption),
               h('thead', null, h('tr', null, cols.map(function (c) {
@@ -1897,7 +1947,11 @@
             })
           ),
           slider('heat-thickness', 'Thickness', 1, 60, 1, thickness,
-            function (e) { upd({ thickness: parseFloat(e.target.value) }); }, thickness + ' mm'),
+            function (e) { upd({ thickness: parseFloat(e.target.value) }); }, thickness + ' mm', 'ht-insulation-status'),
+          h('p', {
+            id: 'ht-insulation-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only'
+          }, insMat.name + ', ' + thickness + ' millimetres. After 60 minutes the tea is ' + after60.toFixed(1) +
+            ' degrees Celsius. ' + (after60 >= 65 ? 'The insulation target is met.' : 'The insulation target is not yet met.')),
           h('div', { className: 'mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2' },
             [['After 10 min', fmt(curve[10], 1) + ' °C'], ['After 30 min', fmt(curve[30], 1) + ' °C'],
              ['After 60 min', fmt(after60, 1) + ' °C'], ['R-value', ((thickness / 1000) / insMat.k).toFixed(3) + ' m²·K/W']
@@ -1918,7 +1972,7 @@
             })),
           h('p', { id: 'ht-cooling-curve-description', className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'Solid line: your choice. Dashed: copper (worst) and aerogel (best) at the same thickness. The curve is steepest at the start, because heat flow is proportional to the temperature gap.'),
-          dataTable('Tea temperature every ten minutes, ' + thickness + ' mm of ' + insMat.name,
+          dataTable('cooling', 'Tea temperature every ten minutes, ' + thickness + ' mm of ' + insMat.name,
             ['Minutes', 'Your wrap', 'Copper', 'Aerogel'],
             [0, 10, 20, 30, 40, 50, 60].map(function (min) {
               return [String(min),
@@ -2035,7 +2089,7 @@
                 );
               })
           ),
-          h('div', { className: 'mt-2 grid grid-cols-3 gap-2' },
+          h('div', { className: 'mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2' },
             [['Total R', wallTotalR.toFixed(2) + ' m²K/W'], ['U-value', wallU.toFixed(3) + ' W/m²K'], ['Loss, 100 m² wall', fmt(wallLoss, 0) + ' W']
             ].map(function (p) {
               return h('div', { key: p[0], className: 'rounded-lg p-2 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(132,204,22,0.1)', border: '1px solid rgba(132,204,22,0.32)' } },
@@ -2194,9 +2248,13 @@
                 'rises again through liquid water, then holds flat at 100 degrees for 2,260 kilojoules while it boils, ' +
                 'then rises as steam. Currently at ' + fmt(energyIn, 0) + ' kilojoules, ' + wstate.temp.toFixed(0) + ' degrees, ' + wstate.phase + '.',
               style: { width: '100%', height: '100%', display: 'block' }
-            })),
+          })),
           slider('heat-energy', 'Energy added', 0, 3100, 10, energyIn,
-            function (e) { upd({ energyIn: parseFloat(e.target.value) }); }, fmt(energyIn, 0) + ' kJ'),
+            function (e) { upd({ energyIn: parseFloat(e.target.value) }); }, fmt(energyIn, 0) + ' kJ', 'ht-heating-status'),
+          h('p', {
+            id: 'ht-heating-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only'
+          }, wstate.phase + ', ' + wstate.temp.toFixed(1) + ' degrees Celsius at ' + fmt(energyIn, 0) +
+            ' kilojoules.' + (wstate.frac > 0 ? ' ' + (wstate.frac * 100).toFixed(0) + ' percent through the phase change.' : '')),
           h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
             h('div', { className: 'rounded-lg p-2.5 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.35)' } },
               h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'State'),
@@ -2217,7 +2275,7 @@
               : 'Here the energy raises the temperature directly. Notice the slope differs by state: ice warms about twice as fast per kilojoule as liquid water, because its specific heat is roughly half.'),
           h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'Melting 1 kg of ice: 334 kJ. Boiling 1 kg of water: 2,260 kJ — nearly seven times more.'),
-          dataTable('Every stage of the curve, for 1 kg of water',
+          dataTable('heating', 'Every stage of the curve, for 1 kg of water',
             ['Stage', 'Energy needed', 'Running total', 'Temperature'],
             [['Warm ice, −20 to 0 °C', '42 kJ', '42 kJ', '−20 → 0 °C'],
              ['Melt the ice', '334 kJ', '376 kJ', 'stays at 0 °C'],
@@ -2415,9 +2473,18 @@
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Everything above absolute zero radiates. The power goes as T⁴ in kelvin, so a modest temperature rise makes a startling difference — and that single exponent explains thermal cameras, why embers glow, and why a small planet-wide warming matters.'),
           slider('heat-radt', 'Surface temp', -20, 900, 5, radT,
-            function (e) { upd({ radT: parseFloat(e.target.value) }); }, radT + ' °C'),
+            function (e) { upd({ radT: parseFloat(e.target.value) }); }, radT + ' °C', 'ht-radiation-status'),
+          h('p', {
+            id: 'ht-radiation-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only'
+          }, 'At ' + radT + ' degrees Celsius the surface emits ' + fmt(radGross, 0) + ' watts. ' +
+            (radNet > 0
+              ? 'It sends ' + fmt(radNetMagnitude, 0) + ' watts net to the 20 degree room.'
+              : radNet < 0
+                ? 'It absorbs ' + fmt(radNetMagnitude, 0) + ' watts net from the 20 degree room.'
+                : 'It is in radiative equilibrium with the 20 degree room.') +
+            ' Its peak wavelength is ' + wienUm.toFixed(1) + ' micrometres.'),
           h('div', { className: 'mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2' },
-            [['Radiated', fmt(radGross, 0) + ' W'], ['Net into a 20 °C room', fmt(radNet, 0) + ' W'],
+            [['Emitted', fmt(radGross, 0) + ' W'], [radNetLabel, fmt(radNetMagnitude, 0) + ' W'],
              ['Peak wavelength', wienUm.toFixed(1) + ' µm']
             ].map(function (p) {
               return h('div', { key: p[0], className: 'rounded-lg p-2 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(244,114,182,0.09)', border: '1px solid rgba(244,114,182,0.3)' } },
@@ -2426,10 +2493,14 @@
             })
           ),
           h('p', { className: 'text-[11px] mt-2 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
-            'P = εσAT⁴   σ = 5.67 × 10⁻⁸ W/m²K⁴   A = 1.8 m² (a person)   ε = 0.98 (skin)   λmax = 2898/T'),
+            'Pemitted = εσATs⁴   Pnet = εσA(Ts⁴ − Troom⁴)   σ = 5.67 × 10⁻⁸ W/m²K⁴   A = 1.8 m²   ε = 0.98   λmax = 2898/Ts'),
           h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-            radT <= 40
-              ? 'Bare skin sits near 33 °C, not the 37 °C of your core, and nets about ' + fmt(radNet, 0) + ' W into a cool room. Clothing cuts that sharply, which is why the figure usually quoted for a dressed person is nearer 100 W. It peaks at ' + wienUm.toFixed(0) + ' µm — deep infrared, invisible to your eye but exactly what a thermal camera is built to see.'
+            radT < 20
+              ? 'This surface is colder than the room, so the direction reverses: it still emits ' + fmt(radGross, 0) + ' W, but it absorbs ' + fmt(radNetMagnitude, 0) + ' W more than it emits. Net radiation warms the surface.'
+              : radT === 20
+                ? 'The surface and room are at the same temperature. Both still radiate, but equal power crosses each way, so the net transfer is zero — radiative equilibrium is not the absence of radiation.'
+              : radT <= 40
+                ? 'This surface sends ' + fmt(radNetMagnitude, 0) + ' W net to the room. Bare skin sits near 33 °C, not the 37 °C of your core; clothing changes the effective area and surface temperature. The spectrum peaks at ' + wienUm.toFixed(0) + ' µm — deep infrared, invisible to your eye but exactly what a thermal camera detects.'
               : (radT < 500
                 ? 'Doubling the absolute temperature multiplies radiated power by sixteen, not two. That is why an oven element at 300 °C throws far more heat than its temperature alone suggests — and why it still looks dark, since the peak is at ' + wienUm.toFixed(1) + ' µm, well outside visible light.'
                 : 'The peak has moved to ' + wienUm.toFixed(1) + ' µm and the short-wavelength tail now reaches visible red, so the object glows — dull red, then orange, then white as it climbs. Nothing changed but the temperature.'))

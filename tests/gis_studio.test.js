@@ -79,10 +79,28 @@ describe('GIS Studio', () => {
     expect(tool.testing.calculateBreaks(values, 'custom', 5, '10, 30, 70')).toEqual([10, 30, 70]);
   });
 
+  it('filters and sorts mapped records without mutating the source dataset', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const records = [
+      { name: 'Gamma', density: 30 },
+      { name: 'Alpha', density: 10 },
+      { name: 'Beta', density: 20 }
+    ];
+    const ranged = tool.testing.filterAndSortMappedRecords(records, 'density', false, {
+      query: 'a', minimum: '10', maximum: '20', sort: 'name-desc'
+    });
+    expect(ranged.map((entry) => entry.record.name)).toEqual(['Beta', 'Alpha']);
+    expect(ranged.map((entry) => entry.index)).toEqual([2, 1]);
+    const selected = tool.testing.filterAndSortMappedRecords(records, 'density', false, {
+      sort: 'value-desc', selectedOnly: true, selectedIndices: [0, 2]
+    });
+    expect(selected.map((entry) => entry.record.name)).toEqual(['Gamma', 'Beta']);
+    expect(records.map((record) => record.name)).toEqual(['Gamma', 'Alpha', 'Beta']);
+  });
   it('renders layers, spatial reasoning, sonification, and a table twin', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const html = renderTool('gisStudio', {});
-    for (const text of ['Start a first investigation', 'Build evidence packet', 'Layer workspace', 'Visible layers', 'Spatial pattern coach', 'Spatial analysis workbench', 'Undo analysis', 'Redo analysis', 'Copy analysis summary', 'Keyboard: Ctrl/Cmd+Z to undo', 'Spatial analysis results', 'Accessible data-table twin', 'Sonify values', 'Project', 'Maine missions', 'Change over time', 'Compare + export', 'Import data', 'Projection lab', 'Satellite imagery']) {
+    for (const text of ['Start a first investigation', 'Build evidence packet', 'Layer workspace', 'Visible layers', 'Spatial pattern coach', 'Spatial analysis workbench', 'Undo analysis', 'Redo analysis', 'Copy analysis summary', 'Keyboard: Ctrl/Cmd+Z to undo', 'Spatial analysis results', 'Accessible data-table twin', 'Data Explorer controls', 'Search locations', 'Minimum Population density', 'Maximum Population density', 'Sort table rows', 'Only spatial-analysis selection', 'Reset table view', 'These controls change only this table view.', 'Sonify values', 'Project', 'Maine missions', 'Change over time', 'Compare + export', 'Import data', 'Projection lab', 'Satellite imagery']) {
       expect(html).toContain(text);
     }
     expect(html).toContain('<table');
@@ -92,9 +110,9 @@ describe('GIS Studio', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const html = renderTool('gisStudio', { gisTab: 'import' });
     expect(html).toContain('Map a coordinate CSV');
-    expect(html).toContain('Import a GeoJSON choropleth');
+    expect(html).toContain('Import a spatial layer');
     expect(html).toContain('Load official Maine ecoregions');
-    expect(html).toContain('Build choropleth');
+    expect(html).toContain('Review layer');
     expect(html).toContain('Join a CSV to map boundaries');
     expect(html).toContain('Download import review');
     expect(html).toContain('Read CSV columns');
@@ -166,8 +184,14 @@ describe('GIS Studio', () => {
       left: { label: 'Population', basemap: 'Street', rows: [{ name: 'A', geometry: 'Point', lat: 44, lon: -69, value: 12 }] },
       right: { label: 'Access', basemap: 'Imagery', rows: [{ name: 'A', geometry: 'Point', lat: 44, lon: -69, value: 88 }] },
       spatialAnalysis: { regionPack: 'Global regions (classroom sample)', method: 'Radius buffer', detail: '10 km radius', pointCount: 1, selectedCount: 1, selectedMean: 12, unit: 'people/mi2' },
-      selected: [{ name: 'A', lat: 44, lon: -69, value: 12 }],
-      spatialAnalysis: { regionPack: 'Global regions (classroom sample)', method: 'Radius buffer', detail: '10 km radius', pointCount: 1, selectedCount: 1, selectedMean: 12, unit: 'people/mi2' }
+      coverage: {
+        level: 'World-region representative sample', recordCount: 11,
+        latitudeExtent: '33.9\u00B0 S to 64.2\u00B0 N', longitudeExtent: '257.4\u00B0 of longitude',
+        hemispheres: ['Northern Hemisphere', 'Southern Hemisphere'],
+        represented: ['North America', 'Oceania'], gaps: ['Antarctica'],
+        note: 'Representative, not comprehensive.'
+      },
+      selected: [{ name: 'A', lat: 44, lon: -69, value: 12 }]
     });
     expect(report).toContain('<html lang="en">');
     expect(report).toContain('Coordinate plot');
@@ -176,10 +200,13 @@ describe('GIS Studio', () => {
     expect(report).toContain('Spatial method and provenance');
     expect(report).toContain('Global regions (classroom sample)');
     expect(report).toContain('Radius buffer');
+    expect(report).toContain('Geographic coverage');
+    expect(report).toContain('World-region representative sample');
+    expect(report).toContain('Known gaps');
+    expect(report).toContain('Antarctica');
     expect(report).toContain('&lt;script&gt;');
     expect(report).not.toContain('<script>alert');
   });
-
   it('renders synchronized comparison controls, table twins, and evidence export', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const html = renderTool('gisStudio', { gisTab: 'compare' });
@@ -198,16 +225,41 @@ describe('GIS Studio', () => {
     expect(tool.testing.missionCompletion(mission, { setup: true, pattern: true })).toEqual({ complete: 2, total: 4, percent: 50 });
   });
 
-  it('offers portable region packs with explicit scope notes', () => {
+  it('offers portable region packs with explicit scope and coverage notes', () => {
     const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const packs = tool.testing.regionPacks;
     expect(packs.map((pack) => pack.id)).toEqual(['maine', 'new-england', 'united-states', 'global']);
     expect(packs.find((pack) => pack.id === 'maine').records).toHaveLength(16);
     expect(packs.find((pack) => pack.id === 'global').records).toHaveLength(11);
     expect(packs.every((pack) => pack.description && pack.sourceNote)).toBe(true);
+    expect(packs.every((pack) => pack.coverage && pack.coverage.level && pack.coverage.represented.length && pack.coverage.note)).toBe(true);
+    expect(packs.find((pack) => pack.id === 'global').coverage.gaps).toContain('Antarctica');
     const html = renderTool('gisStudio', {});
     expect(html).toContain('Sample region pack');
     expect(html).toContain('Global regions (classroom sample)');
+    expect(html).toContain('Geographic coverage lens');
+    expect(html).toContain('Known gaps');
+    expect(html).toContain('Broaden coverage with your data');
+  });
+
+  it('summarizes hemisphere and antimeridian coverage without overstating completeness', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const coverage = tool.testing.summarizeGeographicCoverage([
+      { name: 'Northwest Pacific', lat: 10, lon: 170 },
+      { name: 'Southwest Pacific', lat: -12, lon: -175 },
+      { name: 'Invalid', lat: 120, lon: 0 }
+    ], {
+      level: 'Pacific sample', represented: ['Northwest Pacific', 'Southwest Pacific'],
+      gaps: ['Other Pacific subregions'], note: 'Coordinate samples are not complete regional coverage.'
+    });
+    expect(coverage.recordCount).toBe(2);
+    expect(coverage.latitudeExtent).toBe('12\u00B0 S to 10\u00B0 N');
+    expect(coverage.longitudeSpan).toBe(15);
+    expect(coverage.crossesAntimeridian).toBe(true);
+    expect(coverage.hemispheres).toEqual(expect.arrayContaining(['Northern Hemisphere', 'Southern Hemisphere', 'Eastern Hemisphere', 'Western Hemisphere']));
+    expect(coverage.represented).toHaveLength(2);
+    expect(coverage.gaps).toEqual(['Other Pacific subregions']);
+    expect(coverage.summary).toContain('2 valid coordinate records');
   });
   it('renders the guided Maine mission workspace with progress and teacher supports', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');

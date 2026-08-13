@@ -28,7 +28,8 @@ const M = (() => {
   const win = { StemLab: {} };
   const doc = { getElementById: () => ({}), createElement: () => ({ style: {} }), head: { appendChild() {} } };
   return new Function('window', 'document', head + `; return {
-    BURETTE, BUR3D, buretteParallaxMl, readBurette, titrLcg, UNKNOWN_SPECS,
+    BURETTE, BUR3D, buretteParallaxMl, roundBuretteReading, readBurette,
+    titreFromReadings, titrLcg, UNKNOWN_SPECS,
     makeUnknown, gradeUnknown, unknownPH, findEndpointVb, endpointObservation,
     replicateStats, precisionAccuracy, systematicDiagnosis };`)(win, doc);
 })();
@@ -76,6 +77,24 @@ describe('burette parallax — the model behind the 3D station', () => {
     expect(M.buretteParallaxMl(999)).toBe(M.buretteParallaxMl(M.BURETTE.MAX_EYE_CM));
     expect(M.buretteParallaxMl(NaN)).toBe(0);
     expect(M.readBurette(0, 20)).toBeGreaterThanOrEqual(0);   // never negative
+  });
+
+  it('records absolute readings to 0.01 mL and calculates titre from visible values', () => {
+    expect(M.roundBuretteReading(12.346)).toBeCloseTo(12.35, 10);
+    const r = M.titreFromReadings(1.23, 20.126, 0, 0);
+    expect(r.initial).toBeCloseTo(1.23, 10);
+    expect(r.final).toBeCloseTo(21.36, 10);
+    expect(r.titre).toBeCloseTo(20.13, 10);
+  });
+
+  it('cancels the same sight-line offset but preserves a changed-eye shift', () => {
+    const same = M.titreFromReadings(2, 20, 10, 10);
+    expect(same.titre).toBeCloseTo(20, 10);
+
+    const changed = M.titreFromReadings(2, 20, 0, 10);
+    const predicted = M.buretteParallaxMl(10) - M.buretteParallaxMl(0);
+    expect(changed.titre - 20).toBeCloseTo(predicted, 2);
+    expect(changed.titre).toBeCloseTo(19.83, 10);
   });
 });
 
@@ -262,42 +281,67 @@ describe('replicates — precision is scored apart from accuracy', () => {
     expect(M.precisionAccuracy(M.replicateStats([21.25]), 21.25).precise).toBe(false);
   });
 
-  // The whole point of the feature: four replicates read from the same non-level eye
-  // agree beautifully and are all wrong by the same amount.
-  it('names precise-but-not-accurate when a fixed eye height biases every trial', () => {
+  // A fixed non-level eye position affects both absolute readings equally, so it
+  // cancels in final - initial. Precision and accuracy must therefore stay intact.
+  it('does not invent a titre bias when both readings use the same eye height', () => {
     const u = M.makeUnknown(1);
-    const trials = [-0.05, 0.0, 0.05, 0.0].map((j) => ({
-      vb: u.trueVb + j, eyeCm: 10, recorded: M.readBurette(u.trueVb + j, 10),
-    }));
+    const trials = [-0.05, 0.0, 0.05, 0.0].map((j) => {
+      const r = M.titreFromReadings(2, u.trueVb + j, 10, 10);
+      return {
+        initialEyeCm: 10, finalEyeCm: 10,
+        initialRecorded: r.initial, finalRecorded: r.final, recorded: r.titre,
+      };
+    });
     const stats = M.replicateStats(trials.map((t) => t.recorded));
     const pa = M.precisionAccuracy(stats, u.trueVb);
-    expect(pa.precise).toBe(true);
-    expect(pa.accurate).toBe(false);
+    expect(pa.verdict).toBe('both');
+    expect(pa.biasMl).toBeCloseTo(0, 2);
+    expect(M.systematicDiagnosis(trials, pa.biasMl)).toBeNull();
+  });
+
+  // Moving the eye between the two readings does not cancel. Repeating that change
+  // can produce concordant titres which are systematically shifted.
+  it('diagnoses a repeated changed sight line only when it explains the bias', () => {
+    const u = M.makeUnknown(1);
+    const trials = [-0.05, 0.0, 0.05, 0.0].map((j) => {
+      const r = M.titreFromReadings(2, u.trueVb + j, 0, 10);
+      return {
+        initialEyeCm: 0, finalEyeCm: 10,
+        initialRecorded: r.initial, finalRecorded: r.final, recorded: r.titre,
+      };
+    });
+    const stats = M.replicateStats(trials.map((t) => t.recorded));
+    const pa = M.precisionAccuracy(stats, u.trueVb);
     expect(pa.verdict).toBe('precise-not-accurate');
 
-    const diag = M.systematicDiagnosis(trials);
+    const diag = M.systematicDiagnosis(trials, pa.biasMl);
     expect(diag).not.toBeNull();
-    expect(diag.kind).toBe('parallax');
-    expect(diag.eyeCm).toBe(10);
-    // The diagnosis has to actually explain the number, not just assert a cause.
+    expect(diag.kind).toBe('parallax-difference');
     expect(diag.predictedMl).toBeCloseTo(pa.biasMl, 2);
+    expect(diag.matchesObserved).toBe(true);
+
+    const mismatch = M.systematicDiagnosis(trials, 0.4);
+    expect(mismatch).not.toBeNull();
+    expect(mismatch.matchesObserved).toBe(false);
   });
 
   it('covers the other three quadrants', () => {
     const u = M.makeUnknown(1);
-    const mk = (offs, eyes) => offs.map((o, i) => M.readBurette(u.trueVb + o, eyes[i]));
-    const verdict = (offs, eyes) => M.precisionAccuracy(M.replicateStats(mk(offs, eyes)), u.trueVb).verdict;
-    expect(verdict([-0.02, 0.01, 0.02], [0, 0, 0])).toBe('both');
-    expect(verdict([-0.35, 0.36, -0.02], [0, 0, 0])).toBe('accurate-not-precise');
-    expect(verdict([-0.35, 0.36, -0.02], [14, 14, 14])).toBe('neither');
+    const verdict = (offs) => M.precisionAccuracy(
+      M.replicateStats(offs.map((o) => M.roundBuretteReading(u.trueVb + o))),
+      u.trueVb,
+    ).verdict;
+    expect(verdict([-0.02, 0.01, 0.02])).toBe('both');
+    expect(verdict([-0.35, 0.36, -0.02])).toBe('accurate-not-precise');
+    expect(verdict([0.25, 0.50, 0.75])).toBe('neither');
   });
 
-  it('only blames parallax when the eye really was fixed and off-level', () => {
-    const t = (eyes) => eyes.map((e) => ({ eyeCm: e, recorded: 21 }));
-    expect(M.systematicDiagnosis(t([0, 0, 0]))).toBeNull();      // level: nothing to blame
-    expect(M.systematicDiagnosis(t([10, -6, 3]))).toBeNull();    // eye moved: not systematic
-    expect(M.systematicDiagnosis(t([10]))).toBeNull();           // one trial proves nothing
-    expect(M.systematicDiagnosis(t([10, 10]))).not.toBeNull();
+  it('requires two complete reading pairs and a non-zero predicted shift', () => {
+    const complete = (initial, final) => ({ initialEyeCm: initial, finalEyeCm: final, recorded: 21 });
+    expect(M.systematicDiagnosis([complete(0, 10)], -0.17)).toBeNull();
+    expect(M.systematicDiagnosis([{ eyeCm: 10, recorded: 21 }, { eyeCm: 10, recorded: 21 }], -0.17)).toBeNull();
+    expect(M.systematicDiagnosis([complete(10, 10), complete(10, 10)], 0)).toBeNull();
+    expect(M.systematicDiagnosis([complete(0, 10), complete(0, 10)], -0.17)).not.toBeNull();
   });
 });
 
@@ -336,33 +380,54 @@ describe('graded mode, as rendered', () => {
     expect(renderChallenge({ chMode: 'graded', gRun: 1, gVb: endVb + 1 })).toContain('gone past the endpoint');
   });
 
-  it('the recorded reading follows the eye height', () => {
-    const level = renderChallenge({ chMode: 'graded', gRun: 1, gVb: 21.25, gEyeCm: 0 });
+  it('shows initial, final and titre readings, including a changed-eye bias', () => {
+    const base = {
+      chMode: 'graded', gRun: 1, gInitialTrue: 2.50,
+      gInitialLocked: true, gInitialRecorded: 2.50, gInitialEyeCm: 0, gVb: 18.75,
+    };
+    const level = renderChallenge(Object.assign({}, base, { gEyeCm: 0 }));
+    expect(level).toContain('Initial burette reading');
+    expect(level).toContain('Final burette reading');
+    expect(level).toContain('Titre = final − initial');
+    expect(level).toContain('>2.50 mL<');
     expect(level).toContain('>21.25 mL<');
-    expect(level).toContain('no parallax error');
-    const high = renderChallenge({ chMode: 'graded', gRun: 1, gVb: 21.25, gEyeCm: 10 });
-    expect(high).toContain('>21.08 mL<');            // 0.167 mL low
-    expect(high).toContain('reads LOW by 0.167');
-    const low = renderChallenge({ chMode: 'graded', gRun: 1, gVb: 21.25, gEyeCm: -10 });
+    expect(level).toContain('>18.75 mL<');
+    expect(level).toContain('no parallax shift in this reading');
+
+    const high = renderChallenge(Object.assign({}, base, { gEyeCm: 10 }));
+    expect(high).toContain('>21.08 mL<');
+    expect(high).toContain('>18.58 mL<');
+    expect(high).toContain('scale reading is low by 0.167');
+
+    const low = renderChallenge(Object.assign({}, base, { gEyeCm: -10 }));
     expect(low).toContain('>21.42 mL<');
-    expect(low).toContain('reads HIGH by 0.167');
+    expect(low).toContain('>18.92 mL<');
+    expect(low).toContain('scale reading is high by 0.167');
   });
 
-  it('will not report a result from a single trial', () => {
-    const one = renderChallenge({ chMode: 'graded', gRun: 1, gVb: 5, gTrials: [{ vb: 21.25, eyeCm: 0, recorded: 21.25 }] });
-    expect(one).toContain('At least two trials before you can report a result');
-    const two = renderChallenge({ chMode: 'graded', gRun: 1, gVb: 5, gTrials: [
-      { vb: 21.25, eyeCm: 0, recorded: 21.25 }, { vb: 21.20, eyeCm: 0, recorded: 21.20 }] });
-    expect(two).not.toContain('At least two trials before you can report a result');
-    expect(two).toContain('concordant');
+  it('will not report a result from a single selected trial', () => {
+    const trial = (titre, included = true) => ({
+      initialRecorded: 2.50, finalRecorded: 2.50 + titre, recorded: titre,
+      initialEyeCm: 0, finalEyeCm: 0, endpointState: 'endpoint', included,
+    });
+    const one = renderChallenge({ chMode: 'graded', gRun: 1, gTrials: [trial(21.25)] });
+    expect(one).toContain('Select at least two concordant titres before reporting.');
+    const excluded = renderChallenge({ chMode: 'graded', gRun: 1, gTrials: [trial(21.25), trial(21.20, false)] });
+    expect(excluded).toContain('Select at least two concordant titres before reporting.');
+    const two = renderChallenge({ chMode: 'graded', gRun: 1, gTrials: [trial(21.25), trial(21.20)] });
+    expect(two).not.toContain('Select at least two concordant titres before reporting.');
+    expect(two).toContain('concordant ✓');
+    expect(two).toContain('concordance shows repeatability, not accuracy');
   });
 
   it('shows the live mean and spread as trials accumulate', () => {
     const html = renderChallenge({ chMode: 'graded', gRun: 1, gTrials: [
-      { vb: 21.20, eyeCm: 0, recorded: 21.20 },
-      { vb: 21.30, eyeCm: 0, recorded: 21.30 }] });
-    expect(html).toContain('21.250');            // mean
-    expect(html).toContain('0.100');             // spread
+      { vb: 21.20, initialRecorded: 2.00, finalRecorded: 23.20,
+        initialEyeCm: 0, finalEyeCm: 0, recorded: 21.20, endpointState: 'endpoint', included: true },
+      { vb: 21.30, initialRecorded: 2.00, finalRecorded: 23.30,
+        initialEyeCm: 0, finalEyeCm: 0, recorded: 21.30, endpointState: 'endpoint', included: true }] });
+    expect(html).toContain('21.25');             // mean at burette display resolution
+    expect(html).toContain('0.10');              // range at burette display resolution
   });
 
   // Submitting used to be reversible: "Fresh sample" cleared the result but kept the
@@ -371,8 +436,14 @@ describe('graded mode, as rendered', () => {
   it('cannot re-titrate an unknown after its answer has been revealed', () => {
     const revealed = renderChallenge({
       chMode: 'graded', gRun: 1,
-      gTrials: [{ vb: 21.25, eyeCm: 0, recorded: 21.25 }, { vb: 21.2, eyeCm: 0, recorded: 21.2 }],
-      gResult: { band: 'good', measuredConc: 0.82, volErrMl: -0.05, concErrPct: -0.2, seconds: 30,
+      gTrials: [
+        { vb: 21.25, initialRecorded: 2.00, finalRecorded: 23.25,
+          initialEyeCm: 0, finalEyeCm: 0, recorded: 21.25, endpointState: 'endpoint', included: true },
+        { vb: 21.20, initialRecorded: 2.00, finalRecorded: 23.20,
+          initialEyeCm: 0, finalEyeCm: 0, recorded: 21.20, endpointState: 'endpoint', included: true },
+      ],
+      gResult: { run: 1, band: 'good', measuredConc: 0.82, volErrMl: -0.05, techniqueErrMl: -0.05,
+        methodBiasMl: 0, concErrPct: -0.2, seconds: 30,
         stats: { n: 2, mean: 21.225, spread: 0.05, sd: 0.035 },
         pa: { precise: true, accurate: true, biasMl: -0.025, verdict: 'both' }, diag: null, trials: [] },
     });
@@ -382,30 +453,38 @@ describe('graded mode, as rendered', () => {
     const freshBtn = revealed.match(/<button[^>]*>↺ Fresh sample<\/button>/);
     expect(freshBtn, 'fresh-sample button missing').not.toBeNull();
     expect(freshBtn[0]).toContain('disabled');
-    expect((revealed.match(/<button disabled=""[^>]*>\+1 drop<\/button>/) || []).length).toBe(1);
+    const dropBtn = revealed.match(/<button[^>]*>\+1 drop<\/button>/);
+    expect(dropBtn, 'one-drop button missing').not.toBeNull();
+    expect(dropBtn[0]).toContain('disabled');
   });
 
-  it('spells out precise-but-not-accurate, and blames the right cause', () => {
+  it('explains precise-but-not-accurate only when the changed sight line matches', () => {
     const u = M.makeUnknown(1);
-    const trials = [-0.05, 0.0, 0.05, 0.0].map((j) => ({
-      vb: u.trueVb + j, eyeCm: 10, recorded: M.readBurette(u.trueVb + j, 10),
-    }));
+    const trials = [-0.05, 0.0, 0.05, 0.0].map((j) => {
+      const r = M.titreFromReadings(2, u.trueVb + j, 0, 10);
+      return {
+        initialEyeCm: 0, finalEyeCm: 10,
+        initialRecorded: r.initial, finalRecorded: r.final,
+        recorded: r.titre, endpointState: 'endpoint', included: true,
+      };
+    });
     const stats = M.replicateStats(trials.map((t) => t.recorded));
     const grade = M.gradeUnknown(u, stats.mean);
+    const pa = M.precisionAccuracy(stats, u.trueVb);
     const html = renderChallenge({
       chMode: 'graded', gRun: 1, gTrials: trials,
       gResult: Object.assign({}, grade, {
-        stats, pa: M.precisionAccuracy(stats, u.trueVb),
-        diag: M.systematicDiagnosis(trials), trials, seconds: 90,
+        run: 1, stats, pa, diag: M.systematicDiagnosis(trials, pa.biasMl), trials, seconds: 90,
       }),
     });
     expect(html).toContain('Precise, but not accurate');
     expect(html).toContain('Replicates agree');
     expect(html).toContain('Mean is biased');
-    // It must explain WHY, not merely score it.
     expect(html).toContain('SYSTEMATIC error');
-    expect(html).toContain('every trial was read from 10.0 cm above');
-    expect(html).toContain('-0.167');            // the predicted parallax bias
+    expect(html).toContain('A changed sight line between initial and final readings predicts -0.17 mL');
+    expect(html).toContain('close to the observed -0.17 mL bias');
+    expect(html).toContain('Displayed burette readings are recorded to 0.01 mL');
+    expect(html).toContain('manufacturer error limit');
   });
 
   it('delivers drop-wise, at the resolution the ±0.05 mL claim needs', () => {

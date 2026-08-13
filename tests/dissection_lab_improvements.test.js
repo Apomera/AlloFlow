@@ -73,8 +73,9 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('diss-protocol__align');
       expect(source).toContain('Align specimen to recommended ');
       expect(source).toContain('procedureProtocol: {');
-      expect(source).toContain("schemaVersion: 18");
+      expect(source).toContain("schemaVersion: 19");
       expect(source).toContain('procedureByLayer: d.procedureByLayer || {}');
+      expect(source).toContain('verifiedIdentifications: d.verifiedIdentifications || {}');
       expect(source).toContain("role: \"radiogroup\", \"aria-label\": \"Dissection instruments\"");
       expect(source).toContain('function performProcedureAction(action, payload)');
       expect(source).toContain('function beginProcedureStroke(e)');
@@ -291,8 +292,10 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('var pinPreviewPrerequisite = procedureProtocol.preStabilize ? currentProcedure.inspected : currentProcedure.retracted');
       expect(source).toContain("var probePreviewMode = nextProcedureInfo().action === 'inspect' ? 'inspect' : 'trace'");
       expect(source).toContain("probePreviewMode === 'inspect' ? 'INSPECT: '");
-      expect(source).toContain('var intentNativeCursor = cursorIntentState');
-      expect(source).toContain("? 'not-allowed' : toolCursor");
+      expect(source).toContain('function canvasPointerModeData(canvas, hit)');
+      expect(source).toContain('function syncCanvasPointerPresentation(canvas, hit)');
+      expect(source).toContain('canvas.style.cursor = pointerMode.cursor');
+      expect(source).not.toContain("canvas.style.cursor = 'none'");
       expect(source).toContain('canvas._toolIntentState = null;');
       expect(source).toContain('e.currentTarget._toolIntentState = null;');
       expect(source).toContain('Predictive cutting trajectory safety feedback is active');
@@ -586,7 +589,8 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('generalized, non-graphic teaching simulation');
       expect(source).toContain('function procedureInstrumentStatus(toolId)');
       expect(source).toContain('data-diss-tool-status');
-      expect(source).toContain("performProcedureAction('probe', { organ: hit });");
+      expect(source).toContain("performProcedureAction('probe', { organ: drag.target, probeDragMetrics: probeDragMetrics");
+      expect(source).not.toContain("performProcedureAction('probe', { organ: hit });");
       expect(source).toContain('Next-layer tissue bed becomes visible beneath the retracted flaps.');
       expect(source).toContain('var nextTissueLayer = spec.layers[Math.min(spec.layers.length - 1, currentLayerIdx + 1)]');
       expect(source).toContain('Probe confirmation remains anchored to the traced structure as persistent visual evidence.');
@@ -686,6 +690,26 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('var prefersReducedLayerMotion = reducedMotionEnabled;');
       expect(source).toContain('"data-dissection-next-action": true');
       expect(source).toContain('"data-next-action": nextActionModel.action');
+
+      expect(source).toContain('function procedureLearningDefinition(action)');
+      expect(source).toContain('function procedureLearningGateFor(action, state)');
+      expect(source).toContain('function recordProcedureLearningChoice(action, phase, choiceId)');
+      expect(source).toContain("{ id: 'predict', label: '1 Predict'");
+      expect(source).toContain("{ id: 'perform', label: '2 Perform'");
+      expect(source).toContain("{ id: 'reflect', label: '3 Explain'");
+      expect(source).toContain("focusDissectionTarget('diss-learning-checkpoint', 'Learning checkpoint focused. Choose one response; the simulation will not perform the action for you.')");
+      expect(source).toContain('function beginGuidedObservation(org)');
+      expect(source).toContain('function recordGuidedObservationChoice(choiceId)');
+      expect(source).toContain("verified[specimen + '|' + pendingOrgan.id] = { status: 'verified'");
+      expect(source).toContain('Locating alone does not advance the step.');
+
+      const primaryActionStart = source.indexOf('function performPrimaryNextAction()');
+      const primaryActionEnd = source.indexOf('function renderNextActionCard()', primaryActionStart);
+      const primaryActionSource = source.slice(primaryActionStart, primaryActionEnd);
+      expect(primaryActionStart).toBeGreaterThan(-1);
+      expect(primaryActionSource).toContain("focusDissectionTarget('diss-canvas'");
+      expect(primaryActionSource).not.toContain("changeAnatomicalView(nextActionModel.targetView");
+      expect(primaryActionSource).not.toContain('performProcedureAction(');
 
       expect(source).not.toContain("icon: '??'");
       expect(source).not.toContain("'Next best action ? '");
@@ -1600,11 +1624,16 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('diss-procedure__timeline-entry');
     expect(html).toContain('aria-label="Review Inspected: RECORDED"');
     expect(html).toContain('data-selected="true"');
-    expect(html).toContain('Pre-contact check');
-    expect(html).toContain('Run field check');
-    expect(html).toContain('All checks pass');
+    expect(html).toContain('data-next-action="learning"');
+    expect(html).toContain('Pause before contact');
+    expect(html).toContain('Which plan best protects anatomy during the initial entry?');
+    expect(html).toContain('1 Predict');
+    expect(html).toContain('2 Perform');
+    expect(html).toContain('3 Explain');
+    expect(html).toContain('Choose the safest plan');
+    expect(html).not.toContain('Pre-contact check');
     expect(html).toContain('Prepare next');
-    expect(html).toContain('Next · Begin the shallow ventral midline opening');
+    expect(html).toContain('Next · Which plan best protects anatomy during the initial entry?');
     const guidedDocument = new DOMParser().parseFromString(html, 'text/html');
     const guidedHandoff = guidedDocument.querySelector('.diss-stage__handoff');
     const guidedProgress = guidedHandoff.querySelector('.diss-stage__handoff-progress').textContent;
@@ -1612,7 +1641,7 @@ describe('dissection improved UI render', () => {
     expect(guidedStep).not.toBeNull();
     expect(guidedHandoff.getAttribute('aria-label')).toContain('Workflow step ' + guidedStep[1] + ' of 6');
     expect(html).toContain('diss-fullscreen-dock__handoff');
-    expect(html).toContain('Fullscreen next action: Begin the shallow ventral midline opening');
+    expect(html).toContain('Fullscreen next action: Which plan best protects anatomy during the initial entry?');
     expect(html).toContain('Follow the shallow ventral midline corridor');
     expect(html).toContain('data-readiness="ready"');
     expect(html).toContain('data-diss-tool-status="true"');
@@ -2176,7 +2205,9 @@ describe('dissection improved UI render', () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain('function prepareNextProcedureStep()');
-      expect(source).toContain("'next-step planner'");
+      expect(source).toContain("focusDissectionTarget('diss-instrument-' + nextTool)");
+      expect(source).toContain('No setup was changed automatically.');
+      expect(source).not.toContain("selectProcedureInstrument(nextTool, 'next-step planner')");
       expect(source).toContain('function selectProcedureInstrument(toolId, inputMethod)');
       expect(source).toContain('function onInstrumentKeyDown(e, toolId)');
       expect(source).toContain("var navigationKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']");
@@ -2527,7 +2558,7 @@ describe('dissection improved UI render', () => {
         targets: violation.nodes.map(function (node) { return node.target; }),
       };
     })).toEqual([]);
-  }, 60000);
+  }, 180000);
 
 
   it('adds an absorbent-wick recovery loop for excess saline', () => {

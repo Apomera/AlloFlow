@@ -170,6 +170,17 @@ describe('Fire Ecology controlled-burn visualization', () => {
     expect(visualRegion.scrollIntoView).toHaveBeenCalled();
     expect(host.textContent).toContain('illustrated patchier surface fire');
 
+    const deltaComparison = host.querySelector('.fireecology-sim-deltas');
+    expect(deltaComparison).toBeTruthy();
+    expect(deltaComparison.querySelectorAll('.fireecology-sim-delta')).toHaveLength(4);
+    const fuelDelta = deltaComparison.querySelector('[data-metric="fuel"]');
+    expect(fuelDelta.getAttribute('data-direction')).toBe('decreased');
+    expect(fuelDelta.getAttribute('data-difference')).toBe('-8');
+    expect(fuelDelta.textContent).toContain('15 t/acre');
+    expect(fuelDelta.textContent).toContain('7 t/acre');
+    expect(fuelDelta.textContent).toContain('decreased by 8 t/acre');
+    expect(fuelDelta.querySelector('.fireecology-sim-delta-bars').getAttribute('aria-hidden')).toBe('true');
+
     const firstPush = viewer.push.mock.calls.at(-1)[0];
     expect(firstPush).toMatchObject({
       visualEvent: expect.objectContaining({ kind: 'culturalBurn' }),
@@ -257,6 +268,31 @@ describe('Fire Ecology controlled-burn visualization', () => {
     expect(latest.fireEcology.simVisualFrame).toBe('before');
     expect(latest.fireEcology.sim).toBe(result);
     expect(viewer.push.mock.calls.at(-1)[0]).toMatchObject({ frame: 'before', static: true });
+  });
+
+  it('renders comparison landscapes and announces their modeled divergence', async () => {
+    initialFireState = { tab: 'simulator', simViewMode: '2d', comparisonMode: true };
+    await mount();
+
+    const scenesBefore = host.querySelectorAll('.fireecology-compare-scene');
+    expect(scenesBefore).toHaveLength(2);
+    expect(scenesBefore[0].getAttribute('aria-label')).toContain('fuel load 15 tons per acre');
+    expect(host.querySelector('.fireecology-compare-summary').textContent).toContain('same conditions');
+
+    const advanceBoth = [...host.querySelectorAll('button')].find((button) =>
+      button.textContent.includes('Advance Both Forests')
+    );
+    await act(async () => {
+      advanceBoth.click();
+      await Promise.resolve();
+      await flushRaf();
+    });
+
+    const scenesAfter = host.querySelectorAll('.fireecology-compare-scene');
+    expect(scenesAfter[0].getAttribute('aria-label')).toContain('fuel load 7 tons per acre');
+    expect(scenesAfter[1].getAttribute('aria-label')).toContain('fuel load 27 tons per acre');
+    expect(host.querySelector('.fireecology-compare-summary').textContent).toContain('20 more tons of fuel per acre');
+    expect(host.querySelector('.fireecology-compare-summary').textContent).toContain('16 fewer biodiversity points');
   });
 
   it('uses the wildfire visual type only when the stochastic wildfire occurs', async () => {

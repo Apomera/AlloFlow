@@ -243,7 +243,7 @@ describe('Document Builder refinement pass', () => {
       'Revision summary',
       'Compare',
       '_builderSuspendTrackedChanges',
-      "_builderFinalizeTrackedChanges(clone, 'accept')",
+      '_builderFinalizeDocumentForExport(clone)',
       "'pending-changes'",
       'Tracks text, inline and named formatting, paragraph layout, lists, table shape, and explicit page or section changes.',
     ]) expect(view).toContain(contract);
@@ -386,6 +386,74 @@ describe('Document Builder refinement pass', () => {
     expect(view).toContain("_builderRecordElementRevision(wrapper, beforeSnapshot, 'structure', 'Moved section: '");
     expect(view).toContain("setNavigationPaneTab('headings')");
   });
+  it('adds semantic footnotes, bookmarks, live cross-references, and integrity navigation', () => {
+    for (const contract of [
+      '_BUILDER_BOOKMARK_SELECTOR',
+      '_BUILDER_CROSS_REFERENCE_SELECTOR',
+      '_BUILDER_FOOTNOTE_REFERENCE_SELECTOR',
+      'function _builderRefreshDocumentReferences',
+      'function _builderInsertBookmark',
+      'function _builderInsertCrossReference',
+      'function _builderInsertFootnote',
+      'builder-navigation-tab-references',
+      'builder-navigation-panel-references',
+      'Insert footnote',
+      'Add bookmark',
+      'Insert cross-reference',
+      'alloflow-builder-insert-footnote',
+      'aria-keyshortcuts="Control+Alt+F"',
+      "'broken-references'",
+      'Open document references',
+    ]) expect(view).toContain(contract);
+  });
+  it('adds a native citation manager with live fields, bibliographies, and accepted-state exports', () => {
+    for (const contract of [
+      '_BUILDER_CITATION_STORE_SELECTOR',
+      '_BUILDER_CITATION_SELECTOR',
+      '_BUILDER_BIBLIOGRAPHY_SELECTOR',
+      'function _builderNormalizeCitationSource',
+      'function _builderUpsertCitationSource',
+      'function _builderInsertCitation',
+      'function _builderInsertOrRefreshBibliography',
+      'function _builderRefreshCitationFields',
+      'function _builderRefreshFinalDocumentFields',
+      'function _builderFinalizeDocumentForExport',
+      'Source Manager',
+      'APA 7',
+      'MLA 9',
+      'Chicago author-date',
+      'Update all fields',
+      'alloflow-builder-update-fields',
+      'aria-keyshortcuts="F9"',
+      "'broken-citations'",
+      "'bibliography-missing'",
+      'script:not([data-allo-citation-store])',
+      'clone.querySelectorAll(_BUILDER_CITATION_STORE_SELECTOR)',
+      "id: 'updateFields'",
+      'Citation labels, bibliography entries, footnote numbers, and cross-references are synchronized.',
+      'data-allo-citation-items',
+      'function _builderNormalizeCitationItems',
+      'function _builderUpdateCitation',
+      'function _builderParseRIS',
+      'function _builderParseBibTeX',
+      'function _builderParseCitationImport',
+      'function _builderImportCitationSources',
+      'function _builderCitationSourceFromCrossref',
+      'builder-citation-editor',
+      'role="dialog" aria-modal="false"',
+      'Click or press Enter to edit citation',
+      'alloflow-builder-edit-citation',
+      'Suppress author',
+      'Suppress year',
+      'Import RIS / BibTeX',
+      'Look up DOI',
+      'Duplicates are matched by DOI, URL, or author/title/year and skipped.',
+      'Accessed date',
+    ]) expect(view).toContain(contract);
+    expect(view).toContain("if (options?.forExport) clone.querySelectorAll(_BUILDER_CITATION_STORE_SELECTOR)");
+    expect(view).toContain("if (doc.body.getAttribute('data-allo-tracked-view') !== 'original')");
+  });
+
   it('adds persistent custom styles and rollback-safe reusable document templates', () => {
     for (const contract of [
       '_BUILDER_CUSTOM_STYLES_KEY',
@@ -443,6 +511,19 @@ describe('Document Builder refinement pass', () => {
     expect(viewModule).toContain('Drag headings');
     expect(viewModule).toContain('Save selection as style');
     expect(viewModule).toContain('builder-document-templates');
+    expect(viewModule).toContain('builder-navigation-panel-references');
+    expect(viewModule).toContain('alloflow-builder-insert-footnote');
+    expect(viewModule).toContain('data-allo-cross-reference');
+    expect(viewModule).toContain('data-allo-citation-store');
+    expect(viewModule).toContain('builder-source-manager');
+    expect(viewModule).toContain('builder-citation-editor');
+    expect(viewModule).toContain('data-allo-citation-items');
+    expect(viewModule).toContain('alloflow-builder-edit-citation');
+    expect(viewModule).toContain('Import RIS / BibTeX');
+    expect(viewModule).toContain('Look up DOI');
+    expect(viewModule).toContain('alloflow-builder-update-fields');
+    expect(viewModule).toContain('"aria-keyshortcuts": "F9"');
+    expect(viewModule).toContain('function _builderFinalizeDocumentForExport');
     expect(pipelineModule).toContain('alloflow-cs-place-btn');
     expect(handlersDeploy).toBe(handlers);
     expect(viewDeploy).toBe(viewModule);

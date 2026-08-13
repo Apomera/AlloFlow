@@ -290,6 +290,45 @@
 .diss-next-action__secondary { border: 1px solid #94a3b8; background: #fff; color: #334155; }
 .diss-next-action__primary:disabled { cursor: not-allowed; opacity: .56; }
 .diss-next-action__actions > :only-child { grid-column: 1 / -1; }
+.diss-learning-check {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .65rem 1rem;
+  padding: .8rem .9rem;
+  border: 1px solid #7aa6cf;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #f0f9ff, #f8fbff 58%, #ecfdf5);
+  color: #163a63;
+  box-shadow: 0 8px 22px rgba(15, 73, 120, .09);
+}
+.diss-learning-check[data-phase="reflect"] { border-color: #a78bfa; background: linear-gradient(135deg, #f5f3ff, #faf5ff 58%, #f0fdfa); color: #4c1d95; }
+.diss-learning-check[data-phase="perform"] { border-color: #34a68f; background: linear-gradient(135deg, #ecfdf5, #f0fdfa); color: #115e59; }
+.diss-learning-check__head { min-width: 0; }
+.diss-learning-check__eyebrow { margin: 0; font-size: .67rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+.diss-learning-check h3 { margin: .15rem 0 0; color: currentColor; font-size: .94rem; font-weight: 900; line-height: 1.3; }
+.diss-learning-check__prompt { margin: .3rem 0 0; max-width: 64rem; color: currentColor; font-size: .79rem; line-height: 1.5; }
+.diss-learning-check__phases { display: flex; flex-wrap: wrap; align-self: start; justify-content: flex-end; gap: .3rem; }
+.diss-learning-check__phase { min-width: 4.7rem; padding: .3rem .42rem; border: 1px solid #a9bdd3; border-radius: 999px; background: #fff; color: #405a77; font-size: .64rem; font-weight: 900; text-align: center; }
+.diss-learning-check__phase[data-state="current"] { border-color: currentColor; background: #e0f2fe; color: #075985; box-shadow: inset 0 0 0 1px currentColor; }
+.diss-learning-check[data-phase="reflect"] .diss-learning-check__phase[data-state="current"] { background: #ede9fe; color: #5b21b6; }
+.diss-learning-check__phase[data-state="complete"] { border-color: #5eb69d; background: #ecfdf5; color: #065f46; }
+.diss-learning-check__options { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .48rem; }
+.diss-learning-check__option { min-height: 3.35rem !important; padding: .58rem .65rem; border: 1px solid #8ba7c4; border-radius: .68rem; background: #fff; color: #173f69; font-size: .72rem; font-weight: 800; line-height: 1.38; text-align: left; cursor: pointer; }
+.diss-learning-check__option:hover { border-color: #1766d2; background: #eff6ff; }
+.diss-learning-check__option[aria-pressed="true"] { border-color: #1766d2; box-shadow: inset 0 0 0 1px #1766d2; }
+.diss-learning-check__option[data-result="incorrect"] { border-color: #d97706; background: #fffbeb; color: #78350f; }
+.diss-learning-check__option[data-result="correct"] { border-color: #0f766e; background: #ecfdf5; color: #065f46; }
+.diss-learning-check__feedback { grid-column: 1 / -1; margin: 0; padding: .48rem .58rem; border-left: .25rem solid currentColor; border-radius: .3rem; background: rgba(255,255,255,.72); color: currentColor; font-size: .72rem; font-weight: 750; line-height: 1.45; }
+.diss-learning-check__perform { grid-column: 1 / -1; display: flex; align-items: center; gap: .55rem; padding: .5rem .6rem; border: 1px solid #75c9ae; border-radius: .65rem; background: rgba(255,255,255,.78); color: #065f46; font-size: .74rem; font-weight: 800; line-height: 1.4; }
+.diss-learning-check__perform::before { content: "2"; display: grid; width: 1.6rem; height: 1.6rem; flex: 0 0 auto; place-items: center; border-radius: 999px; background: #0f766e; color: #fff; font-size: .7rem; font-weight: 900; }
+.diss-pointer-guide { display: flex; min-width: 0; align-items: center; gap: .5rem; margin: 0 0 .5rem; padding: .48rem .58rem; border: 1px solid #89a8c8; border-radius: .7rem; background: #eff6ff; color: #174d86; }
+.diss-pointer-guide[data-tone="ready"] { border-color: #34a68f; background: #ecfdf5; color: #065f46; }
+.diss-pointer-guide[data-tone="caution"], .diss-pointer-guide[data-tone="blocked"] { border-color: #d9a03b; background: #fffbeb; color: #78350f; }
+.diss-pointer-guide[data-tone="assessment"] { border-color: #8b5cf6; background: #f5f3ff; color: #5b21b6; }
+.diss-pointer-guide__cursor { display: grid; width: 1.8rem; height: 1.8rem; flex: 0 0 auto; place-items: center; border: 1px solid currentColor; border-radius: .48rem; background: #fff; font-size: 1rem; font-weight: 900; }
+.diss-pointer-guide__body { display: grid; min-width: 0; gap: .08rem; }
+.diss-pointer-guide__body strong { color: currentColor; font-size: .72rem; font-weight: 900; }
+.diss-pointer-guide__body span { color: currentColor; font-size: .68rem; line-height: 1.35; opacity: .9; }
 .diss-workflow li[data-state="complete"] { border-color: rgba(153,246,228,.55); background: rgba(13,148,136,.35); }
 .diss-workflow li[data-state="current"] { border-color: #fde68a; background: #fef3c7; color: #422006; box-shadow: 0 0 0 2px rgba(246,198,91,.22); }
 .diss-workflow li[data-state="upcoming"] { opacity: .72; }
@@ -298,6 +337,9 @@
   .diss-next-action { position: static; grid-template-columns: auto minmax(0, 1fr); }
   .diss-next-action__actions { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; min-width: 0; }
   .diss-stage__telemetry-grid, .diss-field-readiness__checks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .diss-learning-check { grid-template-columns: 1fr; }
+  .diss-learning-check__phases { justify-content: flex-start; }
+  .diss-learning-check__options { grid-template-columns: 1fr; }
 }
 @media (max-width: 430px) {
   .diss-next-action { grid-template-columns: 1fr; }
@@ -2641,21 +2683,249 @@ var d = labToolData.dissection || {};
               : activeMaterialProfile.response + ' expected at contact.';
             return { resistance: resistance, calibration: calibration, margin: margin, label: label, response: response, failureMode: procedureProtocol.failureMode };
           }
+          // Procedure credit follows a predict -> perform -> explain cycle. Physical
+          // specimen state and learning evidence remain separate so hints and motor-neutral
+          // controls stay available without turning a single Next click into mastery.
+          function procedureLearningDefinition(action) {
+            var route = procedureProtocol.route || 'planned access corridor';
+            var protectedNames = procedureProtectedLandmarks().map(function (landmark) { return landmark.name; });
+            var protectedText = protectedNames.length ? protectedNames.slice(0, 3).join(', ') : 'underlying landmarks';
+            var definitions = {
+              inspect: {
+                title: 'Plan the orientation check',
+                predictionPrompt: 'What must be confirmed before any instrument contacts this specimen?',
+                predictionCorrectId: 'confirm-route',
+                predictionOptions: [
+                  { id: 'confirm-route', label: 'Confirm the ' + procedureProtocol.recommendedView + ' view, center the ' + route + ', and account for ' + protectedText + '.' },
+                  { id: 'deep-view', label: 'Choose the deepest-looking region first; orientation can be corrected after opening.' },
+                  { id: 'tool-first', label: 'Select a cutting tool first, then use the incision to determine orientation.' }
+                ],
+                predictionCoaching: 'Look for the recommended view, planned route, and protected landmarks before contact.',
+                reflectionPrompt: 'Which observation shows that orientation was recorded successfully?',
+                reflectionCorrectId: 'aligned-landmarks',
+                reflectionOptions: [
+                  { id: 'largest-area', label: 'The largest possible surface area is visible, even if the access route is off-center.' },
+                  { id: 'aligned-landmarks', label: 'The recommended view and access route are centered, with protected landmarks accounted for.' },
+                  { id: 'tool-selected', label: 'A cutting instrument is selected and visible above the tray.' }
+                ],
+                reflectionCoaching: 'Base the conclusion on view alignment and identifiable landmarks, not tool selection.'
+              },
+              scalpel: {
+                title: 'Plan the first opening',
+                predictionPrompt: 'Which plan best protects anatomy during the initial entry?',
+                predictionCorrectId: 'shallow-corridor',
+                predictionOptions: [
+                  { id: 'wide-entry', label: 'Open the widest area in one stroke so every structure becomes visible immediately.' },
+                  { id: 'shallow-corridor', label: 'Use shallow depth and follow the ' + route + '; stop if alignment or resistance changes.' },
+                  { id: 'deep-shortcut', label: 'Use a deeper short stroke so the scissors have less tissue to extend.' }
+                ],
+                predictionCoaching: 'The first entry should be shallow, corridor-aligned, and reversible before it is wide.',
+                reflectionPrompt: 'What outcome is evidence of a controlled initial incision?',
+                reflectionCorrectId: 'aligned-entry',
+                reflectionOptions: [
+                  { id: 'aligned-entry', label: 'A shallow entry follows the planned corridor while underlying landmarks remain protected.' },
+                  { id: 'maximum-exposure', label: 'Maximum exposure is achieved even if the stroke leaves the corridor.' },
+                  { id: 'high-resistance', label: 'Resistance rises sharply, showing the tool reached deeper tissue.' }
+                ],
+                reflectionCoaching: 'Use alignment, depth, and tissue preservation as evidence.'
+              },
+              scissors: {
+                title: 'Plan the extension',
+                predictionPrompt: 'How should scissors be used at this point in the protocol?',
+                predictionCorrectId: 'extend-opening',
+                predictionOptions: [
+                  { id: 'new-opening', label: 'Start a separate opening beside the first incision to increase exposure.' },
+                  { id: 'cross-landmark', label: 'Cut toward the nearest landmark regardless of the established corridor.' },
+                  { id: 'extend-opening', label: 'Extend the existing opening along the planned corridor with controlled coverage.' }
+                ],
+                predictionCoaching: 'Scissors extend an established opening; they do not create an unrelated path.',
+                reflectionPrompt: 'Which result best supports a safe extension?',
+                reflectionCorrectId: 'longer-controlled',
+                reflectionOptions: [
+                  { id: 'longer-controlled', label: 'The established opening is longer and usable without a new tear or corridor deviation.' },
+                  { id: 'more-pressure', label: 'More pressure was required than before, regardless of the tissue response.' },
+                  { id: 'new-window', label: 'A second window appeared away from the initial entry.' }
+                ],
+                reflectionCoaching: 'Look for controlled coverage of the same opening and no new tissue damage.'
+              },
+              forceps: {
+                title: 'Plan tissue retraction',
+                predictionPrompt: 'Where and how should forceps contact the opened layer?',
+                predictionCorrectId: 'edge-low-tension',
+                predictionOptions: [
+                  { id: 'edge-low-tension', label: 'Grip near the opened edge and lift gradually with low, controlled tension.' },
+                  { id: 'organ-grip', label: 'Grip the nearest visible structure so the layer moves out of the way.' },
+                  { id: 'maximum-lift', label: 'Pull to maximum height quickly so the field stays open.' }
+                ],
+                predictionCoaching: 'Use the opened edge, gradual lift, and bounded tension.',
+                reflectionPrompt: 'What change indicates that retraction helped rather than harmed the field?',
+                reflectionCorrectId: 'exposure-stable',
+                reflectionOptions: [
+                  { id: 'trauma-rise', label: 'The edge becomes more irregular and tissue risk rises.' },
+                  { id: 'exposure-stable', label: 'Exposure and stability improve without a sharp increase in trauma or risk.' },
+                  { id: 'field-covered', label: 'The lifted layer crosses the observation field.' }
+                ],
+                reflectionCoaching: 'Compare exposure and stability with trauma and risk.'
+              },
+              pin: {
+                title: 'Plan stabilization',
+                predictionPrompt: 'Which pin arrangement creates a stable, observable field?',
+                predictionCorrectId: 'opposing-anchors',
+                predictionOptions: [
+                  { id: 'center-pins', label: 'Place both pins near the center of the observation field.' },
+                  { id: 'opposing-anchors', label: 'Place well-spaced anchors at opposing ends of the opened corridor, away from structures.' },
+                  { id: 'same-side', label: 'Place both pins together on the easiest side to reach.' }
+                ],
+                predictionCoaching: 'Stability comes from spacing and opposition while preserving the observation field.',
+                reflectionPrompt: 'What evidence shows that the anchoring step is complete?',
+                reflectionCorrectId: 'stable-open-field',
+                reflectionOptions: [
+                  { id: 'single-anchor', label: 'One anchor is present anywhere on the specimen.' },
+                  { id: 'pins-near-target', label: 'Both anchors are close to the structure that will be probed.' },
+                  { id: 'stable-open-field', label: 'Two separated anchors hold the opening stable without obstructing visible anatomy.' }
+                ],
+                reflectionCoaching: 'Check anchor count, spacing, field stability, and obstruction.'
+              },
+              probe: {
+                title: 'Plan structure tracing',
+                predictionPrompt: 'Which probe plan produces useful anatomical evidence?',
+                predictionCorrectId: 'visible-low-pressure',
+                predictionOptions: [
+                  { id: 'hidden-target', label: 'Trace the named structure even if it is still covered or obscured.' },
+                  { id: 'firm-contact', label: 'Use firm pressure so resistance is unmistakable.' },
+                  { id: 'visible-low-pressure', label: 'Choose a visible exposed boundary and trace it with calibrated, controlled pressure.' }
+                ],
+                predictionCoaching: 'A valid trace begins on visible anatomy and uses controlled contact.',
+                reflectionPrompt: 'Which result supports a successful probe trace?',
+                reflectionCorrectId: 'boundary-preserved',
+                reflectionOptions: [
+                  { id: 'boundary-preserved', label: 'The visible boundary is traced and identified without increasing tissue stress.' },
+                  { id: 'deep-displacement', label: 'The structure shifts deeply under pressure during the trace.' },
+                  { id: 'name-only', label: 'The structure name appears, even though no boundary was followed.' }
+                ],
+                reflectionCoaching: 'Use boundary contact, identification, and preserved tissue condition as evidence.'
+              }
+            };
+            return definitions[action] || null;
+          }
+          function procedureLearningEntry(action, state) {
+            state = state || currentProcedure || {};
+            var checks = state.learningChecks;
+            if (!checks && action && procedureActionComplete(state, action)) {
+              return { predictionCorrect: true, reflectionCorrect: true, legacy: true };
+            }
+            return checks && checks[action] ? checks[action] : {};
+          }
+          function pendingProcedureReflectionAction(state) {
+            state = state || currentProcedure || {};
+            var ordered = procedureProtocol.order || [];
+            for (var learningIndex = 0; learningIndex < ordered.length; learningIndex++) {
+              var learningAction = ordered[learningIndex];
+              if (procedureActionComplete(state, learningAction) && !procedureLearningEntry(learningAction, state).reflectionCorrect) return learningAction;
+            }
+            return null;
+          }
+          function procedureLearningGateFor(action, state) {
+            state = state || currentProcedure || {};
+            var pendingReflection = pendingProcedureReflectionAction(state);
+            if (pendingReflection) {
+              return { required: true, phase: 'reflect', action: pendingReflection, definition: procedureLearningDefinition(pendingReflection), entry: procedureLearningEntry(pendingReflection, state) };
+            }
+            var definition = procedureLearningDefinition(action);
+            if (!definition) return { required: false, phase: action === 'complete' ? 'complete' : 'perform', action: action, definition: null, entry: {} };
+            var entry = procedureLearningEntry(action, state);
+            if (!entry.predictionCorrect) return { required: true, phase: 'predict', action: action, definition: definition, entry: entry };
+            return { required: false, phase: procedureActionComplete(state, action) ? 'verified' : 'perform', action: action, definition: definition, entry: entry };
+          }
+          function procedureLearningSummary(state) {
+            state = state || currentProcedure || {};
+            var ordered = procedureProtocol.order || [];
+            var verified = ordered.filter(function (action) {
+              var entry = procedureLearningEntry(action, state);
+              return procedureActionComplete(state, action) && !!entry.predictionCorrect && !!entry.reflectionCorrect;
+            }).length;
+            return { verified: verified, total: ordered.length, score: ordered.length ? Math.round(verified / ordered.length * 100) : 100 };
+          }
+          function recordProcedureLearningChoice(action, phase, choiceId) {
+            var definition = procedureLearningDefinition(action);
+            if (!definition || (phase !== 'prediction' && phase !== 'reflection')) return false;
+            if (phase === 'reflection' && !procedureActionComplete(currentProcedure, action)) {
+              setProcedureFeedback('Perform the planned action before explaining its observed result.', 'caution');
+              return false;
+            }
+            var correctId = definition[phase + 'CorrectId'];
+            var isCorrect = choiceId === correctId;
+            var checks = Object.assign({}, currentProcedure.learningChecks || {});
+            var entry = Object.assign({}, checks[action] || {});
+            entry[phase + 'Choice'] = choiceId;
+            entry[phase + 'Correct'] = isCorrect;
+            entry[phase + 'Attempts'] = (Number(entry[phase + 'Attempts']) || 0) + 1;
+            entry[phase + 'Feedback'] = isCorrect
+              ? (phase === 'prediction' ? 'Plan confirmed. Demonstrate the action on the specimen; the action will not run automatically.' : 'Interpretation verified. The next protocol decision is now available.')
+              : definition[phase + 'Coaching'];
+            entry[phase + 'AnsweredAt'] = Date.now();
+            checks[action] = entry;
+            updateProcedure({ learningChecks: checks }, entry[phase + 'Feedback'], null, isCorrect ? 'success' : 'caution');
+            if (isCorrect) {
+              setTimeout(function () {
+                var nextFocusId = phase === 'prediction' ? 'diss-canvas' : 'diss-next-action-title';
+                var focusTarget = typeof document !== 'undefined' ? document.getElementById(nextFocusId) : null;
+                if (focusTarget && focusTarget.focus) focusTarget.focus();
+              }, 0);
+            }
+            return isCorrect;
+          }
+          function beginGuidedObservation(org) {
+            if (!org) return false;
+            updMany({ guidedObservationPending: org.id, guidedObservationFeedback: null, selectedOrgan: null });
+            setProcedureFeedback('Target located. Now choose the specimen observation that best supports this identification; the Guided step has not advanced yet.', 'working');
+            focusDissectionTarget('diss-guided-observation-check');
+            return true;
+          }
+          function recordGuidedObservationChoice(choiceId) {
+            var pendingId = d.guidedObservationPending;
+            var pendingOrgan = pendingId ? organs.find(function (organ) { return organ.id === pendingId; }) : null;
+            if (!pendingOrgan || !currentGuided || pendingOrgan.id !== currentGuided.organId) {
+              setProcedureFeedback('Return to the current Guided target before recording an observation.', 'caution');
+              return false;
+            }
+            var isCorrect = choiceId === pendingOrgan.id;
+            if (!isCorrect) {
+              upd('guidedObservationFeedback', { correct: false, choiceId: choiceId, message: 'That observation belongs to a different structure. Compare position, tissue appearance, and function, then try again.' });
+              setProcedureFeedback('Observation does not yet support the identification. Compare the visible structure with the choices and try again.', 'caution');
+              return false;
+            }
+            var verified = Object.assign({}, d.verifiedIdentifications || {});
+            verified[specimen + '|' + pendingOrgan.id] = { status: 'verified', guided: true, at: Date.now(), layer: activeLayer };
+            var nextGuidedStep = guidedStep + 1;
+            var guidedFinished = nextGuidedStep >= guidedSteps.length;
+            updMany({ verifiedIdentifications: verified, guidedObservationPending: null, guidedObservationFeedback: { correct: true, choiceId: choiceId, message: 'Observation verified. The identification is supported by specimen evidence.' }, selectedOrgan: pendingOrgan.id, guidedStep: nextGuidedStep, guidedMode: guidedFinished ? false : true, guidedComplete: guidedFinished ? true : !!d.guidedComplete, guidedTargetIds: guidedFinished ? [] : guidedTargetIds });
+            awardStemXP('dissection', 2, 'Verified ' + pendingOrgan.name + ' with specimen evidence');
+            sfxDisProbe();
+            if (addToast) addToast('\u2713 Observation verified for ' + pendingOrgan.name, 'success');
+            if (guidedFinished) {
+              awardStemXP('dissection', 10, 'Completed evidence-based guided investigation');
+              if (addToast) addToast('Guided investigation complete!', 'success');
+            }
+            return true;
+          }
           function procedureToolReadinessData(toolId, state) {
             state = state || currentProcedure;
             var tool = PROCEDURE_INSTRUMENTS.find(function (entry) { return entry.id === toolId; }) || { id: toolId, label: toolId };
             var toolState = procedureInstrumentStatus(toolId);
             var next = nextProcedureInfo();
+            var learningGate = procedureLearningGateFor(next.action, state);
             var calibration = instrumentCalibrationAssessment(toolId, (state && state.toolCalibration) || toolCalibration);
             var material = procedureMaterialInteractionData(toolId, state);
             var field = observationFieldData(state);
             var tissue = normalizeTissueState(state.tissueState);
             var isHydrationTool = toolId === 'dropper' || toolId === 'wick';
             var restricted = currentScenarioDefinition().id === 'restricted-tray' && isHydrationTool;
-            var protocolComplete = next.action === 'complete';
+            var protocolComplete = next.action === 'complete' && !learningGate.required;
             var completed = toolState.readiness === 'complete';
             var toolWaiting = toolState.readiness === 'waiting';
             var sequenceReady = !protocolComplete && (isHydrationTool || next.instrument === toolId);
+            var learningReady = isHydrationTool || !sequenceReady || !learningGate.required;
             var calibrationReady = calibration.score >= 60;
             var preOpeningTool = toolId === 'scalpel' || toolId === 'scissors';
             var fieldReady = isHydrationTool || next.action === 'inspect' || (preOpeningTool ? tissue.clarity >= 45 && tissue.risk < 70 : field.quality >= 45);
@@ -2663,12 +2933,13 @@ var d = labToolData.dissection || {};
             var materialReady = (toolId !== 'scalpel' && toolId !== 'scissors') || material.margin >= 0;
             var depthReady = toolId !== 'scalpel' || (d.incisionDepth || 'shallow') === 'shallow';
             var contactReady = materialReady && depthReady;
-            var score = Math.round((sequenceReady ? 30 : 0) + (calibrationReady ? 25 : Math.max(0, calibration.score / 100 * 25)) + (fieldReady ? 15 : field.quality / 45 * 15) + (viewReady ? 15 : 0) + (contactReady ? 15 : 0));
+            var score = Math.round((sequenceReady ? 24 : 0) + (learningReady ? 20 : 0) + (calibrationReady ? 20 : Math.max(0, calibration.score / 100 * 20)) + (fieldReady ? 14 : Math.max(0, field.quality / 45 * 14)) + (viewReady ? 10 : 0) + (contactReady ? 12 : 0));
             score = Math.max(0, Math.min(100, score));
-            var tone = restricted ? 'restricted' : (protocolComplete ? 'complete' : (completed ? 'complete' : (toolWaiting ? 'waiting' : (!sequenceReady ? 'waiting' : ((!calibrationReady || !fieldReady || !viewReady || !contactReady) ? 'caution' : 'ready')))));
-            var label = restricted ? 'Unavailable' : (protocolComplete ? 'Technique complete' : (completed ? 'Completed' : (toolWaiting ? toolState.label : (tone === 'ready' ? 'Ready to act' : (tone === 'waiting' ? 'Out of sequence' : 'Adjust before acting')))));
+            var tone = restricted ? 'restricted' : (protocolComplete ? 'complete' : (!learningReady && sequenceReady ? 'waiting' : (completed ? 'complete' : (toolWaiting ? 'waiting' : (!sequenceReady ? 'waiting' : ((!calibrationReady || !fieldReady || !viewReady || !contactReady) ? 'caution' : 'ready'))))));
+            var label = restricted ? 'Unavailable' : (protocolComplete ? 'Technique complete' : (!learningReady && sequenceReady ? (learningGate.phase === 'reflect' ? 'Explain the result' : 'Prediction required') : (completed ? 'Completed' : (toolWaiting ? toolState.label : (tone === 'ready' ? 'Ready to act' : (tone === 'waiting' ? 'Out of sequence' : 'Adjust before acting'))))));
             var cue = restricted ? 'This scenario removes ' + tool.label + ' from the tray.'
               : protocolComplete ? 'Technique protocol complete. Continue with visible structure identification and evidence.'
+              : !learningReady && sequenceReady ? (learningGate.phase === 'reflect' ? 'Explain what changed after ' + procedureActionLabel(learningGate.action).toLowerCase() + ' before beginning another step.' : 'Complete the prediction checkpoint before this instrument can contact the specimen.')
               : completed ? tool.label + ' has completed its protocol role.'
               : toolWaiting ? toolState.instruction
               : !sequenceReady ? 'Use ' + ((PROCEDURE_INSTRUMENTS.find(function (entry) { return entry.id === next.instrument; }) || {}).label || next.instrument) + ' first: ' + next.label + '.'
@@ -2684,6 +2955,7 @@ var d = labToolData.dissection || {};
               safeToAct: tone === 'ready',
               checks: [
                 { id: 'sequence', label: 'Sequence', ready: sequenceReady },
+                { id: 'learning', label: 'Predict + explain', ready: learningReady },
                 { id: 'calibration', label: 'Calibration', ready: calibrationReady },
                 { id: 'field', label: 'Field + view', ready: fieldReady && viewReady },
                 { id: 'contact', label: 'Contact', ready: contactReady && !restricted }
@@ -2698,7 +2970,8 @@ var d = labToolData.dissection || {};
             var deviations = Number(state.protocolDeviations) || 0;
             var exposure = procedureExposureData(state).score / 100;
             var preservation = tissuePreservationScore(state) / 100;
-            return Math.max(0, Math.min(100, Math.round(aligned * 20 + Math.max(0, 1 - deviations * 0.22) * 30 + exposure * 25 + preservation * 25)));
+            var understanding = procedureLearningSummary(state).score / 100;
+            return Math.max(0, Math.min(100, Math.round(aligned * 15 + Math.max(0, 1 - deviations * 0.22) * 25 + exposure * 20 + preservation * 20 + understanding * 20)));
           }
           function procedureActionLabel(action) {
             return {
@@ -2856,7 +3129,7 @@ var d = labToolData.dissection || {};
             var scenarioProcedure = restartAttempt ? {
               inspected: false, incisionStarted: false, incisionExtended: false,
               retracted: false, pins: [], probed: false, errors: 0, protocolDeviations: 0,
-              history: [], actionLog: [], cautionLog: [], tissueState: defaultTissueState()
+              history: [], actionLog: [], cautionLog: [], learningChecks: {}, tissueState: defaultTissueState()
             } : Object.assign({}, currentProcedure);
             if (restartAttempt) {
               var explored = Object.assign({}, d.exploredOrgans || {});
@@ -2868,11 +3141,14 @@ var d = labToolData.dissection || {};
               patch.compareTechniqueAttempts = false;
             }
             if (scenario.id === 'orientation-rescue') {
+              var orientationLearningChecks = Object.assign({}, scenarioProcedure.learningChecks || {});
+              delete orientationLearningChecks.inspect;
               patch.anatomicalView = procedureProtocol.recommendedView === 'dorsal' ? 'ventral' : 'dorsal';
               // Preserve existing technique evidence while requiring a fresh,
               // scenario-specific observation after the learner corrects the view.
               scenarioProcedure = Object.assign({}, scenarioProcedure, {
-                orientationRecheckRequired: true
+                orientationRecheckRequired: true,
+                learningChecks: orientationLearningChecks
               });
               map[activeLayer] = scenarioProcedure;
               patch.procedureByLayer = map;
@@ -3248,7 +3524,7 @@ var d = labToolData.dissection || {};
             var map = Object.assign({}, d.procedureByLayer || {});
             map[activeLayer] = {
               inspected: false, incisionStarted: false, incisionExtended: false,
-              retracted: false, pins: [], probed: false, errors: 0, history: [], actionLog: [], cautionLog: [],
+              retracted: false, pins: [], probed: false, errors: 0, history: [], actionLog: [], cautionLog: [], learningChecks: {},
               tissueState: defaultTissueState()
             };
             updMany({
@@ -3408,6 +3684,8 @@ var d = labToolData.dissection || {};
               next.history = (currentProcedure.history || []).concat([action]).slice(-12);
               var actionOutcome = procedureOutcomeFeedbackData(action, patch, tissueBefore, next.tissueState, tone);
               next.actionLog = (currentProcedure.actionLog || []).concat([{
+                inputType: patch.inputType || 'unknown',
+                assistance: patch.inputType === 'motor-neutral' ? 'motor-neutral' : 'none',
                 action: action,
                 label: procedureActionLabel(action),
                 outcome: actionOutcome.label,
@@ -3453,6 +3731,17 @@ var d = labToolData.dissection || {};
             if (action !== 'dropper' && action !== 'wick' && expectedStep.action !== 'complete' && expectedStep.action !== action && !procedureActionComplete(currentProcedure, action)) {
               procedureMistake('Protocol sequence check: ' + expectedStep.label + ' must be completed before using ' + ((PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === procedureInstrumentForAction(action); }) || {}).label || action) + '.', true); return;
             }
+            if (action !== 'dropper' && action !== 'wick') {
+              var actionLearningGate = procedureLearningGateFor(action, currentProcedure);
+              if (actionLearningGate.required) {
+                var learningMessage = actionLearningGate.phase === 'reflect'
+                  ? 'Explain the observed result from ' + procedureActionLabel(actionLearningGate.action).toLowerCase() + ' before beginning another action.'
+                  : 'Predict the safe plan before ' + procedureActionLabel(action).toLowerCase() + '. The specimen was not changed.';
+                setProcedureFeedback(learningMessage, 'caution');
+                focusDissectionTarget('diss-learning-checkpoint');
+                return { ok: false, reason: actionLearningGate.phase === 'reflect' ? 'reflection-required' : 'prediction-required' };
+              }
+            }
             if (action === 'inspect') {
               if (currentProcedure.inspected && !(currentScenarioDefinition().id === 'orientation-rescue' && currentProcedure.orientationRecheckRequired)) { setProcedureFeedback('Orientation is already recorded for this layer.'); return; }
               if ((d.anatomicalView || anatomicalView) !== procedureProtocol.recommendedView) {
@@ -3461,7 +3750,7 @@ var d = labToolData.dissection || {};
               }
               var inspectNextAction = (procedureProtocol.order || [])[1] || 'scalpel';
               var inspectNextTool = (PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === procedureInstrumentForAction(inspectNextAction); }) || {}).label || inspectNextAction;
-              updateProcedure({ inspected: true, orientationRecheckRequired: false, orientationObservedAt: Date.now() }, 'Orientation recorded for ' + procedureProtocol.title + '. Use ' + inspectNextTool + ' next: ' + (procedureProtocol.actions[1] || procedureActionLabel(inspectNextAction)) + '.', 'inspect'); return { ok: true };
+              updateProcedure({ inspected: true, orientationRecheckRequired: false, orientationObservedAt: Date.now(), inputType: payload.inputType || 'pointer' }, 'Orientation recorded for ' + procedureProtocol.title + '. Use ' + inspectNextTool + ' next: ' + (procedureProtocol.actions[1] || procedureActionLabel(inspectNextAction)) + '.', 'inspect'); return { ok: true };
             }
             if (action === 'scalpel') {
               if (!currentProcedure.inspected) { procedureMistake('Pause and inspect the layer before choosing an incision path.'); return; }
@@ -3574,6 +3863,11 @@ var d = labToolData.dissection || {};
             if (!action) { setProcedureFeedback('There is no technique action to undo.'); return; }
             var previousActionLog = (currentProcedure.actionLog || []).slice();
             var lastActionEntry = previousActionLog[previousActionLog.length - 1];
+            var restoredLearningChecks = Object.assign({}, currentProcedure.learningChecks || {});
+            if (restoredLearningChecks[action]) {
+              restoredLearningChecks[action] = Object.assign({}, restoredLearningChecks[action], { reflectionChoice: null, reflectionCorrect: false, reflectionFeedback: 'Repeat the action, then explain the new observed response.' });
+              patch.learningChecks = restoredLearningChecks;
+            }
             var patch = { history: history, actionLog: previousActionLog.slice(0, -1) };
             if (lastActionEntry && lastActionEntry.tissueBefore) patch.tissueState = normalizeTissueState(lastActionEntry.tissueBefore);
             if (lastActionEntry && lastActionEntry.calibrationScoresBefore) patch.calibrationScores = Object.assign({}, lastActionEntry.calibrationScoresBefore);
@@ -3654,15 +3948,19 @@ var d = labToolData.dissection || {};
               }
               peelCurrentLayer(); return true;
             }
+            if (activeInstrument !== next.instrument) {
+              setProcedureFeedback('Choose ' + ((PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === next.instrument; }) || {}).label || next.instrument) + ' yourself before using the motor-neutral equivalent. No action was recorded.', 'caution');
+              focusDissectionTarget('diss-instrument-' + next.instrument);
+              return false;
+            }
             var nextReadiness = procedureToolReadinessData(next.instrument, currentProcedure);
             if (!nextReadiness.safeToAct) {
-              selectProcedureInstrument(next.instrument, 'next-step readiness check');
               setProcedureFeedback('Action paused. ' + nextReadiness.cue + ' Complete the setup, then try ' + next.label + ' again.', 'caution');
               return false;
             }
             var replayGuide = procedureGuidePoints();
             var replayOptions = {};
-            var actionPayload = {};
+            var actionPayload = { inputType: 'motor-neutral' };
             if (next.action === 'scalpel' || next.action === 'scissors') replayOptions.path = replayGuide;
             else if (next.action === 'pin') replayOptions.point = (currentProcedure.pins || []).length ? replayGuide[replayGuide.length - 1] : replayGuide[0];
             else if (next.action === 'probe') {
@@ -3676,7 +3974,6 @@ var d = labToolData.dissection || {};
               actionPayload.organ = replayOrgan;
               replayOptions.point = variedOrganPoint(replayOrgan);
             } else replayOptions.point = replayGuide[Math.floor((replayGuide.length - 1) / 2)];
-            upd('activeInstrument', next.instrument);
             var actionResult = performProcedureAction(next.action, actionPayload);
             if (!actionResult || !actionResult.ok) return false;
             if (actionResult.path) replayOptions.path = actionResult.path;
@@ -3848,7 +4145,7 @@ var d = labToolData.dissection || {};
             canvas._toolPressure = null;
             canvas._suppressToolClick = false;
             if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
-            canvas.style.cursor = (canvas._zoom || 1) > 1.01 ? 'grab' : 'crosshair';
+            syncCanvasPointerPresentation(canvas, null);
             setProcedureFeedback('Instrument stroke canceled; no cut was recorded.', 'working');
             return true;
           }
@@ -3919,7 +4216,7 @@ var d = labToolData.dissection || {};
             drag.active = false; var assessment = forcepsDragAssessment(canvas, drag.current, Date.now()) || drag.assessment;
             canvas._forcepsDrag = null; canvas._forcepsDragStatusKey = null; canvas._suppressToolClick = true;
             if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
-            canvas.style.cursor = 'grab';
+            syncCanvasPointerPresentation(canvas, null);
             if (cancelled) { canvas._suppressToolClick = false; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Forceps lift canceled. The tissue returned to its resting position.', 'working'); return true; }
             if (!assessment || assessment.key === 'position') { setProcedureFeedback('No lift recorded. Begin on the opened tissue edge, then drag away from it.', 'caution'); return true; }
             if (assessment.key === 'grasp') { setProcedureFeedback('Forceps grasp released before the tissue was lifted. Drag farther, or use the equivalent action button.', 'working'); return true; }
@@ -4014,7 +4311,7 @@ var d = labToolData.dissection || {};
             drag.active = false; var assessment = pinDragAssessment(canvas, drag.current, Date.now()) || drag.assessment;
             canvas._pinDrag = null; canvas._pinDragStatusKey = null; canvas._suppressToolClick = true;
             if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
-            canvas.style.cursor = 'grab';
+            syncCanvasPointerPresentation(canvas, null);
             if (cancelled) { canvas._suppressToolClick = false; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Pin placement canceled. The tissue returned to its resting position.', 'working'); return true; }
             if (!assessment || ['position', 'crowded'].indexOf(assessment.key) >= 0) { setProcedureFeedback('No anchor recorded. Begin at the indicated endpoint and keep the second pin outside the spacing ring.', 'caution'); return true; }
             if (assessment.key === 'grasp') { setProcedureFeedback('Pin engaged but was not inserted. Drag inward farther, or use the equivalent action button.', 'working'); return true; }
@@ -4126,7 +4423,7 @@ var d = labToolData.dissection || {};
             drag.active = false; var assessment = probeDragAssessment(canvas, drag.current, Date.now()) || drag.assessment;
             canvas._probeDrag = null; canvas._probeDragStatusKey = null; canvas._suppressToolClick = true;
             if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
-            canvas.style.cursor = 'pointer';
+            syncCanvasPointerPresentation(canvas, null);
             if (cancelled) { canvas._suppressToolClick = false; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Probe trace canceled. No structure was recorded.', 'working'); return true; }
             if (!assessment || assessment.key === 'position') { setProcedureFeedback('No probe trace recorded. Press a visible structure before tracing.', 'caution'); return true; }
             if (assessment.key === 'grasp') { setProcedureFeedback('Probe engaged but did not trace far enough. Drag across the structure, or use the equivalent action button.', 'working'); return true; }
@@ -4206,12 +4503,11 @@ var d = labToolData.dissection || {};
             if (!drag || !drag.active || (drag.pointerId != null && e.pointerId != null && drag.pointerId !== e.pointerId)) return false;
             cancelled = !!cancelled || !directGestureContextIsCurrent(drag.gestureContext);
             drag.active = false; var assessment = dropperDragAssessment(canvas, drag.current, Date.now()) || drag.assessment; var inputType = drag.inputType || (e.pointerType || 'mouse'); canvas._dropperDrag = null; canvas._dropperDragStatusKey = null; canvas._suppressToolClick = true;
-            if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId); canvas.style.cursor = 'pointer';
+            if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId); syncCanvasPointerPresentation(canvas, null);
             if (cancelled) { canvas._suppressToolClick = false; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Dropper pass canceled. No saline was applied.', 'working'); return true; }
             if (!assessment || assessment.key === 'position') { setProcedureFeedback('No hydration pass recorded. Press on the specimen surface before dragging.', 'caution'); return true; }
             if (assessment.key === 'grasp') {
-              var dropperTapResult = performProcedureAction('dropper', { point: drag.start, inputType: inputType });
-              if (dropperTapResult && dropperTapResult.ok) queueProcedureInstrumentReplay('dropper', { point: dropperTapResult.point || drag.start });
+              setProcedureFeedback('Dropper contact was too short to demonstrate control. Drag a short flow-aligned path before release; no saline was applied.', 'working');
               return true;
             }
             if (assessment.key === 'saturated') { setProcedureFeedback('The surface is already saturated. Do not add another saline dose.', 'caution'); return true; }
@@ -4289,12 +4585,11 @@ var d = labToolData.dissection || {};
             if (!drag || !drag.active || (drag.pointerId != null && e.pointerId != null && drag.pointerId !== e.pointerId)) return false;
             cancelled = !!cancelled || !directGestureContextIsCurrent(drag.gestureContext);
             drag.active = false; var assessment = wickDragAssessment(canvas, drag.current, Date.now()) || drag.assessment; var inputType = drag.inputType || (e.pointerType || 'mouse'); canvas._wickDrag = null; canvas._wickDragStatusKey = null; canvas._suppressToolClick = true;
-            if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId); canvas.style.cursor = 'pointer';
+            if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId); syncCanvasPointerPresentation(canvas, null);
             if (cancelled) { canvas._suppressToolClick = false; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Wick pass canceled. No saline was removed.', 'working'); return true; }
             if (!assessment || assessment.key === 'position') { setProcedureFeedback('No recovery pass recorded. Press on the pool edge before dragging.', 'caution'); return true; }
             if (assessment.key === 'grasp') {
-              var wickTapResult = performProcedureAction('wick', { point: drag.start, inputType: inputType });
-              if (wickTapResult && wickTapResult.ok) queueProcedureInstrumentReplay('wick', { point: wickTapResult.point || drag.start });
+              setProcedureFeedback('Wick contact was too short to demonstrate recovery control. Drag outward across the pool edge before release; no saline was removed.', 'working');
               return true;
             }
             if (assessment.key === 'center' || assessment.key === 'light') { setProcedureFeedback('Wick engaged but did not recover enough film. Start at the pool edge and drag outward across a short path.', 'working'); return true; }
@@ -4357,7 +4652,7 @@ var d = labToolData.dissection || {};
             canvas._parallaxTargetX = 0;
             canvas._parallaxTargetY = 0;
             if (canvas.releasePointerCapture && pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(pointerId)) canvas.releasePointerCapture(pointerId);
-            canvas.style.cursor = (canvas._zoom || 1) > 1.01 ? 'grab' : 'crosshair';
+            syncCanvasPointerPresentation(canvas, null);
             if (canvas._drawDissectionNow) canvas._drawDissectionNow();
             if (canceled && reason) setProcedureFeedback(reason, 'working');
             return canceled;
@@ -4396,7 +4691,11 @@ var d = labToolData.dissection || {};
             ? quizPool.filter(function (organ) { return practicalTargetIds.indexOf(organ.id) >= 0; })
             : quizPool;
           var orderedQuizPool = dissStableOrder(activeQuizPool, quizSalt);
-          var quizQ = d.quizMode && orderedQuizPool.length > 0 ? orderedQuizPool[(d.quizIdx || 0) % orderedQuizPool.length] : null;
+          var quizReviewIds = !d.practicalMode && Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue : [];
+          var quizIndex = Number(d.quizIdx) || 0;
+          var reviewCycleIndex = quizIndex - orderedQuizPool.length;
+          var scheduledReviewId = reviewCycleIndex >= 0 && quizReviewIds.length ? quizReviewIds[reviewCycleIndex % quizReviewIds.length] : null;
+          var quizQ = d.quizMode && orderedQuizPool.length > 0 ? (orderedQuizPool.find(function (organ) { return organ.id === scheduledReviewId; }) || orderedQuizPool[quizIndex % orderedQuizPool.length]) : null;
           var hotspotQuizAvailable = !!quizQ && visibleQuizPool.some(function (organ) { return organ.id === quizQ.id; });
           var effectiveQuizAnswerMode = d.quizAnswerMode === 'hotspot' && hotspotQuizAvailable ? 'hotspot' : 'choices';
           var quizOptions = quizQ
@@ -4426,19 +4725,52 @@ var d = labToolData.dissection || {};
             if (!quizQ || d.quizFeedback) return;
             var correct = answerId === quizQ.id;
             var nextScore = (d.quizScore || 0) + (correct ? 1 : 0);
+            var retryState = d.quizRetry && d.quizRetry.questionId === quizQ.id ? d.quizRetry : null;
+            if (!correct && !d.practicalMode) {
+              var nextAttempt = (Number(retryState && retryState.attempts) || 0) + 1;
+              var locationClue = dissDiagramRegion(quizQ);
+              updMany({
+                quizRetry: {
+                  questionId: quizQ.id,
+                  chosen: answerId,
+                  attempts: nextAttempt,
+                  message: 'Not yet. Re-read the prompt and compare candidates in the ' + locationClue + ' region. Choose again, or reveal the answer for supported practice.'
+                },
+                hoveredOrgan: null
+              });
+              if (addToast) addToast('Try again: use the location and function clues.', 'error');
+              return;
+            }
             var nextTotal = (d.quizTotal || 0) + 1;
             updMany({
               quizFeedback: { correct: correct, chosen: answerId },
               quizScore: nextScore,
               quizTotal: nextTotal,
-              quizExplanation: quizQ.fn.split('.').slice(0, 2).join('.') + '.',
-              hoveredOrgan: null
+              quizExplanation: d.practicalMode && !correct ? null : quizQ.fn.split('.').slice(0, 2).join('.') + '.',
+              quizRetry: null,
+              hoveredOrgan: null,
+              quizReviewQueue: correct ? quizReviewIds.filter(function (organId) { return organId !== quizQ.id; }) : quizReviewIds
             });
             if (d.practicalMode) {
               try { window.__alloDissectionPracticalScore = nextScore; } catch (e) {}
             }
-            if (correct) awardStemXP('dissection', 2, 'Correct quiz answer');
-            if (addToast) addToast(correct ? '\u2705 Correct!' : '\u274C It was ' + quizQ.name, correct ? 'success' : 'error');
+            if (correct && !d.practicalMode) awardStemXP('dissection', 2, 'Correct quiz answer');
+            if (addToast) addToast(d.practicalMode ? 'Response recorded for end-of-practical review.' : '\u2705 Correct!', d.practicalMode ? 'working' : 'success');
+          }
+          function revealQuizAnswer() {
+            if (!quizQ || d.practicalMode || d.quizFeedback || !d.quizRetry) return false;
+            var reviewQueue = Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue.slice() : [];
+            if (reviewQueue.indexOf(quizQ.id) < 0) reviewQueue.push(quizQ.id);
+            updMany({
+              quizFeedback: { correct: false, chosen: d.quizRetry.chosen, supported: true },
+              quizTotal: (Number(d.quizTotal) || 0) + 1,
+              quizExplanation: quizQ.fn.split('.').slice(0, 2).join('.') + '.',
+              quizRetry: null,
+              quizReviewQueue: reviewQueue,
+              hoveredOrgan: null
+            });
+            if (addToast) addToast('Answer shown as supported practice; review this concept again.', 'working');
+            return true;
           }
           function peelCurrentLayer() {
             var fromLayerDef = spec.layers[currentLayerIdx] || spec.layers[0];
@@ -10762,7 +11094,7 @@ var d = labToolData.dissection || {};
 
                 ctx.fillStyle = 'rgba(255,255,255,0.35)';
 
-                fillReadableSpecimenText(exploredCount + '/' + totalOrgansInSpecimen + ' explored \u00B7 ' + progressPct + '%', specimenScale.x < 0 ? W - 14 / specimenTextScaleX : 14 / specimenTextScaleX, 42 / specimenTextScaleY);
+                fillReadableSpecimenText(exploredCount + '/' + totalOrgansInSpecimen + ' viewed \u00B7 observation ' + progressPct + '%', specimenScale.x < 0 ? W - 14 / specimenTextScaleX : 14 / specimenTextScaleX, 42 / specimenTextScaleY);
 
               }
 
@@ -12305,7 +12637,7 @@ var d = labToolData.dissection || {};
                   var cursorTipPoint = { x: pointerScreenX, y: pointerScreenY - replayLift };
                   var toolVisuallyEngaged = !!canvas._toolDrawing || (!!activeContactPulse && replayContactPhase);
                   var cursorScale = (liveVisualMode === 'accessible' ? 1.28 : 1) * (1 + contactPressure * 0.035 + (toolVisuallyEngaged ? 0.018 : 0));
-                  var toolTipOffset = cursorTool === 'scissors' ? 29 : (cursorTool === 'forceps' ? 21 : (cursorTool === 'probe' ? 20 : (cursorTool === 'pin' ? 17 : 15)));
+                  var toolTipOffset = cursorTool === 'scissors' ? 29 : (cursorTool === 'forceps' ? 21 : (cursorTool === 'probe' ? 20 : (cursorTool === 'wick' ? 18 : (cursorTool === 'pin' ? 17 : 15))));
                   var cursorProjectedOffset = toolTipOffset * cursorLongitudinalScale * cursorScale;
                   drawInstrumentElevationTether(cursorAngle, toolVisuallyEngaged, cursorContactContext.onSpecimen, cursorPitch, cursorLighting, cursorTipPoint);
                   drawInstrumentContactShadow(cursorTool, cursorContactContext, cursorAngle, toolVisuallyEngaged, cursorScale, cursorMaterial, cursorPitch, cursorLighting);
@@ -12373,7 +12705,17 @@ var d = labToolData.dissection || {};
                     ctx.fillStyle = dropperGradient; ctx.fillRect(-29, -4, 40, 8);
                     ctx.fillStyle = '#334155'; ctx.beginPath(); ctx.ellipse(-32, 0, 12, 9, 0, 0, Math.PI * 2); ctx.fill();
                     ctx.fillStyle = 'rgba(125,211,252,0.9)'; ctx.beginPath(); ctx.moveTo(15, 0); ctx.quadraticCurveTo(20 + toolCalibration.salineDose * 2, 6 + toolCalibration.salineDose * 2, 15, 11 + toolCalibration.salineDose * 2); ctx.quadraticCurveTo(10 - toolCalibration.salineDose, 6 + toolCalibration.salineDose * 2, 15, 0); ctx.fill();
+                  } else if (cursorTool === 'wick') {
+                    var wickHandleGradient = ctx.createLinearGradient(-43, -5, 10, 5);
+                    wickHandleGradient.addColorStop(0, '#475569'); wickHandleGradient.addColorStop(0.48, '#e2e8f0'); wickHandleGradient.addColorStop(1, '#94a3b8');
+                    ctx.fillStyle = wickHandleGradient;
+                    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(-43, -4, 48, 8, 3); ctx.fill(); } else ctx.fillRect(-43, -4, 48, 8);
+                    ctx.fillStyle = '#f8fafc'; ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
+                    ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(3, -8, 15, 16, 3); else ctx.rect(3, -8, 15, 16); ctx.fill(); ctx.stroke();
+                    ctx.strokeStyle = '#64748b'; ctx.lineWidth = 0.8;
+                    for (var wickFiber = 5; wickFiber <= 16; wickFiber += 3) { ctx.beginPath(); ctx.moveTo(wickFiber, -6); ctx.lineTo(wickFiber - 3, 6); ctx.stroke(); }
                   } else {
+                    ctx.fillStyle = 'rgba(56,189,248,0.52)'; ctx.beginPath(); ctx.ellipse(17, 0, 3.2, 5.4, 0, 0, Math.PI * 2); ctx.fill();
                     ctx.strokeStyle = metalGradient; ctx.lineWidth = 2.15 + toolCalibration.probePressure / 100 * 1.25; ctx.beginPath(); ctx.moveTo(-43, 0); ctx.lineTo(20, 0); ctx.stroke();
                     var probeHandleGradient = ctx.createLinearGradient(-45, -6, -15, 6);
                     probeHandleGradient.addColorStop(0, '#115e59'); probeHandleGradient.addColorStop(0.5, '#2dd4bf'); probeHandleGradient.addColorStop(1, '#134e4a');
@@ -12417,8 +12759,9 @@ var d = labToolData.dissection || {};
           // its own layer, notes, assessment, and annotation state.
           if (d._dissLoadedSpec === specimen) {
             scheduleDissectionSave('dissection_progress_' + specimen, {
-              schemaVersion: 18,
+              schemaVersion: 19,
               exploredOrgans: d.exploredOrgans || {},
+              verifiedIdentifications: d.verifiedIdentifications || {},
               revealedLayers: d.revealedLayers || {},
               quizScore: d.quizScore || 0,
               quizTotal: d.quizTotal || 0,
@@ -12500,6 +12843,7 @@ var d = labToolData.dissection || {};
                 : ((loadSpecimenDef.layers[0] || {}).id || 'skin');
               updMany({
                 exploredOrgans: data.exploredOrgans || {},
+                verifiedIdentifications: data.verifiedIdentifications || {},
                 revealedLayers: data.revealedLayers || {},
                 quizScore: Number(data.quizScore) || 0,
                 quizTotal: Number(data.quizTotal) || 0,
@@ -12822,12 +13166,72 @@ var d = labToolData.dissection || {};
 
 
 
+          function canvasPointerModeData(canvas, hit) {
+            canvas = canvas || {};
+            if (canvas._cameraTransition) return { mode: 'wait', cursor: 'wait', tone: 'caution', icon: '?', label: 'Camera moving', instruction: 'Wait for the specimen view to settle before contact.' };
+            if (d.quizMode) {
+              if (d.quizFeedback) return { mode: 'answered', cursor: 'not-allowed', tone: 'blocked', icon: '?', label: 'Answer recorded', instruction: 'Use Next question before selecting another candidate.' };
+              return { mode: 'identify', cursor: 'crosshair', tone: 'assessment', icon: '?', label: 'Identify a structure', instruction: effectiveQuizAnswerMode === 'hotspot' ? 'Select an unlabeled visible candidate; Arrow keys preview and Enter submits.' : 'Use the answer choices below the specimen.' };
+            }
+            if (d.annotateMode) return { mode: 'annotate', cursor: 'crosshair', tone: 'ready', icon: '?', label: 'Add observation mark', instruction: 'Select the specimen to place a visible observation mark.' };
+            if (d.rulerMode) return { mode: 'measure', cursor: 'crosshair', tone: 'ready', icon: '?', label: 'Measure', instruction: d.rulerStart ? 'Select the second endpoint to complete the measurement.' : 'Select the first measurement endpoint.' };
+            if (guidedMode) return { mode: 'locate', cursor: hit ? 'pointer' : 'crosshair', tone: 'ready', icon: '?', label: 'Locate the guided target', instruction: 'Select a visible structure; procedure tools are paused during Guided investigation.' };
+            if (canvas._isPanning) return { mode: 'panning', cursor: 'grabbing', tone: 'ready', icon: '?', label: 'Panning specimen', instruction: 'Release to keep this view position.' };
+            if ((d.canvasZoom || 1) > 1.01 && activeInstrument === 'probe') return { mode: 'pan-or-probe', cursor: 'grab', tone: 'ready', icon: '?', label: 'Pan or trace', instruction: 'Drag the background to pan; drag a visible structure to trace it.' };
+            var next = nextProcedureInfo();
+            var techniqueActive = !revealedLayers[activeLayer] && next.action !== 'complete';
+            if (!techniqueActive) return { mode: 'explore', cursor: hit ? 'pointer' : 'crosshair', tone: 'ready', icon: '?', label: 'Inspect anatomy', instruction: 'Select a visible structure, or use Arrow keys to preview and Enter to inspect.' };
+            var readiness = procedureToolReadinessData(activeInstrument, currentProcedure);
+            var intent = canvas._toolIntentState && canvas._toolIntentState.tool === activeInstrument ? canvas._toolIntentState : null;
+            if (!readiness.safeToAct || (intent && !intent.valid)) {
+              return { mode: 'blocked', cursor: 'not-allowed', tone: 'blocked', icon: '!', label: readiness.label || 'Contact blocked', instruction: intent && intent.targetLabel ? 'Move toward ' + intent.targetLabel + '. ' + readiness.cue : readiness.cue };
+            }
+            if (next.action === 'inspect' && activeInstrument === 'probe') return { mode: 'inspect', cursor: 'crosshair', tone: 'ready', icon: '?', label: 'Confirm orientation', instruction: 'Select the specimen only after the recommended view and landmarks are confirmed.' };
+            var toolModes = {
+              scalpel: { mode: 'cut', cursor: 'crosshair', icon: '?', label: 'Draw shallow entry', instruction: 'Press and drag along the planned corridor, then release.' },
+              scissors: { mode: 'extend', cursor: 'crosshair', icon: '?', label: 'Extend opening', instruction: 'Press and drag within the established opening, then release.' },
+              forceps: { mode: 'lift', cursor: 'grab', icon: '?', label: 'Lift tissue edge', instruction: 'Press the opened edge, drag with controlled tension, then release.' },
+              pin: { mode: 'anchor', cursor: 'crosshair', icon: '?', label: 'Place stabilizer', instruction: 'Press an endpoint, drag to set the angle, then release.' },
+              probe: { mode: 'trace', cursor: 'crosshair', icon: '?', label: 'Trace visible boundary', instruction: 'Press a visible structure, trace a short controlled path, then release.' },
+              dropper: { mode: 'hydrate', cursor: 'crosshair', icon: '?', label: 'Apply controlled film', instruction: 'Press the specimen, drag a short flow-aligned path, then release.' },
+              wick: { mode: 'wick', cursor: 'crosshair', icon: '?', label: 'Recover pooled saline', instruction: 'Press the pool edge, drag outward, then release.' }
+            };
+            var modeData = toolModes[activeInstrument] || { mode: 'inspect', cursor: 'crosshair', icon: '?', label: 'Interact with specimen', instruction: readiness.cue };
+            if (intent && intent.label && intent.label !== 'READY') modeData = Object.assign({}, modeData, { label: intent.label + ' ? ' + modeData.label });
+            return Object.assign({ tone: 'ready' }, modeData);
+          }
+          function syncCanvasPointerPresentation(canvas, hit) {
+            if (!canvas) return canvasPointerModeData(null, hit);
+            var pointerMode = canvasPointerModeData(canvas, hit);
+            canvas.style.cursor = pointerMode.cursor;
+            canvas.setAttribute('data-cursor-mode', pointerMode.mode);
+            canvas.setAttribute('data-cursor-tone', pointerMode.tone);
+            var pointerGuide = typeof document !== 'undefined' ? document.querySelector('[data-diss-pointer-guide]') : null;
+            if (pointerGuide) {
+              pointerGuide.setAttribute('data-tone', pointerMode.tone);
+              pointerGuide.setAttribute('data-mode', pointerMode.mode);
+              var pointerGuideIcon = pointerGuide.querySelector('[data-pointer-guide-icon]');
+              var pointerGuideLabel = pointerGuide.querySelector('[data-pointer-guide-label]');
+              var pointerGuideInstruction = pointerGuide.querySelector('[data-pointer-guide-instruction]');
+              if (pointerGuideIcon) pointerGuideIcon.textContent = pointerMode.icon;
+              if (pointerGuideLabel) pointerGuideLabel.textContent = 'Pointer mode ? ' + pointerMode.label;
+              if (pointerGuideInstruction) pointerGuideInstruction.textContent = pointerMode.instruction;
+            }
+            return pointerMode;
+          }
           var canvasClick = function (e) {
 
-            if (e.target._wasPanning) { e.target._wasPanning = false; return; }
-            if (e.target._suppressToolClick) { e.target._suppressToolClick = false; return; }
+            var canvas = e.target;
+            if (canvas._cameraTransition) {
+              canvas._suppressToolClick = false;
+              setProcedureFeedback('Wait for the specimen camera movement to finish before selecting or making contact.', 'caution');
+              syncCanvasPointerPresentation(canvas, null);
+              return;
+            }
+            if (canvas._wasPanning) { canvas._wasPanning = false; return; }
+            if (canvas._suppressToolClick) { canvas._suppressToolClick = false; return; }
 
-            var canvas = e.target; var rect = canvas.getBoundingClientRect();
+            var rect = canvas.getBoundingClientRect();
 
             var rawX = (e.clientX - rect.left) / rect.width, rawY = (e.clientY - rect.top) / rect.height;
             canvas._parallaxTargetX = parallaxDepth ? (rawX - 0.5) * 8 : 0;
@@ -12847,20 +13251,22 @@ var d = labToolData.dissection || {};
             mx = mappedPoint.x; my = mappedPoint.y;
             var techniqueContactActive = !guidedMode && !revealedLayers[activeLayer] && nextProcedureInfo().action !== 'complete';
             if (!d.quizMode && !d.annotateMode && !d.rulerMode && techniqueContactActive) {
-              if (activeInstrument === 'dropper') {
-                if (!canBeginDirectInstrument('dropper')) return;
-                var clickDropResult = performProcedureAction('dropper', { point: { x: mx, y: my } });
-                if (clickDropResult && clickDropResult.ok) queueProcedureInstrumentReplay('dropper', { point: clickDropResult.point });
+              if (activeInstrument === 'probe' && nextProcedureInfo().action === 'inspect') {
+                if (!canBeginDirectInstrument('probe')) return;
+                if (!specimenContactContext({ x: mx, y: my }).onSpecimen) {
+                  setProcedureFeedback('Move the orientation marker onto the specimen before recording the view.', 'caution');
+                  return;
+                }
+                var inspectResult = performProcedureAction('inspect', { point: { x: mx, y: my }, inputType: 'pointer' });
+                if (inspectResult && inspectResult.ok) queueProcedureInstrumentReplay('probe', { point: { x: mx, y: my } });
                 return;
               }
-              if (activeInstrument === 'wick') {
-                if (!canBeginDirectInstrument('wick')) return;
-                var clickWickResult = performProcedureAction('wick', { point: { x: mx, y: my } });
-                if (clickWickResult && clickWickResult.ok) queueProcedureInstrumentReplay('wick', { point: clickWickResult.point });
+              if (activeInstrument === 'dropper' || activeInstrument === 'wick') {
+                setProcedureFeedback((activeInstrument === 'dropper' ? 'Apply saline' : 'Recover pooled saline') + ' with a short press-drag-release path; a tap does not record technique.', 'working');
                 return;
               }
-              if (activeInstrument === 'scalpel' || activeInstrument === 'scissors') {
-                setProcedureFeedback('Drag along the teaching corridor, or use the equivalent procedure action button.', 'working');
+              if (activeInstrument === 'scalpel' || activeInstrument === 'scissors' || activeInstrument === 'forceps' || activeInstrument === 'pin') {
+                setProcedureFeedback('Use the visible pointer mode: press, drag through the planned motion, then release. A tap does not record technique.', 'working');
                 return;
               }
             }
@@ -12879,13 +13285,9 @@ var d = labToolData.dissection || {};
             if (hit) {
               playDissectSound('pin'); sfxDisPin();
               if (window._alloHaptic) window._alloHaptic('click');
-              if (!d.quizMode && !d.annotateMode && !d.rulerMode && techniqueContactActive && activeInstrument === 'probe' && (currentProcedure.pins || []).length >= 2) {
-                if (!canBeginDirectInstrument('probe')) return;
-                var clickProbeResult = performProcedureAction('probe', { organ: hit });
-                if (clickProbeResult && clickProbeResult.ok) {
-                  hitHandledByProcedure = true;
-                  queueProcedureInstrumentReplay('probe', { point: clickProbeResult.point || variedOrganPoint(hit) });
-                }
+              if (!d.quizMode && !d.annotateMode && !d.rulerMode && techniqueContactActive && activeInstrument === 'probe' && nextProcedureInfo().action === 'probe') {
+                hitHandledByProcedure = true;
+                setProcedureFeedback('Target previewed: ' + hit.name + '. Press and trace its visible boundary before releasing; a tap does not record the probe step.', 'working');
               } else if (!d.quizMode && !d.annotateMode && !d.rulerMode && activeInstrument === 'probe') {
                 setProcedureFeedback('Selected ' + hit.name + '. ' + procedureInstrumentStatus('probe').instruction, 'working');
               }
@@ -12949,27 +13351,10 @@ var d = labToolData.dissection || {};
 
               upd('exploredOrgans', explored);
 
-              // Advance guided walkthrough if correct organ clicked
-
+              // Locating a Guided target marks it viewed. A matching observation
+              // must be chosen before the step earns verification credit.
               if (guidedMode && currentGuided && hit.id === currentGuided.organId) {
-
-                upd('guidedStep', guidedStep + 1);
-
-                awardStemXP('dissection', 2, 'Found ' + hit.name + ' in guided tour');
-
-                sfxDisProbe(); if (window._alloHaptic) window._alloHaptic('tap');
-                if (addToast) addToast('\uD83D\uDCCD ' + 'Found organ!'.replace('{name}', hit.name), 'success');
-
-                if (guidedStep + 1 >= guidedSteps.length) {
-
-                  updMany({ guidedMode: false, guidedComplete: true, guidedTargetIds: [] });
-
-                  awardStemXP('dissection', 10, 'Completed guided tour');
-
-                  if (addToast) addToast('\uD83C\uDF89 ' + 'Tour Complete!', 'success');
-
-                }
-
+                beginGuidedObservation(hit);
               }
 
             }
@@ -13144,19 +13529,14 @@ var d = labToolData.dissection || {};
               var previewStateKey = activeInstrument + '|' + previewIntentLabel + '|' + (hit ? hit.id : '') + '|' + hoverPins.length + '|' + previewDetailKey + '|' + hoverReadiness.tone;
               if (canvas._toolPreviewState !== previewStateKey) {
                 canvas._toolPreviewState = previewStateKey;
-                var previewStatus = document.querySelector('[data-diss-tool-status]');
+                var previewStatus = document.querySelector('#diss-canvas-status');
                 if (previewStatus) {
                   previewStatus.setAttribute('data-tone', previewTone);
                   previewStatus.textContent = previewMessage;
                 }
               }
             }
-            var toolCursor = (activeInstrument === 'scalpel' || activeInstrument === 'scissors') ? 'crosshair' : ((activeInstrument === 'forceps' || activeInstrument === 'probe' || activeInstrument === 'dropper' || activeInstrument === 'wick') ? 'grab' : 'pointer');
-            var cursorIntentState = canvas._toolIntentState;
-            var intentNativeCursor = cursorIntentState && cursorIntentState.tool === activeInstrument && !cursorIntentState.valid ? 'not-allowed' : toolCursor;
-            canvas.style.cursor = visualRealism === 'accessible' || !instrumentVisuals
-              ? (canvas._isPanning ? 'grabbing' : (((d.canvasZoom || 1) > 1 && activeInstrument === 'probe') ? 'grab' : (hit && (!cursorIntentState || cursorIntentState.valid) ? 'pointer' : intentNativeCursor)))
-              : (canvas._isPanning ? 'grabbing' : 'none');
+            syncCanvasPointerPresentation(canvas, hit);
 
           };
 
@@ -13201,6 +13581,8 @@ var d = labToolData.dissection || {};
           });
 
           var currentGuided = guidedMode && guidedSteps.length ? guidedSteps[guidedStep % guidedSteps.length] : null;
+          var guidedObservationOrgan = d.guidedObservationPending ? organs.find(function (organ) { return organ.id === d.guidedObservationPending; }) : null;
+          var guidedObservationOptions = guidedObservationOrgan ? [guidedObservationOrgan].concat(organs.filter(function (organ) { return organ.id !== guidedObservationOrgan.id && structureExposureState(organ, currentProcedure) === 'visible'; }).sort(function (a, b) { return dissHash(specimen + '|' + guidedObservationOrgan.id + '|' + a.id) - dissHash(specimen + '|' + guidedObservationOrgan.id + '|' + b.id); })).slice(0, 3) : [];
           var currentGuidedOrgan = currentGuided ? organs.find(function (org) { return org.id === currentGuided.organId; }) : null;
           var currentGuidedVisible = !!currentGuidedOrgan && structureExposureState(currentGuidedOrgan, currentProcedure) === 'visible';
 
@@ -13302,7 +13684,8 @@ var d = labToolData.dissection || {};
           var nextUnexplored = visibleOrgansInView.find(function (org) { return !exploredOrgans[specimen + '|' + org.id]; }) || null;
           var visibilityTarget = currentGuidedOrgan && !currentGuidedVisible ? currentGuidedOrgan : remainingUnexplored;
           var visibilityTargetView = alternateVisibleViewForOrgan(visibilityTarget);
-          var layerTechniqueComplete = procedureNext.action === 'complete';
+          var currentLearningGate = procedureLearningGateFor(procedureNext.action, currentProcedure);
+          var layerTechniqueComplete = procedureNext.action === 'complete' && !currentLearningGate.required;
           var studyRoute = d.practicalMode ? 'study' : (d.guidedMode ? 'guided' : (d.quizMode ? 'quiz' : ((d.flashcardMode || d.compareMode || d.toolbarStudyOpen) ? 'study' : 'explore')));
           var currentLayerExploredCount = organs.filter(function (org) { return !!exploredOrgans[specimen + '|' + org.id]; }).length;
           var recordCandidate = organs.find(function (org) {
@@ -13313,6 +13696,43 @@ var d = labToolData.dissection || {};
             var evidenceKey = specimen + '|' + org.id;
             return !!exploredOrgans[evidenceKey] && !!String((d.organNotes || {})[evidenceKey] || '').trim() && !!(d.organConfidence || {})[evidenceKey];
           }).length;
+          var allSpecimenOrgans = [];
+          spec.layers.forEach(function (layer) {
+            allSpecimenOrgans = allSpecimenOrgans.concat(spec.organs[layer.id] || []);
+          });
+          var specimenEvidenceCount = allSpecimenOrgans.filter(function (org) {
+            var evidenceKey = specimen + '|' + org.id;
+            return !!exploredOrgans[evidenceKey] && !!String((d.organNotes || {})[evidenceKey] || '').trim() && !!(d.organConfidence || {})[evidenceKey];
+          }).length;
+          var verifiedIdentificationCount = Object.keys(d.verifiedIdentifications || {}).filter(function (key) {
+            var verification = (d.verifiedIdentifications || {})[key];
+            return key.indexOf(specimen + '|') === 0 && verification && verification.status === 'verified';
+          }).length;
+          var procedureLearningTotals = spec.layers.reduce(function (totals, layer) {
+            var summary = procedureLearningSummary(((d.procedureByLayer || {})[layer.id]) || {});
+            totals.verified += summary.verified;
+            totals.total += summary.total;
+            return totals;
+          }, { verified: 0, total: 0 });
+          var techniqueLearningPct = procedureLearningTotals.total ? Math.round(procedureLearningTotals.verified / procedureLearningTotals.total * 100) : 100;
+          var evidenceProgressPct = totalOrgansInSpecimen ? Math.round(specimenEvidenceCount / totalOrgansInSpecimen * 100) : 100;
+          var verifiedIdentificationGoal = Math.min(totalOrgansInSpecimen, Math.max(1, instructorRequiredStructures));
+          var verifiedIdentificationPct = verifiedIdentificationGoal ? Math.min(100, Math.round(verifiedIdentificationCount / verifiedIdentificationGoal * 100)) : 100;
+          var assessmentQuestionGoal = Math.min(3, Math.max(1, totalOrgansInSpecimen));
+          var assessmentCoveragePct = Math.min(100, Math.round((Number(d.quizTotal) || 0) / assessmentQuestionGoal * 100));
+          var assessmentAccuracyPct = (Number(d.quizTotal) || 0) ? Math.round((Number(d.quizScore) || 0) / Number(d.quizTotal) * 100) : 0;
+          var assessmentUnderstandingPct = Math.min(assessmentCoveragePct, Math.min(100, Math.round(assessmentAccuracyPct / 80 * 100)));
+          var understandingProgressPct = Math.round((verifiedIdentificationPct + assessmentUnderstandingPct) / 2);
+          var masteryComplete = progressPct >= 100 && evidenceProgressPct >= 100 && techniqueLearningPct >= 100 &&
+            verifiedIdentificationCount >= verifiedIdentificationGoal && (Number(d.quizTotal) || 0) >= assessmentQuestionGoal &&
+            assessmentAccuracyPct >= 80 && revealedLayerCount >= spec.layers.length;
+          var masteryDimensions = [
+            { id: 'technique', label: 'Technique', value: techniqueLearningPct },
+            { id: 'observation', label: 'Observation', value: progressPct },
+            { id: 'evidence', label: 'Evidence', value: evidenceProgressPct },
+            { id: 'understanding', label: 'Understanding', value: understandingProgressPct }
+          ];
+          var masteryOverallPct = Math.round(masteryDimensions.reduce(function (sum, dimension) { return sum + dimension.value; }, 0) / masteryDimensions.length);
           var nextToolDefinition = PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === procedureNext.instrument; }) || { label: procedureNext.instrument || 'instrument' };
           var nextActionModel;
           if (d.practicalMode && quizQ) {
@@ -13327,15 +13747,28 @@ var d = labToolData.dissection || {};
             nextActionModel = { step: 4, tone: 'assessment', phase: 'Compare', title: 'Select a structure to compare', description: 'Inspect any visible structure first; the cross-specimen comparison will open automatically.', label: 'Focus the specimen', action: 'canvas' };
           } else if (d.toolbarStudyOpen) {
             nextActionModel = { step: 6, tone: 'assessment', phase: 'Study tools', title: 'Choose a study activity', description: 'Open flashcards, compare a selected structure, or start a timed specimen practical.', label: 'Choose a study activity', action: 'study-tools' };
+          } else if (guidedMode && guidedObservationOrgan) {
+            nextActionModel = { step: 4, tone: 'assessment', phase: 'Verify observation', title: 'Choose the observation that supports ' + guidedObservationOrgan.name, description: 'Locating the target marks it viewed; a matching specimen observation is required before the Guided step advances.', label: 'Complete evidence check', action: 'guided-observation' };
           } else if (guidedMode && currentGuided && currentGuidedVisible) {
             nextActionModel = { step: 4, tone: 'ready', phase: 'Guided investigation', title: currentGuided.prompt, description: 'Preview with Arrow keys or pointer movement, then press Enter or select the structure to inspect it.', label: 'Focus the specimen', action: 'canvas' };
           } else if (guidedMode && currentGuided) {
             nextActionModel = { step: 4, tone: 'caution', phase: 'Guided investigation', title: 'Make ' + currentGuided.name + ' visible to continue', description: visibilityTargetView ? 'Change to the ' + visibilityTargetView + ' view; the Guided target and step count will stay fixed.' : 'Improve the anatomical exposure before continuing the fixed Guided route.', label: visibilityTargetView ? 'Change to ' + visibilityTargetView + ' view' : 'Review field setup', action: 'visibility', targetView: visibilityTargetView };
+          } else if (!currentLayerDone && currentLearningGate.required && currentLearningGate.definition) {
+            var learningIsReflection = currentLearningGate.phase === 'reflect';
+            nextActionModel = {
+              step: learningIsReflection ? 3 : (currentLearningGate.action === 'inspect' ? 1 : 2),
+              tone: learningIsReflection ? 'assessment' : 'caution',
+              phase: learningIsReflection ? 'Explain the response' : 'Predict before contact',
+              title: learningIsReflection ? currentLearningGate.definition.reflectionPrompt : currentLearningGate.definition.predictionPrompt,
+              description: learningIsReflection ? 'Interpret the tissue response before another protocol action unlocks.' : 'Choose the safest plan. A correct plan unlocks the simulation action but never performs it for you.',
+              label: learningIsReflection ? 'Explain what changed' : 'Answer planning checkpoint',
+              action: 'learning'
+            };
           } else if (!currentLayerDone && !layerTechniqueComplete) {
             if (procedureNext.action !== 'complete' && nextToolReadiness && !nextToolReadiness.safeToAct) {
               nextActionModel = { step: procedureNext.action === 'inspect' ? 1 : 2, tone: 'caution', phase: 'Set up safely', title: 'Prepare ' + nextToolDefinition.label + ' to ' + procedureNext.label.toLowerCase(), description: nextToolReadiness.cue, label: 'Set up ' + nextToolDefinition.label, action: 'prepare' };
             } else {
-              nextActionModel = { step: procedureNext.action === 'inspect' ? 1 : 3, tone: 'ready', phase: procedureNext.action === 'inspect' ? 'Orient' : 'Reveal', title: procedureNext.label, description: 'Perform one deliberate simulated action and review the tissue response.', label: procedureNext.label, action: 'procedure' };
+              nextActionModel = { step: procedureNext.action === 'inspect' ? 1 : 3, tone: 'ready', phase: procedureNext.action === 'inspect' ? 'Orient' : 'Demonstrate technique', title: procedureNext.label, description: 'Your plan is confirmed. Choose the required instrument, perform the action on the specimen, then explain the observed response.', label: activeInstrument === procedureNext.instrument ? 'Demonstrate on specimen' : 'Choose the instrument', action: 'procedure' };
             }
           } else if (nextUnexplored) {
             nextActionModel = { step: 4, tone: 'ready', phase: 'Identify', title: 'Find and inspect ' + nextUnexplored.name, description: currentLayerExploredCount + ' of ' + organs.length + ' structures inspected in this layer.', label: 'Focus the specimen', action: 'canvas' };
@@ -13358,6 +13791,7 @@ var d = labToolData.dissection || {};
             ? nextToolDefinition.label + ' \u00B7 ' + nextToolReadiness.label
             : nextActionModel.phase;
           stageHandoffGlyph = stageHandoffTone === 'ready' ? '\u2713' : (stageHandoffTone === 'caution' ? '!' : '\u2192');
+          var pointerGuideData = canvasPointerModeData(null, null);
           var workflowSteps = [
             { label: __alloT('stem.dissection.orient', 'Orient') },
             { label: 'Prepare' },
@@ -13377,19 +13811,34 @@ var d = labToolData.dissection || {};
             if (message) setProcedureFeedback(message, 'working');
           }
           function performPrimaryNextAction() {
-            if (nextActionModel.action === 'prepare') {
+            if (nextActionModel.action === 'guided-observation') {
+              focusDissectionTarget('diss-guided-observation-check', 'Guided evidence check focused. Choose the observation that supports the identification.');
+            } else if (nextActionModel.action === 'learning') {
+              focusDissectionTarget('diss-learning-checkpoint', 'Learning checkpoint focused. Choose one response; the simulation will not perform the action for you.');
+            } else if (nextActionModel.action === 'prepare') {
               upd('techniquePanelOpen', true);
-              prepareNextProcedureStep();
-              focusDissectionTarget('diss-procedure-panel');
+              setProcedureFeedback('Choose and prepare the required instrument yourself. The planner will focus the tray without changing the tool, view, calibration, or specimen.', 'working');
+              focusDissectionTarget('diss-instrument-' + procedureNext.instrument);
             } else if (nextActionModel.action === 'procedure') {
-              performNextProcedureStep();
+              upd('techniquePanelOpen', true);
+              if (activeInstrument !== procedureNext.instrument) {
+                setProcedureFeedback('Choose the instrument that matches your confirmed plan. No technique action has been recorded.', 'working');
+                focusDissectionTarget('diss-instrument-' + procedureNext.instrument);
+              } else {
+                focusDissectionTarget('diss-canvas', 'Plan confirmed. Demonstrate ' + procedureNext.label.toLowerCase() + ' on the specimen. The action occurs only through your canvas gesture or the motor-neutral equivalent control.');
+              }
             } else if (nextActionModel.action === 'peel-layer') {
               performNextProcedureStep();
             } else if (nextActionModel.action === 'study-tools') {
               focusDissectionTarget('diss-study-tools', 'Study tools focused. Choose flashcards, comparison, or a timed practical.');
             } else if (nextActionModel.action === 'visibility') {
-              if (nextActionModel.targetView) changeAnatomicalView(nextActionModel.targetView, 'next-action visibility recovery');
-              else { upd('techniquePanelOpen', true); focusDissectionTarget('diss-procedure-panel', 'Review the field setup before continuing.'); }
+              if (nextActionModel.targetView) {
+                updMany({ toolbarViewOpen: true, toolbarToolsOpen: false, toolbarStudyOpen: false });
+                focusDissectionTarget('diss-view-cycle', 'Choose the anatomical view that makes the target visible. The view was not changed automatically.');
+              } else {
+                upd('techniquePanelOpen', true);
+                focusDissectionTarget('diss-procedure-panel', 'Review the field setup and decide what to adjust before continuing.');
+              }
             } else if (nextActionModel.action === 'canvas') {
               focusDissectionTarget('diss-canvas', nextActionModel.title + '. Use the pointer, or Arrow keys followed by Enter.');
             } else if (nextActionModel.action === 'quiz') {
@@ -13421,7 +13870,7 @@ var d = labToolData.dissection || {};
               React.createElement("div", { className: "diss-next-action__step", "aria-label": "Workflow step " + nextActionModel.step + " of " + workflowSteps.length }, 'Step ' + nextActionModel.step + '\n' + 'of ' + workflowSteps.length),
               React.createElement("div", { className: "diss-next-action__body" },
                 React.createElement("span", { className: "diss-next-action__eyebrow" }, 'Next best action \u00B7 ' + nextActionModel.phase),
-                React.createElement("h3", { id: "diss-next-action-title" }, nextActionModel.title),
+                React.createElement("h3", { id: "diss-next-action-title", tabIndex: -1 }, nextActionModel.title),
                 React.createElement("p", null, nextActionModel.description),
                 React.createElement("div", { className: "diss-next-action__meta", "aria-label": "Current lab context" },
                   React.createElement("span", null, spec.icon + ' ' + spec.name),
@@ -13436,6 +13885,100 @@ var d = labToolData.dissection || {};
             );
           }
 
+          function renderProcedureLearningCheckpoint() {
+            if (studyRoute !== 'explore' || d.quizMode || guidedMode || currentLayerDone || !currentLearningGate.definition) return null;
+            var learningAction = currentLearningGate.action;
+            var definition = currentLearningGate.definition;
+            var entry = procedureLearningEntry(learningAction, currentProcedure);
+            var phase = currentLearningGate.phase === 'reflect' ? 'reflect' : (currentLearningGate.required ? 'predict' : 'perform');
+            var responseKey = phase === 'reflect' ? 'reflection' : 'prediction';
+            var selectedChoice = entry[responseKey + 'Choice'];
+            var responseCorrect = !!entry[responseKey + 'Correct'];
+            var options = phase === 'reflect' ? definition.reflectionOptions : (phase === 'predict' ? definition.predictionOptions : []);
+            var feedback = entry[responseKey + 'Feedback'];
+            var actionToolId = procedureInstrumentForAction(learningAction);
+            var actionTool = PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === actionToolId; }) || { label: actionToolId };
+            var actionComplete = procedureActionComplete(currentProcedure, learningAction);
+            var phaseStates = [
+              { id: 'predict', label: '1 Predict', state: entry.predictionCorrect ? 'complete' : (phase === 'predict' ? 'current' : 'upcoming') },
+              { id: 'perform', label: '2 Perform', state: actionComplete ? 'complete' : (phase === 'perform' ? 'current' : 'upcoming') },
+              { id: 'reflect', label: '3 Explain', state: entry.reflectionCorrect ? 'complete' : (phase === 'reflect' ? 'current' : 'upcoming') }
+            ];
+            return React.createElement("section", {
+              id: "diss-learning-checkpoint",
+              className: "diss-learning-check",
+              "data-phase": phase,
+              "data-learning-action": learningAction,
+              tabIndex: -1,
+              role: "region",
+              "aria-labelledby": "diss-learning-check-title"
+            },
+              React.createElement("div", { className: "diss-learning-check__head" },
+                React.createElement("p", { className: "diss-learning-check__eyebrow" }, phase === 'reflect' ? 'Reason from evidence' : (phase === 'perform' ? 'Plan confirmed' : 'Pause before contact')),
+                React.createElement("h3", { id: "diss-learning-check-title" }, phase === 'reflect' ? 'Explain what changed' : (phase === 'perform' ? 'Demonstrate your plan' : definition.title)),
+                React.createElement("p", { className: "diss-learning-check__prompt" },
+                  phase === 'reflect' ? definition.reflectionPrompt : (phase === 'perform' ? 'Use ' + actionTool.label + ' to ' + procedureNext.label.toLowerCase() + '. The simulation will score the action you perform; it will not execute the step from the Next card.' : definition.predictionPrompt)
+                )
+              ),
+              React.createElement("div", { className: "diss-learning-check__phases", "aria-label": "Learning cycle progress" },
+                phaseStates.map(function (phaseState) {
+                  return React.createElement("span", { key: phaseState.id, className: "diss-learning-check__phase", "data-state": phaseState.state, "aria-current": phaseState.state === 'current' ? 'step' : undefined }, (phaseState.state === 'complete' ? '\u2713 ' : '') + phaseState.label);
+                })
+              ),
+              options.length ? React.createElement("div", { className: "diss-learning-check__options", role: "group", "aria-label": phase === 'reflect' ? "Choose the best evidence-based explanation" : "Choose the safest plan" },
+                options.map(function (option) {
+                  var isSelected = selectedChoice === option.id;
+                  return React.createElement("button", {
+                    type: "button",
+                    key: option.id,
+                    className: "diss-learning-check__option",
+                    "aria-pressed": isSelected,
+                    "data-result": isSelected ? (responseCorrect ? "correct" : "incorrect") : undefined,
+                    onClick: function () { recordProcedureLearningChoice(learningAction, responseKey, option.id); }
+                  }, option.label);
+                })
+              ) : React.createElement("div", { className: "diss-learning-check__perform" }, 'Make the contact yourself, then return here to explain the observed tissue response. A motor-neutral equivalent is available in Technique controls after all readiness checks pass.'),
+              feedback && React.createElement("p", { className: "diss-learning-check__feedback", "data-result": responseCorrect ? "correct" : "incorrect" }, feedback)
+            );
+          }
+          function renderGuidedObservationCheck() {
+            if (!guidedMode || !guidedObservationOrgan || !currentGuided) return null;
+            var guidedFeedback = d.guidedObservationFeedback;
+            return React.createElement("section", {
+              id: "diss-guided-observation-check",
+              className: "diss-learning-check",
+              "data-phase": "reflect",
+              "data-guided-observation": true,
+              tabIndex: -1,
+              role: "region",
+              "aria-labelledby": "diss-guided-observation-title"
+            },
+              React.createElement("div", { className: "diss-learning-check__head" },
+                React.createElement("p", { className: "diss-learning-check__eyebrow" }, 'Guided evidence check'),
+                React.createElement("h3", { id: "diss-guided-observation-title" }, 'What observation supports this identification?'),
+                React.createElement("p", { className: "diss-learning-check__prompt" }, 'You located ' + guidedObservationOrgan.name + '. Choose the description that matches what this structure looks like or does. Locating alone does not advance the step.')
+              ),
+              React.createElement("div", { className: "diss-learning-check__phases", "aria-label": "Guided evidence progress" },
+                React.createElement("span", { className: "diss-learning-check__phase", "data-state": "complete" }, '\u2713 Locate'),
+                React.createElement("span", { className: "diss-learning-check__phase", "data-state": "current", "aria-current": "step" }, 'Observe'),
+                React.createElement("span", { className: "diss-learning-check__phase", "data-state": "upcoming" }, 'Verify')
+              ),
+              React.createElement("div", { className: "diss-learning-check__options", role: "group", "aria-label": "Choose the matching specimen observation" },
+                guidedObservationOptions.map(function (option) {
+                  var isChosen = guidedFeedback && guidedFeedback.choiceId === option.id;
+                  return React.createElement("button", {
+                    type: "button",
+                    key: option.id,
+                    className: "diss-learning-check__option",
+                    "aria-pressed": !!isChosen,
+                    "data-result": isChosen ? (guidedFeedback.correct ? "correct" : "incorrect") : undefined,
+                    onClick: function () { recordGuidedObservationChoice(option.id); }
+                  }, String(option.fn || 'No observation available.').split('.')[0] + '.');
+                })
+              ),
+              guidedFeedback && React.createElement("p", { className: "diss-learning-check__feedback", "data-result": guidedFeedback.correct ? "correct" : "incorrect" }, guidedFeedback.message)
+            );
+          }
           function captureVisualEvidence() {
             try {
               var sourceCanvas = document.querySelector('[data-diss-canvas]');
@@ -13532,10 +14075,10 @@ var d = labToolData.dissection || {};
             }
             cancelActiveCanvasGesture('Specimen gesture canceled before changing specimens; no action was recorded.');
             closeTimedPractical();
-            updMany({ guidedMode: false, guidedTargetIds: [] });
+            updMany({ guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null });
             var viewed = Object.assign({}, d.specimensViewed || {});
             viewed[sk] = true;
-            updMany({ specimen: sk, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, organSearch: '', exploredOrgans: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFeedback: null, completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _viewTransition: null, _layerBrowseTransition: null });
+            updMany({ specimen: sk, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _viewTransition: null, _layerBrowseTransition: null });
             if (typeof announceToSR === 'function') announceToSR('Selected ' + sp.name + '. Loading saved progress for the ' + ((sp.layers[0] || {}).name || 'first') + ' layer.');
             if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
           }
@@ -13547,7 +14090,7 @@ var d = labToolData.dissection || {};
           }
           function requestSpecimenReset() {
             upd('resetConfirmPending', true);
-            var message = 'Reset confirmation opened. This will remove explored structures, notes, evidence frames, quiz progress, and technique attempts for ' + spec.name + '.';
+            var message = 'Reset confirmation opened. This will remove viewed structures, verified identifications, notes, evidence frames, quiz progress, and technique attempts for ' + spec.name + '.';
             setProcedureFeedback(message, 'caution');
             if (typeof announceToSR === 'function') announceToSR(message);
             focusResetControl('diss-reset-confirm');
@@ -13560,7 +14103,7 @@ var d = labToolData.dissection || {};
           }
           function confirmSpecimenReset() {
             closeTimedPractical();
-            updMany({ activeLayer: (spec.layers[0] || {}).id || 'skin', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, exploredOrgans: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFeedback: null, completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false });
+            updMany({ activeLayer: (spec.layers[0] || {}).id || 'skin', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false });
             updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalTargetIds: [], quizExplanation: null, guidedMode: false, guidedTargetIds: [], labelMode: d.practicalMode ? (d._prePracticalLabelMode || 'show') : (d.labelMode || 'show') });
             try { localStorage.removeItem('dissection_progress_' + specimen); } catch (e) {}
             if (addToast) addToast('\u21BA Progress reset for ' + spec.name, 'info');
@@ -13577,33 +14120,42 @@ var d = labToolData.dissection || {};
             var issue = fieldReadinessChecks.find(function (check) { return !check.ready; });
             if (!issue) { setProcedureFeedback('Field check passed. The current setup is ready for one deliberate contact.', 'success'); return; }
             if (issue.id === 'view') {
-              changeAnatomicalView(procedureProtocol.recommendedView, 'readiness rail');
+              updMany({ toolbarViewOpen: true, toolbarToolsOpen: false, toolbarStudyOpen: false });
+              focusDissectionTarget('diss-view-cycle', 'Choose the ' + procedureProtocol.recommendedView + ' view yourself, using the specimen landmarks as evidence.');
               return;
             }
             if (issue.id === 'optics') {
-              updMany({ inspectionLens: true, lensFocusDepth: currentOpticalInspection.idealDepth || 'structure' });
-              setProcedureFeedback('Optics tuned to ' + (currentOpticalInspection.idealDepth || 'structure') + ' focus. ' + currentOpticalInspection.suggestion, 'working');
+              updMany({ toolbarViewOpen: true, toolbarToolsOpen: false, toolbarStudyOpen: false });
+              focusDissectionTarget('diss-view-tools', 'Adjust focus and illumination yourself. ' + currentOpticalInspection.suggestion);
               return;
             }
             if (issue.id === 'tool') {
               prepareNextProcedureStep();
               return;
             }
-            setProcedureFeedback('Tissue needs attention before contact. ' + issue.detail, 'caution');
+            setProcedureFeedback('Tissue needs attention before contact. Decide which intervention matches this evidence: ' + issue.detail, 'caution');
           }
           function prepareNextProcedureStep() {
             var next = nextProcedureInfo();
             if (next.action === 'complete') {
+              var completionLearningGate = procedureLearningGateFor(next.action, currentProcedure);
+              if (completionLearningGate.required) {
+                focusDissectionTarget('diss-learning-checkpoint', 'Explain the final observed response before completing this layer.');
+                return;
+              }
               setProcedureFeedback('This layer protocol is complete. Review the debrief or continue to the next layer.', 'success');
               return;
             }
-            var nextTool = procedureInstrumentForAction(next.action);
-            selectProcedureInstrument(nextTool, 'next-step planner');
-            if (next.action !== 'dropper' && next.action !== 'wick' && (d.anatomicalView || anatomicalView) !== procedureProtocol.recommendedView) {
-              changeAnatomicalView(procedureProtocol.recommendedView, 'next-step planner');
+            var nextLearningGate = procedureLearningGateFor(next.action, currentProcedure);
+            if (nextLearningGate.required) {
+              focusDissectionTarget('diss-learning-checkpoint', nextLearningGate.phase === 'reflect' ? 'Explain the observed response before preparing another tool.' : 'Choose a safe plan before preparing the instrument.');
+              return;
             }
+            var nextTool = procedureInstrumentForAction(next.action);
             var tool = PROCEDURE_INSTRUMENTS.find(function (entry) { return entry.id === nextTool; }) || { label: nextTool };
-            setProcedureFeedback('Next-step plan ready: ' + tool.label + '. ' + next.label + ' Review the cue, then make one controlled contact.', 'working');
+            upd('techniquePanelOpen', true);
+            setProcedureFeedback('Planner opened. Choose ' + tool.label + ', verify the view and calibration, then demonstrate ' + next.label.toLowerCase() + '. No setup was changed automatically.', 'working');
+            focusDissectionTarget('diss-instrument-' + nextTool);
           }
           function selectProcedureInstrument(toolId, inputMethod) {
             var tool = PROCEDURE_INSTRUMENTS.find(function (entry) { return entry.id === toolId; });
@@ -13717,7 +14269,7 @@ var d = labToolData.dissection || {};
             var layerMotionReduced = reducedMotionEnabled;
             try { layerMotionReduced = reducedMotionEnabled || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { layerMotionReduced = reducedMotionEnabled; }
             var layerBrowseDuration = layerMotionReduced ? 1 : 720;
-            updMany({ activeLayer: layerId, selectedOrgan: null, hoveredOrgan: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], quizFeedback: null, quizExplanation: null, _viewTransition: null,
+            updMany({ activeLayer: layerId, selectedOrgan: null, hoveredOrgan: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, quizFeedback: null, quizExplanation: null, _viewTransition: null,
               _layerBrowseTransition: { active: true, fromId: fromLayer.id, fromName: fromLayer.name, fromIcon: fromLayer.icon, fromIndex: fromLayerIdx, toId: layer.id, toName: layer.name, toIcon: layer.icon, toIndex: layerIdx, direction: layerIdx > fromLayerIdx ? 'deeper' : 'superficial', startedAt: Date.now(), duration: layerBrowseDuration, reducedMotion: layerMotionReduced, specimenShape: spec.bodyShape }
             });
             var layerMessage = 'Viewing ' + layer.name + ' layer, step ' + (layerIdx + 1) + ' of ' + spec.layers.length + '. Moving ' + (layerIdx > fromLayerIdx ? 'deeper' : 'toward the surface') + ' from ' + fromLayer.name + '.';
@@ -13727,13 +14279,13 @@ var d = labToolData.dissection || {};
           function moveThroughLayer() {
             if (d._incisionAnim && d._incisionAnim.active) return;
             if (currentLayerDone && nextLayerDef) { selectLayer(nextLayerDef.id); return; }
-            if (!currentLayerDone) performNextProcedureStep();
+            if (!currentLayerDone) performPrimaryNextAction();
           }
 
           function closeTimedPractical() {
             try { if (window.__alloDissectionPracticalInterval) clearInterval(window.__alloDissectionPracticalInterval); window.__alloDissectionPracticalInterval = null; window.__alloDissectionPracticalScore = 0; } catch (e) {}
             if (!d.practicalMode) return;
-            updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalTargetIds: [], quizFeedback: null, quizExplanation: null, hoveredOrgan: null, labelMode: d._prePracticalLabelMode || 'show' });
+            updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalTargetIds: [], quizFeedback: null, quizExplanation: null, hoveredOrgan: null, guidedObservationPending: null, guidedObservationFeedback: null, labelMode: d._prePracticalLabelMode || 'show' });
           }
 
           function clearAssessmentTeachingTimers() {
@@ -13756,7 +14308,7 @@ var d = labToolData.dissection || {};
             if (routeIsClean) return;
             cancelActiveCanvasGesture('Specimen gesture canceled before changing learning routes; no action was recorded.');
             if (route === 'study') {
-              updMany({ guidedMode: false, guidedTargetIds: [], quizMode: d.practicalMode ? true : false, quizFeedback: d.practicalMode ? d.quizFeedback : null, toolbarStudyOpen: true, toolbarViewOpen: false, toolbarToolsOpen: false });
+              updMany({ guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, quizMode: d.practicalMode ? true : false, quizFeedback: d.practicalMode ? d.quizFeedback : null, toolbarStudyOpen: true, toolbarViewOpen: false, toolbarToolsOpen: false });
               if (typeof announceToSR === 'function') announceToSR(secondaryStudyOpen ? 'Study tools open. The active study activity is unchanged.' : 'Study tools open. Choose flashcards, comparison, or a timed practical.');
               return;
             }
@@ -13764,20 +14316,20 @@ var d = labToolData.dissection || {};
             if (route === 'guided') {
               var firstGuided = guidedSteps[0];
               if (!firstGuided) {
-                updMany({ flashcardMode: false, compareMode: false, quizMode: false, guidedMode: false, guidedTargetIds: [], toolbarStudyOpen: false });
+                updMany({ flashcardMode: false, compareMode: false, quizMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, toolbarStudyOpen: false });
                 setProcedureFeedback('Guided investigation is not ready yet. Complete the current reveal step or change view until at least one structure is visible.', 'caution');
                 return;
               }
-              updMany({ flashcardMode: false, compareMode: false, quizMode: false, guidedMode: true, guidedStep: 0, guidedTargetIds: guidedOrgans.map(function (org) { return org.id; }), toolbarStudyOpen: false });
+              updMany({ flashcardMode: false, compareMode: false, quizMode: false, guidedMode: true, guidedStep: 0, guidedTargetIds: guidedOrgans.map(function (org) { return org.id; }), guidedObservationPending: null, guidedObservationFeedback: null, toolbarStudyOpen: false });
               if (typeof announceToSR === 'function') announceToSR('Guided investigation started. ' + firstGuided.prompt);
               clearAssessmentTeachingTimers();
             } else if (route === 'quiz') {
               clearAssessmentTeachingTimers();
-              updMany({ flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0, quizFeedback: null, quizExplanation: null, selectedOrgan: null, hoveredOrgan: null, quizSeed: Date.now(), quizAnswerMode: d.quizAnswerMode || 'choices', toolbarStudyOpen: false, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
+              updMany({ flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0, quizFeedback: null, quizExplanation: null, quizRetry: null, quizReviewQueue: [], selectedOrgan: null, hoveredOrgan: null, quizSeed: Date.now(), quizAnswerMode: d.quizAnswerMode || 'choices', toolbarStudyOpen: false, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
               updMany({ inspectionLens: false, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, macroInset: false, _procedureDemo: null, _procedureReplay: null });
               if (typeof announceToSR === 'function') announceToSR('Practice assessment started. Choose multiple choice or answer directly on the specimen.');
             } else {
-              updMany({ flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], quizMode: false, quizFeedback: null, toolbarStudyOpen: false });
+              updMany({ flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, quizMode: false, quizFeedback: null, toolbarStudyOpen: false });
               if (typeof announceToSR === 'function') announceToSR('Free explore mode active.');
             }
           }
@@ -13792,7 +14344,7 @@ var d = labToolData.dissection || {};
             }
             if (exposureState !== 'visible') {
               upd('selectedOrgan', org.id);
-              setProcedureFeedback('Reviewing previously recorded evidence for ' + org.name + '. The structure is not currently visible, so no new exploration progress was added.', 'working');
+              setProcedureFeedback('Reviewing previously recorded evidence for ' + org.name + '. The structure is not currently visible, so no new viewing progress was added.', 'working');
               return true;
             }
             var explored = Object.assign({}, d.exploredOrgans || {});
@@ -13801,15 +14353,7 @@ var d = labToolData.dissection || {};
             var completesStructureScenario = currentScenarioDefinition().id === 'structure-trace' && exploredForSpecimen >= instructorRequiredStructures;
             updMany({ selectedOrgan: org.id, exploredOrgans: explored, scenarioCompletedAt: completesStructureScenario ? Date.now() : (Number(d.scenarioCompletedAt) || 0) });
             if (guidedMode && currentGuided && org.id === currentGuided.organId) {
-              upd('guidedStep', guidedStep + 1);
-              awardStemXP('dissection', 2, 'Found ' + org.name + ' in guided tour');
-              sfxDisProbe();
-              if (addToast) addToast('Found ' + org.name + '!', 'success');
-              if (guidedStep + 1 >= guidedSteps.length) {
-                updMany({ guidedMode: false, guidedComplete: true, guidedTargetIds: [] });
-                awardStemXP('dissection', 10, 'Completed guided tour');
-                if (addToast) addToast('Guided tour complete!', 'success');
-              }
+              beginGuidedObservation(org);
             }
 
 
@@ -13860,7 +14404,7 @@ var d = labToolData.dissection || {};
                 [
                   { label: 'Specimen', value: spec.icon + ' ' + spec.name },
                   { label: 'Layer', value: (currentLayerIdx + 1) + ' of ' + spec.layers.length + ' · ' + currentLayerDef.name },
-                  { label: 'Structures explored', value: exploredCount + ' of ' + totalOrgansInSpecimen }
+                  { label: 'Structures viewed', value: exploredCount + ' of ' + totalOrgansInSpecimen }
                 ].map(function (stat) {
                   return React.createElement("div", { className: "diss-stat", key: stat.label },
                     React.createElement("span", { className: "diss-stat__label" }, stat.label),
@@ -13871,6 +14415,8 @@ var d = labToolData.dissection || {};
             ),
 
             renderNextActionCard(),
+            renderProcedureLearningCheckpoint(),
+            renderGuidedObservationCheck(),
 
             React.createElement("div", { className: "diss-mode-rail", role: "toolbar", "aria-label": "Learning route", "aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown },
               [
@@ -13971,7 +14517,7 @@ var d = labToolData.dissection || {};
             ),
 
             // ── View group expanded ──
-            d.toolbarViewOpen && React.createElement("div", { id: "diss-view-tools", className: "diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]", role: "region", "aria-label": "View and accessibility controls" },
+            d.toolbarViewOpen && React.createElement("div", { id: "diss-view-tools", className: "diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]", role: "region", tabIndex: -1, "aria-label": "View and accessibility controls" },
               React.createElement("button", { disabled: !!d.quizMode, "aria-label": d.quizMode ? "Organ name labels hidden during assessment" : "Toggle organ name labels", "aria-pressed": !d.quizMode && d.labelMode !== 'hidden', onClick: function () { upd('labelMode', d.labelMode === 'show' ? 'hidden' : 'show'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (!d.quizMode && d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83C\uDFF7 Labels'),
               React.createElement("button", { "aria-label": "Toggle high contrast mode", "aria-pressed": highContrastEnabled, onClick: function () { setAccessibilityPreference('highContrast', !highContrastEnabled, 'High contrast'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (highContrastEnabled ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200') }, '\u2600 High contrast'),
               React.createElement("button", { "aria-label": "Toggle additional reduced motion; operating system reduced motion settings are always honored", "aria-pressed": reducedMotionEnabled, onClick: function () { setAccessibilityPreference('reducedMotion', !reducedMotionEnabled, 'Reduced motion'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (reducedMotionEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, reducedMotionEnabled ? '\u23F8 Reduced motion on' : '\u25B6 Reduced motion off'),
@@ -13981,7 +14527,7 @@ var d = labToolData.dissection || {};
               React.createElement("button", { "aria-label": "Toggle tactile instrument feedback", "aria-pressed": d.tactileFeedback !== false, onClick: function () { upd('tactileFeedback', d.tactileFeedback === false); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.tactileFeedback !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.tactileFeedback !== false ? '\u223F Tactile on' : '\u223F Tactile off'),
               React.createElement("button", { "aria-label": "Visual presentation: cycle guided, realistic, and accessible", onClick: function () { setVisualRealism(visualRealism === 'guided' ? 'realistic' : (visualRealism === 'realistic' ? 'accessible' : 'guided')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2726 Visuals: ' + (visualRealism === 'realistic' ? 'Realistic' : visualRealism === 'accessible' ? 'Accessible' : 'Guided')),
               !d.quizMode && React.createElement(React.Fragment, null,
-              React.createElement("button", { disabled: !!d.practicalMode, "aria-label": d.practicalMode ? "Anatomical view locked during timed practical" : "Anatomical view: cycle dorsal, ventral, lateral, and internal", onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'view toolbar'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB View: ' + anatomicalView),
+              React.createElement("button", { id: "diss-view-cycle", disabled: !!d.practicalMode, "aria-label": d.practicalMode ? "Anatomical view locked during timed practical" : "Anatomical view: cycle dorsal, ventral, lateral, and internal", onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'view toolbar'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB View: ' + anatomicalView),
               React.createElement("button", { "aria-label": "Toggle layer cross-section", "aria-pressed": crossSectionMode, onClick: function () { upd('crossSectionMode', !crossSectionMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (crossSectionMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A4 Cross-section ' + (crossSectionMode ? 'on' : 'off')),
               React.createElement("button", { "aria-label": "Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen", onClick: function () { var conditions = ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen']; upd('specimenCondition', conditions[(conditions.indexOf(specimenCondition) + 1) % conditions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Condition: ' + specimenCondition),
               React.createElement("button", { "aria-label": "Toggle curated anatomical relationships", "aria-pressed": relationshipMode, onClick: function () { upd('relationshipMode', !relationshipMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2194 Relationships ' + (relationshipMode ? 'on' : 'off')),
@@ -14061,7 +14607,7 @@ var d = labToolData.dissection || {};
                 onClick: function () {
                   var report = 'Virtual Dissection Lab Report: ' + spec.name + '\n' + '\u2500'.repeat(36) + '\n';
                   report += 'Specimen: ' + spec.name + '\nLayers revealed: ' + revealedLayerCount + '/' + spec.layers.length + '\n';
-                  report += 'Structures examined: ' + exploredCount + '/' + totalOrgansInSpecimen + '\nPractice score: ' + (d.quizScore || 0) + '/' + (d.quizTotal || 0) + '\n';
+                  report += 'Structures viewed: ' + exploredCount + '/' + totalOrgansInSpecimen + '\nVerified identifications: ' + verifiedIdentificationCount + '\nPractice score: ' + (d.quizScore || 0) + '/' + (d.quizTotal || 0) + '\n';
                   report += 'Active investigation time: ' + (d.timeSpent || 0) + ' seconds\n';
                   var techniqueLayers = spec.layers.map(function (layer) { return (d.procedureByLayer || {})[layer.id] || {}; });
                   var completedTechniques = techniqueLayers.filter(function (state) { return procedureStepIndex(state) >= (procedureProtocol.order || []).length; }).length;
@@ -14136,7 +14682,7 @@ var d = labToolData.dissection || {};
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-700 border border-red-300"
               }, '\u21BA Reset specimen'),
               d.resetConfirmPending && React.createElement("div", { id: "diss-reset-confirmation", className: "diss-reset-confirm", role: "group", "aria-labelledby": "diss-reset-confirm-title" },
-                React.createElement("p", { id: "diss-reset-confirm-title", role: "alert", "aria-live": "assertive", "aria-atomic": "true" }, 'Reset ' + spec.name + '? This permanently removes explored structures, notes, evidence frames, quiz progress, and technique attempts. Accessibility preferences are preserved.'),
+                React.createElement("p", { id: "diss-reset-confirm-title", role: "alert", "aria-live": "assertive", "aria-atomic": "true" }, 'Reset ' + spec.name + '? This permanently removes viewed structures, verified identifications, notes, evidence frames, quiz progress, and technique attempts. Accessibility preferences are preserved.'),
                 React.createElement("button", { id: "diss-reset-confirm", type: "button", "data-confirm": "true", onClick: confirmSpecimenReset }, 'Confirm reset'),
                 React.createElement("button", { id: "diss-reset-cancel", type: "button", onClick: cancelSpecimenReset }, 'Cancel')
               )
@@ -14172,7 +14718,7 @@ var d = labToolData.dissection || {};
                     }
                     var previousLabelMode = d.labelMode || 'show';
                     try { if (window.__alloDissectionPracticalInterval) clearInterval(window.__alloDissectionPracticalInterval); window.__alloDissectionPracticalScore = 0; } catch (e) {}
-                    updMany({ _prePracticalLabelMode: previousLabelMode, guidedMode: false, flashcardMode: false, compareMode: false, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, practicalMode: true, labelMode: 'hidden', quizMode: true, quizAnswerMode: 'hotspot', quizSeed: Date.now(), quizIdx: 0, quizScore: 0, quizTotal: 0, quizFeedback: null, quizExplanation: null, practicalTimer: 120, practicalTargetIds: practicalIds, selectedOrgan: null, hoveredOrgan: null, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
+                    updMany({ _prePracticalLabelMode: previousLabelMode, guidedMode: false, flashcardMode: false, compareMode: false, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, practicalMode: true, labelMode: 'hidden', quizMode: true, quizAnswerMode: 'hotspot', quizSeed: Date.now(), quizIdx: 0, quizScore: 0, quizTotal: 0, quizFeedback: null, quizExplanation: null, quizRetry: null, quizReviewQueue: [], practicalTimer: 120, practicalTargetIds: practicalIds, selectedOrgan: null, hoveredOrgan: null, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
                     updMany({ inspectionLens: false, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, macroInset: false, _procedureDemo: null, _procedureReplay: null });
                     var remaining = 120;
                     var practicalTimerId = setInterval(function () {
@@ -14314,6 +14860,13 @@ var d = labToolData.dissection || {};
                   ),
                     )
                   ),
+                  React.createElement("div", { className: "diss-pointer-guide", "data-diss-pointer-guide": true, "data-tone": pointerGuideData.tone, "data-mode": pointerGuideData.mode, role: "group", "aria-label": "Current pointer mode: " + pointerGuideData.label + ". " + pointerGuideData.instruction },
+                    React.createElement("span", { className: "diss-pointer-guide__cursor", "data-pointer-guide-icon": true, "aria-hidden": "true" }, pointerGuideData.icon),
+                    React.createElement("span", { className: "diss-pointer-guide__body" },
+                      React.createElement("strong", { "data-pointer-guide-label": true }, 'Pointer mode ? ' + pointerGuideData.label),
+                      React.createElement("span", { "data-pointer-guide-instruction": true }, pointerGuideData.instruction)
+                    )
+                  ),
                   React.createElement("div", { className: "diss-canvas-layout", "data-split": !d.quizMode && splitComparison && referenceEvidence ? "true" : "false" },
                     React.createElement("div", { className: "diss-canvas-frame", "data-diss-fullscreen-stage": true },
                       React.createElement("div", { id: "diss-fullscreen-dock", className: "diss-fullscreen-dock", role: "toolbar", "aria-label": "Fullscreen specimen view and tools" },
@@ -14368,6 +14921,8 @@ var d = labToolData.dissection || {};
                       },
                       onBlur: function (e) { e.currentTarget._keyboardFocus = false; e.currentTarget._keyboardPreviewOrganId = null; },
                       'data-diss-canvas': true,
+                      'data-cursor-mode': pointerGuideData.mode,
+                      'data-cursor-tone': pointerGuideData.tone,
                       'aria-roledescription': 'interactive specimen canvas',
                       'aria-labelledby': 'diss-canvas-label',
                       'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space 0 R V X M P F 1 2 3 4 5 6 7',
@@ -14459,7 +15014,7 @@ var d = labToolData.dissection || {};
                     canvas._panStartY = null;
                     canvas._panOrigX = null;
                     canvas._panOrigY = null;
-                    canvas.style.cursor = (canvas._zoom || 1) > 1.01 ? 'grab' : 'crosshair';
+                    syncCanvasPointerPresentation(canvas, null);
 
                   },
 
@@ -14474,13 +15029,14 @@ var d = labToolData.dissection || {};
                     e.currentTarget._toolVector = null;
                     e.currentTarget._toolPressure = null;
                     upd('hoveredOrgan', null);
+                    syncCanvasPointerPresentation(e.currentTarget, null);
                   },
 
                   width: 500, height: 600,
 
                       className: "diss-canvas w-full rounded-xl border border-slate-400 cursor-crosshair",
 
-                      style: { aspectRatio: '5/6', background: 'var(--allo-stem-canvas, #0f172a)', touchAction: d.quizMode && (d.canvasZoom || 1) <= 1.01 ? 'pan-y' : (((d.canvasZoom || 1) > 1.01 || d.annotateMode || d.rulerMode || activeInstrument === 'scalpel' || activeInstrument === 'pin' || ((activeInstrument === 'probe' || activeInstrument === 'dropper' || activeInstrument === 'wick') && (d.canvasZoom || 1) <= 1.01)) ? 'none' : ((activeInstrument === 'scissors' || activeInstrument === 'forceps') ? 'none' : 'pan-y')) }
+                      style: { aspectRatio: '5/6', background: 'var(--allo-stem-canvas, #0f172a)', cursor: pointerGuideData.cursor, touchAction: (d.canvasZoom || 1) <= 1.01 && (d.quizMode || guidedMode || currentLearningGate.required || !currentToolReadiness.safeToAct || procedureNext.action === 'complete') ? 'pan-y' : (((d.canvasZoom || 1) > 1.01 || d.annotateMode || d.rulerMode || activeInstrument === 'scalpel' || activeInstrument === 'pin' || ((activeInstrument === 'probe' || activeInstrument === 'dropper' || activeInstrument === 'wick') && (d.canvasZoom || 1) <= 1.01)) ? 'none' : ((activeInstrument === 'scissors' || activeInstrument === 'forceps') ? 'none' : 'pan-y')) }
 
                       })
                     ),
@@ -14944,7 +15500,8 @@ var d = labToolData.dissection || {};
                       })
                     ),
                     React.createElement("div", { className: "diss-procedure__controls" },
-                      React.createElement("button", { type: "button", className: "diss-procedure__next", disabled: !!(d._incisionAnim && d._incisionAnim.active) || procedureNext.action === 'complete', onClick: performNextProcedureStep, "aria-label": procedureNext.action === 'complete' ? "Technique protocol complete; use the Next best action card to inspect and record evidence" : procedureNext.label }, procedureNext.action === 'complete' ? 'Technique complete' : procedureNext.label),
+                      React.createElement("button", { type: "button", className: "diss-procedure__next", disabled: !!(d._incisionAnim && d._incisionAnim.active) || procedureNext.action === 'complete' || currentLearningGate.required || activeInstrument !== procedureNext.instrument || !nextToolReadiness || !nextToolReadiness.safeToAct, onClick: performNextProcedureStep, "aria-describedby": "diss-equivalent-technique-note", "aria-label": procedureNext.action === 'complete' ? "Technique protocol complete; use the Next best action card to inspect and record evidence" : "Motor-neutral equivalent: " + procedureNext.label + ". Choose the required tool and complete prediction and readiness checks first." }, procedureNext.action === 'complete' ? 'Technique complete' : ('Motor-neutral: ' + procedureNext.label)),
+                      React.createElement("span", { id: "diss-equivalent-technique-note", className: "diss-sr-only" }, 'This control provides a motor-neutral equivalent after you choose the plan and prepare the field. It records supported technique and still requires an explanation before the next step.'),
                       React.createElement("button", { type: "button", onClick: showProcedureDemonstration, "aria-label": "Show a generalized safe-technique demonstration on the specimen" }, '\u25B6 Show technique'),
                       React.createElement("button", { type: "button", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: showProcedureReplay, "aria-label": "Replay the recorded technique attempt on the specimen" }, '\u21BB Replay attempt'),
                       React.createElement("button", { type: "button", disabled: procedureStageIdx === 0, onClick: saveTechniqueAttempt, "aria-label": "Save this technique attempt as a comparison baseline" }, '\u25A3 Save attempt'),
@@ -15561,7 +16118,7 @@ var d = labToolData.dissection || {};
                         "aria-pressed": d.selectedOrgan === org.id,
                         "aria-disabled": directoryVisible || isExplored ? undefined : true,
                         "data-exposure-state": directoryExposureState,
-                        "aria-label": org.name + (directoryVisible ? (isExplored ? ', explored' : ', not yet explored') : (isExplored ? ', previously explored; review evidence' : ', not currently visible; preview only')),
+                        "aria-label": org.name + (directoryVisible ? (isExplored ? ', viewed' : ', not yet viewed') : (isExplored ? ', previously viewed; review evidence' : ', not currently visible; preview only')),
                         title: directoryVisible ? (isExplored ? 'Explored' : 'Visible and ready to inspect') : (isExplored ? 'Review previously recorded evidence; no new exploration credit.' : 'Not currently visible. Activate for a recovery cue.'),
                         onClick: function () { chooseOrganFromDirectory(org); },
 
@@ -15612,11 +16169,11 @@ var d = labToolData.dissection || {};
 
                       var fb = d.quizFeedback;
 
-                      var isCorrect = fb && opt.id === quizQ.id;
+                      var isCorrect = fb && !d.practicalMode && opt.id === quizQ.id;
 
-                      var isChosen = fb && fb.chosen === opt.id;
+                      var isChosen = (fb && fb.chosen === opt.id) || (!fb && d.quizRetry && d.quizRetry.questionId === quizQ.id && d.quizRetry.chosen === opt.id);
 
-                      var isWrong = isChosen && !isCorrect;
+                      var isWrong = !d.practicalMode && isChosen && !isCorrect;
 
                       return React.createElement("button", { type: "button", key: opt.id, disabled: !!fb, "aria-label": opt.name + (isCorrect ? ', correct answer' : isWrong ? ', selected answer, incorrect' : ''),
 
@@ -15630,16 +16187,29 @@ var d = labToolData.dissection || {};
                     })
 
                   ),
+                  !d.practicalMode && d.quizRetry && !d.quizFeedback && React.createElement("div", { className: "mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2.5 text-amber-900", role: "status" },
+                    React.createElement("p", { className: "text-xs font-semibold" }, d.quizRetry.message),
+                    React.createElement("button", {
+                      type: "button",
+                      onClick: revealQuizAnswer,
+                      className: "mt-2 min-h-11 w-full rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100"
+                    }, 'Show answer \u00B7 supported practice')
+                  ),
 
-                  d.quizFeedback && React.createElement("div", {
+                  !d.practicalMode && d.quizFeedback && React.createElement("div", {
                     className: "mt-3 p-2.5 rounded-lg border " + (d.quizFeedback.correct ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-rose-50 border-rose-300 text-rose-800'),
                     role: "status",
                     "aria-live": "assertive"
                   }, d.quizFeedback.correct ? ('Correct — ' + quizQ.name + '.') : ('Not quite. The correct structure is ' + quizQ.name + '.')),
+                  d.practicalMode && d.quizFeedback && React.createElement("div", {
+                    className: "mt-3 rounded-lg border border-blue-300 bg-blue-50 p-2.5 text-blue-900",
+                    role: "status",
+                    "aria-live": "assertive"
+                  }, 'Response recorded. Correctness remains hidden until practical review.'),
 
                   d.quizFeedback && React.createElement("button", { type: "button", "aria-label": "Next Question",
 
-                    onClick: function () { updMany({ quizIdx: (d.quizIdx || 0) + 1, quizFeedback: null, quizExplanation: null, selectedOrgan: null, hoveredOrgan: null }); setTimeout(function () { var panel = document.getElementById('diss-quiz-panel'); if (panel) panel.focus(); }, 0); },
+                    onClick: function () { updMany({ quizIdx: (d.quizIdx || 0) + 1, quizFeedback: null, quizExplanation: null, quizRetry: null, selectedOrgan: null, hoveredOrgan: null }); setTimeout(function () { var panel = document.getElementById('diss-quiz-panel'); if (panel) panel.focus(); }, 0); },
 
                     className: "transition-colors w-full min-h-11 mt-2 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 active:scale-[0.97]"
 
@@ -15750,41 +16320,58 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                    React.createElement("span", { className: "text-[11px] font-bold text-blue-700" }, '\uD83D\uDCCA ' + 'Exploration'),
+                    React.createElement("span", { className: "text-[11px] font-bold text-blue-700" }, '\uD83D\uDCCA Learning evidence'),
 
-                    React.createElement("span", { className: "text-[11px] font-bold " + (progressPct >= 100 ? 'text-green-600' : 'text-blue-600') }, progressPct + '%')
+                    React.createElement("span", { className: "text-[11px] font-bold " + (masteryComplete ? 'text-green-700' : 'text-blue-700') }, masteryOverallPct + '%')
 
                   ),
 
                   React.createElement("div", { className: "w-full h-2 bg-blue-100 rounded-full overflow-hidden" },
 
-                    React.createElement("div", { role: "progressbar", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": progressPct, "aria-label": "Structures examined: " + exploredCount + " of " + totalOrgansInSpecimen, className: "h-full rounded-full transition-all duration-500 " + (progressPct >= 100 ? 'bg-green-700' : 'bg-blue-500'), style: { width: progressPct + '%' } })
+                    React.createElement("div", { role: "progressbar", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": progressPct, "aria-label": "Observation: structures viewed " + exploredCount + " of " + totalOrgansInSpecimen, className: "h-full rounded-full transition-all duration-500 " + (progressPct >= 100 ? 'bg-green-700' : 'bg-blue-500'), style: { width: progressPct + '%' } })
 
                   ),
 
-                  React.createElement("div", { className: "mt-1 text-[11px] text-blue-500" }, 'Structures Examined'.replace('{count}', exploredCount).replace('{total}', totalOrgansInSpecimen)),
+                  React.createElement("div", { className: "mt-1 text-[11px] text-blue-700" }, 'Observation: ' + exploredCount + ' of ' + totalOrgansInSpecimen + ' structures viewed'),
+                  React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2", "aria-label": "Learning evidence dimensions" },
+                    masteryDimensions.map(function (dimension) {
+                      return React.createElement("div", { key: dimension.id, className: "rounded-lg border border-blue-100 bg-white/80 p-2" },
+                        React.createElement("div", { className: "flex items-center justify-between gap-2 text-[11px]" },
+                          React.createElement("span", { className: "font-semibold text-slate-700" }, dimension.label),
+                          React.createElement("span", { className: "font-bold text-blue-800" }, dimension.value + '%')
+                        ),
+                        React.createElement("div", { className: "mt-1 h-1.5 overflow-hidden rounded-full bg-blue-100" },
+                          React.createElement("div", { role: "progressbar", "aria-label": dimension.label + ' evidence', "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": dimension.value, className: "h-full rounded-full " + (dimension.value >= 100 ? 'bg-green-700' : 'bg-blue-600'), style: { width: dimension.value + '%' } })
+                        )
+                      );
+                    })
+                  ),
+                  React.createElement("div", { className: "mt-1 text-[11px] text-slate-600" }, verifiedIdentificationCount + '/' + verifiedIdentificationGoal + ' guided identifications verified \u00B7 ' + specimenEvidenceCount + '/' + totalOrgansInSpecimen + ' evidence records \u00B7 assessment ' + (d.quizScore || 0) + '/' + (d.quizTotal || 0)),
 
-                  progressPct >= 100 && React.createElement("div", { className: "mt-1" },
+                  React.createElement("div", { className: "mt-2" },
 
-                    React.createElement("div", { className: "text-[11px] font-bold text-green-600" }, '\u2B50 ' + 'Specimen Complete!'),
+                    React.createElement("div", { className: "text-[11px] font-bold " + (masteryComplete ? 'text-green-700' : 'text-amber-800') }, masteryComplete ? '\u2713 Verified investigation complete' : (progressPct >= 100 ? 'Viewing milestone reached' : 'Practice in progress')),
 
                     React.createElement("div", { className: "text-[11px] text-emerald-500 mt-0.5" },
 
-                      '\uD83C\uDFC6 Identified ' + exploredCount + ' of ' + totalOrgansInSpecimen
+                      masteryComplete ? 'Technique, observation, evidence, and understanding all meet the practice criteria.' : (progressPct >= 100 ? 'Viewing every structure is a milestone, not proof of identification. Complete the remaining evidence and understanding checks.' : 'Continue the investigation; the log distinguishes viewing from verified understanding.')
 
                     ),
 
-                    React.createElement("button", { "aria-label": "Generate dissection completion summary",
+                    React.createElement("button", { type: "button", "aria-label": masteryComplete ? "Copy verified dissection completion summary" : "Copy dissection practice log",
 
                       onClick: function () {
 
-                        var cert = '\u2728 ' + 'Dissection Completion Summary' + ' \u2728\n';
+                        var cert = (masteryComplete ? 'Verified Dissection Completion Summary' : 'Dissection Practice Log') + '\n';
 
                         cert += '\u2500'.repeat(40) + '\n';
 
                         cert += 'Specimen' + ': ' + spec.icon + ' ' + spec.name + '\n';
 
-                        cert += 'Structures' + ': ' + totalOrgansInSpecimen + '/' + totalOrgansInSpecimen + '\n';
+                        cert += 'Observation: ' + progressPct + '% (' + exploredCount + '/' + totalOrgansInSpecimen + ' viewed)\n';
+                        cert += 'Technique: ' + techniqueLearningPct + '%\n';
+                        cert += 'Evidence: ' + evidenceProgressPct + '% (' + specimenEvidenceCount + '/' + totalOrgansInSpecimen + ' records)\n';
+                        cert += 'Understanding: ' + understandingProgressPct + '% (' + verifiedIdentificationCount + ' guided identifications verified)\n';
 
                         cert += 'Layers revealed: ' + revealedLayerCount + '/' + spec.layers.length + '\n';
 
@@ -15794,17 +16381,17 @@ var d = labToolData.dissection || {};
 
                         cert += '\u2500'.repeat(40) + '\n';
 
-                        cert += 'Learner-generated completion summary';
+                        cert += masteryComplete ? 'Verified completion criteria met' : 'Practice in progress; completion criteria not yet met';
 
                         if (navigator.clipboard) navigator.clipboard.writeText(cert);
 
-                        if (addToast) addToast('\uD83C\uDF93 ' + 'Certificate copied!', 'success');
+                        if (addToast) addToast(masteryComplete ? 'Verified completion summary copied.' : 'Practice log copied.', 'success');
 
                       },
 
                       className: "mt-1 px-2 py-1 rounded-lg text-[11px] font-bold bg-gradient-to-r from-green-700 to-emerald-700 text-white"
 
-                    }, '\uD83C\uDF93 ' + 'Copy Summary')
+                    }, masteryComplete ? '\uD83C\uDF93 Copy verified summary' : 'Copy practice log')
 
                   )
 

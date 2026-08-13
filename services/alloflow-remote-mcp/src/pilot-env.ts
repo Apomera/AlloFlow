@@ -6,7 +6,7 @@ export const PILOT_SCOPES = [
 ] as const;
 export const REQUIRED_PILOT_ACCEPTANCE_VERSION =
   "institution-pilot-synthetic-v2";
-export const PILOT_DATABASE_SCHEMA_VERSION = 5;
+export const PILOT_DATABASE_SCHEMA_VERSION = 7;
 export const PILOT_CHECKPOINT_SCHEMA_VERSION = 1;
 export const PILOT_RUNNER_PROTOCOL_VERSION = "remediation-run-v1";
 

@@ -118,7 +118,8 @@ describe('Typing Practice Battle Mode timing and interaction accessibility', () 
       pausedMs: 4_000,
       outgoingFlashTo: 10_200,
     });
-    expect(source).toContain('if (battleSt.ended || battleSt.paused || battleSt.pickerOpen) return;');
+    expect(source).toContain("if (state.battle.view !== 'playing' || battleSt.ended || battleSt.paused || battleSt.pickerOpen) return;");
+    expect(source).toContain('return typingPracticeAdvanceBattleTick(current, now');
     expect(source).not.toContain('pickerTimeoutAt');
     expect(source).not.toContain('auto-pick option 1');
     expect(source).toContain('No time limit · both stacks paused');

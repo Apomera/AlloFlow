@@ -341,6 +341,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-atlas-provenance{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 9px;width:100%;padding:0 9px 7px;color:#475569;font-size:9px;line-height:1.4}.anatomy-atlas-provenance dt{font-weight:900;color:#334155}.anatomy-atlas-provenance dd{min-width:0;margin:0;overflow-wrap:anywhere}.anatomy-atlas-provenance a{font-weight:850;color:#0369a1;text-decoration:underline;text-underline-offset:2px}.anatomy-atlas-scope-note{margin:0 9px 9px;padding:7px 8px;border-left:3px solid #0d9488;background:#ecfdf5;color:#065f46;font-size:9px;line-height:1.45}',
       '.anatomy-global-search{position:relative;flex:1 1 220px;min-width:180px;z-index:12}.anatomy-global-search-results{position:absolute;top:calc(100% + 5px);left:0;right:0;display:grid;gap:3px;max-height:260px;padding:5px;overflow-y:auto;border:1px solid #94a3b8;border-radius:11px;background:rgba(255,255,255,.98);box-shadow:0 16px 34px rgba(15,23,42,.2)}.anatomy-global-search-results button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:42px;padding:7px 9px;border-radius:8px;color:#0f172a;text-align:left}.anatomy-global-search-results button:hover,.anatomy-global-search-results button[aria-selected="true"]{background:var(--anatomy-soft);outline:1px solid var(--anatomy-accent)}.anatomy-global-search-results strong{font-size:11px}.anatomy-global-search-results span{font-size:9px;font-weight:800;color:#64748b;text-align:right}',
       '.anatomy-clinical-structures{max-width:400px;margin:9px auto 0;padding:10px;border:1px solid rgba(13,148,136,.34);border-radius:13px;background:linear-gradient(145deg,#f0fdfa,#f8fafc);box-shadow:0 8px 20px rgba(15,118,110,.08)}.anatomy-clinical-structures-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.anatomy-clinical-structures-head strong{font-size:12px;color:#134e4a}.anatomy-clinical-structures-head span{font-size:9px;font-weight:850;color:#0f766e}.anatomy-clinical-concept-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}.anatomy-clinical-concept{min-height:48px;padding:6px 7px;border:1px solid #99f6e4;border-radius:9px;background:#fff;color:#134e4a;text-align:left}.anatomy-clinical-concept strong,.anatomy-clinical-concept span{display:block}.anatomy-clinical-concept strong{font-size:10px}.anatomy-clinical-concept span{margin-top:2px;font:800 8px/1.25 ui-monospace,SFMono-Regular,monospace;color:#64748b}.anatomy-clinical-concept[data-selected="true"]{border-color:#0f766e;background:#ccfbf1;box-shadow:0 0 0 2px rgba(13,148,136,.16)}.anatomy-clinical-selection{margin-top:7px;padding:7px 8px;border-left:3px solid #eab308;background:#fffbeb;color:#713f12;font-size:10px;line-height:1.4}.anatomy-clinical-locator{display:grid;grid-template-columns:52px minmax(0,1fr);gap:9px;align-items:center;margin-top:8px;padding:8px;border-radius:10px;background:#fff;border:1px solid #cbd5e1}.anatomy-clinical-locator svg{width:48px;height:68px}.anatomy-clinical-locator p{margin:0 0 5px;font-size:9px;line-height:1.4;color:#475569}.anatomy-clinical-locator button{min-height:36px;padding:5px 8px;border-radius:8px;background:#0f766e;color:#fff;font-size:10px;font-weight:900}',
+      '.anatomy-clinical-ftu{margin:10px 0 0;padding:10px;border:1px solid #a7f3d0;border-radius:12px;background:linear-gradient(145deg,#f0fdf4,#ecfeff);box-shadow:0 8px 20px rgba(5,150,105,.08)}.anatomy-clinical-ftu-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}.anatomy-clinical-ftu-head h6{margin:0;color:#065f46;font-size:12px;font-weight:950}.anatomy-clinical-ftu-head p{margin:2px 0 0;color:#475569;font-size:9px;line-height:1.4}.anatomy-clinical-ftu-badge{padding:3px 7px;border-radius:999px;background:#d1fae5;color:#065f46;font-size:8px;font-weight:900;white-space:nowrap}.anatomy-clinical-ftu-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(170px,.8fr);gap:10px;margin-top:8px}.anatomy-clinical-ftu figure{margin:0;min-width:0}.anatomy-clinical-ftu-image{display:block;width:100%;height:auto;aspect-ratio:4031/3037;object-fit:contain;border:1px solid #cbd5e1;border-radius:10px;background:#fff}.anatomy-clinical-ftu figcaption{margin-top:5px;color:#475569;font-size:8px;line-height:1.4}.anatomy-clinical-ftu figcaption a{color:#0369a1;font-weight:850;text-decoration:underline}.anatomy-clinical-ftu-cells{display:grid;grid-template-columns:1fr 1fr;gap:4px;align-content:start}.anatomy-clinical-ftu-cell{min-height:44px;padding:5px 6px;border:1px solid #a7f3d0;border-radius:8px;background:#fff;color:#134e4a;text-align:left}.anatomy-clinical-ftu-cell strong,.anatomy-clinical-ftu-cell span{display:block}.anatomy-clinical-ftu-cell strong{font-size:9px;line-height:1.25}.anatomy-clinical-ftu-cell span{margin-top:2px;color:#64748b;font:800 7px/1.25 ui-monospace,SFMono-Regular,monospace}.anatomy-clinical-ftu-cell[data-selected=true]{border-color:#047857;background:#d1fae5;box-shadow:0 0 0 2px rgba(5,150,105,.14)}.anatomy-clinical-ftu-selection{grid-column:1/-1;margin-top:3px;padding:7px 8px;border-left:3px solid #0d9488;background:#fff;color:#134e4a;font-size:9px;line-height:1.45}.anatomy-clinical-ftu-selection strong,.anatomy-clinical-ftu-selection span{display:block}.anatomy-clinical-ftu-selection span{margin-top:2px;color:#475569}.anatomy-clinical-ftu-note{grid-column:1/-1;margin:0;color:#475569;font-size:8px;line-height:1.4}',
+      '@media (max-width:560px){.anatomy-clinical-concept-grid{grid-template-columns:1fr}.anatomy-clinical-ftu-layout{grid-template-columns:1fr}.anatomy-clinical-ftu-cells{grid-template-columns:1fr}.anatomy-clinical-ftu-cell{min-height:44px}}',
       '.anatomy-skin-tone-controls{padding-top:2px}.anatomy-skin-tone-controls>span:first-child{color:#64748b!important}',
       '@media (max-width:560px){.anatomy-visual-presets button{min-height:44px}.anatomy-display-summary,.anatomy-appearance-summary,.anatomy-model-source-summary{min-height:44px}.anatomy-layer-options button{min-height:42px}}',
       '@media (max-width:900px){.anatomy-workspace{grid-template-columns:1fr}.anatomy-body-shell{max-width:560px;margin-inline:auto;width:100%;}}',
@@ -752,6 +754,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       modelUrl: modelUrl,
       manifestUrl: anatomyAtlasUrl(candidate.manifestUrl),
       crosswalkUrl: anatomyAtlasUrl(candidate.crosswalkUrl),
+      metadataUrl: anatomyAtlasUrl(candidate.metadataUrl),
       attributionUrl: anatomyAtlasUrl(candidate.attributionUrl),
       sourceUrl: anatomyAtlasUrl(candidate.sourceUrl),
       canonicalIdentifier: anatomyAtlasUrl(candidate.canonicalIdentifier),
@@ -772,7 +775,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       bodyView: candidate.bodyView === 'posterior' ? 'posterior' : 'anterior',
       systems: systems,
       structureMap: structureMap,
-      structureLabels: structureLabels
+      structureLabels: structureLabels,
+      scaleBridge: normalizeAnatomyScaleBridge(candidate.scaleBridge),
+      tissueAtlas: normalizeAnatomyTissueAtlas(candidate.tissueAtlas)
     };
   }
   function getAnatomyAtlasConcepts(pack) {
@@ -789,6 +794,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       conceptsById[ontologyId].nodeNames.push(nodeName);
     });
     return Object.keys(conceptsById).map(function(ontologyId) { return conceptsById[ontologyId]; });
+  }
+  function normalizeAnatomyScaleBridge(candidate) {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return null;
+    var tissueTarget = candidate.tissueTarget === 'regionalAtlas' ? 'regionalAtlas' : '';
+    var cellTarget = candidate.cellTarget === 'microdissection' ? 'microdissection' : '';
+    var tissueStructureId = anatomyAtlasText(candidate.tissueStructureId, '', 120);
+    var cellContextId = anatomyAtlasText(candidate.cellContextId, '', 120);
+    if (!tissueTarget || !cellTarget || !/^[a-z0-9][a-z0-9_-]*$/i.test(tissueStructureId) || !/^[a-z0-9][a-z0-9_-]*$/i.test(cellContextId)) return null;
+    return {
+      organLabel: anatomyAtlasText(candidate.organLabel, 'Reference organ', 120),
+      tissueLabel: anatomyAtlasText(candidate.tissueLabel, 'Tissue detail', 120),
+      tissueTarget: tissueTarget,
+      tissueStructureId: tissueStructureId,
+      tissueStep: Math.max(0, Math.min(20, Math.floor(Number(candidate.tissueStep) || 0))),
+      cellLabel: anatomyAtlasText(candidate.cellLabel, 'Cell Microdissection', 120),
+      cellTarget: cellTarget,
+      cellContextId: cellContextId
+    };
+  }
+  function normalizeAnatomyTissueAtlas(candidate) {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return null;
+    var id = anatomyAtlasText(candidate.id, '', 120).toLowerCase();
+    var imageUrl = anatomyAtlasUrl(candidate.imageUrl);
+    if (!/^[a-z0-9][a-z0-9._-]*$/.test(id) || !imageUrl) return null;
+    var cellConcepts = Array.isArray(candidate.cellConcepts) ? candidate.cellConcepts.slice(0, 80).map(function(concept) {
+      if (!concept || typeof concept !== 'object' || Array.isArray(concept)) return null;
+      var conceptId = anatomyAtlasText(concept.id, '', 120);
+      if (!/^(?:CL|UBERON):[0-9]+$/.test(conceptId)) return null;
+      return {
+        id: conceptId,
+        label: anatomyAtlasText(concept.label, conceptId, 160),
+        nodeCount: Math.max(0, Math.min(5000, Math.floor(Number(concept.nodeCount) || 0))),
+        role: anatomyAtlasText(concept.role, '', 360)
+      };
+    }).filter(Boolean) : [];
+    if (!cellConcepts.length) return null;
+    return {
+      id: id,
+      title: anatomyAtlasText(candidate.title, 'Functional tissue unit', 160),
+      tissueLabel: anatomyAtlasText(candidate.tissueLabel, 'Reference tissue', 120),
+      tissueOntologyId: anatomyAtlasText(candidate.tissueOntologyId, '', 120),
+      organOntologyId: anatomyAtlasText(candidate.organOntologyId, '', 120),
+      imageUrl: imageUrl,
+      imageAlt: anatomyAtlasText(candidate.imageAlt, 'Functional tissue unit medical illustration.', 320),
+      crosswalkUrl: anatomyAtlasUrl(candidate.crosswalkUrl),
+      metadataUrl: anatomyAtlasUrl(candidate.metadataUrl),
+      sourceUrl: anatomyAtlasUrl(candidate.sourceUrl),
+      doiUrl: anatomyAtlasUrl(candidate.doiUrl),
+      licenseName: anatomyAtlasText(candidate.licenseName, 'License information unavailable', 160),
+      licenseUrl: anatomyAtlasUrl(candidate.licenseUrl),
+      attribution: anatomyAtlasText(candidate.attribution, '', 800),
+      attributionLabel: anatomyAtlasText(candidate.attributionLabel, 'HRA reference illustration', 200),
+      modifications: anatomyAtlasText(candidate.modifications, '', 400),
+      illustrationNodeCount: Math.max(0, Math.min(10000, Math.floor(Number(candidate.illustrationNodeCount) || 0))),
+      cellConcepts: cellConcepts
+    };
   }
   window.StemLab._anatomyAtlasPacks = Array.isArray(window.StemLab._anatomyAtlasPacks) ? window.StemLab._anatomyAtlasPacks : [];
   window.StemLab.registerAnatomyAtlasPack = function(candidate) {
@@ -820,6 +881,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     version: '1.3', referenceSex: 'female', laterality: 'left',
     primaryOntologyId: 'UBERON:0004538', modeledStructureCount: 31,
     focusStructureId: 'kidneys', focusLabel: 'Female left kidney', bodyView: 'posterior', systems: ['organs'],
+    scaleBridge: {
+      organLabel: 'Left kidney', tissueLabel: 'Kidney regions & nephron', tissueTarget: 'regionalAtlas',
+      tissueStructureId: 'kidneys', tissueStep: 0, cellLabel: 'Cell Microdissection',
+      cellTarget: 'microdissection', cellContextId: 'kidney'
+    },
+    tissueAtlas: {
+      id: 'hra-kidney-renal-corpuscle-v1.4',
+      title: 'Renal Corpuscle Functional Tissue Unit', tissueLabel: 'Renal corpuscle',
+      tissueOntologyId: 'UBERON:0001229', organOntologyId: 'UBERON:0002113',
+      imageUrl: __alloAnatomyAssetUrl('assets/anatomy/clinical-atlas/hra-kidney-renal-corpuscle-v1.4.png', 'stem_lab/assets/anatomy/clinical-atlas/hra-kidney-renal-corpuscle-v1.4.png'),
+      imageAlt: 'HRA medical illustration of a renal corpuscle showing the glomerular capillary tuft, Bowman capsule, arterioles, tubule entrance, and representative cell populations.',
+      crosswalkUrl: __alloAnatomyAssetUrl('assets/anatomy/clinical-atlas/hra-kidney-renal-corpuscle-v1.4-crosswalk.csv', 'stem_lab/assets/anatomy/clinical-atlas/hra-kidney-renal-corpuscle-v1.4-crosswalk.csv'),
+      metadataUrl: __alloAnatomyAssetUrl('assets/anatomy/clinical-atlas/hra-kidney-renal-corpuscle-v1.4-metadata.yaml', 'stem_lab/assets/anatomy/clinical-atlas/hra-kidney-renal-corpuscle-v1.4-metadata.yaml'),
+      sourceUrl: 'https://lod.humanatlas.io/2d-ftu/kidney-renal-corpuscle/v1.4/',
+      doiUrl: 'https://doi.org/10.48539/HBM489.GJJK.324',
+      licenseName: 'CC BY 4.0', licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+      attribution: '2D Reference Renal Corpuscle FTU for Kidney v1.4, Rachel Bajema (2026), Human Reference Atlas / HuBMAP, HBM489.GJJK.324, CC BY 4.0.',
+      attributionLabel: 'HRA reference illustration by Rachel Bajema (2026)',
+      modifications: 'Source PNG, crosswalk, and metadata are vendored byte-for-byte; the viewer adds responsive framing, accessible concept controls, and explanatory text.',
+      illustrationNodeCount: 142,
+      cellConcepts: [
+        { id: 'CL:0000648', label: 'Kidney granular cell', nodeCount: 15, role: 'Juxtaglomerular cell near the afferent arteriole that releases renin and helps regulate filtration pressure.' },
+        { id: 'CL:0000653', label: 'Podocyte', nodeCount: 27, role: 'Specialized visceral epithelial cell whose interdigitating foot processes contribute to the glomerular filtration barrier.' },
+        { id: 'CL:0002306', label: 'Proximal tubule epithelial cell', nodeCount: 8, role: 'Tubule cell that begins reclaiming much of the filtered water and useful solutes.' },
+        { id: 'CL:1000452', label: 'Parietal epithelial cell', nodeCount: 12, role: 'Cell lining the outer wall of Bowman capsule around the urinary space.' },
+        { id: 'CL:1000742', label: 'Glomerular mesangial cell', nodeCount: 16, role: 'Support and signaling cell positioned between glomerular capillary loops.' },
+        { id: 'CL:1000850', label: 'Macula densa epithelial cell', nodeCount: 7, role: 'Specialized distal-tubule cell that senses tubular sodium chloride during feedback control of filtration.' },
+        { id: 'CL:1001005', label: 'Glomerular capillary endothelial cell', nodeCount: 10, role: 'Fenestrated blood-facing cell forming one layer of the glomerular filtration barrier.' },
+        { id: 'CL:1001096', label: 'Afferent arteriole endothelial cell', nodeCount: 19, role: 'Cell lining the vessel that delivers blood into the glomerular capillary tuft.' },
+        { id: 'CL:1001099', label: 'Efferent arteriole endothelial cell', nodeCount: 28, role: 'Cell lining the vessel that drains blood from the glomerular capillary tuft.' }
+      ]
+    },
     structureLabels: {
       'UBERON:0004538': 'Left kidney', 'UBERON:0002015': 'Kidney capsule', 'UBERON:0008716': 'Hilum of kidney',
       'UBERON:0000362': 'Renal medulla', 'UBERON:0001228': 'Renal papilla', 'UBERON:0004200': 'Renal pyramid',
@@ -837,6 +930,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       VH_F_renal_pyramid_L_g: 'UBERON:0004200', VH_F_renal_pyramid_L_h: 'UBERON:0004200', VH_F_renal_pyramid_L_i: 'UBERON:0004200',
       VH_F_renal_pyramid_L_j: 'UBERON:0004200', VH_F_renal_pyramid_L_k: 'UBERON:0004200', VH_F_cortex_of_kidney_L: 'UBERON:0001225',
       VH_F_renal_column_L: 'UBERON:0001284', VH_F_outer_cortex_of_kidney_L: 'UBERON:0002189'
+    }
+  });
+  window.StemLab.registerAnatomyAtlasPack({
+    id: 'hra-heart-female-v1.3',
+    title: 'Clinical Heart Atlas',
+    description: 'Standalone HRA female-heart reference organ with a chamber, valve, and papillary-muscle ontology crosswalk; it is not positioned on the whole-body model.',
+    modelUrl: __alloAnatomyAssetUrl('assets/anatomy/clinical-atlas/hra-heart-female-v1.3.glb', 'stem_lab/assets/anatomy/clinical-atlas/hra-heart-female-v1.3.glb'),
+    manifestUrl: __alloAnatomyAssetUrl('assets/anatomy/clinical-atlas/asset-manifest.json', 'stem_lab/assets/anatomy/clinical-atlas/asset-manifest.json'),
+    crosswalkUrl: __alloAnatomyAssetUrl('assets/anatomy/clinical-atlas/hra-heart-female-v1.3-crosswalk.csv', 'stem_lab/assets/anatomy/clinical-atlas/hra-heart-female-v1.3-crosswalk.csv'),
+    metadataUrl: __alloAnatomyAssetUrl('assets/anatomy/clinical-atlas/hra-heart-female-v1.3-metadata.yaml', 'stem_lab/assets/anatomy/clinical-atlas/hra-heart-female-v1.3-metadata.yaml'),
+    attributionUrl: __alloAnatomyAssetUrl('assets/anatomy/clinical-atlas/ATTRIBUTION.md', 'stem_lab/assets/anatomy/clinical-atlas/ATTRIBUTION.md'),
+    sourceUrl: 'https://lod.humanatlas.io/ref-organ/heart-female/v1.3/',
+    canonicalIdentifier: 'https://lod.humanatlas.io/ref-organ/heart-female/v1.3',
+    licenseName: 'CC BY 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+    attribution: '3D Reference Organ for Heart, Female v1.3, Kristen Browne and Heidi Schlehlein (2024), Human Reference Atlas/HuBMAP, HBM449.SHRV.225, CC BY 4.0. Derived from the NLM Visible Human Dataset.',
+    modifications: 'Source GLB, CSV, and metadata are vendored byte-for-byte; the viewer applies runtime centering, uniform scaling, concept highlighting, and double-sided material rendering.',
+    usage: 'Static single-donor reference visualization for research and education; not a population average, patient-specific scan, medical advice, or a diagnostic device.',
+    publisher: 'Human Reference Atlas / HuBMAP',
+    version: '1.3', referenceSex: 'female', laterality: '',
+    primaryOntologyId: 'UBERON:0000948', modeledStructureCount: 17,
+    focusStructureId: 'heart', focusLabel: 'Female heart', bodyView: 'anterior', systems: ['circulatory'],
+    scaleBridge: {
+      organLabel: 'Heart', tissueLabel: 'Heart chambers & cardiac flow', tissueTarget: 'regionalAtlas',
+      tissueStructureId: 'heart', tissueStep: 0, cellLabel: 'Generic animal cell microdissection',
+      cellTarget: 'microdissection', cellContextId: 'heart'
+    },
+    structureLabels: {
+      'UBERON:0000948': 'Heart', 'UBERON:0002094': 'Interventricular septum',
+      'UBERON:0002079': 'Left cardiac atrium', 'UBERON:0002084': 'Left ventricle',
+      'UBERON:0002078': 'Right cardiac atrium', 'UBERON:0002080': 'Right ventricle',
+      'UBERON:0002494': 'Papillary muscle of heart', 'FMA:7264': 'Anterior papillary muscle of left ventricle',
+      'FMA:7265': 'Anterolateral head of lateral papillary muscle of left ventricle',
+      'FMA:7262': 'Septal papillary muscle of right ventricle', 'FMA:7261': 'Posterior papillary muscle of right ventricle',
+      'FMA:7267': 'Posteromedial head of posterior papillary muscle of left ventricle',
+      'UBERON:0003978': 'Valve', 'UBERON:0002137': 'Aortic valve', 'UBERON:0002146': 'Pulmonary valve',
+      'UBERON:0002135': 'Mitral valve', 'UBERON:0002134': 'Tricuspid valve'
+    },
+    structureMap: {
+      VH_F_heart: 'UBERON:0000948', VH_F_interventricular_septum: 'UBERON:0002094',
+      VH_F_left_cardiac_atrium: 'UBERON:0002079', VH_F_left_ventricle: 'UBERON:0002084',
+      VH_F_right_cardiac_atrium: 'UBERON:0002078', VH_F_right_ventricle: 'UBERON:0002080',
+      VH_F_papillary_muscle_of_heart: 'UBERON:0002494', VH_F_papillary_muscle_of_heart_ant: 'FMA:7264',
+      VH_F_papillary_muscle_of_heart_antlat: 'FMA:7265', VH_F_papillary_muscle_of_heart_med: 'FMA:7262',
+      VH_F_papillary_muscle_of_heart_pos: 'FMA:7261', VH_F_papillary_muscle_of_heart_posmed: 'FMA:7267',
+      VH_F_valve: 'UBERON:0003978', VH_F_aortic_valve: 'UBERON:0002137',
+      VH_F_pulmonary_valve: 'UBERON:0002146', VH_F_mitral_valve: 'UBERON:0002135',
+      VH_F_tricuspid_valve: 'UBERON:0002134'
     }
   });
   function countStoredTrueFlags(value, allowedIds) {
@@ -2900,20 +3041,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var bodyView3d = d._bodyView3d === true;
         var registeredClinicalAtlasPacks = (typeof window.StemLab.getAnatomyAtlasPacks === 'function' ? window.StemLab.getAnatomyAtlasPacks() : [])
           .map(normalizeAnatomyAtlasPack).filter(Boolean);
-        var clinicalAtlasPacks = registeredClinicalAtlasPacks.filter(function(pack) {
+        var systemClinicalAtlasPacks = registeredClinicalAtlasPacks.filter(function(pack) {
           return !pack.systems.length || pack.systems.indexOf(sysKey) !== -1;
         });
         var requestedClinicalAtlasPackId = typeof d._clinicalAtlasPackId === 'string' ? d._clinicalAtlasPackId : '';
-        var selectedClinicalAtlasPack = clinicalAtlasPacks.find(function(pack) { return pack.id === requestedClinicalAtlasPackId; }) || clinicalAtlasPacks[0] || null;
-        var clinicalAtlasAvailable = !!selectedClinicalAtlasPack;
+        var selectedClinicalAtlasPack = systemClinicalAtlasPacks.find(function(pack) { return pack.id === requestedClinicalAtlasPackId; })
+          || systemClinicalAtlasPacks.find(function(pack) { return pack.focusStructureId === d.selectedStructure; })
+          || systemClinicalAtlasPacks[0] || null;
+        var clinicalAtlasAvailable = systemClinicalAtlasPacks.length > 0;
         var clinicalAtlasConcepts = selectedClinicalAtlasPack ? getAnatomyAtlasConcepts(selectedClinicalAtlasPack) : [];
-        var requestedClinicalConceptId = typeof d._clinicalAtlasConceptId === 'string' ? d._clinicalAtlasConceptId : '';
+        var clinicalPackIdentityMatches = !!selectedClinicalAtlasPack && requestedClinicalAtlasPackId === selectedClinicalAtlasPack.id;
+        var requestedClinicalConceptId = clinicalPackIdentityMatches && typeof d._clinicalAtlasConceptId === 'string' ? d._clinicalAtlasConceptId : '';
         var selectedClinicalConcept = clinicalAtlasConcepts.find(function(concept) { return concept.id === requestedClinicalConceptId; })
           || clinicalAtlasConcepts.find(function(concept) { return selectedClinicalAtlasPack && concept.id === selectedClinicalAtlasPack.primaryOntologyId; })
           || clinicalAtlasConcepts[0] || null;
         var selectedClinicalConceptId = selectedClinicalConcept ? selectedClinicalConcept.id : '';
+        var selectedClinicalScaleBridge = selectedClinicalAtlasPack ? selectedClinicalAtlasPack.scaleBridge : null;
+        var selectedClinicalTissueAtlas = selectedClinicalAtlasPack ? selectedClinicalAtlasPack.tissueAtlas : null;
+        var requestedClinicalFtuAtlasId = clinicalPackIdentityMatches && typeof d._clinicalFtuAtlasId === 'string' ? d._clinicalFtuAtlasId : '';
+        var requestedClinicalFtuCellId = clinicalPackIdentityMatches && selectedClinicalTissueAtlas && requestedClinicalFtuAtlasId === selectedClinicalTissueAtlas.id && typeof d._clinicalFtuCellId === 'string' ? d._clinicalFtuCellId : '';
+        var selectedClinicalFtuCell = selectedClinicalTissueAtlas
+          ? selectedClinicalTissueAtlas.cellConcepts.find(function(concept) { return concept.id === requestedClinicalFtuCellId; }) || selectedClinicalTissueAtlas.cellConcepts[0] || null
+          : null;
+        function clinicalAtlasIdentityPatch(conceptId) {
+          if (!selectedClinicalAtlasPack) return {};
+          var patch = {
+            _clinicalAtlasPackId: selectedClinicalAtlasPack.id,
+            _clinicalAtlasConceptId: conceptId || selectedClinicalConceptId || selectedClinicalAtlasPack.primaryOntologyId || ''
+          };
+          if (!clinicalPackIdentityMatches) {
+            patch._clinicalFtuCellId = null;
+            patch._clinicalFtuAtlasId = null;
+          }
+          return patch;
+        }
         var clinicalLocatorName = selectedClinicalAtlasPack ? selectedClinicalAtlasPack.focusLabel.replace(/^(?:female|male)[ ]+/i, '') : 'reference organ';
-        var clinicalLocatorSystem = selectedClinicalAtlasPack && selectedClinicalAtlasPack.systems.length ? SYSTEMS[selectedClinicalAtlasPack.systems[0]] : null;
+        var clinicalLocatorSystemId = selectedClinicalAtlasPack ? resolveClinicalAtlasPackSystemId(selectedClinicalAtlasPack, sysKey) : sysKey;
+        var clinicalLocatorSystem = SYSTEMS[clinicalLocatorSystemId] || null;
         var clinicalLocatorStructure = clinicalLocatorSystem && clinicalLocatorSystem.structures.find(function(structure) { return selectedClinicalAtlasPack && structure.id === selectedClinicalAtlasPack.focusStructureId; });
         var clinicalLocatorX = clinicalLocatorStructure ? Math.max(12, Math.min(36, 8 + clinicalLocatorStructure.x * 32)) : 24;
         if (selectedClinicalAtlasPack && selectedClinicalAtlasPack.laterality) {
@@ -2932,7 +3096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var activeAnatomyModelName = body3dStyle === 'clinical' && selectedClinicalAtlasPack
           ? selectedClinicalAtlasPack.title : (window.__alloAnatomyModelName || 'procedural');
         var activeAnatomyModelIdentity = body3dStyle === 'clinical' && selectedClinicalAtlasPack
-          ? 'atlas:' + selectedClinicalAtlasPack.id + ':' + selectedClinicalAtlasPack.version
+          ? 'atlas:' + selectedClinicalAtlasPack.id + ':' + selectedClinicalAtlasPack.version + ':' + selectedClinicalAtlasPack.modelUrl
           : (window.__alloAnatomyModelName || 'procedural');
         var systemProcedureCase = ({ circulatory: 'vascular', nervous: 'deep', organs: 'adhesion', digestive: 'adhesion', muscular: 'friable', respiratory: 'standard', skeletal: 'lateral' })[sysKey] || 'standard';
         var searchValue = typeof d.search === 'string' ? d.search.slice(0, 200) : '';
@@ -3089,11 +3253,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var scaleJourneyCellAtlasTissue = scaleJourneyBrainContext ? 'brain'
           : sel && lungCellScaleIds.indexOf(sel.id) !== -1 ? 'lung'
           : sel && pancreasCellScaleIds.indexOf(sel.id) !== -1 ? 'pancreas' : null;
-        var scaleJourneyDetailLabel = scaleJourneyBrainContext ? 'Brain Atlas'
-          : regionalAtlas ? regionalAtlas.title : 'Anatomy Lens gallery';
-        var scaleJourneyCellLabel = scaleJourneyCellAtlasTissue
-          ? ({ brain: 'Brain', lung: 'Lung', pancreas: 'Pancreas' })[scaleJourneyCellAtlasTissue] + ' Cell Atlas'
+        var clinicalScaleJourneyActive = !!(selectedClinicalAtlasPack && selectedClinicalScaleBridge && sel
+          && sel.id === selectedClinicalScaleBridge.tissueStructureId
+          && (requestedClinicalAtlasPackId === selectedClinicalAtlasPack.id || (bodyView3d && body3dStyle === 'clinical')));
+        var scaleJourneyStructureLabel = clinicalScaleJourneyActive ? selectedClinicalScaleBridge.organLabel : (sel ? sel.name : 'Select a structure');
+        var scaleJourneyDetailLabel = clinicalScaleJourneyActive ? selectedClinicalScaleBridge.tissueLabel
+          : scaleJourneyBrainContext ? 'Brain Atlas' : regionalAtlas ? regionalAtlas.title : 'Anatomy Lens gallery';
+        var scaleJourneyCellLabel = clinicalScaleJourneyActive ? selectedClinicalScaleBridge.cellLabel
+          : scaleJourneyCellAtlasTissue ? ({ brain: 'Brain', lung: 'Lung', pancreas: 'Pancreas' })[scaleJourneyCellAtlasTissue] + ' Cell Atlas'
           : 'Cell Microdissection';
+        var scaleJourneyTissueSpecialist = clinicalScaleJourneyActive ? selectedClinicalScaleBridge.tissueTarget
+          : scaleJourneyBrainContext ? 'brainAtlas' : scaleJourneyLensItem ? 'anatomyLens' : 'anatomyLensGallery';
+        var scaleJourneyCellContext = clinicalScaleJourneyActive ? selectedClinicalScaleBridge.cellContextId : (scaleJourneyCellAtlasTissue || 'general');
         var showAnatomyLens = d._showAnatomyLens === true;
         var showMasteryMap = d._showMasteryMap === true;
         var anatomyLensIds = ANATOMY_LENS_ITEMS.map(function(item) { return item.id; });
@@ -3133,6 +3304,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var systemsMotionCompletedCount = systemsMotionScenario.steps.filter(function(stepItem) { return !!systemsMotionCompleted[stepItem.id]; }).length;
         var systemsMotionScenarioComplete = systemsMotionCompletedCount === systemsMotionScenario.steps.length;
         var showSystemsSynthesis = systemsMotionScenarioComplete && d._showSystemsSynthesis === true;
+        function resolveClinicalAtlasPackSystemId(pack, preferredSystemId) {
+          var declaredSystems = pack && Array.isArray(pack.systems) ? pack.systems.filter(function(systemId) { return !!SYSTEMS[systemId]; }) : [];
+          var matchingDeclaredSystem = declaredSystems.find(function(systemId) {
+            return SYSTEMS[systemId].structures.some(function(structure) { return pack && structure.id === pack.focusStructureId; });
+          });
+          if (matchingDeclaredSystem) return matchingDeclaredSystem;
+          var structureContext = pack ? findStructureContext(pack.focusStructureId, preferredSystemId) : null;
+          if (structureContext && (!declaredSystems.length || declaredSystems.indexOf(structureContext.systemId) !== -1)) return structureContext.systemId;
+          if (declaredSystems.length) return declaredSystems[0];
+          return SYSTEMS[preferredSystemId] ? preferredSystemId : (structureContext ? structureContext.systemId : 'organs');
+        }
         function findStructureContext(structureId, preferredSystemId) {
           var orderedSystems = ANATOMY_SYSTEM_IDS.slice();
           var preferredIndex = orderedSystems.indexOf(preferredSystemId);
@@ -3172,7 +3354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             getAnatomyAtlasConcepts(pack).forEach(function(concept) {
               var clinicalSearchText = [concept.id, concept.label, pack.title, pack.focusLabel].join(' ').toLowerCase();
               if (clinicalSearchText.indexOf(searchTerm) === -1) return;
-              var targetSystemId = pack.systems[0] || 'organs';
+              var targetSystemId = resolveClinicalAtlasPackSystemId(pack, sysKey);
               anatomyGlobalSearchResults.push({ kind: 'clinical', id: concept.id, label: concept.label, systemId: targetSystemId, systemName: SYSTEMS[targetSystemId] ? SYSTEMS[targetSystemId].name : 'Clinical Atlas', pack: pack, concept: concept, score: concept.id.toLowerCase() === searchTerm ? 0 : 2 });
             });
           });
@@ -3186,12 +3368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (!result) return;
           var resultPatch;
           if (result.kind === 'clinical') {
-            resultPatch = {
-              system: result.systemId, view: result.pack.bodyView, selectedStructure: result.pack.focusStructureId,
-              search: '', _anatomySearchIndex: 0, _bodyView3d: true, _body3dStyle: 'clinical',
-              _clinicalAtlasPackId: result.pack.id, _clinicalAtlasConceptId: result.concept.id,
-              _lastSelectedSource: 'global-search'
-            };
+            resultPatch = clinicalAtlasPackTransitionPatch(result.pack, 'global-search', result.concept.id, result.systemId);
           } else {
             resultPatch = structureFocusPatch(result.structure.id, { system: result.systemId, complexity: Math.max(complexity, result.complexity || 1), _anatomySearchIndex: 0, _lastSelectedSource: 'global-search' });
           }
@@ -3205,7 +3382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         }
 
 
-        function openAnatomyScaleBridge(structureId, stepIndex, announcement) {
+        function openAnatomyScaleBridge(structureId, stepIndex, announcement, extraPatch) {
           var item = ANATOMY_LENS_ITEMS.find(function(lensItem) { return lensItem.structureId === structureId; });
           var atlas = REGIONAL_ATLASES[structureId];
           if (!item || !atlas) return;
@@ -3213,7 +3390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var safeStep = Number.isFinite(numericStep) ? Math.max(0, Math.min(Math.floor(numericStep), atlas.steps.length - 1)) : 0;
           var viewedPatch = Object.assign({}, anatomyLensViewed);
           viewedPatch[item.id] = true;
-          updMulti(structureFocusPatch(item.structureId, {
+          updMulti(structureFocusPatch(item.structureId, Object.assign({
             _activeTab: 'explore',
             _regionalAtlasOpen: item.structureId,
             _regionalAtlasStep: safeStep,
@@ -3221,7 +3398,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             _showAnatomyLens: false,
             _anatomyLensViewed: viewedPatch,
             quizMode: false
-          }));
+          }, extraPatch || {})));
           playSound('structureClick');
           if (typeof announceToSR === 'function') announceToSR(announcement || ('Opening ' + item.title + ' in Anatomy Lens.'));
         }
@@ -3610,8 +3787,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var tourStepViewMatches = !tourStepContext || tourStepContext.structure.v === 'b' || (tourStepContext.structure.v === 'a' ? view === 'anterior' : view === 'posterior');
         var diagramMatchesTourStep = !!currentTourStep && !!tourStepContext && tourStepContext.systemId === sysKey && tourStepViewMatches && selectedStructureId === currentTourStep.structureId;
 
+        function clinicalAtlasPackTransitionPatch(pack, source, conceptId, preferredSystemId) {
+          if (!pack) return {};
+          var targetSystemId = resolveClinicalAtlasPackSystemId(pack, preferredSystemId || sysKey);
+          return {
+            system: targetSystemId, view: pack.bodyView, selectedStructure: pack.focusStructureId,
+            quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0,
+            search: '', _anatomySearchIndex: 0, _flashcardIdx: 0, _flashcardFlipped: false,
+            _bodyView3d: true, _body3dStyle: 'clinical', _clinicalAtlasPackId: pack.id,
+            _clinicalAtlasConceptId: conceptId || pack.primaryOntologyId || '',
+            _clinicalFtuCellId: null, _clinicalFtuAtlasId: null, _regionalAtlasOpen: null,
+            _lastSelectedSource: source || 'clinical-pack'
+          };
+        }
         function systemSelectionPatch(systemId) {
-          return { system: systemId, selectedStructure: null, quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, search: '', _flashcardIdx: 0, _flashcardFlipped: false };
+          var patch = { system: systemId, selectedStructure: null, quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, search: '', _flashcardIdx: 0, _flashcardFlipped: false };
+          if (bodyView3d && body3dStyle === 'clinical') {
+            var targetPack = registeredClinicalAtlasPacks.find(function(pack) { return !pack.systems.length || pack.systems.indexOf(systemId) !== -1; });
+            if (targetPack) return Object.assign(patch, clinicalAtlasPackTransitionPatch(targetPack, 'system-selector', '', systemId));
+            patch._body3dStyle = 'blueprint'; patch._clinicalAtlasPackId = ''; patch._clinicalAtlasConceptId = '';
+            patch._clinicalFtuCellId = null; patch._clinicalFtuAtlasId = null;
+          }
+          return patch;
         }
         function showAnatomySystem(systemId, contextLabel) {
           if (!SYSTEMS[systemId]) return;
@@ -7614,6 +7811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             id: 'anatomy-regional-atlas',
             className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
             'aria-label': regionalAtlas.title,
+            tabIndex: -1,
             'data-anatomy-atlas': 'heart',
             'data-anatomy-atlas-step': activeStep.id,
             'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES['heart'].id : undefined
@@ -7749,6 +7947,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             id: 'anatomy-regional-atlas',
             className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
             'aria-label': regionalAtlas.title,
+            tabIndex: -1,
             'data-anatomy-atlas': 'kidneys',
             'data-anatomy-scale-bridge': 'kidneys',
             'data-anatomy-atlas-step': activeStep.id,
@@ -7866,6 +8065,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 kidneyLabel(40, 327, 'filtrate', { anchor: 'start', color: '#334155', size: 10, weight: 700 }),
                 h('line', { x1: 100, y1: 323, x2: 122, y2: 323, stroke: '#f87171', strokeWidth: 4 }),
                 kidneyLabel(130, 327, 'capillary blood', { anchor: 'start', color: '#334155', size: 10, weight: 700 })
+              )
+            ),
+            selectedClinicalTissueAtlas && clinicalScaleJourneyActive && h('section', {
+              className: 'anatomy-clinical-ftu', 'data-anatomy-clinical-ftu': selectedClinicalTissueAtlas.id,
+              'data-anatomy-atlas-pack': selectedClinicalAtlasPack.id, 'aria-labelledby': 'anatomy-clinical-ftu-title-' + selectedClinicalTissueAtlas.id
+            },
+              h('div', { className: 'anatomy-clinical-ftu-head' },
+                h('div', null, h('h6', { id: 'anatomy-clinical-ftu-title-' + selectedClinicalTissueAtlas.id }, selectedClinicalTissueAtlas.title),
+                  h('p', null, selectedClinicalScaleBridge.organLabel + ' → ' + selectedClinicalTissueAtlas.tissueLabel + ' → representative cell populations')),
+                h('span', { className: 'anatomy-clinical-ftu-badge' }, selectedClinicalTissueAtlas.illustrationNodeCount + ' mapped nodes · ' + selectedClinicalTissueAtlas.cellConcepts.length + ' cell concepts')
+              ),
+              h('div', { className: 'anatomy-clinical-ftu-layout' },
+                h('figure', null,
+                  h('img', { className: 'anatomy-clinical-ftu-image', src: selectedClinicalTissueAtlas.imageUrl,
+                    alt: selectedClinicalTissueAtlas.imageAlt, loading: 'lazy', decoding: 'async', width: 4031, height: 3037 }),
+                  h('figcaption', null, selectedClinicalTissueAtlas.attributionLabel + '. ',
+                    h('a', { href: selectedClinicalTissueAtlas.sourceUrl, target: '_blank', rel: 'noreferrer' }, 'Source'), ' · ',
+                    h('a', { href: selectedClinicalTissueAtlas.licenseUrl, target: '_blank', rel: 'noreferrer' }, selectedClinicalTissueAtlas.licenseName), ' · ',
+                    h('a', { href: selectedClinicalTissueAtlas.crosswalkUrl, target: '_blank', rel: 'noreferrer' }, 'Ontology crosswalk'),
+                    selectedClinicalTissueAtlas.doiUrl && h(React.Fragment, null, ' · ', h('span', { title: 'Upstream HRA identifier; use the Source link if the DOI landing page is unavailable.' }, 'DOI: ' + selectedClinicalTissueAtlas.doiUrl.replace(/^https?:\/\/doi\.org\//, ''))))
+                ),
+                h('div', { className: 'anatomy-clinical-ftu-cells', role: 'group', 'aria-label': selectedClinicalTissueAtlas.tissueLabel + ' cell concepts' },
+                  selectedClinicalTissueAtlas.cellConcepts.map(function(cellConcept) {
+                    var cellSelected = !!selectedClinicalFtuCell && cellConcept.id === selectedClinicalFtuCell.id;
+                    return h('button', { type: 'button', key: cellConcept.id, className: 'anatomy-clinical-ftu-cell',
+                      'data-anatomy-ftu-cell': cellConcept.id, 'data-selected': cellSelected ? 'true' : 'false',
+                      'aria-pressed': cellSelected ? 'true' : 'false',
+                      onClick: function() { updMulti(Object.assign(clinicalAtlasIdentityPatch(selectedClinicalConceptId), { _clinicalFtuCellId: cellConcept.id, _clinicalFtuAtlasId: selectedClinicalTissueAtlas.id, _lastSelectedSource: 'clinical-ftu' })); playSound('select'); }
+                    }, h('strong', null, cellConcept.label), h('span', null, cellConcept.id + ' · ' + cellConcept.nodeCount + ' illustrated'));
+                  }),
+                  selectedClinicalFtuCell && h('div', { className: 'anatomy-clinical-ftu-selection', role: 'status', 'aria-live': 'polite', 'data-anatomy-ftu-selection': selectedClinicalFtuCell.id },
+                    h('strong', null, selectedClinicalFtuCell.label + ' · ' + selectedClinicalFtuCell.id),
+                    h('span', null, selectedClinicalFtuCell.role + ' The reference crosswalk maps ' + selectedClinicalFtuCell.nodeCount + ' illustration nodes to this concept.')),
+                  h('p', { className: 'anatomy-clinical-ftu-note' }, 'This is a stylized healthy-reference illustration, not a cell count for every person and not a diagnostic image. Cell choices describe the crosswalk; they do not recolor the source artwork.')
+                )
               )
             ),
             renderAtlasVisualKey('kidneys'),
@@ -9225,12 +9459,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (typeof announceToSR === 'function') announceToSR('Scale Journey: opening ' + label);
         }
         function openScaleJourneyDetail() {
+          if (clinicalScaleJourneyActive && selectedClinicalScaleBridge.tissueTarget === 'regionalAtlas') {
+            openAnatomyScaleBridge(selectedClinicalScaleBridge.tissueStructureId, selectedClinicalScaleBridge.tissueStep,
+              'Opening ' + selectedClinicalScaleBridge.tissueLabel + (selectedClinicalTissueAtlas ? ' with the licensed functional tissue unit reference.' : '.'), {
+                _bodyView3d: false, _regionalAtlasSource: 'clinical-atlas', _scaleJourneySource: 'clinical-atlas',
+                _clinicalAtlasPackId: selectedClinicalAtlasPack.id, _clinicalAtlasConceptId: selectedClinicalConceptId,
+                _scaleJourneyAtlasPackId: selectedClinicalAtlasPack.id, _scaleJourneyOntologyId: selectedClinicalConceptId,
+                _lastSelectedSource: 'clinical-scale-bridge'
+              });
+            setTimeout(function() { var atlas = document.getElementById('anatomy-regional-atlas'); if (atlas && atlas.focus) atlas.focus(); }, 0);
+            return;
+          }
           if (scaleJourneyBrainContext) { openBrainAtlasFromLens(); return; }
           if (scaleJourneyLensItem) { openAnatomyLensItem(scaleJourneyLensItem); return; }
           upd('_showAnatomyLens', true);
           if (typeof announceToSR === 'function') announceToSR('Opening the Anatomy Lens gallery for tissue and process diagrams.');
         }
         function openScaleJourneyCell() {
+          if (clinicalScaleJourneyActive && selectedClinicalScaleBridge.cellTarget === 'microdissection') {
+            openAnatomyScaleDestination('cell', 'cell', {
+              mode: 'microdissection', _cellPicked: true, _cellCategory: 'interactive', microCellType: 'animal',
+              tissue: selectedClinicalScaleBridge.cellContextId, _scaleJourneyAtlasPackId: selectedClinicalAtlasPack.id,
+              _scaleJourneyOntologyId: selectedClinicalConceptId, _clinicalFtuCellId: selectedClinicalFtuCell ? selectedClinicalFtuCell.id : null,
+              _anatomyFtuContext: selectedClinicalFtuCell && selectedClinicalTissueAtlas ? {
+                schemaVersion: 1, packId: selectedClinicalAtlasPack.id, packTitle: selectedClinicalAtlasPack.title,
+                systemId: sysKey, structureId: selectedClinicalScaleBridge.tissueStructureId, bodyView: selectedClinicalAtlasPack.bodyView,
+                organLabel: selectedClinicalScaleBridge.organLabel, anatomyConceptId: selectedClinicalConceptId,
+                tissueAtlasId: selectedClinicalTissueAtlas.id, tissueTitle: selectedClinicalTissueAtlas.title,
+                tissueLabel: selectedClinicalTissueAtlas.tissueLabel, tissueOntologyId: selectedClinicalTissueAtlas.tissueOntologyId,
+                cellId: selectedClinicalFtuCell.id, cellLabel: selectedClinicalFtuCell.label,
+                cellRole: selectedClinicalFtuCell.role, mappedNodeCount: selectedClinicalFtuCell.nodeCount,
+                sourceUrl: selectedClinicalTissueAtlas.sourceUrl, licenseName: selectedClinicalTissueAtlas.licenseName,
+                licenseUrl: selectedClinicalTissueAtlas.licenseUrl, attribution: selectedClinicalTissueAtlas.attribution
+              } : null
+            }, selectedClinicalScaleBridge.cellLabel);
+            return;
+          }
           if (scaleJourneyCellAtlasTissue) {
             openAnatomyScaleDestination('cellAtlasLab', 'cellAtlasLab', { tissue: scaleJourneyCellAtlasTissue, view: 'map' }, scaleJourneyCellLabel);
             return;
@@ -9708,7 +9972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     blueprintGroup.visible = loadedStyle === 'blueprint';
                     surfaceGroup.visible = !importedVisible && (loadedStyle === 'realistic' || loadedStyle === 'clinical');
                     imported.visible = importedVisible;
-                    if (structuresGroup) structuresGroup.visible = !(loadedStyle === 'clinical' && importedVisible);
+                    if (structuresGroup) structuresGroup.visible = loadedStyle !== 'clinical';
                     if (selectionCueGroup && loadedStyle === 'clinical' && importedVisible) selectionCueGroup.visible = false;
                     applyClinicalAtlasSelection(canvas._anatomy3dClinicalSelection || selectedClinicalConceptId);
                     render3d();
@@ -9728,7 +9992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     var fallbackStyle = fallbackStyleValue === 'clinical' ? 'clinical' : fallbackStyleValue === 'realistic' ? 'realistic' : 'blueprint';
                     blueprintGroup.visible = fallbackStyle === 'blueprint';
                     surfaceGroup.visible = fallbackStyle === 'realistic' || fallbackStyle === 'clinical';
-                    if (structuresGroup) structuresGroup.visible = true;
+                    if (structuresGroup) structuresGroup.visible = fallbackStyle !== 'clinical';
                     render3d();
                     setStatus(activeAnatomyModelKind === 'clinical' ? 'The Clinical Atlas organ could not be prepared. The built-in Surface body and 2D Atlas remain available.' : 'The local GLB could not be prepared. The built-in 3D body remains available.', 'fallback-model');
                   }
@@ -9739,7 +10003,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   silhouetteGroup.visible = true;
                   blueprintGroup.visible = failedStyle === 'blueprint';
                   surfaceGroup.visible = failedStyle === 'realistic' || failedStyle === 'clinical';
-                  if (structuresGroup) structuresGroup.visible = true;
+                  if (structuresGroup) structuresGroup.visible = failedStyle !== 'clinical';
                   render3d();
                   setStatus(activeAnatomyModelKind === 'clinical' ? 'The Clinical Atlas organ could not be read. The built-in Surface body and 2D Atlas remain available.' : 'The local GLB could not be read. The procedural 3D body remains available.', 'fallback-model');
                 });
@@ -9818,7 +10082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   var clinicalOntologyId = clinicalHitIds[(currentClinicalIndex + 1) % clinicalHitIds.length];
                   applyClinicalAtlasSelection(clinicalOntologyId);
                   render3d();
-                  updMulti({ _clinicalAtlasConceptId: clinicalOntologyId, _lastSelectedSource: 'clinical-3d' });
+                  updMulti(Object.assign(clinicalAtlasIdentityPatch(clinicalOntologyId), { _lastSelectedSource: 'clinical-3d' }));
                   var clinicalConcept = clinicalAtlasConcepts.find(function(concept) { return concept.id === clinicalOntologyId; });
                   if (typeof announceToSR === 'function') announceToSR((clinicalConcept ? clinicalConcept.label : 'Clinical Atlas structure') + ', ' + clinicalOntologyId + ', selected.');
                   playSound('select');
@@ -9906,7 +10170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 var resolvedStyle = nextStyle === 'clinical' && selectedClinicalAtlasPack ? 'clinical'
                   : nextStyle === 'realistic' ? 'realistic' : 'blueprint';
                 var importedVisible = !!importedModel && resolvedStyle === importedModelStyle;
-                var showBodyMarkers = !(resolvedStyle === 'clinical' && importedVisible);
+                var showBodyMarkers = resolvedStyle !== 'clinical';
                 canvas.setAttribute('data-anatomy-3d-style', resolvedStyle);
                 canvas._anatomy3dClinicalSelection = nextClinicalConceptId || '';
                 if (silhouetteGroup) silhouetteGroup.visible = !importedVisible;
@@ -10066,7 +10330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 } else {
                   var readyLabel = body3dStyle === 'clinical' ? 'Clinical Atlas organ focus ready. '
                     : body3dStyle === 'realistic' ? 'Realistic surface body ready. ' : 'Blueprint body ready. ';
-                  setStatus(readyLabel + 'Drag to rotate and use the wheel or plus and minus to zoom. Arrow keys rotate; press R, Home, or 0 to reset.', 'ready');
+                  setStatus(readyLabel + (canvas.getAttribute('data-anatomy-3d-input') === 'buttons' ? 'Use the camera buttons to rotate, tilt, and zoom. ' : 'Drag to rotate and use the wheel or plus and minus to zoom. ') + 'Arrow keys rotate; press R, Home, or 0 to reset.', 'ready');
                 }
               }
             } catch (error) {
@@ -10568,12 +10832,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               anatomyGlobalSearchResults.length ? h('div', { id: 'anatomy-global-search-results', className: 'anatomy-global-search-results', role: 'listbox', 'aria-label': 'Anatomy search results' },
                 anatomyGlobalSearchResults.map(function(result, resultIndex) {
                   return h('button', {
-                    type: 'button', key: result.kind + ':' + result.systemId + ':' + result.id,
+                    type: 'button', key: result.kind + ':' + (result.pack ? result.pack.id + ':' : '') + result.systemId + ':' + result.id,
                     id: anatomySearchOptionId(resultIndex), role: 'option', tabIndex: -1, 'aria-selected': resultIndex === anatomySearchIndex ? 'true' : 'false',
                     onMouseDown: function(event) { event.preventDefault(); }, onClick: function() { applyAnatomySearchResult(result); }
                   },
                     h('strong', null, result.label),
-                    h('span', null, result.systemName + (result.kind === 'clinical' ? ' \u00b7 ' + result.id : ' \u00b7 ' + result.structure.id))
+                    h('span', null, result.systemName + (result.kind === 'clinical' ? ' \u00b7 ' + result.pack.title + ' \u00b7 ' + result.id : ' \u00b7 ' + result.structure.id))
                   );
                 })
               ) : null
@@ -10674,7 +10938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('div', { className: 'anatomy-body-badges' },
                   h('span', { 'data-anatomy-structure-count': 'true', style: { color: sys.accent } }, filtered.length + ' structures'),
                   h('div', { className: 'anatomy-view-toggle', role: 'group', 'aria-label': 'Anatomy model view', 'data-has-clinical-atlas': clinicalAtlasAvailable ? 'true' : 'false' },
-                    h('button', { type: 'button', 'data-anatomy-view-option': '2d', 'aria-pressed': bodyView3d ? 'false' : 'true', title: 'Detailed labeled atlas', onClick: function() { upd('_bodyView3d', false); } }, '2D Atlas'),
+                    h('button', { type: 'button', 'data-anatomy-view-option': '2d', 'aria-pressed': bodyView3d ? 'false' : 'true', title: 'Detailed labeled atlas', onClick: function() { bodyView3d && body3dStyle === 'clinical' ? updMulti(Object.assign(clinicalAtlasIdentityPatch(selectedClinicalConceptId), { _bodyView3d: false })) : upd('_bodyView3d', false); } }, '2D Atlas'),
                     h('button', { type: 'button', 'data-anatomy-view-option': 'blueprint', 'aria-pressed': bodyView3d && body3dStyle === 'blueprint' ? 'true' : 'false', title: 'Transparent spatial blueprint', onClick: function() { updMulti({ _bodyView3d: true, _body3dStyle: 'blueprint' }); } }, '3D Blueprint'),
                     h('button', { type: 'button', 'data-anatomy-view-option': 'realistic', 'aria-pressed': bodyView3d && body3dStyle === 'realistic' ? 'true' : 'false', title: 'Detailed realistic surface model', onClick: function() { updMulti({ _bodyView3d: true, _body3dStyle: 'realistic' }); } }, '3D Surface'),
                     clinicalAtlasAvailable && h('button', {
@@ -10682,10 +10946,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       'aria-pressed': bodyView3d && body3dStyle === 'clinical' ? 'true' : 'false',
                       title: 'Standalone licensed reference organ with ontology provenance',
                       onClick: function() {
-                        var clinicalPatch = { _bodyView3d: true, _body3dStyle: 'clinical', _clinicalAtlasPackId: selectedClinicalAtlasPack.id, search: '' };
-                        if (selectedClinicalAtlasPack.focusStructureId) clinicalPatch.selectedStructure = selectedClinicalAtlasPack.focusStructureId;
-                        if (selectedClinicalAtlasPack.bodyView) clinicalPatch.view = selectedClinicalAtlasPack.bodyView;
-                        updMulti(clinicalPatch);
+                        updMulti(clinicalAtlasPackTransitionPatch(selectedClinicalAtlasPack, 'clinical-view'));
+                        if (typeof announceToSR === 'function') announceToSR('Opening ' + selectedClinicalAtlasPack.title + ' for ' + selectedClinicalAtlasPack.focusLabel + '.');
                       }
                     }, 'Clinical Atlas')
                   ),
@@ -10718,23 +10980,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   },
                     h('summary', { className: 'anatomy-model-source-summary' },
                       h('span', null, 'Atlas source & credits'),
-                      h('span', { className: 'anatomy-model-source-note' }, selectedClinicalAtlasPack.title + ' \u00b7 v' + selectedClinicalAtlasPack.version)
+                      h('span', { className: 'anatomy-model-source-note' }, selectedClinicalAtlasPack.title + ' \u00b7 v' + selectedClinicalAtlasPack.version + (registeredClinicalAtlasPacks.length > 1 ? ' \u00b7 ' + registeredClinicalAtlasPacks.length + ' atlas packs' : ''))
                     ),
-                    clinicalAtlasPacks.length > 1 && h('div', { className: 'anatomy-model-source-row' },
+                    registeredClinicalAtlasPacks.length > 1 && h('div', { className: 'anatomy-model-source-row' },
                       h('label', { className: 'text-[10px] font-black text-slate-700' }, 'Atlas pack ',
                         h('select', {
                           value: selectedClinicalAtlasPack.id,
-                          'aria-label': 'Clinical Atlas pack',
+                          'aria-label': 'Clinical Atlas pack', 'data-anatomy-clinical-pack-select': 'true',
                           onChange: function(event) {
                             var nextPackId = event.currentTarget.value;
-                            var nextPack = clinicalAtlasPacks.find(function(pack) { return pack.id === nextPackId; });
-                            var atlasPatch = { _clinicalAtlasPackId: nextPackId, _clinicalAtlasConceptId: '', search: '' };
-                            if (nextPack && nextPack.focusStructureId) atlasPatch.selectedStructure = nextPack.focusStructureId;
-                            if (nextPack && nextPack.bodyView) atlasPatch.view = nextPack.bodyView;
-                            updMulti(atlasPatch);
+                            var nextPack = registeredClinicalAtlasPacks.find(function(pack) { return pack.id === nextPackId; });
+                            if (!nextPack) return;
+                            updMulti(clinicalAtlasPackTransitionPatch(nextPack, 'clinical-pack-selector'));
+                            if (typeof announceToSR === 'function') announceToSR('Opening ' + nextPack.title + ' for ' + nextPack.focusLabel + '.');
                           },
                           className: 'rounded-lg border border-slate-300 bg-white px-2 py-1 text-[10px] font-bold text-slate-800'
-                        }, clinicalAtlasPacks.map(function(pack) { return h('option', { key: pack.id, value: pack.id }, pack.title); }))
+                        }, registeredClinicalAtlasPacks.map(function(pack) { return h('option', { key: pack.id, value: pack.id }, pack.title); }))
                       )
                     ),
                     h('dl', { className: 'anatomy-atlas-provenance' },
@@ -10751,6 +11012,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('dt', null, 'Local data'), h('dd', null,
                         selectedClinicalAtlasPack.manifestUrl && h('a', { href: selectedClinicalAtlasPack.manifestUrl, target: '_blank', rel: 'noreferrer' }, 'Asset manifest'),
                         selectedClinicalAtlasPack.crosswalkUrl && h(React.Fragment, null, ' \u00b7 ', h('a', { href: selectedClinicalAtlasPack.crosswalkUrl, target: '_blank', rel: 'noreferrer' }, 'Ontology crosswalk')),
+                        selectedClinicalAtlasPack.metadataUrl && h(React.Fragment, null, ' \u00b7 ', h('a', { href: selectedClinicalAtlasPack.metadataUrl, target: '_blank', rel: 'noreferrer' }, 'Pinned metadata')),
                         selectedClinicalAtlasPack.attributionUrl && h(React.Fragment, null, ' \u00b7 ', h('a', { href: selectedClinicalAtlasPack.attributionUrl, target: '_blank', rel: 'noreferrer' }, 'Attribution'))
                       ),
                       h('dt', null, 'Credit'), h('dd', null, selectedClinicalAtlasPack.attribution),
@@ -10769,7 +11031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 )
               ),
               h('div', { className: 'anatomy-canvas-toolbar' },
-                h('span', null, bodyView3d ? 'Drag to rotate · wheel to zoom' : (view === 'anterior' ? 'Patient right is on your left' : 'Patient left/right align with you')),
+                h('span', null, bodyView3d ? 'Camera controls · drag/wheel where supported' : (view === 'anterior' ? 'Patient right is on your left' : 'Patient left/right align with you')),
                 !bodyView3d && h('div', { className: 'anatomy-canvas-toolbar-group', role: 'group', 'aria-label': 'Diagram zoom and pan controls' },
                   h('button', {
                     type: 'button', 'aria-label': 'Zoom out of anatomy diagram', 'aria-keyshortcuts': '-',
@@ -10862,10 +11124,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               ),
               bodyView3d && h('div', { id: 'anatomy-3d-status', className: 'anatomy-3d-status', role: 'status', 'aria-live': 'polite' }, 'Loading the interactive 3D anatomy view…'),
               bodyView3d && body3dStyle === 'clinical' && selectedClinicalAtlasPack && h('section', {
-                className: 'anatomy-clinical-structures', 'data-anatomy-clinical-structure-list': 'true', 'aria-label': 'Clinical Atlas structures'
+                id: 'anatomy-clinical-structures-' + selectedClinicalAtlasPack.id, className: 'anatomy-clinical-structures',
+                'data-anatomy-clinical-structure-list': 'true', 'data-anatomy-clinical-pack': selectedClinicalAtlasPack.id,
+                'aria-labelledby': 'anatomy-clinical-structures-title-' + selectedClinicalAtlasPack.id
               },
                 h('div', { className: 'anatomy-clinical-structures-head' },
-                  h('strong', null, 'Explore ' + clinicalLocatorName + ' structures'),
+                  h('strong', { id: 'anatomy-clinical-structures-title-' + selectedClinicalAtlasPack.id }, 'Explore ' + clinicalLocatorName + ' structures'),
                   h('span', null, clinicalAtlasConcepts.length + ' ontology concepts')
                 ),
                 h('div', { className: 'anatomy-clinical-concept-grid' }, clinicalAtlasConcepts.map(function(concept) {
@@ -10875,7 +11139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     'data-anatomy-clinical-concept': concept.id, 'data-selected': conceptSelected ? 'true' : 'false',
                     'aria-pressed': conceptSelected ? 'true' : 'false',
                     onClick: function() {
-                      updMulti({ _clinicalAtlasConceptId: concept.id, _lastSelectedSource: 'clinical-list' });
+                      updMulti(Object.assign(clinicalAtlasIdentityPatch(concept.id), { _lastSelectedSource: 'clinical-list' }));
                       if (typeof announceToSR === 'function') announceToSR(concept.label + ', ' + concept.id + ', selected in the Clinical Atlas.');
                       playSound('select');
                     }
@@ -10892,18 +11156,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('text', { x: clinicalLocatorX, y: Math.min(62, clinicalLocatorY + 12), textAnchor: 'middle', fill: '#0f766e', fontSize: '5', fontWeight: '800' }, (selectedClinicalAtlasPack.laterality || 'FOCUS').toUpperCase())
                   ),
                   h('div', null,
-                    h('p', null, 'Approximate posterior body context. The reference organ remains a standalone model.'),
+                    h('p', null, 'Approximate ' + selectedClinicalAtlasPack.bodyView + ' body context. The reference organ remains a standalone model.'),
                     h('button', {
                       type: 'button', 'data-anatomy-clinical-locate': selectedClinicalAtlasPack.focusStructureId,
                       'aria-label': 'Locate the ' + clinicalLocatorName + ' in the 2D Atlas',
-                      onClick: function() { updMulti({ _bodyView3d: false, view: selectedClinicalAtlasPack.bodyView, selectedStructure: selectedClinicalAtlasPack.focusStructureId, search: '', _lastSelectedSource: 'clinical-locator' }); }
+                      onClick: function() { updMulti(Object.assign(clinicalAtlasIdentityPatch(selectedClinicalConceptId), { _bodyView3d: false, system: resolveClinicalAtlasPackSystemId(selectedClinicalAtlasPack, sysKey), view: selectedClinicalAtlasPack.bodyView, selectedStructure: selectedClinicalAtlasPack.focusStructureId, search: '', _lastSelectedSource: 'clinical-locator' })); }
                     }, 'Locate ' + clinicalLocatorName + ' in 2D Atlas')
                   )
                 )
               ),
               h('nav', {
                 className: 'anatomy-scale-journey', 'aria-label': 'Scale Journey from body system to cellular context',
-                'data-anatomy-scale-journey': sel ? sel.id : 'system-only'
+                'data-anatomy-scale-journey': sel ? sel.id : 'system-only',
+                'data-scale-source': clinicalScaleJourneyActive ? 'clinical-atlas' : 'anatomy',
+                'data-anatomy-atlas-pack': clinicalScaleJourneyActive ? selectedClinicalAtlasPack.id : undefined
               },
                 h('div', { className: 'anatomy-scale-journey-head' },
                   h('strong', null, 'Scale Journey'),
@@ -10914,24 +11180,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('span', null, '1 · Body system'), h('strong', null, sys.icon + ' ' + sys.name)
                   ),
                   h('div', { className: 'anatomy-scale-step', 'data-scale-stage': 'structure' },
-                    h('span', null, '2 · Structure'), h('strong', null, sel ? sel.name : 'Select a structure')
+                    h('span', null, '2 · Structure'), h('strong', null, scaleJourneyStructureLabel)
                   ),
                   h('button', {
                     type: 'button', className: 'anatomy-scale-step', 'data-scale-stage': 'tissue',
-                    'data-scale-specialist': scaleJourneyBrainContext ? 'brainAtlas' : scaleJourneyLensItem ? 'anatomyLens' : 'anatomyLensGallery',
+                    'data-scale-specialist': scaleJourneyTissueSpecialist,
                     'aria-label': 'Open tissue or specialist level: ' + scaleJourneyDetailLabel,
                     onClick: openScaleJourneyDetail
                   }, h('span', null, '3 · Tissue / region'), h('strong', null, scaleJourneyDetailLabel)),
                   h('button', {
                     type: 'button', className: 'anatomy-scale-step', 'data-scale-stage': 'cell',
-                    'data-scale-cell-context': scaleJourneyCellAtlasTissue || 'general',
+                    'data-scale-cell-context': scaleJourneyCellContext,
                     'aria-label': 'Open cell level: ' + scaleJourneyCellLabel,
                     onClick: openScaleJourneyCell
                   }, h('span', null, '4 · Cell scale'), h('strong', null, scaleJourneyCellLabel))
                 ),
                 h('p', { className: 'anatomy-scale-status', role: 'status', 'aria-live': 'polite' },
-                  sel
-                    ? 'Current route: ' + sys.name + ' → ' + sel.name + ' → ' + scaleJourneyDetailLabel + ' → ' + scaleJourneyCellLabel + '.'
+                  clinicalScaleJourneyActive
+                    ? 'Current route: ' + sys.name + ' → ' + scaleJourneyStructureLabel + ' → ' + scaleJourneyDetailLabel + ' → ' + scaleJourneyCellLabel + '. Clinical focus: ' + (selectedClinicalConcept ? selectedClinicalConcept.label : selectedClinicalAtlasPack.focusLabel) + '.'
+                    : sel ? 'Current route: ' + sys.name + ' → ' + sel.name + ' → ' + scaleJourneyDetailLabel + ' → ' + scaleJourneyCellLabel + '.'
                     : 'Select a structure in the diagram to personalize tissue and cell destinations.'
                 ),
                 h('div', { className: 'anatomy-scale-journey-buttons', 'aria-label': 'Additional scale destinations' },

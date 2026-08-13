@@ -225,8 +225,13 @@ const shellRecoveryMarkers = [
   'PluginStates',
   '__alloEnsureStemPluginLoaded',
   'loadStemModuleWithDependencies',
+  'stemModuleDependencies',
   'stem_data_cellatlas_muraro.js',
   'data_kernel_loader.js',
+  'stem_tool_dataplot.js',
+  'stem_tool_statslab.js',
+  'stem_lumen_study.js',
+  's.async = true',
   '__alloGetStemPluginState',
   '__alloRetryStemPlugin',
   'data-allo-plugin-attempt',
@@ -243,8 +248,19 @@ for (const marker of ['could not load', 'Retry loading ', "'aria-busy': 'true'"]
   if (canonicalModule.indexOf(marker) === -1) fail(MODULE_COPIES[0] + ' is missing fallback UI marker: ' + marker);
 }
 
-for (const marker of ['__alloEnsureStemPluginLoaded', 'onMouseEnter', 'onFocus', '_stemOpenerRef', '100dvh', 'data-stem-tool-id']) {
+for (const marker of ['__alloEnsureStemPluginLoaded', 'onMouseEnter', 'onFocus', '_stemOpenerRef', '_stemFocusableElements', 'document.activeElement === root', 'data-stem-scroll-region', 'data-stem-tool-id']) {
   if (canonicalModule.indexOf(marker) === -1) fail(MODULE_COPIES[0] + ' is missing demand-load/accessibility marker: ' + marker);
+}
+const altOneHelp = canonicalModule.indexOf('"Alt+1"');
+const exploreHelp = canonicalModule.indexOf('"Explore tab"', altOneHelp);
+const altTwoHelp = canonicalModule.indexOf('"Alt+2"', exploreHelp);
+const createHelp = canonicalModule.indexOf('"Create tab"', altTwoHelp);
+if (altOneHelp === -1 || exploreHelp - altOneHelp > 600 || altTwoHelp - exploreHelp > 600 || createHelp - altTwoHelp > 600) {
+  fail(MODULE_COPIES[0] + ' has shortcut help that does not match the Alt+1 Explore / Alt+2 Create handlers');
+}
+const scrollRegionCount = (canonicalModule.match(/\x22data-stem-scroll-region\x22:\s*\x22true\x22/g) || []).length;
+if (scrollRegionCount !== 1) {
+  fail(MODULE_COPIES[0] + ' must define exactly one named STEM scroll region (found ' + scrollRegionCount + ')');
 }
 
 if (failures.length) {

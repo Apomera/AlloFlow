@@ -155,6 +155,7 @@ uses an open range.
 | [DOMPurify](https://github.com/cure53/DOMPurify) | HTML sanitizing | Apache-2.0 / MPL-2.0 | Copyright (c) 2015 Dr.-Ing. Mario Heiderich, Cure53 |
 | [Harper](https://writewithharper.com) | grammar & spelling checks; v2.4.0 runtime vendored under `vendor/harper/2.4.0/` | Apache-2.0 ([vendored license](./vendor/harper/2.4.0/LICENSE)) | Copyright 2024 Elijah Potter |
 | [Free Dictionary API](https://dictionaryapi.dev) | word definitions/pronunciation | API free; data CC BY-SA (Wiktionary) | Definitions © Wiktionary contributors (CC BY-SA) |
+| [Wiktionary](https://www.wiktionary.org/) reviewed lexical pilot | Small, locally bundled English/French/Spanish word-family, cognate, borrowing, and false-friend records in `lexical_graph_module.js`; each relationship retains its source record URL, review date, and attribution | CC BY-SA 4.0 | © Wiktionary contributors; AlloFlow's reviewed subset and relationship annotations are distributed under CC BY-SA 4.0, with changes identified in the dataset manifest |
 | [liblouis](https://liblouis.io) | UEB Grade 2 braille (.brf) translation | GPLv3 (engine) / LGPL-2.1+ (tables) | Copyright (c) liblouis contributors |
 | [Open Board Format (OBF/OBZ)](https://www.openboardformat.org) | AAC board interchange (Symbol Studio) | open specification | © Open AAC / CoughDrop |
 | [Mulberry Symbols](https://mulberrysymbols.org) | validated AAC symbol set | CC BY-SA | Copyright (c) Steve Lee / Open AAC (share-alike; see note above) |
@@ -185,6 +186,8 @@ uses an open range.
 | [CODAP](https://codap.concord.org) | data-science workspace (Data Lab; iframe) | MIT | Copyright (c) 2010-present Concord Consortium |
 | [PhET Interactive Simulations](https://phet.colorado.edu) | science & math sims (iframe) | GPLv3 (code) / CC-BY (content) | © University of Colorado Boulder |
 | [Human Reference Atlas kidney v1.3](https://cdn.humanatlas.io/digital-objects/ref-organ/kidney-female-left/v1.3/) | bundled female-left 3D reference organ and ontology crosswalk (Anatomy Clinical Atlas; see [`ATTRIBUTION.md`](./stem_lab/assets/anatomy/clinical-atlas/ATTRIBUTION.md)) | CC BY 4.0 | Copyright 2024 Kristen Browne and Heidi Schlehlein; Human Reference Atlas / HuBMAP; derived from the NLM Visible Human Dataset |
+| [Human Reference Atlas heart v1.3](https://lod.humanatlas.io/ref-organ/heart-female/v1.3/) | bundled female-heart 3D reference organ, ontology crosswalk, and pinned metadata (Anatomy Clinical Atlas; see [`ATTRIBUTION.md`](./stem_lab/assets/anatomy/clinical-atlas/ATTRIBUTION.md)) | CC BY 4.0 | Copyright 2024 Kristen Browne and Heidi Schlehlein; Human Reference Atlas / HuBMAP; derived from the NLM Visible Human Dataset |
+| [Human Reference Atlas renal corpuscle FTU v1.4](https://lod.humanatlas.io/2d-ftu/kidney-renal-corpuscle/v1.4/) | bundled 2D renal-corpuscle reference illustration, metadata, and Cell Ontology crosswalk for the Anatomy kidney Scale Bridge (see [`ATTRIBUTION.md`](./stem_lab/assets/anatomy/clinical-atlas/ATTRIBUTION.md)) | CC BY 4.0 | Copyright 2026 Rachel Bajema; Human Reference Atlas / HuBMAP |
 | [iframe-phone](https://github.com/concord-consortium/iframe-phone) | bridge to the CODAP window | MIT | Copyright (c) 2014 Concord Consortium |
 | [OpenSeadragon](https://openseadragon.github.io) | deep-zoom image viewer (Zoom Gallery) | BSD-3-Clause | Copyright (C) 2009 CodePlex Foundation; (C) 2010-present OpenSeadragon contributors |
 | [Smithsonian Open Access](https://www.si.edu/openaccess) | museum images (Zoom Gallery) | CC0 1.0 | Public domain (CC0) — Smithsonian Institution |
@@ -196,6 +199,7 @@ uses an open range.
 | Library | Used for | License | Copyright |
 |---|---|---|---|
 | [three.js](https://threejs.org) | 3D graphics (Memory Palace, STEM tools) | MIT | Copyright (c) 2010-present three.js authors |
+| [moon-rover (REGOLITH — The Silence at Anaxagoras)](https://github.com/winchxyz/moon-rover) | technical inspiration for selected lunar-rover simulation techniques independently adapted for Moon Mission and Solar System Drone Mode; reviewed at pinned upstream commit [`8a72604`](https://github.com/winchxyz/moon-rover/tree/8a72604adf2ca465c8a8529effd12803129c3531) | MIT — [upstream notice bundled voluntarily for provenance](./licenses/moon-rover-MIT.txt) | Copyright (c) 2026 winch; AlloFlow's independent implementation is modified and unaffiliated; no endorsement by the original author |
 | [Excalidraw](https://excalidraw.com) | the Whiteboard | MIT | Copyright (c) 2020 Excalidraw |
 | [KayKit Dungeon Remastered](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | 3D decoration models (Memory Palace) | CC0 (credit appreciated) | © Kay Lousberg — see [`assets/glb/KAYKIT_LICENSE.txt`](./assets/glb/KAYKIT_LICENSE.txt) |
 | [globe.gl](https://github.com/vasturiano/globe.gl) | interactive 3D globe | MIT | Copyright (c) 2019 Vasco Asturiano |
@@ -400,6 +404,6 @@ Same as BSD 2-Clause, plus a third clause:
 
 ---
 
-_Last reviewed: 2026-08-01. This NOTICES file mirrors `OSS_CREDITS` in
+_Last reviewed: 2026-08-12. This NOTICES file mirrors `OSS_CREDITS` in
 `view_info_modal_source.jsx`; `dev-tools/check_oss_credits.cjs` fails the build if
 they drift or if a credited library is missing its entry here._

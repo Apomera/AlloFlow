@@ -470,7 +470,7 @@ function _builderDocumentText(doc) {
   const parts = [];
   while (walker.nextNode()) {
     const node = walker.currentNode;
-    if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element],[data-allo-toc],del[data-allo-change-id]')) continue;
+    if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element],[data-allo-toc],[data-allo-footnote-ref],[data-allo-footnote-backlink],[data-allo-footnotes-title],[data-allo-citation],del[data-allo-change-id]')) continue;
     if (node.nodeValue) parts.push(node.nodeValue);
   }
   return parts.join(' ').replace(/\s+/g, ' ').trim();
@@ -508,7 +508,7 @@ function _builderDocumentStatistics(doc) {
   while (walker.nextNode()) {
     const node = walker.currentNode;
     if (!String(node.nodeValue || '').trim()) continue;
-    if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element],[data-allo-toc],del[data-allo-change-id]')) continue;
+    if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element],[data-allo-toc],[data-allo-footnote-ref],[data-allo-footnote-backlink],[data-allo-footnotes-title],[data-allo-citation],del[data-allo-change-id]')) continue;
     const block = node.parentElement?.closest('h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,pre,address,dt,dd,td,th,div');
     if (block && block !== doc.body) blocks.add(block);
   }
@@ -562,7 +562,7 @@ function _builderReviewerIdentity(value) {
 }
 
 function _builderNormalizeCommentMessage(value) {
-  return String(value || '').replace(/\r\n?/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, 1200);
+  return String(value || '').replace(/\n?/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, 1200);
 }
 
 function _builderCommentThread(marker) {
@@ -709,7 +709,8 @@ const _BUILDER_TRACKED_META_ATTRIBUTES = new Set([
   'data-allo-change-id', 'data-allo-change-type', 'data-allo-change-kind',
   'data-allo-change-at', 'data-allo-change-author', 'data-allo-change-author-key', 'data-allo-change-label',
   'data-allo-change-before', 'data-allo-change-after', 'data-allo-change-scopes',
-  'data-allo-change-action', 'data-allo-change-active',
+  'data-allo-change-action', 'data-allo-change-active', 'data-allo-change-summary',
+  'data-allo-change-group', 'data-allo-change-group-secondary',
   'data-allo-change-tabindex-added', 'data-allo-change-title-added',
   'data-allo-change-aria-added', 'data-allo-change-preview-state',
 ]);
@@ -1088,6 +1089,10 @@ function _builderSetTrackedMarkupView(root, requestedView = 'all') {
       marker.setAttribute('data-allo-change-preview-state', view === 'original' ? 'before' : 'after');
     });
   }
+  if (root?.nodeType === 9 && root.body) {
+    _builderRefreshTableOfContents(root);
+    _builderRefreshDocumentReferences(root);
+  }
   return view;
 }
 
@@ -1095,6 +1100,7 @@ function _builderTrackedChangeEntries(doc) {
   if (!doc?.querySelectorAll) return [];
   const seen = new Set();
   return Array.from(doc.querySelectorAll(_BUILDER_CHANGE_SELECTOR))
+    .filter((marker) => !marker.hasAttribute('data-allo-change-group-secondary'))
     .filter((marker) => {
       const type = _builderTrackedChangeType(marker);
       return marker.matches?.(_BUILDER_ADVANCED_CHANGE_SELECTOR)
@@ -1121,7 +1127,7 @@ function _builderTrackedChangeEntries(doc) {
         label,
         scopes: String(marker.getAttribute('data-allo-change-scopes') || type).split(',').filter(Boolean),
         action: marker.getAttribute('data-allo-change-action') || '',
-        text: String(marker.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 220) || label,
+        text: _builderCitationPlain(marker.getAttribute('data-allo-change-summary'), 220) || String(marker.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 220) || label,
         at: marker.getAttribute('data-allo-change-at') || '',
         author: marker.getAttribute('data-allo-change-author') || 'You',
         node: marker,
@@ -1366,8 +1372,19 @@ function _builderHandleTrackedBeforeInput(doc, event) {
   return { handled: false, structural: true };
 }
 
-function _builderApplyTrackedChange(marker, decision = 'accept') {
-  if (!marker?.parentNode) return false;
+function _builderApplyTrackedChange(marker, decision = 'accept', options = {}) {
+  if (!marker?.parentNode || !marker.matches?.(_BUILDER_CHANGE_SELECTOR)) return false;
+  const groupId = marker.getAttribute?.('data-allo-change-group') || '';
+  if (groupId && !options.skipGroup) {
+    const root = marker.getRootNode?.() || marker.ownerDocument;
+    const peers = Array.from(root?.querySelectorAll?.('[data-allo-change-group]') || [])
+      .filter((candidate) => candidate.getAttribute('data-allo-change-group') === groupId && candidate.parentNode);
+    if (peers.length) {
+      let applied = false;
+      peers.reverse().forEach((candidate) => { applied = _builderApplyTrackedChange(candidate, decision, { skipGroup: true }) || applied; });
+      return applied;
+    }
+  }
   const type = _builderTrackedChangeType(marker);
   const advanced = marker.matches?.(_BUILDER_ADVANCED_CHANGE_SELECTOR);
   if (!advanced) {
@@ -1378,6 +1395,20 @@ function _builderApplyTrackedChange(marker, decision = 'accept') {
   }
   const kind = marker.getAttribute('data-allo-change-kind') || '';
   const accepting = decision === 'accept';
+  if (kind === 'reference-insert') {
+    const snapshot = _builderRevisionSnapshotDecode(marker.getAttribute(accepting ? 'data-allo-change-after' : 'data-allo-change-before'));
+    if (snapshot) _builderApplyElementRevisionSnapshot(marker, snapshot, { content: true });
+    _builderStripAdvancedTrackedMetadata(marker);
+    if (!accepting) return marker.childNodes.length ? _builderUnwrapTrackedContainer(marker) : (marker.remove(), true);
+    return true;
+  }
+  if (kind === 'reference-remove') {
+    const snapshot = _builderRevisionSnapshotDecode(marker.getAttribute(accepting ? 'data-allo-change-after' : 'data-allo-change-before'));
+    if (snapshot) _builderApplyElementRevisionSnapshot(marker, snapshot, { content: true });
+    _builderStripAdvancedTrackedMetadata(marker);
+    if (accepting) return marker.childNodes.length ? _builderUnwrapTrackedContainer(marker) : (marker.remove(), true);
+    return true;
+  }
   if (kind === 'structure-insert') {
     if (!accepting) {
       marker.remove();
@@ -1428,6 +1459,53 @@ function _builderFinalizeTrackedChanges(root, decision = 'accept') {
   body?.removeAttribute('data-allo-review-balloons');
   body?.removeAttribute('data-allo-reviewer-name');
   return root;
+}
+
+function _builderRefreshFinalDocumentFields(root) {
+  if (!root?.querySelectorAll) return root;
+  let scope = root;
+  let fieldDocument = root.nodeType === 9 ? root : null;
+  if (!fieldDocument) {
+    const staging = root.ownerDocument?.implementation?.createHTMLDocument?.('');
+    if (!staging) return root;
+    const imported = staging.importNode(root, true);
+    const tag = String(root.tagName || '').toLowerCase();
+    if (tag === 'html') staging.replaceChild(imported, staging.documentElement);
+    else if (tag === 'body') staging.body.replaceWith(imported);
+    else staging.body.replaceChildren(imported);
+    fieldDocument = staging;
+    scope = tag === 'html' ? staging.documentElement : tag === 'body' ? staging.body : imported;
+  }
+  _builderRefreshTableOfContents(fieldDocument);
+  _builderRefreshDocumentReferences(fieldDocument);
+  return scope;
+}
+
+function _builderPrepareCitationFieldsForExport(root) {
+  if (!root?.querySelectorAll) return root;
+  Array.from(root.querySelectorAll(_BUILDER_CITATION_SELECTOR)).forEach((node) => {
+    node.removeAttribute('tabindex');
+    node.removeAttribute('aria-keyshortcuts');
+    node.removeAttribute('aria-haspopup');
+    const label = String(node.getAttribute('aria-label') || '')
+      .replace(/\.\s*Press Enter to edit\.?$/i, '')
+      .replace(/\s*Press Enter to edit\.?$/i, '')
+      .trim();
+    if (label) node.setAttribute('aria-label', label);
+    else node.removeAttribute('aria-label');
+    node.setAttribute('title', node.getAttribute('aria-invalid') === 'true' ? 'Broken citation' : 'Citation');
+    node.querySelectorAll('[data-allo-citation-link]').forEach((link) => link.removeAttribute('tabindex'));
+  });
+  return root;
+}
+
+function _builderFinalizeDocumentForExport(root) {
+  if (!root?.querySelectorAll) return root;
+  _builderClearReviewCommentTransientState(root);
+  _builderClearTrackedChangeTransientState(root);
+  _builderStripReviewComments(root);
+  _builderFinalizeTrackedChanges(root, 'accept');
+  return _builderPrepareCitationFieldsForExport(_builderRefreshFinalDocumentFields(root));
 }
 
 function _builderClearTrackedChangeTransientState(root) {
@@ -1519,8 +1597,1248 @@ function _builderSuspendTrackedChanges(root) {
   };
 }
 
-const _BUILDER_TOC_SELECTOR = 'nav[data-allo-toc]';
-const _BUILDER_HEADING_SELECTOR = 'h1,h2,h3,h4,h5,h6';
+const _BUILDER_BOOKMARK_SELECTOR = '[data-allo-bookmark="1"][id]';
+const _BUILDER_CROSS_REFERENCE_SELECTOR = 'a[data-allo-cross-reference="1"]';
+const _BUILDER_FOOTNOTE_REFERENCE_SELECTOR = 'sup[data-allo-footnote-ref]';
+const _BUILDER_FOOTNOTE_SELECTOR = 'li[data-allo-footnote]';
+const _BUILDER_FOOTNOTES_SELECTOR = 'section[data-allo-footnotes="1"]';
+const _BUILDER_CITATION_STORE_SELECTOR = '[data-allo-citation-store="1"]';
+const _BUILDER_CITATION_SELECTOR = 'span[data-allo-citation="1"]';
+const _BUILDER_BIBLIOGRAPHY_SELECTOR = 'section[data-allo-bibliography="1"]';
+
+function _builderNormalizeBookmarkName(value) {
+  return String(value || '').replace(/[\u200B\uFEFF]/g, '').replace(/\s+/g, ' ').trim().slice(0, 80);
+}
+
+function _builderReferenceSlug(value, fallback = 'reference') {
+  return String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 56) || fallback;
+}
+
+function _builderUniqueReferenceId(doc, prefix, value) {
+  const base = String(prefix || 'reference').replace(/[^a-zA-Z0-9_-]/g, '') + '-' + _builderReferenceSlug(value, Date.now().toString(36));
+  let candidate = base;
+  let suffix = 2;
+  while (doc?.getElementById?.(candidate)) {
+    candidate = base + '-' + suffix;
+    suffix += 1;
+  }
+  return candidate;
+}
+
+function _builderReferenceRange(doc, suppliedRange) {
+  if (!doc?.body) return null;
+  let range = suppliedRange?.cloneRange?.() || null;
+  const selection = doc.getSelection?.();
+  if (!range && selection?.rangeCount) range = selection.getRangeAt(0).cloneRange();
+  if (!range) return null;
+  const start = range.startContainer?.nodeType === 1 ? range.startContainer : range.startContainer?.parentElement;
+  const end = range.endContainer?.nodeType === 1 ? range.endContainer : range.endContainer?.parentElement;
+  if (!start || !end || !doc.body.contains(start) || !doc.body.contains(end)) return null;
+  const blocked = [_BUILDER_TOC_SELECTOR, _BUILDER_FOOTNOTES_SELECTOR, _BUILDER_BIBLIOGRAPHY_SELECTOR, _BUILDER_CITATION_SELECTOR, _BUILDER_CITATION_STORE_SELECTOR].join(',');
+  if (start.closest?.(blocked) || end.closest?.(blocked)) return null;
+  return range;
+}
+
+function _builderSetSelectionAfter(doc, node) {
+  try {
+    const range = doc.createRange();
+    range.setStartAfter(node);
+    range.collapse(true);
+    const selection = doc.getSelection?.();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  } catch (_) {}
+}
+
+const _BUILDER_CITATION_STYLES = [
+  { id: 'apa', label: 'APA 7', bibliographyTitle: 'References' },
+  { id: 'mla', label: 'MLA 9', bibliographyTitle: 'Works Cited' },
+  { id: 'chicago', label: 'Chicago author-date', bibliographyTitle: 'References' },
+];
+const _BUILDER_CITATION_SOURCE_TYPES = ['book', 'journal', 'webpage', 'report'];
+const _BUILDER_CITATION_ITEM_LIMIT = 20;
+
+function _builderCitationPlain(value, limit = 500) {
+  return String(value == null ? '' : value).replace(/[\u200B\uFEFF]/g, '').replace(/\s+/g, ' ').trim().slice(0, limit);
+}
+
+function _builderNormalizeCitationStyle(value) {
+  const style = String(value || '').toLowerCase();
+  return _BUILDER_CITATION_STYLES.some((entry) => entry.id === style) ? style : 'apa';
+}
+
+function _builderCitationSourceId(value) {
+  const normalized = _builderCitationPlain(value, 80).replace(/[^a-zA-Z0-9_-]/g, '');
+  return normalized || 'source-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+}
+
+function _builderNormalizeCitationSource(value = {}, index = 0) {
+  const type = _BUILDER_CITATION_SOURCE_TYPES.includes(String(value.type || '').toLowerCase()) ? String(value.type).toLowerCase() : 'webpage';
+  const authors = Array.isArray(value.authors) ? value.authors : String(value.authors || value.author || '').split(';');
+  const normalizedAuthors = authors.map((author) => _builderCitationPlain(author, 120)).filter(Boolean).slice(0, 20);
+  return {
+    id: _builderCitationSourceId(value.id || 'source-' + (index + 1)),
+    type,
+    authors: normalizedAuthors,
+    corporateAuthor: _builderCitationPlain(value.corporateAuthor, 160),
+    title: _builderCitationPlain(value.title, 300),
+    containerTitle: _builderCitationPlain(value.containerTitle || value.websiteTitle || value.journalTitle, 300),
+    publisher: _builderCitationPlain(value.publisher, 200),
+    year: _builderCitationPlain(value.year, 20),
+    volume: _builderCitationPlain(value.volume, 40),
+    issue: _builderCitationPlain(value.issue, 40),
+    pages: _builderCitationPlain(value.pages, 80),
+    url: _builderCitationPlain(value.url || value.URL, 1000),
+    doi: _builderCitationPlain(value.doi || value.DOI, 300).replace(/^(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:\s*)/i, ''),
+    accessed: _builderCitationPlain(value.accessed, 80),
+  };
+}
+
+function _builderNormalizeCitationSources(value) {
+  const sources = Array.isArray(value) ? value : [];
+  const seen = new Set();
+  return sources.map((source, index) => _builderNormalizeCitationSource(source, index))
+    .filter((source) => source.title || source.authors.length || source.corporateAuthor)
+    .filter((source) => {
+      let id = source.id;
+      let suffix = 2;
+      while (seen.has(id)) { id = source.id + '-' + suffix; suffix += 1; }
+      source.id = id;
+      seen.add(id);
+      return true;
+    }).slice(0, 200);
+}
+
+function _builderNormalizeCitationItem(value = {}) {
+  const rawSourceId = _builderCitationPlain(value.sourceId || value.source || value.id, 80);
+  return {
+    sourceId: rawSourceId.replace(/[^a-zA-Z0-9_-]/g, ''),
+    locator: _builderCitationPlain(value.locator || value.page, 80),
+    prefix: _builderCitationPlain(value.prefix, 120),
+    suffix: _builderCitationPlain(value.suffix, 120),
+    suppressAuthor: value.suppressAuthor === true || value.suppressAuthor === 'true' || value.suppressAuthor === 1,
+    suppressYear: value.suppressYear === true || value.suppressYear === 'true' || value.suppressYear === 1,
+  };
+}
+
+function _builderNormalizeCitationItems(value) {
+  const items = Array.isArray(value) ? value : [];
+  const seen = new Set();
+  return items.map((item) => _builderNormalizeCitationItem(item))
+    .filter((item) => item.sourceId && !seen.has(item.sourceId) && seen.add(item.sourceId))
+    .slice(0, _BUILDER_CITATION_ITEM_LIMIT);
+}
+
+function _builderCitationItems(node) {
+  if (!node?.getAttribute) return [];
+  const serialized = node.getAttribute('data-allo-citation-items');
+  if (serialized) {
+    try {
+      const parsed = _builderNormalizeCitationItems(JSON.parse(serialized));
+      if (parsed.length) return parsed;
+    } catch (_) {}
+  }
+  const sourceId = _builderCitationPlain(node.getAttribute('data-allo-citation-source'), 80).replace(/[^a-zA-Z0-9_-]/g, '');
+  return sourceId ? [_builderNormalizeCitationItem({
+    sourceId,
+    locator: node.getAttribute('data-allo-citation-locator'),
+  })] : [];
+}
+
+function _builderWriteCitationItems(node, value) {
+  if (!node?.setAttribute) return [];
+  const items = _builderNormalizeCitationItems(value);
+  node.setAttribute('data-allo-citation-items', JSON.stringify(items));
+  node.setAttribute('data-allo-citation-source', items[0]?.sourceId || '');
+  node.setAttribute('data-allo-citation-locator', items[0]?.locator || '');
+  return items;
+}
+
+function _builderCitationSourceTypeFromImport(value) {
+  const type = String(value || '').trim().toLowerCase();
+  if (['jour', 'jfull', 'ejour', 'article', 'journal-article', 'proceedings-article'].includes(type)) return 'journal';
+  if (['book', 'ebook', 'inbook', 'incollection', 'book-chapter', 'edited-book', 'monograph', 'reference-book'].includes(type)) return 'book';
+  if (['rprt', 'report', 'techreport', 'report-series', 'posted-content'].includes(type)) return 'report';
+  return 'webpage';
+}
+
+function _builderCitationSourceFromCrossref(message = {}) {
+  const authorRecords = Array.isArray(message.author) ? message.author : [];
+  const authors = authorRecords.map((author) => {
+    const family = _builderCitationPlain(author?.family, 80);
+    const given = _builderCitationPlain(author?.given, 100);
+    return [family, given].filter(Boolean).join(', ');
+  }).filter(Boolean);
+  const dateRecord = message.issued || message.published || message['published-print'] || message['published-online'] || {};
+  const dateParts = Array.isArray(dateRecord['date-parts']) ? dateRecord['date-parts'][0] : [];
+  const institution = Array.isArray(message.institution) ? message.institution[0] : message.institution;
+  return _builderNormalizeCitationSource({
+    type: _builderCitationSourceTypeFromImport(message.type),
+    authors,
+    corporateAuthor: authors.length ? '' : _builderCitationPlain(institution?.name || institution, 160),
+    title: Array.isArray(message.title) ? message.title[0] : message.title,
+    containerTitle: Array.isArray(message['container-title']) ? message['container-title'][0] : message['container-title'],
+    publisher: message.publisher,
+    year: Array.isArray(dateParts) && dateParts[0] ? String(dateParts[0]) : '',
+    volume: message.volume,
+    issue: message.issue,
+    pages: message.page || message['article-number'],
+    url: message.URL,
+    doi: message.DOI,
+  });
+}
+
+function _builderParseRIS(value) {
+  const text = String(value || '').replace(/\r\n?/g, '\n').slice(0, 500000);
+  const records = [];
+  let record = {};
+  let lastTag = '';
+  const addValue = (tag, content) => {
+    if (!record[tag]) record[tag] = [];
+    record[tag].push(_builderCitationPlain(content, 2000));
+    lastTag = tag;
+  };
+  const finish = () => {
+    if (Object.keys(record).length) records.push(record);
+    record = {};
+    lastTag = '';
+  };
+  text.split('\n').slice(0, 10000).forEach((line) => {
+    const match = line.match(/^([A-Z0-9]{2})\s*-\s?(.*)$/i);
+    if (!match) {
+      const continuation = _builderCitationPlain(line, 1000);
+      if (continuation && lastTag && record[lastTag]?.length) record[lastTag][record[lastTag].length - 1] += ' ' + continuation;
+      return;
+    }
+    const tag = match[1].toUpperCase();
+    if (tag === 'TY' && Object.keys(record).length) finish();
+    if (tag === 'ER') { finish(); return; }
+    addValue(tag, match[2]);
+  });
+  finish();
+  return records.slice(0, 200).map((entry) => {
+    const first = (...tags) => {
+      for (const tag of tags) if (entry[tag]?.find(Boolean)) return entry[tag].find(Boolean);
+      return '';
+    };
+    const all = (...tags) => tags.flatMap((tag) => entry[tag] || []).filter(Boolean);
+    const published = first('PY', 'Y1', 'DA');
+    const year = String(published || '').match(/(?:19|20)\d{2}/)?.[0] || published;
+    const startPage = first('SP');
+    const endPage = first('EP');
+    return _builderNormalizeCitationSource({
+      type: _builderCitationSourceTypeFromImport(first('TY')),
+      authors: all('AU', 'A1'),
+      corporateAuthor: first('A2'),
+      title: first('TI', 'T1', 'CT'),
+      containerTitle: first('JF', 'JO', 'T2', 'JA'),
+      publisher: first('PB', 'IN'),
+      year,
+      volume: first('VL'),
+      issue: first('IS'),
+      pages: startPage && endPage && endPage !== startPage ? startPage + '?' + endPage : startPage || endPage,
+      url: first('UR', 'L1'),
+      doi: first('DO'),
+      accessed: first('Y2'),
+    });
+  });
+}
+
+function _builderBibTeXRawEntries(value) {
+  const text = String(value || '').slice(0, 500000);
+  const entries = [];
+  let cursor = 0;
+  while (cursor < text.length && entries.length < 200) {
+    const at = text.indexOf('@', cursor);
+    if (at < 0) break;
+    const typeMatch = text.slice(at + 1).match(/^\s*([a-zA-Z]+)\s*([({])/);
+    if (!typeMatch) { cursor = at + 1; continue; }
+    const type = typeMatch[1].toLowerCase();
+    const openIndex = at + 1 + typeMatch[0].lastIndexOf(typeMatch[2]);
+    const open = typeMatch[2];
+    const close = open === '{' ? '}' : ')';
+    let depth = 1;
+    let quoted = false;
+    let escaped = false;
+    let end = openIndex + 1;
+    for (; end < text.length; end += 1) {
+      const char = text[end];
+      if (escaped) { escaped = false; continue; }
+      if (char === '\\') { escaped = true; continue; }
+      if (char === '"') { quoted = !quoted; continue; }
+      if (quoted) continue;
+      if (char === open) depth += 1;
+      else if (char === close) depth -= 1;
+      if (!depth) break;
+    }
+    if (depth) break;
+    if (!['comment', 'preamble', 'string'].includes(type)) entries.push({ type, body: text.slice(openIndex + 1, end) });
+    cursor = end + 1;
+  }
+  return entries;
+}
+
+function _builderBibTeXFields(body) {
+  const fields = {};
+  let cursor = String(body || '').indexOf(',');
+  if (cursor < 0) return fields;
+  cursor += 1;
+  while (cursor < body.length) {
+    while (cursor < body.length && /[\s,]/.test(body[cursor])) cursor += 1;
+    const keyMatch = body.slice(cursor).match(/^([a-zA-Z][\w-]*)\s*=\s*/);
+    if (!keyMatch) break;
+    const key = keyMatch[1].toLowerCase();
+    cursor += keyMatch[0].length;
+    let raw = '';
+    if (body[cursor] === '{') {
+      let depth = 1;
+      cursor += 1;
+      const start = cursor;
+      let escaped = false;
+      for (; cursor < body.length; cursor += 1) {
+        const char = body[cursor];
+        if (escaped) { escaped = false; continue; }
+        if (char === '\\') { escaped = true; continue; }
+        if (char === '{') depth += 1;
+        else if (char === '}') depth -= 1;
+        if (!depth) break;
+      }
+      raw = body.slice(start, cursor);
+      cursor += 1;
+    } else if (body[cursor] === '"') {
+      cursor += 1;
+      const start = cursor;
+      let escaped = false;
+      for (; cursor < body.length; cursor += 1) {
+        const char = body[cursor];
+        if (escaped) { escaped = false; continue; }
+        if (char === '\\') { escaped = true; continue; }
+        if (char === '"') break;
+      }
+      raw = body.slice(start, cursor);
+      cursor += 1;
+    } else {
+      const start = cursor;
+      while (cursor < body.length && body[cursor] !== ',') cursor += 1;
+      raw = body.slice(start, cursor);
+    }
+    fields[key] = raw.trim();
+    while (cursor < body.length && body[cursor] !== ',') cursor += 1;
+  }
+  return fields;
+}
+
+function _builderBibTeXText(value) {
+  return _builderCitationPlain(String(value || '')
+    .replace(/\\([&%#_$])/g, '$1')
+    .replace(/\\"?\s*([a-zA-Z])/g, '$1')
+    .replace(/\\[a-zA-Z]+\*?\s*/g, '')
+    .replace(/[{}]/g, '')
+    .replace(/~/g, ' '), 2000);
+}
+
+function _builderParseBibTeX(value) {
+  return _builderBibTeXRawEntries(value).map((entry) => {
+    const fields = _builderBibTeXFields(entry.body);
+    const rawAuthor = fields.author || '';
+    const corporate = /^\s*\{[\s\S]*\}\s*$/.test(rawAuthor) && !/\s+and\s+/i.test(rawAuthor);
+    const authorText = _builderBibTeXText(rawAuthor);
+    const date = _builderBibTeXText(fields.year || fields.date);
+    return _builderNormalizeCitationSource({
+      type: _builderCitationSourceTypeFromImport(entry.type),
+      authors: corporate ? [] : authorText.split(/\s+and\s+/i).filter(Boolean),
+      corporateAuthor: corporate ? authorText : '',
+      title: _builderBibTeXText(fields.title),
+      containerTitle: _builderBibTeXText(fields.journal || fields.booktitle || fields.howpublished),
+      publisher: _builderBibTeXText(fields.publisher || fields.institution || fields.organization),
+      year: date.match(/(?:19|20)\d{2}/)?.[0] || date,
+      volume: _builderBibTeXText(fields.volume),
+      issue: _builderBibTeXText(fields.number || fields.issue),
+      pages: _builderBibTeXText(fields.pages).replace(/--/g, '?'),
+      url: _builderBibTeXText(fields.url),
+      doi: _builderBibTeXText(fields.doi),
+      accessed: _builderBibTeXText(fields.urldate),
+    });
+  });
+}
+
+function _builderParseCitationImport(value, requestedFormat = 'auto') {
+  const text = String(value || '').trim().slice(0, 500000);
+  const selected = ['auto', 'ris', 'bibtex'].includes(String(requestedFormat || '').toLowerCase()) ? String(requestedFormat || '').toLowerCase() : 'auto';
+  if (!text) return { format: selected, sources: [], warnings: [], errors: ['Paste RIS or BibTeX records first.'] };
+  const format = selected === 'auto' ? (/^\s*@\w+\s*[({]/i.test(text) ? 'bibtex' : /^\s*TY\s*-/im.test(text) ? 'ris' : '') : selected;
+  if (!format) return { format: 'unknown', sources: [], warnings: [], errors: ['The pasted text does not look like RIS or BibTeX.'] };
+  const parsed = format === 'ris' ? _builderParseRIS(text) : _builderParseBibTeX(text);
+  const sources = _builderNormalizeCitationSources(parsed);
+  const warnings = [];
+  if (parsed.length > sources.length) warnings.push((parsed.length - sources.length) + ' incomplete record' + (parsed.length - sources.length === 1 ? ' was' : 's were') + ' skipped.');
+  if (sources.length >= 200) warnings.push('Only the first 200 records were read.');
+  return { format, sources, warnings, errors: sources.length ? [] : ['No usable source records were found.'] };
+}
+
+function _builderCitationStore(doc, create = false) {
+  if (!doc?.body) return null;
+  let store = doc.querySelector(_BUILDER_CITATION_STORE_SELECTOR);
+  if (!store && create) {
+    store = doc.createElement('script');
+    store.setAttribute('type', 'application/json');
+    store.setAttribute('data-allo-citation-store', '1');
+    store.setAttribute('data-allo-citation-style', 'apa');
+    store.textContent = '[]';
+    doc.body.appendChild(store);
+  }
+  return store;
+}
+
+function _builderCitationSources(doc) {
+  const store = _builderCitationStore(doc, false);
+  if (!store) return [];
+  try { return _builderNormalizeCitationSources(JSON.parse(store.textContent || '[]')); } catch (_) { return []; }
+}
+
+function _builderCitationStyle(doc) {
+  return _builderNormalizeCitationStyle(_builderCitationStore(doc, false)?.getAttribute('data-allo-citation-style'));
+}
+
+function _builderWriteCitationSources(doc, sources, style = _builderCitationStyle(doc)) {
+  const store = _builderCitationStore(doc, true);
+  const normalized = _builderNormalizeCitationSources(sources);
+  store.setAttribute('data-allo-citation-style', _builderNormalizeCitationStyle(style));
+  store.textContent = JSON.stringify(normalized).replace(/<\//g, '<\\/');
+  return normalized;
+}
+
+function _builderCitationSurname(author) {
+  const name = _builderCitationPlain(author, 120);
+  if (!name) return '';
+  if (name.includes(',')) return _builderCitationPlain(name.split(',')[0], 80);
+  const parts = name.split(/\s+/);
+  return parts[parts.length - 1] || name;
+}
+
+function _builderCitationGivenName(author) {
+  const name = _builderCitationPlain(author, 120);
+  if (!name) return '';
+  if (name.includes(',')) return _builderCitationPlain(name.split(',').slice(1).join(','), 100);
+  const parts = name.split(/\s+/);
+  return parts.slice(0, -1).join(' ');
+}
+
+function _builderCitationTitleFallback(source) {
+  const title = source.title || 'Untitled source';
+  return title.length > 42 ? title.slice(0, 39).trimEnd() + '…' : title;
+}
+
+function _builderCitationAuthorKey(source, style = 'apa') {
+  const names = source.authors.map(_builderCitationSurname).filter(Boolean);
+  if (!names.length) return source.corporateAuthor || _builderCitationTitleFallback(source);
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return names[0] + (style === 'apa' ? ' & ' : ' and ') + names[1];
+  return names[0] + ' et al.';
+}
+
+function _builderCitationAuthorList(source, style = 'apa') {
+  if (!source.authors.length) return source.corporateAuthor || '';
+  const display = source.authors.map((author, index) => {
+    const surname = _builderCitationSurname(author);
+    const given = _builderCitationGivenName(author);
+    if (style === 'apa') {
+      const initials = given.split(/\s+/).filter(Boolean).map((part) => (part[0] ? part[0].toUpperCase() + '.' : '')).join(' ');
+      return [surname, initials].filter(Boolean).join(', ');
+    }
+    if (index === 0) return [surname, given].filter(Boolean).join(', ');
+    return [given, surname].filter(Boolean).join(' ');
+  });
+  if (style === 'mla' && display.length > 2) return display[0] + ', et al.';
+  if (display.length === 1) return display[0];
+  if (display.length === 2) return display[0] + (style === 'apa' ? ', & ' : ', and ') + display[1];
+  return display.slice(0, -1).join(', ') + (style === 'apa' ? ', & ' : ', and ') + display.at(-1);
+}
+
+function _builderFormatCitationItem(source, style = 'apa', value = {}) {
+  const normalizedStyle = _builderNormalizeCitationStyle(style);
+  const item = _builderNormalizeCitationItem(value);
+  const author = item.suppressAuthor ? '' : _builderCitationAuthorKey(source, normalizedStyle);
+  const year = item.suppressYear || normalizedStyle === 'mla' ? '' : (source.year || 'n.d.');
+  const place = item.locator;
+  let core = '';
+  if (normalizedStyle === 'mla') {
+    core = [author, place].filter(Boolean).join(' ');
+  } else if (normalizedStyle === 'chicago') {
+    core = [author, year].filter(Boolean).join(' ');
+    if (place) core += (core ? ', ' : '') + place;
+  } else {
+    core = [author, year].filter(Boolean).join(', ');
+    if (place) {
+      const formattedPlace = /^(p{1,2}|para|chap|sec)\.?\s/i.test(place) ? place : 'p. ' + place;
+      core += (core ? ', ' : '') + formattedPlace;
+    }
+  }
+  if (!core) core = _builderCitationTitleFallback(source);
+  if (item.prefix) core = item.prefix + (/\s$/.test(item.prefix) ? '' : ' ') + core;
+  if (item.suffix) core += (/^[,.;:)\]]/.test(item.suffix) ? '' : ' ') + item.suffix;
+  return core;
+}
+
+function _builderFormatCitationCluster(value, sources, style = 'apa') {
+  const items = _builderNormalizeCitationItems(value);
+  const sourceMap = sources instanceof Map ? sources : new Map((Array.isArray(sources) ? sources : []).map((source) => [source.id, source]));
+  if (!items.length) return '(missing citation)';
+  return '(' + items.map((item) => {
+    const source = sourceMap.get(item.sourceId);
+    if (!source) return (item.prefix ? item.prefix + ' ' : '') + 'missing source' + (item.suffix ? ' ' + item.suffix : '');
+    return _builderFormatCitationItem(source, style, item);
+  }).join('; ') + ')';
+}
+
+function _builderFormatInlineCitation(source, style = 'apa', locator = '') {
+  return '(' + _builderFormatCitationItem(source, style, { sourceId: source?.id, locator }) + ')';
+}
+
+function _builderCitationLink(source) {
+  if (source.doi) return 'https://doi.org/' + source.doi;
+  return /^https?:\/\//i.test(source.url) ? source.url : '';
+}
+
+function _builderSentence(value) {
+  const text = _builderCitationPlain(value, 1200);
+  return text && !/[.!?]$/.test(text) ? text + '.' : text;
+}
+
+function _builderFormatBibliographyEntry(source, style = 'apa') {
+  const normalizedStyle = _builderNormalizeCitationStyle(style);
+  const authors = _builderCitationAuthorList(source, normalizedStyle);
+  const year = source.year || 'n.d.';
+  const title = source.title || 'Untitled source';
+  const container = source.containerTitle;
+  const publisher = source.publisher;
+  const journalDetail = [source.volume, source.issue ? '(' + source.issue + ')' : ''].join('');
+  const pageDetail = source.pages ? (normalizedStyle === 'mla' ? 'pp. ' : '') + source.pages : '';
+  const link = _builderCitationLink(source);
+  let parts = [];
+  if (normalizedStyle === 'mla') {
+    parts = [_builderSentence(authors), _builderSentence(title), container ? _builderSentence(container) : '', publisher, source.year, journalDetail, pageDetail, link];
+  } else if (normalizedStyle === 'chicago') {
+    parts = [_builderSentence(authors), _builderSentence(year), _builderSentence(title), container ? _builderSentence(container) : '', publisher, journalDetail, pageDetail, link];
+  } else {
+    parts = [_builderSentence(authors), '(' + year + ').', _builderSentence(title), container ? _builderSentence(container) : '', journalDetail, pageDetail, publisher ? _builderSentence(publisher) : '', link];
+  }
+  return parts.filter(Boolean).join(' ').replace(/\s+([,.;:])/g, '$1').replace(/\s+/g, ' ').trim();
+}
+
+function _builderCitationSortKey(source) {
+  return (_builderCitationAuthorKey(source, 'mla') + ' ' + source.year + ' ' + source.title).toLocaleLowerCase();
+}
+
+function _builderCitationEntries(doc) {
+  if (!doc?.querySelectorAll) return { sources: [], citations: [], bibliography: null, style: 'apa', brokenCount: 0, uncitedCount: 0, citedSourceCount: 0 };
+  const sources = _builderCitationSources(doc);
+  const sourceMap = new Map(sources.map((source) => [source.id, source]));
+  const style = _builderCitationStyle(doc);
+  const citations = Array.from(doc.querySelectorAll(_BUILDER_CITATION_SELECTOR))
+    .filter((node) => !node.closest('del[data-allo-change-id],[data-allo-change-kind="structure-delete"]'))
+    .map((node, index) => {
+      const items = _builderCitationItems(node);
+      const resolvedItems = items.map((item) => ({ ...item, source: sourceMap.get(item.sourceId) || null }));
+      const sourceId = items[0]?.sourceId || '';
+      const source = resolvedItems[0]?.source || null;
+      const fallbackLabel = _builderFormatCitationCluster(items, sourceMap, style);
+      return {
+        id: node.getAttribute('data-allo-citation-id') || 'citation-' + (index + 1),
+        key: 'citation:' + (node.getAttribute('data-allo-citation-id') || index + 1),
+        sourceId,
+        source,
+        sourceIds: items.map((item) => item.sourceId),
+        sources: resolvedItems.map((item) => item.source).filter(Boolean),
+        items,
+        resolvedItems,
+        locator: items[0]?.locator || '',
+        label: _builderCitationPlain(node.textContent, 500) || fallbackLabel,
+        broken: !items.length || resolvedItems.some((item) => !item.source),
+        brokenItemCount: items.length ? resolvedItems.filter((item) => !item.source).length : 1,
+        node,
+      };
+    });
+  const citedIds = new Set(citations.flatMap((entry) => entry.resolvedItems.filter((item) => item.source).map((item) => item.sourceId)));
+  const bibliography = doc.querySelector(_BUILDER_BIBLIOGRAPHY_SELECTOR);
+  return {
+    sources,
+    citations,
+    bibliography,
+    style,
+    brokenCount: citations.filter((entry) => entry.broken).length,
+    uncitedCount: sources.filter((source) => !citedIds.has(source.id)).length,
+    citedSourceCount: citedIds.size,
+  };
+}
+
+function _builderRefreshCitationFields(doc) {
+  if (!doc?.body) return _builderCitationEntries(doc);
+  const initial = _builderCitationEntries(doc);
+  const sourceMap = new Map(initial.sources.map((source) => [source.id, source]));
+  initial.citations.forEach((entry, index) => {
+    const node = entry.node;
+    const items = _builderWriteCitationItems(node, entry.items);
+    const id = node.getAttribute('data-allo-citation-id') || _builderUniqueReferenceId(doc, 'citation', (items[0]?.sourceId || 'missing') + '-' + (index + 1));
+    node.setAttribute('data-allo-citation-id', id);
+    node.setAttribute('contenteditable', 'false');
+    node.setAttribute('role', 'doc-biblioref');
+    node.setAttribute('tabindex', '0');
+    node.setAttribute('aria-keyshortcuts', 'Enter');
+    node.setAttribute('aria-haspopup', 'dialog');
+    node.replaceChildren(doc.createTextNode('('));
+    const titles = [];
+    let broken = !items.length;
+    items.forEach((item, itemIndex) => {
+      if (itemIndex) node.appendChild(doc.createTextNode('; '));
+      const itemSource = sourceMap.get(item.sourceId) || null;
+      if (!itemSource) {
+        broken = true;
+        const missing = doc.createElement('span');
+        missing.setAttribute('data-allo-citation-missing', item.sourceId || 'unknown');
+        missing.textContent = (item.prefix ? item.prefix + ' ' : '') + 'missing source' + (item.suffix ? ' ' + item.suffix : '');
+        node.appendChild(missing);
+        return;
+      }
+      titles.push(itemSource.title || _builderCitationAuthorKey(itemSource, initial.style));
+      const link = doc.createElement('a');
+      link.setAttribute('data-allo-citation-link', item.sourceId);
+      link.setAttribute('href', '#bibliography-source-' + itemSource.id);
+      link.setAttribute('tabindex', '-1');
+      link.setAttribute('aria-label', 'Go to bibliography entry for ' + (itemSource.title || _builderCitationAuthorKey(itemSource, initial.style)));
+      link.setAttribute('title', 'Go to bibliography entry');
+      link.textContent = _builderFormatCitationItem(itemSource, initial.style, item);
+      node.appendChild(link);
+    });
+    node.appendChild(doc.createTextNode(')'));
+    if (broken) {
+      node.setAttribute('data-allo-reference-broken', '1');
+      node.setAttribute('aria-invalid', 'true');
+      node.setAttribute('aria-label', 'Broken citation: one or more sources are missing. Press Enter to edit.');
+      node.setAttribute('title', 'Broken citation. Click or press Enter to edit.');
+    } else {
+      node.removeAttribute('data-allo-reference-broken');
+      node.removeAttribute('aria-invalid');
+      node.setAttribute('aria-label', 'Citation to ' + titles.join('; ') + '. Press Enter to edit.');
+      node.setAttribute('title', 'Click or press Enter to edit citation');
+    }
+  });
+  const bibliography = doc.querySelector(_BUILDER_BIBLIOGRAPHY_SELECTOR);
+  if (bibliography) {
+    const citedOnly = bibliography.getAttribute('data-allo-bibliography-scope') !== 'all';
+    const citedIds = new Set(_builderCitationEntries(doc).citations.flatMap((entry) => entry.resolvedItems.filter((item) => item.source).map((item) => item.sourceId)));
+    const selected = initial.sources.filter((source) => !citedOnly || citedIds.has(source.id)).sort((a, b) => _builderCitationSortKey(a).localeCompare(_builderCitationSortKey(b)));
+    bibliography.setAttribute('data-allo-bibliography-style', initial.style);
+    bibliography.setAttribute('role', 'doc-bibliography');
+    let heading = bibliography.querySelector('[data-allo-bibliography-title]');
+    if (!heading) {
+      heading = doc.createElement('h2');
+      heading.setAttribute('data-allo-bibliography-title', '1');
+      heading.setAttribute('contenteditable', 'false');
+      bibliography.prepend(heading);
+    }
+    heading.textContent = _BUILDER_CITATION_STYLES.find((entry) => entry.id === initial.style)?.bibliographyTitle || 'References';
+    let list = bibliography.querySelector('[data-allo-bibliography-list]');
+    if (!list) {
+      list = doc.createElement('div');
+      list.setAttribute('data-allo-bibliography-list', '1');
+      bibliography.appendChild(list);
+    }
+    list.replaceChildren();
+    selected.forEach((itemSource) => {
+      const paragraph = doc.createElement('p');
+      paragraph.id = 'bibliography-source-' + itemSource.id;
+      paragraph.setAttribute('data-allo-bibliography-source', itemSource.id);
+      paragraph.setAttribute('contenteditable', 'false');
+      paragraph.setAttribute('style', 'margin:.35em 0;padding-left:.5in;text-indent:-.5in;');
+      const formatted = _builderFormatBibliographyEntry(itemSource, initial.style);
+      const sourceLink = _builderCitationLink(itemSource);
+      if (sourceLink && formatted.endsWith(sourceLink)) {
+        paragraph.appendChild(doc.createTextNode(formatted.slice(0, -sourceLink.length)));
+        const anchor = doc.createElement('a');
+        anchor.href = sourceLink;
+        anchor.textContent = sourceLink;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        paragraph.appendChild(anchor);
+      } else paragraph.textContent = formatted;
+      list.appendChild(paragraph);
+    });
+    if (!selected.length) {
+      const empty = doc.createElement('p');
+      empty.setAttribute('data-allo-bibliography-empty', '1');
+      empty.setAttribute('contenteditable', 'false');
+      empty.textContent = citedOnly ? 'No cited sources yet.' : 'No sources yet.';
+      list.appendChild(empty);
+    }
+  }
+  const referenceSelector = [_BUILDER_CITATION_SELECTOR, _BUILDER_BIBLIOGRAPHY_SELECTOR].join(',');
+  if (doc.body.getAttribute('data-allo-tracked-view') !== 'original') {
+    Array.from(doc.querySelectorAll('[data-allo-change-kind="structure-insert"][data-allo-change-id],[data-allo-change-kind="reference-update"][data-allo-change-id]')).forEach((marker) => {
+      if (!marker.matches?.(referenceSelector) && !marker.querySelector?.(referenceSelector)) return;
+      const afterSnapshot = _builderCaptureElementRevision(marker, { attributeMode: 'all', includeContent: true });
+      if (afterSnapshot) marker.setAttribute('data-allo-change-after', JSON.stringify(afterSnapshot));
+    });
+  }
+  return _builderCitationEntries(doc);
+}
+
+function _builderTrackCitationStoreMutation(doc, store, beforeSnapshot, label, summary) {
+  if (!store || doc?.body?.getAttribute('data-allo-track-changes') !== '1') return null;
+  const result = _builderRecordElementRevision(store, beforeSnapshot, 'structure', label, {
+    kind: 'reference-update', action: 'update', attributeMode: 'all', includeContent: true,
+  });
+  if (result.ok && summary) result.marker.setAttribute('data-allo-change-summary', _builderCitationPlain(summary, 220));
+  return result.ok ? result.marker : null;
+}
+function _builderCitationSourceFingerprint(value) {
+  const source = _builderNormalizeCitationSource(value);
+  const compact = (text) => String(text || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  if (source.doi) return 'doi:' + source.doi.toLowerCase();
+  if (source.url) return 'url:' + source.url.toLowerCase().replace(/[?#].*$/, '').replace(/\/+$/, '');
+  return 'meta:' + compact(_builderCitationAuthorKey(source, 'mla')) + '|' + compact(source.year) + '|' + compact(source.title);
+}
+
+function _builderImportCitationSources(doc, value, style = _builderCitationStyle(doc)) {
+  if (!doc?.body) return { ok: false, error: 'The editable document is not ready.' };
+  const incoming = _builderNormalizeCitationSources(value);
+  if (!incoming.length) return { ok: false, error: 'No usable source records were found.' };
+  const store = _builderCitationStore(doc, true);
+  const existing = _builderCitationSources(doc);
+  const known = new Map(existing.map((source) => [_builderCitationSourceFingerprint(source), source]));
+  const ids = new Set(existing.map((source) => source.id));
+  const added = [];
+  const duplicates = [];
+  let capacitySkipped = 0;
+  incoming.forEach((candidate, index) => {
+    const fingerprint = _builderCitationSourceFingerprint(candidate);
+    if (fingerprint && known.has(fingerprint)) {
+      duplicates.push({ source: candidate, existing: known.get(fingerprint) });
+      return;
+    }
+    if (existing.length + added.length >= 200) { capacitySkipped += 1; return; }
+    const sourceRecord = _builderNormalizeCitationSource(candidate, existing.length + index);
+    const baseId = _builderCitationSourceId(sourceRecord.id || 'source-' + (existing.length + added.length + 1));
+    let id = baseId;
+    let suffix = 2;
+    while (ids.has(id)) { id = baseId + '-' + suffix; suffix += 1; }
+    sourceRecord.id = id;
+    ids.add(id);
+    known.set(fingerprint, sourceRecord);
+    added.push(sourceRecord);
+  });
+  if (!added.length) {
+    return {
+      ok: true, added, duplicates, duplicateCount: duplicates.length, capacitySkipped,
+      tracked: false, citations: _builderRefreshCitationFields(doc), references: _builderRefreshDocumentReferences(doc),
+    };
+  }
+  const beforeSnapshot = _builderCaptureElementRevision(store, { attributeMode: 'all', includeContent: true });
+  const written = _builderWriteCitationSources(doc, [...existing, ...added], style);
+  const addedIds = new Set(added.map((sourceRecord) => sourceRecord.id));
+  const saved = written.filter((sourceRecord) => addedIds.has(sourceRecord.id));
+  const marker = _builderTrackCitationStoreMutation(
+    doc, store, beforeSnapshot,
+    'Imported ' + saved.length + ' source' + (saved.length === 1 ? '' : 's'),
+    saved.map((sourceRecord) => sourceRecord.title || _builderCitationAuthorKey(sourceRecord)).slice(0, 3).join('; ')
+  );
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const citations = _builderRefreshCitationFields(doc);
+  return {
+    ok: true, added: saved, duplicates, duplicateCount: duplicates.length, capacitySkipped,
+    marker, tracked: Boolean(marker), citations, references: _builderRefreshDocumentReferences(doc),
+  };
+}
+
+function _builderUpsertCitationSource(doc, source, style = _builderCitationStyle(doc)) {
+  if (!doc?.body) return { ok: false, error: 'The editable document is not ready.' };
+  const normalized = _builderNormalizeCitationSource(source);
+  if (!normalized.title && !normalized.authors.length && !normalized.corporateAuthor) return { ok: false, error: 'Add a title or author for the source.' };
+  const store = _builderCitationStore(doc, true);
+  const beforeSnapshot = _builderCaptureElementRevision(store, { attributeMode: 'all', includeContent: true });
+  const sources = _builderCitationSources(doc);
+  const index = source?.id ? sources.findIndex((entry) => entry.id === normalized.id) : -1;
+  const existing = index >= 0;
+  if (existing) sources[index] = normalized;
+  else {
+    normalized.id = _builderCitationSourceId(source?.id);
+    while (sources.some((entry) => entry.id === normalized.id)) normalized.id = _builderCitationSourceId('');
+    sources.push(normalized);
+  }
+  const written = _builderWriteCitationSources(doc, sources, style);
+  const saved = written.find((entry) => entry.id === normalized.id) || normalized;
+  const marker = _builderTrackCitationStoreMutation(doc, store, beforeSnapshot, (existing ? 'Updated source: ' : 'Added source: ') + (saved.title || _builderCitationAuthorKey(saved)), (saved.title || 'Untitled source') + ' — ' + (_builderCitationAuthorKey(saved) || 'Unknown author') + (saved.year ? ' (' + saved.year + ')' : ''));
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const citations = _builderRefreshCitationFields(doc);
+  return { ok: true, source: saved, marker, citations, references: _builderRefreshDocumentReferences(doc), tracked: Boolean(marker) };
+}
+
+function _builderSetCitationStyle(doc, style) {
+  if (!doc?.body) return { ok: false, error: 'The editable document is not ready.' };
+  const normalized = _builderNormalizeCitationStyle(style);
+  const store = _builderCitationStore(doc, true);
+  const beforeSnapshot = _builderCaptureElementRevision(store, { attributeMode: 'all', includeContent: true });
+  _builderWriteCitationSources(doc, _builderCitationSources(doc), normalized);
+  const styleLabel = _BUILDER_CITATION_STYLES.find((entry) => entry.id === normalized)?.label || normalized.toUpperCase();
+  const marker = _builderTrackCitationStoreMutation(doc, store, beforeSnapshot, 'Changed citation style to ' + styleLabel, styleLabel + ' citation and bibliography fields');
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  return { ok: true, style: normalized, marker, citations: _builderRefreshCitationFields(doc), references: _builderRefreshDocumentReferences(doc), tracked: Boolean(marker) };
+}
+
+function _builderInsertCitation(doc, sourceIdOrItems, locator = '', savedRange) {
+  if (!doc?.body) return { ok: false, error: 'The editable document is not ready.' };
+  const items = _builderNormalizeCitationItems(Array.isArray(sourceIdOrItems)
+    ? sourceIdOrItems
+    : [{ sourceId: sourceIdOrItems, locator }]);
+  if (!items.length) return { ok: false, error: 'Choose an available source first.' };
+  const sourceMap = new Map(_builderCitationSources(doc).map((sourceRecord) => [sourceRecord.id, sourceRecord]));
+  const missing = items.filter((item) => !sourceMap.has(item.sourceId));
+  if (missing.length) return { ok: false, error: 'One or more citation sources are no longer available.' };
+  const range = _builderReferenceRange(doc, savedRange);
+  if (!range) return { ok: false, error: 'Place the caret in the main document first.' };
+  range.collapse(false);
+  const field = doc.createElement('span');
+  field.setAttribute('data-allo-citation', '1');
+  field.setAttribute('data-allo-citation-id', _builderUniqueReferenceId(doc, 'citation', items[0].sourceId + '-' + Date.now().toString(36)));
+  _builderWriteCitationItems(field, items);
+  field.setAttribute('contenteditable', 'false');
+  field.textContent = _builderFormatCitationCluster(items, sourceMap, _builderCitationStyle(doc));
+  range.insertNode(field);
+  const sources = items.map((item) => sourceMap.get(item.sourceId));
+  const sourceRecord = sources[0];
+  const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+  const marker = tracking ? (_builderRecordInsertedStructure(field, 'Inserted citation: ' + sources.map((entry) => entry.title || _builderCitationAuthorKey(entry)).join('; ')) || field) : field;
+  _builderSetSelectionAfter(doc, field);
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const citations = _builderRefreshCitationFields(doc);
+  return { ok: true, id: field.getAttribute('data-allo-citation-id'), source: sourceRecord, sources, items, marker, node: field, tracked: tracking, citations, references: _builderRefreshDocumentReferences(doc) };
+}
+
+function _builderUpdateCitation(doc, citationId, value) {
+  const entry = _builderCitationEntries(doc).citations.find((item) => item.id === citationId);
+  const node = entry?.node;
+  if (!doc?.body || !node) return { ok: false, error: 'That citation is no longer available.' };
+  if (node.matches(_BUILDER_CHANGE_SELECTOR) || node.querySelector?.(_BUILDER_CHANGE_SELECTOR)) return { ok: false, error: 'Accept or reject the pending change on this citation first.' };
+  const items = _builderNormalizeCitationItems(value);
+  if (!items.length) return { ok: false, error: 'Keep at least one source in the citation.' };
+  const sourceMap = new Map(_builderCitationSources(doc).map((sourceRecord) => [sourceRecord.id, sourceRecord]));
+  if (items.some((item) => !sourceMap.has(item.sourceId))) return { ok: false, error: 'Replace missing sources before saving this citation.' };
+  const beforeSnapshot = _builderCaptureElementRevision(node, { attributeMode: 'all', includeContent: true });
+  _builderWriteCitationItems(node, items);
+  _builderRefreshCitationFields(doc);
+  const sources = items.map((item) => sourceMap.get(item.sourceId));
+  let marker = null;
+  if (doc.body.getAttribute('data-allo-track-changes') === '1') {
+    const revision = _builderRecordElementRevision(node, beforeSnapshot, 'structure', 'Edited citation: ' + sources.map((sourceRecord) => sourceRecord.title || _builderCitationAuthorKey(sourceRecord)).join('; '), {
+      kind: 'reference-update', action: 'update', attributeMode: 'all', includeContent: true,
+    });
+    marker = revision.ok ? revision.marker : null;
+    if (marker) marker.setAttribute('data-allo-change-summary', _builderFormatCitationCluster(items, sourceMap, _builderCitationStyle(doc)));
+  }
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const citations = _builderRefreshCitationFields(doc);
+  const updated = citations.citations.find((item) => item.id === citationId);
+  return { ok: true, id: citationId, source: sources[0], sources, items, marker, node, entry: updated, tracked: Boolean(marker), citations, references: _builderRefreshDocumentReferences(doc) };
+}
+
+function _builderInsertOrRefreshBibliography(doc, options = {}) {
+  if (!doc?.body) return { ok: false, error: 'The editable document is not ready.' };
+  let section = doc.querySelector(_BUILDER_BIBLIOGRAPHY_SELECTOR);
+  const existing = Boolean(section);
+  if (!section) {
+    section = doc.createElement('section');
+    section.setAttribute('data-allo-bibliography', '1');
+    section.setAttribute('data-allo-bibliography-scope', options.includeUncited ? 'all' : 'cited');
+    section.setAttribute('style', 'margin-top:2em;');
+    doc.body.appendChild(section);
+  } else if (Object.prototype.hasOwnProperty.call(options, 'includeUncited')) section.setAttribute('data-allo-bibliography-scope', options.includeUncited ? 'all' : 'cited');
+  const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+  const marker = !existing && tracking ? (_builderRecordInsertedStructure(section, 'Inserted bibliography') || section) : null;
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const citations = _builderRefreshCitationFields(doc);
+  return { ok: true, existing, marker, node: section, tracked: Boolean(marker), citations, references: _builderRefreshDocumentReferences(doc) };
+}
+
+function _builderRemoveCitation(doc, citationId) {
+  const entry = _builderCitationEntries(doc).citations.find((item) => item.id === citationId);
+  const node = entry?.node;
+  if (!doc?.body || !node) return { ok: false, error: 'That citation is no longer available.' };
+  if (node.matches(_BUILDER_CHANGE_SELECTOR) || node.querySelector?.(_BUILDER_CHANGE_SELECTOR)) return { ok: false, error: 'Accept or reject the pending change on this citation first.' };
+  const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+  const marker = tracking ? _builderRecordDeletedStructure(node, 'Removed citation') : null;
+  if (!tracking) node.remove();
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const citations = _builderRefreshCitationFields(doc);
+  return { ok: true, id: citationId, marker, tracked: tracking, citations, references: _builderRefreshDocumentReferences(doc) };
+}
+
+function _builderRemoveCitationSource(doc, sourceId) {
+  if (!doc?.body || !sourceId) return { ok: false, error: 'That source is no longer available.' };
+  const entries = _builderCitationEntries(doc);
+  const source = entries.sources.find((entry) => entry.id === sourceId);
+  if (!source) return { ok: false, error: 'That source is no longer available.' };
+  if (entries.citations.some((entry) => entry.items.some((item) => item.sourceId === sourceId))) return { ok: false, error: 'Remove citations to this source before deleting it.' };
+  const store = _builderCitationStore(doc, true);
+  const beforeSnapshot = _builderCaptureElementRevision(store, { attributeMode: 'all', includeContent: true });
+  _builderWriteCitationSources(doc, entries.sources.filter((entry) => entry.id !== sourceId), entries.style);
+  const marker = _builderTrackCitationStoreMutation(doc, store, beforeSnapshot, 'Removed source: ' + (source.title || _builderCitationAuthorKey(source)), source.title || _builderCitationAuthorKey(source));
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const citations = _builderRefreshCitationFields(doc);
+  return { ok: true, source, marker, citations, references: _builderRefreshDocumentReferences(doc), tracked: Boolean(marker) };
+}
+function _builderDocumentReferenceEntries(doc) {
+  if (!doc?.querySelectorAll) return { bookmarks: [], crossReferences: [], footnotes: [], brokenCount: 0 };
+  const bookmarks = Array.from(doc.querySelectorAll(_BUILDER_BOOKMARK_SELECTOR))
+    .filter((node) => !node.closest('del[data-allo-change-id],[data-allo-change-kind="structure-delete"]'))
+    .map((node, index) => {
+      const name = _builderNormalizeBookmarkName(node.getAttribute('data-allo-bookmark-name') || node.id.replace(/^bookmark-/, '') || 'Bookmark ' + (index + 1));
+      const text = String(node.textContent || '').replace(/[\u200B\uFEFF]/g, '').replace(/\s+/g, ' ').trim();
+      return { id: node.id, key: 'bookmark:' + node.id, name, text: text || name, node };
+    });
+  const bookmarkMap = new Map(bookmarks.map((entry) => [entry.id, entry]));
+  const crossReferences = Array.from(doc.querySelectorAll(_BUILDER_CROSS_REFERENCE_SELECTOR))
+    .filter((node) => !node.closest('del[data-allo-change-id],[data-allo-change-kind="structure-delete"]'))
+    .map((node, index) => {
+      const targetId = String(node.getAttribute('data-allo-reference-target') || node.getAttribute('href') || '').replace(/^#/, '');
+      const target = bookmarkMap.get(targetId) || null;
+      return {
+        id: node.getAttribute('data-allo-cross-reference-id') || 'cross-reference-' + (index + 1),
+        key: 'cross-reference:' + (node.getAttribute('data-allo-cross-reference-id') || index + 1),
+        targetId, targetName: target?.name || targetId || 'Missing target',
+        label: String(node.textContent || '').replace(/\s+/g, ' ').trim() || target?.text || target?.name || 'Cross-reference',
+        broken: !target, node,
+      };
+    });
+  const noteMap = new Map(Array.from(doc.querySelectorAll(_BUILDER_FOOTNOTE_SELECTOR))
+    .filter((node) => !node.closest('del[data-allo-change-id],[data-allo-change-kind="structure-delete"]'))
+    .map((node) => [node.getAttribute('data-allo-footnote') || '', node]));
+  const references = Array.from(doc.querySelectorAll(_BUILDER_FOOTNOTE_REFERENCE_SELECTOR))
+    .filter((node) => !node.closest('del[data-allo-change-id],[data-allo-change-kind="structure-delete"]'));
+  const seenNotes = new Set();
+  const footnotes = references.map((reference, index) => {
+    const id = reference.getAttribute('data-allo-footnote-ref') || '';
+    const note = noteMap.get(id) || null;
+    if (note) seenNotes.add(id);
+    const textNode = note?.querySelector?.('[data-allo-footnote-text]');
+    return {
+      id, key: 'footnote:' + (id || index + 1), number: index + 1,
+      text: String(textNode?.textContent || note?.textContent || '').replace(/[↩↵]\s*$/, '').replace(/\s+/g, ' ').trim() || 'Empty footnote',
+      broken: !id || !note, reference, note, node: note || reference,
+    };
+  });
+  noteMap.forEach((note, id) => {
+    if (id && !seenNotes.has(id)) {
+      const textNode = note.querySelector?.('[data-allo-footnote-text]');
+      footnotes.push({ id, key: 'footnote:' + id, number: null, text: String(textNode?.textContent || note.textContent || '').replace(/[↩↵]\s*$/, '').replace(/\s+/g, ' ').trim() || 'Orphaned footnote', broken: true, reference: null, note, node: note });
+    }
+  });
+  const brokenCount = crossReferences.filter((entry) => entry.broken).length + footnotes.filter((entry) => entry.broken).length;
+  return { bookmarks, crossReferences, footnotes, brokenCount };
+}
+
+function _builderRefreshDocumentReferences(doc) {
+  if (!doc?.body) return { bookmarks: [], crossReferences: [], footnotes: [], brokenCount: 0 };
+  const initial = _builderDocumentReferenceEntries(doc);
+  const bookmarkMap = new Map(initial.bookmarks.map((entry) => [entry.id, entry]));
+  initial.bookmarks.forEach((entry) => {
+    entry.node.setAttribute('data-allo-bookmark-name', entry.name);
+    entry.node.setAttribute('title', 'Bookmark: ' + entry.name);
+  });
+  initial.crossReferences.forEach((entry, index) => {
+    const node = entry.node;
+    const id = node.getAttribute('data-allo-cross-reference-id') || _builderUniqueReferenceId(doc, 'cross-reference', String(index + 1) + '-' + Date.now().toString(36));
+    const target = bookmarkMap.get(entry.targetId) || null;
+    node.setAttribute('data-allo-cross-reference-id', id);
+    node.setAttribute('data-allo-reference-target', entry.targetId);
+    node.setAttribute('href', '#' + entry.targetId);
+    if (target) {
+      const mode = node.getAttribute('data-allo-reference-label') === 'name' ? 'name' : 'text';
+      node.textContent = mode === 'name' ? target.name : target.text;
+      node.removeAttribute('data-allo-reference-broken');
+      node.removeAttribute('aria-invalid');
+      node.setAttribute('aria-label', 'Cross-reference to ' + target.name);
+      node.setAttribute('title', 'Go to ' + target.name);
+    } else {
+      node.setAttribute('data-allo-reference-broken', '1');
+      node.setAttribute('aria-invalid', 'true');
+      node.setAttribute('aria-label', 'Broken cross-reference to ' + (entry.targetId || 'missing bookmark'));
+      node.setAttribute('title', 'Broken cross-reference');
+    }
+  });
+  const notes = new Map(Array.from(doc.querySelectorAll(_BUILDER_FOOTNOTE_SELECTOR)).map((note) => [note.getAttribute('data-allo-footnote') || '', note]));
+  const refs = Array.from(doc.querySelectorAll(_BUILDER_FOOTNOTE_REFERENCE_SELECTOR));
+  const usedNotes = new Set();
+  refs.forEach((reference, index) => {
+    const number = index + 1;
+    const id = reference.getAttribute('data-allo-footnote-ref') || 'note-' + Date.now().toString(36) + '-' + number;
+    const note = notes.get(id) || null;
+    reference.setAttribute('data-allo-footnote-ref', id);
+    reference.id = 'footnote-ref-' + id;
+    reference.setAttribute('data-allo-footnote-number', String(number));
+    reference.setAttribute('contenteditable', 'false');
+    const link = reference.querySelector('a') || reference.appendChild(doc.createElement('a'));
+    link.setAttribute('href', '#footnote-' + id);
+    link.setAttribute('role', 'doc-noteref');
+    link.setAttribute('aria-label', 'Footnote ' + number);
+    link.textContent = String(number);
+    if (note) {
+      usedNotes.add(id);
+      reference.removeAttribute('data-allo-reference-broken');
+      note.id = 'footnote-' + id;
+      note.setAttribute('data-allo-footnote', id);
+      note.setAttribute('data-allo-footnote-number', String(number));
+      note.setAttribute('role', 'doc-footnote');
+      note.removeAttribute('data-allo-reference-broken');
+      note.value = number;
+      let backlink = note.querySelector('[data-allo-footnote-backlink]');
+      if (!backlink) {
+        backlink = doc.createElement('a');
+        backlink.setAttribute('data-allo-footnote-backlink', '1');
+        note.append(doc.createTextNode(' '), backlink);
+      }
+      backlink.setAttribute('href', '#footnote-ref-' + id);
+      backlink.setAttribute('contenteditable', 'false');
+      backlink.setAttribute('aria-label', 'Return to footnote ' + number + ' reference');
+      backlink.setAttribute('title', 'Return to reference');
+      backlink.textContent = '↩';
+    } else reference.setAttribute('data-allo-reference-broken', '1');
+  });
+  notes.forEach((note, id) => {
+    if (!usedNotes.has(id)) note.setAttribute('data-allo-reference-broken', '1');
+  });
+  const section = doc.querySelector(_BUILDER_FOOTNOTES_SELECTOR);
+  if (section && !section.querySelector(_BUILDER_FOOTNOTE_SELECTOR) && !section.matches(_BUILDER_ADVANCED_CHANGE_SELECTOR) && !section.querySelector(_BUILDER_CHANGE_SELECTOR)) section.remove();
+  const referenceSelector = [_BUILDER_BOOKMARK_SELECTOR, _BUILDER_CROSS_REFERENCE_SELECTOR, _BUILDER_FOOTNOTE_REFERENCE_SELECTOR, _BUILDER_FOOTNOTE_SELECTOR, _BUILDER_FOOTNOTES_SELECTOR].join(',');
+  if (doc.body.getAttribute('data-allo-tracked-view') !== 'original') {
+    Array.from(doc.querySelectorAll('[data-allo-change-kind="structure-insert"][data-allo-change-id],[data-allo-change-kind="reference-insert"][data-allo-change-id]')).forEach((marker) => {
+      if (!marker.matches?.(referenceSelector) && !marker.querySelector?.(referenceSelector)) return;
+      const afterSnapshot = _builderCaptureElementRevision(marker, { attributeMode: 'all', includeContent: true });
+      if (afterSnapshot) marker.setAttribute('data-allo-change-after', JSON.stringify(afterSnapshot));
+    });
+  }
+  const references = _builderDocumentReferenceEntries(doc);
+  const citations = _builderRefreshCitationFields(doc);
+  return {
+    ...references,
+    sources: citations.sources,
+    citations: citations.citations,
+    bibliography: citations.bibliography,
+    citationStyle: citations.style,
+    citationBrokenCount: citations.brokenCount,
+    uncitedSourceCount: citations.uncitedCount,
+    documentBrokenCount: references.brokenCount,
+    brokenCount: references.brokenCount + citations.brokenCount,
+  };
+}
+
+function _builderLinkTrackedReferenceMarkers(markers) {
+  const live = (Array.isArray(markers) ? markers : []).filter(Boolean);
+  if (!live.length) return null;
+  const groupId = 'reference-group-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+  live.forEach((marker, index) => {
+    marker.setAttribute('data-allo-change-group', groupId);
+    if (index) marker.setAttribute('data-allo-change-group-secondary', '1');
+  });
+  return live[0];
+}
+
+function _builderInsertBookmark(doc, name, savedRange) {
+  const normalizedName = _builderNormalizeBookmarkName(name);
+  if (!doc?.body || !normalizedName) return { ok: false, error: 'Enter a bookmark name.' };
+  const existing = _builderDocumentReferenceEntries(doc).bookmarks.find((entry) => entry.name.toLowerCase() === normalizedName.toLowerCase());
+  if (existing) return { ok: false, error: 'A bookmark with that name already exists.' };
+  const range = _builderReferenceRange(doc, savedRange);
+  if (!range) return { ok: false, error: 'Place the caret or select text in the main document first.' };
+  if (!range.collapsed && !_builderTrackedRangeBlock(range)) return { ok: false, error: 'A bookmark selection must stay within one paragraph or table cell.' };
+  const marker = doc.createElement('span');
+  marker.id = _builderUniqueReferenceId(doc, 'bookmark', normalizedName);
+  marker.setAttribute('data-allo-bookmark', '1');
+  marker.setAttribute('data-allo-bookmark-name', normalizedName);
+  marker.setAttribute('title', 'Bookmark: ' + normalizedName);
+  const preservesContent = !range.collapsed;
+  if (preservesContent) marker.appendChild(range.extractContents());
+  else {
+    marker.setAttribute('data-allo-bookmark-empty', '1');
+    marker.setAttribute('contenteditable', 'false');
+    marker.setAttribute('aria-label', 'Bookmark ' + normalizedName);
+    marker.setAttribute('style', 'display:inline-block;position:relative;width:0;height:1em;overflow:visible;vertical-align:baseline;');
+  }
+  range.insertNode(marker);
+  let trackedMarker = marker;
+  const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+  if (tracking && preservesContent) {
+    const beforeSnapshot = { tag: 'span', attributeMode: 'all', attributes: {}, html: marker.innerHTML };
+    const recorded = _builderRecordElementRevision(marker, beforeSnapshot, 'structure', 'Inserted bookmark: ' + normalizedName, { kind: 'reference-insert', action: 'insert', attributeMode: 'all', includeContent: true });
+    trackedMarker = recorded.ok ? recorded.marker : marker;
+  } else if (tracking) trackedMarker = _builderRecordInsertedStructure(marker, 'Inserted bookmark: ' + normalizedName) || marker;
+  _builderSetSelectionAfter(doc, marker);
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const references = _builderRefreshDocumentReferences(doc);
+  return { ok: true, id: marker.id, name: normalizedName, marker: trackedMarker, node: marker, tracked: tracking, references };
+}
+
+function _builderInsertCrossReference(doc, bookmarkId, labelMode = 'text', savedRange) {
+  if (!doc?.body) return { ok: false, error: 'The editable document is not ready.' };
+  const target = _builderDocumentReferenceEntries(doc).bookmarks.find((entry) => entry.id === bookmarkId);
+  if (!target) return { ok: false, error: 'Choose an available bookmark first.' };
+  const range = _builderReferenceRange(doc, savedRange);
+  if (!range) return { ok: false, error: 'Place the caret in the main document first.' };
+  range.collapse(false);
+  const link = doc.createElement('a');
+  link.setAttribute('data-allo-cross-reference', '1');
+  link.setAttribute('data-allo-cross-reference-id', _builderUniqueReferenceId(doc, 'cross-reference', target.name + '-' + Date.now().toString(36)));
+  link.setAttribute('data-allo-reference-target', target.id);
+  link.setAttribute('data-allo-reference-label', labelMode === 'name' ? 'name' : 'text');
+  link.setAttribute('href', '#' + target.id);
+  link.setAttribute('contenteditable', 'false');
+  link.textContent = labelMode === 'name' ? target.name : target.text;
+  range.insertNode(link);
+  const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+  const marker = tracking ? (_builderRecordInsertedStructure(link, 'Inserted cross-reference to ' + target.name) || link) : link;
+  _builderSetSelectionAfter(doc, link);
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const references = _builderRefreshDocumentReferences(doc);
+  return { ok: true, id: link.getAttribute('data-allo-cross-reference-id'), targetId: target.id, marker, node: link, tracked: tracking, references };
+}
+
+function _builderEnsureFootnotesSection(doc) {
+  let section = doc.querySelector(_BUILDER_FOOTNOTES_SELECTOR);
+  let created = false;
+  if (!section) {
+    created = true;
+    section = doc.createElement('section');
+    section.setAttribute('data-allo-footnotes', '1');
+    section.setAttribute('role', 'doc-endnotes');
+    section.setAttribute('aria-label', 'Footnotes');
+    section.setAttribute('style', 'margin-top:2em;padding-top:.75em;border-top:1px solid #cbd5e1;');
+    const title = doc.createElement('p');
+    title.setAttribute('data-allo-footnotes-title', '1');
+    title.setAttribute('contenteditable', 'false');
+    title.setAttribute('style', 'margin:0 0 .5em;font-weight:700;');
+    title.textContent = 'Footnotes';
+    const list = doc.createElement('ol');
+    list.setAttribute('style', 'margin:.25em 0 0;padding-left:1.5em;');
+    section.append(title, list);
+    doc.body.appendChild(section);
+  }
+  let list = section.querySelector('ol');
+  if (!list) {
+    list = doc.createElement('ol');
+    section.appendChild(list);
+  }
+  return { section, list, created };
+}
+
+function _builderInsertFootnote(doc, text, savedRange) {
+  const noteText = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 2000);
+  if (!doc?.body || !noteText) return { ok: false, error: 'Write the footnote text first.' };
+  const range = _builderReferenceRange(doc, savedRange);
+  if (!range) return { ok: false, error: 'Place the caret in the main document first.' };
+  range.collapse(false);
+  const id = 'note-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+  const reference = doc.createElement('sup');
+  reference.setAttribute('data-allo-footnote-ref', id);
+  reference.setAttribute('contenteditable', 'false');
+  const link = doc.createElement('a');
+  link.setAttribute('href', '#footnote-' + id);
+  link.setAttribute('role', 'doc-noteref');
+  reference.appendChild(link);
+  range.insertNode(reference);
+  const destination = _builderEnsureFootnotesSection(doc);
+  const note = doc.createElement('li');
+  note.setAttribute('data-allo-footnote', id);
+  note.setAttribute('role', 'doc-footnote');
+  const body = doc.createElement('span');
+  body.setAttribute('data-allo-footnote-text', '1');
+  body.textContent = noteText;
+  const backlink = doc.createElement('a');
+  backlink.setAttribute('data-allo-footnote-backlink', '1');
+  backlink.setAttribute('contenteditable', 'false');
+  backlink.setAttribute('href', '#footnote-ref-' + id);
+  backlink.textContent = '↩';
+  note.append(body, doc.createTextNode(' '), backlink);
+  destination.list.appendChild(note);
+  const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+  let marker = reference;
+  if (tracking) {
+    const primary = _builderRecordInsertedStructure(reference, 'Inserted footnote') || reference;
+    const secondaryTarget = destination.created ? destination.section : note;
+    const secondary = _builderRecordInsertedStructure(secondaryTarget, 'Inserted footnote') || secondaryTarget;
+    marker = _builderLinkTrackedReferenceMarkers([primary, secondary]) || primary;
+  }
+  _builderSetSelectionAfter(doc, reference);
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const references = _builderRefreshDocumentReferences(doc);
+  const entry = references.footnotes.find((item) => item.id === id);
+  return { ok: true, id, number: entry?.number || references.footnotes.length, marker, reference, note, tracked: tracking, references };
+}
+
+function _builderRemoveBookmark(doc, bookmarkId) {
+  const marker = doc?.getElementById?.(bookmarkId);
+  if (!doc?.body || !marker?.matches?.(_BUILDER_BOOKMARK_SELECTOR)) return { ok: false, error: 'That bookmark is no longer available.' };
+  if (marker.matches(_BUILDER_CHANGE_SELECTOR) || marker.querySelector?.(_BUILDER_CHANGE_SELECTOR)) return { ok: false, error: 'Accept or reject the pending change on this bookmark first.' };
+  const name = _builderNormalizeBookmarkName(marker.getAttribute('data-allo-bookmark-name')) || 'bookmark';
+  const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+  let changeMarker = null;
+  if (tracking) {
+    const before = _builderCaptureElementRevision(marker, { attributeMode: 'all', includeContent: true });
+    marker.removeAttribute('id');
+    marker.removeAttribute('data-allo-bookmark');
+    marker.removeAttribute('data-allo-bookmark-name');
+    marker.removeAttribute('data-allo-bookmark-empty');
+    marker.removeAttribute('contenteditable');
+    marker.removeAttribute('aria-label');
+    marker.removeAttribute('title');
+    marker.removeAttribute('style');
+    const recorded = _builderRecordElementRevision(marker, before, 'structure', 'Removed bookmark: ' + name, { kind: 'reference-remove', action: 'delete', attributeMode: 'all', includeContent: true });
+    changeMarker = recorded.ok ? recorded.marker : null;
+  } else if (marker.childNodes.length) _builderUnwrapTrackedContainer(marker);
+  else marker.remove();
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const references = _builderRefreshDocumentReferences(doc);
+  return { ok: true, id: bookmarkId, name, marker: changeMarker, tracked: tracking, references };
+}
+
+function _builderRemoveCrossReference(doc, crossReferenceId) {
+  const entry = _builderDocumentReferenceEntries(doc).crossReferences.find((item) => item.id === crossReferenceId);
+  const node = entry?.node;
+  if (!doc?.body || !node) return { ok: false, error: 'That cross-reference is no longer available.' };
+  if (node.matches(_BUILDER_CHANGE_SELECTOR) || node.querySelector?.(_BUILDER_CHANGE_SELECTOR)) return { ok: false, error: 'Accept or reject the pending change on this cross-reference first.' };
+  const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+  const marker = tracking ? _builderRecordDeletedStructure(node, 'Removed cross-reference') : null;
+  if (!tracking) node.remove();
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const references = _builderRefreshDocumentReferences(doc);
+  return { ok: true, id: crossReferenceId, marker, tracked: tracking, references };
+}
+
+function _builderRemoveFootnote(doc, footnoteId) {
+  if (!doc?.body || !footnoteId) return { ok: false, error: 'That footnote is no longer available.' };
+  const entry = _builderDocumentReferenceEntries(doc).footnotes.find((item) => item.id === footnoteId);
+  if (!entry) return { ok: false, error: 'That footnote is no longer available.' };
+  const candidates = [entry.reference, entry.note].filter(Boolean);
+  if (candidates.some((node) => node.matches?.(_BUILDER_CHANGE_SELECTOR) || node.querySelector?.(_BUILDER_CHANGE_SELECTOR))) return { ok: false, error: 'Accept or reject pending changes in this footnote first.' };
+  const section = entry.note?.closest?.(_BUILDER_FOOTNOTES_SELECTOR);
+  const useSection = section && section.querySelectorAll(_BUILDER_FOOTNOTE_SELECTOR).length === 1;
+  const secondaryTarget = useSection ? section : entry.note;
+  const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+  let marker = null;
+  if (tracking) {
+    const primary = entry.reference ? _builderRecordDeletedStructure(entry.reference, 'Removed footnote') : null;
+    const secondary = secondaryTarget ? _builderRecordDeletedStructure(secondaryTarget, 'Removed footnote') : null;
+    marker = _builderLinkTrackedReferenceMarkers([primary, secondary]);
+  } else {
+    entry.reference?.remove();
+    entry.note?.remove();
+    if (useSection) section.remove();
+  }
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  const references = _builderRefreshDocumentReferences(doc);
+  return { ok: true, id: footnoteId, marker, tracked: tracking, references };
+}
+
+const _BUILDER_TOC_SELECTOR = 'nav[data-allo-toc]';const _BUILDER_HEADING_SELECTOR = 'h1,h2,h3,h4,h5,h6';
 
 function _builderHeadingLevel(node) {
   return Number(String(node?.tagName || '').substring(1)) || 1;
@@ -1529,7 +2847,7 @@ function _builderHeadingLevel(node) {
 function _builderHeadingNodes(doc) {
   if (!doc?.querySelectorAll) return [];
   return Array.from(doc.querySelectorAll(_BUILDER_HEADING_SELECTOR))
-    .filter((heading) => !heading.closest(_BUILDER_TOC_SELECTOR + ',del[data-allo-change-id],[data-allo-page-element]'));
+    .filter((heading) => !heading.closest(_BUILDER_TOC_SELECTOR + ',' + _BUILDER_FOOTNOTES_SELECTOR + ',' + _BUILDER_BIBLIOGRAPHY_SELECTOR + ',del[data-allo-change-id],[data-allo-page-element]'));
 }
 
 function _builderHeadingOutline(doc) {
@@ -1626,7 +2944,7 @@ function _builderRefreshTableOfContents(doc, target) {
   nav.setAttribute('contenteditable', 'false');
   if (!nav.getAttribute('style')) nav.setAttribute('style', 'margin:1em 0;padding:1em;border:1px solid #cbd5e1;border-radius:.5em;background:#f8fafc;');
   const trackedInsert = nav.closest?.('[data-allo-change-kind="structure-insert"][data-allo-change-id]');
-  if (trackedInsert) {
+  if (trackedInsert && doc.body?.getAttribute('data-allo-tracked-view') !== 'original') {
     const afterSnapshot = _builderCaptureElementRevision(trackedInsert, { attributeMode: 'all', includeContent: true });
     if (afterSnapshot) trackedInsert.setAttribute('data-allo-change-after', JSON.stringify(afterSnapshot));
   }
@@ -1810,8 +3128,7 @@ function _builderPrepareComparableDocument(source, ownerDocument) {
         : source?.outerHTML || '';
     if (!html) return null;
     const doc = new Parser().parseFromString(html, 'text/html');
-    _builderStripReviewComments(doc.documentElement);
-    _builderFinalizeTrackedChanges(doc.documentElement, 'accept');
+    _builderFinalizeDocumentForExport(doc);
     doc.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],script,style').forEach((node) => node.remove());
     return doc;
   } catch (_) {
@@ -1998,6 +3315,9 @@ const _BUILDER_QUICK_ACCESS_OPTIONS = [
   { id: 'trackChanges', label: 'Toggle Track Changes', shortLabel: 'Track' },
   { id: 'wordCount', label: 'Open word count', shortLabel: 'Words' },
   { id: 'navigation', label: 'Toggle document navigation', shortLabel: 'Navigate' },
+  { id: 'footnote', label: 'Insert a footnote', shortLabel: 'Footnote' },
+  { id: 'references', label: 'Open document references', shortLabel: 'References' },
+  { id: 'updateFields', label: 'Update all document fields', shortLabel: 'Fields', shortcut: 'F9' },
   { id: 'focus', label: 'Toggle focus mode', shortLabel: 'Focus' },
 ];
 
@@ -2020,7 +3340,7 @@ function _readBuilderViewPreferences() {
       pageOrientation: ['portrait', 'landscape'].includes(stored.pageOrientation) ? stored.pageOrientation : defaults.pageOrientation,
       pageMargin: ['0.5in', '1in', '1.5in'].includes(stored.pageMargin) ? stored.pageMargin : defaults.pageMargin,
       navigationPane: typeof stored.navigationPane === 'boolean' ? stored.navigationPane : Boolean(stored.pageThumbnails),
-      navigationTab: ['headings', 'pages', 'sections', 'comments', 'changes'].includes(stored.navigationTab) ? stored.navigationTab : (stored.pageThumbnails ? 'pages' : defaults.navigationTab),
+      navigationTab: ['headings', 'pages', 'sections', 'references', 'comments', 'changes'].includes(stored.navigationTab) ? stored.navigationTab : (stored.pageThumbnails ? 'pages' : defaults.navigationTab),
       navigationWidth: Math.max(180, Math.min(420, Number(stored.navigationWidth) || defaults.navigationWidth)),
       ribbonTab: ['home', 'insert', 'layout', 'review', 'view', 'expert'].includes(stored.ribbonTab) ? stored.ribbonTab : defaults.ribbonTab,
       ribbonCollapsed: typeof stored.ribbonCollapsed === 'boolean' ? stored.ribbonCollapsed : defaults.ribbonCollapsed,
@@ -2074,6 +3394,14 @@ function _builderExportPreflight(doc, mode) {
   if (duplicateIds) add('error', 'duplicate-ids', `${duplicateIds} duplicate element ID${duplicateIds === 1 ? '' : 's'} can break links and labels.`, duplicateIds);
   const chrome = doc.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui]').length;
   if (chrome) add('warning', 'editor-chrome', 'Editor-only controls will be removed from the exported file.', chrome);
+  const references = _builderDocumentReferenceEntries(doc);
+  const citationReferences = _builderCitationEntries(doc);
+  if (references.brokenCount) add('warning', 'broken-references', references.brokenCount + ' broken or orphaned document reference' + (references.brokenCount === 1 ? ' needs' : 's need') + ' attention before export.', references.brokenCount);
+  if (citationReferences.brokenCount) add('warning', 'broken-citations', citationReferences.brokenCount + ' citation' + (citationReferences.brokenCount === 1 ? ' points' : 's point') + ' to a missing source.', citationReferences.brokenCount);
+  if (citationReferences.citations.length && !citationReferences.bibliography) add('warning', 'bibliography-missing', 'Insert a bibliography so every live citation has a matching source entry.');
+  if (citationReferences.bibliography && !citationReferences.citations.length) add('warning', 'bibliography-empty', 'The bibliography has no cited sources yet.');
+  const emptyFootnotes = references.footnotes.filter((entry) => !entry.broken && (!entry.text || entry.text === 'Empty footnote')).length;
+  if (emptyFootnotes) add('warning', 'empty-footnotes', emptyFootnotes + ' footnote' + (emptyFootnotes === 1 ? ' is' : 's are') + ' empty.', emptyFootnotes);
   const pendingChanges = _builderTrackedChangeEntries(doc).length;
   if (pendingChanges) add('warning', 'pending-changes', pendingChanges + ' pending revision' + (pendingChanges === 1 ? ' will' : 's will') + ' export using the final accepted view.', pendingChanges);
   if (mode === 'slides' && headings.length < 2) add('warning', 'slide-structure', 'Add section headings so the slide deck can split content into meaningful slides.');
@@ -2227,6 +3555,28 @@ function ExportPreviewView(props) {
   const [activeHeadingIndex, setActiveHeadingIndex] = React.useState(null);
   const [tocDepth, setTocDepth] = React.useState(3);
   const [draggedHeadingIndex, setDraggedHeadingIndex] = React.useState(null);
+  const [documentReferences, setDocumentReferences] = React.useState(() => ({
+    bookmarks: [], crossReferences: [], footnotes: [], sources: [], citations: [],
+    bibliography: null, citationStyle: 'apa', citationBrokenCount: 0, uncitedSourceCount: 0, documentBrokenCount: 0, brokenCount: 0,
+  }));
+  const [crossReferenceTarget, setCrossReferenceTarget] = React.useState('');
+  const [crossReferenceLabelMode, setCrossReferenceLabelMode] = React.useState('text');
+  const [activeDocumentReferenceKey, setActiveDocumentReferenceKey] = React.useState('');
+  const [citationStyle, setCitationStyle] = React.useState('apa');
+  const [citationSourceTarget, setCitationSourceTarget] = React.useState('');
+  const [citationLocator, setCitationLocator] = React.useState('');
+  const [showSourceManager, setShowSourceManager] = React.useState(false);
+  const [editingCitationSourceId, setEditingCitationSourceId] = React.useState('');
+  const [citationSourceDraft, setCitationSourceDraft] = React.useState(() => _builderNormalizeCitationSource({ type: 'webpage' }));
+  const [citationSourceMode, setCitationSourceMode] = React.useState('manual');
+  const [citationImportFormat, setCitationImportFormat] = React.useState('auto');
+  const [citationImportText, setCitationImportText] = React.useState('');
+  const [citationImportFeedback, setCitationImportFeedback] = React.useState(null);
+  const [citationDoiBusy, setCitationDoiBusy] = React.useState(false);
+  const [editingCitationId, setEditingCitationId] = React.useState('');
+  const [citationItemsDraft, setCitationItemsDraft] = React.useState([]);
+  const [citationEditorError, setCitationEditorError] = React.useState('');
+  const [bibliographyIncludeUncited, setBibliographyIncludeUncited] = React.useState(false);
   const [customBuilderStyles, setCustomBuilderStyles] = React.useState(() => _readBuilderCustomStyles());
   const [customDocumentTemplates, setCustomDocumentTemplates] = React.useState(() => _readBuilderCustomDocumentTemplates());
   const builderStyleGallery = React.useMemo(() => [..._BUILDER_STYLE_GALLERY, ...customBuilderStyles], [customBuilderStyles]);
@@ -2354,6 +3704,9 @@ function ExportPreviewView(props) {
   const wordCountButtonRef = React.useRef(null);
   const wordCountPanelRef = React.useRef(null);
   const wordCountOpenerRef = React.useRef(null);
+  const citationEditorRef = React.useRef(null);
+  const citationEditorOpenerRef = React.useRef(null);
+  const citationDoiRunRef = React.useRef(0);
   const imageInsertRunRef = React.useRef(0);
   const writingCheckRunRef = React.useRef(0);
   const auditRunRef = React.useRef(0);
@@ -2386,6 +3739,7 @@ function ExportPreviewView(props) {
     writingCheckRunRef.current += 1;
     auditRunRef.current += 1;
     expertRunRef.current += 1;
+    citationDoiRunRef.current += 1;
     try { rulerDragCleanupRef.current?.(); } catch (_) {}
   }, []);
 
@@ -2886,6 +4240,15 @@ function ExportPreviewView(props) {
   const refreshDocumentStats = React.useCallback(() => {
     const doc = exportPreviewRef.current?.contentDocument;
     _builderRefreshTableOfContents(doc);
+    const references = _builderRefreshDocumentReferences(doc);
+    setDocumentReferences(references);
+    setCrossReferenceTarget((current) => references.bookmarks.some((entry) => entry.id === current) ? current : (references.bookmarks[0]?.id || ''));    setCitationStyle(references.citationStyle || 'apa');
+    setCitationSourceTarget((current) => references.sources?.some((entry) => entry.id === current) ? current : (references.sources?.[0]?.id || ''));
+    setBibliographyIncludeUncited(references.bibliography?.getAttribute?.('data-allo-bibliography-scope') === 'all');
+    setActiveDocumentReferenceKey((current) => {
+      const keys = new Set([...references.bookmarks, ...references.crossReferences, ...references.footnotes, ...(references.citations || []), ...(references.sources || []).map((source) => ({ key: 'source:' + source.id }))].map((entry) => entry.key));
+      return keys.has(current) ? current : '';
+    });
     const statistics = _builderDocumentStatistics(doc);
     setWordCount(statistics.words);
     setDocumentStatistics(statistics);
@@ -2970,7 +4333,7 @@ function ExportPreviewView(props) {
 
   const handleNavigationTabKeyDown = React.useCallback((event, currentTab) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    const tabs = ['headings', 'pages', 'sections', 'comments', 'changes'];
+    const tabs = ['headings', 'pages', 'sections', 'references', 'comments', 'changes'];
     const currentIndex = Math.max(0, tabs.indexOf(currentTab));
     const nextIndex = event.key === 'Home' ? 0
       : event.key === 'End' ? tabs.length - 1
@@ -4466,6 +5829,478 @@ function ExportPreviewView(props) {
     exportPreviewRef.current?.focus();
   }, [exportPreviewRef, resumeTrackedEditingView, commitTrackedChangeMutation, addToast]);
 
+  const openDocumentReferences = React.useCallback(() => {
+    setActiveRibbonTab('insert');
+    setRibbonCollapsed(false);
+    setNavigationPaneTab('references');
+    setShowNavigationPane(true);
+  }, []);
+
+  const captureDocumentReferenceRange = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const selection = doc?.getSelection?.();
+    try {
+      if (selection?.rangeCount) return selection.getRangeAt(0).cloneRange();
+      const saved = editorSelectionRangeRef.current;
+      if (saved?.cloneRange && saved.commonAncestorContainer?.ownerDocument === doc) return saved.cloneRange();
+    } catch (_) {}
+    return null;
+  }, [exportPreviewRef]);
+
+  const finishDocumentReferenceMutation = React.useCallback((result, message, activeKey = '') => {
+    if (!result?.ok) {
+      addToast && addToast(result?.error || 'The document reference could not be updated.', 'error');
+      return false;
+    }
+    if (result.references) {
+      setDocumentReferences(result.references);
+      setCrossReferenceTarget((current) => result.references.bookmarks.some((entry) => entry.id === current) ? current : (result.references.bookmarks[0]?.id || ''));      setCitationStyle(result.references.citationStyle || 'apa');
+      setCitationSourceTarget((current) => result.references.sources?.some((entry) => entry.id === current) ? current : (result.references.sources?.[0]?.id || ''));
+      setBibliographyIncludeUncited(result.references.bibliography?.getAttribute?.('data-allo-bibliography-scope') === 'all');
+    }
+    if (activeKey) setActiveDocumentReferenceKey(activeKey);
+    const changeId = result.marker?.getAttribute?.('data-allo-change-id') || '';
+    if (changeId) setActiveTrackedChangeId(changeId);
+    openDocumentReferences();
+    commitTrackedChangeMutation(message + (result.tracked ? ' Recorded in Track Changes.' : '.'));
+    exportPreviewRef.current?.focus();
+    return true;
+  }, [addToast, openDocumentReferences, commitTrackedChangeMutation, exportPreviewRef]);
+
+  const resetCitationSourceDraft = React.useCallback(() => {
+    citationDoiRunRef.current += 1;
+    setCitationDoiBusy(false);
+    setEditingCitationSourceId('');
+    setCitationSourceDraft(_builderNormalizeCitationSource({ type: 'webpage' }));
+    setCitationSourceMode('manual');
+    setCitationImportFormat('auto');
+    setCitationImportText('');
+    setCitationImportFeedback(null);
+  }, []);
+
+  const openCitationSourceManager = React.useCallback((source = null, mode = 'manual') => {
+    if (source?.id) {
+      citationDoiRunRef.current += 1;
+      setCitationDoiBusy(false);
+      setEditingCitationSourceId(source.id);
+      setCitationSourceDraft(_builderNormalizeCitationSource(source));
+      setCitationSourceMode('manual');
+      setCitationImportFeedback(null);
+    } else {
+      resetCitationSourceDraft();
+      setCitationSourceMode(mode === 'import' ? 'import' : 'manual');
+    }
+    setShowSourceManager(true);
+    openDocumentReferences();
+  }, [openDocumentReferences, resetCitationSourceDraft]);
+
+  const saveCitationSource = React.useCallback((event) => {
+    event?.preventDefault?.();
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body) {
+      addToast && addToast('The editable document is not ready yet.', 'info');
+      return;
+    }
+    resumeTrackedEditingView(true);
+    const payload = { ...citationSourceDraft, id: editingCitationSourceId || undefined };
+    const result = _builderUpsertCitationSource(doc, payload, citationStyle);
+    const label = result.ok ? (editingCitationSourceId ? 'Updated source ?' : 'Added source ?') + (result.source.title || _builderCitationAuthorKey(result.source)) + '?' : 'Source update failed';
+    if (finishDocumentReferenceMutation(result, label, result.ok ? 'source:' + result.source.id : '')) {
+      setCitationSourceTarget(result.source.id);
+      setShowSourceManager(false);
+      resetCitationSourceDraft();
+    }
+  }, [exportPreviewRef, citationSourceDraft, editingCitationSourceId, citationStyle, resumeTrackedEditingView, finishDocumentReferenceMutation, resetCitationSourceDraft, addToast]);
+
+  const lookupCitationDoi = React.useCallback(async () => {
+    const doi = _builderCitationPlain(citationSourceDraft.doi, 300).replace(/^(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:\s*)/i, '');
+    if (!doi) {
+      setCitationImportFeedback({ tone: 'error', message: 'Enter a DOI before looking it up.' });
+      return;
+    }
+    if (typeof window.fetch !== 'function') {
+      setCitationImportFeedback({ tone: 'error', message: 'DOI lookup is unavailable in this environment. You can still enter the source manually.' });
+      return;
+    }
+    const runId = ++citationDoiRunRef.current;
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    const timeout = window.setTimeout(() => controller?.abort(), 12000);
+    setCitationDoiBusy(true);
+    setCitationImportFeedback({ tone: 'info', message: 'Looking up DOI metadata?' });
+    try {
+      const response = await window.fetch('https://api.crossref.org/works/' + encodeURIComponent(doi), {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        signal: controller?.signal,
+      });
+      if (!response.ok) throw new Error(response.status === 404 ? 'No Crossref record was found for that DOI.' : 'Crossref returned HTTP ' + response.status + '.');
+      const payload = await response.json();
+      if (runId !== citationDoiRunRef.current) return;
+      const lookedUp = _builderCitationSourceFromCrossref(payload?.message || {});
+      if (!lookedUp.title && !lookedUp.authors.length && !lookedUp.corporateAuthor) throw new Error('The DOI record did not include usable title or author metadata.');
+      setCitationSourceDraft((current) => _builderNormalizeCitationSource({
+        ...lookedUp,
+        id: current.id,
+        type: lookedUp.type || current.type,
+        authors: current.authors?.length ? current.authors : lookedUp.authors,
+        corporateAuthor: current.corporateAuthor || lookedUp.corporateAuthor,
+        title: current.title || lookedUp.title,
+        containerTitle: current.containerTitle || lookedUp.containerTitle,
+        publisher: current.publisher || lookedUp.publisher,
+        year: current.year || lookedUp.year,
+        volume: current.volume || lookedUp.volume,
+        issue: current.issue || lookedUp.issue,
+        pages: current.pages || lookedUp.pages,
+        url: current.url || lookedUp.url,
+        doi: lookedUp.doi || doi,
+        accessed: current.accessed || lookedUp.accessed,
+      }));
+      setCitationImportFeedback({ tone: 'success', message: 'Metadata loaded from Crossref. Existing values were kept.' });
+    } catch (error) {
+      if (runId !== citationDoiRunRef.current) return;
+      const timedOut = error?.name === 'AbortError';
+      setCitationImportFeedback({ tone: 'error', message: timedOut ? 'DOI lookup timed out. Check your connection or enter the source manually.' : (error?.message || 'DOI lookup failed. You can still enter the source manually.') });
+    } finally {
+      window.clearTimeout(timeout);
+      if (runId === citationDoiRunRef.current) setCitationDoiBusy(false);
+    }
+  }, [citationSourceDraft.doi]);
+
+  const importCitationSources = React.useCallback((event) => {
+    event?.preventDefault?.();
+    const parsed = _builderParseCitationImport(citationImportText, citationImportFormat);
+    if (parsed.errors.length) {
+      setCitationImportFeedback({ tone: 'error', message: parsed.errors.join(' ') });
+      return;
+    }
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body) {
+      setCitationImportFeedback({ tone: 'error', message: 'The editable document is not ready yet.' });
+      return;
+    }
+    resumeTrackedEditingView(true);
+    const result = _builderImportCitationSources(doc, parsed.sources, citationStyle);
+    if (!result.ok) {
+      setCitationImportFeedback({ tone: 'error', message: result.error || 'The sources could not be imported.' });
+      return;
+    }
+    const addedCount = result.added?.length || 0;
+    const duplicateCount = result.duplicateCount || 0;
+    const skippedCount = result.capacitySkipped || 0;
+    const parts = [
+      addedCount + ' source' + (addedCount === 1 ? '' : 's') + ' added',
+      duplicateCount ? duplicateCount + ' duplicate' + (duplicateCount === 1 ? '' : 's') + ' skipped' : '',
+      skippedCount ? skippedCount + ' skipped because the 200-source limit was reached' : '',
+      ...(parsed.warnings || []),
+    ].filter(Boolean);
+    setCitationImportFeedback({ tone: addedCount ? 'success' : 'info', message: parts.join(' ? ') + '.' });
+    if (!addedCount) return;
+    if (result.references) {
+      setDocumentReferences(result.references);
+      setCitationStyle(result.references.citationStyle || 'apa');
+      setBibliographyIncludeUncited(result.references.bibliography?.getAttribute?.('data-allo-bibliography-scope') === 'all');
+    }
+    const firstAdded = result.added[0];
+    if (firstAdded) {
+      setCitationSourceTarget(firstAdded.id);
+      setActiveDocumentReferenceKey('source:' + firstAdded.id);
+    }
+    const changeId = result.marker?.getAttribute?.('data-allo-change-id') || '';
+    if (changeId) setActiveTrackedChangeId(changeId);
+    setCitationImportText('');
+    commitTrackedChangeMutation('Imported ' + addedCount + ' citation source' + (addedCount === 1 ? '' : 's') + (result.tracked ? ' with Track Changes.' : '.'), 'success');
+  }, [citationImportText, citationImportFormat, exportPreviewRef, citationStyle, resumeTrackedEditingView, commitTrackedChangeMutation]);
+
+  const closeCitationEditor = React.useCallback((returnFocus = true) => {
+    const opener = citationEditorOpenerRef.current;
+    setEditingCitationId('');
+    setCitationItemsDraft([]);
+    setCitationEditorError('');
+    citationEditorOpenerRef.current = null;
+    if (returnFocus && opener?.isConnected && typeof opener.focus === 'function') window.setTimeout(() => opener.focus(), 0);
+  }, []);
+
+  const openCitationEditor = React.useCallback((citationOrId, opener = null) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const citationId = typeof citationOrId === 'string' ? citationOrId : citationOrId?.id;
+    const entry = _builderCitationEntries(doc).citations.find((item) => item.id === citationId);
+    if (!entry?.node) {
+      addToast && addToast('That citation is no longer available.', 'info');
+      return;
+    }
+    if (entry.node.matches(_BUILDER_CHANGE_SELECTOR) || entry.node.querySelector?.(_BUILDER_CHANGE_SELECTOR)) {
+      addToast && addToast('Accept or reject the pending change on this citation before editing it again.', 'info');
+      return;
+    }
+    citationEditorOpenerRef.current = opener || entry.node;
+    setEditingCitationId(entry.id);
+    setCitationItemsDraft(entry.items.map((item) => ({ ...item })));
+    setCitationEditorError(entry.broken ? 'Replace any missing source before saving.' : '');
+    setActiveDocumentReferenceKey(entry.key);
+    window.setTimeout(() => citationEditorRef.current?.focus(), 0);
+  }, [exportPreviewRef, addToast]);
+
+  const updateCitationItemDraft = React.useCallback((index, changes) => {
+    setCitationItemsDraft((items) => items.map((item, itemIndex) => itemIndex === index ? _builderNormalizeCitationItem({ ...item, ...changes }) : item));
+    setCitationEditorError('');
+  }, []);
+
+  const addCitationItemDraft = React.useCallback(() => {
+    setCitationItemsDraft((items) => {
+      if (items.length >= _BUILDER_CITATION_ITEM_LIMIT) return items;
+      const used = new Set(items.map((item) => item.sourceId));
+      const source = (documentReferences.sources || []).find((candidate) => !used.has(candidate.id));
+      if (!source) return items;
+      return [...items, _builderNormalizeCitationItem({ sourceId: source.id })];
+    });
+    setCitationEditorError('');
+  }, [documentReferences.sources]);
+
+  const moveCitationItemDraft = React.useCallback((index, direction) => {
+    setCitationItemsDraft((items) => {
+      const target = index + direction;
+      if (target < 0 || target >= items.length) return items;
+      const reordered = [...items];
+      [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+      return reordered;
+    });
+  }, []);
+
+  const removeCitationItemDraft = React.useCallback((index) => {
+    setCitationItemsDraft((items) => items.filter((_, itemIndex) => itemIndex !== index));
+    setCitationEditorError('');
+  }, []);
+
+  const saveCitationEdit = React.useCallback((event) => {
+    event?.preventDefault?.();
+    if (!citationItemsDraft.length) {
+      setCitationEditorError('Keep at least one source in the citation.');
+      return;
+    }
+    const doc = exportPreviewRef.current?.contentDocument;
+    resumeTrackedEditingView(true);
+    const result = _builderUpdateCitation(doc, editingCitationId, citationItemsDraft);
+    if (!result.ok) {
+      setCitationEditorError(result.error || 'The citation could not be updated.');
+      addToast && addToast(result.error || 'The citation could not be updated.', 'error');
+      return;
+    }
+    const focusTarget = result.node;
+    if (result.references) setDocumentReferences(result.references);
+    setActiveDocumentReferenceKey('citation:' + result.id);
+    const changeId = result.marker?.getAttribute?.('data-allo-change-id') || '';
+    if (changeId) setActiveTrackedChangeId(changeId);
+    closeCitationEditor(false);
+    commitTrackedChangeMutation('Updated citation' + (result.tracked ? ' with Track Changes.' : '.'), 'success');
+    window.setTimeout(() => focusTarget?.focus?.(), 0);
+  }, [citationItemsDraft, editingCitationId, exportPreviewRef, resumeTrackedEditingView, closeCitationEditor, commitTrackedChangeMutation, addToast]);
+
+  React.useEffect(() => {
+    if (!editingCitationId) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeCitationEditor(true);
+    };
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
+  }, [editingCitationId, closeCitationEditor]);
+
+  const changeCitationStyle = React.useCallback((nextStyle) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    resumeTrackedEditingView(true);
+    const result = _builderSetCitationStyle(doc, nextStyle);
+    const label = _BUILDER_CITATION_STYLES.find((entry) => entry.id === result.style)?.label || String(nextStyle).toUpperCase();
+    if (finishDocumentReferenceMutation(result, result.ok ? 'Updated all citation fields to ' + label : 'Citation style update failed')) setCitationStyle(result.style);
+  }, [exportPreviewRef, resumeTrackedEditingView, finishDocumentReferenceMutation]);
+
+  const insertDocumentCitation = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!citationSourceTarget) {
+      addToast && addToast('Add or choose a source before inserting a citation.', 'info');
+      return;
+    }
+    resumeTrackedEditingView(true);
+    const result = _builderInsertCitation(doc, citationSourceTarget, citationLocator, captureDocumentReferenceRange());
+    if (finishDocumentReferenceMutation(result, result.ok ? 'Inserted live citation' : 'Citation insertion failed', result.ok ? 'citation:' + result.id : '')) setCitationLocator('');
+  }, [exportPreviewRef, citationSourceTarget, citationLocator, captureDocumentReferenceRange, resumeTrackedEditingView, finishDocumentReferenceMutation, addToast]);
+
+  const insertOrRefreshDocumentBibliography = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    resumeTrackedEditingView(true);
+    const result = _builderInsertOrRefreshBibliography(doc, { includeUncited: bibliographyIncludeUncited });
+    finishDocumentReferenceMutation(result, result.ok ? (result.existing ? 'Bibliography updated' : 'Bibliography inserted') : 'Bibliography update failed', result.ok ? 'bibliography' : '');
+  }, [exportPreviewRef, bibliographyIncludeUncited, resumeTrackedEditingView, finishDocumentReferenceMutation]);
+
+  const updateAllDocumentFields = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body) {
+      addToast && addToast('The editable document is not ready yet.', 'info');
+      return;
+    }
+    _builderRefreshTableOfContents(doc);
+    const references = _builderRefreshDocumentReferences(doc);
+    setDocumentReferences(references);
+    setCitationStyle(references.citationStyle || 'apa');
+    setCitationSourceTarget((current) => references.sources?.some((source) => source.id === current) ? current : (references.sources?.[0]?.id || ''));
+    commitTrackedChangeMutation('Updated table of contents, cross-references, citations, footnotes, and bibliography fields.', 'success', false);
+  }, [exportPreviewRef, commitTrackedChangeMutation, addToast]);
+
+  React.useEffect(() => {
+    if (!showExportPreview) return undefined;
+    const onEditCitation = (event) => openCitationEditor(event?.detail?.id || '');
+    document.addEventListener('alloflow-builder-edit-citation', onEditCitation);
+    return () => document.removeEventListener('alloflow-builder-edit-citation', onEditCitation);
+  }, [showExportPreview, openCitationEditor]);
+
+  React.useEffect(() => {
+    if (!showExportPreview) return undefined;
+    const onUpdateFields = () => updateAllDocumentFields();
+    const onUpdateFieldsShortcut = (event) => {
+      if (event.key !== 'F9' || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      event.preventDefault();
+      updateAllDocumentFields();
+    };
+    document.addEventListener('alloflow-builder-update-fields', onUpdateFields);
+    document.addEventListener('keydown', onUpdateFieldsShortcut);
+    return () => {
+      document.removeEventListener('alloflow-builder-update-fields', onUpdateFields);
+      document.removeEventListener('keydown', onUpdateFieldsShortcut);
+    };
+  }, [showExportPreview, updateAllDocumentFields]);
+
+  const insertDocumentFootnote = React.useCallback(async () => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body) {
+      addToast && addToast('The editable document is not ready yet.', 'info');
+      return;
+    }
+    const savedRange = captureDocumentReferenceRange();
+    const noteText = await promptForBuilderText('Write the footnote text. It will appear in a numbered footnotes section at the end of the document.', '', {
+      title: 'Insert footnote', confirmText: 'Insert footnote', cancelText: 'Cancel',
+      placeholder: 'Footnote text', multiline: true, maxLength: 2000,
+      validate: (value) => value.trim() ? null : 'Write the footnote text first.',
+    });
+    if (noteText == null) return;
+    resumeTrackedEditingView(true);
+    const result = _builderInsertFootnote(doc, noteText, savedRange);
+    finishDocumentReferenceMutation(result, result.ok ? 'Inserted footnote ' + result.number : 'Footnote insertion failed', result.ok ? 'footnote:' + result.id : '');
+  }, [exportPreviewRef, captureDocumentReferenceRange, promptForBuilderText, resumeTrackedEditingView, finishDocumentReferenceMutation, addToast]);
+
+  const insertDocumentBookmark = React.useCallback(async () => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body) {
+      addToast && addToast('The editable document is not ready yet.', 'info');
+      return;
+    }
+    const savedRange = captureDocumentReferenceRange();
+    let selectedText = '';
+    try { selectedText = String(doc.getSelection?.()?.toString() || '').replace(/\s+/g, ' ').trim().slice(0, 60); } catch (_) {}
+    const name = await promptForBuilderText('Name this bookmark. Cross-references can use either this name or the bookmarked text.', selectedText, {
+      title: 'Insert bookmark', confirmText: 'Add bookmark', cancelText: 'Cancel',
+      placeholder: 'Bookmark name', maxLength: 80,
+      validate: (value) => value.trim() ? null : 'Enter a bookmark name.',
+    });
+    if (name == null) return;
+    resumeTrackedEditingView(true);
+    const result = _builderInsertBookmark(doc, name, savedRange);
+    finishDocumentReferenceMutation(result, result.ok ? 'Added bookmark “' + result.name + '”' : 'Bookmark insertion failed', result.ok ? 'bookmark:' + result.id : '');
+  }, [exportPreviewRef, captureDocumentReferenceRange, promptForBuilderText, resumeTrackedEditingView, finishDocumentReferenceMutation, addToast]);
+
+  const insertDocumentCrossReference = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!crossReferenceTarget) {
+      addToast && addToast('Add or choose a bookmark before inserting a cross-reference.', 'info');
+      return;
+    }
+    resumeTrackedEditingView(true);
+    const result = _builderInsertCrossReference(doc, crossReferenceTarget, crossReferenceLabelMode, captureDocumentReferenceRange());
+    finishDocumentReferenceMutation(result, result.ok ? 'Inserted live cross-reference' : 'Cross-reference insertion failed', result.ok ? 'cross-reference:' + result.id : '');
+  }, [exportPreviewRef, crossReferenceTarget, crossReferenceLabelMode, captureDocumentReferenceRange, resumeTrackedEditingView, finishDocumentReferenceMutation, addToast]);
+
+  const jumpToDocumentReference = React.useCallback((entry) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const node = entry?.node;
+    if (!doc || !node?.isConnected) {
+      refreshDocumentStats();
+      addToast && addToast('That reference is no longer in the document.', 'info');
+      return;
+    }
+    try {
+      node.scrollIntoView({ behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth', block: 'center' });
+      const range = doc.createRange();
+      if (node.childNodes.length) range.selectNodeContents(node);
+      else range.selectNode(node);
+      _builderSetTrackedSelection(doc, range);
+      editorSelectionRangeRef.current = range.cloneRange();
+      setActiveDocumentReferenceKey(entry.key || '');
+      openDocumentReferences();
+      exportPreviewRef.current?.focus();
+    } catch (_) {
+      addToast && addToast('Could not move to that reference.', 'error');
+    }
+  }, [exportPreviewRef, refreshDocumentStats, openDocumentReferences, addToast]);
+
+  const confirmDocumentReferenceRemoval = React.useCallback(async (message, detail, confirmText) => {
+    const confirmReference = window.AlloFlowUX?.confirm;
+    if (typeof confirmReference !== 'function') {
+      addToast && addToast('The confirmation dialog is still loading. Please try again.', 'info');
+      return false;
+    }
+    try {
+      return await Promise.resolve(confirmReference.call(window.AlloFlowUX, message, {
+        title: confirmText + '?', detail, confirmText, cancelText: 'Keep reference', tone: 'danger',
+      })).then(Boolean, () => false);
+    } catch (_) { return false; }
+  }, [addToast]);
+
+  const removeDocumentCitation = React.useCallback(async (entry) => {
+    if (!entry?.id) return;
+    const confirmed = await confirmDocumentReferenceRemoval('Remove this citation?', 'Only this inline citation field will be removed. The reusable source remains available.', 'Remove citation');
+    if (!confirmed) return;
+    const result = _builderRemoveCitation(exportPreviewRef.current?.contentDocument, entry.id);
+    finishDocumentReferenceMutation(result, result.ok ? 'Removed citation' : 'Citation removal failed');
+  }, [confirmDocumentReferenceRemoval, exportPreviewRef, finishDocumentReferenceMutation]);
+
+  const removeCitationSource = React.useCallback(async (source) => {
+    if (!source?.id) return;
+    const confirmed = await confirmDocumentReferenceRemoval('Delete source “' + (source.title || _builderCitationAuthorKey(source)) + '”?', 'Only unused sources can be deleted. Citation fields must be removed first.', 'Delete source');
+    if (!confirmed) return;
+    const result = _builderRemoveCitationSource(exportPreviewRef.current?.contentDocument, source.id);
+    finishDocumentReferenceMutation(result, result.ok ? 'Deleted source “' + (source.title || _builderCitationAuthorKey(source)) + '”' : 'Source deletion failed');
+  }, [confirmDocumentReferenceRemoval, exportPreviewRef, finishDocumentReferenceMutation]);
+  const removeDocumentBookmark = React.useCallback(async (entry) => {
+    if (!entry?.id) return;
+    const confirmed = await confirmDocumentReferenceRemoval('Remove bookmark “' + entry.name + '”?', 'Bookmarked text will be kept. Any links to this bookmark will be flagged as broken until retargeted or removed.', 'Remove bookmark');
+    if (!confirmed) return;
+    const result = _builderRemoveBookmark(exportPreviewRef.current?.contentDocument, entry.id);
+    finishDocumentReferenceMutation(result, result.ok ? 'Removed bookmark “' + entry.name + '”' : 'Bookmark removal failed');
+  }, [confirmDocumentReferenceRemoval, exportPreviewRef, finishDocumentReferenceMutation]);
+
+  const removeDocumentCrossReference = React.useCallback(async (entry) => {
+    if (!entry?.id) return;
+    const confirmed = await confirmDocumentReferenceRemoval('Remove this cross-reference?', 'Only the inserted reference link will be removed. Its bookmark target will be kept.', 'Remove cross-reference');
+    if (!confirmed) return;
+    const result = _builderRemoveCrossReference(exportPreviewRef.current?.contentDocument, entry.id);
+    finishDocumentReferenceMutation(result, result.ok ? 'Removed cross-reference' : 'Cross-reference removal failed');
+  }, [confirmDocumentReferenceRemoval, exportPreviewRef, finishDocumentReferenceMutation]);
+
+  const removeDocumentFootnote = React.useCallback(async (entry) => {
+    if (!entry?.id) return;
+    const confirmed = await confirmDocumentReferenceRemoval('Remove footnote ' + (entry.number || '') + '?', 'The in-text reference and its matching note will be removed together.', 'Remove footnote');
+    if (!confirmed) return;
+    const result = _builderRemoveFootnote(exportPreviewRef.current?.contentDocument, entry.id);
+    finishDocumentReferenceMutation(result, result.ok ? 'Removed footnote' : 'Footnote removal failed');
+  }, [confirmDocumentReferenceRemoval, exportPreviewRef, finishDocumentReferenceMutation]);
+
+  React.useEffect(() => {
+    if (!showExportPreview) return undefined;
+    const onInsertFootnote = () => insertDocumentFootnote();
+    document.addEventListener('alloflow-builder-insert-footnote', onInsertFootnote);
+    return () => document.removeEventListener('alloflow-builder-insert-footnote', onInsertFootnote);
+  }, [showExportPreview, insertDocumentFootnote]);
+
   const toggleTrackChanges = React.useCallback((nextValue) => {
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc?.body) {
@@ -4480,7 +6315,7 @@ function ExportPreviewView(props) {
     setRibbonCollapsed(false);
     _builderDispatchTrackedInput(doc, 'toggleTrackChanges');
     addToast && addToast(enabled
-      ? 'Track Changes is on. Text, formatting, paragraph layout, list, table, and explicit break changes will be marked.'
+      ? 'Track Changes is on. Text, formatting, paragraph layout, lists, tables, breaks, and reference changes will be marked.'
       : 'Track Changes is off. Existing revisions remain available for review.', 'info');
     exportPreviewRef.current?.focus();
   }, [exportPreviewRef, addToast]);
@@ -4670,7 +6505,7 @@ function ExportPreviewView(props) {
     const walker = doc.createTreeWalker(doc.body, NF.SHOW_TEXT, {
       acceptNode(node) {
         const parent = node.parentElement;
-        return parent && !parent.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element],del[data-allo-change-id]') && node.nodeValue
+        return parent && !parent.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element],[data-allo-citation],[data-allo-bibliography],del[data-allo-change-id]') && node.nodeValue
           ? NF.FILTER_ACCEPT : NF.FILTER_REJECT;
       }
     });
@@ -4893,14 +6728,14 @@ function ExportPreviewView(props) {
   const getCleanBuilderDocument = React.useCallback((options = {}) => {
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc?.documentElement) return null;
-    const clone = doc.documentElement.cloneNode(true);
-    _builderClearReviewCommentTransientState(clone);
-    _builderClearTrackedChangeTransientState(clone);
-    if (options?.forExport) {
-      _builderStripReviewComments(clone);
-      _builderFinalizeTrackedChanges(clone, 'accept');
+    let clone = doc.documentElement.cloneNode(true);
+    if (options?.forExport) clone = _builderFinalizeDocumentForExport(clone);
+    else {
+      _builderClearReviewCommentTransientState(clone);
+      _builderClearTrackedChangeTransientState(clone);
     }
-    clone.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css,script').forEach((node) => node.remove());
+    clone.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css,script:not([data-allo-citation-store])').forEach((node) => node.remove());
+    if (options?.forExport) clone.querySelectorAll(_BUILDER_CITATION_STORE_SELECTOR).forEach((node) => node.remove());
     clone.querySelectorAll('[contenteditable]').forEach((node) => node.removeAttribute('contenteditable'));
     _builderStripEditorBreakMetadata(clone);
     clone.querySelectorAll('[data-allo-crop-tabindex-added]').forEach((node) => {
@@ -5162,6 +6997,9 @@ function ExportPreviewView(props) {
       if (active) setShowNavigationPane(false);
       else { setNavigationPaneTab('headings'); setShowNavigationPane(true); }
     }, pressed: showNavigationPane && navigationPaneTab === 'headings' },
+    footnote: { action: insertDocumentFootnote },
+    references: { action: openDocumentReferences, pressed: showNavigationPane && navigationPaneTab === 'references' },
+    updateFields: { action: updateAllDocumentFields },
     focus: { action: () => setBuilderFocusMode(), pressed: isFocusMode },
   };
 
@@ -5330,7 +7168,63 @@ function ExportPreviewView(props) {
                 </div>
               </div>
             )}
-            <div ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className={`bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 ${isFocusMode ? 'rounded-none max-w-none max-h-none h-full' : 'rounded-2xl max-w-[95vw] max-h-[95vh]'}`} inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
+            <div ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className={`relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 ${isFocusMode ? 'rounded-none max-w-none max-h-none h-full' : 'rounded-2xl max-w-[95vw] max-h-[95vh]'}`} inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
+              {editingCitationId && (
+                <form ref={citationEditorRef} id="builder-citation-editor" data-builder-citation-editor="1" tabIndex={-1} role="dialog" aria-modal="false" aria-labelledby="builder-citation-editor-title" aria-describedby="builder-citation-editor-help" onSubmit={saveCitationEdit} className="absolute right-3 top-16 z-[190] flex max-h-[calc(100%-5rem)] w-[min(32rem,calc(100%-1.5rem))] flex-col overflow-hidden rounded-xl border border-cyan-400 bg-white text-slate-800 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700">
+                  <div className="flex items-start justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-3 py-2">
+                    <div>
+                      <h3 id="builder-citation-editor-title" className="text-sm font-black text-cyan-950">Edit citation</h3>
+                      <p id="builder-citation-editor-help" className="mt-0.5 text-[10px] leading-snug text-cyan-900">Combine sources, adjust locators, and control how each source appears. Escape cancels.</p>
+                    </div>
+                    <button type="button" onClick={() => closeCitationEditor(true)} className="rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-white" aria-label="Close citation editor">?</button>
+                  </div>
+                  <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
+                    {citationItemsDraft.map((item, index) => {
+                      const sourceRecord = documentReferences.sources?.find((source) => source.id === item.sourceId);
+                      return (
+                        <fieldset key={item.sourceId + '-' + index} className="rounded-lg border border-slate-300 bg-slate-50 p-2">
+                          <legend className="px-1 text-[9px] font-black uppercase tracking-wide text-slate-600">Source {index + 1}</legend>
+                          <div className="mb-2 flex items-center gap-1">
+                            <label className="min-w-0 flex-1 text-[9px] font-bold uppercase text-slate-600">Source
+                              <select value={item.sourceId} onChange={(event) => updateCitationItemDraft(index, { sourceId: event.target.value })} className="mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-1.5 text-[10px] font-semibold normal-case text-slate-800" aria-label={'Source ' + (index + 1) + ' in citation'}>
+                                {!sourceRecord && <option value={item.sourceId}>Missing source ? choose a replacement</option>}
+                                {(documentReferences.sources || []).map((source) => {
+                                  const alreadyUsed = citationItemsDraft.some((candidate, candidateIndex) => candidateIndex !== index && candidate.sourceId === source.id);
+                                  return <option key={source.id} value={source.id} disabled={alreadyUsed}>{source.title || _builderCitationAuthorKey(source, citationStyle)}{alreadyUsed ? ' ? already cited' : ''}</option>;
+                                })}
+                              </select>
+                            </label>
+                            <div className="mt-3 flex shrink-0" role="group" aria-label={'Reorder source ' + (index + 1)}>
+                              <button type="button" onClick={() => moveCitationItemDraft(index, -1)} disabled={!index} className="h-8 w-7 rounded-l border border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30" aria-label={'Move source ' + (index + 1) + ' earlier'}>?</button>
+                              <button type="button" onClick={() => moveCitationItemDraft(index, 1)} disabled={index === citationItemsDraft.length - 1} className="h-8 w-7 border-y border-r border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30" aria-label={'Move source ' + (index + 1) + ' later'}>?</button>
+                              <button type="button" onClick={() => removeCitationItemDraft(index)} disabled={citationItemsDraft.length === 1} className="h-8 rounded-r border-y border-r border-slate-300 bg-white px-2 text-[9px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-30" aria-label={'Remove source ' + (index + 1) + ' from citation'}>Remove</button>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3">
+                            <label className="text-[8px] font-bold uppercase text-slate-600">Prefix<input value={item.prefix} onChange={(event) => updateCitationItemDraft(index, { prefix: event.target.value.slice(0, 120) })} className="mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800" placeholder="e.g., see" /></label>
+                            <label className="text-[8px] font-bold uppercase text-slate-600">Page or locator<input value={item.locator} onChange={(event) => updateCitationItemDraft(index, { locator: event.target.value.slice(0, 80) })} className="mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800" placeholder="23 or chap. 2" /></label>
+                            <label className="text-[8px] font-bold uppercase text-slate-600">Suffix<input value={item.suffix} onChange={(event) => updateCitationItemDraft(index, { suffix: event.target.value.slice(0, 120) })} className="mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800" placeholder="e.g., emphasis added" /></label>
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <label className="inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700"><input type="checkbox" checked={item.suppressAuthor} onChange={(event) => updateCitationItemDraft(index, { suppressAuthor: event.target.checked })} className="accent-cyan-800" />Suppress author</label>
+                            <label className="inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700"><input type="checkbox" checked={item.suppressYear} onChange={(event) => updateCitationItemDraft(index, { suppressYear: event.target.checked })} className="accent-cyan-800" />Suppress year</label>
+                          </div>
+                        </fieldset>
+                      );
+                    })}
+                    <button type="button" onClick={addCitationItemDraft} disabled={citationItemsDraft.length >= _BUILDER_CITATION_ITEM_LIMIT || citationItemsDraft.length >= (documentReferences.sources?.length || 0)} className="h-8 w-full rounded border border-dashed border-cyan-500 bg-cyan-50 px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40">+ Add another source</button>
+                    <div className="rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-2">
+                      <p className="text-[8px] font-black uppercase tracking-wide text-cyan-800">Preview ? {_BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle}</p>
+                      <p className="mt-1 break-words text-[11px] font-semibold text-slate-800" aria-live="polite">{_builderFormatCitationCluster(citationItemsDraft, documentReferences.sources || [], citationStyle)}</p>
+                    </div>
+                    <p className="min-h-4 text-[10px] font-bold text-red-700" role="alert">{citationEditorError}</p>
+                  </div>
+                  <div className="flex justify-end gap-2 border-t border-slate-200 bg-white px-3 py-2">
+                    <button type="button" onClick={() => closeCitationEditor(true)} className="h-9 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
+                    <button type="submit" disabled={!citationItemsDraft.length} className="h-9 rounded bg-cyan-800 px-4 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:opacity-40">Update citation</button>
+                  </div>
+                </form>
+              )}
               {/* Left Panel — Settings */}
               <div className={`${isFocusMode ? 'hidden' : 'w-full lg:w-72'} shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3`}>
                 <div className="flex items-center justify-between mb-1">
@@ -6214,7 +8108,7 @@ function ExportPreviewView(props) {
                         const command = quickAccessActions[itemId];
                         if (!option || !command) return null;
                         const pressed = typeof command.pressed === 'boolean' ? command.pressed : undefined;
-                        return <button key={itemId} type="button" onMouseDown={(event) => event.preventDefault()} onClick={command.action} aria-pressed={pressed} aria-label={option.label} title={option.label} className={'h-7 rounded px-2 text-[10px] font-bold transition-colors ' + (pressed ? 'bg-indigo-700 text-white shadow-inner' : 'text-slate-700 hover:bg-indigo-100 hover:text-indigo-800')}>{option.shortLabel}</button>;
+                        return <button key={itemId} type="button" onMouseDown={(event) => event.preventDefault()} onClick={command.action} aria-pressed={pressed} aria-keyshortcuts={option.shortcut} aria-label={option.label} title={option.shortcut ? option.label + ' (' + option.shortcut + ')' : option.label} className={'h-7 rounded px-2 text-[10px] font-bold transition-colors ' + (pressed ? 'bg-indigo-700 text-white shadow-inner' : 'text-slate-700 hover:bg-indigo-100 hover:text-indigo-800')}>{option.shortLabel}</button>;
                       })}
                       <details id="builder-quick-access-customize" className="relative">
                         <summary className="flex h-7 cursor-pointer list-none items-center rounded px-1.5 text-[10px] font-black text-slate-600 hover:bg-slate-200" aria-label="Customize Quick Access toolbar" title="Customize Quick Access toolbar">+</summary>
@@ -6372,9 +8266,7 @@ function ExportPreviewView(props) {
                           // newline per block element so the text keeps its reading structure.
                           let text = '';
                           try {
-                            const _tClone = doc.body.cloneNode(true);
-                            _builderStripReviewComments(_tClone);
-                            _builderFinalizeTrackedChanges(_tClone, 'accept');
+                            let _tClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
                             _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
                             _tClone.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
                             text = (_tClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
@@ -6389,11 +8281,9 @@ function ExportPreviewView(props) {
                           // #14: strip editor chrome + style/script bodies before the regex conversion.
                           let html = '';
                           try {
-                            const _mClone = doc.documentElement.cloneNode(true);
+                            let _mClone = _builderFinalizeDocumentForExport(doc.documentElement.cloneNode(true));
                             _mClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style').forEach(el => el.remove());
                             _builderStripEditorBreakMetadata(_mClone);
-                            _builderStripReviewComments(_mClone);
-                            _builderFinalizeTrackedChanges(_mClone, 'accept');
                             html = _mClone.outerHTML;
                           } catch (_) { html = doc.documentElement.outerHTML; }
                           // Spoken-math captions (2026-07-05): the ```mathml fence below is
@@ -6511,11 +8401,9 @@ function ExportPreviewView(props) {
                               // and editor CSS were leaking into the markdown).
                               let html = '';
                               try {
-                                const _mdClone = doc.documentElement.cloneNode(true);
+                                let _mdClone = _builderFinalizeDocumentForExport(doc.documentElement.cloneNode(true));
                                 _mdClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style').forEach(el => el.remove());
                                 _builderStripEditorBreakMetadata(_mdClone);
-                                _builderStripReviewComments(_mdClone);
-                                _builderFinalizeTrackedChanges(_mdClone, 'accept');
                                 html = _mdClone.outerHTML;
                               } catch (_) { html = doc.documentElement.outerHTML; }
                               // #6: preserve tables (pipe tables) + image alts before the tag-strip.
@@ -6553,14 +8441,13 @@ function ExportPreviewView(props) {
                           // Document" and language always "en". Now: strip editor chrome, build a real
                           // EPUB3 toc nav from the content headings (ids assigned so targets resolve),
                           // and carry the document's actual title + language into the OPF metadata.
-                          const _clone = doc.documentElement.cloneNode(true);
+                          let _clone = doc.documentElement.cloneNode(true);
                           try {
+                            _clone = _builderFinalizeDocumentForExport(_clone);
                             _clone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script').forEach(el => el.remove());
                             _clone.querySelectorAll('[data-allo-crop-tabindex-added]').forEach(el => { const added = el.getAttribute('data-allo-crop-tabindex-added') === 'added'; el.removeAttribute('data-allo-crop-tabindex-added'); if (added) el.removeAttribute('tabindex'); el.removeAttribute('aria-keyshortcuts'); });
                             _clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
                             _builderStripEditorBreakMetadata(_clone);
-                            _builderStripReviewComments(_clone);
-                            _builderFinalizeTrackedChanges(_clone, 'accept');
                           } catch (_) {}
                           const _escXml = (s) => String(s || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
                           const title = ((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc.title || '').trim() || 'AlloFlow Document').substring(0, 120);
@@ -6740,7 +8627,7 @@ function ExportPreviewView(props) {
                             norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _brfSmart[c] || '');
                             try { norm = norm.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
                             const out = []; let dropped = 0;
-                            for (const line of norm.replace(/\r\n?/g, '\n').split('\n')) {
+                            for (const line of norm.replace(/\n?/g, '\n').split('\n')) {
                               const chars = Array.from(line); let bl = ''; let numMode = false;
                               for (let i = 0; i < chars.length; i++) {
                                 const ch = chars[i];
@@ -6767,7 +8654,7 @@ function ExportPreviewView(props) {
                               }
                               _brfWrap(bl, out, cells);
                             }
-                            const brf = out.join('\r\n');
+                            const brf = out.join('\n');
                             return (opts && opts.withMeta) ? { brf, dropped } : brf;
                           };
 const _downloadBRF = (brf) => {
@@ -6875,7 +8762,7 @@ const _downloadBRF = (brf) => {
                       <button type="button" onClick={() => openReviewComments(activeCommentId)} aria-pressed={showNavigationPane && navigationPaneTab === 'comments'} aria-controls="document-builder-navigation" className="h-8 rounded border border-amber-500 bg-white px-2.5 text-[11px] font-bold text-amber-800 hover:bg-amber-50">Comments ({unresolvedReviewCommentCount})</button>
                       <button type="button" onClick={openWordCountDetails} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="h-8 rounded border border-indigo-500 bg-white px-2.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50">Word Count</button>
                       <span className="text-[10px] font-medium text-slate-600">{pendingTrackedChangeCount ? `${pendingTrackedChangeCount} pending change${pendingTrackedChangeCount === 1 ? '' : 's'}` : selectionStatistics.active ? `${selectionStatistics.words.toLocaleString()} selected / ${wordCount.toLocaleString()} total words` : `${wordCount.toLocaleString()} words`} &middot; {documentStatistics.readingMinutes || 0} min reading time</span>
-                      <span className="ml-auto text-[10px] text-slate-500">Ctrl+Shift+E track &middot; Ctrl+Alt+M comment &middot; Ctrl+Shift+G word count</span>
+                      <span className="ml-auto text-[10px] text-slate-500">Ctrl+Shift+E track &middot; Ctrl+Alt+M comment &middot; Ctrl+Alt+F footnote &middot; Ctrl+Shift+G word count</span>
                     </div>
                 <details id="builder-find-tools" className="bg-white border-b border-slate-200 shrink-0">
                   <summary className="cursor-pointer px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50">Find / Replace | Heading Outline ({headingOutline.length}) <span className="font-normal text-slate-500">{findMatchState.count ? `${findMatchState.current || 0}/${findMatchState.count} matches` : 'No matches'} | Ctrl+F / Ctrl+H</span></summary>
@@ -7196,6 +9083,43 @@ const _downloadBRF = (brf) => {
                           </div>
                         </details>
                         <span id="builder-structure-help" className="w-full text-[9px] text-slate-500">The automatic table of contents follows live headings. Reorder full sections from the outline pane.</span>
+                      </fieldset>
+                      <fieldset className="flex min-w-[24rem] flex-1 flex-wrap items-center gap-1.5 rounded border border-cyan-200 bg-cyan-50/60 px-2 py-1" aria-describedby="builder-references-help">
+                        <legend className="px-1 text-[10px] font-black uppercase tracking-wider text-cyan-900">References</legend>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={insertDocumentFootnote} aria-keyshortcuts="Control+Alt+F" className="h-7 rounded bg-cyan-800 px-2.5 text-[10px] font-bold text-white hover:bg-cyan-900" title="Insert footnote (Ctrl+Alt+F)">Footnote</button>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={insertDocumentBookmark} className="h-7 rounded border border-cyan-500 bg-white px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100">Add bookmark</button>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-700">Style
+                          <select value={citationStyle} onChange={(event) => changeCitationStyle(event.target.value)} className="h-7 rounded border border-cyan-300 bg-white px-1.5 text-[10px] text-slate-700" aria-label="Citation style">
+                            {_BUILDER_CITATION_STYLES.map((entry) => <option key={entry.id} value={entry.id}>{entry.label}</option>)}
+                          </select>
+                        </label>
+                        <label className="flex min-w-40 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-700">Source
+                          <select value={citationSourceTarget} onChange={(event) => setCitationSourceTarget(event.target.value)} disabled={!documentReferences.sources?.length} className="h-7 min-w-0 flex-1 rounded border border-cyan-300 bg-white px-1.5 text-[10px] text-slate-700 disabled:cursor-not-allowed disabled:bg-slate-100" aria-label="Citation source">
+                            {!documentReferences.sources?.length && <option value="">Add a source first</option>}
+                            {documentReferences.sources?.map((source) => <option key={source.id} value={source.id}>{source.title || _builderCitationAuthorKey(source, citationStyle)}</option>)}
+                          </select>
+                        </label>
+                        <input value={citationLocator} onChange={(event) => setCitationLocator(event.target.value.slice(0, 80))} className="h-7 w-24 rounded border border-cyan-300 bg-white px-1.5 text-[10px] text-slate-700" aria-label="Citation page or locator" placeholder="Page" />
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={insertDocumentCitation} disabled={!citationSourceTarget} className="h-7 rounded bg-cyan-800 px-2 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:cursor-not-allowed disabled:opacity-45">Insert citation</button>
+                        <button type="button" onClick={() => openCitationSourceManager()} className="h-7 rounded border border-cyan-500 bg-white px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100">Source Manager</button>
+                        <button type="button" onClick={() => openCitationSourceManager(null, 'import')} className="h-7 rounded px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100">Import sources</button>
+                        <button type="button" onClick={insertOrRefreshDocumentBibliography} disabled={!documentReferences.sources?.length} className="h-7 rounded border border-cyan-500 bg-white px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:opacity-45">Bibliography</button>
+                        <button type="button" onClick={updateAllDocumentFields} aria-keyshortcuts="F9" title="Update all document fields (F9)" className="h-7 rounded px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100">Update fields</button>
+                        <label className="flex min-w-40 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-700">Target
+                          <select value={crossReferenceTarget} onChange={(event) => setCrossReferenceTarget(event.target.value)} disabled={!documentReferences.bookmarks.length} className="h-7 min-w-0 flex-1 rounded border border-cyan-300 bg-white px-1.5 text-[10px] text-slate-700 disabled:cursor-not-allowed disabled:bg-slate-100" aria-label="Cross-reference bookmark target">
+                            {!documentReferences.bookmarks.length && <option value="">Add a bookmark first</option>}
+                            {documentReferences.bookmarks.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}
+                          </select>
+                        </label>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-700">Label
+                          <select value={crossReferenceLabelMode} onChange={(event) => setCrossReferenceLabelMode(event.target.value)} className="h-7 rounded border border-cyan-300 bg-white px-1.5 text-[10px] text-slate-700" aria-label="Cross-reference label style">
+                            <option value="text">Bookmarked text</option>
+                            <option value="name">Bookmark name</option>
+                          </select>
+                        </label>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={insertDocumentCrossReference} disabled={!crossReferenceTarget} className="h-7 rounded border border-cyan-500 bg-white px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-45">Insert cross-reference</button>
+                        <button type="button" onClick={openDocumentReferences} aria-pressed={showNavigationPane && navigationPaneTab === 'references'} aria-controls="document-builder-navigation" className="h-7 rounded px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100">Manage</button>
+                        <span id="builder-references-help" className={'w-full text-[9px] ' + (documentReferences.brokenCount ? 'font-bold text-red-700' : 'text-slate-500')}>{documentReferences.citations?.length || 0} citation{documentReferences.citations?.length === 1 ? '' : 's'} · {documentReferences.sources?.length || 0} source{documentReferences.sources?.length === 1 ? '' : 's'} · {documentReferences.footnotes.length} footnote{documentReferences.footnotes.length === 1 ? '' : 's'} · {documentReferences.bookmarks.length} bookmark{documentReferences.bookmarks.length === 1 ? '' : 's'}{documentReferences.brokenCount ? ' · ' + documentReferences.brokenCount + ' broken reference' + (documentReferences.brokenCount === 1 ? '' : 's') : ' · Live fields update together.'}</span>
                       </fieldset>
                       <fieldset className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1" aria-describedby="builder-table-help">
                         <legend className="px-1 text-[10px] font-black uppercase tracking-wider text-slate-600">Table</legend>
@@ -7518,14 +9442,15 @@ const _downloadBRF = (brf) => {
                       <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2">
                         <div>
                           <div className="text-[11px] font-black uppercase tracking-wider text-slate-700">Navigation</div>
-                          <div className="text-[10px] text-slate-500">{navigationPaneTab === 'headings' ? `${headingOutline.length} heading${headingOutline.length === 1 ? '' : 's'}` : navigationPaneTab === 'sections' ? `${pageMetrics.documentSections.length} section${pageMetrics.documentSections.length === 1 ? '' : 's'}` : navigationPaneTab === 'comments' ? `${unresolvedReviewCommentCount} open / ${reviewComments.length} total` : navigationPaneTab === 'changes' ? `${pendingTrackedChangeCount} pending change${pendingTrackedChangeCount === 1 ? '' : 's'}` : `${pageMetrics.count} page${pageMetrics.count === 1 ? '' : 's'}`}</div>
+                          <div className="text-[10px] text-slate-500">{navigationPaneTab === 'headings' ? headingOutline.length + ' heading' + (headingOutline.length === 1 ? '' : 's') : navigationPaneTab === 'sections' ? pageMetrics.documentSections.length + ' section' + (pageMetrics.documentSections.length === 1 ? '' : 's') : navigationPaneTab === 'references' ? (documentReferences.sources?.length || 0) + ' source' + (documentReferences.sources?.length === 1 ? '' : 's') + ' · ' + (documentReferences.citations?.length || 0) + ' citation' + (documentReferences.citations?.length === 1 ? '' : 's') + (documentReferences.brokenCount ? ' · ' + documentReferences.brokenCount + ' broken' : '') : navigationPaneTab === 'comments' ? unresolvedReviewCommentCount + ' open / ' + reviewComments.length + ' total' : navigationPaneTab === 'changes' ? pendingTrackedChangeCount + ' pending change' + (pendingTrackedChangeCount === 1 ? '' : 's') : pageMetrics.count + ' page' + (pageMetrics.count === 1 ? '' : 's')}</div>
                         </div>
                         <button type="button" onClick={() => setShowNavigationPane(false)} aria-label="Close document navigation" className="rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-800">×</button>
                       </div>
-                      <div className="grid grid-cols-5 gap-1 border-b border-slate-200 bg-slate-50 p-1" role="tablist" aria-label="Navigation view">
+                      <div className="grid grid-cols-3 gap-1 border-b border-slate-200 bg-slate-50 p-1" role="tablist" aria-label="Navigation view">
                         <button id="builder-navigation-tab-headings" type="button" role="tab" aria-selected={navigationPaneTab === 'headings'} aria-controls="builder-navigation-panel-headings" tabIndex={navigationPaneTab === 'headings' ? 0 : -1} onClick={() => setNavigationPaneTab('headings')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'headings')} className={`rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === 'headings' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Headings</button>
                         <button id="builder-navigation-tab-pages" type="button" role="tab" aria-selected={navigationPaneTab === 'pages'} aria-controls="builder-navigation-panel-pages" tabIndex={navigationPaneTab === 'pages' ? 0 : -1} onClick={() => setNavigationPaneTab('pages')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'pages')} className={`rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === 'pages' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Pages</button>
                         <button id="builder-navigation-tab-sections" type="button" role="tab" aria-selected={navigationPaneTab === 'sections'} aria-controls="builder-navigation-panel-sections" tabIndex={navigationPaneTab === 'sections' ? 0 : -1} onClick={() => setNavigationPaneTab('sections')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'sections')} className={`rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === 'sections' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Sections</button>
+                        <button id="builder-navigation-tab-references" type="button" role="tab" aria-selected={navigationPaneTab === 'references'} aria-controls="builder-navigation-panel-references" tabIndex={navigationPaneTab === 'references' ? 0 : -1} onClick={() => setNavigationPaneTab('references')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'references')} className={'rounded px-0.5 py-1.5 text-[9px] font-bold ' + (navigationPaneTab === 'references' ? 'bg-white text-cyan-900 shadow-sm ring-1 ring-cyan-300' : 'text-slate-600 hover:bg-white')}>References</button>
                         <button id="builder-navigation-tab-comments" type="button" role="tab" aria-selected={navigationPaneTab === 'comments'} aria-controls="builder-navigation-panel-comments" tabIndex={navigationPaneTab === 'comments' ? 0 : -1} onClick={() => setNavigationPaneTab('comments')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'comments')} className={`rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === 'comments' ? 'bg-white text-amber-800 shadow-sm ring-1 ring-amber-300' : 'text-slate-600 hover:bg-white'}`}>Comments</button>
                         <button id="builder-navigation-tab-changes" type="button" role="tab" aria-selected={navigationPaneTab === 'changes'} aria-controls="builder-navigation-panel-changes" tabIndex={navigationPaneTab === 'changes' ? 0 : -1} onClick={() => setNavigationPaneTab('changes')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'changes')} className={`rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === 'changes' ? 'bg-white text-violet-800 shadow-sm ring-1 ring-violet-300' : 'text-slate-600 hover:bg-white'}`}>Changes</button>
                       </div>
@@ -7567,6 +9492,177 @@ const _downloadBRF = (brf) => {
                             </>
                           ) : <p className="px-2 py-3 text-[11px] text-slate-500">Add headings to build a navigable document map.</p>}
                         </nav>
+                      ) : navigationPaneTab === 'references' ? (
+                        <section id="builder-navigation-panel-references" role="tabpanel" aria-labelledby="builder-navigation-tab-references" aria-label="Document references" className="flex min-h-0 flex-1 flex-col">
+                          <div className="space-y-2 border-b border-cyan-200 bg-cyan-50 px-2 py-2">
+                            <div className="flex flex-wrap gap-1">
+                              <button type="button" onClick={() => openCitationSourceManager()} aria-expanded={showSourceManager} aria-controls="builder-source-manager" className="h-8 rounded bg-cyan-800 px-2.5 text-[10px] font-bold text-white hover:bg-cyan-900">Source Manager</button>
+                              <button type="button" onClick={() => openCitationSourceManager(null, 'import')} className="h-8 rounded border border-cyan-500 bg-white px-2.5 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100">Import</button>
+                              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={insertDocumentCitation} disabled={!citationSourceTarget} className="h-8 rounded border border-cyan-500 bg-white px-2.5 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:opacity-45">Insert citation</button>
+                              <button type="button" onClick={insertOrRefreshDocumentBibliography} disabled={!documentReferences.sources?.length} className="h-8 rounded border border-cyan-500 bg-white px-2.5 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:opacity-45">Bibliography</button>
+                              <button type="button" onClick={updateAllDocumentFields} aria-keyshortcuts="F9" title="Update all document fields (F9)" className="h-8 rounded border border-cyan-500 bg-white px-2.5 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100">Update all fields</button>
+                              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={insertDocumentFootnote} aria-keyshortcuts="Control+Alt+F" className="h-8 rounded bg-cyan-800 px-2.5 text-[10px] font-bold text-white hover:bg-cyan-900">Insert footnote</button>
+                              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={insertDocumentBookmark} className="h-8 rounded border border-cyan-500 bg-white px-2.5 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100">Add bookmark</button>
+                            </div>
+                            <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-1">
+                              <label className="text-[9px] font-bold uppercase tracking-wide text-cyan-900">Citation style
+                                <select value={citationStyle} onChange={(event) => changeCitationStyle(event.target.value)} className="mt-0.5 h-8 w-full rounded border border-cyan-300 bg-white px-1.5 text-[10px] font-semibold normal-case tracking-normal text-slate-700">
+                                  {_BUILDER_CITATION_STYLES.map((entry) => <option key={entry.id} value={entry.id}>{entry.label}</option>)}
+                                </select>
+                              </label>
+                              <label className="text-[9px] font-bold uppercase tracking-wide text-cyan-900">Citation source
+                                <select value={citationSourceTarget} onChange={(event) => setCitationSourceTarget(event.target.value)} disabled={!documentReferences.sources?.length} className="mt-0.5 h-8 w-full rounded border border-cyan-300 bg-white px-1.5 text-[10px] font-semibold normal-case tracking-normal text-slate-700 disabled:bg-slate-100">
+                                  {!documentReferences.sources?.length && <option value="">Add a source first</option>}
+                                  {documentReferences.sources?.map((source) => <option key={source.id} value={source.id}>{source.title || _builderCitationAuthorKey(source, citationStyle)}</option>)}
+                                </select>
+                              </label>
+                              <label className="col-span-2 text-[9px] font-bold uppercase tracking-wide text-cyan-900">Page or locator
+                                <input value={citationLocator} onChange={(event) => setCitationLocator(event.target.value.slice(0, 80))} className="mt-0.5 h-8 w-full rounded border border-cyan-300 bg-white px-2 text-[10px] font-semibold normal-case tracking-normal text-slate-700" placeholder="Optional: 23, pp. 23–25, chap. 2" />
+                              </label>
+                              <label className="col-span-2 inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-cyan-200 bg-white px-2 text-[9px] font-semibold text-cyan-900"><input type="checkbox" checked={bibliographyIncludeUncited} onChange={(event) => setBibliographyIncludeUncited(event.target.checked)} className="accent-cyan-800" />Include uncited sources in bibliography</label>
+                            </div>                            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1">
+                              <label className="text-[9px] font-bold uppercase tracking-wide text-cyan-900">Cross-reference target
+                                <select value={crossReferenceTarget} onChange={(event) => setCrossReferenceTarget(event.target.value)} disabled={!documentReferences.bookmarks.length} className="mt-0.5 h-8 w-full rounded border border-cyan-300 bg-white px-1.5 text-[10px] font-semibold normal-case tracking-normal text-slate-700 disabled:bg-slate-100">
+                                  {!documentReferences.bookmarks.length && <option value="">Add a bookmark first</option>}
+                                  {documentReferences.bookmarks.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}
+                                </select>
+                              </label>
+                              <label className="text-[9px] font-bold uppercase tracking-wide text-cyan-900">Label
+                                <select value={crossReferenceLabelMode} onChange={(event) => setCrossReferenceLabelMode(event.target.value)} className="mt-0.5 h-8 rounded border border-cyan-300 bg-white px-1.5 text-[10px] font-semibold normal-case tracking-normal text-slate-700">
+                                  <option value="text">Text</option>
+                                  <option value="name">Name</option>
+                                </select>
+                              </label>
+                              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={insertDocumentCrossReference} disabled={!crossReferenceTarget} className="col-span-2 h-8 rounded border border-cyan-500 bg-white px-2.5 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-45">Insert cross-reference at cursor</button>
+                            </div>
+                            {showSourceManager && (
+                              <section id="builder-source-manager" className="space-y-2 rounded border border-cyan-300 bg-white p-2" aria-label="Source Manager">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div><h3 className="text-[10px] font-black text-cyan-950">Source Manager</h3><p className="text-[8px] leading-snug text-slate-500">{editingCitationSourceId ? 'Edit this reusable source.' : 'Add one source manually or import a group.'}</p></div>
+                                  <button type="button" onClick={() => { setShowSourceManager(false); resetCitationSourceDraft(); }} className="rounded px-1.5 py-0.5 text-sm leading-none text-slate-500 hover:bg-slate-100" aria-label="Close Source Manager">?</button>
+                                </div>
+                                {!editingCitationSourceId && (
+                                  <div className="grid grid-cols-2 gap-1" role="tablist" aria-label="Source Manager mode">
+                                    <button id="builder-source-mode-manual" type="button" role="tab" aria-selected={citationSourceMode === 'manual'} aria-controls="builder-source-panel-manual" onClick={() => { setCitationSourceMode('manual'); setCitationImportFeedback(null); }} className={'h-8 rounded text-[9px] font-bold ' + (citationSourceMode === 'manual' ? 'bg-cyan-800 text-white' : 'border border-cyan-300 bg-white text-cyan-900 hover:bg-cyan-50')}>Add manually</button>
+                                    <button id="builder-source-mode-import" type="button" role="tab" aria-selected={citationSourceMode === 'import'} aria-controls="builder-source-panel-import" onClick={() => { setCitationSourceMode('import'); setCitationImportFeedback(null); }} className={'h-8 rounded text-[9px] font-bold ' + (citationSourceMode === 'import' ? 'bg-cyan-800 text-white' : 'border border-cyan-300 bg-white text-cyan-900 hover:bg-cyan-50')}>Import RIS / BibTeX</button>
+                                  </div>
+                                )}
+                                {(citationSourceMode === 'manual' || editingCitationSourceId) ? (
+                                  <form id="builder-source-panel-manual" role="tabpanel" aria-labelledby={!editingCitationSourceId ? 'builder-source-mode-manual' : undefined} onSubmit={saveCitationSource} className="space-y-2">
+                                    <p className="text-[8px] leading-snug text-slate-500">Use semicolons between people and enter each as Last, First. Use Corporate author for organizations.</p>
+                                    <div className="grid grid-cols-2 gap-1">
+                                      <label className="text-[8px] font-bold uppercase text-slate-600">Type<select value={citationSourceDraft.type} onChange={(event) => setCitationSourceDraft((draft) => ({ ...draft, type: event.target.value }))} className="mt-0.5 h-8 w-full rounded border border-slate-300 px-1.5 text-[10px] font-medium normal-case text-slate-800">{_BUILDER_CITATION_SOURCE_TYPES.map((type) => <option key={type} value={type}>{type[0].toUpperCase() + type.slice(1)}</option>)}</select></label>
+                                      <label className="text-[8px] font-bold uppercase text-slate-600">Year<input value={citationSourceDraft.year} onChange={(event) => setCitationSourceDraft((draft) => ({ ...draft, year: event.target.value.slice(0, 20) }))} className="mt-0.5 h-8 w-full rounded border border-slate-300 px-2 text-[10px] font-medium normal-case text-slate-800" placeholder="2026 or n.d." /></label>
+                                      <label className="col-span-2 text-[8px] font-bold uppercase text-slate-600">Title<input required value={citationSourceDraft.title} onChange={(event) => setCitationSourceDraft((draft) => ({ ...draft, title: event.target.value.slice(0, 300) }))} className="mt-0.5 h-8 w-full rounded border border-slate-300 px-2 text-[10px] font-medium normal-case text-slate-800" /></label>
+                                      <label className="col-span-2 text-[8px] font-bold uppercase text-slate-600">Authors<input value={citationSourceDraft.authors.join('; ')} onChange={(event) => setCitationSourceDraft((draft) => ({ ...draft, authors: event.target.value.split(';').map((value) => value.trim()).filter(Boolean).slice(0, 20) }))} className="mt-0.5 h-8 w-full rounded border border-slate-300 px-2 text-[10px] font-medium normal-case text-slate-800" placeholder="Smith, Jordan; Lee, Morgan" /></label>
+                                      <label className="col-span-2 text-[8px] font-bold uppercase text-slate-600">Corporate author<input value={citationSourceDraft.corporateAuthor} onChange={(event) => setCitationSourceDraft((draft) => ({ ...draft, corporateAuthor: event.target.value.slice(0, 160) }))} className="mt-0.5 h-8 w-full rounded border border-slate-300 px-2 text-[10px] font-medium normal-case text-slate-800" placeholder="Optional organization" /></label>
+                                      <label className="col-span-2 text-[8px] font-bold uppercase text-slate-600">Journal, website, or container<input value={citationSourceDraft.containerTitle} onChange={(event) => setCitationSourceDraft((draft) => ({ ...draft, containerTitle: event.target.value.slice(0, 300) }))} className="mt-0.5 h-8 w-full rounded border border-slate-300 px-2 text-[10px] font-medium normal-case text-slate-800" /></label>
+                                      <label className="col-span-2 text-[8px] font-bold uppercase text-slate-600">Publisher<input value={citationSourceDraft.publisher} onChange={(event) => setCitationSourceDraft((draft) => ({ ...draft, publisher: event.target.value.slice(0, 200) }))} className="mt-0.5 h-8 w-full rounded border border-slate-300 px-2 text-[10px] font-medium normal-case text-slate-800" /></label>
+                                      <label className="text-[8px] font-bold uppercase text-slate-600">Volume<input value={citationSourceDraft.volume} onChange={(event) => setCitationSourceDraft((draft) => ({ ...draft, volume: event.target.value.slice(0, 40) }))} className="mt-0.5 h-8 w-full rounded border border-slate-300 px-2 text-[10px] font-medium normal-case text-slate-800" /></label>
+                                      <label className="text-[8px] font-bold uppercase text-slate-600">Issue<input value={citationSourceDraft.issue} onChange={(event) => setCitationSourceDraft((draft) => ({ ...draft, issue: event.target.value.slice(0, 40) }))} className="mt-0.5 h-8 w-full rounded border border-slate-300 px-2 text-[10px] font-medium normal-case text-slate-800" /></label>
+                                      <label className="col-span-2 text-[8px] font-bold uppercase text-slate-600">Page range<input value={citationSourceDraft.pages} onChange={(event) => setCitationSourceDraft((draft) => ({ ...draft, pages: event.target.value.slice(0, 80) }))} className="mt-0.5 h-8 w-full rounded border border-slate-300 px-2 text-[10px] font-medium normal-case text-slate-800" /></label>
+                                      <label className="col-span-2 text-[8px] font-bold uppercase text-slate-600">DOI
+                                        <span className="mt-0.5 flex gap-1"><input value={citationSourceDraft.doi} onChange={(event) => { setCitationSourceDraft((draft) => ({ ...draft, doi: event.target.value.slice(0, 300) })); setCitationImportFeedback(null); }} className="h-8 min-w-0 flex-1 rounded border border-slate-300 px-2 text-[10px] font-medium normal-case text-slate-800" placeholder="10.xxxx/xxxxx" /><button type="button" onClick={lookupCitationDoi} disabled={citationDoiBusy || !citationSourceDraft.doi.trim()} aria-busy={citationDoiBusy} className="h-8 shrink-0 rounded border border-cyan-400 bg-cyan-50 px-2 text-[9px] font-bold normal-case text-cyan-900 hover:bg-cyan-100 disabled:opacity-40">{citationDoiBusy ? 'Looking up?' : 'Look up DOI'}</button></span>
+                                      </label>
+                                      <label className="col-span-2 text-[8px] font-bold uppercase text-slate-600">URL<input type="url" value={citationSourceDraft.url} onChange={(event) => setCitationSourceDraft((draft) => ({ ...draft, url: event.target.value.slice(0, 1000) }))} className="mt-0.5 h-8 w-full rounded border border-slate-300 px-2 text-[10px] font-medium normal-case text-slate-800" placeholder="https://?" /></label>
+                                      <label className="col-span-2 text-[8px] font-bold uppercase text-slate-600">Accessed date<input value={citationSourceDraft.accessed} onChange={(event) => setCitationSourceDraft((draft) => ({ ...draft, accessed: event.target.value.slice(0, 80) }))} className="mt-0.5 h-8 w-full rounded border border-slate-300 px-2 text-[10px] font-medium normal-case text-slate-800" placeholder="Optional: August 12, 2026" /></label>
+                                    </div>
+                                    {citationImportFeedback && <p className={'rounded px-2 py-1.5 text-[9px] font-semibold ' + (citationImportFeedback.tone === 'error' ? 'border border-red-300 bg-red-50 text-red-800' : citationImportFeedback.tone === 'success' ? 'border border-emerald-300 bg-emerald-50 text-emerald-800' : 'border border-cyan-200 bg-cyan-50 text-cyan-900')} role={citationImportFeedback.tone === 'error' ? 'alert' : 'status'} aria-live="polite">{citationImportFeedback.message}</p>}
+                                    <div className="flex gap-1"><button type="button" onClick={() => { setShowSourceManager(false); resetCitationSourceDraft(); }} className="h-8 flex-1 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-slate-50">Cancel</button><button type="submit" className="h-8 flex-1 rounded bg-cyan-800 px-2 text-[10px] font-bold text-white hover:bg-cyan-900">{editingCitationSourceId ? 'Save source' : 'Add source'}</button></div>
+                                  </form>
+                                ) : (
+                                  <form id="builder-source-panel-import" role="tabpanel" aria-labelledby="builder-source-mode-import" onSubmit={importCitationSources} className="space-y-2">
+                                    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-end gap-2">
+                                      <label className="text-[8px] font-bold uppercase text-slate-600">Format<select value={citationImportFormat} onChange={(event) => { setCitationImportFormat(event.target.value); setCitationImportFeedback(null); }} className="mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-1.5 text-[10px] font-semibold normal-case text-slate-800"><option value="auto">Auto-detect</option><option value="ris">RIS</option><option value="bibtex">BibTeX</option></select></label>
+                                      <p className="pb-1 text-[8px] leading-snug text-slate-500">Duplicates are matched by DOI, URL, or author/title/year and skipped.</p>
+                                    </div>
+                                    <label className="block text-[8px] font-bold uppercase text-slate-600">Paste source records<textarea value={citationImportText} onChange={(event) => { setCitationImportText(event.target.value.slice(0, 500000)); setCitationImportFeedback(null); }} rows={8} spellCheck={false} className="mt-0.5 w-full resize-y rounded border border-slate-300 bg-white px-2 py-1.5 font-mono text-[9px] font-medium normal-case text-slate-800" placeholder={'RIS example:\\nTY  - JOUR\\nAU  - Smith, Jordan\\nTI  - Article title\\nER  -\\n\\nBibTeX example:\\n@article{key, title={Article title}, author={Smith, Jordan}}'} /></label>
+                                    <p className="text-[8px] leading-snug text-slate-500">Up to 200 source records can be stored in a document. Imported source metadata stays with editable drafts and is excluded from final exports.</p>
+                                    {citationImportFeedback && <p className={'rounded px-2 py-1.5 text-[9px] font-semibold ' + (citationImportFeedback.tone === 'error' ? 'border border-red-300 bg-red-50 text-red-800' : citationImportFeedback.tone === 'success' ? 'border border-emerald-300 bg-emerald-50 text-emerald-800' : 'border border-cyan-200 bg-cyan-50 text-cyan-900')} role={citationImportFeedback.tone === 'error' ? 'alert' : 'status'} aria-live="polite">{citationImportFeedback.message}</p>}
+                                    <div className="flex gap-1"><button type="button" onClick={() => { setShowSourceManager(false); resetCitationSourceDraft(); }} className="h-8 flex-1 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-slate-50">Close</button><button type="submit" disabled={!citationImportText.trim()} className="h-8 flex-1 rounded bg-cyan-800 px-2 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:opacity-40">Import sources</button></div>
+                                  </form>
+                                )}
+                                <p className="text-[8px] leading-snug text-slate-500">Generated citations cover common cases. Verify specialized legal, archival, translated, media, and institutional requirements against your assigned style guide.</p>
+                              </section>
+                            )}
+                            <p className={'rounded px-2 py-1.5 text-[9px] leading-snug ' + (documentReferences.brokenCount ? 'border border-red-300 bg-red-50 font-bold text-red-800' : 'border border-emerald-200 bg-emerald-50 text-emerald-800')} role={documentReferences.brokenCount ? 'alert' : 'status'}>{documentReferences.brokenCount ? documentReferences.brokenCount + ' broken reference' + (documentReferences.brokenCount === 1 ? '' : 's') + ' found. Review the red items below before exporting.' : 'Reference integrity check passed. Citation labels, bibliography entries, footnote numbers, and cross-references are synchronized.'}</p>
+                          </div>
+                          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-2">
+                            <section aria-labelledby="builder-sources-list-title">
+                              <h3 id="builder-sources-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-500"><span>Sources</span><span>{documentReferences.sources?.length || 0}</span></h3>
+                              <div className="space-y-1">
+                                {documentReferences.sources?.length ? documentReferences.sources.map((source) => {
+                                  const usageCount = documentReferences.citations?.filter((citation) => citation.items?.some((item) => item.sourceId === source.id)).length || 0;
+                                  return (
+                                    <article key={source.id} className={'rounded border p-1.5 ' + (activeDocumentReferenceKey === 'source:' + source.id ? 'border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200' : 'border-slate-200 bg-white')}>
+                                      <div className="flex items-start gap-1">
+                                        <button type="button" onClick={() => { setCitationSourceTarget(source.id); setActiveDocumentReferenceKey('source:' + source.id); }} aria-current={activeDocumentReferenceKey === 'source:' + source.id ? 'true' : undefined} className="min-w-0 flex-1 rounded px-1 text-left hover:bg-cyan-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700"><span className="block truncate text-[10px] font-black text-cyan-900">{source.title || 'Untitled source'}</span><span className="mt-0.5 block truncate text-[9px] text-slate-600">{_builderCitationAuthorKey(source, citationStyle)}{source.year ? ' · ' + source.year : ''}</span><span className="mt-0.5 block text-[8px] font-semibold text-slate-400">{source.type} · {usageCount} citation{usageCount === 1 ? '' : 's'}</span></button>
+                                        <button type="button" onClick={() => openCitationSourceManager(source)} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-cyan-800 hover:bg-cyan-100" aria-label={'Edit source ' + source.title}>Edit</button>
+                                        <button type="button" onClick={() => removeCitationSource(source)} disabled={usageCount > 0} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-35" aria-label={'Delete source ' + source.title} title={usageCount ? 'Remove its citation fields before deleting this source' : 'Delete source'}>Delete</button>
+                                      </div>
+                                    </article>
+                                  );
+                                }) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-500">Add a reusable source, then insert live citations at the cursor.</p>}
+                              </div>
+                            </section>
+                            <section aria-labelledby="builder-citations-list-title">
+                              <h3 id="builder-citations-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-500"><span>Citations</span><span>{documentReferences.citations?.length || 0}</span></h3>
+                              <div className="space-y-1">
+                                {documentReferences.citations?.length ? documentReferences.citations.map((entry) => (
+                                  <article key={entry.key} className={'flex items-start gap-1 rounded border p-1.5 ' + (activeDocumentReferenceKey === entry.key ? 'border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200' : entry.broken ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white')}>
+                                    <button type="button" onClick={() => jumpToDocumentReference(entry)} aria-current={activeDocumentReferenceKey === entry.key ? 'location' : undefined} className="min-w-0 flex-1 rounded px-1 text-left hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700"><span className={'block truncate text-[10px] font-black ' + (entry.broken ? 'text-red-800' : 'text-cyan-900')}>{entry.label}</span><span className="mt-0.5 block truncate text-[9px] text-slate-500">{entry.items?.length > 1 ? entry.items.length + ' sources' : entry.source?.title || 'Missing source'}</span>{entry.broken && <span className="mt-0.5 block text-[8px] font-bold uppercase text-red-700">Source missing</span>}</button>
+                                    <button type="button" onClick={(event) => openCitationEditor(entry, event.currentTarget)} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-cyan-800 hover:bg-cyan-100" aria-label={'Edit citation ' + entry.label}>Edit</button>
+                                    <button type="button" onClick={() => removeDocumentCitation(entry)} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-red-700 hover:bg-red-100" aria-label={'Remove citation ' + entry.label}>Remove</button>
+                                  </article>
+                                )) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-500">No live citations yet.</p>}
+                              </div>
+                            </section>
+                            <section aria-labelledby="builder-bibliography-status-title">
+                              <h3 id="builder-bibliography-status-title" className="mb-1 text-[9px] font-black uppercase tracking-wider text-slate-500">Bibliography</h3>
+                              <div className={'rounded border p-2 text-[10px] ' + (documentReferences.bibliography ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-slate-200 bg-slate-50 text-slate-600')}>
+                                <p className="font-bold">{documentReferences.bibliography ? 'Live bibliography is in the document.' : 'No bibliography inserted.'}</p>
+                                <p className="mt-0.5 text-[9px]">{documentReferences.bibliography ? ((documentReferences.bibliography.getAttribute('data-allo-bibliography-scope') === 'all' ? 'All sources' : 'Cited sources') + ' · ' + (_BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle)) : 'Insert one to keep source entries synchronized with citation fields.'}</p>
+                                <button type="button" onClick={insertOrRefreshDocumentBibliography} disabled={!documentReferences.sources?.length} className="mt-2 h-7 rounded border border-emerald-400 bg-white px-2 text-[9px] font-bold text-emerald-800 hover:bg-emerald-100 disabled:opacity-40">{documentReferences.bibliography ? 'Refresh bibliography' : 'Insert bibliography'}</button>
+                              </div>
+                            </section>
+                            <section aria-labelledby="builder-footnotes-list-title">
+                              <h3 id="builder-footnotes-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-500"><span>Footnotes</span><span>{documentReferences.footnotes.length}</span></h3>
+                              <div className="space-y-1">
+                                {documentReferences.footnotes.length ? documentReferences.footnotes.map((entry) => (
+                                  <article key={entry.key} className={'flex items-start gap-1 rounded border p-1.5 ' + (activeDocumentReferenceKey === entry.key ? 'border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200' : entry.broken ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white')}>
+                                    <button type="button" onClick={() => jumpToDocumentReference(entry)} aria-current={activeDocumentReferenceKey === entry.key ? 'location' : undefined} className="min-w-0 flex-1 rounded px-1 text-left hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700"><span className={'mr-1 inline-flex min-w-5 justify-center rounded px-1 py-0.5 text-[9px] font-black ' + (entry.broken ? 'bg-red-200 text-red-900' : 'bg-cyan-100 text-cyan-900')}>{entry.number || '!'}</span><span className="line-clamp-2 break-words text-[10px] leading-snug text-slate-700">{entry.text}</span>{entry.broken && <span className="mt-0.5 block text-[8px] font-bold uppercase text-red-700">Broken link pair</span>}</button>
+                                    <button type="button" onClick={() => removeDocumentFootnote(entry)} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-red-700 hover:bg-red-100" aria-label={'Remove footnote ' + (entry.number || entry.id)}>Remove</button>
+                                  </article>
+                                )) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-500">No footnotes yet.</p>}
+                              </div>
+                            </section>
+                            <section aria-labelledby="builder-bookmarks-list-title">
+                              <h3 id="builder-bookmarks-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-500"><span>Bookmarks</span><span>{documentReferences.bookmarks.length}</span></h3>
+                              <div className="space-y-1">
+                                {documentReferences.bookmarks.length ? documentReferences.bookmarks.map((entry) => {
+                                  const linkCount = documentReferences.crossReferences.filter((reference) => reference.targetId === entry.id).length;
+                                  return (
+                                    <article key={entry.key} className={'flex items-start gap-1 rounded border p-1.5 ' + (activeDocumentReferenceKey === entry.key ? 'border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200' : 'border-slate-200 bg-white')}>
+                                      <button type="button" onClick={() => jumpToDocumentReference(entry)} aria-current={activeDocumentReferenceKey === entry.key ? 'location' : undefined} className="min-w-0 flex-1 rounded px-1 text-left hover:bg-cyan-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700"><span className="block truncate text-[10px] font-black text-cyan-900">{entry.name}</span><span className="mt-0.5 block line-clamp-2 break-words text-[9px] leading-snug text-slate-600">{entry.text}</span><span className="mt-0.5 block text-[8px] font-semibold text-slate-400">{linkCount} cross-reference{linkCount === 1 ? '' : 's'}</span></button>
+                                      <button type="button" onClick={() => removeDocumentBookmark(entry)} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-red-700 hover:bg-red-100" aria-label={'Remove bookmark ' + entry.name}>Remove</button>
+                                    </article>
+                                  );
+                                }) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-500">Select text or place the cursor, then add a bookmark.</p>}
+                              </div>
+                            </section>
+                            <section aria-labelledby="builder-cross-references-list-title">
+                              <h3 id="builder-cross-references-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-500"><span>Cross-references</span><span>{documentReferences.crossReferences.length}</span></h3>
+                              <div className="space-y-1">
+                                {documentReferences.crossReferences.length ? documentReferences.crossReferences.map((entry) => (
+                                  <article key={entry.key} className={'flex items-start gap-1 rounded border p-1.5 ' + (activeDocumentReferenceKey === entry.key ? 'border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200' : entry.broken ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white')}>
+                                    <button type="button" onClick={() => jumpToDocumentReference(entry)} aria-current={activeDocumentReferenceKey === entry.key ? 'location' : undefined} className="min-w-0 flex-1 rounded px-1 text-left hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700"><span className={'block truncate text-[10px] font-black ' + (entry.broken ? 'text-red-800' : 'text-cyan-900')}>{entry.label}</span><span className="mt-0.5 block truncate text-[9px] text-slate-500">Target: {entry.targetName}</span>{entry.broken && <span className="mt-0.5 block text-[8px] font-bold uppercase text-red-700">Bookmark missing</span>}</button>
+                                    <button type="button" onClick={() => removeDocumentCrossReference(entry)} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-red-700 hover:bg-red-100" aria-label={'Remove cross-reference to ' + entry.targetName}>Remove</button>
+                                  </article>
+                                )) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-500">No cross-references yet. Add a bookmark, place the cursor, and insert a live link.</p>}
+                              </div>
+                            </section>
+                          </div>
+                        </section>
                       ) : navigationPaneTab === 'changes' ? (
                         <section id="builder-navigation-panel-changes" role="tabpanel" aria-labelledby="builder-navigation-tab-changes" aria-label="Tracked changes review" className="flex min-h-0 flex-1 flex-col">
                           <div className="space-y-2 border-b border-violet-200 bg-violet-50 px-2 py-2">
@@ -7876,6 +9972,12 @@ const _downloadBRF = (brf) => {
                               setActiveTrackedChangeId(changeId);
                               hostDoc?.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-activate-change', { detail: { id: changeId } }));
                             }
+                            const citationField = event.target?.closest?.(_BUILDER_CITATION_SELECTOR);
+                            const citationId = citationField?.getAttribute?.('data-allo-citation-id') || '';
+                            if (citationId && !event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
+                              event.preventDefault();
+                              hostDoc?.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-edit-citation', { detail: { id: citationId } }));
+                            }
                           } catch (_) {}
                         };
                         doc.addEventListener('selectionchange', _rememberSelection);
@@ -8061,7 +10163,7 @@ const _downloadBRF = (brf) => {
                     <span>Section {pageMetrics.activeSection + 1} of {pageMetrics.documentSections.length}: {activeDocumentSection.name}</span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-slate-500">Ctrl+Enter page break · Ctrl+Shift+Enter {isFocusMode ? 'exits focus mode' : 'opens focus mode'} · Ctrl+Shift+G word count &middot; Ctrl+Z undo</span>
+                    <span className="text-slate-500">Ctrl+Enter page break · Ctrl+Alt+F footnote · F9 update fields · Ctrl+Shift+Enter {isFocusMode ? 'exits focus mode' : 'opens focus mode'} · Ctrl+Shift+G word count &middot; Ctrl+Z undo</span>
                     <span className="hidden sm:inline-block h-4 w-px bg-slate-300" aria-hidden="true"></span>
                     <div className="flex items-center gap-1" aria-label="Editor zoom controls">
                       <button type="button" onClick={() => setCustomEditorZoom((value) => value - 5)} className="h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Zoom out" title="Zoom out">−</button>
@@ -8203,6 +10305,20 @@ async function updateExportPreview(deps) {
         @media print { [data-allo-page-break="1"],[data-allo-section-break] { height:0 !important;margin:0 !important;border:0 !important;background:none !important; } [data-allo-page-break="1"]::after,[data-allo-section-break]::after { display:none !important; } }
         [data-allo-tab="1"] { min-height:1em;border-bottom:1px dotted rgba(99,102,241,.45); }
         [data-allo-tab-field] { min-width:.25in; }
+        [data-allo-bookmark="1"] { scroll-margin-top:5rem; }
+        [data-allo-bookmark="1"]:not([data-allo-bookmark-empty]) { box-shadow:inset 0 -2px 0 rgba(8,145,178,.45); }
+        [data-allo-bookmark-empty]::before { content:'BM';position:absolute;left:-1px;bottom:.9em;padding:1px 3px;border:1px solid #0891b2;border-radius:3px;background:#ecfeff;color:#155e75;font:800 7px/1 system-ui,sans-serif;letter-spacing:.03em;white-space:nowrap; }
+        [data-allo-cross-reference="1"] { color:#0e7490;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;scroll-margin-top:5rem; }
+        [data-allo-citation="1"] { padding:0 .08em;border-radius:2px;background:rgba(8,145,178,.08);box-shadow:inset 0 -1px 0 rgba(8,145,178,.42);scroll-margin-top:5rem; }
+        [data-allo-citation="1"] > a { color:inherit;text-decoration:none; }
+        [data-allo-citation="1"]:hover { background:rgba(8,145,178,.16); }
+        [data-allo-citation="1"]:focus-visible { outline:2px solid #0e7490;outline-offset:2px;background:rgba(8,145,178,.16); }
+        [data-allo-bibliography="1"],[data-allo-bibliography-source] { scroll-margin-top:5rem; }
+        [data-allo-bibliography-title] { break-after:avoid;page-break-after:avoid; }
+        [data-allo-footnote-ref] { color:#0e7490;font-weight:700;scroll-margin-top:5rem; }
+        [data-allo-footnotes="1"] { margin-top:2em;padding-top:.75em;border-top:1px solid #cbd5e1; }
+        [data-allo-footnote] { scroll-margin-top:5rem; }
+        [data-allo-reference-broken="1"] { outline:2px dashed #dc2626 !important;outline-offset:2px;background:#fef2f2 !important;color:#991b1b !important; }
         ::selection { background: #c7d2fe; }
         ::highlight(allo-builder-find) { background: #fde68a; color: #713f12; }
         mark[data-allo-comment-id] { padding:0;background:var(--allo-reviewer-soft,#fef3c7);color:inherit;border-bottom:2px solid var(--allo-reviewer-accent,#d97706);border-radius:2px;cursor:pointer; }
@@ -8226,6 +10342,7 @@ async function updateExportPreview(deps) {
         body[data-allo-tracked-view="original"] ins[data-allo-change-id],body[data-allo-tracked-view="original"] [data-allo-change-kind="structure-insert"] { display:none; }
         body[data-allo-tracked-view="original"] del[data-allo-change-id] { padding:0;background:transparent;color:inherit;border:0;box-shadow:none;text-decoration:none; }
         body[data-allo-tracked-view="original"] [data-allo-change-kind][data-allo-change-id] { outline:1px dotted #94a3b8;outline-offset:2px;box-shadow:none; }
+        @media print { [data-allo-bookmark-empty]::before { display:none !important; } [data-allo-bookmark="1"],[data-allo-citation="1"],[data-allo-reference-broken="1"] { outline:0 !important;box-shadow:none !important;background:transparent !important;color:inherit !important; } }
         @media print { mark[data-allo-comment-id],ins[data-allo-change-id],[data-allo-change-kind][data-allo-change-id] { padding:0 !important;background:transparent !important;color:inherit !important;border:0 !important;outline:0 !important;box-shadow:none !important;text-decoration:none !important; } del[data-allo-change-id],[data-allo-change-kind="structure-delete"] { display:none !important; } [data-allo-change-kind][data-allo-change-id]::before,[data-allo-change-kind][data-allo-change-id]::after { display:none !important; } }
       `;
       editStyle.setAttribute('data-allo-base-css', _baseEditCss);
@@ -8235,6 +10352,24 @@ async function updateExportPreview(deps) {
       editStyle.textContent = `${_baseEditCss}\n${_pageCss}\n        body { zoom: ${_editorZoom}%; }`;
       doc.head.appendChild(editStyle);
       doc.addEventListener('keydown', function(e) {
+        const _citationField = e.target?.closest?.(_BUILDER_CITATION_SELECTOR);
+        if (_citationField && (e.key === 'Enter' || e.key === ' ') && !e.altKey && !e.ctrlKey && !e.metaKey) {
+          try {
+            e.preventDefault();
+            const _hostDoc = window.parent && window.parent.document;
+            const _citationId = _citationField.getAttribute('data-allo-citation-id') || '';
+            if (_hostDoc && _citationId) _hostDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-edit-citation', { detail: { id: _citationId } }));
+          } catch (_) {}
+          return;
+        }
+        if (e.key === 'F9' && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+          try {
+            e.preventDefault();
+            const _hostDoc = window.parent && window.parent.document;
+            if (_hostDoc) _hostDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-update-fields'));
+          } catch (_) {}
+          return;
+        }
         if (e.key === 'Escape') {
           // Focus mode owns Escape first: leave the distraction-free surface,
           // then keep the existing escape hatch for the normal builder dialog.
@@ -8361,6 +10496,14 @@ async function updateExportPreview(deps) {
         }
         if ((e.key === 'Enter' || e.key === ' ') && e.target && (e.target.tagName || '').toUpperCase() === 'IMG') {
           e.preventDefault(); e.stopPropagation(); _openBuilderCropModal(e.target); return;
+        }
+        if ((e.ctrlKey || e.metaKey) && e.altKey && !e.shiftKey && (e.key === 'f' || e.key === 'F')) {
+          try {
+            e.preventDefault();
+            const _hostDoc = window.parent && window.parent.document;
+            if (_hostDoc) _hostDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-insert-footnote'));
+          } catch (_) {}
+          return;
         }
         if ((e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey && (e.key === 'g' || e.key === 'G')) {
           try {

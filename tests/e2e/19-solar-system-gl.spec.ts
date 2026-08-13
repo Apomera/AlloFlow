@@ -104,6 +104,51 @@ test.describe('Solar System — real WebGL', () => {
     expect(errs).toEqual([]);
   });
 
+  test('the rocky rover accelerates and exposes its damped chase view', async ({ page }) => {
+    await harness.mount(page, {
+      solarSystem: {
+        tutorialDismissed: true,
+        selectedPlanet: 'stem.solar_sys.mars',
+        viewTab: 'drone',
+      },
+    }, 'document.querySelector(\'canvas[data-drone-vehicle-mode="surface-rover"]\')');
+
+    const canvas = page.locator('canvas[data-drone-vehicle-mode="surface-rover"]');
+    await canvas.focus();
+    // The deployment shot owns the first few seconds and intentionally ignores
+    // drive input. Wait for its DOM status to leave before measuring traction.
+    await page.waitForFunction(() => !document.getElementById('descent-status'), null, { timeout: 35000 });
+
+    const soundToggle = page.locator('[data-rover-sound-toggle=true]');
+    await expect(soundToggle).toBeVisible();
+    await expect(soundToggle).toHaveAttribute('aria-keyshortcuts', 'B');
+    await expect(soundToggle).toHaveAttribute('aria-pressed', 'false');
+    await expect(canvas).toHaveAttribute('data-rover-sound', 'off');
+    await soundToggle.click();
+    await expect(soundToggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(canvas).toHaveAttribute('data-rover-sound', 'on');
+    await soundToggle.click();
+    await expect(soundToggle).toHaveAttribute('aria-pressed', 'false');
+    await expect(canvas).toHaveAttribute('data-rover-sound', 'off');
+    await expect(canvas).toBeFocused();
+
+    await page.keyboard.down('KeyW');
+    const moving = await page.waitForFunction(() => {
+      const el = document.getElementById('hud-spd');
+      const speed = el ? Number.parseFloat(String(el.textContent)) : 0;
+      return speed > 0.05 ? String(el!.textContent) : false;
+    }, null, { timeout: 8000 }).catch(() => null);
+    await page.keyboard.up('KeyW');
+    expect(moving, 'the rover never accelerated from keyboard input').not.toBeNull();
+
+    await page.keyboard.press('KeyV');
+    await expect(page.locator('#hud-mode')).toContainText('3RD PERSON');
+
+    const errs: string[] = (await page.evaluate(() => (window as any).__events.errors))
+      .filter((m: string) => !/ResizeObserver loop/.test(m));
+    expect(errs).toEqual([]);
+  });
+
   test('releases the GL canvas on unmount', async ({ page }) => {
     await harness.mount(page);
     expect(await page.evaluate(() => document.querySelectorAll('#wrap canvas').length)).toBeGreaterThan(0);

@@ -414,7 +414,7 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('currentHeadingLabel = dirLabel;');
       expect(source).toContain('J journal');
       expect(source).toContain('P plot');
-      expect(source).toContain('roverGroup.rotation.x = Math.max(-0.22');
+      expect(source).toMatch(/(?:roverGroup\.rotation\.x|var targetRoverPitch) = Math\.max\(-0\.22/);
     });
   });
 

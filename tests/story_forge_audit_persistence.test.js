@@ -18,7 +18,7 @@ describe('Story Forge Comic Flow audit persistence', () => {
 
   it('carries audits through browser saves, vault snapshots, restores, and imports', () => {
     expect(normalizedSource).toContain("comicFlowReport: layoutMode === 'comic' ? sanitizeComicFlowReport(comicFlowReport) : null,");
-    expect(normalizedSource).toContain('comicFlowReport: source.layoutMode === \'comic\' ? sanitizeComicFlowReport(source.comicFlowReport) : null,');
+    expect(normalizedSource).toContain("comicFlowReport: draft.artifactType === 'comic' ? sanitizeComicFlowReport(source.comicFlowReport) : null,");
     expect(normalizedSource).toContain('    audioSegments,\n    comicFlowReport,\n  });');
     expect(normalizedSource).toContain('setComicFlowReport(project.comicFlowReport || null);');
     expect(normalizedSource).toContain('comicFlowReport: validated.comicFlowReport,');

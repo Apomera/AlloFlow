@@ -189,7 +189,7 @@ describe('Typing Practice progress integrity and chart accessibility', () => {
   });
 
   it('explains filtered assisted-only history and destructive recalculation', () => {
-    expect(source).toContain('No comparable sessions match these filters.');
+    expect(source).toContain('No WPM-comparable runs match these filters.');
     expect(source).toContain('Baseline, personal-best, goal, and mastery records will be recalculated.');
     expect(source).toContain('This cannot be undone.');
     expect(source).toContain('typingPracticeDiscardSessionUpdates(state, s)');

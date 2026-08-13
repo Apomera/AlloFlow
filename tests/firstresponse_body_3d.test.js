@@ -17,6 +17,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { makePoseProbe, span } from './helpers/firstresponse_pose_probe.js';
 
 const FILE = 'stem_lab/stem_tool_firstresponse.js';
 const ID = 'firstResponse';
@@ -1017,5 +1018,137 @@ describe('body 3D — AED pads are age-specific, not age-scaled', () => {
     const child = body({ b3dTab: 'aed', b3dAge: 'child' });
     expect(child).toMatch(/front-and-back/i);
     expect(child).toMatch(/school-age/i);
+  });
+});
+
+// The recovery tab's teaching content IS the pose, and every step is supposed
+// to move the thing it names. It did not. The roll was ramped linearly across
+// the last four steps, so "pull on the bent knee to roll them onto their side"
+// delivered a quarter of the turn, the airway and top-leg steps appeared to
+// work only because the body kept rotating underneath them, and "keep watching
+// their breathing" rolled the patient. The head never tilted at all — the one
+// step whose own text calls it "the whole reason the position exists".
+//
+// These read joint positions rather than diffing a screenshot, because a
+// screenshot only answers "did anything change" and the bug satisfied that.
+describe('body 3D — the recovery position performs its own steps', () => {
+  const pose = makePoseProbe(SRC);
+  const ORDER = RECOVERY.map((s) => s.id);
+  const at = (id) => ORDER.indexOf(id) + 1;
+  const LANDMARKS = ['nearShoulder', 'nearElbow', 'nearWrist', 'topHip', 'topKnee', 'topAnkle'];
+  const moved = (a, b) => LANDMARKS.some((k) => span(a[k], b[k]) > 1e-9);
+
+  it('turns them on the step that says to turn them', () => {
+    expect(pose(at('knee')).rollAngle, 'rolled before the roll step').toBe(0);
+    const onRoll = pose(at('roll')).rollAngle;
+    const finished = pose(ORDER.length).rollAngle;
+    expect(onRoll, 'the roll step did not roll them').toBeGreaterThan(0);
+    // Most of the turn belongs to this step. It used to deliver a quarter.
+    expect(onRoll / finished).toBeGreaterThan(0.8);
+  });
+
+  it('rolls them TOWARDS the rescuer, not away', () => {
+    // The near arm is the one placed out at a right angle, so that side is
+    // where the rescuer is kneeling. Rolling towards them puts that shoulder
+    // DOWN and brings the far hip up and over. Rolling the other way — which
+    // is what it did — is the mistake the step text explicitly warns about,
+    // and it leaves the lever leg underneath and the bracing arm in the air.
+    const done = pose(ORDER.length);
+    expect(done.nearShoulder.y, 'the near side ended up on top: they rolled away from the rescuer')
+      .toBeLessThan(done.topHip.y);
+  });
+
+  it('opens the airway on the airway step, and moves nothing else', () => {
+    const before = pose(at('roll'));
+    const after = pose(at('airway'));
+    expect(before.headTiltX, 'head already tilted before the airway step').toBe(0);
+    expect(after.headTiltX, 'the airway step did not tilt the head').toBeGreaterThan(0);
+    // ...and points the mouth down towards the mat, which is what the drainage
+    // angle is for and the reason the position exists at all.
+    expect(after.headRollZ).toBeGreaterThan(0);
+    expect(after.rollAngle, 'the airway step rotated the body').toBe(before.rollAngle);
+    expect(moved(before, after), 'the airway step moved a limb').toBe(false);
+  });
+
+  it('scales the recovery head tilt by age, like the CPR one', () => {
+    const adult = pose(at('airway'), 'adult').headTiltX;
+    const infant = pose(at('airway'), 'infant').headTiltX;
+    expect(infant, 'an infant got the adult head tilt').toBeLessThan(adult);
+  });
+
+  it('squares the top leg on the step that squares the top leg', () => {
+    const before = pose(at('airway'));
+    const after = pose(at('stable'));
+    // Measured in the BODY frame. In world space the knee moved on this step
+    // even when the leg did not, because the body was still rotating — so a
+    // world-space assertion passes against the very bug it should catch.
+    const legVec = (L) => ({
+      x: L.topKneeLocal.x - L.topHipLocal.x,
+      y: L.topKneeLocal.y - L.topHipLocal.y,
+      z: L.topKneeLocal.z - L.topHipLocal.z,
+    });
+    expect(span(legVec(before), legVec(after)), 'the top leg was never re-posed').toBeGreaterThan(0.05);
+    expect(after.headTiltX, 'squaring the leg changed the head').toBe(before.headTiltX);
+  });
+
+  it('does not move them when the step is to watch them', () => {
+    const before = pose(at('stable'));
+    const after = pose(at('watch'));
+    expect(after.rollAngle, 'watching them breathe rolled them').toBe(before.rollAngle);
+    expect(moved(before, after), 'watching them breathe moved them').toBe(false);
+  });
+
+  it('keeps every joint above the mat, at every step and every age', () => {
+    for (const age of ['adult', 'child', 'infant']) {
+      for (let p = 0; p <= ORDER.length; p++) {
+        const L = pose(p, age);
+        for (const k of LANDMARKS) {
+          expect(L[k].y, age + ' ' + k + ' is through the floor at step ' + p).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+
+  it('does not stretch a limb to reach a pose', () => {
+    // Both rolled poses re-pin joints that the body rotation would otherwise
+    // drag through the floor or into the air. Hand-picked world coordinates
+    // did that by stretching: the upper arm went from 0.47 to 0.87 and left a
+    // forearm floating clear of the body. The lengths are the figure's own.
+    for (const age of ['adult', 'child', 'infant']) {
+      const armRef = pose(at('arm'), age);      // arm out at a right angle
+      const legRef = pose(0, age);              // legs still flat
+      const upper = span(armRef.nearShoulder, armRef.nearElbow);
+      const fore = span(armRef.nearElbow, armRef.nearWrist);
+      const thigh = span(legRef.topHip, legRef.topKnee);
+      const shin = span(legRef.topKnee, legRef.topAnkle);
+      for (let p = at('roll'); p <= ORDER.length; p++) {
+        const L = pose(p, age);
+        expect(Math.abs(span(L.nearShoulder, L.nearElbow) / upper - 1),
+          age + ' upper arm stretched at step ' + p).toBeLessThan(0.05);
+        expect(Math.abs(span(L.nearElbow, L.nearWrist) / fore - 1),
+          age + ' forearm stretched at step ' + p).toBeLessThan(0.05);
+        if (p >= at('stable')) {
+          expect(Math.abs(span(L.topHip, L.topKnee) / thigh - 1),
+            age + ' thigh stretched at step ' + p).toBeLessThan(0.05);
+          expect(Math.abs(span(L.topKnee, L.topAnkle) / shin - 1),
+            age + ' shin stretched at step ' + p).toBeLessThan(0.05);
+        }
+      }
+    }
+  });
+
+  it('lifts the body as it comes onto its side instead of sinking into the mat', () => {
+    // A body on its side is taller than one on its back. Holding the supine
+    // height through the roll buried the near shoulder under the floor.
+    const flat = pose(0);
+    const rolled = pose(ORDER.length);
+    expect(rolled.nearShoulder.y, 'the near shoulder sank below the mat').toBeGreaterThan(0);
+    expect(rolled.topHip.y, 'the figure did not rise as it rolled').toBeGreaterThan(flat.topHip.y);
+  });
+
+  it('leaves the other tabs flat on their back', () => {
+    for (const tab of ['gate', 'place', 'depth', 'coach', 'aed']) {
+      expect(pose(0, 'adult', tab).rollAngle, tab + ' is rolled').toBe(0);
+    }
   });
 });

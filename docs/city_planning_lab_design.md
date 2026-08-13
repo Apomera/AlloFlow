@@ -10,17 +10,18 @@
 > be interwoven later rather than bundled into this tool's review.
 > The plan memo rubric lives in `docs/city_planning_lab_memo_rubric.md`; it grades the
 > reasoning, never the plan, which is why the tool still produces no score. The contested
-> tier now has its promised other half, the `Discussion` tab (§22). Three suites, **110 green**:
-> `city_lab_core` (59, the model and the scenario registry), `city_lab_render` (22, the
-> markup, server-rendered), `city_lab_interaction` (29, mounted for real and driven with
-> DOM events, so effects run and focus moves). **Every promise this doc makes is now
-> built**; the audit that closed the last of them is §19.
+> tier now has its promised other half, the `Discussion` tab (§22). Three suites, **153
+> green**: `city_lab_core` (102, the model and the scenario registry), `city_lab_render` (22,
+> the markup, server-rendered), `city_lab_interaction` (29, mounted for real and driven with
+> DOM events, so effects run and focus moves). **Every promise this doc makes is built**,
+> including the documented case-study reading layer (§25). The audit that closed most of
+> them is §19; the visual passes are §23, §24 and §26.
 > **Every surface has been rendered and looked at** via server-side React plus the real
 > compiled Tailwind bundle, screenshotted with Playwright: Design in both themes, Parcel
 > table, Assumption Lab with results, and Memo. Looking found five defects (§16); driving it
 > found three more, including an accessibility regression (§17). **Live browser smoke in
-> Canvas is still owed**, as is hand-translated i18n. Phases 2 and 3 are unbuilt. Where this
-> doc and the module disagree, the module wins.
+> Canvas is still owed**, as is hand-translated i18n. Where this doc and the module disagree,
+> the module wins.
 
 > STEM Lab tool · `id: cityLab` · file `stem_lab/stem_tool_citylab.js` · single
 > hand-maintained module, no build step · mirror `desktop/web-app/public/stem_lab/` ·
@@ -422,10 +423,12 @@ when idle so it does not burn a 60fps render loop on a view nobody is looking at
 
 Mirrors the `gisStudio` evidence-report pattern.
 
-- **Plan memo, standalone accessible HTML.** Brief, plan map as inline SVG, parcel table,
-  constraint report with margins, Assumption Lab comparison if run, and the student's
-  written rationale. All interpolated text HTML-escaped. Anonymization setting honored.
-  Browser print covers PDF, so this deliberately does not go through the PDF pipeline.
+- **Plan memo, standalone accessible HTML. BUILT.** Brief, the plan as an **inline SVG map**,
+  a **what-changed table**, the constraint report with margins, the **Assumption Lab
+  comparison if it was run**, the measured and modelled tables, and the student's written
+  rationale. All interpolated text HTML-escaped, print styles included, and nothing loaded
+  from anywhere: the file is the whole artifact. Browser print covers PDF, so this
+  deliberately does not go through the PDF pipeline. See §29.
 - **Plan JSON. BUILT, both directions.** Full plan state, versioned. Import is
   **merge-only**: it starts from the named town's baseline and lays the imported choices on
   top, keeping only keys it recognises, so a plan file can never introduce terrain, a land
@@ -995,12 +998,23 @@ not households, and cannot tell you who is in them before or after.** That is a 
 precise statement of the model's limit, and it is more useful than any number the tool could
 have printed instead.
 
-### One thing that is not in scope here
+### The reading layer: BUILT, see §25
 
 §3 also lists documented case studies (redlining, urban renewal, the Dutch and Japanese
-zoning contrasts) as a reading layer. That remains **phase 3 and unbuilt**, and it is a
-pedagogical decision for the pilot team rather than a technical one. The discussion prompts
-deliberately do not stand in for it: they raise present-tense questions, not history.
+zoning contrasts) as a reading layer. **Aaron confirmed on 2026-08-11 that this is in scope**, and it shipped as the `History`
+tab. §25 records how, and what its own integrity rules are.
+
+Two things to carry into building it, both already argued for in §4 of the executive summary
+and in the Tier 3 rules above:
+
+- **It is history, not simulation.** HOLC maps and urban renewal records are archival
+  documents, which is exactly why they clear a bar that a modelled rent number does not.
+- **Adjacency is the risk.** Put documented history beside a simulation and students will
+  infer that the simulation models the causation. The layer has to say plainly: this is what
+  happened, and the tool you just used cannot tell you why.
+
+The discussion prompts do not stand in for it and should not be edited to try: they raise
+present-tense questions, not history.
 
 ---
 
@@ -1050,3 +1064,337 @@ student to identify it; a label saying "this one is tightest" would answer the q
 assignment exists to ask. Showing the slack lets them see it. Saying it out loud would do the
 seeing for them. A test greps the source for that label to keep a future contributor from
 adding it as a kindness.
+
+---
+
+## 24. Visual pass, second round
+
+### The scorecard was a spreadsheet dump
+
+Nineteen label-and-number rows in one flat column. Now grouped under **Homes / Land /
+Exposure / Getting around** and **Stormwater / Money / People / Water supply / Sea level**,
+with a rule and a small caption per group.
+
+Grouping is presentation only: the tier an indicator belongs to still decides whether an
+assumption can move it. But grouping introduces exactly one new way to fail, which is an
+indicator nobody put in a group rendering nowhere, silently. Four tests pin it: every id in
+`TIER1_IDS` and `TIER2_IDS` appears in **exactly one** group, every grouped id is a real
+indicator, and no id spans both tiers.
+
+### Land-use buttons carry their map colour
+
+The palette in the inspector and the colours on the board were two separate things to
+memorise. Each land-use button now shows its own fill and pattern as a small swatch, so the
+mapping is immediate rather than learned.
+
+### Walking paths are dashed
+
+Roads and paths were distinguished by colour and thickness alone. Paths are now dashed, the
+way a footpath is drawn on every paper map, so the two differ in **shape** and not only in
+hue.
+
+That change made an existing rule visible that had only ever been a number: a row of homes
+served by a footpath alone carries the "no road reaches this" marker, because paths do not
+carry cars. You can now see the difference between a street and a path doing different jobs,
+which is a thing the scorecard could only ever report as a count.
+
+### And one trap avoided on the way
+
+The dashed path sets `backgroundImage`, and the first draft of it set the `background`
+shorthand alongside. That is precisely the defect §16 records: the shorthand resets
+`background-image`, so a re-render could have blanked every path on the map. Caught while
+writing rather than after, because §16 exists.
+
+---
+
+## 25. The reading layer
+
+The `History` tab. Four documented cases: the HOLC residential security maps, United States
+clearance and highway programmes, nationally set zoning in Japan, and Dutch street design and
+the woonerf.
+
+These clear an integrity bar that a modelled rent number does not, for exactly one reason:
+**they are archival record rather than inference.** The maps exist. The statutes exist. What
+people argue about is what any of it caused, and each entry says where that line falls
+instead of leaving a reader to guess.
+
+### Its own rules, and why each exists
+
+- **Every entry carries both `what` (on the record) and `contested` (argued about).** An
+  entry with only the first reads as settled; an entry with only the second reads as opinion.
+  On screen they are separate labelled fields in different colours, so the line is visible
+  rather than buried in a paragraph. A test requires both, with substance in each.
+- **`record` says where the record is**, so a reader can go and look instead of taking this
+  tool at its word.
+- **No statistics, no displacement or casualty counts, no cited studies.** A fabricated figure
+  would be worse here than anywhere else in this tool, because a made-up historical number is
+  precisely the kind that gets repeated. A test rejects both.
+- **`toolSays` names the limit of the simulation** on every entry. This is the adjacency
+  guard, and it is the reason this section was written cautiously: put documented history
+  beside a working model and a reader will assume the model explains it. The tab says so at
+  the top, in a box, before any of the content: *nothing you did in the Design tab models any
+  of what follows.*
+- **The invented towns stay out of the record.** A test asserts no scenario name appears in
+  any `what`, `record` or `contested` field. Riverbend in a historical entry would blur
+  exactly the line the tab exists to hold. The towns appear only in `toolSays`, where the
+  point is that they are fictional and these places are not.
+- **More than one country**, so the record does not read as one country's story.
+
+### Separate from the Discussion tab, on purpose
+
+They are the two halves of Tier 3 and they do different jobs. The prompts raise present-tense
+questions with no answer key. The reading layer presents arguments that already happened, to
+people who are not hypothetical. Merging them into one tab would blur that, so they are two
+tabs and each links to the other saying what the other is for.
+
+### The closing line, which is the point of the whole tab
+
+> Every one of these began as somebody drawing a line on a map and being sure they were
+> improving things. You have spent this session doing exactly that, with a scorecard telling
+> you how well it was going.
+
+That is the only place in the tool where the simulation is turned back on the student, and it
+is the reason the reading layer was worth building rather than linking out to.
+
+---
+
+## 26. Visual pass, third round
+
+- **A start hint that removes itself.** On an untouched plan the map panel says what the
+  first move is: click a parcel, or Tab into the grid and use the arrows. It disappears the
+  moment `editCount` leaves zero, so it is guidance rather than clutter.
+- **Parcel hover**, via a Tailwind utility rather than React state. Hover in state would
+  re-render 144 buttons and recompute the scorecard on every mouse move. The utility was
+  checked against the shipped CSS bundle before use, because a class Tailwind has not seen
+  is not in the build (see the note below).
+- **The inspector shows the parcel it is describing**, as a swatch beside its heading, so the
+  panel and the map are visibly the same thing.
+- **The Assumption Lab flip is now shown rather than described.** When a requirement changes
+  verdict between the two sets it gets a card: the requirement, then set A and set B side by
+  side with their verdicts. This is the payoff moment of the whole design and it had been a
+  line of prose. The robust case gets its own panel too, because "nothing flipped" is a real
+  result and deserves to look like one.
+
+### And a bug the screenshot caught
+
+Harborlight has no aquifer, and its two water indicators were appearing in the Assumption
+Lab's "did not move at all" list, both zero. True, and completely meaningless. The scorecard
+filtered indicators by what the town models; the Assumption Lab did not. `compareAssumptions`
+stays complete over every indicator, because it is a model function, and the filter belongs
+in the panel. A render test now loads Harborlight and asserts no water indicator reaches the
+markup.
+
+### A constraint worth knowing before the next visual change
+
+Tailwind classes are compiled from a scan of `./public/**/*.js`, which includes the mirrored
+copy of this tool. **A class this file has never used is not in the current CSS bundle and
+will do nothing until the app is rebuilt.** Check before relying on one:
+
+```
+grep -c -F 'hover\:brightness-110' app/static/css/main.*.css
+```
+
+Inline styles have no such problem, which is why most of this tool's colour lives there. The
+bundle filename is content-hashed and changes on every build, so anything that reads it
+should glob rather than hardcode.
+
+---
+
+## 27. Contrast, measured rather than eyeballed
+
+A light-theme audit of everything added since the previous check turned up no theme bugs, but
+it did surface two contrast failures that had been there for a while and that no amount of
+looking had caught. Both were found by computing ratios, which is the point.
+
+### The parcel label was white on everything
+
+The two-letter code in each parcel was white regardless of the fill under it. Measured:
+
+| Fill | White | Dark |
+|---|---|---|
+| Housing, low density `#d8a521` | **2.25** | 6.50 |
+| Housing, mid density | 2.99 | 4.89 |
+| Open field | 2.98 | 4.92 |
+| Terrain ramp, pale end | as low as **1.15** | up to 12.68 |
+
+The label now picks whichever ink genuinely has more contrast against the fill it sits on,
+computed from relative luminance. Four fills were also nudged by two to nine percent, which
+is imperceptible as a palette change, so that the better ink clears **4.5:1 on every one of
+the twenty-one backgrounds** a label can land on. Worst case is now 4.61:1, and a test
+asserts it for every land use and every step of the terrain ramp.
+
+**The lesson is the one already in this repo's notes:** match the ratio, do not eyeball which
+colour looks lighter. The yellow parcel had been on screen in every screenshot in this
+document and nobody, including me, noticed the label on it was at 2.25:1.
+
+### The walking path was invisible on pale ground
+
+Paths had just been changed to dashed, correctly, so that road versus path is a difference in
+shape rather than only in hue: hue plus one pixel of thickness is a distinction a colourblind
+reader and a photocopier both lose. But the dash was lime with **transparent** gaps and the
+casing was removed, which measured **1.01:1** against the palest ground in the Height view.
+Effectively not there.
+
+The gaps are dark now. Whichever way the ground goes, one of the two dash tones contrasts
+against it: the lime reads on dark ground, the gap reads on pale. Worst case across every
+fill and every terrain step is 3.54:1, above the 3.0 that WCAG asks of a graphical object,
+and a test holds it there.
+
+### Why this kept happening
+
+Both defects were introduced by changes that were themselves improvements. The terrain ramp
+made the Height view legible and simultaneously created eleven new backgrounds the label had
+never been tested against. The dash made paths distinguishable by shape and simultaneously
+removed the casing that had been carrying their contrast.
+
+**A visual change that adds a background or removes an outline should be followed by
+measuring, not by looking.** The helpers to do it (`contrastRatio`, `readableInk`) are
+exported on the test seam precisely so the next change can be checked in one line.
+
+---
+
+## 28. The 3D view
+
+Built, as a third option on the board's view toggle beside Land use and Height, with a
+fullscreen button. The mental model is deliberately "same plan, three ways to look at it"
+rather than a separate mode.
+
+### The rule it is built around
+
+**Anything you can do on the map you can do in the table.** A WebGL canvas cannot be a peer
+path, so the 3D view is a *view*: it changes nothing, and nothing is discoverable only there.
+The panel says so in place, and the moment something is only visible in 3D that promise is
+broken for any student who cannot use it. This is not a limitation worked around; it is what
+makes the feature safe to add at all.
+
+### Shape
+
+`buildMassing()` turns a plan into a plain list of boxes and planes with no Three.js in
+sight. That keeps the geometry testable and makes the renderer a thin thing that reads a
+list. `buildCityScene()` is exported on the test seam so a browser harness can drive it
+against real WebGL, because the geometry is the part most likely to be wrong and no jsdom
+test can see it.
+
+- **Massing is by storeys**, not by dwellings per hectare. Commercial, civic and industry all
+  have `units: 0`, so density massing would render the school, the shops and the factory as
+  pancakes. `storeys` is display data in the same category as `fill` and `code`, and a test
+  sets every value to 99 and asserts the scorecard is byte-identical.
+- **One vertical exaggeration for everything**, stated on screen with the town's real range.
+  Terrain relief in Harborlight is 2.7 m and a five-storey building is 15 m; scaling them
+  differently would be a lie about which is taller.
+- **`static: true`.** A town idling at 60 fps on a school Chromebook is the regression that
+  has bitten the orbit bays before, so the scene renders on demand and runs a loop only while
+  the camera is moving.
+- **The caller owns the camera.** `rotY`, `rotX` and `zoom` are in tool state and in every
+  push, because the viewer has no drag handler of its own and omitting them freezes the scene
+  at its opening angle. Drag is implemented in the panel, and **every camera move is also a
+  button**, since drag is not a path everyone has.
+- **No WebGL is not an error to shout about.** The fallback says the plan is not missing
+  anything and points at the map and the table.
+
+### Two things only a real render caught
+
+Both were found by preloading the pinned `vendor/three-r128` build into a headless Chromium
+and driving the actual viewer. Neither is visible to any test in the repo.
+
+1. **The first render came back as a correct silhouette in near-total black.**
+   `makeOrbitViewer` does not light the scene; `makeBayViewer` does. That is an easy thing to
+   assume applies to both. Lights now go in `S.model` so they are disposed and rebuilt with
+   the group.
+
+2. **The translucent water sheet did not communicate what was submerged.** Seen from above, a
+   sheet tints everything behind it whatever the depth, so switching assumption set barely
+   changed the picture even though the underlying numbers changed enormously. Fixed by
+   marking the ground itself: each parcel knows whether it is under the surge today or under
+   the 2050 line, and gets a cap accordingly. The sheets stayed but dropped to about a sixth
+   of their opacity, as atmosphere rather than information.
+
+   With that change the comparison finally reads: under the optimistic allowance most of
+   Harborlight is dry, and under the conservative one everything but the high ground is
+   under the line. **73 parcels dry against 21.** That is the whole point of the town, and
+   for a while it was invisible in the view built to show it.
+
+---
+
+## 29. The memo, finished
+
+The memo is the deliverable and the artifact the rubric grades, and for a long time it
+carried the numbers and none of the plan. A teacher reading a set of them could not see what
+any student had built. Three things §8 had promised were missing, and one thing was simply
+broken.
+
+- **The plan as an inline SVG map.** Every parcel with its land-use colour and two-letter
+  code, roads solid and paths dashed, flood outlines, and the marker for homes no road
+  reaches. Self-contained: no fetch, no `<image>`, no external anything, so the file is the
+  whole artifact and survives being emailed. A test strips the `xmlns` (a namespace, not a
+  fetch) and asserts nothing else looks like a URL.
+- **A what-changed table**, not all 144 rows. 130 of those would say "unchanged" and bury the
+  fourteen that matter. Rezoning a parcel and putting it back counts as no change.
+- **The Assumption Lab comparison, only if it was run.** Printing it regardless would imply a
+  check the student never made.
+- **Every town's memo downloaded as `riverbend-plan-memo.html`.** A Harborlight plan arrived
+  named after a different town, which for a teacher collecting a class set is worse than
+  cosmetic.
+
+### Two things the render caught
+
+**The legend inside the SVG ran off the right-hand edge.** SVG text does not wrap, and the
+sentence was longer than the 440-unit viewBox. It moved to the HTML `figcaption`, which wraps
+and can hold more. A test now caps the length of any text node inside the SVG at three
+characters, which is what a parcel code needs and nothing else.
+
+**The map picks its ink by measured contrast**, reusing `readableInk` from §27, so the codes
+are legible on the pale fills in the export exactly as they are on screen. A test asserts
+both inks appear, which is how you know the chooser ran instead of defaulting to one.
+
+The `figcaption` also carries the line that keeps the map honest: *the map is a picture of
+the table below, not a substitute for it.*
+
+---
+
+## 30. Being findable, and a gotcha worth knowing
+
+A tool nobody can find is not shipped. `tool_index.json` is the STEM Lab capability index, and
+this tool was **not in it at all**: search could match the catalog tile blurb and nothing else,
+so every feature living inside the tool was unfindable.
+
+Three separate problems, none visible from the tool itself.
+
+### The tool's own `desc` still described version one
+
+`dev-tools/build_tool_index.cjs` harvests the `desc:` from the `registerTool` config, not the
+catalog tile. Updating the tile earlier had left this one describing a single-town 2D tool
+with no water, no sea level and no history. It is not decoration; it is the index entry.
+
+### A concatenated `desc` is silently truncated to its first fragment
+
+The harvester's regex captures a **single string literal**. Written as
+`'first part ' + 'second part'`, only `first part ` is ever indexed. That is why the entry
+came back with keywords like *genuinely*, *guests* and *sets*: they were the only words the
+harvester had seen. Every other tool in the repo writes `desc` as one long literal, and now so
+does this one.
+
+**There is also a hard 320-character cap** (`MAX_DESC`). Anything past it is gone, so the
+searchable terms have to be near the front. "Redlining" originally sat at character 380 and
+vanished. Ten checked terms now resolve, including *redlining*, *aquifer*, *sea level*,
+*storm surge*, *urban renewal* and each town by name.
+
+### Cross-links were being harvested as this tool's own content
+
+Topics come from `title:` and `name:` keys anywhere in the file. The "Take this somewhere"
+list used `name:` for the tools it links out to, so **GIS Studio, Bridge Engineering Lab,
+Environmental Stewardship and Architecture Studio were being indexed as topics of this tool**.
+Renaming that key to `tool:` fixed it, and the topics are now the four case-study headings,
+which genuinely are content this tool carries.
+
+### One thing not to do on a shared tree
+
+`build_tool_index.cjs` rebuilds the whole file, and running it here rewrote **56 other tools'
+entries**, because it derives them from the current working tree and other sessions have
+uncommitted edits in flight. That would have baked their unfinished state into a file someone
+else may commit.
+
+The rebuild is still the right way to generate the entry, but the result was reduced to a
+surgical insert: take the previous index as the base, drop in only `cityLab`, and leave every
+other entry byte-identical. Verified by diffing before and after, which reports
+`other tools changed: none`.

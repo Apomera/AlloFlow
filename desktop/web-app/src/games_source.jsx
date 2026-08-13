@@ -1,13 +1,33 @@
-// Fisher-Yates shuffle used by the unscramble game. Recurses if shuffle produces the same word.
+// Keep scrambling bounded: a repeated-character term such as "AAA" has no
+// alternate ordering and must never recurse forever.
+var SCRAMBLE_MAX_SHUFFLE_ATTEMPTS = 16;
+var canScrambleWord = function(word) {
+  if (!word || String(word).trim().length < 2) return false;
+  var chars = Array.from(String(word)).filter(function(char) { return char.trim().length > 0; });
+  return chars.length > 1 && new Set(chars.map(function(char) { return char.toLocaleLowerCase(); })).size > 1;
+};
 var scrambleWord = function(word) {
-  if (!word || word.length < 2) return word;
-  var arr = word.split('');
-  for (var i = arr.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  if (!word || word.length < 2 || !canScrambleWord(word)) return word;
+  var original = String(word);
+  for (var attempt = 0; attempt < SCRAMBLE_MAX_SHUFFLE_ATTEMPTS; attempt++) {
+    var arr = Array.from(original);
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    var result = arr.join('');
+    if (result !== original) return result;
   }
-  var result = arr.join('');
-  return result === word ? scrambleWord(word) : result;
+  var fallback = Array.from(original);
+  for (var swapIndex = 1; swapIndex < fallback.length; swapIndex++) {
+    if (fallback[swapIndex] !== fallback[0]) {
+      var swap = fallback[0];
+      fallback[0] = fallback[swapIndex];
+      fallback[swapIndex] = swap;
+      break;
+    }
+  }
+  return fallback.join('');
 };
 
 const useReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;

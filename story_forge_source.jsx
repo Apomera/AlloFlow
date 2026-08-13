@@ -651,6 +651,7 @@ const getComicContinuityAudit = (paragraphs = [], context = {}) => {
 const getStoryForgeProjectReadiness = (context = {}) => {
   const paragraphs = Array.isArray(context.paragraphs) ? context.paragraphs : [];
   const layoutMode = context.layoutMode === 'comic' ? 'comic' : 'prose';
+  const sectionLabel = layoutMode === 'comic' ? 'panel' : 'scene';
   const totalSections = paragraphs.length;
   const writtenSections = paragraphs.filter((p) => countWords(p?.text) >= (layoutMode === 'comic' ? 2 : 5)).length;
   const contentSections = paragraphs.filter((p) => String(p?.text || '').trim()).length;
@@ -694,24 +695,24 @@ const getStoryForgeProjectReadiness = (context = {}) => {
   const addIssue = (list, phase, code, label, detail) => list.push({ phase, code, label, detail });
 
   if (!contentSections) {
-    addIssue(blockers, 'write', 'missing-story-content', layoutMode === 'comic' ? 'Comic panels need captions' : 'Story draft is empty', layoutMode === 'comic' ? 'Add a short narration caption to each planned panel.' : 'Write at least one complete paragraph before exporting.');
+    addIssue(blockers, 'write', 'missing-story-content', layoutMode === 'comic' ? 'Comic panels need captions' : 'Draft is empty', layoutMode === 'comic' ? 'Add a short narration caption to each planned panel.' : 'Write at least one complete scene before exporting.');
   } else if (contentSections < totalSections && layoutMode !== 'comic') {
     addIssue(warnings, 'write', 'incomplete-story-sections', 'Some story sections are empty', `${totalSections - contentSections} section${totalSections - contentSections === 1 ? '' : 's'} still need writing.`);
   }
-  if (!storyCueReady) addIssue(warnings, 'configure', 'missing-story-title', 'Add a story title', 'A specific title makes the saved story easier to identify.');
-  if (!vocabTotal) addIssue(warnings, 'configure', 'missing-vocabulary', 'Add vocabulary goals', 'Choose at least one vocabulary term for the story.');
+  if (!storyCueReady) addIssue(warnings, 'configure', 'missing-story-title', layoutMode === 'comic' ? 'Add a comic title' : 'Add a story title', 'A specific title makes the saved artifact easier to identify.');
+  if (!vocabTotal) addIssue(warnings, 'configure', 'missing-vocabulary', 'Add vocabulary goals', 'Choose at least one vocabulary term for the draft.');
   else if (vocabUsed < vocabTotal) addIssue(warnings, 'write', 'unused-vocabulary', 'Use the vocabulary goals', `${vocabTotal - vocabUsed} assigned term${vocabTotal - vocabUsed === 1 ? '' : 's'} have not appeared in the draft.`);
   if (totalSections > 0 && illustratedSections < totalSections) {
-    addIssue(warnings, 'illustrate', 'missing-illustrations', 'Finish the visual pass', `${totalSections - illustratedSections} scene${totalSections - illustratedSections === 1 ? '' : 's'} still need art.`);
+    addIssue(warnings, 'illustrate', 'missing-illustrations', 'Finish the visual pass', `${totalSections - illustratedSections} ${sectionLabel}${totalSections - illustratedSections === 1 ? '' : 's'} still need art.`);
   }
   if (!reviewSignalCount) {
-    addIssue(warnings, 'review', 'review-not-run', layoutMode === 'comic' ? 'Run a comic flow review' : 'Review the story', 'Complete at least one review or revision pass before publishing.');
+    addIssue(warnings, 'review', 'review-not-run', layoutMode === 'comic' ? 'Run a comic flow review' : 'Review the draft', 'Complete at least one review or revision pass before publishing.');
   }
 
   if (layoutMode === 'comic') {
     if (comicStats.emptyPanels > 0 && contentSections > 0) addIssue(blockers, 'write', 'empty-comic-panels', 'Fill every comic panel', `${comicStats.emptyPanels} panel${comicStats.emptyPanels === 1 ? '' : 's'} have no narration caption.`);
-    if (comicStats.unplacedBubbles > 0) addIssue(blockers, 'export', 'unplaced-lettering', 'Place every lettering bubble', `${comicStats.unplacedBubbles} bubble panel${comicStats.unplacedBubbles === 1 ? '' : 's'} need a safe anchor.`);
-    if (comicStats.gutterRiskPanels > 0) addIssue(blockers, 'export', 'gutter-lettering-conflict', 'Move lettering away from the gutter', `${comicStats.gutterRiskPanels} panel${comicStats.gutterRiskPanels === 1 ? '' : 's'} place lettering in the binding risk area.`);
+    if (comicStats.unplacedBubbles > 0) addIssue(warnings, 'illustrate', 'unplaced-lettering', 'Place every lettering bubble', `${comicStats.unplacedBubbles} bubble panel${comicStats.unplacedBubbles === 1 ? '' : 's'} need a safe anchor.`);
+    if (comicStats.gutterRiskPanels > 0) addIssue(warnings, 'illustrate', 'gutter-lettering-conflict', 'Move lettering away from the gutter', `${comicStats.gutterRiskPanels} panel${comicStats.gutterRiskPanels === 1 ? '' : 's'} place lettering in the binding risk area.`);
     if (comicStats.crowdedBubbles > 0) addIssue(warnings, 'write', 'crowded-lettering', 'Trim crowded lettering', `${comicStats.crowdedBubbles} panel${comicStats.crowdedBubbles === 1 ? '' : 's'} exceed the recommended lettering load.`);
     const printSafety = sanitizeComicPrintSafety(context.comicPrintSafety);
     if (printSafety.format !== 'digital' && !printSafety.includeBleed) {
@@ -749,12 +750,12 @@ const getStoryForgeProjectReadiness = (context = {}) => {
   const exportScore = Math.max(0, Math.round(100 - blockers.length * 24 - warnings.length * 4));
   const writeBlocked = blockers.some(issue => issue.phase === 'write');
   const phases = [
-    { key: 'configure', label: 'Setup', score: setupScore, status: setupScore >= 85 ? 'ready' : setupScore === 0 ? 'attention' : 'progress', detail: storyCueReady ? `${vocabTotal} vocabulary goal${vocabTotal === 1 ? '' : 's'}` : 'Story identity needs attention' },
-    { key: 'write', label: 'Write', score: writeScore, status: writeBlocked ? 'blocked' : writeScore >= 85 ? 'ready' : contentSections ? 'progress' : 'attention', detail: `${totalWords} words across ${contentSections}/${totalSections} sections` },
-    { key: 'illustrate', label: 'Illustrate', score: illustrateScore, status: illustratedSections === totalSections && totalSections > 0 ? 'ready' : illustratedSections > 0 ? 'progress' : 'attention', detail: `${illustratedSections}/${totalSections} scenes illustrated` },
-    { key: 'narrate', label: 'Narrate', score: narrateScore, status: narratedSections === 0 ? 'optional' : narratedSections === totalSections ? 'ready' : 'progress', detail: narratedSections === 0 ? 'Optional audio pass' : `${narratedSections}/${totalSections} scenes narrated` },
+    { key: 'configure', label: 'Plan', score: setupScore, status: setupScore >= 85 ? 'ready' : setupScore === 0 ? 'attention' : 'progress', detail: storyCueReady ? `${vocabTotal} vocabulary goal${vocabTotal === 1 ? '' : 's'}` : 'Artifact identity needs attention' },
+    { key: 'write', label: 'Draft', score: writeScore, status: writeBlocked ? 'blocked' : writeScore >= 85 ? 'ready' : contentSections ? 'progress' : 'attention', detail: `${totalWords} words across ${contentSections}/${totalSections} ${sectionLabel}${totalSections === 1 ? '' : 's'}` },
     { key: 'review', label: 'Review', score: reviewScore, status: reviewSignalCount ? 'ready' : 'attention', detail: reviewSignalCount ? `${reviewSignalCount} review signal${reviewSignalCount === 1 ? '' : 's'} complete` : 'Review pass pending' },
-    { key: 'export', label: 'Export', score: exportScore, status: blockers.length ? 'blocked' : warnings.length ? 'attention' : 'ready', detail: blockers.length ? `${blockers.length} production blocker${blockers.length === 1 ? '' : 's'}` : warnings.length ? `${warnings.length} refinement${warnings.length === 1 ? '' : 's'} available` : 'Ready to publish' },
+    { key: 'illustrate', label: 'Design', score: illustrateScore, status: illustratedSections === totalSections && totalSections > 0 ? 'ready' : illustratedSections > 0 ? 'progress' : 'optional', detail: illustratedSections ? `${illustratedSections}/${totalSections} ${sectionLabel}${totalSections === 1 ? '' : 's'} designed` : 'Optional visual pass' },
+    { key: 'narrate', label: 'Audio', score: narrateScore, status: narratedSections === 0 ? 'optional' : narratedSections === totalSections ? 'ready' : 'progress', detail: narratedSections === 0 ? 'Optional audio pass' : `${narratedSections}/${totalSections} ${sectionLabel}${totalSections === 1 ? '' : 's'} narrated` },
+    { key: 'export', label: 'Publish', score: exportScore, status: blockers.length ? 'blocked' : 'ready', detail: blockers.length ? `${blockers.length} required item${blockers.length === 1 ? '' : 's'}` : warnings.length ? `Ready with ${warnings.length} recommended improvement${warnings.length === 1 ? '' : 's'}` : 'Ready to publish' },
   ];
   const effectiveNarrateScore = narratedSections === 0 ? 100 : narrateScore;
   const percent = Math.round(
@@ -993,6 +994,31 @@ const sanitizePanelDialogue = (obj) => {
     if (Object.keys(clean).length) out[key] = clean;
   });
   return out;
+};
+
+const getStoryForgeReviewSignature = (value = {}) => {
+  const source = value && typeof value === 'object' ? value : {};
+  const sections = sanitizeParagraphs(source.paragraphs) || [];
+  const dialogue = sanitizePanelDialogue(source.panelDialogue);
+  const serialized = JSON.stringify({
+    artifactType: source.artifactType === 'comic' || source.layoutMode === 'comic' ? 'comic' : 'story',
+    rubricText: typeof source.rubricText === 'string' ? source.rubricText.slice(0, 12000) : '',
+    vocabTerms: sanitizeVocabTerms(source.vocabTerms) || [],
+    language: typeof source.language === 'string' ? source.language.slice(0, 24) : 'en',
+    customLanguage: typeof source.customLanguage === 'string' ? source.customLanguage.slice(0, 120) : '',
+    sections: sections.map(section => ({
+      id: section.id,
+      text: section.text,
+      plotBeat: section.plotBeat,
+      dialogue: dialogue[section.id] || {},
+    })),
+  });
+  let hash = 2166136261;
+  for (let index = 0; index < serialized.length; index += 1) {
+    hash ^= serialized.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `review-v1-${(hash >>> 0).toString(36)}-${serialized.length}`;
 };
 
 const sanitizePanelDirections = (obj) => {
@@ -1387,6 +1413,32 @@ const LAYOUT_MODES = {
   'dark': { label: 'Dark', emoji: '🌙', desc: 'Dark mode cyberpunk aesthetic', writeBg: 'bg-slate-900', writeBorder: 'border-slate-600', accent: 'cyan' },
 };
 
+// Keep layoutMode as the persisted legacy value, but present two separate
+// decisions: what the learner is making and how the story-writing canvas looks.
+const ARTIFACT_TYPES = {
+  story: { label: 'Story', desc: 'Build scenes or paragraphs into a storybook' },
+  comic: { label: 'Comic', desc: 'Build panels with dialogue, captions, and art' },
+};
+const WRITING_VIEWS = {
+  standard: { ...LAYOUT_MODES.prose, layoutMode: 'prose', label: 'Standard', desc: 'A clean, focused writing canvas' },
+  notebook: { ...LAYOUT_MODES.journal, layoutMode: 'journal', label: 'Notebook', desc: 'A lined, notebook-style canvas' },
+  'low-light': { ...LAYOUT_MODES.dark, layoutMode: 'dark', label: 'Low light', desc: 'A darker canvas for comfortable writing' },
+};
+const normalizeStoryForgeModeSelection = (value = {}) => {
+  const source = value && typeof value === 'object' ? value : {};
+  const legacy = hasOwnOption(LAYOUT_MODES, source.layoutMode) ? source.layoutMode : 'prose';
+  const legacyView = legacy === 'journal' ? 'notebook' : legacy === 'dark' ? 'low-light' : 'standard';
+  const artifactType = hasOwnOption(ARTIFACT_TYPES, source.artifactType)
+    ? source.artifactType
+    : legacy === 'comic' ? 'comic' : 'story';
+  const writingView = hasOwnOption(WRITING_VIEWS, source.writingView) ? source.writingView : legacyView;
+  return {
+    artifactType,
+    writingView,
+    layoutMode: artifactType === 'comic' ? 'comic' : WRITING_VIEWS[writingView].layoutMode,
+  };
+};
+
 const COMIC_PAGE_LAYOUTS = {
   grid: { label: 'Grid', desc: 'Balanced two-column page for most short comics.' },
   strip: { label: 'Strip', desc: 'One panel per row for newspaper-strip pacing.' },
@@ -1435,16 +1487,18 @@ const validateStoryForgeImport = (value) => {
   if (!Number.isInteger(version) || version < 1) return { valid: false, code: 'invalid-version' };
   if (version > STORYFORGE_PROJECT_VERSION) return { valid: false, code: 'newer-version', version };
   const snapshot = isStoryForgeRecord(value.snapshot) ? value.snapshot : value;
-  const hasStoryData = ['storyTitle', 'storyPrompt', 'paragraphs', 'layoutMode'].some((key) => Object.prototype.hasOwnProperty.call(snapshot, key));
+  const hasStoryData = ['storyTitle', 'storyPrompt', 'paragraphs', 'artifactType', 'layoutMode'].some((key) => Object.prototype.hasOwnProperty.call(snapshot, key));
   if (!hasStoryData) return { valid: false, code: 'missing-snapshot' };
-  const layoutMode = snapshot.layoutMode === 'comic' ? 'comic' : 'prose';
+  const modes = normalizeStoryForgeModeSelection(snapshot);
+  const { artifactType, writingView, layoutMode } = modes;
   const paragraphs = Array.isArray(snapshot.paragraphs) ? snapshot.paragraphs.slice(0, MAX_DRAFT_PARAGRAPHS) : [];
   const comicPages = layoutMode === 'comic'
     ? buildComicPageGroups(paragraphs, snapshot.comicPageComposer, snapshot.comicPageLayout)
     : [];
   const manifest = isStoryForgeRecord(value.manifest) ? value.manifest : {};
   const manifestStory = isStoryForgeRecord(manifest.story) ? manifest.story : {};
-  const title = String(manifestStory.title || snapshot.storyTitle || 'Untitled story').trim().slice(0, 120) || 'Untitled story';
+  const untitledArtifact = artifactType === 'comic' ? 'Untitled comic' : 'Untitled story';
+  const title = String(manifestStory.title || snapshot.storyTitle || untitledArtifact).trim().slice(0, 120) || untitledArtifact;
   const exportedAt = typeof value.exportedAt === 'string' && Number.isFinite(Date.parse(value.exportedAt))
     ? new Date(value.exportedAt).toISOString()
     : '';
@@ -1456,6 +1510,15 @@ const validateStoryForgeImport = (value) => {
       : isStoryForgeRecord(importedReview.comicFlowReport)
         ? importedReview.comicFlowReport
         : null;
+  const savedReviewSignature = typeof snapshot.reviewedDraftSignature === 'string'
+    ? snapshot.reviewedDraftSignature
+    : '';
+  const reviewSignatureMatches = Boolean(
+    savedReviewSignature && savedReviewSignature === getStoryForgeReviewSignature(snapshot)
+  );
+  const hasLegacyReviewData = !savedReviewSignature && Boolean(
+    value.gradingResult || importedReview.gradingResult || importedComicFlowReport
+  );
   return {
     valid: true,
     version,
@@ -1463,9 +1526,13 @@ const validateStoryForgeImport = (value) => {
     review: importedReview,
     comicFlowReport: importedComicFlowReport,
     isProject: value._storyForgePackage === 'project' || isStoryForgeRecord(value.snapshot),
-    hasReviewData: version >= 2 && (isStoryForgeRecord(value.analytics) || isStoryForgeRecord(value.review)),
+    hasReviewData: version >= 2 && value.purpose !== 'handoff' && Boolean(
+      reviewSignatureMatches || hasLegacyReviewData
+    ),
     summary: {
       title,
+      artifactType,
+      writingView,
       layoutMode,
       pageCount: comicPages.length,
       panelCount: layoutMode === 'comic' ? paragraphs.length : 0,
@@ -1664,8 +1731,8 @@ const aggregatePenmanship = (penmanshipObjs) => {
   };
 };
 
-const PHASES = ['configure', 'write', 'illustrate', 'narrate', 'review', 'export'];
-const PHASE_LABELS = ['Setup', 'Write', 'Illustrate', 'Narrate', 'Review', 'Export'];
+const PHASES = ['configure', 'write', 'review', 'illustrate', 'narrate', 'export'];
+const PHASE_LABELS = ['Plan', 'Draft', 'Review', 'Design', 'Audio', 'Publish'];
 const LANG_OPTIONS = [
   { code: 'en', label: 'English', bcp47: 'en-US' },
   { code: 'es', label: 'Español', bcp47: 'es-ES' },
@@ -1702,6 +1769,7 @@ const sanitizeValenceByParagraph = (obj) => {
 
 const sanitizeStoryForgeDraft = (value = {}) => {
   const source = value && typeof value === 'object' ? value : {};
+  const modes = normalizeStoryForgeModeSelection(source);
   const cleanString = (input, max) => typeof input === 'string' ? input.slice(0, max) : '';
   const parsedSavedAt = typeof source.savedAt === 'string' && Number.isFinite(Date.parse(source.savedAt))
     ? new Date(source.savedAt).toISOString()
@@ -1722,7 +1790,9 @@ const sanitizeStoryForgeDraft = (value = {}) => {
     customLanguage: cleanString(source.customLanguage, 120),
     storyShape: hasOwnOption(STORY_SHAPES, source.storyShape) ? source.storyShape : '',
     valenceByPara: sanitizeValenceByParagraph(source.valenceByPara),
-    layoutMode: hasOwnOption(LAYOUT_MODES, source.layoutMode) ? source.layoutMode : 'prose',
+    artifactType: modes.artifactType,
+    writingView: modes.writingView,
+    layoutMode: modes.layoutMode,
     comicPageLayout: hasOwnOption(COMIC_PAGE_LAYOUTS, source.comicPageLayout) ? source.comicPageLayout : 'grid',
     comicPageComposer: sanitizeComicPageComposer(source.comicPageComposer),
     comicPrintSafety: sanitizeComicPrintSafety(source.comicPrintSafety),
@@ -1732,8 +1802,26 @@ const sanitizeStoryForgeDraft = (value = {}) => {
     panelThumbnails: sanitizePanelThumbnails(source.panelThumbnails),
     panelLayouts: sanitizePanelLayouts(source.panelLayouts),
     panelStickers: sanitizePanelStickers(source.panelStickers),
+    reviewedDraftSignature: cleanString(source.reviewedDraftSignature, 120),
     savedAt: parsedSavedAt,
   };
+};
+
+const getStoryForgeRestoredPhase = (value = {}) => {
+  const draft = value && typeof value === 'object' ? value : {};
+  const phase = PHASES.includes(draft.phase) ? draft.phase : 'configure';
+  const phaseIndex = PHASES.indexOf(phase);
+  const hasStoryCue = Boolean(String(draft.storyTitle || draft.storyPrompt || draft.sourceTopic || '').trim());
+  const hasDraftContent = Array.isArray(draft.paragraphs) && draft.paragraphs.some(section => String(section?.text || '').trim());
+  const reviewIsCurrent = Boolean(
+    typeof draft.reviewedDraftSignature === 'string' &&
+    draft.reviewedDraftSignature &&
+    draft.reviewedDraftSignature === getStoryForgeReviewSignature(draft)
+  );
+  if (phaseIndex >= PHASES.indexOf('write') && !hasStoryCue) return 'configure';
+  if (phaseIndex >= PHASES.indexOf('review') && !hasDraftContent) return 'write';
+  if (phaseIndex >= PHASES.indexOf('illustrate') && !reviewIsCurrent) return 'review';
+  return phase;
 };
 
 
@@ -1842,7 +1930,7 @@ const sanitizeStoryForgeProject = (value = {}) => {
     coverArt: safeImageUrl(source.coverArt).slice(0, 15000000),
     audioSegments: sanitizeAudioSegments(source.audioSegments),
     audioStore: sanitizeStoryForgeAudioStore(source.audioStore),
-    comicFlowReport: source.layoutMode === 'comic' ? sanitizeComicFlowReport(source.comicFlowReport) : null,
+    comicFlowReport: draft.artifactType === 'comic' ? sanitizeComicFlowReport(source.comicFlowReport) : null,
   };
 };
 
@@ -1938,7 +2026,38 @@ const StoryForge = React.memo(({
   const [scaffoldsGenerated, setScaffoldsGenerated] = useState(false);
   const [helpMeResult, setHelpMeResult] = useState(null);
   const [helpMeParagraphIdx, setHelpMeParagraphIdx] = useState(-1);
-  const [layoutMode, setLayoutMode] = useState('prose');
+  const [artifactType, setArtifactType] = useState('story');
+  const [writingView, setWritingView] = useState('standard');
+  const layoutMode = artifactType === 'comic'
+    ? 'comic'
+    : (WRITING_VIEWS[writingView]?.layoutMode || 'prose');
+  const [showWritingTools, setShowWritingTools] = useState(false);
+  const [showReviewTools, setShowReviewTools] = useState(false);
+
+  const selectArtifactType = (nextType) => {
+    if (!ARTIFACT_TYPES[nextType] || nextType === artifactType) return;
+    const hasArtifactContent =
+      paragraphs.some(item => String(item.text || '').trim()) ||
+      Object.keys(panelDialogue || {}).length > 0 ||
+      Object.keys(panelDirections || {}).length > 0 ||
+      Object.keys(panelThumbnails || {}).length > 0 ||
+      Object.values(illustrations || {}).some(item => Boolean(item?.imageUrl)) ||
+      Object.values(audioSegments || {}).some(item => Boolean(item?.studentAudioUrl || item?.aiAudioUrl));
+    if (hasArtifactContent) {
+      const message = 'Choose the artifact type before drafting. Your current writing was kept unchanged.';
+      if (addToast) addToast(message, 'info');
+      sfAnnounce(message);
+      return;
+    }
+    setArtifactType(nextType);
+    setIsDirty(true);
+  };
+
+  const selectWritingView = (nextView) => {
+    if (!WRITING_VIEWS[nextView]) return;
+    setWritingView(nextView);
+    setIsDirty(true);
+  };
   const [comicPageLayout, setComicPageLayout] = useState('grid');
   const [dictatingParagraphIdx, setDictatingParagraphIdx] = useState(-1);
   const [focusMode, setFocusMode] = useState(false);
@@ -2008,6 +2127,16 @@ const StoryForge = React.memo(({
   // ── Comic panel stickers + dialogue/thought/narration per panel ──
   const [panelStickers, setPanelStickers] = useState({});
   const [panelDialogue, setPanelDialogue] = useState({}); // keyed by paragraph id: { speaker, speech, thought, sfx }
+  const [reviewedDraftSignature, setReviewedDraftSignature] = useState('');
+  const currentReviewDraftSignature = useMemo(() => getStoryForgeReviewSignature({
+    artifactType,
+    rubricText,
+    vocabTerms,
+    language,
+    customLanguage,
+    paragraphs,
+    panelDialogue,
+  }), [artifactType, rubricText, vocabTerms, language, customLanguage, paragraphs, panelDialogue]);
   const [panelDirections, setPanelDirections] = useState({}); // keyed by paragraph id: { shot, angle, mood, transition }
   const [panelThumbnails, setPanelThumbnails] = useState({}); // keyed by paragraph id: { focalPoint, composition, letteringSpace, letteringX, letteringY, letteringWidth, sketchNote }
   const [panelLayouts, setPanelLayouts] = useState({}); // keyed by paragraph id: { frame, colSpan, rowSpan }
@@ -2469,8 +2598,8 @@ const StoryForge = React.memo(({
     ...sanitizeStoryForgeDraft({
       storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText,
       paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara,
-      layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity,
-      panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers,
+      artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity,
+      panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature,
     }),
     comicFlowReport: layoutMode === 'comic' ? sanitizeComicFlowReport(comicFlowReport) : null,
     _storyForgeAutosaveVersion: 2,
@@ -3255,7 +3384,7 @@ const StoryForge = React.memo(({
     } else {
       setDictatingParagraphIdx(idx);
       dictation.startDictation();
-      sfAnnounce(`Dictation started for paragraph ${idx + 1}`);
+      sfAnnounce(`Dictation started for ${artifactType === 'comic' ? 'panel' : 'scene'} ${idx + 1}`);
     }
   };
 
@@ -3286,6 +3415,30 @@ const StoryForge = React.memo(({
   const [comicFlowReport, setComicFlowReport] = useState(null);
   const [comicFlowLoading, setComicFlowLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
+  const isCurrentDraftReviewed = Boolean(
+    reviewedDraftSignature && reviewedDraftSignature === currentReviewDraftSignature
+  );
+  const hasPriorReviewOutput = Boolean(
+    gradingResult ||
+    revisionPlan ||
+    comicFlowReport ||
+    (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0)
+  );
+  const isReviewStale = !isCurrentDraftReviewed && Boolean(reviewedDraftSignature || hasPriorReviewOutput);
+  const clearReviewState = () => {
+    setGradingResult(null);
+    setGrammarResults({});
+    setSelfAssessment({});
+    setSelfAssessmentSubmitted(false);
+    setRevisionPlan(null);
+    setSensesResult(null);
+    setMentorMatch(null);
+    setShowTellResult(null);
+    setArcReport(null);
+    setDialogueReport(null);
+    setComicFlowReport(null);
+    setReviewedDraftSignature('');
+  };
 
   // ── Init vocab from glossary ──
   useEffect(() => {
@@ -3337,12 +3490,9 @@ const StoryForge = React.memo(({
     panelThumbnails,
     panelLayouts,
     reviewSignals: {
-      grading: Boolean(gradingResult),
-      revisionPlan: Boolean(revisionPlan),
-      comicFlow: Boolean(comicFlowReport),
-      selfAssessment: Boolean(selfAssessmentSubmitted),
+      completed: isCurrentDraftReviewed,
     },
-  }), [storyTitle, storyPrompt, sourceTopic, genre, layoutMode, paragraphs, vocabTerms, vocabUsedCount, illustrations, audioSegments, comicPageGroups, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelThumbnails, panelLayouts, gradingResult, revisionPlan, comicFlowReport, selfAssessmentSubmitted]);
+  }), [storyTitle, storyPrompt, sourceTopic, genre, layoutMode, paragraphs, vocabTerms, vocabUsedCount, illustrations, audioSegments, comicPageGroups, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelThumbnails, panelLayouts, isCurrentDraftReviewed]);
   const readinessByPhase = useMemo(() => Object.fromEntries(projectReadiness.phases.map(item => [item.key, item])), [projectReadiness]);
 
   // ── Reading level ──
@@ -3497,7 +3647,7 @@ const StoryForge = React.memo(({
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, exportConsent, importConfirmation, showCloseConfirm, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, illustrations, draftHydrationState, comicProductionSnapshotKey, comicCanUndo, comicCanRedo]);
+  }, [isOpen, exportConsent, importConfirmation, showCloseConfirm, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, draftHydrationState, comicProductionSnapshotKey, comicCanUndo, comicCanRedo]);
 
   // ── Focus management: move focus into the dialog on open, trap Tab inside it, and
   //    restore focus to the trigger on close (WCAG 2.4.3 Focus Order / 2.1.2 No Keyboard Trap escape). ──
@@ -3654,11 +3804,13 @@ const StoryForge = React.memo(({
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [isOpen, draftHydrationState, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, illustrations, coverArt, audioSegments, audioStorePayload]);
+  }, [isOpen, draftHydrationState, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload]);
 
   const applySanitizedDraft = (value) => {
     const draft = sanitizeStoryForgeDraft(value);
+    const restoredPhase = getStoryForgeRestoredPhase({ ...draft, sourceTopic });
     resetComicHistory();
+    clearReviewState();
     setStoryTitle(draft.storyTitle);
     setGenre(draft.genre);
     setVocabTerms(draft.vocabTerms);
@@ -3669,12 +3821,13 @@ const StoryForge = React.memo(({
     setParagraphs(draft.paragraphs);
     setScaffoldsGenerated(draft.scaffoldsGenerated);
     setDraftCount(draft.draftCount);
-    setPhase(draft.phase);
+    setPhase(restoredPhase);
     setLanguage(draft.language);
     setCustomLanguage(draft.customLanguage);
     setStoryShape(draft.storyShape);
     setValenceByPara(draft.valenceByPara);
-    setLayoutMode(draft.layoutMode);
+    setArtifactType(draft.artifactType);
+    setWritingView(draft.writingView);
     setComicPageLayout(draft.comicPageLayout);
     setComicPageComposer(draft.comicPageComposer);
     setComicPrintSafety(draft.comicPrintSafety);
@@ -3684,6 +3837,7 @@ const StoryForge = React.memo(({
     setPanelThumbnails(draft.panelThumbnails);
     setPanelLayouts(draft.panelLayouts);
     setPanelStickers(draft.panelStickers);
+    setReviewedDraftSignature(draft.reviewedDraftSignature);
     setFocusParagraphIdx(0);
     return draft;
   };
@@ -3699,7 +3853,7 @@ const StoryForge = React.memo(({
     storyAudioHydrationSignatureRef.current = '';
     setStoryAudioStorePayload(project.audioStore || null);
     setComicFlowReport(project.comicFlowReport || null);
-    return draft;
+    return { ...draft, phase: restoredPhase };
   };
   const restoreDraft = () => {
     if (!savedDraftRef.current) return;
@@ -3743,6 +3897,7 @@ const StoryForge = React.memo(({
   // ── Load initial config from teacher assignment ──
   useEffect(() => {
     if (initialConfig && initialConfig.vocabTerms) {
+      const initialModes = normalizeStoryForgeModeSelection(initialConfig);
       resetComicHistory();
       if (initialConfig.storyTitle) setStoryTitle(initialConfig.storyTitle);
       if (initialConfig.genre) setGenre(initialConfig.genre);
@@ -3754,7 +3909,8 @@ const StoryForge = React.memo(({
       if (initialConfig.language) setLanguage(LANG_OPTIONS.some(option => option.code === initialConfig.language) ? initialConfig.language : 'en');
       if (typeof initialConfig.customLanguage === 'string') setCustomLanguage(initialConfig.customLanguage.slice(0, 120));
       if (hasOwnOption(STORY_SHAPES, initialConfig.storyShape)) setStoryShape(initialConfig.storyShape);
-      if (hasOwnOption(LAYOUT_MODES, initialConfig.layoutMode)) setLayoutMode(initialConfig.layoutMode);
+      setArtifactType(initialModes.artifactType);
+      setWritingView(initialModes.writingView);
       if (hasOwnOption(COMIC_PAGE_LAYOUTS, initialConfig.comicPageLayout)) setComicPageLayout(initialConfig.comicPageLayout);
       if (initialConfig.comicPageComposer) setComicPageComposer(sanitizeComicPageComposer(initialConfig.comicPageComposer));
       if (initialConfig.comicPrintSafety) setComicPrintSafety(sanitizeComicPrintSafety(initialConfig.comicPrintSafety));
@@ -3775,7 +3931,7 @@ const StoryForge = React.memo(({
     const config = {
       storyTitle: storyTitle || sourceTopic || 'Story Assignment',
       genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, language, customLanguage, storyShape,
-      layoutMode, comicPageLayout,
+      artifactType, writingView, layoutMode, comicPageLayout,
       comicPageComposer: sanitizeComicPageComposer(comicPageComposer),
       comicPrintSafety: sanitizeComicPrintSafety(comicPrintSafety),
       comicContinuity: sanitizeComicContinuity(comicContinuity),
@@ -3798,10 +3954,12 @@ const StoryForge = React.memo(({
       const createdAt = new Date(ts).toISOString();
       const paragraphsForShelf = Array.isArray(submission.paragraphs) ? submission.paragraphs : [];
       const words = submission.analytics?.totalWords || 0;
+      const submissionIsComic = submission.artifactType === 'comic' || submission.layoutMode === 'comic';
+      const sectionName = submissionIsComic ? 'Panel' : 'Scene';
       const items = paragraphsForShelf
         .map((p, idx) => ({
           id: p.id || `storyforge-paragraph-${idx}`,
-          title: `Paragraph ${idx + 1}`,
+          title: `${sectionName} ${idx + 1}`,
           text: p.text || '',
           toolLabel: 'StoryForge',
           privacy: 'full',
@@ -3812,11 +3970,11 @@ const StoryForge = React.memo(({
         type: 'storyforge-submission',
         source: 'storyforge',
         sourceLabel: 'StoryForge',
-        kindLabel: 'StoryForge Story',
-        title: submission.storyTitle || 'My Story',
-        summary: `Student-controlled StoryForge story with ${words} words across ${paragraphsForShelf.length} paragraph${paragraphsForShelf.length === 1 ? '' : 's'}`,
+        kindLabel: submissionIsComic ? 'StoryForge Comic' : 'StoryForge Story',
+        title: submission.storyTitle || (submissionIsComic ? 'My Comic' : 'My Story'),
+        summary: `Student-controlled StoryForge ${submissionIsComic ? 'comic' : 'story'} with ${words} words across ${paragraphsForShelf.length} ${sectionName.toLowerCase()}${paragraphsForShelf.length === 1 ? '' : 's'}`,
         privacy: 'student-controlled',
-        privacySummary: 'Student-controlled. Full story text is saved on this device for the AlloHaven Portfolio.',
+        privacySummary: 'Student-controlled. Full draft text is saved on this device for the AlloHaven Portfolio.',
         sourceSummary: 'Saved from StoryForge',
         lifecycleStatus: 'saved',
         version: 1,
@@ -3841,7 +3999,7 @@ const StoryForge = React.memo(({
       window.__alloflowStudentArtifacts = next;
       localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
       window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', {
-        detail: { source: 'storyforge', sourceLabel: 'StoryForge', kindLabel: 'StoryForge Story', privacy: 'student-controlled', title: artifact.title, action: 'saved', artifact, count: next.length }
+        detail: { source: 'storyforge', sourceLabel: 'StoryForge', kindLabel: submissionIsComic ? 'StoryForge Comic' : 'StoryForge Story', privacy: 'student-controlled', title: artifact.title, action: 'saved', artifact, count: next.length }
       }));
       return { action: 'saved', artifact, count: next.length };
     } catch (_) {}
@@ -3851,11 +4009,12 @@ const StoryForge = React.memo(({
   // ── Save completed story as submission resource ──
   const saveAsSubmission = () => {
     if (!onSaveSubmission) return;
+    if (!ensureReadyToPublish()) return;
     const submission = {
-      storyTitle: storyTitle || 'My Story',
+      storyTitle: storyTitle || (artifactType === 'comic' ? 'My Comic' : 'My Story'),
       authorName: authorName || 'Student',
       genre, language, customLanguage, vocabTerms, storyShape,
-      layoutMode, comicPageLayout,
+      artifactType, writingView, layoutMode, comicPageLayout,
       comicPageComposer: sanitizeComicPageComposer(comicPageComposer),
       comicPrintSafety: sanitizeComicPrintSafety(comicPrintSafety),
       comicContinuity: sanitizeComicContinuity(comicContinuity),
@@ -3882,11 +4041,11 @@ const StoryForge = React.memo(({
     onSaveSubmission(submission);
     const receipt = saveStoryForgeArtifactToAlloHaven(submission);
     const receiptText = receipt
-      ? 'Saved new student-controlled StoryForge story to AlloHaven Portfolio. Open AlloHaven > Portfolio to view it.'
-      : t('toasts.story_saved_portfolio');
+      ? `Saved new student-controlled StoryForge ${artifactType === 'comic' ? 'comic' : 'story'} to AlloHaven Portfolio. Open AlloHaven > Portfolio to view it.`
+      : `${artifactType === 'comic' ? 'Comic' : 'Story'} saved to Portfolio.`;
     if (addToast) addToast(receiptText, 'success');
     sfAnnounce(receiptText);
-    awardXP(10, 'Saved story to portfolio');
+    awardXP(10, 'Saved artifact to portfolio');
   };
 
   // ── Import from lesson resources ──
@@ -3930,13 +4089,76 @@ const StoryForge = React.memo(({
 
   // ── Phase navigation with focus management ──
   const phaseIdx = PHASES.indexOf(phase);
+  const hasStoryCue = Boolean(storyTitle.trim() || storyPrompt.trim() || sourceTopic);
+  const hasDraftContent = projectReadiness.metrics.contentSections > 0;
+  const hasCompletedReview = isCurrentDraftReviewed;
   const canGoNext = () => {
-    if (phase === 'configure') return Boolean(storyTitle.trim() || storyPrompt.trim() || sourceTopic || vocabTerms.length > 0);
-    if (phase === 'write') return projectReadiness.metrics.contentSections > 0;
+    if (phase === 'configure') return hasStoryCue;
+    if (phase === 'write') return hasDraftContent;
+    if (phase === 'review') return hasCompletedReview;
+    const nextPhase = PHASES[phaseIdx + 1];
+    return !nextPhase || canEnterPhase(nextPhase);
+  };
+  const canEnterPhase = (targetPhase) => {
+    const targetIdx = PHASES.indexOf(targetPhase);
+    if (targetIdx < 0 || targetIdx <= phaseIdx) return targetIdx >= 0;
+    if (targetIdx >= 1 && !hasStoryCue) return false;
+    if (targetIdx >= 2 && !hasDraftContent) return false;
+    if (targetIdx >= 3 && !hasCompletedReview) return false;
     return true;
+  };
+  const getPhaseRequirement = () => {
+    if (phase === 'configure') return hasStoryCue
+      ? 'Plan ready: you have a title or starting idea.'
+      : 'Required to continue: add a title or starting idea.';
+    if (phase === 'write') return hasDraftContent
+      ? projectReadiness.metrics.contentSections + ' ' + (artifactType === 'comic' ? 'panel' : 'scene') + (projectReadiness.metrics.contentSections === 1 ? '' : 's') + ' ready to review.'
+      : 'Required to continue: draft at least one ' + (artifactType === 'comic' ? 'panel' : 'scene') + '.';
+    if (phase === 'review') return hasCompletedReview
+      ? 'Review complete: your draft is ready to design.'
+      : isReviewStale
+        ? 'Required to continue: review the latest draft before design.'
+        : 'Required to continue: complete the self-check or run feedback.';
+    if ((phase === 'illustrate' || phase === 'narrate') && !hasCompletedReview) {
+      return 'Required to continue: review the latest draft before moving forward.';
+    }
+    if (phase === 'illustrate') return projectReadiness.metrics.illustratedSections > 0
+      ? projectReadiness.metrics.illustratedSections + ' section' + (projectReadiness.metrics.illustratedSections === 1 ? '' : 's') + ' designed.'
+      : 'Optional step: add visuals, or continue when the words are enough.';
+    if (phase === 'narrate') return projectReadiness.metrics.narratedSections > 0
+      ? projectReadiness.metrics.narratedSections + ' section' + (projectReadiness.metrics.narratedSections === 1 ? ' has' : 's have') + ' audio.'
+      : 'Optional step: add audio, or continue to publish.';
+    if (!hasCompletedReview) return 'Required before publishing: review the latest draft.';
+    return projectReadiness.blockers.length > 0
+      ? 'Required before publishing: ' + projectReadiness.blockers[0].detail
+      : 'Your artifact is ready to publish.';
+  };
+  const nextActionLabels = {
+    configure: 'Continue to Draft',
+    write: 'Continue to Review',
+    review: 'Continue to Design',
+    illustrate: 'Continue to Audio',
+    narrate: 'Continue to Publish',
   };
   const changePhase = (newPhase, focusTargetId = '') => {
     if (!PHASES.includes(newPhase)) return;
+    if (PHASES.indexOf(newPhase) > phaseIdx && !canEnterPhase(newPhase)) {
+      const requiredPhase = !hasStoryCue
+        ? 'configure'
+        : !hasDraftContent
+          ? 'write'
+          : !hasCompletedReview
+            ? 'review'
+            : phase;
+      const message = getPhaseRequirement();
+      if (addToast) addToast(message, 'info');
+      sfAnnounce(message);
+      if (requiredPhase !== phase) {
+        pendingPhaseFocusRef.current = '';
+        setPhase(requiredPhase);
+      }
+      return;
+    }
     pendingPhaseFocusRef.current = focusTargetId;
     setPhase(newPhase);
     setTimeout(() => {
@@ -3954,7 +4176,8 @@ const StoryForge = React.memo(({
   };
   const goNext = () => {
     const idx = PHASES.indexOf(phase);
-    if (idx < PHASES.length - 1) changePhase(PHASES[idx + 1]);
+    const nextPhase = PHASES[idx + 1];
+    if (idx < PHASES.length - 1 && canGoNext() && canEnterPhase(nextPhase)) changePhase(nextPhase);
   };
   const goBack = () => {
     const idx = PHASES.indexOf(phase);
@@ -3988,7 +4211,17 @@ const StoryForge = React.memo(({
   // ═══════════════════════════════════════════════════════════
 
   const updateParagraph = (idx, text) => {
+    const paragraphId = paragraphs[idx]?.id;
     setParagraphs(prev => prev.map((p, i) => i === idx ? { ...p, text } : p));
+    if (paragraphId) {
+      setGrammarResults(prev => {
+        if (!prev[paragraphId] && !prev._overallTip) return prev;
+        const next = { ...prev };
+        delete next[paragraphId];
+        delete next._overallTip;
+        return next;
+      });
+    }
     if (!isDirty) setIsDirty(true);
   };
 
@@ -5107,12 +5340,13 @@ Return ONLY JSON:
     setCoverArtLoading(true);
     try {
       const style = getStyleDesc();
-      const title = storyTitle || sourceTopic || 'My Story';
-      const storySnippet = paragraphs.map(p => p.text).join(' ').substring(0, 300);
+      const isComicCover = artifactType === 'comic';
+      const title = storyTitle || sourceTopic || (isComicCover ? 'My Comic' : 'My Story');
+      const draftSnippet = paragraphs.map(p => p.text).join(' ').substring(0, 300);
       const promptResult = await onCallGemini(
-        `Create a book cover image prompt for a story titled "${title}". Story excerpt: "${storySnippet}". Art style: ${style}. The image should be a dramatic, eye-catching book cover scene that captures the story's essence. Do NOT include any text, title, or words in the image — just the visual scene. Max 80 words. Return ONLY the image prompt text.`
+        `Create a ${isComicCover ? 'comic' : 'storybook'} cover image prompt for an artifact titled "${title}". Draft excerpt: "${draftSnippet}". Art style: ${style}. The image should be a dramatic, eye-catching cover scene that captures the draft's essence. Do NOT include any text, title, or words in the image — just the visual scene. Max 80 words. Return ONLY the image prompt text.`
       );
-      const imgPrompt = promptResult.trim() + ' STRICTLY NO TEXT, NO TITLE, NO WORDS IN THE IMAGE. Book cover composition.';
+      const imgPrompt = promptResult.trim() + ` STRICTLY NO TEXT, NO TITLE, NO WORDS IN THE IMAGE. ${isComicCover ? 'Comic' : 'Storybook'} cover composition.`;
       const imageUrl = await onCallImagen(imgPrompt, 768, 0.9);
       if (imageUrl) setCoverArt(imageUrl);
     } catch (err) {
@@ -5154,7 +5388,7 @@ Return ONLY JSON:
     storyNarrationAbortRef.current = null;
     setIsNarrating(false);
     setIsProcessing(false);
-    sfAnnounce('Story narration stopped. Saved clips were kept.');
+    sfAnnounce('Narration stopped. Saved clips were kept.');
   };
   const narrateParagraph = async (paragraphId, text, options = {}) => {
     if (!onCallTTS || !String(text || '').trim()) return false;
@@ -5248,7 +5482,7 @@ Return ONLY JSON:
     } catch (error) {
       if (error?.name !== 'AbortError') {
         console.warn('Story narration run failed:', error);
-        if (addToast) addToast('Story narration could not finish. Try again; saved clips will be reused.', 'error');
+        if (addToast) addToast('Narration could not finish. Try again; saved clips will be reused.', 'error');
       }
     } finally {
       if (storyNarrationAbortRef.current === controller) storyNarrationAbortRef.current = null;
@@ -5415,6 +5649,7 @@ Return ONLY JSON:
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
       setGradingResult(data);
+      setReviewedDraftSignature(currentReviewDraftSignature);
       if (addToast) addToast(t('toasts.feedback_ready'), 'success');
       awardXP(15, 'Got AI feedback');
     } catch (err) {
@@ -5428,16 +5663,7 @@ Return ONLY JSON:
     // Save snapshot of current draft for delta comparison
     setRevisionSnapshot({ words: totalWords, vocabUsed: vocabUsedCount, paragraphCount: paragraphs.length, grade: readingLevel?.grade || null });
     setDraftCount(d => d + 1);
-    setGradingResult(null);
-    setSelfAssessment({});
-    setSelfAssessmentSubmitted(false);
-    setSensesResult(null);
-    setMentorMatch(null);
-    setShowTellResult(null);
-    setArcReport(null);
-    setRevisionPlan(null);
-    setDialogueReport(null);
-    setComicFlowReport(null);
+    clearReviewState();
     changePhase('write');
   };
 
@@ -5711,7 +5937,7 @@ Return ONLY JSON:
       setArcReport(data);
       const count = data.characters.length;
       if (addToast) addToast(t('toasts.character_arcs_analyzed'), 'success');
-      sfAnnounce(count === 0 ? 'No named characters found in the story.' : `Character arc tracker: ${count} character${count === 1 ? '' : 's'} analyzed.`);
+      sfAnnounce(count === 0 ? 'No named characters found in the draft.' : `Character arc tracker: ${count} character${count === 1 ? '' : 's'} analyzed.`);
       awardXP(8, 'Tracked character arcs');
     } catch (err) {
       console.warn('Character arc analysis failed:', err);
@@ -6033,6 +6259,7 @@ Return ONLY JSON:
     const snapshot = buildComicFlowSnapshot();
     if (!onCallGemini) {
       setComicFlowReport(snapshot);
+      setReviewedDraftSignature(currentReviewDraftSignature);
       setComicFlowLoading(false);
       return;
     }
@@ -6071,12 +6298,14 @@ Return ONLY JSON:
           priority: ['high', 'medium', 'low'].includes(n.priority) ? n.priority : 'medium',
         })).filter(n => n.issue || n.suggestion) : [],
       });
+      setReviewedDraftSignature(currentReviewDraftSignature);
       awardXP(5, 'Audited comic flow');
       if (addToast) addToast('Comic flow audit ready.', 'success');
       sfAnnounce('Comic flow audit ready');
     } catch (err) {
       console.warn('Comic flow audit failed:', err);
       setComicFlowReport(snapshot);
+      setReviewedDraftSignature(currentReviewDraftSignature);
       if (addToast) addToast('AI comic audit failed, so local production checks were shown.', 'info');
     } finally {
       setComicFlowLoading(false);
@@ -6148,6 +6377,23 @@ Return ONLY JSON:
     changePhase(issue.phase || 'write', getReadinessFocusTarget(issue));
   };
 
+  const ensureReadyToPublish = () => {
+    if (!isCurrentDraftReviewed) {
+      const message = 'Review the latest draft before publishing.';
+      if (addToast) addToast(message, 'error');
+      sfAnnounce(message);
+      changePhase('review', 'sf-review-tools');
+      return false;
+    }
+    const issue = projectReadiness.blockers[0];
+    if (!issue) return true;
+    const message = 'Finish this required item before publishing: ' + issue.label;
+    if (addToast) addToast(message, 'error');
+    sfAnnounce(message);
+    void resolveReadinessIssue(issue);
+    return false;
+  };
+
   const synthesizeRevisionPlan = async () => {
     if (!onCallGemini) return;
     setRevisionPlanLoading(true);
@@ -6216,6 +6462,7 @@ Return ONLY JSON:
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
       setRevisionPlan(data);
+      setReviewedDraftSignature(currentReviewDraftSignature);
       if (addToast) addToast(t('toasts.revision_plan_ready'), 'success');
       sfAnnounce(`Revision plan ready with ${(data.tasks || []).length} prioritized tasks.`);
       awardXP(10, 'Built a revision plan');
@@ -6280,21 +6527,26 @@ Return ONLY JSON:
   // ═══════════════════════════════════════════════════════════
 
   const exportStorybook = async () => {
+    if (!ensureReadyToPublish()) return;
+    const isComic = layoutMode === 'comic';
     // FERPA reminder: the storybook is de-identified (codename, never a real name), but it
     // bundles the student's full story and — if they recorded it — their VOICE narration in a
     // single downloadable file, so a local download is a confirmed, informed action (mirrors
     // the exportDraftJSON gate below).
-    if (!(await requestExportConsent({ title: 'Export storybook?', message: 'This de-identified file uses the student codename, but it contains the complete story and any recorded voice narration. Save it only to a school-approved location and follow district student-records policy.', confirmLabel: 'Export storybook' }))) return;
-    const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || 'My Story');
+    if (!(await requestExportConsent({
+      title: isComic ? 'Export comic?' : 'Export storybook?',
+      message: 'This de-identified file uses the student codename, but it contains the complete ' + (isComic ? 'comic' : 'story') + ' and any recorded voice narration. Save it only to a school-approved location and follow district student-records policy.',
+      confirmLabel: isComic ? 'Export comic' : 'Export storybook',
+    }))) return;
+    const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || (isComic ? 'My Comic' : 'My Story'));
     const author = escapeHtml(authorName || 'A Creative Student');
     const date = new Date().toLocaleDateString();
     const styleDesc = getStyleDesc();
 
     setHasExported(true);
-    awardXP(20, 'Exported storybook');
+    awardXP(20, isComic ? 'Exported comic' : 'Exported storybook');
 
     let chaptersHtml = '';
-    const isComic = layoutMode === 'comic';
     const comicLayout = COMIC_PAGE_LAYOUTS[comicPageLayout] ? comicPageLayout : 'grid';
     const storybookPrintSafety = sanitizeComicPrintSafety(comicPrintSafety);
     const exportedComicPages = isComic ? buildComicPageGroups(paragraphs, comicPageComposer, comicLayout) : [];
@@ -6375,15 +6627,15 @@ Return ONLY JSON:
         chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.replace(/\n/g, '<br/>')}</div>`;
         chaptersHtml += `</article>`;
       } else {
-        chaptersHtml += `<article class="chapter" aria-label="${escapeHtml(t("a11y.paragraph_n", { n: idx + 1 }))}">`;
-        if (img) chaptersHtml += `<img src="${escapeHtml(img)}" class="scene-img" loading="lazy" alt="Illustration for paragraph ${idx + 1}" />`;
+        chaptersHtml += `<article class="chapter" aria-label="Scene ${idx + 1}">`;
+        if (img) chaptersHtml += `<img src="${escapeHtml(img)}" class="scene-img" loading="lazy" alt="Illustration for scene ${idx + 1}" />`;
         const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label;
         if (beatLabel && p.plotBeat) {
           chaptersHtml += `<div class="beat-label" aria-label="${escapeHtml(t("a11y.narrative_beat", { label: beatLabel }))}">${escapeHtml(beatLabel)}</div>`;
         }
         chaptersHtml += `<p class="story-text">${safeText.replace(/\n/g, '<br/>')}</p>`;
         if (audio?.studentAudioBase64) {
-          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label="${escapeHtml(t("a11y.audio_narration_paragraph", { n: idx + 1 }))}"></audio>`;
+          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label="Audio narration for scene ${idx + 1}"></audio>`;
         }
         chaptersHtml += `</article>`;
         if (idx < paragraphs.length - 1) chaptersHtml += `<div class="separator" aria-hidden="true">&mdash;</div>`;
@@ -6511,8 +6763,8 @@ main{display:block}
 @page{size:${storybookPrintSafety.format === 'letter' ? 'Letter portrait' : storybookPrintSafety.format === 'comic' ? '6.625in 10.25in' : 'auto'};margin:0}@media print{.skip-link,.print-btn{display:none}.chapter,.panel{break-inside:avoid}body{background:#fff !important}.cover{background:#fffbeb !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.comic-grid{background:#1e293b !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
-<a class="skip-link" href="#story-content">${escapeHtml(t("ui_common.skip_to_story"))}</a>
-<button type="button" class="print-btn" onclick="window.print()" aria-label="${escapeHtml(t("a11y.story_print"))}">Print-ready PDF</button>
+<a class="skip-link" href="#story-content">${isComic ? 'Skip to comic' : 'Skip to story'}</a>
+<button type="button" class="print-btn" onclick="window.print()" aria-label="${isComic ? 'Print comic' : 'Print storybook'}">Print-ready PDF</button>
 <header class="cover" role="banner">
   ${coverArt ? `<img src="${escapeHtml(coverArt)}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
   <h1 id="story-title">${title}</h1>
@@ -6544,6 +6796,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
 
   const exportComicScript = async () => {
     if (layoutMode !== 'comic') return;
+    if (!ensureReadyToPublish()) return;
     if (!(await requestExportConsent({ title: 'Export comic script?', message: 'This de-identified file uses the student codename, but it contains all panel captions and dialogue. Save it only to a school-approved location and follow district student-records policy.', confirmLabel: 'Export comic script' }))) return;
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || 'My Comic');
     const author = escapeHtml(authorName || 'A Creative Student');
@@ -6630,6 +6883,7 @@ ${panelsHtml}
 
   const exportComicProductionPack = async () => {
     if (layoutMode !== 'comic') return;
+    if (!ensureReadyToPublish()) return;
     if (!(await requestExportConsent({ title: 'Export production pack?', message: 'This de-identified file contains the full comic, bubbles, art prompts, continuity notes, and production status. Save it only to a school-approved location and follow district student-records policy.', confirmLabel: 'Export production pack' }))) return;
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || 'My Comic');
     const author = escapeHtml(authorName || 'A Creative Student');
@@ -6936,8 +7190,10 @@ ${panelsHtml}
   };
 
   const exportSlideshow = () => {
-    const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || 'My Story');
+    if (!ensureReadyToPublish()) return;
+    const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || (artifactType === 'comic' ? 'My Comic' : 'My Story'));
     const author = escapeHtml(authorName || 'A Creative Student');
+    const slideshowDialogue = artifactType === 'comic' ? sanitizePanelDialogue(panelDialogue) : {};
     let slidesHtml = '';
 
     setHasExported(true);
@@ -6952,14 +7208,19 @@ ${panelsHtml}
     // Content slides
     paragraphs.forEach((p, idx) => {
       const img = illustrations[p.id]?.imageUrl;
+      const dialogue = slideshowDialogue[p.id] || {};
+      const dialogueHtml = artifactType === 'comic' && (dialogue.speech || dialogue.thought || dialogue.sfx)
+        ? `<div class="comic-dialogue">${dialogue.speech ? `<div class="comic-speech">${dialogue.speaker ? `<strong>${escapeHtml(dialogue.speaker)}:</strong> ` : ''}${escapeHtml(dialogue.speech)}</div>` : ''}${dialogue.thought ? `<div class="comic-thought">Thought: ${escapeHtml(dialogue.thought)}</div>` : ''}${dialogue.sfx ? `<div class="comic-sfx">${escapeHtml(dialogue.sfx)}</div>` : ''}</div>`
+        : '';
       const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label;
       const beatHtml = (beatLabel && p.plotBeat)
         ? `<div class="beat-label" aria-label="${escapeHtml(t("a11y.narrative_beat", { label: beatLabel }))}">${escapeHtml(beatLabel)}</div>`
         : '';
       slidesHtml += `<div class="slide">
-        ${img ? `<img src="${escapeHtml(img)}" class="slide-img" alt="Scene ${idx + 1}" />` : ''}
+        ${img ? `<img src="${escapeHtml(img)}" class="slide-img" alt="${artifactType === 'comic' ? 'Panel' : 'Scene'} ${idx + 1}" />` : ''}
         ${beatHtml}
         <div class="slide-text">${escapeHtml(p.text).replace(/\n/g, '<br/>')}</div>
+        ${dialogueHtml}
         <div class="slide-num">${idx + 1} / ${paragraphs.length}</div>
       </div>`;
     });
@@ -6996,6 +7257,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:white;
 .cover-img{max-width:300px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.4)}
 .slide-img{max-height:50vh;max-width:80%;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);margin-bottom:24px}
 .slide-text{font-size:1.4em;line-height:1.8;max-width:700px;text-indent:2em;text-align:left}
+.comic-dialogue{max-width:700px;margin-top:14px;display:grid;gap:8px;text-align:left}
+.comic-speech,.comic-thought{padding:10px 14px;border-radius:14px;background:#fff;color:#0f172a;font-size:1.05em;line-height:1.45}
+.comic-thought{border:2px dashed #c4b5fd;background:#faf5ff;color:#5b21b6;font-style:italic}
+.comic-sfx{justify-self:center;color:#fde68a;font-size:1.25em;font-weight:900;font-style:italic;text-transform:uppercase}
 .beat-label{display:inline-block;font-size:0.75em;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fde68a;background:rgba(67,56,202,0.5);border:1px solid #a78bfa;padding:4px 14px;border-radius:999px;margin-bottom:12px}
 .slide-num{position:absolute;bottom:20px;right:30px;color:#cbd5e1;font-size:0.8em}
 .vocab-slide h2,.feedback-slide h2{font-size:2em;margin-bottom:24px;color:#fbbf24}
@@ -7040,13 +7305,14 @@ show();
   // ═══════════════════════════════════════════════════════════
 
   const shareToSession = async () => {
+    if (!ensureReadyToPublish()) return;
     if (!liveSession || !liveSession.push) return;
     if (isCanvasEnv) {
       if (addToast) addToast(t('toasts.sharing_disabled_canvas_environment_ferpa'), 'error');
       return;
     }
     try {
-      const title = storyTitle || storyPrompt || sourceTopic || 'My Story';
+      const title = storyTitle || storyPrompt || sourceTopic || (artifactType === 'comic' ? 'My Comic' : 'My Story');
       const safePanelDialogue = sanitizePanelDialogue(panelDialogue);
       const safePanelDirections = sanitizePanelDirections(panelDirections);
       const safePanelThumbnails = sanitizePanelThumbnails(panelThumbnails);
@@ -7057,6 +7323,8 @@ show();
         title,
         author: authorName || 'Student',
         genre: GENRE_TEMPLATES[genre]?.label || 'Creative Writing',
+        artifactType,
+        writingView,
         layoutMode,
         comicPageLayout,
         comicPageComposer: sanitizeComicPageComposer(comicPageComposer),
@@ -7083,7 +7351,7 @@ show();
         readingGrade: readingLevel?.grade || null,
         draftCount,
       });
-      if (addToast) addToast(t('toasts.storybook_shared_class'), 'success');
+      if (addToast) addToast(`${artifactType === 'comic' ? 'Comic' : 'Storybook'} shared with the class.`, 'success');
       awardXP(10, 'Shared to class');
     } catch (err) {
       console.warn('Share failed:', err);
@@ -7128,8 +7396,10 @@ show();
       version: STORYFORGE_PROJECT_VERSION,
       exportedAt,
       story: {
-        title: snapshot.storyTitle || 'Untitled story',
+        title: snapshot.storyTitle || (snapshot.artifactType === 'comic' ? 'Untitled comic' : 'Untitled story'),
         genre: snapshot.genre,
+        artifactType: snapshot.artifactType,
+        writingView: snapshot.writingView,
         layoutMode: snapshot.layoutMode,
       },
       production: {
@@ -7197,10 +7467,11 @@ show();
     if (!(await requestExportConsent({ title: 'Export full draft?', message: 'This de-identified file uses the student codename, but it contains complete writing, AI feedback or grades, and progress analytics. Save it only to a school-approved location and follow district student-records policy.', confirmLabel: 'Export full draft' }))) return;
     const draft = {
       _storyForgeVersion: 2,
+      purpose: 'handoff',
       // ── Story content ──
       storyTitle, codename: authorName, genre, language, customLanguage, vocabTerms, artStyle, customArtStyle,
       storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, storyShape, valenceByPara,
-      layoutMode, comicPageLayout,
+      artifactType, writingView, layoutMode, comicPageLayout,
       comicPageComposer: sanitizeComicPageComposer(comicPageComposer),
       comicPrintSafety: sanitizeComicPrintSafety(comicPrintSafety),
       comicContinuity: sanitizeComicContinuity(comicContinuity),
@@ -7264,9 +7535,11 @@ show();
       comicFlowReport: validated.comicFlowReport,
     });
     const review = validated.review;
-    if (review.gradingResult) setGradingResult(review.gradingResult);
-    if (review.grammarResults) setGrammarResults(review.grammarResults);
-    if (Array.isArray(review.characters)) setCharacters(review.characters.slice(0, 32));
+    setGradingResult(validated.hasReviewData ? (review.gradingResult || null) : null);
+    setGrammarResults(validated.hasReviewData ? (review.grammarResults || {}) : {});
+    setCharacters(Array.isArray(review.characters) ? review.characters.slice(0, 32) : []);
+    setComicFlowReport(validated.hasReviewData ? validated.comicFlowReport : null);
+    setReviewedDraftSignature(validated.hasReviewData ? getStoryForgeReviewSignature(validated.snapshot) : '');
     const summary = validated.summary;
     const packageDetail = summary.layoutMode === 'comic'
       ? ` ${summary.pageCount} page${summary.pageCount === 1 ? '' : 's'} · ${summary.panelCount} panel${summary.panelCount === 1 ? '' : 's'}.`
@@ -7359,9 +7632,49 @@ show();
 
   if (!isOpen) return null;
 
-  const phaseIcons = [Sparkles, Type, ImageIcon, Volume2, Star, Download];
+  const phaseIcons = [Sparkles, Type, Star, ImageIcon, Volume2, Download];
   const primaryReadinessIssue = projectReadiness.blockers[0] || projectReadiness.warnings[0] || null;
   const exportReadinessIssues = [...projectReadiness.blockers, ...projectReadiness.warnings];
+  const phaseGuides = {
+    configure: {
+      title: 'Plan your ' + (artifactType === 'comic' ? 'comic' : 'story'),
+      outcome: 'Choose the artifact, give it a clear starting idea, and set any vocabulary goals.',
+    },
+    write: {
+      title: 'Draft the ' + (artifactType === 'comic' ? 'panels' : 'story'),
+      outcome: artifactType === 'comic'
+        ? 'Build the sequence one panel at a time with concise captions and dialogue.'
+        : 'Build the story one scene at a time. Focus on the ideas before visual polish.',
+    },
+    review: {
+      title: 'Review and improve the draft',
+      outcome: 'Use a self-check or feedback pass, then revise anything that is unclear.',
+    },
+    illustrate: {
+      title: artifactType === 'comic' ? 'Design the panels' : 'Design the story',
+      outcome: artifactType === 'comic'
+        ? 'Add art, arrange panels, and check that lettering is easy to follow.'
+        : 'Add optional illustrations and choose the final visual treatment.',
+    },
+    narrate: {
+      title: 'Add optional audio',
+      outcome: 'Record or generate narration, or continue if the artifact works best silently.',
+    },
+    export: {
+      title: 'Preview and publish',
+      outcome: 'Check the finished artifact, resolve required items, then choose an output.',
+    },
+  };
+  const currentPhaseGuide = phaseGuides[phase];
+  const currentPhaseRequirement = getPhaseRequirement();
+  const publishBlocked = !isCurrentDraftReviewed || projectReadiness.blockers.length > 0;
+  const artifactTypeLocked =
+    paragraphs.some(item => String(item.text || '').trim()) ||
+    Object.keys(panelDialogue || {}).length > 0 ||
+    Object.keys(panelDirections || {}).length > 0 ||
+    Object.keys(panelThumbnails || {}).length > 0 ||
+    Object.values(illustrations || {}).some(item => Boolean(item?.imageUrl)) ||
+    Object.values(audioSegments || {}).some(item => Boolean(item?.studentAudioUrl || item?.aiAudioUrl));
 const comicAltCoverageLabel = layoutMode === 'comic'
     ? projectReadiness.comicStats.artPanels > 0
       ? `${Math.max(0, projectReadiness.comicStats.artPanels - projectReadiness.comicStats.missingAltText)}/${projectReadiness.comicStats.artPanels}`
@@ -7533,7 +7846,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
       {/* Screen reader playback announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {playbackIdx >= 0 && paragraphs[playbackIdx] ? (
-          `Now reading paragraph ${playbackIdx + 1}${audioSegments[paragraphs[playbackIdx].id]?.sentences?.[sentenceIdx] ? ': ' + audioSegments[paragraphs[playbackIdx].id].sentences[sentenceIdx] : ''}`
+          `Now reading ${artifactType === 'comic' ? 'panel' : 'scene'} ${playbackIdx + 1}${audioSegments[paragraphs[playbackIdx].id]?.sentences?.[sentenceIdx] ? ': ' + audioSegments[paragraphs[playbackIdx].id].sentences[sentenceIdx] : ''}`
         ) : ''}
       </div>
       {/* WCAG 4.1.3 — top-level announcer for ephemeral status messages (sfAnnounce target) */}
@@ -7718,7 +8031,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
             {draftSaveState === 'saving' ? <RefreshCw size={15} aria-hidden="true" /> : draftSaveState === 'saved' ? <CheckCircle2 size={15} aria-hidden="true" /> : <Save size={15} aria-hidden="true" />}
             <span className="hidden sm:inline">{draftSaveLabel}</span>
           </button>
-          <span className="sr-only" aria-live="polite" data-sf-draft-save-live>{draftSaveState === 'error' ? draftSaveError : draftSaveState === 'saving' ? 'Saving story draft' : draftSaveState === 'saved' ? 'Story draft saved' : ''}</span>
+          <span className="sr-only" aria-live="polite" data-sf-draft-save-live>{draftSaveState === 'error' ? draftSaveError : draftSaveState === 'saving' ? 'Saving project' : draftSaveState === 'saved' ? 'Project saved' : ''}</span>
           <button type="button"
             data-sf-focusable
             onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
@@ -7736,7 +8049,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
 
       {/* Workflow readiness */}
       <div className="sf-workflow-dashboard bg-white border-b border-slate-200 shrink-0">
-        <nav className="px-2 sm:px-6 pt-3 pb-2 flex items-center justify-center gap-1 overflow-x-auto" role="navigation" aria-label={t("a11y.story_creation_phases")}>
+        <nav className="px-2 sm:px-6 pt-3 pb-2 flex items-center justify-start sm:justify-center gap-1 overflow-x-auto" role="navigation" aria-label={t("a11y.story_creation_phases")}>
           {PHASES.map((p, i) => {
             const Icon = phaseIcons[i];
             const phaseHealth = readinessByPhase[p] || { status: 'attention', score: 0, detail: '' };
@@ -7760,14 +8073,16 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 <button
                   type="button"
                   data-sf-focusable
-                  onClick={() => changePhase(p)}
-                  className={`shrink-0 flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors ${tone}`}
+                  data-sf-phase-step={p}
+                  onClick={() => canEnterPhase(p) && changePhase(p)}
+                  disabled={!canEnterPhase(p)}
+                  className={`min-h-11 shrink-0 flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${tone}`}
                   aria-current={isCurrent ? 'step' : undefined}
                   aria-label={`${PHASE_LABELS[i]}, ${statusLabel}, ${phaseHealth.score} percent. ${phaseHealth.detail}`}
-                  title={phaseHealth.detail}
+                  title={canEnterPhase(p) ? phaseHealth.detail : currentPhaseRequirement}
                 >
                   <Icon size={14} aria-hidden="true" />
-                  <span className="hidden sm:inline">{PHASE_LABELS[i]}</span>
+                  <span>{PHASE_LABELS[i]}</span>
                   <span className={`hidden sm:block w-1.5 h-1.5 rounded-full ${isCurrent ? 'bg-white' : isReady ? 'bg-emerald-500' : phaseHealth.status === 'blocked' ? 'bg-rose-500' : phaseHealth.status === 'progress' ? 'bg-blue-500' : 'bg-amber-500'}`} aria-hidden="true" />
                 </button>
               </React.Fragment>
@@ -7778,13 +8093,13 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-3 text-[11px] font-black uppercase text-slate-600">
-                <span>Production readiness</span>
-                <span>{projectReadiness.percent}%</span>
+                <span>Build checklist</span>
+                <span>{projectReadiness.readyCount}/{PHASES.length} steps ready</span>
               </div>
-              <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="Story production readiness" aria-valuemin="0" aria-valuemax="100" aria-valuenow={projectReadiness.percent}>
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="Artifact production readiness" aria-valuemin="0" aria-valuemax="100" aria-valuenow={projectReadiness.percent}>
                 <div className={`h-full rounded-full transition-all ${projectReadiness.blockers.length ? 'bg-rose-500' : projectReadiness.warnings.length ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${projectReadiness.percent}%` }} />
               </div>
-              <div className="mt-1 text-[11px] font-medium text-slate-500">{projectReadiness.summary} · {projectReadiness.readyCount}/{PHASES.length} phases ready</div>
+              <div className="mt-1 text-[11px] font-medium text-slate-500">{projectReadiness.summary}</div>
             </div>
             {primaryReadinessIssue && (
               <button
@@ -7794,13 +8109,38 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 className={`sf-health-action min-w-0 sm:max-w-xs rounded-lg border px-3 py-2 text-left text-xs font-bold flex items-center gap-2 ${projectReadiness.blockers.length ? 'border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100' : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100'}`}
                 title={primaryReadinessIssue.detail}
               >
-                <span className="min-w-0 flex-1 truncate">{primaryReadinessIssue.label}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[9px] uppercase tracking-widest opacity-75">{projectReadiness.blockers.length ? 'Required' : 'Recommended'}</span>
+                  <span className="block truncate">{primaryReadinessIssue.label}</span>
+                </span>
                 <ArrowRight size={14} className="shrink-0" aria-hidden="true" />
               </button>
             )}
           </div>
         </div>
       </div>
+      <section className="bg-slate-50 border-b border-slate-200 px-3 sm:px-6 py-3 shrink-0" aria-labelledby="sf-current-step-title">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-5">
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-black uppercase tracking-widest text-rose-600">
+              Step {phaseIdx + 1} of {PHASES.length} · {ARTIFACT_TYPES[artifactType].label}
+            </div>
+            <h2 id="sf-current-step-title" className="text-base font-black text-slate-800">{currentPhaseGuide.title}</h2>
+            <p className="text-xs text-slate-600 mt-0.5">{currentPhaseGuide.outcome}</p>
+          </div>
+          <div
+            id="sf-phase-requirements"
+            data-sf-phase-requirements
+            className={'sm:max-w-sm rounded-lg border px-3 py-2 text-xs font-bold ' + (
+              canGoNext() || phase === 'export'
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                : 'border-amber-200 bg-amber-50 text-amber-900'
+            )}
+          >
+            {currentPhaseRequirement}
+          </div>
+        </div>
+      </section>
       {/* ── Phase Content ── */}
       <div className="flex-grow overflow-y-auto" ref={phaseContentRef} tabIndex={-1} role="region" aria-label={`${PHASE_LABELS[phaseIdx]} phase`}>
         <div className="max-w-4xl mx-auto p-6">
@@ -7809,8 +8149,8 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           {phase === 'configure' && (
             <div className={`space-y-6 ${animClass}`}>
               <div className="text-center mb-6">
-                <h3 className="text-2xl font-black text-slate-800">{t("ui_common.set_up_story")}</h3>
-                <p className="text-slate-600 text-sm mt-1">Name your story, choose a genre, and set your vocabulary ingredients</p>
+                <h3 className="text-2xl font-black text-slate-800">Plan your {artifactType === 'comic' ? 'comic' : 'story'}</h3>
+                <p className="text-slate-600 text-sm mt-1">Name your {artifactType === 'comic' ? 'comic' : 'story'}, choose a genre, and set vocabulary goals</p>
                 <div className="flex gap-2 justify-center mt-2 flex-wrap">
                   <button type="button" onClick={importDraftJSON} className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1">
                     <Plus size={10} /> Import classmate's draft
@@ -7849,11 +8189,11 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               <div className="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="sf-title" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t("ui_common.story_title_label")}</label>
+                    <label htmlFor="sf-title" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{artifactType === 'comic' ? 'Comic title' : 'Story title'}</label>
                     <input
                       id="sf-title"
                       type="text" value={storyTitle} onChange={(e) => setStoryTitle(e.target.value)}
-                      placeholder={t("placeholders.story_title")}
+                      placeholder={artifactType === 'comic' ? 'Give your comic a title' : 'Give your story a title'}
                       className="w-full text-sm p-2.5 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 font-bold"
                     />
                   </div>
@@ -7887,28 +8227,61 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 </div>
               </div>
 
-              {/* Format Picker */}
-              <div className="bg-white rounded-2xl border-2 border-blue-100 p-5 shadow-sm">
+              {/* Artifact type picker */}
+              <div data-sf-artifact-picker className="bg-white rounded-2xl border-2 border-blue-100 p-5 shadow-sm">
                 <h4 className="text-sm font-bold text-blue-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Type size={16} /> Format
+                  <Type size={16} /> What are you making?
                 </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {Object.entries(LAYOUT_MODES).map(([key, m]) => (
+                <p className="text-xs text-slate-600 mb-3">Choose this before drafting. Story and Comic use different building tools.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {Object.entries(ARTIFACT_TYPES).map(([key, m]) => (
                     <button
                       key={key}
                       type="button"
-                      onClick={() => setLayoutMode(key)}
-                      aria-pressed={layoutMode === key}
-                      aria-label={m.desc}
-                      title={m.desc}
-                      className={`p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${
-                        layoutMode === key ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md' : 'border-slate-200 text-slate-600 hover:border-blue-300'
+                      onClick={() => selectArtifactType(key)}
+                      disabled={artifactTypeLocked && artifactType !== key}
+                      aria-pressed={artifactType === key}
+                      aria-label={m.label + ': ' + m.desc}
+                      title={artifactTypeLocked && artifactType !== key ? 'Artifact type is locked after drafting begins' : m.desc}
+                      className={`p-3 rounded-xl border-2 text-center text-xs font-bold transition-all disabled:opacity-45 disabled:cursor-not-allowed ${
+                        artifactType === key ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md' : 'border-slate-200 text-slate-600 hover:border-blue-300'
                       }`}
                     >
-                      {m.emoji}<br/>{m.label}
+                      <span className="block text-sm">{m.label}</span>
+                      <span className="block text-[11px] font-medium leading-snug mt-1">{m.desc}</span>
                     </button>
                   ))}
                 </div>
+                {artifactTypeLocked && (
+                  <p className="mt-3 text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                    Artifact type is locked because drafting has started. Your current Story or Comic structure is protected.
+                  </p>
+                )}
+                {artifactType === 'story' && (
+                  <div data-sf-writing-view-picker className="mt-4 pt-4 border-t border-blue-100">
+                    <div className="text-[11px] font-bold text-blue-600 uppercase tracking-widest mb-1">Writing view</div>
+                    <p className="text-xs text-slate-500 mb-2">This only changes how the Draft canvas looks.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {Object.entries(WRITING_VIEWS).map(([key, item]) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => selectWritingView(key)}
+                          aria-pressed={writingView === key}
+                          title={item.desc}
+                          className={'p-2.5 rounded-xl border-2 text-left transition-all ' + (
+                            writingView === key
+                              ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                              : 'border-slate-200 text-slate-600 hover:border-blue-300'
+                          )}
+                        >
+                          <div className="text-xs font-black">{item.label}</div>
+                          <div className="text-[10px] leading-snug opacity-75 mt-0.5">{item.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {layoutMode === 'comic' && (
                   <div className="mt-4 pt-4 border-t border-blue-100">
                     <div className="text-[11px] font-bold text-blue-600 uppercase tracking-widest mb-2">Comic Page Layout</div>
@@ -7969,7 +8342,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               {/* Vocab Terms */}
               <div className="bg-white rounded-2xl border-2 border-rose-100 p-5 shadow-sm">
                 <h4 className="text-sm font-bold text-rose-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <BookOpen size={16} /> Story Ingredients ({vocabTerms.length} terms)
+                  <BookOpen size={16} /> Vocabulary Goals ({vocabTerms.length} terms)
                 </h4>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {vocabTerms.map((v, i) => (
@@ -7984,23 +8357,23 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     <p className="text-slate-500 text-sm italic">No vocabulary terms yet — add some below or they'll come from your glossary</p>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     id="sf-new-vocab-term"
                     type="text" value={newTerm} onChange={(e) => setNewTerm(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && addVocabTerm()}
                     placeholder={t("placeholders.add_a_term")}
                     aria-label={t("a11y.vocabulary_term")}
-                    className="flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300"
+                    className="min-w-0 flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300"
                   />
                   <input
                     type="text" value={newDef} onChange={(e) => setNewDef(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && addVocabTerm()}
                     placeholder={t("placeholders.definition_optional")}
                     aria-label={t("a11y.term_definition")}
-                    className="flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300"
+                    className="min-w-0 flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300"
                   />
-                  <button type="button" onClick={addVocabTerm} disabled={!newTerm.trim()} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 disabled:opacity-50 transition-colors flex items-center gap-1">
+                  <button type="button" onClick={addVocabTerm} disabled={!newTerm.trim()} className="w-full sm:w-auto justify-center px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 disabled:opacity-50 transition-colors flex items-center gap-1">
                     <Plus size={14} /> Add
                   </button>
                 </div>
@@ -8012,9 +8385,10 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 className="w-full flex items-center justify-between px-5 py-3 bg-slate-50 border-2 border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors"
                 aria-expanded={showAdvancedConfig}
               >
-                <span className="flex items-center gap-2"><Palette size={16} /> Advanced Settings</span>
+                <span className="flex items-center gap-2 text-left"><Palette size={16} /> Optional setup &amp; assignment</span>
                 <span className={`transition-transform ${showAdvancedConfig ? 'rotate-180' : ''}`}>▼</span>
               </button>
+              <p className="-mt-4 px-2 text-xs text-slate-500">Story shape, art, language, starting idea, and rubric.</p>
 
               {showAdvancedConfig && (
               <div className="space-y-6">
@@ -8084,10 +8458,10 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 {language !== 'en' && <p className="mt-2 text-[11px] text-teal-500 font-medium">AI scaffolds, coaching, grading, and dictation will use {langLabel}</p>}
               </div>
 
-              {/* Story Prompt */}
+              {/* Starting idea */}
               <div className="bg-white rounded-2xl border-2 border-amber-100 p-5 shadow-sm">
                 <h4 className="text-sm font-bold text-amber-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Sparkles size={16} /> Story Prompt (Optional)
+                  <Sparkles size={16} /> Starting Idea (Optional)
                 </h4>
                 <textarea
                   value={storyPrompt} onChange={(e) => setStoryPrompt(e.target.value)}
@@ -8141,15 +8515,34 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           {/* ═══ WRITE PHASE ═══ */}
           {phase === 'write' && (
             <div className={`space-y-4 ${animClass}`}>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800">{t("ui_common.write_your_story")}</h3>
+                  <h3 className="text-2xl font-black text-slate-800">{artifactType === 'comic' ? 'Draft your comic' : 'Draft your story'}</h3>
                   <p className="text-slate-600 text-sm mt-1">
-                    Use your vocabulary ingredients in each paragraph
+                    {artifactType === 'comic' ? 'Build one clear panel beat at a time' : 'Build one clear scene at a time'}
                     {revisionSnapshot && <span className="text-indigo-500 ml-2">Draft #{draftCount} — revising!</span>}
                   </p>
                 </div>
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-2 items-center flex-wrap sm:justify-end">
+                  <button type="button"
+                    onClick={generateScaffolds}
+                    disabled={isProcessing}
+                    className="px-4 py-2 bg-rose-600 text-white rounded-full text-xs font-bold hover:bg-rose-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <Sparkles size={14} /> {layoutMode === 'comic'
+                      ? (scaffoldsGenerated ? 'Regenerate Panel Plan' : 'Generate Panel Plan')
+                      : (scaffoldsGenerated ? 'Regenerate Scene Plan' : 'Generate Scene Plan')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowWritingTools(value => !value)}
+                    aria-expanded={showWritingTools}
+                    className="px-4 py-2 rounded-full border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50"
+                  >
+                    {showWritingTools ? 'Hide tools' : 'More tools'}
+                  </button>
+                  {showWritingTools && (
+                  <>
                   {/* Writing timer */}
                   {timerActive ? (
                     <div className="flex items-center gap-2 bg-rose-100 border border-rose-300 rounded-full px-3 py-1">
@@ -8165,22 +8558,27 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       ))}
                     </div>
                   )}
-                  {/* Layout toggle */}
-                  <div className="flex bg-slate-100 rounded-full p-0.5">
-                    {Object.entries(LAYOUT_MODES).map(([key, m]) => (
-                      <button type="button"
-                        key={key}
-                        onClick={() => setLayoutMode(key)}
-                        className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${
-                          layoutMode === key ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'
-                        }`}
-                        aria-label={m.desc}
-                        title={m.desc}
-                      >
-                        {m.emoji} {m.label}
-                      </button>
-                    ))}
-                  </div>
+                  {artifactType === 'story' ? (
+                    <div data-sf-writing-view-picker className="flex bg-slate-100 rounded-full p-0.5">
+                      {Object.entries(WRITING_VIEWS).map(([key, item]) => (
+                        <button type="button"
+                          key={key}
+                          onClick={() => selectWritingView(key)}
+                          className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${
+                            writingView === key ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'
+                          }`}
+                          aria-label={item.desc}
+                          title={item.desc}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => changePhase('configure')} className="px-3 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 hover:bg-blue-200" title="Artifact type is chosen in Plan">
+                      Comic · Change in Plan
+                    </button>
+                  )}
                   {layoutMode === 'comic' && onCallGemini && (
                     <button type="button"
                       onClick={() => draftComicBubbles()}
@@ -8221,22 +8619,15 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <Sparkles size={14} /> Tighten Bubbles
                     </button>
                   )}
-                  <button type="button"
-                    onClick={generateScaffolds}
-                    disabled={isProcessing}
-                    className="px-4 py-2 bg-rose-100 text-rose-700 rounded-full text-xs font-bold hover:bg-rose-200 transition-colors flex items-center gap-2 disabled:opacity-50"
-                  >
-                    <Sparkles size={14} /> {layoutMode === 'comic'
-                      ? (scaffoldsGenerated ? 'Regenerate Panel Plan' : 'Generate Panel Plan')
-                      : (scaffoldsGenerated ? 'Regenerate Scaffolds' : 'Generate Scaffolds')}
-                  </button>
                   {/* Focus Mode Toggle — write one paragraph at a time */}
                   <button type="button"
                     onClick={() => { setFocusMode(!focusMode); setFocusParagraphIdx(0); }}
                     className={`px-4 py-2 rounded-full text-xs font-bold transition-colors flex items-center gap-2 ${
                       focusMode ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200'
                     }`}
-                    title={focusMode ? 'Show all paragraphs at once' : 'Focus on one paragraph at a time — less overwhelming!'}
+                    title={focusMode
+                      ? 'Show all ' + (artifactType === 'comic' ? 'panels' : 'scenes') + ' at once'
+                      : 'Focus on one ' + (artifactType === 'comic' ? 'panel' : 'scene') + ' at a time'}
                   >
                     <Target size={14} /> {focusMode ? 'Focus ON' : 'Focus Mode'}
                   </button>
@@ -8248,6 +8639,8 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     >
                       <CheckCircle2 size={14} /> {grammarLoading ? 'Checking...' : 'Check Writing'}
                     </button>
+                  )}
+                  </>
                   )}
                 </div>
               </div>
@@ -8267,7 +8660,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               {/* Vocab Ingredients Bar — STICKY so it's always visible while writing */}
               <div className="bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-3 sticky top-0 z-30 shadow-sm" style={{ backdropFilter: 'blur(8px)', background: 'rgba(255,241,242,0.92)' }}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <div className="text-[11px] font-bold text-rose-500 uppercase tracking-widest">Story Ingredients — click to copy</div>
+                  <div className="text-[11px] font-bold text-rose-500 uppercase tracking-widest">Vocabulary goals · click to copy</div>
                   <div className="text-[11px] font-bold text-rose-700">
                     {vocabTerms.filter(v => vocabUsage[v.term]).length}/{vocabTerms.length} used
                   </div>
@@ -8288,13 +8681,13 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           type="button"
                           data-sf-focusable
                           aria-describedby={`sf-vocab-tip-${i}`}
-                          aria-label={`${v.term}${used ? ' — used' : ' — not yet used'}. ${t("a11y.copy_vocab_term") || 'Copy term to paste into your story'}`}
+                          aria-label={`${v.term}${used ? ' — used' : ' — not yet used'}. Copy term to paste into your draft`}
                           className={`px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all cursor-pointer select-none ${
                             used ? 'bg-green-100 border-green-400 text-green-800 shadow-sm' : 'bg-white border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-400'
                           }`}
                           onClick={async () => {
                             if (!navigator.clipboard?.writeText) { if (addToast) addToast(`Copy "${v.term}" manually — clipboard unavailable`, 'error'); return; }
-                            try { const ok = window.alloCopyText ? await window.alloCopyText(v.term) : false; if (!ok) throw new Error('copy unavailable'); if (addToast) addToast(`"${v.term}" copied — paste into your story!`, 'success'); }
+                            try { const ok = window.alloCopyText ? await window.alloCopyText(v.term) : false; if (!ok) throw new Error('copy unavailable'); if (addToast) addToast(`"${v.term}" copied — paste into your draft!`, 'success'); }
                             catch (err) { console.warn('Clipboard write failed:', err); if (addToast) addToast(`Couldn't copy — please copy "${v.term}" manually`, 'error'); }
                           }}
                         >
@@ -8305,7 +8698,9 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         <div id={`sf-vocab-tip-${i}`} role="tooltip" className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-50 pointer-events-none">
                           <div className="text-xs font-bold text-amber-300 mb-1">{v.term}</div>
                           {v.definition && <div className="text-[11px] text-slate-200 leading-relaxed mb-1">{v.definition}</div>}
-                          <div className="text-[11px] text-slate-300 italic">Click to copy · Paste into your paragraph</div>
+                          <div className="text-[11px] text-slate-300 italic">
+                            Click to copy · Paste into your {artifactType === 'comic' ? 'panel' : 'scene'}
+                          </div>
                           <div aria-hidden="true" className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" />
                         </div>
                       </div>
@@ -8403,7 +8798,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     ← Previous
                   </button>
                   <div className="text-center">
-                    <div className="text-xs font-bold text-indigo-700">{layoutMode === 'comic' ? 'Panel' : 'Paragraph'} {focusParagraphIdx + 1} of {paragraphs.length}</div>
+                    <div className="text-xs font-bold text-indigo-700">{layoutMode === 'comic' ? 'Panel' : 'Scene'} {focusParagraphIdx + 1} of {paragraphs.length}</div>
                     <div className="text-[11px] text-indigo-400 mt-0.5">
                       {paragraphs[focusParagraphIdx]?.scaffoldFrame ? paragraphs[focusParagraphIdx].scaffoldFrame.substring(0, 60) + (paragraphs[focusParagraphIdx].scaffoldFrame.length > 60 ? '...' : '') : 'Free write'}
                     </div>
@@ -8416,8 +8811,8 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           className={`w-2 h-2 rounded-full transition-all ${
                             pi === focusParagraphIdx ? 'bg-indigo-600 scale-125' : pp.text.trim().length > 10 ? 'bg-green-400' : 'bg-slate-300'
                           }`}
-                          title={`Jump to ${layoutMode === 'comic' ? 'panel' : 'paragraph'} ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
-                          aria-label={`Jump to ${layoutMode === 'comic' ? 'panel' : 'paragraph'} ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
+                          title={`Jump to ${layoutMode === 'comic' ? 'panel' : 'scene'} ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
+                          aria-label={`Jump to ${layoutMode === 'comic' ? 'panel' : 'scene'} ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
                           aria-current={pi === focusParagraphIdx ? 'true' : undefined}
                         />
                       ))}
@@ -8434,7 +8829,9 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     }}
                     className="px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-1"
                   >
-                    {focusParagraphIdx >= paragraphs.length - 1 ? '+ New ¶' : 'Next →'}
+                    {focusParagraphIdx >= paragraphs.length - 1
+                      ? (artifactType === 'comic' ? '+ New panel' : '+ New scene')
+                      : 'Next →'}
                   </button>
                 </div>
               )}
@@ -8476,11 +8873,11 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           <Move size={15} aria-hidden="true" />
                         </button>
                       )}
-                      <span className="text-xs font-bold text-slate-600">{layoutMode === 'comic' ? 'Panel' : 'Paragraph'} {idx + 1}</span>
+                      <span className="text-xs font-bold text-slate-600">{layoutMode === 'comic' ? 'Panel' : 'Scene'} {idx + 1}</span>
                       {/* Reorder buttons */}
                       <div className="flex gap-0.5">
-                        <button type="button" onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={layoutMode === 'comic' ? `Move panel ${idx + 1} earlier` : t("a11y.move_paragraph_up")} title={t("ui_common.move_up")}>▲</button>
-                        <button type="button" onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={layoutMode === 'comic' ? `Move panel ${idx + 1} later` : t("a11y.move_paragraph_down")} title={t("ui_common.move_down")}>▼</button>
+                        <button type="button" onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={`Move ${layoutMode === 'comic' ? 'panel' : 'scene'} ${idx + 1} earlier`} title={t("ui_common.move_up")}>▲</button>
+                        <button type="button" onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={`Move ${layoutMode === 'comic' ? 'panel' : 'scene'} ${idx + 1} later`} title={t("ui_common.move_down")}>▼</button>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -8508,7 +8905,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         <Sparkles size={10} /> Help Me
                       </button>
                       {paragraphs.length > 1 && (
-                        <button type="button" onClick={() => removeParagraph(idx)} className="text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={`Remove ${layoutMode === 'comic' ? 'panel' : 'paragraph'} ${idx + 1}`}>
+                        <button type="button" onClick={() => removeParagraph(idx)} className="text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={`Remove ${layoutMode === 'comic' ? 'panel' : 'scene'} ${idx + 1}`}>
                           <Trash2 size={14} />
                         </button>
                       )}
@@ -8530,7 +8927,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         value={p.plotBeat || ''}
                         onChange={(e) => updateParagraphBeat(idx, e.target.value)}
                         className="text-xs px-2 py-1 rounded-md border border-indigo-200 bg-white text-indigo-800 font-medium focus:border-indigo-500"
-                        aria-label={`Plot beat for ${layoutMode === 'comic' ? 'panel' : 'paragraph'} ${idx + 1} (optional)`}
+                        aria-label={`Plot beat for ${layoutMode === 'comic' ? 'panel' : 'scene'} ${idx + 1} (optional)`}
                       >
                         {PLOT_BEATS.map(b => (
                           <option key={b.value || 'none'} value={b.value}>{b.label}</option>
@@ -8788,8 +9185,8 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         backgroundImage: layoutMode === 'journal' ? 'repeating-linear-gradient(transparent, transparent 27px, #d4a574 27px, #d4a574 28px)' : undefined,
                         backgroundPosition: layoutMode === 'journal' ? '0 8px' : undefined,
                       }}
-                      placeholder={p.scaffoldFrame ? "Continue from the scaffold above..." : layoutMode === 'journal' ? "Dear diary..." : layoutMode === 'dark' ? "Begin your story..." : "Write your paragraph here..."}
-                      aria-label={`Paragraph ${idx + 1} text`}
+                      placeholder={p.scaffoldFrame ? "Continue from the scaffold above..." : layoutMode === 'journal' ? "Write this scene like a notebook entry..." : "Write this scene here..."}
+                      aria-label={`Scene ${idx + 1} text`}
                     />
                   )}
                   {/* ── Handwriting Capture Row ── */}
@@ -8802,7 +9199,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       } ${
                         layoutMode === 'dark' ? 'border-cyan-700 text-cyan-400 hover:bg-cyan-900/30' : 'border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400'
                       }`}
-                        aria-label={`Snap or upload handwriting for paragraph ${idx + 1}`}
+                        aria-label={`Snap or upload handwriting for scene ${idx + 1}`}
                       >
                         <input
                           type="file"
@@ -8940,7 +9337,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       className="text-[11px] text-indigo-600 hover:text-indigo-700 font-medium hover:bg-indigo-50 px-3 py-1 rounded-full transition-colors"
                       title={t("ui_common.click_to_insert")}
                     >
-                      Tip: Start next paragraph with "{suggestTransition(idx + 1)}"
+                      Tip: Start the next scene with "{suggestTransition(idx + 1)}"
                     </button>
                   </div>
                 )}
@@ -8949,7 +9346,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
 
               {!focusMode && paragraphs.length < maxParagraphs && (
                 <button type="button" onClick={addParagraph} className="w-full p-3 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 font-bold text-sm hover:border-rose-400 hover:text-rose-500 transition-colors flex items-center justify-center gap-2">
-                  <Plus size={16} /> Add Paragraph
+                  <Plus size={16} /> {artifactType === 'comic' ? 'Add Panel' : 'Add Scene'}
                 </button>
               )}
             </div>
@@ -8958,10 +9355,14 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           {/* ═══ ILLUSTRATE PHASE ═══ */}
           {phase === 'illustrate' && (
             <div className={`space-y-4 ${animClass}`}>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800">{t("ui_common.illustrate_story")}</h3>
-                  <p className="text-slate-600 text-sm mt-1">{layoutMode === 'comic' ? 'AI will create consistent artwork for each panel' : 'AI will create artwork for each paragraph'}</p>
+                  <h3 className="text-2xl font-black text-slate-800">Design your {artifactType === 'comic' ? 'comic' : 'story'}</h3>
+                  <p className="text-slate-600 text-sm mt-1">
+                    {layoutMode === 'comic'
+                      ? 'Add consistent artwork to each panel, then check the reading order'
+                      : 'Add optional artwork to any scene that benefits from a visual'}
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2 justify-end">
                   <button type="button"
@@ -8986,7 +9387,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     disabled={isProcessing}
                     className="px-4 py-2 bg-purple-600 text-white rounded-full text-xs font-bold hover:bg-purple-700 transition-colors flex items-center gap-2 disabled:opacity-50"
                   >
-                    <ImageIcon size={14} /> {isProcessing ? 'Generating...' : 'Illustrate All'}
+                    <ImageIcon size={14} /> {isProcessing ? 'Generating...' : (artifactType === 'comic' ? 'Design All Panels' : 'Illustrate All Scenes')}
                   </button>
                 </div>
               </div>
@@ -8994,13 +9395,13 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               {/* Cover Art Preview */}
               {(coverArt || coverArtLoading) && (
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center">
-                  <div className="text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2">{t("ui_common.book_cover")}</div>
+                  <div className="text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2">Cover art</div>
                   {coverArtLoading ? (
                     <div className="w-48 h-48 mx-auto bg-purple-100 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-300">
                       <RefreshCw size={32} className="text-purple-700 animate-spin motion-reduce:animate-none" />
                     </div>
                   ) : coverArt && (
-                    <img src={coverArt} alt={t("alts.book_cover")} className="max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" />
+                    <img src={coverArt} alt="Artifact cover art" className="max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" />
                   )}
                 </div>
               )}
@@ -9131,7 +9532,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               {promptPreview && (
                 <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-5 shadow-lg">
                   <div className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <Eye size={14} /> Preview Image Prompt — {layoutMode === 'comic' ? 'Panel' : 'Paragraph'} {promptPreview.idx + 1}
+                    <Eye size={14} /> Preview Image Prompt — {layoutMode === 'comic' ? 'Panel' : 'Scene'} {promptPreview.idx + 1}
                   </div>
                   <p className="text-[11px] text-slate-600 mb-2">Edit the prompt below before generating, or click Generate to proceed.</p>
                   <textarea
@@ -9153,10 +9554,10 @@ const comicAltCoverageLabel = layoutMode === 'comic'
 
               {paragraphs.map((p, idx) => (
                 <div key={p.id} id={`sf-illustrate-${p.id}`} tabIndex={-1} data-sf-focusable className="bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-5 focus:ring-2 focus:ring-purple-400">
-                  <div className="flex items-start gap-4">
+                  <div className="flex flex-col sm:flex-row items-start gap-4">
                     <div className="flex-1">
-                      <div className="text-xs font-bold text-purple-600 mb-1">{layoutMode === 'comic' ? 'Panel' : 'Paragraph'} {idx + 1}</div>
-                      <p className="text-sm text-slate-700 leading-relaxed">{p.text || p.scaffoldFrame || <span className="italic text-slate-500">{t("ui_common.empty_paragraph")}</span>}</p>
+                      <div className="text-xs font-bold text-purple-600 mb-1">{layoutMode === 'comic' ? 'Panel' : 'Scene'} {idx + 1}</div>
+                      <p className="text-sm text-slate-700 leading-relaxed">{p.text || p.scaffoldFrame || <span className="italic text-slate-500">No draft text yet.</span>}</p>
                       {/* Show the prompt used */}
                       {illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && (
                         <div className="mt-2 text-[11px] text-purple-700 italic truncate" title={illustrations[p.id].prompt}>
@@ -9233,7 +9634,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           )}
                                                   <label className="mt-2 block rounded-lg border border-purple-100 bg-purple-50/70 px-2 py-1.5 text-[10px] font-bold text-purple-700">
                             <span className="flex items-center justify-between"><span>Image size</span><span>{clampStoryIllustrationWidth(illustrations[p.id]?.displayWidth)}px</span></span>
-                            <input type="range" min={240} max={720} step={10} value={clampStoryIllustrationWidth(illustrations[p.id]?.displayWidth)} onChange={(e) => updateIllustrationDisplayWidth(p.id, e.target.value)} className="mt-1 w-full accent-purple-600" aria-label={"Image width for paragraph " + (idx + 1)} />
+                            <input type="range" min={240} max={720} step={10} value={clampStoryIllustrationWidth(illustrations[p.id]?.displayWidth)} onChange={(e) => updateIllustrationDisplayWidth(p.id, e.target.value)} className="mt-1 w-full accent-purple-600" aria-label={'Image width for ' + (artifactType === 'comic' ? 'panel ' : 'scene ') + (idx + 1)} />
                           </label>
 </div>
                       ) : illustrations[p.id]?.error ? (
@@ -9277,12 +9678,16 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           {/* ═══ NARRATE PHASE ═══ */}
           {phase === 'narrate' && (
             <div className={`space-y-4 ${animClass}`}>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800">{t("headings.narrate_story")}</h3>
-                  <p className="text-slate-600 text-sm mt-1">AI reads your story aloud — or record your own voice</p>
+                  <h3 className="text-2xl font-black text-slate-800">Add audio to your {artifactType === 'comic' ? 'comic' : 'story'}</h3>
+                  <p className="text-slate-600 text-sm mt-1">
+                    {artifactType === 'comic'
+                      ? 'AI reads each panel caption aloud — or record your own voice'
+                      : 'AI reads each scene aloud — or record your own voice'}
+                  </p>
                 </div>
-                <div className="flex gap-2 items-center">
+                <div className="flex flex-wrap gap-2 items-center">
                   {/* Voice selector */}
                   <div className="flex items-center gap-1.5">
                     <label htmlFor="sf-voice" className="text-[11px] font-bold text-indigo-500 uppercase">Voice:</label>
@@ -9301,7 +9706,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     </button>
                   )}
                   <button type="button" onClick={narrateAll} disabled={isProcessing} className="px-4 py-2 bg-indigo-600 text-white rounded-full text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2">
-                    <Volume2 size={14} /> {isProcessing ? 'Narrating...' : 'Narrate All'}
+                    <Volume2 size={14} /> {isProcessing ? 'Narrating...' : (artifactType === 'comic' ? 'Narrate All Captions' : 'Narrate All Scenes')}
                   </button>
                   {isNarrating && (
                     <button type="button" onClick={stopStoryNarration} className="px-4 py-2 bg-amber-500 text-white rounded-full text-xs font-bold hover:bg-amber-600 transition-colors flex items-center gap-2">
@@ -9340,7 +9745,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 return (
                   <div key={p.id} className={`bg-white rounded-2xl border-2 shadow-sm p-5 transition-colors ${isCurrentPlayback ? 'border-green-400 bg-green-50/30' : 'border-indigo-100'}`}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-indigo-600">Paragraph {idx + 1} {isCurrentPlayback && '\u25B6 Playing'}</span>
+                      <span className="text-xs font-bold text-indigo-600">{artifactType === 'comic' ? 'Panel' : 'Scene'} {idx + 1} {isCurrentPlayback && '\u25B6 Playing'}</span>
                       <div className="flex gap-2">
                         {/* AI Narrate button */}
                         {hasSentenceAudio ? (
@@ -9480,12 +9885,22 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           {/* ═══ REVIEW PHASE ═══ */}
           {phase === 'review' && (
             <div id="sf-review-tools" tabIndex={-1} data-sf-focusable className={`space-y-6 focus:ring-2 focus:ring-indigo-400 ${animClass}`}>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">{t("headings.review_feedback")}</h3>
-                  <p className="text-slate-600 text-sm mt-1">Draft #{draftCount} — Get AI feedback on your story</p>
+                  <p className="text-slate-600 text-sm mt-1">Draft #{draftCount} · Reflect, get feedback, and revise before visual design</p>
                 </div>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 flex-wrap sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowReviewTools(value => !value)}
+                    aria-expanded={showReviewTools}
+                    className="px-4 py-2.5 bg-white text-slate-700 rounded-full text-sm font-bold hover:bg-slate-50 border border-slate-300"
+                  >
+                    {showReviewTools ? 'Hide review tools' : 'More review tools'}
+                  </button>
+                  {showReviewTools && (
+                  <>
                   {!gradingResult && (
                     <button type="button" onClick={checkSenses} disabled={sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title={t("tooltips.check_sensory")}>
                       🌈 {sensesLoading ? 'Checking...' : 'Senses Check'}
@@ -9521,6 +9936,8 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       🗺️ºï¸ {revisionPlanLoading ? 'Synthesizing...' : 'Revision Plan'}
                     </button>
                   )}
+                  </>
+                  )}
                   {!gradingResult && (
                     <button type="button" onClick={gradeStory} disabled={isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
                       <Sparkles size={16} /> {isProcessing ? 'Grading...' : 'Get Feedback'}
@@ -9528,11 +9945,21 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   )}
                   {gradingResult && (
                     <button type="button" onClick={reviseStory} className="px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2">
-                      <RefreshCw size={16} /> Revise Story
+                      <RefreshCw size={16} /> Revise Draft
                     </button>
                   )}
                 </div>
               </div>
+
+              {isReviewStale && (
+                <div data-sf-review-stale role="alert" className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 text-amber-950">
+                  <p className="text-sm font-black">This feedback is for an earlier draft.</p>
+                  <p className="mt-1 text-xs">The writing or comic dialogue changed after Review. Start a fresh review to continue to Design.</p>
+                  <button type="button" onClick={clearReviewState} className="mt-3 rounded-full bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700">
+                    Start fresh review
+                  </button>
+                </div>
+              )}
 
               {/* ═══ Pre-grade Self-Assessment ═══ */}
               {!gradingResult && !selfAssessmentSubmitted && (
@@ -9542,7 +9969,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <h4 className="text-base font-black text-violet-800 flex items-center gap-2">
                         <Star size={18} /> Self-Assessment First
                       </h4>
-                      <p className="text-xs text-violet-700 mt-1">Rate your own story on each criterion (1-5) before the AI grades it. This builds reflection skills.</p>
+                      <p className="text-xs text-violet-700 mt-1">Rate your own draft on each criterion (1-5) before the AI gives feedback. This builds reflection skills.</p>
                     </div>
                     <button type="button"
                       onClick={() => { setSelfAssessmentSubmitted(true); sfAnnounce('Self-assessment skipped. AI grading is now available.'); }}
@@ -9576,6 +10003,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       getRubricCriteria().forEach(c => { filled[c] = selfAssessment[c] || 3; });
                       setSelfAssessment(filled);
                       setSelfAssessmentSubmitted(true);
+                      setReviewedDraftSignature(currentReviewDraftSignature);
                       sfAnnounce('Self-assessment submitted. You can now get AI feedback.');
                       awardXP(8, 'Completed self-assessment');
                     }}
@@ -9981,7 +10409,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       </div>
                     ))}
                   </div>
-                  <p className="text-[11px] text-orange-500 mt-2">Tip: Check your character names are spelled consistently throughout the story</p>
+                  <p className="text-[11px] text-orange-500 mt-2">Tip: Check your character names are spelled consistently throughout the draft</p>
                 </div>
               )}
 
@@ -10027,7 +10455,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   </div>
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
                     <div className="text-2xl font-black text-slate-800">{paragraphs.length}</div>
-                    <div className="text-[11px] text-slate-600 font-bold">Paragraphs</div>
+                    <div className="text-[11px] text-slate-600 font-bold">{artifactType === 'comic' ? 'Panels' : 'Scenes'}</div>
                   </div>
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
                     <div className="text-2xl font-black text-slate-800">{vocabUsedCount}/{vocabTerms.length}</div>
@@ -10054,7 +10482,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 {/* Story Arc — emotional fortune curve (Vonnegut shapes) */}
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Story Arc <span className="normal-case tracking-normal text-slate-500 font-medium">· fortune over time</span></div>
+                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Narrative Arc <span className="normal-case tracking-normal text-slate-500 font-medium">· fortune over time</span></div>
                     {onCallGemini && (
                       <button type="button" data-sf-focusable onClick={suggestValenceArc} disabled={valenceLoading}
                         className="text-[11px] font-bold text-violet-600 hover:text-violet-800 disabled:opacity-50 inline-flex items-center gap-1">
@@ -10074,7 +10502,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     const match = anySet ? closestStoryShape(norm) : null;
                     return (
                       <>
-                        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label="Emotional fortune of the story across paragraphs" className="overflow-visible">
+                        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={`Emotional arc across ${artifactType === 'comic' ? 'panels' : 'scenes'}`} className="overflow-visible">
                           <line x1={pad} y1={py(0)} x2={W - pad} y2={py(0)} stroke="#e2e8f0" strokeWidth="1" strokeDasharray="3 3" />
                           <text x={pad} y={py(5) + 2} fontSize="7" fill="#94a3b8">😀 good</text>
                           <text x={pad} y={py(-5)} fontSize="7" fill="#94a3b8">😟 bad</text>
@@ -10134,14 +10562,14 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               {!gradingResult && !isProcessing && (
                 <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center">
                   <Star size={48} className="text-slate-600 mx-auto mb-4" />
-                  <p className="text-slate-600 font-bold">Click "Get Feedback" to receive AI-powered Glow & Grow feedback on your story</p>
+                  <p className="text-slate-600 font-bold">Click "Get Feedback" to receive AI-powered Glow &amp; Grow feedback on your draft</p>
                 </div>
               )}
 
               {isProcessing && (
                 <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-12 text-center">
                   <RefreshCw size={48} className="text-indigo-400 mx-auto mb-4 animate-spin motion-reduce:animate-none" />
-                  <p className="text-indigo-600 font-bold">Reading your story and preparing feedback...</p>
+                  <p className="text-indigo-600 font-bold">Reading your draft and preparing feedback...</p>
                 </div>
               )}
 
@@ -10247,23 +10675,22 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           {phase === 'export' && (
             <div className={`space-y-6 ${animClass}`}>
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-black text-slate-800">{t("headings.storybook_ready")}</h3>
-                <p className="text-slate-600 text-sm mt-1">Preview your illustrated story and export it</p>
-              </div>
-
-              {/* Layout Toggle */}
-              <div className="flex justify-center gap-2 mb-4">
-                {Object.entries(LAYOUT_MODES).map(([key, m]) => (
-                  <button type="button"
-                    key={key}
-                    onClick={() => setLayoutMode(key)}
-                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                      layoutMode === key ? 'bg-amber-600 text-white shadow-md' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                    }`}
-                  >
-                    {m.emoji} {m.label}
-                  </button>
-                ))}
+                <h3 className="text-2xl font-black text-slate-800">
+                  {!isCurrentDraftReviewed
+                    ? 'Review the latest draft before publishing'
+                    : publishBlocked
+                    ? 'Finish required items before publishing'
+                    : projectReadiness.warnings.length
+                      ? 'Your ' + ARTIFACT_TYPES[artifactType].label.toLowerCase() + ' is ready to export as a draft'
+                      : 'Your ' + ARTIFACT_TYPES[artifactType].label.toLowerCase() + ' is ready to publish'}
+                </h3>
+                <p className="text-slate-600 text-sm mt-1">
+                  Preview the finished {ARTIFACT_TYPES[artifactType].label.toLowerCase()} and choose how to share or save it.
+                </p>
+                <div className="inline-flex mt-3 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">
+                  Artifact: {ARTIFACT_TYPES[artifactType].label}
+                  {artifactType === 'story' ? ' · ' + WRITING_VIEWS[writingView].label + ' writing view' : ''}
+                </div>
               </div>
               {layoutMode === 'comic' && (
                 <div className="flex flex-wrap justify-center gap-2 mb-4">
@@ -10299,7 +10726,9 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     <span>Art <strong className="text-slate-900">{projectReadiness.metrics.illustratedSections}/{projectReadiness.metrics.totalSections}</strong></span>
                     <span>Audio <strong className="text-slate-900">{projectReadiness.metrics.narratedSections}/{projectReadiness.metrics.totalSections}</strong></span>
                     <span>Review <strong className="text-slate-900">{projectReadiness.metrics.reviewSignalCount ? 'Done' : 'Open'}</strong></span>
-                    <span>Alt <strong className="text-slate-900">{comicAltCoverageLabel}</strong></span>
+                    {artifactType === 'comic' && (
+                      <span>Alt <strong className="text-slate-900">{comicAltCoverageLabel}</strong></span>
+                    )}
                   </div>
                 </div>
                 {exportReadinessIssues.length > 0 ? (
@@ -10330,7 +10759,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   </div>
                 ) : (
                   <div className="px-4 py-4 text-sm font-bold text-emerald-800 flex items-center gap-2">
-                    <CheckCircle2 size={18} aria-hidden="true" /> Story structure, media, review, and production checks are clear.
+                    <CheckCircle2 size={18} aria-hidden="true" /> Narrative structure, media, review, and production checks are clear.
                   </div>
                 )}
               </section>
@@ -10781,8 +11210,8 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               {/* Preview */}
               <div className="sf-comic-preview-shell bg-gradient-to-b from-amber-50 to-white border-2 border-amber-200 rounded-2xl overflow-hidden shadow-lg">
                 <div className="text-center p-8 border-b border-amber-200 bg-gradient-to-r from-amber-100/50 to-rose-100/50">
-                  {coverArt && <img src={coverArt} alt={t("alts.book_cover")} className="max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" />}
-                  <h3 className="text-3xl font-black text-amber-900">{storyTitle || storyPrompt || sourceTopic || 'My Story'}</h3>
+                  {coverArt && <img src={coverArt} alt="Artifact cover art" className="max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" />}
+                  <h3 className="text-3xl font-black text-amber-900">{storyTitle || storyPrompt || sourceTopic || (artifactType === 'comic' ? 'My Comic' : 'My Story')}</h3>
                   {authorName && <p className="text-amber-800 text-sm mt-1 font-bold">By {authorName}</p>}
                   <p className="text-amber-700 text-sm mt-1 italic">{GENRE_TEMPLATES[genre]?.label || 'Creative Writing'} · {vocabTerms.length} vocabulary terms</p>
                 </div>
@@ -10913,17 +11342,30 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 </div>
               </div>
 
-              {/* Export Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
+              {/* Primary export */}
+              <div className="flex justify-center">
                 <button type="button"
+                  data-sf-publish-action="artifact"
+                  data-sf-publish-blocked={publishBlocked}
                   onClick={exportStorybook}
+                  aria-describedby="sf-phase-requirements"
                   className="px-8 py-4 bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-2xl text-lg font-black hover:from-rose-700 hover:to-pink-700 transition-all shadow-lg shadow-rose-200 hover:shadow-xl hover:scale-105 active:scale-95 flex items-center gap-3"
                 >
-                  <Download size={24} /> Export Storybook
+                  <Download size={24} /> Export {artifactType === 'comic' ? 'Comic' : 'Storybook'}
                 </button>
+              </div>
+              <details data-sf-publish-more className="bg-white rounded-2xl border border-slate-200 p-4">
+                <summary className="cursor-pointer text-sm font-black text-slate-700 focus-visible:ring-2 focus-visible:ring-rose-500 rounded-lg">
+                  More output options
+                </summary>
+                <p className="mt-1 text-xs text-slate-500">Choose a presentation, production handoff, or portfolio copy.</p>
+                <div className="mt-3 flex flex-col sm:flex-row sm:flex-wrap gap-3 items-center">
                 {layoutMode === 'comic' && (
                   <button type="button"
+                    data-sf-publish-action="comic-script"
+                    data-sf-publish-blocked={publishBlocked}
                     onClick={exportComicScript}
+                    aria-describedby="sf-phase-requirements"
                     className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center gap-2"
                   >
                     <Download size={18} /> Comic Script
@@ -10931,36 +11373,40 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 )}
                 {layoutMode === 'comic' && (
                   <button type="button"
+                    data-sf-publish-action="production-pack"
+                    data-sf-publish-blocked={publishBlocked}
                     onClick={exportComicProductionPack}
+                    aria-describedby="sf-phase-requirements"
                     className="px-6 py-3 bg-blue-700 text-white rounded-2xl text-sm font-bold hover:bg-blue-800 transition-all shadow-lg shadow-blue-200 flex items-center gap-2"
                   >
                     <Download size={18} /> Production Pack
                   </button>
                 )}
                 <button type="button"
+                  data-sf-publish-action="slideshow"
+                  data-sf-publish-blocked={publishBlocked}
                   onClick={exportSlideshow}
+                  aria-describedby="sf-phase-requirements"
                   className="px-6 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2"
                 >
                   <Play size={18} /> Slideshow
                 </button>
-                {liveSession && !isCanvasEnv && (
-                  <button type="button"
-                    onClick={shareToSession}
-                    className="px-6 py-3 bg-green-600 text-white rounded-2xl text-sm font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-200 flex items-center gap-2"
-                  >
-                    <Eye size={18} /> Share to Class
-                  </button>
-                )}
                 {onSaveSubmission && (
                   <button type="button"
+                    data-sf-publish-action="portfolio"
+                    data-sf-publish-blocked={publishBlocked}
                     onClick={saveAsSubmission}
+                    aria-describedby="sf-phase-requirements"
                     className="px-6 py-3 bg-amber-600 text-white rounded-2xl text-sm font-bold hover:bg-amber-700 transition-all shadow-lg shadow-amber-200 flex items-center gap-2"
                   >
                     <Star size={18} /> Save to Portfolio
                   </button>
                 )}
-              </div>
-              <p className="text-slate-500 text-xs text-center">Storybook & slideshow open in new tabs — print or save as PDF</p>
+                </div>
+              </details>
+              <p className="text-slate-500 text-xs text-center">
+                {artifactType === 'comic' ? 'Comic' : 'Storybook'} and slideshow exports open in new tabs · print or save as PDF
+              </p>
 
               {/* ── Class Portfolio Gallery (teacher view) ── */}
               {liveSession && !isCanvasEnv && (
@@ -10968,9 +11414,14 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <h4 className="text-sm font-bold text-violet-700 uppercase tracking-wider mb-2 flex items-center gap-2">
                     <Eye size={16} /> Class Portfolio
                   </h4>
-                  <p className="text-xs text-slate-600 mb-3">Share your storybook to the class gallery so your teacher and classmates can view it. Teacher sees all shared stories as a gallery wall.</p>
+                  <p className="text-xs text-slate-600 mb-3">
+                    Share your {artifactType === 'comic' ? 'comic' : 'storybook'} so your teacher and classmates can view it. Shared artifacts appear in the class gallery.
+                  </p>
                   <button type="button"
+                    data-sf-publish-action="gallery"
+                    data-sf-publish-blocked={publishBlocked}
                     onClick={shareToSession}
+                    aria-describedby="sf-phase-requirements"
                     className="px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 transition-colors flex items-center gap-2"
                   >
                     <Star size={14} /> Publish to Class Gallery
@@ -10979,7 +11430,13 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 </div>
               )}
 
-                            <div data-sf-project-vault className="bg-white rounded-2xl border-2 border-emerald-200 p-5 shadow-sm">
+              <details data-sf-project-tools className="bg-white rounded-2xl border border-slate-200 p-4">
+                <summary className="cursor-pointer rounded-lg text-sm font-black text-slate-700 focus-visible:ring-2 focus-visible:ring-rose-500">
+                  <span className="inline-flex items-center gap-2"><Save size={16} aria-hidden="true" /> Project files &amp; collaboration</span>
+                </summary>
+                <p className="mt-1 text-xs text-slate-500">Export or import a portable project, save a checkpoint, or hand a draft to a classmate.</p>
+                <div className="mt-3 space-y-4">
+                  <div data-sf-project-vault className="bg-white rounded-2xl border-2 border-emerald-200 p-5 shadow-sm">
                 <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2 flex items-center gap-2">
                   <Save size={16} /> Project Vault
                 </h4>
@@ -11020,7 +11477,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <RefreshCw size={16} /> Pass the Torch
                 </h4>
                 <p className="text-xs text-slate-600 mb-3">Export your draft as a file and share it with a classmate — they can continue where you left off!</p>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
                   <button type="button" onClick={exportDraftJSON} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors flex items-center gap-2">
                     <Download size={14} /> Export Draft (.json)
                   </button>
@@ -11029,33 +11486,39 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   </button>
                 </div>
               </div>
+                </div>
+              </details>
             </div>
           )}
         </div>
       </div>
 
       {/* ── Footer Navigation ── */}
-      <div className="bg-white border-t border-slate-200 p-4 flex justify-between items-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <div className="bg-white border-t border-slate-200 p-3 sm:p-4 flex flex-wrap sm:flex-nowrap justify-between items-center gap-2 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <button type="button"
+          data-sf-footer-action="back"
           onClick={goBack}
           disabled={phaseIdx === 0}
-          className="px-5 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-30 flex items-center gap-2"
+          className="min-h-11 flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-30 flex items-center justify-center gap-2"
         >
           <ArrowLeft size={16} /> Back
         </button>
-        <div className="text-xs text-slate-500 font-medium">
+        <div data-sf-step-summary className="order-first sm:order-none w-full sm:w-auto sm:flex-1 text-center text-xs text-slate-500 font-medium">
           {PHASE_LABELS[phaseIdx]} · Step {phaseIdx + 1} of {PHASES.length}
         </div>
         {phaseIdx < PHASES.length - 1 ? (
           <button type="button"
+            data-sf-primary-cta
+            data-sf-footer-action="next"
             onClick={goNext}
             disabled={!canGoNext()}
-            className="px-5 py-2.5 rounded-full text-sm font-bold bg-rose-600 text-white hover:bg-rose-700 transition-colors disabled:opacity-40 flex items-center gap-2 shadow-lg shadow-rose-200"
+            aria-describedby="sf-phase-requirements"
+            className="min-h-11 flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-full text-sm font-bold bg-rose-600 text-white hover:bg-rose-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2 shadow-lg shadow-rose-200"
           >
-            Next <ArrowRight size={16} />
+            {nextActionLabels[phase]} <ArrowRight size={16} />
           </button>
         ) : (
-          <button type="button" onClick={safeClose} className="px-5 py-2.5 rounded-full text-sm font-bold bg-slate-600 text-white hover:bg-slate-700 transition-colors flex items-center gap-2">
+          <button type="button" data-sf-footer-action="done" onClick={safeClose} className="min-h-11 flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-full text-sm font-bold bg-slate-600 text-white hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
             Done <CheckCircle2 size={16} />
           </button>
         )}

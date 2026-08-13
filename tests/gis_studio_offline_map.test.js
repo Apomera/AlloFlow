@@ -146,3 +146,37 @@ describe('GIS Studio â€” no-basemap mode is genuinely no-egress', () => {
     expect(low).toMatch(/^#[0-9a-f]{6}$/i);
   });
 });
+
+describe('GIS Studio"éÝyø§yÔ schematic geometry decomposition', () => {
+  beforeEach(() => resetStemLab());
+
+  it('keeps points, open lines, polygon shells, and polygon holes in distinct parts', () => {
+    const { featureSchematicParts } = load().testing;
+    const point = [-70, 43];
+    const multiPoints = [[-70.1, 43.1], [-70.2, 43.2]];
+    const line = [[-70.4, 43.2], [-70.3, 43.3], [-70.2, 43.4]];
+    const multiLines = [
+      [[-70.6, 43.2], [-70.5, 43.3]],
+      [[-70.4, 43.4], [-70.3, 43.5]]
+    ];
+    const outer = [[-70.8, 43.1], [-70.4, 43.1], [-70.4, 43.5], [-70.8, 43.1]];
+    const hole = [[-70.7, 43.2], [-70.6, 43.2], [-70.6, 43.3], [-70.7, 43.2]];
+    const outer2 = [[-70.3, 43.5], [-70, 43.5], [-70, 43.8], [-70.3, 43.5]];
+    const hole2 = [[-70.2, 43.6], [-70.1, 43.6], [-70.1, 43.7], [-70.2, 43.6]];
+
+    expect(featureSchematicParts({ geometry: { type: 'Point', coordinates: point } }))
+      .toEqual({ points: [point], lines: [], polygons: [] });
+    expect(featureSchematicParts({ geometry: { type: 'MultiPoint', coordinates: multiPoints } }))
+      .toEqual({ points: multiPoints, lines: [], polygons: [] });
+    expect(featureSchematicParts({ geometry: { type: 'LineString', coordinates: line } }))
+      .toEqual({ points: [], lines: [line], polygons: [] });
+    expect(featureSchematicParts({ geometry: { type: 'MultiLineString', coordinates: multiLines } }))
+      .toEqual({ points: [], lines: multiLines, polygons: [] });
+    expect(featureSchematicParts({ geometry: { type: 'Polygon', coordinates: [outer, hole] } }))
+      .toEqual({ points: [], lines: [], polygons: [[outer, hole]] });
+    expect(featureSchematicParts({
+      geometry: { type: 'MultiPolygon', coordinates: [[outer, hole], [outer2, hole2]] }
+    })).toEqual({ points: [], lines: [], polygons: [[outer, hole], [outer2, hole2]] });
+    expect(featureSchematicParts(null)).toEqual({ points: [], lines: [], polygons: [] });
+  });
+});

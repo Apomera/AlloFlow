@@ -38,6 +38,55 @@ const STORAGE_TIMEOUT_MS = 2 * 60 * 1000;
 const JOB_ID_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
 const SHA256_RE = /^[a-f0-9]{64}$/;
 const CHECKPOINT_STAGES = new Set(['extraction', 'primary', 'round']);
+const CHECKPOINT_TERMINAL_CAPSULE_KEYS = Object.freeze([
+  'checkpointCapsuleSchema',
+  'accessibleHtml',
+  'verificationHtmlBinding',
+  'verificationCoverage',
+  'verificationState',
+  'executionState',
+  'outcomeState',
+  'verificationScope',
+  'testedScopeComplete',
+  'engineExecutionComplete',
+  'fullyVerifiedSuccess',
+  'success',
+  'afterScoreVerified',
+  'requiresManualReview',
+  'verificationReviewCount',
+  'verificationReasons',
+  'knownFindingCount',
+  'knownFindings',
+  'scoreEvidence',
+  'evidenceSchemaVersion',
+  'evidenceProfile',
+  'evidenceProvenance',
+  'evidenceManifest',
+  'afterScore',
+  '_aiVerificationIncomplete',
+  '_scoreSource',
+  '_estimatedMinimumScore',
+  'integrityCoverage',
+  'integrityWarning',
+  'fidelityNotes',
+  'needsExpertReview',
+  'expertReviewReason',
+  'activeContent',
+  'documentLanguage',
+  'sourceKind',
+  'isScanned',
+  'groundTruthMethod',
+  'groundTruthPages',
+  'sourceStructTree',
+  'finalText',
+  'ocrAccuracy',
+  '_experimentEarlyGetPages',
+  '_perLeafScannedOptOut',
+  'runId',
+  '_runId',
+  'axeAudit',
+  'secondEngineAudit',
+]);
 const SUPPORTED_OCR_LANGUAGE_BASES = new Set([
   'en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'ru', 'uk', 'pl',
   'tr', 'sv', 'da', 'nb', 'no', 'fi', 'cs', 'sk', 'ro', 'hu', 'el', 'bg',
@@ -275,7 +324,6 @@ function checkpointOptionsDigest(options) {
     autoContinueRounds: options.autoContinueRounds,
     validateUa: options.validateUa,
     maxRunMinutes: options.maxRunMinutes,
-    modelRetryBudget: options.modelRetryBudget,
   };
   return sha256(Buffer.from(JSON.stringify(normalized), 'utf8'));
 }
@@ -474,6 +522,178 @@ function checkpointRemediationSnapshot(value) {
   return value;
 }
 
+function checkpointVerificationBinding(value, accessibleHtml) {
+  if (
+    !hasExactKeys(value, [
+      'version',
+      'algorithm',
+      'digest',
+      'utf8ByteLength',
+    ]) ||
+    value.version !== 1 ||
+    value.algorithm !== 'SHA-256' ||
+    typeof value.digest !== 'string' ||
+    !SHA256_RE.test(value.digest) ||
+    !Number.isSafeInteger(value.utf8ByteLength) ||
+    value.utf8ByteLength <= 0
+  ) return null;
+  const html = Buffer.from(accessibleHtml, 'utf8');
+  return html.length === value.utf8ByteLength && sha256(html) === value.digest
+    ? value
+    : null;
+}
+
+function checkpointActiveContent(value) {
+  const types = new Set([
+    'open-action',
+    'javascript',
+    'launch',
+    'embedded-files',
+    'additional-actions',
+    'other-actions',
+    'multimedia',
+  ]);
+  return hasExactKeys(value, [
+    'schema',
+    'complete',
+    'pageScanFailures',
+    'unexaminedStructures',
+    'any',
+    'findings',
+    'externalLinks',
+  ]) &&
+    value.schema === 1 &&
+    value.complete === true &&
+    value.pageScanFailures === 0 &&
+    value.unexaminedStructures === 0 &&
+    typeof value.any === 'boolean' &&
+    Number.isSafeInteger(value.externalLinks) &&
+    value.externalLinks >= 0 &&
+    Array.isArray(value.findings) &&
+    value.findings.every((finding) => (
+      hasExactKeys(finding, ['type', 'count', 'label']) &&
+      types.has(finding.type) &&
+      Number.isSafeInteger(finding.count) &&
+      finding.count > 0 &&
+      typeof finding.label === 'string' &&
+      finding.label.length > 0
+    )) &&
+    value.any === (value.findings.length > 0);
+}
+
+function checkpointTerminalCapsule(value) {
+  if (
+    !hasExactKeys(value, CHECKPOINT_TERMINAL_CAPSULE_KEYS) ||
+    value.checkpointCapsuleSchema !== 1 ||
+    typeof value.accessibleHtml !== 'string' ||
+    value.accessibleHtml.length === 0 ||
+    !checkpointVerificationBinding(
+      value.verificationHtmlBinding,
+      value.accessibleHtml,
+    ) ||
+    !isPlainObject(value.verificationCoverage) ||
+    !checkpointActiveContent(value.activeContent) ||
+    typeof value.sourceKind !== 'string' ||
+    value.sourceKind.length === 0 ||
+    !(value.groundTruthMethod === null ||
+      typeof value.groundTruthMethod === 'string') ||
+    !(value.groundTruthPages === null ||
+      Array.isArray(value.groundTruthPages)) ||
+    !(value.sourceStructTree === null ||
+      isPlainObject(value.sourceStructTree)) ||
+    typeof value.finalText !== 'string' ||
+    value.finalText.length === 0 ||
+    !(value.ocrAccuracy === null ||
+      isPlainObject(value.ocrAccuracy)) ||
+    typeof value.isScanned !== 'boolean' ||
+    typeof value._experimentEarlyGetPages !== 'boolean' ||
+    typeof value._perLeafScannedOptOut !== 'boolean' ||
+    ![
+      'complete',
+      'complete-for-tested-scope',
+      'review-required',
+      'partial',
+      'unavailable',
+    ].includes(value.verificationState) ||
+    typeof value.afterScoreVerified !== 'boolean' ||
+    typeof value.requiresManualReview !== 'boolean' ||
+    !hasExactKeys(value.axeAudit, ['score', 'totalViolations']) ||
+    !hasExactKeys(value.secondEngineAudit, ['score', 'failViolations']) ||
+    !(
+      value.axeAudit.score === null ||
+      (typeof value.axeAudit.score === 'number' &&
+        Number.isFinite(value.axeAudit.score) &&
+        value.axeAudit.score >= 0 &&
+        value.axeAudit.score <= 100)
+    ) ||
+    !(
+      value.axeAudit.totalViolations === null ||
+      (Number.isSafeInteger(value.axeAudit.totalViolations) &&
+        value.axeAudit.totalViolations >= 0)
+    ) ||
+    !(
+      value.secondEngineAudit.score === null ||
+      (typeof value.secondEngineAudit.score === 'number' &&
+        Number.isFinite(value.secondEngineAudit.score) &&
+        value.secondEngineAudit.score >= 0 &&
+        value.secondEngineAudit.score <= 100)
+    ) ||
+    !(
+      value.secondEngineAudit.failViolations === null ||
+      (Number.isSafeInteger(value.secondEngineAudit.failViolations) &&
+        value.secondEngineAudit.failViolations >= 0)
+    )
+  ) return null;
+  return value;
+}
+
+function checkpointCompactRemediationSnapshot(value) {
+  if (
+    !hasExactKeys(value, [
+      'schema',
+      'stage',
+      'audit',
+      'remediation',
+      'nextRound',
+      'roundsRun',
+      'roundLog',
+      'loopState',
+      'autoContinueDone',
+    ]) ||
+    value.schema !== CHECKPOINT_SCHEMA ||
+    !['primary', 'round'].includes(value.stage) ||
+    !checkpointAudit(value.audit) ||
+    !checkpointTerminalCapsule(value.remediation) ||
+    value.autoContinueDone !== true ||
+    !integerInRange(value.nextRound, 0, 5) ||
+    !integerInRange(value.roundsRun, 0, 5) ||
+    !Array.isArray(value.roundLog) ||
+    value.roundLog.length > 64 ||
+    !value.roundLog.every(
+      (line) => typeof line === 'string' && line.length <= 1000,
+    ) ||
+    !hasExactKeys(value.loopState, [
+      'lastViolations',
+      'lastDet',
+      'lastIssues',
+      'stagnant',
+    ]) ||
+    ![
+      value.loopState.lastViolations,
+      value.loopState.lastDet,
+      value.loopState.lastIssues,
+    ].every((entry) => (
+      entry === null || (typeof entry === 'number' && Number.isFinite(entry))
+    )) ||
+    !integerInRange(value.loopState.stagnant, 0, 10) ||
+    (value.stage === 'primary' &&
+      (value.nextRound !== 0 || value.roundsRun !== 0)) ||
+    (value.stage === 'round' &&
+      (value.nextRound === 0 || value.nextRound !== value.roundsRun))
+  ) return null;
+  return value;
+}
+
 
 
 function validateCheckpointEnvelope(value, expected = {}) {
@@ -508,7 +728,12 @@ function validateCheckpointEnvelope(value, expected = {}) {
       ? value.snapshot
       : null;
   } else if (value.stage === 'primary' || value.stage === 'round') {
-    snapshot = checkpointRemediationSnapshot(value.snapshot);
+    const markedCompact = isPlainObject(value.snapshot) &&
+      isPlainObject(value.snapshot.remediation) &&
+      Object.hasOwn(value.snapshot.remediation, 'checkpointCapsuleSchema');
+    snapshot = markedCompact
+      ? checkpointCompactRemediationSnapshot(value.snapshot)
+      : checkpointRemediationSnapshot(value.snapshot);
   }
   if (!snapshot || snapshot.stage !== value.stage) return null;
   return value;

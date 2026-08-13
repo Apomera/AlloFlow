@@ -11,13 +11,15 @@ function loadWordSoundsHistoryUpdater(relativePath) {
   const source = readFileSync(resolve(process.cwd(), relativePath), 'utf8');
   const wordSoundsStart = source.indexOf('let _wsFingerprint');
   const updaterStart = source.indexOf('setHistory(prev => {', wordSoundsStart);
-  const updaterEnd = source.indexOf('\n                   setWsPreloadedWords(words);', updaterStart);
+  const updaterMatch = source.slice(updaterStart).match(
+    /^setHistory\(prev => \{[\s\S]*?^\s*\}\);/m,
+  );
 
-  if (wordSoundsStart < 0 || updaterStart < 0 || updaterEnd < 0) {
+  if (wordSoundsStart < 0 || updaterStart < 0 || !updaterMatch) {
     throw new Error(`Unable to extract Word Sounds history updater from ${relativePath}`);
   }
 
-  const updaterStatement = source.slice(updaterStart, updaterEnd);
+  const updaterStatement = updaterMatch[0];
   return (setHistory, fingerprint, resource) => {
     new Function(
       'setHistory',

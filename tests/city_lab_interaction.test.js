@@ -438,6 +438,72 @@ describe('City Planning Lab - predict-then-place closes its own loop', () => {
   });
 });
 
+describe('City Planning Lab - the 3D view degrades without WebGL', () => {
+  // jsdom has no WebGL and the StemLab stub has no makeOrbitViewer, so every
+  // test here runs the fallback path. That is the point: it is the path a
+  // school Chromebook with a broken driver actually takes, and it is the one
+  // no screenshot of a working canvas ever exercises.
+  it('offers 3D as a third way to look at the same plan', () => {
+    const { container } = mount();
+    expect(byText(container, 'button', 'Land use')).toBeTruthy();
+    expect(byText(container, 'button', 'Height')).toBeTruthy();
+    expect(byText(container, 'button', '3D')).toBeTruthy();
+  });
+
+  it('says the plan is intact rather than showing a dead canvas', () => {
+    const { container } = mount();
+    click(byText(container, 'button', '3D'));
+    const text = container.textContent;
+    expect(text).toContain('not available on this device');
+    expect(text, 'the fallback does not say the plan is fine').toMatch(/Nothing is missing/i);
+    expect(text, 'the fallback does not point anywhere useful').toMatch(/Parcel table/);
+    expect(container.querySelector('canvas'), 'a dead canvas was left on screen').toBeFalsy();
+  });
+
+  it('changes nothing about the plan when the view changes', () => {
+    const { container } = mount();
+    const cell = parcel(container, 'A9');
+    cell.focus();
+    press(cell, '6');
+    const after = storedPlan().uses.A9;
+    click(byText(container, 'button', '3D'));
+    expect(storedPlan().uses.A9).toBe(after);
+    click(byText(container, 'button', 'Land use'));
+    expect(storedPlan().uses.A9).toBe(after);
+    expect(parcel(container, 'A9').getAttribute('aria-label')).toContain('Housing');
+  });
+
+  it('keeps the table editable while the 3D view is the one selected', () => {
+    // The peer-path guarantee: a view can never be the only way to do a thing.
+    const { container } = mount();
+    click(byText(container, 'button', '3D'));
+    click(byText(container, 'button', 'Parcel table'));
+    const select = container.querySelector('select[aria-label="Land use for parcel A9"]');
+    expect(select).toBeTruthy();
+    act(() => {
+      select.value = 'housing_mid';
+      select.dispatchEvent(new window.Event('change', { bubbles: true }));
+    });
+    expect(storedPlan().uses.A9).toBe('housing_mid');
+  });
+
+  it('announces that the model is a view, not a workspace', () => {
+    const { container, announced } = mount();
+    click(byText(container, 'button', '3D'));
+    const last = announced[announced.length - 1] || '';
+    expect(last).toMatch(/3D/);
+    expect(last, 'the announcement does not say where to edit').toMatch(/table|map/i);
+  });
+
+  it('does not lose the board when 3D is unavailable and the view is switched back', () => {
+    const { container } = mount();
+    click(byText(container, 'button', '3D'));
+    expect(parcel(container, 'D6'), 'parcels should be gone in the model view').toBeFalsy();
+    click(byText(container, 'button', 'Height'));
+    expect(parcel(container, 'D6'), 'the board did not come back').toBeTruthy();
+  });
+});
+
 describe('City Planning Lab - the table path is genuinely equivalent', () => {
   it('edits the plan from the table select, not just the map', () => {
     const { container } = mount();

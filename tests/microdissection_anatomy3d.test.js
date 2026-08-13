@@ -154,7 +154,7 @@ describe('Anatomy 3D overview and cross-scale handoffs', () => {
     expect(html).toContain('data-anatomy-view="3d"');
     expect(html).toContain('data-anatomy-3d-canvas="true"');
     expect(html).toContain('3D controls:');
-    expect(html).toContain('Drag to rotate');
+    expect(html).toContain('Camera controls · drag/wheel where supported');
     expect(html).toContain('structure directory for precise labels and full keyboard access');
     expect(html).toContain('id="anatomy-3d-status"');
     expect(html).toContain('2D Atlas');

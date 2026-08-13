@@ -33,6 +33,36 @@ var UI_MODAL_A11Y_STYLES = `
       scroll-behavior: auto !important;
     }
   }
+  [data-allo-ui-modal="role-selection"] {
+    background: radial-gradient(circle at 15% 5%, rgba(79,70,229,.28), transparent 34%), radial-gradient(circle at 90% 15%, rgba(14,165,233,.18), transparent 32%), rgba(8,13,29,.94) !important;
+  }
+  [data-allo-ui-modal="role-selection"] > .min-h-full > div {
+    background: linear-gradient(145deg, rgba(255,255,255,.99), rgba(248,250,252,.97)) !important;
+    border: 1px solid rgba(199,210,254,.8) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 32px 90px rgba(2,6,23,.42), inset 0 1px 0 #fff !important;
+  }
+  [data-allo-ui-modal="role-selection"] button[data-help-key^="role_"] {
+    border-width: 1px !important;
+    border-color: #e2e8f0 !important;
+    border-radius: 18px !important;
+    background: linear-gradient(180deg, #fff, #f8fafc) !important;
+    box-shadow: 0 10px 24px rgba(15,23,42,.07), inset 0 1px 0 #fff;
+    transform: none !important;
+  }
+  [data-allo-ui-modal="role-selection"] button[data-help-key^="role_"]:hover {
+    border-color: #a5b4fc !important;
+    background: #fff !important;
+    box-shadow: 0 16px 34px rgba(79,70,229,.12), 0 0 0 1px rgba(99,102,241,.08);
+    transform: translateY(-3px) !important;
+  }
+  [data-allo-ui-modal="role-selection"] button[data-help-key^="role_"] > div {
+    border-radius: 14px !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-allo-ui-modal="role-selection"] button[data-help-key^="role_"]:hover { transform: none !important; }
+  }
 `;
 // Lazy icon wrappers — window.AlloIcons is set in a useEffect after CDN scripts load,
 // so each icon must look up window.AlloIcons at RENDER time, not at script load time.
@@ -1193,28 +1223,74 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
 const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
   const { t } = useContext(LanguageContext);
   const [passwordInput, setPasswordInput] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [blockedUntil, setBlockedUntil] = useState(0);
+  const [clockNow, setClockNow] = useState(() => Date.now());
   const gateRef = useRef(null);
-  useFocusTrap(gateRef, isOpen, onClose);
+  const gateOpenRef = useRef(isOpen);
+  const attemptRef = useRef(0);
+  const closeGate = () => {
+    attemptRef.current += 1;
+    gateOpenRef.current = false;
+    setBusy(false);
+    onClose();
+  };
+  useFocusTrap(gateRef, isOpen, closeGate);
+  useEffect(() => {
+    gateOpenRef.current = isOpen;
+    if (!isOpen) {
+      attemptRef.current += 1;
+      setPasswordInput('');
+      setError('');
+      setBusy(false);
+      setBlockedUntil(0);
+    }
+  }, [isOpen]);
+  useEffect(() => {
+    if (!isOpen || blockedUntil <= Date.now()) return undefined;
+    const timer = setInterval(() => setClockNow(Date.now()), 250);
+    return () => clearInterval(timer);
+  }, [isOpen, blockedUntil]);
   if (!isOpen) return null;
+  const retrySeconds = Math.max(0, Math.ceil((blockedUntil - clockNow) / 1000));
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Verify against a stored PBKDF2 hash envelope (the password itself is never kept in
-    // the clear). Legacy console-set plaintext keys still work via the string branch.
-    const _key = APP_CONFIG._cfg_validation_key;
-    let _ok = false;
-    if (_key && typeof _key === 'object' && _key.kind === 'pwhash' && window.AlloModules && window.AlloModules.AlloCrypto) {
-      try { _ok = await window.AlloModules.AlloCrypto.verifyPassword(passwordInput, _key); } catch (_) { _ok = false; }
-    } else if (typeof _key === 'string') {
-      _ok = passwordInput === _key;
-    }
-    if (_ok) {
-      onUnlock();
-      onClose();
-      setPasswordInput('');
-      setError(false);
-    } else {
-      setError(true);
+    if (busy || retrySeconds > 0) return;
+    const attemptId = ++attemptRef.current;
+    const accessCode = window.AlloModules?.DeviceAccessCode;
+    const submittedCode = passwordInput;
+    setPasswordInput('');
+    setBusy(true);
+    setError('');
+    try {
+      if (!accessCode || typeof accessCode.verify !== 'function') {
+        setError('The access-code checker is still loading. Please try again.');
+        return;
+      }
+      const result = await accessCode.verify(submittedCode);
+      if (!gateOpenRef.current || attemptId !== attemptRef.current) return;
+      if (result?.ok) {
+        onUnlock();
+        closeGate();
+        setError('');
+        setBlockedUntil(0);
+      } else if (result?.reason === 'backoff' || result?.retryAfterMs > 0) {
+        const waitMs = Math.max(1000, Number(result.retryAfterMs) || 0);
+        setClockNow(Date.now());
+        setBlockedUntil(Date.now() + waitMs);
+        setError('Too many incorrect attempts. Please wait briefly before trying again.');
+      } else {
+        setError(result?.reason === 'not-configured'
+          ? 'No educator access code is configured on this device.'
+          : 'That access code is not correct.');
+      }
+    } catch (_) {
+      if (gateOpenRef.current && attemptId === attemptRef.current) {
+        setError('The access code could not be checked on this device.');
+      }
+    } finally {
+      if (gateOpenRef.current && attemptId === attemptRef.current) setBusy(false);
     }
   };
   return (
@@ -1239,33 +1315,35 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
                     value={passwordInput}
                     onChange={(e) => {
                         setPasswordInput(e.target.value);
-                        setError(false);
+                        setError('');
                     }}
                     placeholder={t('modals.teacher_gate.access_code_placeholder')}
                     className={`w-full text-center text-lg p-3 border-2 rounded-xl outline-none focus:ring-4 transition-all placeholder:text-slate-600 ${error ? 'border-red-400 bg-red-50 focus:ring-red-200 text-red-900' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 text-indigo-900'}`}
                     autoFocus
-                    aria-invalid={error}
+                    disabled={busy || retrySeconds > 0}
+                    aria-invalid={Boolean(error)}
                     aria-labelledby="teacher-gate-access-code-label"
                     aria-describedby={error ? 'teacher-gate-helper teacher-gate-error' : 'teacher-gate-helper'}
                     data-help-key="teacher_gate_input"
                 />
                 {error && (
                     <p id="teacher-gate-error" role="alert" className="text-xs font-bold text-red-700 mt-2 flex items-center justify-center gap-1">
-                        <XCircle aria-hidden="true" size={12} /> {t('modals.teacher_gate.error_incorrect')}
+                        <XCircle aria-hidden="true" size={12} /> {error}{retrySeconds > 0 ? ` (${retrySeconds}s)` : ''}
                     </p>
                 )}
             </div>
             <button
                 type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                disabled={busy || retrySeconds > 0 || !passwordInput}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
                 data-help-key="teacher_gate_unlock"
             >
-                {t('modals.teacher_gate.unlock')}
+                {busy ? 'Checkingâ€¦' : retrySeconds > 0 ? `Try again in ${retrySeconds}s` : t('modals.teacher_gate.unlock')}
             </button>
         </form>
         <button
             type="button"
-            onClick={onClose}
+            onClick={closeGate}
             className="absolute top-4 right-4 min-h-6 min-w-6 text-slate-600 hover:text-slate-900 transition-colors p-1 rounded-full hover:bg-slate-100"
             aria-label={t('common.cancel')}
             data-alloflow-close-on-escape="true"
@@ -1277,12 +1355,15 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
   );
 });
 
-const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
+const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceAccess }) => {
   const { t } = useContext(LanguageContext);
   const roleRef = useRef(null);
   useFocusTrap(roleRef, true);
   const handleRoleClick = (role) => {
-    if (APP_CONFIG._cfg_validation_key && ['teacher', 'parent', 'independent'].includes(role)) {
+    const accessCodeRequired = typeof window._alloEducatorAccessCodeRequired === 'function'
+      ? window._alloEducatorAccessCodeRequired()
+      : !!APP_CONFIG._cfg_validation_key;
+    if (accessCodeRequired && ['teacher', 'parent', 'independent'].includes(role)) {
         if (onGateRequired) onGateRequired(role);
     } else {
         onSelect(role);
@@ -1298,7 +1379,23 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
     </span>
   ) : null;
   const [micStatus, setMicStatus] = useState('idle');
-  const handleMicCheck = () => {
+  const handleMicCheck = async () => {
+      if (micStatus === 'requesting' || micStatus === 'granted') return;
+      if (typeof onStartVoiceAccess === 'function') {
+          setMicStatus('requesting');
+          try {
+              // The host-owned coordinator is the only microphone owner on this
+              // path. Resolve true only after continuous command listening starts.
+              const started = await onStartVoiceAccess();
+              setMicStatus(started === false ? 'denied' : 'granted');
+          } catch (e) {
+              warnLog("Unable to start Voice Access:", e);
+              setMicStatus('denied');
+          }
+          return;
+      }
+      // Safe legacy fallback: probe permission only when the host has not
+      // supplied its global voice-session callback.
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
           setMicStatus('unsupported');
@@ -1324,11 +1421,21 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
           setMicStatus('denied');
       }
   };
-  const micStatusText = micStatus === 'granted' ? t('roles.mic_ready') :
-      micStatus === 'unsupported' ? t('roles.voice_not_supported') :
-      micStatus === 'denied' ? t('roles.mic_denied') :
-      micStatus === 'requesting' ? t('roles.mic_requesting') :
-      t('roles.mic_enable');
+  const roleCopy = (key, fallback) => {
+      const value = t(key);
+      return value && value !== key ? value : fallback;
+  };
+  const usesGlobalVoiceAccess = typeof onStartVoiceAccess === 'function';
+  const micStatusText = usesGlobalVoiceAccess
+      ? micStatus === 'granted' ? roleCopy('roles.voice_access_active', 'Voice Access started') :
+        micStatus === 'denied' ? roleCopy('roles.voice_access_denied', 'Voice Access could not start') :
+        micStatus === 'requesting' ? roleCopy('roles.voice_access_starting', 'Starting Voice Access...') :
+        roleCopy('roles.voice_access_enable', 'Enable Voice Access')
+      : micStatus === 'granted' ? t('roles.mic_ready') :
+        micStatus === 'unsupported' ? t('roles.voice_not_supported') :
+        micStatus === 'denied' ? t('roles.mic_denied') :
+        micStatus === 'requesting' ? t('roles.mic_requesting') :
+        t('roles.mic_enable');
   return (
   <div
     ref={roleRef}
@@ -1398,13 +1505,14 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
         </button>
       </div>
       <div className="border-t border-slate-100 pt-4">
-          <p className="text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2">{t('roles.mic_setup')}</p>
+          <p className="text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2">{usesGlobalVoiceAccess ? roleCopy('roles.voice_access_setup', 'Voice Access') : t('roles.mic_setup')}</p>
           <button
             type="button"
             onClick={handleMicCheck}
             disabled={micStatus === 'granted' || micStatus === 'requesting'}
             aria-busy={micStatus === 'requesting'}
             aria-describedby="role-mic-status"
+            data-help-key="role_voice_access"
             className={`flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${
                 micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' :
                 micStatus === 'denied' || micStatus === 'unsupported' ? 'bg-red-50 text-red-700 border border-red-200' :
@@ -1423,7 +1531,9 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
           </p>
           {micStatus === 'idle' && (
               <p id="role-mic-tip" className="text-[11px] text-slate-600 mt-2">
-                  {t('roles.mic_tip')}
+                  {usesGlobalVoiceAccess
+                    ? roleCopy('roles.voice_access_tip', 'Your browser or operating system may ask for microphone activation once. After permission, continuous voice command listening starts. Voice Access is optional; touch, pointer, and keyboard remain available.')
+                    : t('roles.mic_tip')}
               </p>
           )}
       </div>
@@ -1460,6 +1570,83 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
       onConfirm(getFullName(), mode);
     }
   };
+  // Student Entry is a required learner setup surface, so it contributes its
+  // own semantic command scope instead of asking voice users to operate the
+  // two visual select controls. The scope never exposes the generated
+  // codename in command snapshots or spoken narration; it stays visible on
+  // this device and reaches the host only through the existing onConfirm path.
+  const studentEntryVoiceRef = useRef(null);
+  studentEntryVoiceRef.current = {
+    isOpen: !!isOpen,
+    codenameReady: !!(selectedAdj && selectedAnimal),
+    randomize: randomizeName,
+    startNew: () => handleConfirm('new'),
+    cancel: onClose,
+  };
+  useEffect(() => {
+    if (!isOpen || typeof window === 'undefined') return undefined;
+    const commands = window.AlloModules && window.AlloModules.AlloCommands;
+    if (!commands || typeof commands.registerCommandScope !== 'function') return undefined;
+    return commands.registerCommandScope({
+      id: 'student-entry',
+      priority: 120,
+      isActive: () => !!(studentEntryVoiceRef.current && studentEntryVoiceRef.current.isOpen),
+      getCapabilities: () => ({
+        semanticStudentSetup: true,
+        canRandomizeCodename: true,
+        canStartNewWork: !!(studentEntryVoiceRef.current && studentEntryVoiceRef.current.codenameReady),
+        canCancel: true,
+      }),
+      // Deliberately omit the adjective/animal. Debug and command state must
+      // not become a second persistence or disclosure path for learner IDs.
+      getState: () => ({
+        phase: 'codename',
+        codenameReady: !!(studentEntryVoiceRef.current && studentEntryVoiceRef.current.codenameReady),
+      }),
+      getCommands: () => [
+        { id: 'student_entry_describe', risk: 'none', confirmation: 'never', label: 'Describe student setup' },
+        { id: 'student_entry_list_actions', risk: 'none', confirmation: 'never', label: 'List student setup actions' },
+        { id: 'student_entry_randomize_codename', risk: 'state-change', confirmation: 'never', label: 'Choose a different private codename' },
+        {
+          id: 'student_entry_start_new_work',
+          risk: 'state-change',
+          confirmation: 'always',
+          label: 'Start a new learner workspace',
+          confirmMessage: 'Start a new learner workspace using the private codename shown on this device?',
+        },
+        { id: 'student_entry_cancel', risk: 'state-change', confirmation: 'never', label: 'Return to role selection' },
+      ],
+      parse: (value) => {
+        const text = String(value || '').toLowerCase().replace(/[^a-z0-9\s'-]/g, ' ').replace(/\s+/g, ' ').trim();
+        if (/^(?:where am i|describe (?:this|the current) screen|what screen is this|describe student setup)$/.test(text)) return { commandId: 'student_entry_describe', confidence: 1 };
+        if (/^(?:what can i do(?: here)?|list (?:available )?actions|list my choices|what are my choices|help)$/.test(text)) return { commandId: 'student_entry_list_actions', confidence: 1 };
+        if (/^(?:randomize|change|choose|give me)(?: (?:a|the))? (?:different |new )?(?:private )?codename$/.test(text) || /^(?:different|new) codename$/.test(text)) return { commandId: 'student_entry_randomize_codename', confidence: 1 };
+        if (/^(?:start|begin)(?: my| a)? new (?:work|workspace|project)$/.test(text) || /^(?:use|choose) this codename$/.test(text) || /^(?:continue|start learning)$/.test(text)) return { commandId: 'student_entry_start_new_work', confidence: 1 };
+        if (/^(?:cancel|go back|back|return to role selection|close (?:this|the) (?:screen|dialog))$/.test(text)) return { commandId: 'student_entry_cancel', confidence: 1 };
+        return null;
+      },
+      execute: (commandId) => {
+        const current = studentEntryVoiceRef.current;
+        if (!current || !current.isOpen) return { ok: false, narration: 'Student setup is no longer open.' };
+        if (commandId === 'student_entry_describe') return { ok: true, narration: 'Student setup is open. A private codename has been generated on this device. You can choose a different codename, start new work, or go back.' };
+        if (commandId === 'student_entry_list_actions') return { ok: true, narration: 'Available actions: choose a different codename, start new work, or go back.' };
+        if (commandId === 'student_entry_randomize_codename') {
+          current.randomize();
+          return { ok: true, narration: 'A different private codename is now shown on this device.' };
+        }
+        if (commandId === 'student_entry_start_new_work') {
+          if (!current.codenameReady) return { ok: false, narration: 'The private codename is still being prepared. Try again in a moment.' };
+          current.startNew();
+          return { ok: true, narration: 'New learner workspace started.' };
+        }
+        if (commandId === 'student_entry_cancel') {
+          current.cancel();
+          return { ok: true, narration: 'Returned to role selection.' };
+        }
+        return { ok: false, narration: 'That student setup action is not available.' };
+      },
+    });
+  }, [isOpen]);
   if (!isOpen) return null;
   return (
     <div

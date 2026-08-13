@@ -22,7 +22,13 @@ describe('Life Skills 3D passport', () => {
     expect(source).toContain("if (/-progress$/.test(type))");
     expect(source).toContain("record.confidence = lifeSkills3dConfidenceNames[signals.confidence] ? signals.confidence : ''");
     expect(source).toContain("record.nextStep = lifeSkills3dNextStepNames[signals.nextStep] ? signals.nextStep : ''");
-    expect(source).toContain("All ' + LIFE_SKILLS_3D_LABS.length + ' 3D labs are complete.");
+    expect(source).toContain("record.firstTry = Math.max(0, Math.min(5");
+    expect(source).toContain("record.selfCorrected = Math.max(0, Math.min(5");
+    expect(source).toContain("record.coached = Math.max(0, Math.min(5");
+    expect(source).toContain("record.contextTransfer = Math.max(0, Math.min(5");
+    expect(source).toContain("record.procedurePractice = Math.max(0, Math.min(5");
+    expect(source).toContain("record.recommendedTask = lifeSkills3dCapstoneTaskNames[signals.recommendedTask]");
+    expect(source).toContain("All ' + LIFE_SKILLS_3D_LABS.length + ' 3D labs are complete with procedural and context-transfer evidence.");
     expect(source).not.toContain('All five 3D labs are complete.');
   });
 
@@ -33,6 +39,14 @@ describe('Life Skills 3D passport', () => {
     expect(source).toContain('Open the scene and practice safely.');
     expect(source).toContain('openLifeSkills3dById(lab.id)');
     expect(source).toContain("'aria-label': 'Open suggested next lab: ' + lifeSkills3dNextLab.title");
+    expect(source).toContain("'data-lifeskills-transfer-evidence': 'true'");
+    expect(source).toContain("'/5 context shifts'");
+    expect(source).toContain("'/5 action sequences'");
+    expect(source).toContain("'Action goal: Practice the three-step actions in the capstone.'");
+    expect(source).toContain("'Transfer goal: Complete changed-context practice in the capstone.'");
+    expect(source).toContain("'Transfer focus: Rehearse ' + lifeSkills3dTransferFocus");
+    expect(source).toContain('capstoneRecommendedLab');
+    expect(source).toContain('capstoneNeedsReplay');
     expect(source).toContain('capstoneFocusLab');
     expect(source).toContain('capstoneFoundationsComplete');
     expect(source).toContain("'&focus=' + encodeURIComponent(capstoneFocusLab.id)");

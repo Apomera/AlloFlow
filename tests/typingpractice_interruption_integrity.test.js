@@ -80,7 +80,8 @@ describe('Typing Practice interruption and exit integrity', () => {
     expect(source).toContain('if (paused || interruptionPauseRef.current) return');
     expect(source).toContain("if (document.hidden) pauseForInterruption('this page moved to the background')");
     expect(source).toContain("if (typeof document !== 'undefined' && document.hidden) return");
-    expect(source).toContain("if (state.view !== 'drill' || drillComplete || paused) return");
+    expect(source).toContain("if (state.view !== 'drill' || drillComplete || paused || !startTime) return");
+    expect(source).toContain('}, [state.view, drillComplete, paused, startTime]);');
   });
 
   it('explains the safe Escape behavior consistently', () => {

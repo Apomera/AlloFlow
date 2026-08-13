@@ -1412,7 +1412,12 @@ window.StemLab = window.StemLab || {
   // ═══════════════════════════════════════════════════════════════════
 
   var MACHINE_HOME = { rotY: 22, rotX: 12, zoom: 1 };
-  var WALL_HOME = { rotY: 14, rotX: 16, zoom: 1 };
+  // Behind the machine, looking down the field at the castle. The camera
+  // direction runs (sin rotY, ., cos rotY), so a rotY near 0 puts the camera on
+  // the far side of the wall and you watch the impact from the defenders' side,
+  // through the back of the wall, with your own machine a speck beyond it.
+  // 206 degrees puts it behind the crew, which is the shot this view is for.
+  var WALL_HOME = { rotY: 206, rotX: 14, zoom: 1 };
 
   var COCKED_DEG = -52;   // long arm down, ready to fire
 
@@ -1436,13 +1441,17 @@ window.StemLab = window.StemLab || {
     var projCol = m.contrast ? 0xffff00 : 0xf59e0b;
     var mat = function (c) { return new THREE.MeshLambertMaterial({ color: c }); };
 
-    if (S.renderer && S.renderer.setClearColor) S.renderer.setClearColor(m.contrast ? 0x000000 : (m.dark === false ? 0xdfe6ef : 0x0b1220), 1);
-    var ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(30, 30),
-      new THREE.MeshLambertMaterial({ color: m.contrast ? 0x000000 : (m.dark === false ? 0xd7dfe8 : 0x16233a) })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    S.model.add(ground);
+    // Skipped when this machine is a guest in the siege scene, which owns the
+    // ground and the sky for the whole field.
+    if (!m.embedded) {
+      if (S.renderer && S.renderer.setClearColor) S.renderer.setClearColor(m.contrast ? 0x000000 : (m.dark === false ? 0xdfe6ef : 0x0b1220), 1);
+      var ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(30, 30),
+        new THREE.MeshLambertMaterial({ color: m.contrast ? 0x000000 : (m.dark === false ? 0xd7dfe8 : 0x16233a) })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      S.model.add(ground);
+    }
 
     var deckH = 0.42;
     var deckLen = Math.max(1.3, armLen * 1.35);
@@ -1613,14 +1622,17 @@ window.StemLab = window.StemLab || {
 
     var mat = function (c) { return new THREE.MeshLambertMaterial({ color: c }); };
 
-    // Ground
-    if (S.renderer && S.renderer.setClearColor) S.renderer.setClearColor(m.contrast ? 0x000000 : (m.dark === false ? 0xdfe6ef : 0x0b1220), 1);
-    var ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(40, 40),
-      new THREE.MeshLambertMaterial({ color: m.contrast ? 0x000000 : (m.dark === false ? 0xd7dfe8 : 0x16233a) })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    S.model.add(ground);
+    // Ground. Skipped when this machine is a guest in the siege scene, which
+    // owns the ground and the sky for the whole field.
+    if (!m.embedded) {
+      if (S.renderer && S.renderer.setClearColor) S.renderer.setClearColor(m.contrast ? 0x000000 : (m.dark === false ? 0xdfe6ef : 0x0b1220), 1);
+      var ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(40, 40),
+        new THREE.MeshLambertMaterial({ color: m.contrast ? 0x000000 : (m.dark === false ? 0xd7dfe8 : 0x16233a) })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      S.model.add(ground);
+    }
 
     // A-frame uprights
     [-0.7, 0.7].forEach(function (zz) {
@@ -1801,6 +1813,201 @@ window.StemLab = window.StemLab || {
     return (h % 100003) / 100003;
   }
 
+  // ═══════════════════════════════════════════════════════════════════
+  // THE SIEGE FIELD
+  //
+  // Until now the machine lived in one 3D scene and the castle in another, and
+  // the shot between them was a number. That is the moment this whole tool
+  // builds towards, so it happens on screen: YOUR machine, standing off at the
+  // distance you set, throwing YOUR stone along the path the model actually
+  // computed, into the wall, which breaks where it lands.
+  //
+  // World layout. The wall stands in the x-y plane at z = 0, blocks at
+  // x = col - midCol and y = row + 0.5, which is what buildWallScene already
+  // used. The machine sits at negative z and fires towards +z, so rubble
+  // continues past the wall rather than back over the crew.
+  //
+  // The machine geometry is not re-modelled here. buildTrebuchetScene and
+  // buildTorsionScene are called with embedded:true onto a sub-group, so there
+  // is one trebuchet in this tool and editing it changes both views.
+  function buildSiegeScene(THREE, S, m) {
+    var blocks = (m && m.blocks) || [];
+    var contrast = !!(m && m.contrast);
+    var dark = (m && m.dark) !== false;
+    var standoff = Math.max(5, (m && m.standoff) || 80);
+
+    if (S.renderer && S.renderer.setClearColor) {
+      S.renderer.setClearColor(contrast ? 0x000000 : (dark ? 0x0b1220 : 0xdfe6ef), 1);
+    }
+
+    // Long enough to hold the whole field at any standoff the sliders allow.
+    var groundSpan = Math.max(240, standoff * 2.6);
+    var ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(groundSpan, groundSpan),
+      new THREE.MeshLambertMaterial({ color: contrast ? 0x000000 : (dark ? 0x16233a : 0xd7dfe8) })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    S.model.add(ground);
+
+    // ── The wall ──
+    var batch = (window.StemLab && typeof window.StemLab.makeVoxelBatch === 'function')
+      ? window.StemLab.makeVoxelBatch(THREE, {
+          capacity: Math.max(16, blocks.length),
+          size: 0.94,
+          edges: !contrast
+        })
+      : null;
+    if (batch) batch.addTo(S.model);
+    S.wall = { batch: batch, contrast: contrast, dark: dark };
+
+    var ext = { minCol: 0, maxCol: 0, maxRow: 0 };
+    blocks.forEach(function (b) {
+      if (b.col < ext.minCol) ext.minCol = b.col;
+      if (b.col > ext.maxCol) ext.maxCol = b.col;
+      if (b.row > ext.maxRow) ext.maxRow = b.row;
+    });
+    var midCol = (ext.minCol + ext.maxCol) / 2;
+    var span = Math.max(2, ext.maxCol - ext.minCol + 1);
+    var wallTop = ext.maxRow + 1;
+
+    function colourFor(b) {
+      if (contrast) return b.state === 'breached' ? 0x888888 : 0xffffff;
+      if (b.state === 'cracked') return 0xfb923c;
+      if (b.state === 'breached') return 0x4b5563;
+      if (b.mat === 'granite') return 0x94a3b8;
+      if (b.mat === 'earth') return 0x8d6e4a;
+      return 0xcbd5e1;
+    }
+
+    // ── The machine, borrowed whole from the Build view ──
+    var mg = new THREE.Group();
+    mg.position.set(0, 0, -standoff);
+    S.model.add(mg);
+    var guest = { model: mg, renderer: null };
+    try {
+      buildMachineScene(THREE, guest, Object.assign({}, m, { embedded: true }));
+    } catch (e) { guest.ml = null; }
+    // The machine models fire along +x; the field runs along +z.
+    mg.rotation.y = Math.PI / 2;
+    // The guest's tick closes over the GUEST, not over this scene, so its data
+    // has to be written onto the guest. Keeping the object is the whole point.
+    S.siegeGuest = guest;
+
+    // ── The stone in flight ──
+    var stoneR = Math.max(0.35, Math.min(1.2, ((m && m.projDiameter) || 0.26) * 1.6));
+    var stone = new THREE.Mesh(
+      new THREE.SphereGeometry(stoneR, 16, 12),
+      new THREE.MeshLambertMaterial({ color: contrast ? 0xffff00 : 0xf59e0b })
+    );
+    stone.visible = false;
+    S.model.add(stone);
+    S.flyStone = stone;
+
+    // No single camera can make both the machine and the castle large across
+    // 80 m of field, so the shot is a choice rather than a compromise.
+    var framing = (m && m.framing) || 'field';
+    if (framing === 'castle') {
+      // Tight on the wall. This is the one to watch a hit from.
+      S.target = new THREE.Vector3(0, Math.max(1.5, wallTop * 0.45), 0);
+      S.fitPts = [
+        new THREE.Vector3(-span / 2 - 1.5, 0, 2.5),
+        new THREE.Vector3(span / 2 + 1.5, wallTop + 1.5, 2.5),
+        new THREE.Vector3(0, 0, -3), new THREE.Vector3(0, wallTop + 1.5, -3)
+      ];
+    } else if (framing === 'machine') {
+      // Tight on the machine, for watching the arm rather than the target. The
+      // box is sized to the machine itself: a generous one leaves it a model on
+      // a table rather than a machine you are standing next to.
+      var reach = Math.max(3.2, ((m.geom && m.geom.beamLong) || 4.5) * 0.75);
+      var high = Math.max(4.5, ((m.geom && m.geom.cwDrop) || 3.2) + 2.2);
+      S.target = new THREE.Vector3(0, high * 0.42, -standoff);
+      S.fitPts = [
+        new THREE.Vector3(-reach, 0, -standoff - reach * 0.5),
+        new THREE.Vector3(reach, high, -standoff + reach * 0.5)
+      ];
+    } else {
+      // The whole field. Both are small, and that IS the fact: the distance is
+      // the thing being shown.
+      S.target = new THREE.Vector3(0, Math.max(2, wallTop * 0.5), -standoff * 0.45);
+      S.fitPts = [
+        new THREE.Vector3(-span / 2 - 2, 0, 2),
+        new THREE.Vector3(span / 2 + 2, wallTop + 2, 2),
+        new THREE.Vector3(0, 0, -standoff - 6),
+        new THREE.Vector3(0, wallTop + 2, -standoff - 6)
+      ];
+    }
+
+    S.tick = function (now) {
+      var data = S.data || {};
+
+      // The wall. While a stone is in the air the wall is still whole, so the
+      // pre-impact blocks are drawn until it lands: a wall that broke while the
+      // stone was still halfway there would read as the tool cheating.
+      var flying = !!(data.flight && data.flight.path && data.flight.path.length > 1);
+      var t = 0, dur = 0;
+      if (flying) {
+        if (S.flightId !== data.flight.id) { S.flightId = data.flight.id; S.flightT0 = now; }
+        dur = Math.max(0.3, data.flight.seconds || 1.4);
+        t = Math.max(0, (now - (S.flightT0 || now)) / 1000);
+      }
+      var landed = !flying || t >= dur;
+      var list = (flying && !landed && data.prevBlocks) ? data.prevBlocks : (data.blocks || []);
+
+      if (S.wall.batch) {
+        var n = 0;
+        for (var i = 0; i < list.length && i < S.wall.batch.capacity; i++) {
+          var b = list[i];
+          var x = b.col - midCol, y = b.row + 0.5, z = 0, sc = 1;
+          if (b.state === 'breached') {
+            var r1 = hash01(b.col, b.row, 1), r2 = hash01(b.col, b.row, 2), r3 = hash01(b.col, b.row, 3);
+            x += (r1 - 0.5) * 2.2;
+            // Forward, away from the machine: the impact carries it through.
+            z += (r2 - 0.5) * 2.6 + 1.1;
+            y = 0.22 + r3 * 0.5;
+            sc = 0.45 + r1 * 0.25;
+          }
+          S.wall.batch.set(n, x, y, z, sc, colourFor(b));
+          n++;
+        }
+        S.wall.batch.commit(n);
+      }
+
+      // The machine's own swing, driven off the flight clock so the arm reaches
+      // release exactly as the stone appears. The guest tick reads GUEST.data,
+      // and it hides its own sling stone once the swing finishes, which is what
+      // hands the shot over to the field stone below.
+      var g = S.siegeGuest;
+      if (g && typeof g.tick === 'function') {
+        g.data = flying
+          ? { shotId: data.flight.id, releaseAngle: data.releaseAngle, muzzleV: 0 }
+          : {};
+        try { g.tick(flying ? (S.flightT0 || now) + Math.min(t, 0.9) * 1000 : now); }
+        catch (e) {}
+      }
+
+      // The stone, on the path the model computed. x downrange maps to +z from
+      // the machine, y is height, z is crosswind drift mapped to world x.
+      if (S.flyStone) {
+        if (!flying || landed) {
+          S.flyStone.visible = false;
+        } else {
+          var pts = data.flight.path;
+          var frac = t / dur;
+          var idx = Math.min(pts.length - 1, Math.max(0, Math.floor(frac * (pts.length - 1))));
+          var nx = Math.min(pts.length - 1, idx + 1);
+          var seg = (frac * (pts.length - 1)) - idx;
+          var a = pts[idx], bb = pts[nx];
+          var px = (a.z || 0) + (((bb.z || 0) - (a.z || 0)) * seg);
+          var py = a.y + ((bb.y - a.y) * seg);
+          var pz = a.x + ((bb.x - a.x) * seg);
+          S.flyStone.visible = true;
+          S.flyStone.position.set(px, Math.max(0.2, py), -standoff + pz);
+        }
+      }
+    };
+    S.tick(0);
+  }
+
   function buildWallScene(THREE, S, m) {
     var blocks = (m && m.blocks) || [];
     var contrast = !!(m && m.contrast);
@@ -1880,8 +2087,15 @@ window.StemLab = window.StemLab || {
         attr: 'data-machinelab-wall-gl',
         clearColor: 0x0b1220,
         fov: 46,
-        fitSlack: 1.25,
-        rot: { y: 14, x: 16 },
+        // A field 80 m long fitted as a sphere puts the camera so far back that
+        // the castle and the machine are both specks in a lot of empty ground.
+        // Held tight, and the framing is done by where the target sits instead.
+        fitSlack: 1.02,
+        // Low and off to one side, looking down the firing line. A high camera
+        // flattens the field into a plan view; at 9 degrees the ground
+        // foreshortens, the castle stands against the sky, and the distance
+        // reads as distance.
+        rot: { y: 206, x: 9 },
         failMessage: 'The 3D wall is unavailable. The wall diagram and the course table below carry the same information.',
         lights: function (THREE, scene) {
           scene.add(new THREE.AmbientLight(0xffffff, 0.55));
@@ -1892,7 +2106,7 @@ window.StemLab = window.StemLab || {
           fill.position.set(-2.4, 1.4, -2.2);
           scene.add(fill);
         },
-        build: buildWallScene
+        build: buildSiegeScene
       })
     : {
         attach: function () {}, push: function () {}, onStatusChange: function () {},
@@ -1952,6 +2166,12 @@ window.StemLab = window.StemLab || {
       lastShot: null,
       shotId: 0,
       animating: false,
+      // The shot the 3D field is currently playing: the arc, how long it takes
+      // and the wall as it stood before impact. Null except during a throw.
+      siegeFlight: null,
+      siegeFlightId: 0,
+      // Which shot the 3D field is composed for: field | castle | machine.
+      siegeFraming: 'field',
       shotHistory: [],
       showOverlay: true,
       rangePrediction: '',
@@ -3913,10 +4133,22 @@ window.StemLab = window.StemLab || {
         var res = _machineMath.applyDamage(blocks, impact, {
           projMass: d.projMass, projDiameter: d.projDiameter
         });
+        // The arc the stone actually flies, cut at the wall rather than carried
+        // on to where it would have landed on open ground.
+        var flightPath = (preview.path || []).filter(function (pt) { return pt.x <= d.standoff + 1; });
+        if (flightPath.length < 2) flightPath = (preview.path || []).slice(0, 2);
+        var flightSecs = (impact && impact.t) ? impact.t
+          : (flightPath.length ? flightPath[flightPath.length - 1].t : 1.4);
         if (!res) {
           upd('siegeFeedback', { ok: false, message: __alloT('stem.machinelab.no_target', 'Nothing to hit there.') });
           return;
         }
+        var flightId = (d.siegeFlightId || 0) + 1;
+        // Played at real time where that is watchable. A very fast or very slow
+        // shot is stretched or squeezed into the window, and the Flight time in
+        // the numbers below is always the true one, so nothing here is claiming
+        // the animation is a measurement.
+        var playSecs = Math.max(0.9, Math.min(4.5, flightSecs));
         var nowBreached = _machineMath.isBreached(res.blocks);
         var msg;
         if (res.outcome === 'over') {
@@ -3938,8 +4170,26 @@ window.StemLab = window.StemLab || {
         updMulti({
           wallBlocks: res.blocks, shotsFired: shots, totalCrankWork: work,
           breached: nowBreached, lastImpact: res,
-          siegeFeedback: { ok: res.outcome === 'hit', message: msg }
+          siegeFeedback: { ok: res.outcome === 'hit', message: msg },
+          siegeFlightId: flightId,
+          // What the 3D field needs to play the throw. `before` is the wall as
+          // it stood, drawn until the stone lands.
+          siegeFlight: {
+            id: flightId, path: flightPath, seconds: playSecs, before: blocks
+          }
         });
+        // Clearing it returns the bay to render-on-demand. Read from prev so a
+        // second shot fired during the first does not have its flight wiped by
+        // the earlier timer.
+        setTimeout(function () {
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {};
+            if (!cur.siegeFlight || cur.siegeFlight.id !== flightId) return prev;
+            return Object.assign({}, prev, {
+              machineLab: Object.assign({}, cur, { siegeFlight: null })
+            });
+          });
+        }, playSecs * 1000 + 900);
         if (nowBreached && !d.breached) {
           awardStemXP(40);
           celebrate();
@@ -3997,12 +4247,35 @@ window.StemLab = window.StemLab || {
         var wCam = camFor('wall');
         var siegeGlStatus = SIEGE_GL.status();
         SIEGE_GL.onStatusChange(function () { upd('glTick', (d.glTick || 0) + 1); });
+        // The signature decides when the scene is REBUILT rather than updated.
+        // Standoff and machine identity belong in it because both change the
+        // geometry of the field; block states do not, because those ride in on
+        // the same push and are applied by the tick without a teardown.
         SIEGE_GL.push({
-          sig: [d.wallPreset || 'curtain', blocks.length, ext ? ext.cols : 0, ext ? ext.rows : 0, isDark, isContrast].join('|'),
-          static: true,
+          sig: [d.wallPreset || 'curtain', blocks.length, ext ? ext.cols : 0, ext ? ext.rows : 0,
+                machineId, Math.round(d.standoff), d.beamLong, d.beamShort, d.slingLength,
+                d.cwMass, d.cwDrop, d.torsionArmLength, d.torsionDraw, d.onagerSling,
+                d.projDiameter, d.siegeFraming || 'field', isDark, isContrast].join('|'),
+          // A shot in the air needs frames. Everything else is render-on-demand.
+          static: !d.siegeFlight,
           rotY: wCam.rotY, rotX: wCam.rotX, zoom: wCam.zoom,
           blocks: blocks,
-          dark: isDark, contrast: isContrast
+          // Drawn instead of `blocks` until the stone lands: a wall that broke
+          // while the stone was still halfway there would read as a cheat.
+          prevBlocks: d.siegeFlight ? d.siegeFlight.before : null,
+          flight: d.siegeFlight || null,
+          standoff: d.standoff,
+          framing: d.siegeFraming || 'field',
+          kind: machineId,
+          releaseAngle: d.releaseAngle,
+          projDiameter: d.projDiameter,
+          dark: isDark, contrast: isContrast,
+          geom: {
+            beamLong: d.beamLong, beamShort: d.beamShort,
+            slingLength: (machineId === 'onager') ? d.onagerSling : d.slingLength,
+            cwMass: d.cwMass, cwDrop: d.cwDrop, projDiameter: d.projDiameter,
+            armLength: d.torsionArmLength, drawLength: d.torsionDraw
+          }
         });
 
         var presetMeta = WALL_PRESETS[0];
@@ -4074,7 +4347,39 @@ window.StemLab = window.StemLab || {
                     borderRadius: 10, background: T.bg, border: '1px solid ' + T.border
                   }
                 }, null),
-                camControls(wCam, presetMeta ? presetMeta.label : 'wall', 'wall')
+                camControls(wCam, presetMeta ? presetMeta.label : 'wall', 'wall'),
+                // Which shot to compose. Inside the full-screen wrapper, so a
+                // student watching a hit can change the view without leaving.
+                h('div', {
+                  key: 'fram', role: 'group',
+                  'aria-label': __alloT('stem.machinelab.framing_group', 'Camera framing'),
+                  style: {
+                    display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center',
+                    marginTop: 6, background: T.card, borderRadius: 8, padding: '4px 6px'
+                  }
+                }, [
+                  h('span', { key: 'l', style: { fontSize: 11, color: T.dim, marginRight: 2 } },
+                    __alloT('stem.machinelab.framing_label', 'Shot:'))
+                ].concat([
+                  { id: 'field', label: __alloT('stem.machinelab.fram_field', 'Whole field') },
+                  { id: 'castle', label: __alloT('stem.machinelab.fram_castle', 'Castle') },
+                  { id: 'machine', label: __alloT('stem.machinelab.fram_machine', 'Machine') }
+                ].map(function (f) {
+                  var on = (d.siegeFraming || 'field') === f.id;
+                  return h('button', {
+                    key: f.id,
+                    type: 'button',
+                    'aria-pressed': on ? 'true' : 'false',
+                    onClick: function () { upd('siegeFraming', f.id); },
+                    style: {
+                      padding: '3px 9px', borderRadius: 7, cursor: 'pointer',
+                      border: '1px solid ' + (on ? T.accent : T.border),
+                      background: on ? T.accent : T.card,
+                      color: on ? T.accentInk : T.text,
+                      fontSize: 11, fontWeight: 700
+                    }
+                  }, f.label);
+                })))
                 ]),
                 siegeGlStatus !== 'ready' ? h('p', {
                   key: 'st', style: { margin: '8px 0 0', fontSize: 12, color: T.dim }

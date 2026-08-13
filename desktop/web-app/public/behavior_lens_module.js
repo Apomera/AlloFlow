@@ -951,7 +951,7 @@ Return ONLY valid JSON:
         const [showModal, setShowModal] = useState(false);
         const [sortField, setSortField] = useState('timestamp');
         const [sortDir, setSortDir] = useState('desc');
-        const [filterBehavior, setFilterBehavior] = useState('all');
+        const [filterBehavior, setFilterBehavior] = useState('');
         const [searchText, setSearchText] = useState('');
         const [dateRange, setDateRange] = useState('all'); // today, 7, 30, all
         const [selectedIds, setSelectedIds] = useState(new Set());
@@ -963,6 +963,8 @@ Return ONLY valid JSON:
         const [nlEditId, setNlEditId] = useState(null);
         const [nlEditInput, setNlEditInput] = useState('');
         const [nlEditLoading, setNlEditLoading] = useState(false);
+        const [pageIndex, setPageIndex] = useState(0);
+        const [pageSize, setPageSize] = useState(50);
 
         const handleRestorativeQuestions = async (entry) => {
             if (!callGemini) return;
@@ -1032,17 +1034,28 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             } finally { setNlEditLoading(false); }
         };
 
-        const uniqueBehaviors = useMemo(() => {
-            const set = new Set(entries.map(e => e.behavior));
-            return ['all', ...Array.from(set)];
+        const behaviorSuggestions = useMemo(() => {
+            const seen = new Set();
+            const suggestions = [];
+            for (const entry of entries) {
+                const behavior = String(entry.behavior || '').trim();
+                if (!behavior || seen.has(behavior)) continue;
+                seen.add(behavior);
+                suggestions.push(behavior);
+                if (suggestions.length >= 50) break;
+            }
+            return suggestions.sort((left, right) => left.localeCompare(right));
         }, [entries]);
 
         const sorted = useMemo(() => {
             const now = new Date();
             let filtered = entries;
 
-            // Behavior filter
-            if (filterBehavior !== 'all') filtered = filtered.filter(e => e.behavior === filterBehavior);
+            // Behavior filter remains full-dataset, while its suggestion list is DOM-bounded.
+            if (filterBehavior.trim()) {
+                const behaviorQuery = filterBehavior.toLowerCase().trim();
+                filtered = filtered.filter(e => String(e.behavior || '').toLowerCase().includes(behaviorQuery));
+            }
 
             // Date range filter
             if (dateRange !== 'all') {
@@ -1079,6 +1092,26 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 return sortDir === 'desc' ? vb.localeCompare(va) : va.localeCompare(vb);
             });
         }, [entries, sortField, sortDir, filterBehavior, searchText, dateRange]);
+
+        const hasPhases = useMemo(() => entries.some(e => e.phase), [entries]);
+        const page = useMemo(() => getBehaviorLensWorkspaceRuntime().paginateCollection(
+            sorted, pageIndex, pageSize
+        ), [sorted, pageIndex, pageSize]);
+        const visibleEntries = page.items;
+        useEffect(() => {
+            if (page.pageIndex !== pageIndex) setPageIndex(page.pageIndex);
+        }, [page.pageIndex, pageIndex]);
+        useEffect(() => {
+            setPageIndex(0);
+        }, [sortField, sortDir, filterBehavior, searchText, dateRange, pageSize]);
+        useEffect(() => {
+            if (expandedId && !visibleEntries.some(entry => entry.id === expandedId)) setExpandedId(null);
+            if (restorativeId && !visibleEntries.some(entry => entry.id === restorativeId)) setRestorativeId(null);
+            if (nlEditId && !visibleEntries.some(entry => entry.id === nlEditId)) {
+                setNlEditId(null);
+                setNlEditInput('');
+            }
+        }, [page.pageIndex]);
 
         const handleSaveEntry = (entry) => {
             setEntries(prev => {
@@ -1122,12 +1155,15 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             });
         };
 
-        const toggleSelectAll = () => {
-            if (selectedIds.size === sorted.length) {
-                setSelectedIds(new Set());
-            } else {
-                setSelectedIds(new Set(sorted.map(e => e.id)));
-            }
+        const visibleSelectedCount = visibleEntries.reduce((count, entry) => count + (selectedIds.has(entry.id) ? 1 : 0), 0);
+        const allVisibleSelected = visibleEntries.length > 0 && visibleSelectedCount === visibleEntries.length;
+        const toggleSelectVisible = () => {
+            setSelectedIds(prev => {
+                const next = new Set(prev);
+                if (allVisibleSelected) visibleEntries.forEach(entry => next.delete(entry.id));
+                else visibleEntries.forEach(entry => next.add(entry.id));
+                return next;
+            });
         };
 
         const behaviorSummary = useMemo(() => {
@@ -1202,19 +1238,28 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         )
                     )
                 ),
-                // Behavior filter pills
-                h('div', { className: 'flex items-center gap-2 flex-wrap' },
-                    h('span', { className: 'text-xs font-bold text-slate-600' }, tt('behavior_lens.filter', 'Filter:')),
-                    uniqueBehaviors.map(beh =>
-                        h('button', { "aria-label": "Toggle filter behavior",
-                            key: beh,
-                            onClick: () => setFilterBehavior(beh),
-                            className: `text-[11px] px-2.5 py-1 rounded-full border transition-all ${filterBehavior === beh
-                                ? 'bg-indigo-600 text-white border-indigo-600'
-                                : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600'
-                                }`
-                        }, beh === 'all' ? (tt('behavior_lens.all', 'All')) : beh)
-                    )
+                // Text filtering avoids mounting one control per distinct behavior.
+                h('div', { className: 'flex items-center gap-2' },
+                    h('label', { htmlFor: 'behavior-lens-abc-behavior-filter', className: 'text-xs font-bold text-slate-700' }, tt('behavior_lens.filter', 'Filter:')),
+                    h('input', {
+                        id: 'behavior-lens-abc-behavior-filter',
+                        type: 'search',
+                        list: 'behavior-lens-abc-behavior-suggestions',
+                        value: filterBehavior,
+                        onChange: event => setFilterBehavior(event.target.value),
+                        placeholder: tt('behavior_lens.abc.behavior_filter_placeholder', 'Filter by behavior...'),
+                        className: 'min-h-11 max-w-full flex-1 rounded-lg border border-slate-400 bg-white px-3 text-xs font-medium text-slate-800 sm:max-w-sm',
+                        'aria-label': 'Filter ABC entries by behavior'
+                    }),
+                    h('datalist', { id: 'behavior-lens-abc-behavior-suggestions' },
+                        behaviorSuggestions.map(behavior => h('option', { key: behavior, value: behavior }))
+                    ),
+                    filterBehavior && h('button', {
+                        type: 'button',
+                        onClick: () => setFilterBehavior(''),
+                        className: 'min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100',
+                        'aria-label': 'Clear behavior filter'
+                    }, 'Clear')
                 )
             ),
             // Quick summary chips
@@ -1265,49 +1310,59 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         h('div', { className: 'text-2xl mb-2' }, '🔍'),
                         h('p', { className: 'text-sm font-bold text-slate-600' }, tt('behavior_lens.no_entries_match', 'No entries match your filters')),
                         h('button', { "aria-label": "Toggle search text",
-                            onClick: () => { setSearchText(''); setDateRange('all'); setFilterBehavior('all'); },
+                            onClick: () => { setSearchText(''); setDateRange('all'); setFilterBehavior(''); },
                             className: 'mt-2 text-xs text-indigo-600 font-bold hover:underline'
                         }, tt('behavior_lens.clear_all_filters', 'Clear all filters'))
                     )
                     : h('div', { className: 'bg-white rounded-xl border border-slate-400 overflow-hidden shadow-sm' },
                         h('div', { className: 'overflow-x-auto' },
                             h('table', { className: 'w-full text-sm' },
-                                h('caption', { className: 'sr-only' }, 'Clear all filters'), h('thead', null,
+                                h('caption', { className: 'sr-only' }, 'ABC entries, page ' + page.pageNumber + ' of ' + page.pageCount), h('thead', null,
                                     h('tr', { className: 'bg-slate-50 border-b border-slate-200' },
                                         // Checkbox header
                                         h('th', { scope: 'col', className: 'px-2 py-2.5 text-center w-8' },
                                             h('input', {
                                                 type: 'checkbox',
-                                                checked: selectedIds.size === sorted.length && sorted.length > 0,
-                                                onChange: toggleSelectAll,
-                                                'aria-label': 'Select all entries',
+                                                checked: allVisibleSelected,
+                                                onChange: toggleSelectVisible,
+                                                'aria-label': 'Select all entries on this page',
                                                 className: 'w-3.5 h-3.5 rounded border-slate-300 text-indigo-600 cursor-pointer'
                                             })
                                         ),
-                                        ['timestamp', 'antecedent', 'behavior', 'consequence', 'intensity'].map(col =>
-                                            h('th', { scope: 'col',
+                                        ['timestamp', 'antecedent', 'behavior', 'consequence', 'intensity'].map(col => {
+                                            const columnLabel = col === 'timestamp' ? tt('behavior_lens.abc.time', 'Time') :
+                                                col === 'intensity' ? tt('behavior_lens.abc.intensity', 'Intensity') :
+                                                    (t(`behavior_lens.abc.${col}`) || col.charAt(0).toUpperCase() + col.slice(1));
+                                            const activeSort = sortField === col;
+                                            return h('th', {
+                                                scope: 'col',
                                                 key: col,
-                                                onClick: () => {
-                                                    if (sortField === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-                                                    else { setSortField(col); setSortDir('desc'); }
-                                                },
-                                                className: 'px-3 py-2.5 text-start text-xs font-bold text-slate-600 uppercase tracking-wide cursor-pointer hover:text-indigo-600 transition-colors select-none'
+                                                'aria-sort': activeSort ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none',
+                                                className: 'px-1 py-1 text-start'
                                             },
-                                                col === 'timestamp' ? (tt('behavior_lens.abc.time', 'Time')) :
-                                                    col === 'intensity' ? '📊' :
-                                                        (t(`behavior_lens.abc.${col}`) || col.charAt(0).toUpperCase() + col.slice(1)),
-                                                sortField === col && h('span', { className: 'ms-1' }, sortDir === 'asc' ? '↑' : '↓')
-                                            )
-                                        ),
+                                                h('button', {
+                                                    type: 'button',
+                                                    onClick: () => {
+                                                        if (activeSort) setSortDir(direction => direction === 'asc' ? 'desc' : 'asc');
+                                                        else { setSortField(col); setSortDir('desc'); }
+                                                    },
+                                                    className: 'min-h-11 w-full rounded-md px-2 text-start text-xs font-bold uppercase tracking-wide text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700',
+                                                    'aria-label': 'Sort ABC entries by ' + columnLabel + (activeSort ? ', currently ' + sortDir : '')
+                                                },
+                                                    columnLabel,
+                                                    activeSort && h('span', { className: 'ms-1', 'aria-hidden': 'true' }, sortDir === 'asc' ? '↑' : '↓')
+                                                )
+                                            );
+                                        }),
                                         // Phase column header
-                                        entries.some(e => e.phase) && h('th', { scope: 'col', className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-600 uppercase tracking-wide' }, tt('behavior_lens.abc.phase', 'Phase')),
+                                        hasPhases && h('th', { scope: 'col', className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-600 uppercase tracking-wide' }, tt('behavior_lens.abc.phase', 'Phase')),
                                         // Notes indicator header
                                         h('th', { scope: 'col', className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-600 w-8' }, '📝'),
                                         h('th', { scope: 'col', className: 'px-3 py-2.5 text-end text-xs font-bold text-slate-600 uppercase' }, '')
                                     )
                                 ),
                                 h('tbody', null,
-                                    sorted.map((entry, idx) =>
+                                    visibleEntries.map((entry, idx) =>
                                         h(React.Fragment, { key: entry.id },
                                             h('tr', {
                                                 className: `border-b border-slate-100 hover:bg-indigo-50/40 transition-colors ${selectedIds.has(entry.id) ? 'bg-indigo-50/60' : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`
@@ -1352,7 +1407,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                     )
                                                 ),
                                                 // Phase badge
-                                                entries.some(e => e.phase) && h('td', { className: 'px-2 py-2.5 text-center' },
+                                                hasPhases && h('td', { className: 'px-2 py-2.5 text-center' },
                                                     entry.phase ? h('span', { className: `text-[11px] px-2 py-0.5 rounded-full font-bold ${
                                                         entry.phase === 'baseline' ? 'bg-slate-100 text-slate-600 border border-slate-400' :
                                                         entry.phase === 'intervention' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
@@ -1454,6 +1509,45 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                         )
                                     )
                                 )
+                            )
+                        ),
+                        h('div', {
+                            className: 'flex flex-col gap-3 border-t border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between',
+                            role: 'navigation',
+                            'aria-label': 'ABC entry pages'
+                        },
+                            h('p', {
+                                className: 'text-xs font-medium text-slate-700',
+                                role: 'status',
+                                'aria-live': 'polite',
+                                'aria-atomic': 'true'
+                            }, 'Showing ' + page.startIndex + '–' + page.endIndex + ' of ' + page.totalItems + ' matching entries'),
+                            h('div', { className: 'flex flex-wrap items-center gap-2' },
+                                h('label', { htmlFor: 'behavior-lens-abc-page-size', className: 'text-xs font-bold text-slate-700' }, 'Rows per page'),
+                                h('select', {
+                                    id: 'behavior-lens-abc-page-size',
+                                    value: String(pageSize),
+                                    onChange: event => setPageSize(Number(event.target.value)),
+                                    className: 'min-h-11 rounded-lg border border-slate-400 bg-white px-2 text-xs font-bold text-slate-800',
+                                    'aria-label': 'ABC rows per page'
+                                }, [25, 50, 100].map(size => h('option', { key: size, value: String(size) }, String(size)))),
+                                h('button', {
+                                    type: 'button',
+                                    disabled: !page.hasPrevious,
+                                    onClick: () => setPageIndex(current => Math.max(0, current - 1)),
+                                    className: 'min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-xs font-bold text-slate-800 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50',
+                                    'aria-label': 'Previous ABC entries page'
+                                }, '← Previous'),
+                                h('span', { className: 'min-w-24 text-center text-xs font-bold text-slate-700' },
+                                    'Page ' + page.pageNumber + ' of ' + page.pageCount
+                                ),
+                                h('button', {
+                                    type: 'button',
+                                    disabled: !page.hasNext,
+                                    onClick: () => setPageIndex(current => Math.min(page.pageCount - 1, current + 1)),
+                                    className: 'min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-xs font-bold text-slate-800 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50',
+                                    'aria-label': 'Next ABC entries page'
+                                }, 'Next →')
                             )
                         )
                     ),
@@ -23353,22 +23447,41 @@ Keep the language professional but accessible.`;
 
         const handleImportCode = () => {
             try {
-                const decoded = JSON.parse(decodeURIComponent(escape(atob(importCode.trim()))));
+                const encoded = importCode.trim();
+                if (encoded.length > 5000) throw new Error('Share code exceeds the 5,000-character safety limit.');
+                const decodedText = decodeURIComponent(escape(atob(encoded)));
+                const decoded = JSON.parse(decodedText);
+                const validation = getBehaviorLensWorkspaceRuntime().validateSharedWorkspaceImport(decoded, {
+                    sourceBytes: getBehaviorLensWorkspaceRuntime().utf8ByteLength(decodedText)
+                });
+                if (!validation.ok) throw new Error(validation.error);
                 setImportedData(decoded);
-            } catch {
-                if (addToast) addToast(tt('behavior_lens.toast.invalid_share_code', 'Invalid share code'), 'error');
+            } catch (error) {
+                if (addToast) addToast('Shared workspace not loaded: ' + (error && error.message ? error.message : 'invalid share code.'), 'error');
             }
         };
 
         const handleImportFile = (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
+            const workspaceRuntime = getBehaviorLensWorkspaceRuntime();
+            if (file.size > workspaceRuntime.MAX_SHARED_WORKSPACE_IMPORT_BYTES) {
+                if (addToast) addToast('Shared workspace not loaded: file exceeds the ' + workspaceRuntime.formatByteSize(workspaceRuntime.MAX_SHARED_WORKSPACE_IMPORT_BYTES) + ' safety limit.', 'error');
+                e.target.value = '';
+                return;
+            }
             const reader = new FileReader();
             reader.onload = (ev) => {
                 try {
-                    setImportedData(JSON.parse(ev.target.result));
-                } catch { if (addToast) addToast(tt('behavior_lens.toast.invalid_share_file', 'Invalid share file'), 'error'); }
+                    const data = JSON.parse(ev.target.result);
+                    const validation = workspaceRuntime.validateSharedWorkspaceImport(data, { sourceBytes: file.size });
+                    if (!validation.ok) throw new Error(validation.error);
+                    setImportedData(data);
+                } catch (error) {
+                    if (addToast) addToast('Shared workspace not loaded: ' + (error && error.message ? error.message : 'invalid share file.'), 'error');
+                }
             };
+            reader.onerror = () => { if (addToast) addToast('Shared workspace not loaded: the file could not be read.', 'error'); };
             reader.readAsText(file);
             e.target.value = '';
         };
@@ -25314,6 +25427,31 @@ IMPORTANT rules for expert keys:
         const [localPersistenceError, setLocalPersistenceError] = useState(null);
         const [localTabConflict, setLocalTabConflict] = useState(null);
         const [pendingLocalSync, setPendingLocalSync] = useState(false);
+        const [workspaceCapacityWarning, setWorkspaceCapacityWarning] = useState(null);
+        const capacityWarningToastRef = useRef(null);
+        const capacityWarningDismissedRef = useRef(null);
+        const _reportWorkspaceCapacity = useCallback((capacity) => {
+            if (!capacity || !capacity.level) {
+                setWorkspaceCapacityWarning(null);
+                if (!capacity || capacity.usageRatio < 0.7) capacityWarningDismissedRef.current = null;
+                return;
+            }
+            const bucket = Math.ceil((capacity.projectedBytes || capacity.workspaceBytes || 0) / (256 * 1024));
+            const signature = capacity.level + ':' + capacity.reason + ':' + bucket;
+            if (capacityWarningDismissedRef.current === signature) return;
+            const warning = Object.assign({}, capacity, { signature: signature });
+            setWorkspaceCapacityWarning(warning);
+            if (capacityWarningToastRef.current !== signature && addToast) {
+                addToast(capacity.level === 'critical'
+                    ? 'BehaviorLens browser storage is near capacity. Export a backup now.'
+                    : 'BehaviorLens workspace storage is growing large. Consider exporting a backup.', 'warning');
+                capacityWarningToastRef.current = signature;
+            }
+        }, [addToast]);
+        const dismissWorkspaceCapacityWarning = useCallback(() => {
+            if (workspaceCapacityWarning) capacityWarningDismissedRef.current = workspaceCapacityWarning.signature;
+            setWorkspaceCapacityWarning(null);
+        }, [workspaceCapacityWarning]);
         const localPersistenceToastRef = useRef(false);
         const _reportLocalPersistenceError = useCallback((err) => {
             const isQuota = !!(err && (err.name === 'QuotaExceededError' || err.code === 22 || err.code === 1014));
@@ -25433,37 +25571,39 @@ IMPORTANT rules for expert keys:
                     if (!alreadyReported && addToast) addToast('A newer cloud copy exists. Local changes remain in this browser until you choose a copy.', 'warning');
                     return false;
                 }
+                const workspaceRuntime = getBehaviorLensWorkspaceRuntime();
                 _cloudRevisionsRef.current[studentId] = result.revision;
+                // Per-student saves are serialized, so a successful commit is
+                // newer than any retry record left by an earlier failed commit.
                 delete _pendingCloudSavesRef.current[studentId];
+                let acknowledgement = null;
                 if (studentId !== '__roster__') {
                     try {
                         const safeLocalId = String(studentId).replace(/[^A-Za-z0-9_-]/g, '_');
-                        localStorage.setItem('behaviorLens_workspace_' + safeLocalId, JSON.stringify({
-                            ...(data || {}),
+                        acknowledgement = workspaceRuntime.acknowledgeCloudWorkspace({
+                            storage: localStorage,
+                            workspaceKey: 'behaviorLens_workspace_' + safeLocalId,
+                            dirtyKey: 'behaviorLens_workspace_dirty_' + safeLocalId,
+                            workspace: data,
                             revision: result.revision,
                             updatedAt: result.updatedAt
-                        }));
-                        const dirtyKey = 'behaviorLens_workspace_dirty_' + safeLocalId;
-                        const dirtyRaw = localStorage.getItem(dirtyKey);
-                        let shouldClearDirty = true;
-                        if (dirtyRaw) {
-                            try {
-                                const dirty = JSON.parse(dirtyRaw);
-                                shouldClearDirty = !dirty.savedAt || dirty.savedAt === (data && data.savedAt);
-                            } catch (_) {}
-                        }
-                        if (shouldClearDirty) {
-                            localStorage.removeItem(dirtyKey);
+                        });
+                        if (acknowledgement.applied) {
+                            _reportWorkspaceCapacity(acknowledgement.capacity);
                             setPendingLocalSync(false);
+                            _clearLocalPersistenceError();
+                        } else {
+                            setPendingLocalSync(true);
                         }
-                        _clearLocalPersistenceError();
                     } catch (storageError) {
+                        acknowledgement = { applied: false, stale: true, error: storageError };
+                        setPendingLocalSync(true);
                         _reportLocalPersistenceError(storageError);
                     }
                 }
                 if (studentId !== '__roster__') {
                     setCloudConflict((current) => current && current.studentId !== studentId ? current : null);
-                    _setSyncStatus('synced');
+                    _setSyncStatus(acknowledgement && acknowledgement.stale ? 'idle' : 'synced');
                 }
                 debugLog('CloudSync: transaction committed', studentId, 'revision', result.revision);
                 return true;
@@ -25479,7 +25619,7 @@ IMPORTANT rules for expert keys:
                 setPendingLocalSync(true);
                 return false;
             }
-        }, [firestore, _cloudUserId, isCanvasEnv, _cloudDocPath, cloudConflict, addToast, _isRetryableCloudFailure, _clearLocalPersistenceError, _reportLocalPersistenceError]);
+        }, [firestore, _cloudUserId, isCanvasEnv, _cloudDocPath, cloudConflict, addToast, _isRetryableCloudFailure, _clearLocalPersistenceError, _reportLocalPersistenceError, _reportWorkspaceCapacity]);
         const _saveToCloud = useCallback((studentId, data, options = {}) => {
             if (!studentId) return Promise.resolve(false);
             const previous = _cloudSaveQueueRef.current[studentId] || Promise.resolve();
@@ -25534,7 +25674,7 @@ IMPORTANT rules for expert keys:
 
         // Assemble the cloudSync object (same interface as before)
         const pendingCloudSaveCount = Object.keys(_pendingCloudSavesRef.current).length;
-        const cloudSync = { saveToCloud: _saveToCloud, overwriteCloud: (studentId, data) => _saveToCloud(studentId, data, { force: true }), loadFromCloud: _loadFromCloud, syncStatus: _syncStatus, setSyncStatus: _setSyncStatus, userId: _cloudUserId, cloudConflict, browserOnline, pendingSaveCount: pendingCloudSaveCount };
+        const cloudSync = { saveToCloud: _saveToCloud, overwriteCloud: (studentId, data) => _saveToCloud(studentId, data, { force: true }), loadFromCloud: _loadFromCloud, syncStatus: _syncStatus, setSyncStatus: _setSyncStatus, userId: isCanvasEnv ? null : _cloudUserId, cloudConflict, browserOnline, pendingSaveCount: pendingCloudSaveCount };
         const [activePanel, setActivePanel] = useState('hub');
         const [selectedStudent, setSelectedStudent] = useState(studentNickname || '');
         const behaviorLensDialogRef = useRef(null);
@@ -26101,16 +26241,19 @@ IMPORTANT rules for expert keys:
         const handleLoadWorkspace = (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
+            const workspaceRuntime = getBehaviorLensWorkspaceRuntime();
+            if (file.size > workspaceRuntime.MAX_WORKSPACE_IMPORT_BYTES) {
+                if (addToast) addToast('Workspace not loaded: file exceeds the ' + workspaceRuntime.formatByteSize(workspaceRuntime.MAX_WORKSPACE_IMPORT_BYTES) + ' safety limit.', 'error');
+                e.target.value = '';
+                return;
+            }
             const reader = new FileReader();
             reader.onload = (ev) => {
                 try {
                     const data = JSON.parse(ev.target.result);
-                    const validWorkspace = data && typeof data === 'object' && (
-                        Array.isArray(data.abcEntries) || Array.isArray(data.observationSessions) ||
-                        Array.isArray(data.sessionHistory) || Array.isArray(data.sessionNotes) ||
-                        !!data.studentProfile
-                    );
-                    if (!validWorkspace) throw new Error('Invalid BehaviorLens workspace shape');
+                    const validation = workspaceRuntime.validateWorkspaceImport(data, { sourceBytes: file.size });
+                    const validWorkspace = data && validation.ok;
+                    if (!validWorkspace) throw new Error(validation.error || 'Invalid BehaviorLens workspace shape');
                     if (data.student && data.student !== selectedStudent) {
                         pendingWorkspaceRef.current = { student: data.student, data };
                         setSelectedStudent(data.student);
@@ -26122,8 +26265,11 @@ IMPORTANT rules for expert keys:
                         (Array.isArray(data.sessionNotes) ? data.sessionNotes.length : 0) + ' notes) ??', 'success');
                 } catch (err) {
                     warnLog('Failed to parse workspace file:', err);
-                    if (addToast) addToast(tt('behavior_lens.toast_invalid_file', 'Invalid workspace file ? must be BehaviorLens JSON'), 'error');
+                    if (addToast) addToast('Workspace not loaded: ' + (err && err.message ? err.message : 'invalid BehaviorLens JSON.'), 'error');
                 }
+            };
+            reader.onerror = () => {
+                if (addToast) addToast('Workspace not loaded: the file could not be read.', 'error');
             };
             reader.readAsText(file);
             // Reset input so the same file can be re-loaded
@@ -26132,23 +26278,48 @@ IMPORTANT rules for expert keys:
 
         // ── Multi-workspace comparison file loader ──
         const handleLoadComparisonFiles = (e) => {
-            const files = Array.from(e.target.files || []);
-            if (files.length === 0) return;
+            const allFiles = Array.from(e.target.files || []);
+            if (allFiles.length === 0) return;
+            const workspaceRuntime = getBehaviorLensWorkspaceRuntime();
+            const MAX_COMPARISON_FILES = 10;
+            const selectedFiles = allFiles.slice(0, MAX_COMPARISON_FILES);
+            const files = selectedFiles.filter(file => file.size <= workspaceRuntime.MAX_WORKSPACE_IMPORT_BYTES);
+            let rejected = allFiles.length - files.length;
+            if (allFiles.length > MAX_COMPARISON_FILES && addToast) {
+                addToast('Comparison is limited to 10 workspace files at a time.', 'warning');
+            }
+            if (files.length === 0) {
+                if (addToast) addToast('No comparison workspaces were loaded; selected files exceeded safety limits.', 'error');
+                e.target.value = '';
+                return;
+            }
             const loaded = [];
             let processed = 0;
+            const finishFile = () => {
+                processed += 1;
+                if (processed !== files.length) return;
+                setComparisonWorkspaces(prev => {
+                    const existing = new Set(prev.map(w => w.student));
+                    const newOnes = loaded.filter(w => !existing.has(w.student));
+                    return [...prev, ...newOnes];
+                });
+                if (addToast) {
+                    const summary = 'Loaded ' + loaded.length + ' workspace(s) for comparison' + (rejected ? '; skipped ' + rejected + ' unsafe or invalid file(s).' : '.');
+                    addToast(summary, loaded.length ? 'success' : 'error');
+                }
+            };
             files.forEach(file => {
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     try {
                         const data = JSON.parse(ev.target.result);
+                        const validation = workspaceRuntime.validateWorkspaceImport(data, { sourceBytes: file.size });
+                        if (!validation.ok) throw new Error(validation.error);
                         const entries = data.abcEntries || [];
                         const sessions = data.sessionHistory || [];
-                        // Extract behavior frequency counts
                         const behaviorCounts = {};
-                        entries.forEach(e => { const b = (e.behavior || '').trim(); if (b) behaviorCounts[b] = (behaviorCounts[b] || 0) + 1; });
-                        // Calculate avg intensity
-                        const avgIntensity = entries.length > 0 ? entries.reduce((s, e) => s + (e.intensity || 3), 0) / entries.length : 0;
-                        // Last entry date
+                        entries.forEach(entry => { const behavior = (entry.behavior || '').trim(); if (behavior) behaviorCounts[behavior] = (behaviorCounts[behavior] || 0) + 1; });
+                        const avgIntensity = entries.length > 0 ? entries.reduce((sum, entry) => sum + (entry.intensity || 3), 0) / entries.length : 0;
                         const lastEntry = entries.length > 0 ? entries.reduce((latest, entry) => new Date(entry.timestamp || entry.date || 0) > new Date(latest.timestamp || latest.date || 0) ? entry : latest, entries[0]).timestamp : null;
                         const topBehaviors = Object.entries(behaviorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
                         loaded.push({
@@ -26164,19 +26335,15 @@ IMPORTANT rules for expert keys:
                             sessionHistory: sessions.slice(0, 20),
                             designPhases: data.designPhases || [],
                             effectSizeResults: data.effectSizeResults,
-                            _fullData: data,
+                            _fullData: data
                         });
-                    } catch (err) { warnLog('Failed to parse comparison file:', file.name, err); }
-                    processed++;
-                    if (processed === files.length) {
-                        setComparisonWorkspaces(prev => {
-                            const existing = new Set(prev.map(w => w.student));
-                            const newOnes = loaded.filter(w => !existing.has(w.student));
-                            return [...prev, ...newOnes];
-                        });
-                        if (addToast) addToast(t('behavior_lens.toast.loaded_n_workspaces_for_comparison') || `Loaded ${loaded.length} workspace(s) for comparison`, 'success');
+                    } catch (err) {
+                        rejected += 1;
+                        warnLog('Failed to validate comparison file:', file.name, err);
                     }
+                    finishFile();
                 };
+                reader.onerror = () => { rejected += 1; finishFile(); };
                 reader.readAsText(file);
             });
             e.target.value = '';
@@ -26404,9 +26571,13 @@ Use professional language. Refer to "the student" (not the codename).`;
         // Student-scoped workspace persistence. Every read/write is guarded by
         // an immutable identity when available and by a generation token so a
         // slower response from a previous student cannot hydrate the new one.
+        const localTabIdRef = useRef(null);
+        if (!localTabIdRef.current) localTabIdRef.current = uid();
+        const workspaceSnapshotSequenceRef = useRef(0);
         const buildWorkspaceSnapshot = useCallback(() => ({
             version: 3,
             savedAt: new Date().toISOString(),
+            snapshotId: localTabIdRef.current + ':' + (++workspaceSnapshotSequenceRef.current).toString(36),
             student: selectedStudent,
             studentId: activeStudentId || null,
             revision: selectedStudent ? (_cloudRevisionsRef.current[activeStudentId || selectedStudent] || 0) : 0,
@@ -26430,8 +26601,38 @@ Use professional language. Refer to "the student" (not the codename).`;
         const suppressNextWorkspacePersistRef = useRef(false);
         const latestLocalSnapshotRef = useRef(null);
         const localTabConflictRef = useRef(null);
-        const localTabIdRef = useRef(null);
-        if (!localTabIdRef.current) localTabIdRef.current = uid();
+        const localWorkspacePersistAdapterRef = useRef(null);
+        const localWorkspacePersistErrorRef = useRef(null);
+        const localWorkspaceSaveSchedulerRef = useRef(null);
+        if (!localWorkspaceSaveSchedulerRef.current) {
+            const workspaceRuntime = getBehaviorLensWorkspaceRuntime();
+            localWorkspaceSaveSchedulerRef.current = workspaceRuntime.createWorkspacePersistenceScheduler({
+                delayMs: workspaceRuntime.LOCAL_WORKSPACE_SAVE_DELAY_MS,
+                keyForValue: (payload) => payload.identity,
+                persist: (payload, context) => localWorkspacePersistAdapterRef.current(payload, context),
+                onError: (error, payload, context) => localWorkspacePersistErrorRef.current(error, payload, context)
+            });
+        }
+        localWorkspacePersistAdapterRef.current = (payload, context = {}) => {
+            const persistenceResult = getBehaviorLensWorkspaceRuntime().persistLocalWorkspace({
+                storage: localStorage,
+                workspaceKey: payload.workspaceKey,
+                dirtyKey: payload.dirtyKey,
+                workspace: payload.workspace,
+                suppressDirtyMark: payload.suppressDirtyMark
+            });
+            if (!context.silent) {
+                _reportWorkspaceCapacity(persistenceResult && persistenceResult.capacity);
+                setPendingLocalSync(!payload.suppressDirtyMark && !payload.localOnly);
+                _clearLocalPersistenceError();
+            }
+            return persistenceResult;
+        };
+        localWorkspacePersistErrorRef.current = (storageError, payload, context = {}) => {
+            if (context.silent) return;
+            setPendingLocalSync(!payload.localOnly);
+            _reportLocalPersistenceError(storageError);
+        };
         const handleUseCloudCopy = useCallback(async () => {
             if (!selectedStudent || !cloudSync.userId) return;
             const remote = await cloudSync.loadFromCloud(activeStudentId || selectedStudent);
@@ -26481,16 +26682,14 @@ Use professional language. Refer to "the student" (not the codename).`;
                 const workspace = latestLocalSnapshotRef.current || conflict.currentWorkspace;
                 if (!workspace) return;
                 try {
-                    getBehaviorLensWorkspaceRuntime().persistLocalWorkspace({
+                    const persistenceResult = getBehaviorLensWorkspaceRuntime().persistLocalWorkspace({
                         storage: localStorage,
                         workspaceKey: studentKey('behaviorLens_workspace_'),
                         dirtyKey: studentKey('behaviorLens_workspace_dirty_'),
-                        abcKey: studentKey('behaviorLens_abc_'),
-                        observationKey: studentKey('behaviorLens_obs_'),
                         workspace,
-                        abcEntries: workspace.abcEntries,
-                        observationSessions: workspace.observationSessions
+                        suppressDirtyMark: isCanvasEnv
                     });
+                    _reportWorkspaceCapacity(persistenceResult && persistenceResult.capacity);
                     clearLocalTabConflict(conflict.draftKey);
                     setPendingLocalSync(!isCanvasEnv);
                     _clearLocalPersistenceError();
@@ -26504,7 +26703,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 if (blAnnounceToSR) blAnnounceToSR('Kept this tab workspace');
                 if (addToast) addToast("This tab's workspace is now the shared browser copy.", 'success');
             });
-        }, [selectedStudent, activeStudentId, studentKey, cloudSync, isCanvasEnv, clearLocalTabConflict, _clearLocalPersistenceError, _reportLocalPersistenceError, addToast, blAnnounceToSR]);
+        }, [selectedStudent, activeStudentId, studentKey, cloudSync, isCanvasEnv, clearLocalTabConflict, _clearLocalPersistenceError, _reportLocalPersistenceError, _reportWorkspaceCapacity, addToast, blAnnounceToSR]);
 
         const handleLoadOtherTabWorkspace = useCallback(() => {
             const conflict = localTabConflictRef.current;
@@ -26520,11 +26719,29 @@ Use professional language. Refer to "the student" (not the codename).`;
         }, [applyStudentWorkspace, clearLocalTabConflict, addToast, blAnnounceToSR]);
 
         useEffect(() => {
+            const scheduler = localWorkspaceSaveSchedulerRef.current;
+            const flushForPageLifecycle = () => scheduler.flush({ reason: 'page-lifecycle', silent: true });
+            const flushWhenHidden = () => {
+                if (document.visibilityState === 'hidden') flushForPageLifecycle();
+            };
+            window.addEventListener('pagehide', flushForPageLifecycle);
+            document.addEventListener('visibilitychange', flushWhenHidden);
+            return () => {
+                window.removeEventListener('pagehide', flushForPageLifecycle);
+                document.removeEventListener('visibilitychange', flushWhenHidden);
+                scheduler.flush({ reason: 'unmount', silent: true });
+            };
+        }, []);
+
+        useEffect(() => {
             if (!selectedStudent) {
                 abcHydratedRef.current = true;
                 return undefined;
             }
             const identity = activeStudentId || 'name:' + selectedStudent;
+            if (localWorkspaceSaveSchedulerRef.current.hasPending()) {
+                localWorkspaceSaveSchedulerRef.current.flush({ reason: 'before-hydration' });
+            }
             const hydrationToken = hydrationRef.current.begin(identity);
             abcHydratedRef.current = false;
             const isCurrent = () => hydrationRef.current.isCurrent(hydrationToken);
@@ -26662,6 +26879,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 } catch (storageError) {
                     _reportLocalPersistenceError(storageError);
                 }
+                localWorkspaceSaveSchedulerRef.current.cancel(identity);
                 const conflict = {
                     studentId: identity,
                     currentWorkspace,
@@ -26708,24 +26926,17 @@ Use professional language. Refer to "the student" (not the codename).`;
             }
             const suppressDirtyMark = suppressNextDirtyMarkRef.current;
             suppressNextDirtyMarkRef.current = false;
-            try {
-                getBehaviorLensWorkspaceRuntime().persistLocalWorkspace({
-                    storage: localStorage,
-                    workspaceKey: studentKey('behaviorLens_workspace_'),
-                    dirtyKey: studentKey('behaviorLens_workspace_dirty_'),
-                    abcKey: studentKey('behaviorLens_abc_'),
-                    observationKey: studentKey('behaviorLens_obs_'),
-                    workspace: snapshot,
-                    abcEntries,
-                    observationSessions,
-                    suppressDirtyMark
-                });
-                setPendingLocalSync(!suppressDirtyMark && !isCanvasEnv);
-                _clearLocalPersistenceError();
-            } catch (storageError) {
-                setPendingLocalSync(!isCanvasEnv);
-                _reportLocalPersistenceError(storageError);
-            }
+            const localOnly = !!isCanvasEnv;
+            const effectiveSuppressDirtyMark = suppressDirtyMark || localOnly;
+            localWorkspaceSaveSchedulerRef.current.schedule({
+                identity: saveKey,
+                workspaceKey: studentKey('behaviorLens_workspace_'),
+                dirtyKey: studentKey('behaviorLens_workspace_dirty_'),
+                workspace: snapshot,
+                suppressDirtyMark: effectiveSuppressDirtyMark,
+                localOnly
+            });
+            setPendingLocalSync(!effectiveSuppressDirtyMark && !localOnly);
             if (cloudSync.userId && !isCanvasEnv && !suppressDirtyMark) {
                 if (cloudSaveTimer.current) clearTimeout(cloudSaveTimer.current);
                 cloudSaveTimer.current = setTimeout(() => {
@@ -26734,7 +26945,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             }
             return () => { if (cloudSaveTimer.current) clearTimeout(cloudSaveTimer.current); };
         }, [buildWorkspaceSnapshot, selectedStudent, activeStudentId, cloudSync.userId, isCanvasEnv,
-            studentKey, abcEntries, observationSessions, _clearLocalPersistenceError, _reportLocalPersistenceError]);
+            studentKey, abcEntries, observationSessions, _clearLocalPersistenceError, _reportLocalPersistenceError, _reportWorkspaceCapacity]);
 
                 // Track data changes for save reminder
         useEffect(() => {
@@ -28893,6 +29104,12 @@ Analyze this data and return ONLY valid JSON:
                     h('div', { className: 'flex items-center gap-2' },
                         // Data Quality Badge
                         selectedStudent && abcEntries.length > 0 && h(DataQualityBadge, { abcEntries, t }),
+                        workspaceCapacityWarning && h('div', {
+                            role: 'status',
+                            'aria-label': 'BehaviorLens browser storage nearing capacity',
+                            className: 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border bg-amber-50 border-amber-300 text-amber-900',
+                            title: 'Export a workspace backup before browser storage fills up'
+                        }, 'Storage near limit'),
                         localTabConflict && h('div', {
                             role: 'status',
                             'aria-label': 'Workspace conflict with another browser tab',
@@ -29015,6 +29232,15 @@ Analyze this data and return ONLY valid JSON:
                 h('div', { className: 'mt-3 flex flex-wrap gap-2' },
                     h('button', { type: 'button', onClick: handleUseCloudCopy, className: 'min-h-[44px] rounded-lg border border-orange-400 bg-white px-3 py-2 text-xs font-bold text-orange-800 hover:bg-orange-100' }, 'Use cloud copy'),
                     h('button', { type: 'button', onClick: handleKeepLocalCopy, className: 'min-h-[44px] rounded-lg bg-orange-700 px-3 py-2 text-xs font-bold text-white hover:bg-orange-800' }, 'Replace cloud with local')
+                )
+            ),
+            workspaceCapacityWarning && !localPersistenceError && h('div', { role: 'alert', 'aria-live': 'polite', className: 'mx-6 mt-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 shadow-sm' },
+                h('p', { className: 'font-bold' }, workspaceCapacityWarning.level === 'critical' ? 'Browser workspace storage is nearly full.' : 'Workspace storage is growing large.'),
+                h('p', { className: 'mt-1' }, 'Estimated browser storage after this save: ' + getBehaviorLensWorkspaceRuntime().formatByteSize(workspaceCapacityWarning.projectedBytes) + ' of a conservative ' + getBehaviorLensWorkspaceRuntime().formatByteSize(workspaceCapacityWarning.safetyBytes) + ' safety budget. This workspace file is about ' + getBehaviorLensWorkspaceRuntime().formatByteSize(workspaceCapacityWarning.workspaceBytes) + '.'),
+                h('p', { className: 'mt-1 text-xs' }, 'Export a backup now. If the warning continues, archive older observations before adding large imports.'),
+                h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                    h('button', { type: 'button', onClick: handleSaveWorkspace, className: 'min-h-[44px] rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white hover:bg-amber-800' }, 'Export backup now'),
+                    h('button', { type: 'button', onClick: dismissWorkspaceCapacityWarning, className: 'min-h-[44px] rounded-lg border border-amber-400 bg-white px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100' }, 'Dismiss for now')
                 )
             ),
             localPersistenceError && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'mx-6 mt-3 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900 shadow-sm' },

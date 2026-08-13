@@ -32,6 +32,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { execSync } = require('child_process');
 
 const MCP_DIR = __dirname;
@@ -62,6 +63,35 @@ function log(m) { process.stderr.write('[build-mcpb] ' + m + '\n'); }
 
 function copyRecursive(src, dest) {
   fs.cpSync(src, dest, { recursive: true });
+}
+
+function materializeAndVerifyVendorBundle(vendorRoot) {
+  const root = path.resolve(vendorRoot);
+  const manifestPath = path.join(root, 'manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  if (!manifest || manifest.schema !== 1 || !Array.isArray(manifest.files) || !manifest.files.length) {
+    throw new Error('Unsupported staged vendor manifest: ' + manifestPath);
+  }
+  const { normalizeVendorAssetBytes } = require('./remediation_headless_driver.cjs');
+  const seen = new Set();
+  for (const entry of manifest.files) {
+    if (!entry || typeof entry.path !== 'string' || entry.path.startsWith('/') || entry.path.includes('..')
+      || !/^[A-Za-z0-9._/-]+$/.test(entry.path) || seen.has(entry.path)
+      || !Number.isSafeInteger(entry.bytes) || !/^[a-f0-9]{64}$/.test(entry.sha256)) {
+      throw new Error('Unsafe staged vendor manifest entry: ' + JSON.stringify(entry));
+    }
+    seen.add(entry.path);
+    const absolute = path.resolve(root, entry.path);
+    if (!absolute.startsWith(root + path.sep)) throw new Error('Staged vendor entry escapes its root: ' + entry.path);
+    const original = fs.readFileSync(absolute);
+    const canonical = normalizeVendorAssetBytes(entry, original);
+    if (!canonical.equals(original)) fs.writeFileSync(absolute, canonical);
+    const sha256 = crypto.createHash('sha256').update(canonical).digest('hex');
+    if (canonical.length !== entry.bytes || sha256 !== entry.sha256) {
+      throw new Error('Staged vendor asset failed hash verification: ' + entry.path);
+    }
+  }
+  return { files: seen.size, root };
 }
 
 function buildManifest() {
@@ -164,6 +194,10 @@ function stageBundle(stagingDir) {
 
   for (const f of SERVER_FILES) copyRecursive(path.join(MCP_DIR, f), path.join(dest, 'server', f));
   for (const d of SERVER_DIRS) copyRecursive(path.join(MCP_DIR, d), path.join(dest, 'server', d));
+  // Git may leave a pre-.gitattributes Windows checkout with CRLF text while reporting a clean
+  // worktree. Materialize the manifest-declared canonical package bytes and verify every staged
+  // asset before packing; executable assets remain byte-exact and are never normalized.
+  materializeAndVerifyVendorBundle(path.join(dest, 'server', 'vendor'));
   for (const f of ASSET_FILES) copyRecursive(path.join(REPO_ROOT, f), path.join(dest, 'assets', f));
   for (const d of ASSET_DIRS) copyRecursive(path.join(REPO_ROOT, d), path.join(dest, 'assets', d));
   for (const d of SKILL_DIRS) copyRecursive(path.join(REPO_ROOT, 'agent_skills', d), path.join(dest, 'skills', d));
@@ -216,7 +250,7 @@ function main() {
   const mb = (fs.statSync(BUNDLE).size / 1024 / 1024).toFixed(1);
   log((packed ? 'VALIDATED' : 'UNVALIDATED DIAGNOSTIC') + ' → ' + BUNDLE + ' (' + mb + ' MB)');
   log('extracting and boot-checking the emitted artifact...');
-  execSync('node "' + path.join(MCP_DIR, 'verify_mcpb_artifact.cjs') + '" "' + BUNDLE + '" --require-playwright', { stdio: ['ignore', 'inherit', 'inherit'] });
+  execSync('node "' + path.join(MCP_DIR, 'verify_mcpb_artifact.cjs') + '" "' + BUNDLE + '"' + (LEAN ? '' : ' --require-playwright'), { stdio: ['ignore', 'inherit', 'inherit'] });
   log('Install: Claude Desktop → Settings → Extensions → drag the .mcpb in; the Gemini API key field is optional and can be left blank for no-account tools.');
   log('First run on a fresh machine: ask Claude to run `remediation_setup` (one-time ~200MB Chromium download).');
   log('Claude Desktop provides the Node runtime for type:node MCPB extensions; other hosts need Node 18+ on PATH.');
@@ -225,5 +259,5 @@ function main() {
 // Guarded so the manifest can be imported and checked against the live tool registry without
 // building a bundle as a side effect (tests/mcp_remediation_stdio_smoke.test.js pins that parity).
 // Same require.main pattern as remediation_headless_driver.cjs's direct CLI.
-module.exports = { buildManifest, stageBundle };
+module.exports = { buildManifest, stageBundle, materializeAndVerifyVendorBundle };
 if (require.main === module) main();

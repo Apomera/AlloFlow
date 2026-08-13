@@ -36,7 +36,7 @@ describe('titrationLab — pH engine (rendered, values verified by hand)', () =>
     { name: 'weak/strong at equivalence (basic salt)', state: { presetId: 'wa_sb', volumeAdded: 25 }, pH: '8.72' },
     { name: 'strong/weak at equivalence (acidic salt)', state: { presetId: 'sa_wb', volumeAdded: 25 }, pH: '5.28' },
     { name: 'weak/weak at equivalence (~neutral)', state: { presetId: 'wa_wb', volumeAdded: 25 }, pH: '7.00' },
-    { name: 'H3PO4 first equivalence (½(pKa1+pKa2))', state: { presetId: 'poly_h3po4', volumeAdded: 25 }, pH: '4.67' },
+    { name: 'H3PO4 first equivalence from the exact triprotic charge balance', state: { presetId: 'poly_h3po4', volumeAdded: 25 }, pH: '4.70' },
   ];
   for (const c of PH_CASES) {
     it(c.name + ' -> pH ' + c.pH, () => {
@@ -142,9 +142,10 @@ describe('titrationLab — LOW scientific-accuracy fixes', () => {
     expect(showsCurrentPH(html, '2.88')).toBe(true);
     expect(showsCurrentPH(html, '2.65')).toBe(false); // the old dipped value
   });
-  it('H3PO4 third equivalence uses the real phosphate concentration', () => {
-    // [OH-]=sqrt((Kw/Ka3)·C), C = molesAcid/totalV ≈ 0.025 M (not CaP/1000).
+  it('H3PO4 third equivalence is solved by the full charge balance', () => {
+    // The exact triprotic distribution plus water autoionization yields pH 12.17
+    // here; the former isolated Kb square-root approximation overestimated it.
     const html = renderLab({ presetId: 'poly_h3po4', volumeAdded: 75 });
-    expect(showsCurrentPH(html, '12.36')).toBe(true);
+    expect(showsCurrentPH(html, '12.17')).toBe(true);
   });
 });

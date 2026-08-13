@@ -215,9 +215,11 @@ describe('the player treats the target as print, not sound', () => {
     expect(idx).toBeGreaterThan(0);
     const ladder = MODULE.slice(idx, idx + 900);
     expect(ladder).toMatch(/"missing_letter",/);
-    // Gated exactly like the picker: never auto-advance into an activity
-    // the language would hide.
-    expect(ladder).toMatch(/indexOf\("en"\) === 0\)\s*\? \["read_sentence", "read_passage"\]\s*: \[\]/);
+    expect(ladder).toContain('"read_sentence",');
+    expect(ladder).toContain('"read_passage",');
+    // Gated through the same availability predicate as the picker: never
+    // auto-advance into an activity the current language would hide.
+    expect(ladder).toMatch(/\]\.filter\(wsActivityAvailableForLang\);/);
   });
 
   it('a sentence-initial blank fills capitalized', () => {

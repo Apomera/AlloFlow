@@ -2,7 +2,7 @@
 
 Reviewed: 2026-07-18
 
-Status: **assistant-reviewed-pass-with-declared-content-gaps**
+Status: **hard-qa-findings**
 
 ## Outcome
 
@@ -13,7 +13,7 @@ Status: **assistant-reviewed-pass-with-declared-content-gaps**
 - Guided-review activities reviewed: **5,700**
 - Remaining distinct-question gap: **7,838**
 - Exact response-option kernels shared across different packs: **324**
-- Hard findings: **0**
+- Hard findings: **23**
 - Libraries: **22** with 264 chapters, 1056 lessons, 1320 checks, 1650 flashcards, and 440 memory aids
 - Unique learner-visible sources reviewed: **136**
 
@@ -39,7 +39,7 @@ A hard-QA pass does not mean every pack has 500 independent questions. Guided tr
 | School Psychologist 5403 diagnostics | 300 | 200 | 200 | 300 | 0 | 213 |
 | Special Education 5355 diagnostics | 200 | 100 | 300 | 400 | 0 | 175 |
 | Behavioral Disorders and Emotional Disturbances (5372) | 200 | 103 | 300 | 397 | 0 | 174 |
-| Special Education EC/EI (5692) | 200 | 100 | 300 | 400 | 0 | 166 |
+| Special Education EC/EI (5692) | 200 | 100 | 300 | 400 | 1 | 166 |
 | Teaching Students with Intellectual Disabilities (5322) | 200 | 103 | 300 | 397 | 0 | 173 |
 | Teaching Students with Learning Disabilities (5383) | 200 | 111 | 300 | 389 | 0 | 153 |
 | Special Education Severe to Profound (5547) | 200 | 103 | 300 | 397 | 0 | 182 |

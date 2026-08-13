@@ -996,6 +996,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var _wcObjectsRef = useRef(null);
       var _wcBirdsRef = useRef([]);
       var _wcTimeRef = useRef(0);
+      // Synchronous one-shot for the thermal award. The state write is async, so
+      // between the award and the re-render every qualifying frame would fire
+      // again — the same ~60-XP-per-second shape _vfPerfectRef guards against.
+      var _wcThermalAwarded = useRef(false);
       // Tab 3: Routes refs
       var _rtCanvasRef = useRef(null);
       var _rtAnimRef = useRef(null);
@@ -1021,7 +1025,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         flightWind: d.flightWind == null ? 8 : d.flightWind,
         flightPaused: !!d.flightPaused,
         flightSeason: d.flightSeason || 'fall',
-        selectedWing: d.selectedWing || 'goose', isDark: isDark, tab: tab
+        selectedWing: d.selectedWing || 'goose', isDark: isDark, tab: tab,
+        // Read inside deferred canvas callbacks, so they cannot come from the
+        // render closure: vLeaderRotations is both DISPLAYED and INCREMENTED
+        // there, and thermalRidden gates a one-shot XP award.
+        vLeaderRotations: d.vLeaderRotations || 0, thermalRidden: !!d.thermalRidden
       };
 
       // ══════════════════════════════════════════
@@ -2088,6 +2096,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             }
             // Read fresh values from live ref (updated every React render)
             var lv = _liveVals.current;
+            var simSpeed = lv.simSpeed;
+            var isDark = lv.isDark;
             // Dynamically update bird count if changed
             if (birdsRef.current && birdsRef.current.length !== lv.birdCount) {
               birdsRef.current = makeFlock(lv.birdCount);
@@ -2100,6 +2110,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           }
 
           function renderFrame(c, W, H, birds, vortices, windParts, time) {
+            // Sibling of frame() inside the same guarded init: it needs its own
+            // alias, because a var declared in frame() does not reach here.
+            var lv = _liveVals.current;
+            var simSpeed = lv.simSpeed;
+            var leaderRotations = lv.vLeaderRotations;
+            var isDark = lv.isDark;
             // Sky gradient
             var skyGrad = c.createLinearGradient(0, 0, 0, H);
             if (isDark) {
@@ -2290,9 +2306,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               drawBird(c, db.x, db.y, 11, db.flapPhase, 1, birdColor, isDark, 'goose');
 
               // Energy bar
-              var barW = 22, barH = 3.5;
+              var barW = 18, barH = 3;
               var barX = db.x - barW / 2;
-              var barY = db.y - 22;
+              var barY = db.y - 17;
               var ePct = db.energy / 100;
               var eColor = ePct > 0.6 ? '#22c55e' : ePct > 0.3 ? '#eab308' : '#ef4444';
               if (ePct < 0.99 || isLead) {
@@ -2314,7 +2330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 c.font = 'bold 11px system-ui';
                 c.textAlign = 'center';
                 c.textBaseline = 'middle';
-                c.fillText('\u2605', db.x + barW / 2 + 8, barY + barH / 2);
+                c.fillText('\u2605', db.x, barY - 6);
                 c.textBaseline = 'alphabetic';
               }
             }
@@ -2878,6 +2894,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           function frame() {
             timeRef.current += 0.016;
             var lv = _liveVals.current;
+            // Shadow the frozen render-scope copies with the live ones.
+            var isDark = lv.isDark;
+            var showStreamlines = lv.showStreamlines;
             var windRad = (lv.windDir || 0) * Math.PI / 180;
             c.clearRect(0, 0, W, H);
 
@@ -2934,7 +2953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             }
             c.fillStyle = groundGrad;
             c.fillRect(0, H - 30, W, 30);
-            c.fillStyle = isDark ? '#15803d' : '#3fbb6a';
+            c.fillStyle = isDark ? '#1a5c33' : '#3fbb6a';
             c.fillRect(0, H - 30, W, 2);
             // Grass tufts, spaced so the ground plane reads as a surface
             c.strokeStyle = isDark ? 'rgba(21,128,61,0.7)' : 'rgba(22,101,52,0.35)';
@@ -3087,7 +3106,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 if (objs[toi].type === 'thermal') {
                   var tdx = wb.x - objs[toi].x;
                   var tdy = wb.y - objs[toi].y;
-                  if (Math.sqrt(tdx * tdx + tdy * tdy) < 40 && wb.vy < -0.5 && !d.thermalRidden) {
+                  if (Math.sqrt(tdx * tdx + tdy * tdy) < 40 && wb.vy < -0.5 && !lv.thermalRidden && !_wcThermalAwarded.current) {
+                    _wcThermalAwarded.current = true;
                     upd('thermalRidden', true);
                     if (celebrate) celebrate();
                     if (awardXP) awardXP('migration', 15, 'Rode a thermal updraft');
@@ -3108,10 +3128,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.textBaseline = 'alphabetic';
             c.fillStyle = isDark ? '#f1f5f9' : '#0f172a';
             c.font = 'bold 15px system-ui';
-            c.fillText(windSpeed + ' mph', W - 122, 101);
+            c.fillText(lv.windSpeed + ' mph', W - 122, 101);
             c.fillStyle = isDark ? '#94a3b8' : '#475569';
             c.font = '9px system-ui';
-            c.fillText(getBeaufort(windSpeed) + ' · ' + Math.round(lv.windDir || 0) + '°', W - 122, 114);
+            c.fillText(getBeaufort(lv.windSpeed) + ' · ' + Math.round(lv.windDir || 0) + '°', W - 122, 114);
 
             // Speed key for the particle colour ramp
             var keyW = 108;
@@ -3144,17 +3164,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Click to place objects
           function onClick(e) {
-            if (!placingObj) return;
+            // Registered once alongside frame(), so this closure is the first
+            // render's: reading placingObj from render scope pinned it to null
+            // and no click ever placed anything.
+            var live = _liveVals.current.placingObj;
+            if (!live) return;
             var rect = canvas.getBoundingClientRect();
             var mx = e.clientX - rect.left;
             var my = e.clientY - rect.top;
             if (my > H - 35) return; // Don't place on ground
-            var newObjs = (objectsRef.current || []).concat([{ type: placingObj, x: mx, y: my }]);
+            var newObjs = (objectsRef.current || []).concat([{ type: live, x: mx, y: my }]);
             objectsRef.current = newObjs;
             upd('windObjects', newObjs);
             upd('placingObj', null);
             if (beep) beep(659, 0.12, 0.12);
-            if (announceToSR) announceToSR(placingObj + ' placed on wind field');
+            if (announceToSR) announceToSR(live + ' placed on wind field');
           }
 
           canvas.addEventListener('click', onClick);
@@ -3429,14 +3453,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var scaleX = mapScale;
           var scaleY = mapScale;
 
-          var _flyDrawn = false;
+          var _flyIdlePainted = false;
           function frame() {
-            // Idle in the default (no-species) state: the map + title are static for
-            // this canvas instance (selectedSpecies/isDark are frozen by the _rtInit
-            // guard), so paint once and skip the 60fps repaint. The loop stays alive;
-            // a species selection re-inits on a fresh canvas and animates the bird.
-            if (!selectedSpecies && _flyDrawn) { animRef.current = requestAnimationFrame(frame); return; }
-            _flyDrawn = true;
+            // The _rtInit guard means this closure is the FIRST render's, so
+            // anything read from render scope is frozen at mount. Shadow the
+            // stale names with the live ref: every reference below is then live.
+            var lv = _liveVals.current;
+            var isDark = lv.isDark;
+            var selectedSpecies = lv.selectedSpecies || null;
+            // Nothing on the map animates until a species is chosen, so paint the
+            // static version once and idle. A selection turns the loop back on —
+            // previously the idle guard read a frozen null and never did.
+            if (!selectedSpecies && _flyIdlePainted) { animRef.current = requestAnimationFrame(frame); return; }
+            _flyIdlePainted = !selectedSpecies;
             timeRef.current += 0.016;
             c.clearRect(0, 0, W, H);
 
@@ -3525,7 +3554,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var RELIEF_W = [5.0, 4.0, 3.1, 2.3, 1.5, 0.8];
             for (var mr = 0; mr < MAP_RANGES.length; mr++) {
               var rng = MAP_RANGES[mr];
-              c.strokeStyle = isDark ? 'rgba(150,136,124,0.055)' : 'rgba(124,109,95,0.05)';
+              // Shaded relief has to sit DARKER than the land it crosses. A warm
+              // grey satisfies that over the light theme's pale land and inverts
+              // over the dark one: measured, the ridge came out 23 luminance
+              // units darker than the plain in light and 27 units LIGHTER in
+              // dark, so the cordilleras read as glowing bands. Shadow per theme.
+              c.strokeStyle = isDark ? 'rgba(3,7,12,0.085)' : 'rgba(124,109,95,0.05)';
               for (var rw = 0; rw < RELIEF_W.length; rw++) {
                 migrSmoothPath(c, rng.pts, scaleX, scaleY, false, 0.16);
                 c.lineWidth = rng.hgt * RELIEF_W[rw] * scaleX;
@@ -3534,7 +3568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               // Sunlit north-west flank, offset and just as soft
               c.save();
               c.translate(-rng.hgt * 0.8 * scaleX, -rng.hgt * 0.6 * scaleY);
-              c.strokeStyle = isDark ? 'rgba(226,220,214,0.045)' : 'rgba(255,255,255,0.11)';
+              c.strokeStyle = isDark ? 'rgba(188,199,212,0.05)' : 'rgba(255,255,255,0.11)';
               for (var rw2 = 2; rw2 < RELIEF_W.length; rw2++) {
                 migrSmoothPath(c, rng.pts, scaleX, scaleY, false, 0.16);
                 c.lineWidth = rng.hgt * RELIEF_W[rw2] * scaleX;
@@ -3730,7 +3764,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 c.beginPath();
                 c.arc(ep.x, ep.y, ends[en].r, 0, Math.PI * 2);
                 c.fill();
-                migrChip(c, ep.x, ep.y + ends[en].dy, ends[en].label,
+                // Set the caption BESIDE the halo, perpendicular to the route,
+                // not on it. Stacked above or below it sat in the flight lane,
+                // where the animated bird and its own name chip pass through
+                // every cycle — "Breeding" and "Sandhill Crane" overprinted each
+                // other on each lap.
+                var perpX = Math.sin(ep.ang) * 52;
+                var perpY = -Math.cos(ep.ang) * 52;
+                migrChip(c, ep.x + perpX, ep.y + perpY + ends[en].dy * 0.25, ends[en].label,
                   isDark ? '#f8fafc' : '#0f172a', migrAlpha(ends[en].tint, 0.55), 'bold 8px system-ui');
               }
               void colR;
@@ -4210,6 +4251,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
             // Read fresh values from live ref
             var lv = _liveVals.current;
+            var isDark = lv.isDark;
             var _aoa = lv.aoa;
             var _selWing = lv.selectedWing;
             var _wing = getWingType(_selWing);
@@ -4895,13 +4937,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             });
           }
 
-          // Magnetic field lines
+          // Magnetic field lines. Eight evenly spaced near-parallel lines across
+          // the full width read as ruled notepaper. Fewer of them, fanned so
+          // they converge toward the pole the way real dip lines do, is both
+          // better looking and closer to the thing being taught.
           var fieldLines = [];
-          for (var fl = 0; fl < 8; fl++) {
+          var poleFocusY = H * 0.20;
+          for (var fl = 0; fl < 5; fl++) {
+            var flStart = H * 0.16 + fl * H * 0.17;
             fieldLines.push({
               startX: 0,
-              startY: H * 0.15 + fl * H * 0.1,
-              curve: 0.3 + Math.random() * 0.4
+              startY: flStart,
+              endY: lerp(flStart, poleFocusY, 0.5),
+              curve: 0.55 + Math.random() * 0.6
             });
           }
 
@@ -4937,11 +4985,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             for (var fli = 0; fli < fieldLines.length; fli++) {
               var fl2 = fieldLines[fli];
               c.beginPath();
+              // Control points shared with the pulse maths below, so the moving
+              // dot stays exactly on the curve it is meant to be travelling.
+              var fc1 = fl2.startY - 62 * fl2.curve;
+              var fc2 = fl2.endY + 48 * fl2.curve;
               c.moveTo(0, fl2.startY);
               c.bezierCurveTo(
-                W * 0.3, fl2.startY - 62 * fl2.curve,
-                W * 0.7, fl2.startY + 48 * fl2.curve,
-                W, fl2.startY - 18
+                W * 0.3, fc1,
+                W * 0.7, fc2,
+                W, fl2.endY
               );
               c.strokeStyle = 'rgba(96,165,250,0.30)';
               c.lineWidth = 1;
@@ -4950,9 +5002,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               var fu = ((t2 * 0.16) + fli * 0.13) % 1;
               var fx = fu * W;
               var fy = fl2.startY * Math.pow(1 - fu, 3)
-                + (fl2.startY - 62 * fl2.curve) * 3 * fu * Math.pow(1 - fu, 2)
-                + (fl2.startY + 48 * fl2.curve) * 3 * fu * fu * (1 - fu)
-                + (fl2.startY - 18) * fu * fu * fu;
+                + fc1 * 3 * fu * Math.pow(1 - fu, 2)
+                + fc2 * 3 * fu * fu * (1 - fu)
+                + fl2.endY * fu * fu * fu;
               c.beginPath();
               c.arc(fx, fy, 1.7, 0, Math.PI * 2);
               c.fillStyle = 'rgba(147,197,253,0.85)';

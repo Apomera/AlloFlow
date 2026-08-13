@@ -183,6 +183,76 @@ describe('Pathogen-aware map profiles', () => {
     expect(summary.attackRate).toBeCloseTo(20, 6);
   });
 });
+describe('Seeded paired map experiments', () => {
+  const scenario = { gridSize: 10, density: 0.8, initialInfected: 3 };
+
+  it('replays the same initial grid for one seed and changes it for another', () => {
+    const first = C.createGrid(scenario, 20, 1234);
+    const replay = C.createGrid(scenario, 20, 1234);
+    const alternate = C.createGrid(scenario, 20, 1235);
+    expect(replay).toEqual(first);
+    expect(alternate).not.toEqual(first);
+    expect(C.countGrid(first).I).toBe(3);
+  });
+
+  it('normalizes seeds and produces coordinate-keyed draws independent of call order', () => {
+    expect(C.normalizeMapSeed(-12.9)).toBe(12);
+    expect(C.normalizeMapSeed(0)).toBe(20260812);
+    const first = C.mapEventRandom(77, 4, 2, 3, 1, 20);
+    C.mapEventRandom(77, 4, 9, 9, 0, 30);
+    expect(C.mapEventRandom(77, 4, 2, 3, 1, 20)).toBe(first);
+    expect(C.mapEventRandom(77, 5, 2, 3, 1, 20)).not.toBe(first);
+  });
+
+  it('keeps paired no-intervention trajectories identical at every day', () => {
+    let actual = C.createGrid(scenario, 10, 9090);
+    let baseline = actual.map((row) => row.slice());
+    for (let day = 1; day <= 20; day++) {
+      const context = { seed: 9090, day };
+      actual = C.stepGrid(actual, 3, [], 8, 'respiratory', 60, {}, context);
+      baseline = C.stepGrid(baseline, 3, [], 8, 'respiratory', 60, {}, context);
+      expect(actual, `day ${day}`).toEqual(baseline);
+    }
+  });
+
+  it('does not invent initial cases when every occupied cell is immune', () => {
+    const grid = C.createGrid({ gridSize: 8, density: 1, initialInfected: 5 }, 100, 404);
+    expect(C.countGrid(grid)).toMatchObject({ S: 0, I: 0, R: 64, total: 64 });
+  });
+
+  it('reports signed outcome differences against the matched baseline', () => {
+    const actual = [
+      { S: 95, E: 2, I: 3, H: 0, R: 0, total: 100 },
+      { S: 85, E: 2, I: 7, H: 2, R: 4, total: 100 },
+      { S: 82, E: 0, I: 0, H: 0, R: 18, total: 100 },
+    ];
+    const baseline = [
+      { S: 95, E: 2, I: 3, H: 0, R: 0, total: 100 },
+      { S: 70, E: 5, I: 15, H: 5, R: 5, total: 100 },
+      { S: 65, E: 0, I: 0, H: 0, R: 35, total: 100 },
+    ];
+    expect(C.compareMapHistories(actual, baseline, 2)).toMatchObject({
+      casesAvoided: 17,
+      peakInfectiousAvoided: 8,
+      peakHospitalizedAvoided: 3,
+      overloadDaysAvoided: 1,
+    });
+    expect(C.compareMapHistories(baseline, actual, 2).casesAvoided).toBe(-17);
+  });
+
+  it('detects the operating-system reduced-motion preference', () => {
+    const previous = window.matchMedia;
+    try {
+      window.matchMedia = () => ({ matches: true });
+      expect(C.epidemicPrefersReducedMotion()).toBe(true);
+      window.matchMedia = () => ({ matches: false });
+      expect(C.epidemicPrefersReducedMotion()).toBe(false);
+    } finally {
+      if (previous) window.matchMedia = previous;
+      else delete window.matchMedia;
+    }
+  });
+});
 describe('NPI effective reproduction number', () => {
   it('includes the susceptible fraction created by vaccination', () => {
     const result = C.solveSIR_NPI({ r0: 4, vaccRate: 75, infectPeriod: 10, popSize: 1000000 }, []);

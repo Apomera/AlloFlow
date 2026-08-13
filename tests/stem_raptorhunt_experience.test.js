@@ -10,7 +10,7 @@ function source(file = CANONICAL) {
 }
 
 function functionBody(text, name) {
-  const start = text.indexOf(`function ${name}`);
+  const start = text.indexOf(`function ${name}(`);
   expect(start, `Expected ${name} to exist`).toBeGreaterThanOrEqual(0);
   const open = text.indexOf('{', start);
   let depth = 0;
@@ -294,18 +294,33 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('qualityProfile.clouds');
     expect(init).toContain('qualityProfile.stars');
     expect(init).toContain('qualityProfile.waterSegments');
+    expect(init).toContain('qualityProfile.waterHz');
   });
 
   it('updates the complete environment through one coherent daylight palette', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toContain('function updateEnvironmentalLight(phase)');
     expect(init).toContain('scene.background.copy(skyFrameColor)');
+    expect(init).toContain("skGrad.addColorStop(0, '#94a3b8')");
+    expect(init).toContain('skyTintColor.copy(skyFrameColor)');
+    expect(init).not.toMatch(/if \(species\.biome === 'forest-night'\) \{[\s\S]{0,300}skGrad\.addColorStop/);
     expect(init).toContain('scene.fog.color.copy(fogFrameColor)');
     expect(init).toContain('skyDome.material.color.copy(skyTintColor)');
     expect(init).toContain('skyFill.intensity =');
     expect(init).toContain('rimLight.intensity =');
     expect(init).toContain('sun.position.copy(sunDir)');
+    expect(init).toContain('var sunSprite = new THREE.Sprite');
+    expect(init).toContain('var moonSprite = new THREE.Sprite');
+    expect(init).toContain('scene.add(sunSprite)');
+    expect(init).toContain('scene.add(moonSprite)');
     expect(init).toContain('sunSprite.material.opacity =');
+    expect(init).toContain('moonSprite.material.opacity =');
+    expect(init).toContain('moonGlow.intensity =');
+    expect(init).toContain('sunSprite.position.copy(camera.position).addScaledVector(sunDir, sunDistance)');
+    expect(init).toContain('moonSprite.position.copy(camera.position).addScaledVector(moonDir, moonDistance)');
+    expect(init).toContain('skyDome.position.copy(camera.position)');
+    expect(init).toContain('var skyDomeRadius = 900');
+    expect(init).not.toContain('sunSprite.position.y = sunDir.y * sunDistance');
     expect(init).toContain('starVisibility *');
     expect(init).toContain('updateEnvironmentalLight(dayPhase)');
   });
@@ -333,10 +348,14 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain('.rh-flight-controls{display:grid;grid-template-columns:1fr');
     expect(text).toContain('.rh-flight-controls-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))');
     expect(text).toContain('max-height:42vh;overflow-y:auto');
+    expect(text).toContain('.rh-flight-metric:nth-child(6){display:none;}');
+    expect(init).toContain("telemetryMission.parentElement.dataset.raptorMissionMetric = 'true'");
     expect(text).not.toContain('.rh-flight-energy,.rh-flight-mission-hud{display:none!important;}');
-    expect(init).toContain("nextTargetState === 'ready' ? 'Strike ready - press Strike'");
-    expect(init).toContain("nextTargetState === 'close' ? 'Close distance - '");
-    expect(init).toContain("targetInfo.verticalOffset > 0 ? 'Pull up to align' : 'Dive to align'");
+    expect(init).toContain("nextTargetState === 'recovering'");
+    expect(init).toContain("nextTargetState === 'ready' ? 'READY - press Strike'");
+    expect(init).toContain("nextTargetState === 'close' ? 'CLOSE - '");
+    expect(init).toContain("targetInfo.verticalOffset > 0 ? 'ALIGN - pull up' : 'ALIGN - dive lower'");
+    expect(init).toContain('reticle.dataset.lockState = nextTargetState');
     expect(init).toContain('notifyUI({ targetState: nextTargetState, targetHint: nextTargetHint })');
   });
 
@@ -351,6 +370,19 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('horizonGroup.position.z = raptor.z');
   });
 
+  it('keeps both landmark layers grouped around the flying raptor', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    expect(init).toContain('var distantTerrainGroup = new THREE.Group()');
+    expect(init).toMatch(/distantTerrainGroup\.add\(/);
+    expect(init).toContain('scene.add(distantTerrainGroup)');
+    expect(init).toContain('distantTerrainGroup.position.x = raptor.x');
+    expect(init).toContain('distantTerrainGroup.position.z = raptor.z');
+    expect(init).not.toMatch(/scene\.add\(mt\)/);
+    ['distantTerrainCount', 'distantTerrainOffsetX', 'distantTerrainOffsetZ', 'distantTerrainWorldY'].forEach((field) => {
+      expect(init).toContain(field + ':');
+    });
+  });
+
   it('separates raptor plumage planes with subtle material and edge accents', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toContain('emissive: new THREE.Color(bodyColor).multiplyScalar(0.035)');
@@ -359,7 +391,146 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('emissive: new THREE.Color(tailColor).multiplyScalar(0.02)');
   });
 
+  it('turns live weather into visible, wind-driven atmosphere at every frame rate', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    expect(init).toContain('var visualCloudCover = weather.cloudCover');
+    expect(init).toContain('var cloudShade = 1 - visualCloudCover * 0.58');
+    expect(init).toContain('scene.fog.far = 600 - visualCloudCover * 150');
+    expect(init).toContain('renderer.toneMappingExposure = (0.78 + daylight * 0.28 + twilight * 0.04) * (1 - visualCloudCover * 0.12)');
+    expect(init).toContain('sun.intensity = daylight * 0.96 * cloudShade');
+    expect(init).toContain('starVisibility = Math.max(0, Math.min(1, 1 - daylight * 1.35)) * (1 - visualCloudCover * 0.90)');
+    expect(init).toContain('var cloudList = []');
+    expect(init).not.toMatch(/if\s*\(!isNight\)\s*\{\s*var cloudCanvas/);
+    expect(init).toContain('var cloudTargetOpacity = Math.min(0.92, c.baseOpacity * (0.22 + visualCloudCover * 1.02))');
+    expect(init).toContain('var cloudWindX = Math.sin(weather.windDir) * effWindSpeed');
+    expect(init).toContain('var cloudWindZ = -Math.cos(weather.windDir) * effWindSpeed');
+    expect(init).toContain('c.sprite.position.x += cloudWindX * (0.12 + c.driftSpeed) * dt');
+    expect(init).toContain('c.sprite.position.z += cloudWindZ * (0.12 + c.driftSpeed) * dt');
+    expect(init).toContain('weather.thermalQuality = Math.max(0.1, (1 - visualCloudCover) * thermalDaylight)');
+    expect(init).toContain('var particleFrame = Math.min(3, dt * 60)');
+    expect(init).toContain('var particleWindX = Math.sin(weather.windDir) * effWindSpeed * dt * 0.08');
+    expect(init).not.toMatch(/pos\[[^\]]+\]\s*\+=\s*v\.v[xyz]\s*;/);
+    expect(init).toContain('if (!_rmFX && lake && lakeOriginalY && now - lastWaterUpdate >= waterUpdateInterval)');
+    expect(init).toContain("starsList.points.material.opacity = starVisibility * (_rmFX ? 0.78");
+    expect(init).toContain("telemetryWeather.parentElement.dataset.raptorWeather = 'true'");
+    expect(init).toContain("telemetryWeather.parentElement.dataset.dayPeriod = dayPeriod");
+    expect(init).toContain("telemetryWeather.parentElement.dataset.cloudBand = cloudBand");
+    expect(init).toContain("' meters per second toward ' + windCompass");
+  });
+
+  it('uses quality-scaled pooled rain and snow with frame-rate-independent wind drift', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    const qualityFactors = ['low', 'balanced', 'high'].map((tier) => {
+      const match = init.match(new RegExp(tier + ':\\s*\\{[^}]*precipitation:\\s*([\\d.]+)'));
+      expect(match, 'Expected a precipitation factor for ' + tier).not.toBeNull();
+      return Number(match[1]);
+    });
+    expect(qualityFactors[0]).toBeLessThan(qualityFactors[1]);
+    expect(qualityFactors[1]).toBeLessThanOrEqual(qualityFactors[2]);
+
+    expect(init).toMatch(/var rainCapacity\s*=.*qualityProfile\.precipitation/);
+    expect(init).toMatch(/var snowCapacity\s*=.*qualityProfile\.precipitation/);
+    expect(init).toMatch(/new Float32Array\(rainCapacity \* 6\)/);
+    expect(init).toMatch(/new Float32Array\(snowCapacity \* 3\)/);
+    expect(init).toContain('rainGeometry.setDrawRange(0, 0)');
+    expect(init).toContain('snowGeometry.setDrawRange(0, 0)');
+
+    const update = functionBody(init, 'updatePrecipitation');
+    expect(update).toContain('weather.windDir');
+    expect(update).toMatch(/\bdt\b/);
+    expect(update).toContain('rainSystem.visible');
+    expect(update).toContain('snowSystem.visible');
+    expect(update).toContain('_rmFX');
+    expect(update).toMatch(/\.needsUpdate\s*=\s*true/);
+    expect(update).not.toMatch(/new\s+(?:Float32Array|Array|THREE\.)/);
+  });
+
+  it('exposes precipitation state while reduced motion suppresses particle animation', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    const update = functionBody(init, 'updatePrecipitation');
+    expect(init).toContain("action === 'environment' && value");
+    expect(init).toContain('precipitationType');
+    expect(init).toContain('precipitationIntensity');
+    expect(init).toContain('precipitationMode: precipitationMode');
+    expect(init).toContain('activePrecipitationCount: activePrecipitationCount');
+    ['rainVisible', 'snowVisible', 'rainCapacity', 'snowCapacity', 'precipitationUpdates'].forEach((field) => {
+      expect(init).toContain(field + ':');
+    });
+    expect(init).toContain("telemetryWeather.parentElement.dataset.precipitation = precipitationMode");
+    expect(init).not.toMatch(/species\.biome === 'tundra'\s*\|\|\s*species\.biome === 'boreal'[\s\S]{0,120}ambientParticleType = 'snow'/);
+    expect(update).toMatch(/if\s*\([^)]*_rmFX[^)]*\)[\s\S]{0,500}rainSystem\.visible\s*=\s*false/);
+    expect(update).toMatch(/if\s*\([^)]*_rmFX[^)]*\)[\s\S]{0,700}snowSystem\.visible\s*=\s*false/);
+  });
+
+  it('shows at most one selective target beacon and reports that assist state', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    const toggleAssist = functionBody(init, 'toggleAssist');
+    expect(init).toContain('beacon.visible = false');
+    expect(init).toContain('beaconCap.visible = false');
+    expect(toggleAssist).not.toMatch(/beacon\.visible\s*=\s*targetLockOn/);
+    expect(init).toContain('function countVisiblePreyBeacons()');
+    expect(init).toContain('visibleBeaconCount: countVisiblePreyBeacons()');
+    expect(init).toContain('activeTargetIndex:');
+    expect(init).toMatch(/targetLockOn\s*&&\s*highlightedPrey\s*===\s*pm2/);
+  });
+
+  it('removes hidden legacy HUD nodes and updates only the compact telemetry strip', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    expect(init).toContain("telemetryStrip.className = 'rh-flight-telemetry-strip'");
+    expect(init).not.toContain("hud.className = 'rh-flight-telemetry'");
+    expect(init).not.toContain("status.className = 'rh-flight-status'");
+    expect(init).not.toContain("energyPanel.className = 'rh-flight-energy'");
+    expect(init).not.toMatch(/\bhud\.innerHTML\s*=/);
+    expect(init).not.toMatch(/\bstatus\.innerHTML\s*=/);
+    expect(init).not.toMatch(/\benergyPanel\.innerHTML\s*=/);
+  });
+
+  it('throttles water visuals and exposes deterministic atmosphere diagnostics', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    expect(init).toContain('waterHz: 10');
+    expect(init).toContain('waterHz: 16');
+    expect(init).toContain('waterHz: 24');
+    expect(init).toContain('var waterUpdateInterval = 1000 / qualityProfile.waterHz');
+    expect(init).toContain('now - lastWaterUpdate >= waterUpdateInterval');
+    expect(init).toContain('lastWaterUpdate = now');
+    expect(init).toContain('lake.geometry.computeVertexNormals()');
+    expect(init).toContain("action === 'environment' && value");
+    expect(init).toContain('canvasEl._rhSnapshot = function()');
+    expect(init).toContain('sunAltitude: (sunSprite.position.y - camera.position.y) / sunDistance');
+    expect(init).toContain('starVisibility: starsList ? starsList.points.material.opacity : 0');
+    expect(init).toContain('skyDomeMargin: skyDomeRadius - camera.position.distanceTo(skyDome.position)');
+    expect(init).toContain('renderFrames: renderFrameCount');
+    expect(init).toContain('snapshotTimeMs: performance.now()');
+    expect(init).toContain('waterHz: qualityProfile.waterHz');
+    expect(init).toContain('if (simPaused && animId)');
+    expect(init).toContain('cancelAnimationFrame(animId)');
+    expect(init).toContain('else if (wasPaused && !simPaused && !disposed && !animId)');
+    expect(init).toContain('lakeSheen.material.opacity = daylight * cloudShade * 0.22');
+    expect(init).toContain('lakeSheen.position.x = sunDir.x * 32');
+    expect(init).toContain('canvasEl._rhSnapshot = null');
+  });
+
+  it('differentiates catches and misses with restrained, accessible strike feedback', () => {
+    const init = functionBody(source(), 'initHuntSim');
+    expect(init).toContain('function beginStrikeFeedback(kind, message, atTime)');
+    expect(init).toContain('function strikeMissReason(targetInfo)');
+    ['NO TARGET', 'TOO FAR', 'PULL UP', 'DIVE LOWER', 'ALIGN'].forEach((label) => {
+      expect(init).toContain("code: '" + label + "'");
+    });
+    expect(init).toContain("beginStrikeFeedback('hit', catchFeedback, now)");
+    expect(init).toContain("beginStrikeFeedback('miss', missMessage, now)");
+    expect(init).toContain("energyEventLog.push({ msg: '× MISS - '");
+    expect(init).toContain('strikeFeedbackEl.dataset.raptorStrikeFeedback = strikeFeedback.kind');
+    expect(init).toContain("var impactFovKick = (!_rmFX && camMode !== 'fp' && strikeFeedbackActive)");
+    expect(init).toContain("var impactCameraPush = (!_rmFX && strikeFeedbackActive)");
+    expect(init).toContain('var talonStrikeAmount = !_rmFX && strikeFeedbackActive');
+    expect(init).toContain("targetInfo.canStrike && !strikeReady ? 'recovering'");
+    expect(init).toContain('var fxCount = _rmFX ? 4 : Math.max(10, Math.round(28 * qualityProfile.particles))');
+    expect(init).toContain('fx.flash.material.opacity = Math.max(0, (_rmFX ? 0.28 : 0.85)');
+    expect(init).toMatch(/diveVig,\s*strikeFeedbackEl,\s*eventLogEl/);
+  });
+
   it('keeps the packaged desktop copy byte-identical to the canonical tool source', () => {
     expect(source(MIRROR)).toBe(source());
-  });
+  }, 30000);
 });

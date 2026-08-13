@@ -71,6 +71,15 @@ window.StemLab = window.StemLab || {
   // WCAG 2.1 AA: Accessibility CSS
   if (!document.getElementById('ep-a11y-css')) { var _s = document.createElement('style'); _s.id = 'ep-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }'; document.head.appendChild(_s); }
 
+  function epidemicPrefersReducedMotion() {
+    try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+    catch (e) { return false; }
+  }
+
+  function nextMapAnalysisToken() {
+    window._epiMapAnalysisToken = (Number(window._epiMapAnalysisToken) || 0) + 1;
+    return window._epiMapAnalysisToken;
+  }
 
   // ═══════════════════════════════════════════════════════
   // IIFE-Scope Static Data (shared across renders)
@@ -558,8 +567,8 @@ window.StemLab = window.StemLab || {
   // SEVERE_CASE_FATALITY is a `var` declared much further down and is exported at its
   // own definition instead — naming it here would capture undefined.
   window.__EpidemicCore = Object.assign({}, window.__EpidemicCore || {}, {
-    summarizeEpidemicRun: summarizeEpidemicRun, summarizeMapHistory: summarizeMapHistory, solveSIR: solveSIR, solveSEIR: solveSEIR,
-    gridRates: gridRates, pathogenGridRates: pathogenGridRates, getPathogenInterventions: getPathogenInterventions, stepGrid: stepGrid, countGrid: countGrid, isPathogenFeature: isPathogenFeature, PATHOGEN_PROFILES: PATHOGEN_PROFILES, solveSIR_NPI: solveSIR_NPI, solveSIRStochastic: solveSIRStochastic
+    summarizeEpidemicRun: summarizeEpidemicRun, summarizeMapHistory: summarizeMapHistory, compareMapHistories: compareMapHistories, solveSIR: solveSIR, solveSEIR: solveSEIR,
+    gridRates: gridRates, pathogenGridRates: pathogenGridRates, getPathogenInterventions: getPathogenInterventions, createGrid: createGrid, stepGrid: stepGrid, countGrid: countGrid, normalizeMapSeed: normalizeMapSeed, mapEventRandom: mapEventRandom, epidemicPrefersReducedMotion: epidemicPrefersReducedMotion, isPathogenFeature: isPathogenFeature, PATHOGEN_PROFILES: PATHOGEN_PROFILES, solveSIR_NPI: solveSIR_NPI, solveSIRStochastic: solveSIRStochastic
   });
 
   function solveSIR(params) {
@@ -606,6 +615,28 @@ window.StemLab = window.StemLab || {
     };
   }
 
+  function normalizeMapSeed(value) {
+    var parsed = Math.floor(Math.abs(Number(value)));
+    if (!isFinite(parsed) || parsed <= 0) return 20260812;
+    return ((parsed - 1) % 4294967295) + 1;
+  }
+
+  // Coordinate-keyed randomness lets an intervention run and its no-action baseline
+  // share the same daily chance events. A lower transmission probability changes the
+  // threshold, not the random draw, so comparisons reflect the intervention rather
+  // than two unrelated rolls of the dice.
+  function mapEventRandom(seed, day, row, col, slot, eventCode) {
+    var h = normalizeMapSeed(seed);
+    h ^= Math.imul((Number(day) || 0) + 1, 0x9e3779b1);
+    h ^= Math.imul((Number(row) || 0) + 1, 0x85ebca6b);
+    h ^= Math.imul((Number(col) || 0) + 1, 0xc2b2ae35);
+    h ^= Math.imul((Number(slot) || 0) + 1, 0x27d4eb2f);
+    h ^= Math.imul((Number(eventCode) || 0) + 1, 0x165667b1);
+    h = Math.imul(h ^ (h >>> 16), 0x7feb352d);
+    h = Math.imul(h ^ (h >>> 15), 0x846ca68b);
+    h = (h ^ (h >>> 16)) >>> 0;
+    return h / 4294967296;
+  }
   function sampleBinomial(n, p, rng) {
     n = Math.max(0, Math.floor(n));
     p = Math.max(0, Math.min(1, Number(p) || 0));
@@ -700,14 +731,17 @@ window.StemLab = window.StemLab || {
   }
 
   // ── Outbreak Map Grid Logic ──
-  function createGrid(scenario, vaccPct) {
+  function createGrid(scenario, vaccPct, seed) {
     var size = scenario.gridSize;
     var grid = [];
+    function initialRandom(row, col, eventCode) {
+      return seed == null ? Math.random() : mapEventRandom(seed, 0, row, col, 0, eventCode);
+    }
     for (var r = 0; r < size; r++) {
       var row = [];
       for (var c = 0; c < size; c++) {
-        if (Math.random() < scenario.density) {
-          if (Math.random() * 100 < vaccPct) {
+        if (initialRandom(r, c, 1) < scenario.density) {
+          if (initialRandom(r, c, 2) * 100 < vaccPct) {
             row.push('R'); // vaccinated = recovered/immune
           } else {
             row.push('S');
@@ -718,21 +752,22 @@ window.StemLab = window.StemLab || {
       }
       grid.push(row);
     }
-    // seed initial infected
-    var placed = 0;
-    var attempts = 0;
-    while (placed < scenario.initialInfected && attempts < 500) {
-      var ri = Math.floor(Math.random() * size);
-      var ci = Math.floor(Math.random() * size);
-      if (grid[ri][ci] === 'S') {
-        grid[ri][ci] = 'I';
-        placed++;
+    // Rank every susceptible location once. This guarantees placement whenever enough
+    // susceptible cells exist and remains reproducible for a supplied seed.
+    var susceptibleLocations = [];
+    for (var sr = 0; sr < size; sr++) {
+      for (var sc = 0; sc < size; sc++) {
+        if (grid[sr][sc] === 'S') susceptibleLocations.push({ r: sr, c: sc, rank: seed == null ? Math.random() : mapEventRandom(seed, 0, sr, sc, 0, 90) });
       }
-      attempts++;
+    }
+    susceptibleLocations.sort(function(a, b) { return a.rank - b.rank || a.r - b.r || a.c - b.c; });
+    var initialCases = Math.min(Math.max(0, Number(scenario.initialInfected) || 0), susceptibleLocations.length);
+    for (var placed = 0; placed < initialCases; placed++) {
+      var location = susceptibleLocations[placed];
+      grid[location.r][location.c] = 'I';
     }
     return grid;
   }
-
   // One grid step is one day. Recovery used to be a flat 15% per step no matter what the
   // Infectious Period slider said, and the per-neighbour infection chance was an arbitrary
   // r0 * 0.08 — so the map's spread had no arithmetic relationship to the R₀ that the rest
@@ -801,13 +836,17 @@ window.StemLab = window.StemLab || {
     return false;
   }
 
-  function stepGrid(grid, r0, quarantineZones, infectPeriod, pathogenProfile, exposure, interventions) {
+  function stepGrid(grid, r0, quarantineZones, infectPeriod, pathogenProfile, exposure, interventions, randomContext) {
     var size = grid.length;
     var profile = getPathogenProfile(pathogenProfile);
     var rates = pathogenGridRates(r0, infectPeriod, profile, exposure, interventions);
     var pRecover = rates.pRecover;
     var pInfect = rates.pInfect;
     var next = grid.map(function(row) { return row.slice(); });
+    var context = randomContext || {};
+    function eventRandom(row, col, slot, eventCode) {
+      return context.seed == null ? Math.random() : mapEventRandom(context.seed, context.day || 0, row, col, slot, eventCode);
+    }
     var neighbors = profile.spreadMode === 'waterborne'
       ? [[-1,0],[1,0],[0,-1],[0,1]]
       : [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]];
@@ -820,11 +859,11 @@ window.StemLab = window.StemLab || {
         }
         if (grid[r][c] === 'H') {
           // Hospitalized cells do not transmit in this simplified model and recover more slowly.
-          if (Math.random() < Math.min(0.8, pRecover * 0.7)) next[r][c] = 'R';
+          if (eventRandom(r, c, 0, 10) < Math.min(0.8, pRecover * 0.7)) next[r][c] = 'R';
           continue;
         }
         if (grid[r][c] === 'I') {
-          // check if in quarantine zone — reduced spread
+          // Check if in a quarantine zone: focused support reduces local spread.
           var inQZ = false;
           if (quarantineZones) {
             for (var qz = 0; qz < quarantineZones.length; qz++) {
@@ -840,19 +879,18 @@ window.StemLab = window.StemLab || {
               var targetFeature = isPathogenFeature(nr, nc, size, profile);
               if (profile.spreadMode === 'waterborne') effectiveP *= sourceFeature || targetFeature ? 1.8 : 0.35;
               if (profile.spreadMode === 'vector') effectiveP *= sourceFeature || targetFeature ? 1.9 : 0.3;
-              if (Math.random() < Math.min(0.95, effectiveP)) next[nr][nc] = 'E';
+              if (eventRandom(r, c, n, 20) < Math.min(0.95, effectiveP)) next[nr][nc] = 'E';
             }
           }
-          // recover (faster in quarantine due to focused care)
-          if (Math.random() < Math.min(0.95, inQZ ? pRecover * 1.5 : pRecover)) {
-            next[r][c] = Math.random() < rates.hospitalizationRisk ? 'H' : 'R';
+          // Recover faster in quarantine due to focused care.
+          if (eventRandom(r, c, 0, 30) < Math.min(0.95, inQZ ? pRecover * 1.5 : pRecover)) {
+            next[r][c] = eventRandom(r, c, 0, 40) < rates.hospitalizationRisk ? 'H' : 'R';
           }
         }
       }
     }
     return next;
-  }
-  // One capacity definition for the whole tool: the share of the population that can be
+  }  // One capacity definition for the whole tool: the share of the population that can be
   // infected AT ONCE before hospitals are overwhelmed. A deliberate teaching
   // simplification (it folds the hospitalisation rate and beds-per-capita into a single
   // number), but it has to be ONE number — the SIR chart drew its line at 20% while the
@@ -997,6 +1035,18 @@ window.StemLab = window.StemLab || {
     return { days: Math.max(0, rows.length - 1), peakInfectious: peakInfectious, peakInfectiousDay: peakInfectiousDay, peakHospitalized: peakHospitalized, peakHospitalizedDay: peakHospitalizedDay, overloadDays: overloadDays, newInfections: newInfections, attackRate: Math.min(100, newInfections / total * 100), containmentDay: containmentDay, contained: containmentDay !== null, finalActive: finalActive, finalExposed: Math.max(0, Number(final.E) || 0), finalInfectious: Math.max(0, Number(final.I) || 0), finalHospitalized: Math.max(0, Number(final.H) || 0), finalRecovered: Math.max(0, Number(final.R) || 0), finalDeaths: Math.max(0, Number(final.D) || 0) };
   }  // ═══════════════════════════════════════════════════════
   // ═══════════════════════════════════════════════════════
+  function compareMapHistories(actualHistory, baselineHistory, hospitalBeds) {
+    var actual = summarizeMapHistory(actualHistory, hospitalBeds);
+    var baseline = summarizeMapHistory(baselineHistory, hospitalBeds);
+    return {
+      actual: actual,
+      baseline: baseline,
+      casesAvoided: baseline.newInfections - actual.newInfections,
+      peakInfectiousAvoided: baseline.peakInfectious - actual.peakInfectious,
+      peakHospitalizedAvoided: baseline.peakHospitalized - actual.peakHospitalized,
+      overloadDaysAvoided: baseline.overloadDays - actual.overloadDays
+    };
+  }
   // OUTBREAK RESPONSE: 26-WEEK PUBLIC HEALTH OFFICER CAMPAIGN
   // Parallel to Fire Ecology's Cultural Mosaic and Ecosystem's
   // Conservation Manager, but the core pedagogy is public health
@@ -1346,6 +1396,7 @@ window.StemLab = window.StemLab || {
       var initialInfectedPct = d.initialInfectedPct != null ? d.initialInfectedPct : 0.1;
       var chartPlaybackRunning = d.chartPlaybackRunning || false;
       var chartPlaybackSpeed = d.chartPlaybackSpeed || 1;
+      var reducedMotion = epidemicPrefersReducedMotion();
       var stochasticSummary = d.stochasticSummary || null;
       var sirRunNote = d.sirRunNote || null;
       var lastRunParams = d.lastRunParams || null;
@@ -1389,15 +1440,27 @@ window.StemLab = window.StemLab || {
 
       function chartPlaybackStep() {
         var maxDayForPlayback = activeData.length ? activeData[activeData.length - 1].day : 0;
-        var currentDayForPlayback = d.hoverDay == null ? 0 : Number(d.hoverDay) || 0;
-        if (!maxDayForPlayback || currentDayForPlayback >= maxDayForPlayback) {
-          updMulti({ chartPlaybackRunning: false, hoverDay: null });
-          return;
-        }
-        upd('hoverDay', Math.min(maxDayForPlayback, currentDayForPlayback + 1));
+        ctx.setToolData(function(prev) {
+          var copy = Object.assign({}, prev);
+          var td = Object.assign({}, copy.epidemicSim || {});
+          var currentDayForPlayback = td.hoverDay == null ? 0 : Number(td.hoverDay) || 0;
+          if (!maxDayForPlayback || currentDayForPlayback >= maxDayForPlayback) {
+            td.chartPlaybackRunning = false;
+            td.hoverDay = null;
+          } else {
+            td.hoverDay = Math.min(maxDayForPlayback, currentDayForPlayback + 1);
+          }
+          copy.epidemicSim = td;
+          return copy;
+        });
       }
 
       function toggleChartPlayback() {
+        if (reducedMotion) {
+          chartPlaybackStep();
+          announceToSR('Advanced the epidemic chart by one day. Automatic playback is off while reduced motion is enabled.');
+          return;
+        }
         if (chartPlaybackRunning) {
           upd('chartPlaybackRunning', false);
           return;
@@ -1411,21 +1474,21 @@ window.StemLab = window.StemLab || {
         updMulti({ chartPlaybackRunning: false, hoverDay: null });
       }
 
-      // Playback is one guarded timer chain, so rerenders from the scrubber cannot
-      // multiply animation speed. It also stops automatically when the tool leaves the DOM.
-      if (!chartPlaybackRunning && window._epiChartTimer) {
+      var chartPlaybackActive = chartPlaybackRunning && !reducedMotion && activeData.length > 1;
+      if (!chartPlaybackActive && window._epiChartTimer) {
         clearTimeout(window._epiChartTimer);
         window._epiChartTimer = null;
       }
-      if (chartPlaybackRunning && activeData.length > 1 && !window._epiChartTimer) {
+      if (chartPlaybackActive && !window._epiChartTimer) {
         window._epiChartTimer = setTimeout(function() {
           window._epiChartTimer = null;
           if (!document.querySelector('[data-epidemic-tool]')) return;
+          if (epidemicPrefersReducedMotion()) { upd('chartPlaybackRunning', false); return; }
           chartPlaybackStep();
         }, Math.max(60, Math.round(240 / Math.max(1, chartPlaybackSpeed))));
       }
 
-      // ── Particle simulation state ──
+      // Particle simulation state
       var particleRunning = d.particleRunning || false;
 
       // ── Particle canvas logic (via callback ref) ──
@@ -1438,7 +1501,7 @@ window.StemLab = window.StemLab || {
         // now self-terminates once the canvas leaves the DOM, so the detach call no
         // longer has to cancel anything.
         if (!canvas) return;
-        var signature = particleRunning ? [r0, vaccRate, infectPeriod, popSize].join('|') : 'stopped';
+        var signature = particleRunning ? [r0, vaccRate, infectPeriod, popSize, reducedMotion ? 'static' : 'motion'].join('|') : 'stopped';
         if (canvas._epiSignature === signature) return;
         canvas._epiSignature = signature;
         if (window._epiParticles) {
@@ -1510,7 +1573,14 @@ window.StemLab = window.StemLab || {
           var colors = { S: '#3b82f6', I: '#ef4444', R: '#22c55e' };
           var stateCounts = { S: 0, I: 0, R: 0 };
           for (var countIndex = 0; countIndex < particles.length; countIndex++) stateCounts[particles[countIndex].state]++;
-          canvas.setAttribute('aria-label', 'Particle simulation: ' + stateCounts.S + ' susceptible, ' + stateCounts.I + ' infected, ' + stateCounts.R + ' recovered agents.');          // Faint transmission-radius halos around infected agents (shows the contagion reach)
+          var accessibleLabel = 'Particle simulation: ' + stateCounts.S + ' susceptible, ' + stateCounts.I + ' infected, ' + stateCounts.R + ' recovered agents.' + (reducedMotion ? ' Static view because reduced motion is enabled.' : '');
+          if (canvas._epiLastLabel !== accessibleLabel) {
+            canvas._epiLastLabel = accessibleLabel;
+            canvas.setAttribute('aria-label', accessibleLabel);
+            var particleStatus = canvas.parentNode && canvas.parentNode.querySelector('[data-epi-particle-status]');
+            if (particleStatus) particleStatus.textContent = 'S ' + stateCounts.S + ' · I ' + stateCounts.I + ' · R ' + stateCounts.R + (reducedMotion ? ' · static view' : '');
+          }
+          // Faint transmission-radius halos around infected agents (shows the contagion reach)
           cx.save();
           cx.globalCompositeOperation = 'lighter';
           for (var jh = 0; jh < particles.length; jh++) {
@@ -1523,14 +1593,14 @@ window.StemLab = window.StemLab || {
             cx.beginPath(); cx.arc(ph.x, ph.y, infRadius, 0, Math.PI * 2); cx.fill();
           }
           cx.restore();
-          // Susceptible + recovered dots
+          // Redundant shapes keep state legible for learners who cannot distinguish
+          // the palette: susceptible=circle, recovered=square, infected=ring + cross.
           for (var j = 0; j < particles.length; j++) {
             var p = particles[j];
             if (p.state === 'I') continue;
-            cx.beginPath();
-            cx.arc(p.x, p.y, 3, 0, Math.PI * 2);
             cx.fillStyle = colors[p.state] || '#94a3b8';
-            cx.fill();
+            if (p.state === 'R') cx.fillRect(p.x - 3, p.y - 3, 6, 6);
+            else { cx.beginPath(); cx.arc(p.x, p.y, 3, 0, Math.PI * 2); cx.fill(); }
           }
           // Infected dots last, with a hot glow so outbreaks read at a glance
           cx.save();
@@ -1542,6 +1612,12 @@ window.StemLab = window.StemLab || {
             cx.beginPath();
             cx.arc(pI.x, pI.y, 3.3, 0, Math.PI * 2);
             cx.fill();
+            cx.strokeStyle = 'rgba(255,255,255,0.9)';
+            cx.lineWidth = 0.9;
+            cx.beginPath();
+            cx.moveTo(pI.x - 1.8, pI.y - 1.8); cx.lineTo(pI.x + 1.8, pI.y + 1.8);
+            cx.moveTo(pI.x + 1.8, pI.y - 1.8); cx.lineTo(pI.x - 1.8, pI.y + 1.8);
+            cx.stroke();
           }
           cx.restore();
           // Live agent counts make the animated canvas readable without relying on color alone.
@@ -1553,16 +1629,18 @@ window.StemLab = window.StemLab || {
           cx.restore();
           // legend
           cx.font = '10px system-ui';
-          cx.fillStyle = '#3b82f6'; cx.fillText('\u25CF Susceptible', 10, ch - 8);
-          cx.fillStyle = '#ef4444'; cx.fillText('\u25CF Infected', 110, ch - 8);
-          cx.fillStyle = '#22c55e'; cx.fillText('\u25CF Recovered', 190, ch - 8);
+          cx.fillStyle = '#3b82f6'; cx.fillText('\u25CF S Susceptible', 10, ch - 8);
+          cx.fillStyle = '#ef4444'; cx.fillText('\u2297 I Infected', 120, ch - 8);
+          cx.fillStyle = '#22c55e'; cx.fillText('\u25A0 R Recovered', 215, ch - 8);
         }
 
         initParticles();
+        if (reducedMotion) { draw(); return; }
         function animate() {
           // Self-terminate when the canvas leaves the DOM (tab switch, tool exit) —
           // otherwise the loop runs forever against a detached canvas.
           if (!document.contains(canvas)) { window._epiParticles = null; return; }
+          if (epidemicPrefersReducedMotion()) { draw(); window._epiParticles = null; return; }
           step();
           draw();
           window._epiParticles = requestAnimationFrame(animate);
@@ -1767,10 +1845,10 @@ window.StemLab = window.StemLab || {
             h('span', { className: 'font-mono font-bold w-16 text-right' }, hoverDay == null ? '—' : 'Day ' + scrubValue)
           ),
           h('div', { className: 'flex flex-wrap items-center gap-2 text-[11px] text-slate-600' },
-            h('button', { type: 'button', onClick: toggleChartPlayback, 'aria-pressed': chartPlaybackRunning ? 'true' : 'false', disabled: !data.length || !activeData.length,
-              className: 'px-2 py-1 rounded-lg font-semibold ' + (chartPlaybackRunning ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-700')
-            }, chartPlaybackRunning ? '⏸ Pause' : '▶ Play'),
-            h('label', { className: 'flex items-center gap-1' },
+            h('button', { type: 'button', onClick: toggleChartPlayback, 'aria-pressed': chartPlaybackActive ? 'true' : 'false', disabled: !data.length || !activeData.length,
+              className: 'px-2 py-1 rounded-lg font-semibold ' + (chartPlaybackActive ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-700')
+            }, reducedMotion ? 'Next day' : chartPlaybackActive ? '⏸ Pause' : '▶ Play'),
+            !reducedMotion && h('label', { className: 'flex items-center gap-1' },
               h('span', null, 'Speed'),
               h('select', { value: chartPlaybackSpeed, onChange: function(e) { upd('chartPlaybackSpeed', Number(e.target.value)); }, disabled: !activeData.length, 'aria-label': 'Playback speed', className: 'px-1 py-1 rounded border border-slate-300 bg-white text-[11px]' },
                 h('option', { value: 1 }, '1×'),
@@ -1778,8 +1856,9 @@ window.StemLab = window.StemLab || {
                 h('option', { value: 4 }, '4×')
               )
             ),
+            reducedMotion && h('span', { className: 'text-[11px] text-slate-500' }, 'Autoplay off: reduced motion'),
             h('button', { type: 'button', onClick: resetChartPlayback, className: 'px-2 py-1 rounded-lg bg-slate-100 text-slate-700' }, 'Reset')
-          ),          h('p', { className: 'text-[11px] text-slate-600', role: 'status', 'aria-live': 'polite' },
+          ),          h('p', { className: 'text-[11px] text-slate-600', role: 'status', 'aria-live': chartPlaybackActive ? 'off' : 'polite' },
             hoverDay == null || !scrubPoint
               ? 'Hover the curve or move the day slider to inspect the compartments.'
               : 'Day ' + scrubPoint.day + ': ' + compartments.map(function(comp) { return compLabels[comp] + ' ' + scrubPoint[comp].toFixed(1) + '%'; }).join(' · ') + (scrubUncertainty ? ' · stochastic infected range ' + scrubUncertainty.lower.toFixed(1) + '–' + scrubUncertainty.upper.toFixed(1) + '%' : '')
@@ -1799,8 +1878,11 @@ window.StemLab = window.StemLab || {
           next = Math.max(controlMin, Math.min(controlMax, next));
           var patch = {}; patch[key] = next;
           if (key === 'r0' || key === 'vaccRate' || key === 'infectPeriod' || key === 'latentPeriod' || key === 'popSize' || key === 'simDays' || key === 'initialInfectedPct') { patch.sirRunNote = null; patch.stochasticSummary = null; }
-          if (key === 'mapExposure') {
-            Object.assign(patch, { mapGrid: null, mapSnapshots: [], mapViewStep: 0, mapHistory: [], mapRunning: false, mapPlacementMode: false, mapQuarantineZones: [], mapInterventions: {}, mapHospPct: 0, mapAnalysis: null });
+          if (tab === 'outbreakmap' && (key === 'r0' || key === 'infectPeriod' || key === 'mapVacc' || key === 'mapExposure')) {
+            Object.assign(patch, { mapGrid: null, mapBaselineGrid: null, mapStep: 0, mapSnapshots: [], mapViewStep: 0, mapHistory: [], mapBaselineHistory: [], mapRunning: false, mapPlacementMode: false, mapQuarantineZones: [], mapHospPct: 0, mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null });
+            if (key === 'mapExposure') patch.mapInterventions = {};
+          } else if (tab === 'outbreakmap' && key === 'hospitalBeds') {
+            Object.assign(patch, { mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null });
           }
           updMulti(patch);
         }
@@ -1962,60 +2044,95 @@ window.StemLab = window.StemLab || {
       var mapVacc = d.mapVacc != null ? d.mapVacc : 0;
       var mapExposure = d.mapExposure != null ? d.mapExposure : 50;
       var mapInterventions = d.mapInterventions || {};
+      var mapSeed = normalizeMapSeed(d.mapSeed);
       var mapGrid = d.mapGrid || null;
+      var mapBaselineGrid = d.mapBaselineGrid || null;
       var mapRunning = d.mapRunning || false;
       var mapPlacementMode = d.mapPlacementMode || false;
       var mapStep = d.mapStep || 0;
       var mapHistory = d.mapHistory || [];
+      var mapBaselineHistory = d.mapBaselineHistory || [];
       var mapSnapshots = d.mapSnapshots || [];
       var mapViewStep = d.mapViewStep != null ? Math.max(0, Math.min(mapStep, d.mapViewStep)) : mapStep;
       var mapDisplayGrid = mapSnapshots[mapViewStep] || mapGrid;
       var mapCanPlace = mapPlacementMode && mapViewStep === mapStep;
 
-      function initMap() {
-        var sc = MAP_SCENARIOS[mapScenario];
-        var grid = createGrid(sc, mapVacc);
-        var counts = countGrid(grid);
-        updMulti({ mapGrid: grid, mapStep: 0, mapViewStep: 0, mapSnapshots: [grid], mapRunning: false, mapPlacementMode: false, mapHistory: [counts] });
-        checkBadge('outbreakMapper');
+      function resetMapExperiment(nextSeed) {
+        updMulti({
+          mapSeed: normalizeMapSeed(nextSeed), mapGrid: null, mapBaselineGrid: null,
+          mapStep: 0, mapViewStep: 0, mapSnapshots: [], mapHistory: [], mapBaselineHistory: [],
+          mapRunning: false, mapPlacementMode: false, mapQuarantineZones: [], mapHospPct: 0, mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null
+        });
       }
 
-      // Map stepping via timer in render body.
-      // The schedule is now token-guarded. It used to fire on EVERY render while the map
-      // was running, not only when the map advanced — so a slider nudge or a chart hover
-      // (which sets hoverDay) forked a second stepper chain, and each fork forked again.
-      // The outbreak visibly accelerated the more the student touched anything.
-      if (!mapRunning && window._epiMapTimer) { clearTimeout(window._epiMapTimer); window._epiMapTimer = null; }
-      function advanceMap() {
+      function initMap() {
+        var sc = MAP_SCENARIOS[mapScenario];
+        var activeSeed = normalizeMapSeed(mapSeed);
+        var grid = createGrid(sc, mapVacc, activeSeed);
+        var baselineGrid = grid.map(function(row) { return row.slice(); });
+        var counts = countGrid(grid);
+        updMulti({
+          mapSeed: activeSeed, mapGrid: grid, mapBaselineGrid: baselineGrid,
+          mapStep: 0, mapViewStep: 0, mapSnapshots: [grid], mapRunning: false,
+          mapPlacementMode: false, mapQuarantineZones: [], mapHistory: [counts], mapBaselineHistory: [counts],
+          mapHospPct: 0, mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null
+        });
+        checkBadge('outbreakMapper');
+        announceToSR('Reproducible outbreak map generated with seed ' + activeSeed + '.');
+      }
+
+      // Map stepping uses one guarded timer chain. The actual response and a no-action
+      // baseline advance from the same initial grid with the same coordinate-keyed chance
+      // events, making the comparison a controlled experiment.
+      if ((!mapRunning || tab !== 'outbreakmap' || reducedMotion) && window._epiMapTimer) { clearTimeout(window._epiMapTimer); window._epiMapTimer = null; }
+      function advanceMap(continueRunning) {
         if (!mapGrid || mapStep >= 200) return;
-        var newGrid = stepGrid(mapGrid, r0, mapQuarantineZones, infectPeriod, pathogenProfile, mapExposure, mapInterventions);
+        var nextDay = mapStep + 1;
+        var randomContext = { seed: mapSeed, day: nextDay };
+        var newGrid = stepGrid(mapGrid, r0, mapQuarantineZones, infectPeriod, pathogenProfile, mapExposure, mapInterventions, randomContext);
+        var baselineSource = mapBaselineGrid || mapGrid;
+        var newBaselineGrid = stepGrid(baselineSource, r0, [], infectPeriod, pathogenProfile, mapExposure, {}, randomContext);
         var counts = countGrid(newGrid);
+        var baselineCounts = countGrid(newBaselineGrid);
         var hist = (mapHistory || []).concat([counts]);
+        var baselineHist = (mapBaselineHistory && mapBaselineHistory.length ? mapBaselineHistory : [countGrid(baselineSource)]).concat([baselineCounts]);
         var snapshots = (mapSnapshots || []).concat([newGrid]);
-        var stillInfected = counts.E + counts.I + counts.H > 0;
+        var actualActive = counts.E + counts.I + counts.H > 0;
+        var baselineActive = baselineCounts.E + baselineCounts.I + baselineCounts.H > 0;
+        var comparison = compareMapHistories(hist, baselineHist, hospitalBeds);
         // Hospital load follows hospitalized cells, not every infectious cell.
         var hospPct = counts.total > 0 ? (counts.H / (counts.total * hospitalBeds / 100)) * 100 : 0;
         updMulti({
           mapGrid: newGrid,
-          mapStep: mapStep + 1,
-          mapViewStep: mapStep + 1,
+          mapBaselineGrid: newBaselineGrid,
+          mapStep: nextDay,
+          mapViewStep: nextDay,
           mapSnapshots: snapshots,
           mapHistory: hist,
-          mapRunning: stillInfected && mapStep < 199,
-          mapHospPct: hospPct
+          mapBaselineHistory: baselineHist,
+          mapRunning: !!continueRunning && (actualActive || baselineActive) && nextDay < 200,
+          mapHospPct: hospPct,
+          mapAnalysis: null,
+          mapAnalysisLoading: false,
+          mapAnalysisRequestId: null
         });
-        announceToSR('Map day ' + (mapStep + 1) + '. Susceptible ' + counts.S + ', exposed ' + counts.E + ', infectious ' + counts.I + ', hospitalized ' + counts.H + ', recovered ' + counts.R + '.');
+        if (!continueRunning || nextDay === 1 || nextDay % 5 === 0 || (!actualActive && !baselineActive)) {
+          var comparisonPhrase = comparison.casesAvoided >= 0
+            ? comparison.casesAvoided + ' infections avoided versus baseline.'
+            : Math.abs(comparison.casesAvoided) + ' additional infections versus baseline.';
+          announceToSR('Map day ' + nextDay + '. Susceptible ' + counts.S + ', exposed ' + counts.E + ', infectious ' + counts.I + ', hospitalized ' + counts.H + ', recovered ' + counts.R + '. ' + comparisonPhrase);
+        }
       }
 
-      if (tab === 'outbreakmap' && mapRunning && mapGrid && !window._epiMapTimer) {
+      if (tab === 'outbreakmap' && mapRunning && !reducedMotion && mapGrid && !window._epiMapTimer) {
         window._epiMapTimer = setTimeout(function() {
           window._epiMapTimer = null;
-          if (!document.querySelector('[data-epidemic-tool]')) return;   // tool unmounted mid-step
-          advanceMap();
-        }, 150);
+          if (!document.querySelector('[data-epidemic-tool]')) return;
+          if (epidemicPrefersReducedMotion()) { upd('mapRunning', false); return; }
+          advanceMap(true);
+        }, 220);
       }
-
-      // ── R0 Explorer state ──
+      // R0 Explorer state
       var r0Compared = d.r0Compared || [];
 
       function addR0Comparison() {
@@ -2159,6 +2276,12 @@ window.StemLab = window.StemLab || {
 
       // ── Quarantine zones for outbreak map ──
       var mapQuarantineZones = d.mapQuarantineZones || [];
+      function focusMapPlacementControl() {
+        setTimeout(function() {
+          var control = document.querySelector('[data-epi-place-zone-control]');
+          if (control && typeof control.focus === 'function') control.focus();
+        }, 30);
+      }
       function addQuarantineZone(row, col) {
         var zoneSize = 5;
         var gridSize = mapGrid && mapGrid.length ? mapGrid.length : 20;
@@ -2171,24 +2294,38 @@ window.StemLab = window.StemLab || {
         }
         if (existing >= 0) {
           zones.splice(existing, 1);
-          updMulti({ mapQuarantineZones: zones, mapPlacementMode: false });
-          announceToSR('Quarantine zone removed from row ' + row + ', column ' + col + '.');
+          updMulti({ mapQuarantineZones: zones, mapPlacementMode: false, mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null });
+          announceToSR('Quarantine zone removed from row ' + (row + 1) + ', column ' + (col + 1) + '.');
+          focusMapPlacementControl();
           return;
         }
         zones.push({ r: Math.min(maxStart, Math.max(0, row - 2)), c: Math.min(maxStart, Math.max(0, col - 2)), size: zoneSize });
-        updMulti({ mapQuarantineZones: zones, mapPlacementMode: false });
+        updMulti({ mapQuarantineZones: zones, mapPlacementMode: false, mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null });
         checkBadge('quarantine');
-        announceToSR('Quarantine zone placed near row ' + row + ', column ' + col + '. Click a gold-covered cell again to remove it.');
+        announceToSR('Quarantine zone placed near row ' + (row + 1) + ', column ' + (col + 1) + '. Activate a gold-covered cell to remove it.');
+        focusMapPlacementControl();
       }
       function removeLastQuarantineZone() {
         if (!mapQuarantineZones.length) return;
-        updMulti({ mapQuarantineZones: mapQuarantineZones.slice(0, -1), mapPlacementMode: false });
+        updMulti({ mapQuarantineZones: mapQuarantineZones.slice(0, -1), mapPlacementMode: false, mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null });
         announceToSR('Last quarantine zone removed.');
+        focusMapPlacementControl();
       }
       // ── Hospital capacity for outbreak map ──
       var hospitalBeds = d.hospitalBeds != null ? d.hospitalBeds : HOSP_CAPACITY_PCT; // % of pop
-      var mapSummary = summarizeMapHistory(mapHistory, hospitalBeds);
-
+      var mapComparison = compareMapHistories(mapHistory, mapBaselineHistory, hospitalBeds);
+      var mapSummary = mapComparison.actual;
+      var mapBaselineSummary = mapComparison.baseline;
+      function commitMapAnalysis(requestId, patch) {
+        ctx.setToolData(function(prev) {
+          var current = prev && prev.epidemicSim ? prev.epidemicSim : {};
+          if (current.mapAnalysisRequestId !== requestId) return prev;
+          var copy = Object.assign({}, prev);
+          var nextData = Object.assign({}, current, patch);
+          copy.epidemicSim = nextData;
+          return copy;
+        });
+      }
       // ── AI Scenarios state ──
       var scenarioData = d.scenarioData || null;
       var scenarioError = d.scenarioError || null;
@@ -2470,6 +2607,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, __alloT('stem.epidemic.particle_simulation', 'Particle Simulation')),
               h('button', {
+                type: 'button',
                 'aria-pressed': particleRunning ? 'true' : 'false',
                 onClick: function() {
                   if (particleRunning) { upd('particleRunning', false); return; }
@@ -2481,13 +2619,15 @@ window.StemLab = window.StemLab || {
                   if (runs >= 3) checkBadge('particlePro');
                 },
                 className: 'px-3 py-1 text-[11px] font-bold rounded-lg ' + (particleRunning ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700')
-              }, particleRunning ? '\u23F9 Stop' : '\u25B6 Start')
+              }, reducedMotion ? (particleRunning ? 'Hide static view' : 'Show static view') : (particleRunning ? '\u23F9 Stop' : '\u25B6 Start'))
             ),
-            h('canvas', { role: 'img', tabIndex: 0, 'aria-label': __alloT('stem.epidemic.epidemic_visualization', 'Epidemic visualization'),
+            h('canvas', { role: 'img', 'aria-label': __alloT('stem.epidemic.epidemic_visualization', 'Epidemic visualization'),
               ref: particleRef,
               className: 'w-full rounded-xl border border-slate-400',
               style: { height: '200px', background: 'rgba(15,23,42,0.85)' }
-            })
+            }),
+            h('p', { 'data-epi-particle-status': 'true', className: 'mt-1 text-[11px] text-slate-600', role: 'status', 'aria-live': particleRunning && !reducedMotion ? 'off' : 'polite' },
+              reducedMotion ? 'Static particle view: start it to inspect the initial agent states.' : 'Start the particle simulation to see live agent counts.')
           ),
           // Equations (grade-dependent)
           (gradeBand === '6-8' || gradeBand === '9-12') &&
@@ -3646,7 +3786,7 @@ window.StemLab = window.StemLab || {
               MAP_SCENARIOS.map(function(sc, idx) {
                 var active = mapScenario === idx;
                 return h('button', { key: sc.name,
-                  onClick: function() { updMulti({ mapScenario: idx, mapPathogen: sc.pathogen || mapPathogen, mapExposure: sc.defaultExposure != null ? sc.defaultExposure : mapExposure, mapGrid: null, mapSnapshots: [], mapViewStep: 0, mapHistory: [], mapRunning: false, mapPlacementMode: false, mapQuarantineZones: [], mapInterventions: {}, mapHospPct: 0, mapAnalysis: null }); },
+                  onClick: function() { updMulti({ mapScenario: idx, mapPathogen: sc.pathogen || mapPathogen, mapExposure: sc.defaultExposure != null ? sc.defaultExposure : mapExposure, mapGrid: null, mapBaselineGrid: null, mapStep: 0, mapSnapshots: [], mapViewStep: 0, mapHistory: [], mapBaselineHistory: [], mapRunning: false, mapPlacementMode: false, mapQuarantineZones: [], mapInterventions: {}, mapHospPct: 0, mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null }); },
                   className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' + (active ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-400')
                 }, (sc.historical ? '\uD83D\uDCDC ' : '') + sc.name);
               })
@@ -3662,7 +3802,7 @@ window.StemLab = window.StemLab || {
               PATHOGEN_PROFILES.map(function(profile) {
                 var activePathogen = mapPathogen === profile.id;
                 return h('button', { key: profile.id, type: 'button', 'aria-pressed': activePathogen ? 'true' : 'false',
-                  onClick: function() { updMulti({ mapPathogen: profile.id, mapGrid: null, mapSnapshots: [], mapViewStep: 0, mapHistory: [], mapRunning: false, mapPlacementMode: false, mapQuarantineZones: [], mapInterventions: {}, mapHospPct: 0, mapAnalysis: null }); },
+                  onClick: function() { updMulti({ mapPathogen: profile.id, mapGrid: null, mapBaselineGrid: null, mapStep: 0, mapSnapshots: [], mapViewStep: 0, mapHistory: [], mapBaselineHistory: [], mapRunning: false, mapPlacementMode: false, mapQuarantineZones: [], mapInterventions: {}, mapHospPct: 0, mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null }); },
                   className: 'rounded-lg px-2 py-2 text-left text-[11px] font-bold transition-all ' + (activePathogen ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-300')
                 }, profile.icon + ' ' + profile.name);
               })
@@ -3684,7 +3824,7 @@ window.StemLab = window.StemLab || {
                   options.map(function(option) {
                     var selected = !!mapInterventions[option.id];
                     return h('button', { key: option.id, type: 'button', 'aria-pressed': selected ? 'true' : 'false',
-                      onClick: function() { var next = Object.assign({}, mapInterventions); next[option.id] = !selected; upd('mapInterventions', next); },
+                      onClick: function() { var next = Object.assign({}, mapInterventions); next[option.id] = !selected; updMulti({ mapInterventions: next, mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null }); },
                       className: 'rounded-lg px-2.5 py-1.5 text-[11px] font-bold ' + (selected ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-800 border border-emerald-300')
                     }, option.icon + ' ' + option.label + ' (' + Math.round(option.reduction * 100) + '%)');
                   })
@@ -3696,15 +3836,32 @@ window.StemLab = window.StemLab || {
             slider('Pre-vaccinated (%)', mapVacc, 0, 90, 5, 'mapVacc', function(v) { return v + '%'; }),
             slider(pathogenProfile.spreadMode === 'waterborne' ? 'Water contamination' : pathogenProfile.spreadMode === 'vector' ? 'Habitat coverage' : 'Contact intensity', mapExposure, 0, 100, 5, 'mapExposure', function(v) { return v + '%'; }),
             slider('Hospital Beds (% of pop)', hospitalBeds, 1, 15, 1, 'hospitalBeds', function(v) { return v + '%'; }),
+            h('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50 p-2.5 space-y-1' },
+              h('div', { className: 'flex flex-wrap items-end gap-2' },
+                h('label', { className: 'flex-1 min-w-[150px] text-[11px] font-bold uppercase tracking-wide text-indigo-800' },
+                  h('span', { className: 'block mb-1' }, 'Experiment seed'),
+                  h('input', { type: 'number', min: 1, max: 4294967295, step: 1, value: mapSeed,
+                    onChange: function(e) { resetMapExperiment(e.target.value); },
+                    className: 'w-full rounded-lg border border-indigo-300 bg-white px-2 py-1.5 font-mono text-xs text-slate-800',
+                    'aria-describedby': 'epidemic-map-seed-help'
+                  })
+                ),
+                h('button', { type: 'button', onClick: function() { resetMapExperiment(mapSeed + 1); },
+                  className: 'rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-[11px] font-bold text-indigo-700'
+                }, 'Next seed')
+              ),
+              h('p', { id: 'epidemic-map-seed-help', className: 'text-[11px] text-indigo-800' }, 'Reuse a seed to replay the same starting map and daily chance events. Your day-by-day actions can still change the outcome.')
+            ),
             h('div', { className: 'flex gap-2' },
               h('button', { onClick: initMap, className: 'flex-1 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, __alloT('stem.epidemic.generate_map', '\uD83D\uDDFA\uFE0F Generate Map')),
-              mapGrid && h('button', { onClick: function() { upd('mapRunning', !mapRunning); },
+              mapGrid && !reducedMotion && h('button', { type: 'button', onClick: function() { upd('mapRunning', !mapRunning); },
                 className: 'px-4 py-2 text-sm font-bold rounded-xl ' + (mapRunning ? 'bg-red-600 text-white' : 'bg-emerald-700 text-white')
-              }, mapRunning ? '\u23F9 Stop' : '\u25B6 Run'),
-              mapGrid && h('button', { onClick: advanceMap, disabled: mapRunning || mapStep >= 200 || !mapGrid, 'aria-label': 'Advance outbreak map one day',
+              }, mapRunning ? '⏹ Stop' : '▶ Run'),
+              mapGrid && h('button', { type: 'button', onClick: function() { advanceMap(false); }, disabled: (mapRunning && !reducedMotion) || mapStep >= 200 || !mapGrid, 'aria-label': 'Advance outbreak map one day and stay paused',
                 className: 'px-3 py-2 text-sm font-bold rounded-xl bg-slate-100 text-slate-700 disabled:opacity-50'
               }, '\u23ED Step')
-            )
+            ),
+            reducedMotion && mapGrid && h('p', { className: 'text-[11px] font-semibold text-indigo-700' }, 'Autoplay is off because reduced motion is enabled. Use Step to advance one day at a time.')
           ),
           // Grid display
           mapGrid && h('div', { className: glassCard },
@@ -3723,30 +3880,42 @@ window.StemLab = window.StemLab || {
             ),
             mapSnapshots.length > 1 && h('label', { className: 'flex items-center gap-2 text-[11px] text-slate-600 mb-2' },
               h('span', { className: 'font-semibold whitespace-nowrap' }, 'Scrub map history'),
-              h('input', { type: 'range', min: 0, max: mapSnapshots.length - 1, step: 1, value: mapViewStep, disabled: mapRunning,
+              h('input', { type: 'range', min: 0, max: mapSnapshots.length - 1, step: 1, value: mapViewStep, disabled: mapRunning && !reducedMotion,
                 onChange: function(e) { var nextStep = Number(e.target.value); updMulti({ mapViewStep: nextStep, mapPlacementMode: nextStep === mapStep ? mapPlacementMode : false }); },
                 className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer', style: { accentColor: '#6366f1' },
                 'aria-label': 'View outbreak map day'
               }),
               h('span', { className: 'font-mono font-bold w-20 text-right' }, mapViewStep === mapStep ? 'Latest' : 'Day ' + mapViewStep)
             ),
-            h('div', { className: 'inline-grid max-w-full gap-px bg-slate-800 rounded-lg overflow-hidden p-px', role: 'grid', 'aria-label': 'Outbreak map grid for day ' + mapViewStep + '. ' + (mapCanPlace ? 'Click a cell to place a quarantine zone; click a gold-covered cell to remove it.' : 'Use the history slider to inspect another day.'), style: { gridTemplateColumns: 'repeat(' + mapDisplayGrid[0].length + ', minmax(0, 1fr))', width: 'min(100%, 420px)' } },
+            h('div', { className: 'inline-grid max-w-full gap-px bg-slate-800 rounded-lg overflow-hidden p-px', role: 'grid', 'aria-label': 'Outbreak map grid for day ' + mapViewStep + '. ' + (mapCanPlace ? 'Use arrow keys to move between cells, then Enter or Space to place a quarantine zone; activate a gold-covered cell to remove it.' : 'Use the history slider to inspect another day.'), style: { gridTemplateColumns: 'repeat(' + mapDisplayGrid[0].length + ', minmax(0, 1fr))', width: 'min(100%, 420px)' } },
               mapDisplayGrid.reduce(function(cells, row, ri) {
                 row.forEach(function(cell, ci) {
                   var bg = cell === 'S' ? '#3b82f6' : cell === 'E' ? '#f59e0b' : cell === 'I' ? '#ef4444' : cell === 'H' ? '#a855f7' : cell === 'R' ? '#22c55e' : '#1e293b';
                   var inZone = mapQuarantineZones.some(function(z) { return ri >= z.r && ri < z.r + z.size && ci >= z.c && ci < z.c + z.size; });
                   var inFeature = isPathogenFeature(ri, ci, mapDisplayGrid.length, pathogenProfile);
-                  cells.push(h('div', {
+                  cells.push(h(mapCanPlace ? 'button' : 'div', {
                     key: ri + '-' + ci,
-                    role: mapCanPlace ? 'button' : undefined,
-                    tabIndex: mapCanPlace ? 0 : undefined,
-                    'aria-label': mapCanPlace ? ('Row ' + (ri + 1) + ', column ' + (ci + 1) + ', ' + (cell === 'S' ? 'susceptible' : cell === 'E' ? 'exposed' : cell === 'I' ? 'infectious' : cell === 'H' ? 'hospitalized' : cell === 'R' ? 'recovered' : 'empty') + '. ' + (inZone ? 'Quarantine zone already covers this cell. Click to remove it.' : 'Click to place a quarantine zone here.')) : undefined,
+                    type: mapCanPlace ? 'button' : undefined,
+                    role: mapCanPlace ? undefined : 'gridcell',
+                    tabIndex: mapCanPlace ? (ri === 0 && ci === 0 ? 0 : -1) : undefined,
+                    'data-epi-map-cell': ri + '-' + ci,
+                    'aria-pressed': mapCanPlace ? (inZone ? 'true' : 'false') : undefined,
+                    'aria-label': mapCanPlace ? ('Row ' + (ri + 1) + ', column ' + (ci + 1) + ', ' + (cell === 'S' ? 'susceptible' : cell === 'E' ? 'exposed' : cell === 'I' ? 'infectious' : cell === 'H' ? 'hospitalized' : cell === 'R' ? 'recovered' : 'empty') + '. ' + (inZone ? 'Quarantine zone already covers this cell. Activate to remove it.' : 'Activate to place a quarantine zone here.')) : undefined,
                     onClick: mapCanPlace ? function() { addQuarantineZone(ri, ci); } : undefined,
                     onKeyDown: mapCanPlace ? function(ev) {
-                      if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); addQuarantineZone(ri, ci); }
+                      if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); addQuarantineZone(ri, ci); return; }
+                      var nextRow = ri, nextCol = ci;
+                      if (ev.key === 'ArrowUp') nextRow = Math.max(0, ri - 1);
+                      else if (ev.key === 'ArrowDown') nextRow = Math.min(mapDisplayGrid.length - 1, ri + 1);
+                      else if (ev.key === 'ArrowLeft') nextCol = Math.max(0, ci - 1);
+                      else if (ev.key === 'ArrowRight') nextCol = Math.min(mapDisplayGrid[ri].length - 1, ci + 1);
+                      else return;
+                      ev.preventDefault();
+                      var target = ev.currentTarget.parentNode && ev.currentTarget.parentNode.querySelector('[data-epi-map-cell="' + nextRow + '-' + nextCol + '"]');
+                      if (target) { ev.currentTarget.tabIndex = -1; target.tabIndex = 0; target.focus(); }
                     } : undefined,
-                    style: { aspectRatio: '1', minWidth: 0, backgroundColor: bg, transition: 'background-color 0.15s', boxShadow: inZone ? 'inset 0 0 0 2px #fbbf24' : inFeature ? (pathogenProfile.spreadMode === 'waterborne' ? 'inset 0 0 0 1px rgba(8,145,178,0.85)' : 'inset 0 0 0 1px rgba(217,119,6,0.85)') : undefined, cursor: mapCanPlace ? 'crosshair' : 'default' }
-                  }));
+                    style: { aspectRatio: '1', minWidth: 0, padding: 0, border: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.95)', fontSize: 8, fontWeight: 800, lineHeight: 1, backgroundColor: bg, transition: reducedMotion ? 'none' : 'background-color 0.15s', boxShadow: inZone ? 'inset 0 0 0 2px #fbbf24' : inFeature ? (pathogenProfile.spreadMode === 'waterborne' ? 'inset 0 0 0 1px rgba(8,145,178,0.85)' : 'inset 0 0 0 1px rgba(217,119,6,0.85)') : undefined, cursor: mapCanPlace ? 'crosshair' : 'default' }
+                  }, cell || ''));
                 });
                 return cells;
               }, [])
@@ -3759,8 +3928,9 @@ window.StemLab = window.StemLab || {
               var deltaI = selected.I - baseline.I;
               var deltaLabel = deltaI > 0 ? '+' + deltaI : String(deltaI);
               var deltaClass = deltaI > 0 ? 'text-red-700 bg-red-50' : deltaI < 0 ? 'text-emerald-700 bg-emerald-50' : 'text-slate-700 bg-slate-100';
-              var phase = selected.I === 0 ? 'No active infections' : selected.I > baseline.I ? 'Growing transmission' : 'Transmission easing';
-              return h('div', { className: 'flex flex-wrap items-center gap-2 text-[11px] mb-2', role: 'status', 'aria-live': 'polite', 'aria-label': 'Map snapshot summary for day ' + mapViewStep },
+              var activeClinical = (selected.E || 0) + (selected.I || 0) + (selected.H || 0);
+              var phase = activeClinical === 0 ? 'No active infections' : selected.I > baseline.I ? 'Growing transmission' : 'Transmission easing';
+              return h('div', { className: 'flex flex-wrap items-center gap-2 text-[11px] mb-2', role: 'status', 'aria-live': mapRunning && !reducedMotion ? 'off' : 'polite', 'aria-label': 'Map snapshot summary for day ' + mapViewStep },
                 h('span', { className: 'px-2 py-1 rounded-lg font-bold ' + deltaClass }, 'Δ Infected vs day 0: ' + deltaLabel),
                 h('span', { className: 'px-2 py-1 rounded-lg font-semibold text-indigo-700 bg-indigo-50' }, phase),
                 h('span', { className: 'px-2 py-1 rounded-lg text-slate-600 bg-slate-100' }, 'Total cells: ' + selected.total)
@@ -3771,7 +3941,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center justify-between' },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, '\uD83D\uDEA7 Quarantine Zones (' + mapQuarantineZones.length + ')'),
               h('div', { className: 'flex gap-2' },
-                h('button', { 'aria-label': __alloT('stem.epidemic.add_zone', 'Place quarantine zone'),
+                h('button', { type: 'button', 'data-epi-place-zone-control': 'true', 'aria-label': __alloT('stem.epidemic.add_zone', 'Place quarantine zone'),
                   'aria-pressed': mapPlacementMode ? 'true' : 'false',
                   onClick: function() { upd('mapPlacementMode', !mapPlacementMode); },
                   disabled: mapViewStep !== mapStep,
@@ -3782,13 +3952,13 @@ window.StemLab = window.StemLab || {
                   className: 'px-2 py-1 text-[11px] font-bold bg-slate-100 text-slate-600 rounded-lg'
                 }, '↶ Undo'),
                 mapQuarantineZones.length > 0 && h('button', { 'aria-label': __alloT('stem.epidemic.clear_3', 'Clear'),
-                  onClick: function() { upd('mapQuarantineZones', []); announceToSR('All quarantine zones cleared.'); },
+                  onClick: function() { updMulti({ mapQuarantineZones: [], mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null }); announceToSR('All quarantine zones cleared.'); },
                   className: 'px-2 py-1 text-[11px] font-bold bg-slate-100 text-slate-600 rounded-lg'
                 }, __alloT('stem.epidemic.clear_4', 'Clear'))
               )
             ),
-            mapPlacementMode && h('p', { role: 'note', className: 'text-[11px] text-amber-700 font-semibold' }, 'Placement mode: choose a map cell to center a 5×5 quarantine zone.'),
-            mapQuarantineZones.length > 0 && h('p', { className: 'text-[11px] text-amber-600 italic' }, __alloT('stem.epidemic.quarantine_zones_reduce_transmission_b', 'Quarantine zones reduce transmission by 80% within the zone and do not change the disease biology.') + ' Gold outlines show coverage; click a covered cell to remove a zone.'),
+            mapPlacementMode && h('p', { role: 'note', className: 'text-[11px] text-amber-700 font-semibold' }, 'Placement mode: use arrow keys to choose a map cell, then press Enter or Space to center a 5×5 quarantine zone.'),
+            mapQuarantineZones.length > 0 && h('p', { className: 'text-[11px] text-amber-600 italic' }, __alloT('stem.epidemic.quarantine_zones_reduce_transmission_b', 'Quarantine zones reduce transmission by 80% within the zone and do not change the disease biology.') + ' Gold outlines show coverage; activate a covered cell to remove a zone.'),
             // Hospital capacity bar
             h('div', null,
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.epidemic.hospital_capacity_2', '\uD83C\uDFE5 Hospital Capacity')),
@@ -3802,7 +3972,7 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'absolute inset-0 flex items-center justify-center text-[11px] font-bold ' + (hospPct > 50 ? 'text-white' : 'text-slate-600') },
                       hospPct.toFixed(0) + '% used (' + hospitalBeds + '% beds)')
                   ),
-                  exceeded && h('p', { className: 'text-[11px] font-bold text-red-600 mt-0.5' }, __alloT('stem.epidemic.hospitals_overwhelmed_mortality_increa', '\u26A0\uFE0F HOSPITALS OVERWHELMED \u2014 mortality increases!'))
+                  exceeded && h('p', { className: 'text-[11px] font-bold text-red-600 mt-0.5' }, __alloT('stem.epidemic.hospitals_overwhelmed_mortality_increa', '\u26A0\uFE0F CARE CAPACITY EXCEEDED \u2014 prioritize surge support.'))
                 );
               })()
             )
@@ -3826,7 +3996,19 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'rounded-lg bg-amber-50 p-2' }, h('div', { className: 'text-[10px] font-bold uppercase text-amber-700' }, 'Capacity overload'), h('div', { className: 'text-lg font-extrabold text-amber-800' }, mapSummary.overloadDays), h('div', { className: 'text-[10px] text-amber-700' }, 'days above 100%')),
                   h('div', { className: 'rounded-lg bg-emerald-50 p-2' }, h('div', { className: 'text-[10px] font-bold uppercase text-emerald-700' }, 'New infections'), h('div', { className: 'text-lg font-extrabold text-emerald-800' }, mapSummary.newInfections), h('div', { className: 'text-[10px] text-emerald-700' }, mapSummary.attackRate.toFixed(1) + '% of cells'))
                 ),
-                h('p', { role: 'status', 'aria-live': 'polite', className: 'text-[11px] font-semibold text-slate-700' }, outcomeText),
+                mapBaselineHistory.length > 1 && h('div', { className: 'mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2', role: 'group', 'aria-label': 'Matched no-additional-response baseline comparison' },
+                  h('p', { className: 'text-[10px] font-bold uppercase tracking-wide text-slate-600' }, 'Compared with no additional response'),
+                  h('div', { className: 'mt-1 flex flex-wrap gap-2 text-[11px] font-bold' },
+                    h('span', { className: mapComparison.casesAvoided > 0 ? 'text-emerald-700' : mapComparison.casesAvoided < 0 ? 'text-red-700' : 'text-slate-600' },
+                      mapComparison.casesAvoided > 0 ? mapComparison.casesAvoided + ' fewer infections' : mapComparison.casesAvoided < 0 ? Math.abs(mapComparison.casesAvoided) + ' more infections' : 'No infection difference'),
+                    h('span', { className: mapComparison.peakInfectiousAvoided > 0 ? 'text-emerald-700' : mapComparison.peakInfectiousAvoided < 0 ? 'text-red-700' : 'text-slate-600' },
+                      mapComparison.peakInfectiousAvoided > 0 ? mapComparison.peakInfectiousAvoided + ' lower peak' : mapComparison.peakInfectiousAvoided < 0 ? Math.abs(mapComparison.peakInfectiousAvoided) + ' higher peak' : 'Same peak'),
+                    h('span', { className: mapComparison.overloadDaysAvoided > 0 ? 'text-emerald-700' : mapComparison.overloadDaysAvoided < 0 ? 'text-red-700' : 'text-slate-600' },
+                      mapComparison.overloadDaysAvoided > 0 ? mapComparison.overloadDaysAvoided + ' overload days avoided' : mapComparison.overloadDaysAvoided < 0 ? Math.abs(mapComparison.overloadDaysAvoided) + ' extra overload days' : 'Same overload duration')
+                  ),
+                  h('p', { className: 'mt-1 text-[10px] text-slate-500' }, 'Matched baseline: seed ' + mapSeed + ', same day-0 grid and pre-vaccination, with quarantine and pathogen-specific interventions off.')
+                ),
+                h('p', { role: 'status', 'aria-live': mapRunning && !reducedMotion ? 'off' : 'polite', className: 'text-[11px] font-semibold text-slate-700' }, outcomeText),
                 h('p', { className: 'text-[11px] text-slate-500' }, 'New infections are susceptible cells lost after day 0; pre-vaccinated or initially recovered cells are not counted.')
               );
             })()
@@ -3835,7 +4017,7 @@ window.StemLab = window.StemLab || {
           mapHistory && mapHistory.length > 2 && h('div', { className: glassCard },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.epidemic.outbreak_timeline', 'Outbreak Timeline')),
             (function() {
-              var w2 = 700, ht2 = 150, padL2 = 40, padR2 = 10, padT2 = 10, padB2 = 20;
+              var w2 = 700, ht2 = 132, padL2 = 12, padR2 = 12, padT2 = 8, padB2 = 8;
               var pw = w2 - padL2 - padR2, ph = ht2 - padT2 - padB2;
               var total = mapHistory[0].total || 1;
               var maxSteps = mapHistory.length - 1 || 1;
@@ -3846,6 +4028,9 @@ window.StemLab = window.StemLab || {
               var pathI = 'M ' + x(0) + ' ' + y(mapHistory[0].I);
               var pathH = 'M ' + x(0) + ' ' + y(mapHistory[0].H || 0);
               var pathR = 'M ' + x(0) + ' ' + y(mapHistory[0].R);
+              var baselineLength = Math.min(mapHistory.length, mapBaselineHistory.length);
+              var pathBaselineI = baselineLength > 0 ? 'M ' + x(0) + ' ' + y(mapBaselineHistory[0].I || 0) : null;
+              for (var bi = 1; bi < baselineLength; bi++) pathBaselineI += ' L ' + x(bi) + ' ' + y(mapBaselineHistory[bi].I || 0);
               for (var mi = 1; mi < mapHistory.length; mi++) {
                 pathS += ' L ' + x(mi) + ' ' + y(mapHistory[mi].S);
                 pathE += ' L ' + x(mi) + ' ' + y(mapHistory[mi].E || 0);
@@ -3854,35 +4039,38 @@ window.StemLab = window.StemLab || {
                 pathR += ' L ' + x(mi) + ' ' + y(mapHistory[mi].R);
               }
               var currentStep = Math.min(mapViewStep, maxSteps);
-              return h('svg', { role: 'img', 'aria-label': 'Clinical map trajectories through day ' + currentStep, viewBox: '0 0 ' + w2 + ' ' + ht2, className: 'w-full', style: { maxHeight: ht2 + 'px' } },
-                h('title', null, 'Spatial clinical trajectories'),
-                h('desc', null, 'Susceptible, exposed, infectious, hospitalized, and recovered cell counts across map steps. The gold marker shows the current day.'),
-                h('path', { d: pathS, fill: 'none', stroke: 'var(--allo-stem-blue, #3b82f6)', strokeWidth: 2 }),
-                h('path', { d: pathE, fill: 'none', stroke: 'var(--allo-stem-yellow, #f59e0b)', strokeWidth: 2 }),
-                h('path', { d: pathI, fill: 'none', stroke: 'var(--allo-stem-red, #ef4444)', strokeWidth: 2 }),
-                h('path', { d: pathH, fill: 'none', stroke: '#a855f7', strokeWidth: 2 }),
-                h('path', { d: pathR, fill: 'none', stroke: 'var(--allo-stem-green, #22c55e)', strokeWidth: 2 }),
-                h('line', { x1: x(currentStep), x2: x(currentStep), y1: padT2, y2: padT2 + ph, stroke: 'var(--allo-stem-yellow, #fbbf24)', strokeWidth: 1.5, strokeDasharray: '3,2' }),
-                h('text', { x: Math.min(w2 - padR2 - 4, Math.max(padL2 + 18, x(currentStep))), y: padT2 + 10, textAnchor: 'middle', fill: 'var(--allo-stem-text, #334155)', fontSize: 9, fontWeight: 'bold' }, 'Day ' + currentStep),
-                h('g', { transform: 'translate(' + padL2 + ',' + (ht2 - 2) + ')' },
-                  h('text', { x: 0, y: 0, fill: 'var(--allo-stem-blue, #3b82f6)', fontSize: 9 }, 'S susceptible'),
-                  h('text', { x: 92, y: 0, fill: 'var(--allo-stem-yellow, #f59e0b)', fontSize: 9 }, 'E exposed'),
-                  h('text', { x: 176, y: 0, fill: 'var(--allo-stem-red, #ef4444)', fontSize: 9 }, 'I infectious'),
-                  h('text', { x: 272, y: 0, fill: '#a855f7', fontSize: 9 }, 'H hospitalized'),
-                  h('text', { x: 390, y: 0, fill: 'var(--allo-stem-green, #22c55e)', fontSize: 9 }, 'R recovered')
+              return h('div', null,
+                h('svg', { role: 'img', 'aria-label': 'Clinical map trajectories through day ' + currentStep + ', including a dashed no-additional-response infectious baseline', viewBox: '0 0 ' + w2 + ' ' + ht2, className: 'w-full', style: { maxHeight: ht2 + 'px' } },
+                  h('title', null, 'Spatial clinical trajectories'),
+                  h('desc', null, 'Solid lines show the response run. The dashed infectious line is the same seeded starting map with quarantine and pathogen-specific interventions off. The gold marker shows the current day.'),
+                  h('path', { d: pathS, fill: 'none', stroke: 'var(--allo-stem-blue, #3b82f6)', strokeWidth: 2 }),
+                  h('path', { d: pathE, fill: 'none', stroke: 'var(--allo-stem-yellow, #f59e0b)', strokeWidth: 2 }),
+                  pathBaselineI && h('path', { d: pathBaselineI, fill: 'none', stroke: 'var(--allo-stem-red, #ef4444)', strokeWidth: 1.5, strokeDasharray: '5,4', opacity: 0.55 }),
+                  h('path', { d: pathI, fill: 'none', stroke: 'var(--allo-stem-red, #ef4444)', strokeWidth: 2 }),
+                  h('path', { d: pathH, fill: 'none', stroke: 'var(--allo-stem-purple, #a855f7)', strokeWidth: 2 }),
+                  h('path', { d: pathR, fill: 'none', stroke: 'var(--allo-stem-green, #22c55e)', strokeWidth: 2 }),
+                  h('line', { x1: x(currentStep), x2: x(currentStep), y1: padT2, y2: padT2 + ph, stroke: 'var(--allo-stem-yellow, #fbbf24)', strokeWidth: 1.5, strokeDasharray: '3,2' })
+                ),
+                h('div', { className: 'mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold', 'aria-hidden': 'true' },
+                  h('span', { className: 'text-blue-600' }, '— S susceptible'),
+                  h('span', { className: 'text-amber-600' }, '— E exposed'),
+                  h('span', { className: 'text-red-600' }, '— I infectious'),
+                  h('span', { className: 'text-purple-600' }, '— H hospitalized'),
+                  h('span', { className: 'text-emerald-600' }, '— R recovered'),
+                  h('span', { className: 'text-slate-600' }, '- - I baseline')
                 )
               );
             })()
-          ),
-          // AI Analysis
+          ),          // AI Analysis
           callGemini && mapHistory && mapHistory.length > 5 && h('div', { className: glassCard },
             d.mapAnalysis ? h('div', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-line' }, d.mapAnalysis) :
-            h('button', { onClick: function() {
-                upd('mapAnalysisLoading', true);
+            h('button', { type: 'button', onClick: function() {
+                var requestId = nextMapAnalysisToken();
+                updMulti({ mapAnalysis: null, mapAnalysisLoading: true, mapAnalysisRequestId: requestId });
                 var lastC = countGrid(mapGrid);
-                callGemini('Analyze this outbreak simulation for a ' + gradeBand + ' student. Scenario: ' + MAP_SCENARIOS[mapScenario].name + ', pathogen profile=' + pathogenProfile.name + ' (' + pathogenProfile.transmission + '), R0=' + r0 + ', vaccination=' + mapVacc + '%, steps=' + mapStep + '. Final counts: S=' + lastC.S + ', E=' + lastC.E + ', I=' + lastC.I + ', H=' + lastC.H + ', R=' + lastC.R + '. Peak infectious=' + mapSummary.peakInfectious + ' on day ' + mapSummary.peakInfectiousDay + ', peak hospitalized=' + mapSummary.peakHospitalized + ' on day ' + mapSummary.peakHospitalizedDay + ', overload days=' + mapSummary.overloadDays + '. Provide 2-3 key observations and one question for the student.').then(function(res) {
-                  updMulti({ mapAnalysis: res, mapAnalysisLoading: false });
-                }).catch(function() { upd('mapAnalysisLoading', false); });
+                callGemini('Analyze this outbreak simulation for a ' + gradeBand + ' student. Scenario: ' + MAP_SCENARIOS[mapScenario].name + ', pathogen profile=' + pathogenProfile.name + ' (' + pathogenProfile.transmission + '), R0=' + r0 + ', vaccination=' + mapVacc + '%, seed=' + mapSeed + ', steps=' + mapStep + '. Final counts: S=' + lastC.S + ', E=' + lastC.E + ', I=' + lastC.I + ', H=' + lastC.H + ', R=' + lastC.R + '. Peak infectious=' + mapSummary.peakInfectious + ' on day ' + mapSummary.peakInfectiousDay + ', peak hospitalized=' + mapSummary.peakHospitalized + ' on day ' + mapSummary.peakHospitalizedDay + ', overload days=' + mapSummary.overloadDays + '. Matched no-additional-response baseline differences: infections avoided=' + mapComparison.casesAvoided + ', peak infectious avoided=' + mapComparison.peakInfectiousAvoided + ', overload days avoided=' + mapComparison.overloadDaysAvoided + '. Provide 2-3 key observations and one question for the student.').then(function(res) {
+                  commitMapAnalysis(requestId, { mapAnalysis: res, mapAnalysisLoading: false });
+                }).catch(function() { commitMapAnalysis(requestId, { mapAnalysisLoading: false }); });
               },
               disabled: d.mapAnalysisLoading,
               className: 'w-full py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50'

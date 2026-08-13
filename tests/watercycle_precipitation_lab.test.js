@@ -57,10 +57,52 @@ describe('Water Cycle Precipitation Lab', () => {
       waterCycle: { wcMode: 'precipHunt', precipHunt: { preset: 'mountainSnow' } },
     });
 
-    expect(html).toContain('2.5D storm chamber');
+    expect(html).toContain('Interactive storm chamber');
     expect(html).toContain('View this setup in 3D');
     expect(html).toContain('Vertical lift / updraft');
     expect(html).toContain('Qualitative teaching model');
+  });
+
+  it('renders a phase-coded HUD, intensity meter, and connected atmospheric pathway', () => {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_watercycle.js', 'waterCycle');
+    const html = renderTool('waterCycle', {
+      waterCycle: {
+        wcMode: 'precipHunt',
+        precipHunt: {
+          preset: 'hailstorm',
+          moisture: 96,
+          tempC: -14,
+          midLevelTempC: -8,
+          lowLevelHumidity: 78,
+          surfaceTempC: 24,
+          wind: 26,
+          windDirection: 'east',
+          updraft: 96,
+          cloudDepth: 12,
+          terrain: 'plains',
+        },
+      },
+    });
+
+    expect(html).toContain('data-precipitation-kind="hail"');
+    expect(html).toContain('data-precipitation-reach="ground"');
+    expect(html).toContain('wc-precip-live-outcome');
+    expect(html).toContain('Intensity index');
+    expect(html).toContain('<meter');
+    expect(html).toContain('data-path-step="cloud"');
+    expect(html).toContain('data-path-step="air-column"');
+    expect(html).toContain('data-path-step="surface"');
+
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('function drawPrecipThermalRail(ctx2, w, cloudBase, groundY)');
+      expect(source).toContain("canvasEl.dataset.temperatureRail = 'cloud-middle-surface';");
+      expect(source).toContain('drawPrecipThermalRail(context, w, cloudBase, groundY);');
+      expect(source).toContain('.wc-precip-live-meter meter');
+      expect(source).toContain('@media(max-width:560px){.wc-precip-canvas-dock{grid-template-columns:minmax(0,1fr) auto}');
+      expect(source).toContain('.wc-precip-live-meter{grid-column:1/-1');
+    });
   });
 
   it('keeps the source and deploy mirror byte-identical', () => {
@@ -263,13 +305,33 @@ describe('Water Cycle Precipitation Lab', () => {
       expect(source).toContain('Measure the storm');
     });
   });
-  it('limits electrical activity to deep convective presets', () => {
+  it('limits lightning to cold mixed-phase deep convection', () => {
     const kernel = loadPrecipitationKernel();
 
     expect(kernel.compute(kernel.presets.summerStorm).lightningEligible).toBe(true);
     expect(kernel.compute(kernel.presets.hailstorm).lightningEligible).toBe(true);
     expect(kernel.compute(kernel.presets.gentleRain).lightningEligible).toBe(false);
     expect(kernel.compute(kernel.presets.mountainSnow).lightningEligible).toBe(false);
+
+    const energeticColumn = {
+      moisture: 100,
+      midLevelTempC: 6,
+      lowLevelHumidity: 92,
+      surfaceTempC: 26,
+      wind: 24,
+      windDirection: 'east',
+      updraft: 100,
+      cloudDepth: 12,
+      stormTime: 52,
+      terrain: 'plains',
+    };
+    const warmCloud = kernel.compute({ ...energeticColumn, tempC: 8 });
+    const coldCloud = kernel.compute({ ...energeticColumn, tempC: -8 });
+
+    expect(warmCloud.electrificationIndex).toBeGreaterThanOrEqual(72);
+    expect(warmCloud.reachesGround).toBe(true);
+    expect(warmCloud.lightningEligible).toBe(false);
+    expect(coldCloud.lightningEligible).toBe(true);
   });
 
   it('bridges the complete hail profile into the existing 3D renderer', () => {
@@ -293,6 +355,7 @@ describe('Water Cycle Precipitation Lab', () => {
           updraft: 96,
           cloudDepth: 12,
           terrain: 'plains',
+          lightningStudyStep: 'pressure-wave',
         },
       },
     });
@@ -305,6 +368,7 @@ describe('Water Cycle Precipitation Lab', () => {
     expect(html).toContain('data-precipitation-cloud-temp="-14"');
     expect(html).toContain('data-precipitation-wind-direction="east"');
     expect(html).toContain('data-precipitation-lightning-eligible="true"');
+    expect(html).toContain('data-lightning-study-step="pressure-wave"');
   });
 
   it('models developing, mature, and weakening stages with cumulative ground effects', () => {
@@ -344,17 +408,188 @@ describe('Water Cycle Precipitation Lab', () => {
     expect(muted.thunder.caption).toMatch(/no lightning flash/i);
   });
 
+  it('offers normalized, accessible guided lightning snapshots without changing the weather setup', () => {
+    const kernel = loadPrecipitationKernel();
+    expect(kernel.defaults.lightningStudyStep).toBe('auto');
+    expect(Array.from(kernel.lightningStudySteps, (step) => step.key)).toEqual([
+      'auto',
+      'charge-separation',
+      'stepped-leader',
+      'upward-streamer',
+      'return-stroke',
+      'pressure-wave',
+    ]);
+    expect(kernel.normalize({ lightningStudyStep: 'pressure-wave' }).lightningStudyStep).toBe('pressure-wave');
+    expect(kernel.normalize({ lightningStudyStep: 'not-a-phase' }).lightningStudyStep).toBe('auto');
+    expect(kernel.normalize({ lightningStudyStep: 'constructor' }).lightningStudyStep).toBe('auto');
+    expect(kernel.normalize({ lightningStudyStep: 'toString' }).lightningStudyStep).toBe('auto');
+    expect(kernel.normalize({ lightningStudyStep: '__proto__' }).lightningStudyStep).toBe('auto');
+
+    const chargeOnly = kernel.compute({ ...kernel.presets.hailstorm, stormTime: 26 });
+    expect(chargeOnly.stormAnatomy.chargeSeparation.index).toBeGreaterThanOrEqual(8);
+    expect(chargeOnly.lightningEligible).toBe(false);
+    expect(kernel.studyStepAvailable(chargeOnly, 'auto')).toBe(true);
+    expect(kernel.studyStepAvailable(chargeOnly, 'charge-separation')).toBe(true);
+    expect(kernel.studyStepAvailable(chargeOnly, 'stepped-leader')).toBe(false);
+    expect(kernel.studyStepAvailable(chargeOnly, 'pressure-wave')).toBe(false);
+
+    const completePathway = kernel.compute(kernel.presets.hailstorm);
+    ['charge-separation', 'stepped-leader', 'upward-streamer', 'return-stroke', 'pressure-wave']
+      .forEach((stepKey) => expect(kernel.studyStepAvailable(completePathway, stepKey)).toBe(true));
+
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_watercycle.js', 'waterCycle');
+    const guidedHtml = renderTool('waterCycle', {
+      waterCycle: {
+        wcMode: 'precipHunt',
+        precipHunt: {
+          ...kernel.presets.hailstorm,
+          preset: 'hailstorm',
+          lightningStudyStep: 'pressure-wave',
+          soundEnabled: true,
+        },
+      },
+    });
+    expect(guidedHtml).toContain('data-lightning-study-step="pressure-wave"');
+    expect(guidedHtml).toContain('data-lightning-study-mode="guided"');
+    expect(guidedHtml).toContain('aria-labelledby="wcLightningStudyTitle"');
+    expect(guidedHtml).toContain('data-lightning-study-choice="pressure-wave" aria-label="Step 5: Thunder wave" aria-pressed="true"');
+    expect(guidedHtml).toContain('Study snapshots are static and silent');
+
+    const unavailableHtml = renderTool('waterCycle', {
+      waterCycle: {
+        wcMode: 'precipHunt',
+        precipHunt: {
+          ...kernel.presets.gentleRain,
+          preset: 'gentleRain',
+          lightningStudyStep: 'return-stroke',
+        },
+      },
+    });
+    expect(unavailableHtml).toContain('data-lightning-study-mode="unavailable"');
+    expect(unavailableHtml).toContain('data-lightning-study-choice="return-stroke" aria-label="Step 4: Return stroke" aria-pressed="true"');
+    expect(unavailableHtml).toContain('This current cloud is not electrically active enough to produce this step');
+
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('canvasEl.dataset.lightningStudyStep = canvasStudyStep;');
+      expect(source).toContain('var canvasStudyActive = canvasStudyRequested && model.config.showStormAnatomy;');
+      expect(source).toContain('var precipLightningStudyActive3d = precipLightningStudyRequested3d && precipStormAnatomy3d;');
+      expect(source).toContain("var stormLightningStudyPhysical3d = precipLightningStudyStep3d === 'charge-separation'");
+      expect(source).toContain("var stormPressureWaveStatic3d = stormLightningStudyAvailable3d &&");
+      expect(source).toContain("canvasEl.dataset.thunderStatus = 'suppressed-study';");
+    });
+  });
+  it('models storm charge anatomy and deterministic thunder-wave travel', () => {
+    const kernel = loadPrecipitationKernel();
+    const hailstorm = { ...kernel.presets.hailstorm, preset: 'hailstorm' };
+    const developing = kernel.compute({ ...hailstorm, stormTime: 12 });
+    const mature = kernel.compute({ ...hailstorm, stormTime: 52 });
+    const weakening = kernel.compute({ ...hailstorm, stormTime: 90 });
+
+    expect(mature.stormAnatomy.chargeSeparation).toMatchObject({
+      state: 'strong',
+      upperPolarity: 'positive',
+      upperCarrier: 'small ice crystals',
+      lowerPolarity: 'negative',
+      lowerCarrier: 'graupel and larger ice',
+    });
+    expect(mature.stormAnatomy.chargeSeparation.index)
+      .toBeGreaterThan(developing.stormAnatomy.chargeSeparation.index);
+    expect(mature.stormAnatomy.chargeSeparation.index)
+      .toBeGreaterThan(weakening.stormAnatomy.chargeSeparation.index);
+    expect(mature.stormAnatomy.lightningPathway).toMatchObject({
+      active: true,
+      type: 'cloud-to-ground',
+      steps: ['stepped-leader', 'upward-streamer', 'return-stroke'],
+    });
+    const gentle = kernel.compute(kernel.presets.gentleRain);
+    expect(gentle.stormAnatomy.chargeSeparation).toMatchObject({ active: false, state: 'inactive', index: 0 });
+    expect(gentle.stormAnatomy.lightningPathway.active).toBe(false);
+    expect(gentle.stormAnatomy.instruments.find((instrument) => instrument.id === 'delay').value).toBeNull();
+    expect(gentle.stormAnatomy.instruments.find((instrument) => instrument.id === 'distance').value).toBeNull();
+
+    const halfway = kernel.thunderWaveAt(mature.thunder, mature.thunder.delaySeconds / 2);
+    expect(halfway.radiusKm).toBeCloseTo(mature.thunder.distanceKm / 2, 1);
+    expect(halfway.progress).toBeCloseTo(0.5, 1);
+    expect(halfway.state).toBe('expanding');
+    expect(kernel.thunderWaveAt(mature.thunder, mature.thunder.delaySeconds * 2)).toMatchObject({
+      radiusKm: mature.thunder.distanceKm,
+      progress: 1,
+      state: 'arrived',
+    });
+
+    const muted = kernel.compute({ ...hailstorm, soundEnabled: false });
+    expect(muted.stormAnatomy.thunderWave.active).toBe(true);
+    expect(muted.stormAnatomy.instruments.map((instrument) => instrument.id))
+      .toEqual(['charge', 'updraft', 'delay', 'distance']);
+    muted.stormAnatomy.instruments.forEach((instrument) => {
+      expect(Number.isFinite(instrument.value)).toBe(true);
+      expect(instrument.unit.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('server-renders non-color storm anatomy, pathway, and instrument semantics', () => {
+    const kernel = loadPrecipitationKernel();
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_watercycle.js', 'waterCycle');
+    const html = renderTool('waterCycle', {
+      waterCycle: {
+        wcMode: 'precipHunt',
+        precipHunt: { ...kernel.presets.hailstorm, preset: 'hailstorm', soundEnabled: false },
+      },
+    });
+
+    expect(html).toContain('role="region" aria-labelledby="wcStormAnatomyTitle"');
+    expect(html).toContain('<h4 id="wcStormAnatomyTitle">Storm anatomy</h4>');
+    expect(html).toContain('data-storm-anatomy="strong"');
+    expect(html).toContain('Upper cloud: positive small ice crystals (+)');
+    expect(html).toContain('Lower cloud: negative graupel and larger ice (\u2212)');
+    expect(html).toContain('Stepped leader -&gt; upward streamer -&gt; return stroke');
+    expect(html).toContain('aria-label="Storm instrument readouts"');
+    ['charge', 'updraft', 'delay', 'distance'].forEach((instrumentId) => {
+      expect(html).toContain(`data-storm-instrument="${instrumentId}"`);
+    });
+    expect(html).toContain('Sound is muted; follow the captioned delay');
+    expect(html).toContain('pressure wave');
+  });
+
+  it('keeps one causal flash event active until the modeled thunder wave arrives', () => {
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      const lifecycleScheduler = source.slice(
+        source.indexOf('function scheduleStormLifecycleTick()'),
+        source.indexOf('function scheduleThunderAfterFlash()'),
+      );
+      const thunderScheduler = source.slice(
+        source.indexOf('function scheduleThunderAfterFlash()'),
+        source.indexOf('function drawArrow('),
+      );
+
+      expect(lifecycleScheduler).not.toContain('clearTimeout(thunderTimer)');
+      expect(thunderScheduler).toContain("model.config.showStormAnatomy && model.config.lightningStudyStep !== 'auto'");
+      expect(thunderScheduler).toContain('thunderEventActive');
+      expect(source).toContain('var lightningCadence = Math.max(5.8, model.thunder.delaySeconds + 1.15);');
+      expect(source).toContain('var waveState = wcThunderWaveAt(model.thunder, waveElapsed);');
+      expect(source).toContain('var stormLightningCadence3d = Math.max(5.8, precipThunderDelay3d + 1.15);');
+      expect(source).toContain("canvasEl.dataset.thunderSound === 'enabled'");
+    });
+  });
   it('keeps enhanced storm cues semantic, pooled, and reduced-motion safe', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
       const chamberStart = source.indexOf('var precipCanvasRef');
       const chamberEnd = source.indexOf('var precipCanvasLabel');
       const chamberSource = source.slice(chamberStart, chamberEnd);
+      const stormSequenceSource = source.slice(
+        source.indexOf('var stormLightningCadence3d'),
+        source.indexOf('canvasEl.dataset.stormColumnAlignment'),
+      );
 
       expect(chamberSource).toContain("canvasEl.dataset.thermalProfile = model.thermalLayers.transitionKind;");
       expect(chamberSource).toContain('canvasEl.dataset.freezingLevel = model.freezingLevel == null');
       expect(source).toContain("canvasEl.dataset.orographicFlow = model.config.terrain === 'mountains'");
-      expect(chamberSource).toContain('model.lightningEligible && !motionReduced');
+      expect(chamberSource).toContain('var lightningAnimationEligible = model.lightningEligible && !motionReduced && !lightningStudyActive;');
       expect(source).toContain('function wcPrecipPhaseFromModel(model, fallProgress)');
       expect(source).toContain("'WINDWARD LIFT'");
       expect(source).toContain("'LEEWARD DRYING'");
@@ -367,7 +602,7 @@ describe('Water Cycle Precipitation Lab', () => {
       expect(source).toContain("precipType3d === 'hail'");
       expect(source).toContain("precipType3d === 'virga'");
       expect(source).toContain("canvasEl.dataset.hydrometeorMode = precipitationFieldActive3d ? precipType3d : 'hidden';");
-      expect(source).toContain("canvasEl.dataset.lightningMode = !stormProfileVisible3d");
+      expect(source).toContain("canvasEl.dataset.lightningMode = precipLightningStudyActive3d");
       expect(source).toContain('var stormUpdraft3d = new THREE.Line(');
       expect(source).toContain('var stormUpdraftMarkerCount3d = 18;');
       expect(source).toContain('var stormThermalLayer3d = new THREE.Mesh(');
@@ -378,7 +613,8 @@ describe('Water Cycle Precipitation Lab', () => {
       expect(source).toContain('rainCurtainGeometry3d.setDrawRange(0, liquidRainActive3d');
       expect(source).toContain("var hailImpactActive3d = precipitationFieldActive3d && precipLabSource3d && precipType3d === 'hail';");
       expect(source).toContain('stormThermalLayer3d.position.y = 2.65 - precipTransitionProgress3d * 3.6;');
-      expect(source).toContain('stormProfileVisible3d && precipLightningEligible3d &&');
+      expect(stormSequenceSource).toContain('var stormLightningEventDue3d = stormProfileEligible3d');
+      expect(stormSequenceSource).toContain('!precipLightningStudyActive3d');
       expect(source).toContain("canvasEl.dataset.stormColumnAlignment = stormProfileVisible3d ? 'cloud-to-ground-synced' : 'legacy';");
       expect(source).toContain("canvasEl.dataset.altitudePhaseMode = precipitationFieldActive3d ? 'thermal-profile-resolved' : 'hidden';");
       expect(source).toContain('wcPrecipPhaseAtTransitions(');

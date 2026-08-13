@@ -19,6 +19,15 @@
         }.bind(this));
       }
     });
+    AFRAME.registerComponent('capstone-action', {
+      schema: { slot: { type: 'int' } },
+      init: function () {
+        this.el.classList.add('clickable');
+        this.el.addEventListener('click', function () {
+          if (window.lifeSkillsCapstone) window.lifeSkillsCapstone.chooseProcedureSlot(this.data.slot);
+        }.bind(this));
+      }
+    });
   }
 </script>
 <style>
@@ -50,6 +59,15 @@
   .step-dot { width:9px; height:9px; border-radius:50%; background:#5b7894; flex:0 0 auto; }
   .step.current .step-dot { background:var(--warn); box-shadow:0 0 0 3px rgba(250,204,21,.18); }
   .step.done .step-dot { background:var(--good); }
+  .step-copy { min-width:0; flex:1; }
+  .step-evidence { flex:0 0 auto; padding:2px 5px; border:1px solid currentColor; border-radius:999px; font-size:9px; font-weight:900; letter-spacing:.02em; white-space:nowrap; }
+  .step-evidence[data-evidence="first-try"] { color:var(--good); background:rgba(74,222,128,.08); }
+  .step-evidence[data-evidence="self-corrected"] { color:var(--accent); background:rgba(103,232,249,.08); }
+  .step-evidence[data-evidence="coached"] { color:var(--warn); background:rgba(250,204,21,.08); }
+  .context-line { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 4px; }
+  .context-line .eyebrow { margin:0; }
+  .context-badge { flex:0 0 auto; max-width:52%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:3px 7px; border:1px solid #547b9d; border-radius:999px; color:var(--muted); background:rgba(8,19,33,.42); font-size:9px; font-weight:900; letter-spacing:.03em; }
+  .context-badge[data-shifted="true"] { border-color:var(--warn); color:#fef3c7; background:rgba(250,204,21,.10); }
   .eyebrow { color:var(--accent); font-size:11px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; margin:0 0 4px; }
   h2 { font-size:18px; line-height:1.2; margin:0 0 7px; }
   .situation, .instruction { color:var(--muted); font-size:13px; line-height:1.45; margin:0 0 10px; }
@@ -66,6 +84,29 @@
   .feedback.good { color:var(--good); background:rgba(74,222,128,.1); }
   .feedback.error { color:#fecdd3; background:rgba(251,113,133,.1); }
   .hint-text { color:var(--warn); font-size:11px; line-height:1.4; margin:6px 0 0; }
+  .procedure-progress { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:5px; margin:0 0 8px; }
+  .procedure-progress[hidden] { display:none; }
+  .procedure-stage { padding:5px 4px; border:1px solid #365575; border-radius:8px; background:rgba(8,19,33,.32); color:var(--muted); text-align:center; font-size:11px; font-weight:800; }
+  .procedure-stage strong { display:block; margin-bottom:1px; color:inherit; font-size:11px; }
+  .procedure-stage.current { border-color:var(--warn); color:#fef3c7; background:rgba(250,204,21,.1); }
+  .procedure-stage.done { border-color:var(--good); color:var(--good); background:rgba(74,222,128,.08); }
+  .procedure-choice { display:grid; grid-template-columns:minmax(68px, .32fr) minmax(0, 1fr); align-items:center; gap:8px; }
+  .procedure-phase { color:var(--accent); font-size:11px; font-weight:900; letter-spacing:.04em; text-transform:uppercase; }
+  .procedure-choice:disabled { border-color:rgba(74,222,128,.45); color:var(--good); opacity:.72; }
+  .procedure-toggle { display:block; width:100%; margin-top:8px; }
+  .procedure-toggle[hidden] { display:none; }
+  .transfer-summary { margin-top:12px; padding:10px; border:1px solid #3f6688; border-radius:10px; background:linear-gradient(135deg, rgba(14,116,144,.15), rgba(11,27,45,.76)); }
+  .transfer-summary h2 { font-size:14px; margin:0 0 5px; }
+  .evidence-bar { display:flex; width:100%; height:8px; margin:8px 0; overflow:hidden; border-radius:999px; background:#27445f; }
+  .evidence-segment { display:block; min-width:0; transition:width .2s ease; }
+  .evidence-segment.first-try { background:var(--good); }
+  .evidence-segment.self-corrected { background:var(--accent); }
+  .evidence-segment.coached { background:var(--warn); }
+  .evidence-counts { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:5px; }
+  .evidence-count { padding:6px; border:1px solid #365575; border-radius:8px; background:rgba(8,19,33,.32); text-align:center; }
+  .evidence-count strong { display:block; color:var(--text); font-size:15px; }
+  .evidence-count span { display:block; color:var(--muted); font-size:9px; font-weight:800; }
+  .transfer-recommendation { margin:8px 0 7px; color:var(--text); font-size:11px; line-height:1.4; }
   .debrief { margin-top:12px; padding:10px; border:1px solid #365575; border-radius:10px; background:rgba(11,27,45,.72); }
   .debrief h2 { font-size:14px; margin:0 0 5px; }
   .debrief-prompt { color:var(--muted); font-size:11px; line-height:1.35; margin:7px 0 5px; }
@@ -98,8 +139,12 @@
   .scene-panel { position: relative; transition:border-color .18s ease, box-shadow .18s ease; }
   .scene-panel[data-risk-active="true"] { border-color:var(--danger); box-shadow:0 0 0 2px rgba(251,113,133,.16), 0 18px 55px rgba(0,0,0,.30); }
   .scene-panel[data-mission-complete="true"] { border-color:var(--good); box-shadow:0 0 0 2px rgba(74,222,128,.14), 0 18px 55px rgba(0,0,0,.30); }
+  .scene-panel[data-context-shift="true"] { border-color:#d6a722; box-shadow:0 0 0 2px rgba(250,204,21,.13), 0 18px 55px rgba(0,0,0,.30); }
+  .scene-panel[data-action-practice="true"] { border-color:var(--accent); box-shadow:0 0 0 2px rgba(103,232,249,.16), 0 18px 55px rgba(0,0,0,.30); }
   .scene-panel::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(135deg, rgba(255,255,255,.08), transparent 34%, transparent 70%, rgba(0,0,0,.16)); }
   .scene-panel::after { content: '3D SCENE'; position: absolute; top: 12px; right: 12px; z-index: 3; padding: 5px 8px; border: 1px solid rgba(103,232,249,.35); border-radius: 999px; background: rgba(8,19,33,.62); color: var(--accent); font-size: 9px; font-weight: 900; letter-spacing: .1em; pointer-events: none; }
+  .scene-panel[data-context-shift="true"]::after { content:'CONTEXT SHIFT'; border-color:rgba(250,204,21,.55); color:#fef3c7; }
+  .scene-panel[data-action-practice="true"]::after { content:'ACTION PRACTICE'; border-color:rgba(103,232,249,.55); color:var(--accent); }
   .scene-panel > * { position: relative; z-index: 2; }
   .progress-line { border: 1px solid #365575; border-radius: 11px; background: linear-gradient(90deg, rgba(14,116,144,.18), rgba(11,27,45,.72)); box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 8px 18px rgba(0,0,0,.14); }
   #progressValue { display: inline-flex; padding: 4px 7px; border: 1px solid rgba(103,232,249,.35); border-radius: 999px; background: rgba(103,232,249,.10); }
@@ -131,13 +176,15 @@
       </section>
       <ol class="steps" id="steps" aria-label="Capstone stations"></ol>
       <div class="decision">
-        <p class="eyebrow" id="stationLabel">Station 1</p>
+        <div class="context-line"><p class="eyebrow" id="stationLabel">Station 1</p><span class="context-badge" id="contextBadge" data-shifted="false">Routine context</span></div>
         <h2 id="stationTitle"></h2>
         <p class="situation" id="situation"></p>
         <p class="instruction" id="instruction"></p>
+        <div id="procedureProgress" class="procedure-progress" role="status" aria-live="polite" hidden></div>
         <div class="choices" id="choices" role="group" aria-label="Capstone choices"></div>
         <button class="hint" id="hintButton" type="button">Show a hint</button>
         <p class="hint-text" id="hintText" role="status" aria-live="polite" hidden></p>
+        <button class="tool procedure-toggle" id="procedureButton" type="button" hidden>Practice 3D actions</button>
         <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
       </div>
       <div class="views" aria-label="Scene view presets">
@@ -151,6 +198,24 @@
         <button class="tool" id="resetButton" type="button">Start over</button>
       </div>
       <p id="challengeNote" class="hint-text" role="status" aria-live="polite" hidden></p>
+      <section id="transferSummary" class="transfer-summary" aria-labelledby="transferSummaryTitle" hidden>
+        <p class="eyebrow">Mission evidence</p>
+        <h2 id="transferSummaryTitle">How the safer decisions happened</h2>
+        <div id="evidenceBar" class="evidence-bar" role="img" aria-label="No mission evidence yet">
+          <span id="evidenceFirstBar" class="evidence-segment first-try"></span>
+          <span id="evidenceCorrectedBar" class="evidence-segment self-corrected"></span>
+          <span id="evidenceCoachedBar" class="evidence-segment coached"></span>
+        </div>
+        <div class="evidence-counts" role="list" aria-label="Decision evidence counts">
+          <div class="evidence-count" role="listitem"><strong id="firstTryCount">0</strong><span>First try</span></div>
+          <div class="evidence-count" role="listitem"><strong id="selfCorrectedCount">0</strong><span>Self-corrected</span></div>
+          <div class="evidence-count" role="listitem"><strong id="coachedCount">0</strong><span>Coached</span></div>
+        </div>
+        <p id="contextTransferSummary" class="debrief-prompt">Context shifts completed: 0 of 5.</p>
+        <p id="procedurePracticeSummary" class="debrief-prompt">Action sequences practiced: 0 of 5.</p>
+        <p id="transferRecommendation" class="transfer-recommendation"></p>
+        <button class="tool primary" id="transferActionButton" type="button">Practice recommended station</button>
+      </section>
       <section id="debrief" class="debrief" aria-labelledby="debriefTitle" hidden>
         <p class="eyebrow">Quick reflection</p>
         <h2 id="debriefTitle">How ready do you feel to use this habit?</h2>
@@ -190,26 +255,79 @@
         <a-cylinder position="-5.2 2.15 -2.5" radius=".22" height=".12" rotation="90 0 0" color="#facc15" capstone-interactive="station: stove"></a-cylinder>
         <a-entity id="label-stove" position="-5.2 2.7 -2.5" text="value: KITCHEN\nStove; align: center; color: #fff7ed; width: 4"></a-entity>
         <a-entity id="state-stove" position="-5.2 3.2 -2.5" visible="false"><a-sphere id="state-orb-stove" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-stove" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
+        <a-entity id="procedure-effects-stove" position="-5.2 .14 -2.5" visible="false">
+          <a-cone id="procedure-risk-stove" position="0 1.88 .66" radius-bottom=".2" radius-top=".035" height=".48" color="#fb7185" material="color: #fb7185; emissive: #fb7185; emissiveIntensity: .9" visible="false"></a-cone>
+          <a-torus id="procedure-control-stove" position="0 2.01 .66" radius=".34" radius-tubular=".045" rotation="90 0 0" color="#4ade80" material="color: #4ade80; emissive: #4ade80; emissiveIntensity: .8" visible="false"></a-torus>
+          <a-box id="procedure-stabilize-stove" position=".42 2.12 .69" width=".78" height=".1" depth=".12" rotation="0 38 0" color="#67e8f9" material="color: #67e8f9; emissive: #67e8f9; emissiveIntensity: .6" visible="false"></a-box>
+          <a-entity id="procedure-connect-stove" position="0 3.48 .2" visible="false"><a-sphere radius=".13" color="#4ade80" material="color: #4ade80; emissive: #4ade80; emissiveIntensity: .85"></a-sphere><a-entity position="0 .28 0" text="value: HELP CONNECTED; align: center; color: #bbf7d0; width: 3"></a-entity></a-entity>
+        </a-entity>
         <a-box position="-1.8 1.15 -2.5" width="2.6" height="2" depth="1.2" color="#0f766e" capstone-interactive="station: lint"></a-box>
         <a-box position="-1.8 1.1 -1.82" width="1.7" height=".75" depth=".08" color="#082f49" capstone-interactive="station: lint"></a-box>
         <a-entity id="label-lint" position="-1.8 2.7 -2.5" text="value: LAUNDRY\nAirflow; align: center; color: #cffafe; width: 4"></a-entity>
         <a-entity id="state-lint" position="-1.8 3.2 -2.5" visible="false"><a-sphere id="state-orb-lint" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-lint" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
+        <a-entity id="procedure-effects-lint" position="-1.8 .14 -2.5" visible="false">
+          <a-sphere id="procedure-risk-lint" position="0 1.15 .72" radius=".42" color="#fb7185" material="color: #fb7185; opacity: .48; transparent: true; emissive: #fb7185; emissiveIntensity: .75" visible="false"></a-sphere>
+          <a-torus id="procedure-control-lint" position="0 1.08 .72" radius=".48" radius-tubular=".045" rotation="90 0 0" color="#4ade80" material="color: #4ade80; emissive: #4ade80; emissiveIntensity: .8" visible="false"></a-torus>
+          <a-entity id="procedure-stabilize-lint" position="0 2.05 .75" visible="false"><a-cone position="-.42 0 0" radius-bottom=".12" radius-top="0" height=".36" rotation="0 0 -90" color="#67e8f9"></a-cone><a-cone position="0 0 0" radius-bottom=".12" radius-top="0" height=".36" rotation="0 0 -90" color="#67e8f9"></a-cone><a-cone position=".42 0 0" radius-bottom=".12" radius-top="0" height=".36" rotation="0 0 -90" color="#67e8f9"></a-cone></a-entity>
+          <a-entity id="procedure-connect-lint" position="0 3.48 .2" visible="false"><a-sphere radius=".13" color="#4ade80" material="color: #4ade80; emissive: #4ade80; emissiveIntensity: .85"></a-sphere><a-entity position="0 .28 0" text="value: HELP CONNECTED; align: center; color: #bbf7d0; width: 3"></a-entity></a-entity>
+        </a-entity>
         <a-box position="1.8 1.1 -2.5" width="2.6" height="1.8" depth="1.1" color="#2563eb" capstone-interactive="station: shutoff"></a-box>
         <a-cylinder position="1.8 1.85 -1.9" radius=".3" height=".12" rotation="90 0 0" color="#93c5fd" capstone-interactive="station: shutoff"></a-cylinder>
         <a-entity id="label-shutoff" position="1.8 2.7 -2.5" text="value: BATH\nWater shutoff; align: center; color: #dbeafe; width: 4"></a-entity>
         <a-entity id="state-shutoff" position="1.8 3.2 -2.5" visible="false"><a-sphere id="state-orb-shutoff" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-shutoff" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
+        <a-entity id="procedure-effects-shutoff" position="1.8 .14 -2.5" visible="false">
+          <a-circle id="procedure-risk-shutoff" position="0 -.08 .55" rotation="-90 0 0" radius=".82" color="#60a5fa" material="color: #60a5fa; opacity: .5; transparent: true; side: double" visible="false"></a-circle>
+          <a-torus id="procedure-control-shutoff" position="0 1.7 .66" radius=".37" radius-tubular=".05" rotation="90 0 0" color="#4ade80" material="color: #4ade80; emissive: #4ade80; emissiveIntensity: .8" visible="false"></a-torus>
+          <a-entity id="procedure-stabilize-shutoff" position="0 .38 .68" visible="false"><a-cylinder radius=".34" height=".55" color="#67e8f9" material="color: #67e8f9; opacity: .72; transparent: true"></a-cylinder><a-torus position="0 .32 0" radius=".28" radius-tubular=".025" rotation="0 0 0" color="#cffafe"></a-torus></a-entity>
+          <a-entity id="procedure-connect-shutoff" position="0 3.48 .2" visible="false"><a-sphere radius=".13" color="#4ade80" material="color: #4ade80; emissive: #4ade80; emissiveIntensity: .85"></a-sphere><a-entity position="0 .28 0" text="value: HELP CONNECTED; align: center; color: #bbf7d0; width: 3"></a-entity></a-entity>
+        </a-entity>
         <a-cylinder position="5.1 2.1 -2.5" radius=".82" height=".14" rotation="90 0 0" color="#f97316" capstone-interactive="station: alarm"></a-cylinder>
         <a-cylinder position="5.1 2.1 -2.4" radius=".52" height=".16" rotation="90 0 0" color="#431407"></a-cylinder>
         <a-entity id="label-alarm" position="5.1 3.25 -2.5" text="value: ENTRY\nAlarm + exit; align: center; color: #ffedd5; width: 4"></a-entity>
         <a-entity id="state-alarm" position="5.1 3.75 -2.5" visible="false"><a-sphere id="state-orb-alarm" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-alarm" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
+        <a-entity id="procedure-effects-alarm" position="5.1 .14 -2.5" visible="false">
+          <a-torus id="procedure-risk-alarm" position="0 1.96 .18" radius=".88" radius-tubular=".065" rotation="90 0 0" color="#fb7185" material="color: #fb7185; emissive: #fb7185; emissiveIntensity: .95" visible="false"></a-torus>
+          <a-torus id="procedure-control-alarm" position="0 1.96 .2" radius=".62" radius-tubular=".05" rotation="90 0 0" color="#4ade80" material="color: #4ade80; emissive: #4ade80; emissiveIntensity: .85" visible="false"></a-torus>
+          <a-entity id="procedure-stabilize-alarm" position="-.7 .12 .76" rotation="0 0 0" visible="false"><a-box position="0 0 0" width=".85" height=".08" depth=".24" color="#67e8f9"></a-box><a-cone position="-.55 0 0" radius-bottom=".2" radius-top="0" height=".42" rotation="0 0 90" color="#67e8f9"></a-cone></a-entity>
+          <a-entity id="procedure-connect-alarm" position="0 3.9 .2" visible="false"><a-sphere radius=".13" color="#4ade80" material="color: #4ade80; emissive: #4ade80; emissiveIntensity: .85"></a-sphere><a-entity position="0 .28 0" text="value: HELP CALLED; align: center; color: #bbf7d0; width: 3"></a-entity></a-entity>
+        </a-entity>
         <a-box position="0 1.25 2.5" width="4.4" height="2.1" depth="1.4" color="#075985" capstone-interactive="station: visibility"></a-box>
         <a-box position="0 2.05 1.75" width="2.5" height=".7" depth=".08" color="#7dd3fc" capstone-interactive="station: visibility"></a-box>
         <a-entity id="label-visibility" position="0 3.1 2.5" text="value: TRANSIT\nVisible stop; align: center; color: #e0f2fe; width: 5"></a-entity>
         <a-entity id="state-visibility" position="0 3.6 2.5" visible="false"><a-sphere id="state-orb-visibility" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-visibility" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
+        <a-entity id="procedure-effects-visibility" position="0 .14 2.5" visible="false">
+          <a-torus id="procedure-risk-visibility" position="0 1.18 .78" radius=".92" radius-tubular=".06" rotation="90 0 0" color="#fb7185" material="color: #fb7185; emissive: #fb7185; emissiveIntensity: .85" visible="false"></a-torus>
+          <a-circle id="procedure-control-visibility" position="0 -.08 .7" rotation="-90 0 0" radius="1.05" color="#4ade80" material="color: #4ade80; opacity: .38; transparent: true; side: double" visible="false"></a-circle>
+          <a-entity id="procedure-stabilize-visibility" position="0 2.18 .82" visible="false"><a-cylinder radius=".1" height="1.2" color="#67e8f9" material="color: #67e8f9; emissive: #67e8f9; emissiveIntensity: .65"></a-cylinder><a-sphere position="0 .7 0" radius=".2" color="#facc15" material="color: #facc15; emissive: #facc15; emissiveIntensity: .9"></a-sphere></a-entity>
+          <a-entity id="procedure-connect-visibility" position="0 3.65 .2" visible="false"><a-box width="1.35" height=".42" depth=".08" color="#4ade80"></a-box><a-entity position="0 0 .06" text="value: OFFICIAL HELP; align: center; color: #052e16; width: 2.6"></a-entity></a-entity>
+        </a-entity>
         <a-entity id="sceneMarker" position="0 .12 -2.5" visible="false">
           <a-torus id="sceneMarkerRing" radius="1.25" radius-tubular=".045" rotation="90 0 0" color="#facc15" material="emissive: #facc15; emissiveIntensity: .7"></a-torus>
         </a-entity>
+        <a-entity id="actionSequence3d" position="0 .14 -2.5" visible="false">
+          <a-plane position="0 .63 .02" width="2.7" height=".75" material="color: #071521; opacity: .86; transparent: true"></a-plane>
+          <a-entity id="actionSequenceTitle" position="0 1.08 .05" text="value: ACTION 1 OF 3; align: center; color: #67e8f9; width: 4"></a-entity>
+          <a-sphere id="actionStepOrb1" position="-.82 .63 .08" radius=".16" color="#facc15" material="emissive: #facc15; emissiveIntensity: .8"></a-sphere>
+          <a-sphere id="actionStepOrb2" position="0 .63 .08" radius=".16" color="#5b7894"></a-sphere>
+          <a-sphere id="actionStepOrb3" position=".82 .63 .08" radius=".16" color="#5b7894"></a-sphere>
+          <a-entity id="actionStepLabel1" position="-.82 .28 .08" text="value: 1 CONTROL; align: center; color: #facc15; width: 2.4"></a-entity>
+          <a-entity id="actionStepLabel2" position="0 .28 .08" text="value: 2 STABILIZE; align: center; color: #9fb4c8; width: 2.4"></a-entity>
+          <a-entity id="actionStepLabel3" position=".82 .28 .08" text="value: 3 CONNECT; align: center; color: #9fb4c8; width: 2.4"></a-entity>
+        </a-entity>
+        <a-entity id="actionConsole3d" position="0 .14 -2.5" visible="false">
+          <a-plane position="0 1.55 .96" width="3.9" height="1.2" material="color: #071521; opacity: .94; transparent: true"></a-plane>
+          <a-entity id="actionConsolePrompt" position="0 1.93 1" text="value: STEP 1: CONTROL\nCHOOSE AN ACTION; align: center; color: #67e8f9; width: 4.6"></a-entity>
+          <a-box id="actionControl1" class="clickable" position="-1.22 1.45 1.05" width="1.08" height=".5" depth=".14" color="#0e7490" material="color: #0e7490; emissive: #0e7490; emissiveIntensity: .45" capstone-action="slot: 0"></a-box>
+          <a-box id="actionControl2" class="clickable" position="0 1.45 1.05" width="1.08" height=".5" depth=".14" color="#0e7490" material="color: #0e7490; emissive: #0e7490; emissiveIntensity: .45" capstone-action="slot: 1"></a-box>
+          <a-box id="actionControl3" class="clickable" position="1.22 1.45 1.05" width="1.08" height=".5" depth=".14" color="#0e7490" material="color: #0e7490; emissive: #0e7490; emissiveIntensity: .45" capstone-action="slot: 2"></a-box>
+          <a-entity id="actionControlLabel1" position="-1.22 1.45 1.14" text="value: A ACTION; align: center; color: #e0f2fe; width: 2.2"></a-entity>
+          <a-entity id="actionControlLabel2" position="0 1.45 1.14" text="value: B ACTION; align: center; color: #e0f2fe; width: 2.2"></a-entity>
+          <a-entity id="actionControlLabel3" position="1.22 1.45 1.14" text="value: C ACTION; align: center; color: #e0f2fe; width: 2.2"></a-entity>
+        </a-entity>
         <a-entity id="sceneNote" position="0 4.25 -2.7" text="value: FOCUS A STATION; align: center; color: #facc15; width: 7"></a-entity>
+        <a-entity id="mouseActionRay" cursor="rayOrigin: mouse; fuse: false" raycaster="objects: .clickable"></a-entity>
+        <a-entity id="leftActionRay" laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
+        <a-entity id="rightActionRay" laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
         <a-camera id="camera" position="0 4.1 10" rotation="-12 0 0"></a-camera>
       </a-scene>
     </section>
@@ -257,6 +375,65 @@
     transit: { title: 'Safe trip connection', context: 'Start with an unfamiliar stop after dark, then transfer the same stop-and-check habit back home.', order: ['visibility', 'alarm', 'stove', 'shutoff', 'lint'] }
   };
   var SUPPORT_LABELS = { supported: 'Extra coaching', guided: 'Guided practice', independent: 'Independent transfer' };
+  var CONTEXTS = {
+    stove: [
+      { id: 'distraction', label: 'Distraction added', scene: 'TIMER + VOICE', sky: '#141827', fog: '#141827', situation: 'A timer sounds while someone calls from another room. The burner is on and a pan handle points toward the edge. What is the safest next move?', instruction: 'Choose the first move that keeps the distraction from becoming a burn or spill.' },
+      { id: 'crowded-counter', label: 'Crowded counter', scene: 'LESS SPACE', sky: '#182130', fog: '#182130', situation: 'A bag has been set beside the stove, the heat is on, and the pan handle points outward. What should happen first?', instruction: 'Transfer the same stop-and-stabilize habit when the work area is crowded.' }
+    ],
+    lint: [
+      { id: 'time-pressure', label: 'Time pressure', scene: 'NEED CLOTHES', sky: '#17202c', fog: '#17202c', situation: 'You need the clothes soon, but the dryer smells hot and airflow feels weak. What should happen before another cycle?', instruction: 'Choose the safer first move even when the schedule feels urgent.' },
+      { id: 'shared-laundry', label: 'Shared laundry', scene: 'SHARED ROOM', sky: '#10242d', fog: '#10242d', situation: 'In a shared laundry room, the dryer is unusually hot and lint is visible near the vent. Another person is waiting. What should happen first?', instruction: 'Protect airflow and people before trying to keep the line moving.' }
+    ],
+    shutoff: [
+      { id: 'spreading-water', label: 'Water spreading', scene: 'WATER MOVING', sky: '#101d35', fog: '#101d35', situation: 'Water is spreading toward stored items while someone asks whether to keep using the sink. What should happen first?', instruction: 'Choose the move that controls the source before cleanup or inspection.' },
+      { id: 'unfamiliar-valve', label: 'Unfamiliar valve', scene: 'NEW FIXTURE', sky: '#101a31', fog: '#101a31', situation: 'A leak starts under an unfamiliar sink. Two valves are visible, and water is pooling near a cabinet. What is the safest first response?', instruction: 'Transfer the control-the-source habit without guessing at an unfamiliar repair.' }
+    ],
+    alarm: [
+      { id: 'low-light', label: 'Low light', scene: 'NIGHT ALARM', sky: '#080d1c', fog: '#080d1c', situation: 'An alarm sounds after dark. The hallway is dim, and you cannot confirm where the warning started. What should happen first?', instruction: 'Choose the response that protects people without delaying to investigate alone.' },
+      { id: 'competing-noise', label: 'Competing noise', scene: 'NOISY ROOM', sky: '#181425', fog: '#181425', situation: 'A television and fan make it hard to hear whether an alarm is chirping or sounding steadily. What is the safer first move?', instruction: 'Use the warning-and-exit habit even when the signal is hard to interpret.' }
+    ],
+    visibility: [
+      { id: 'route-change', label: 'Route changed', scene: 'NEW STOP', sky: '#071226', fog: '#071226', situation: 'The bus skips your usual stop. The alternate stop is dim, traffic is moving, and you are unsure where the next official stop is. What should you do?', instruction: 'Transfer the visible-place and reliable-help habit when the route changes.' },
+      { id: 'weather-change', label: 'Weather changed', scene: 'RAIN + GLARE', sky: '#0b1726', fog: '#0b1726', situation: 'Rain and headlight glare make an unfamiliar stop harder to see after dark. What is the safer response?', instruction: 'Choose a response that keeps you visible, predictable, and connected.' }
+    ]
+  };
+  var PROCEDURE_PHASES = [
+    { id: 'control', label: 'Control', cue: 'stop or control the immediate risk' },
+    { id: 'stabilize', label: 'Stabilize', cue: 'keep the situation from getting worse' },
+    { id: 'connect', label: 'Connect', cue: 'bring in reliable help or confirmation' }
+  ];
+  var PROCEDURES = {
+    stove: [
+      { id: 'heat-off', scene: 'HEAT OFF', phase: 'Control', label: 'Turn the burner off when it is safe to reach the control.' },
+      { id: 'handle-in', scene: 'HANDLE IN', phase: 'Stabilize', label: 'Turn the pan handle inward and leave the hot pan stable.' },
+      { id: 'ask-help', scene: 'ASK HELP', phase: 'Connect', label: 'Tell a responsible adult or ask for help before moving anything hot.' }
+    ],
+    lint: [
+      { id: 'dryer-stop', scene: 'DRYER OFF', phase: 'Control', label: 'Stop the dryer and do not start another cycle.' },
+      { id: 'airflow-clear', scene: 'CLEAR AIR', phase: 'Stabilize', label: 'Clear the lint screen and check that the airflow path is open.' },
+      { id: 'heat-help', scene: 'ASK HELP', phase: 'Connect', label: 'Tell a responsible adult or maintenance if heat or odor continues.' }
+    ],
+    shutoff: [
+      { id: 'valve-close', scene: 'VALVE OFF', phase: 'Control', label: 'Close the correct small water shutoff without forcing it.' },
+      { id: 'contain-water', scene: 'CONTAIN', phase: 'Stabilize', label: 'Place a bucket or towels to contain the water.' },
+      { id: 'repair-help', scene: 'GET HELP', phase: 'Connect', label: 'Tell a responsible adult or get repair help before opening fittings.' }
+    ],
+    alarm: [
+      { id: 'alert-people', scene: 'ALERT', phase: 'Control', label: 'Alert other people and a responsible adult immediately.' },
+      { id: 'move-safe', scene: 'MOVE OUT', phase: 'Stabilize', label: 'Move toward a safe exit or fresh air without stopping to investigate.' },
+      { id: 'call-help', scene: 'CALL HELP', phase: 'Connect', label: 'Call emergency help from safety if danger may be present.' }
+    ],
+    visibility: [
+      { id: 'visible-place', scene: 'VISIBLE', phase: 'Control', label: 'Move to a visible, well-lit waiting place away from traffic.' },
+      { id: 'light-up', scene: 'LIGHT UP', phase: 'Stabilize', label: 'Use a light or reflective item and stay predictable.' },
+      { id: 'official-help', scene: 'ASK STAFF', phase: 'Connect', label: 'Ask the driver, transit staff, or another official source for help.' }
+    ]
+  };
+  var EVIDENCE_META = {
+    'first-try': { label: 'First try', scene: 'FIRST TRY', color: '#4ade80' },
+    'self-corrected': { label: 'Self-corrected', scene: 'CORRECTED', color: '#67e8f9' },
+    coached: { label: 'Coached', scene: 'COACHED', color: '#facc15' }
+  };
   function validMissionFocus(value) { return Object.prototype.hasOwnProperty.call(MISSION_BY_FOCUS, value); }
   function validOrder(value) { return Array.isArray(value) && value.length === TASKS.length && TASKS.every(function (task) { return value.indexOf(task.id) >= 0; }); }
   function missionFor(focus) { return MISSION_BY_FOCUS[validMissionFocus(focus) ? focus : 'kitchen']; }
@@ -274,13 +451,51 @@
   var missionFocus = hasSavedProgress && validMissionFocus(saved.missionFocus) ? saved.missionFocus : requestedFocus;
   var mission = missionFor(missionFocus);
   var savedSupport = Object.prototype.hasOwnProperty.call(SUPPORT_LABELS, saved.support) ? saved.support : requestedSupport;
-  var state = { missionFocus: missionFocus, support: hasSavedProgress ? savedSupport : requestedSupport, mode: saved.mode === 'challenge' ? 'challenge' : 'guided', order: hasSavedProgress && validOrder(saved.order) ? saved.order : mission.order.slice(), challengeChoices: saved.challengeChoices && typeof saved.challengeChoices === 'object' ? saved.challengeChoices : {}, risk: saved.risk && typeof saved.risk === 'object' ? saved.risk : {}, attempts: saved.attempts && typeof saved.attempts === 'object' ? saved.attempts : {}, debrief: (function () { var loaded = saved.debrief && typeof saved.debrief === 'object' ? saved.debrief : {}; return { confidence: typeof loaded.confidence === 'string' ? loaded.confidence : '', nextStep: typeof loaded.nextStep === 'string' ? loaded.nextStep : '', teachBack: typeof loaded.teachBack === 'string' ? loaded.teachBack : '' }; }()), debriefDraft: saved.debrief && typeof saved.debrief.teachBack === 'string' ? saved.debrief.teachBack : '', teachBackMessage: '', done: saved.done || {}, missteps: Number(saved.missteps) || 0, hints: Number(saved.hints) || 0, focused: null, activeIndex: 0, hintShown: false, feedback: 'Choose the safer response for the highlighted station.', tone: '' };
+  var state = { missionFocus: missionFocus, support: hasSavedProgress ? savedSupport : requestedSupport, mode: saved.mode === 'challenge' ? 'challenge' : 'guided', order: hasSavedProgress && validOrder(saved.order) ? saved.order : mission.order.slice(), challengeChoices: saved.challengeChoices && typeof saved.challengeChoices === 'object' ? saved.challengeChoices : {}, contexts: saved.contexts && typeof saved.contexts === 'object' ? saved.contexts : {}, contextTransfers: saved.contextTransfers && typeof saved.contextTransfers === 'object' ? saved.contextTransfers : {}, procedures: saved.procedures && typeof saved.procedures === 'object' ? saved.procedures : {}, procedureChoices: saved.procedureChoices && typeof saved.procedureChoices === 'object' ? saved.procedureChoices : {}, procedureMistakes: saved.procedureMistakes && typeof saved.procedureMistakes === 'object' ? saved.procedureMistakes : {}, procedureTarget: BY_ID[saved.procedureTarget] && (saved.done || {})[saved.procedureTarget] ? saved.procedureTarget : '', procedureStep: Math.max(0, Math.min(2, Number(saved.procedureStep) || 0)), procedureError: !!saved.procedureError, procedureWrongSlot: [0, 1, 2].indexOf(Number(saved.procedureWrongSlot)) >= 0 ? Number(saved.procedureWrongSlot) : -1, procedureUsed3d: !!saved.procedureUsed3d, risk: saved.risk && typeof saved.risk === 'object' ? saved.risk : {}, attempts: saved.attempts && typeof saved.attempts === 'object' ? saved.attempts : {}, hinted: saved.hinted && typeof saved.hinted === 'object' ? saved.hinted : {}, outcomes: saved.outcomes && typeof saved.outcomes === 'object' ? saved.outcomes : {}, replayTarget: BY_ID[saved.replayTarget] ? saved.replayTarget : '', replayFrom: EVIDENCE_META[saved.replayFrom] ? saved.replayFrom : '', replayContextFrom: typeof saved.replayContextFrom === 'string' ? saved.replayContextFrom : '', debrief: (function () { var loaded = saved.debrief && typeof saved.debrief === 'object' ? saved.debrief : {}; return { confidence: typeof loaded.confidence === 'string' ? loaded.confidence : '', nextStep: typeof loaded.nextStep === 'string' ? loaded.nextStep : '', teachBack: typeof loaded.teachBack === 'string' ? loaded.teachBack : '' }; }()), debriefDraft: saved.debrief && typeof saved.debrief.teachBack === 'string' ? saved.debrief.teachBack : '', teachBackMessage: '', done: saved.done || {}, missteps: Number(saved.missteps) || 0, hints: Number(saved.hints) || 0, focused: null, activeIndex: 0, hintShown: false, feedback: 'Choose the safer response for the highlighted station.', tone: '' };
   function shuffle(values) { var result = values.slice(); for (var i = result.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var swap = result[i]; result[i] = result[j]; result[j] = swap; } return result; }
   function runTasks() { return state.order.map(function (id) { return BY_ID[id]; }).filter(Boolean); }
-  function ensureChallengeChoices() { if (state.mode !== 'challenge') return; TASKS.forEach(function (task) { var savedIds = Array.isArray(state.challengeChoices[task.id]) ? state.challengeChoices[task.id] : []; var valid = savedIds.length === task.choices.length && savedIds.every(function (id) { return task.choices.some(function (choice) { return choice.id === id; }); }); if (!valid) state.challengeChoices[task.id] = shuffle(task.choices.map(function (choice) { return choice.id; })); }); }
+  function contextOptions(task) { return [{ id: 'routine', label: 'Routine context', scene: 'ROUTINE', sky: '#081321', fog: '#081321', situation: task.situation, instruction: task.instruction }].concat(CONTEXTS[task.id] || []); }
+  function contextFor(task) { var selected = state.contexts[task.id] || 'routine'; return contextOptions(task).find(function (context) { return context.id === selected; }) || contextOptions(task)[0]; }
+  function shiftedContextId(task, previousId) { var options = CONTEXTS[task.id] || []; if (!options.length) return 'routine'; var index = options.findIndex(function (context) { return context.id === previousId; }); return options[(index + 1 + options.length) % options.length].id; }
+  function assignShiftedContexts() { TASKS.forEach(function (task) { state.contexts[task.id] = shiftedContextId(task, state.contexts[task.id] || 'routine'); }); }
+  function contextTransferCount() { return TASKS.filter(function (task) { return !!state.contextTransfers[task.id]; }).length; }
+  function procedureFor(task) { return PROCEDURES[task.id] || []; }
+  function procedurePracticeCount() { return TASKS.filter(function (task) { return !!state.procedures[task.id]; }).length; }
+  function nextProcedureTask() { return runTasks().find(function (task) { return !state.procedures[task.id]; }) || null; }
+  function ensureProcedureChoices(task, refresh) { var actions = procedureFor(task); var savedIds = Array.isArray(state.procedureChoices[task.id]) ? state.procedureChoices[task.id] : []; var valid = savedIds.length === actions.length && savedIds.every(function (id) { return actions.some(function (action) { return action.id === id; }); }); if (refresh || !valid) state.procedureChoices[task.id] = shuffle(actions.map(function (action) { return action.id; })); return state.procedureChoices[task.id].map(function (id) { return actions.find(function (action) { return action.id === id; }); }).filter(Boolean); }
+  function ensureChallengeChoices() { if (state.mode !== 'challenge' && !state.replayTarget) return; TASKS.forEach(function (task) { if (state.mode !== 'challenge' && state.replayTarget !== task.id) return; var savedIds = Array.isArray(state.challengeChoices[task.id]) ? state.challengeChoices[task.id] : []; var valid = savedIds.length === task.choices.length && savedIds.every(function (id) { return task.choices.some(function (choice) { return choice.id === id; }); }); if (!valid) state.challengeChoices[task.id] = shuffle(task.choices.map(function (choice) { return choice.id; })); }); }
   ensureChallengeChoices();
-  function saveState() { try { window.localStorage.setItem(storageKey, JSON.stringify({ missionFocus: state.missionFocus, support: state.support, mode: state.mode, order: state.order, challengeChoices: state.challengeChoices, risk: state.risk, attempts: state.attempts, debrief: state.debrief, done: state.done, missteps: state.missteps, hints: state.hints, updatedAt: Date.now() })); } catch (_) {} }
+  if (state.procedureTarget) ensureProcedureChoices(BY_ID[state.procedureTarget], false);
+  function saveState() { try { window.localStorage.setItem(storageKey, JSON.stringify({ missionFocus: state.missionFocus, support: state.support, mode: state.mode, order: state.order, challengeChoices: state.challengeChoices, contexts: state.contexts, contextTransfers: state.contextTransfers, procedures: state.procedures, procedureChoices: state.procedureChoices, procedureMistakes: state.procedureMistakes, procedureTarget: state.procedureTarget, procedureStep: state.procedureStep, procedureError: state.procedureError, procedureWrongSlot: state.procedureWrongSlot, procedureUsed3d: state.procedureUsed3d, risk: state.risk, attempts: state.attempts, hinted: state.hinted, outcomes: state.outcomes, replayTarget: state.replayTarget, replayFrom: state.replayFrom, replayContextFrom: state.replayContextFrom, debrief: state.debrief, done: state.done, missteps: state.missteps, hints: state.hints, updatedAt: Date.now() })); } catch (_) {} }
   function doneCount() { return TASKS.filter(function (task) { return !!state.done[task.id]; }).length; }
+  function recordedOutcome(task) { return state.outcomes[task.id] || (state.replayTarget === task.id ? state.replayFrom : ''); }
+  function evidenceCounts() {
+    var counts = { firstTry: 0, selfCorrected: 0, coached: 0 };
+    TASKS.forEach(function (task) {
+      var outcome = recordedOutcome(task);
+      if (outcome === 'first-try') counts.firstTry += 1;
+      else if (outcome === 'self-corrected') counts.selfCorrected += 1;
+      else if (outcome === 'coached') counts.coached += 1;
+    });
+    return counts;
+  }
+  function recordOutcome(task) {
+    var attempts = Number(state.attempts[task.id]) || 0;
+    state.outcomes[task.id] = state.hinted[task.id] ? 'coached' : attempts > 1 ? 'self-corrected' : 'first-try';
+    if (contextFor(task).id !== 'routine') state.contextTransfers[task.id] = true;
+  }
+  function recommendedTask() {
+    var best = null; var bestRank = 0;
+    runTasks().forEach(function (task) {
+      var outcome = recordedOutcome(task); var rank = outcome === 'coached' ? 2 : outcome === 'self-corrected' ? 1 : 0;
+      if (rank > bestRank) { best = task; bestRank = rank; }
+    });
+    return best;
+  }
+  function evidencePayload() {
+    var counts = evidenceCounts(); var target = recommendedTask();
+    return { firstTry: counts.firstTry, selfCorrected: counts.selfCorrected, coached: counts.coached, contextTransfer: contextTransferCount(), procedurePractice: procedurePracticeCount(), recommendedTask: target ? target.id : '' };
+  }
   function nextIndex() { var tasks = runTasks(); for (var i = 0; i < tasks.length; i++) if (!state.done[tasks[i].id]) return i; return tasks.length - 1; }
   function postToOpener(payload) { try { if (window.opener && !window.opener.closed) window.opener.postMessage(Object.assign({ source: 'alloflow-life-capstone-3d' }, payload), '*'); } catch (_) {} }
   function announce(message) { var live = document.getElementById('srStatus'); live.textContent = ''; window.setTimeout(function () { live.textContent = message; }, 20); }
@@ -295,36 +510,111 @@
   }
   function focus(station, announceIt) {
     if (!BY_ID[station]) return;
+    var lockedTarget = state.procedureTarget || state.replayTarget;
+    if (lockedTarget && station !== lockedTarget) { announce('Finish or exit the current ' + (state.procedureTarget ? 'action practice' : 'targeted replay') + ' at ' + BY_ID[lockedTarget].room + ' before changing stations.'); return; }
     state.focused = station;
     var index = runTasks().findIndex(function (task) { return task.id === station; });
-    if (index >= 0) state.activeIndex = index;
+    if (index >= 0) { state.activeIndex = index; state.hintShown = !!state.hinted[station]; }
     renderScene(); render();
     if (announceIt !== false) announce(BY_ID[station].title + ' is highlighted in the scene.');
   }
   function postProgressSnapshot() {
-    postToOpener({ type: 'alloflow-life-capstone-3d-progress', completed: doneCount(), total: TASKS.length, confidence: state.debrief.confidence || '', nextStep: state.debrief.nextStep || '', mode: state.mode, missionFocus: state.missionFocus, support: state.support });
+    postToOpener(Object.assign({ type: 'alloflow-life-capstone-3d-progress', completed: doneCount(), total: TASKS.length, confidence: state.debrief.confidence || '', nextStep: state.debrief.nextStep || '', mode: state.mode, missionFocus: state.missionFocus, support: state.support }, evidencePayload()));
+  }
+  function beginTargetedReplay(station) {
+    var task = BY_ID[station]; if (!task || !state.done[station]) return;
+    state.procedureTarget = ''; state.procedureStep = 0; state.procedureError = false; state.procedureWrongSlot = -1; state.procedureUsed3d = false;
+    state.replayTarget = station; state.replayFrom = state.outcomes[station] || ''; state.replayContextFrom = contextFor(task).id;
+    state.contexts[station] = shiftedContextId(task, state.replayContextFrom); state.challengeChoices[station] = shuffle(task.choices.map(function (choice) { return choice.id; }));
+    state.support = state.support === 'supported' ? 'guided' : 'independent';
+    delete state.outcomes[station]; delete state.attempts[station]; delete state.hinted[station]; delete state.risk[station]; delete state.contextTransfers[station];
+    state.hintShown = false; state.focused = station;
+    var index = runTasks().findIndex(function (item) { return item.id === station; }); if (index >= 0) state.activeIndex = index;
+    setFeedback('Targeted replay ready: ' + task.title + '. Support has faded to ' + SUPPORT_LABELS[state.support].toLowerCase() + '.', '');
+    saveState(); render(); renderScene();
+    postToOpener({ type: 'alloflow-life-capstone-3d-targeted-replay-start', task: station, previousOutcome: state.replayFrom, previousContext: state.replayContextFrom, context: contextFor(task).id, support: state.support, mode: state.mode });
+    announce('Targeted replay started at ' + task.room + ' in a new context with ' + SUPPORT_LABELS[state.support].toLowerCase() + '.');
+  }
+  function finishTargetedReplay(task) {
+    var previousOutcome = state.replayFrom; var previousContext = state.replayContextFrom; var outcome = state.outcomes[task.id] || ''; var currentContext = contextFor(task).id;
+    state.replayTarget = ''; state.replayFrom = ''; state.replayContextFrom = ''; saveState();
+    setFeedback('Targeted replay complete in a changed context: ' + task.title + '. New evidence: ' + EVIDENCE_META[outcome].label + '.', 'good');
+    postProgressSnapshot();
+    postToOpener(Object.assign({ type: 'alloflow-life-capstone-3d-replay-complete', task: task.id, previousOutcome: previousOutcome, outcome: outcome, previousContext: previousContext, context: currentContext, contextChanged: previousContext !== currentContext, support: state.support, mode: state.mode }, evidencePayload()));
+    announce('Targeted replay complete. New evidence: ' + EVIDENCE_META[outcome].label + '.');
+  }
+  function beginProcedure(station) {
+    var task = BY_ID[station]; if (!task || !state.done[station] || state.replayTarget) return;
+    state.procedureTarget = station; state.procedureStep = 0; state.procedureError = false; state.procedureWrongSlot = -1; state.procedureUsed3d = false; state.procedureMistakes[station] = 0;
+    ensureProcedureChoices(task, true); state.focused = station;
+    var index = runTasks().findIndex(function (item) { return item.id === station; }); if (index >= 0) state.activeIndex = index;
+    setFeedback('Action rehearsal ready. Choose the action that matches Step 1: Control.', '');
+    saveState(); render(); renderScene();
+    postToOpener({ type: 'alloflow-life-capstone-3d-procedure-start', task: station, context: contextFor(task).id, support: state.support, mode: state.mode });
+    announce('Action rehearsal started at ' + task.room + '. Step 1 of 3: Control.');
+  }
+  function exitProcedure() {
+    var task = BY_ID[state.procedureTarget]; if (!task) return;
+    state.procedureTarget = ''; state.procedureStep = 0; state.procedureError = false; state.procedureWrongSlot = -1; state.procedureUsed3d = false;
+    setFeedback('Action rehearsal paused for ' + task.title + '. You can return when ready.', '');
+    saveState(); render(); renderScene(); announce('Exited action rehearsal for ' + task.room + '.');
+  }
+  function chooseProcedure(actionId, inputSlot) {
+    var task = BY_ID[state.procedureTarget]; if (!task) return;
+    var actions = procedureFor(task); var expected = actions[state.procedureStep]; var selected = actions.find(function (action) { return action.id === actionId; });
+    if (!expected || !selected) return;
+    if (selected.id !== expected.id) {
+      state.procedureMistakes[task.id] = (Number(state.procedureMistakes[task.id]) || 0) + 1; state.procedureError = true; state.procedureWrongSlot = [0, 1, 2].indexOf(Number(inputSlot)) >= 0 ? Number(inputSlot) : -1;
+      var phase = PROCEDURE_PHASES[state.procedureStep];
+      setFeedback('Pause and check the order. Step ' + (state.procedureStep + 1) + ' is ' + phase.label + ': choose the action that will ' + phase.cue + '.', 'error');
+      saveState(); render(); renderScene(); announce('Try a different action for Step ' + (state.procedureStep + 1) + ', ' + phase.label + '.'); return;
+    }
+    state.procedureStep += 1; state.procedureError = false; state.procedureWrongSlot = -1;
+    if (state.procedureStep >= actions.length) {
+      var used3dControls = state.procedureUsed3d;
+      state.procedures[task.id] = true; state.procedureTarget = ''; state.procedureStep = 0; state.procedureWrongSlot = -1; state.procedureUsed3d = false;
+      setFeedback('3D action sequence practiced: ' + task.title + '. Control, stabilize, then connect.', 'good');
+      saveState(); postProgressSnapshot();
+      postToOpener(Object.assign({ type: 'alloflow-life-capstone-3d-procedure-practiced', task: task.id, context: contextFor(task).id, mistakes: Number(state.procedureMistakes[task.id]) || 0, used3dControls: used3dControls, support: state.support, mode: state.mode }, evidencePayload()));
+      announce('Action sequence complete for ' + task.room + '. Control, stabilize, then connect.');
+    } else {
+      var nextPhase = PROCEDURE_PHASES[state.procedureStep];
+      setFeedback('Step ' + state.procedureStep + ' complete: ' + expected.phase + '. Next, ' + nextPhase.label + ': ' + nextPhase.cue + '.', 'good'); saveState();
+      announce('Step ' + state.procedureStep + ' complete. Step ' + (state.procedureStep + 1) + ': ' + nextPhase.label + '.');
+    }
+    render(); renderScene();
+  }
+  function chooseProcedureSlot(slot) {
+    var task = BY_ID[state.procedureTarget]; if (!task) return;
+    var slotIndex = Number(slot); if ([0, 1, 2].indexOf(slotIndex) < 0) return;
+    var choices = ensureProcedureChoices(task, false); var action = choices[slotIndex]; if (!action) return;
+    var completedIds = procedureFor(task).slice(0, state.procedureStep).map(function (item) { return item.id; });
+    if (completedIds.indexOf(action.id) >= 0) { announce(action.scene + ' is already complete. Choose one of the remaining 3D actions.'); return; }
+    state.procedureUsed3d = true; chooseProcedure(action.id, slotIndex);
   }
   function completeTask(task) {
     if (state.done[task.id]) return;
     state.done[task.id] = true; saveState();
     var completed = doneCount();
-    if (completed >= TASKS.length) { setFeedback((state.mode === 'challenge' ? 'Transfer challenge complete. ' : 'Capstone complete. ') + 'You practiced five connected safety decisions.', 'good'); postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-complete', score: completed, total: TASKS.length, missteps: state.missteps, hints: state.hints, mode: state.mode, missionFocus: state.missionFocus, support: state.support }); announce(state.mode === 'challenge' ? 'Transfer challenge complete.' : 'Capstone complete.'); }
-    else { postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-task-complete', task: task.id, completed: completed, total: TASKS.length, source: 'capstone', mode: state.mode, missionFocus: state.missionFocus, support: state.support }); setFeedback('Completed: ' + task.title + '. Next: ' + runTasks()[nextIndex()].title + '.', 'good'); announce('Completed ' + task.title + '.'); }
+    if (completed >= TASKS.length) { setFeedback((state.mode === 'challenge' ? 'Transfer challenge complete. ' : 'Capstone complete. ') + 'Review how each safer decision happened below.', 'good'); postProgressSnapshot(); postToOpener(Object.assign({ type: 'alloflow-life-capstone-3d-complete', score: completed, total: TASKS.length, missteps: state.missteps, hints: state.hints, mode: state.mode, missionFocus: state.missionFocus, support: state.support }, evidencePayload())); announce(state.mode === 'challenge' ? 'Transfer challenge complete. Mission evidence is ready.' : 'Capstone complete. Mission evidence is ready.'); }
+    else { postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-task-complete', task: task.id, outcome: state.outcomes[task.id] || '', completed: completed, total: TASKS.length, source: 'capstone', mode: state.mode, missionFocus: state.missionFocus, support: state.support }); setFeedback('Completed: ' + task.title + '. Evidence: ' + EVIDENCE_META[state.outcomes[task.id]].label + '. Next: ' + runTasks()[nextIndex()].title + '.', 'good'); announce('Completed ' + task.title + '. ' + EVIDENCE_META[state.outcomes[task.id]].label + '.'); }
   }
   function choose(choiceId) {
     var task = runTasks()[state.activeIndex];
     var choice = task && task.choices.find(function (item) { return item.id === choiceId; });
     if (!task || !choice) return;
-    var revisiting = !!state.done[task.id];
+    var replaying = state.replayTarget === task.id;
+    var revisiting = !!state.done[task.id] && !replaying;
     state.attempts[task.id] = (Number(state.attempts[task.id]) || 0) + 1;
     state.hintShown = false;
     if (choice.safe) {
       delete state.risk[task.id];
       if (revisiting) { saveState(); setFeedback('Rehearsed: ' + task.title + '. The station remains marked safe.', 'good'); announce('Rehearsed ' + task.title + '.'); }
-      else { completeTask(task); state.activeIndex = nextIndex(); state.focused = runTasks()[state.activeIndex].id; }
+      else if (replaying) { recordOutcome(task); finishTargetedReplay(task); }
+      else { recordOutcome(task); completeTask(task); state.activeIndex = nextIndex(); state.focused = runTasks()[state.activeIndex].id; }
     } else {
       state.risk[task.id] = true; state.missteps += 1;
-      if (state.support === 'supported' && state.attempts[task.id] === 1) { state.hintShown = true; state.hints += 1; }
+      if (state.support === 'supported' && state.attempts[task.id] === 1) { if (!state.hinted[task.id]) state.hints += 1; state.hinted[task.id] = true; state.hintShown = true; }
       saveState(); state.focused = task.id; setFeedback((state.hintShown ? 'Coaching cue: ' : '') + choice.feedback + ' The station is flagged in the scene until you correct it.', 'error'); announce('Try another response. ' + choice.feedback + (state.hintShown ? ' A first-step cue is now available.' : ''));
     }
     render(); renderScene();
@@ -333,44 +623,98 @@
     var list = document.getElementById('steps'); list.innerHTML = '';
     runTasks().forEach(function (task, index) {
       var item = document.createElement('li');
-      var button = document.createElement('button'); button.type = 'button'; button.className = 'step' + (state.done[task.id] ? ' done' : '') + (!state.done[task.id] && index === state.activeIndex ? ' current' : '');
-      button.setAttribute('aria-label', (state.done[task.id] ? 'Done: ' : index === state.activeIndex ? 'Next: ' : '') + task.room + ' - ' + task.title);
+      var replaying = state.replayTarget === task.id; var practicing = state.procedureTarget === task.id;
+      var evidence = replaying ? '' : state.outcomes[task.id] || ''; var evidenceMeta = EVIDENCE_META[evidence];
+      var button = document.createElement('button'); button.type = 'button'; button.className = 'step' + (state.done[task.id] && !replaying ? ' done' : '') + (index === state.activeIndex && (practicing || replaying || !state.done[task.id]) ? ' current' : '') + (evidence ? ' evidence-' + evidence : '');
+      var stepLabel = (practicing ? 'Actions: ' : replaying ? 'Replay: ' : state.done[task.id] ? 'Done: ' : index === state.activeIndex ? 'Next: ' : '') + task.room + ' - ' + task.title;
+      var lockedTarget = state.procedureTarget || state.replayTarget; button.disabled = !!lockedTarget && task.id !== lockedTarget;
+      button.setAttribute('aria-label', stepLabel + (evidenceMeta ? ', ' + evidenceMeta.label : '') + (state.procedures[task.id] ? ', action sequence practiced' : '') + (button.disabled ? ', unavailable until current practice is complete' : ''));
       if (index === state.activeIndex) button.setAttribute('aria-current', 'step');
-      button.innerHTML = '<span class="step-dot" aria-hidden="true"></span><span>' + (state.done[task.id] ? 'Done: ' : index === state.activeIndex ? 'Next: ' : '') + task.room + ' - ' + task.title + '</span>';
+      button.innerHTML = '<span class="step-dot" aria-hidden="true"></span><span class="step-copy">' + stepLabel + '</span>' + (evidenceMeta ? '<span class="step-evidence" data-evidence="' + evidence + '">' + evidenceMeta.label + '</span>' : '');
       button.addEventListener('click', function () { focus(task.id, true); });
       item.appendChild(button); list.appendChild(item);
     });
   }
+  function renderProcedureProgress(task) {
+    var wrap = document.getElementById('procedureProgress'); var practicing = state.procedureTarget === task.id; wrap.hidden = !practicing; wrap.innerHTML = '';
+    if (!practicing) { wrap.removeAttribute('aria-label'); return; }
+    PROCEDURE_PHASES.forEach(function (phase, index) { var stage = document.createElement('span'); stage.className = 'procedure-stage' + (index < state.procedureStep ? ' done' : index === state.procedureStep ? ' current' : ''); var number = document.createElement('strong'); number.textContent = index < state.procedureStep ? 'Done' : 'Step ' + (index + 1); var label = document.createElement('span'); label.textContent = phase.label; stage.appendChild(number); stage.appendChild(label); wrap.appendChild(stage); });
+    wrap.setAttribute('aria-label', 'Action sequence, step ' + (state.procedureStep + 1) + ' of ' + PROCEDURE_PHASES.length + ': ' + PROCEDURE_PHASES[state.procedureStep].label + '.');
+  }
   function renderChoices(task) {
     var wrap = document.getElementById('choices'); wrap.innerHTML = '';
-    var choices = state.mode === 'challenge' ? state.challengeChoices[task.id].map(function (id) { return task.choices.find(function (choice) { return choice.id === id; }); }).filter(Boolean) : task.choices;
+    if (state.procedureTarget === task.id) {
+      wrap.setAttribute('aria-label', 'Action sequence choices'); var completedIds = procedureFor(task).slice(0, state.procedureStep).map(function (action) { return action.id; });
+      ensureProcedureChoices(task, false).forEach(function (action) { var button = document.createElement('button'); button.type = 'button'; button.className = 'choice procedure-choice'; button.disabled = completedIds.indexOf(action.id) >= 0; var phase = document.createElement('span'); phase.className = 'procedure-phase'; phase.textContent = button.disabled ? 'Done - ' + action.phase : action.phase; var label = document.createElement('span'); label.textContent = action.label; button.appendChild(phase); button.appendChild(label); button.addEventListener('click', function () { chooseProcedure(action.id, -1); }); wrap.appendChild(button); });
+      return;
+    }
+    wrap.setAttribute('aria-label', 'Capstone choices');
+    var shuffled = state.mode === 'challenge' || state.replayTarget === task.id;
+    var choices = shuffled ? state.challengeChoices[task.id].map(function (id) { return task.choices.find(function (choice) { return choice.id === id; }); }).filter(Boolean) : task.choices;
     choices.forEach(function (choice) {
-      var hideSafeCue = state.mode === 'challenge' || state.support === 'independent';
+      var hideSafeCue = shuffled || state.support === 'independent';
       var button = document.createElement('button'); button.type = 'button'; button.className = 'choice' + (choice.safe && !hideSafeCue ? ' safe' : ''); button.textContent = choice.label; button.disabled = false; button.addEventListener('click', function () { choose(choice.id); }); wrap.appendChild(button);
     });
   }
+  function renderTransferSummary(complete) {
+    var summary = document.getElementById('transferSummary'); summary.hidden = !complete || !!state.replayTarget || !!state.procedureTarget;
+    if (!complete || state.replayTarget || state.procedureTarget) return;
+    var counts = evidenceCounts(); var target = recommendedTask(); var procedureTarget = nextProcedureTask();
+    document.getElementById('firstTryCount').textContent = counts.firstTry;
+    document.getElementById('selfCorrectedCount').textContent = counts.selfCorrected;
+    document.getElementById('coachedCount').textContent = counts.coached;
+    document.getElementById('contextTransferSummary').textContent = 'Context shifts completed: ' + contextTransferCount() + ' of ' + TASKS.length + '.';
+    document.getElementById('procedurePracticeSummary').textContent = 'Action sequences practiced: ' + procedurePracticeCount() + ' of ' + TASKS.length + '.';
+    document.getElementById('evidenceFirstBar').style.width = (counts.firstTry / TASKS.length * 100) + '%';
+    document.getElementById('evidenceCorrectedBar').style.width = (counts.selfCorrected / TASKS.length * 100) + '%';
+    document.getElementById('evidenceCoachedBar').style.width = (counts.coached / TASKS.length * 100) + '%';
+    document.getElementById('evidenceBar').setAttribute('aria-label', counts.firstTry + ' first try, ' + counts.selfCorrected + ' self-corrected, and ' + counts.coached + ' coached decisions.');
+    var recommendation = document.getElementById('transferRecommendation'); var action = document.getElementById('transferActionButton');
+    action.removeAttribute('data-station'); action.removeAttribute('data-procedure');
+    var recorded = counts.firstTry + counts.selfCorrected + counts.coached;
+    if (recorded < TASKS.length) {
+      recommendation.textContent = 'A full evidence trail is not available for this saved mission. Start a fresh challenge to build one.';
+      action.textContent = 'Start evidence challenge'; action.removeAttribute('data-station');
+    } else if (target) {
+      var outcome = state.outcomes[target.id];
+      recommendation.textContent = outcome === 'coached' ? 'Next practice: Rehearse "' + target.title + '" without opening the cue.' : 'Next practice: Replay "' + target.title + '" and aim for the safer first move.';
+      action.textContent = 'Practice ' + target.room.toLowerCase() + ' station'; action.setAttribute('data-station', target.id);
+    } else if (procedureTarget) {
+      recommendation.textContent = 'Next practice: Build the three-action plan for "' + procedureTarget.title + '" by controlling, stabilizing, and connecting.';
+      action.textContent = 'Practice ' + procedureTarget.room.toLowerCase() + ' actions'; action.setAttribute('data-procedure', procedureTarget.id);
+    } else {
+      recommendation.textContent = state.mode === 'challenge' ? 'All five safer decisions and action sequences were practiced in changed contexts. Replay with another order to keep the habit flexible.' : 'All five safer decisions and action sequences are practiced. Try changed contexts and shuffled answers in the transfer challenge.';
+      action.textContent = state.mode === 'challenge' ? 'Replay transfer challenge' : 'Start transfer challenge';
+    }
+  }
   function render() {
-    var tasks = runTasks(); var task = tasks[state.activeIndex] || tasks[0]; var complete = doneCount() === tasks.length;
+    var tasks = runTasks(); var task = tasks[state.activeIndex] || tasks[0]; var complete = doneCount() === tasks.length; var replaying = !!state.replayTarget; var practicing = state.procedureTarget === task.id;
     mission = missionFor(state.missionFocus);
     document.getElementById('missionTitle').textContent = mission.title;
     document.getElementById('missionContext').textContent = mission.context;
     document.getElementById('supportBadge').textContent = SUPPORT_LABELS[state.support];
     document.getElementById('progressValue').textContent = doneCount() + ' / ' + TASKS.length + ' stations';
-    document.getElementById('capstoneStatus').textContent = complete ? (state.mode === 'challenge' ? 'Transfer challenge complete' : 'Capstone complete') : (state.mode === 'challenge' ? 'Transfer challenge / ' : 'Guided sequence / ') + (state.missteps ? state.missteps + ' coaching moment' + (state.missteps === 1 ? '' : 's') : 'no coaching moments');
+    document.getElementById('capstoneStatus').textContent = practicing ? 'Action practice ' + (state.procedureStep + 1) + ' / 3 - ' + SUPPORT_LABELS[state.support] : replaying ? 'Targeted replay / ' + SUPPORT_LABELS[state.support] : complete ? (state.mode === 'challenge' ? 'Transfer challenge complete' : 'Capstone complete') : (state.mode === 'challenge' ? 'Transfer challenge / ' : 'Guided sequence / ') + (state.missteps ? state.missteps + ' coaching moment' + (state.missteps === 1 ? '' : 's') : 'no coaching moments');
     document.getElementById('stationLabel').textContent = 'Station ' + (state.activeIndex + 1) + ' of ' + TASKS.length + ' · ' + task.room;
-    document.getElementById('stationTitle').textContent = task.title;
-    document.getElementById('situation').textContent = task.situation;
-    document.getElementById('instruction').textContent = state.risk[task.id] ? 'Risk is still flagged. Choose the safer response to resolve the station.' : state.done[task.id] ? 'This station is marked safe. Rehearse the safe response or choose another station.' : task.instruction;
-    renderChoices(task); renderSteps();
-    var hintButton = document.getElementById('hintButton'); hintButton.disabled = false; hintButton.textContent = state.hintShown ? (state.support === 'supported' ? 'First-step cue shown' : 'Hint shown') : (state.support === 'supported' ? 'Show first-step cue' : 'Show a hint');
-    var hintText = document.getElementById('hintText'); hintText.hidden = !state.hintShown; hintText.textContent = state.hintShown ? task.hint : '';
+    var context = contextFor(task); var shifted = context.id !== 'routine';
+    if (practicing) document.getElementById('stationLabel').textContent = 'Action rehearsal - ' + task.room;
+    document.getElementById('stationTitle').textContent = practicing ? 'Practice: ' + task.title : task.title;
+    var contextBadge = document.getElementById('contextBadge'); contextBadge.textContent = context.label; contextBadge.setAttribute('data-shifted', String(shifted));
+    document.getElementById('situation').textContent = context.situation;
+    var procedurePhase = practicing ? PROCEDURE_PHASES[state.procedureStep] : null;
+    document.getElementById('instruction').textContent = practicing ? 'Step ' + (state.procedureStep + 1) + ' of 3 - ' + procedurePhase.label + ': choose the action that will ' + procedurePhase.cue + '.' : state.risk[task.id] ? 'Risk is still flagged. Choose the safer response to resolve the station.' : state.replayTarget === task.id ? 'Targeted replay: transfer the safer first move to this changed context with ' + SUPPORT_LABELS[state.support].toLowerCase() + '.' : state.done[task.id] ? 'This station is marked safe. Rehearse the safe response or practice its three actions.' : context.instruction;
+    renderChoices(task); renderProcedureProgress(task); renderSteps();
+    var hintButton = document.getElementById('hintButton'); hintButton.hidden = practicing; hintButton.disabled = practicing; hintButton.textContent = state.hintShown ? (state.support === 'supported' ? 'First-step cue shown' : 'Hint shown') : (state.support === 'supported' ? 'Show first-step cue' : 'Show a hint');
+    var hintText = document.getElementById('hintText'); hintText.hidden = practicing || !state.hintShown; hintText.textContent = state.hintShown && !practicing ? task.hint : '';
+    var procedureButton = document.getElementById('procedureButton'); procedureButton.hidden = !(practicing || (state.done[task.id] && !replaying)); procedureButton.textContent = practicing ? 'Exit action practice' : state.procedures[task.id] ? 'Repractice 3D actions - practiced' : 'Practice 3D actions';
     var feedback = document.getElementById('feedback'); feedback.textContent = state.feedback; feedback.className = 'feedback' + (state.tone ? ' ' + state.tone : '');
-    var challengeButton = document.getElementById('challengeButton'); challengeButton.disabled = !complete; challengeButton.textContent = state.mode === 'challenge' ? 'Replay transfer challenge' : 'Start transfer challenge';
-    var challengeNote = document.getElementById('challengeNote'); challengeNote.hidden = state.mode !== 'challenge' && !complete; challengeNote.textContent = state.mode === 'challenge' ? 'Order and answer choices were reshuffled. Safe-answer styling is intentionally hidden.' : 'Transfer challenge reshuffles the day and answer choices so you can practice the habit, not memorize the route.';
+    var challengeButton = document.getElementById('challengeButton'); challengeButton.disabled = !complete || replaying || practicing; challengeButton.textContent = state.mode === 'challenge' ? 'Replay transfer challenge' : 'Start transfer challenge';
+    var challengeNote = document.getElementById('challengeNote'); challengeNote.hidden = practicing ? false : replaying ? false : state.mode !== 'challenge' && !complete; challengeNote.textContent = practicing ? 'Choose the three actions in a safe order. Use the accessible buttons below or the matching glowing controls in the 3D scene.' : replaying ? 'The situation changed, support faded, and answer cues are hidden. New evidence will replace the earlier result.' : state.mode === 'challenge' ? 'Situations, order, and answer choices changed. Safe-answer styling is intentionally hidden.' : 'Transfer challenge changes the situations, day order, and answer choices so you can practice the habit, not memorize the route.';
     var teachBackInput = document.getElementById('teachBackInput'); if (teachBackInput && document.activeElement !== teachBackInput) teachBackInput.value = state.debriefDraft;
     document.getElementById('teachBackCount').textContent = state.debriefDraft.length + ' / 180';
     var teachBackFeedback = document.getElementById('teachBackFeedback'); teachBackFeedback.textContent = state.teachBackMessage || (state.debriefDraft !== state.debrief.teachBack ? 'Draft ready. Save when it says what you would do first.' : state.debrief.teachBack ? 'Teach-back saved.' : 'Optional practice; not saved yet.');
-    var debrief = document.getElementById('debrief'); debrief.hidden = !complete;
+    renderTransferSummary(complete);
+    var debrief = document.getElementById('debrief'); debrief.hidden = !complete || replaying || practicing;
     document.querySelectorAll('[data-confidence]').forEach(function (button) { button.setAttribute('aria-pressed', String(button.getAttribute('data-confidence') === state.debrief.confidence)); });
     document.querySelectorAll('[data-next-step]').forEach(function (button) { button.setAttribute('aria-pressed', String(button.getAttribute('data-next-step') === state.debrief.nextStep)); });
     var confidenceNames = { 'not-yet': 'Not yet', 'getting-there': 'Getting there', ready: 'Ready to try' };
@@ -378,44 +722,77 @@
     var debriefFeedback = document.getElementById('debriefFeedback');
     debriefFeedback.textContent = state.debrief.confidence && state.debrief.nextStep ? 'Reflection saved: ' + confidenceNames[state.debrief.confidence] + ' · ' + nextStepNames[state.debrief.nextStep] + '.' : state.debrief.confidence ? 'Readiness saved. Choose one next step.' : state.debrief.nextStep ? 'Next step saved. Choose a readiness level.' : 'Reflection is optional.';
   }
-  function renderScene() {
-    var task = runTasks()[state.activeIndex] || TASKS[0];
+  function renderActionConsole(task) {
+    var actionConsole = document.getElementById('actionConsole3d'); actionConsole.setAttribute('visible', !!task); if (!task) return;
+    actionConsole.setAttribute('position', itemPosition(task.id));
+    var actions = procedureFor(task); var choices = ensureProcedureChoices(task, false); var completedIds = actions.slice(0, state.procedureStep).map(function (action) { return action.id; }); var phase = PROCEDURE_PHASES[state.procedureStep];
+    var prompt = document.getElementById('actionConsolePrompt'); var promptColor = state.procedureError ? '#fb7185' : '#67e8f9'; prompt.setAttribute('text', 'value: ' + (state.procedureError ? 'CHECK ORDER - ' : '') + 'STEP ' + (state.procedureStep + 1) + ': ' + phase.label.toUpperCase() + '\nCHOOSE AN ACTION; align: center; color: ' + promptColor + '; width: 4.6');
+    choices.forEach(function (action, index) {
+      var completed = completedIds.indexOf(action.id) >= 0; var wrong = state.procedureWrongSlot === index; var color = completed ? '#4ade80' : wrong ? '#fb7185' : '#0e7490'; var labelColor = completed ? '#bbf7d0' : wrong ? '#fecdd3' : '#e0f2fe';
+      var control = document.getElementById('actionControl' + (index + 1)); var label = document.getElementById('actionControlLabel' + (index + 1));
+      if (control) { control.setAttribute('color', color); control.setAttribute('material', 'color: ' + color + '; emissive: ' + color + '; emissiveIntensity: ' + (completed || wrong ? '.85' : '.45')); control.setAttribute('data-action-id', action.id); control.setAttribute('data-completed', String(completed)); control.setAttribute('aria-label', '3D action ' + (index + 1) + ': ' + action.label + (completed ? ', completed' : '')); }
+      if (label) label.setAttribute('text', 'value: ' + String.fromCharCode(65 + index) + ' ' + action.scene + '; align: center; color: ' + labelColor + '; width: 2.2');
+    });
+  }
+  function renderProcedureEffects(focusId) {
+    var effectTaskId = state.procedureTarget || (state.procedures[focusId] ? focusId : '');
     TASKS.forEach(function (item) {
-      var label = document.getElementById('label-' + item.id); if (label) label.setAttribute('color', state.risk[item.id] ? '#fb7185' : state.done[item.id] ? '#4ade80' : item.id === task.id ? '#facc15' : '#c8d8e9');
+      var show = item.id === effectTaskId; var active = state.procedureTarget === item.id; var step = active ? state.procedureStep : show && state.procedures[item.id] ? PROCEDURE_PHASES.length : 0;
+      var group = document.getElementById('procedure-effects-' + item.id); if (group) { group.setAttribute('visible', show); group.setAttribute('data-procedure-step', String(step)); }
+      var risk = document.getElementById('procedure-risk-' + item.id); if (risk) risk.setAttribute('visible', show && active && step === 0);
+      var control = document.getElementById('procedure-control-' + item.id); if (control) control.setAttribute('visible', show && step >= 1);
+      var stabilize = document.getElementById('procedure-stabilize-' + item.id); if (stabilize) stabilize.setAttribute('visible', show && step >= 2);
+      var connect = document.getElementById('procedure-connect-' + item.id); if (connect) connect.setAttribute('visible', show && step >= 3);
+    });
+  }
+  function renderScene() {
+    var task = runTasks()[state.activeIndex] || TASKS[0]; var context = contextFor(task); var shifted = context.id !== 'routine';
+    var scene = document.getElementById('capstoneScene'); scene.setAttribute('background', 'color: ' + context.sky); scene.setAttribute('fog', 'type: linear; color: ' + context.fog + '; near: 12; far: 38');
+    TASKS.forEach(function (item) {
+      var evidenceMeta = EVIDENCE_META[state.outcomes[item.id]]; var replaying = state.replayTarget === item.id; var practicing = state.procedureTarget === item.id;
+      var label = document.getElementById('label-' + item.id); if (label) label.setAttribute('color', state.risk[item.id] ? '#fb7185' : practicing ? '#67e8f9' : replaying ? '#facc15' : state.done[item.id] ? (evidenceMeta ? evidenceMeta.color : '#4ade80') : item.id === task.id ? '#facc15' : '#c8d8e9');
       var status = document.getElementById('state-' + item.id);
       var orb = document.getElementById('state-orb-' + item.id);
       var statusLabel = document.getElementById('state-label-' + item.id);
-      var settled = !!state.done[item.id] && !state.risk[item.id];
+      var settled = !!state.done[item.id] && !state.risk[item.id] && !replaying;
       var atRisk = !!state.risk[item.id];
-      var statusColor = settled ? '#4ade80' : '#fb7185';
+      var statusColor = settled ? (evidenceMeta ? evidenceMeta.color : '#4ade80') : '#fb7185';
       if (status) status.setAttribute('visible', settled || atRisk);
       if (orb) { orb.setAttribute('color', statusColor); orb.setAttribute('material', 'color: ' + statusColor + '; emissive: ' + statusColor + '; emissiveIntensity: .8'); }
-      if (statusLabel) statusLabel.setAttribute('text', 'value: ' + (settled ? 'SAFE' : 'RISK') + '; align: center; color: ' + statusColor + '; width: 2.2');
+      if (statusLabel) statusLabel.setAttribute('text', 'value: ' + (settled ? (evidenceMeta ? evidenceMeta.scene : 'SAFE') : 'RISK') + '; align: center; color: ' + statusColor + '; width: 3');
     });
     var focusId = state.focused || task.id;
-    var marker = document.getElementById('sceneMarker'); marker.setAttribute('position', itemPosition(focusId)); marker.setAttribute('visible', !state.done[focusId] || !!state.risk[focusId]);
-    var markerRing = document.getElementById('sceneMarkerRing'); var markerColor = state.risk[focusId] ? '#fb7185' : '#facc15'; if (markerRing) { markerRing.setAttribute('color', markerColor); markerRing.setAttribute('material', 'emissive: ' + markerColor + '; emissiveIntensity: .7'); }
+    renderProcedureEffects(focusId);
+    var marker = document.getElementById('sceneMarker'); marker.setAttribute('position', itemPosition(focusId)); marker.setAttribute('visible', state.procedureTarget === focusId || state.replayTarget === focusId || !state.done[focusId] || !!state.risk[focusId]);
+    var markerRing = document.getElementById('sceneMarkerRing'); var markerColor = state.procedureTarget === focusId ? (state.procedureError ? '#fb7185' : '#67e8f9') : state.risk[focusId] ? '#fb7185' : '#facc15'; if (markerRing) { markerRing.setAttribute('color', markerColor); markerRing.setAttribute('material', 'emissive: ' + markerColor + '; emissiveIntensity: .7'); }
     var panel = document.getElementById('scenePanel');
     var anyRisk = Object.keys(state.risk).some(function (id) { return !!state.risk[id]; });
     panel.setAttribute('data-risk-active', String(anyRisk));
-    panel.setAttribute('data-mission-complete', String(doneCount() === TASKS.length && !anyRisk));
-    document.getElementById('sceneNote').setAttribute('value', state.risk[task.id] ? 'RISK STILL ACTIVE\n' + task.room.toUpperCase() + ' - ' + task.title.toUpperCase() : doneCount() === TASKS.length && !anyRisk ? 'MISSION COMPLETE\nFIVE SAFER DECISIONS' : state.done[task.id] ? 'CHOOSE A STATION TO REVISIT' : 'FOCUS\n' + task.room.toUpperCase() + ' - ' + task.title.toUpperCase());
+    panel.setAttribute('data-mission-complete', String(doneCount() === TASKS.length && !anyRisk && !state.replayTarget && !state.procedureTarget));
+    panel.setAttribute('data-context-shift', String(shifted)); panel.setAttribute('data-action-practice', String(!!state.procedureTarget));
+    var actionSequence = document.getElementById('actionSequence3d'); var actionTask = BY_ID[state.procedureTarget]; actionSequence.setAttribute('visible', !!actionTask); if (actionTask) actionSequence.setAttribute('position', itemPosition(actionTask.id));
+    for (var actionIndex = 0; actionIndex < PROCEDURE_PHASES.length; actionIndex++) { var actionDone = actionIndex < state.procedureStep; var actionCurrent = actionIndex === state.procedureStep; var actionColor = actionDone ? '#4ade80' : actionCurrent ? (state.procedureError ? '#fb7185' : '#facc15') : '#5b7894'; var actionOrb = document.getElementById('actionStepOrb' + (actionIndex + 1)); var actionLabel = document.getElementById('actionStepLabel' + (actionIndex + 1)); if (actionOrb) { actionOrb.setAttribute('color', actionColor); actionOrb.setAttribute('material', 'color: ' + actionColor + '; emissive: ' + actionColor + '; emissiveIntensity: ' + (actionDone || actionCurrent ? '.8' : '.15')); } if (actionLabel) actionLabel.setAttribute('text', 'value: ' + (actionIndex + 1) + ' ' + PROCEDURE_PHASES[actionIndex].label.toUpperCase() + '; align: center; color: ' + actionColor + '; width: 2.4'); }
+    var actionTitle = document.getElementById('actionSequenceTitle'); if (actionTitle && actionTask) actionTitle.setAttribute('text', 'value: ACTION ' + (state.procedureStep + 1) + ' OF 3; align: center; color: #67e8f9; width: 4');
+    renderActionConsole(actionTask);
+    document.getElementById('sceneNote').setAttribute('value', state.procedureTarget === task.id ? 'ACTION ' + (state.procedureStep + 1) + ' OF 3\n' + PROCEDURE_PHASES[state.procedureStep].label.toUpperCase() : state.risk[task.id] ? 'RISK STILL ACTIVE\n' + task.room.toUpperCase() + ' - ' + context.scene : state.replayTarget === task.id ? 'TARGETED REPLAY\n' + context.scene : doneCount() === TASKS.length && !anyRisk ? 'MISSION COMPLETE\nFIVE SAFER DECISIONS' : state.done[task.id] ? 'CHOOSE A STATION TO REVISIT' : shifted ? 'CONTEXT SHIFT\n' + context.scene : 'FOCUS\n' + task.room.toUpperCase() + ' - ' + task.title.toUpperCase());
   }
   function itemPosition(id) { return ({ stove: '-5.2 .14 -2.5', lint: '-1.8 .14 -2.5', shutoff: '1.8 .14 -2.5', alarm: '5.1 .14 -2.5', visibility: '0 .14 2.5' })[id] || '0 .14 -2.5'; }
   function recordDebrief(field, value) { state.debrief[field] = value; saveState(); postProgressSnapshot(); render(); var message = field === 'confidence' ? 'Readiness saved.' : 'Next practice step saved.'; announce(message); if (state.debrief.confidence && state.debrief.nextStep) postToOpener({ type: 'alloflow-life-capstone-3d-debrief', confidence: state.debrief.confidence, nextStep: state.debrief.nextStep, mode: state.mode, missionFocus: state.missionFocus, support: state.support }); }
   function saveTeachBack() { var text = String(state.debriefDraft || '').trim(); if (!text) { state.teachBackMessage = 'Write a sentence before saving, or leave it blank to skip.'; render(); announce('Write a sentence before saving the teach-back.'); return; } state.debrief.teachBack = text; state.debriefDraft = text; state.teachBackMessage = 'Teach-back saved.'; saveState(); render(); postToOpener({ type: 'alloflow-life-capstone-3d-teach-back', mode: state.mode, missionFocus: state.missionFocus, support: state.support }); announce('Teach-back saved.'); }
-  function beginChallenge() { state.mode = 'challenge'; state.support = 'independent'; state.order = shuffle(TASKS.map(function (task) { return task.id; })); state.challengeChoices = {}; state.risk = {}; state.attempts = {}; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; ensureChallengeChoices(); state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = state.order[0]; state.hintShown = false; setFeedback('Transfer challenge ready. Choose the safer response without the visual cue.'); saveState(); render(); renderScene(); postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-challenge-start', mode: 'challenge', total: TASKS.length, missionFocus: state.missionFocus, support: state.support }); announce('Transfer challenge started with a new station order.'); }
-  document.getElementById('hintButton').addEventListener('click', function () { if (!state.hintShown) state.hints += 1; state.hintShown = true; saveState(); render(); announce('Hint: ' + runTasks()[state.activeIndex].hint); });
+  function beginChallenge() { state.procedureTarget = ''; state.procedureStep = 0; state.procedureError = false; state.procedureWrongSlot = -1; state.procedureUsed3d = false; state.procedureChoices = {}; state.procedureMistakes = {}; state.replayTarget = ''; state.replayFrom = ''; state.replayContextFrom = ''; state.mode = 'challenge'; state.support = 'independent'; state.order = shuffle(TASKS.map(function (task) { return task.id; })); state.challengeChoices = {}; state.contextTransfers = {}; assignShiftedContexts(); state.risk = {}; state.attempts = {}; state.hinted = {}; state.outcomes = {}; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; ensureChallengeChoices(); state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = state.order[0]; state.hintShown = false; setFeedback('Context-shift challenge ready. Choose the safer response without the visual cue.'); saveState(); render(); renderScene(); postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-challenge-start', mode: 'challenge', total: TASKS.length, missionFocus: state.missionFocus, support: state.support, contextShift: true }); announce('Transfer challenge started with changed situations, a new station order, and hidden answer cues.'); }
+  document.getElementById('hintButton').addEventListener('click', function () { var task = runTasks()[state.activeIndex]; if (!state.hinted[task.id]) state.hints += 1; state.hinted[task.id] = true; state.hintShown = true; saveState(); render(); announce('Hint: ' + task.hint); });
   document.getElementById('focusButton').addEventListener('click', function () { focus(runTasks()[state.activeIndex].id, true); });
   document.getElementById('challengeButton').addEventListener('click', beginChallenge);
+  document.getElementById('procedureButton').addEventListener('click', function () { if (state.procedureTarget) exitProcedure(); else beginProcedure(runTasks()[state.activeIndex].id); });
+  document.getElementById('transferActionButton').addEventListener('click', function () { var station = this.getAttribute('data-station'); var procedure = this.getAttribute('data-procedure'); if (station) beginTargetedReplay(station); else if (procedure) beginProcedure(procedure); else beginChallenge(); });
   document.querySelectorAll('[data-confidence]').forEach(function (button) { button.addEventListener('click', function () { recordDebrief('confidence', button.getAttribute('data-confidence')); }); });
   document.querySelectorAll('[data-next-step]').forEach(function (button) { button.addEventListener('click', function () { recordDebrief('nextStep', button.getAttribute('data-next-step')); }); });
   document.getElementById('teachBackInput').addEventListener('input', function () { state.debriefDraft = this.value.slice(0, 180); state.teachBackMessage = ''; document.getElementById('teachBackCount').textContent = state.debriefDraft.length + ' / 180'; document.getElementById('teachBackFeedback').textContent = state.debriefDraft !== state.debrief.teachBack ? 'Draft ready. Save when it says what you would do first.' : state.debrief.teachBack ? 'Teach-back saved.' : 'Optional practice; not saved yet.'; });
   document.getElementById('saveTeachBackButton').addEventListener('click', saveTeachBack);
-  document.getElementById('resetButton').addEventListener('click', function () { state.missionFocus = requestedFocus; state.support = requestedSupport; state.mode = 'guided'; state.order = missionFor(state.missionFocus).order.slice(); state.challengeChoices = {}; state.risk = {}; state.attempts = {}; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = state.order[0]; state.hintShown = false; setFeedback('Fresh adaptive mission. Choose the safer response for the highlighted station.'); saveState(); render(); renderScene(); postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-reset', missionFocus: state.missionFocus, support: state.support }); announce('Adaptive capstone mission reset.'); });
+  document.getElementById('resetButton').addEventListener('click', function () { state.missionFocus = requestedFocus; state.support = requestedSupport; state.mode = 'guided'; state.order = missionFor(state.missionFocus).order.slice(); state.challengeChoices = {}; state.contexts = {}; state.contextTransfers = {}; state.procedures = {}; state.procedureChoices = {}; state.procedureMistakes = {}; state.procedureTarget = ''; state.procedureStep = 0; state.procedureError = false; state.procedureWrongSlot = -1; state.procedureUsed3d = false; state.risk = {}; state.attempts = {}; state.hinted = {}; state.outcomes = {}; state.replayTarget = ''; state.replayFrom = ''; state.replayContextFrom = ''; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = state.order[0]; state.hintShown = false; setFeedback('Fresh adaptive mission. Choose the safer response for the highlighted station.'); saveState(); render(); renderScene(); postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-reset', missionFocus: state.missionFocus, support: state.support }); announce('Adaptive capstone mission reset.'); });
   document.querySelectorAll('[data-view]').forEach(function (button) { button.addEventListener('click', function () { setView(button.getAttribute('data-view')); }); });
-  window.lifeSkillsCapstone = { focus: function (station, announceIt) { focus(station, announceIt); }, startChallenge: beginChallenge };
-  var first = nextIndex(); state.activeIndex = first; state.focused = runTasks()[first].id; render(); renderScene(); postToOpener({ type: 'alloflow-life-capstone-3d-hello', mode: state.mode, missionFocus: state.missionFocus, support: state.support });
+  window.lifeSkillsCapstone = { focus: function (station, announceIt) { focus(station, announceIt); }, startChallenge: beginChallenge, startReplay: beginTargetedReplay, startProcedure: beginProcedure, chooseProcedureSlot: chooseProcedureSlot };
+  var activeTarget = state.procedureTarget || state.replayTarget; var first = activeTarget ? runTasks().findIndex(function (task) { return task.id === activeTarget; }) : nextIndex(); if (first < 0) first = nextIndex(); state.activeIndex = first; state.focused = runTasks()[first].id; state.hintShown = !!state.hinted[state.focused]; render(); renderScene(); postToOpener({ type: 'alloflow-life-capstone-3d-hello', mode: state.mode, missionFocus: state.missionFocus, support: state.support });
   postProgressSnapshot();
   if (!window.AFRAME) document.getElementById('scenePanel').classList.add('no-aframe');
 })();

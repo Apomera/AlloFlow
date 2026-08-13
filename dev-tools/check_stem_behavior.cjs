@@ -681,7 +681,7 @@ const TEST_SUITES = [
     framesToWait: 30,
     initialToolData: {},
     clearStorage: ['coaster_lab_design_v2', 'coaster_lab_design_recovery_v1', 'coaster_lab_onboarding_v1', 'coaster_lab_guided_record_v1'],
-    skipHookCalls: ['fastRun', 'guidedRun', 'randomize', 'genOnce', 'rideTest', 'setLevel', 'place', 'setCam', 'settleCam', 'setProp', 'importDesign', 'importLabPacket'],
+    skipHookCalls: ['setCertBank', 'fastRun', 'guidedRun', 'randomize', 'genOnce', 'rideTest', 'setLevel', 'place', 'setCam', 'settleCam', 'setProp', 'importDesign', 'importLabPacket'],
     triggerStart: true,
     startHook: 'guidedRun',
     assertions: [
@@ -699,10 +699,14 @@ const TEST_SUITES = [
           if (!info.notebook || info.notebook.attempts < 1 || info.notebook.revisions !== 0 || !info.notebook.hasPrediction) {
             return { pass: false, message: 'Notebook did not retain the guided attempt: ' + JSON.stringify(info.notebook) };
           }
-          if (!info.evidenceVisible) return { pass: false, message: 'Prediction evidence card was not rendered in the report' };
-          if (!info.notebook || info.notebook.historyLength !== 1 || !info.notebook.exportReady || !info.notebook.packetReady || !info.notebook.packetEvidenceReady || !info.notebook.packetControlsVisible || !info.notebook.clearReady || !info.notebook.conditionsLocked || !info.timelineVisible || !info.historyExportVisible || !info.historyTrendVisible || !info.teacherReportVisible || !info.classroomRubricVisible || !info.evidenceQualityVisible || !info.adaptiveVisible || !info.adaptiveActionVisible || !info.adaptiveFocusVisible || !info.adaptivePlanVisible || !info.adaptivePlan || typeof info.adaptivePlan.change !== 'string' || typeof info.adaptivePlan.why !== 'string' || typeof info.adaptivePlan.test !== 'string' || typeof info.adaptivePlan.success !== 'string' || !info.adaptiveInspectVisible || !info.adaptiveProgressVisible || !info.reflectionPromptVisible || !info.reviewVisible || !info.notebook.conditions || !info.comparisonVisible) return { pass: false, message: 'Guided baseline comparison, controls, or locked conditions were not ready: ' + JSON.stringify(info) };
+          if (!info.evidenceVisible) return { pass: false, message: 'Prediction evidence card was not rendered in the report; first packet pass: ' + JSON.stringify(state._earlier && state._earlier.packetRoundTrip) };
+          const journey = state.learningJourney;
+          if (!journey || !journey.inquiryVisible || journey.inquiryPhase !== 'explain' || !/highlighted measurement/i.test(journey.inquiryPrompt || '') || !journey.evidenceStoryVisible || !journey.cerScaffoldVisible || !journey.chartEvidenceLabels || !journey.evidence || journey.evidence.goal !== 'hill20' || !Number.isFinite(Number(journey.evidence.value)) || !Number.isFinite(Number(journey.evidence.target)) || !Number.isFinite(Number(journey.evidence.startS)) || !Number.isFinite(Number(journey.evidence.endS)) || !/Claim:/.test(journey.evidence.starter || '') || !/Evidence:/.test(journey.evidence.starter || '') || !/Reasoning:/.test(journey.evidence.starter || '')) {
+            return { pass: false, message: 'Visual inquiry cycle or goal evidence story was not ready after the guided run: ' + JSON.stringify(journey) };
+          }
+          if (!info.notebook || info.notebook.historyLength !== 1 || !info.notebook.exportReady || !info.notebook.packetReady || !info.notebook.packetEvidenceReady || !info.notebook.packetControlsVisible || !info.notebook.clearReady || !info.notebook.conditionsLocked || !info.timelineVisible || !info.historyExportVisible || !info.historyTrendVisible || !info.teacherReportVisible || !info.classroomRubricVisible || !info.evidenceQualityVisible || !info.adaptiveVisible || !info.adaptiveActionVisible || !info.adaptiveFocusVisible || !info.adaptivePlanVisible || !info.adaptivePlan || typeof info.adaptivePlan.change !== 'string' || typeof info.adaptivePlan.why !== 'string' || typeof info.adaptivePlan.test !== 'string' || typeof info.adaptivePlan.success !== 'string' || !info.adaptiveInspectVisible || !info.adaptiveInspectReady || !info.adaptiveEvidenceTarget || info.adaptiveEvidenceTarget.kind !== 'hill' || !info.adaptiveProgressVisible || !info.reflectionPromptVisible || !info.reviewVisible || !info.notebook.conditions || !info.comparisonVisible) return { pass: false, message: 'Guided baseline comparison, controls, or locked conditions were not ready: ' + JSON.stringify(info) };
           if (!state.packetRoundTrip || !state.packetRoundTrip.pass || !state.packetRoundTrip.evidence) return { pass: false, message: 'Lab packet round trip did not restore the guided state: ' + JSON.stringify(state.packetRoundTrip) };
-          return { pass: true, message: 'guided first run completed with 6 editable points, a recorded prediction, and a round-trippable lab packet' };
+          return { pass: true, message: 'guided first run completed with the inquiry loop, highlighted goal evidence, CER support, and a round-trippable lab packet' };
         },
       },
       {
@@ -719,7 +723,7 @@ const TEST_SUITES = [
         name: 'Guided ride completes and emits usable telemetry',
         fn: (state) => {
           const t = state.telemetrySummary;
-          if (!t || t.status !== 'complete' || !Number.isFinite(t.duration) || t.duration <= 0 || !Array.isArray(t.trace) || t.trace.length < 5) {
+          if (!t || t.status !== 'complete' || typeof t.experimentSignature !== 'string' || !t.experimentSignature || !Number.isFinite(t.duration) || t.duration <= 0 || !Array.isArray(t.trace) || t.trace.length < 5) {
             return { pass: false, message: 'Ride did not emit complete telemetry: ' + JSON.stringify(t) };
           }
           const finite = t.trace.every(p => ['s', 'v', 'g', 'gl'].every(k => Number.isFinite(p[k])));

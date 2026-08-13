@@ -11,7 +11,7 @@
     "tesseractCore": "tesseract.js-core@5.1.0"
   },
   "files": [
-    { "path": "THIRD_PARTY_NOTICES.md", "sha256": "ab336fc61c6dd997cc1a9b6194b9d89e1cdc1ebc3094d3ad1b9055d70ff9d782", "bytes": 1060 },
+    { "path": "THIRD_PARTY_NOTICES.md", "normalization": "lf", "sha256": "ab336fc61c6dd997cc1a9b6194b9d89e1cdc1ebc3094d3ad1b9055d70ff9d782", "bytes": 1060 },
     { "path": "axe.min.js", "sha256": "b511cd9dec01c76f4b2ad1723b66b6db37d4c2eb4ed199076e1829d9ee7b75e3", "bytes": 553290 },
     { "path": "fontkit.umd.min.js", "sha256": "d8df561b9fba98e24f2e5130e40948809281bbbc55a20c412359f1a0a5eb35a6", "bytes": 758440 },
     { "path": "pako.min.js", "sha256": "ede2693a4a6a5126b9d35669062b358ecab6ae7b9b86a1cf302feb45a8514907", "bytes": 46859 },

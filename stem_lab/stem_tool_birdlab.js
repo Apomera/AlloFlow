@@ -522,6 +522,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-scene-card[data-birdlab-condition="dawn"] .birdlab-habitat-sun { opacity: .10; }',
       '.birdlab-scene-card[data-birdlab-condition="dusk"] .birdlab-habitat-sun { opacity: .04; }',
       '.birdlab-habitat-sun { transition: opacity 350ms ease; }',
+      // Direct-sunlight artifacts (canopy shafts, floor dapple, alpine glare)
+      // have to fade with the sun disc. Leaving them at full strength while the
+      // sun is dimmed to 4% produced a "dusk" scene lit by blazing noon god-rays,
+      // which is why dawn/day/dusk were nearly indistinguishable on screen.
+      // Mist and water shimmer are deliberately excluded — those do not weaken
+      // at low light, and dawn mist should stay legible.
+      '[data-birdlab-ambient="forest-light"], [data-birdlab-ambient="forest-floor"], [data-birdlab-ambient="yard-dapple"], [data-birdlab-ambient="alpine-light"] { transition: opacity 350ms ease; }',
+      '.birdlab-scene-card[data-birdlab-condition="dawn"] [data-birdlab-ambient="forest-light"], .birdlab-scene-card[data-birdlab-condition="dawn"] [data-birdlab-ambient="forest-floor"], .birdlab-scene-card[data-birdlab-condition="dawn"] [data-birdlab-ambient="yard-dapple"], .birdlab-scene-card[data-birdlab-condition="dawn"] [data-birdlab-ambient="alpine-light"] { opacity: .42; }',
+      '.birdlab-scene-card[data-birdlab-condition="dusk"] [data-birdlab-ambient="forest-light"], .birdlab-scene-card[data-birdlab-condition="dusk"] [data-birdlab-ambient="forest-floor"], .birdlab-scene-card[data-birdlab-condition="dusk"] [data-birdlab-ambient="yard-dapple"], .birdlab-scene-card[data-birdlab-condition="dusk"] [data-birdlab-ambient="alpine-light"] { opacity: .12; }',
       '.birdlab-condition-button { position: relative; overflow: hidden; }',
       '.birdlab-condition-button[aria-checked="true"]::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: 3px; height: 2px; border-radius: 999px; background: #fbbf24; box-shadow: 0 0 8px rgba(251,191,36,0.75); }',
       '@media (prefers-reduced-motion: reduce) { .birdlab-scene-card::before { display: none !important; } .birdlab-scene-card > .birdlab-scene-canvas { transform: none !important; } .birdlab-scene-subject { opacity: 1 !important; transform: none !important; transition: none !important; } .birdlab-motion-subject { animation: none !important; } .birdlab-ambient-motion { animation: none !important; } .birdlab-subject-contact { animation: none !important; } .birdlab-anatomy-motion { animation: none !important; transform: none !important; } .birdlab-behavior-motion { animation: none !important; transform: none !important; } }',
@@ -533,7 +542,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '  .birdlab-metric-grid, .birdlab-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
       '}',
       '@media (max-width: 520px) {',
-      '  .birdlab-metric-grid, .birdlab-status-grid { grid-template-columns: 1fr; }',
+      // A hard 1fr stacked all seven status chips on a phone, and each chip is
+      // only a number plus a short uppercase label. auto-fit keeps two columns
+      // wherever they actually fit and collapses to one only when they do not.
+      // The min() guard stops the track overflowing a container narrower than
+      // the 124px floor.
+      '  .birdlab-metric-grid, .birdlab-status-grid { grid-template-columns: repeat(auto-fit, minmax(min(124px, 100%), 1fr)); }',
       '}',
       // Bird-button reset (so buttons over SVG don't carry default browser styling)
       '.birdlab-bird-btn {',
@@ -577,6 +591,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // localStorage helpers
   function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
   function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+  function birdLabLocalDateKey(value) {
+    var date = value instanceof Date ? value : new Date(value == null ? Date.now() : value);
+    if (!isFinite(date.getTime())) return '';
+    var month = String(date.getMonth() + 1).padStart(2, '0');
+    var day = String(date.getDate()).padStart(2, '0');
+    return date.getFullYear() + '-' + month + '-' + day;
+  }
 
   // BirdLab's durable progression spine. Ranks are intentionally based on
   // accumulated field XP rather than module visits: students advance by
@@ -663,19 +684,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // Time-of-day color grades use restrained multi-stop light instead of
       // flat tints, preserving feather contrast around each habitat horizon.
       '<linearGradient id="blConditionDawn" x1="12%" y1="100%" x2="72%" y2="0%">',
-      '  <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.48"/>',
-      '  <stop offset="42%" stop-color="#fde68a" stop-opacity="0.16"/>',
-      '  <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0.08"/>',
+      '  <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.62"/>',
+      '  <stop offset="42%" stop-color="#fde68a" stop-opacity="0.24"/>',
+      '  <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0.10"/>',
       '</linearGradient>',
       '<linearGradient id="blConditionDay" x1="0%" y1="0%" x2="0%" y2="100%">',
       '  <stop offset="0%" stop-color="#dbeafe" stop-opacity="0.20"/>',
       '  <stop offset="62%" stop-color="#ffffff" stop-opacity="0.04"/>',
       '  <stop offset="100%" stop-color="#fef3c7" stop-opacity="0.07"/>',
       '</linearGradient>',
+      // Dusk is weighted hard into the sky and released before the actor band:
+      // by 62% of scene height the veil is under 10% alpha, so silhouettes go
+      // dark against a deep sky (which is what dusk birding actually looks
+      // like) without smothering the feather contrast learners must read.
       '<linearGradient id="blConditionDusk" x1="0%" y1="0%" x2="0%" y2="100%">',
-      '  <stop offset="0%" stop-color="#1e1b4b" stop-opacity="0.54"/>',
-      '  <stop offset="55%" stop-color="#4338ca" stop-opacity="0.25"/>',
-      '  <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.13"/>',
+      '  <stop offset="0%" stop-color="#1e1b4b" stop-opacity="0.74"/>',
+      '  <stop offset="35%" stop-color="#3730a3" stop-opacity="0.44"/>',
+      '  <stop offset="62%" stop-color="#4338ca" stop-opacity="0.15"/>',
+      '  <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.11"/>',
       '</linearGradient>',
       // ── Scene atmosphere (applied over habitat backdrops) ──
       // Warm sky light pouring from top-left
@@ -1583,10 +1609,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           // Mid-front tree on the right side, partly framing the nuthatch
           h('rect', { x: 740, y: 150, width: 40, height: 350, fill: '#4a3525' }),
           h('ellipse', { cx: 760, cy: 160, rx: 80, ry: 110, fill: '#3a7a3a', opacity: 0.85 }),
-          // Mid-front tree branches stretching across (occludes some birds)
-          h('path', { d: 'M 740 200 Q 600 180 460 220', stroke: '#4a3525', strokeWidth: 4, fill: 'none' }),
-          h('ellipse', { cx: 590, cy: 200, rx: 30, ry: 18, fill: '#4a8a4a', opacity: 0.7 }),
-          h('ellipse', { cx: 470, cy: 210, rx: 25, ry: 14, fill: '#4a8a4a', opacity: 0.7 })
+          // Mid-front branch stretching across (occludes some birds). Drawn as
+          // a tapered filled path rather than a uniform 4px stroke, and the tip
+          // ends inside a leaf cluster instead of stopping blunt in open sky —
+          // the old version read as a detached stick floating over the scene.
+          h('path', { d: 'M 744 196 Q 600 176 462 214 L 464 219 Q 604 183 745 204 Z', fill: '#4a3525' }),
+          h('ellipse', { cx: 592, cy: 198, rx: 30, ry: 17, fill: '#4a8a4a', opacity: 0.72 }),
+          h('ellipse', { cx: 522, cy: 203, rx: 22, ry: 13, fill: '#3f7f3f', opacity: 0.66 }),
+          h('ellipse', { cx: 470, cy: 212, rx: 26, ry: 15, fill: '#4a8a4a', opacity: 0.75 }),
+          h('ellipse', { cx: 452, cy: 223, rx: 16, ry: 10, fill: '#3f7f3f', opacity: 0.7 })
         );
       }
       // Layer 4: foreground (closest trees, ground, foliage occluding undergrowth birds)
@@ -1639,9 +1670,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           );
         }
         if (z === 1) {
-          // Open water + lily pads
+          // Open water + lily pads. The waterline echoes the curve of the bank
+          // behind it instead of running dead straight across all 900 units —
+          // that ruler edge was the most artificial line in the scene. A pale
+          // wet-edge stroke sits on the same curve so bank and water meet at a
+          // shoreline rather than at a cut.
           return h('g', null,
-            h('path', { d: 'M 0 380 L 900 380 L 900 500 L 0 500 Z', fill: '#5a7a8a' }),
+            h('path', { d: 'M 0 384 Q 150 375 320 383 Q 470 390 620 379 Q 770 371 900 384 L 900 500 L 0 500 Z', fill: '#5a7a8a' }),
+            h('path', { d: 'M 0 384 Q 150 375 320 383 Q 470 390 620 379 Q 770 371 900 384', fill: 'none', stroke: '#cfe4dd', strokeWidth: 2, opacity: 0.42 }),
             // Lily pads
             h('ellipse', { cx: 450, cy: 410, rx: 28, ry: 8, fill: '#4a7a4a', opacity: 0.9 }),
             h('ellipse', { cx: 600, cy: 430, rx: 22, ry: 6, fill: '#5a8a5a', opacity: 0.9 }),
@@ -1652,13 +1688,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           );
         }
         if (z === 3) {
-          // Mid-distance cattails clusters
+          // Mid-distance cattail cluster. Stems lean and curve rather than
+          // standing as identical parallel rectangles, and the heads vary in
+          // height — a row of dead-straight rules with beads on top read as
+          // wire, not reeds.
           return h('g', null,
-            // Cattail patch right side
             [0, 1, 2, 3, 4].map(function(i) {
+              var stemX = 800 + i * 8;
+              var lean = ((i % 2) ? 1 : -1) * (2 + (i % 3));
+              var headY = 272 + ((i * 5) % 13);
               return h('g', { key: 'cr' + i },
-                h('rect', { x: 800 + i * 8, y: 280, width: 1.5, height: 100, fill: '#6a4a2a' }),
-                h('ellipse', { cx: 800.7 + i * 8, cy: 275, rx: 2, ry: 5, fill: '#3a2515' })
+                h('path', {
+                  d: 'M ' + stemX + ' 380 Q ' + (stemX + lean * 0.35) + ' ' + ((headY + 380) / 2) + ' ' + (stemX + lean) + ' ' + (headY + 4),
+                  fill: 'none', stroke: '#6a4a2a', strokeWidth: 1.6, strokeLinecap: 'round'
+                }),
+                h('ellipse', { cx: stemX + lean, cy: headY, rx: 2, ry: 5, fill: '#3a2515' })
               );
             })
           );
@@ -1666,18 +1710,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         if (z === 4) {
           // Foreground cattails (occlude back-layer birds)
           return h('g', null,
-            // Left cattail patch
+            // Left cattail patch — leaning, curved stems at varied heights.
             [0, 1, 2, 3].map(function(i) {
+              var stemX = 60 + i * 12;
+              var lean = ((i % 2) ? 1 : -1) * (3 + i);
+              var headY = 244 + ((i * 7) % 19);
               return h('g', { key: 'cl' + i },
-                h('rect', { x: 60 + i * 12, y: 250, width: 2, height: 250, fill: '#5a3a25' }),
-                h('ellipse', { cx: 61 + i * 12, cy: 245, rx: 3, ry: 7, fill: '#3a2010' })
+                h('path', {
+                  d: 'M ' + stemX + ' 500 Q ' + (stemX + lean * 0.3) + ' ' + ((headY + 500) / 2) + ' ' + (stemX + lean) + ' ' + (headY + 6),
+                  fill: 'none', stroke: '#5a3a25', strokeWidth: 2.1, strokeLinecap: 'round'
+                }),
+                h('ellipse', { cx: stemX + lean, cy: headY, rx: 3, ry: 7, fill: '#3a2010' })
               );
             }),
             // Mid-foreground cattail clump
             [0, 1, 2].map(function(i) {
+              var clumpX = 360 + i * 14;
+              var clumpLean = ((i % 2) ? -1 : 1) * (2 + i * 2);
+              var clumpHeadY = 283 + ((i * 9) % 15);
               return h('g', { key: 'cm' + i },
-                h('rect', { x: 360 + i * 14, y: 290, width: 1.8, height: 200, fill: '#5a3a25' }),
-                h('ellipse', { cx: 361 + i * 14, cy: 285, rx: 2.5, ry: 6, fill: '#3a2010' })
+                h('path', {
+                  d: 'M ' + clumpX + ' 490 Q ' + (clumpX + clumpLean * 0.3) + ' ' + ((clumpHeadY + 490) / 2) + ' ' + (clumpX + clumpLean) + ' ' + (clumpHeadY + 5),
+                  fill: 'none', stroke: '#5a3a25', strokeWidth: 1.9, strokeLinecap: 'round'
+                }),
+                h('ellipse', { cx: clumpX + clumpLean, cy: clumpHeadY, rx: 2.5, ry: 6, fill: '#3a2010' })
               );
             }),
             // Foreground waving grass at very bottom
@@ -1712,17 +1768,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       ],
       renderLayer: function(h, z) {
         if (z === 0) {
-          // Distant rooftops
+          // Neighbours' houses, seen over the fence. Previously this layer was
+          // one flat 900-wide slab with two roof bumps on it, which read as a
+          // grey wall with tents parked on top. Now each house is a wall with a
+          // lit window under its roof and its base runs below the fence line,
+          // so the fence painted at z=1 crops it the way a real sightline does.
+          // Kept low-contrast on purpose: this is backdrop, and bird
+          // silhouettes have to stay the most legible thing in the scene.
           return h('g', null,
-            h('path', { d: 'M 0 320 L 200 320 L 220 290 L 280 290 L 300 320 L 500 320 L 530 285 L 600 285 L 620 320 L 900 320 L 900 360 L 0 360 Z', fill: '#9a8a7a' }),
-            // Chimneys
+            // Left house
+            h('rect', { x: 214, y: 300, width: 72, height: 50, fill: '#a3968a' }),
+            h('path', { d: 'M 204 302 L 250 276 L 296 302 Z', fill: '#8a7669' }),
+            h('rect', { x: 232, y: 310, width: 16, height: 14, fill: '#cbbfa6', opacity: 0.85 }),
             h('rect', { x: 240, y: 270, width: 12, height: 25, fill: '#7a6a5a' }),
+            // Right house, set slightly further back and a touch hazier
+            h('rect', { x: 524, y: 296, width: 84, height: 54, fill: '#a99c8f', opacity: 0.94 }),
+            h('path', { d: 'M 512 298 L 566 270 L 620 298 Z', fill: '#8f7b6d', opacity: 0.94 }),
+            h('rect', { x: 546, y: 306, width: 18, height: 15, fill: '#cbbfa6', opacity: 0.78 }),
             h('rect', { x: 560, y: 265, width: 14, height: 25, fill: '#7a6a5a' })
           );
         }
         if (z === 1) {
-          // Backyard fence + tree behind
+          // Backyard fence + tree behind. The fence is a real board panel with
+          // seams and a cap rail rather than a 6px rule: it is what crops the
+          // houses above, and it gives the scene its one honest horizontal.
           return h('g', null,
+            h('rect', { x: 0, y: 326, width: 900, height: 40, fill: '#a08a6e' }),
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17].map(function(boardIndex) {
+              return h('rect', { key: 'fence-seam-' + boardIndex, x: 50 + boardIndex * 50, y: 328, width: 2, height: 36, fill: '#856f56', opacity: 0.55 });
+            }),
+            h('rect', { x: 0, y: 320, width: 900, height: 8, fill: '#b59c7d' }),
             h('rect', { x: 0, y: 360, width: 900, height: 6, fill: '#8a7a6a' }),
             // Tree behind right side
             h('rect', { x: 720, y: 200, width: 15, height: 200, fill: '#5a4030' }),
@@ -1737,12 +1812,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             // Shrub
             h('ellipse', { cx: 160, cy: 320, rx: 75, ry: 45, fill: '#4a7a4a' }),
             h('ellipse', { cx: 130, cy: 305, rx: 30, ry: 22, fill: '#5a8a5a' }),
-            // Bird feeder pole + feeder
+            // Bird feeder: pitched roof, glass hopper with visible seed, and a
+            // tray with a perch lip. A bare rectangle on a stick read as a
+            // mailbox, which is a poor cue for the one object in the scene the
+            // feeder birds are supposed to be visiting.
             h('rect', { x: 467, y: 220, width: 4, height: 200, fill: '#3a3a3a' }),
-            h('rect', { x: 440, y: 215, width: 60, height: 18, fill: '#7a4a2a', stroke: '#3a2010', strokeWidth: 1 }),
-            h('rect', { x: 440, y: 215, width: 60, height: 4, fill: '#5a3a20' }),
+            h('path', { d: 'M 432 216 L 469 197 L 506 216 Z', fill: '#6a3f22' }),
+            h('rect', { x: 440, y: 216, width: 60, height: 18, fill: '#7a4a2a', stroke: '#3a2010', strokeWidth: 1 }),
             // Seed visible
-            h('rect', { x: 446, y: 222, width: 48, height: 6, fill: '#c8a060' })
+            h('rect', { x: 446, y: 223, width: 48, height: 6, fill: '#c8a060' }),
+            h('rect', { x: 434, y: 234, width: 72, height: 4, rx: 1.5, fill: '#5a3a20' })
           );
         }
         if (z === 4) {
@@ -1805,9 +1884,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           );
         }
         if (z === 3) {
-          // Mid-distance: dead snag (pine where eagle perches)
+          // Mid-distance: dead snag (pine where eagle perches). The trunk runs
+          // down to y=448 so its base is hidden behind the foreground ledge
+          // drawn at z=4; ending it at y=420 left the snag standing in open
+          // water well offshore, as if a pine were growing out of the swell.
           return h('g', null,
-            h('rect', { x: 800, y: 100, width: 8, height: 320, fill: '#7a6a5a' }),
+            h('rect', { x: 800, y: 100, width: 8, height: 348, fill: '#7a6a5a' }),
             // Bare branches
             h('path', { d: 'M 800 150 L 770 130 M 808 180 L 840 160 M 800 220 L 760 215', stroke: '#7a6a5a', strokeWidth: 3, fill: 'none' })
           );
@@ -1815,16 +1897,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         if (z === 4) {
           // Foreground granite ledges + kelp
           return h('g', null,
-            // Big granite outcrop on left
-            h('path', { d: 'M 0 280 L 50 250 L 120 260 L 180 245 L 230 265 L 270 280 L 280 320 L 0 320 Z', fill: '#9a8a8a' }),
+            // Big granite outcrop on left. Its base used to end on a dead
+            // straight y=320 line, cutting the rock off like a guillotine; it
+            // now steps into the water and carries a darker wet band plus a
+            // foam line at the waterline, so the rock reads as entering the sea.
+            h('path', { d: 'M 0 280 L 50 250 L 120 260 L 180 245 L 230 265 L 270 280 L 282 318 L 236 330 L 168 322 L 96 332 L 0 324 Z', fill: '#9a8a8a' }),
+            h('path', { d: 'M 0 310 L 96 318 L 168 310 L 236 318 L 282 310 L 282 318 L 236 330 L 168 322 L 96 332 L 0 324 Z', fill: '#7d6f70', opacity: 0.85 }),
             h('path', { d: 'M 50 280 L 100 270 L 150 280', stroke: '#5a4a4a', strokeWidth: 1, fill: 'none' }),
+            h('path', { d: 'M 0 326 Q 60 334 120 326 Q 190 318 262 328', fill: 'none', stroke: '#eef6f7', strokeWidth: 2.4, opacity: 0.5 }),
             // Smaller foreground rock right side
             h('path', { d: 'M 700 440 L 750 430 L 820 445 L 850 470 L 700 490 Z', fill: '#7a6a6a' }),
-            // Foreground water at bottom
-            h('path', { d: 'M 0 460 L 900 460 L 900 500 L 0 500 Z', fill: '#2a4a6a' }),
-            // Kelp / seaweed at base of granite
-            h('path', { d: 'M 80 320 Q 75 350 90 380 Q 100 410 85 440', stroke: '#5a8050', strokeWidth: 4, fill: 'none' }),
-            h('path', { d: 'M 250 320 Q 245 350 260 380 Q 270 410 255 440', stroke: '#5a8050', strokeWidth: 4, fill: 'none' })
+            // Foreground water at bottom — a swell, not a ruled band.
+            h('path', { d: 'M 0 464 Q 160 456 330 463 Q 500 470 660 461 Q 800 454 900 464 L 900 500 L 0 500 Z', fill: '#2a4a6a' }),
+            // Kelp / seaweed, rooted at the rock's new waterline rather than
+            // hanging from the old flat cut.
+            h('path', { d: 'M 84 330 Q 76 356 92 382 Q 102 412 86 442', stroke: '#5a8050', strokeWidth: 4, fill: 'none', strokeLinecap: 'round' }),
+            h('path', { d: 'M 248 328 Q 242 354 260 380 Q 271 410 254 440', stroke: '#5a8050', strokeWidth: 4, fill: 'none', strokeLinecap: 'round' })
           );
         }
         return null;
@@ -1864,12 +1952,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           );
         }
         if (z === 1) {
-          // Mid-distance conifer band
+          // Mid-distance conifer band. Nine identical triangles on a constant
+          // 100-unit pitch read as a stamped repeat, not a treeline: same
+          // height, same width, same colour, evenly spaced across the whole
+          // ridge. Each tree now carries its own height, width, offset and
+          // tone, derived from its index so the band is deterministic and
+          // screenshots stay stable. Drawn tallest-first so the shorter trees
+          // overlap in front and the row gains depth.
           return h('g', null,
-            // Many small triangle conifers
-            [0, 1, 2, 3, 4, 5, 6, 7, 8].map(function(i) {
-              return h('path', { key: 'c' + i, d: 'M ' + (60 + i * 100) + ' 290 L ' + (90 + i * 100) + ' 230 L ' + (120 + i * 100) + ' 290 Z',
-                fill: '#3a5a3a' });
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(function(i) {
+              var jitter = ((i * 37) % 23) - 11;
+              var treeWidth = 26 + ((i * 17) % 12);
+              var treeHeight = 48 + ((i * 29) % 30);
+              var baseX = 34 + i * 76 + jitter;
+              var tone = i % 3 === 0 ? '#33532f' : (i % 3 === 1 ? '#3a5a3a' : '#456546');
+              return h('path', {
+                key: 'c' + i,
+                d: 'M ' + baseX + ' 292 L ' + (baseX + treeWidth / 2) + ' ' + (292 - treeHeight) + ' L ' + (baseX + treeWidth) + ' 292 Z',
+                fill: tone
+              });
             })
           );
         }
@@ -1877,10 +1978,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           // Closer conifers (taller, fewer)
           return h('g', null,
             // Tall conifer right. The exposed trunk is painted after foliage so
-            // the left-facing woodpecker can visibly brace against the bark.
+            // the left-facing woodpecker can visibly brace against the bark —
+            // but it stops below the crown and a tuft is painted back over its
+            // top cap. Running it to the apex drew a brown spike straight
+            // through the canopy, which is what the wide mountain scene showed.
             h('path', { d: 'M 690 460 L 720 200 L 750 460 Z', fill: '#2a4a2a' }),
             h('path', { d: 'M 700 380 L 720 280 L 740 380 Z', fill: '#3a5a3a' }),
-            h('path', { d: 'M720 462 L720 214', fill: 'none', stroke: '#5a402f', strokeWidth: 10, strokeLinecap: 'round', 'data-birdlab-trunk-anchor': 'mountain-pileated' }),
+            h('path', { d: 'M720 462 L720 250', fill: 'none', stroke: '#5a402f', strokeWidth: 10, strokeLinecap: 'round', 'data-birdlab-trunk-anchor': 'mountain-pileated' }),
+            h('path', { d: 'M 700 268 L 720 200 L 740 268 Z', fill: '#2a4a2a' }),
             // Tall conifer middle-left
             h('path', { d: 'M 380 480 L 420 240 L 460 480 Z', fill: '#2a4a2a' }),
             h('path', { d: 'M 390 400 L 420 320 L 450 400 Z', fill: '#3a5a3a' })
@@ -1933,6 +2038,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     pileated: 'trunk', nuthatch: 'trunk'
   };
 
+  // Target Search clues model the way birders narrow an identification:
+  // ecology and shape first, then behavior and field marks, with location
+  // reserved as the final support. Stable IDs keep saved progress resilient
+  // when clue copy improves.
+  var TARGET_SEARCH_CLUE_ORDER = ['habitat', 'silhouette', 'behavior', 'field-mark', 'spatial'];
+  var TARGET_SEARCH_CLUE_LADDERS = {
+    easy: ['habitat', 'silhouette', 'behavior', 'field-mark', 'spatial'],
+    normal: ['habitat', 'field-mark', 'spatial'],
+    hard: ['spatial'],
+    expert: []
+  };
+  var TARGET_SEARCH_FIELD_MARK_CLUES = {
+    chickadee: 'Look for a black cap and bib framing bright white cheeks, with warm buff along the flanks.',
+    nuthatch: 'Look for a black cap, a clean white face and breast, a blue-gray back, and a long pointed bill.',
+    pileated: 'Look for a crow-sized black woodpecker with a flaming red crest and bold white neck stripes.',
+    coopershawk: 'Look for short rounded wings, a very long banded tail, and fine barring across the underparts.',
+    vireo: 'Look for an olive back, pale underside, white eyebrow, dark eye line, and a small hooked bill.',
+    robin: 'Look for a warm orange breast, gray-brown back, yellow bill, and a broken white eye ring.',
+    towhee: 'Look for a black hood and back, rusty sides, a white belly, and white corners flashing in the tail.',
+    greatBlueHeron: 'Look for a huge blue-gray wader with long legs, an S-curved neck, and a dagger-like yellow bill.',
+    kingfisher: 'Look for a shaggy crest, heavy straight bill, blue-gray back, and a crisp white collar and belly.',
+    mallard: 'Look for a glossy green head, yellow bill, narrow white neck ring, and chestnut breast.',
+    redwingBlackbird: 'Look for a black bird with a red shoulder patch edged by a narrow yellow border.',
+    cardinal: 'Look for a pointed crest, thick orange bill, brilliant red body, and a black mask around the face.',
+    bluejay: 'Look for a blue crest and tail, white face and belly, and a bold black necklace.',
+    houseFinch: 'Look for a small conical bill, brown-streaked body, and red concentrated on the head and upper chest.',
+    baldEagle: 'Look for a massive dark body, white head and tail, and a large hooked yellow bill.',
+    herringGull: 'Look for a white head and body, pale gray back, black wingtips, and a sturdy yellow bill.',
+    puffin: 'Look for a stocky black-and-white body, orange feet, and a deep colorful triangular bill.',
+    eider: 'Look for a large sea duck with a long sloping forehead and a bold black-and-white pattern.',
+    raven: 'Look for an all-black bird with a heavy bill, shaggy throat, fingered wings, and a wedge-shaped tail.',
+    junco: 'Look for a slate-gray hood and back, white belly, pale pink bill, and white outer tail feathers.'
+  };
+
   var SCENE_BIRD_MOTION_OVERRIDES = {
     'forest:pileated': 'trunk-cling', 'forest:nuthatch': 'walk-down',
     'forest:robin': 'ground-hop', 'forest:towhee': 'double-scratch',
@@ -1974,7 +2113,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   function sceneBirdBehaviorScript(bird, habitatKey) {
     return bird ? (SCENE_BIRD_BEHAVIOR_SCRIPTS[habitatKey + ':' + bird.species] || '') : '';
   }
-  function sceneBirdBehaviorState(bird, index, position, habitatKey, qaBehaviorMs) {
+  function sceneBirdBehaviorState(bird, index, position, habitatKey, qaBehaviorMs, frozenBehavior) {
     var script = sceneBirdBehaviorScript(bird, habitatKey);
     var motionName = sceneBirdMotionName(bird, habitatKey);
     var defaultPose = sceneBirdFieldPose(bird, habitatKey, motionName);
@@ -1984,7 +2123,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       'hover-aim-dive': { state: 'hover', pose: 'kingfisher-hover' },
       'ground-forage-flush': { state: 'forage', pose: 'junco-ground' }
     }[script];
-    if (position.pinned || position.static) return { script: script, state: stable.state, pose: stable.pose, trackable: true, pinned: true };
+    // Reduced/static scenes use the most legible diagnostic posture. During
+    // live binocular acquisition, preserve the behavior the learner actually
+    // noticed instead of snapping seed handling, aiming, or a tail flick back
+    // to the script's generic stable pose.
+    if (position.static) return { script: script, state: stable.state, pose: stable.pose, trackable: true, pinned: true };
+    if (frozenBehavior && frozenBehavior.script === script && frozenBehavior.state && frozenBehavior.pose) {
+      return { script: script, state: frozenBehavior.state, pose: frozenBehavior.pose, trackable: true, pinned: true, frozen: true };
+    }
+    if (position.pinned) return { script: script, state: stable.state, pose: stable.pose, trackable: true, pinned: true };
     var phase = position.phase;
     var localMs = Number(position.localMs) || 0;
     var visibleMs = qaBehaviorMs == null ? Math.max(0, localMs - 1900) : Math.max(0, Number(qaBehaviorMs) || 0);
@@ -2485,7 +2632,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     var common = { 'aria-hidden': 'true', style: { pointerEvents: 'none' }, 'data-birdlab-occluders': habitatKey };
     if (habitatKey === 'forest') return h('g', common,
       h('path', { d: 'M0 476 Q90 461 175 478 T350 475 T525 478 T700 474 T900 477 L900 500 L0 500 Z', fill: '#244b32', opacity: 0.72 }),
-      h('path', { d: 'M94 480 l7 -25 l4 25 m198 2 l-5 -22 l12 21 m470 0 l8 -28 l5 27', fill: 'none', stroke: '#416341', strokeWidth: 4, strokeLinecap: 'round' })
+      // Grass tufts as three curved blades fanning from a common base. The old
+      // form was two straight strokes meeting at a point, which reads as a
+      // small aerial rather than grass.
+      h('path', {
+        d: 'M92 482 Q88 466 84 452 M96 482 Q97 462 99 448 M100 482 Q106 468 112 458'
+          + ' M301 483 Q296 468 291 455 M305 483 Q306 464 308 451 M309 483 Q315 470 321 461'
+          + ' M778 482 Q773 464 769 449 M782 482 Q784 460 786 445 M786 482 Q793 466 800 456',
+        fill: 'none', stroke: '#416341', strokeWidth: 3, strokeLinecap: 'round'
+      })
     );
     if (habitatKey === 'marsh') return h('g', common,
       h('path', { d: 'M0 472 Q120 459 235 474 T470 471 T705 474 T900 468 L900 500 L0 500 Z', fill: '#526b37', opacity: 0.68 }),
@@ -2495,7 +2650,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     );
     if (habitatKey === 'backyard') return h('g', common,
       h('path', { d: 'M0 478 Q145 467 290 478 T580 475 T900 478 L900 500 L0 500 Z', fill: '#477443', opacity: 0.66 }),
-      h('path', { d: 'M305 480 l8 -20 l2 20 m68 0 l-7 -18 l14 18 m290 0 l8 -24 l4 23', fill: 'none', stroke: '#639454', strokeWidth: 3.5, strokeLinecap: 'round' })
+      h('path', {
+        d: 'M303 481 Q299 468 295 457 M307 481 Q308 464 310 452 M311 481 Q316 469 322 461'
+          + ' M381 481 Q377 469 373 459 M385 481 Q386 465 388 454 M389 481 Q394 470 400 463'
+          + ' M685 481 Q680 466 676 453 M689 481 Q690 461 692 448 M693 481 Q699 467 706 458',
+        fill: 'none', stroke: '#639454', strokeWidth: 2.8, strokeLinecap: 'round'
+      })
     );
     if (habitatKey === 'coast') return h('g', common,
       h('path', { d: 'M182 318 Q230 309 286 316 Q270 323 197 324 Z', fill: '#55616a', opacity: 0.92 }),
@@ -2503,7 +2663,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     );
     if (habitatKey === 'mountain') return h('g', common,
       h('path', { d: 'M0 472 Q120 459 245 474 T500 470 T750 474 T920 468 L920 500 L0 500 Z', fill: '#59654d', opacity: 0.64 }),
-      h('path', { d: 'M42 472 Q65 437 111 454 Q126 469 141 478 L28 482 Z', fill: '#6b7280', stroke: '#4b5563', strokeWidth: 1.3 })
+      // Foreground granite. The old single soft curve in slate #6b7280 read as
+      // a smooth blue dome sitting on warm alpine ground — wrong shape and
+      // wrong geology. Faceted, and warmed into the same family as the
+      // boulders and scree behind it.
+      h('path', { d: 'M28 482 L44 458 L72 441 L104 452 L127 468 L141 480 Z', fill: '#7d7365', stroke: '#5d5346', strokeWidth: 1.3, strokeLinejoin: 'round' }),
+      h('path', { d: 'M44 458 L72 441 L86 466 L58 472 Z', fill: '#8b8072', opacity: 0.85 })
     );
     return null;
   }
@@ -9109,23 +9274,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       var useMemo = React.useMemo;
 
       var d = (ctx.toolData && ctx.toolData['birdLab']) || {};
+      var birdLabWindowSnapshot = {};
+      try {
+        if (typeof window !== 'undefined' && window.__alloflowBirdLab) birdLabWindowSnapshot = window.__alloflowBirdLab;
+      } catch (e) {}
       // Non-persisted deterministic scene seam used only by local visual QA.
       var birdLabVisualQa = (ctx.props && ctx.props.birdLabVisualQa && typeof ctx.props.birdLabVisualQa === 'object') ? ctx.props.birdLabVisualQa : null;
       var upd = function(key, val) { ctx.update('birdLab', key, val); };
       var addToast = ctx.addToast || function(msg) { console.log('[BirdLab]', msg); };
 
+      // localStorage → host toolData hydration. This MUST run in an effect:
+      // ctx.update() is a setState on the host (AlloFlowContent), and calling
+      // it while this tool is rendering trips React's "Cannot update a
+      // component while rendering a different component" warning. The render
+      // that mounts the tool sees the pre-hydration `d` either way, so the
+      // deferral costs nothing.
       var _hydratedRef = useRef(false);
-      if (!_hydratedRef.current) {
+      useEffect(function() {
+        if (_hydratedRef.current) return;
         _hydratedRef.current = true;
         var savedProgress = lsGet('birdLab.progress.v1', null);
-        if (savedProgress) {
-          if (d.blXp === undefined) upd('blXp', Number(savedProgress.xp) || 0);
-          if (d.blXpLedger === undefined) upd('blXpLedger', savedProgress.ledger || {});
+        var snapshotHasXp = Object.prototype.hasOwnProperty.call(birdLabWindowSnapshot, 'xp');
+        var snapshotHasXpLedger = Object.prototype.hasOwnProperty.call(birdLabWindowSnapshot, 'xpLedger');
+        if (d.blXp === undefined) {
+          if (snapshotHasXp) upd('blXp', Number(birdLabWindowSnapshot.xp) || 0);
+          else if (savedProgress) upd('blXp', Number(savedProgress.xp) || 0);
+        }
+        if (d.blXpLedger === undefined) {
+          if (snapshotHasXpLedger) upd('blXpLedger', birdLabWindowSnapshot.xpLedger || {});
+          else if (savedProgress) upd('blXpLedger', savedProgress.ledger || {});
         }
         var savedBadges = lsGet('birdLab.badges.v1', null);
         if (savedBadges && d.blBadges === undefined) upd('blBadges', savedBadges);
         var savedRounds = lsGet('birdLab.rounds.v1', null);
-        if (savedRounds && d.blRoundCounts === undefined) upd('blRoundCounts', savedRounds);
+        var snapshotHasRoundCounts = Object.prototype.hasOwnProperty.call(birdLabWindowSnapshot, 'roundCounts');
+        if (d.blRoundCounts === undefined) {
+          if (snapshotHasRoundCounts) upd('blRoundCounts', birdLabWindowSnapshot.roundCounts || {});
+          else if (savedRounds) upd('blRoundCounts', savedRounds);
+        }
         var savedEvidence = lsGet('birdLab.evidence.v1', null);
         var savedReportHistory = lsGet('birdLab.reports.v1', null);
         var savedFieldSession = lsGet('birdLab.session.v1', null);
@@ -9145,7 +9331,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         } catch (e) {}
         if (!savedLifeList) savedLifeList = lsGet('birdLab.lifeList.v1', null);
         if (savedLifeList && d.blLifeList === undefined) upd('blLifeList', savedLifeList);
-      }
+      }, []);
 
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
@@ -9279,10 +9465,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             reportHistory: d.blReportHistory || current.reportHistory || {},
             fieldSession: d.blFieldSession !== undefined ? d.blFieldSession : (current.fieldSession || null),
             fieldSessionHistory: Array.isArray(d.blFieldSessionHistory) ? d.blFieldSessionHistory : (current.fieldSessionHistory || []),
+            assignmentSearchActive: d.blAssignmentSearchActive !== undefined
+              ? d.blAssignmentSearchActive === true : current.assignmentSearchActive === true,
+            assignmentClueProgress: d.blAssignmentClueProgress || current.assignmentClueProgress || {},
+            hintsUsed: d.blHintsUsed || current.hintsUsed || {},
+            habitatHinted: d.blHabitatHinted || current.habitatHinted || {},
+            spotStreak: Number(d.blSpotStreak != null ? d.blSpotStreak : current.spotStreak) || 0,
+            binocularHoldMode: d.blBinocularHoldMode || current.binocularHoldMode || 'standard',
+            difficulty: d.blDifficulty || current.difficulty || 'normal',
+            hintMode: d.blHintMode !== undefined ? d.blHintMode !== false : current.hintMode !== false,
             _ts: Date.now()
           });
         } catch (e) {}
-      }, [d.blLifeList, d.blBadges, d.blXp, d.blXpLedger, d.blRoundCounts, d.blEvidenceLog, d.blReportHistory, d.blFieldSession, d.blFieldSessionHistory]);
+      }, [d.blLifeList, d.blBadges, d.blXp, d.blXpLedger, d.blRoundCounts, d.blEvidenceLog, d.blReportHistory, d.blFieldSession, d.blFieldSessionHistory, d.blAssignmentSearchActive, d.blAssignmentClueProgress, d.blHintsUsed, d.blHabitatHinted, d.blSpotStreak, d.blBinocularHoldMode, d.blDifficulty, d.blHintMode]);
 
       // Hot-reload from a project-JSON load mid-session.
       useEffect(function () {
@@ -9298,6 +9493,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             if (w.reportHistory) upd('blReportHistory', w.reportHistory);
             if (Object.prototype.hasOwnProperty.call(w, 'fieldSession')) upd('blFieldSession', w.fieldSession || null);
             if (Object.prototype.hasOwnProperty.call(w, 'fieldSessionHistory')) upd('blFieldSessionHistory', Array.isArray(w.fieldSessionHistory) ? w.fieldSessionHistory : []);
+            if (Object.prototype.hasOwnProperty.call(w, 'assignmentSearchActive')) upd('blAssignmentSearchActive', w.assignmentSearchActive === true);
+            if (Object.prototype.hasOwnProperty.call(w, 'assignmentClueProgress')) upd('blAssignmentClueProgress', w.assignmentClueProgress || {});
+            if (Object.prototype.hasOwnProperty.call(w, 'hintsUsed')) upd('blHintsUsed', w.hintsUsed || {});
+            if (Object.prototype.hasOwnProperty.call(w, 'habitatHinted')) upd('blHabitatHinted', w.habitatHinted || {});
+            if (Object.prototype.hasOwnProperty.call(w, 'spotStreak')) upd('blSpotStreak', Number(w.spotStreak) || 0);
+            if (Object.prototype.hasOwnProperty.call(w, 'binocularHoldMode')) upd('blBinocularHoldMode', w.binocularHoldMode || 'standard');
+            if (Object.prototype.hasOwnProperty.call(w, 'difficulty')) {
+              var restoredDifficulty = ['easy', 'normal', 'hard', 'expert'].indexOf(w.difficulty) >= 0 ? w.difficulty : 'normal';
+              upd('blDifficulty', restoredDifficulty);
+            }
+            if (Object.prototype.hasOwnProperty.call(w, 'hintMode')) upd('blHintMode', w.hintMode !== false);
           } catch (e) {}
         }
         window.addEventListener('alloflow-birdlab-restored', onRestore);
@@ -10997,6 +11203,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var expeditionCelebration = expeditionCelebration_state[0], setExpeditionCelebration = expeditionCelebration_state[1];
         var sceneLens_state = useState(d.blSceneLens || 'wide');
         var sceneLens = sceneLens_state[0], setSceneLens = sceneLens_state[1];
+        // Once the learner picks a sweep themselves, the small-stage auto-focus
+        // below must never override them again. Tracked per mount so a fresh
+        // visit re-offers the help.
+        var lensChosenByLearnerRef = useRef(false);
+        var autoFocusedHabitatRef = useRef('');
         // Keep the learner's manual motion preference separate from the live
         // operating-system accessibility override. If reduced motion is later
         // turned off, the learner's prior Play/Pause choice is restored.
@@ -11009,6 +11220,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var qaSceneAspect = birdLabVisualQa && Number(birdLabVisualQa.sceneAspect) > 0 ? Number(birdLabVisualQa.sceneAspect) : 900 / 500;
         var sceneViewportAspect_state = useState(qaSceneAspect);
         var sceneViewportAspect = sceneViewportAspect_state[0], setSceneViewportAspect = sceneViewportAspect_state[1];
+        // Painted width of the scene stage, in CSS px. The aspect alone cannot
+        // tell us how BIG a bird ends up: the same 900-unit scene lands in
+        // ~1080px on a laptop and ~342px on a phone, which paints a chickadee
+        // at 26px and 9px respectively. 0 means "not measured yet" (SSR and
+        // jsdom both report a zero rect), and every consumer must treat 0 as
+        // "assume roomy" so nothing changes behaviour off-screen.
+        var sceneViewportWidth_state = useState(0);
+        var sceneViewportWidth = sceneViewportWidth_state[0], setSceneViewportWidth = sceneViewportWidth_state[1];
         useEffect(function() {
           if (typeof window === 'undefined' || !window.matchMedia) return;
           var mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -11025,15 +11244,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         }, []);
         var sceneSweep_state = useState(d.blSceneSweep === true);
         var sceneSweep = sceneSweep_state[0], setSceneSweep = sceneSweep_state[1];
-        // I-Spy uses a shorter continuous lock than the advanced Field
-        // Observation challenge. Difficulty adjusts the steady-focus demand.
-        var ISPY_DWELL_MS = 1500;
+        // Identification knowledge and motor endurance are different skills.
+        // This access preference never changes hints, rewards, scene ecology,
+        // field marks, or Target Search difficulty.
+        var BINOCULAR_HOLD_DURATIONS = {
+          steady: { label: 'Steady', ms: 1000, note: 'Shorter hold for easier access.' },
+          standard: { label: 'Standard', ms: 1500, note: 'Balanced observation hold.' },
+          extended: { label: 'Extended', ms: 2500, note: 'Longer voluntary tracking hold.' }
+        };
+        var qaBinocularHoldMode = birdLabVisualQa && BINOCULAR_HOLD_DURATIONS[birdLabVisualQa.binocularHoldMode] ? birdLabVisualQa.binocularHoldMode : null;
+        var savedBinocularHoldMode = d.blBinocularHoldMode && BINOCULAR_HOLD_DURATIONS[d.blBinocularHoldMode]
+          ? d.blBinocularHoldMode
+          : (BINOCULAR_HOLD_DURATIONS[birdLabWindowSnapshot.binocularHoldMode] ? birdLabWindowSnapshot.binocularHoldMode : 'standard');
+        var binocularHoldMode_state = useState(qaBinocularHoldMode || savedBinocularHoldMode);
+        var binocularHoldMode = binocularHoldMode_state[0], setBinocularHoldMode = binocularHoldMode_state[1];
+        var ISPY_DWELL_MS = BINOCULAR_HOLD_DURATIONS[binocularHoldMode].ms;
         var ISPY_DWELL_GRACE_MS = 280;
-        var ISPY_DWELL_BY_DIFFICULTY = { easy: 1000, normal: 1500, hard: 2000, expert: 2500 };
+        useEffect(function() {
+          if (qaBinocularHoldMode || d.blBinocularHoldMode === undefined) return;
+          var nextHoldMode = d.blBinocularHoldMode && BINOCULAR_HOLD_DURATIONS[d.blBinocularHoldMode] ? d.blBinocularHoldMode : 'standard';
+          if (nextHoldMode !== binocularHoldMode) setBinocularHoldMode(nextHoldMode);
+        }, [d.blBinocularHoldMode]);
         var qaLifecycleMs = birdLabVisualQa && isFinite(Number(birdLabVisualQa.lifecycleMs)) ? Math.max(0, Number(birdLabVisualQa.lifecycleMs)) : null;
         var sceneLifecycleClock_state = useState(qaLifecycleMs != null ? qaLifecycleMs : (sceneMotion && !prefersReducedMotion ? 0 : null));
         var sceneLifecycleClock = sceneLifecycleClock_state[0], setSceneLifecycleClock = sceneLifecycleClock_state[1];
         var qaTargetId = birdLabVisualQa && birdLabVisualQa.targetId ? String(birdLabVisualQa.targetId) : null;
+        var qaFrozenBehavior = birdLabVisualQa && birdLabVisualQa.frozenBehavior && birdLabVisualQa.frozenBehavior.script
+          ? birdLabVisualQa.frozenBehavior : null;
         var qaDwellProgress = birdLabVisualQa && isFinite(Number(birdLabVisualQa.dwellProgress)) ? Math.max(0, Math.min(100, Number(birdLabVisualQa.dwellProgress))) : 0;
         var binocularUi_state = useState({ targetId: qaTargetId, progress: qaDwellProgress, message: qaTargetId ? 'Deterministic binocular focus checkpoint.' : 'Move the binoculars over a moving subject and hold steady.', feedback: null });
         var binocularUi = binocularUi_state[0], setBinocularUi = binocularUi_state[1];
@@ -11043,10 +11280,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var keyboardFocusTarget = keyboardFocusTarget_state[0], setKeyboardFocusTarget = keyboardFocusTarget_state[1];
         var binocularPointerRef = useRef({ active: false, down: false, clientX: 0, clientY: 0, pointerType: 'mouse' });
         var binocularTrackRef = useRef({ id: null, kind: null, index: -1, elapsed: 0, lost: 0, lastTs: 0, lastScan: 0, lastPaint: 0, cooldowns: {} });
+        var binocularBehaviorFreezeRef = useRef(qaTargetId && qaFrozenBehavior ? {
+          targetId: qaTargetId, habitatId: habitatId,
+          script: qaFrozenBehavior.script, state: qaFrozenBehavior.state, pose: qaFrozenBehavior.pose
+        } : null);
         var binocularSubjectRefs = useRef({});
         var handleBirdClickRef = useRef(null);
         var binocularReticleRef = useRef(null);
         var binocularFeedbackTimerRef = useRef(0);
+        // Free discovery remains the authentic default. Target Search is an
+        // explicit, optional field assignment; enabling it never moves, pins,
+        // highlights, or force-spawns its species.
+        var qaAssignmentSearchActive = birdLabVisualQa && typeof birdLabVisualQa.assignmentSearchActive === 'boolean' ? birdLabVisualQa.assignmentSearchActive : null;
+        var qaAssignmentClueStage = birdLabVisualQa && TARGET_SEARCH_CLUE_ORDER.indexOf(String(birdLabVisualQa.assignmentClueStage || '')) >= 0
+          ? String(birdLabVisualQa.assignmentClueStage) : null;
+        var initialAssignmentSearchActive = qaAssignmentSearchActive != null
+          ? qaAssignmentSearchActive
+          : (d.blAssignmentSearchActive !== undefined ? d.blAssignmentSearchActive === true : birdLabWindowSnapshot.assignmentSearchActive === true);
+        var assignmentSearchActive_state = useState(initialAssignmentSearchActive);
+        var assignmentSearchActive = assignmentSearchActive_state[0], setAssignmentSearchActive = assignmentSearchActive_state[1];
+        useEffect(function() {
+          if (qaAssignmentSearchActive != null || d.blAssignmentSearchActive === undefined) return;
+          var nextAssignmentMode = d.blAssignmentSearchActive === true;
+          if (nextAssignmentMode !== assignmentSearchActive) setAssignmentSearchActive(nextAssignmentMode);
+        }, [d.blAssignmentSearchActive]);
         // Adaptive field sessions layer a short investigation arc over free play.
         // The session is intentionally separate from XP/progression so learners
         // can opt in, restart, or switch habitats without losing their field log.
@@ -11103,7 +11360,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           if (!shell) return;
           function measureSceneAspect() {
             var rect = shell.getBoundingClientRect();
-            if (rect.width > 0 && rect.height > 0) setSceneViewportAspect(rect.width / rect.height);
+            if (rect.width > 0 && rect.height > 0) {
+              setSceneViewportAspect(rect.width / rect.height);
+              setSceneViewportWidth(rect.width);
+            }
           }
           measureSceneAspect();
           if (typeof ResizeObserver === 'function') {
@@ -11253,6 +11513,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         function switchSceneLens(nextLens) {
           for (var lensIndex = 0; lensIndex < SCENE_LENSES.length; lensIndex++) {
             if (SCENE_LENSES[lensIndex].id !== nextLens) continue;
+            // An explicit choice retires the small-stage auto-focus for this
+            // mount, including a deliberate return to the wide sweep.
+            lensChosenByLearnerRef.current = true;
             cancelBinocularFocus('Lens changed. Reacquire the moving subject.');
             setSceneLens(nextLens);
             upd('blSceneLens', nextLens);
@@ -11314,8 +11577,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var habitatSceneRef = useRef(null);
         var foundByHabitat_state = useState(d.foundByHabitat || {});
         var foundByHabitat = foundByHabitat_state[0], setFoundByHabitat = foundByHabitat_state[1];
-        var roundCounts_state = useState(d.blRoundCounts || {});
+        var initialRoundCounts = d.blRoundCounts !== undefined ? d.blRoundCounts : (birdLabWindowSnapshot.roundCounts || {});
+        var roundCounts_state = useState(initialRoundCounts);
         var roundCounts = roundCounts_state[0], setRoundCounts = roundCounts_state[1];
+        useEffect(function() {
+          if (d.blRoundCounts !== undefined && d.blRoundCounts !== roundCounts) setRoundCounts(d.blRoundCounts || {});
+        }, [d.blRoundCounts]);
         var evidenceLog_state = useState(d.blEvidenceLog || {});
         var evidenceLog = evidenceLog_state[0], setEvidenceLog = evidenceLog_state[1];
         var FIELD_EVIDENCE = [
@@ -11352,14 +11619,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           var t = getCleanTier(habitatIdLookup);
           return t || null;
         }
-        var difficulty_state = useState(d.blDifficulty || 'normal');
+        var initialDifficulty = DIFFICULTY_BUDGETS[d.blDifficulty] != null
+          ? d.blDifficulty
+          : (DIFFICULTY_BUDGETS[birdLabWindowSnapshot.difficulty] != null ? birdLabWindowSnapshot.difficulty : 'normal');
+        var difficulty_state = useState(initialDifficulty);
         var difficulty = difficulty_state[0], setDifficulty = difficulty_state[1];
-        ISPY_DWELL_MS = ISPY_DWELL_BY_DIFFICULTY[difficulty] || 1500;
+        useEffect(function() {
+          if (d.blDifficulty === undefined) return;
+          var nextDifficulty = DIFFICULTY_BUDGETS[d.blDifficulty] != null ? d.blDifficulty : 'normal';
+          if (nextDifficulty !== difficulty) setDifficulty(nextDifficulty);
+        }, [d.blDifficulty]);
         var HINT_BUDGET = DIFFICULTY_BUDGETS[difficulty] != null ? DIFFICULTY_BUDGETS[difficulty] : 3;
-        var hintMode_state = useState(d.blHintMode !== false); // default true
+        var initialHintMode = d.blHintMode !== undefined ? d.blHintMode !== false : birdLabWindowSnapshot.hintMode !== false;
+        var hintMode_state = useState(initialHintMode); // default true
         var hintMode = hintMode_state[0], setHintMode = hintMode_state[1];
-        var hintsUsed_state = useState(d.blHintsUsed || {});
+        useEffect(function() {
+          if (d.blHintMode === undefined) return;
+          var nextHintMode = d.blHintMode !== false;
+          if (nextHintMode !== hintMode) setHintMode(nextHintMode);
+        }, [d.blHintMode]);
+        var initialHintsUsed = d.blHintsUsed !== undefined ? d.blHintsUsed : (birdLabWindowSnapshot.hintsUsed || {});
+        var hintsUsed_state = useState(initialHintsUsed);
         var hintsUsed = hintsUsed_state[0], setHintsUsed = hintsUsed_state[1];
+        var hintsUsedRef = useRef(hintsUsed);
+        useEffect(function() { hintsUsedRef.current = hintsUsed; }, [hintsUsed]);
+        useEffect(function() {
+          if (d.blHintsUsed !== undefined && d.blHintsUsed !== hintsUsed) {
+            hintsUsedRef.current = d.blHintsUsed || {};
+            setHintsUsed(d.blHintsUsed || {});
+          }
+        }, [d.blHintsUsed]);
+        var initialAssignmentClueProgress = d.blAssignmentClueProgress !== undefined
+          ? d.blAssignmentClueProgress : (birdLabWindowSnapshot.assignmentClueProgress || {});
+        var assignmentClueProgress_state = useState(initialAssignmentClueProgress);
+        var assignmentClueProgress = assignmentClueProgress_state[0], setAssignmentClueProgress = assignmentClueProgress_state[1];
+        var assignmentClueProgressRef = useRef(assignmentClueProgress);
+        useEffect(function() { assignmentClueProgressRef.current = assignmentClueProgress; }, [assignmentClueProgress]);
+        useEffect(function() {
+          if (d.blAssignmentClueProgress && d.blAssignmentClueProgress !== assignmentClueProgress) {
+            assignmentClueProgressRef.current = d.blAssignmentClueProgress;
+            setAssignmentClueProgress(d.blAssignmentClueProgress);
+          }
+        }, [d.blAssignmentClueProgress]);
         var hintActive_state = useState(null); // { species, ts } — currently pulsing bird
         var hintActive = hintActive_state[0], setHintActive = hintActive_state[1];
         var foundVia_state = useState(d.blFoundVia || {});
@@ -11367,15 +11668,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         // ── Spotter Streak: rewards consecutive spatial-spots (no hints) ──
         // Resets when a student uses a hint OR identifies via accessibility-mode button.
         // Persists across habitats so a strong run carries through.
-        var spotStreak_state = useState(d.blSpotStreak || 0);
+        var initialSpotStreak = d.blSpotStreak !== undefined ? d.blSpotStreak : (birdLabWindowSnapshot.spotStreak || 0);
+        var spotStreak_state = useState(initialSpotStreak);
         var spotStreak = spotStreak_state[0], setSpotStreak = spotStreak_state[1];
+        useEffect(function() {
+          if (d.blSpotStreak !== undefined && Number(d.blSpotStreak || 0) !== Number(spotStreak || 0)) {
+            setSpotStreak(Number(d.blSpotStreak) || 0);
+          }
+        }, [d.blSpotStreak]);
         var bestStreak_state = useState(d.blBestStreak || 0);
         var bestStreak = bestStreak_state[0], setBestStreak = bestStreak_state[1];
         var cleanHabitats_state = useState(d.blCleanHabitats || {});
         var cleanHabitats = cleanHabitats_state[0], setCleanHabitats = cleanHabitats_state[1];
         // Per-habitat hint usage flag (any hint = not clean)
-        var habitatHinted_state = useState(d.blHabitatHinted || {});
+        var initialHabitatHinted = d.blHabitatHinted !== undefined ? d.blHabitatHinted : (birdLabWindowSnapshot.habitatHinted || {});
+        var habitatHinted_state = useState(initialHabitatHinted);
         var habitatHinted = habitatHinted_state[0], setHabitatHinted = habitatHinted_state[1];
+        useEffect(function() {
+          if (d.blHabitatHinted !== undefined && d.blHabitatHinted !== habitatHinted) setHabitatHinted(d.blHabitatHinted || {});
+        }, [d.blHabitatHinted]);
         // Clean Habitat celebration overlay (transient, auto-clears)
         var cleanCelebration_state = useState(null);
         var cleanCelebration = cleanCelebration_state[0], setCleanCelebration = cleanCelebration_state[1];
@@ -11387,18 +11698,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var bestTimes_state = useState(d.blBestTimes || {});  // { 'habitatId|difficulty': seconds }
         // Durable field XP. A reward ledger makes every achievement idempotent,
         // so revisiting a bird never becomes an XP farming loop.
-        var fieldXp_state = useState(Number(d.blXp) || 0);
+        var initialFieldXp = d.blXp !== undefined ? (Number(d.blXp) || 0) : (Number(birdLabWindowSnapshot.xp) || 0);
+        var initialXpLedger = d.blXpLedger !== undefined ? d.blXpLedger : (birdLabWindowSnapshot.xpLedger || {});
+        var fieldXp_state = useState(initialFieldXp);
         var fieldXp = fieldXp_state[0], setFieldXp = fieldXp_state[1];
-        var xpLedger_state = useState(d.blXpLedger || {});
+        var xpLedger_state = useState(initialXpLedger);
         var xpLedger = xpLedger_state[0], setXpLedger = xpLedger_state[1];
-        var progressionRef = useRef({ xp: Number(d.blXp) || 0, ledger: d.blXpLedger || {} });
+        var progressionRef = useRef({ xp: initialFieldXp, ledger: initialXpLedger });
         var rankInfo = birdLabRankForXp(fieldXp);
         var rankCelebration_state = useState(null);
         var rankCelebration = rankCelebration_state[0], setRankCelebration = rankCelebration_state[1];
 
         useEffect(function() {
-          var incomingXp = Number(d.blXp) || 0;
-          var incomingLedger = d.blXpLedger || {};
+          if (d.blXp === undefined && d.blXpLedger === undefined) return;
+          var incomingXp = d.blXp !== undefined ? (Number(d.blXp) || 0) : progressionRef.current.xp;
+          var incomingLedger = d.blXpLedger !== undefined ? d.blXpLedger : progressionRef.current.ledger;
           if (incomingXp === progressionRef.current.xp && incomingLedger === progressionRef.current.ledger) return;
           progressionRef.current = { xp: incomingXp, ledger: incomingLedger };
           setFieldXp(incomingXp);
@@ -11638,18 +11952,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         }
 
         var bestTimes = bestTimes_state[0], setBestTimes = bestTimes_state[1];
+        // Lighting changes the perceptual identification challenge and XP,
+        // while the learner's chosen motor hold remains stable.
         var FIELD_CONDITIONS = {
-          dawn: { label: 'Dawn chorus', icon: '\uD83C\uDF05', note: 'Warm low light. Listen first; movement silhouettes stand out.', overlay: 'url(#blConditionDawn)', opacity: 0.34 },
-          day:  { label: 'Clear day', icon: '\u2600\uFE0F', note: 'Balanced light and color: best for studying field marks.', overlay: 'url(#blConditionDay)', opacity: 0.22 },
-          dusk: { label: 'Dusk watch', icon: '\uD83C\uDF19', note: 'Cool low light. Shape and flight behavior matter more than color.', overlay: 'url(#blConditionDusk)', opacity: 0.44 }
+          dawn: { label: 'Dawn chorus', icon: '\uD83C\uDF05', note: 'Warm low light. Listen first; movement silhouettes stand out.', overlay: 'url(#blConditionDawn)', opacity: 0.50,
+                  spotBonus: 2, effect: 'Low-light field marks \u00B7 +2 XP per unaided spot' },
+          day:  { label: 'Clear day', icon: '\u2600\uFE0F', note: 'Balanced light and color: best for studying field marks.', overlay: 'url(#blConditionDay)', opacity: 0.22,
+                  spotBonus: 0, effect: 'Balanced field marks \u00B7 standard XP' },
+          dusk: { label: 'Dusk watch', icon: '\uD83C\uDF19', note: 'Cool low light. Shape and flight behavior matter more than color.', overlay: 'url(#blConditionDusk)', opacity: 0.62,
+                  spotBonus: 4, effect: 'Silhouette-led identification \u00B7 +4 XP per unaided spot' }
         };
         var fieldCondition_state = useState(d.blFieldCondition || 'day');
         var fieldCondition = fieldCondition_state[0], setFieldCondition = fieldCondition_state[1];
         var conditionConfig = FIELD_CONDITIONS[fieldCondition] || FIELD_CONDITIONS.day;
         function switchFieldCondition(nextCondition) {
+          if (!FIELD_CONDITIONS[nextCondition] || nextCondition === fieldCondition) return;
+          cancelBinocularFocus('Field conditions changed. Begin a fresh observation.');
+          requireFreshBinocularAcquisition();
           setFieldCondition(nextCondition);
           upd('blFieldCondition', nextCondition);
-          announce('Field condition: ' + FIELD_CONDITIONS[nextCondition].label + '. ' + FIELD_CONDITIONS[nextCondition].note);
+          announce('Field condition: ' + FIELD_CONDITIONS[nextCondition].label + '. ' + FIELD_CONDITIONS[nextCondition].note + ' ' + FIELD_CONDITIONS[nextCondition].effect + '.');
         }
 
         function formatTime(seconds) {
@@ -11674,7 +11996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           { id: 'spot10',       icon: '🦅', title: __alloT('stem.birdlab.eagle_eye_10_in_a_row', 'Eagle Eye — 10 in a row'), desc: __alloT('stem.birdlab.spot_10_birds_in_a_row_without_a_hint_', 'Spot 10 birds in a row without a hint. Tough one.'), xp: 60 }
         ];
         function getDailyChallenge() {
-          var today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+          var today = birdLabLocalDateKey(); // learner-local YYYY-MM-DD
           // Simple deterministic hash of date → challenge index
           var hash = 0;
           for (var ci = 0; ci < today.length; ci++) hash = (hash * 31 + today.charCodeAt(ci)) & 0xffffffff;
@@ -11690,12 +12012,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         // Visited-habitats today tracker (for 'visit3' challenge)
         var visitedToday_state = useState(d.blVisitedToday || { date: '', habitats: {} });
         var visitedToday = visitedToday_state[0], setVisitedToday = visitedToday_state[1];
-        if (visitedToday.date !== dailyChallenge.date) {
-          // New day — reset
-          visitedToday = { date: dailyChallenge.date, habitats: {} };
-          setVisitedToday(visitedToday);
-          upd('blVisitedToday', visitedToday);
-        }
+        // New day — reset. Derive the fresh value inline so THIS render is
+        // already correct, but push the state/host writes into an effect:
+        // calling upd() here would setState on the host (AlloFlowContent)
+        // while React is rendering this view, which React warns about and
+        // which can drop the write.
+        var visitedTodayStale = visitedToday.date !== dailyChallenge.date;
+        if (visitedTodayStale) visitedToday = { date: dailyChallenge.date, habitats: {} };
+        useEffect(function() {
+          if (!visitedTodayStale) return;
+          var freshVisited = { date: dailyChallenge.date, habitats: {} };
+          setVisitedToday(freshVisited);
+          upd('blVisitedToday', freshVisited);
+        }, [dailyChallenge.date, visitedTodayStale]);
         function completeDailyChallenge() {
           if (dailyComplete) return;
           var nd = Object.assign({}, dailyDone);
@@ -12037,31 +12366,114 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         // One species-specific assignment per habitat per day. This gives each
         // revisit a clear purpose without changing the authentic scene layout.
         var assignmentSeed = 0;
-        var assignmentSeedText = dailyChallenge.date + ':' + habitatId;
+        var assignmentDate = birdLabVisualQa && birdLabVisualQa.assignmentDate ? String(birdLabVisualQa.assignmentDate) : dailyChallenge.date;
+        var assignmentSeedText = assignmentDate + ':' + habitatId;
         for (var asi = 0; asi < assignmentSeedText.length; asi++)
           assignmentSeed = (assignmentSeed * 33 + assignmentSeedText.charCodeAt(asi)) >>> 0;
         var assignmentBird = habitatSpecies[assignmentSeed % habitatSpecies.length];
         var assignmentSpecies = BIRDS[assignmentBird.species];
-        var assignmentKey = 'assignment:' + dailyChallenge.date + ':' + habitatId + ':' + assignmentBird.species;
-        var assignmentComplete = !!xpLedger[assignmentKey];
+        var assignmentKey = 'assignment:' + assignmentDate + ':' + habitatId + ':' + assignmentBird.species;
+        var assignmentComplete = birdLabVisualQa && typeof birdLabVisualQa.assignmentComplete === 'boolean'
+          ? birdLabVisualQa.assignmentComplete
+          : !!xpLedger[assignmentKey];
+        var assignmentSearchState = assignmentComplete ? 'complete' : (assignmentSearchActive ? 'active' : 'free');
+        var assignmentBehaviorId = sceneBirdBehaviorScript(assignmentBird, habitatId);
+        var assignmentMotionName = sceneBirdMotionName(assignmentBird, habitatId);
+        var assignmentMovementCue = ({
+          'feeder-grab-go': 'quick feeder visits and a single seed grab',
+          'hover-aim-dive': 'a sustained hover followed by a fishing dive',
+          'ground-forage-flush': 'short ground hops, foraging, and a white-tail flick'
+        })[assignmentBehaviorId] || ({
+          'perch-bob': 'small balance shifts on a perch', flit: 'quick flights between cover',
+          'trunk-cling': 'upright clinging and short trunk movements', 'walk-down': 'head-first creeps down tree bark',
+          'ground-hop': 'short ground hops with pauses to forage', 'double-scratch': 'two-footed scratching in leaf litter',
+          'wade-strike': 'slow wading followed by a quick bill strike', 'water-glide': 'a steady glide along the water surface',
+          hover: 'brief hovering with a steady head', waddle: 'short rocking steps on a ledge',
+          soar: 'broad circling flight', glide: 'long level glides', hidden: 'brief movement inside cover'
+        })[assignmentMotionName] || String(assignmentMotionName || 'field movement').replace(/-/g, ' ');
+        var assignmentSearchCue = difficulty === 'easy'
+          ? 'Begin with the habitat, silhouette, and any behavior you notice. Reveal support only if you need it.'
+          : difficulty === 'normal'
+            ? 'Begin with habitat and field marks. Optional clues narrow the search without changing the birds.'
+            : 'Scan independently first. Any available clue is optional and counts as assisted field work.';
+        function targetSearchHabitatClue(bird, species) {
+          var surface = sceneSubjectSurface(bird, 'bird', habitatId);
+          var surfaceCue = {
+            trunk: 'Search vertical bark and exposed trunks.',
+            ground: 'Search the ground layer and the edges of low cover.',
+            water: 'Search the waterline and open water.',
+            rock: 'Search rocky ledges near the water.',
+            air: 'Search the open air and the upper edges of the habitat.'
+          }[surface] || 'Search the habitat layer that best fits this bird.';
+          return surfaceCue + ' This species favors ' + String(species.habitat || habitat.name).toLowerCase() + '.';
+        }
+        function targetSearchSilhouetteClue(species) {
+          return species.size + '. Compare body proportions, bill shape, tail length, and posture before relying on color.';
+        }
+        function targetSearchBehaviorClue() {
+          if (prefersReducedMotion) return 'Compare the stable silhouette, body angle, bill shape, and how it uses its perch or surface.';
+          return 'Watch for ' + assignmentMovementCue + '.';
+        }
+        function targetSearchFieldMarkClue() {
+          return TARGET_SEARCH_FIELD_MARK_CLUES[assignmentBird.species]
+            || 'Look for one field mark that separates this bird from others of a similar size and shape.';
+        }
+        function targetSearchSpatialClue() {
+          var horizontal = assignmentBird.x < 300 ? 'left' : (assignmentBird.x > 600 ? 'right' : 'center');
+          var vertical = assignmentBird.y < 175 ? 'upper' : (assignmentBird.y > 340 ? 'lower' : 'middle');
+          return 'Search the ' + vertical + ' ' + horizontal + ' area. ' + assignmentBird.hint;
+        }
+        var assignmentClueDefinitions = {
+          habitat: { id: 'habitat', label: 'Habitat', kind: 'text', text: targetSearchHabitatClue(assignmentBird, assignmentSpecies) },
+          silhouette: { id: 'silhouette', label: 'Silhouette', kind: 'text', text: targetSearchSilhouetteClue(assignmentSpecies) },
+          behavior: { id: 'behavior', label: prefersReducedMotion ? 'Posture' : 'Behavior', kind: 'text', text: targetSearchBehaviorClue() },
+          'field-mark': { id: 'field-mark', label: 'Field mark', kind: 'text', text: targetSearchFieldMarkClue() },
+          spatial: { id: 'spatial', label: 'Location', kind: 'spatial', text: targetSearchSpatialClue() }
+        };
+        var assignmentClueLadderIds = TARGET_SEARCH_CLUE_LADDERS[difficulty] || [];
+        var assignmentClueEntry = assignmentClueProgress[assignmentKey] || { version: 1, round: roundCounts[habitatId] || 0, revealed: [] };
+        var assignmentClueRound = roundCounts[habitatId] || 0;
+        var assignmentClueRevealedIds = assignmentClueEntry.round === assignmentClueRound && Array.isArray(assignmentClueEntry.revealed)
+          ? assignmentClueEntry.revealed.filter(function(id) { return TARGET_SEARCH_CLUE_ORDER.indexOf(id) >= 0; })
+          : [];
+        var qaAssignmentClueIndex = qaAssignmentClueStage ? assignmentClueLadderIds.indexOf(qaAssignmentClueStage) : -1;
+        var assignmentClueVisibleIds = qaAssignmentClueIndex >= 0
+          ? assignmentClueLadderIds.slice(0, qaAssignmentClueIndex + 1)
+          : assignmentClueRevealedIds.filter(function(id) { return assignmentClueLadderIds.indexOf(id) >= 0; });
+        var assignmentCluesVisible = assignmentClueVisibleIds.map(function(id) { return assignmentClueDefinitions[id]; }).filter(Boolean);
+        var assignmentClueStage = assignmentClueVisibleIds.length ? assignmentClueVisibleIds[assignmentClueVisibleIds.length - 1] : '';
+        var assignmentClueStageDefinition = assignmentClueStage ? assignmentClueDefinitions[assignmentClueStage] : null;
+        var assignmentNextClueId = assignmentClueRevealedIds.indexOf('spatial') >= 0
+          ? null
+          : (assignmentClueLadderIds.filter(function(id) { return assignmentClueRevealedIds.indexOf(id) < 0; })[0] || null);
+        var assignmentNextClue = assignmentNextClueId ? assignmentClueDefinitions[assignmentNextClueId] : null;
+        var assignmentSpatialClueActive = assignmentClueVisibleIds.indexOf('spatial') >= 0;
+        function setAssignmentSearchMode(nextActive) {
+          var enabled = !!nextActive && !assignmentComplete;
+          cancelBinocularFocus(enabled ? 'Target Search started. Reacquire a bird deliberately.' : 'Free discovery resumed. Reacquire a bird deliberately.');
+          binocularPointerRef.current.active = false;
+          binocularPointerRef.current.down = false;
+          setBinocularActive(false);
+          setAssignmentSearchActive(enabled);
+          upd('blAssignmentSearchActive', enabled);
+          announce(enabled
+            ? 'Target Search started. Find the ' + assignmentSpecies.name + '. Other sightings still count.'
+            : 'Free discovery active. Observe any bird that catches your attention.');
+        }
         var habitatHintsUsed = hintsUsed[habitatId] || 0;
         var hintsLeft = Math.max(0, HINT_BUDGET - habitatHintsUsed);
 
-        function fireHint(bird) {
-          // Bring a hinted bird into the learner's current sweep so a hint
-          // never points outside the active visual lens.
-          if (sceneLens !== 'wide') setSceneLens(sceneLensForBird(bird));
-          // Already used max hints AND in hint mode → block
-          if (hintMode && habitatHintsUsed >= HINT_BUDGET) return;
-          // Mark a hint used (only in hint mode — accessibility mode doesn't deplete)
-          if (hintMode) {
-            var nextHints = Object.assign({}, hintsUsed);
-            nextHints[habitatId] = habitatHintsUsed + 1;
-            setHintsUsed(nextHints);
-            upd('blHintsUsed', nextHints);
-          }
-          // Using a hint disqualifies this habitat from "Clean Habitat" status
-          // AND resets the current spotter streak (was a run of unaided spots).
+        function consumeHintUse() {
+          // This common accounting path guarantees exactly one spent hint per
+          // clue, regardless of whether the clue is textual or spatial.
+          var liveHints = hintsUsedRef.current || {};
+          var habitatHintsUsed = Number(liveHints[habitatId] || 0);
+          if (!hintMode || habitatHintsUsed >= HINT_BUDGET) return false;
+          var nextHints = Object.assign({}, liveHints);
+          nextHints[habitatId] = habitatHintsUsed + 1;
+          hintsUsedRef.current = nextHints;
+          setHintsUsed(nextHints);
+          upd('blHintsUsed', nextHints);
           if (!habitatHinted[habitatId]) {
             var nh = Object.assign({}, habitatHinted); nh[habitatId] = true;
             setHabitatHinted(nh);
@@ -12070,17 +12482,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           if (spotStreak > 0) {
             setSpotStreak(0);
             upd('blSpotStreak', 0);
-            if (spotStreak >= 3) announce('Hint used — streak reset (was ' + spotStreak + ').');
+            if (spotStreak >= 3) announce('Clue used \u2014 streak reset (was ' + spotStreak + ').');
           }
-          setHintActive({ species: bird.species, ts: Date.now() });
+          return true;
+        }
+
+        function activateSpatialHint(bird) {
+          // The final Target Search stage delegates to the established spatial
+          // hint path, which charges once and owns lens/pulse behavior.
+          return fireHint(bird, { announceLocation: false });
+        }
+
+        function fireHint(bird, options) {
+          if (!consumeHintUse()) return false;
+          options = options || {};
+          // Text clues never enter this path. Only a location clue may change
+          // the camera or add a temporary scene pulse.
+          if (sceneLens !== 'wide') setSceneLens(sceneLensForBird(bird));
+          var hintStamp = Date.now();
+          setHintActive({ species: bird.species, ts: hintStamp });
           chirpHint();
-          announce('Hint: ' + bird.hint);
-          // Auto-clear pulse after 3.5 seconds
+          if (options.announceLocation !== false) announce('Location clue: ' + bird.hint);
           setTimeout(function() {
             setHintActive(function(cur) {
-              return (cur && cur.species === bird.species) ? null : cur;
+              return (cur && cur.species === bird.species && cur.ts === hintStamp) ? null : cur;
             });
           }, 3500);
+          return true;
+        }
+
+        function revealNextAssignmentClue() {
+          var clueLadder = TARGET_SEARCH_CLUE_LADDERS[difficulty] || [];
+          if (!assignmentSearchActive || assignmentComplete || !hintMode || !assignmentNextClue) return false;
+          if (assignmentClueRevealedIds.length >= HINT_BUDGET || hintsLeft <= 0) return false;
+          var liveProgress = assignmentClueProgressRef.current || {};
+          var liveEntry = liveProgress[assignmentKey];
+          var liveRevealed = liveEntry && liveEntry.round === assignmentClueRound && Array.isArray(liveEntry.revealed)
+            ? liveEntry.revealed.filter(function(id) { return TARGET_SEARCH_CLUE_ORDER.indexOf(id) >= 0; })
+            : [];
+          if (liveRevealed.indexOf('spatial') >= 0) return false;
+          var nextClueId = clueLadder.filter(function(id) { return liveRevealed.indexOf(id) < 0; })[0];
+          if (!nextClueId || liveRevealed.length >= HINT_BUDGET) return false;
+          var clue = assignmentClueDefinitions[nextClueId];
+          var spent = nextClueId === 'spatial' ? activateSpatialHint(assignmentBird) : consumeHintUse();
+          if (!spent) return false;
+          var nextEntry = {
+            version: 1,
+            round: assignmentClueRound,
+            revealed: liveRevealed.concat(nextClueId),
+            updatedAt: Date.now()
+          };
+          var nextProgress = Object.assign({}, liveProgress);
+          nextProgress[assignmentKey] = nextEntry;
+          assignmentClueProgressRef.current = nextProgress;
+          setAssignmentClueProgress(nextProgress);
+          upd('blAssignmentClueProgress', nextProgress);
+          // The card's single polite live region announces the complete clue
+          // after this state update. Target Search suppresses the generic
+          // scene announcement so text and spatial clues each speak once.
+          return true;
         }
 
         function toggleHintMode() {
@@ -12092,10 +12552,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         function switchHabitat(newId) {
           cancelBinocularFocus('New habitat selected. Begin a fresh scan.');
+          requireFreshBinocularAcquisition();
+          binocularTrackRef.current.cooldowns = {};
           setSceneLens('wide');
           upd('blSceneLens', 'wide');
           setHabitatId(newId);
           setPicked(null);
+          setHintActive(null);
           setRecordFilter('all');
           upd('blRecordFilter', 'all');
           focusBirdLabRefSoon(habitatSceneRef);
@@ -12122,6 +12585,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         }
         function startNewRound(nextDifficulty) {
           cancelBinocularFocus('New observation round. Begin a fresh scan.');
+          requireFreshBinocularAcquisition();
+          binocularTrackRef.current.cooldowns = {};
           var roundDifficulty = nextDifficulty || difficulty;
           var nextFound = Object.assign({}, foundByHabitat);
           nextFound[habitatId] = {};
@@ -12163,8 +12628,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           announce('New ' + habitat.name + ' round started on ' + DIFFICULTY_LABELS[roundDifficulty] + '.');
           if (typeof addToast === 'function') addToast('\uD83D\uDD04 Fresh round: ' + habitat.name + ' on ' + DIFFICULTY_TIER_LABEL[roundDifficulty], 'success');
         }
+        function changeBinocularHoldMode(nextMode) {
+          if (!BINOCULAR_HOLD_DURATIONS[nextMode] || nextMode === binocularHoldMode) return;
+          cancelBinocularFocus('Binocular hold changed. Begin a fresh observation.');
+          requireFreshBinocularAcquisition();
+          setBinocularHoldMode(nextMode);
+          upd('blBinocularHoldMode', nextMode);
+          announce('Binocular hold: ' + BINOCULAR_HOLD_DURATIONS[nextMode].label + ', ' + (BINOCULAR_HOLD_DURATIONS[nextMode].ms / 1000).toFixed(1) + ' seconds.');
+        }
         function changeDifficulty(nextDifficulty) {
           if (!nextDifficulty || nextDifficulty === difficulty) return;
+          cancelBinocularFocus('Identification difficulty changed. Begin a fresh observation.');
+          requireFreshBinocularAcquisition();
           setDifficulty(nextDifficulty);
           upd('blDifficulty', nextDifficulty);
           if (foundCount > 0) startNewRound(nextDifficulty);
@@ -12189,6 +12664,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           // Default 'spotted' so existing call sites work.
           var src = source || 'spotted';
           var species = BIRDS[bird.species];
+          var assignmentWasActive = assignmentSearchActive && !assignmentComplete;
+          var isAssignmentTarget = assignmentWasActive && bird.species === assignmentBird.species;
+          var assignmentAwarded = false;
           // Turn a successful wide-view spot into a short field-guide close-up.
           // The wide sweep remains one click away via the lens controls.
           if (sceneLens === 'wide') setSceneLens(sceneLensForBird(bird));
@@ -12196,6 +12674,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           var nextByHabitat = Object.assign({}, foundByHabitat); nextByHabitat[habitatId] = habitatFound;
           setFoundByHabitat(nextByHabitat);
           upd('foundByHabitat', nextByHabitat);
+          // A Target Search is a deliberate re-observation task, so a known bird
+          // can satisfy it without clearing the whole habitat round. Direct-identify
+          // is equally valid for access; streaks and clean clears remain unaided-only.
+          if (isAssignmentTarget && (src === 'spotted' || src === 'hinted')) {
+            assignmentAwarded = awardFieldXp(assignmentKey, 18, 'Target Search: ' + species.name);
+            if (assignmentAwarded) {
+              setAssignmentSearchActive(false);
+              upd('blAssignmentSearchActive', false);
+              setHintActive(null);
+            }
+          }
           // Track find source — only record FIRST find. A subsequent re-click does not downgrade
           // a previously-spotted bird to hinted.
           var foundViaKey = habitatId + ':' + bird.species;
@@ -12208,8 +12697,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             // Audio: bright ascending chirp on a real spot, quieter beep on direct-identify
             if (src === 'spotted') chirpSpot();
             if (src === 'spotted') {
-              awardFieldXp('spot:' + habitatId + ':' + bird.species, 6, 'Unaided spot: ' + species.name);
-              if (bird.species === assignmentBird.species) awardFieldXp(assignmentKey, 18, 'Field assignment: ' + species.name);
+              // Low-light spots pay the condition bonus. Only the unaided spot
+              // carries it — evidence, notes and reports stay flat so badge
+              // thresholds keep meaning the same amount of work.
+              var conditionSpotBonus = conditionConfig.spotBonus || 0;
+              awardFieldXp('spot:' + habitatId + ':' + bird.species, 6 + conditionSpotBonus,
+                'Unaided spot: ' + species.name + (conditionSpotBonus ? ' (' + conditionConfig.label + ' +' + conditionSpotBonus + ')' : ''));
             }
             // ── Spotter Streak management ──
             if (src === 'spotted') {
@@ -12255,7 +12748,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           setHintActive(null);
           openBirdRecord(species);
           if (!isFirstFind) {
-            announce('Reviewing ' + species.name + '. Start a new round to record another sighting.');
+            announce(assignmentAwarded
+              ? 'Target Search complete. ' + species.name + ' confirmed; free discovery resumed.'
+              : 'Reviewing ' + species.name + '. Start a new round to record another sighting.');
             return;
           }
           // ── Clean Habitat detection ──
@@ -12358,6 +12853,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           } else {
             announce('Identified: ' + species.name);
           }
+          if (assignmentAwarded) {
+            announce('Target Search complete. ' + species.name + ' confirmed; free discovery resumed.');
+          } else if (assignmentWasActive && !isAssignmentTarget) {
+            announce(species.name + ' recorded. Your target is still the ' + assignmentSpecies.name + '.');
+            if (typeof addToast === 'function') addToast('🔭 ' + species.name + ' recorded · target still ' + assignmentSpecies.name, 'info');
+          }
         }
         // The tracking RAF is long-lived; always route completion through the
         // callback from the latest render so hint, streak, and scoring state
@@ -12385,11 +12886,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var totalSpecies = Object.keys(BIRDS).length;
         var liferCount = Object.keys(lifeListNow).length;
         var habitatProgressPct = totalBirds > 0 ? Math.round((foundCount / totalBirds) * 100) : 0;
-        var missionPrompt = foundCount === 0
-          ? __alloT('stem.birdlab.i_spy_prompt_scan', 'Scan the habitat for movement, posture, and shape before using a hint.')
-          : (foundCount >= totalBirds
-            ? __alloT('stem.birdlab.i_spy_prompt_complete', 'Habitat complete. Try another habitat or re-run on a harder hint budget.')
-            : __alloT('stem.birdlab.i_spy_prompt_keep', 'Keep scanning. The remaining birds are still moving in the scene.'));
+        var missionPrompt = assignmentSearchActive && !assignmentComplete
+          ? 'Target Search: find the ' + assignmentSpecies.name + '. Other sightings still count as authentic field observations.'
+          : (foundCount === 0
+            ? __alloT('stem.birdlab.i_spy_prompt_scan', 'Scan the habitat for movement, posture, and shape before using a hint.')
+            : (foundCount >= totalBirds
+              ? __alloT('stem.birdlab.i_spy_prompt_complete', 'Habitat complete. Try another habitat or re-run on a harder hint budget.')
+              : __alloT('stem.birdlab.i_spy_prompt_keep', 'Keep scanning. The remaining birds are still moving in the scene.')));
 
         var passportHabitatStats = allHabitatIds.map(function(passportId) {
           var passportHabitat = HABITATS[passportId];
@@ -12469,9 +12972,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var visibleSceneFauna = (DISTRACTOR_FAUNA[habitatId] || []).filter(sceneDistractorVisible);
         // One descriptor per bird per render is shared by paint and hit target,
         // preventing state-boundary drift between what learners see and track.
+        function frozenBehaviorForBird(runtimeBird, runtimeIndex) {
+          var frozen = binocularBehaviorFreezeRef.current;
+          if (!frozen || frozen.habitatId !== habitatId || frozen.targetId !== binocularUi.targetId) return null;
+          return frozen.targetId === 'bird-' + runtimeIndex ? frozen : null;
+        }
         var sceneBirdRuntimeStates = habitat.birds.map(function(runtimeBird, runtimeIndex) {
           var runtimePosition = sceneBirdPosition(runtimeBird, runtimeIndex);
-          return { position: runtimePosition, behavior: sceneBirdBehaviorState(runtimeBird, runtimeIndex, runtimePosition, habitatId, birdLabVisualQa && birdLabVisualQa.behaviorMs) };
+          var frozenBehavior = frozenBehaviorForBird(runtimeBird, runtimeIndex);
+          return { position: runtimePosition, behavior: sceneBirdBehaviorState(runtimeBird, runtimeIndex, runtimePosition, habitatId, birdLabVisualQa && birdLabVisualQa.behaviorMs, frozenBehavior) };
         });
 
         function registerBinocularSubject(subjectId, node) {
@@ -12506,6 +13015,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           track.lost = 0;
           track.lastTs = now;
           track.lastPaint = 0;
+          if (track.kind === 'bird') {
+            var frozenScript = node.getAttribute('data-birdlab-behavior') || '';
+            var frozenState = node.getAttribute('data-birdlab-behavior-state') || '';
+            var frozenPose = node.getAttribute('data-birdlab-behavior-pose') || '';
+            binocularBehaviorFreezeRef.current = frozenScript && frozenScript !== 'field-mark-loop' && frozenState && frozenPose ? {
+              targetId: subjectId,
+              habitatId: habitatId,
+              script: frozenScript,
+              state: frozenState,
+              pose: frozenPose
+            } : null;
+          } else binocularBehaviorFreezeRef.current = null;
           announce('Subject acquired. Hold the binoculars steady.');
           setBinocularUi(function(previous) {
             return { targetId: subjectId, progress: 0, message: 'Subject acquired. Hold the binoculars steady.', feedback: previous.feedback };
@@ -12520,11 +13041,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           track.elapsed = 0;
           track.lost = 0;
           track.lastTs = 0;
+          binocularBehaviorFreezeRef.current = null;
           if (binocularReticleRef.current) binocularReticleRef.current.style.setProperty('--birdlab-reticle-progress', '0%');
           if (hadTarget && message && message.indexOf('Focus lost') === 0) announce(message);
           setBinocularUi(function(previous) {
             return { targetId: null, progress: 0, message: message || 'Move the binoculars over a moving subject and hold steady.', feedback: previous.feedback };
           });
+        }
+        function requireFreshBinocularAcquisition() {
+          // Completing one subject cannot cascade into a nearby overlapping one.
+          // Mouse users move again; touch users make a fresh press.
+          binocularPointerRef.current.active = false;
+          binocularPointerRef.current.down = false;
+          setBinocularActive(false);
         }
         function handleDistractorFocus(animal) {
           var label = animal && animal.label ? animal.label : 'animal';
@@ -12648,13 +13177,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   var bird = habitat.birds[track.index];
                   var completedBirdId = track.id;
                   track.cooldowns[completedBirdId] = now + 2200;
-                  cancelBinocularFocus('Bird identified. Choose another moving subject.');
+                  cancelBinocularFocus('Bird identified. Move the binoculars to begin a fresh observation.');
+                  requireFreshBinocularAcquisition();
                   if (bird && handleBirdClickRef.current) handleBirdClickRef.current(bird, 'spotted');
                 } else if (track.kind === 'distractor' && elapsed >= requiredMs) {
                   var animal = (DISTRACTOR_FAUNA[habitatId] || [])[track.index];
                   var completedAnimalId = track.id;
                   track.cooldowns[completedAnimalId] = now + 4200;
-                  cancelBinocularFocus('That subject was not a bird. Keep scanning.');
+                  cancelBinocularFocus('That subject was not a bird. Move the binoculars before checking another subject.');
+                  requireFreshBinocularAcquisition();
                   handleDistractorFocus(animal);
                 }
               }
@@ -12667,7 +13198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           }
           scheduleBinocularTick();
           return function() { if (rafId) cancelAnimationFrame(rafId); };
-        }, [habitatId, difficulty, binocularLoopAwake, sceneLens, foundCount]);
+        }, [habitatId, binocularHoldMode, binocularLoopAwake, sceneLens, foundCount]);
 
         var sceneLensStats = SCENE_LENSES.map(function(lens) {
           var lensSpecies = {};
@@ -12692,6 +13223,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           if (sceneBirdVisible(bird) && sceneBirdRuntimeStates[birdIndex].position.trackable) visibleSpeciesInScene[bird.species] = true;
         });
         var visibleSceneBirdCount = Object.keys(visibleSpeciesInScene).length;
+        // ── Small-stage legibility ──
+        // The wide sweep fits all 900 scene units across the card, so on a phone
+        // (~342px stage) one unit paints at 0.38px and the smallest songbirds
+        // land at 7–10px: a speck with no readable shape, measured across all
+        // five habitats. A focused lens crops to 450 units and paints with
+        // preserveAspectRatio="slice", which is exactly 2x — the same birds
+        // measure 18–22px. So rather than inflating the sprite scales (which
+        // would flatten the relative species sizes the field-ID lesson depends
+        // on, and push the largest birds past the shared 60-unit hotspot), open
+        // a small stage on a sector the way a real birder scans one.
+        // Only fires once per habitat, only when the stage really is that small,
+        // only if the learner has not picked a lens, and only onto a sector that
+        // actually holds birds. sceneViewportWidth === 0 means unmeasured, so
+        // SSR and the visual-QA harness keep the wide sweep untouched.
+        var sceneUnitPx = sceneViewportWidth > 0 ? sceneViewportWidth / habitat.width : 0;
+        var sceneStageIsSmall = sceneUnitPx > 0 && sceneUnitPx < 0.62;
+        useEffect(function() {
+          if (!sceneStageIsSmall) return;
+          if (lensChosenByLearnerRef.current || sceneSweep) return;
+          if (autoFocusedHabitatRef.current === habitatId) return;
+          if (sceneLens !== 'wide') { autoFocusedHabitatRef.current = habitatId; return; }
+          var fullest = null;
+          for (var statIndex = 0; statIndex < sceneLensStats.length; statIndex++) {
+            var stat = sceneLensStats[statIndex];
+            if (stat.id === 'wide' || stat.total <= 0) continue;
+            if (!fullest || stat.total > fullest.total) fullest = stat;
+          }
+          if (!fullest) return;
+          autoFocusedHabitatRef.current = habitatId;
+          setSceneLens(fullest.id);
+          upd('blSceneLens', fullest.id);
+          announce('Small screen: opened the ' + fullest.id + ' sweep so birds are large enough to identify. '
+            + 'Switch to the wide sweep any time from the scene lens controls.');
+        }, [sceneStageIsSmall, habitatId, sceneLens, sceneSweep]);
         function renderSceneBirds(layer, keyPrefix) {
           return habitat.birds.filter(function(bird) { return bird.layer === layer && sceneBirdVisible(bird); }).map(function(bird) {
             var birdIndex = habitat.birds.indexOf(bird);
@@ -12706,7 +13271,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             var anchored = (hintActive && hintActive.species === bird.species) || pickedSpeciesKey === bird.species;
             var motionClass = 'birdlab-motion-subject birdlab-' + motionName + (anchored ? ' birdlab-motion-subject--anchored' : '') + (!position.trackable && behaviorState.script !== 'field-mark-loop' ? ' birdlab-motion-subject--behavior-route' : '');
             var motionStyle = sceneActorMotionStyle(travelStyle.animationDelay, facing);
-            var foundClass = found[bird.species] ? ' birdlab-bird-found' : '';
+            var assignmentTarget = assignmentSearchActive && !assignmentComplete && bird.species === assignmentBird.species;
+            var foundClass = found[bird.species] && !assignmentTarget ? ' birdlab-bird-found' : '';
             return h('g', {
               key: keyPrefix + '-' + bird.species + '-' + birdIndex,
               className: sceneSubjectClass(position.phase),
@@ -12715,7 +13281,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               'data-birdlab-route-index': sceneSubjectRouteIndex(bird, birdIndex, habitatId),
               'data-birdlab-appearance-cycles': bird.appearanceEveryCycles || 1,
               'data-birdlab-behavior': behaviorState.script,
-              'data-birdlab-behavior-state': behaviorState.state
+              'data-birdlab-behavior-state': behaviorState.state,
+              'data-birdlab-behavior-pose': behaviorState.pose,
+              'data-birdlab-behavior-frozen': behaviorState.frozen ? 'true' : undefined,
+              'data-birdlab-species': bird.species,
+              'data-birdlab-assignment-target': assignmentTarget ? 'true' : undefined
             },
               (behaviorState.script === 'ground-forage-flush' && (position.phase === 'entering' || position.phase === 'exiting' || position.phase === 'cooldown')) ? null : renderSceneSubjectGrounding(h, bird, 'bird', habitatId, position, displayScale, 'lifecycle', motionName, travelStyle.animationDelay, facing),
               h('g', { className: motionClass, style: motionStyle },
@@ -12851,6 +13421,492 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             )
           ),
           h('div', { className: 'p-4 max-w-6xl mx-auto space-y-4' },
+            // ── Scene first ──
+            // The habitat scene is what this module IS, and it used to render
+            // below the mission header, status grid, passport and expedition
+            // route: 1686px down on a 1280x900 desktop and 3301px down on a
+            // 390px phone, both below the fold. Measured, not guessed. The scan
+            // controls stay directly above the scene they drive; every progress
+            // panel simply follows it. DOM order is the reordering, so reading
+            // order and focus order stay in step.
+            // The habitat scene
+            h('div', {
+              ref: habitatSceneRef,
+              tabIndex: -1,
+              role: 'region',
+              'aria-label': 'Interactive ' + habitat.name + ' habitat scene',
+              className: 'birdlab-scene-card relative bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden focus:outline-none focus:ring-4 ring-sky-500/40 ' + (sceneActive ? '' : 'birdlab-scene--motion-off') + (binocularUi.targetId ? ' birdlab-scene--acquiring' : '') + (binocularActive ? ' birdlab-scene--binocular-active' : ''),
+              'data-birdlab-scene-shell': 'true',
+              'data-birdlab-condition': fieldCondition,
+              'data-birdlab-scene-lens': activeSceneLens.id,
+              'data-birdlab-lifecycle-ms': sceneLifecycleClock == null ? 'static' : sceneLifecycleClock,
+              onPointerEnter: onScenePointerEnter,
+              onPointerMove: onScenePointerMove,
+              onPointerDown: onScenePointerDown,
+              onPointerUp: onScenePointerUp,
+              onPointerCancel: onScenePointerUp,
+              onPointerLeave: onScenePointerLeave,
+              // maxWidth is load-bearing, not decoration. aspect-ratio 1.8 plus
+              // a 300px min-height resolves the card to 540px wide, and with no
+              // width cap the browser honours that over the column it sits in —
+              // so on a 390px phone the whole tool scrolled sideways. Capped,
+              // the card becomes 342x300, which is exactly the geometry
+              // dev-tools/birdlab_visual_qa.mjs has always modelled.
+              style: { aspectRatio: (habitat.width / habitat.height).toString(), minHeight: '300px', maxWidth: '100%', touchAction: 'none' }
+            },
+              h('div', { className: 'birdlab-scope-corners', 'aria-hidden': 'true' }),
+              h('div', {
+                ref: binocularReticleRef,
+                className: 'birdlab-binocular-reticle',
+                'data-active': binocularActive ? 'true' : 'false',
+                'data-birdlab-reticle-style': 'clear-center-ticks',
+                'aria-hidden': 'true',
+                style: {
+                  '--birdlab-reticle-progress': binocularUi.progress + '%',
+                  '--birdlab-reticle-color': '#38bdf8'
+                }
+              }),
+              cleanCelebration && h('div', {
+                role: 'status',
+                'aria-live': 'assertive',
+                className: 'absolute inset-0 z-50 flex items-center justify-center pointer-events-none overflow-hidden',
+                style: { background: 'radial-gradient(ellipse at center, rgba(254,243,199,0.85) 0%, rgba(254,243,199,0.5) 50%, rgba(255,255,255,0.2) 100%)' }
+              },
+                // ── Confetti burst (16 particles fanning out + falling) ──
+                Array.from({ length: 18 }, function(_, ci) {
+                  // Deterministic-ish spread so it looks like a burst
+                  var angle = (ci / 18) * Math.PI * 2;
+                  var distance = 120 + (ci % 4) * 22;
+                  var dx = Math.cos(angle) * distance;
+                  var dy = Math.sin(angle) * distance + 40; // bias downward for gravity
+                  var colors = ['#fbbf24', '#f87171', '#34d399', '#60a5fa', '#a78bfa', '#fb923c'];
+                  var color = colors[ci % colors.length];
+                  var size = 6 + (ci % 3) * 3;
+                  var rotate = (ci * 47) % 360;
+                  var delay = (ci % 6) * 0.04;
+                  return h('div', {
+                    key: 'cnf-' + ci,
+                    'aria-hidden': 'true',
+                    className: 'birdlab-confetti',
+                    style: {
+                      position: 'absolute',
+                      top: '50%', left: '50%',
+                      width: size + 'px', height: (size * (ci % 2 ? 1 : 1.6)) + 'px',
+                      background: color,
+                      borderRadius: ci % 3 === 0 ? '50%' : '2px',
+                      transform: 'translate(-50%, -50%)',
+                      // Pass per-particle motion via CSS custom properties (read by keyframe)
+                      '--dx': dx + 'px',
+                      '--dy': dy + 'px',
+                      '--rot': rotate + 'deg',
+                      animationDelay: delay + 's'
+                    }
+                  });
+                }),
+                h('div', { className: 'birdlab-clean-celebrate relative bg-white border-4 border-amber-500 rounded-2xl shadow-2xl px-6 py-5 text-center max-w-sm mx-4',
+                  style: { boxShadow: '0 12px 36px rgba(217, 119, 6, 0.45), 0 4px 12px rgba(217, 119, 6, 0.25)' }
+                },
+                  // Spinning gold halo behind the medal
+                  h('div', { 'aria-hidden': 'true', className: 'absolute birdlab-trophy-spin',
+                    style: { top: '-12px', left: '50%', width: '96px', height: '96px', transform: 'translateX(-50%)', borderRadius: '50%', background: 'conic-gradient(from 0deg, #fbbf24, #fde047, #f59e0b, #fbbf24)', filter: 'blur(8px)', opacity: 0.55 }
+                  }),
+                  h('div', { 'aria-hidden': 'true', className: 'text-5xl mb-2 relative', style: { textShadow: '0 4px 12px rgba(217, 119, 6, 0.45)' } },
+                    cleanCelebration.medal || '🏆'),
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-amber-700 mb-1' },
+                    (cleanCelebration.isUpgrade ? 'TIER UPGRADED — ' : '') + (cleanCelebration.tierLabel || 'Clean') + ' Tier'),
+                  h('div', { className: 'text-xl font-black text-slate-900 mb-1 tracking-tight' },
+                    cleanCelebration.habitatName + (cleanCelebration.isUpgrade ? ' re-cleared!' : ' cleared!')),
+                  h('div', { className: 'text-sm text-slate-700 mb-2' },
+                    'All ' + cleanCelebration.birdCount + ' birds spotted ',
+                    h('span', { className: 'font-bold text-amber-700' }, __alloT('stem.birdlab.without_a_single_hint', 'without a single hint')),
+                    '.'),
+                  h('div', { className: 'flex items-center justify-center gap-2 text-[11px] font-bold text-slate-600 flex-wrap' },
+                    h('span', { className: 'px-2 py-0.5 bg-amber-100 border border-amber-300 rounded-full' },
+                      DIFFICULTY_LABELS[cleanCelebration.difficulty]),
+                    cleanCelebration.streak >= 3 && h('span', { className: 'px-2 py-0.5 bg-orange-100 border border-orange-300 rounded-full' },
+                      '🔥 ' + cleanCelebration.streak + '-streak')
+                  )
+                )
+              ),
+              h('div', {
+                role: 'group',
+                'aria-label': habitatAriaLabel,
+                className: 'birdlab-scene-canvas relative w-full h-full',
+                style: { background: habitat.bgGradient }
+              },
+                // Layered SVG scene — birds and habitat layers stacked in z-order.
+                // No `pointer-events-none` here: click targets are foreignObject
+                // buttons rendered INSIDE this SVG (see below), so they share the
+                // same viewBox transform as the birds and stay glued to them.
+                h('svg', {
+                  viewBox: sceneViewBox,
+                  className: 'absolute inset-0 w-full h-full',
+                  preserveAspectRatio: activeSceneLens.id === 'wide' ? 'xMidYMid meet' : 'xMidYMid slice',
+                  'data-birdlab-wide-fit': activeSceneLens.id === 'wide' ? 'meet' : 'focused-slice',
+                  'data-birdlab-realistic-scene': habitatId
+                },
+                  staticSceneArt.defs,
+                  staticSceneArt.backdrop,
+                  // Condition-specific sky light stays behind trees and actors.
+                  h('g', { key: 'condition-sky', 'data-birdlab-condition-sky': fieldCondition, 'aria-hidden': 'true', style: { pointerEvents: 'none' } },
+                    h('rect', { x: 0, y: 0, width: habitat.width, height: HABITAT_SCENE_PALETTES[habitatId].horizon, fill: 'url(#blScene-' + habitatId + (fieldCondition === 'dawn' ? '-dawn-light)' : '-light)'), opacity: fieldCondition === 'dawn' ? .72 : (fieldCondition === 'day' ? .34 : .04) }),
+                    fieldCondition === 'dawn' && h('circle', { key: 'dawn-glow', cx: habitat.width * .18, cy: Math.max(72, HABITAT_SCENE_PALETTES[habitatId].horizon * .36), r: habitat.height * .19, fill: '#fef3c7', opacity: .32 }),
+                    fieldCondition === 'dusk' && h('g', { key: 'dusk-stars' },
+                      [[.12,.10],[.24,.18],[.42,.09],[.63,.16],[.82,.08],[.92,.22]].map(function(star, si) {
+                        return h('circle', { key: 'star-' + si, cx: habitat.width * star[0], cy: habitat.height * star[1], r: si % 2 ? 1.4 : 2, fill: '#fef3c7', opacity: .8 });
+                      })
+                    )
+                  ),
+                  staticSceneArt.clouds,
+                  staticSceneArt.layer0,
+                  staticSceneArt.layer1,
+                  // Atmospheric perspective and habitat-specific air sit behind
+                  // every trackable subject, preserving silhouette clarity.
+                  h('rect', { key: 'atmo-horizon-haze', x: 0, y: 0, width: habitat.width, height: habitat.height, fill: 'url(#blScene-' + habitatId + '-haze)', 'aria-hidden': 'true', style: { pointerEvents: 'none' } }),
+                  staticSceneArt.ambientMid,
+                  // Birds and distractors at layer 2 (back / hidden)
+                  renderSceneBirds(2, 'bird2'),
+                  renderSceneDistractors(2, 'fauna2'),
+                  // Habitat layer 3 (midground trees) on top of layer-2 birds
+                  staticSceneArt.layer3,
+                  // Birds and distractors at layer 3 (mid-flight)
+                  renderSceneBirds(3, 'bird3'),
+                  renderSceneDistractors(3, 'fauna3'),
+                  // Foreground structure and subtle surface light ground actors.
+                  staticSceneArt.layer4,
+                  staticSceneArt.ambientSurface,
+                  // Birds and distractors at layer 4 (foreground)
+                  renderSceneBirds(4, 'bird4'),
+                  renderSceneDistractors(4, 'fauna4'),
+                  // Sparse foreground cover grounds feet without hiding field marks.
+                  staticSceneArt.occluders,
+                  // Birds and distractors at layer 5 (highest / flying)
+                  renderSceneBirds(5, 'bird5'),
+                  renderSceneDistractors(5, 'fauna5'),
+                  // Final color grade and vignette unify actors with the habitat.
+                  h('rect', { key: 'atmo-vignette', x: 0, y: 0, width: habitat.width, height: habitat.height, fill: 'url(#blVignette)', 'aria-hidden': 'true', style: { pointerEvents: 'none' } }),
+                  h('rect', { key: 'field-condition', x: 0, y: 0, width: habitat.width, height: habitat.height, fill: conditionConfig.overlay, opacity: conditionConfig.opacity, 'aria-hidden': 'true', style: { pointerEvents: 'none', transition: 'fill 350ms ease, opacity 350ms ease' } }),
+                  // ── Hint pulse: a pulsing amber ring on the hinted bird's position ──
+                  // Rendered above all bird layers so it's clearly visible even on
+                  // tightly-clustered birds. Auto-clears 3.5s after triggered.
+                  hintActive && (function() {
+                    var hintedBird = null;
+                    for (var bi = 0; bi < habitat.birds.length; bi++) {
+                      if (habitat.birds[bi].species === hintActive.species) { hintedBird = habitat.birds[bi]; break; }
+                    }
+                    if (!hintedBird) return null;
+                    return h('g', { key: 'hint-pulse', 'aria-hidden': 'true' },
+                      // Outer pulsing ring (animates outward + fades)
+                      h('circle', { cx: hintedBird.x, cy: hintedBird.y, r: 12,
+                        fill: 'none', stroke: '#f59e0b', strokeWidth: 3,
+                        className: 'birdlab-hint-ring', style: { filter: 'drop-shadow(0 0 5px rgba(245,158,11,0.85))' } }),
+                      // Static inner dot so the location is always pinned
+                      h('circle', { cx: hintedBird.x, cy: hintedBird.y, r: 6,
+                        fill: '#f59e0b', opacity: 0.85,
+                        stroke: '#fef3c7', strokeWidth: 2 })
+                    );
+                  })(),
+                  // Selected-bird reticle keeps the record card visually tied to
+                  // the sprite, without adding another animated effect.
+                  picked && pickedSpeciesKey && (function() {
+                    var selectedBird = null;
+                    for (var selectedBirdIndex = 0; selectedBirdIndex < habitat.birds.length; selectedBirdIndex++) {
+                      if (habitat.birds[selectedBirdIndex].species === pickedSpeciesKey) { selectedBird = habitat.birds[selectedBirdIndex]; break; }
+                    }
+                    if (!selectedBird || !sceneBirdVisible(selectedBird)) return null;
+                    var selectedSpecies = BIRDS[selectedBird.species];
+                    var labelWidth = Math.min(210, Math.max(104, selectedSpecies.name.length * 5.4 + 20));
+                    var labelX = Math.max(labelWidth / 2 + 6, Math.min(habitat.width - labelWidth / 2 - 6, selectedBird.x));
+                    var labelY = selectedBird.y < 72 ? selectedBird.y + 28 : selectedBird.y - 38;
+                    return h('g', { key: 'picked-reticle', 'aria-hidden': 'true' },
+                      h('circle', { cx: selectedBird.x, cy: selectedBird.y, r: 23, className: 'birdlab-picked-ring' }),
+                      h('circle', { cx: selectedBird.x, cy: selectedBird.y, r: 3, fill: '#fbbf24', stroke: '#fff', strokeWidth: 1.5, 'vector-effect': 'non-scaling-stroke' }),
+                      h('g', { className: 'birdlab-selected-label' },
+                        h('rect', { x: labelX - labelWidth / 2, y: labelY, width: labelWidth, height: 22, rx: 8, fill: 'rgba(15,23,42,0.9)', stroke: '#fde68a', strokeWidth: 1.2, 'vector-effect': 'non-scaling-stroke' }),
+                        h('text', { x: labelX, y: labelY + 14, textAnchor: 'middle', fill: '#fff', fontSize: 9, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, selectedSpecies.name)
+                      )
+                    );
+                  })(),
+                  // Moving focus targets mirror the exact lifecycle + motion
+                  // transform used by the visible actors. Identification now
+                  // occurs only after a continuous binocular lock.
+                  habitat.birds.filter(sceneBirdVisible).map(function(b) {
+                    var birdIndex = habitat.birds.indexOf(b);
+                    var subjectId = 'bird-' + birdIndex;
+                    var sp = BIRDS[b.species];
+                    var isFound = !!found[b.species];
+                    var targetObservationRequired = assignmentSearchActive && !assignmentComplete && b.species === assignmentBird.species;
+                    var runtimeState = sceneBirdRuntimeStates[birdIndex];
+                    var position = runtimeState.position;
+                    var behaviorState = runtimeState.behavior;
+                    var travelStyle = sceneSubjectStyle(b, birdIndex, 'bird');
+                    var targetFacing = sceneSubjectFacing(b, birdIndex, 'bird', habitatId);
+                    var yFrac = b.y / habitat.height;
+                    var xFrac = b.x / habitat.width;
+                    var vDesc = yFrac < 0.33 ? 'upper sky' : yFrac < 0.66 ? 'mid scene' : 'ground level';
+                    var hDesc = xFrac < 0.33 ? 'left' : xFrac > 0.66 ? 'right' : 'center';
+                    var areaDesc = vDesc + ', ' + hDesc;
+                    var hitSize = 60;
+                    var targetMotionClass = 'birdlab-motion-subject birdlab-' + sceneBirdMotionName(b, habitatId) + (((hintActive && hintActive.species === b.species) || pickedSpeciesKey === b.species) ? ' birdlab-motion-subject--anchored' : '') + (!position.trackable && behaviorState.script !== 'field-mark-loop' ? ' birdlab-motion-subject--behavior-route' : '');
+                    return h('g', { key: 'target-' + subjectId, className: sceneSubjectClass(position.phase), style: travelStyle, 'data-birdlab-presence': position.phase, 'data-birdlab-behavior': behaviorState.script, 'data-birdlab-behavior-state': behaviorState.state, 'data-birdlab-behavior-pose': behaviorState.pose, 'data-birdlab-behavior-frozen': behaviorState.frozen ? 'true' : undefined, 'data-birdlab-species': b.species, 'data-birdlab-assignment-target': targetObservationRequired ? 'true' : undefined },
+                      h('g', { className: targetMotionClass, style: sceneActorMotionStyle(travelStyle.animationDelay, targetFacing) },
+                        renderSceneMotionBox(h, position),
+                        h('foreignObject', {
+                          x: position.x - hitSize / 2,
+                          y: position.y - hitSize / 2,
+                          width: hitSize,
+                          height: hitSize,
+                          style: { pointerEvents: position.trackable ? 'auto' : 'none', overflow: 'visible' }
+                        },
+                          h('button', {
+                            ref: function(node) { registerBinocularSubject(subjectId, node); },
+                            type: 'button',
+                            disabled: !position.trackable,
+                            tabIndex: position.trackable ? 0 : -1,
+                            onFocus: function() { setKeyboardFocusTarget(subjectId); },
+                            onBlur: function() { setKeyboardFocusTarget(function(current) { return current === subjectId ? null : current; }); },
+                            onClick: function(event) {
+                              if (isFound && !targetObservationRequired) handleBirdClick(b, 'spotted');
+                              else {
+                                if (event && event.preventDefault) event.preventDefault();
+                                announce(targetObservationRequired
+                                  ? 'Daily target located. Use the binocular reticle and hold steady to confirm it.'
+                                  : 'Use the binocular reticle and hold steady to identify this bird.');
+                              }
+                            },
+                            'data-birdlab-kind': 'bird',
+                            'data-birdlab-index': birdIndex,
+                            'data-birdlab-group-id': b.groupId || undefined,
+                            'data-birdlab-behavior': behaviorState.script,
+                            'data-birdlab-behavior-state': behaviorState.state,
+                            'data-birdlab-behavior-pose': behaviorState.pose,
+                            'data-birdlab-presence': position.phase,
+                            'data-birdlab-found': isFound && !targetObservationRequired ? 'true' : 'false',
+                            'data-birdlab-species': b.species,
+                            'data-birdlab-assignment-target': targetObservationRequired ? 'true' : undefined,
+                            'data-birdlab-appearance-cycles': b.appearanceEveryCycles || 1,
+                            'aria-label': targetObservationRequired
+                              ? 'Target Search bird in ' + areaDesc + '. Hold binocular focus to confirm the ' + sp.name + '.'
+                              : (isFound ? 'Identified: ' + sp.name + '. Click to review.' : 'Moving bird in ' + areaDesc + ': ' + b.hint + '. Hold binocular focus to identify.'),
+                            className: 'birdlab-bird-btn',
+                            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }
+                          }, isFound && !targetObservationRequired && h('span', { 'aria-hidden': true, style: { position: 'absolute', top: '-4px', right: '-4px', background: '#047857', color: '#fff', fontSize: '10px', fontWeight: 800, borderRadius: '999px', padding: '2px 5px' } }, '✓'))
+                        )
+                      )
+                    );
+                  }),
+                  visibleSceneFauna.map(function(animal) {
+                    var fauna = DISTRACTOR_FAUNA[habitatId] || [];
+                    var animalIndex = fauna.indexOf(animal);
+                    var subjectId = 'distractor-' + animalIndex;
+                    var position = sceneDistractorPosition(animal, animalIndex);
+                    var travelStyle = sceneSubjectStyle(animal, animalIndex, 'distractor');
+                    var targetFacing = sceneSubjectFacing(animal, animalIndex, 'distractor', habitatId);
+                    var hitSize = Math.round(Math.max(68, Math.min(104, 58 * distractorSceneScale(animal))));
+                    return h('g', { key: 'target-' + subjectId, className: sceneSubjectClass(position.phase), style: travelStyle, 'data-birdlab-presence': position.phase },
+                      h('g', { className: 'birdlab-motion-subject birdlab-' + sceneDistractorMotionName(animal), style: sceneActorMotionStyle(travelStyle.animationDelay, targetFacing) },
+                        h('foreignObject', { x: position.x - hitSize / 2, y: position.y - hitSize / 2, width: hitSize, height: hitSize, style: { pointerEvents: position.trackable ? 'auto' : 'none', overflow: 'visible' } },
+                          h('button', {
+                            ref: function(node) { registerBinocularSubject(subjectId, node); },
+                            type: 'button',
+                            disabled: !position.trackable,
+                            tabIndex: position.trackable ? 0 : -1,
+                            onFocus: function() { setKeyboardFocusTarget(subjectId); },
+                            onBlur: function() { setKeyboardFocusTarget(function(current) { return current === subjectId ? null : current; }); },
+                            onClick: function(event) { if (event && event.preventDefault) event.preventDefault(); announce('Hold the binoculars steady to check this animal.'); },
+                            'data-birdlab-kind': 'distractor',
+                            'data-birdlab-index': animalIndex,
+                            'data-birdlab-presence': position.phase,
+                            'data-birdlab-found': 'false',
+                            'data-birdlab-distractor': 'true',
+                            'data-birdlab-appearance-cycles': animal.appearanceEveryCycles || 1,
+                            'aria-label': 'Moving animal. Hold binocular focus to check whether it is a bird.',
+                            className: 'birdlab-bird-btn birdlab-distractor-btn',
+                            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }
+                          })
+                        )
+                      )
+                    );
+                  })
+                ),
+                // ── Hint banner: shows above the keyboard alternative when a hint is active ──
+                // Click hotspots are rendered inside the SVG as foreignObject buttons.
+                // Observation copy lives in the stable rail outside pointer bounds.
+              )
+            ),
+            h('div', {
+              className: 'birdlab-observation-rail',
+              'data-birdlab-observation-rail': 'true',
+              'data-acquiring': binocularUi.targetId ? 'true' : 'false',
+              role: 'group',
+              'aria-label': 'Observation status'
+            },
+              h('div', { className: 'birdlab-scene-hud birdlab-scene-hud--condition', 'data-birdlab-rail-slot': 'condition', 'aria-hidden': 'true' },
+                h('span', { className: 'birdlab-observation-slot-icon' }, conditionConfig.icon),
+                h('div', null,
+                  h('strong', null, conditionConfig.label),
+                  h('span', null, activeSceneLens.label + ' · ' + habitat.name + ' field view')
+                )
+              ),
+              h('div', {
+                className: 'birdlab-observation-slot birdlab-observation-slot--focus birdlab-binocular-feedback ' + (hintActive && !binocularUi.targetId && !binocularUi.feedback ? 'birdlab-observation-slot--hint' : ''),
+                'data-birdlab-rail-slot': 'focus',
+                'aria-live': 'off'
+              },
+                (binocularUi.targetId || binocularUi.feedback)
+                  ? h('div', { className: 'birdlab-observation-focus-copy' },
+                      h('strong', null, binocularUi.feedback || binocularUi.message),
+                      h('span', null, binocularUi.targetId ? 'Keep the clear center steady on the subject.' : 'Keep scanning for a bird.'),
+                      h('div', {
+                        className: 'birdlab-observation-progress',
+                        role: 'progressbar',
+                        'data-birdlab-binocular-progress': 'true',
+                        'aria-label': 'Binocular focus progress',
+                        'aria-valuemin': 0,
+                        'aria-valuemax': 100,
+                        'aria-valuenow': binocularUi.progress
+                      }, h('div', { style: { width: binocularUi.progress + '%' } }))
+                    )
+                  : hintActive
+                    ? (function() {
+                        var railHintBird = null;
+                        for (var railHintIndex = 0; railHintIndex < habitat.birds.length; railHintIndex++) {
+                          if (habitat.birds[railHintIndex].species === hintActive.species) { railHintBird = habitat.birds[railHintIndex]; break; }
+                        }
+                        if (!railHintBird) return null;
+                        var railHintSpecies = BIRDS[railHintBird.species];
+                        return h('div', { className: 'birdlab-observation-focus-copy', 'aria-live': 'polite' },
+                          h('strong', null, '💡 Looking for ' + railHintSpecies.name),
+                          h('span', null, railHintBird.hint + ' Center it in the clear binocular ring and hold steady.')
+                        );
+                      })()
+                    : h('div', { className: 'birdlab-observation-focus-copy' },
+                        h('strong', null, '🔭 Binoculars ready'),
+                        h('span', null, 'Center an animal in the clear ring and hold steady to observe it.')
+                      )
+              ),
+              h('div', { className: 'birdlab-scene-hud birdlab-scene-hud--assignment ' + (assignmentComplete ? 'birdlab-scene-hud--complete' : ''), 'data-birdlab-rail-slot': 'assignment', 'data-birdlab-target-search-state': assignmentSearchState, 'data-birdlab-target-species': assignmentSearchState === 'free' ? undefined : assignmentBird.species, 'aria-hidden': 'true' },
+                h('span', { className: 'birdlab-observation-slot-icon' }, assignmentComplete ? '✓' : (assignmentSearchActive ? '🎯' : '🔭')),
+                h('div', null,
+                  h('strong', null, assignmentComplete ? 'Target complete' : (assignmentSearchActive ? 'Target: ' + assignmentSpecies.name : 'Free discovery')),
+                  h('span', null, assignmentComplete ? 'Excellent field work' : (assignmentSearchActive ? 'Other sightings still count' : 'Observe any bird that catches your attention'))
+                )
+              )
+            ),
+            h('section', { className: 'rounded-2xl border-2 border-slate-300 bg-white p-3 shadow-sm', 'aria-label': 'Field conditions' },
+              h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+                h('div', { className: 'min-w-[220px] flex-1' },
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-slate-600' }, 'Field conditions'),
+                  h('div', { className: 'text-xs text-slate-700 mt-1' }, conditionConfig.note),
+                  h('div', { className: 'text-[11px] font-bold text-slate-800 mt-1', 'data-birdlab-condition-effect': fieldCondition }, conditionConfig.effect)
+                ),
+                h('div', { className: 'flex gap-2 flex-wrap', role: 'radiogroup', 'aria-label': 'Choose scene lighting condition' },
+                  Object.keys(FIELD_CONDITIONS).map(function(conditionKey) {
+                    var cfg = FIELD_CONDITIONS[conditionKey];
+                    return h('button', {
+                      key: conditionKey,
+                      type: 'button',
+                      onClick: function() { switchFieldCondition(conditionKey); },
+                      role: 'radio', 'aria-checked': fieldCondition === conditionKey ? 'true' : 'false',
+                      // The trade rides on the accessible name so a screen-reader
+                      // user hears the cost/benefit before choosing, not after.
+                      'aria-label': cfg.label + '. ' + cfg.effect,
+                      title: cfg.effect,
+                      className: 'birdlab-condition-button px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (fieldCondition === conditionKey ? 'bg-slate-900 text-white border-slate-900 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-sky-500')
+                    }, cfg.icon + ' ' + cfg.label);
+                  })
+                )
+              )
+            ),
+            h('section', { className: 'rounded-2xl border-2 border-slate-300 bg-white p-3 shadow-sm', 'aria-label': 'Scene viewing controls', 'data-birdlab-scene-controls': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+                h('div', { className: 'min-w-[220px] flex-1' },
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-slate-600' }, '\uD83D\uDD2D Scene lens'),
+                  h('div', { className: 'text-xs text-slate-700 mt-1' }, activeSceneLens.note + ' ' + visibleSceneBirdCount + '/' + totalBirds + ' bird species in view. Hold steady for ' + (ISPY_DWELL_MS / 1000).toFixed(1) + ' seconds to identify.')
+                ),
+                h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { stepSceneLens(-1); },
+                    'aria-label': 'Previous scene lens',
+                    title: 'Previous scene lens',
+                    className: 'h-10 w-10 rounded-xl border-2 border-slate-300 bg-white text-lg font-black text-slate-800 transition hover:border-sky-500 focus:outline-none focus:ring-4 ring-sky-500/30'
+                  }, '\u2190'),
+                  h('button', {
+                    type: 'button',
+                    onClick: toggleSceneMotion,
+                    disabled: prefersReducedMotion,
+                    'aria-pressed': sceneMotion && !prefersReducedMotion ? 'true' : 'false',
+                    'aria-label': prefersReducedMotion ? 'Scene motion disabled by reduced-motion preference' : (sceneMotion ? 'Pause scene motion' : 'Play scene motion'),
+                    title: prefersReducedMotion ? 'Reduced motion is enabled in your device settings' : undefined,
+                    className: 'px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (sceneMotion ? 'bg-sky-100 text-sky-900 border-sky-400 hover:bg-sky-200' : 'bg-slate-900 text-white border-slate-900 hover:bg-slate-700')
+                  }, prefersReducedMotion ? '\u25A0 Reduced motion' : (sceneMotion ? '\u23F8 Motion on' : '\u25B6 Motion paused')),
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { stepSceneLens(1); },
+                    'aria-label': 'Next scene lens',
+                    title: 'Next scene lens',
+                    className: 'h-10 w-10 rounded-xl border-2 border-slate-300 bg-white text-lg font-black text-slate-800 transition hover:border-sky-500 focus:outline-none focus:ring-4 ring-sky-500/30'
+                  }, '\u2192')
+                )
+              ),
+              h('div', {
+                className: 'mt-3 rounded-xl border border-sky-200 bg-sky-50 p-2.5',
+                'data-birdlab-binocular-hold': binocularHoldMode
+              },
+                h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+                  h('div', { className: 'min-w-[220px] flex-1' },
+                    h('label', { htmlFor: 'birdlab-binocular-hold-select', className: 'block text-[10px] font-black uppercase tracking-widest text-sky-800' }, 'Binocular hold'),
+                    h('div', { id: 'birdlab-binocular-hold-help', className: 'text-[11px] text-slate-700 mt-0.5' }, 'Motor-access preference only. Identification difficulty, XP, and medals stay unchanged.')
+                  ),
+                  h('select', {
+                    id: 'birdlab-binocular-hold-select',
+                    value: binocularHoldMode,
+                    onChange: function(event) { changeBinocularHoldMode(event.target.value); },
+                    'aria-describedby': 'birdlab-binocular-hold-help',
+                    className: 'min-h-[40px] rounded-lg border-2 border-sky-500 bg-white px-3 py-2 text-xs font-black text-sky-950 focus:outline-none focus:ring-4 ring-sky-500/25'
+                  }, Object.keys(BINOCULAR_HOLD_DURATIONS).map(function(holdKey) {
+                    var holdOption = BINOCULAR_HOLD_DURATIONS[holdKey];
+                    return h('option', {
+                      key: holdKey,
+                      value: holdKey,
+                      'data-birdlab-binocular-hold-option': holdKey
+                    }, holdOption.label + ' \u00B7 ' + (holdOption.ms / 1000).toFixed(1) + ' seconds');
+                  }))
+                )
+              ),
+              h('div', { className: 'mt-2 flex items-center gap-2 flex-wrap' },
+                h('button', {
+                  type: 'button',
+                  onClick: toggleSceneSweep,
+                  'aria-pressed': sceneSweep ? 'true' : 'false',
+                  'aria-label': sceneSweep ? 'Turn guided sweep off' : 'Turn guided sweep on',
+                  className: 'px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (sceneSweep ? 'bg-indigo-700 text-white border-indigo-800 shadow' : 'bg-white text-indigo-900 border-indigo-300 hover:border-indigo-500')
+                }, sceneSweep ? '\uD83E\uDDED Guided sweep on' : '\uD83E\uDDED Guided sweep'),
+                h('span', { className: 'text-[11px] text-slate-600' }, sceneSweep ? 'Finish a zone to move to the next lens.' : 'Manual lens navigation.')
+              ),
+              h('div', { className: 'mt-2 flex gap-2 flex-wrap', role: 'radiogroup', 'aria-label': 'Choose scene lens' },
+                SCENE_LENSES.map(function(lens) {
+                  var selectedLens = activeSceneLens.id === lens.id;
+                  var lensStat = sceneLensStats.filter(function(stat) { return stat.id === lens.id; })[0] || { found: 0, total: 0 };
+                  var lensUnavailable = lens.id !== 'wide' && lensStat.total === 0;
+                  return h('button', {
+                    key: lens.id,
+                    type: 'button',
+                    role: 'radio',
+                    disabled: lensUnavailable,
+                    'aria-disabled': lensUnavailable ? 'true' : 'false',
+                    'aria-checked': selectedLens ? 'true' : 'false',
+                    title: lensUnavailable ? 'No fully visible subjects in this sweep at the current screen size.' : (lens.note + ' ' + lensStat.found + ' of ' + lensStat.total + ' birds spotted in this sweep.'),
+                    onClick: function() { if (!lensUnavailable) switchSceneLens(lens.id); },
+                    className: 'px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (lensUnavailable ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' : (selectedLens ? 'bg-slate-900 text-white border-slate-900 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-sky-500'))
+                  },
+                    lens.icon + ' ' + lens.label,
+                    h('span', { className: 'ml-1 text-[10px] font-mono ' + (selectedLens ? 'text-emerald-200' : 'text-slate-500') }, lensStat.found + '/' + lensStat.total)
+                  );
+                })
+              )
+            ),
             h('section', { className: 'birdlab-mission-header', 'data-birdlab-mission': 'true' },
               h('div', { className: 'birdlab-mission-inner' },
                 h('div', null,
@@ -12920,14 +13976,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               )
             ),
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-3' },
-              h('section', { className: 'rounded-2xl border-2 p-4 shadow-sm ' + (assignmentComplete ? 'bg-emerald-50 border-emerald-400' : 'bg-amber-50 border-amber-300'), 'aria-label': 'Daily field assignment' },
+              h('section', {
+                className: 'rounded-2xl border-2 p-4 shadow-sm ' + (assignmentComplete ? 'bg-emerald-50 border-emerald-400' : assignmentSearchActive ? 'bg-amber-50 border-amber-400' : 'bg-sky-50 border-sky-300'),
+                'aria-label': 'Target Search',
+                'data-birdlab-target-search': assignmentSearchState,
+                'data-birdlab-target-species': assignmentSearchState === 'free' ? undefined : assignmentBird.species
+              },
                 h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
-                  h('span', { className: 'text-[10px] font-black uppercase tracking-widest text-amber-800' }, '\uD83C\uDFAF Field assignment'),
-                  h('span', { className: 'text-[10px] font-bold rounded-full px-2 py-0.5 ' + (assignmentComplete ? 'bg-emerald-200 text-emerald-900' : 'bg-white text-amber-900 border border-amber-300') }, assignmentComplete ? '\u2713 COMPLETE' : '+18 XP')
+                  h('span', { className: 'text-[10px] font-black uppercase tracking-widest ' + (assignmentComplete ? 'text-emerald-800' : assignmentSearchActive ? 'text-amber-900' : 'text-sky-800') }, '\uD83C\uDFAF Target Search'),
+                  h('span', { className: 'text-[10px] font-bold rounded-full px-2 py-0.5 ' + (assignmentComplete ? 'bg-emerald-200 text-emerald-900' : assignmentSearchActive ? 'bg-white text-amber-900 border border-amber-300' : 'bg-white text-sky-900 border border-sky-300') }, assignmentComplete ? '\u2713 COMPLETE' : assignmentSearchActive ? '+18 XP ACTIVE' : 'OPTIONAL')
                 ),
-                h('div', { className: 'text-lg font-black text-slate-900 mt-1' }, 'Find the ' + assignmentSpecies.name),
-                h('p', { className: 'text-xs text-slate-700 mt-1 leading-relaxed' }, assignmentBird.hint),
-                h('div', { className: 'text-[11px] font-bold mt-2 ' + (assignmentComplete ? 'text-emerald-800' : 'text-amber-800') }, assignmentComplete ? 'Excellent field work. Return tomorrow for a new target.' : 'Spot it directly in the scene without direct-identify mode.')
+                assignmentComplete
+                  ? h('div', null,
+                      h('div', { className: 'text-lg font-black text-slate-900 mt-1' }, assignmentSpecies.name + ' confirmed'),
+                      h('p', { className: 'text-xs text-emerald-800 mt-1 font-semibold' }, 'Excellent field work. Free discovery is active again; a new target arrives tomorrow.')
+                    )
+                  : assignmentSearchActive
+                    ? h('div', null,
+                        h('div', { className: 'text-lg font-black text-slate-900 mt-1' }, 'Find the ' + assignmentSpecies.name),
+                        h('p', { className: 'text-xs text-slate-700 mt-1 leading-relaxed', 'data-birdlab-target-cue': difficulty }, assignmentSearchCue),
+                        h('p', { className: 'text-[11px] text-slate-600 mt-1' }, 'No photo preview: identify it from a living scene. Other birds remain valid discoveries.'),
+                        assignmentCluesVisible.length > 0 && h('ol', {
+                          className: 'mt-3 space-y-2',
+                          'aria-label': 'Revealed Target Search clues',
+                          'data-birdlab-target-clue-stage': assignmentClueStage,
+                          'data-birdlab-target-clue-kind': assignmentClueStageDefinition ? assignmentClueStageDefinition.kind : undefined,
+                          'data-birdlab-target-clue-spatial': assignmentSpatialClueActive ? 'true' : 'false'
+                        }, assignmentCluesVisible.map(function(clue, clueIndex) {
+                          return h('li', {
+                            key: clue.id,
+                            className: 'rounded-xl border border-amber-300 bg-white/90 px-3 py-2 text-xs text-slate-800',
+                            'data-birdlab-target-clue-kind': clue.kind,
+                            'data-birdlab-target-clue-id': clue.id
+                          },
+                            h('span', { className: 'font-black text-amber-900' }, (clueIndex + 1) + '. ' + clue.label + ': '),
+                            h('span', null, clue.text)
+                          );
+                        })),
+                        h('div', {
+                          className: 'sr-only',
+                          role: 'status',
+                          'aria-live': 'polite',
+                          'aria-atomic': 'true',
+                          'data-birdlab-target-clue-status': 'true'
+                        }, assignmentCluesVisible.length
+                          ? assignmentCluesVisible[assignmentCluesVisible.length - 1].label + ' clue: ' + assignmentCluesVisible[assignmentCluesVisible.length - 1].text
+                          : 'No Target Search clues revealed.'),
+                        h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                          hintMode && HINT_BUDGET > 0 && h('button', {
+                            type: 'button',
+                            disabled: hintsLeft <= 0 || !assignmentNextClue || assignmentClueRevealedIds.length >= HINT_BUDGET,
+                            onClick: revealNextAssignmentClue,
+                            className: 'rounded-lg border-2 px-3 py-2 text-xs font-black focus:outline-none focus:ring-4 ring-amber-500/25 ' + (hintsLeft > 0 && assignmentNextClue && assignmentClueRevealedIds.length < HINT_BUDGET ? 'border-amber-700 bg-white text-amber-900 hover:bg-amber-100' : 'border-slate-300 bg-slate-100 text-slate-500 cursor-not-allowed'),
+                            'aria-label': assignmentNextClue && hintsLeft > 0 && assignmentClueRevealedIds.length < HINT_BUDGET
+                              ? 'Reveal ' + assignmentNextClue.label.toLowerCase() + ' clue ' + (assignmentClueRevealedIds.length + 1) + ' of ' + assignmentClueLadderIds.length + '. ' + hintsLeft + ' hints remain.'
+                              : 'No more Target Search clues are available.'
+                          }, assignmentNextClue && hintsLeft > 0 && assignmentClueRevealedIds.length < HINT_BUDGET
+                            ? '💡 Reveal ' + assignmentNextClue.label.toLowerCase() + ' clue (' + hintsLeft + ')'
+                            : 'No more clues'),
+                          h('button', {
+                            type: 'button',
+                            onClick: function() { setAssignmentSearchMode(false); },
+                            'aria-pressed': 'true',
+                            className: 'rounded-lg border-2 border-slate-400 bg-white px-3 py-2 text-xs font-black text-slate-800 hover:border-sky-600 focus:outline-none focus:ring-4 ring-sky-500/25'
+                          }, 'Return to free scan')
+                        )
+                      )
+                    : h('div', null,
+                        h('div', { className: 'text-lg font-black text-slate-900 mt-1' }, 'Free discovery active'),
+                        h('p', { className: 'text-xs text-slate-700 mt-1 leading-relaxed' }, 'Follow whatever movement catches your eye—the way an unscripted bird walk usually begins.'),
+                        h('button', {
+                          type: 'button',
+                          onClick: function() { setAssignmentSearchMode(true); },
+                          'aria-pressed': 'false',
+                          className: 'mt-3 rounded-lg border-2 border-sky-700 bg-sky-700 px-3 py-2 text-xs font-black text-white hover:bg-sky-800 focus:outline-none focus:ring-4 ring-sky-500/25'
+                        }, '\uD83C\uDFAF Start Target Search (+18 XP)')
+                      )
               ),
               h('section', { className: 'rounded-2xl border-2 border-sky-300 bg-gradient-to-br from-white to-sky-50 p-4 shadow-sm', 'aria-label': 'Field rank progress' },
                 h('div', { className: 'flex items-center gap-3' },
@@ -13189,437 +14313,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 }, foundCount >= totalBirds ? '\u21BB Start next round' : '\u21BA Restart round')
               )
             ),
-            h('section', { className: 'rounded-2xl border-2 border-slate-300 bg-white p-3 shadow-sm', 'aria-label': 'Field conditions' },
-              h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
-                h('div', { className: 'min-w-[220px] flex-1' },
-                  h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-slate-600' }, 'Field conditions'),
-                  h('div', { className: 'text-xs text-slate-700 mt-1' }, conditionConfig.note)
-                ),
-                h('div', { className: 'flex gap-2 flex-wrap', role: 'radiogroup', 'aria-label': 'Choose scene lighting condition' },
-                  Object.keys(FIELD_CONDITIONS).map(function(conditionKey) {
-                    var cfg = FIELD_CONDITIONS[conditionKey];
-                    return h('button', {
-                      key: conditionKey,
-                      type: 'button',
-                      onClick: function() { switchFieldCondition(conditionKey); },
-                      role: 'radio', 'aria-checked': fieldCondition === conditionKey ? 'true' : 'false',
-                      className: 'birdlab-condition-button px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (fieldCondition === conditionKey ? 'bg-slate-900 text-white border-slate-900 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-sky-500')
-                    }, cfg.icon + ' ' + cfg.label);
-                  })
-                )
-              )
-            ),
-            h('section', { className: 'rounded-2xl border-2 border-slate-300 bg-white p-3 shadow-sm', 'aria-label': 'Scene viewing controls', 'data-birdlab-scene-controls': 'true' },
-              h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
-                h('div', { className: 'min-w-[220px] flex-1' },
-                  h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-slate-600' }, '\uD83D\uDD2D Scene lens'),
-                  h('div', { className: 'text-xs text-slate-700 mt-1' }, activeSceneLens.note + ' ' + visibleSceneBirdCount + '/' + totalBirds + ' bird species in view. Hold steady for ' + (ISPY_DWELL_MS / 1000).toFixed(1) + ' seconds to identify.')
-                ),
-                h('div', { className: 'flex items-center gap-2 flex-wrap' },
-                  h('button', {
-                    type: 'button',
-                    onClick: function() { stepSceneLens(-1); },
-                    'aria-label': 'Previous scene lens',
-                    title: 'Previous scene lens',
-                    className: 'h-10 w-10 rounded-xl border-2 border-slate-300 bg-white text-lg font-black text-slate-800 transition hover:border-sky-500 focus:outline-none focus:ring-4 ring-sky-500/30'
-                  }, '\u2190'),
-                  h('button', {
-                    type: 'button',
-                    onClick: toggleSceneMotion,
-                    disabled: prefersReducedMotion,
-                    'aria-pressed': sceneMotion && !prefersReducedMotion ? 'true' : 'false',
-                    'aria-label': prefersReducedMotion ? 'Scene motion disabled by reduced-motion preference' : (sceneMotion ? 'Pause scene motion' : 'Play scene motion'),
-                    title: prefersReducedMotion ? 'Reduced motion is enabled in your device settings' : undefined,
-                    className: 'px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (sceneMotion ? 'bg-sky-100 text-sky-900 border-sky-400 hover:bg-sky-200' : 'bg-slate-900 text-white border-slate-900 hover:bg-slate-700')
-                  }, prefersReducedMotion ? '\u25A0 Reduced motion' : (sceneMotion ? '\u23F8 Motion on' : '\u25B6 Motion paused')),
-                  h('button', {
-                    type: 'button',
-                    onClick: function() { stepSceneLens(1); },
-                    'aria-label': 'Next scene lens',
-                    title: 'Next scene lens',
-                    className: 'h-10 w-10 rounded-xl border-2 border-slate-300 bg-white text-lg font-black text-slate-800 transition hover:border-sky-500 focus:outline-none focus:ring-4 ring-sky-500/30'
-                  }, '\u2192')
-                )
-              ),
-              h('div', { className: 'mt-2 flex items-center gap-2 flex-wrap' },
-                h('button', {
-                  type: 'button',
-                  onClick: toggleSceneSweep,
-                  'aria-pressed': sceneSweep ? 'true' : 'false',
-                  'aria-label': sceneSweep ? 'Turn guided sweep off' : 'Turn guided sweep on',
-                  className: 'px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (sceneSweep ? 'bg-indigo-700 text-white border-indigo-800 shadow' : 'bg-white text-indigo-900 border-indigo-300 hover:border-indigo-500')
-                }, sceneSweep ? '\uD83E\uDDED Guided sweep on' : '\uD83E\uDDED Guided sweep'),
-                h('span', { className: 'text-[11px] text-slate-600' }, sceneSweep ? 'Finish a zone to move to the next lens.' : 'Manual lens navigation.')
-              ),
-              h('div', { className: 'mt-2 flex gap-2 flex-wrap', role: 'radiogroup', 'aria-label': 'Choose scene lens' },
-                SCENE_LENSES.map(function(lens) {
-                  var selectedLens = activeSceneLens.id === lens.id;
-                  var lensStat = sceneLensStats.filter(function(stat) { return stat.id === lens.id; })[0] || { found: 0, total: 0 };
-                  var lensUnavailable = lens.id !== 'wide' && lensStat.total === 0;
-                  return h('button', {
-                    key: lens.id,
-                    type: 'button',
-                    role: 'radio',
-                    disabled: lensUnavailable,
-                    'aria-disabled': lensUnavailable ? 'true' : 'false',
-                    'aria-checked': selectedLens ? 'true' : 'false',
-                    title: lensUnavailable ? 'No fully visible subjects in this sweep at the current screen size.' : (lens.note + ' ' + lensStat.found + ' of ' + lensStat.total + ' birds spotted in this sweep.'),
-                    onClick: function() { if (!lensUnavailable) switchSceneLens(lens.id); },
-                    className: 'px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (lensUnavailable ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' : (selectedLens ? 'bg-slate-900 text-white border-slate-900 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-sky-500'))
-                  },
-                    lens.icon + ' ' + lens.label,
-                    h('span', { className: 'ml-1 text-[10px] font-mono ' + (selectedLens ? 'text-emerald-200' : 'text-slate-500') }, lensStat.found + '/' + lensStat.total)
-                  );
-                })
-              )
-            ),
-            // The habitat scene
-            h('div', {
-              ref: habitatSceneRef,
-              tabIndex: -1,
-              role: 'region',
-              'aria-label': 'Interactive ' + habitat.name + ' habitat scene',
-              className: 'birdlab-scene-card relative bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden focus:outline-none focus:ring-4 ring-sky-500/40 ' + (sceneActive ? '' : 'birdlab-scene--motion-off') + (binocularUi.targetId ? ' birdlab-scene--acquiring' : '') + (binocularActive ? ' birdlab-scene--binocular-active' : ''),
-              'data-birdlab-scene-shell': 'true',
-              'data-birdlab-condition': fieldCondition,
-              'data-birdlab-scene-lens': activeSceneLens.id,
-              'data-birdlab-lifecycle-ms': sceneLifecycleClock == null ? 'static' : sceneLifecycleClock,
-              onPointerEnter: onScenePointerEnter,
-              onPointerMove: onScenePointerMove,
-              onPointerDown: onScenePointerDown,
-              onPointerUp: onScenePointerUp,
-              onPointerCancel: onScenePointerUp,
-              onPointerLeave: onScenePointerLeave,
-              style: { aspectRatio: (habitat.width / habitat.height).toString(), minHeight: '300px', touchAction: 'none' }
-            },
-              h('div', { className: 'birdlab-scope-corners', 'aria-hidden': 'true' }),
-              h('div', {
-                ref: binocularReticleRef,
-                className: 'birdlab-binocular-reticle',
-                'data-active': binocularActive ? 'true' : 'false',
-                'data-birdlab-reticle-style': 'clear-center-ticks',
-                'aria-hidden': 'true',
-                style: {
-                  '--birdlab-reticle-progress': binocularUi.progress + '%',
-                  '--birdlab-reticle-color': '#38bdf8'
-                }
-              }),
-              cleanCelebration && h('div', {
-                role: 'status',
-                'aria-live': 'assertive',
-                className: 'absolute inset-0 z-50 flex items-center justify-center pointer-events-none overflow-hidden',
-                style: { background: 'radial-gradient(ellipse at center, rgba(254,243,199,0.85) 0%, rgba(254,243,199,0.5) 50%, rgba(255,255,255,0.2) 100%)' }
-              },
-                // ── Confetti burst (16 particles fanning out + falling) ──
-                Array.from({ length: 18 }, function(_, ci) {
-                  // Deterministic-ish spread so it looks like a burst
-                  var angle = (ci / 18) * Math.PI * 2;
-                  var distance = 120 + (ci % 4) * 22;
-                  var dx = Math.cos(angle) * distance;
-                  var dy = Math.sin(angle) * distance + 40; // bias downward for gravity
-                  var colors = ['#fbbf24', '#f87171', '#34d399', '#60a5fa', '#a78bfa', '#fb923c'];
-                  var color = colors[ci % colors.length];
-                  var size = 6 + (ci % 3) * 3;
-                  var rotate = (ci * 47) % 360;
-                  var delay = (ci % 6) * 0.04;
-                  return h('div', {
-                    key: 'cnf-' + ci,
-                    'aria-hidden': 'true',
-                    className: 'birdlab-confetti',
-                    style: {
-                      position: 'absolute',
-                      top: '50%', left: '50%',
-                      width: size + 'px', height: (size * (ci % 2 ? 1 : 1.6)) + 'px',
-                      background: color,
-                      borderRadius: ci % 3 === 0 ? '50%' : '2px',
-                      transform: 'translate(-50%, -50%)',
-                      // Pass per-particle motion via CSS custom properties (read by keyframe)
-                      '--dx': dx + 'px',
-                      '--dy': dy + 'px',
-                      '--rot': rotate + 'deg',
-                      animationDelay: delay + 's'
-                    }
-                  });
-                }),
-                h('div', { className: 'birdlab-clean-celebrate relative bg-white border-4 border-amber-500 rounded-2xl shadow-2xl px-6 py-5 text-center max-w-sm mx-4',
-                  style: { boxShadow: '0 12px 36px rgba(217, 119, 6, 0.45), 0 4px 12px rgba(217, 119, 6, 0.25)' }
-                },
-                  // Spinning gold halo behind the medal
-                  h('div', { 'aria-hidden': 'true', className: 'absolute birdlab-trophy-spin',
-                    style: { top: '-12px', left: '50%', width: '96px', height: '96px', transform: 'translateX(-50%)', borderRadius: '50%', background: 'conic-gradient(from 0deg, #fbbf24, #fde047, #f59e0b, #fbbf24)', filter: 'blur(8px)', opacity: 0.55 }
-                  }),
-                  h('div', { 'aria-hidden': 'true', className: 'text-5xl mb-2 relative', style: { textShadow: '0 4px 12px rgba(217, 119, 6, 0.45)' } },
-                    cleanCelebration.medal || '🏆'),
-                  h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-amber-700 mb-1' },
-                    (cleanCelebration.isUpgrade ? 'TIER UPGRADED — ' : '') + (cleanCelebration.tierLabel || 'Clean') + ' Tier'),
-                  h('div', { className: 'text-xl font-black text-slate-900 mb-1 tracking-tight' },
-                    cleanCelebration.habitatName + (cleanCelebration.isUpgrade ? ' re-cleared!' : ' cleared!')),
-                  h('div', { className: 'text-sm text-slate-700 mb-2' },
-                    'All ' + cleanCelebration.birdCount + ' birds spotted ',
-                    h('span', { className: 'font-bold text-amber-700' }, __alloT('stem.birdlab.without_a_single_hint', 'without a single hint')),
-                    '.'),
-                  h('div', { className: 'flex items-center justify-center gap-2 text-[11px] font-bold text-slate-600 flex-wrap' },
-                    h('span', { className: 'px-2 py-0.5 bg-amber-100 border border-amber-300 rounded-full' },
-                      DIFFICULTY_LABELS[cleanCelebration.difficulty]),
-                    cleanCelebration.streak >= 3 && h('span', { className: 'px-2 py-0.5 bg-orange-100 border border-orange-300 rounded-full' },
-                      '🔥 ' + cleanCelebration.streak + '-streak')
-                  )
-                )
-              ),
-              h('div', {
-                role: 'group',
-                'aria-label': habitatAriaLabel,
-                className: 'birdlab-scene-canvas relative w-full h-full',
-                style: { background: habitat.bgGradient }
-              },
-                // Layered SVG scene — birds and habitat layers stacked in z-order.
-                // No `pointer-events-none` here: click targets are foreignObject
-                // buttons rendered INSIDE this SVG (see below), so they share the
-                // same viewBox transform as the birds and stay glued to them.
-                h('svg', {
-                  viewBox: sceneViewBox,
-                  className: 'absolute inset-0 w-full h-full',
-                  preserveAspectRatio: activeSceneLens.id === 'wide' ? 'xMidYMid meet' : 'xMidYMid slice',
-                  'data-birdlab-wide-fit': activeSceneLens.id === 'wide' ? 'meet' : 'focused-slice',
-                  'data-birdlab-realistic-scene': habitatId
-                },
-                  staticSceneArt.defs,
-                  staticSceneArt.backdrop,
-                  // Condition-specific sky light stays behind trees and actors.
-                  h('g', { key: 'condition-sky', 'data-birdlab-condition-sky': fieldCondition, 'aria-hidden': 'true', style: { pointerEvents: 'none' } },
-                    h('rect', { x: 0, y: 0, width: habitat.width, height: HABITAT_SCENE_PALETTES[habitatId].horizon, fill: 'url(#blScene-' + habitatId + (fieldCondition === 'dawn' ? '-dawn-light)' : '-light)'), opacity: fieldCondition === 'dawn' ? .72 : (fieldCondition === 'day' ? .34 : .04) }),
-                    fieldCondition === 'dawn' && h('circle', { key: 'dawn-glow', cx: habitat.width * .18, cy: Math.max(72, HABITAT_SCENE_PALETTES[habitatId].horizon * .36), r: habitat.height * .19, fill: '#fef3c7', opacity: .32 }),
-                    fieldCondition === 'dusk' && h('g', { key: 'dusk-stars' },
-                      [[.12,.10],[.24,.18],[.42,.09],[.63,.16],[.82,.08],[.92,.22]].map(function(star, si) {
-                        return h('circle', { key: 'star-' + si, cx: habitat.width * star[0], cy: habitat.height * star[1], r: si % 2 ? 1.4 : 2, fill: '#fef3c7', opacity: .8 });
-                      })
-                    )
-                  ),
-                  staticSceneArt.clouds,
-                  staticSceneArt.layer0,
-                  staticSceneArt.layer1,
-                  // Atmospheric perspective and habitat-specific air sit behind
-                  // every trackable subject, preserving silhouette clarity.
-                  h('rect', { key: 'atmo-horizon-haze', x: 0, y: 0, width: habitat.width, height: habitat.height, fill: 'url(#blScene-' + habitatId + '-haze)', 'aria-hidden': 'true', style: { pointerEvents: 'none' } }),
-                  staticSceneArt.ambientMid,
-                  // Birds and distractors at layer 2 (back / hidden)
-                  renderSceneBirds(2, 'bird2'),
-                  renderSceneDistractors(2, 'fauna2'),
-                  // Habitat layer 3 (midground trees) on top of layer-2 birds
-                  staticSceneArt.layer3,
-                  // Birds and distractors at layer 3 (mid-flight)
-                  renderSceneBirds(3, 'bird3'),
-                  renderSceneDistractors(3, 'fauna3'),
-                  // Foreground structure and subtle surface light ground actors.
-                  staticSceneArt.layer4,
-                  staticSceneArt.ambientSurface,
-                  // Birds and distractors at layer 4 (foreground)
-                  renderSceneBirds(4, 'bird4'),
-                  renderSceneDistractors(4, 'fauna4'),
-                  // Sparse foreground cover grounds feet without hiding field marks.
-                  staticSceneArt.occluders,
-                  // Birds and distractors at layer 5 (highest / flying)
-                  renderSceneBirds(5, 'bird5'),
-                  renderSceneDistractors(5, 'fauna5'),
-                  // Final color grade and vignette unify actors with the habitat.
-                  h('rect', { key: 'atmo-vignette', x: 0, y: 0, width: habitat.width, height: habitat.height, fill: 'url(#blVignette)', 'aria-hidden': 'true', style: { pointerEvents: 'none' } }),
-                  h('rect', { key: 'field-condition', x: 0, y: 0, width: habitat.width, height: habitat.height, fill: conditionConfig.overlay, opacity: conditionConfig.opacity, 'aria-hidden': 'true', style: { pointerEvents: 'none', transition: 'fill 350ms ease, opacity 350ms ease' } }),
-                  // ── Hint pulse: a pulsing amber ring on the hinted bird's position ──
-                  // Rendered above all bird layers so it's clearly visible even on
-                  // tightly-clustered birds. Auto-clears 3.5s after triggered.
-                  hintActive && (function() {
-                    var hintedBird = null;
-                    for (var bi = 0; bi < habitat.birds.length; bi++) {
-                      if (habitat.birds[bi].species === hintActive.species) { hintedBird = habitat.birds[bi]; break; }
-                    }
-                    if (!hintedBird) return null;
-                    return h('g', { key: 'hint-pulse', 'aria-hidden': 'true' },
-                      // Outer pulsing ring (animates outward + fades)
-                      h('circle', { cx: hintedBird.x, cy: hintedBird.y, r: 12,
-                        fill: 'none', stroke: '#f59e0b', strokeWidth: 3,
-                        className: 'birdlab-hint-ring', style: { filter: 'drop-shadow(0 0 5px rgba(245,158,11,0.85))' } }),
-                      // Static inner dot so the location is always pinned
-                      h('circle', { cx: hintedBird.x, cy: hintedBird.y, r: 6,
-                        fill: '#f59e0b', opacity: 0.85,
-                        stroke: '#fef3c7', strokeWidth: 2 })
-                    );
-                  })(),
-                  // Selected-bird reticle keeps the record card visually tied to
-                  // the sprite, without adding another animated effect.
-                  picked && pickedSpeciesKey && (function() {
-                    var selectedBird = null;
-                    for (var selectedBirdIndex = 0; selectedBirdIndex < habitat.birds.length; selectedBirdIndex++) {
-                      if (habitat.birds[selectedBirdIndex].species === pickedSpeciesKey) { selectedBird = habitat.birds[selectedBirdIndex]; break; }
-                    }
-                    if (!selectedBird || !sceneBirdVisible(selectedBird)) return null;
-                    var selectedSpecies = BIRDS[selectedBird.species];
-                    var labelWidth = Math.min(210, Math.max(104, selectedSpecies.name.length * 5.4 + 20));
-                    var labelX = Math.max(labelWidth / 2 + 6, Math.min(habitat.width - labelWidth / 2 - 6, selectedBird.x));
-                    var labelY = selectedBird.y < 72 ? selectedBird.y + 28 : selectedBird.y - 38;
-                    return h('g', { key: 'picked-reticle', 'aria-hidden': 'true' },
-                      h('circle', { cx: selectedBird.x, cy: selectedBird.y, r: 23, className: 'birdlab-picked-ring' }),
-                      h('circle', { cx: selectedBird.x, cy: selectedBird.y, r: 3, fill: '#fbbf24', stroke: '#fff', strokeWidth: 1.5, 'vector-effect': 'non-scaling-stroke' }),
-                      h('g', { className: 'birdlab-selected-label' },
-                        h('rect', { x: labelX - labelWidth / 2, y: labelY, width: labelWidth, height: 22, rx: 8, fill: 'rgba(15,23,42,0.9)', stroke: '#fde68a', strokeWidth: 1.2, 'vector-effect': 'non-scaling-stroke' }),
-                        h('text', { x: labelX, y: labelY + 14, textAnchor: 'middle', fill: '#fff', fontSize: 9, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, selectedSpecies.name)
-                      )
-                    );
-                  })(),
-                  // Moving focus targets mirror the exact lifecycle + motion
-                  // transform used by the visible actors. Identification now
-                  // occurs only after a continuous binocular lock.
-                  habitat.birds.filter(sceneBirdVisible).map(function(b) {
-                    var birdIndex = habitat.birds.indexOf(b);
-                    var subjectId = 'bird-' + birdIndex;
-                    var sp = BIRDS[b.species];
-                    var isFound = !!found[b.species];
-                    var runtimeState = sceneBirdRuntimeStates[birdIndex];
-                    var position = runtimeState.position;
-                    var behaviorState = runtimeState.behavior;
-                    var travelStyle = sceneSubjectStyle(b, birdIndex, 'bird');
-                    var targetFacing = sceneSubjectFacing(b, birdIndex, 'bird', habitatId);
-                    var yFrac = b.y / habitat.height;
-                    var xFrac = b.x / habitat.width;
-                    var vDesc = yFrac < 0.33 ? 'upper sky' : yFrac < 0.66 ? 'mid scene' : 'ground level';
-                    var hDesc = xFrac < 0.33 ? 'left' : xFrac > 0.66 ? 'right' : 'center';
-                    var areaDesc = vDesc + ', ' + hDesc;
-                    var hitSize = 60;
-                    var targetMotionClass = 'birdlab-motion-subject birdlab-' + sceneBirdMotionName(b, habitatId) + (((hintActive && hintActive.species === b.species) || pickedSpeciesKey === b.species) ? ' birdlab-motion-subject--anchored' : '') + (!position.trackable && behaviorState.script !== 'field-mark-loop' ? ' birdlab-motion-subject--behavior-route' : '');
-                    return h('g', { key: 'target-' + subjectId, className: sceneSubjectClass(position.phase), style: travelStyle, 'data-birdlab-presence': position.phase, 'data-birdlab-behavior': behaviorState.script, 'data-birdlab-behavior-state': behaviorState.state },
-                      h('g', { className: targetMotionClass, style: sceneActorMotionStyle(travelStyle.animationDelay, targetFacing) },
-                        renderSceneMotionBox(h, position),
-                        h('foreignObject', {
-                          x: position.x - hitSize / 2,
-                          y: position.y - hitSize / 2,
-                          width: hitSize,
-                          height: hitSize,
-                          style: { pointerEvents: position.trackable ? 'auto' : 'none', overflow: 'visible' }
-                        },
-                          h('button', {
-                            ref: function(node) { registerBinocularSubject(subjectId, node); },
-                            type: 'button',
-                            disabled: !position.trackable,
-                            tabIndex: position.trackable ? 0 : -1,
-                            onFocus: function() { setKeyboardFocusTarget(subjectId); },
-                            onBlur: function() { setKeyboardFocusTarget(function(current) { return current === subjectId ? null : current; }); },
-                            onClick: function(event) {
-                              if (isFound) handleBirdClick(b, 'spotted');
-                              else {
-                                if (event && event.preventDefault) event.preventDefault();
-                                announce('Use the binocular reticle and hold steady to identify this bird.');
-                              }
-                            },
-                            'data-birdlab-kind': 'bird',
-                            'data-birdlab-index': birdIndex,
-                            'data-birdlab-presence': position.phase,
-                            'data-birdlab-found': isFound ? 'true' : 'false',
-                            'data-birdlab-appearance-cycles': b.appearanceEveryCycles || 1,
-                            'aria-label': (isFound ? 'Identified: ' + sp.name + '. Click to review.' : 'Moving bird in ' + areaDesc + ': ' + b.hint + '. Hold binocular focus to identify.'),
-                            className: 'birdlab-bird-btn',
-                            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }
-                          }, isFound && h('span', { 'aria-hidden': true, style: { position: 'absolute', top: '-4px', right: '-4px', background: '#047857', color: '#fff', fontSize: '10px', fontWeight: 800, borderRadius: '999px', padding: '2px 5px' } }, '✓'))
-                        )
-                      )
-                    );
-                  }),
-                  visibleSceneFauna.map(function(animal) {
-                    var fauna = DISTRACTOR_FAUNA[habitatId] || [];
-                    var animalIndex = fauna.indexOf(animal);
-                    var subjectId = 'distractor-' + animalIndex;
-                    var position = sceneDistractorPosition(animal, animalIndex);
-                    var travelStyle = sceneSubjectStyle(animal, animalIndex, 'distractor');
-                    var targetFacing = sceneSubjectFacing(animal, animalIndex, 'distractor', habitatId);
-                    var hitSize = Math.round(Math.max(68, Math.min(104, 58 * distractorSceneScale(animal))));
-                    return h('g', { key: 'target-' + subjectId, className: sceneSubjectClass(position.phase), style: travelStyle, 'data-birdlab-presence': position.phase },
-                      h('g', { className: 'birdlab-motion-subject birdlab-' + sceneDistractorMotionName(animal), style: sceneActorMotionStyle(travelStyle.animationDelay, targetFacing) },
-                        h('foreignObject', { x: position.x - hitSize / 2, y: position.y - hitSize / 2, width: hitSize, height: hitSize, style: { pointerEvents: position.trackable ? 'auto' : 'none', overflow: 'visible' } },
-                          h('button', {
-                            ref: function(node) { registerBinocularSubject(subjectId, node); },
-                            type: 'button',
-                            disabled: !position.trackable,
-                            tabIndex: position.trackable ? 0 : -1,
-                            onFocus: function() { setKeyboardFocusTarget(subjectId); },
-                            onBlur: function() { setKeyboardFocusTarget(function(current) { return current === subjectId ? null : current; }); },
-                            onClick: function(event) { if (event && event.preventDefault) event.preventDefault(); announce('Hold the binoculars steady to check this moving animal.'); },
-                            'data-birdlab-kind': 'distractor',
-                            'data-birdlab-index': animalIndex,
-                            'data-birdlab-presence': position.phase,
-                            'data-birdlab-found': 'false',
-                            'data-birdlab-distractor': 'true',
-                            'data-birdlab-appearance-cycles': animal.appearanceEveryCycles || 1,
-                            'aria-label': 'Moving animal. Hold binocular focus to check whether it is a bird.',
-                            className: 'birdlab-bird-btn birdlab-distractor-btn',
-                            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }
-                          })
-                        )
-                      )
-                    );
-                  })
-                ),
-                // ── Hint banner: shows above the keyboard alternative when a hint is active ──
-                // Click hotspots are rendered inside the SVG as foreignObject buttons.
-                // Observation copy lives in the stable rail outside pointer bounds.
-              )
-            ),
-            h('div', {
-              className: 'birdlab-observation-rail',
-              'data-birdlab-observation-rail': 'true',
-              'data-acquiring': binocularUi.targetId ? 'true' : 'false',
-              role: 'group',
-              'aria-label': 'Observation status'
-            },
-              h('div', { className: 'birdlab-scene-hud birdlab-scene-hud--condition', 'data-birdlab-rail-slot': 'condition', 'aria-hidden': 'true' },
-                h('span', { className: 'birdlab-observation-slot-icon' }, conditionConfig.icon),
-                h('div', null,
-                  h('strong', null, conditionConfig.label),
-                  h('span', null, activeSceneLens.label + ' · ' + habitat.name + ' field view')
-                )
-              ),
-              h('div', {
-                className: 'birdlab-observation-slot birdlab-observation-slot--focus birdlab-binocular-feedback ' + (hintActive && !binocularUi.targetId && !binocularUi.feedback ? 'birdlab-observation-slot--hint' : ''),
-                'data-birdlab-rail-slot': 'focus',
-                'aria-live': 'off'
-              },
-                (binocularUi.targetId || binocularUi.feedback)
-                  ? h('div', { className: 'birdlab-observation-focus-copy' },
-                      h('strong', null, binocularUi.feedback || binocularUi.message),
-                      h('span', null, binocularUi.targetId ? 'Keep the clear center steady on the subject.' : 'Keep scanning for a bird.'),
-                      h('div', {
-                        className: 'birdlab-observation-progress',
-                        role: 'progressbar',
-                        'data-birdlab-binocular-progress': 'true',
-                        'aria-label': 'Binocular focus progress',
-                        'aria-valuemin': 0,
-                        'aria-valuemax': 100,
-                        'aria-valuenow': binocularUi.progress
-                      }, h('div', { style: { width: binocularUi.progress + '%' } }))
-                    )
-                  : hintActive
-                    ? (function() {
-                        var railHintBird = null;
-                        for (var railHintIndex = 0; railHintIndex < habitat.birds.length; railHintIndex++) {
-                          if (habitat.birds[railHintIndex].species === hintActive.species) { railHintBird = habitat.birds[railHintIndex]; break; }
-                        }
-                        if (!railHintBird) return null;
-                        var railHintSpecies = BIRDS[railHintBird.species];
-                        return h('div', { className: 'birdlab-observation-focus-copy', 'aria-live': 'polite' },
-                          h('strong', null, '💡 Looking for ' + railHintSpecies.name),
-                          h('span', null, railHintBird.hint + ' Center it in the clear binocular ring and hold steady.')
-                        );
-                      })()
-                    : h('div', { className: 'birdlab-observation-focus-copy' },
-                        h('strong', null, '🔭 Binoculars ready'),
-                        h('span', null, 'Center any moving animal in the clear ring and hold steady to observe it.')
-                      )
-              ),
-              h('div', { className: 'birdlab-scene-hud birdlab-scene-hud--assignment ' + (assignmentComplete ? 'birdlab-scene-hud--complete' : ''), 'data-birdlab-rail-slot': 'assignment', 'aria-hidden': 'true' },
-                h('span', { className: 'birdlab-observation-slot-icon' }, assignmentComplete ? '✓' : '🎯'),
-                h('div', null,
-                  h('strong', null, assignmentComplete ? 'Assignment complete' : 'Target: ' + assignmentSpecies.name),
-                  h('span', null, assignmentComplete ? 'Excellent field work' : (foundCount + '/' + totalBirds + ' birds identified'))
-                )
-              )
-            ),
             // Info panel for picked bird
             picked && h('div', { className: 'bg-white rounded-2xl border-2 border-emerald-400 shadow-lg overflow-hidden', 'aria-live': 'polite' },
               // ── Discovery scene (sun rays + sparkles around the bird) ──
@@ -13871,7 +14564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 hintMode
                   ? h('span', null,
                       h('strong', { className: 'text-amber-800' }, __alloT('stem.birdlab.hint_mode', 'Hint mode: ')),
-                      __alloT('stem.birdlab.each_button_reveals_where_the_bird_is_', 'each button reveals where the bird is — but you still have to find and click it in the scene to identify it. '),
+                      __alloT('stem.birdlab.each_button_reveals_where_the_bird_is_', 'each button reveals the next available clue. Only the final location clue changes the scene; you still identify the bird yourself. '),
                       h('strong', null, __alloT('stem.birdlab.spotting_beats_button_clicking', 'Spotting beats button-clicking.')),
                       __alloT('stem.birdlab.if_you_need_direct_access_tap_the_togg', ' If you need direct access, tap the toggle above (unlimited).')
                     )
@@ -14090,7 +14783,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 visibleRecordBirds.map(function(b, i) {
                   var sp = BIRDS[b.species];
                   var isFound = !!found[b.species];
-                  var btnDisabled = hintMode && !isFound && hintsLeft === 0;
+                  var targetObservationRequired = assignmentSearchActive && !assignmentComplete && b.species === assignmentBird.species;
+                  var btnDisabled = hintMode && (!isFound || targetObservationRequired) && hintsLeft === 0;
                   var foundViaThis = foundVia[habitatId + ':' + b.species];
                   var speciesEvidenceEntry = evidenceLog[b.species];
                   var speciesEvidenceCount = speciesEvidenceEntry ? Object.keys(speciesEvidenceEntry.cues || {}).length : 0;
@@ -14101,21 +14795,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     'aria-current': pickedSpeciesKey === b.species ? 'true' : undefined,
                     disabled: btnDisabled,
                     onClick: function() {
-                      if (isFound) {
+                      if (isFound && !targetObservationRequired) {
                         // Already found — show the info panel (no double-credit, no hint cost)
                         openBirdRecord(BIRDS[b.species], 'Reviewing ' + BIRDS[b.species].name + ' field record.');
                         return;
                       }
-                      if (hintMode) fireHint(b);
-                      else handleBirdClick(b, 'hinted'); // accessibility direct-identify
+                      if (hintMode) {
+                        if (targetObservationRequired) revealNextAssignmentClue();
+                        else fireHint(b);
+                      } else handleBirdClick(b, 'hinted'); // accessibility direct-identify
                     },
-                    'aria-label': isFound
+                    'aria-label': isFound && !targetObservationRequired
                       ? sp.name + ' — found. Click to review.'
                       : (hintMode
-                          ? 'Reveal hint for ' + sp.name + (btnDisabled ? ' (no hints remaining)' : '')
-                          : 'Identify ' + sp.name + ' directly'),
+                          ? 'Reveal hint for ' + sp.name + (targetObservationRequired ? ', the active Target Search bird' : '') + (btnDisabled ? ' (no hints remaining)' : '')
+                          : 'Identify ' + sp.name + (targetObservationRequired ? ', the active Target Search bird,' : '') + ' directly'),
                     className: 'text-left p-2 rounded-lg border-2 transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
-                      (isFound
+                      (isFound && !targetObservationRequired
                         ? 'bg-emerald-50 border-emerald-400'
                         : btnDisabled
                           ? 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
@@ -14123,7 +14819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       + (pickedSpeciesKey === b.species ? ' ring-4 ring-indigo-500 ring-offset-2' : '')
                   },
                     h('div', { className: 'text-xs font-bold text-slate-800 flex items-center gap-1.5' },
-                      isFound ? h('span', { className: 'text-emerald-700' }, '✓') : h('span', { className: 'text-slate-500' }, hintMode ? '💡' : '○'),
+                      isFound && !targetObservationRequired ? h('span', { className: 'text-emerald-700' }, '✓') : h('span', { className: targetObservationRequired ? 'text-amber-700' : 'text-slate-500' }, targetObservationRequired ? '🎯' : (hintMode ? '💡' : '○')),
                       sp.name,
                       isFound && h('span', {
                         className: 'ml-auto rounded-full px-1.5 py-0.5 text-[9px] font-black ' + (speciesEvidenceReady ? 'bg-emerald-700 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300')

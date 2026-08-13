@@ -1477,6 +1477,53 @@
   // Walks the active view + generatedContent and returns an array of
   // {type, text} items for screen-reader read-aloud. Pure function:
   // takes deps, returns array. No mutations, no DOM writes.
+  const _readClean = function(value) { return String(value == null ? '' : value).replace(/\\s+/g, ' ').trim(); };
+  const _readHidden = function(el) {
+    if (!el || el.nodeType !== 1) return true;
+    if (el.hidden || el.hasAttribute('inert') || el.getAttribute('aria-hidden') === 'true') return true;
+    if (el.closest && el.closest('[hidden],[inert],[aria-hidden="true"]')) return true;
+    return !!(el.style && (el.style.display === 'none' || el.style.visibility === 'hidden'));
+  };
+  const _readReferenced = function(el, attr, root) {
+    const ids = _readClean(el.getAttribute(attr)).split(/\\s+/).filter(Boolean);
+    return _readClean(ids.map(function(id) {
+      const match = root.ownerDocument && root.ownerDocument.getElementById(id);
+      return match ? match.textContent : '';
+    }).join(' '));
+  };
+  const _readName = function(el, root) {
+    const aria = _readClean(el.getAttribute('aria-label'));
+    if (aria) return aria;
+    const labelled = _readReferenced(el, 'aria-labelledby', root);
+    if (labelled) return labelled;
+    if (el.labels && el.labels.length) return _readClean(Array.prototype.map.call(el.labels, function(label) { return label.textContent; }).join(' '));
+    const title = _readClean(el.getAttribute('title'));
+    if (title) return title;
+    const alt = _readClean(el.getAttribute('alt'));
+    if (alt) return alt;
+    return _readClean(el.textContent || el.getAttribute('placeholder'));
+  };
+  const _readControl = function(el, root) {
+    const tag = String(el.tagName || '').toLowerCase();
+    const inputType = String(el.type || '').toLowerCase();
+    const role = _readClean(el.getAttribute('role')) || (tag === 'a' ? 'link' : tag === 'button' ? 'button' : tag === 'select' ? 'select' : tag === 'textarea' ? 'text field' : tag === 'input' ? (inputType === 'checkbox' ? 'checkbox' : inputType === 'radio' ? 'radio button' : inputType === 'range' ? 'slider' : inputType === 'submit' || inputType === 'button' ? 'button' : 'text field') : 'control');
+    const name = _readName(el, root);
+    if (!name) return '';
+    const state = [];
+    if (el.disabled || el.getAttribute('aria-disabled') === 'true') state.push('disabled');
+    const pressed = el.getAttribute('aria-pressed');
+    if (pressed === 'true' || pressed === 'false') state.push(pressed === 'true' ? 'pressed' : 'not pressed');
+    const expanded = el.getAttribute('aria-expanded');
+    if (expanded === 'true' || expanded === 'false') state.push(expanded === 'true' ? 'expanded' : 'collapsed');
+    if (el.checked === true || el.getAttribute('aria-checked') === 'true') state.push('checked');
+    else if (el.checked === false && (inputType === 'checkbox' || inputType === 'radio')) state.push('not checked');
+    if (el.getAttribute('aria-invalid') === 'true') state.push('invalid');
+    if ((tag === 'input' || tag === 'textarea' || tag === 'select') && inputType !== 'password' && inputType !== 'file') {
+      const value = _readClean(tag === 'select' && el.selectedOptions && el.selectedOptions[0] ? el.selectedOptions[0].textContent : el.value);
+      if (value) state.push('current value ' + value);
+    }
+    return role + ': ' + name + (state.length ? '. ' + state.join(', ') : '');
+  };
   const getReadableContent = (deps) => {
     const { activeView, inputText, generatedContent, filteredGlossaryData } = deps || {};
     const items = [];
@@ -1487,10 +1534,9 @@
         const wc = inputText.trim().split(/\s+/).filter(function(w) { return w; }).length;
         items.push({ type: 'heading', text: 'Source material loaded. ' + wc + ' words.' });
         const paragraphs = inputText.split(/\n\n+/).filter(function(p) { return p.trim(); });
-        paragraphs.slice(0, 6).forEach(function(p) {
-          items.push({ type: 'text', text: p.trim().substring(0, 400) + (p.trim().length > 400 ? '...' : '') });
+        paragraphs.forEach(function(p) {
+          items.push({ type: 'text', text: p.trim() });
         });
-        if (paragraphs.length > 6) items.push({ type: 'status', text: 'Plus ' + (paragraphs.length - 6) + ' more paragraphs.' });
       }
     } else if (activeView === 'glossary' && generatedContent && generatedContent.type === 'glossary') {
       const terms = (generatedContent && generatedContent.data) || [];
@@ -1520,8 +1566,8 @@
         const wc = txt.trim().split(/\s+/).filter(function(w) { return w; }).length;
         items.push({ type: 'heading', text: 'Adapted text. ' + wc + ' words.' });
         const paragraphs = txt.split(/\n\n+/).filter(function(p) { return p.trim(); });
-        paragraphs.slice(0, 8).forEach(function(p) {
-          items.push({ type: 'text', text: p.trim().substring(0, 400) + (p.trim().length > 400 ? '...' : '') });
+        paragraphs.forEach(function(p) {
+          items.push({ type: 'text', text: p.trim() });
         });
       } else {
         items.push({ type: 'status', text: 'Adapted text panel. No content generated yet.' });
@@ -1536,31 +1582,42 @@
       const frames = (generatedContent && generatedContent.data) || [];
       items.push({ type: 'heading', text: 'Sentence frames. ' + (Array.isArray(frames) ? frames.length : 0) + ' frames generated.' });
       if (Array.isArray(frames)) {
-        frames.slice(0, 10).forEach(function(f, i) {
+        frames.forEach(function(f, i) {
           items.push({ type: 'text', text: 'Frame ' + (i + 1) + ': ' + (typeof f === 'string' ? f : (f.frame || f.text || JSON.stringify(f))) });
         });
       }
     } else {
-      const main = document.getElementById('main-content');
+      const main = (deps && deps.root) || document.getElementById('main-content');
       if (main) {
         items.push({ type: 'heading', text: 'Current view: ' + activeView + '.' });
-        const headings = main.querySelectorAll('h1, h2, h3, h4');
-        headings.forEach(function(h) {
-          const level = h.tagName.replace('H', '');
-          const txt = h.textContent.trim();
-          if (txt && txt.length < 200) items.push({ type: 'heading', text: 'Heading level ' + level + ': ' + txt });
+        const seen = new Set();
+        const addUnique = function(type, value) {
+          const text = _readClean(value);
+          const key = type + ':' + text.toLowerCase();
+          if (!text || seen.has(key)) return;
+          seen.add(key);
+          items.push({ type: type, text: text });
+        };
+        main.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(function(heading) {
+          if (!_readHidden(heading)) addUnique('heading', 'Heading level ' + heading.tagName.slice(1) + ': ' + heading.textContent);
         });
-        const paras = main.querySelectorAll('p');
-        let pCount = 0;
-        paras.forEach(function(p) {
-          const txt = p.textContent.trim();
-          if (txt && pCount < 10) {
-            items.push({ type: 'text', text: txt.substring(0, 250) + (txt.length > 250 ? '...' : '') });
-            pCount++;
-          }
+        main.querySelectorAll('img').forEach(function(img) {
+          if (_readHidden(img) || img.getAttribute('role') === 'presentation') return;
+          const name = _readName(img, main);
+          if (name) addUnique('image', 'Image: ' + name);
         });
-        const btns = main.querySelectorAll('button[aria-label], button[title]');
-        if (btns.length > 0) items.push({ type: 'status', text: btns.length + ' interactive controls available.' });
+        main.querySelectorAll('p,li,blockquote,[role="status"],[role="alert"],[aria-live]').forEach(function(node) {
+          if (!_readHidden(node)) addUnique(node.matches('[role="status"],[role="alert"],[aria-live]') ? 'status' : 'text', node.textContent);
+        });
+        main.querySelectorAll('button,a[href],input:not([type="hidden"]),textarea,select,[role="button"],[role="link"],[role="checkbox"],[role="radio"],[role="switch"],[role="slider"],[tabindex]:not([tabindex="-1"])').forEach(function(control) {
+          if (_readHidden(control)) return;
+          addUnique('control', _readControl(control, main));
+          const described = _readReferenced(control, 'aria-describedby', main);
+          if (described) addUnique('status', _readName(control, main) + ': ' + described);
+        });
+
+
+
       }
       if (items.length <= 1) items.push({ type: 'status', text: activeView + ' view is active. Generate content to hear it read aloud.' });
     }
@@ -1632,7 +1689,7 @@
         ? Promise.resolve(window.alloDeviceStorage)
         : new Promise((resolve, reject) => {
             const s = document.createElement('script');
-            s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds3-storage-manager';
+            s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds4-bridge-auth';
             s.onload = () => {
               if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);
               else reject(new Error('device storage module missing after load'));

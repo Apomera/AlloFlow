@@ -192,7 +192,12 @@ function HistoryPanel(props) {
   }, [activeUnitId]);
 
   return (
-            <div id="tour-history-panel" data-help-key="history_panel" className={`bg-indigo-900 text-indigo-100 rounded-3xl p-4 shadow-xl shadow-indigo-900/50 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? 'fixed inset-4 z-[190] h-auto' : (!isTeacherMode ? 'h-full' : 'flex-grow min-h-[500px]')}`}>
+            <div id="tour-history-panel" data-help-key="history_panel" className={`allo-premium-history bg-slate-950 text-slate-100 rounded-2xl p-4 border border-slate-700/70 shadow-xl shadow-slate-950/30 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? 'fixed inset-4 z-[190] h-auto' : (!isTeacherMode ? 'h-full' : 'flex-grow min-h-[500px]')}`}>
+                <style>{`
+                  .allo-premium-history { background: linear-gradient(180deg, #111827 0%, #0f172a 58%, #0b1220 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 18px 46px rgba(2,6,23,.24); }
+                  .allo-premium-history button:focus-visible, .allo-premium-history input:focus-visible, .allo-premium-history select:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+                  @media (prefers-reduced-motion: reduce) { .allo-premium-history, .allo-premium-history * { transition-duration: .01ms !important; } }
+                `}</style>
                 <div className="flex flex-col gap-3 mb-3 shrink-0">
                     <div className="flex justify-between items-center">
                         <div className="flex flex-col">
@@ -214,14 +219,16 @@ function HistoryPanel(props) {
                             ) : isCanvas ? (
                                 <button type="button"
                                     onClick={onOpenDeviceRecovery}
-                                    className={'flex min-h-11 items-center gap-1 rounded-lg px-2 text-left transition-colors hover:bg-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ' + (canvasRecoverySaveStatus === 'error' ? 'text-red-200' : (canvasRecoverySaveStatus === 'saved' ? 'text-green-300' : 'text-indigo-200'))}
-                                    title={String(canvasRecoverySnapshotCount) + ' saved ' + (canvasRecoverySnapshotCount === 1 ? 'workspace' : 'workspaces') + ' on this device. Open saved work manager.'}
-                                    aria-label={(canvasRecoverySaveStatus === 'error' ? 'Device save needs attention' : canvasRecoverySaveStatus === 'idle' ? 'Current workspace is not saved yet' : (lastSaved ? 'Saved on this device at ' + lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'On-device saved work')) + '. Open saved work manager.'}
+                                    className={'flex min-h-11 items-center gap-1 rounded-lg px-2 text-left transition-colors hover:bg-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ' + (canvasRecoverySaveStatus === 'error' ? 'text-red-200' : canvasRecoverySaveStatus === 'locked' ? 'text-amber-200' : (canvasRecoverySaveStatus === 'saved' ? 'text-green-300' : 'text-indigo-200'))}
+                                    title={canvasRecoverySaveStatus === 'locked' ? 'Protected recovery workspaces are locked in this tab. Open the manager to unlock.' : String(canvasRecoverySnapshotCount) + ' saved ' + (canvasRecoverySnapshotCount === 1 ? 'workspace' : 'workspaces') + ' on this device. Open saved work manager.'}
+                                    aria-label={(canvasRecoverySaveStatus === 'error' ? 'Device save needs attention' : canvasRecoverySaveStatus === 'locked' ? 'Protected recovery workspaces locked, ' + canvasRecoverySnapshotCount + ' workspaces' : canvasRecoverySaveStatus === 'idle' ? 'Current workspace is not saved yet' : (lastSaved ? 'Saved on this device at ' + lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'On-device saved work')) + '. Open saved work manager.'}
                                     data-help-key="history_device_storage">
                                     {(canvasRecoverySaveStatus === 'checking' || canvasRecoverySaveStatus === 'saving' || canvasRecoverySaveStatus === 'restoring') ? (
                                         <RefreshCw size={10} className="animate-spin" aria-hidden="true" />
                                     ) : canvasRecoverySaveStatus === 'error' ? (
                                         <AlertCircle size={10} aria-hidden="true" />
+                                    ) : canvasRecoverySaveStatus === 'locked' ? (
+                                        <Lock size={10} aria-hidden="true" />
                                     ) : (
                                         <Save size={10} aria-hidden="true" />
                                     )}
@@ -234,6 +241,8 @@ function HistoryPanel(props) {
                                                     ? 'Restoring saved work…'
                                                     : canvasRecoverySaveStatus === 'error'
                                                         ? 'Device save needs attention'
+                                                        : canvasRecoverySaveStatus === 'locked'
+                                                            ? 'Protected recovery workspaces locked · ' + canvasRecoverySnapshotCount + (canvasRecoverySnapshotCount === 1 ? ' workspace' : ' workspaces')
                                                         : canvasRecoverySaveStatus === 'idle'
                                                             ? (canvasRecoverySnapshotCount > 0 ? 'Current workspace not saved yet' : 'Not saved on this device yet')
                                                             : lastSaved
@@ -423,8 +432,8 @@ function HistoryPanel(props) {
                                 <button
                                     onClick={() => onVisualizeUnit(activeUnitId)}
                                     className="p-1 rounded bg-amber-700/40 hover:bg-amber-600 text-amber-200 hover:text-white transition-colors"
-                                    title={t('history.visualize_unit_tooltip') || 'Visualize this unit in Throughline'}
-                                    aria-label={t('history.visualize_unit_tooltip') || 'Visualize this unit in Throughline'}
+                                    title={t('history.visualize_unit_tooltip') || 'Open this unit in Learning Web: Unit Path'}
+                                    aria-label={t('history.visualize_unit_tooltip') || 'Open this unit in Learning Web: Unit Path'}
                                 >
                                     <span style={{fontSize:'13px',lineHeight:1}}>🧭</span>
                                 </button>
@@ -769,18 +778,25 @@ function HistoryPanel(props) {
                                     </button>
                                     <div className="relative">
                                         <button
+                                            type="button"
                                             data-help-key="history_move_to_unit_btn"
+                                            aria-label={`${t('history.tooltips.move_to_unit') || 'Move to unit'}: ${itemTitle}`}
+                                            aria-expanded={movingItemId === item.id}
+                                            aria-haspopup="menu"
+                                            aria-controls={`history-move-menu-${item.id}`}
                                             onClick={() => setMovingItemId(movingItemId === item.id ? null : item.id)}
-                                            className={`p-1 rounded hover:bg-indigo-700 text-indigo-300 transition-colors ${item.unitId ? 'text-yellow-400' : ''}`}
+                                            className={`min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 ${item.unitId ? 'text-yellow-400' : ''}`}
                                             title={t('history.tooltips.move_to_unit')}
                                         >
-                                            <FolderInput size={12} />
+                                            <FolderInput size={12} aria-hidden="true" />
                                         </button>
                                         {movingItemId === item.id && (
-                                            <div className="absolute left-0 top-6 z-[100] bg-white shadow-xl border border-indigo-200 rounded-lg p-1 w-40 animate-in fade-in zoom-in-95 origin-top-left">
-                                                <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2 py-1">{t('history.move_to_label')}</div>
-                                                <div className="flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar">
+                                            <div id={`history-move-menu-${item.id}`} role="menu" className="absolute left-0 top-12 z-[100] bg-white shadow-xl border border-indigo-200 rounded-lg p-1 w-40 animate-in fade-in zoom-in-95 origin-top-left">
+                                                <div role="presentation" className="text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2 py-1">{t('history.move_to_label')}</div>
+                                                <div role="presentation" className="flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar">
                                                     <button
+                                                        type="button"
+                                                        role="menuitem"
                                                         onClick={() => handleMoveToUnit(item.id, 'uncategorized')}
                                                         className={`text-[11px] text-left px-2 py-1.5 rounded hover:bg-indigo-50 text-slate-700 w-full truncate ${!item.unitId ? 'bg-indigo-50 font-bold text-indigo-700' : ''}`}
                                                     >
@@ -788,6 +804,8 @@ function HistoryPanel(props) {
                                                     </button>
                                                     {units.map(u => (
                                                         <button
+                                                            type="button"
+                                                            role="menuitem"
                                                             key={u.id}
                                                             onClick={() => handleMoveToUnit(item.id, u.id)}
                                                             className={`text-[11px] text-left px-2 py-1.5 rounded hover:bg-indigo-50 text-slate-700 w-full truncate ${item.unitId === u.id ? 'bg-indigo-50 font-bold text-indigo-700' : ''}`}

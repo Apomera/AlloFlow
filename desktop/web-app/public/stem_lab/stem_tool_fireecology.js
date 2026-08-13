@@ -140,6 +140,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       '.fireecology-sim-legend-item{display:inline-flex;align-items:center;gap:5px;}',
       '.fireecology-sim-swatch{display:inline-block;width:12px;height:12px;border:1px solid var(--fe-border);}',
       '.fireecology-sim-change{margin-top:9px;border-left:3px solid #ea580c;padding:8px 10px;background:var(--fe-panel);color:var(--fe-text);font-size:12px;line-height:1.5;}',
+      '.fireecology-sim-deltas{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:9px 0 0;padding:0;}',
+      '.fireecology-sim-delta{min-width:0;border:1px solid var(--fe-border);border-radius:10px;padding:9px;background:var(--fe-surface);}',
+      '.fireecology-sim-delta dt{margin:0;color:var(--fe-text);font-size:11px;font-weight:800;}',
+      '.fireecology-sim-delta dd{margin:5px 0 0;color:var(--fe-text);font-size:12px;line-height:1.4;}',
+      '.fireecology-sim-delta-values{display:flex;align-items:center;justify-content:space-between;gap:5px;font-variant-numeric:tabular-nums;font-weight:800;}',
+      '.fireecology-sim-delta-direction{display:block;margin-top:3px;color:var(--fe-muted);font-size:11px;}',
+      '.fireecology-sim-delta-bars{display:grid;gap:4px;margin-top:7px;}',
+      '.fireecology-sim-delta-bar{display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:5px;color:var(--fe-muted);font-size:11px;}',
+      '.fireecology-sim-delta-track{display:block;height:7px;overflow:hidden;border:1px solid var(--fe-border);border-radius:999px;background:var(--fe-panel);}',
+      '.fireecology-sim-delta-fill{display:block;height:100%;min-width:2px;border-radius:inherit;background:#0284c7;}',
+      '.fireecology-compare-panel{border:1px solid var(--fe-border);border-left:4px solid #7c3aed;border-radius:12px;padding:16px;background:var(--fe-surface);margin-bottom:16px;}',
+      '.fireecology-compare-heading{margin:0 0 8px;color:var(--fe-text);font-size:15px;font-weight:800;}',
+      '.fireecology-compare-intro{margin:0 0 12px;color:var(--fe-text);font-size:13px;line-height:1.5;}',
+      '.fireecology-compare-advance{width:100%;min-height:46px;margin-bottom:12px;border:1px solid var(--allo-stem-button-border,var(--fe-border));border-left:5px solid #7c3aed;border-radius:8px;padding:10px 14px;background:var(--allo-stem-button-bg,var(--fe-panel));color:var(--allo-stem-button-text,var(--fe-text));cursor:pointer;font-weight:800;text-align:left;}',
+      '.fireecology-compare-landscapes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 12px;}',
+      '.fireecology-compare-landscape{min-width:0;margin:0;border:1px solid var(--fe-border);border-radius:10px;padding:9px;background:var(--fe-panel);}',
+      '.fireecology-compare-landscape figcaption{margin-bottom:7px;color:var(--fe-text);font-size:11px;font-weight:800;}',
+      '.fireecology-compare-scene{position:relative;height:118px;overflow:hidden;border:1px solid var(--fe-border);border-radius:8px;background:linear-gradient(#7dd3fc 0 52%,#d6a45b 52% 100%);}',
+      '.fireecology-compare-canopy{position:absolute;left:5%;right:5%;top:15%;height:31%;display:flex;justify-content:space-around;align-items:flex-end;}',
+      '.fireecology-compare-tree{position:relative;width:9px;height:61px;background:#5b3a20;border-radius:3px 3px 0 0;}',
+      '.fireecology-compare-tree:before{content:"";position:absolute;left:50%;top:-17px;width:34px;height:34px;border:2px solid #14532d;border-radius:50%;background:#4d8b3a;transform:translateX(-50%);}',
+      '.fireecology-compare-understory{position:absolute;left:4%;right:4%;bottom:17px;height:var(--understory-height);background:repeating-linear-gradient(105deg,#166534 0 3px,transparent 3px 10px);}',
+      '.fireecology-compare-fuel{position:absolute;left:0;right:0;bottom:0;height:var(--fuel-height);border-top:2px dashed #713f12;background:#a16207;}',
+      '.fireecology-compare-summary{margin:0 0 12px;border-left:3px solid #7c3aed;padding:8px 10px;background:var(--fe-panel);color:var(--fe-text);font-size:12px;line-height:1.5;}',
+      '.fireecology-compare-gauges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}',
+      '.fireecology-compare-forest-title{margin-bottom:8px;border-left:4px solid var(--forest-accent);padding-left:8px;color:var(--fe-text);font-size:14px;font-weight:800;}',
+      '.fireecology-compare-forest-title[data-forest="cultural"]{--forest-accent:#15803d;}',
+      '.fireecology-compare-forest-title[data-forest="suppression"]{--forest-accent:#b91c1c;}',
+      '.fireecology-compare-meta{margin-top:4px;color:var(--fe-text);font-size:12px;}',
+      '@media (max-width:560px){.fireecology-compare-landscapes,.fireecology-compare-gauges{grid-template-columns:1fr;}}',
       '.fireecology-sim-note{margin:8px 0 0;color:var(--fe-muted);font-size:11px;line-height:1.45;}',
       '.fireecology-fact,.fireecology-badges{min-width:0;}',
       '@media (max-width:860px){.fireecology-route-groups{grid-template-columns:1fr;}.fireecology-route-group:last-child .fireecology-route-list{grid-template-columns:repeat(2,minmax(0,1fr));}.fireecology-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}}',
@@ -2659,9 +2689,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             );
           }
 
+          function renderComparisonLandscape(id, label, forest) {
+            var trees = Math.max(2, Math.round(clamp(forest.canopyCover, 0, 100) / 16));
+            var description = label + ', year ' + forest.year + ': canopy ' + Math.round(forest.canopyCover) + ' percent; understory ' + Math.round(forest.understoryDensity) + ' percent; fuel load ' + Math.round(forest.fuelLoad) + ' tons per acre; biodiversity ' + Math.round(forest.biodiversity) + ' out of 100.';
+            return h('figure', { className: 'fireecology-compare-landscape', 'data-forest': id },
+              h('figcaption', null, label + ' - Year ' + forest.year),
+              h('div', { className: 'fireecology-compare-scene', role: 'img', 'aria-label': description, style: {
+                '--understory-height': clamp(forest.understoryDensity * 0.58, 4, 58) + 'px',
+                '--fuel-height': clamp(forest.fuelLoad * 0.28, 3, 28) + 'px'
+              } },
+                h('span', { className: 'fireecology-compare-canopy', 'aria-hidden': 'true' },
+                  Array.from({ length: trees }).map(function(_, index) { return h('span', { key: index, className: 'fireecology-compare-tree' }); })
+                ),
+                h('span', { className: 'fireecology-compare-understory', 'aria-hidden': 'true' }),
+                h('span', { className: 'fireecology-compare-fuel', 'aria-hidden': 'true' })
+              )
+            );
+          }
+
           function renderCanvas() {
             var burnKind = visualEvent ? visualEvent.kind : 'none';
             var isBurn = burnKind === 'culturalBurn' || burnKind === 'prescribedBurn' || burnKind === 'wildfire';
+            var visualDeltas = visualEvent ? [
+              { key: 'fuel', label: t('stem.fireecology.fuel_load', 'Fuel load'), before: visualEvent.before.fuelLoad, after: visualEvent.after.fuelLoad, unit: ' t/acre', max: 100 },
+              { key: 'understory', label: t('stem.fireecology.understory_density', 'Understory'), before: visualEvent.before.understoryDensity, after: visualEvent.after.understoryDensity, unit: '%', max: 100 },
+              { key: 'canopy', label: t('stem.fireecology.canopy_cover', 'Canopy cover'), before: visualEvent.before.canopyCover, after: visualEvent.after.canopyCover, unit: '%', max: 100 },
+              { key: 'biodiversity', label: t('stem.fireecology.biodiversity', 'Biodiversity'), before: visualEvent.before.biodiversity, after: visualEvent.after.biodiversity, unit: '/100', max: 100 }
+            ] : [];
             var describedBy = 'fireecology-sim-phase-description fireecology-sim-outcome-description fireecology-sim-legend fireecology-sim-safety-description';
             var treatmentName = visualEvent ? visualEvent.label : t('stem.fireecology.current_forest', 'Current forest');
             if (visualEvent && visualEvent.subject) treatmentName += ' — ' + visualEvent.subject;
@@ -2787,6 +2841,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('strong', null, t('stem.fireecology.what_changed', 'What changed: ')),
                 visualSummary
               ),
+              visualEvent ? h('dl', { className: 'fireecology-sim-deltas', 'aria-label': t('stem.fireecology.before_outcome_comparison', 'Before and outcome model comparison') },
+                visualDeltas.map(function(metric) {
+                  var difference = metric.after - metric.before;
+                  var direction = difference > 0 ? 'increased' : (difference < 0 ? 'decreased' : 'did not change');
+                  var arrow = difference > 0 ? '\u2191' : (difference < 0 ? '\u2193' : '\u2192');
+                  var directionText = direction + (difference ? ' by ' + Math.abs(difference) + metric.unit : '');
+                  return h('div', { key: metric.key, className: 'fireecology-sim-delta', 'data-metric': metric.key, 'data-direction': direction, 'data-difference': difference },
+                    h('dt', null, metric.label),
+                    h('dd', null,
+                      h('span', { className: 'fireecology-sim-delta-values' },
+                        h('span', null, metric.before + metric.unit),
+                        h('span', { 'aria-hidden': 'true' }, arrow),
+                        h('span', null, metric.after + metric.unit)
+                      ),
+                      h('span', { className: 'fireecology-sim-delta-direction' }, directionText),
+                      h('span', { className: 'fireecology-sim-delta-bars', 'aria-hidden': 'true' },
+                        h('span', { className: 'fireecology-sim-delta-bar' },
+                          h('span', null, t('stem.fireecology.phase_before', 'Before')),
+                          h('span', { className: 'fireecology-sim-delta-track' }, h('span', { className: 'fireecology-sim-delta-fill', style: { width: clamp(metric.before / metric.max * 100, 0, 100) + '%' } }))
+                        ),
+                        h('span', { className: 'fireecology-sim-delta-bar' },
+                          h('span', null, t('stem.fireecology.phase_outcome', 'Outcome')),
+                          h('span', { className: 'fireecology-sim-delta-track' }, h('span', { className: 'fireecology-sim-delta-fill', style: { width: clamp(metric.after / metric.max * 100, 0, 100) + '%' } }))
+                        )
+                      )
+                    )
+                  );
+                })
+              ) : null,
               h('p', { id: 'fireecology-sim-safety-description', className: 'fireecology-sim-note' },
                 t('stem.fireecology.simulation_safety_note_v2', 'Illustrative, time-compressed classroom visualization—not a fire-behavior forecast, burn plan, or authorization to use fire. Wind, slope, direction, ignition pattern, and containment are not modeled. Cultural burning is place-based, practitioner-led knowledge that includes relationships, governance, timing, and responsibilities beyond flame behavior; this scene does not reproduce a real cultural practice.')
               )
@@ -2911,6 +2994,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                             s.fuelLoad < 40 ? { label: t('stem.fireecology.moderate', 'Moderate'), color: '#f59e0b' } :
                             s.fuelLoad < 60 ? { label: t('stem.fireecology.high', 'High'), color: '#f97316' } :
                             { label: 'EXTREME', color: '#ef4444' };
+          var comparisonFuelGap = Math.round(simB.fuelLoad - sim.fuelLoad);
+          var comparisonBiodiversityGap = Math.round(simB.biodiversity - sim.biodiversity);
+          var comparisonFuelText = comparisonFuelGap === 0 ? 'the same fuel load' : Math.abs(comparisonFuelGap) + (comparisonFuelGap > 0 ? ' more' : ' fewer') + ' tons of fuel per acre';
+          var comparisonBiodiversityText = comparisonBiodiversityGap === 0 ? 'the same biodiversity score' : Math.abs(comparisonBiodiversityGap) + (comparisonBiodiversityGap > 0 ? ' more' : ' fewer') + ' biodiversity points';
 
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f97316' } },
@@ -3012,9 +3099,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }, t('stem.fireecology.reset_forest_2', '\uD83D\uDD04 Reset Forest')),
 
             // Side-by-side comparison
-            comparisonMode ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, border: '2px solid #7c3aed' } },
-              h('div', { style: { fontWeight: 700, color: '#7c3aed', marginBottom: 12, fontSize: 15 } }, t('stem.fireecology.side_by_side_cultural_burn_vs_suppress', '\u2194\uFE0F Side-by-Side: Cultural Burn vs. Suppression')),
-              h('p', { style: { margin: '0 0 12px 0', fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.click_to_advance_both_forests_10_years', 'Click to advance both forests 10 years \u2014 one managed with cultural burning, one with total fire suppression.')),
+            comparisonMode ? h('section', { className: 'fireecology-compare-panel', 'aria-labelledby': 'fireecology-compare-title' },
+              h('h3', { id: 'fireecology-compare-title', className: 'fireecology-compare-heading' }, t('stem.fireecology.side_by_side_cultural_burn_vs_suppress', '\u2194\uFE0F Side-by-Side: Cultural Burn vs. Suppression')),
+              h('p', { className: 'fireecology-compare-intro' }, t('stem.fireecology.click_to_advance_both_forests_10_years', 'Click to advance both forests 10 years \u2014 one managed with cultural burning, one with total fire suppression.')),
               h('button', { disabled: playbackActive, onClick: function() {
                   // Advance Forest A (cultural burn)
                   var newA = Object.assign({}, sim);
@@ -3077,57 +3164,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   checkBadge('mosaicMaster');
                   if (newA.year >= 50) checkBadge('comparisonChamp');
                 },
-                style: { width: '100%', padding: '12px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#7c3aed', color: '#fff', fontWeight: 700, fontSize: 14, marginBottom: 16 }
+                className: 'fireecology-compare-advance'
               }, t('stem.fireecology.advance_both_forests_10_years', '\u27A1\uFE0F Advance Both Forests +10 Years')),
 
+              h('div', { className: 'fireecology-compare-landscapes', role: 'group', 'aria-label': t('stem.fireecology.comparison_landscapes', 'Modeled comparison landscapes') },
+                renderComparisonLandscape('cultural', t('stem.fireecology.forest_a_cultural', 'Forest A: cultural stewardship'), sim),
+                renderComparisonLandscape('suppression', t('stem.fireecology.forest_b_suppression', 'Forest B: suppression'), simB)
+              ),
+              h('p', { className: 'fireecology-compare-summary', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                sim.year === 0
+                  ? t('stem.fireecology.compare_same_start', 'Both modeled forests begin with the same conditions. Advance them to see how the classroom scenarios diverge.')
+                  : 'After ' + sim.year + ' modeled years, compared with Forest A, Forest B has ' + comparisonFuelText + ' and ' + comparisonBiodiversityText + '.'
+              ),
+
               // Side by side gauges
-              h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 } },
+              h('div', { className: 'fireecology-compare-gauges' },
                 h('div', null,
-                  h('div', { style: { fontWeight: 700, color: '#22c55e', marginBottom: 8, fontSize: 14 } }, '\uD83D\uDD25 Forest A: Cultural Burn (Year ' + sim.year + ')'),
+                  h('div', { className: 'fireecology-compare-forest-title', 'data-forest': 'cultural' }, '\uD83D\uDD25 Forest A: Cultural Burn (Year ' + sim.year + ')'),
                   gauge('Fuel Load', Math.round(sim.fuelLoad), 100, '#22c55e', ' t/acre'),
                   gauge('Biodiversity', Math.round(sim.biodiversity), 100, '#3b82f6', '/100'),
                   gauge('Soil Health', Math.round(sim.soilHealth), 100, '#854d0e', '/100'),
                   gauge('Water Yield', Math.round(sim.waterYield), 100, '#0ea5e9', '%'),
-                  h('div', { style: { fontSize: 12, color: '#4ade80', marginTop: 4 } }, 'Burns: ' + sim.totalBurns + ' | Wildfires: ' + sim.wildfires)
+                  h('div', { className: 'fireecology-compare-meta' }, 'Burns: ' + sim.totalBurns + ' | Wildfires: ' + sim.wildfires)
                 ),
                 h('div', null,
-                  h('div', { style: { fontWeight: 700, color: '#ef4444', marginBottom: 8, fontSize: 14 } }, '\u26D4 Forest B: Suppression (Year ' + simB.year + ')'),
+                  h('div', { className: 'fireecology-compare-forest-title', 'data-forest': 'suppression' }, '\u26D4 Forest B: Suppression (Year ' + simB.year + ')'),
                   gauge('Fuel Load', Math.round(simB.fuelLoad), 100, simB.fuelLoad > 50 ? '#ef4444' : '#f59e0b', ' t/acre'),
                   gauge('Biodiversity', Math.round(simB.biodiversity), 100, '#3b82f6', '/100'),
                   gauge('Soil Health', Math.round(simB.soilHealth), 100, '#854d0e', '/100'),
                   gauge('Water Yield', Math.round(simB.waterYield), 100, '#0ea5e9', '%'),
-                  h('div', { style: { fontSize: 12, color: '#fca5a5', marginTop: 4 } }, 'Years since burn: ' + simB.yearsSinceLastBurn + ' | Wildfires: ' + simB.wildfires)
+                  h('div', { className: 'fireecology-compare-meta' }, 'Years since burn: ' + simB.yearsSinceLastBurn + ' | Wildfires: ' + simB.wildfires)
                 )
               )
             ) : null,
 
             // Decade graph
-            s.decade && s.decade.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 14, marginBottom: 16 } },
-              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 10, fontSize: 14 } }, t('stem.fireecology.forest_health_over_time', '\uD83D\uDCCA Forest Health Over Time')),
-              h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 2, height: 120 } },
+            s.decade && s.decade.length > 0 ? h('section', {
+              className: 'fireecology-health-chart',
+              role: 'region',
+              'aria-labelledby': 'fireecology-health-chart-title',
+              'aria-describedby': 'fireecology-health-chart-summary'
+            },
+              h('div', { style: { marginBottom: 8 } },
+                h('div', { id: 'fireecology-health-chart-title', style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4, fontSize: 14 } }, t('stem.fireecology.forest_health_over_time', 'Forest Health Over Time')),
+                h('p', { id: 'fireecology-health-chart-summary', className: 'fireecology-sim-note' }, 'Each column compares biodiversity with fuel load. The table below provides the exact modeled values.')
+              ),
+              h('div', {
+                role: 'img',
+                'aria-label': 'Forest health trend over ' + s.decade.length + ' modeled steps. Latest year ' + s.decade[s.decade.length - 1].year + '.',
+                style: { display: 'flex', alignItems: 'flex-end', gap: 2, height: 120 }
+              },
                 s.decade.map(function(snap, si) {
-                  return h('div', { key: si, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
+                  return h('div', { key: si, 'aria-hidden': true, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
                     h('div', { title: 'Biodiversity: ' + snap.biodiversity, style: { width: '100%', height: Math.max(2, snap.biodiversity * 1.1) + 'px', background: '#3b82f6', borderRadius: '2px 2px 0 0', transition: 'height 0.3s' } }),
                     h('div', { title: 'Fuel: ' + snap.fuel, style: { width: '100%', height: Math.max(2, snap.fuel * 1.1) + 'px', background: snap.fuel > 50 ? '#ef4444' : '#f59e0b', borderRadius: '0 0 2px 2px', transition: 'height 0.3s' } }),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Y' + snap.year)
                   );
                 })
               ),
-              h('div', { style: { display: 'flex', gap: 16, marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-                h('span', null, t('stem.fireecology.biodiversity', '\u25A0 Biodiversity')),
-                h('span', { style: { color: '#f59e0b' } }, t('stem.fireecology.fuel_load', '\u25A0 Fuel Load'))
+              h('div', { className: 'fireecology-sim-legend', role: 'list', 'aria-label': 'Chart legend' },
+                h('span', { className: 'fireecology-sim-legend-item', role: 'listitem' },
+                  h('span', { className: 'fireecology-sim-swatch', 'aria-hidden': true, style: { background: '#3b82f6' } }),
+                  t('stem.fireecology.biodiversity', 'Biodiversity')
+                ),
+                h('span', { className: 'fireecology-sim-legend-item', role: 'listitem' },
+                  h('span', { className: 'fireecology-sim-swatch', 'aria-hidden': true, style: { background: '#f59e0b' } }),
+                  t('stem.fireecology.fuel_load', 'Fuel load')
+                )
+              ),
+              h('details', { className: 'fireecology-sim-data-details' },
+                h('summary', null, 'Read modeled values as a table'),
+                h('div', { className: 'fireecology-sim-table-wrap' },
+                  h('table', { className: 'fireecology-sim-table' },
+                    h('caption', null, 'Modeled forest health values by year'),
+                    h('thead', null, h('tr', null,
+                      h('th', { scope: 'col' }, 'Year'),
+                      h('th', { scope: 'col' }, 'Biodiversity /100'),
+                      h('th', { scope: 'col' }, 'Fuel load /acre'),
+                      h('th', { scope: 'col' }, 'Canopy %')
+                    )),
+                    h('tbody', null, s.decade.map(function(snap, si) {
+                      return h('tr', { key: si },
+                        h('th', { scope: 'row' }, snap.year),
+                        h('td', null, snap.biodiversity),
+                        h('td', null, snap.fuel),
+                        h('td', null, snap.canopy)
+                      );
+                    }))
+                  )
+                )
               )
             ) : null,
 
             // Event log
-            s.eventLog && s.eventLog.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 14 } },
-              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, fontSize: 14 } }, t('stem.fireecology.event_log', '\uD83D\uDCDC Event Log')),
-              s.eventLog.slice(-8).reverse().map(function(ev, ei) {
-                return h('div', { key: ei, style: { padding: '6px 0', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                  h('span', { style: { color: '#f97316', fontWeight: 600 } }, 'Year ' + ev.year + ': '),
-                  ev.event
-                );
-              })
+            s.eventLog && s.eventLog.length > 0 ? h('section', {
+              className: 'fireecology-event-log',
+              role: 'log',
+              'aria-live': 'polite',
+              'aria-atomic': 'false',
+              'aria-labelledby': 'fireecology-event-log-title'
+            },
+              h('div', { id: 'fireecology-event-log-title', style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, fontSize: 14 } }, t('stem.fireecology.event_log', 'Event Log')),
+              h('ol', { style: { margin: 0, paddingLeft: 20 }, 'aria-label': 'Simulation events' },
+                s.eventLog.slice(-8).reverse().map(function(ev, ei) {
+                  return h('li', { key: ei, style: { padding: '6px 0', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                    h('span', { style: { color: '#f97316', fontWeight: 600 } }, 'Year ' + ev.year + ': '),
+                    ev.event
+                  );
+                })
+              )
             ) : null
           );
         }

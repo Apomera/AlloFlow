@@ -27,8 +27,12 @@ describe('the advance waits for the read-back', () => {
     expect(MODULE).toMatch(/_rbAdvanceMs = Math\.min\(6500, Math\.max\(2000, 350 \+ _rbText\.split\(\/\\s\+\/\)\.length \* 400\)\);/);
   });
 
-  it('only the correct-answer, non-probe advance uses it', () => {
-    expect(MODULE).toMatch(/isProbeMode \? \(isCorrect \? 800 : 1200\) : isCorrect \? _rbAdvanceMs : 3000,/);
+  it('uses correctness-neutral exposure time in scored probes', () => {
+    const marker = MODULE.indexOf('// Keep scored probe exposure intervals correctness-neutral.');
+    expect(marker).toBeGreaterThan(0);
+    const advance = MODULE.slice(marker, marker + 450);
+    expect(advance).toMatch(/isProbeMode \? 800 : isCorrect \? _rbAdvanceMs : 3000,/);
+    expect(advance).not.toMatch(/isProbeMode\s*\?\s*\(isCorrect/);
   });
 
   it('a story-length read-back gets the time it needs', () => {

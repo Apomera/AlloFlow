@@ -68,16 +68,29 @@ describe('the threshold is set where it means something', () => {
 
 describe('every completion path carries it', () => {
   it('all three probe payloads report hidden time and the flag', () => {
-    expect((MODULE.match(/hiddenMs: Math\.round\(probeHiddenMs\(\)\)/g) || []).length).toBe(3);
-    expect((MODULE.match(/interrupted: probeHiddenMs\(\) >= PROBE_INTERRUPTION_MS/g) || []).length).toBe(3);
+    const payload = MODULE.slice(MODULE.indexOf('const buildProbePayload'), MODULE.indexOf('const emitProbeComplete'));
+    expect(payload).toContain('const hiddenMs = Math.round(probeHiddenMs())');
+    expect(payload).toContain('hiddenMs,');
+    expect(payload).toContain('interrupted: hiddenMs >= PROBE_INTERRUPTION_MS');
+    expect((MODULE.match(/emitProbeComplete\(/g) || []).length).toBe(3);
+    expect((MODULE.match(/onProbeComplete\(/g) || []).length).toBe(1);
   });
 
   it('the tally resets wherever the clock starts', () => {
     // Otherwise the second probe of a session inherits the first one's
     // interruption and is wrongly flagged.
-    const starts = MODULE.match(/probeStartTimeRef\.current = Date\.now\(\);/g) || [];
-    const resets = MODULE.match(/probeHiddenMsRef\.current = 0;/g) || [];
-    expect(resets.length).toBe(starts.length);
+    const marker = 'probeStartTimeRef.current = Date.now();';
+    let index = MODULE.indexOf(marker);
+    let starts = 0;
+    while (index >= 0) {
+      starts += 1;
+      expect(MODULE.slice(index, index + 220)).toContain('probeHiddenMsRef.current = 0;');
+      index = MODULE.indexOf(marker, index + marker.length);
+    }
+    expect(starts).toBeGreaterThan(0);
+    const reset = MODULE.slice(MODULE.indexOf('const resetRuntimeSession'), MODULE.indexOf('const runtimeIdentityKey'));
+    expect(reset).toContain('probeHiddenMsRef.current = 0;');
+    expect(reset).toContain('probeHiddenSinceRef.current = null;');
   });
 
   it('the elapsed time is NOT quietly reduced', () => {

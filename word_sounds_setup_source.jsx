@@ -1085,7 +1085,7 @@
         }
     };
 
-    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode, probeActivity, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = []}) => {
+    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = []}) => {
         // t-with-fallback: the host's t(key, params) returns UNDEFINED on a
         // missing key and treats a string second argument as params — so every
         // `tf('word_sounds.x', 'English text')` call below rendered an EMPTY
@@ -1103,12 +1103,9 @@
         };
         const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));
         const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');
-    React.useEffect(() => {
-        if (isProbeMode) setImageVisibilityMode('off');
-    }, [isProbeMode]);
-    React.useEffect(() => {
-        if (isProbeMode) setImageVisibilityMode('off');
-    }, [isProbeMode]);
+        React.useEffect(() => {
+            if (isProbeMode) setImageVisibilityMode('off');
+        }, [isProbeMode]);
         const SMART_IMAGE_VISIBILITY = {
             'counting':       'afterCompletion',
             'isolation':      'progressive',
@@ -1238,6 +1235,65 @@
         const [prewarmTotal, setPrewarmTotal] = React.useState(0);
         const [selectedIndices, setSelectedIndices] = React.useState(new Set());
         const startRunRef = React.useRef(false);
+        const generationEpochRef = React.useRef(0);
+        const setupDialogRef = React.useRef(null);
+        const setupPreviouslyFocusedRef = React.useRef(null);
+        const generatorCloseRef = React.useRef(onClose);
+        React.useEffect(() => {
+            generatorCloseRef.current = onClose;
+        }, [onClose]);
+        const handleGeneratorClose = React.useCallback(() => {
+            generationEpochRef.current += 1;
+            startRunRef.current = false;
+            setIsProcessing(false);
+            if (typeof generatorCloseRef.current === 'function') generatorCloseRef.current();
+        }, []);
+        React.useEffect(() => {
+            if (isMinimized || typeof document === 'undefined') return undefined;
+            const root = setupDialogRef.current;
+            if (!root) return undefined;
+            setupPreviouslyFocusedRef.current = document.activeElement;
+            const focusableSelector = 'a[href],area[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+            const getFocusable = () => Array.from(root.querySelectorAll(focusableSelector))
+                .filter((element) => element.getClientRects().length > 0);
+            const focusTimer = setTimeout(() => {
+                const focusable = getFocusable();
+                (focusable[0] || root).focus();
+            }, 0);
+            const handleDialogKeyDown = (event) => {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    handleGeneratorClose();
+                    return;
+                }
+                if (event.key !== 'Tab') return;
+                const focusable = getFocusable();
+                if (!focusable.length) {
+                    event.preventDefault();
+                    root.focus();
+                    return;
+                }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                const active = document.activeElement;
+                if (event.shiftKey && (active === first || !root.contains(active))) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && (active === last || !root.contains(active))) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            };
+            root.addEventListener('keydown', handleDialogKeyDown);
+            return () => {
+                clearTimeout(focusTimer);
+                root.removeEventListener('keydown', handleDialogKeyDown);
+                const previous = setupPreviouslyFocusedRef.current;
+                if (previous && typeof previous.focus === 'function' && document.contains(previous)) {
+                    try { previous.focus(); } catch (_) {}
+                }
+            };
+        }, [handleGeneratorClose, isMinimized]);
         const [kokoroRecDismissed, setKokoroRecDismissed] = React.useState(() => {
             try { return sessionStorage.getItem('allo.kokoroRecDismissed') === '1'; }
             catch (_) { return false; }
@@ -1281,7 +1337,7 @@
                 list = [...list, ...familyWords];
             }
             if (includeCustom && customText) {
-                const customWords = customText.split(/[\n,]+/).map(w => w.trim()).filter(w => w.length > 0);
+                const customWords = customText.split(/[\s,]+/).map(w => w.trim()).filter(w => w.length > 0);
                 list = [...list, ...customWords];
             }
             if (includeSightWords && selectedSightWordList && SIGHT_WORD_PRESETS[selectedSightWordList]) {
@@ -1291,7 +1347,16 @@
             if (includeAI && aiTerms.length > 0) {
                 list = [...list, ...aiTerms];
             }
-            return [...new Set(list)];
+            const uniqueWords = [];
+            const seenWords = new Set();
+            list.forEach((value) => {
+                const word = String(value || '').trim();
+                const key = word.toLocaleLowerCase();
+                if (!word || seenWords.has(key)) return;
+                seenWords.add(key);
+                uniqueWords.push(word);
+            });
+            return uniqueWords;
         }, [includeGlossary, includeFamily, includeCustom, includeAI, includeSightWords, selectedSightWordList, glossaryTerms, selectedFamily, customText, aiTerms, preloadedWords]);
         React.useEffect(() => {
             const limit = Math.min(previewList.length, wordCount);
@@ -1399,7 +1464,18 @@
         const packIsEnglish = !wordSoundsLanguage || String(wordSoundsLanguage).toLowerCase().startsWith('en');
         const makePackManipulationFallback = (word, phonemes) => {
             const source = normalizePackKey(word);
-            const answer = source.length > 1 ? source.slice(1) : source;
+            const firstEntry = (phonemes || [])[0];
+            const suppliedGrapheme = normalizePackKey(
+                firstEntry && typeof firstEntry === 'object'
+                    ? firstEntry.grapheme
+                    : firstEntry
+            );
+            const estimatedGrapheme = normalizePackKey(estimatePackPhonemes(source)[0]);
+            const removableGrapheme = [suppliedGrapheme, estimatedGrapheme, source[0]]
+                .find((candidate) => candidate && source.startsWith(candidate)) || '';
+            const answer = removableGrapheme && source.length > removableGrapheme.length
+                ? source.slice(removableGrapheme.length)
+                : source;
             return {
                 type: 'deletion',
                 instruction: `Say '${source}'. Now say it again, but leave out the first sound.`,
@@ -1680,6 +1756,19 @@
         const handleStart = async () => {
              const wordsToProcess = previewList.filter((_, i) => selectedIndices.has(i));
              if (wordsToProcess.length === 0 || startRunRef.current) return;
+             const generationEpoch = ++generationEpochRef.current;
+             const isGenerationActive = () => generationEpochRef.current === generationEpoch;
+             const waitWhileActive = (milliseconds) => new Promise((resolve) => {
+                 const startedAt = Date.now();
+                 const poll = () => {
+                     if (!isGenerationActive() || Date.now() - startedAt >= milliseconds) {
+                         resolve();
+                         return;
+                     }
+                     setTimeout(poll, Math.min(250, milliseconds));
+                 };
+                 poll();
+             });
              startRunRef.current = true;
              try {
              setIsProcessing(true);
@@ -1712,6 +1801,7 @@
              }
 
              for (let i = 0; i < wordsToProcess.length; i++) {
+                 if (!isGenerationActive()) return;
                  const rawWord = wordsToProcess[i];
 
                  // ── Skip AI if this word was already generated ──
@@ -1820,6 +1910,7 @@
                       `;
                      const prompt = packIsEnglish ? _procPrompt_english : _procPrompt_nonEnglish;
                      const result = await callGemini(prompt, true);
+                     if (!isGenerationActive()) return;
                      const data = JSON.parse(result.replace(/```json/g, '').replace(/```/g, ''));
                      let imageUrl = null;
                      if (callImagen) {
@@ -1829,6 +1920,7 @@
                                 ? `${themePrefix}${data.imagePrompt}`
                                 : `${themePrefix}Icon of ${rawWord}, white background`;
                             imageUrl = await callImagen(finalPrompt);
+                            if (!isGenerationActive()) return;
                         } catch(e) { warnLog('Caught error:', e?.message || e); }
                      }
                      // Cluster-aware estimate, and FLAG it: the old silent raw
@@ -1841,6 +1933,7 @@
                      let _espeakPhonemes = null;
                      if (_phonemesMissing) {
                          _espeakPhonemes = await espeakPackPhonemes(data.word, wordSoundsLanguage);
+                         if (!isGenerationActive()) return;
                      }
                      const validatedPhonemes = !_phonemesMissing
                          ? data.phonemes
@@ -1921,6 +2014,7 @@
                      // but a G2P engine does not need one. Try eSpeak before
                      // giving the child sounds derived from spelling.
                      const _espeakRescue = await espeakPackPhonemes(rawWord, wordSoundsLanguage);
+                     if (!isGenerationActive()) return;
                      const fallbackPhonemes = _espeakRescue || estimatePackPhonemes(rawWord);
                      processed.push({
                          term: rawWord,
@@ -1987,10 +2081,12 @@
                      ...(item.activityItems?.sentence_match?.extras || []),
                  ]))];
                  for (const word of decodingWords) {
+                     if (!isGenerationActive()) return;
                      if (decodingAssets[word]) continue;
                      try {
                          const themePrefix = imageTheme?.trim() ? `${imageTheme.trim()} style, ` : '';
                          const image = await callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`);
+                         if (!isGenerationActive()) return;
                          if (image) decodingAssets[word] = image;
                      } catch (e) {
                          warnLog('Decoding image preload failed for:', word, e?.message || e);
@@ -2027,10 +2123,12 @@
                  }).map((value) => normalizePackKey(value)).filter(Boolean))];
                  setPrewarmTotal((prev) => prev + aacWords.length);
                  for (const word of aacWords) {
+                     if (!isGenerationActive()) return;
                      try {
                          if (aacAssets[word] || decodingAssets[word]) continue;
                          const themePrefix = imageTheme?.trim() ? `${imageTheme.trim()} style, ` : '';
                          const image = await callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`);
+                         if (!isGenerationActive()) return;
                          if (image) aacAssets[word] = image;
                      } catch (e) {
                          warnLog('AAC image preload failed for:', word, e?.message || e);
@@ -2057,6 +2155,7 @@
              const voiceForTts = selectedVoice || undefined;
              const speedForTts = (typeof ttsSpeed === 'number') ? ttsSpeed : undefined;
              for (const item of processed) {
+                 if (!isGenerationActive()) return;
                  const word = item.targetWord || item.word || item.term;
                  const boards = item.activityItems || {};
                  const tasks = new Set([word]);
@@ -2122,6 +2221,7 @@
                  const taskList = [...tasks].filter(Boolean);
                  setPrewarmTotal((prev) => prev + taskList.length);
                  const runTasks = async (list) => Promise.allSettled(list.map(async (text) => {
+                     if (!isGenerationActive()) throw new Error('Generation canceled');
                      const key = normalizePackKey(text);
                      if (packedTtsAssets[key]) {
                          setPrewarmCount((prev) => prev + 1);
@@ -2140,6 +2240,7 @@
                  }));
                  const was429 = (results) => results.some((r) => r.status === 'rejected' && /429|Rate Limit/i.test(r.reason?.message || ''));
                  let results = await runTasks(taskList);
+                 if (!isGenerationActive()) return;
                  if (was429(results)) {
                      ttsGate.rateLimited = true;
                      if (typeof window !== 'undefined' && !window.__kokoroOfferDeclined && onRequestKokoroOffer && !window.__kokoroOfferedThisPreload) {
@@ -2150,10 +2251,12 @@
                          // Wait out the cooldown and retry only what is still
                          // missing, so the words after this one still get audio.
                          ttsGate.cooldowns += 1;
-                         await new Promise((r) => setTimeout(r, TTS_COOLDOWN_MS * ttsGate.cooldowns));
+                         await waitWhileActive(TTS_COOLDOWN_MS * ttsGate.cooldowns);
+                         if (!isGenerationActive()) return;
                          const stillMissing = taskList.filter((text) => !packedTtsAssets[normalizePackKey(text)]);
                          setPrewarmTotal((prev) => prev + stillMissing.length);
                          results = await runTasks(stillMissing);
+                         if (!isGenerationActive()) return;
                          if (was429(results) && ttsGate.cooldowns >= TTS_MAX_COOLDOWNS) ttsGate.aborted = true;
                      } else {
                          ttsGate.aborted = true;
@@ -2207,8 +2310,32 @@
              // Assessment Center run instead of misfiling this child's probe
              // under that one.
              const probeOptions = isAssessment
-                 ? { isProbe: true, activity: probeActivitySel, student: probeStudentTrimmed || null }
+                 ? {
+                     isProbe: true,
+                     activity: probeActivitySel,
+                     student: probeStudentTrimmed || null,
+                     grade: probeGradeLevel || gradeLevel || 'K',
+                     form: probeForm || 'A',
+                 }
                  : { isProbe: false };
+             const sessionConfig = {
+                 schema: 'alloflow-word-sounds-session/v1',
+                 version: 1,
+                 sessionGoal: isAssessment
+                     ? processed.length
+                     : Math.max(1, Number(wordSoundsSessionGoal) || 30),
+                 orthoSessionGoal: isAssessment || useLessonPlan
+                     ? 0
+                     : Math.max(0, Number(orthoSessionGoal) || 0),
+                 imageVisibilityMode: isAssessment ? 'off' : imageVisibilityMode,
+                 language: wordSoundsLanguage || 'en',
+                 fixedForm: isAssessment,
+                 probeItemCount: isAssessment ? processed.length : null,
+                 studentLocked: isAssessment,
+                 learnerId: probeStudentTrimmed || null,
+                 probeGrade: isAssessment ? (probeGradeLevel || gradeLevel || 'K') : null,
+                 probeForm: isAssessment ? (probeForm || 'A') : null
+             };
              const configSummary = isAssessment
                  ? `📊 Assessment · ${String(probeActivitySel).replace(/_/g, ' ')} probe (timed, no hints)` +
                    (probeStudentTrimmed ? ` · ${probeStudentTrimmed}` : '')
@@ -2217,12 +2344,16 @@
                        enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count})`).join(' → ') +
                        ` • Est. ${lessonPlanConfig.estimatedMinutes} min`
                      : 'Quick Practice Mode');
-             // 5th arg is backward-compatible: an older host that destructures only
-             // the first four simply ignores it (practice behaviour unchanged).
-             onStartGame(processed, sequence, lessonPlanConfig, configSummary, probeOptions);
+             // The optional fifth and sixth arguments preserve compatibility with
+             // older hosts while carrying assessment identity and visible setup
+             // choices to current hosts.
+             if (!isGenerationActive()) return;
+             onStartGame(processed, sequence, lessonPlanConfig, configSummary, probeOptions, sessionConfig);
              } finally {
-                 setIsProcessing(false);
-                 startRunRef.current = false;
+                 if (isGenerationActive()) {
+                     setIsProcessing(false);
+                     startRunRef.current = false;
+                 }
              }
         };
 
@@ -2236,17 +2367,22 @@
                                  {isProcessing ? tf('status.analyzing', 'Generating...') : tf('word_sounds.title', 'Word Sounds Studio')}
                              </span>
                          </div>
-                         <button type="button" data-help-key="ws_gen_expand" onClick={() => { setIsMinimized(false); if (onExpand) onExpand(); }} className="p-1 hover:bg-slate-100 rounded text-slate-600">
-                             <Maximize2 size={18} />
-                         </button>
+                         <div className="flex items-center gap-1">
+                             <button type="button" aria-label={tf('word_sounds.expand_setup', 'Expand Word Sounds setup')} data-help-key="ws_gen_expand" onClick={() => { setIsMinimized(false); if (onExpand) onExpand(); }} className="p-2 hover:bg-slate-100 rounded text-slate-600">
+                                 <Maximize2 size={18} />
+                             </button>
+                             <button type="button" aria-label={tf('word_sounds.close_setup', 'Close Word Sounds setup')} onClick={handleGeneratorClose} className="p-2 hover:bg-slate-100 rounded text-slate-600">
+                                 <X size={18} />
+                             </button>
+                         </div>
                      </div>
                      {isProcessing && (
-                         <div className="space-y-2">
+                         <div className="space-y-2" role="status" aria-live="polite" aria-busy="true">
                              <div className="flex justify-between text-xs font-bold text-violet-600">
                                  <span>{tf('status.analyzing', 'Processing...')}</span>
                                  <span>{generatedCount} / {selectedIndices.size}</span>
                              </div>
-                             <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                             <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden" role="progressbar" aria-label="Preparing Word Sounds activity" aria-valuemin={0} aria-valuemax={selectedIndices.size} aria-valuenow={generatedCount}>
                                  <div
                                      className="h-full bg-violet-600 transition-all duration-300"
                                      style={{ width: `${selectedIndices.size ? (generatedCount / selectedIndices.size) * 100 : 0}%` }}
@@ -2263,7 +2399,7 @@
                      {!isProcessing && (
                           <div className="text-center">
                               <button type="button"
-                                  aria-label={t('common.generate')}
+                                  aria-label={tf('word_sounds.expand_setup', 'Expand Word Sounds setup')}
                                   data-help-key="ws_gen_expand" onClick={() => { setIsMinimized(false); if (onExpand) onExpand(); }}
                                   className="text-xs bg-violet-100 text-violet-700 font-bold px-3 py-1.5 rounded-full hover:bg-violet-200"
                               >
@@ -2275,9 +2411,9 @@
             );
         }
         return (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in motion-reduce:animate-none fade-in">
-                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-400">
-                    <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-6 flex justify-between items-center text-white shrink-0">
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-2 sm:p-4 animate-in motion-reduce:animate-none fade-in">
+                <div ref={setupDialogRef} role="dialog" aria-modal="true" aria-label={tf('word_sounds.setup_dialog_label', 'Word Sounds setup')} tabIndex={-1} className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-5xl max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden border border-slate-400 focus:outline-none">
+                    <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-4 sm:p-6 flex flex-wrap justify-between items-center gap-3 text-white shrink-0">
                         <div className="flex items-center gap-4">
                             <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
                                 <Sparkles size={32} className="text-yellow-300 animate-pulse motion-reduce:animate-none" />
@@ -2291,7 +2427,7 @@
                             <button type="button" data-help-key="ws_gen_minimize" onClick={() => { setIsMinimized(true); if (onMinimize) onMinimize(); }} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors" title={t('common.minimize')}>
                                 <Minimize size={24} />
                             </button>
-                            <button type="button" aria-label={t('common.close_minimize')} data-help-key="ws_gen_close" onClick={onClose} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors" title={t('common.close')}>
+                            <button type="button" aria-label={tf('word_sounds.close_setup', 'Close Word Sounds setup')} data-help-key="ws_gen_close" onClick={handleGeneratorClose} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors" title={t('common.close')}>
                                 <X size={24} />
                             </button>
                         </div>
@@ -2374,8 +2510,8 @@
                             </div>
                         );
                     })()}
-                    <div className="flex flex-1 overflow-hidden">
-                        <div className="w-1/3 bg-slate-50 border-r border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto">
+                    <div className="flex flex-col lg:flex-row flex-1 overflow-y-auto lg:overflow-hidden">
+                        <div className="w-full lg:w-1/3 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200 p-4 sm:p-6 flex flex-col gap-6 lg:overflow-y-auto">
                             <div className="space-y-3">
                                 <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.session_type', 'Session Type')}</label>
                                 <div className="bg-white p-2 rounded-xl border border-slate-400 shadow-sm grid grid-cols-2 gap-2">
@@ -2823,7 +2959,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div className="flex-1 bg-white p-8 overflow-y-auto flex flex-col">
+                        <div className="flex-1 bg-white p-4 sm:p-6 lg:p-8 lg:overflow-y-auto flex flex-col">
                              <div className="flex justify-between items-end mb-6">
                                 <div>
                                     <h3 className="text-2xl font-black text-slate-700">{tf('word_sounds.preview_title', 'Lesson Preview')}</h3>
@@ -2856,7 +2992,7 @@
                                 </button>
                              </div>
                              {isProcessing && (
-                                 <div className="bg-gradient-to-r from-violet-50 to-indigo-50 rounded-2xl p-6 border border-violet-200 animate-in motion-reduce:animate-none fade-in slide-in-from-top-2">
+                                 <div className="bg-gradient-to-r from-violet-50 to-indigo-50 rounded-2xl p-6 border border-violet-200 animate-in motion-reduce:animate-none fade-in slide-in-from-top-2" role="status" aria-live="polite" aria-busy="true">
                                      <div className="flex items-center justify-between mb-3">
                                          <div className="flex items-center gap-3">
                                              <Loader2 className="animate-spin motion-reduce:animate-none text-violet-600" size={24} />
@@ -2864,7 +3000,7 @@
                                          </div>
                                          <span className="text-violet-600 font-black text-xl">{generatedCount} / {selectedIndices.size}</span>
                                      </div>
-                                     <div className="w-full h-4 bg-violet-200/50 rounded-full overflow-hidden">
+                                     <div className="w-full h-4 bg-violet-200/50 rounded-full overflow-hidden" role="progressbar" aria-label="Preparing Word Sounds activity" aria-valuemin={0} aria-valuemax={selectedIndices.size} aria-valuenow={generatedCount}>
                                          <div
                                              className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all duration-500 ease-out"
                                              style={{ width: `${(generatedCount / selectedIndices.size) * 100}%` }}
@@ -2899,9 +3035,12 @@
                                      {previewList.map((word, i) => {
                                          const isSelected = selectedIndices.has(i);
                                          return (
-                                             <div
+                                             <button
+                                                 type="button"
                                                  key={i}
                                                  onClick={() => toggleSelection(i)}
+                                                 aria-pressed={isSelected}
+                                                 aria-label={String(word) + ': ' + (isSelected ? 'selected' : 'not selected')}
                                                  className={`border-2 rounded-xl px-4 py-3 flex items-center justify-between group cursor-pointer transition-all ${
                                                      isSelected
                                                          ? 'bg-violet-50 border-violet-500 shadow-md'
@@ -2920,7 +3059,7 @@
                                                      <span className="w-2 h-2 rounded-full bg-indigo-400" title={t('common.phonemes')}></span>
                                                      <span className="w-2 h-2 rounded-full bg-pink-400" title={t('common.image')}></span>
                                                  </div>
-                                             </div>
+                                             </button>
                                          );
                                      })}
                                  </div>

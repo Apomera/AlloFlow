@@ -12,11 +12,11 @@
   "summary": {
     "totalItems": 1500,
     "totalIncorrectOptions": 4500,
-    "itemsWithWarnings": 617,
-    "incorrectOptionsWithWarnings": 1740,
-    "insufficientDetailOptions": 644,
-    "genericTemplateOptions": 1035,
-    "choiceRestatementOptions": 421,
+    "itemsWithWarnings": 614,
+    "incorrectOptionsWithWarnings": 1734,
+    "insufficientDetailOptions": 642,
+    "genericTemplateOptions": 1031,
+    "choiceRestatementOptions": 420,
     "fullKeyEchoOptions": 260,
     "currentWaveIncorrectOptions": 24,
     "currentWaveOptionsWithWarnings": 0,
@@ -2246,17 +2246,6 @@
       "optionIndex": 3,
       "feedbackLength": 233,
       "feedbackWordCount": 35,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-b004-social-1",
-      "domainId": "social-cultural",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 298,
-      "feedbackWordCount": 36,
       "codes": [
         "generic-template"
       ]
@@ -4848,28 +4837,6 @@
       "difficulty": "foundation",
       "optionIndex": 3,
       "feedbackLength": 96,
-      "feedbackWordCount": 15,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-cognitive-affective-038",
-      "domainId": "cognitive-affective",
-      "difficulty": "advanced",
-      "optionIndex": 0,
-      "feedbackLength": 51,
-      "feedbackWordCount": 7,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-cognitive-affective-038",
-      "domainId": "cognitive-affective",
-      "difficulty": "advanced",
-      "optionIndex": 1,
-      "feedbackLength": 107,
       "feedbackWordCount": 15,
       "codes": [
         "insufficient-detail"
@@ -10315,40 +10282,6 @@
       "codes": [
         "generic-template",
         "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-biological-012",
-      "domainId": "biological",
-      "difficulty": "advanced",
-      "optionIndex": 0,
-      "feedbackLength": 123,
-      "feedbackWordCount": 17,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-biological-012",
-      "domainId": "biological",
-      "difficulty": "advanced",
-      "optionIndex": 2,
-      "feedbackLength": 110,
-      "feedbackWordCount": 17,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-v3-biological-012",
-      "domainId": "biological",
-      "difficulty": "advanced",
-      "optionIndex": 3,
-      "feedbackLength": 147,
-      "feedbackWordCount": 25,
-      "codes": [
-        "generic-template"
       ]
     },
     {

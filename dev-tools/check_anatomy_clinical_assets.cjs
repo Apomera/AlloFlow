@@ -101,6 +101,15 @@ function checkClinicalAssets() {
     if (sha256(model) !== pack.sha256.model || sha256(crosswalk) !== pack.sha256.crosswalk) {
       throw new Error(`${pack.id}: asset integrity hash mismatch`);
     }
+    if (pack.metadata) {
+      const metadata = fs.readFileSync(path.join(CANONICAL_DIR, pack.metadata));
+      const publicMetadata = fs.readFileSync(path.join(PUBLIC_DIR, pack.metadata));
+      const buildMetadata = fs.readFileSync(path.join(BUILD_DIR, pack.metadata));
+      if (!metadata.equals(publicMetadata) || !metadata.equals(buildMetadata)) throw new Error(`${pack.id}: canonical, public, and build metadata differ`);
+      if (!pack.sha256.metadata || sha256(metadata) !== pack.sha256.metadata) throw new Error(`${pack.id}: metadata integrity hash mismatch`);
+      const metadataText = metadata.toString('utf8');
+      if (pack.hubmapId && (!metadataText.includes(pack.hubmapId) || !metadataText.includes('CC BY 4.0'))) throw new Error(`${pack.id}: metadata provenance is incomplete`);
+    }
 
     const nodeNames = readGlbNodeNames(model, pack.id);
     const lines = crosswalk.toString('utf8').replace(/^\uFEFF/, '').trim().split(/\r?\n/);
@@ -141,7 +150,57 @@ function checkClinicalAssets() {
     };
   });
 
-  return { packCount: results.length, packs: results };
+  const tissueAtlases = Array.isArray(canonicalManifest.data.tissueAtlases) ? canonicalManifest.data.tissueAtlases : [];
+  const tissueResults = tissueAtlases.map((atlas) => {
+    const names = ['image', 'crosswalk', 'metadata'];
+    const canonicalAssets = {};
+    for (const name of names) {
+      canonicalAssets[name] = fs.readFileSync(path.join(CANONICAL_DIR, atlas[name]));
+      const publicAsset = fs.readFileSync(path.join(PUBLIC_DIR, atlas[name]));
+      const buildAsset = fs.readFileSync(path.join(BUILD_DIR, atlas[name]));
+      if (!canonicalAssets[name].equals(publicAsset) || !canonicalAssets[name].equals(buildAsset)) {
+        throw new Error(`${atlas.id}: canonical, public, and build ${name} assets differ`);
+      }
+      if (sha256(canonicalAssets[name]) !== atlas.sha256[name]) {
+        throw new Error(`${atlas.id}: ${name} integrity hash mismatch`);
+      }
+    }
+    const image = canonicalAssets.image;
+    if (image.length < 24 || image.toString('hex', 0, 8) !== '89504e470d0a1a0a') throw new Error(`${atlas.id}: invalid PNG image`);
+    const width = image.readUInt32BE(16);
+    const height = image.readUInt32BE(20);
+    if (width !== atlas.imageWidth || height !== atlas.imageHeight) throw new Error(`${atlas.id}: PNG dimensions do not match manifest`);
+
+    const lines = canonicalAssets.crosswalk.toString('utf8').replace(/^\uFEFF/, '').trim().split(/\r?\n/);
+    const headers = parseCsvLine(lines.shift() || '');
+    const nodeIndex = headers.indexOf('node_id');
+    const ontologyIndex = headers.indexOf('node_mapped_to');
+    const labelIndex = headers.indexOf('node_label');
+    const tissueIndex = headers.indexOf('tissue_mapped_to');
+    const organIndex = headers.indexOf('organ_mapped_to');
+    if ([nodeIndex, ontologyIndex, labelIndex, tissueIndex, organIndex].some((index) => index < 0)) {
+      throw new Error(`${atlas.id}: FTU crosswalk is missing required columns`);
+    }
+    const nodeIds = new Set();
+    const ontologyIds = new Set();
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const row = parseCsvLine(line);
+      if (!row[nodeIndex] || nodeIds.has(row[nodeIndex])) throw new Error(`${atlas.id}: duplicate or empty illustration node`);
+      nodeIds.add(row[nodeIndex]);
+      if (!/^CL:\d+$/.test(row[ontologyIndex] || '')) throw new Error(`${atlas.id}: invalid cell ontology identifier ${row[ontologyIndex] || "(empty)"}`);
+      ontologyIds.add(row[ontologyIndex]);
+      if (row[tissueIndex] !== atlas.tissueOntologyId || row[organIndex] !== atlas.organOntologyId) throw new Error(`${atlas.id}: tissue or organ ontology mismatch`);
+    }
+    if (nodeIds.size !== atlas.illustrationNodeCount || ontologyIds.size !== atlas.cellConceptCount) {
+      throw new Error(`${atlas.id}: FTU node or concept count mismatch`);
+    }
+    const metadata = canonicalAssets.metadata.toString('utf8');
+    if (!metadata.includes(atlas.hubmapId) || !metadata.includes('CC BY 4.0')) throw new Error(`${atlas.id}: metadata provenance is incomplete`);
+    return { id: atlas.id, bytes: image.length, width, height, crosswalkRows: nodeIds.size, ontologyCount: ontologyIds.size };
+  });
+
+  return { packCount: results.length, packs: results, tissueAtlasCount: tissueResults.length, tissueAtlases: tissueResults };
 }
 
 if (require.main === module) {
@@ -149,6 +208,9 @@ if (require.main === module) {
     const result = checkClinicalAssets();
     for (const pack of result.packs) {
       process.stdout.write(`Clinical Atlas OK: ${pack.id} (${pack.bytes} bytes, ${pack.crosswalkRows} mapped nodes, ${pack.ontologyCount} ontology terms)\n`);
+    }
+    for (const atlas of result.tissueAtlases) {
+      process.stdout.write(`Clinical FTU OK: ${atlas.id} (${atlas.bytes} bytes, ${atlas.crosswalkRows} mapped nodes, ${atlas.ontologyCount} cell concepts)\n`);
     }
   } catch (error) {
     process.stderr.write(`Clinical Atlas asset check failed: ${error.message}\n`);

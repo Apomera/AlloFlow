@@ -19,10 +19,10 @@ const expectedAfter = {
   totalItems: 1500,
   forbiddenAggregateChoices: 0,
   uniqueKeyStemLexicalLeakageCandidates: 55,
-  asymmetricExtremeDistractorCandidates: 120,
-  advancedDirectRecallCandidates: 7,
-  semanticConceptDuplicatePairs: 82,
-  semanticConceptDuplicateClusters: 46,
+  asymmetricExtremeDistractorCandidates: 116,
+  advancedDirectRecallCandidates: 4,
+  semanticConceptDuplicatePairs: 81,
+  semanticConceptDuplicateClusters: 45,
 };
 const extremeCuePattern = /\b(?:always|never|only|every|entirely|exclusively|without|regardless|automatically|guarantee(?:d|s)?|completely|identical|none|all|immediately|universally|solely|definitively|perfectly|strictly|absolutely|permanently|categorically)\b/i;
 const genericFeedbackPattern = /\b(?:is not best because|does not meet the defining condition or distinction|the supported response is|makes an absolute or unconditional claim)\b/i;
@@ -152,7 +152,7 @@ describe('EPPP distractor-quality repair wave 22', () => {
     }
   });
 
-  it('eliminates exactly one pair and cluster without another metric regression in isolation', () => {
+  it('eliminates its selected pair while retaining later wave 23 improvements in isolation', () => {
     const protectedPaths = [
       'test_prep/eppp_native_items.json',
       'desktop/web-app/public/test_prep/eppp_native_items.json',
@@ -175,23 +175,22 @@ describe('EPPP distractor-quality repair wave 22', () => {
     expect(diagnostics.asymmetricExtremeDistractors.some((item) => item.id === selectedId)).toBe(false);
     expect(diagnostics.advancedDirectRecall.some((item) => item.id === selectedId)).toBe(false);
 
-    for (const metric of [
-      'forbiddenAggregateChoices',
-      'uniqueKeyStemLexicalLeakageCandidates',
-      'asymmetricExtremeDistractorCandidates',
-      'advancedDirectRecallCandidates',
-    ]) {
+    for (const metric of ['forbiddenAggregateChoices', 'uniqueKeyStemLexicalLeakageCandidates']) {
       expect(diagnostics.summary[metric]).toBe(wave22.warningCountsBefore[metric]);
     }
+    expect(diagnostics.summary.asymmetricExtremeDistractorCandidates)
+      .toBe(wave22.warningCountsBefore.asymmetricExtremeDistractorCandidates - 4);
+    expect(diagnostics.summary.advancedDirectRecallCandidates)
+      .toBe(wave22.warningCountsBefore.advancedDirectRecallCandidates - 3);
     expect(diagnostics.summary.semanticConceptDuplicatePairs)
-      .toBe(wave22.warningCountsBefore.semanticConceptDuplicatePairs - 1);
+      .toBe(wave22.warningCountsBefore.semanticConceptDuplicatePairs - 2);
     expect(diagnostics.summary.semanticConceptDuplicateClusters)
-      .toBe(wave22.warningCountsBefore.semanticConceptDuplicateClusters - 1);
+      .toBe(wave22.warningCountsBefore.semanticConceptDuplicateClusters - 2);
 
     for (const relativePath of protectedPaths) {
       expect(read(relativePath)).toBe(beforeFiles.get(relativePath));
     }
-  });
+  }, 30000);
 
   it('keeps frozen and own after-states replayable and hooks after wave 21 before the campaign', () => {
     const item = json('test_prep/eppp_native_items.json')

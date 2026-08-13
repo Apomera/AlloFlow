@@ -764,6 +764,118 @@
     return Promise.reject(new Error('Unknown engine: ' + engine));
   }
 
+  // App-wide voice-session arbitration. Dictation, agent commands, hands-free
+  // activities, and recorders all compete for the same physical microphone.
+  // A session lease gives those surfaces one shared ownership contract instead
+  // of relying on each feature to know about every other recognizer.
+  var activeVoiceSession = null;
+  var voiceSessionSerial = 0;
+  var voiceSessionStatus = {
+    state: 'idle', owner: null, mode: null, label: '', privacy: '', message: '', reason: ''
+  };
+  var voiceSessionObservers = [];
+
+  function _copyVoiceSessionStatus(status) {
+    return Object.assign({}, status || voiceSessionStatus);
+  }
+
+  function _publishVoiceSessionStatus(status) {
+    voiceSessionStatus = _copyVoiceSessionStatus(status);
+    voiceSessionObservers.slice().forEach(function (callback) {
+      try { callback(_copyVoiceSessionStatus(voiceSessionStatus)); } catch (e) { /* observer isolation */ }
+    });
+  }
+
+  function subscribeToVoiceSessionStatus(callback) {
+    if (typeof callback !== 'function') return function () {};
+    voiceSessionObservers.push(callback);
+    try { callback(_copyVoiceSessionStatus(voiceSessionStatus)); } catch (e) { /* observer isolation */ }
+    return function () {
+      var index = voiceSessionObservers.indexOf(callback);
+      if (index !== -1) voiceSessionObservers.splice(index, 1);
+    };
+  }
+
+  function getActiveVoiceSessionStatus() {
+    return _copyVoiceSessionStatus(voiceSessionStatus);
+  }
+
+  function _releaseVoiceSession(record, reason) {
+    if (!record || activeVoiceSession !== record) return false;
+    activeVoiceSession = null;
+    record.active = false;
+    _publishVoiceSessionStatus({
+      state: 'idle', owner: null, mode: null, label: '', privacy: '', message: '', reason: reason || 'released'
+    });
+    return true;
+  }
+
+  function stopActiveVoiceSession(reason) {
+    var record = activeVoiceSession;
+    if (!record) return false;
+    // Clear ownership before invoking consumer teardown. That callback may
+    // synchronously call lease.release(), which must not disturb a newer lease.
+    activeVoiceSession = null;
+    record.active = false;
+    try {
+      if (typeof record.onStop === 'function') record.onStop(reason || 'external');
+    } catch (e) { /* teardown should be best-effort */ }
+    // A teardown callback may synchronously start a replacement session. Do
+    // not overwrite that new owner's status with the old owner's idle state.
+    if (!activeVoiceSession) {
+      _publishVoiceSessionStatus({
+        state: 'idle', owner: null, mode: null, label: '', privacy: '', message: '', reason: reason || 'external'
+      });
+    }
+    return true;
+  }
+
+  function acquireVoiceSession(owner, opts) {
+    opts = opts || {};
+    var normalizedOwner = String(owner || '').trim();
+    if (!normalizedOwner) throw new Error('A voice session owner is required.');
+    if (activeVoiceSession) stopActiveVoiceSession('replaced');
+
+    var record = {
+      id: ++voiceSessionSerial,
+      owner: normalizedOwner,
+      mode: String(opts.mode || 'microphone'),
+      label: String(opts.label || normalizedOwner),
+      privacy: String(opts.privacy || ''),
+      onStop: typeof opts.onStop === 'function' ? opts.onStop : null,
+      active: true
+    };
+    activeVoiceSession = record;
+
+    function update(detail) {
+      if (activeVoiceSession !== record || !record.active) return false;
+      detail = detail || {};
+      if (detail.mode !== undefined) record.mode = String(detail.mode || record.mode);
+      if (detail.label !== undefined) record.label = String(detail.label || record.label);
+      if (detail.privacy !== undefined) record.privacy = String(detail.privacy || '');
+      _publishVoiceSessionStatus({
+        state: String(detail.state || voiceSessionStatus.state || 'starting'),
+        owner: record.owner,
+        mode: record.mode,
+        label: record.label,
+        privacy: record.privacy,
+        message: String(detail.message || ''),
+        reason: String(detail.reason || '')
+      });
+      return true;
+    }
+
+    var lease = {
+      id: record.id,
+      owner: record.owner,
+      update: update,
+      release: function (reason) { return _releaseVoiceSession(record, reason); },
+      isActive: function () { return activeVoiceSession === record && record.active; }
+    };
+    record.lease = lease;
+    update({ state: opts.state || 'starting', message: opts.message || '' });
+    return lease;
+  }
   // Unified dictation session controller. All microphone entry points can use
   // this service, which arbitrates a single active session and reports the
   // actual engine/privacy boundary instead of making each view guess.
@@ -819,6 +931,7 @@
   function createDictationController(opts) {
     opts = opts || {};
     var session = null;
+    var voiceSessionLease = null;
     var state = 'idle';
     var generation = 0;
     var stoppedByUser = false;
@@ -841,6 +954,16 @@
     function setState(nextState, detail) {
       state = nextState;
       var payload = statusFor(nextState, detail);
+      if (voiceSessionLease && voiceSessionLease.isActive()) {
+        voiceSessionLease.update({
+          state: nextState,
+          mode: 'dictation',
+          label: engineMeta.engineLabel || opts.label || 'Dictation',
+          privacy: engineMeta.privacy || '',
+          message: payload.message,
+          reason: payload.reason
+        });
+      }
       _publishDictationStatus(payload);
       if (typeof opts.onStateChange === 'function') {
         try { opts.onStateChange(_copyDictationStatus(payload)); } catch (e) { /* observer isolation */ }
@@ -850,6 +973,10 @@
 
     function releaseActive() {
       if (activeDictationController === controller) activeDictationController = null;
+      if (voiceSessionLease) {
+        voiceSessionLease.release(state === 'error' ? 'error' : 'completed');
+        voiceSessionLease = null;
+      }
     }
 
     function sanitizedDictationMetadata(recognitionMetadata) {
@@ -1002,6 +1129,18 @@
       if (activeDictationController && activeDictationController !== controller) {
         activeDictationController.abort('replaced');
       }
+      voiceSessionLease = acquireVoiceSession(opts.owner || 'dictation', {
+        mode: 'dictation',
+        label: opts.label || 'Dictation',
+        state: 'starting',
+        message: 'Starting microphone...',
+        onStop: function (reason) {
+          // The coordinator clears the lease before this callback. Avoid
+          // releasing whatever session replaced us.
+          voiceSessionLease = null;
+          controller.abort(reason || 'replaced');
+        }
+      });
       activeDictationController = controller;
       stoppedByUser = false;
       generation += 1;
@@ -1250,16 +1389,23 @@
     isDictationSupported: isDictationSupported,
     getActiveDictationStatus: getActiveDictationStatus,
     subscribeToDictationStatus: subscribeToDictationStatus,
+
+    // Phase 3v.6 - one physical microphone owner across every voice surface
+    acquireVoiceSession: acquireVoiceSession,
+    stopActiveVoiceSession: stopActiveVoiceSession,
+    getActiveVoiceSessionStatus: getActiveVoiceSessionStatus,
+    subscribeToVoiceSessionStatus: subscribeToVoiceSessionStatus,
     stopActiveDictation: stopActiveDictation,
 
     // Phase / version markers — let callers detect what's actually wired.
-    _phase: '3v.5',
+    _phase: '3v.6',
     _shipped: [
       'initWebSpeechCapture', 'getCapabilities', 'loadPreference', 'savePreference',
       'recordAudioBlob', 'recordAudioBlob.onStream', 'recordAudioBlob.result.blob',
       'transcribeAudio', 'preloadWhisper', 'isWhisperLoaded', 'getLoadedWhisperTier', 'subscribeToVoiceProgress',
       'gradeAudioJustification', 'buildJustificationRubricPrompt', 'parseRubricResponse',
-      'createDictationController', 'isDictationSupported', 'getActiveDictationStatus', 'subscribeToDictationStatus', 'stopActiveDictation'
+      'createDictationController', 'isDictationSupported', 'getActiveDictationStatus', 'subscribeToDictationStatus', 'stopActiveDictation',
+      'acquireVoiceSession', 'stopActiveVoiceSession', 'getActiveVoiceSessionStatus', 'subscribeToVoiceSessionStatus'
     ]
   };
 
@@ -1274,6 +1420,6 @@
   window.AlloModules.Voice = window.AlloFlowVoice;
 
   if (typeof console !== 'undefined') {
-    console.log('[Voice] AlloFlowVoice loaded — phase 3v.5');
+    console.log('[Voice] AlloFlowVoice loaded — phase 3v.6');
   }
 })();

@@ -38,19 +38,19 @@
     "fullKeyEchoOptions": 718
   },
   "liveBefore": {
-    "itemsWithWarnings": 617,
-    "incorrectOptionsWithWarnings": 1740,
-    "insufficientDetailOptions": 644,
-    "genericTemplateOptions": 1035,
-    "choiceRestatementOptions": 421,
+    "itemsWithWarnings": 614,
+    "incorrectOptionsWithWarnings": 1734,
+    "insufficientDetailOptions": 642,
+    "genericTemplateOptions": 1031,
+    "choiceRestatementOptions": 420,
     "fullKeyEchoOptions": 260
   },
   "liveAfter": {
-    "itemsWithWarnings": 617,
-    "incorrectOptionsWithWarnings": 1740,
-    "insufficientDetailOptions": 644,
-    "genericTemplateOptions": 1035,
-    "choiceRestatementOptions": 421,
+    "itemsWithWarnings": 614,
+    "incorrectOptionsWithWarnings": 1734,
+    "insufficientDetailOptions": 642,
+    "genericTemplateOptions": 1031,
+    "choiceRestatementOptions": 420,
     "fullKeyEchoOptions": 260
   },
   "deepPrerequisiteSatisfied": true,
@@ -59,7 +59,7 @@
   "fingerprints": {
     "selection": "796d90d0c26e71169497e3867bf8f9eb5575d33106aa156a8f5a41bb35e768e7",
     "composition": "86336c1c190009dfd3972a1da6411f805cdff04d9dae028e968adf052408da0a",
-    "protectedContent": "d430910cac4ccc4c8eae105f81830d11683cb069c05769bbdddbf5929fd8dff2"
+    "protectedContent": "d75cf678c2fe3cf67964f38a3874c5adbb6ea2917f17d5a0049145af72ab9c24"
   },
   "summary": {
     "selectedItems": 420,
@@ -1197,7 +1197,7 @@
       "id": "eppp-b019-intervention-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "c3617aea7a1e931bdc1ca84688402637daae9e678408fcd17d03d56f1586d2f3",
+      "protectedFingerprint": "14c6f881ce87c248380b20e1deeac447589434e7f1a628bf6218261f2b748272",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -1230,7 +1230,7 @@
       "id": "eppp-b019-lifespan-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "61a089a9e519069bab68c15f818b2dee40cfa295254e77ef567ea764108731c8",
+      "protectedFingerprint": "a04f39a3f11fdf6257bea2dd1fd317928b2c944584354dfb16058db94f4a28a9",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -1351,7 +1351,7 @@
       "id": "eppp-b021-assessment-3",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "79bcbc62904263a733f0ed487c0c1d5c6661dadec1759c6f483e3f37d7416e00",
+      "protectedFingerprint": "00fcee3074f1e089fbd0407abb2f0992e131e5c6ac297f3854ed5f6cacd3484e",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -1615,7 +1615,7 @@
       "id": "eppp-b022-professional-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "4d0e2d4fd5d6dfe2064d5accbe879f864ff27123f0c7cd18e8a3c917928b6285",
+      "protectedFingerprint": "29171cecb72cb2c267e22ce27f97bf235e9b0ce1538384370b3bccdcb317adfc",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -3815,7 +3815,7 @@
       "id": "eppp-v2-research-017",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "05aae73ad38a7729d7521738dff64707f2a0c61d52870ac5b12b4dc109d67e40",
+      "protectedFingerprint": "92fcfde3efdeb00b3185259cfbfb2505535221cecf09a96f2805f718ba0dfa64",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "source-reviewed-legacy-reason-expanded",

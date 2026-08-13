@@ -70,6 +70,40 @@ describe('Fire Ecology simulator WCAG controls', () => {
     expect(source).toContain('Repeat the same choices to reproduce the same classroom event path.');
   });
 
+  it('adds an exact-value chart reading view and semantic event log', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+
+    expect(source).toContain("role: 'region'");
+    expect(source).toContain("'aria-labelledby': 'fireecology-health-chart-title'");
+    expect(source).toContain("className: 'fireecology-sim-data-details'");
+    expect(source).toContain("h('table', { className: 'fireecology-sim-table' }");
+    expect(source).toContain("h('th', { scope: 'col' }, 'Biodiversity /100')");
+    expect(source).toContain("role: 'log'");
+    expect(source).toContain("'aria-live': 'polite'");
+    expect(source).toContain("'aria-labelledby': 'fireecology-event-log-title'");
+  });
+  it('shows exact before/outcome deltas without relying on color', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+
+    expect(source).toContain("className: 'fireecology-sim-deltas'");
+    expect(source).toContain("'aria-label': t('stem.fireecology.before_outcome_comparison'");
+    expect(source).toContain("'data-direction': direction");
+    expect(source).toContain("'data-difference': difference");
+    expect(source).toContain("className: 'fireecology-sim-delta-direction'");
+    expect(source).toContain("className: 'fireecology-sim-delta-bars', 'aria-hidden': 'true'");
+  });
+  it('uses named responsive landscapes and theme-safe comparison copy', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+
+    expect(source).toContain('function renderComparisonLandscape');
+    expect(source).toContain("className: 'fireecology-compare-scene'");
+    expect(source).toContain("role: 'img'");
+    expect(source).toContain("className: 'fireecology-compare-summary', role: 'status'");
+    expect(source).toContain(".fireecology-compare-landscapes,.fireecology-compare-gauges{grid-template-columns:1fr;}");
+    expect(source).toContain(".fireecology-compare-heading{margin:0 0 8px;color:var(--fe-text)");
+    expect(source).not.toContain("fontWeight: 700, color: '#7c3aed', marginBottom: 12");
+  });
+
   it('keeps the tracked public mirror identical', () => {
     expect(fs.readFileSync(sourcePath, 'utf8')).toBe(fs.readFileSync(publicPath, 'utf8'));
   });

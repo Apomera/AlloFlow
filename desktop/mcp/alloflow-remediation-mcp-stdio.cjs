@@ -53,7 +53,9 @@
  *   - Cancellation: `notifications/cancelled` for an in-flight tools/call stops
  *     the run. For pdf_audit/pdf_remediate that closes the driver's active
  *     browser context, killing queued and in-flight Gemini calls within seconds;
- *     for the others it stops the answer but cannot un-spend work already sent.
+ *     pdf_validate_ua gets its own AbortSignal, which terminates only that
+ *     validator process; the other tools stop the answer but cannot un-spend
+ *     work already sent.
  *     No response is sent for a cancelled request, per spec.
  *
  * Safety properties:
@@ -174,7 +176,8 @@ function makeProgressReporter(token) {
   return function onProgress(line) {
     seen++;
     const now = Date.now();
-    if (now - lastSentAt < PROGRESS_MIN_INTERVAL_MS) return;
+    const terminal = /(?:complete|cancel|fail)(?:d|led|ure)?\b/i.test(String(line));
+    if (!terminal && now - lastSentAt < PROGRESS_MIN_INTERVAL_MS) return;
     lastSentAt = now;
     send({
       jsonrpc: '2.0',
@@ -195,19 +198,77 @@ const IN_FLIGHT = new Map();
 // remediation_setup, which is an npx download with no context to close.
 const RUN_CANCELLABLE_TOOLS = new Set(['pdf_audit', 'pdf_remediate']);
 
+// veraPDF is deliberately outside the remediation single-flight lane, but an
+// unbounded number of concurrent JVMs can exhaust a desktop quickly. Two slots
+// retain useful parallelism without letting one MCP client fork-bomb Java. A
+// queued request remains independently cancellable through its AbortSignal.
+const PDF_UA_MAX_CONCURRENCY = 2;
+let pdfUaActive = 0;
+const PDF_UA_WAITERS = [];
+
+function validationAbortError() {
+  const error = new Error('veraPDF validation cancelled');
+  error.name = 'AbortError';
+  error.code = 'ALLOFLOW_VALIDATION_CANCELLED';
+  return error;
+}
+
+function acquirePdfUaSlot(signal, onProgress) {
+  if (signal && signal.aborted) return Promise.reject(validationAbortError());
+  if (pdfUaActive < PDF_UA_MAX_CONCURRENCY) {
+    pdfUaActive++;
+    return Promise.resolve();
+  }
+  if (onProgress) onProgress('veraPDF: queued; both local validator slots are busy');
+  return new Promise((resolve, reject) => {
+    const waiter = { resolve, reject, signal, onAbort: null };
+    waiter.onAbort = () => {
+      const index = PDF_UA_WAITERS.indexOf(waiter);
+      if (index !== -1) PDF_UA_WAITERS.splice(index, 1);
+      reject(validationAbortError());
+    };
+    if (signal && typeof signal.addEventListener === 'function') {
+      signal.addEventListener('abort', waiter.onAbort, { once: true });
+    }
+    PDF_UA_WAITERS.push(waiter);
+  });
+}
+
+function releasePdfUaSlot() {
+  while (PDF_UA_WAITERS.length) {
+    const waiter = PDF_UA_WAITERS.shift();
+    if (waiter.signal && typeof waiter.signal.removeEventListener === 'function') {
+      waiter.signal.removeEventListener('abort', waiter.onAbort);
+    }
+    if (waiter.signal && waiter.signal.aborted) continue;
+    waiter.resolve();
+    return;
+  }
+  pdfUaActive = Math.max(0, pdfUaActive - 1);
+}
+
+async function withPdfUaSlot(signal, onProgress, operation) {
+  await acquirePdfUaSlot(signal, onProgress);
+  try { return await operation(); }
+  finally { releasePdfUaSlot(); }
+}
+
 function getDriver() {
+  requireCurrentRuntimeBuild();
   if (!driver) driver = Driver.createDriver({ log });
   return driver;
 }
 
-async function validatePdfUaLocally(filePath, onLog) {
+async function validatePdfUaLocally(filePath, onProgress, signal) {
   try {
     const result = await getDriver().validatePdfUaCli({
-      filePath, onLog, timeoutMs: 120000, maxBytes: MAX_PDF_BYTES,
+      filePath, onProgress, onLog: onProgress, signal,
+      timeoutMs: 300000, maxBytes: MAX_PDF_BYTES,
     });
     return {
       validator: 'veraPDF CLI',
       validatorVersion: result.validatorVersion || undefined,
+      profile: result.profile || 'ua1',
       transport: 'local-java-cli',
       compliant: result.status === 'compliant',
       failedChecks: result.failedChecks,
@@ -215,20 +276,21 @@ async function validatePdfUaLocally(filePath, onLog) {
       failedRules: result.failedRuleSummaries || [],
       passedChecks: result.passedChecks,
       passedRuleCount: result.passedRules,
+      inputSha256: result.inputSha256,
+      inputBytes: result.inputBytes,
+      validatedAt: result.validatedAt,
+      validationDurationMs: result.validationDurationMs,
     };
   } catch (error) {
     const message = String(error && error.message || error);
     if (!/CLI could not start|CLI JAR is not packaged/i.test(message)) throw error;
-    if (onLog) onLog('Local veraPDF CLI unavailable; using the bundled browser validator fallback.');
-    const result = await getDriver().validatePdfUa({ filePath, onLog });
-    return {
-      validator: 'veraPDF browser fallback',
-      transport: 'local-browser-jvm',
-      compliant: !!(result && result.compliant),
-      failedChecks: (result && result.failedChecks) || 0,
-      failedRuleCount: ((result && result.failedRules) || []).length,
-      failedRules: ((result && result.failedRules) || []).slice(0, 100),
-    };
+    const offlineError = new Error(
+      'The packaged offline veraPDF CLI could not start. pdf_validate_ua will not fall back '
+      + 'to the browser validator because that path downloads public CDN dependencies. '
+      + 'Reinstall the connector and confirm local Java is available. Cause: ' + message,
+    );
+    offlineError.cause = error;
+    throw offlineError;
   }
 }
 
@@ -387,6 +449,7 @@ function jobCheckpointTempPath(jobId) { return path.join(STATE_DIR, jobId + '.ch
 
 const JOB_RECORD_SCHEMA = 3;
 const JOB_EXECUTION_SCHEMA = 1;
+const JOB_TERMINAL_INTENT_SCHEMA = 1;
 const CHECKPOINT_SCHEMA = 1;
 const CHECKPOINT_ENGINE_ABI = 1;
 const CHECKPOINT_STAGES = new Set(['extraction', 'primary', 'round']);
@@ -454,11 +517,7 @@ function atomicWriteJson(finalPath, value, mode = 0o600) {
   atomicWriteBytes(finalPath, Buffer.from(JSON.stringify(value, null, 2), 'utf8'), mode);
 }
 
-let checkpointEngineDigestCache = null;
-function checkpointEngineDigest() {
-  if (checkpointEngineDigestCache) return checkpointEngineDigestCache;
-  const hash = crypto.createHash('sha256');
-  hash.update('alloflow-desktop-checkpoint-engine-abi:' + CHECKPOINT_ENGINE_ABI + '\n');
+function checkpointEngineFiles() {
   const files = [__filename, path.join(__dirname, 'remediation_headless_driver.cjs')];
   for (const name of Driver.MODULE_FILES) files.push(path.join(Driver.ASSETS_ROOT, name));
   const vendorManifest = [
@@ -467,6 +526,19 @@ function checkpointEngineDigest() {
   ].find((candidate) => fs.existsSync(candidate));
   if (!vendorManifest) throw new Error('Checkpoint engine vendor manifest is missing.');
   files.push(vendorManifest);
+  return files;
+}
+
+function checkpointEngineFileState(files = checkpointEngineFiles()) {
+  return files.map((file) => {
+    const stat = fs.statSync(file);
+    return [file, stat.size, stat.mtimeMs, stat.ctimeMs];
+  });
+}
+
+function computeCheckpointEngineDigest(files = checkpointEngineFiles()) {
+  const hash = crypto.createHash('sha256');
+  hash.update('alloflow-desktop-checkpoint-engine-abi:' + CHECKPOINT_ENGINE_ABI + '\n');
   for (const file of files) {
     const bytes = fs.readFileSync(file);
     hash.update(path.basename(file) + '\u0000' + bytes.length + '\u0000');
@@ -480,8 +552,70 @@ function checkpointEngineDigest() {
     geminiModel: ENGINE_ENV_AT_BOOT.geminiModel,
     geminiFallbackModel: ENGINE_ENV_AT_BOOT.geminiFallbackModel,
   }));
-  checkpointEngineDigestCache = hash.digest('hex');
-  return checkpointEngineDigestCache;
+  return hash.digest('hex');
+}
+
+function computeStableCheckpointEngineFingerprint() {
+  const files = checkpointEngineFiles();
+  const before = JSON.stringify(checkpointEngineFileState(files));
+  const digest = computeCheckpointEngineDigest(files);
+  const after = JSON.stringify(checkpointEngineFileState(files));
+  if (before !== after) {
+    throw new Error('Desktop remediation files changed while their build fingerprint was being verified.');
+  }
+  return { digest, fileState: after };
+}
+
+// Bind this process to the files it actually booted from. A desktop rebuild can
+// replace modules while an older MCP process is still alive; recomputing only at
+// job start would then label old in-memory code with the new on-disk digest.
+const CHECKPOINT_ENGINE_AT_BOOT = computeStableCheckpointEngineFingerprint();
+const CHECKPOINT_ENGINE_DIGEST_AT_BOOT = CHECKPOINT_ENGINE_AT_BOOT.digest;
+const CHECKPOINT_ENGINE_FINGERPRINTED_AT = new Date().toISOString();
+let checkpointEngineFileStateCache = CHECKPOINT_ENGINE_AT_BOOT.fileState;
+let checkpointBuildVerification = {
+  fingerprintSha256: CHECKPOINT_ENGINE_DIGEST_AT_BOOT,
+  current: true,
+  checkedAt: CHECKPOINT_ENGINE_FINGERPRINTED_AT,
+  error: undefined,
+};
+function currentBuildFingerprint() {
+  try {
+    const diskState = JSON.stringify(checkpointEngineFileState());
+    if (diskState === checkpointEngineFileStateCache) return { ...checkpointBuildVerification };
+    const disk = computeStableCheckpointEngineFingerprint();
+    checkpointEngineFileStateCache = disk.fileState;
+    checkpointBuildVerification = {
+      fingerprintSha256: CHECKPOINT_ENGINE_DIGEST_AT_BOOT,
+      current: disk.digest === CHECKPOINT_ENGINE_DIGEST_AT_BOOT,
+      checkedAt: new Date().toISOString(),
+      error: disk.digest === CHECKPOINT_ENGINE_DIGEST_AT_BOOT
+        ? undefined
+        : 'The desktop remediation files changed after this MCP server started. Restart the connector before running or resuming work.',
+    };
+    return { ...checkpointBuildVerification };
+  } catch (error) {
+    checkpointBuildVerification = {
+      fingerprintSha256: CHECKPOINT_ENGINE_DIGEST_AT_BOOT,
+      current: false,
+      checkedAt: new Date().toISOString(),
+      error: 'Could not verify the current desktop remediation build: ' + ((error && error.message) || error),
+    };
+    return { ...checkpointBuildVerification };
+  }
+}
+function requireCurrentRuntimeBuild() {
+  const build = currentBuildFingerprint();
+  if (!build.current) {
+    const error = new Error('desktop_runtime_build_changed_since_server_start: ' + build.error);
+    error.detail = build.error;
+    throw error;
+  }
+  return build;
+}
+function checkpointEngineDigest() {
+  requireCurrentRuntimeBuild();
+  return CHECKPOINT_ENGINE_DIGEST_AT_BOOT;
 }
 
 function checkpointAudit(value) {
@@ -528,6 +662,46 @@ function checkpointExtraction(value, inputSha256) {
   return value;
 }
 
+function checkpointTerminalAudit(value, countKey) {
+  return hasExactKeys(value, ['score', countKey])
+    && (value.score === null || (typeof value.score === 'number' && Number.isFinite(value.score) && value.score >= 0 && value.score <= 100))
+    && (value[countKey] === null || (Number.isSafeInteger(value[countKey]) && value[countKey] >= 0));
+}
+
+function checkpointTerminalCapsule(value) {
+  const keys = ['checkpointCapsuleSchema', ...Driver.TERMINAL_CHECKPOINT_REMEDIATION_FIELDS, 'axeAudit', 'secondEngineAudit'];
+  const binding = value && value.verificationHtmlBinding;
+  const active = value && value.activeContent;
+  const findingTypes = new Set(['open-action', 'javascript', 'launch', 'embedded-files', 'additional-actions', 'other-actions', 'multimedia']);
+  if (!hasExactKeys(value, keys) || value.checkpointCapsuleSchema !== 1
+      || typeof value.accessibleHtml !== 'string' || value.accessibleHtml.length === 0
+      || !hasExactKeys(binding, ['version', 'algorithm', 'digest', 'utf8ByteLength'])
+      || binding.version !== 1 || binding.algorithm !== 'SHA-256'
+      || binding.digest !== sha256Bytes(Buffer.from(value.accessibleHtml, 'utf8'))
+      || binding.utf8ByteLength !== Buffer.byteLength(value.accessibleHtml, 'utf8')
+      || !isPlainObject(value.verificationCoverage)
+      || !['complete', 'complete-for-tested-scope', 'review-required', 'partial', 'unavailable'].includes(value.verificationState)
+      || typeof value.afterScoreVerified !== 'boolean' || typeof value.requiresManualReview !== 'boolean'
+      || !hasExactKeys(active, ['schema', 'complete', 'pageScanFailures', 'unexaminedStructures', 'any', 'externalLinks', 'findings'])
+      || active.schema !== 1 || active.complete !== true || active.pageScanFailures !== 0 || active.unexaminedStructures !== 0
+      || typeof active.any !== 'boolean' || !Number.isSafeInteger(active.externalLinks) || active.externalLinks < 0
+      || !Array.isArray(active.findings) || active.any !== (active.findings.length > 0)
+      || !active.findings.every((finding) => hasExactKeys(finding, ['type', 'count', 'label'])
+        && findingTypes.has(finding.type) && Number.isSafeInteger(finding.count) && finding.count > 0
+        && typeof finding.label === 'string' && finding.label.length > 0)
+      || typeof value.sourceKind !== 'string' || value.sourceKind.length === 0
+      || typeof value.finalText !== 'string' || value.finalText.length === 0
+      || !(value.groundTruthMethod === null || typeof value.groundTruthMethod === 'string')
+      || !(value.groundTruthPages === null || Array.isArray(value.groundTruthPages))
+      || !(value.sourceStructTree === null || isPlainObject(value.sourceStructTree))
+      || !(value.ocrAccuracy === null || isPlainObject(value.ocrAccuracy))
+      || typeof value.isScanned !== 'boolean' || typeof value._experimentEarlyGetPages !== 'boolean'
+      || typeof value._perLeafScannedOptOut !== 'boolean'
+      || !checkpointTerminalAudit(value.axeAudit, 'totalViolations')
+      || !checkpointTerminalAudit(value.secondEngineAudit, 'failViolations')) return null;
+  return value;
+}
+
 function checkpointRemediationSnapshot(value) {
   if (!hasExactKeys(value, [
     'schema', 'stage', 'audit', 'remediation', 'nextRound', 'roundsRun',
@@ -538,8 +712,9 @@ function checkpointRemediationSnapshot(value) {
     !['primary', 'round'].includes(value.stage) ||
     !checkpointAudit(value.audit) ||
     !isPlainObject(value.remediation) ||
-    typeof value.remediation.accessibleHtml !== 'string' ||
-    value.remediation.accessibleHtml.length === 0 ||
+    (Object.hasOwn(value.remediation, 'checkpointCapsuleSchema')
+      ? (!value.autoContinueDone || !checkpointTerminalCapsule(value.remediation))
+      : (typeof value.remediation.accessibleHtml !== 'string' || value.remediation.accessibleHtml.length === 0)) ||
     !integerInRange(value.nextRound, 0, 5) ||
     !integerInRange(value.roundsRun, 0, 5) ||
     !Array.isArray(value.roundLog) || value.roundLog.length > 64 ||
@@ -723,9 +898,19 @@ function persistJob(job, options = {}) {
       checkpoint: job.checkpoint || null,
       currentFile: job.currentFile || null,
       fileRows: Array.isArray(job.fileRows) ? job.fileRows : [],
+      terminalIntent: job.terminalIntent || null,
+      durabilityWarning: job.durabilityWarning || null,
       persistedAt: new Date().toISOString(),
       schema: JOB_RECORD_SCHEMA,
     };
+    if (process.env.NODE_ENV === 'test'
+        && process.env.ALLOFLOW_MCP_TEST_FAIL_TERMINAL_RECORD_ONCE === '1'
+        && TERMINAL_STATUSES.includes(job.status)
+        && !job.terminalIntent
+        && !persistJob._terminalRecordFaultInjected) {
+      persistJob._terminalRecordFaultInjected = true;
+      throw new Error('injected_terminal_record_persist_failure');
+    }
     atomicWriteJson(jobRecordPath(job.jobId), record);
     return true;
   } catch (e) {
@@ -737,6 +922,57 @@ function persistJob(job, options = {}) {
       throw failure;
     }
     return false;
+  }
+}
+
+function storedTerminalIntentIsValid(intent, rec) {
+  return hasExactKeys(intent, [
+    'schema', 'jobId', 'attemptId', 'attemptNumber', 'status', 'finishedAt',
+  ])
+    && intent.schema === JOB_TERMINAL_INTENT_SCHEMA
+    && intent.jobId === rec.jobId
+    && intent.attemptId === rec.attemptId
+    && intent.attemptNumber === rec.attemptNumber
+    && TERMINAL_STATUSES.includes(intent.status)
+    && typeof intent.finishedAt === 'string'
+    && Number.isFinite(Date.parse(intent.finishedAt));
+}
+
+// Two-phase terminal commit: first persist the result/error plus a terminal
+// intent while the record is still unfinished, then publish the terminal
+// status. If phase two fails, restart recovery finalizes from the intent rather
+// than treating the old running record as resumable work.
+function commitTerminalJob(job, status) {
+  if (!TERMINAL_STATUSES.includes(status)) throw new Error('invalid_terminal_status');
+  const intent = {
+    schema: JOB_TERMINAL_INTENT_SCHEMA,
+    jobId: job.jobId,
+    attemptId: job.attemptId || null,
+    attemptNumber: Number(job.attemptNumber) || 0,
+    status,
+    finishedAt: job.finishedAt || new Date().toISOString(),
+  };
+  job.finishedAt = intent.finishedAt;
+  job.terminalIntent = intent;
+  job.runStage = 'terminal-commit:' + status;
+  // Phase one must remain visibly unfinished: this is what proves restart
+  // recovery consumed the identity-bound intent rather than merely noticing an
+  // already-terminal status.
+  job.status = job.startedAt ? 'running' : 'queued';
+  persistJob(job, { required: true });
+
+  job.status = status;
+  job.terminalIntent = null;
+  try {
+    persistJob(job, { required: true });
+    job.durabilityWarning = null;
+    return { recordCommitted: true, intentCommitted: true };
+  } catch (error) {
+    job.terminalIntent = intent;
+    job.durabilityWarning = 'terminal_record_commit_failed; restart will finalize from the durable terminal intent';
+    jobRecordsWritable = false;
+    log('[' + job.jobId.slice(0, 13) + '] ' + job.durabilityWarning);
+    return { recordCommitted: false, intentCommitted: true, error };
   }
 }
 
@@ -836,9 +1072,15 @@ function restoreJobs() {
     }
     const priorStatus = rec.status;
     const wasUnfinished = priorStatus === 'queued' || priorStatus === 'running';
-    const resumable = wasUnfinished && recordCanResume(rec) &&
+    const hasTerminalIntent = wasUnfinished && rec.terminalIntent != null;
+    const terminalIntentValid = hasTerminalIntent && storedTerminalIntentIsValid(rec.terminalIntent, rec);
+    const resumable = wasUnfinished && !hasTerminalIntent && rec.cancelRequested !== true && recordCanResume(rec) &&
       ((priorStatus === 'queued' && !rec.startedAt) || priorStatus === 'running');
-    if (wasUnfinished && rec.cancelRequested === true) {
+    if (terminalIntentValid) {
+      rec.status = rec.terminalIntent.status;
+      rec.finishedAt = rec.terminalIntent.finishedAt;
+      rec.terminalIntent = null;
+    } else if (wasUnfinished && rec.cancelRequested === true) {
       rec.status = 'cancelled';
       rec.finishedAt = rec.finishedAt || new Date().toISOString();
     } else if (resumable) {
@@ -871,6 +1113,8 @@ function restoreJobs() {
       checkpoint: isPlainObject(rec.checkpoint) ? rec.checkpoint : null,
       currentFile: isPlainObject(rec.currentFile) ? rec.currentFile : null,
       fileRows: Array.isArray(rec.fileRows) ? rec.fileRows.filter(isPlainObject).slice(0, BATCH_LIMIT_AUDIT) : [],
+      terminalIntent: null,
+      durabilityWarning: rec.durabilityWarning || null,
       restoredFromStatus: resumable ? priorStatus : null,
       restored: true,
     };
@@ -878,7 +1122,7 @@ function restoreJobs() {
     if (resumable) RESTORED_TO_REQUEUE.push(restoredJob);
     if (wasUnfinished) {
       if (!resumable) removeLocalCheckpointFiles(rec.jobId);
-      persistJob(restoredJob);
+      persistJob(restoredJob, { required: true });
     } else {
       removeLocalCheckpointFiles(rec.jobId);
     }
@@ -929,6 +1173,8 @@ function newJob(kind, input, execution) {
     checkpoint: null,
     currentFile: null,
     fileRows: [],
+    terminalIntent: null,
+    durabilityWarning: null,
   };
   JOBS.set(job.jobId, job);
   try {
@@ -993,6 +1239,7 @@ function jobStatusPayload(job) {
     recentLog: job.logLines.slice(-15),
     error: job.error || undefined,
     resultAvailable: job.result != null,
+    durabilityWarning: job.durabilityWarning || undefined,
     restored: job.restored || undefined,
     interruptedNote: job.status === 'interrupted'
       ? 'This job had legacy, incomplete, corrupt, or compatibility-unsafe recovery state, so AlloFlow stopped rather than resume against the wrong input or engine. Verified outputs remain on disk; inspect the error and re-run explicitly if appropriate.'
@@ -1002,6 +1249,7 @@ function jobStatusPayload(job) {
 
 function enqueueJob(job, runner) {
   jobQueue = jobQueue.then(async () => {
+    if (TERMINAL_STATUSES.includes(job.status)) return;
     // The FIFO chain serializes jobs against EACH OTHER, but a synchronous tool
     // (pdf_audit / pdf_remediate) may hold the single-flight lane when this job's
     // turn arrives. Waiting here is the correct semantics — withSingleFlight would
@@ -1011,7 +1259,12 @@ function enqueueJob(job, runner) {
       if (!waitedForLane) { waitedForLane = true; jobLog(job, 'waiting for the in-progress ' + busyWith + ' call to finish'); }
       await new Promise((r) => setTimeout(r, 3000));
     }
-    if (job.cancelRequested) { job.status = 'cancelled'; job.finishedAt = new Date().toISOString(); jobLog(job, 'cancelled before start'); persistJob(job); return; }
+    if (job.cancelRequested) {
+      job.finishedAt = new Date().toISOString();
+      jobLog(job, 'cancelled before start');
+      commitTerminalJob(job, 'cancelled');
+      return;
+    }
     const attemptStartedAt = new Date().toISOString();
     job.status = 'running';
     job.startedAt = job.startedAt || attemptStartedAt;
@@ -1022,6 +1275,11 @@ function enqueueJob(job, runner) {
     // Persisted at each transition, not on every log line: a 200-file triage would otherwise do
     // thousands of writes to record telemetry that is already on stderr.
     persistJob(job, { required: true });
+    // One request-scoped signal owns the whole attempt, including the
+    // post-export veraPDF process that runs after the browser page has closed.
+    // This controller is runtime-only and is deliberately not persisted.
+    const attemptAbortController = new AbortController();
+    job.abortController = attemptAbortController;
     try {
       job.result = await withSingleFlight(job.kind, () => runner(job));
       // A cancelled batch returns normally with a partial scoreboard — the status
@@ -1036,9 +1294,16 @@ function enqueueJob(job, runner) {
     } finally {
       job.finishedAt = new Date().toISOString();
       jobLog(job, job.status + (job.error ? ': ' + job.error : ''));
-      persistJob(job);
+      commitTerminalJob(job, job.status);
+      if (job.abortController === attemptAbortController) job.abortController = null;
     }
-  }).catch(() => {}); // the chain itself must never break
+  }).catch((error) => {
+    // The FIFO chain itself must never break, but a required durability failure
+    // must remain visible rather than disappearing into an empty catch.
+    job.durabilityWarning = (error && error.message) || 'job_queue_transition_failed';
+    jobRecordsWritable = false;
+    log('[' + job.jobId.slice(0, 13) + '] queue transition failed: ' + job.durabilityWarning);
+  });
 }
 
 const JOB_NOT_FOUND = 'No job with that job_id. Records are kept for ' + Math.round(JOB_RECORD_TTL_MS / 86400000) + ' days and survive a server restart, so this id is unknown, expired, or was evicted once ' + MAX_JOBS + ' newer jobs accumulated.';
@@ -1361,21 +1626,33 @@ async function writeCompletionManifest(filePath, outDir, summary, compatibility,
       || relativePath === '..') throw new Error('completion_artifact_outside_output_dir');
     const stat = fs.statSync(resolved);
     if (!stat.isFile()) throw new Error('completion_artifact_missing');
+    const sha256 = await sha256File(resolved);
+    const statAfter = fs.statSync(resolved);
+    if (stat.size !== statAfter.size || stat.mtimeMs !== statAfter.mtimeMs ||
+      stat.ctimeMs !== statAfter.ctimeMs || stat.dev !== statAfter.dev || stat.ino !== statAfter.ino) {
+      throw new Error('completion_artifact_changed_while_manifest_was_written');
+    }
     artifacts.push({
       role,
       relativePath: relativePath.split(path.sep).join('/'),
-      sizeBytes: stat.size,
-      sha256: await sha256File(resolved),
+      sizeBytes: statAfter.size,
+      sha256,
     });
   }
   if (!artifacts.some((artifact) => artifact.role === 'report')) {
     throw new Error('completion_report_missing');
   }
+  const sourceBefore = fs.statSync(filePath);
+  const sourceSha256 = await sha256File(filePath);
   const source = fs.statSync(filePath);
+  if (sourceBefore.size !== source.size || sourceBefore.mtimeMs !== source.mtimeMs
+      || sourceSha256 !== compatibility.inputSha256) {
+    throw new Error('completion_source_changed_since_remediation_started');
+  }
   const manifest = {
     schema: COMPLETION_MANIFEST_SCHEMA,
     kind: COMPLETION_MANIFEST_KIND,
-    source: { path: filePath, sizeBytes: source.size, sha256: compatibility.inputSha256 },
+    source: { path: filePath, sizeBytes: source.size, sha256: sourceSha256 },
     compatibility: {
       optionsSha256: compatibility.optionsSha256,
       engineSha256: compatibility.engineSha256,
@@ -1414,9 +1691,15 @@ async function validateCompletionManifest(manifestPath, filePath, outDir, compat
       !Array.isArray(manifest.artifacts) || manifest.artifacts.length < 1 ||
       manifest.artifacts.length > 4
     ) return null;
-    const sourceStat = fs.statSync(filePath);
-    if (sourceStat.size !== manifest.source.sizeBytes) return null;
+    const sourceBefore = fs.statSync(filePath);
+    if (sourceBefore.size !== manifest.source.sizeBytes) return null;
+    const sourceSha256 = await sha256File(filePath);
+    const sourceAfter = fs.statSync(filePath);
+    if (sourceBefore.size !== sourceAfter.size || sourceBefore.mtimeMs !== sourceAfter.mtimeMs
+      || sourceAfter.size !== manifest.source.sizeBytes
+      || sourceSha256 !== manifest.source.sha256) return null;
     const artifacts = new Map();
+    let verifiedReportBytes = null;
     for (const artifact of manifest.artifacts) {
       if (
         !hasExactKeys(artifact, ['role', 'relativePath', 'sizeBytes', 'sha256']) ||
@@ -1431,13 +1714,25 @@ async function validateCompletionManifest(manifestPath, filePath, outDir, compat
       const relative = path.relative(outDir, resolved);
       if (path.isAbsolute(relative) || relative === '..' || relative.startsWith('..' + path.sep)) return null;
       const stat = fs.statSync(resolved);
-      if (!stat.isFile() || stat.size !== artifact.sizeBytes ||
-        await sha256File(resolved) !== artifact.sha256) return null;
+      if (!stat.isFile() || stat.size !== artifact.sizeBytes) return null;
+      let digest;
+      if (artifact.role === 'report') {
+        if (stat.size > 8 * 1024 * 1024) return null;
+        verifiedReportBytes = fs.readFileSync(resolved);
+        if (verifiedReportBytes.length !== artifact.sizeBytes) return null;
+        digest = sha256Bytes(verifiedReportBytes);
+      } else {
+        digest = await sha256File(resolved);
+      }
+      const statAfter = fs.statSync(resolved);
+      if (stat.size !== statAfter.size || stat.mtimeMs !== statAfter.mtimeMs ||
+        stat.ctimeMs !== statAfter.ctimeMs || stat.dev !== statAfter.dev || stat.ino !== statAfter.ino ||
+        statAfter.size !== artifact.sizeBytes || digest !== artifact.sha256) return null;
       artifacts.set(artifact.role, resolved);
     }
     const reportPath = artifacts.get('report');
-    if (!reportPath || fs.statSync(reportPath).size > 8 * 1024 * 1024) return null;
-    const summary = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+    if (!reportPath || !verifiedReportBytes) return null;
+    const summary = JSON.parse(verifiedReportBytes.toString('utf8'));
     if (!isPlainObject(summary) || path.resolve(summary.input || '') !== filePath ||
       !isPlainObject(summary.files) ||
       path.resolve(summary.files.report || '') !== reportPath ||
@@ -1763,6 +2058,9 @@ function safeAuditCoverage(value) {
 }
 
 async function remediateOneFile(filePath, outDir, opts, onLog, durability = null) {
+  const signal = durability && (durability.signal
+    || (durability.job && durability.job.abortController
+      && durability.job.abortController.signal));
   const compatibility = durability && durability.compatibility
     ? durability.compatibility
     : {
@@ -1771,7 +2069,7 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
       engineSha256: checkpointEngineDigest(),
     };
   const job = durability && durability.job;
-  const driverOptions = Object.assign({ filePath, onLog }, opts);
+  const driverOptions = Object.assign({ filePath, onLog, signal }, opts);
   if (job) {
     job.currentFile = {
       file: filePath,
@@ -1808,9 +2106,19 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
   let pdfUa;
   if (opts.validateUa && files.taggedPdf) {
     try {
-      const v = await validatePdfUaLocally(files.taggedPdf, onLog);
+      const v = await withPdfUaSlot(
+        signal,
+        onLog,
+        () => validatePdfUaLocally(files.taggedPdf, onLog, signal),
+      );
       pdfUa = { standard: 'PDF/UA-1 (ISO 14289-1)', compliant: !!(v && v.compliant), validator: v && v.validator, validatorVersion: v && v.validatorVersion, failedChecks: (v && v.failedChecks) || 0, failedRuleCount: (v && v.failedRuleCount) || 0, failedRules: ((v && v.failedRules) || []).slice(0, 100) };
-    } catch (e) { pdfUa = { error: (e && e.message) || String(e) }; }
+    } catch (e) {
+      // Cancellation is control flow, not a validation verdict. Let the owner
+      // mark the request/job cancelled instead of publishing a completed report
+      // whose verifier merely says it errored.
+      if (signal && signal.aborted) throw e;
+      pdfUa = { error: (e && e.message) || String(e) };
+    }
   } else if (opts.validateUa) {
     pdfUa = { skipped: out.taggedPdfB64 ? 'tagged PDF not written' : 'no tagged PDF (office input or tagged_pdf: false)' };
   }
@@ -2191,7 +2499,7 @@ const TOOLS = [
   {
     name: 'pdf_validate_ua',
     title: 'Validate PDF/UA-1 conformance',
-    description: 'Independent ISO 14289-1 (PDF/UA-1) validation of a local PDF using the packaged veraPDF CLI and local Java, with the bundled browser JVM only as a fallback. Run it on a -tagged.pdf produced by remediation or on any PDF. Needs NO Gemini key, paid Worker, institution account, AlloFlow service, or document upload; writes nothing. Typically 30-120s including JVM startup. This is a DIFFERENT artifact from the remediation score: the score judges the accessible-HTML content; this judges the exported PDF bytes.',
+    description: 'Independent ISO 14289-1 (PDF/UA-1) validation of a local PDF using the packaged veraPDF CLI and local Java. It fails closed if that offline validator is unavailable; it never silently uses the CDN-backed browser validator. Run it on a -tagged.pdf produced by remediation or on any PDF. Needs NO Gemini key, paid Worker, institution account, AlloFlow service, or document upload; writes nothing. Typically 30-120s including JVM startup. This is a DIFFERENT artifact from the remediation score: the score judges the accessible-HTML content; this judges the exported PDF bytes.',
     inputSchema: {
       type: 'object',
       required: ['file_path'],
@@ -2366,6 +2674,20 @@ const KEY_SETUP_HINT = [
 
 const CREDENTIAL_CHECK_TOOL_NAMES = Object.freeze(['remediation_verify_key']);
 const CREDENTIAL_CHECK_TOOL_SET = new Set(CREDENTIAL_CHECK_TOOL_NAMES);
+let geminiKeyVerification = null;
+function geminiCredentialIdentity(info) {
+  if (!info || !info.key) return null;
+  return crypto.createHash('sha256').update('alloflow-mcp-key-identity\0' + String(info.source || '') + '\0' + info.key).digest('hex');
+}
+function currentGeminiKeyVerification(keyInfo) {
+  const identity = geminiCredentialIdentity(keyInfo);
+  if (!identity || !geminiKeyVerification || geminiKeyVerification.identity !== identity
+      || geminiKeyVerification.source !== keyInfo.source) {
+    geminiKeyVerification = null;
+    return null;
+  }
+  return geminiKeyVerification;
+}
 
 const OFFLINE_TOOL_NAMES = Object.freeze(
   KEYLESS_TOOL_NAMES.filter(
@@ -2463,13 +2785,13 @@ const S_JOB_VIEW = obj({
     filesDone: S_NUM, filesTotal: S_NUM, filesRemaining: S_NUM,
     meanSecondsPerFile: S_NUM, estimatedMinutesRemaining: S_NUM, estimateBasis: S_STR,
   }),
-  resultAvailable: S_BOOL, restored: S_BOOL, interruptedNote: S_STR,
+  resultAvailable: S_BOOL, restored: S_BOOL, interruptedNote: S_STR, durabilityWarning: S_STR,
   partial: S_BOOL, fromPreviousServerRun: S_BOOL, result: {},
 });
 
 const OUTPUT_SCHEMAS = {
   remediation_capabilities: obj({
-    ready: { type: 'boolean', description: 'Parts are present, including a key that has NOT been tested. Presence is not function — see readyMeans, remediation_verify_key (key works?) and remediation_selftest (pipeline works?).' },
+    ready: { type: 'boolean', description: 'Current build/components are intact and this process verified the configured key.' },
     readyMeans: S_STR,
     fullAiPipelineReady: S_BOOL,
     keylessModeAvailable: S_BOOL,
@@ -2485,7 +2807,7 @@ const OUTPUT_SCHEMAS = {
       note: S_STR,
     }, ['offlineToolNames', 'publicDependencyDownloadToolNames', 'credentialCheckToolNames', 'geminiDocumentEgressToolNames', 'dependencyDownloadsSendDocumentContent', 'note']),
     onboarding: strictObj({
-      state: { type: 'string', enum: ['busy', 'setup-required', 'reinstall-required', 'keyless-ready', 'full-ai-ready'] },
+      state: { type: 'string', enum: ['busy', 'setup-required', 'reinstall-required', 'keyless-ready', 'key-present-untested', 'key-invalid', 'key-unreachable', 'key-quota-exhausted', 'full-ai-ready'] },
       nextTool: { type: ['string', 'null'] },
       actionRequired: S_BOOL,
       message: S_STR,
@@ -2494,8 +2816,12 @@ const OUTPUT_SCHEMAS = {
     paidWorkerRequired: S_BOOL,
     institutionAccountRequired: S_BOOL,
     geminiKeyPresent: S_BOOL, geminiKeySource: S_STR,
+    keyVerified: S_BOOL,
+    keyVerificationState: { type: 'string', enum: ['not-checked', 'valid', 'valid-but-quota-exhausted', 'invalid', 'unreachable'] },
+    keyVerificationCheckedAt: { type: ['string', 'null'] },
     playwrightAvailable: S_BOOL, chromiumInstalled: S_BOOL, setupHint: S_STR,
     vendorAssets: obj({ present: S_BOOL, hashVerified: S_BOOL, root: {}, files: S_NUM, error: S_STR }, ['present', 'hashVerified', 'files']),
+    runtimeBuild: strictObj({ fingerprintSha256: S_STR, current: S_BOOL, checkedAt: S_STR, error: S_STR }, ['fingerprintSha256', 'current', 'checkedAt']),
     pipelineModulesPresent: obj({}), model: S_STR, fallbackModel: S_STR,
     maxRunMinutes: S_NUM, maxPdfMB: S_NUM, singleFlight: S_BOOL, busy: {},
     jobs: obj({ stored: S_NUM, unfinished: S_NUM, interrupted: S_NUM, stateDir: S_STR, durable: S_BOOL, retentionDays: S_NUM }),
@@ -2505,7 +2831,7 @@ const OUTPUT_SCHEMAS = {
   remediation_verify_key: obj({
     state: { type: 'string', enum: ['no-key', 'valid', 'valid-but-quota-exhausted', 'invalid', 'unreachable'] },
     keyWorks: { type: ['boolean', 'null'], description: 'true/false when tested; null when no key or the API was unreachable' },
-    checked: S_BOOL,
+    checked: S_BOOL, checkedAt: S_STR,
     geminiKeySource: S_STR,
     detail: S_STR,
     setup: S_STR,
@@ -2584,8 +2910,10 @@ const OUTPUT_SCHEMAS = {
   pdf_audit: S_AUDIT,
   pdf_validate_ua: obj({
     input: S_STR, standard: S_STR, validator: S_STR,
-    compliant: S_BOOL, failedChecks: S_NUM, failedRuleCount: S_NUM, failedRules: { type: 'array' }, passedChecks: S_NUM, passedRuleCount: S_NUM, validatorVersion: S_STR, transport: S_STR, note: S_STR,
-  }, ['compliant']),
+    compliant: S_BOOL, failedChecks: S_NUM, failedRuleCount: S_NUM, failedRules: { type: 'array' }, passedChecks: S_NUM, passedRuleCount: S_NUM, validatorVersion: S_STR, profile: S_STR, transport: S_STR,
+    inputSha256: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+    inputBytes: S_NUM, validatedAt: S_STR, validationDurationMs: S_NUM, note: S_STR,
+  }, ['compliant', 'inputSha256', 'inputBytes', 'validatedAt']),
   pdf_remediate: S_REMEDIATE,
   pdf_remediate_start: S_JOB_START,
   pdf_batch_audit_start: S_JOB_START,
@@ -2598,7 +2926,7 @@ const OUTPUT_SCHEMAS = {
   }, ['jobId', 'status']),
   remediation_job_status: S_JOB_VIEW,
   remediation_job_result: S_JOB_VIEW,
-  remediation_job_cancel: obj({ ok: S_BOOL, error: S_STR, jobId: S_STR, status: S_STR, wasRunning: S_BOOL, killedRun: S_BOOL }),
+  remediation_job_cancel: obj({ ok: S_BOOL, error: S_STR, jobId: S_STR, status: S_STR, wasRunning: S_BOOL, killedRun: S_BOOL, durabilityWarning: S_STR }),
 };
 
 for (const t of TOOLS) {
@@ -2659,6 +2987,8 @@ const TOOL_HANDLERS = {
 
   async remediation_verify_key(args) {
     assertAllowedKeys(args, [], 'arguments');
+    const keyBefore = Driver.resolveGeminiApiKey();
+    const identityBefore = geminiCredentialIdentity(keyBefore);
     const result = await Driver.verifyGeminiApiKey();
     const keyWorks = result.state === 'valid' || result.state === 'valid-but-quota-exhausted'
       ? true
@@ -2670,6 +3000,19 @@ const TOOL_HANDLERS = {
       geminiKeySource: result.source, // label only; never the value
       documentContentSent: false,
     };
+    const keyAfter = Driver.resolveGeminiApiKey();
+    const identityAfter = geminiCredentialIdentity(keyAfter);
+    if (identityBefore && identityBefore === identityAfter && keyBefore.source === keyAfter.source) {
+      geminiKeyVerification = {
+        identity: identityAfter, source: keyAfter.source, state: result.state,
+        keyWorks, checkedAt: new Date().toISOString(),
+      };
+      out.checkedAt = geminiKeyVerification.checkedAt;
+    } else {
+      geminiKeyVerification = null;
+      out.keyWorks = null;
+      out.detail = 'The configured Gemini credential changed while it was being checked. Run remediation_verify_key again.';
+    }
     if (result.detail) out.detail = result.detail;
     // Only hand back setup steps when the user actually needs to act.
     if (result.state === 'no-key' || result.state === 'invalid') out.setup = KEY_SETUP_HINT;
@@ -2686,24 +3029,48 @@ const TOOL_HANDLERS = {
     const modules = {};
     for (const f of Driver.MODULE_FILES) modules[f] = fs.existsSync(path.join(Driver.ASSETS_ROOT, f));
     const keyInfo = Driver.resolveGeminiApiKey();
+    const keyVerification = currentGeminiKeyVerification(keyInfo);
+    const keyVerified = !!(keyVerification && keyVerification.keyWorks === true);
+    const keyUsableNow = !!(keyVerification && keyVerification.state === 'valid');
     const vendorAssets = Driver.verifyVendorBundle();
+    const runtimeBuild = currentBuildFingerprint();
     const modulesReady = Object.values(modules).every(Boolean);
-    const browserRuntimeReady = playwrightAvailable && chrome.installed && vendorAssets.hashVerified && modulesReady;
+    const browserRuntimeReady = playwrightAvailable && chrome.installed && vendorAssets.hashVerified && modulesReady && runtimeBuild.current;
     let onboarding;
     if (busyWith) {
       onboarding = {
         state: 'busy', nextTool: null, actionRequired: true,
         message: 'A run is already active. Wait for it to finish or use the job id already returned by a background start tool with remediation_job_status.',
       };
-    } else if (!playwrightAvailable || !vendorAssets.hashVerified || !modulesReady) {
+    } else if (!playwrightAvailable || !vendorAssets.hashVerified || !modulesReady || !runtimeBuild.current) {
       onboarding = {
         state: 'reinstall-required', nextTool: null, actionRequired: true,
-        message: 'The connector package is incomplete or failed its local asset integrity check. Reinstall this connector; adding a Gemini key will not fix it.',
+        message: runtimeBuild.current ? 'The connector package is incomplete or failed its local asset integrity check. Reinstall this connector; adding a Gemini key will not fix it.' : runtimeBuild.error,
       };
     } else if (!chrome.installed) {
       onboarding = {
         state: 'setup-required', nextTool: 'remediation_setup', actionRequired: true,
         message: 'Call remediation_setup once to download Chromium. No Gemini key or AlloFlow account is needed.',
+      };
+    } else if (keyUsableNow) {
+      onboarding = {
+        state: 'full-ai-ready', nextTool: null, actionRequired: false,
+        message: 'The current build and local runtime are intact, and this configured Gemini key was accepted at ' + keyVerification.checkedAt + '.',
+      };
+    } else if (keyVerification && keyVerification.state === 'valid-but-quota-exhausted') {
+      onboarding = {
+        state: 'key-quota-exhausted', nextTool: 'remediation_verify_key', actionRequired: true,
+        message: 'The configured key was accepted, but its Gemini quota was exhausted at ' + keyVerification.checkedAt + '. Wait for quota to reset, then verify again. Keyless tools remain ready.',
+      };
+    } else if (keyVerification && keyVerification.state === 'invalid') {
+      onboarding = {
+        state: 'key-invalid', nextTool: 'remediation_verify_key', actionRequired: true,
+        message: 'The configured key was rejected at ' + keyVerification.checkedAt + '. Replace or re-enable it, then verify again. Keyless tools remain ready.',
+      };
+    } else if (keyVerification && keyVerification.state === 'unreachable') {
+      onboarding = {
+        state: 'key-unreachable', nextTool: 'remediation_verify_key', actionRequired: true,
+        message: 'Gemini was unreachable at ' + keyVerification.checkedAt + ', so the configured key is still unverified. Restore connectivity and verify again. Keyless tools remain ready.',
       };
     } else if (keyInfo.key) {
       // DETECTED, not verified. This state deliberately does not claim the key works:
@@ -2721,6 +3088,9 @@ const TOOL_HANDLERS = {
     return {
       geminiKeyPresent: !!keyInfo.key,
       geminiKeySource: keyInfo.source, // label only; never the value
+      keyVerified,
+      keyVerificationState: keyVerification ? keyVerification.state : 'not-checked',
+      keyVerificationCheckedAt: keyVerification ? keyVerification.checkedAt : null,
       keylessModeAvailable: true,
       keylessModeMeans: 'These registered tools require no Gemini key, paid Worker, institution account, or AlloFlow service. Individual tools can still require local files, Java/Chromium, or an optional library download; inspect the tool description.',
       keylessToolNames: KEYLESS_TOOL_NAMES,
@@ -2742,6 +3112,7 @@ const TOOL_HANDLERS = {
       setupHint: (!chrome.installed && playwrightAvailable) ? 'The Chromium browser binary is not installed yet — call remediation_setup once (a ~200MB one-time download) and this environment becomes ready.' : undefined,
       pipelineModulesPresent: modules,
       vendorAssets,
+      runtimeBuild,
       model: process.env.ALLOFLOW_MCP_GEMINI_MODEL || 'gemini-3-flash-preview',
       fallbackModel: process.env.ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite',
       maxRunMinutes: Number(process.env.ALLOFLOW_MCP_MAX_RUN_MINUTES) || 30,
@@ -2760,17 +3131,18 @@ const TOOL_HANDLERS = {
       // write wherever this user can. Set ALLOFLOW_MCP_ALLOWED_ROOTS to make that a boundary.
       allowedRoots: ALLOWED_ROOTS.length ? ALLOWED_ROOTS : null,
       networkEgress: ['generativelanguage.googleapis.com (document or derived content; Gemini tools only)', 'Playwright browser download service (remediation_setup only; no document)', 'unpkg.com and cdn.jsdelivr.net (pinned exporter libraries only; no document intentionally included)'],
-      ready: !!keyInfo.key && browserRuntimeReady,
-      fullAiPipelineReady: !!keyInfo.key && browserRuntimeReady,
+      ready: keyUsableNow && browserRuntimeReady,
+      fullAiPipelineReady: keyUsableNow && browserRuntimeReady,
       // `ready` is a PRESENCE check, and presence is not function. It reported true for an install
       // where every run died at the pipeline's ownership gate (2026-07-28). Say so, rather than
       // letting one word imply more than it verifies.
-      readyMeans: 'The parts are PRESENT (a key was found, plus Playwright, Chromium, pipeline modules, and hash-verified local vendor assets). It does NOT prove a run succeeds, and it does NOT prove the key works: a revoked or mistyped key still reports present. Call remediation_verify_key to test the key (no document content, no generation quota) and remediation_selftest to test the pipeline (no key, no quota).',
+      readyMeans: 'True means the on-disk build still matches this process, required local components are present, and the current key passed remediation_verify_key here. It still does NOT prove a full remediation succeeds; call remediation_selftest for the keyless pipeline path.',
     };
   },
 
   async remediation_selftest(args, ctx) {
     assertAllowedKeys(args, [], 'arguments');
+    requireCurrentRuntimeBuild();
     // Needs the browser but NOT a key: the whole point is to be runnable on an install that has
     // no key yet, so a user can separate "the connector is broken" from "my key is wrong".
     const chrome = Driver.resolveChromium();
@@ -3149,9 +3521,14 @@ const TOOL_HANDLERS = {
   async pdf_validate_ua(args, ctx) {
     assertAllowedKeys(args, ['file_path'], 'arguments');
     const filePath = requirePdfPath(args);
-    // No Gemini key and no remote service. Prefer the packaged local CLI; retain the bundled
-    // browser JVM as a compatibility fallback when Java is unavailable.
-    const result = await validatePdfUaLocally(filePath, ctx && ctx.onProgress);
+    // No Gemini key and no remote service. The CLI path is intentionally
+    // fail-closed: the browser validator fetches CDN dependencies and is not an
+    // honest fallback for a tool advertised in offlineToolNames.
+    const result = await withPdfUaSlot(
+      ctx && ctx.signal,
+      ctx && ctx.onProgress,
+      () => validatePdfUaLocally(filePath, ctx && ctx.onProgress, ctx && ctx.signal),
+    );
     return Object.assign({
       input: filePath,
       standard: 'PDF/UA-1 (ISO 14289-1)',
@@ -3165,7 +3542,13 @@ const TOOL_HANDLERS = {
     const opts = validateRemediateOptions(args);
     const outDir = resolveOutputDir(args, filePath);
     requireGeminiKey();
-    return withSingleFlight('pdf_remediate', () => remediateOneFile(filePath, outDir, opts, (ctx && ctx.onProgress) || null));
+    return withSingleFlight('pdf_remediate', () => remediateOneFile(
+      filePath,
+      outDir,
+      opts,
+      (ctx && ctx.onProgress) || null,
+      { signal: ctx && ctx.signal },
+    ));
   },
 
   pdf_remediate_start(args) {
@@ -3325,12 +3708,42 @@ const TOOL_HANDLERS = {
       };
     }
     job.cancelRequested = true;
+    // Commit the cancellation fence before killing work or acknowledging the
+    // request. If this write fails, fail closed and leave the run untouched.
+    try {
+      persistJob(job, { required: true });
+    } catch (error) {
+      job.cancelRequested = false;
+      return {
+        ok: false,
+        jobId: job.jobId,
+        status: job.status,
+        error: 'Cancellation was not applied because durable job state could not be written. The active run was left untouched; retry after fixing the state directory.',
+      };
+    }
+    const wasRunning = job.status === 'running';
+    if (!wasRunning) {
+      job.finishedAt = new Date().toISOString();
+      jobLog(job, 'cancelled before start');
+      const committed = commitTerminalJob(job, 'cancelled');
+      return {
+        ok: true,
+        jobId: job.jobId,
+        status: job.status,
+        wasRunning: false,
+        killedRun: false,
+        durabilityWarning: committed.recordCommitted ? undefined : job.durabilityWarning,
+      };
+    }
+    // Abort the entire attempt before touching browser state. This also
+    // terminates a post-export veraPDF child, where activeRun is already null.
+    try { job.abortController?.abort(new Error('Remediation job cancelled')); } catch (_) {}
     let killedRun = false;
-    if (job.status === 'running' && driver) {
+    if (driver) {
       killedRun = await driver.cancelActiveRun(); // page context closes → the run dies in seconds
       jobLog(job, 'cancel requested — active browser context ' + (killedRun ? 'closed' : 'not found'));
     }
-    return { ok: true, jobId: job.jobId, wasRunning: job.status === 'running', killedRun };
+    return { ok: true, jobId: job.jobId, status: job.status, wasRunning, killedRun };
   },
 };
 
@@ -3428,9 +3841,13 @@ async function handleRequest(msg) {
       const handler = TOOL_HANDLERS[name];
       if (!handler) { sendError(id, -32602, 'Unknown tool: ' + String(name)); return; }
       const key = String(id);
-      const entry = { tool: name, cancelled: false };
+      const abortController = new AbortController();
+      const entry = { tool: name, cancelled: false, abortController };
       IN_FLIGHT.set(key, entry);
-      const ctx = { onProgress: makeProgressReporter(params && params._meta && params._meta.progressToken) };
+      const ctx = {
+        onProgress: makeProgressReporter(params && params._meta && params._meta.progressToken),
+        signal: abortController.signal,
+      };
       try {
         const output = await handler((params && params.arguments) || {}, ctx);
         // Cancelled mid-run: the spec says not to answer a cancelled request, and a
@@ -3460,6 +3877,9 @@ async function handleNotification(msg) {
   const entry = IN_FLIGHT.get(String(p.requestId));
   if (!entry) return; // already answered, or never ours — nothing to stop
   entry.cancelled = true;
+  // Request-scoped cancellation is always signalled first. For pdf_validate_ua
+  // this removes a queued waiter or terminates only its Java process.
+  try { entry.abortController.abort(p.reason); } catch (_) {}
   log('cancellation requested for request ' + String(p.requestId) + ' (' + entry.tool + ')' + (p.reason ? ': ' + String(p.reason).slice(0, 200) : ''));
   if (RUN_CANCELLABLE_TOOLS.has(entry.tool) && driver) {
     // Closing the run's browser context rejects its page.evaluate and every queued

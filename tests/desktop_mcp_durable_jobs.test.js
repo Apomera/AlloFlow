@@ -354,6 +354,11 @@ describe('desktop MCP durable-job source contracts', () => {
     expect(prepare).toContain('const currentEngineSha256 = checkpointEngineDigest();');
     expect(prepare).toContain("job.restoredFromStatus === 'queued'");
     expect(prepare).toContain('job.inputSha256 && job.inputSha256 !== inputSha256');
+    const engine = section('function checkpointEngineFiles()', 'function checkpointAudit(');
+    expect(engine).toContain('CHECKPOINT_ENGINE_DIGEST_AT_BOOT');
+    expect(engine).toContain('computeStableCheckpointEngineFingerprint();');
+    expect(engine).toContain('requireCurrentRuntimeBuild();');
+    expect(engine).toContain('desktop_runtime_build_changed_since_server_start');
   });
 
   it('binds completion proofs to the source, compatibility digests, artifact hashes, and output root', () => {
@@ -361,11 +366,18 @@ describe('desktop MCP durable-job source contracts', () => {
     expect(validate).toContain("hasExactKeys(manifest.source, ['path', 'sizeBytes', 'sha256'])");
     expect(validate).toContain('path.resolve(manifest.source.path) !== filePath');
     expect(validate).toContain('manifest.source.sha256 !== compatibility.inputSha256');
-    expect(validate).toContain('sourceStat.size !== manifest.source.sizeBytes');
+    expect(validate).toContain('sourceBefore.size !== manifest.source.sizeBytes');
+    expect(validate).toContain('const sourceSha256 = await sha256File(filePath)');
+    expect(validate).toContain('sourceBefore.mtimeMs !== sourceAfter.mtimeMs');
+    expect(validate).toContain('sourceSha256 !== manifest.source.sha256');
     expect(validate).toContain('manifest.compatibility.optionsSha256 !== compatibility.optionsSha256');
     expect(validate).toContain('manifest.compatibility.engineSha256 !== compatibility.engineSha256');
     expect(validate).toContain("relative.startsWith('..' + path.sep)");
-    expect(validate).toContain('await sha256File(resolved) !== artifact.sha256');
+    expect(validate).toContain('verifiedReportBytes = fs.readFileSync(resolved);');
+    expect(validate).toContain('digest = sha256Bytes(verifiedReportBytes);');
+    expect(validate).toContain('const summary = JSON.parse(verifiedReportBytes.toString');
+    expect(validate).toContain('stat.ctimeMs !== statAfter.ctimeMs');
+    expect(source).toContain('completion_artifact_changed_while_manifest_was_written');
     expect(validate).toContain("path.resolve(summary.files.completionManifest || '') !== path.resolve(manifestPath)");
   });
 
@@ -404,9 +416,188 @@ describe('desktop MCP durable-job source contracts', () => {
     expect(runner).toContain("throw unsafeResume('checkpoint_engine_changed_since_job_started')");
     expect(runner).toContain("throw unsafeResume('running_file_has_no_valid_checkpoint_or_completion_manifest')");
   });
+
+  it('persists cancellation before kill/ack and commits terminal state through an identity-bound intent', () => {
+    const cancel = section('async remediation_job_cancel(args)', '\n  },\n};');
+    expectInOrder(cancel, [
+      'job.cancelRequested = true;',
+      'persistJob(job, { required: true });',
+      'if (!wasRunning)',
+      "commitTerminalJob(job, 'cancelled')",
+      'await driver.cancelActiveRun()',
+    ]);
+    const terminal = section('function storedTerminalIntentIsValid(', 'function forgetJobRecord(');
+    expect(terminal).toContain('intent.jobId === rec.jobId');
+    expect(terminal).toContain('intent.attemptId === rec.attemptId');
+    expect(terminal).toContain('intent.attemptNumber === rec.attemptNumber');
+    const enqueue = section('function enqueueJob(job, runner)', 'const JOB_NOT_FOUND');
+    expect(enqueue).toContain('commitTerminalJob(job, job.status);');
+  });
+
+  it('bounds PDF/UA JVM concurrency, binds the verdict to immutable bytes, and aborts per request', () => {
+    const verifier = section('const PDF_UA_MAX_CONCURRENCY', 'function invalidParams(');
+    expect(verifier).toContain('const PDF_UA_MAX_CONCURRENCY = 2;');
+    expect(verifier).toContain('signal.addEventListener');
+    expect(verifier).toContain('getDriver().validatePdfUaCli({');
+    expect(verifier).toContain('filePath, onProgress, onLog: onProgress, signal');
+    expect(verifier).toContain('inputSha256: result.inputSha256');
+    expect(verifier).toContain('inputBytes: result.inputBytes');
+    expect(verifier).toContain('validatedAt: result.validatedAt');
+    expect(verifier).not.toContain('getDriver().validatePdfUa({');
+    const plumbing = section("case 'tools/call':", "default: sendError(id");
+    expect(plumbing).toContain('const abortController = new AbortController();');
+    expect(plumbing).toContain('signal: abortController.signal');
+    const notification = section('async function handleNotification(msg)', 'function handleMessage(line)');
+    expect(notification).toContain('entry.abortController.abort(p.reason)');
+  });
+
+  it('keeps post-export PDF/UA validation inside the shared semaphore and remediation cancellation signal', () => {
+    const enqueue = section('function enqueueJob(job, runner)', 'const JOB_NOT_FOUND');
+    expectInOrder(enqueue, [
+      'const attemptAbortController = new AbortController();',
+      'job.abortController = attemptAbortController;',
+      'runner(job)',
+      'job.abortController = null;',
+    ]);
+
+    const remediate = section('async function remediateOneFile(', 'async function runnerForStoredJob(job)');
+    expect(remediate).toContain('durability.job.abortController.signal');
+    expect(remediate).toContain('Object.assign({ filePath, onLog, signal }, opts)');
+    expectInOrder(remediate, [
+      'const v = await withPdfUaSlot(',
+      'signal,',
+      '() => validatePdfUaLocally(files.taggedPdf, onLog, signal)',
+    ]);
+    expect(remediate).toContain('if (signal && signal.aborted) throw e;');
+
+    const syncHandler = section('async pdf_remediate(args, ctx)', 'pdf_remediate_start(args)');
+    expect(syncHandler).toContain('{ signal: ctx && ctx.signal }');
+
+    const cancel = source.slice(source.indexOf('async remediation_job_cancel(args)'));
+    expectInOrder(cancel, [
+      'persistJob(job, { required: true });',
+      'job.abortController?.abort',
+      'await driver.cancelActiveRun()',
+    ]);
+  });
 });
 
 describe('desktop MCP durable-job restart behavior', () => {
+  it('finalizes a persisted cancellation fence after restart and never requeues it', async () => {
+    const root = join(scratch, 'cancel-restart');
+    const stateDir = join(root, 'state');
+    const inputs = join(root, 'inputs');
+    mkdirSync(stateDir, { recursive: true });
+    mkdirSync(inputs, { recursive: true });
+    const env = {
+      ...process.env,
+      NODE_ENV: 'test',
+      ALLOFLOW_MCP_STATE_DIR: stateDir,
+      ALLOFLOW_MCP_ALLOWED_ROOTS: root,
+      ALLOFLOW_MCP_NO_KEY_FILES: '1',
+      ALLOFLOW_MCP_MAX_RUN_MINUTES: '30',
+      ALLOFLOW_MCP_GEMINI_BASE: 'https://generativelanguage.googleapis.com/v1beta/models',
+      ALLOFLOW_MCP_GEMINI_MODEL: 'gemini-3-flash-preview',
+      ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL: 'gemini-2.5-flash-lite',
+    };
+    delete env.GEMINI_API_KEY;
+    const file = makePdf(inputs, 'cancelled');
+    const jobId = 'rjob-aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const record = baseRecord({
+      jobId, file, outDir: join(root, 'outputs'),
+      engineSha256: currentEngineDigest(env),
+      createdAt: new Date(Date.now() - 30000).toISOString(),
+    });
+    record.cancelRequested = true;
+    writeRecord(stateDir, record);
+
+    const client = protocolClient(env);
+    try {
+      await client.request('initialize', {
+        protocolVersion: '2025-06-18', capabilities: {},
+        clientInfo: { name: 'cancel-restart-test', version: '1' },
+      });
+      const status = await waitForTerminal(client, jobId);
+      expect(status.status).toBe('cancelled');
+      const saved = JSON.parse(readFileSync(join(stateDir, jobId + '.json'), 'utf8'));
+      expect(saved.status).toBe('cancelled');
+      expect(saved.attemptNumber).toBe(record.attemptNumber);
+      expect(client.stderr()).not.toContain('requeued after server restart');
+      expect(client.stderr()).not.toContain('GEMINI_API_KEY is not set');
+    } finally {
+      await client.close();
+    }
+  }, 30000);
+
+  it('recovers a phase-two terminal persist fault from the durable terminal intent', async () => {
+    const root = join(scratch, 'terminal-fault');
+    const stateDir = join(root, 'state');
+    const inputs = join(root, 'inputs');
+    mkdirSync(stateDir, { recursive: true });
+    mkdirSync(inputs, { recursive: true });
+    const baseEnv = {
+      ...process.env,
+      NODE_ENV: 'test',
+      ALLOFLOW_MCP_STATE_DIR: stateDir,
+      ALLOFLOW_MCP_ALLOWED_ROOTS: root,
+      ALLOFLOW_MCP_NO_KEY_FILES: '1',
+      ALLOFLOW_MCP_MAX_RUN_MINUTES: '30',
+      ALLOFLOW_MCP_GEMINI_BASE: 'https://generativelanguage.googleapis.com/v1beta/models',
+      ALLOFLOW_MCP_GEMINI_MODEL: 'gemini-3-flash-preview',
+      ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL: 'gemini-2.5-flash-lite',
+    };
+    delete baseEnv.GEMINI_API_KEY;
+    const file = makePdf(inputs, 'terminal-fault');
+    const jobId = 'rjob-bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    const record = baseRecord({
+      jobId, file, outDir: join(root, 'outputs'),
+      engineSha256: currentEngineDigest(baseEnv),
+      createdAt: new Date(Date.now() - 30000).toISOString(),
+    });
+    writeCompletionProof(record);
+    writeRecord(stateDir, record);
+
+    const faulted = protocolClient({
+      ...baseEnv,
+      ALLOFLOW_MCP_TEST_FAIL_TERMINAL_RECORD_ONCE: '1',
+    });
+    try {
+      await faulted.request('initialize', {
+        protocolVersion: '2025-06-18', capabilities: {},
+        clientInfo: { name: 'terminal-fault-test', version: '1' },
+      });
+      const status = await waitForTerminal(faulted, jobId);
+      expect(status.status).toBe('completed');
+      expect(status.durabilityWarning).toMatch(/terminal_record_commit_failed/);
+      const fenced = JSON.parse(readFileSync(join(stateDir, jobId + '.json'), 'utf8'));
+      expect(fenced.status).toBe('running');
+      expect(fenced.terminalIntent).toMatchObject({
+        jobId,
+        attemptNumber: record.attemptNumber + 1,
+        status: 'completed',
+      });
+    } finally {
+      await faulted.close();
+    }
+
+    const recovered = protocolClient(baseEnv);
+    try {
+      await recovered.request('initialize', {
+        protocolVersion: '2025-06-18', capabilities: {},
+        clientInfo: { name: 'terminal-recovery-test', version: '1' },
+      });
+      const status = await waitForTerminal(recovered, jobId);
+      expect(status.status).toBe('completed');
+      const saved = JSON.parse(readFileSync(join(stateDir, jobId + '.json'), 'utf8'));
+      expect(saved.status).toBe('completed');
+      expect(saved.terminalIntent).toBeNull();
+      expect(saved.attemptNumber).toBe(record.attemptNumber + 1);
+      expect(recovered.stderr()).not.toContain('requeued after server restart');
+    } finally {
+      await recovered.close();
+    }
+  }, 60000);
+
   it('recovers verified work keylessly, preserves FIFO, and rejects tampered or incompatible state', async () => {
     const root = join(scratch, 'restart');
     const stateDir = join(root, 'state');

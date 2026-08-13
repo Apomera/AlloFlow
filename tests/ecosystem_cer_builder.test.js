@@ -104,7 +104,7 @@ describe('Ecosystem claim-evidence-reasoning builder', () => {
     expect(latestEcosystemState.cerEvidence).toHaveLength(1);
     expect(latestEcosystemState.cerEvidence[0].source).toBe('Current run, step 40');
     expect(latestEcosystemState.cerEvidence[0].text).toContain('62 prey and 19 predators');
-    expect(latestEcosystemState.cerEvidence[0].replayKey).toContain('eco-logistic-v2');
+    expect(latestEcosystemState.cerEvidence[0].replayKey).toContain('eco-logistic-v3-rk4');
 
     const duplicateButton = Array.from(host.querySelectorAll('button'))
       .find((button) => button.textContent === 'Add current-step evidence');

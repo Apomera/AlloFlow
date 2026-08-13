@@ -11,12 +11,13 @@ import {
   clearJobCheckpoint,
   completeJob,
   clearTerminalArtifacts,
-  failJob,
+  failCurrentWorkflowAttempt,
   finalizeInputDeletion,
   getInternalJob,
   getJobCheckpoint,
   jobCheckpointPrefix,
   markJobRunning,
+  markJobThrottleWait,
   renewJobLease,
   RUNNING_JOB_LEASE_SECONDS,
   type JobRow,
@@ -258,9 +259,16 @@ function publicRunnerFailure(value: unknown): PublicRunnerFailure | null {
 async function runnerRequestError(
   env: PilotEnv,
   response: Response,
+  jobId: string,
+  attemptId: string,
 ): Promise<Error> {
+  let body: unknown;
   try {
-    const body = await readJson<unknown>(response);
+    body = await readJson<unknown>(response);
+  } catch {
+    return new PilotError("runner_request_failed", 502);
+  }
+  {
     const throttle = modelThrottleFailure(body);
     if (throttle) {
       workflowMetric(env, "model_throttled", {
@@ -278,6 +286,20 @@ async function runnerRequestError(
       if (!throttle.retryable) {
         return new NonRetryableError("model_throttled");
       }
+      const wait = await markJobThrottleWait(
+        env,
+        jobId,
+        attemptId,
+        throttle.retryAfterMs,
+      );
+      workflowMetric(env, "model_throttle_wait", {
+        outcome: "durable",
+        retryAfterMs: throttle.retryAfterMs,
+        leaseSlackMs: Math.max(
+          0,
+          wait.leaseExpiresAt * 1000 - Date.now(),
+        ),
+      });
       const error = new PilotError("model_throttled", 429) as PilotError & {
         retryAfterMs: number;
       };
@@ -288,8 +310,6 @@ async function runnerRequestError(
     return publicFailure
       ? new NonRetryableError(publicFailure)
       : new PilotError("runner_request_failed", 502);
-  } catch {
-    return new PilotError("runner_request_failed", 502);
   }
 }
 
@@ -639,6 +659,7 @@ function runnerResult(
     reportSizeBytes: reportArtifact.size,
     reportSha256: reportArtifact.sha256.toLowerCase(),
     autoContinueRoundsRun: autoContinueRoundsRun as number,
+    verificationState: body.summary.verificationState,
     beforeScore: score(body.summary?.beforeScore),
     afterScore: score(body.summary?.afterScore),
   };
@@ -688,13 +709,6 @@ export class RemediationWorkflow extends WorkflowEntrypoint<
     const jobId = event.payload.jobId;
     const config = assertPilotBindings(this.env);
     const container = containerFor(this.env, jobId);
-    const attemptState: {
-      latest: {
-        id: string;
-        number: number;
-      } | null;
-    } = { latest: null };
-
     try {
       const job = await step.do(
         "claim queued job",
@@ -741,15 +755,6 @@ export class RemediationWorkflow extends WorkflowEntrypoint<
             context.step.count,
             context.attempt,
           );
-          if (
-            attemptState.latest === null ||
-            context.attempt >= attemptState.latest.number
-          ) {
-            attemptState.latest = {
-              id: attemptId,
-              number: context.attempt,
-            };
-          }
           const claimed = await claimJobAttempt(
             this.env,
             jobId,
@@ -848,7 +853,12 @@ export class RemediationWorkflow extends WorkflowEntrypoint<
             }),
           );
           if (!response.ok) {
-            throw await runnerRequestError(this.env, response);
+            throw await runnerRequestError(
+              this.env,
+              response,
+              jobId,
+              attemptId,
+            );
           }
           const runnerBody = await readJson<RunnerResponse>(response);
           emitRunnerCheckpointTelemetry(this.env, runnerBody);
@@ -862,11 +872,6 @@ export class RemediationWorkflow extends WorkflowEntrypoint<
           };
         },
       );
-      attemptState.latest = {
-        id: result.attemptId,
-        number: result.attemptNumber,
-      };
-
       await step.do(
         "release remediation container",
         {
@@ -1064,7 +1069,6 @@ export class RemediationWorkflow extends WorkflowEntrypoint<
       return { status: "completed", jobId };
     } catch (error) {
       const errorCode = workflowErrorCode(error);
-      const failureAttemptId = attemptState.latest?.id ?? null;
       try {
         await step.do(
           "remove failed artifacts",
@@ -1077,15 +1081,16 @@ export class RemediationWorkflow extends WorkflowEntrypoint<
             timeout: "2 minutes",
           },
           async () => {
-            const owned = await failJob(
+            const failure = await failCurrentWorkflowAttempt(
               this.env,
               jobId,
-              failureAttemptId,
+              event.instanceId,
               errorCode,
             );
-            if (!owned) {
+            if (!failure.owned) {
               return { cleaned: false, preserved: true };
             }
+            const failureAttemptId = failure.attemptId;
             await container.destroy();
             const job = await getInternalJob(this.env, jobId);
             if (
@@ -1125,14 +1130,13 @@ export class RemediationWorkflow extends WorkflowEntrypoint<
         );
       } catch {
         try {
-          if (
-            await failJob(
-              this.env,
-              jobId,
-              failureAttemptId,
-              errorCode,
-            )
-          ) {
+          const failure = await failCurrentWorkflowAttempt(
+            this.env,
+            jobId,
+            event.instanceId,
+            errorCode,
+          );
+          if (failure.owned) {
             await container.destroy();
           }
         } catch {}

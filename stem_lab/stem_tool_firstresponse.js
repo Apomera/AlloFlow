@@ -149,6 +149,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
   // adult tilt and an infant's neutral position is visible in the model rather
   // than only stated in text.
   var AIRWAY_TILT_MAX = 0.38;
+  // The recovery position's own airway step. Gentler than a CPR head-tilt (the
+  // step says "gently"), plus an extra turn about the body's long axis so the
+  // mouth ends up pointing at the mat. The drainage angle is the entire reason
+  // the position exists, so it has to be visible and not merely described.
+  var RECOVERY_HEAD_TILT = 0.30;
+  var RECOVERY_MOUTH_DOWN = 0.38;
+  // How far below horizontal the squared top thigh points, in radians.
+  var STABLE_THIGH_ANGLE = 0.61;
 
   var CPR_COACH_SPEC = {
     compressionsPerCycle: 30,
@@ -661,7 +669,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     var mode = sp.tab || 'place';
     var age = sp.age || 'adult';
     var phase = api.phase || 0;
-    var roll = Math.max(0, Math.min(1, (phase - 4) / Math.max(1, RECOVERY_STEPS.length - 4)));
+    // ── Recovery choreography ───────────────────────────────────────────────
+    // `phase` counts COMPLETED steps, so step i is done once phase >= i + 1.
+    // Every step has to move the thing it names. The old schedule ramped the
+    // roll linearly across the last four steps, which meant the step that says
+    // "roll them onto their side" delivered a quarter of the turn, the airway
+    // and top-leg steps appeared to work only because the body kept rotating
+    // underneath them, and "keep watching their breathing" rolled the patient.
+    var REC_AT = {};
+    for (var rsi = 0; rsi < RECOVERY_STEPS.length; rsi++) REC_AT[RECOVERY_STEPS[rsi].id] = rsi + 1;
+    var didRoll = phase >= (REC_AT.roll || 1e9);
+    var didAirway = phase >= (REC_AT.airway || 1e9);
+    var didStable = phase >= (REC_AT.stable || 1e9);
+    // The turn belongs to its own step; the last 12% is the settle that comes
+    // with squaring the top leg. Nothing after that moves the body, because
+    // nothing after that is an instruction to move them.
+    var roll = didStable ? 1 : (didRoll ? 0.88 : 0);
     var ageScale = 1;
     var ageAirwayTilt = 1;
     for (var ai = 0; ai < CPR_AGES.length; ai++) {
@@ -731,10 +754,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     var heartMat = material(0xe11d48, 34, 0.88);
 
     var body = new THREE.Group();
-    body.rotation.z = -roll * (Math.PI / 2) * 0.78;
-    body.position.y = 0.30 * ageScale;
+    // TOWARDS the rescuer. The near arm is the one placed out at a right angle
+    // on the -X side, so -X is where the rescuer is kneeling, and "pull on the
+    // bent knee to roll them TOWARDS YOU" means the far side comes up and over.
+    // Rolling the other way is the exact mistake the step text warns about, and
+    // it also leaves the lever leg trapped underneath and the bracing arm
+    // waving in the air rather than supporting them on the mat.
+    var rollAngle = roll * (Math.PI / 2) * 0.78;
+    body.rotation.z = rollAngle;
+    // A body on its side is taller than a body on its back: what rests on the
+    // mat changes from the torso's half-THICKNESS to its half-WIDTH. Holding
+    // the supine height through the roll sank the figure into the mat, which
+    // put the near shoulder under the floor and left its hand looking severed.
+    // Exact for the torso ellipsoid, so this reproduces the original supine
+    // 0.30 at roll 0 and rises to the half-WIDTH as it comes over.
+    var bodyLift = 0.05 + Math.sqrt(
+      Math.pow(0.56 * profile.width * Math.sin(rollAngle), 2)
+      + Math.pow(0.25 * Math.cos(rollAngle), 2));
+    body.position.y = bodyLift * ageScale;
     body.scale.setScalar(ageScale);
     api.scene.add(body);
+    // Rolled poses are far easier to reason about in world terms ("flat on the
+    // mat, out to the side") than in the tilted body frame, so express them
+    // that way and rotate them back. groundY is the mat, measured down from the
+    // body origin in body-local units.
+    var groundY = -bodyLift + 0.03 / Math.max(0.2, ageScale);
+    function fromWorld(wx, wy) {
+      var rc = Math.cos(rollAngle), rs = Math.sin(rollAngle);
+      return { x: wx * rc + wy * rs, y: -wx * rs + wy * rc };
+    }
+    function span3(a, b) {
+      return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2));
+    }
 
     var chestRig = new THREE.Group();
     body.add(chestRig);
@@ -760,14 +811,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     blob(headPivot, 0.045 * profile.head, 0.06 * profile.head, 0.07 * profile.head,
       skin, 0.29 * profile.head, 0, 0);
 
+    // The airway step is the whole reason the recovery position exists, and it
+    // moved nothing: the head was carried round by the torso and never tilted.
+    // frame() writes headPivot.rotation.x every tick, so the recovery tilt has
+    // to be a BASE it adds to rather than a value it would overwrite with zero.
+    var baseHeadTiltX = 0;
+    if (didAirway) {
+      baseHeadTiltX = RECOVERY_HEAD_TILT * ageAirwayTilt;
+      headPivot.rotation.z = RECOVERY_MOUTH_DOWN;
+    }
+    headPivot.rotation.x = baseHeadTiltX;
+
     var armOut = phase >= 2;
     var handAtCheek = phase >= 3;
     var kneeUp = phase >= 4;
     var shoulderLX = -0.55 * profile.width;
     var shoulderRX = 0.55 * profile.width;
     var leftShoulder = new THREE.Vector3(shoulderLX, 0, -0.55 * profile.torso);
-    var leftElbow = armOut ? new THREE.Vector3(-1.02, 0, -0.52) : new THREE.Vector3(-0.69, -0.02, -0.10);
-    var leftWrist = armOut ? new THREE.Vector3(-1.34, 0, -0.52) : new THREE.Vector3(-0.66, -0.02, 0.31);
+    // Once they are rolled onto this arm it stays on the mat, extended beside
+    // them, taking their weight and stopping them going face-down. Carried
+    // round by the body rotation alone it would swing 70 degrees and end up
+    // either pointing at the ceiling or driven through the floor, depending on
+    // which way the body turned — so when rolled it is re-pinned to the mat.
+    // Derived from the shoulder and this figure's own upper-arm and forearm
+    // lengths, for the same reason the top leg is: pinning it to hand-picked
+    // world coordinates instead stretched the upper arm from 0.47 to 0.87 and
+    // left a forearm floating clear of the body.
+    var armOutElbow = new THREE.Vector3(-1.02, 0, -0.52);
+    var armOutWrist = new THREE.Vector3(-1.34, 0, -0.52);
+    var leftElbow, leftWrist;
+    if (didRoll) {
+      var rc1 = Math.cos(rollAngle), rs1 = Math.sin(rollAngle);
+      var shWx = leftShoulder.x * rc1 - leftShoulder.y * rs1;
+      var shWy = leftShoulder.x * rs1 + leftShoulder.y * rc1;
+      var upperLen = span3(leftShoulder, armOutElbow);
+      var foreLen = span3(armOutElbow, armOutWrist);
+      var armDrop = shWy - (groundY + 0.10);
+      if (armDrop > upperLen * 0.96) armDrop = upperLen * 0.96;
+      var armReach = Math.sqrt(Math.max(0, upperLen * upperLen - armDrop * armDrop));
+      var elbowW = fromWorld(shWx - armReach, shWy - armDrop);
+      // Forearm continues flat along the mat, away from the body.
+      var wristW = fromWorld(shWx - armReach - foreLen, shWy - armDrop);
+      leftElbow = new THREE.Vector3(elbowW.x, elbowW.y, -0.52);
+      leftWrist = new THREE.Vector3(wristW.x, wristW.y, -0.52);
+    } else if (armOut) {
+      leftElbow = armOutElbow;
+      leftWrist = armOutWrist;
+    } else {
+      leftElbow = new THREE.Vector3(-0.69, -0.02, -0.10);
+      leftWrist = new THREE.Vector3(-0.66, -0.02, 0.31);
+    }
     var rightShoulder = new THREE.Vector3(shoulderRX, 0, -0.55 * profile.torso);
     var rightElbow = handAtCheek ? new THREE.Vector3(0.62, 0.20, -0.82) : new THREE.Vector3(0.69, -0.02, -0.10);
     var rightWrist = handAtCheek ? new THREE.Vector3(0.18, 0.24, -1.12) : new THREE.Vector3(0.66, -0.02, 0.31);
@@ -785,8 +878,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     var hipR = new THREE.Vector3(0.24 * profile.width, 0, 1.00 * profile.torso);
     var kneeL = new THREE.Vector3(-0.25, -0.02, 1.62 * profile.limb);
     var ankleL = new THREE.Vector3(-0.25, -0.02, 2.22 * profile.limb);
-    var kneeR = kneeUp ? new THREE.Vector3(0.34, 0.34, 1.48 * profile.limb) : new THREE.Vector3(0.25, -0.02, 1.62 * profile.limb);
-    var ankleR = kneeUp ? new THREE.Vector3(0.36, 0.01, 1.98 * profile.limb) : new THREE.Vector3(0.25, -0.02, 2.22 * profile.limb);
+    // The far leg is the lever, and after the roll it is the TOP leg. Squaring
+    // it — hip and knee both at right angles, knee resting forward on the mat —
+    // is what stops them rolling onto their front once you let go, so it has to
+    // be its own visible change rather than the pose it was already in.
+    //
+    // The squared pose is DERIVED from the hip and from this figure's own thigh
+    // and shin lengths rather than hard-coded, so it holds at every age and the
+    // leg cannot silently stretch. Hand-picked world coordinates gave an adult a
+    // thigh 31% longer than the one it started with.
+    var kneeFlatR = new THREE.Vector3(0.25, -0.02, 1.62 * profile.limb);
+    var ankleFlatR = new THREE.Vector3(0.25, -0.02, 2.22 * profile.limb);
+    var thighLen = span3(hipR, kneeFlatR);
+    var shinLen = span3(kneeFlatR, ankleFlatR);
+    var kneeR, ankleR;
+    if (didStable) {
+      var rc2 = Math.cos(rollAngle), rs2 = Math.sin(rollAngle);
+      var hipWx = hipR.x * rc2 - hipR.y * rs2;
+      var hipWy = hipR.x * rs2 + hipR.y * rc2;
+      // The step asks for right angles at the hip and knee, not for the knee to
+      // be on the floor — and on this figure those are different requests. Its
+      // thigh is barely longer than the torso is wide, so aiming the knee at
+      // the mat used the whole thigh on the drop and left the leg hanging
+      // straight down beside the body instead of squared in front of it.
+      // So: thigh forward and down across the body, then the shin drops to the
+      // mat so the foot rests rather than floats. Both segments keep the
+      // figure's own lengths, so nothing stretches to reach a target.
+      var kneeWx = hipWx - thighLen * Math.cos(STABLE_THIGH_ANGLE);
+      var kneeWy = hipWy - thighLen * Math.sin(STABLE_THIGH_ANGLE);
+      var shinDrop = Math.min(shinLen * 0.96, Math.max(0, kneeWy - (groundY + 0.12)));
+      var shinRun = Math.sqrt(Math.max(0, shinLen * shinLen - shinDrop * shinDrop));
+      var kneeW = fromWorld(kneeWx, kneeWy);
+      var ankleW = fromWorld(kneeWx, kneeWy - shinDrop);
+      kneeR = new THREE.Vector3(kneeW.x, kneeW.y, hipR.z);
+      ankleR = new THREE.Vector3(ankleW.x, ankleW.y, hipR.z + shinRun);
+    } else if (kneeUp) {
+      kneeR = new THREE.Vector3(0.34, 0.34, 1.48 * profile.limb);
+      ankleR = new THREE.Vector3(0.36, 0.01, 1.98 * profile.limb);
+    } else {
+      kneeR = kneeFlatR;
+      ankleR = ankleFlatR;
+    }
     [[hipL, kneeL, ankleL], [hipR, kneeR, ankleR]].forEach(function (leg) {
       segment(body, leg[0], leg[1], 0.15, trousers);
       segment(body, leg[1], leg[2], 0.13, trousers);
@@ -912,6 +1044,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       meshes: meshes,
       picks: picks,
       anchor: ground,
+      // Recovery-position landmarks in WORLD space, for tests. The pose is the
+      // teaching content of that tab and a screenshot can only say "something
+      // changed" — which the broken schedule satisfied, because the body kept
+      // rotating during steps that were supposed to move a head or a leg.
+      // The shell ignores keys it does not use.
+      landmarks: (function () {
+        function toWorld(p) {
+          var rc = Math.cos(rollAngle), rs = Math.sin(rollAngle);
+          return {
+            x: ageScale * (p.x * rc - p.y * rs),
+            y: (bodyLift * ageScale) + ageScale * (p.x * rs + p.y * rc),
+            z: ageScale * p.z
+          };
+        }
+        return {
+          rollAngle: rollAngle,
+          headTiltX: baseHeadTiltX,
+          headRollZ: headPivot.rotation.z,
+          nearShoulder: toWorld(leftShoulder),
+          nearElbow: toWorld(leftElbow),
+          nearWrist: toWorld(leftWrist),
+          topKnee: toWorld(kneeR),
+          topAnkle: toWorld(ankleR),
+          topHip: toWorld(hipR),
+          // Body-frame copies. World positions alone cannot tell "the leg was
+          // re-posed" from "the whole body rotated underneath it" — which is
+          // exactly how the broken schedule made the top-leg step look like it
+          // worked when it did nothing.
+          topKneeLocal: { x: kneeR.x, y: kneeR.y, z: kneeR.z },
+          topHipLocal: { x: hipR.x, y: hipR.y, z: hipR.z }
+        };
+      })(),
       frame: function (tick, nextProps, reduced) {
         var coach = nextProps.coach || {};
         // Read live from props, NOT from the build-time sceneProps: switching
@@ -990,7 +1154,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         if (mode === 'coach' && coach.running
             && (coach.phase === 'breaths' || coach.phase === 'breathRecovery')) airwayHold = 1;
         else if (mode === 'coach' && breathRise > 0) airwayHold = breathRise;
-        headPivot.rotation.x = (airwayHold * ageAirwayTilt * AIRWAY_TILT_MAX) + (breathRise * -0.04);
+        headPivot.rotation.x = baseHeadTiltX + (airwayHold * ageAirwayTilt * AIRWAY_TILT_MAX) + (breathRise * -0.04);
         guideRing.scale.setScalar(1 + guidePulse * 0.20);
         guideMat.opacity = reduced ? 0.55 : (0.42 + guidePulse * 0.45);
         if (heartMat.emissive) heartMat.emissive.setRGB(0.18 + compression * 0.42, 0.01, 0.04);

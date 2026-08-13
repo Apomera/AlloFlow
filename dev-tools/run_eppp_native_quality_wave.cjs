@@ -51,7 +51,14 @@ function assertNativeQualityWaveReplayPreimage({ item, action, revision, reviewW
 
 function runNativeQualityWave({ dataFile, waveNumber, expectedRevisionCount = 8 }) {
   const {
-    reviewedAt, reviewWave, warningCountsBefore, warningCountContext = null, revisions,
+    reviewedAt,
+    reviewWave,
+    warningCountsBefore,
+    warningCountContext = null,
+    calibrationBasis = null,
+    reportScope = null,
+    reportChallengeCriteria = null,
+    revisions,
   } = require(path.resolve(__dirname, dataFile));
   const expectedWave = `eppp-native-quality-wave-${waveNumber}`;
   if (reviewWave !== expectedWave) throw new Error(`Expected ${expectedWave}; received ${reviewWave}.`);
@@ -115,8 +122,23 @@ function runNativeQualityWave({ dataFile, waveNumber, expectedRevisionCount = 8 
     const item = bankById.get(revision.id);
     const action = actionById.get(revision.id);
     if (!item) throw new Error('Missing selected item: ' + revision.id);
-    assertNativeQualityWaveReplayPreimage({ item, action, revision, reviewWave });
+    const replayState = assertNativeQualityWaveReplayPreimage({ item, action, revision, reviewWave });
     if (item.answerIndex !== revision.expectedAnswerIndex) throw new Error(revision.id + ' answer position drifted.');
+    if (revision.targetDifficulty) {
+      if (!['foundation', 'intermediate', 'advanced'].includes(revision.targetDifficulty)) {
+        throw new Error(revision.id + ' has an unsupported target difficulty.');
+      }
+      if (!revision.expectedDifficulty) {
+        throw new Error(revision.id + ' needs an expected difficulty before retiering.');
+      }
+      const matchesExpectedDifficulty = item.difficulty === revision.expectedDifficulty;
+      const matchesRecognizedAfterDifficulty = (
+        replayState.matchesOwnWaveAfterState || replayState.hasCampaignSupersession
+      ) && item.difficulty === revision.targetDifficulty;
+      if (!matchesExpectedDifficulty && !matchesRecognizedAfterDifficulty) {
+        throw new Error(revision.id + ' difficulty drifted.');
+      }
+    }
     if (!Array.isArray(revision.choices) || revision.choices.length !== 4
       || new Set(revision.choices.map((choice) => choice.toLowerCase())).size !== 4) {
       throw new Error(revision.id + ' needs four distinct choices.');
@@ -147,6 +169,7 @@ function runNativeQualityWave({ dataFile, waveNumber, expectedRevisionCount = 8 
     }
 
     item.prompt = revision.prompt;
+    if (revision.targetDifficulty) item.difficulty = revision.targetDifficulty;
     item.choices = [...revision.choices];
     item.rationale = revision.rationale;
     item.choiceRationales = [...revision.choiceRationales];
@@ -169,7 +192,7 @@ function runNativeQualityWave({ dataFile, waveNumber, expectedRevisionCount = 8 
 
     const carriedDiagnostics = action?.diagnostics;
     const priorDiagnostics = existingAuditById.get(item.id)?.diagnosticsBefore;
-    auditItems.push({
+    const auditItem = {
       id: item.id,
       domainId: item.domainId,
       difficulty: item.difficulty,
@@ -186,7 +209,13 @@ function runNativeQualityWave({ dataFile, waveNumber, expectedRevisionCount = 8 
             ? priorDiagnostics
             : currentDiagnosticsForId(item.id)
       )],
-    });
+    };
+    if (revision.targetDifficulty) {
+      auditItem.difficultyBefore = revision.expectedDifficulty;
+      auditItem.difficultyAfter = item.difficulty;
+      auditItem.difficultyRetiered = revision.expectedDifficulty !== item.difficulty;
+    }
+    auditItems.push(auditItem);
   }
 
   const bankJson = JSON.stringify(bank, null, 2) + '\n';
@@ -243,13 +272,14 @@ function runNativeQualityWave({ dataFile, waveNumber, expectedRevisionCount = 8 
     ];
   }
 
+  const includesDifficultyCalibration = revisions.some((revision) => Boolean(revision.targetDifficulty));
   const report = {
     schemaVersion: 1,
     reviewWave,
     reviewedAt,
     reportType: 'source-checked-native-item-repair',
-    scope: `Deep-rewrite the next ${expectedRevisionCount} selected items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.`,
-    challengeCriteria: [
+    scope: reportScope || `Deep-rewrite the next ${expectedRevisionCount} selected items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.`,
+    challengeCriteria: reportChallengeCriteria || [
       'replace definition completion with application or analysis where difficulty warrants',
       'use adjacent, instructionally plausible distractors without stacked absolute cues',
       'avoid keyed lexical echoes that allow answer selection without construct knowledge',
@@ -257,11 +287,16 @@ function runNativeQualityWave({ dataFile, waveNumber, expectedRevisionCount = 8 
       'verify the key and rationale against an item-specific authoritative or peer-reviewed source',
       'provide four substantive, option-specific explanations and preserve answer positions',
     ],
+    ...(calibrationBasis ? { calibrationBasis: { ...calibrationBasis } } : {}),
     summary: {
       totalItems: bank.length,
       rewrittenItems: auditItems.length,
       domainsCovered: new Set(auditItems.map((item) => item.domainId)).size,
       appliedOrAnalysisItems: auditItems.filter((item) => ['application', 'analysis'].includes(item.cognitiveProcess)).length,
+      ...(includesDifficultyCalibration ? {
+        advancedDifficultyItems: auditItems.filter((item) => item.difficulty === 'advanced').length,
+        difficultyRetieredItems: auditItems.filter((item) => item.difficultyRetiered).length,
+      } : {}),
       keyPositionsPreserved: auditItems.filter((item) => item.keyPositionPreserved).length,
       optionSpecificExplanations: auditItems.length * 4,
       selectedItemsWithWarningsAfter: selectedWarningIdsAfter.length,
@@ -275,6 +310,9 @@ function runNativeQualityWave({ dataFile, waveNumber, expectedRevisionCount = 8 
     limitations: ['Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation.'],
   };
 
+  const difficultyCalibrationMarkdown = includesDifficultyCalibration
+    ? `- Retiered ${report.summary.difficultyRetieredItems} items to advanced after rewriting them for applied or analytic demand.\n`
+    : '';
   const markdown = `# EPPP native distractor-quality repair - wave ${waveNumber}
 
 Reviewed: ${reviewedAt}
@@ -283,7 +321,7 @@ Reviewed: ${reviewedAt}
 
 - Deep-rewrote ${report.summary.rewrittenItems} source-checked questions across ${report.summary.domainsCovered} domains.
 - Preserved all ${report.summary.keyPositionsPreserved} answer positions and supplied ${report.summary.optionSpecificExplanations} option-specific explanations.
-- Converted every selected item to application or analysis and removed stacked absolute distractors.
+${difficultyCalibrationMarkdown}- Converted every selected item to application or analysis and removed stacked absolute distractors.
 - ${report.summary.selectedItemsWithWarningsAfter
     ? `Kept ${report.summary.selectedItemsWithWarningsAfter} selected items in review because at least one warning remains: ${report.summary.selectedWarningIdsAfter.join(', ')}.`
     : 'Cleared all four warning families for the selected tranche.'}

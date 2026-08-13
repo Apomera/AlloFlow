@@ -79,6 +79,16 @@ describe('Epidemic Lab model metrics', () => {
     expect(source).toContain('hospitalizationRisk');
     expect(source).toContain('Clinical map trajectories');
     expect(source).toContain('Hospitalized');
+    expect(source).toContain('compareMapHistories');
+    expect(source).toContain('Experiment seed');
+    expect(source).toContain('mapBaselineHistory');
+    expect(source).toContain('advanceMap(continueRunning)');
+    expect(source).toContain('advanceMap(false)');
+    expect(source).toContain('epidemicPrefersReducedMotion');
+    expect(source).toContain('data-epi-map-cell');
+    expect(source).toContain('commitMapAnalysis');
+    expect(source).toContain('Compared with no additional response');
+    expect(source).toContain('CARE CAPACITY EXCEEDED');
     expect(source).not.toContain("totalInf = 100 - activeData[activeData.length - 1].S");
   });
 });

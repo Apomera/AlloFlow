@@ -141,6 +141,10 @@ const SHOTS = [
   ['09-siege-fresh', S({ view: 'siege', wallPreset: 'curtain' }), {}, 2600],
   ['10-siege-gatehouse', S({ view: 'siege', wallPreset: 'gatehouse' }), {}, 2600],
   ['11-siege-motte', S({ view: 'siege', wallPreset: 'motte' }), {}, 2600],
+  // The three framings of the siege field. No single camera makes both the
+  // machine and the castle large across 80 m, so the shot is a choice.
+  ['11b-field-castle', S({ view: 'siege', wallPreset: 'gatehouse', siegeFraming: 'castle' }), {}, 2600],
+  ['11c-field-machine', S({ view: 'siege', wallPreset: 'gatehouse', siegeFraming: 'machine' }), {}, 2600],
   ['12-compare', S({ view: 'compare' }), {}, 500],
   ['12b-compare-beststone', S({ view: 'compare', bestStones: BEST_FIXTURE }), {}, 500],
   ['12c-compare-beststone-stale', S({ view: 'compare', bestStones: STALE_FIXTURE }), {}, 500],

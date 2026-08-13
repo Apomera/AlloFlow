@@ -73,8 +73,12 @@ describe('Fire Ecology science contracts', () => {
 describe('Fire Ecology quiz accessibility', () => {
   it('gives each answer button a distinct accessible name', () => {
     const html = renderFireEcology({ tab: 'quiz' });
-    expect(html).toContain('Answer A: 500 years');
-    expect(html).toContain('Answer C: 65,000+ years');
+    const answerNames = [...html.matchAll(/aria-label="(Answer [A-D]: [^"]+)"/g)].map((match) => match[1]);
+    expect(answerNames).toHaveLength(4);
+    expect(new Set(answerNames).size).toBe(4);
+    expect(answerNames.map((name) => name.slice(0, 8))).toEqual([
+      'Answer A', 'Answer B', 'Answer C', 'Answer D'
+    ]);
     expect(html).not.toContain('aria-label="Select Answer"');
   });
 });

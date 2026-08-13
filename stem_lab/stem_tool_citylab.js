@@ -49,22 +49,35 @@
   // C is scaled by the active assumption set. `code` is drawn inside the
   // parcel so land use never depends on colour alone.
   var USES = [
-    { id: 'preserve',    code: 'Pr', label: 'Preserve / wetland',   units: 0,  C: 0.10, natural: true,  fill: '#0f766e', pattern: 'dots' },
-    { id: 'farm',        code: 'Fm', label: 'Farmland',             units: 0,  C: 0.20, natural: true,  fill: '#a3782b', pattern: 'vert' },
-    { id: 'field',       code: 'Fd', label: 'Open field (vacant)',  units: 0,  C: 0.20, natural: true,  fill: '#7f9d84', pattern: 'none' },
-    { id: 'park',        code: 'Pk', label: 'Park / open space',    units: 0,  C: 0.20, natural: false, fill: '#2f9e52', pattern: 'dots' },
-    { id: 'housing_low', code: 'Hl', label: 'Housing, low density', units: 12, C: 0.45, natural: false, fill: '#d8a521', pattern: 'hatch' },
-    { id: 'housing_mid', code: 'Hm', label: 'Housing, mid density', units: 45, C: 0.65, natural: false, fill: '#e07b18', pattern: 'hatch' },
-    { id: 'mixed',       code: 'Mx', label: 'Mixed use',            units: 60, C: 0.75, natural: false, fill: '#cf4d16', pattern: 'cross' },
-    { id: 'commercial',  code: 'Cm', label: 'Commercial',           units: 0,  C: 0.85, natural: false, fill: '#9333ea', pattern: 'cross' },
-    { id: 'civic',       code: 'Cv', label: 'Civic (school, clinic)', units: 0, C: 0.75, natural: false, fill: '#2563eb', pattern: 'vert' },
-    { id: 'industry',    code: 'In', label: 'Light industry',       units: 0,  C: 0.85, natural: false, fill: '#5b6675', pattern: 'hatch' },
-    { id: 'water',       code: '~~', label: 'River',                units: 0,  C: 1.00, natural: true,  fill: '#0e88c4', pattern: 'none', fixed: true }
+    { id: 'preserve',    code: 'Pr', label: 'Preserve / wetland',   units: 0,  C: 0.10, storeys: 0, natural: true,  fill: '#0f766e', pattern: 'dots' },
+    { id: 'farm',        code: 'Fm', label: 'Farmland',             units: 0,  C: 0.20, storeys: 0, natural: true,  fill: '#966e28', pattern: 'vert' },
+    { id: 'field',       code: 'Fd', label: 'Open field (vacant)',  units: 0,  C: 0.20, storeys: 0, natural: true,  fill: '#7f9d84', pattern: 'none' },
+    { id: 'park',        code: 'Pk', label: 'Park / open space',    units: 0,  C: 0.20, storeys: 0, natural: false, fill: '#31a656', pattern: 'dots' },
+    { id: 'housing_low', code: 'Hl', label: 'Housing, low density', units: 12, C: 0.45, storeys: 2, natural: false, fill: '#d8a521', pattern: 'hatch' },
+    { id: 'housing_mid', code: 'Hm', label: 'Housing, mid density', units: 45, C: 0.65, storeys: 4, natural: false, fill: '#e07b18', pattern: 'hatch' },
+    { id: 'mixed',       code: 'Mx', label: 'Mixed use',            units: 60, C: 0.75, storeys: 5, natural: false, fill: '#cb4b16', pattern: 'cross' },
+    { id: 'commercial',  code: 'Cm', label: 'Commercial',           units: 0,  C: 0.85, storeys: 2, natural: false, fill: '#9333ea', pattern: 'cross' },
+    { id: 'civic',       code: 'Cv', label: 'Civic (school, clinic)', units: 0, C: 0.75, storeys: 2, natural: false, fill: '#2563eb', pattern: 'vert' },
+    { id: 'industry',    code: 'In', label: 'Light industry',       units: 0,  C: 0.85, storeys: 1, natural: false, fill: '#5b6675', pattern: 'hatch' },
+    { id: 'water',       code: '~~', label: 'River',                units: 0,  C: 1.00, storeys: 0, natural: true,  fill: '#0d7cb2', pattern: 'none', fixed: true }
   ];
   var USE_BY_ID = {};
   for (var _u = 0; _u < USES.length; _u++) USE_BY_ID[USES[_u].id] = USES[_u];
 
   // Uses a student may assign. River is terrain and cannot be rezoned.
+  // `storeys` is DISPLAY ONLY, in the same category as fill, code and pattern.
+  // It exists so the 3D view can give every built use some bulk: commercial,
+  // civic and industry all have units: 0, so massing by dwellings per hectare
+  // would render the school, the shops and the factory as pancakes.
+  //
+  // It is indicative, not modelled. Nothing in any indicator reads it, and a
+  // test asserts the scorecard is byte-identical whatever it is set to.
+  var METRES_PER_STOREY = 3;
+  // One vertical exaggeration for everything, stated on screen. Terrain and
+  // buildings differ by more than an order of magnitude in these towns, so no
+  // single factor flatters both; see the note on the surge planes.
+  var VERT_EXAG = 8;
+
   var PALETTE_IDS = ['field', 'park', 'preserve', 'farm', 'housing_low', 'housing_mid',
     'mixed', 'commercial', 'civic', 'industry'];
 
@@ -580,6 +593,111 @@
     return (scenarioOf(planOrId).discussion || []).concat(SHARED_DISCUSSION);
   }
 
+  // ===================================================================
+  // THE READING LAYER
+  //
+  // Section 3 lists documented case studies as the third route by which
+  // contested subject matter reaches a student. These clear the integrity
+  // bar that a modelled rent number does not, for one reason: they are
+  // ARCHIVAL RECORD rather than inference. The maps exist. The statutes
+  // exist. What people argue about is what any of it caused, and each entry
+  // says so in its own `contested` field rather than leaving the reader to
+  // guess where the record stops.
+  //
+  // Rules, enforced by tests where they can be:
+  //   - `what` is what is documented. `contested` is what is argued about.
+  //     Every entry carries both, because an entry with only the first
+  //     reads as settled and an entry with only the second reads as opinion.
+  //   - No statistics, no casualty or displacement counts, no cited studies.
+  //     A fabricated number here would be worse than in any other part of
+  //     this tool, because history is exactly where a made-up figure gets
+  //     repeated.
+  //   - `toolSays` names the limit of the SIMULATION the student just used.
+  //     This is the adjacency guard: put documented history beside a model
+  //     and a reader will assume the model explains it.
+  //   - The towns are invented and these places are not, and the panel
+  //     says so at the top.
+  // ===================================================================
+  var CASE_STUDIES = [
+    {
+      id: 'case_holc',
+      title: 'Grading neighbourhoods on a map',
+      place: 'United States',
+      period: '1930s onward',
+      what: 'A federal agency, the Home Owners Loan Corporation, produced colour-graded maps ' +
+        'of American cities. Neighbourhoods were graded A to D. D was printed in red, which is ' +
+        'where the word redlining comes from. The written area descriptions filed alongside the ' +
+        'maps recorded the racial and ethnic makeup of each neighbourhood and named it as a ' +
+        'reason for the grade.',
+      record: 'The maps and their area descriptions survive in the national archives and have ' +
+        'been digitised and published by university researchers. You can read the sheets and ' +
+        'the descriptions themselves rather than take anybody at their word for what they say.',
+      contested: 'That the maps exist and say what they say is not in dispute. What historians ' +
+        'and economists argue about is how far the maps CAUSED the disinvestment that followed ' +
+        'and how far they recorded decisions lenders were already making, and how much of the ' +
+        'difference between neighbourhoods today traces to them rather than to everything that ' +
+        'happened afterwards.',
+      toolSays: 'You have just spent an hour assigning grades to squares on a map of a town. ' +
+        'This tool scored your grades against a brief. It has no way to tell you what a line ' +
+        'drawn on a map does to the people inside it, and no simulation does.'
+    },
+    {
+      id: 'case_renewal',
+      title: 'Clearance, and roads through neighbourhoods',
+      place: 'United States',
+      period: 'roughly 1949 to the 1970s',
+      what: 'Federal programmes paid for clearing areas officially designated as blighted and ' +
+        'redeveloping the cleared land. Highway building in the same decades routed new roads ' +
+        'through neighbourhoods that already existed. Homes and businesses were demolished and ' +
+        'the people in them moved.',
+      record: 'The programmes were created by named federal statutes, the blight designations ' +
+        'were made in public documents, and city archives, minutes and newspapers recorded what ' +
+        'was cleared, when, and by whose decision.',
+      contested: 'What is argued about is why particular neighbourhoods were chosen, what ' +
+        'alternatives were genuinely available at the time, what the people displaced were ' +
+        'owed, and how much of what followed would have happened regardless.',
+      toolSays: 'In this tool you changed land use with a click and it reported hectares. ' +
+        'Nobody had to move, because nobody in Riverbend exists. That gap between a hectare ' +
+        'and a household is the whole of what the record above is about.'
+    },
+    {
+      id: 'case_japan',
+      title: 'Zoning set nationally, and zones that nest',
+      place: 'Japan',
+      period: 'current system',
+      what: 'Japan sets land-use zoning through national law rather than leaving each ' +
+        'municipality to write its own, using a small number of zone categories. The categories ' +
+        'broadly nest: uses allowed in a quieter zone are generally also allowed in a busier ' +
+        'one, so a shop is not automatically excluded from a residential street.',
+      record: 'The system is set out in national legislation and the zone categories and what ' +
+        'each permits are published.',
+      contested: 'What is argued about is how much this structure explains differences in what ' +
+        'actually gets built, and how much is down to other things entirely: how buildings are ' +
+        'taxed and valued as they age, demographics, and the aftermath of particular economic ' +
+        'periods.',
+      toolSays: 'The briefs here let you put any use on any parcel with no process and no ' +
+        'objection. That is a simplification made to keep the exercise doable, not a proposal.'
+    },
+    {
+      id: 'case_nl',
+      title: 'A street where cars are the guests',
+      place: 'Netherlands',
+      period: '1970s onward',
+      what: 'Dutch street design widely separates cycling from motor traffic with its own ' +
+        'infrastructure, and the woonerf, a street built so that motor vehicles move at walking ' +
+        'pace among people, originated there and has a legal definition. This was a deliberate ' +
+        'change of direction argued over and made across decades. It is not an old tradition ' +
+        'that was always there.',
+      record: 'The design standards are published, the woonerf is defined in traffic law, and ' +
+        'the period in which the change was pushed for and adopted is well documented.',
+      contested: 'What is argued about is how far the approach transfers to places built at ' +
+        'different densities and around longer distances, and what it would actually take to ' +
+        'get there from wherever somewhere else is starting.',
+      toolSays: 'This tool draws a road or a path and counts what it costs. It knows nothing ' +
+        'about what either is like to use, or about how long it takes a place to change its mind.'
+    }
+  ];
+
   var SCENARIO_IDS = Object.keys(SCENARIOS);
   var DEFAULT_SCENARIO = 'riverbend';
 
@@ -695,6 +813,31 @@
   }
 
   function renderedIndicatorIds() { return TIER1_IDS.concat(TIER2_IDS); }
+
+  // Nineteen label-and-number rows in a flat column is a spreadsheet dump, not
+  // a scorecard. These groups are display only; the tier an indicator belongs
+  // to is still what decides whether an assumption can move it.
+  //
+  // A grouped list can silently drop an indicator that nobody put in a group,
+  // so a test asserts every id in TIER1_IDS and TIER2_IDS appears in exactly
+  // one group here.
+  var TIER1_GROUPS = [
+    { label: 'Homes', ids: ['newUnitsServed', 'totalUnitsServed', 'unitsUnserved'] },
+    { label: 'Land', ids: ['builtAreaHa', 'parkHa', 'farmHa', 'farmlandConvertedHa',
+      'preserveConvertedHa'] },
+    { label: 'Exposure', ids: ['newUnitsInFloodplain', 'existingUnitsInFloodplain'] },
+    { label: 'Getting around', ids: ['parkAccessPct', 'parkAccessPctAsCrowFlies',
+      'civicAccessPct', 'newRoadMetres'] }
+  ];
+  var TIER2_GROUPS = [
+    { label: 'Stormwater', ids: ['runoffCoefficient', 'peakRunoffQ', 'baselineRunoffQ',
+      'runoffRatio'] },
+    { label: 'Money', ids: ['capitalCost'] },
+    { label: 'People', ids: ['population', 'parkHaPer1000'] },
+    { label: 'Water supply', ids: ['waterDemandM3PerDay', 'waterHeadroomM3PerDay'] },
+    { label: 'Sea level', ids: ['newUnitsInFutureSurge', 'existingUnitsInFutureSurge',
+      'landAtRiskHa'] }
+  ];
 
   // SLACK: how far a requirement is from failing, 0 to 1. Full means plenty of
   // room, empty means sitting right on the edge, negative means past it.
@@ -1383,6 +1526,256 @@
     return p;
   }
 
+  // Hypsometric tint: the map convention for showing height, low ground dark
+  // and cool, high ground pale and warm. It exists because Harborlight's whole
+  // question is "which ground is high enough", and a land-use map answers that
+  // nowhere. The two are separate VIEWS rather than one overloaded fill, since
+  // stacking height onto land-use colour would wreck both.
+  var TERRAIN_RAMP = ['#0b3d4d', '#14606b', '#2c7f6f', '#5f9f66', '#93ad5c',
+    '#c4b95e', '#dcc57a', '#e8d3a0', '#efe1c4', '#f6eede'];
+
+  // The parcel code is drawn on eleven different land-use fills and a ten-step
+  // terrain ramp, and white-on-everything was the wrong answer on the pale
+  // ones: white on the low-density housing yellow measured about 2.2 to 1.
+  // Pick whichever ink actually has more contrast against the fill, measured.
+  //
+  // The fills themselves were nudged by a few percent so that the better ink
+  // clears 4.5 to 1 on every one of them. Matching the RATIO is the thing;
+  // eyeballing which looks lighter is how the yellow got missed.
+  function relativeLuminance(hex) {
+    var c = String(hex).replace('#', '');
+    var ch = [0, 2, 4].map(function (i) {
+      var x = parseInt(c.substr(i, 2), 16) / 255;
+      return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+  }
+  function contrastRatio(a, b) {
+    var l1 = relativeLuminance(a), l2 = relativeLuminance(b);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  }
+  var INK_LIGHT = '#ffffff', INK_DARK = '#1e293b';
+  // The dark half of a dashed walking path, and the reason a path stays
+  // visible on ground of any lightness.
+  var PATH_INK = '#bef264', PATH_GAP = '#132033';
+  function readableInk(background) {
+    return contrastRatio(INK_LIGHT, background) >= contrastRatio(INK_DARK, background)
+      ? INK_LIGHT : INK_DARK;
+  }
+
+  function terrainColour(elevationM, minM, maxM) {
+    if (maxM <= minM) return TERRAIN_RAMP[0];
+    var t = (elevationM - minM) / (maxM - minM);
+    var i = Math.max(0, Math.min(TERRAIN_RAMP.length - 1,
+      Math.round(t * (TERRAIN_RAMP.length - 1))));
+    return TERRAIN_RAMP[i];
+  }
+
+  // ===================================================================
+  // THE 3D MODEL, AS DATA
+  //
+  // buildMassing() turns a plan into a plain list of boxes and planes. It
+  // touches no WebGL and no Three.js, which is the point: the geometry can be
+  // tested, and the renderer becomes a thin thing that reads this list.
+  //
+  // Two decisions worth keeping:
+  //
+  //  1. ONE vertical exaggeration for everything, stated on screen. Terrain
+  //     relief in Harborlight is 2.7 m and a five-storey building is 15 m, so
+  //     no single factor flatters both. Exaggerating them differently would be
+  //     a lie about which is taller.
+  //
+  //  2. The surge plane's signal is COVERAGE, not height. A 0.6 m change in
+  //     allowance is invisible next to a 15 m building however it is scaled,
+  //     but the AREA it covers changes a great deal, and that is the actual
+  //     lesson: not that the water is higher, but that more ground is under
+  //     it. Submerged parcels are marked, and the plane spreads.
+  //
+  // World units: one parcel is 1 unit across, so 1 unit is 100 m on the
+  // ground. Vertical metres are multiplied by VERT_EXAG and divided by 100 to
+  // land in the same space.
+  // ===================================================================
+
+  function metresToWorld(m) { return (m * VERT_EXAG) / 100; }
+
+  function buildMassing(plan, assumptionSetId, selectedId) {
+    var sc = scenarioOf(plan);
+    var assumptions = SET_BY_ID[assumptionSetId || plan.assumptionSetId] || SET_BY_ID.central;
+    var ids = allParcelIds();
+    var served = servedParcels(plan);
+    var half = N_COLS / 2;
+
+    var ground = [], buildings = [], marks = [];
+    var minElev = Infinity, maxElev = -Infinity;
+
+    ids.forEach(function (id) {
+      var t = terrainAt(id, plan);
+      var use = USE_BY_ID[plan.uses[id]];
+      var x = parcelCol(id) - half + 0.5;
+      var z = parcelRow(id) - 1 - half + 0.5;
+      var topY = metresToWorld(t.elevationM);
+      if (t.elevationM < minElev) minElev = t.elevationM;
+      if (t.elevationM > maxElev) maxElev = t.elevationM;
+
+      ground.push({
+        id: id, x: x, z: z,
+        top: topY,
+        height: Math.max(0.02, topY),
+        colour: use.fill,
+        floodplain: t.floodplain,
+        water: use.id === 'water',
+        // Which ground is under each line. A translucent sheet cannot answer
+        // this from above: seen through, it tints everything behind it
+        // whatever the depth. The parcels have to say so themselves.
+        underToday: !!(sc.modelsSeaRise && use.id !== 'water' &&
+          t.elevationM <= sc.surgeBaseElevationM + 1e-9),
+        underFuture: !!(sc.modelsSeaRise && use.id !== 'water' &&
+          inFutureSurge(id, plan, assumptions))
+      });
+
+      var storeys = use.storeys || 0;
+      if (storeys > 0) {
+        buildings.push({
+          id: id, x: x, z: z,
+          base: topY,
+          height: metresToWorld(storeys * METRES_PER_STOREY),
+          colour: use.fill,
+          storeys: storeys,
+          unserved: unitsOnParcel(plan, id) > 0 && !served[id]
+        });
+      }
+      if (id === selectedId) marks.push({ id: id, x: x, z: z, base: topY, kind: 'selected' });
+    });
+
+    // Roads and paths as ribbons between parcel centres, sitting on the higher
+    // of the two ends so a road never sinks into a hillside.
+    var links = Object.keys(plan.edges).map(function (key) {
+      var e = edgeEnds(key), kind = plan.edges[key];
+      var a = e[0], b = e[1];
+      var ax = parcelCol(a) - half + 0.5, az = parcelRow(a) - 1 - half + 0.5;
+      var bx = parcelCol(b) - half + 0.5, bz = parcelRow(b) - 1 - half + 0.5;
+      var y = Math.max(metresToWorld(terrainAt(a, plan).elevationM),
+        metresToWorld(terrainAt(b, plan).elevationM));
+      return {
+        x: (ax + bx) / 2, z: (az + bz) / 2, y: y,
+        horizontal: az === bz,
+        kind: kind,
+        colour: kind === 'path' ? PATH_INK : (kind === 'existing' ? '#cbd5e1' : '#ffffff')
+      };
+    });
+
+    // Water sheets. Only a town whose flood line is an ELEVATION can have
+    // one; Riverbend and Mesa Hollow map their flood zone by parcel, so their
+    // exposure is marked on the ground instead of floated above it.
+    var sheets = [];
+    if (sc.modelsSeaRise) {
+      // Low opacity on purpose. The sheets say "there is water at this
+      // height"; the CAPS on the parcels say which ground is under it, and
+      // that is the part a student needs to read.
+      sheets.push({ id: 'surge_today', y: metresToWorld(sc.surgeBaseElevationM),
+        colour: '#0e7490', opacity: 0.16, label: 'storm surge today' });
+      sheets.push({ id: 'surge_2050',
+        y: metresToWorld(futureSurgeElevationM(plan, assumptions)),
+        colour: '#38bdf8', opacity: 0.14,
+        label: 'surge reach planned for 2050' });
+    }
+
+    return {
+      scenarioId: sc.id,
+      ground: ground, buildings: buildings, links: links, sheets: sheets, marks: marks,
+      extent: N_COLS / 2,
+      minElevationM: minElev, maxElevationM: maxElev,
+      verticalExaggeration: VERT_EXAG,
+      metresPerStorey: METRES_PER_STOREY
+    };
+  }
+
+  // What the viewer rebuilds on. Cheap to compute and changes exactly when the
+  // geometry would, so an orbit or a resize never triggers a scene rebuild.
+  function massingSignature(plan, assumptionSetId, selectedId) {
+    var ids = allParcelIds();
+    var uses = ids.map(function (id) { return plan.uses[id]; }).join('');
+    var edges = Object.keys(plan.edges).sort().join(',');
+    return [plan.scenarioId, assumptionSetId || plan.assumptionSetId, selectedId || '', uses, edges].join('|');
+  }
+
+  // The plan as a self-contained SVG, for the memo export. Pure, so it is
+  // testable, and string-only so the memo stays one file with nothing to load.
+  //
+  // SVG presentation attributes cannot take var(), exactly like canvas cannot,
+  // so every colour here is a literal. The memo is also read on paper and in
+  // whatever theme the reader happens to have, so it commits to one light
+  // palette rather than trying to follow a theme it cannot see.
+  function planSvg(plan, assumptionSetId) {
+    var sc = scenarioOf(plan);
+    var CELL = 34, PAD = 16;
+    var w = N_COLS * CELL + PAD * 2, hgt = N_ROWS * CELL + PAD * 2;
+    var served = servedParcels(plan);
+    var out = [];
+
+    out.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + hgt +
+      '" width="' + w + '" height="' + hgt + '" role="img" ' +
+      'aria-labelledby="planTitle planDesc">');
+    out.push('<title id="planTitle">' + esc(sc.town) + ' as planned</title>');
+    out.push('<desc id="planDesc">A ' + N_COLS + ' by ' + N_ROWS + ' grid of one-hectare ' +
+      'parcels. Each parcel carries a two-letter land use code. The table below lists every ' +
+      'parcel that was changed, so nothing here depends on seeing the picture.</desc>');
+    out.push('<rect width="' + w + '" height="' + hgt + '" fill="#ffffff"/>');
+
+    allParcelIds().forEach(function (id) {
+      var t = terrainAt(id, plan);
+      var use = USE_BY_ID[plan.uses[id]];
+      var x = PAD + parcelCol(id) * CELL;
+      var y = PAD + (parcelRow(id) - 1) * CELL;
+      out.push('<rect x="' + x + '" y="' + y + '" width="' + CELL + '" height="' + CELL +
+        '" fill="' + use.fill + '" stroke="#1e293b" stroke-width="0.5"/>');
+      if (t.floodplain) {
+        out.push('<rect x="' + (x + 1.5) + '" y="' + (y + 1.5) + '" width="' + (CELL - 3) +
+          '" height="' + (CELL - 3) + '" fill="none" stroke="#0ea5e9" stroke-width="2"/>');
+      }
+      out.push('<text x="' + (x + 3) + '" y="' + (y + 11) + '" font-family="system-ui,sans-serif" ' +
+        'font-size="9" font-weight="700" fill="' + readableInk(use.fill) + '">' +
+        esc(use.code) + '</text>');
+      if (unitsOnParcel(plan, id) > 0 && !served[id]) {
+        out.push('<text x="' + (x + 3) + '" y="' + (y + CELL - 3) +
+          '" font-family="system-ui,sans-serif" font-size="10" font-weight="700" ' +
+          'fill="#b91c1c">!</text>');
+      }
+    });
+
+    Object.keys(plan.edges).forEach(function (key) {
+      var e = edgeEnds(key), kind = plan.edges[key];
+      var x1 = PAD + parcelCol(e[0]) * CELL + CELL / 2;
+      var y1 = PAD + (parcelRow(e[0]) - 1) * CELL + CELL / 2;
+      var x2 = PAD + parcelCol(e[1]) * CELL + CELL / 2;
+      var y2 = PAD + (parcelRow(e[1]) - 1) * CELL + CELL / 2;
+      out.push('<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 +
+        '" stroke="#0f172a" stroke-width="' + (kind === 'path' ? 1.5 : 3) + '"' +
+        (kind === 'path' ? ' stroke-dasharray="4 3"' : '') + ' stroke-linecap="round"/>');
+    });
+
+    // No legend text inside the SVG: it does not wrap, and the first version
+    // ran off the right edge. It lives in the figcaption, which does wrap.
+    out.push('</svg>');
+    return out.join('');
+  }
+
+  // What the student actually changed, which is the useful table in a memo.
+  // All 144 rows would bury it, and 130 of them would say "unchanged".
+  function planChanges(plan) {
+    var base = basePlan(plan.scenarioId);
+    var rows = [];
+    allParcelIds().forEach(function (id) {
+      var from = base.uses[id], to = plan.uses[id];
+      var gi = !!plan.greenInfra[id];
+      if (from === to && !gi) return;
+      rows.push({ id: id, from: from, to: to, greenInfra: gi,
+        units: unitsOnParcel(plan, id),
+        floodplain: terrainAt(id, plan).floodplain });
+    });
+    return rows;
+  }
+
   // ===================================================================
   // SECTION 3b - THE CLASS VIEW
   //
@@ -1520,6 +1913,7 @@
     visibleIndicatorIds: visibleIndicatorIds, WATER_IDS: WATER_IDS,
     CONTESTED_IDS: CONTESTED_IDS, TIER1_IDS: TIER1_IDS, TIER2_IDS: TIER2_IDS,
     renderedIndicatorIds: renderedIndicatorIds, headroomFraction: headroomFraction,
+    TIER1_GROUPS: TIER1_GROUPS, TIER2_GROUPS: TIER2_GROUPS,
     pid: pid, parcelCol: parcelCol, parcelRow: parcelRow, edgeKey: edgeKey,
     allParcelIds: allParcelIds, terrainAt: terrainAt, neighbours: neighbours,
     isWater: isWater, edgeIsBridge: edgeIsBridge,
@@ -1528,16 +1922,169 @@
     basePlan: basePlan, clonePlan: clonePlan,
     servedParcels: servedParcels, hopsToNearest: hopsToNearest,
     canGreenInfra: canGreenInfra,
+    readableInk: readableInk, contrastRatio: contrastRatio,
+    TERRAIN_RAMP: TERRAIN_RAMP, INK_LIGHT: INK_LIGHT, INK_DARK: INK_DARK,
+    PATH_INK: PATH_INK, PATH_GAP: PATH_GAP,
+    planSvg: planSvg, planChanges: planChanges,
+    buildMassing: buildMassing, massingSignature: massingSignature,
+    buildCityScene: buildCityScene,
+    metresToWorld: metresToWorld, VERT_EXAG: VERT_EXAG,
+    METRES_PER_STOREY: METRES_PER_STOREY,
     effectiveC: effectiveC, weightedC: weightedC, peakRunoff: peakRunoff,
     capitalCost: capitalCost, scorecard: scorecard, constraintReport: constraintReport,
     compareAssumptions: compareAssumptions,
     setUse: setUse, toggleGreenInfra: toggleGreenInfra, setEdge: setEdge,
     importPlan: importPlan, movesLeft: movesLeft, outOfMoves: outOfMoves,
     SHARED_DISCUSSION: SHARED_DISCUSSION, discussionFor: discussionFor,
+    CASE_STUDIES: CASE_STUDIES,
     classSummary: classSummary, classCsv: classCsv, startChallenge: startChallenge
   };
 
+  // ===================================================================
+  // THE 3D SCENE
+  //
+  // Reads the plain box list from buildMassing and puts Three.js objects in
+  // S.model. Kept out of the viewer closure and exported on the test seam so
+  // a browser harness can drive it against real WebGL: the geometry is the
+  // part most likely to be wrong, and it is invisible to every jsdom test.
+  //
+  // Materials are cached per build and thrown away with the group the viewer
+  // disposes, so a rebuild never leaks them.
+  // ===================================================================
+  var cityMatCache = null;
+
+  function cityMaterial(THREE, colour, opts) {
+    opts = opts || {};
+    var key = colour + '|' + (opts.opacity || 1) + '|' + (opts.doubleSided ? 'd' : 's');
+    if (!cityMatCache) cityMatCache = {};
+    if (!cityMatCache[key]) {
+      cityMatCache[key] = new THREE.MeshLambertMaterial({
+        color: new THREE.Color(colour),
+        transparent: opts.opacity != null && opts.opacity < 1,
+        opacity: opts.opacity != null ? opts.opacity : 1,
+        side: opts.doubleSided ? THREE.DoubleSide : THREE.FrontSide
+      });
+    }
+    return cityMatCache[key];
+  }
+
+  function buildCityScene(THREE, S, data) {
+    cityMatCache = null;
+    var m = data && data.massing;
+    if (!m) return;
+    var box = new THREE.BoxGeometry(1, 1, 1);
+    var dark = data.dark !== false;
+
+    // makeOrbitViewer does NOT light the scene. makeBayViewer does, which is
+    // an easy thing to assume applies to both: the first real render of this
+    // model came back as a correct silhouette in near-total black. Lights go
+    // in S.model so they are disposed and rebuilt with the rest of the group.
+    S.model.add(new THREE.AmbientLight(0xffffff, dark ? 0.52 : 0.68));
+    var key = new THREE.DirectionalLight(0xfff4e0, dark ? 0.85 : 0.75);
+    key.position.set(-6, 10, 7);
+    S.model.add(key);
+    var fill = new THREE.DirectionalLight(0xbcd4ff, dark ? 0.34 : 0.28);
+    fill.position.set(7, 5, -6);
+    S.model.add(fill);
+    if (S.renderer && S.renderer.setClearColor) {
+      S.renderer.setClearColor(dark ? 0x0b1220 : 0xdfe6ef, 1);
+    }
+
+    function addBox(x, y, z, sx, sy, sz, colour, opts) {
+      var mesh = new THREE.Mesh(box, cityMaterial(THREE, colour, opts));
+      mesh.position.set(x, y, z);
+      mesh.scale.set(sx, Math.max(0.0005, sy), sz);
+      S.model.add(mesh);
+      return mesh;
+    }
+
+    // Ground. One column per parcel, top face at its own elevation, so the
+    // relief is the terrain rather than a decoration.
+    m.ground.forEach(function (g) {
+      addBox(g.x, g.height / 2, g.z, 0.97, g.height, 0.97, g.colour);
+      // Exposure is marked ON the parcel, not inferred from a sheet overhead.
+      // Ground under the 2050 line but dry today is the interesting case, so
+      // it gets the brighter cap; ground already under water today is darker.
+      if (g.underToday) {
+        addBox(g.x, g.top + 0.006, g.z, 0.97, 0.012, 0.97, '#0e7490', { opacity: 0.82 });
+      } else if (g.underFuture) {
+        addBox(g.x, g.top + 0.006, g.z, 0.97, 0.012, 0.97, '#38bdf8', { opacity: 0.78 });
+      } else if (g.floodplain && !g.water) {
+        // Towns whose flood zone is mapped per parcel rather than derived from
+        // an elevation get their exposure marked the same way.
+        addBox(g.x, g.top + 0.006, g.z, 0.97, 0.012, 0.97, '#38bdf8', { opacity: 0.6 });
+      }
+    });
+
+    m.buildings.forEach(function (b) {
+      addBox(b.x, b.base + b.height / 2, b.z, 0.62, b.height, 0.62, b.colour);
+      if (b.unserved) addBox(b.x, b.base + b.height + 0.06, b.z, 0.18, 0.12, 0.18, '#ef4444');
+    });
+
+    m.links.forEach(function (l) {
+      var w = l.kind === 'path' ? 0.10 : 0.16;
+      addBox(l.x, l.y + 0.014, l.z, l.horizontal ? 1 : w, 0.022, l.horizontal ? w : 1, l.colour);
+    });
+
+    // The water sheets. Full extent and translucent, so what reads is which
+    // ground has gone under rather than how high the sheet sits.
+    m.sheets.forEach(function (sh) {
+      var plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(m.extent * 2 + 0.6, m.extent * 2 + 0.6),
+        cityMaterial(THREE, sh.colour, { opacity: sh.opacity, doubleSided: true })
+      );
+      plane.rotation.x = -Math.PI / 2;
+      plane.position.set(0, sh.y, 0);
+      S.model.add(plane);
+    });
+
+    m.marks.forEach(function (mk) {
+      addBox(mk.x, mk.base + 0.6, mk.z, 0.08, 1.2, 0.08, '#ffffff');
+    });
+
+    var top = 0;
+    m.buildings.forEach(function (b) { top = Math.max(top, b.base + b.height); });
+    m.ground.forEach(function (g) { top = Math.max(top, g.top); });
+    S.target = new THREE.Vector3(0, top * 0.35, 0);
+    S.fitPts = [
+      new THREE.Vector3(-m.extent, 0, -m.extent),
+      new THREE.Vector3(m.extent, top + 0.4, m.extent),
+      new THREE.Vector3(-m.extent, top + 0.4, m.extent),
+      new THREE.Vector3(m.extent, 0, -m.extent)
+    ];
+  }
+
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
+
+  // ===================================================================
+  // THE 3D VIEWER
+  //
+  // makeOrbitViewer, not makeBayViewer: it owns WebGL context-loss rebuild,
+  // pause-when-hidden, theme rebuild, the silent no-WebGL fallback, and
+  // `static: true` render-on-demand. The last matters most. A town sitting
+  // idle at 60 fps on a school Chromebook is the regression that has bitten
+  // the orbit bays before, so this scene renders only when something has
+  // actually changed or the camera is moving.
+  //
+  // The viewer is created ONCE at module scope. Building it per render would
+  // tear down and rebuild the WebGL context on every state change.
+  //
+  // The caller owns the camera: rotY, rotX and zoom must be in every push or
+  // the scene freezes at its opening angle, because the viewer has no drag
+  // handler of its own. The drag and the buttons live in the panel below.
+  // ===================================================================
+  var CITY_VIEWER = typeof window.StemLab.makeOrbitViewer === 'function'
+    ? window.StemLab.makeOrbitViewer({
+        failMessage: 'The 3D model is unavailable on this device. The map and the parcel ' +
+          'table show the same plan.',
+        home: { yaw: 0, pitch: 0, dist: 1 },
+        build: buildCityScene
+      })
+    : null;
+
+  // Stable identity. A fresh callback each render makes React tear the viewer
+  // down and rebuild it on every state change.
+  function cityViewerAttach(node) { if (CITY_VIEWER) CITY_VIEWER.attach(node || null); }
 
   // ===================================================================
   // SECTION 4 - PRESENTATION HELPERS
@@ -1625,22 +2172,6 @@
     return sign + Math.round(delta).toLocaleString();
   }
 
-  // Hypsometric tint: the map convention for showing height, low ground dark
-  // and cool, high ground pale and warm. It exists because Harborlight's whole
-  // question is "which ground is high enough", and a land-use map answers that
-  // nowhere. The two are separate VIEWS rather than one overloaded fill, since
-  // stacking height onto land-use colour would wreck both.
-  var TERRAIN_RAMP = ['#0b3d4d', '#14606b', '#2c7f6f', '#5c9a63', '#93ad5c',
-    '#c4b95e', '#dcc57a', '#e8d3a0', '#efe1c4', '#f6eede'];
-
-  function terrainColour(elevationM, minM, maxM) {
-    if (maxM <= minM) return TERRAIN_RAMP[0];
-    var t = (elevationM - minM) / (maxM - minM);
-    var i = Math.max(0, Math.min(TERRAIN_RAMP.length - 1,
-      Math.round(t * (TERRAIN_RAMP.length - 1))));
-    return TERRAIN_RAMP[i];
-  }
-
   // Land use never depends on colour alone: each carries a two-letter code
   // and a distinct fill pattern.
   function patternCss(pattern, ink) {
@@ -1659,14 +2190,24 @@
   window.StemLab.registerTool('cityLab', {
     icon: '🏙️',
     label: 'City Planning Lab',
-    desc: 'Design a town under constraints that genuinely conflict: homes, floodplain, stormwater, ' +
-      'budget, park access and farmland. Every number opens to show its formula, and the Assumption Lab ' +
-      'runs your plan under two published parameter sets so you can see which conclusions survive both.',
+    // This string is not decoration: dev-tools/build_tool_index.cjs harvests it
+    // into the capability index, which is how STEM Lab search finds features
+    // that live INSIDE a tool. It has to name what the tool actually teaches.
+    desc: 'Design a town under conflicting constraints. Three towns: Riverbend has stormwater and a bond, Mesa Hollow a fixed aquifer and irrigation water, Harborlight sea level rise and storm surge by 2050. Rational-method runoff, walk distance, costed roads, a 3D model. Redlining and urban renewal as documented history.',
     color: 'teal',
     category: 'engineering',
+    // Search terms are the only way a teacher finds this among 147 tools, and
+    // the list predated three of the five models. Anything the tool actually
+    // teaches belongs here, including the towns by name.
     aliases: ['urban planning', 'city planning', 'city builder', 'zoning', 'land use', 'town planning',
       'walkability', 'stormwater', 'runoff', 'floodplain', 'density', 'infrastructure', 'trade-offs',
-      'constraints', 'civics', 'geography', 'planning'],
+      'constraints', 'civics', 'geography', 'planning', 'rational method', 'hydrology',
+      'sea level rise', 'sea level', 'storm surge', 'coastal', 'managed retreat', 'climate adaptation',
+      'water supply', 'aquifer', 'groundwater', 'drought', 'water rights', 'irrigation',
+      'housing', 'affordable housing', 'transport', 'walk score', 'green infrastructure',
+      'redlining', 'urban renewal', 'displacement', 'gentrification', 'land use history',
+      'uncertainty', 'assumptions', 'sensitivity analysis', 'decision making',
+      'riverbend', 'mesa hollow', 'harborlight', '3d city', 'massing'],
 
     models: window.__alloCityLabPure,
 
@@ -1746,7 +2287,16 @@
       // plan it describes.
       var stHist = React.useState({ past: [], future: [] });
       var hist = stHist[0], setHist = stHist[1];
-      var stBoardView = React.useState('use');   // 'use' | 'elevation'
+      // The caller owns the camera, so it lives here. Omit any of these from a
+      // push and the scene freezes at its opening angle.
+      var stCam = React.useState({ rotY: 34, rotX: 26, zoom: 1 });
+      var cam = stCam[0], setCam = stCam[1];
+      var stFull = React.useState(false);
+      var fullscreen = stFull[0], setFullscreen = stFull[1];
+      var stGl = React.useState(CITY_VIEWER ? CITY_VIEWER.status() : 'failed');
+      var glStatus = stGl[0], setGlStatus = stGl[1];
+      var dragRef = React.useRef(null);
+      var stBoardView = React.useState('use');   // 'use' | 'elevation' | 'model'
       var boardView = stBoardView[0], setBoardView = stBoardView[1];
       var stShortcuts = React.useState(false);
       var showShortcuts = stShortcuts[0], setShowShortcuts = stShortcuts[1];
@@ -1777,6 +2327,25 @@
       React.useEffect(function () {
         try { window.localStorage.setItem(STORE_KEY, JSON.stringify(plan)); } catch (_) {}
       }, [plan]);
+
+      React.useEffect(function () {
+        if (!CITY_VIEWER) return;
+        CITY_VIEWER.onStatusChange(setGlStatus);
+        return function () { CITY_VIEWER.onStatusChange(null); };
+      }, []);
+
+      // Push after paint, never during render. `static: true` means the viewer
+      // draws this frame and then stops until something changes again.
+      React.useEffect(function () {
+        if (!CITY_VIEWER || boardView !== 'model') return;
+        CITY_VIEWER.push({
+          sig: massingSignature(plan, plan.assumptionSetId, selected),
+          massing: buildMassing(plan, plan.assumptionSetId, selected),
+          rotY: cam.rotY, rotX: cam.rotX, zoom: cam.zoom,
+          dark: isDark,
+          static: true
+        });
+      });
 
       var report = constraintReport(plan, plan.assumptionSetId);
       var sc = report.scorecard;
@@ -1974,6 +2543,10 @@
           var reach = parkDist[id];
           var hasPark = reach !== undefined && reach <= sc.parkHopLimit;
           var noPark = units > 0 && served[id] && !hasPark;
+          var parcelFill = boardView === 'elevation' && use.id !== 'water'
+            ? terrainColour(terr.elevationM, minElev, maxElev)
+            : use.fill;
+          var parcelInk = readableInk(parcelFill);
           // Dry today, inside the reach the board asked you to plan for.
           var atRisk = scen.modelsSeaRise && !terr.floodplain &&
             inFutureSurge(id, plan, assumptions);
@@ -1994,25 +2567,21 @@
             // The land-use code sits in the CORNER, not the centre. Roads are
             // drawn centre to centre, and a centred label put the two on top of
             // each other: the main street made row 6 unreadable in both themes.
-            className: 'relative text-[9px] font-black',
+            className: 'relative text-[9px] font-black hover:brightness-110',
             style: {
               aspectRatio: '1 / 1',
               // backgroundColor, NOT the `background` shorthand. The shorthand
               // resets background-image, so on a re-render React could reapply
               // it after the pattern and silently wipe the fill pattern. React
               // warns about exactly this mix, and the warning is right.
-              backgroundColor: boardView === 'elevation' && use.id !== 'water'
-                ? terrainColour(terr.elevationM, minElev, maxElev)
-                : use.fill,
+              backgroundColor: parcelFill,
               backgroundImage: boardView === 'elevation'
                 ? 'none'
                 : patternCss(use.pattern, 'rgba(255,255,255,0.55)'),
               backgroundSize: use.pattern === 'dots' ? '6px 6px' : 'auto',
-              color: boardView === 'elevation' && use.id !== 'water' &&
-                terr.elevationM > (minElev + maxElev) / 2 ? '#1e293b' : '#ffffff',
-              textShadow: boardView === 'elevation' && use.id !== 'water' &&
-                terr.elevationM > (minElev + maxElev) / 2
-                ? '0 1px 2px rgba(255,255,255,0.5)' : '0 1px 2px rgba(0,0,0,0.6)',
+              color: parcelInk,
+              textShadow: parcelInk === INK_DARK
+                ? '0 1px 2px rgba(255,255,255,0.55)' : '0 1px 2px rgba(0,0,0,0.6)',
               border: '1px solid rgba(15,23,42,0.35)',
               // NOTE: `outline` is deliberately never set here. Setting
               // outline:none on the unselected parcels suppressed the browser
@@ -2058,12 +2627,28 @@
           // every land-use fill and in both themes, which a flat colour did
           // not. Existing streets are muted, streets the student built are
           // bright white, walking paths are lime.
-          var colour = kind === 'path' ? '#bef264' : (kind === 'existing' ? '#cbd5e1' : '#ffffff');
+          var colour = kind === 'path' ? PATH_INK : (kind === 'existing' ? '#cbd5e1' : '#ffffff');
           var thickness = kind === 'path' ? 2 : 3;
+          // backgroundColor, never the `background` shorthand, because the
+          // dashed path below sets backgroundImage and the shorthand resets it.
           var style = {
-            position: 'absolute', background: colour, borderRadius: '2px', pointerEvents: 'none',
-            boxShadow: '0 0 0 1px rgba(15,23,42,0.75)'
+            position: 'absolute', backgroundColor: colour, borderRadius: '2px',
+            pointerEvents: 'none', boxShadow: '0 0 0 1px rgba(15,23,42,0.75)'
           };
+          if (kind === 'path') {
+            // Dashed, the way a footpath is drawn on every paper map. Colour
+            // alone was carrying the whole distinction before.
+            //
+            // The gaps are DARK rather than transparent, and the casing stays.
+            // A lime dash with see-through gaps measured 1.01 to 1 against the
+            // palest ground in the Height view, which is invisible. With a
+            // dark gap the bar always has one tone that contrasts: the lime
+            // reads on dark ground, the gap reads on pale ground.
+            style.backgroundColor = PATH_GAP;
+            style.backgroundImage = 'repeating-linear-gradient(' +
+              (horizontal ? '90deg' : '0deg') + ', ' + colour + ' 0 4px, ' +
+              PATH_GAP + ' 4px 7px)';
+          }
           if (horizontal) {
             style.left = (Math.min(c1, c2) + 0.5) * cw + '%';
             style.width = cw + '%';
@@ -2121,7 +2706,7 @@
           h('span', { className: 'inline-flex rounded border overflow-hidden',
             role: 'group', 'aria-label': 'Map view',
             style: { borderColor: panelBorder } },
-            [['use', 'Land use'], ['elevation', 'Height']].map(function (kv) {
+            [['use', 'Land use'], ['elevation', 'Height'], ['model', '3D']].map(function (kv) {
               var on = boardView === kv[0];
               return h('button', {
                 key: kv[0], type: 'button',
@@ -2132,7 +2717,10 @@
                   announceToSR(kv[0] === 'elevation'
                     ? 'Map now shaded by ground height, pale is higher. Land use codes stay on ' +
                       'every parcel and every parcel still reads out its own use and elevation.'
-                    : 'Map now coloured by land use.');
+                    : kv[0] === 'model'
+                      ? 'Showing the 3D model. It is a view only: use the Land use map or the ' +
+                        'parcel table to change the plan. Buttons below the model move the camera.'
+                      : 'Map now coloured by land use.');
                 },
                 className: 'text-[11px] font-bold px-2 py-1',
                 style: { background: on ? '#2a78d6' : panelBg, color: on ? '#ffffff' : ink }
@@ -2200,6 +2788,99 @@
             'parcel, and the bay keeps its own colour. Switch back to Land use to zone.'));
       }
 
+      function orbit(dRotY, dRotX, dZoom) {
+        setCam(function (c) {
+          return {
+            rotY: (c.rotY + (dRotY || 0) + 360) % 360,
+            rotX: Math.max(-5, Math.min(80, c.rotX + (dRotX || 0))),
+            zoom: Math.max(0.5, Math.min(3, c.zoom * (dZoom || 1)))
+          };
+        });
+      }
+
+      function modelView() {
+        var m = buildMassing(plan, plan.assumptionSetId, selected);
+        var failed = !CITY_VIEWER || glStatus === 'failed';
+
+        // No WebGL is not an error to shout about. The map and the table carry
+        // the same plan, and this view was never the only way to see it.
+        if (failed) {
+          return h('div', { className: 'rounded-lg border p-3',
+            style: { background: panelBg, borderColor: panelBorder } },
+            h('p', { className: 'text-[11px] font-bold', style: { color: ink } },
+              'The 3D model is not available on this device.'),
+            h('p', { className: 'text-[11px] mt-1', style: { color: dim } },
+              'Nothing is missing from your plan. Switch back to Land use or Height, or open ' +
+              'the Parcel table: all three show the same thing, and every number on the ' +
+              'scorecard is computed from the plan, not from the picture.'));
+        }
+
+        function camBtn(label, aria, fn) {
+          return h('button', {
+            type: 'button', onClick: fn, 'aria-label': aria,
+            className: 'text-[11px] font-bold px-2 py-1 rounded border',
+            style: { background: panelBg, color: ink, borderColor: panelBorder }
+          }, label);
+        }
+
+        return h('div', null,
+          h('div', {
+            className: 'relative w-full rounded-lg overflow-hidden',
+            style: { height: fullscreen ? '68vh' : '340px',
+              background: isDark ? '#0b1220' : '#dfe6ef', touchAction: 'none' },
+            onPointerDown: function (e) {
+              dragRef.current = { x: e.clientX, y: e.clientY };
+              if (e.currentTarget.setPointerCapture) {
+                try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+              }
+            },
+            onPointerMove: function (e) {
+              if (!dragRef.current) return;
+              var dx = e.clientX - dragRef.current.x, dy = e.clientY - dragRef.current.y;
+              dragRef.current = { x: e.clientX, y: e.clientY };
+              orbit(dx * 0.4, -dy * 0.3, 1);
+            },
+            onPointerUp: function () { dragRef.current = null; },
+            onPointerCancel: function () { dragRef.current = null; }
+          },
+            h('div', { ref: cityViewerAttach, className: 'absolute inset-0' }),
+            glStatus === 'loading'
+              ? h('p', { className: 'absolute inset-0 flex items-center justify-center text-[11px]',
+                  style: { color: dim } }, 'Building the model...')
+              : null),
+
+          // Drag is not a path everyone has. Every camera move is also a button.
+          h('div', { className: 'flex flex-wrap gap-1.5 mt-2', role: 'group',
+            'aria-label': 'Move the camera' },
+            camBtn('Turn left', 'Turn the model left', function () { orbit(-20, 0, 1); }),
+            camBtn('Turn right', 'Turn the model right', function () { orbit(20, 0, 1); }),
+            camBtn('Tilt down', 'Look at the model from lower down', function () { orbit(0, -10, 1); }),
+            camBtn('Tilt up', 'Look at the model from higher up', function () { orbit(0, 10, 1); }),
+            camBtn('Closer', 'Move the camera closer', function () { orbit(0, 0, 0.85); }),
+            camBtn('Further', 'Move the camera further away', function () { orbit(0, 0, 1.18); }),
+            camBtn('Reset view', 'Return the camera to its starting angle',
+              function () { setCam({ rotY: 34, rotX: 26, zoom: 1 }); }),
+            camBtn(fullscreen ? 'Exit full screen' : 'Full screen',
+              fullscreen ? 'Leave full screen' : 'Show the model full screen',
+              function () { setFullscreen(!fullscreen); })),
+
+          h('p', { className: 'text-[11px] mt-2', style: { color: dim } },
+            'Blocks are indicative massing at ' + m.metresPerStorey + ' m a storey, not a ' +
+            'modelled building height, and nothing on the scorecard reads them. Heights are ' +
+            'exaggerated ' + m.verticalExaggeration + ' times so the ground shows at all: ' +
+            'this town runs from ' + m.minElevationM + ' m to ' + m.maxElevationM + ' m.'),
+          m.sheets.length
+            ? h('p', { className: 'text-[11px] mt-1', style: { color: ink } },
+                'The two sheets are the surge reach today and the reach planned for 2050. ' +
+                'Watch which GROUND goes under when you change assumption set in the ' +
+                'Assumption Lab, rather than how far the sheet lifts: a 0.6 m difference is ' +
+                'nothing beside a building, and it is a great deal of land.')
+            : null,
+          h('p', { className: 'text-[11px] mt-1', style: { color: dim } },
+            'This is a view, not a workspace. Zoning, roads and everything else happen on the ' +
+            'map or in the parcel table, and the model follows what you do there.'));
+      }
+
       function legend() {
         return h('div', { className: 'flex flex-wrap gap-1.5 mt-2' },
           PALETTE_IDS.concat(['water']).map(function (uid) {
@@ -2221,7 +2902,14 @@
         var served = servedParcels(plan);
         var water = isWater(selected, plan);
 
-        return panel('inspect', 'Parcel ' + selected,
+        return panel('inspect',
+          h('span', { className: 'inline-flex items-center gap-1.5' },
+            h('span', { 'aria-hidden': 'true', className: 'inline-block rounded-sm',
+              style: { width: '13px', height: '13px', backgroundColor: use.fill,
+                backgroundImage: patternCss(use.pattern, 'rgba(255,255,255,0.6)'),
+                backgroundSize: use.pattern === 'dots' ? '5px 5px' : 'auto',
+                outline: '1px solid rgba(15,23,42,0.4)' } }),
+            'Parcel ' + selected),
           h('div', null,
             h('p', { className: 'text-[11px] mb-2', style: { color: dim } },
               useLabel(use.id, plan) + '. ' + terr.elevationM + ' m elevation. ' +
@@ -2254,7 +2942,14 @@
                           color: active ? '#ffffff' : ink,
                           borderColor: active ? u.fill : panelBorder
                         }
-                      }, useLabel(u.id, plan) + (u.units ? ' (' + u.units + '/ha)' : ''));
+                      },
+                        h('span', { 'aria-hidden': 'true',
+                          className: 'inline-block rounded-sm mr-1 align-[-1px]',
+                          style: { width: '9px', height: '9px', backgroundColor: u.fill,
+                            backgroundImage: patternCss(u.pattern, 'rgba(255,255,255,0.65)'),
+                            backgroundSize: u.pattern === 'dots' ? '4px 4px' : 'auto',
+                            outline: '1px solid rgba(15,23,42,0.35)' } }),
+                        useLabel(u.id, plan) + (u.units ? ' (' + u.units + '/ha)' : ''));
                     })),
 
                   h('button', {
@@ -2384,6 +3079,18 @@
           h('span', { className: 'font-bold tabular-nums', style: { color: ink } }, fmtIndicator(id, value)));
       }
 
+      function indicatorGroups(groups, tierIds, values, tier) {
+        var visible = visibleIndicatorIds(tierIds, plan);
+        return groups.map(function (g) {
+          var ids = g.ids.filter(function (id) { return visible.indexOf(id) !== -1; });
+          if (!ids.length) return null;
+          return h('div', { key: g.label, className: 'mt-1.5' },
+            h('div', { className: 'text-[10px] font-bold uppercase tracking-wide mb-0.5 pb-0.5',
+              style: { color: dim, borderBottom: '1px solid ' + panelBorder } }, g.label),
+            ids.map(function (id) { return indicatorRow(id, values[id], tier); }));
+        });
+      }
+
       function modelDisclosure(id, title, body) {
         var open = openModel === id;
         return h('div', { key: id, className: 'mt-1' },
@@ -2406,18 +3113,14 @@
             h('p', { className: 'text-[10px] mb-1', style: { color: dim } },
               'Geometry and accounting over the plan as drawn. No coefficient, nothing to disagree with. ' +
               'You can check every one of these with a pencil.'),
-            visibleIndicatorIds(TIER1_IDS, plan).map(function (id) {
-              return indicatorRow(id, sc.tier1[id], 1);
-            }),
+            indicatorGroups(TIER1_GROUPS, TIER1_IDS, sc.tier1, 1),
 
             h('div', { className: 'text-[10px] font-black uppercase tracking-wide mb-1 mt-3',
               style: { color: '#eb6834' } }, 'Modelled'),
             h('p', { className: 'text-[10px] mb-1', style: { color: dim } },
               'A published formula with parameters. Currently using ' + a.label + '. ' +
               'Change the set in the Assumption Lab and watch which of these move.'),
-            visibleIndicatorIds(TIER2_IDS, plan).map(function (id) {
-              return indicatorRow(id, sc.tier2[id], 2);
-            }),
+            indicatorGroups(TIER2_GROUPS, TIER2_IDS, sc.tier2, 2),
 
             modelDisclosure('runoff', 'runoff model',
               h('div', null,
@@ -2514,8 +3217,15 @@
       // ---- assumption lab
       function assumptionLab() {
         var cmp = compareAssumptions(plan, cmpA, cmpB);
-        var changed = cmp.rows.filter(function (r) { return r.changed; });
-        var unchanged = cmp.rows.filter(function (r) { return !r.changed; });
+        // compareAssumptions stays complete over every indicator; the FILTER
+        // belongs here. Without it a town with no water model listed its two
+        // water indicators, both zero, under "did not move at all", which is
+        // true and completely meaningless.
+        var visible = visibleIndicatorIds(TIER1_IDS, plan)
+          .concat(visibleIndicatorIds(TIER2_IDS, plan));
+        var rows = cmp.rows.filter(function (r) { return visible.indexOf(r.id) !== -1; });
+        var changed = rows.filter(function (r) { return r.changed; });
+        var unchanged = rows.filter(function (r) { return !r.changed; });
         var setDefs = ASSUMPTION_SETS;
 
         return h('div', null,
@@ -2567,19 +3277,40 @@
           compared ? panel('lab-verdict', 'What survived both sets',
             h('div', null,
               cmp.flipped.length === 0
-                ? h('p', { className: 'text-[11px] font-bold', style: { color: okColour } },
-                    'Every requirement kept the same verdict under both sets. Whatever this plan does or ' +
-                    'does not achieve, it does not hinge on which end of the published range you believe.')
+                ? h('div', { className: 'rounded p-2',
+                    style: { background: isDark ? 'rgba(27,175,122,0.14)' : 'rgba(27,175,122,0.10)',
+                      borderLeft: '4px solid ' + okColour } },
+                    h('p', { className: 'text-[11px] font-bold', style: { color: okColour } },
+                      'Every requirement kept the same verdict under both sets.'),
+                    h('p', { className: 'text-[11px] mt-1', style: { color: ink } },
+                      'Whatever this plan does or does not achieve, it does not hinge on which end ' +
+                      'of the published range you believe. That is a plan you can defend without ' +
+                      'first having to win an argument about the parameters.'))
                 : h('div', null,
-                    h('p', { className: 'text-[11px] font-bold', style: { color: missColour } },
+                    h('p', { className: 'text-[11px] font-bold mb-1.5', style: { color: missColour } },
                       cmp.flipped.length + ' requirement' + (cmp.flipped.length > 1 ? 's' : '') +
-                      ' changed verdict between the two sets. That is the part of your plan you cannot ' +
-                      'yet defend, because it depends on a number nobody has pinned down:'),
-                    h('ul', { className: 'text-[11px] mt-1 list-disc pl-4', style: { color: ink } },
-                      cmp.flipped.map(function (f) {
-                        return h('li', { key: f.id }, f.label + ' - met under ' +
-                          (f.metUnderA ? 'A but not B' : 'B but not A') + '.');
-                      }))),
+                      ' changed verdict between the two sets. That is the part of your plan you ' +
+                      'cannot yet defend, because it rests on a number nobody has pinned down.'),
+                    // Shown as a flip rather than described as one: the same
+                    // requirement, the two sets side by side, and the verdict
+                    // visibly different. This is the moment the whole mode exists for.
+                    cmp.flipped.map(function (f) {
+                      return h('div', { key: f.id, className: 'rounded p-2 mb-1.5',
+                        style: { background: isDark ? 'rgba(235,104,52,0.12)' : 'rgba(235,104,52,0.09)',
+                          borderLeft: '4px solid ' + missColour } },
+                        h('div', { className: 'text-[11px] font-bold mb-1', style: { color: ink } }, f.label),
+                        h('div', { className: 'grid grid-cols-2 gap-2' },
+                          [[SET_BY_ID[cmpA], f.metUnderA, 'A'], [SET_BY_ID[cmpB], !f.metUnderA, 'B']]
+                            .map(function (col) {
+                              return h('div', { key: col[2], className: 'rounded p-1.5',
+                                style: { background: isDark ? 'rgba(15,23,42,0.45)' : 'rgba(255,255,255,0.75)' } },
+                                h('div', { className: 'text-[10px]', style: { color: dim } },
+                                  'Set ' + col[2] + ', ' + col[0].label),
+                                h('div', { className: 'text-[11px] font-black',
+                                  style: { color: col[1] ? okColour : missColour } },
+                                  (col[1] ? '✔ Met' : '○ Not met')));
+                            })));
+                    })),
               h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink } },
                 'Which of your conclusions hold under both sets? Those are the ones you can defend.'))) : null,
 
@@ -2703,6 +3434,36 @@
         var t2 = visibleIndicatorIds(TIER2_IDS, plan).map(function (id) {
           return '<tr><td>' + esc(INDICATOR_LABELS[id]) + '</td><td>' + esc(fmtIndicator(id, sc.tier2[id])) + '</td></tr>';
         }).join('');
+        var changes = planChanges(plan);
+        var changeRows = changes.map(function (c) {
+          return '<tr><td>' + esc(c.id) + '</td><td>' + esc(useLabel(c.from, plan)) +
+            '</td><td>' + esc(useLabel(c.to, plan)) + '</td><td>' + (c.units || '') +
+            '</td><td>' + (c.greenInfra ? 'yes' : '') + '</td><td>' +
+            (c.floodplain ? 'yes' : '') + '</td></tr>';
+        }).join('');
+
+        // The Assumption Lab section only appears if it was actually run.
+        // Printing it regardless would imply a check the student never made.
+        var cmpBlock = '';
+        if (plan.ranAssumptionLab) {
+          var cmp = compareAssumptions(plan, cmpA, cmpB);
+          cmpBlock = '<h2>Tested against the assumptions</h2>' +
+            '<p>Run under <strong>' + esc(SET_BY_ID[cmpA].label) + '</strong> and <strong>' +
+            esc(SET_BY_ID[cmpB].label) + '</strong>.</p>' +
+            (cmp.flipped.length
+              ? '<p class="note"><strong>' + cmp.flipped.length + ' requirement' +
+                (cmp.flipped.length > 1 ? 's' : '') + ' changed verdict between the two sets.' +
+                '</strong> That part of this plan rests on a number nobody has pinned down.</p>' +
+                '<ul>' + cmp.flipped.map(function (f) {
+                  return '<li>' + esc(f.label) + ': met under ' +
+                    (f.metUnderA ? 'the first set but not the second' :
+                      'the second set but not the first') + '.</li>';
+                }).join('') + '</ul>'
+              : '<p class="note"><strong>Every requirement kept the same verdict under both ' +
+                'sets.</strong> Whatever this plan does or does not achieve, it does not hinge ' +
+                'on which end of the published range you believe.</p>');
+        }
+
         return '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
           '<meta name="viewport" content="width=device-width, initial-scale=1">' +
           '<title>Plan memo - ' + esc(scen.town) + '</title><style>' +
@@ -2711,9 +3472,26 @@
           'th,td{border:1px solid #94a3b8;padding:.35rem .5rem;text-align:left;font-size:.9rem}' +
           'th{background:#f1f5f9}h1,h2{line-height:1.2}' +
           '.note{background:#f8fafc;border-left:4px solid #2a78d6;padding:.5rem .75rem;font-size:.9rem}' +
+          'figure{margin:1rem 0}figcaption{font-size:.8rem;color:#475569;margin-top:.35rem}' +
+          'svg{max-width:100%;height:auto}' +
+          '@media print{body{max-width:none}table{page-break-inside:avoid}}' +
           '</style></head><body>' +
           '<h1>Plan memo: ' + esc(scen.town) + '</h1>' +
           '<p>' + esc(scen.intro) + '</p>' +
+          '<h2>The plan</h2>' +
+          '<figure>' + planSvg(plan, plan.assumptionSetId) +
+          '<figcaption>One parcel is 100 m across, one hectare. A blue outline marks ' +
+          esc(scen.floodLabel) + '. A dashed line is a walking path, a solid one a road. ' +
+          'An exclamation mark means no road reaches those homes. The map is a picture of ' +
+          'the table below, not a substitute for it.</figcaption></figure>' +
+          '<h2>What was changed</h2>' +
+          (changes.length
+            ? '<table><caption>Every parcel that differs from ' + esc(scen.town) +
+              ' as it stands today</caption><thead><tr><th scope="col">Parcel</th>' +
+              '<th scope="col">Was</th><th scope="col">Now</th><th scope="col">Homes</th>' +
+              '<th scope="col">Green infrastructure</th><th scope="col">In the flood zone</th>' +
+              '</tr></thead><tbody>' + changeRows + '</tbody></table>'
+            : '<p>Nothing was changed. This is the town as it stands today.</p>') +
           '<h2>Constraints</h2><table><caption>Requirements and targets against this plan</caption>' +
           '<thead><tr><th scope="col">Requirement</th><th scope="col">Kind</th>' +
           '<th scope="col">Verdict</th><th scope="col">This plan</th></tr></thead><tbody>' + rows +
@@ -2725,6 +3503,7 @@
           '<h2>Measured</h2><table><caption>Geometry and accounting over the plan as drawn</caption>' +
           '<thead><tr><th scope="col">Indicator</th><th scope="col">Value</th></tr></thead><tbody>' + t1 +
           '</tbody></table>' +
+          cmpBlock +
           '<h2>Modelled</h2><table><caption>Published formulas, under ' +
           esc(SET_BY_ID[plan.assumptionSetId].label) + '</caption>' +
           '<thead><tr><th scope="col">Indicator</th><th scope="col">Value</th></tr></thead><tbody>' + t2 +
@@ -2811,7 +3590,7 @@
                 h('button', {
                   type: 'button',
                   onClick: function () {
-                    download('riverbend-plan-memo.html', memoHtml(), 'text/html;charset=utf-8');
+                    download(scen.id + '-plan-memo.html', memoHtml(), 'text/html;charset=utf-8');
                     announceToSR('Plan memo downloaded.');
                   },
                   className: 'text-[11px] font-bold px-2 py-1.5 rounded',
@@ -2925,6 +3704,7 @@
         { id: 'assume', label: 'Assumption Lab' },
         { id: 'memo', label: 'Memo' },
         { id: 'discuss', label: 'Discussion' },
+        { id: 'history', label: 'History' },
         { id: 'class', label: 'Class view' },
         { id: 'about', label: 'How this works' }
       ];
@@ -2965,7 +3745,65 @@
               'about facts nobody has pinned down, and which are about what people think ' +
               'matters. Those are different arguments, and mixing them up is why planning ' +
               'meetings run long. The Assumption Lab handles the first kind. Nothing handles ' +
-              'the second kind except people talking to each other.')));
+              'the second kind except people talking to each other.'),
+            h('button', {
+              type: 'button', onClick: function () { setTab('history'); },
+              className: 'text-[10px] font-bold underline mt-1.5 block', style: { color: '#2a78d6' }
+            }, 'These are present-tense questions. The History tab is the other thing: ' +
+               'places where the argument already happened.')));
+      }
+
+      function historyPanel() {
+        function field(label, text, tone) {
+          return h('div', { className: 'mt-1.5' },
+            h('div', { className: 'text-[10px] font-bold uppercase tracking-wide',
+              style: { color: tone || dim } }, label),
+            h('p', { className: 'text-[11px]', style: { color: ink } }, text));
+        }
+        return h('div', null,
+          panel('hist-intro', 'Places that actually exist',
+            h('div', null,
+              h('p', { className: 'text-[11px] mb-2', style: { color: ink } },
+                'Riverbend, Mesa Hollow and Harborlight are invented. Everything on this tab ' +
+                'is not. These are things that were done, written down at the time, and kept.'),
+              // The adjacency guard, stated once and hard, at the top.
+              h('div', { className: 'rounded p-2',
+                style: { background: isDark ? 'rgba(235,104,52,0.12)' : 'rgba(235,104,52,0.09)',
+                  borderLeft: '4px solid ' + missColour } },
+                h('p', { className: 'text-[11px] font-bold', style: { color: ink } },
+                  'Read this before the rest.'),
+                h('p', { className: 'text-[11px] mt-1', style: { color: ink } },
+                  'This is history sitting next to a simulation, and that is a trap. Nothing ' +
+                  'you did in the Design tab models any of what follows. The tool cannot tell ' +
+                  'you why these things happened, what they caused, or what should have been ' +
+                  'done instead. It counts hectares. Each entry below separates what is on the ' +
+                  'record from what people argue about, and the line between those two is the ' +
+                  'most important thing on this tab.')))),
+
+          CASE_STUDIES.map(function (c) {
+            return panel('hist-' + c.id, c.title,
+              h('div', null,
+                h('p', { className: 'text-[10px] uppercase tracking-wide font-bold',
+                  style: { color: dim } }, c.place + ', ' + c.period),
+                field('What is on the record', c.what, okColour),
+                field('Where the record is', c.record),
+                field('What is argued about', c.contested, missColour),
+                h('p', { className: 'text-[11px] mt-2 rounded p-1.5',
+                  style: { color: ink,
+                    background: isDark ? 'rgba(42,120,214,0.14)' : 'rgba(42,120,214,0.10)' } },
+                  h('strong', null, 'And the tool you just used: '), c.toolSays)));
+          }),
+
+          panel('hist-close', 'What to do with this',
+            h('div', { className: 'text-[11px] space-y-2', style: { color: dim } },
+              h('p', null, 'The archives are open. The maps and the descriptions are scanned ' +
+                'and searchable, the statutes are published, and many cities have their own ' +
+                'sheet. Looking up a real place is a better exercise than reading a summary ' +
+                'of it, including this one.'),
+              h('p', null, 'A question worth carrying back to the Design tab: every one of ' +
+                'these began as somebody drawing a line on a map and being sure they were ' +
+                'improving things. You have spent this session doing exactly that, with a ' +
+                'scorecard telling you how well it was going.'))));
       }
 
       function classPanel() {
@@ -3140,25 +3978,25 @@
               h('li', null, 'There are no timers anywhere in this tool.'))),
           panel('about-3', 'Take this somewhere',
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
-              [{ id: 'gisStudio', icon: '🌐', name: 'GIS Studio',
+              [{ id: 'gisStudio', icon: '🌐', tool: 'GIS Studio',
                  why: 'Analyse a place that actually exists, with real imported data, and compare it to what you designed.' },
-               { id: 'bridgeLab', icon: '🌉', name: 'Bridge Engineering Lab',
+               { id: 'bridgeLab', icon: '🌉', tool: 'Bridge Engineering Lab',
                  why: 'That river crossing costs 2.8 million dollars for a reason. Find out what is holding it up.' },
-               { id: 'stewardshipHub', icon: '♻️', name: 'Environmental Stewardship',
+               { id: 'stewardshipHub', icon: '♻️', tool: 'Environmental Stewardship',
                  why: 'The watershed campaigns pick up exactly where the runoff model here stops.' },
-               { id: 'archStudio', icon: '🏗️', name: 'Architecture Studio',
+               { id: 'archStudio', icon: '🏗️', tool: 'Architecture Studio',
                  why: 'You zoned the parcel. Now design what actually stands on it.' }
               ].map(function (b) {
                 return h('button', {
                   key: b.id, type: 'button',
-                  'aria-label': 'Open ' + b.name + '. ' + b.why,
+                  'aria-label': 'Open ' + b.tool + '. ' + b.why,
                   onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(b.id); },
                   className: 'text-left rounded-lg p-2.5 border',
                   style: { background: panelBg, borderColor: panelBorder }
                 },
                   h('span', { className: 'flex items-center gap-2' },
                     h('span', { className: 'text-sm', 'aria-hidden': 'true' }, b.icon),
-                    h('span', { className: 'text-[11px] font-black', style: { color: ink } }, b.name)),
+                    h('span', { className: 'text-[11px] font-black', style: { color: ink } }, b.tool)),
                   h('span', { className: 'block text-[11px] mt-1', style: { color: dim } }, b.why));
               }))));
       }
@@ -3200,9 +4038,18 @@
             panel('map', scen.town + ' today, and what you have changed',
               h('div', null,
                 boardControls(),
-                board(),
-                boardView === 'elevation' ? elevationKey() : legend(),
-                scaleBar(),
+                (plan.editCount || 0) === 0
+                  ? h('p', { className: 'text-[11px] mb-2 rounded p-1.5',
+                      style: { color: ink,
+                        background: isDark ? 'rgba(42,120,214,0.14)' : 'rgba(42,120,214,0.10)' } },
+                      'Nothing changed yet. This is ' + scen.town + ' as it stands today. ' +
+                      'Click a parcel, or press Tab into the grid and use the arrow keys, then ' +
+                      'choose what goes there. Every number on the right updates as you go.')
+                  : null,
+                boardView === 'model' ? modelView() : board(),
+                boardView === 'model' ? null
+                  : (boardView === 'elevation' ? elevationKey() : legend()),
+                boardView === 'model' ? null : scaleBar(),
                 h('p', { className: 'text-[10px] mt-2', style: { color: dim } },
                   'Each parcel is one hectare, 100 m across. A blue inner edge marks ' +
                   scen.floodLabel + '. ' +
@@ -3221,6 +4068,7 @@
         tab === 'assume' ? assumptionLab() : null,
         tab === 'memo' ? memoPanel() : null,
         tab === 'discuss' ? discussionPanel() : null,
+        tab === 'history' ? historyPanel() : null,
         tab === 'class' ? classPanel() : null,
         tab === 'about' ? aboutPanel() : null,
 

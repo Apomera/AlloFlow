@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator } from '@playwright/test';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
@@ -81,11 +81,30 @@ test.afterAll(async () => {
   await new Promise((resolve) => server.close(resolve));
 });
 
+test.afterEach(async ({ page }) => {
+  try {
+    await page.evaluate(() => {
+      if (window.__root && typeof window.__root.unmount === 'function') {
+        window.__root.unmount();
+        window.__root = null;
+      }
+    });
+  } catch {}
+});
+
 async function mount(page, route = '/__harness') {
   await page.goto(base + route);
   await page.waitForFunction(() => !!window.__geologyTool);
   await page.evaluate(() => window.__mount());
   await page.waitForSelector('[data-geology-tool="true"]');
+}
+
+async function keyboardActivate(control: Locator) {
+  await expect(control).toBeVisible();
+  await expect(control).toBeEnabled();
+  await control.focus();
+  await expect(control).toBeFocused();
+  await control.press('Enter');
 }
 
 test.describe.configure({ timeout: 60_000 });
@@ -142,6 +161,74 @@ test.describe('Geology Explorer learning path', () => {
     await expect(page.getByRole('region', { name: 'Explain your evidence' })).toContainText('Layer stack');
   });
 
+  test('uses a focus lens to isolate materials while preserving keyboard-selectable context', async ({ page }) => {
+    test.setTimeout(300_000);
+    await mount(page, '/__harness/gl');
+    await page.waitForFunction(() => !!window.__alloGeologyEngine && typeof window.__alloGeologyEngine.getVisualState === 'function');
+    const materials = page.getByRole('group', { name: /Rock types/ });
+    const sandstone = materials.getByRole('button', { name: 'Sandstone', exact: true });
+    const shale = materials.getByRole('button', { name: 'Shale', exact: true });
+    await keyboardActivate(sandstone);
+    await expect(sandstone).toHaveAttribute('aria-pressed', 'true');
+
+    const details = page.getByRole('region', { name: 'Selected rock details' });
+    const lens = details.getByRole('button', { name: 'Isolate selected material in the scene' });
+    await expect(lens).toHaveAttribute('aria-pressed', 'false');
+    const contextVoxels = await page.evaluate(() => window.__alloGeologyEngine.getVisualState().visibleVoxels);
+    await keyboardActivate(lens);
+    await expect(lens).toHaveAttribute('aria-pressed', 'true');
+    const focusedVisual = await page.evaluate(() => window.__alloGeologyEngine.getVisualState());
+    expect(focusedVisual).toMatchObject({ focusLens: true, highlightKey: 'sandstone' });
+    expect(focusedVisual.visibleVoxels).toBeGreaterThan(0);
+    expect(focusedVisual.visibleVoxels).toBeLessThan(contextVoxels);
+    await expect(sandstone).toHaveAttribute('data-geology-focus-state', 'match');
+    await expect(shale).toHaveAttribute('data-geology-focus-state', 'muted');
+
+    await keyboardActivate(shale);
+    await expect(shale).toHaveAttribute('aria-pressed', 'true');
+    await expect(shale).toHaveAttribute('data-geology-focus-state', 'match');
+    await expect(sandstone).toHaveAttribute('data-geology-focus-state', 'muted');
+    await expect(lens).toHaveAttribute('aria-pressed', 'true');
+    await expect(details).toContainText('Shale');
+    await expect.poll(() => page.evaluate(() => window.__alloGeologyEngine.getVisualState().highlightKey)).toBe('shale');
+
+    await page.getByRole('button', { name: /Investigate/ }).click();
+    const excavateToggle = page.getByRole('button', { name: /Excavate:/ });
+    await expect(excavateToggle).toBeDisabled();
+    expect(await page.evaluate(() => window.__alloGeologyEngine.excavateAt(0, 0))).toBeNull();
+    await keyboardActivate(lens);
+    await expect(lens).toHaveAttribute('aria-pressed', 'false');
+    await expect(excavateToggle).toBeEnabled();
+    await keyboardActivate(excavateToggle);
+    await expect(excavateToggle).toHaveAttribute('aria-pressed', 'true');
+
+    const beforeDig = await page.evaluate(() => window.__alloGeologyEngine.getVisualState());
+    const digResult = await page.evaluate(() => window.__alloGeologyEngine.excavateAt(0, 0));
+    expect(digResult).toMatchObject({ count: 1 });
+    expect(digResult.removedKey).toBeTruthy();
+    const undo = page.locator('[data-geology-undo-excavation="true"]');
+    await expect(undo).toHaveAccessibleName('Undo last excavation. 1 block removed.');
+    await expect.poll(() => page.evaluate(() => window.__alloGeologyEngine.getVisualState().excavatedCount)).toBe(1);
+    await undo.focus();
+    await expect(undo).toBeFocused();
+    await expect.poll(() => page.evaluate(() => window.__alloGeologyEngine.getVisualState().undoPreview)).toBe(true);
+    await expect.poll(() => page.evaluate(() => window.__alloGeologyEngine.getVisualState().undoPreviewKey)).toBe('0,0,0');
+    await undo.press('Enter');
+    await expect(undo).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => window.__alloGeologyEngine.getVisualState().excavatedCount)).toBe(0);
+    await expect.poll(() => page.evaluate(() => window.__alloGeologyEngine.getVisualState().undoPreview)).toBe(false);
+    await expect.poll(() => page.evaluate(() => window.__alloGeologyEngine.getVisualState().visibleVoxels)).toBe(beforeDig.visibleVoxels);
+
+    const cutaway = page.getByRole('slider', { name: 'Cutaway from front' });
+    await expect(cutaway).toHaveAttribute('aria-valuetext', 'Full block');
+    await cutaway.focus();
+    await cutaway.press('End');
+    await expect(cutaway).toHaveAttribute('aria-valuetext', /% cut away from front · final section/);
+    await expect(page.locator('[data-geology-cutaway-readout="true"]')).toContainText('final section');
+    await expect.poll(() => page.evaluate(() => window.__alloGeologyEngine.getVisualState().sliceZ)).toBeGreaterThan(0);
+    expect(await page.evaluate(() => window.__events.errors)).toEqual([]);
+  });
+
   test('guides a beacon tour and carries the evidence trail into CER', async ({ page }) => {
     await mount(page);
     const panel = page.getByRole('region', { name: 'Evidence beacons' });
@@ -151,6 +238,9 @@ test.describe('Geology Explorer learning path', () => {
     await panel.getByRole('button', { name: 'Next stop →' }).click();
     await expect(panel.locator('[data-geology-beacon-tour-status="true"]')).toContainText('Stop 2 of 3');
     await expect(panel.getByRole('button', { name: 'Highlight Cross-cutting pluton' })).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('region', { name: 'Formation timeline' }).getByRole('button', { name: 'Timeline stage 3: Contact heat' }).click();
+    await expect(panel.locator('[data-geology-beacon-tour-status="true"]')).toContainText('Stop 3 of 3');
+    await expect(panel.getByRole('button', { name: 'Highlight Baked metamorphic rim' })).toHaveAttribute('aria-pressed', 'true');
     const trail = page.getByRole('group', { name: 'Evidence trail' });
     await expect(trail.locator('[data-geology-evidence-trail-step]')).toHaveCount(3);
     await trail.getByRole('button', { name: 'Carry trail into CER' }).click();
@@ -176,6 +266,23 @@ test.describe('Geology Explorer learning path', () => {
     await front.click();
     await expect(front).toHaveAttribute('aria-pressed', 'true');
     await expect(orientation.locator('[data-geology-camera-current="true"]')).toContainText('Front cross-section');
+    await page.getByRole('region', { name: 'Evidence beacons' }).getByRole('button', { name: 'Highlight Baked metamorphic rim' }).click();
+    await expect(orientation.locator('[data-geology-camera-current="true"]')).toContainText('Top-down map');
+  });
+
+  test('scrubs the formation timeline and updates the active process stage', async ({ page }) => {
+    await mount(page);
+    const timeline = page.getByRole('region', { name: 'Formation timeline' });
+    await expect(timeline.locator('[data-geology-timeline-stage]')).toHaveCount(3);
+    await expect(timeline.locator('[data-geology-timeline-position="true"]')).toContainText('Stage 1 of 3');
+    await timeline.getByRole('button', { name: 'Timeline stage 2: Cross-cutting' }).click();
+    await expect(timeline.locator('[data-geology-timeline-position="true"]')).toContainText('Stage 2 of 3');
+    await expect(timeline.locator('[data-geology-timeline-detail="true"]')).toContainText('Cross-cutting pluton');
+    const range = timeline.locator('[data-geology-timeline-range="true"]');
+    await range.focus();
+    await range.press('End');
+    await expect(range).toBeFocused();
+    await expect(range).toHaveAttribute('aria-valuetext', 'Stage 3: Contact heat');
   });
 
   test('opens the lesson guide and shows CER feedback in Assess mode', async ({ page }) => {
@@ -456,6 +563,14 @@ test.describe('Geology Explorer learning path', () => {
     await expect(page.getByText('3D view unavailable')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('region', { name: 'Field mission' })).toBeVisible();
     await expect(page.getByRole('group', { name: /Rock types/ })).toBeVisible();
+    const orientation = page.getByRole('region', { name: 'Camera orientation' });
+    await page.getByRole('region', { name: 'Evidence beacons' }).getByRole('button', { name: 'Highlight Baked metamorphic rim' }).click();
+    await expect(orientation.locator('[data-geology-camera-current="true"]')).toContainText('Top-down map');
+    const lens = page.getByRole('region', { name: 'Selected rock details' }).getByRole('button', { name: 'Isolate selected material in the scene' });
+    await keyboardActivate(lens);
+    await expect(lens).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-geology-material="marble"]')).toHaveAttribute('data-geology-focus-state', 'match');
+    await expect(page.locator('[data-geology-material="sandstone"]')).toHaveAttribute('data-geology-focus-state', 'muted');
   });
 
 

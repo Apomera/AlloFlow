@@ -238,13 +238,14 @@ function readEnvelope(
 
 function testDatabase(): SqliteD1Database {
   const sqlite = new DatabaseSync(":memory:");
-  for (let version = 1; version <= 5; version += 1) {
+  for (let version = 1; version <= 6; version += 1) {
     const filename = `${String(version).padStart(4, "0")}${[
       "_institution_pilot.sql",
       "_remediation_effort_and_admission.sql",
       "_upload_attempt_admission.sql",
       "_job_attempt_leases.sql",
       "_job_checkpoints.sql",
+      "_throttle_wait_and_verification.sql",
     ][version - 1]}`;
     sqlite.exec(readFileSync(`${migrationDirectory}${filename}`, "utf8"));
   }

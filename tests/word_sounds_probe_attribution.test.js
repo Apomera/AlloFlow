@@ -30,8 +30,12 @@ describe('a probe knows whose record it belongs in', () => {
   it('the setup screen collects a student for assessment runs', () => {
     const src = read('word_sounds_setup_source.jsx');
     expect(src, 'assessment mode needs a student field').toMatch(/probe_student/);
-    expect(src, 'the field must reach the host through probeOptions')
-      .toMatch(/isProbe: true, activity: probeActivitySel, student: probeStudentTrimmed \|\| null/);
+    const start = src.indexOf('const probeOptions = isAssessment');
+    const end = src.indexOf('const sessionConfig =', start);
+    const probeOptions = src.slice(start, end);
+    expect(probeOptions).toContain('isProbe: true');
+    expect(probeOptions).toContain('activity: probeActivitySel');
+    expect(probeOptions).toContain('student: probeStudentTrimmed || null');
   });
 
   it('a blank name is sent as null rather than omitted', () => {
@@ -46,7 +50,7 @@ describe('a probe knows whose record it belongs in', () => {
     const src = read('AlloFlowANTI.txt');
     const idx = src.indexOf('setIsProbeMode(_isProbe);');
     expect(idx, 'onStartGame probe branch not found').toBeGreaterThan(0);
-    const block = src.slice(idx, idx + 1400);
+    const block = src.slice(idx, src.indexOf('let initialActivity;', idx));
     expect(block, 'a probe launch must set the target student explicitly')
       .toMatch(/setProbeTargetStudent\(\s*\(probeOptions && probeOptions\.student\) \|\| null,?\s*\)/);
   });
@@ -57,8 +61,8 @@ describe('a probe knows whose record it belongs in', () => {
     // on every launch would break banking for that flow instead.
     const src = read('AlloFlowANTI.txt');
     const idx = src.indexOf('setIsProbeMode(_isProbe);');
-    const block = src.slice(idx, idx + 1400);
-    expect(block, 'the write must be guarded by if (_isProbe)').toMatch(/if \(_isProbe\) \{\s*\n\s*setProbeTargetStudent/);
+    const block = src.slice(idx, src.indexOf('let initialActivity;', idx));
+    expect(block, 'the write must be guarded by if (_isProbe)').toMatch(/if \(_isProbe\) \{[\s\S]*?setProbeTargetStudent\(/);
   });
 
   it('the teacher is told, before starting, where the result goes', () => {
@@ -71,9 +75,22 @@ describe('a probe knows whose record it belongs in', () => {
     expect(src).toMatch(/probe_student_saved/);
   });
 
-  it('the launched resource carries the student, so a relaunch is not reattributed', () => {
+  it('portable resources stay anonymous and anonymous reopens clear stale targets', () => {
     const src = read('AlloFlowANTI.txt');
-    expect(src).toMatch(/probeStudent: _isProbe \? \(\(probeOptions && probeOptions\.student\) \|\| null\) : null/);
+    const resourceStart = src.indexOf('const wordSoundsResource = {');
+    const resourceEnd = src.indexOf('setGeneratedContent(wordSoundsResource);', resourceStart);
+    const resource = src.slice(resourceStart, resourceEnd);
+    expect(resource).not.toMatch(/probeStudent\s*:/);
+    expect(resource).not.toMatch(/learnerId\s*:/);
+    expect(resource).toContain('sessionConfig: { ..._persistedSessionConfig, resourceId }');
+    expect(src).toContain('learnerId: _sessionLearnerId');
+
+    const reopenStart = src.indexOf("if (item.type === 'word-sounds') {");
+    const reopenEnd = src.indexOf("if (item.type === 'adventure'", reopenStart);
+    expect(src.slice(reopenStart, reopenEnd)).toContain('setProbeTargetStudent(null)');
+    const syncStart = src.indexOf('const hydrateWordSoundsFromSync =');
+    const syncEnd = src.indexOf('// Hydration safety net.', syncStart);
+    expect(src.slice(syncStart, syncEnd)).toContain('setProbeTargetStudent(null)');
   });
 
   it('known names are offered, because probeHistory is keyed by a bare string', () => {
@@ -102,26 +119,29 @@ describe('items per minute means one thing', () => {
     const src = moduleSrc();
     expect(src, 'the panel must not divide total attempts by time')
       .not.toMatch(/Math\.round\(\(total \/ totalTime\) \* 60 \* 10\) \/ 10/);
-    expect(src).toMatch(/Math\.round\(\(correct \/ totalTime\) \* 60 \* 10\) \/ 10/);
+    const payload = src.slice(src.indexOf('const buildProbePayload'), src.indexOf('const emitProbeComplete'));
+    expect(payload).toContain('itemsPerMin: Math.round((correct / elapsedMinutes) * 10) / 10');
   });
 
   it('all three completion paths agree on the numerator', () => {
     const src = moduleSrc();
     // The two checkAnswer paths have always used correct/minute; this pins
     // them so a future edit cannot drift one of the three again.
-    const banked = src.match(/postScore\.correct \/ elapsedMinutes/g) || [];
-    expect(banked.length, 'both checkAnswer completion paths').toBe(2);
+    expect((src.match(/emitProbeComplete\(/g) || []).length).toBe(3);
+    expect((src.match(/onProbeComplete\(/g) || []).length).toBe(1);
   });
 
   it('the panel payload carries elapsed, like the other two', () => {
     const src = moduleSrc();
     const idx = src.indexOf('const finishProbe = () => {');
     expect(idx, 'finishProbe not found').toBeGreaterThan(0);
-    expect(src.slice(idx, idx + 900)).toMatch(/elapsed: Math\.round\(totalTime\)/);
+    expect(src.slice(idx, idx + 300)).toContain('emitProbeComplete(wordSoundsScore)');
+    const payload = src.slice(src.indexOf('const buildProbePayload'), src.indexOf('const emitProbeComplete'));
+    expect(payload).toContain('elapsed: Math.round(totalTime)');
   });
 
   it('the mirror matches', () => {
     expect(read('desktop/web-app/public/word_sounds_module.js'))
-      .toMatch(/Math\.round\(\(correct \/ totalTime\) \* 60 \* 10\) \/ 10/);
+      .toContain('itemsPerMin: Math.round((correct / elapsedMinutes) * 10) / 10');
   });
 });

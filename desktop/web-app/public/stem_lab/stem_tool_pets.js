@@ -299,6 +299,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       '.petslab-sim-stage{position:relative;isolation:isolate;overflow:hidden;border:1px solid rgba(245,158,11,.34);border-radius:20px;background:#111827;box-shadow:0 24px 60px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08);}',
       '.petslab-sensory-stage{height:clamp(340px,52vw,520px);min-height:340px;}',
       '.petslab-sensory-stage canvas{border-radius:20px!important;}',
+      '.petslab-sensory-compare{margin-top:10px;padding:12px;border:1px solid rgba(232,213,183,.2);border-radius:14px;background:linear-gradient(155deg,rgba(45,32,24,.94),rgba(24,18,16,.98));}',
+      '.petslab-sensory-compare-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}',
+      '.petslab-sensory-compare-head h3{margin:0;color:#fef3e2;font-size:14px;}',
+      '.petslab-sensory-compare-head p{margin:4px 0 0;max-width:560px;color:#c9b39c;font-size:11px;line-height:1.45;}',
+      '.petslab-sensory-compare-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;}',
+      '.petslab-sensory-compare-actions button{min-height:40px;}',
+      '.petslab-sensory-lock-note{margin:0 0 9px;padding:7px 9px;border-left:3px solid #fbbf24;background:rgba(251,191,36,.08);color:#fde68a;font-size:11px;line-height:1.4;}',
+      '.petslab-sensory-compare-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}',
+      '.petslab-sensory-compare-card{min-width:0;margin:0;overflow:hidden;border:1px solid rgba(232,213,183,.18);border-radius:11px;background:rgba(15,23,42,.3);}',
+      '.petslab-sensory-compare-card.is-captured{border-color:rgba(132,204,22,.38);}',
+      '.petslab-sensory-compare-frame{position:relative;aspect-ratio:16/10;overflow:hidden;background:#120d0b;}',
+      '.petslab-sensory-compare-frame img{display:block;width:100%;height:100%;object-fit:cover;}',
+      '.petslab-sensory-compare-empty{display:grid;width:100%;height:100%;place-content:center;gap:6px;color:#a89180;text-align:center;}',
+      '.petslab-sensory-compare-empty span{font-size:26px;}',
+      '.petslab-sensory-compare-empty strong{font-size:11px;}',
+      '.petslab-sensory-compare-label{position:absolute;left:7px;top:7px;padding:4px 7px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(15,23,42,.78);color:#fff;font-size:10px;font-weight:850;backdrop-filter:blur(6px);}',
+      '.petslab-sensory-compare-card figcaption{padding:8px 9px;color:#d8c3ad;font-size:10px;line-height:1.4;}',
+      '.petslab-sensory-compare-card figcaption strong,.petslab-sensory-compare-card figcaption span{display:block;}',
+      '.petslab-sensory-compare-card figcaption strong{color:#fef3e2;font-size:11px;}',
+      '.petslab-sensory-compare-complete{margin:9px 0 0;color:#a3e635;font-size:11px;font-weight:800;line-height:1.45;}',
+      '.petslab-sensory-field{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,320px);gap:14px;align-items:center;margin-top:10px;padding:11px 12px;border:1px solid rgba(232,213,183,.2);border-radius:14px;background:linear-gradient(155deg,rgba(45,32,24,.94),rgba(24,18,16,.98));}',
+      '.petslab-sensory-field-copy{min-width:0;}',
+      '.petslab-sensory-field-copy h3{margin:0;color:#fef3e2;font-size:14px;}',
+      '.petslab-sensory-field-copy p{margin:4px 0 0;color:#c9b39c;font-size:11px;line-height:1.45;}',
+      '.petslab-sensory-field-plot{min-width:0;}',
+      '.petslab-sensory-field-svg{display:block;width:100%;height:auto;max-width:320px;margin:0 auto;overflow:visible;}',
+      '.petslab-vision-field-blind{fill:rgba(148,163,184,.12);stroke:#d8c3ad;stroke-width:2;stroke-dasharray:6 4;}',
+      '.petslab-vision-field-visible{fill:rgba(56,189,248,.22);stroke:#7dd3fc;stroke-width:2;}',
+      '.petslab-vision-field-overlap{fill:rgba(251,191,36,.28);stroke:#fde68a;stroke-width:2.5;}',
+      '.petslab-vision-field-axis{stroke:#fef3e2;stroke-width:2;}',
+      '.petslab-vision-field-forward{fill:#fef3e2;stroke:#120d0b;stroke-width:1.2;}',
+      '.petslab-vision-field-headmark{fill:#211711;stroke:#fef3e2;stroke-width:2;}',
+      '.petslab-vision-field-label{fill:#fef3e2;font-size:13px;font-weight:800;}',
+      '.petslab-sensory-field-legend{display:grid;gap:6px;margin:10px 0 0;padding:0;list-style:none;}',
+      '.petslab-sensory-field-legend li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:center;color:#d8c3ad;font-size:11px;line-height:1.35;}',
+      '.petslab-sensory-field-legend strong{color:#fef3e2;}',
+      '.petslab-field-key{display:block;width:22px;height:11px;box-sizing:border-box;}',
+      '.petslab-field-key.is-visible{border:2px solid #7dd3fc;background:rgba(56,189,248,.22);}',
+      '.petslab-field-key.is-overlap{border:3px double #fde68a;background:rgba(251,191,36,.28);}',
+      '.petslab-field-key.is-blind{border:2px dashed #d8c3ad;background:rgba(148,163,184,.12);}',
+      '.petslab-field-mini{margin-top:7px;padding-top:7px;border-top:1px solid rgba(232,213,183,.14);}',
+      '.petslab-field-mini .petslab-sensory-field-svg{max-width:150px;}',
+      '.petslab-field-mini-values{display:flex;gap:3px 7px;justify-content:center;flex-wrap:wrap;margin-top:3px;color:#d8c3ad;font-size:11px;line-height:1.3;}',
+      '.petslab-sensory-fact-row{display:grid;grid-template-columns:minmax(120px,1fr) minmax(90px,auto) minmax(180px,2fr);gap:10px;align-items:baseline;}',
+      '@media (max-width:680px){.petslab-sensory-compare-head{display:block;}.petslab-sensory-compare-actions{justify-content:flex-start;margin-top:9px;}.petslab-sensory-compare-grid{grid-template-columns:1fr;}.petslab-sensory-compare-frame{aspect-ratio:16/8.8;}.petslab-sensory-field{grid-template-columns:1fr;padding:10px;}.petslab-sensory-field-plot{width:min(100%,300px);margin:0 auto;}.petslab-sensory-fact-row{grid-template-columns:minmax(100px,1fr) minmax(84px,auto);}.petslab-sensory-fact-row>[role="cell"]:last-child{grid-column:1/-1;}}',
+      '@media (max-width:420px){.petslab-sensory-compare{padding:9px;}.petslab-sensory-compare-actions{display:grid;grid-template-columns:1fr;}.petslab-sensory-compare-actions button{width:100%;}.petslab-sensory-fact-row{grid-template-columns:1fr;gap:4px;}.petslab-sensory-fact-row>[role="cell"]:last-child{grid-column:auto;}.petslab-sensory-compare-frame{aspect-ratio:16/9.5;}}',
+      '@media (forced-colors:active){.petslab-sensory-compare,.petslab-sensory-compare-card,.petslab-sensory-lock-note,.petslab-sensory-field{border:1px solid CanvasText;}.petslab-vision-field-blind{fill:none;stroke:CanvasText;stroke-dasharray:6 4;}.petslab-vision-field-visible{fill:none;stroke:Highlight;}.petslab-vision-field-overlap{fill:none;stroke:Highlight;stroke-width:4;}.petslab-vision-field-axis{stroke:CanvasText;}.petslab-vision-field-headmark,.petslab-vision-field-forward{fill:Canvas;stroke:CanvasText;}.petslab-vision-field-label{fill:CanvasText;}.petslab-field-key{background:Canvas!important;}}',
       '.petslab-stage-hud{position:absolute;z-index:4;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none;}',
       '.petslab-stage-hud--top{left:14px;right:14px;top:14px;justify-content:space-between;align-items:flex-start;}',
       '.petslab-stage-hud--bottom{left:14px;right:14px;bottom:14px;align-items:flex-end;justify-content:space-between;}',
@@ -1651,6 +1698,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // first-person scene. When reduced, the scene renders only when the
     // student actually changes something.
     var reduced = false;
+    // Comparison capture locks navigation after the first frame so human,
+    // dog and cat images share one camera position and heading. Species eye
+    // height and FOV still change because those are the variables being taught.
+    var inputLocked = false;
 
     function setStatus(next) {
       if (status === next) return;
@@ -1768,13 +1819,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         }
         // Pointer look. pan-y above keeps vertical page scroll working.
         on(renderer.domElement, 'pointerdown', function (e) {
+          if (inputLocked) return;
           S.drag = { x: e.clientX, y: e.clientY };
           if (renderer.domElement.setPointerCapture) {
             try { renderer.domElement.setPointerCapture(e.pointerId); } catch (err) {}
           }
         });
         on(renderer.domElement, 'pointermove', function (e) {
-          if (!S || !S.drag) return;
+          if (!S || !S.drag || inputLocked) return;
           api.look((e.clientX - S.drag.x) * 0.4, (e.clientY - S.drag.y) * 0.3);
           S.drag = { x: e.clientX, y: e.clientY };
           S.dirty = true;
@@ -1841,7 +1893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       // Movement is clamped inside the room so a student can't walk out
       // into the void and lose the scene.
       move: function (forward, strafe) {
-        if (!S) return;
+        if (!S || inputLocked) return;
         var sin = Math.sin(S.yaw), cos = Math.cos(S.yaw);
         var nx = S.x - (forward * sin) + (strafe * cos);
         var nz = S.z - (forward * cos) - (strafe * sin);
@@ -1863,20 +1915,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       },
 
       look: function (dYawDeg, dPitchDeg) {
-        if (!S) return;
+        if (!S || inputLocked) return;
         S.yaw -= dYawDeg * Math.PI / 180;
         S.pitch = Math.max(-Math.PI / 2.6, Math.min(Math.PI / 2.6,
           S.pitch - (dPitchDeg || 0) * Math.PI / 180));
       },
 
       resetView: function () {
-        if (!S) return;
+        if (!S || inputLocked) return;
         S.x = -1.2; S.z = 2.35; S.yaw = 0; S.pitch = -0.15;
         invalidate();
       },
 
       focusTarget: function (name) {
-        if (!S) return;
+        if (!S || inputLocked) return;
         var targets = {
           balls: { x: 0.22, y: 0.12, z: 0.38 },
           doorway: { x: -2.40, y: 0.90, z: -3.25 },
@@ -1893,7 +1945,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         invalidate();
       },
 
-      setKey: function (name, down) { if (S) S.keys[name] = !!down; },
+      setKey: function (name, down) {
+        if (!S || inputLocked) return;
+        S.keys[name] = !!down;
+      },
+
+      getPose: function () {
+        if (!S) return null;
+        return { x: S.x, z: S.z, yaw: S.yaw, pitch: S.pitch };
+      },
+
+      setPose: function (pose) {
+        if (!S || !pose) return;
+        S.x = Number(pose.x); S.z = Number(pose.z);
+        S.yaw = Number(pose.yaw); S.pitch = Number(pose.pitch);
+        invalidate();
+      },
+
+      setInputLocked: function (on) {
+        inputLocked = !!on;
+        if (!S) return;
+        S.keys = {};
+        S.drag = null;
+        S.renderer.domElement.style.cursor = inputLocked ? 'default' : '';
+      },
+
+      captureView: function (maxWidth) {
+        if (!S || !S.renderer || !S.renderer.domElement) return null;
+        try {
+          // Force a synchronous frame, then copy it through a 2D canvas so
+          // the authored CSS acuity / low-light filter is baked into the
+          // saved comparison instead of being lost by raw WebGL toDataURL().
+          S.camera.position.set(S.x, S.camera.position.y, S.z);
+          S.camera.rotation.set(0, 0, 0);
+          S.camera.rotateY(S.yaw);
+          S.camera.rotateX(S.pitch);
+          S.renderer.render(S.scene, S.camera);
+          var source = S.renderer.domElement;
+          var limit = Math.max(240, Math.min(640, Number(maxWidth) || 480));
+          var scale = Math.min(1, limit / Math.max(1, source.width));
+          var out = document.createElement('canvas');
+          out.width = Math.max(1, Math.round(source.width * scale));
+          out.height = Math.max(1, Math.round(source.height * scale));
+          var ctx2 = out.getContext('2d');
+          if (!ctx2) return null;
+          ctx2.filter = source.style.filter || 'none';
+          ctx2.drawImage(source, 0, 0, out.width, out.height);
+          return out.toDataURL('image/jpeg', 0.84);
+        } catch (e) {
+          return null;
+        }
+      },
 
       setSpecies: function (id) { speciesId = id; applySpecies(); },
       setDusk: function (on) { dusk = !!on; applySpecies(); },
@@ -2032,6 +2134,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var _sensoryStatusState = React.useState('idle');
     var sensoryStatus = _sensoryStatusState[0];
     var setSensoryStatus = _sensoryStatusState[1];
+    // Comparison frames are deliberately ephemeral local state. Storing three
+    // data URLs in project JSON would bloat saves; the scientific observations
+    // and earned badge remain persistent through the existing state channels.
+    var _sensoryCompareState = React.useState({});
+    var sensoryCaptures = _sensoryCompareState[0];
+    var setSensoryCaptures = _sensoryCompareState[1];
+    var _sensoryCompareAnchorRef = React.useRef(null);
+    var _sensoryCompareLightRef = React.useRef(null);
 
     var view = d.view || 'menu';
     var modulesVisited = d.modulesVisited || {};
@@ -2073,6 +2183,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var sensoryDusk = !!d.sensoryDusk;
     var sensoryActive = !!d.sensoryActive;
     var sensoryThreeReady = !!d._threeLoaded;
+    var sensoryCompareCount = Object.keys(sensoryCaptures || {}).length;
+    var sensoryCompareActive = sensoryCompareCount > 0;
+
+    // Clear bitmap frames when the student leaves this module. This keeps the
+    // local memory footprint bounded while preserving captures across ordinary
+    // re-renders and species switches inside the comparison workflow.
+    React.useEffect(function () {
+      if (view === 'sensory' && sensoryActive) return;
+      if (Object.keys(sensoryCaptures || {}).length) setSensoryCaptures({});
+      _sensoryCompareAnchorRef.current = null;
+      _sensoryCompareLightRef.current = null;
+    }, [view, sensoryActive]);
 
     // Mount / tear down the viewer. Keyed on what can invalidate the canvas;
     // the cleanup runs on navigation away, so leaving the view stops the RAF
@@ -2121,14 +2243,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       viewer.setSpecies(sensorySpecies);
       viewer.setDusk(sensoryDusk);
       viewer.setReducedMotion(sensoryReduceMotion);
-    }, [sensorySpecies, sensoryDusk, sensoryReduceMotion]);
+      viewer.setInputLocked(sensoryCompareActive);
+    }, [sensorySpecies, sensoryDusk, sensoryReduceMotion, sensoryCompareActive]);
 
     // Keyboard walk. Bound to the window only while the sim is on screen, and
     // only for the movement keys, so it never swallows Tab or a screen-reader
     // shortcut. Arrow keys are preventDefault-ed to stop the page scrolling
     // under the student while they turn.
     React.useEffect(function () {
-      if (view !== 'sensory' || !sensoryActive) return undefined;
+      if (view !== 'sensory' || !sensoryActive || sensoryCompareActive) return undefined;
       var MAP = {
         KeyW: 'w', ArrowUp: 'w', KeyS: 's', ArrowDown: 's',
         KeyA: 'a', KeyD: 'd', ArrowLeft: 'left', ArrowRight: 'right'
@@ -2149,7 +2272,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         window.removeEventListener('keydown', kd);
         window.removeEventListener('keyup', ku);
       };
-    }, [view, sensoryActive]);
+    }, [view, sensoryActive, sensoryCompareActive]);
 
     // ESC dismisses the Toxic Foods Sleuth modal (keyboard accessibility).
     // Hoisted here from renderNutrition(): that helper only runs on the
@@ -5740,12 +5863,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         function xForYear(year) {
           return x0 + (Math.max(0, Math.min(costYears, year)) / costYears) * usable;
         }
-        var setupYears = spans.map(function(span) { return span.start; });
+        var setupMoments = spans.map(function(span) {
+          return span.start === 0 ? 'at adoption' : 'after ' + span.start + ' years';
+        });
         var timelineLabel = costYears + '-year commitment timeline for ' + p.name + '. ' +
           (multiGen
-            ? 'This span covers about ' + costAnimals + ' successive animals, with a new first-year setup at years ' + setupYears.join(', ') + '.'
+            ? 'This span covers about ' + costAnimals + ' successive animals, with a new first-year setup ' + setupMoments.join(', ') + '.'
             : 'This span stays within one typical animal lifespan.') +
-          ' The selected plan ends at year ' + costYears + '.';
+          ' The selected plan ends after ' + costYears + ' years.';
         return h('div', { className: 'petslab-cost-burden' },
           h('div', { className: 'petslab-cost-burden-heading' },
             h('strong', null, 'Annual cost versus the selected span'),
@@ -5822,9 +5947,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('circle', { cx: xForYear(costYears), cy: 35, r: 7, fill: '#f8fafc', stroke: '#0f172a', strokeWidth: 2 })
             ),
             h('div', { className: 'petslab-cost-timeline-labels' },
-              h('span', null, 'Year 0'),
+              h('span', null, 'Adoption / plan starts'),
               h('span', null, '~' + p.lifespan + ' yr typical lifespan'),
-              h('span', null, 'Year ' + costYears)
+              h('span', null, 'After ' + costYears + ' yr')
             ),
             h('div', { className: 'petslab-cost-timeline-key', 'aria-hidden': 'true' },
               h('span', null, '◆ First-year setup / new animal'),
@@ -6467,7 +6592,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           why: '6–10 years. Adrenal disease + insulinoma are common late-life problems; budget $300+/year for senior ferret vet bills. Banned in California and Hawaii.' },
         { id: 6, species: 'Average medium-size dog (~50 lb)', icon: '🐕', correct: 'b3',
           why: '10–14 years. Inverse size rule: small dogs (Yorkies, Chihuahuas) live 14–18; large dogs (Mastiffs, Great Danes) often 7–10. Genetics + cancer rates explain most of the gap.' },
-        { id: 7, species: 'Cockatiel', icon: '🐦', correct: 'b4',
+        // A typical 15–25-year range crosses the quiz's 20-year boundary.
+        // Both adjacent buckets are defensible, so both earn full credit;
+        // correct remains the visual anchor used by the comparison chart.
+        { id: 7, species: 'Cockatiel', icon: '🐦', correct: 'b4', accepted: ['b3', 'b4'],
           why: '15–25 years. Often surprises owners who expected 5–8 years like a finch. Cockatiels are still parrots and need parrot-level commitment + enrichment. Will outlast most childhood-to-college periods.' },
         { id: 8, species: 'Guinea pig', icon: '🐹', correct: 'b2',
           why: '5–8 years. Often kept in pairs (social animals — solo housing is welfare violation in some EU countries). Vitamin C deficiency (scurvy) is a common preventable cause of early death — same as humans, they cannot synthesize it.' },
@@ -6503,6 +6631,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
       function bucketById(bucketId) {
         return BUCKETS.filter(function(bucket) { return bucket.id === bucketId; })[0];
+      }
+      function acceptedBucketIds(item) {
+        return item.accepted && item.accepted.length ? item.accepted : [item.correct];
+      }
+      function isAcceptedBucket(item, bucketId) {
+        return acceptedBucketIds(item).indexOf(bucketId) >= 0;
+      }
+      function acceptedBucketLabel(item) {
+        var labels = acceptedBucketIds(item).map(function(id) { return bucketById(id).label; });
+        return labels.length === 1 ? labels[0] : labels.join(' or ') + ' (range crosses the boundary)';
       }
       function lifeShapeText(bucketId) {
         return ({ b1: '\u25cf', b2: '\u25a0', b3: '\u25c6', b4: '\u25b2', b5: '\u2605' })[bucketId] || '\u25cf';
@@ -6573,7 +6711,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               var bucket = bucketById(item.correct);
               var minPct = Math.max(0, Math.min(100, visual.min));
               var endPct = Math.max(0, Math.min(100, visual.max));
-              var rowLabel = item.species + ': ' + visual.label + ', in the ' + bucket.label + ' bucket, shown on a 0-to-100-year scale.';
+              var rowLabel = item.species + ': ' + visual.label + '. Accepted answer: ' + acceptedBucketLabel(item) +
+                ', shown on a 0-to-100-year scale.';
               return h('div', { key: item.id, className: 'petslab-life-compare-row', role: 'listitem' },
                 h('div', { className: 'petslab-life-compare-name' },
                   h('span', { 'aria-hidden': 'true' }, item.icon + ' '),
@@ -6617,7 +6756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       function pickLs(bId) {
         if (lsAns) return;
         var v = V[lsIdx];
-        var correct = bId === v.correct;
+        var correct = isAcceptedBucket(v, bId);
         var newScore = lsScore + (correct ? 1 : 0);
         var newStreak = correct ? (lsStreak + 1) : 0;
         var newBest = Math.max(lsBest, newStreak);
@@ -6635,7 +6774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, '⏳ 10 species/breeds — pick the typical lifespan range'),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'For each species, pick the lifespan bucket from 5 options (under 3 yrs through 50+ yrs). Coaching after each pick names what makes this species fall in that range and what shortens or extends typical lifespan.')
+              'For each species, pick the lifespan bucket from 5 options (under 3 yrs through 50+ yrs). If a typical range crosses a bucket boundary, either adjacent answer earns credit. Coaching after each pick names what makes this species fall in that range and what shortens or extends typical lifespan.')
           ),
           h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, 'The five lifespan buckets'),
@@ -6659,13 +6798,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
 
       var v = V[lsIdx];
-      var pickedCorrect = lsAns && lsPick === v.correct;
+      var pickedCorrect = lsAns && isAcceptedBucket(v, lsPick);
       var pct = lsRounds > 0 ? Math.round((lsScore / lsRounds) * 100) : 0;
       var allDone = lsShown.length >= V.length && lsAns;
       var correctBucket = BUCKETS.filter(function(b) { return b.id === v.correct; })[0];
       var pickedBucket = lsPick ? BUCKETS.filter(function(b) { return b.id === lsPick; })[0] : null;
+      var acceptedIds = acceptedBucketIds(v);
       var correctAnswerLabel = v.id === 7
-        ? correctBucket.label + ' commitment bucket (cockatiels commonly span 15–25 years)'
+        ? '10–20 years or 20–50 years; cockatiels commonly span 15–25 years, crossing this quiz’s 20-year boundary'
         : correctBucket.label;
 
       return h('div', { className: 'petslab-life-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
@@ -6690,7 +6830,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the lifespan range' },
           BUCKETS.map(function(b) {
             var picked = lsAns && lsPick === b.id;
-            var isRight = lsAns && b.id === v.correct;
+            var isRight = lsAns && acceptedIds.indexOf(b.id) >= 0;
             var bg, border, color;
             if (lsAns) {
               if (isRight) { bg = 'rgba(132,204,22,0.18)'; border = T.ok; color = '#bbf7d0'; }
@@ -6701,7 +6841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             }
             return h('button', { key: b.id, role: 'radio',
               'aria-checked': picked ? 'true' : 'false',
-              'aria-label': b.label,
+              'aria-label': b.label + (lsAns && isRight ? ', accepted answer for ' + v.species : ''),
               disabled: lsAns,
               'data-pets-focusable': true,
               onClick: function() { pickLs(b.id); },
@@ -6725,8 +6865,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         },
           h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 6, color: pickedCorrect ? '#bef264' : '#fca5a5' } },
             pickedCorrect
-              ? '✅ Correct — ' + correctAnswerLabel
-              : '❌ The right range is ' + correctAnswerLabel + (pickedBucket ? ' (you picked ' + pickedBucket.label + ')' : '')
+              ? '✅ Accepted — ' + correctAnswerLabel
+              : '❌ Accepted answer: ' + correctAnswerLabel + (pickedBucket ? ' (you picked ' + pickedBucket.label + ')' : '')
           ),
           h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 12, lineHeight: 1.55 } }, v.why),
           allDone
@@ -7109,10 +7249,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     }
     function svgAirSac() {
       var titleText = 'Bird respiratory air sac system';
-      var descText = 'Schematic of bird respiratory anatomy: 9 air sacs, two-cycle one-way airflow through lungs. Air enters via trachea, fills posterior sacs first (cycle 1), passes through parabronchi (oxygen exchange), then to anterior sacs (cycle 2), exits via trachea. Far more efficient than mammalian tidal-flow lungs.';
-      var subtitleText = '9 air sacs · two-cycle one-way airflow · ~2× more efficient than mammals';
-      var cycleOneText = 'FIRST BREATH: fresh air → posterior sacs → lung';
-      var cycleTwoText = 'SECOND BREATH: lung → anterior sacs → out';
+      var descText = 'Simplified path of one fresh-air packet through a bird respiratory system with 9 air sacs. First inhalation: trachea to posterior sacs. First exhalation: posterior sacs through the lung parabronchi for oxygen exchange. Second inhalation: lung to anterior sacs. Second exhalation: anterior sacs out through the trachea. Airflow through the lung remains one-way.';
+      var subtitleText = '9 air sacs · one-way lung flow · one air packet crosses two breaths';
+      var cycleOneText = 'BREATH 1: inhale → posterior sacs · exhale → lung';
+      var cycleTwoText = 'BREATH 2: inhale → anterior sacs · exhale → out';
       var warningText = '⚠ This efficiency is why birds die from PTFE / smoke / aerosols in MINUTES.';
 
       function airDefs(suffix) {
@@ -7309,10 +7449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             })
           ),
           h('text', { x: 180, y: 652, fill: '#fbbf24', fontSize: 10.5, textAnchor: 'middle', fontWeight: 800 }, cycleOneText),
-          h('text', { x: 180, y: 678, fill: '#7dd3fc', fontSize: 10.5, textAnchor: 'middle', fontWeight: 800 },
-            h('tspan', { x: 180, dy: 0 }, 'CYCLE 2 (exhale): posterior → lung'),
-            h('tspan', { x: 180, dy: 15 }, '→ anterior (blue) → out')
-          ),
+          h('text', { x: 180, y: 678, fill: '#7dd3fc', fontSize: 10.5, textAnchor: 'middle', fontWeight: 800 }, cycleTwoText),
           h('text', { x: 180, y: 744, fill: '#fb923c', fontSize: 10.5, textAnchor: 'middle', fontWeight: 850 },
             h('tspan', { x: 180, dy: 0 }, '⚠ This efficiency is why birds die from'),
             h('tspan', { x: 180, dy: 15 }, 'PTFE / smoke / aerosols in MINUTES.')
@@ -7561,45 +7698,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('text', {
             x: narrow ? 170 : 89, y: narrow ? 118 : 125,
             textAnchor: narrow ? 'end' : 'middle',
-            fill: '#e4cfb8', fontSize: 10, fontWeight: 900, letterSpacing: 1.1
+            fill: '#e4cfb8', fontSize: narrow ? 16 : 10, fontWeight: 900, letterSpacing: 1.1
           }, states.filter(function(s) { return s.id === poseId; })[0].posture)
         );
       }
 
       function ethogramCard(cfg, x, y, width, height, narrow, suffix) {
-        var drawX = narrow ? x + 82 : x + 13;
-        var drawY = narrow ? y + 42 : y + 50;
-        var cueX = narrow ? x + 18 : x + 166;
-        var cueY = narrow ? y + 149 : y + 70;
-        var cueStep = narrow ? 14 : 18;
+        var drawX = narrow ? x + 92 : x + 13;
+        var drawY = narrow ? y + 41 : y + 50;
+        var cueX = narrow ? x + 16 : x + 166;
+        var cueY = narrow ? y + 151 : y + 70;
+        var cueStep = narrow ? 18 : 18;
+        var narrowActions = {
+          relaxed: ['Safe to greet →', 'ask the handler first'],
+          alert: ['Pause + assess;', 'do NOT approach'],
+          fearful: ['Give space — do NOT', 'push interaction'],
+          warning: ['A bite may be next;', 'slowly create distance']
+        };
         return h('g', { key: cfg.id },
           h('rect', { x: x, y: y, width: width, height: height, rx: 13, fill: 'url(#pets-ethogram-' + cfg.id + suffix + ')', stroke: cfg.color, strokeWidth: 2 }),
           h('rect', { x: x + 10, y: y + 9, width: 32, height: 24, rx: 12, fill: '#181210', stroke: cfg.color, strokeWidth: 2 }),
           h('text', { x: x + 26, y: y + 26, textAnchor: 'middle', fill: '#fff8e7', fontSize: 12, fontWeight: 950 }, cfg.number),
-          h('text', { x: x + 50, y: y + 26, fill: cfg.color, fontSize: narrow ? 12.5 : 13.5, fontWeight: 900 }, cfg.title),
-          drawEthogramDog(cfg.id, drawX, drawY, narrow ? 1 : 0.78, narrow),
+          h('text', { x: x + 50, y: y + 26, fill: cfg.color, fontSize: narrow ? 13.5 : 13.5, fontWeight: 900 }, cfg.title),
+          drawEthogramDog(cfg.id, drawX, drawY, narrow ? 0.7 : 0.78, narrow),
           cfg.cues.map(function(cue, i) {
-            return h('text', { key: 'cue-' + i, x: cueX, y: cueY + i * cueStep, fill: '#fff3e2', fontSize: narrow ? 11.5 : 11.8, fontWeight: i === 0 ? 750 : 600 }, cue);
+            return h('text', { key: 'cue-' + i, x: cueX, y: cueY + i * cueStep, fill: '#fff3e2', fontSize: narrow ? 14 : 11.8, fontWeight: i === 0 ? 750 : 600 }, cue);
           }),
           h('line', {
-            x1: narrow ? x + 18 : x + 166,
-            y1: narrow ? y + height - 24 : y + height - 31,
-            x2: x + width - 18,
-            y2: narrow ? y + height - 24 : y + height - 31,
+            x1: narrow ? x + 16 : x + 166,
+            y1: narrow ? y + height - 51 : y + height - 31,
+            x2: x + width - 16,
+            y2: narrow ? y + height - 51 : y + height - 31,
             stroke: cfg.color, strokeWidth: 1, strokeDasharray: '3 4', opacity: 0.62
           }),
-          h('text', {
-            x: narrow ? x + 18 : x + 166, y: narrow ? y + height - 7 : y + height - 13,
-            fill: cfg.id === 'warning' ? cfg.color : '#c8b4a2', fontSize: narrow ? 10 : 10.8,
-            fontStyle: 'italic', fontWeight: cfg.id === 'warning' ? 750 : 500
-          }, cfg.action)
+          narrow
+            ? h('text', {
+                x: x + 16, y: y + height - 31, fill: cfg.id === 'warning' ? cfg.color : '#c8b4a2',
+                fontSize: 13.5, fontStyle: 'italic', fontWeight: cfg.id === 'warning' ? 750 : 500
+              }, narrowActions[cfg.id].map(function(line, lineIndex) {
+                return h('tspan', { key: 'action-' + lineIndex, x: x + 16, dy: lineIndex ? 17 : 0 }, line);
+              }))
+            : h('text', {
+                x: x + 166, y: y + height - 13, fill: cfg.id === 'warning' ? cfg.color : '#c8b4a2',
+                fontSize: 10.8, fontStyle: 'italic', fontWeight: cfg.id === 'warning' ? 750 : 500
+              }, cfg.action)
         );
       }
 
       function ethogramSvg(narrow) {
         var suffix = narrow ? '-narrow' : '-wide';
-        var W = narrow ? 360 : 840;
-        var H = narrow ? 1080 : 570;
+        var W = narrow ? 320 : 840;
+        var H = narrow ? 1350 : 570;
         var titleId = narrow ? 'svg-ethogram-mobile-title' : 'svg-ethogram-title';
         var descId = narrow ? 'svg-ethogram-mobile-desc' : 'svg-ethogram-desc';
         return h('svg', {
@@ -7614,13 +7763,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           ethogramDefs(suffix),
           h('rect', { x: 0, y: 0, width: W, height: H, rx: 12, fill: '#181210' }),
           h('text', { x: W / 2, y: 27, fill: '#fef3e2', fontSize: narrow ? 17 : 18, textAnchor: 'middle', fontWeight: 850 }, '🐕 Dog body language ethogram'),
-          h('text', { x: W / 2, y: 48, fill: '#c8b4a2', fontSize: narrow ? 11 : 13, textAnchor: 'middle' }, 'Read the WHOLE body, not just the tail'),
+          h('text', { x: W / 2, y: 48, fill: '#c8b4a2', fontSize: narrow ? 13.5 : 13, textAnchor: 'middle' }, 'Read the WHOLE body, not just the tail'),
           narrow
             ? h('g', null,
-                ethogramCard(states[0], 12, 62, 336, 240, true, suffix),
-                ethogramCard(states[1], 12, 315, 336, 240, true, suffix),
-                ethogramCard(states[2], 12, 568, 336, 240, true, suffix),
-                ethogramCard(states[3], 12, 821, 336, 240, true, suffix)
+                ethogramCard(states[0], 10, 64, 300, 300, true, suffix),
+                ethogramCard(states[1], 10, 376, 300, 300, true, suffix),
+                ethogramCard(states[2], 10, 688, 300, 300, true, suffix),
+                ethogramCard(states[3], 10, 1000, 300, 300, true, suffix)
               )
             : h('g', null,
                 ethogramCard(states[0], 15, 62, 400, 225, false, suffix),
@@ -7628,7 +7777,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 ethogramCard(states[2], 15, 300, 400, 225, false, suffix),
                 ethogramCard(states[3], 425, 300, 400, 225, false, suffix)
               ),
-          h('text', { x: W / 2, y: narrow ? 1072 : 555, fill: '#c8b4a2', fontSize: narrow ? 10.5 : 11.5, textAnchor: 'middle' }, 'Tail wagging means AROUSAL — context (rest of body) tells you which kind.')
+          narrow
+            ? h('text', { x: W / 2, y: 1317, fill: '#c8b4a2', fontSize: 13.5, textAnchor: 'middle' },
+                h('tspan', { x: W / 2, dy: 0 }, 'Tail wagging means AROUSAL.'),
+                h('tspan', { x: W / 2, dy: 17 }, 'Read the rest of the body for context.')
+              )
+            : h('text', { x: W / 2, y: 555, fill: '#c8b4a2', fontSize: 11.5, textAnchor: 'middle' }, 'Tail wagging means AROUSAL — context tells you which kind.')
         );
       }
 
@@ -9134,7 +9288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       function padBtn(label, aria, onDown) {
         return h('button', {
           key: aria, className: 'petslab-sim-button', 'data-pets-focusable': true, 'aria-label': aria,
-          disabled: sensoryStatus !== 'ready',
+          disabled: sensoryStatus !== 'ready' || sensoryCompareActive,
           onPointerDown: function () { onDown(true); },
           onPointerUp: function () { onDown(false); },
           onPointerLeave: function () { onDown(false); },
@@ -9143,7 +9297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           style: {
             width: 44, height: 40, borderRadius: 8, border: '1px solid ' + T.border,
             background: T.card, color: T.text, fontSize: 15, fontWeight: 800,
-            cursor: sensoryStatus === 'ready' ? 'pointer' : 'not-allowed', opacity: sensoryStatus === 'ready' ? 1 : 0.48
+            cursor: sensoryStatus === 'ready' && !sensoryCompareActive ? 'pointer' : 'not-allowed', opacity: sensoryStatus === 'ready' && !sensoryCompareActive ? 1 : 0.48
           }
         }, label);
       }
@@ -9152,6 +9306,259 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var v = _sensoryViewerRef.current;
           if (v) v.setKey(name, down);
         };
+      }
+
+      // A 360-degree top-down map carries the part of the field-of-view
+      // lesson that a flat perspective camera cannot show. It is deliberately
+      // pure SVG: the live map and three comparison minis add no WebGL context,
+      // canvas, animation loop, or state.
+      function renderVisionFieldCompass(s, compact) {
+        var blindDeg = 360 - s.totalFieldDeg;
+        var cx = compact ? 75 : 150;
+        var cy = compact ? 43 : 87;
+        var radius = compact ? 35 : 70;
+        var headRadius = compact ? 5 : 10;
+        var viewBox = compact ? '0 0 150 86' : '0 0 300 178';
+        var sizeName = compact ? 'comparison' : 'live';
+        var idBase = 'petslab-vision-field-' + s.id + '-' + sizeName;
+        function point(angleDeg, r) {
+          var angle = (angleDeg - 90) * Math.PI / 180;
+          return {
+            x: (cx + Math.cos(angle) * r).toFixed(2),
+            y: (cy + Math.sin(angle) * r).toFixed(2)
+          };
+        }
+        function sectorPath(degrees, r) {
+          var start = point(-degrees / 2, r);
+          var end = point(degrees / 2, r);
+          return 'M ' + cx + ' ' + cy + ' L ' + start.x + ' ' + start.y +
+            ' A ' + r + ' ' + r + ' 0 ' + (degrees > 180 ? 1 : 0) +
+            ' 1 ' + end.x + ' ' + end.y + ' Z';
+        }
+        var description = s.name + ' can see ' + s.totalFieldDeg +
+          ' degrees around the head without turning. Both eyes overlap across ' +
+          s.binocularDeg + ' degrees, the strongest depth-judging zone. The remaining ' +
+          blindDeg + ' degrees form the rear blind zone. The arrow marks forward.';
+        var diagram = h('svg', {
+          className: 'petslab-sensory-field-svg',
+          viewBox: viewBox,
+          role: 'img',
+          focusable: 'false',
+          'aria-labelledby': idBase + '-title ' + idBase + '-desc',
+          'data-vision-field': s.id,
+          'data-compass-size': sizeName,
+          'data-total-field': s.totalFieldDeg,
+          'data-binocular-field': s.binocularDeg,
+          'data-blind-field': blindDeg
+        },
+          h('title', { id: idBase + '-title' },
+            s.name + ' ' + (compact ? 'comparison ' : '') + '360-degree vision field compass'),
+          h('desc', { id: idBase + '-desc' }, description),
+          h('circle', {
+            className: 'petslab-vision-field-blind',
+            cx: cx, cy: cy, r: radius,
+            'data-field-kind': 'rear-blind',
+            'data-degrees': blindDeg
+          }),
+          h('path', {
+            className: 'petslab-vision-field-visible',
+            d: sectorPath(s.totalFieldDeg, radius),
+            'data-field-kind': 'visible',
+            'data-degrees': s.totalFieldDeg
+          }),
+          h('path', {
+            className: 'petslab-vision-field-overlap',
+            d: sectorPath(s.binocularDeg, radius * 0.72),
+            'data-field-kind': 'binocular-overlap',
+            'data-degrees': s.binocularDeg
+          }),
+          h('line', {
+            className: 'petslab-vision-field-axis',
+            x1: cx, y1: cy - headRadius - 2,
+            x2: cx, y2: compact ? 8 : 16
+          }),
+          h('path', {
+            className: 'petslab-vision-field-forward',
+            d: 'M ' + cx + ' ' + (compact ? 3 : 7) + ' L ' + (cx - 6) + ' ' +
+              (compact ? 12 : 17) + ' L ' + (cx + 6) + ' ' + (compact ? 12 : 17) + ' Z'
+          }),
+          h('circle', {
+            className: 'petslab-vision-field-headmark',
+            cx: cx, cy: cy, r: headRadius
+          }),
+          !compact && h('text', {
+            className: 'petslab-vision-field-label',
+            x: cx + 12, y: 18
+          }, 'Forward'),
+          !compact && h('text', {
+            className: 'petslab-vision-field-label',
+            x: cx, y: 174, textAnchor: 'middle'
+          }, 'Rear blind zone ' + blindDeg + '\u00b0')
+        );
+        if (compact) {
+          return h('div', { className: 'petslab-field-mini' },
+            diagram,
+            h('div', { className: 'petslab-field-mini-values', 'aria-hidden': 'true' },
+              h('span', null, '\u2191 Forward'),
+              h('span', null, 'Visible ' + s.totalFieldDeg + '\u00b0'),
+              h('span', null, 'Both eyes ' + s.binocularDeg + '\u00b0'),
+              h('span', null, 'Blind ' + blindDeg + '\u00b0')
+            )
+          );
+        }
+        return h('section', {
+          className: 'petslab-sensory-field',
+          'aria-label': s.name + ' full 360-degree vision field'
+        },
+          h('div', { className: 'petslab-sensory-field-copy' },
+            h('h3', null, 'What the flat screen cannot show'),
+            h('p', null, 'The 3D camera uses a ' + s.renderFov +
+              '\u00b0 display angle. This compass maps the documented ' +
+              s.totalFieldDeg + '\u00b0 horizontal field around the head.'),
+            h('ul', { className: 'petslab-sensory-field-legend' },
+              h('li', null,
+                h('span', { className: 'petslab-field-key is-visible', 'aria-hidden': 'true' }),
+                h('span', null, h('strong', null, 'Visible field \u2014 ' +
+                  s.totalFieldDeg + '\u00b0'), ' without turning the head')),
+              h('li', null,
+                h('span', { className: 'petslab-field-key is-overlap', 'aria-hidden': 'true' }),
+                h('span', null, h('strong', null, 'Both eyes / depth zone \u2014 ' +
+                  s.binocularDeg + '\u00b0'), ' of binocular overlap')),
+              h('li', null,
+                h('span', { className: 'petslab-field-key is-blind', 'aria-hidden': 'true' }),
+                h('span', null, h('strong', null, 'Rear blind zone \u2014 ' +
+                  blindDeg + '\u00b0'), ' outside the current field'))
+            )
+          ),
+          h('div', { className: 'petslab-sensory-field-plot' }, diagram)
+        );
+      }
+
+      function clearSensoryComparison(announce) {
+        setSensoryCaptures({});
+        _sensoryCompareAnchorRef.current = null;
+        _sensoryCompareLightRef.current = null;
+        var viewer = _sensoryViewerRef.current;
+        if (viewer) viewer.setInputLocked(false);
+        if (announce !== false) petsAnnounce('Comparison cleared. You can move and choose a new angle.');
+      }
+
+      function captureSensoryView() {
+        var viewer = _sensoryViewerRef.current;
+        if (!viewer || sensoryStatus !== 'ready') {
+          petsAnnounce('The 3D room must be ready before a comparison frame can be captured.');
+          return;
+        }
+        var first = !sensoryCompareActive;
+        if (first) {
+          _sensoryCompareAnchorRef.current = viewer.getPose();
+          _sensoryCompareLightRef.current = sensoryDusk;
+        } else {
+          viewer.setPose(_sensoryCompareAnchorRef.current);
+          viewer.setDusk(!!_sensoryCompareLightRef.current);
+        }
+        viewer.setInputLocked(true);
+        var src = viewer.captureView(520);
+        if (!src) {
+          if (first) clearSensoryComparison(false);
+          petsAnnounce('This browser could not capture the comparison frame.');
+          return;
+        }
+        var current = _petsSensorySpecies(sensorySpecies);
+        var snapshot = {
+          src: src,
+          species: current.id,
+          name: current.name,
+          dusk: !!_sensoryCompareLightRef.current,
+          eyeHeight: current.eyeHeight,
+          acuity: current.acuity,
+          totalFieldDeg: current.totalFieldDeg,
+          dichromat: current.dichromat
+        };
+        setSensoryCaptures(function (prev) {
+          var next = Object.assign({}, prev || {});
+          next[current.id] = snapshot;
+          return next;
+        });
+        markSeen(current.id);
+        var nextCount = sensoryCompareCount + (sensoryCaptures[current.id] ? 0 : 1);
+        petsAnnounce(current.name + ' comparison frame captured. ' + nextCount + ' of 3 viewpoints saved.');
+      }
+
+      function renderSensoryComparison() {
+        var complete = sensoryCompareCount === SENSORY_SPECIES.length;
+        var currentSaved = !!sensoryCaptures[sensorySpecies];
+        return h('section', {
+          className: 'petslab-sensory-compare',
+          role: 'region',
+          'aria-label': 'Locked viewpoint comparison for human, dog, and cat vision'
+        },
+          h('div', { className: 'petslab-sensory-compare-head' },
+            h('div', null,
+              h('h3', null, 'Compare one place, three visual systems'),
+              h('p', null, sensoryCompareActive
+                ? 'Angle locked to the first frame. Switch species above, then capture the same view.'
+                : 'Aim at something useful, then capture a frame. The first frame locks the comparison angle.')
+            ),
+            h('div', { className: 'petslab-sensory-compare-actions' },
+              h('button', {
+                className: 'petslab-sim-button petslab-sensory-capture',
+                'data-pets-focusable': true,
+                disabled: sensoryStatus !== 'ready',
+                onClick: captureSensoryView,
+                'aria-label': (currentSaved ? 'Replace ' : 'Capture ') + sp.name + ' comparison frame',
+                style: btnPrimary({ padding: '8px 13px', fontSize: 12, opacity: sensoryStatus === 'ready' ? 1 : 0.48 })
+              }, currentSaved ? '↻ Replace ' + sp.name : '📸 Capture ' + sp.name),
+              sensoryCompareActive && h('button', {
+                className: 'petslab-sim-button petslab-sensory-clear',
+                'data-pets-focusable': true,
+                onClick: function () { clearSensoryComparison(true); },
+                style: btn({ padding: '8px 13px', fontSize: 12 })
+              }, 'Clear comparison')
+            )
+          ),
+          sensoryCompareActive && h('div', {
+            className: 'petslab-sensory-lock-note',
+            role: 'status'
+          }, '🔒 Position, heading, and lighting are locked. Eye height and field of view still change by species.'),
+          h('div', { className: 'petslab-sensory-compare-grid' },
+            SENSORY_SPECIES.map(function (s) {
+              var snap = sensoryCaptures[s.id] || null;
+              var light = snap && snap.dusk ? 'Dusk' : 'Daylight';
+              var colour = s.dichromat ? 'blue / yellow colour' : 'full colour';
+              var alt = snap
+                ? s.name + ' comparison frame. ' + light + ', eye height ' + s.eyeHeight.toFixed(2) +
+                  ' metres, acuity ' + s.acuity + ', ' + colour + '. Illustrative approximation.'
+                : s.name + ' comparison frame not captured yet.';
+              return h('figure', {
+                key: s.id,
+                className: 'petslab-sensory-compare-card' + (snap ? ' is-captured' : ''),
+                'data-species': s.id
+              },
+                h('div', { className: 'petslab-sensory-compare-frame' },
+                  snap
+                    ? h('img', { src: snap.src, alt: alt })
+                    : h('div', {
+                        className: 'petslab-sensory-compare-empty',
+                        role: 'img',
+                        'aria-label': alt
+                      },
+                        h('span', { 'aria-hidden': 'true' }, s.icon),
+                        h('strong', null, 'Frame not captured')
+                      ),
+                  h('span', { className: 'petslab-sensory-compare-label' }, (snap ? '✓ ' : '') + s.name)
+                ),
+                h('figcaption', null,
+                  h('strong', null, 'Eye ' + s.eyeHeight.toFixed(2) + ' m · ' + s.acuity),
+                  h('span', null, s.totalFieldDeg + '° total field · ' + colour),
+                  renderVisionFieldCompass(s, true)
+                )
+              );
+            })
+          ),
+          complete && h('p', { className: 'petslab-sensory-compare-complete', role: 'status' },
+            '✓ Comparison complete: scan the balls, doorway, person, and room edges across all three frames.')
+        );
       }
 
       var seenCount = Object.keys(sensorySeen).length;
@@ -9250,11 +9657,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 h('span', { className: 'petslab-hud-chip' }, sp.icon + ' ', h('strong', null, sp.name + ' view')),
                 h('span', { className: 'petslab-hud-chip' }, 'Eye line ', h('strong', null, sp.eyeHeight.toFixed(2) + ' m')),
                 h('span', { className: 'petslab-hud-chip' }, 'View ', h('strong', null, sp.totalFieldDeg + '\u00b0')),
-                h('span', { className: 'petslab-hud-chip' }, sensoryDusk ? '\uD83C\uDF19 Dusk optics' : '\u2600\uFE0F Daylight optics')
+                h('span', { className: 'petslab-hud-chip' }, sensoryDusk ? '\uD83C\uDF19 Dusk optics' : '\u2600\uFE0F Daylight optics'),
+                sensoryCompareActive && h('span', { className: 'petslab-hud-chip' }, '\uD83D\uDD12 ', h('strong', null, 'Comparison angle'))
               ),
               h('div', { className: 'petslab-hud-objective' },
                 h('strong', { style: { display: 'block', color: '#fbbf24', marginBottom: 2 } }, 'SCIENCE MISSION'),
-                sensorySpecies === 'human' ? 'Find the red and blue balls. Then switch species without moving.'
+                sensoryCompareActive ? 'Switch species and capture each frame. The camera angle is locked for a fair comparison.'
+                  : sensorySpecies === 'human' ? 'Find the red and blue balls. Then switch species without moving.'
                   : sensorySpecies === 'dog' ? 'Compare the two balls and follow the scent motes back to their sources.'
                   : 'Notice the lower eye line. Look up at the person, then test dusk.'
               )
@@ -9265,6 +9674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               sensorySpecies === 'dog' && h('span', { className: 'petslab-hud-chip' }, '\uD83D\uDC43 ', h('strong', null, 'Scent field visible'))
             )
           ),
+          renderVisionFieldCompass(sp, false),
           sensoryStatus === 'failed' && h('div', { style: { fontSize: 12, color: T.warm, marginTop: 8 } },
             '⚠ This device could not open a WebGL canvas. The comparison below still carries the lesson.'),
           // Controls
@@ -9285,31 +9695,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               ].map(function(target) {
                 return h('button', {
                   key: target.id, className: 'petslab-sim-button', 'data-pets-focusable': true,
-                  disabled: sensoryStatus !== 'ready',
+                  disabled: sensoryStatus !== 'ready' || sensoryCompareActive,
                   onClick: function () {
                     var viewer = _sensoryViewerRef.current;
-                    if (!viewer || sensoryStatus !== 'ready') return;
+                    if (!viewer || sensoryStatus !== 'ready' || sensoryCompareActive) return;
                     viewer.focusTarget(target.id);
                     petsAnnounce('View centered on ' + target.id + '.');
                   },
-                  style: btn({ padding: '7px 10px', fontSize: 11, opacity: sensoryStatus === 'ready' ? 1 : 0.48 })
+                  style: btn({ padding: '7px 10px', fontSize: 11, opacity: sensoryStatus === 'ready' && !sensoryCompareActive ? 1 : 0.48 })
                 }, target.label);
               }),
               h('button', {
                 className: 'petslab-sim-button', 'data-pets-focusable': true,
-                disabled: sensoryStatus !== 'ready',
+                disabled: sensoryStatus !== 'ready' || sensoryCompareActive,
                 onClick: function () {
                   var viewer = _sensoryViewerRef.current;
-                  if (!viewer || sensoryStatus !== 'ready') return;
+                  if (!viewer || sensoryStatus !== 'ready' || sensoryCompareActive) return;
                   viewer.resetView();
                   petsAnnounce('View reset to the room entrance.');
                 },
-                style: btn({ padding: '7px 10px', fontSize: 11, opacity: sensoryStatus === 'ready' ? 1 : 0.48 })
+                style: btn({ padding: '7px 10px', fontSize: 11, opacity: sensoryStatus === 'ready' && !sensoryCompareActive ? 1 : 0.48 })
               }, '\u21BA Reset')
             ),
             h('button', { className: 'petslab-sim-button', 'data-pets-focusable': true, onClick: toggleDusk,
+              disabled: sensoryCompareActive,
+              'aria-label': sensoryCompareActive ? 'Lighting locked while comparison frames are saved' : (sensoryDusk ? 'Switch to daylight' : 'Switch to dusk'),
               'aria-pressed': sensoryDusk ? 'true' : 'false',
-              style: btn({ padding: '8px 14px', fontSize: 13 }) },
+              style: btn({ padding: '8px 14px', fontSize: 13, opacity: sensoryCompareActive ? 0.48 : 1 }) },
               sensoryDusk ? '🌙 Dusk — on' : '☀️ Daylight'),
             h('button', { className: 'petslab-sim-button', 'data-pets-focusable': true,
               'aria-pressed': sensoryReduceMotion ? 'true' : 'false',
@@ -9323,11 +9735,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               style: btn({ padding: '8px 14px', fontSize: 13 }) },
               sensoryReduceMotion ? '🧊 Motion reduced' : '🌀 Motion on'),
             h('button', { className: 'petslab-sim-button', 'data-pets-focusable': true,
-              onClick: function () { upd('sensoryActive', false); petsAnnounce('Left the room.'); },
+              onClick: function () { clearSensoryComparison(false); upd('sensoryActive', false); petsAnnounce('Left the room.'); },
               style: btn({ padding: '8px 14px', fontSize: 13 }) }, '⏹ Leave the room'),
             h('span', { style: { fontSize: 11, color: T.dim } },
               'Arrow keys or W A S D to move · drag the view to look around')
           ),
+          renderSensoryComparison(),
           sensorySpecies === 'dog' && h('div', { style: { marginTop: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.45)' } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, '👃 Scent layer on'),
             h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.6 } },
@@ -9342,8 +9755,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('p', { style: { margin: '0 0 10px', fontSize: 13, color: T.muted, lineHeight: 1.6 } }, sp.note),
           h('div', { role: 'table', 'aria-label': sp.name + ' sensory measurements' },
             factRows.map(function (r, i) {
-              return h('div', { key: i, role: 'row',
-                style: { display: 'grid', gridTemplateColumns: 'minmax(120px,1fr) minmax(90px,auto) minmax(180px,2fr)', gap: 10, padding: '8px 0', borderTop: i ? '1px solid ' + T.border : 'none', alignItems: 'baseline' } },
+              return h('div', { key: i, role: 'row', className: 'petslab-sensory-fact-row',
+                style: { padding: '8px 0', borderTop: i ? '1px solid ' + T.border : 'none' } },
                 h('div', { role: 'cell', style: { fontSize: 12, fontWeight: 700, color: T.text } }, r.l),
                 h('div', { role: 'cell', style: { fontSize: 13, fontWeight: 800, color: sp.accent, fontFamily: 'monospace' } }, r.v),
                 h('div', { role: 'cell', style: { fontSize: 11, color: T.dim, lineHeight: 1.5 } }, r.why)

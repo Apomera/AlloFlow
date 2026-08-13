@@ -12,12 +12,15 @@ beforeEach(() => {
 });
 
 describe('Ecosystem logistic predator-prey model', () => {
-  it('uses the signed logistic term and permits zero-abundance outcomes', () => {
+  it('uses the signed logistic derivative, RK4 integration, and permits zero-abundance outcomes', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_ecosystem.js', 'utf8');
-    expect(source).toContain('var logisticFactor = 1 - prey / K;');
-    expect(source).toContain('var newPrey = prey + SIM_TIME_STEP * (preyBirth * prey * logisticFactor - preyDeath * prey * pred);');
-    expect(source).toContain('var newPred = pred + SIM_TIME_STEP * (predBirth * prey * pred - predDeath * pred);');
+    expect(source).toContain('prey: params.preyBirth * prey * (1 - prey / K) - params.preyDeath * prey * pred');
+    expect(source).toContain('pred: params.predBirth * prey * pred - params.predDeath * pred');
+    expect(source).toContain('function ecoRK4Step(prey, pred, params, timeStep)');
+    expect(source).toContain('var ECO_MODEL_SUBSTEPS = 4;');
+    expect(source).toContain('return { prey: Math.max(0, nextPrey), pred: Math.max(0, nextPred), invalid: false };');
     expect(source).not.toContain('Math.max(0, 1 - prey / K)');
+    expect(source).not.toContain('Math.min(500');
     expect(source).not.toContain('Math.max(1, prey + preyBirth');
   });
 
@@ -26,14 +29,17 @@ describe('Ecosystem logistic predator-prey model', () => {
     expect(html).toContain('Prey intrinsic growth (r)');
     expect(html).toContain('Predation coefficient (a)');
     expect(html).toContain('Predator conversion (b)');
-    expect(html).toContain('Euler updates use a 0.1 time step');
+    expect(html).toContain('fourth-order Runge-Kutta updates use a 0.1 output step');
+    expect(html).toContain('Values are not silently capped');
     expect(html).toContain('separate stochastic rules');
   });
 
   it('calibrates the baseline and keeps chart and canvas capacities aligned', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_ecosystem.js', 'utf8');
     expect(source).toContain('var pred0 = d.pred0 !== undefined ? d.pred0 : 12;');
-    expect(source).toContain('var SIM_TIME_STEP = 0.1;');
+    expect(source).toContain('var ECO_MODEL_TIME_STEP = 0.1;');
+    expect(source).toContain('guided: {');
+    expect(source).toContain('pred0: { min: 4, max: 30, step: 2 }');
     expect(source).toContain('var PREY_POOL_SIZE = 200;');
     expect(source).toContain('var PRED_POOL_SIZE = 80;');
     expect(source).toContain('syncLivePopulationTargets();');
@@ -56,8 +62,8 @@ describe('Ecosystem logistic predator-prey model', () => {
       data,
       steps: 3
     });
-    expect(populationHtml).toContain('Predator and prey population trajectories over 2 modeled time steps');
-    expect(phaseHtml).toContain('Phase portrait of predator abundance versus prey abundance');
+    expect(populationHtml).toContain('Predator and prey population trajectories over 0.2 modeled time units (2 output steps)');
+    expect(phaseHtml).toContain('Phase portrait of predator abundance versus prey abundance across 0.2 modeled time units');
   });
 });
 
@@ -87,20 +93,32 @@ describe('Ecosystem content contracts', () => {
 });
 
 describe('Ecosystem scenario boundaries and accessibility', () => {
-  it('labels the inquiry classifier as conceptual and exposes table headers', () => {
+  it('runs an accessible 121-cell population-model sweep and exposes table headers', () => {
     const html = renderEcosystem({
       tab: 'inquiry',
       inquiry: {
         predBirth: 50,
         preyLife: 50,
         resScarcity: 30,
-        log: [{ pb: 50, pl: 50, rs: 30, out: 'balanced' }]
+        log: [{ pb: 40, pl: 78, rs: 149, out: 'Coexistence in transition', outcomeKey: 'coexist' }]
       }
     });
-    expect(html).toContain('arbitrary weighted classifier');
-    expect(html).toContain('not a population-dynamics model');
+    expect(html).toContain('Explore 121 runs from the same logistic predator-prey model');
+    expect(html).toContain('every cell runs the same deterministic logistic predator-prey equations');
+    expect(html).toContain('Outcome map: initial prey × initial predators');
+    expect(html).not.toContain('arbitrary weighted classifier');
     expect(html).toContain('role="status"');
+    expect((html.match(/aria-label="\d+ initial prey, \d+ initial predators,/g) || []).length).toBe(121);
     expect((html.match(/scope="col"/g) || []).length).toBe(4);
+  });
+
+  it('discloses what changes and what stays fixed across study scenarios', () => {
+    const html = renderEcosystem({ tab: 'explore' });
+    expect(html).toContain('Study scenario');
+    expect(html).toContain('Species, visuals, events, and baseline values change by scenario.');
+    expect(html).toContain('The same two-population equations remain underneath');
+    expect(html).toContain('Kelp Forest');
+    expect(html).not.toContain('Each has unique colors and ecology.');
   });
 
   it('discloses that Conservation Manager values are indices, not forecasts', () => {

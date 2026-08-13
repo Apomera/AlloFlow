@@ -187,6 +187,8 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
+      - name: Install desktop web-app dependencies
+        run: npm install --no-audit --no-fund --prefix desktop/web-app
       - name: Install Playwright chromium
         run: npx playwright install chromium
       - name: Heat and Nuclear demand-load recovery

@@ -30834,7 +30834,12 @@
     "open_stem_tool_unsupported": "STEM Lab opened. This build cannot jump straight to a named tool.",
     "open_share_collect": "Share & Collect کھولیں",
     "open_share_collect_done": "Share & Collect کھل گیا۔",
-    "open_share_collect_hint": "پول، سائن اپ، سروے اور ان کے نتائج"
+    "open_share_collect_hint": "پول، سائن اپ، سروے اور ان کے نتائج",
+    "open_it_coach": "Coach me through another website",
+    "open_it_coach_blocked": "The browser blocked the coach window. Allow pop-ups for AlloFlow and try again.",
+    "open_it_coach_done": "Screen Coach opened in a new window. Share any tab or window and it will suggest the next step. Nothing is recorded.",
+    "open_it_coach_done_learner": "Screen Coach opened in a new window. Share the website you are stuck on and it will suggest the next step. It helps you use the site; it will not answer schoolwork.",
+    "open_it_coach_hint": "Opens a coach that watches a site you share and suggests the next step — it advises, you do the clicking"
   },
   "palette": {
     "aria": "AlloFlow کمانڈ پیلیٹ",

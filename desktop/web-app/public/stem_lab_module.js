@@ -1884,7 +1884,15 @@
           '@media (prefers-reduced-motion: reduce) { .stem-lab-modal *, .stem-lab-modal *::before, .stem-lab-modal *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
           // WCAG 1.4.11: Ensure focus indicators have adequate contrast on all backgrounds
           '.stem-lab-modal [role="button"]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; }',
-          '.stem-lab-modal-shell { max-height: calc(100dvh - 16px); }',
+          // Percentage, not a viewport unit. The parent (.stem-lab-modal) is
+          // `fixed inset-0`, so 100% is exactly the box this shell must fit, in
+          // every environment. dvh/vh resolve against the DYNAMIC VIEWPORT, which
+          // a nested iframe (Gemini Canvas is one) and any transformed ancestor
+          // both report differently — and when it comes back larger than the frame
+          // the shell overflows while its own overflow:hidden clips the excess with
+          // no scrollbar, so no STEM tool can be scrolled. 16px = the m-2 margins.
+          '.stem-lab-modal-shell { max-height: calc(100% - 16px); }',
+          '.stem-lab-scroll-region { overscroll-behavior: contain; scrollbar-gutter: stable; }',
           '.stem-lab-topbar { gap: 16px; }',
           '.stem-lab-brand-block, .stem-lab-actionbar { min-width: 0; }',
           '.stem-lab-title-lockup { min-width: 0; }',
@@ -1912,10 +1920,12 @@
           '.stem-tool-ai-suggestion-reason { font-size: 11px; line-height: 1.35; font-weight: 700; }',
           '.stem-tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; align-items: stretch; }',
           '.stem-tool-category { grid-column: 1 / -1; }',
-          '.stem-tool-card { min-height: 148px; border-radius: 14px !important; box-shadow: 0 8px 20px rgba(15,23,42,0.06); display: flex; flex-direction: column; }',
-          '.stem-tool-card:hover { transform: translateY(-2px) !important; box-shadow: 0 16px 28px rgba(15,23,42,0.12) !important; }',
-          '.stem-tool-card h4 { line-height: 1.25; }',
-          '.stem-tool-card p { line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }',
+          '.stem-tool-card { min-height: 148px; border-radius: 14px !important; background-color: var(--stem-card-surface) !important; border-color: var(--stem-card-border) !important; border-top: 4px solid var(--stem-card-accent) !important; box-shadow: 0 8px 20px rgba(15,23,42,0.06); display: flex; flex-direction: column; }',
+          '.stem-tool-card:hover { background-color: var(--stem-card-hover) !important; border-color: var(--stem-card-accent) !important; transform: translateY(-2px) !important; box-shadow: 0 16px 28px rgba(15,23,42,0.12) !important; }',
+          '.stem-tool-card:focus-visible { outline: 3px solid var(--stem-card-focus) !important; outline-offset: 3px !important; }',
+          '.stem-tool-card-icon { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background-color: var(--stem-card-icon-bg); }',
+          '.stem-tool-card h4 { color: var(--stem-card-title) !important; line-height: 1.25; }',
+          '.stem-tool-card p { color: var(--stem-card-desc) !important; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }',
           '.stem-active-toolbar { position: sticky; top: 0; z-index: 16; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 24px; border-bottom: 1px solid rgba(148,163,184,0.24); backdrop-filter: blur(12px); }',
           '.stem-active-tool-main { display: flex; align-items: center; gap: 10px; min-width: 0; }',
           '.stem-active-tool-icon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 18px; background: rgba(99,102,241,0.10); }',
@@ -1925,8 +1935,8 @@
           '.stem-active-tool-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }',
           '.stem-active-tool-back { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(99,102,241,0.35); font-size: 12px; font-weight: 900; }',
           '.stem-active-tool-hint { font-size: 11px; white-space: nowrap; }',
-          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100vh !important; } .stem-lab-topbar { padding: 14px 14px 16px 88px !important; align-items: flex-start !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 180px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 26px !important; line-height: 1.05 !important; max-width: 176px; } .stem-lab-title-lockup p { font-size: 12.5px !important; line-height: 1.35 !important; max-width: 178px; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 4px !important; gap: 2px !important; max-width: 184px; flex-wrap: wrap; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 40px !important; width: 40px; min-width: 40px; max-width: 40px; height: 40px; min-height: 40px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span, .stem-lab-subject-select { display: none !important; } .stem-lab-tablist { padding-left: 0 !important; padding-right: 0 !important; } .stem-lab-tablist > button { flex: 1 1 0; justify-content: center; padding: 12px 8px !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
-          '@media (max-width: 640px) { .stem-lab-modal-shell { max-height: 100dvh !important; } }',
+          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100% !important; } .stem-lab-topbar { padding: 14px 14px 16px 88px !important; align-items: flex-start !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 180px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 26px !important; line-height: 1.05 !important; max-width: 176px; } .stem-lab-title-lockup p { font-size: 12.5px !important; line-height: 1.35 !important; max-width: 178px; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 4px !important; gap: 2px !important; max-width: 184px; flex-wrap: wrap; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 40px !important; width: 40px; min-width: 40px; max-width: 40px; height: 40px; min-height: 40px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span, .stem-lab-subject-select { display: none !important; } .stem-lab-tablist { padding-left: 0 !important; padding-right: 0 !important; } .stem-lab-tablist > button { flex: 1 1 0; justify-content: center; padding: 12px 8px !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
+          '@media (max-width: 640px) { .stem-lab-modal-shell { max-height: 100% !important; } .stem-lab-scroll-region { scrollbar-gutter: auto; } }',
           '@media (max-width: 430px) { .stem-lab-topbar { padding-left: 96px !important; } .stem-tool-grid { grid-template-columns: 1fr; } .stem-tool-card { min-height: auto; } }'
         ].join('\n');
         document.head.appendChild(s);
@@ -1986,6 +1996,9 @@
             '[data-stem-lab] .text-purple-800, [data-stem-lab] .text-purple-700, [data-stem-lab] .text-purple-600, [data-stem-lab] .text-violet-800, [data-stem-lab] .text-violet-700, [data-stem-lab] .text-violet-600, [data-stem-lab] .text-fuchsia-700, [data-stem-lab] .text-fuchsia-600 { color: #c4b5fd !important; }',
             '[data-stem-lab] .text-rose-800, [data-stem-lab] .text-rose-700, [data-stem-lab] .text-rose-600, [data-stem-lab] .text-pink-800, [data-stem-lab] .text-pink-700, [data-stem-lab] .text-pink-600, [data-stem-lab] .text-red-700, [data-stem-lab] .text-red-600 { color: #fca5a5 !important; }',
             '[data-stem-lab] input, [data-stem-lab] textarea, [data-stem-lab] select { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; }',
+            '[data-stem-lab] .stem-tool-card h4 { color: #f1f5f9 !important; }',
+            '[data-stem-lab] .stem-tool-card p { color: #cbd5e1 !important; }',
+            '[data-stem-lab] .stem-tool-card:focus-visible { outline: 3px solid #fbbf24 !important; outline-offset: 3px !important; }',
           ].join('\n');
         } else if (isContrast) {
           s.textContent = [
@@ -2002,6 +2015,10 @@
             '[data-stem-lab] [class~="from-white"], [data-stem-lab] [class~="from-slate-50"], [data-stem-lab] [class~="from-gray-50"], [data-stem-lab] [class~="from-amber-50"], [data-stem-lab] [class~="from-orange-50"], [data-stem-lab] [class~="from-yellow-50"], [data-stem-lab] [class~="from-blue-50"], [data-stem-lab] [class~="from-indigo-50"], [data-stem-lab] [class~="from-sky-50"], [data-stem-lab] [class~="from-cyan-50"], [data-stem-lab] [class~="from-green-50"], [data-stem-lab] [class~="from-emerald-50"], [data-stem-lab] [class~="from-teal-50"], [data-stem-lab] [class~="from-lime-50"], [data-stem-lab] [class~="from-purple-50"], [data-stem-lab] [class~="from-violet-50"], [data-stem-lab] [class~="from-fuchsia-50"], [data-stem-lab] [class~="from-pink-50"], [data-stem-lab] [class~="from-rose-50"] { background-image: none !important; background-color: #000000 !important; border: 2px solid #fbbf24 !important; }',
             '[data-stem-lab] input, [data-stem-lab] textarea, [data-stem-lab] select { background-color: #000000 !important; color: #ffffff !important; border: 2px solid #fbbf24 !important; }',
             '[data-stem-lab] button { border: 1px solid #fbbf24 !important; }',
+            '[data-stem-lab] .stem-tool-card { background-color: #000000 !important; border: 2px solid #fbbf24 !important; border-top-width: 4px !important; }',
+            '[data-stem-lab] .stem-tool-card h4 { color: #fbbf24 !important; }',
+            '[data-stem-lab] .stem-tool-card p { color: #ffffff !important; }',
+            '[data-stem-lab] .stem-tool-card:focus-visible { outline: 3px solid #fbbf24 !important; outline-offset: 3px !important; }',
           ].join('\n');
         }
         document.head.appendChild(s);
@@ -2209,7 +2226,8 @@
         _setStemToolSearch('');
         upd('_categoryFilter', '');
         setTimeout(function() {
-          var contentArea = document.querySelector('.stem-lab-modal .overflow-y-auto');
+          var root = _stemDialogRef.current;
+          var contentArea = root ? root.querySelector('[data-stem-scroll-region]') : null;
           if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
         }, 50);
         if (typeof announceToSR === 'function') announceToSR('Opening ' + (label || _formatStemToolId(id)));
@@ -2586,27 +2604,19 @@
       // Active station helper
       var _activeStation = _activeStationId ? _savedStations.find(function(s) { return s.id === _activeStationId; }) : null;
 
-      // ── Color Map (explicit classes for Tailwind JIT compatibility) ──
+      // -- Catalog accent palette --
+      // Card surfaces and text stay neutral; these eight accents identify subject
+      // families through the top edge, icon badge, and hover tint. High contrast
+      // intentionally collapses every accent to amber on black.
       var _toolColorMap = {
-        emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', hoverBorder: 'hover:border-emerald-400', title: 'text-emerald-800', desc: 'text-emerald-700' },
-        blue: { bg: 'bg-blue-50', border: 'border-blue-200', hoverBorder: 'hover:border-blue-400', title: 'text-blue-800', desc: 'text-blue-600' },
-        amber: { bg: 'bg-amber-50', border: 'border-amber-200', hoverBorder: 'hover:border-amber-400', title: 'text-amber-800', desc: 'text-amber-700' },
-        rose: { bg: 'bg-rose-50', border: 'border-rose-200', hoverBorder: 'hover:border-rose-400', title: 'text-rose-800', desc: 'text-rose-700' },
-        orange: { bg: 'bg-orange-50', border: 'border-orange-200', hoverBorder: 'hover:border-orange-400', title: 'text-orange-800', desc: 'text-orange-700' },
-        cyan: { bg: 'bg-cyan-50', border: 'border-cyan-200', hoverBorder: 'hover:border-cyan-400', title: 'text-cyan-800', desc: 'text-cyan-700' },
-        purple: { bg: 'bg-purple-50', border: 'border-purple-200', hoverBorder: 'hover:border-purple-400', title: 'text-purple-800', desc: 'text-purple-600' },
-        sky: { bg: 'bg-sky-50', border: 'border-sky-200', hoverBorder: 'hover:border-sky-400', title: 'text-sky-800', desc: 'text-sky-700' },
-        pink: { bg: 'bg-pink-50', border: 'border-pink-200', hoverBorder: 'hover:border-pink-400', title: 'text-pink-800', desc: 'text-pink-700' },
-        indigo: { bg: 'bg-indigo-50', border: 'border-indigo-200', hoverBorder: 'hover:border-indigo-400', title: 'text-indigo-800', desc: 'text-indigo-600' },
-        fuchsia: { bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', hoverBorder: 'hover:border-fuchsia-400', title: 'text-fuchsia-800', desc: 'text-fuchsia-700' },
-        red: { bg: 'bg-red-50', border: 'border-red-200', hoverBorder: 'hover:border-red-400', title: 'text-red-800', desc: 'text-red-700' },
-        green: { bg: 'bg-green-50', border: 'border-green-200', hoverBorder: 'hover:border-green-400', title: 'text-green-800', desc: 'text-green-700' },
-        violet: { bg: 'bg-violet-50', border: 'border-violet-200', hoverBorder: 'hover:border-violet-400', title: 'text-violet-800', desc: 'text-violet-600' },
-        teal: { bg: 'bg-teal-50', border: 'border-teal-200', hoverBorder: 'hover:border-teal-400', title: 'text-teal-800', desc: 'text-teal-700' },
-        lime: { bg: 'bg-lime-50', border: 'border-lime-200', hoverBorder: 'hover:border-lime-400', title: 'text-lime-800', desc: 'text-lime-700' },
-        yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', hoverBorder: 'hover:border-yellow-400', title: 'text-yellow-800', desc: 'text-yellow-700' },
-        stone: { bg: 'bg-stone-50', border: 'border-stone-200', hoverBorder: 'hover:border-stone-400', title: 'text-stone-800', desc: 'text-stone-600' },
-        slate: { bg: 'bg-slate-50', border: 'border-slate-200', hoverBorder: 'hover:border-slate-400', title: 'text-slate-800', desc: 'text-slate-600' }
+        blue: { light: '#2563eb', soft: '#dbeafe', hover: '#eff6ff', dark: '#60a5fa', darkSoft: '#172554' },
+        indigo: { light: '#4f46e5', soft: '#e0e7ff', hover: '#eef2ff', dark: '#818cf8', darkSoft: '#1e1b4b' },
+        violet: { light: '#7c3aed', soft: '#ede9fe', hover: '#f5f3ff', dark: '#a78bfa', darkSoft: '#2e1065' },
+        rose: { light: '#e11d48', soft: '#ffe4e6', hover: '#fff1f2', dark: '#fb7185', darkSoft: '#4c0519' },
+        orange: { light: '#c2410c', soft: '#ffedd5', hover: '#fff7ed', dark: '#fb923c', darkSoft: '#431407' },
+        amber: { light: '#b45309', soft: '#fef3c7', hover: '#fffbeb', dark: '#fbbf24', darkSoft: '#422006' },
+        emerald: { light: '#047857', soft: '#d1fae5', hover: '#ecfdf5', dark: '#34d399', darkSoft: '#022c22' },
+        cyan: { light: '#0e7490', soft: '#cffafe', hover: '#ecfeff', dark: '#22d3ee', darkSoft: '#083344' }
       };
 
 
@@ -2615,29 +2625,43 @@
 
       // ── Theme Detection (prop from parent app, falls back to DOM query) ──
       // Theme values are resolved above before theme-dependent effects are registered.
+      var _stemDialogRef = React.useRef(null);
       var _stemOpenerRef = React.useRef(null);
       React.useEffect(function () {
         _stemOpenerRef.current = document.activeElement;
+        var body = document.body;
+        var priorBodyOverflow = body ? body.style.overflow : '';
+        var priorBodyOverscroll = body ? body.style.overscrollBehavior : '';
+        if (body) {
+          body.style.overflow = 'hidden';
+          body.style.overscrollBehavior = 'none';
+        }
         var focusTimer = setTimeout(function () {
-          var root = document.querySelector('[data-stem-lab]');
+          var root = _stemDialogRef.current;
           if (root && typeof root.focus === 'function') {
-            root.setAttribute('tabindex', '-1');
-            root.focus();
+            try { root.focus({ preventScroll: true }); } catch (_) { root.focus(); }
           }
         }, 0);
         return function () {
           clearTimeout(focusTimer);
+          if (body) {
+            body.style.overflow = priorBodyOverflow;
+            body.style.overscrollBehavior = priorBodyOverscroll;
+          }
           var opener = _stemOpenerRef.current;
-          if (opener && document.contains(opener) && typeof opener.focus === 'function') opener.focus();
+          if (opener && document.contains(opener) && typeof opener.focus === 'function') {
+            try { opener.focus({ preventScroll: true }); } catch (_) { opener.focus(); }
+          }
         };
       }, []);
       var _previousStemToolRef = React.useRef(null);
       React.useEffect(function () {
         var prior = _previousStemToolRef.current;
         var focusTimer = setTimeout(function () {
-          var target = stemLabTool ? document.querySelector('.stem-active-tool-back') : null;
+          var root = _stemDialogRef.current;
+          var target = stemLabTool && root ? root.querySelector('.stem-active-tool-back') : null;
           if (!target && prior) {
-            var cards = document.querySelectorAll('[data-stem-tool-id]');
+            var cards = root ? root.querySelectorAll('[data-stem-tool-id]') : [];
             for (var i = 0; i < cards.length; i++) {
               if (cards[i].getAttribute('data-stem-tool-id') === prior) { target = cards[i]; break; }
             }
@@ -2647,6 +2671,39 @@
         _previousStemToolRef.current = stemLabTool || null;
         return function () { clearTimeout(focusTimer); };
       }, [stemLabTool]);
+      React.useEffect(function () {
+        if (!stemLabTool) return;
+        var state = null;
+        var registered = false;
+        try {
+          state = typeof window.__alloGetStemPluginState === 'function' ? window.__alloGetStemPluginState(stemLabTool) : null;
+          registered = !!(window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered(stemLabTool));
+        } catch (_) {}
+        if (registered || !state || (state.status !== 'error' && state.status !== 'loaded')) return;
+        var retryFocusTimer = setTimeout(function () {
+          var root = _stemDialogRef.current;
+          var retry = root ? root.querySelector('[data-stem-plugin-retry]') : null;
+          if (retry && typeof retry.focus === 'function') {
+            try { retry.focus({ preventScroll: true }); } catch (_) { retry.focus(); }
+          }
+        }, 0);
+        return function () { clearTimeout(retryFocusTimer); };
+      }, [stemLabTool, _pluginProgressTick]);
+
+      function _stemFocusableElements(root) {
+        if (!root) return [];
+        var selector = 'a[href], area[href], button, input, select, textarea, iframe, object, embed, [contenteditable], [tabindex]';
+        return Array.prototype.filter.call(root.querySelectorAll(selector), function (el) {
+          if (el.disabled || el.tabIndex < 0 || (el.tagName === 'INPUT' && el.type === 'hidden')) return false;
+          if (el.getAttribute && el.getAttribute('contenteditable') === 'false' && !el.hasAttribute('tabindex')) return false;
+          if (el.closest && el.closest('[hidden], [aria-hidden=true], [inert]')) return false;
+          var style = null;
+          try { style = window.getComputedStyle ? window.getComputedStyle(el) : null; } catch (_) {}
+          if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+          if (el.offsetParent === null && (!style || style.position !== 'fixed')) return false;
+          return true;
+        });
+      }
       // ── Keyboard Accessibility ──
       React.useEffect(function () {
         function handleKeyDown(e) {
@@ -2665,12 +2722,22 @@
           }
           // Tab key focus trapping within dialog
           if (e.key === 'Tab') {
-            var root = document.querySelector('[data-stem-lab]');
+            var root = _stemDialogRef.current;
             if (!root) return;
-            var focusable = root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            var focusable = _stemFocusableElements(root);
             if (focusable.length === 0) return;
             var first = focusable[0];
             var last = focusable[focusable.length - 1];
+            if (document.activeElement === root) {
+              e.preventDefault();
+              (e.shiftKey ? last : first).focus();
+              return;
+            }
+            if (!root.contains(document.activeElement)) {
+              e.preventDefault();
+              (e.shiftKey ? last : first).focus();
+              return;
+            }
             if (e.shiftKey) {
               if (document.activeElement === first) { e.preventDefault(); last.focus(); }
             } else {
@@ -2700,7 +2767,7 @@
       // ── Accessibility: Runtime A11Y Enhancer ──
       React.useEffect(function () {
         try {
-          var root = document.querySelector('[data-stem-lab]');
+          var root = _stemDialogRef.current;
           if (!root) return;
           // Auto-label unlabeled buttons by reading their text content
           root.querySelectorAll('button:not([aria-label])').forEach(function (btn) {
@@ -2761,23 +2828,6 @@
           });
         } catch (e) { }
       }, [stemLabTool, stemLabTab, labToolData]);
-
-      // ── Accessibility: Focus trap for modal ──
-      React.useEffect(function () {
-        var root = document.querySelector('[data-stem-lab]');
-        if (!root) return;
-        function trapFocus(e) {
-          if (e.key !== 'Tab') return;
-          var focusable = root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-          if (!focusable.length) return;
-          var first = focusable[0], last = focusable[focusable.length - 1];
-          if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
-          else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
-        }
-        // The primary keyboard handler above owns the single modal focus trap.
-        // Keep this local calculation dormant for compatibility with older mirrors.
-        return undefined;
-      }, [stemLabTool]);
 
       // ── Accessibility: aria-live feedback region ──
       var [a11yAnnouncement, setA11yAnnouncement] = React.useState('');
@@ -4124,7 +4174,7 @@
 
       // STEAM Lab modal JSX
       return /*#__PURE__*/React.createElement("div", {
-        "data-stem-lab": "true", role: "dialog", "aria-modal": "true", "aria-label": stemLabTool ? "STEAM Lab: " + (_activeStemToolMeta ? _activeStemToolMeta.label : stemLabTool) : "STEAM Lab",
+        "data-stem-lab": "true", ref: _stemDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-label": stemLabTool ? "STEAM Lab: " + (_activeStemToolMeta ? _activeStemToolMeta.label : stemLabTool) : "STEAM Lab",
         className: "fixed inset-0 z-[9999] flex items-stretch justify-center stem-lab-modal" + (_reduceMotion ? " reduce-motion" : ""),
         style: {
           zIndex: 10020,
@@ -4138,7 +4188,7 @@
           style: { position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }
         }, a11yAnnouncement),
         /*#__PURE__*/React.createElement("div", {
-        className: "stem-lab-modal-shell w-full max-w-[98vw] m-2 rounded-2xl shadow-2xl flex flex-col overflow-hidden overflow-y-auto stemlab-styled-scrollbar" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300"),
+        className: "stem-lab-modal-shell w-full max-w-[98vw] m-2 rounded-2xl shadow-2xl flex flex-col overflow-hidden" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300"),
         style: { backgroundColor: _pal.bg, color: _pal.text, minHeight: 0, overflow: 'hidden' }
       }, /*#__PURE__*/React.createElement("div", {
         className: "stem-lab-topbar flex items-center justify-between px-6 py-3 text-white", role: "banner",
@@ -4365,9 +4415,9 @@
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Esc"),
             React.createElement("span", { style: { color: _pal.textMuted } }, stemLabTool ? "Close tool / Close lab" : "Close STEAM Lab"),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+1"),
-            React.createElement("span", { style: { color: _pal.textMuted } }, "Create tab"),
-            React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+2"),
             React.createElement("span", { style: { color: _pal.textMuted } }, "Explore tab"),
+            React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+2"),
+            React.createElement("span", { style: { color: _pal.textMuted } }, "Create tab"),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+B"),
             React.createElement("span", { style: { color: _pal.textMuted } }, "Back to tool grid"),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Tab"),
@@ -4538,8 +4588,12 @@
           )
         ),
         /*#__PURE__*/React.createElement("div", {
-          className: "flex-1 overflow-y-auto p-6",
-          style: { backgroundColor: _pal.bg, color: _pal.text, minHeight: 0, overflowY: 'auto' }
+          className: "stem-lab-scroll-region stemlab-styled-scrollbar flex-1 overflow-y-auto p-6",
+          "data-stem-scroll-region": "true",
+          tabIndex: 0,
+          role: "region",
+          "aria-label": stemLabTool && _activeStemToolMeta ? _activeStemToolMeta.label + " workspace" : "STEAM Lab workspace",
+          style: { backgroundColor: _pal.bg, color: _pal.text, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }
         }, stemLabTab === 'create' && !showAssessmentBuilder && /*#__PURE__*/React.createElement("div", {
           className: "space-y-5 max-w-3xl mx-auto animate-in fade-in duration-200"
         }, /*#__PURE__*/React.createElement("div", {
@@ -4991,7 +5045,7 @@
             className: "text-[10px] text-slate-500 mt-1"
           }, new Date(snap.timestamp).toLocaleTimeString()))))))), stemLabTab === 'explore' && !stemLabTool && (() => {
             var _allStemTools = [
-              { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', chip: 'math', category: true },
+              { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', chip: 'math', palette: ['blue', 'cyan', 'indigo'], category: true },
               {
                 id: 'numberline',
                 icon: '📏',
@@ -5071,7 +5125,7 @@
                 color: 'sky',
                 ready: true
               },
-              { id: '_cat_AdvancedMath', icon: '', label: t('stem.tools_menu.advanced_math'), desc: '', color: 'slate', chip: 'math', category: true },
+              { id: '_cat_AdvancedMath', icon: '', label: t('stem.tools_menu.advanced_math'), desc: '', color: 'slate', chip: 'math', palette: ['indigo', 'violet'], category: true },
               {
                 // @tool funcGrapher
                 id: 'funcGrapher', icon: '📈', label: t('stem.tools_menu.function_grapher'),
@@ -5098,7 +5152,7 @@
                 desc: 'Type equations, plot functions, explore data. Learn what every button really does.',
                 color: 'indigo', ready: true
               },
-              { id: '_cat_GeometryMeasurement', icon: '', label: '\uD83D\uDCD0 Geometry & Measurement', desc: '', color: 'slate', chip: 'math', category: true },
+              { id: '_cat_GeometryMeasurement', icon: '', label: '\uD83D\uDCD0 Geometry & Measurement', desc: '', color: 'slate', chip: 'math', palette: ['cyan', 'blue', 'indigo'], category: true },
               {
                 id: 'volume',
                 icon: '📦',
@@ -5140,7 +5194,7 @@
               },
               { id: 'geometryProver', icon: '🔺', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
               { id: 'geometryWorld', icon: '\uD83E\uDDF1', label: 'Geometry World', desc: 'Explore a 3D world where geometry questions unlock new areas. Talk to NPCs and solve shape puzzles!', color: 'purple', ready: true },
-              { id: '_cat_DataStatsProbability', icon: '', label: '\uD83D\uDCCA Data, Statistics & Probability', desc: '', color: 'slate', chip: 'math', category: true },
+              { id: '_cat_DataStatsProbability', icon: '', label: '\uD83D\uDCCA Data, Statistics & Probability', desc: '', color: 'slate', chip: 'math', palette: ['blue', 'indigo', 'cyan'], category: true },
               {
                 id: 'probability', icon: '\uD83C\uDFB2', label: t('stem.tools_menu.probability'),
                 desc: 'Coin flips, dice rolls, and spinners. Visualize outcomes and explore chance.',
@@ -5174,7 +5228,7 @@
                 desc: 'Reactive research canvas — collect, analyze & present as one honest, provenance-bound object. 9 chart types, correlation-not-causation guards, FERPA-aware exports.',
                 color: 'amber', ready: true
               },
-              { id: '_cat_LifeScienceGenetics', icon: '', label: '\uD83E\uDDEC Life Science & Genetics', desc: '', color: 'slate', chip: 'science', category: true },
+              { id: '_cat_LifeScienceGenetics', icon: '', label: '\uD83E\uDDEC Life Science & Genetics', desc: '', color: 'slate', chip: 'science', palette: ['emerald', 'cyan'], category: true },
               {
                 // @tool cell
                 id: 'cell', icon: '🔬', label: t('stem.tools_menu.cell_simulator'),
@@ -5221,7 +5275,7 @@
                 desc: 'Look up public AlphaFold DB protein structures by UniProt/accession, inspect them in Mol*, import downloaded prediction files, and prepare AlphaFold Server-ready JSON with guardrails for public or synthetic classroom sequences only.',
                 color: 'teal', ready: true
               },
-              { id: '_cat_HumanBodyHealth', icon: '', label: '\uD83E\uDEC0 Human Body, Health & Safety', desc: '', color: 'slate', chip: 'science', category: true },
+              { id: '_cat_HumanBodyHealth', icon: '', label: '\uD83E\uDEC0 Human Body, Health & Safety', desc: '', color: 'slate', chip: 'science', palette: ['rose', 'violet', 'orange', 'rose', 'orange'], category: true },
               {
                 id: 'anatomy', icon: '🫀', label: t('stem.tools_menu.human_anatomy'),
                 desc: 'Explore all 11 body systems with interactive canvas — skeletal, muscular, circulatory, nervous, and more.',
@@ -5247,7 +5301,7 @@
                 desc: 'Cooking life skills + culinary science: USDA safe temps + bacteria danger zone, knife cuts (dice/julienne/chiffonade/brunoise), heat techniques (sauté/sear/simmer/braise/roast/fry/steam), Maillard chemistry, top-9 allergens, real-time recipe sim (coming next ship). Sister to NutritionLab + BakingScience.',
                 color: 'orange', ready: true
               },
-              { id: '_cat_EcologyEnvironment', icon: '', label: '\uD83C\uDF0D Ecology, Environment & Animals', desc: '', color: 'slate', chip: 'science', category: true },
+              { id: '_cat_EcologyEnvironment', icon: '', label: '\uD83C\uDF0D Ecology, Environment & Animals', desc: '', color: 'slate', chip: 'science', palette: ['emerald', 'cyan', 'amber'], category: true },
               {
                 // @tool ecosystem
                 id: 'ecosystem', icon: '\uD83D\uDC3A', label: 'Ecosystem',
@@ -5306,7 +5360,7 @@
                 id: 'decomposer', icon: '🧫', label: t('stem.tools_menu.decomposer'), desc: t('stem.tools_menu.break_materials_into_elements'),
                 color: 'lime', ready: true
               },
-              { id: '_cat_EarthSpaceScience', icon: '', label: '\uD83C\uDF0E Earth & Space Science', desc: '', color: 'slate', chip: 'science', category: true },
+              { id: '_cat_EarthSpaceScience', icon: '', label: '\uD83C\uDF0E Earth & Space Science', desc: '', color: 'slate', chip: 'science', palette: ['amber', 'orange', 'cyan'], paletteBreaks: { astronomy: ['indigo', 'blue', 'violet'] }, category: true },
               // @tool rocks
               { id: 'rocks', icon: '🪨', label: t('stem.tools_menu.rocks_minerals'), desc: t('stem.tools_menu.interactive_rock_cycle_mineral_properties'), color: 'amber', ready: true },
               {
@@ -5365,7 +5419,7 @@
                 desc: 'Experience 13.8 billion years of cosmic history, from the Big Bang to the far future.',
                 color: 'violet', ready: true
               },
-              { id: '_cat_Physics&Chemistry', icon: '', label: t('stem.tools_menu.physics_chemistry'), desc: '', color: 'slate', chip: 'science', category: true },
+              { id: '_cat_Physics&Chemistry', icon: '', label: t('stem.tools_menu.physics_chemistry'), desc: '', color: 'slate', chip: 'science', palette: ['cyan', 'orange', 'violet'], paletteBreaks: { molecule: ['amber', 'emerald', 'violet'] }, category: true },
               {
                 // @tool wave
                 id: 'wave', icon: '🌊', label: t('stem.tools_menu.wave_simulator'),
@@ -5426,7 +5480,7 @@
                 desc: 'Leavening chemistry, emulsions, recipe scaling, oven timeline, and Maillard browning — the science behind every bake.',
                 color: 'amber', ready: true
               },
-              { id: '_cat_EngineeringDesign', icon: '', label: '\u2699\uFE0F Engineering & Design', desc: '', color: 'slate', chip: 'engineering', category: true },
+              { id: '_cat_EngineeringDesign', icon: '', label: '\u2699\uFE0F Engineering & Design', desc: '', color: 'slate', chip: 'engineering', palette: ['amber', 'orange', 'cyan'], category: true },
               {
                 // @tool machineLab
                 id: 'machineLab', icon: '\u2699\uFE0F', label: 'Machine Lab',
@@ -5459,10 +5513,10 @@
                 // Indicators are tiered: measured, modelled, and a contested tier that is
                 // deliberately never produced as a number. See docs/city_planning_lab_design.md
                 id: 'cityLab', icon: '\uD83C\uDFD9\uFE0F', label: 'City Planning Lab',
-                desc: 'NGSS MS-ETS1 + HS-ETS1-3 + MS-ESS3-3. Design a town on a 144-parcel grid against requirements that conflict: 1,200 new homes, no new housing in the floodplain, a stormwater ceiling, a fixed bond, park access on foot, and farmland. Rational-method runoff, network walk distance, and a costed road network. The Assumption Lab reruns one plan under two published parameter sets so students can see which conclusions survive both. No score and no answer key.',
+                desc: 'NGSS MS-ETS1 + HS-ETS1-3 + MS-ESS3-3. Design a town on a 144-parcel grid against requirements that genuinely conflict. Three towns, each with a different binding constraint: Riverbend, where stormwater and the bond bite; Mesa Hollow, where the aquifer is fixed and the farms are drinking it; and Harborlight, where the plan has to still work in 2050. Rational-method runoff, water balance, sea-level allowance, network walk distance and a costed road network, each openable to show its formula. The Assumption Lab reruns one plan under two published parameter sets so students can see which conclusions survive both. Map, editable parcel table and a 3D model of the same plan. Discussion prompts and documented history carry the questions the tool refuses to model. No score and no answer key.',
                 color: 'teal', ready: true
               },
-              { id: '_cat_ComputingAI', icon: '', label: '\uD83D\uDCBB Computing, AI & Digital Literacy', desc: '', color: 'slate', chip: 'engineering', category: true },
+              { id: '_cat_ComputingAI', icon: '', label: '\uD83D\uDCBB Computing, AI & Digital Literacy', desc: '', color: 'slate', chip: 'engineering', palette: ['indigo', 'violet', 'cyan'], category: true },
               {
                 id: 'codingPlayground', icon: '🖥️', label: 'Coding Playground',
                 desc: 'Visual block coding with turtle graphics. Learn sequencing, loops, and conditionals. Toggle between blocks and text code.',
@@ -5507,7 +5561,7 @@
                 desc: 'Zoom deep into real, openly-licensed images in OpenSeadragon \u2014 the viewer museums use \u2014 from the Pillars of Creation and Saturn\u2019s rings to an Apollo bootprint, the real Apollo 11 capsule, and a coral fan. Smithsonian Open Access (CC0) + NASA (public domain), with a Notice \u2192 Wonder observation coach beside it.',
                 color: 'sky', ready: true
               },
-              { id: '_cat_Arts&Music', icon: '', label: t('stem.tools_menu.arts_music'), desc: '', color: 'slate', chip: 'creative', category: true },
+              { id: '_cat_Arts&Music', icon: '', label: t('stem.tools_menu.arts_music'), desc: '', color: 'slate', chip: 'creative', palette: ['violet', 'rose', 'indigo'], category: true },
 
               {
 
@@ -5542,7 +5596,7 @@
                 desc: 'Literary RPG — explore worlds, craft items, build structures, and battle through the strength of your prose. Your eloquence IS your superpower.',
                 color: 'violet', ready: true
               },
-              { id: '_cat_LearningBehavioral', icon: '', label: '\uD83E\uDDE0 Learning & Behavioral Science', desc: '', color: 'slate', chip: 'applied', category: true },
+              { id: '_cat_LearningBehavioral', icon: '', label: '\uD83E\uDDE0 Learning & Behavioral Science', desc: '', color: 'slate', chip: 'applied', palette: ['indigo', 'violet', 'rose'], category: true },
               {
                 id: 'behaviorLab', icon: '\uD83D\uDC2D', label: 'Behavior Shaping Lab',
                 desc: 'Train a virtual mouse using operant conditioning! Learn ABA fundamentals: reinforcement, shaping, extinction, and schedules of reinforcement.',
@@ -5579,7 +5633,7 @@
                 desc: 'What the parenting literature actually says — warmth and structure as two dials, with a strength-of-evidence badge on every claim (RCT-supported to popular-but-unsupported). Strengths-based and non-diagnostic. Sister tool to BehaviorLab and Learning Lab.',
                 color: 'rose', ready: true
               },
-              { id: '_cat_LifeSkillsCareers', icon: '', label: '\uD83D\uDCB0 Life Skills, Careers & Economics', desc: '', color: 'slate', chip: 'applied', category: true },
+              { id: '_cat_LifeSkillsCareers', icon: '', label: '\uD83D\uDCB0 Life Skills, Careers & Economics', desc: '', color: 'slate', chip: 'applied', palette: ['emerald', 'amber', 'orange', 'cyan'], category: true },
               {
                 id: 'economicsLab', icon: '💰', label: 'Economics Lab',
                 desc: 'Supply & demand curves, personal finance life sim, stock market trading, AI business startup sim, and a national economy policy simulator.',
@@ -5642,7 +5696,7 @@
                 desc: 'Run a Maine shellfish farm. Pilot your skiff out to a Bagaduce River lease, deploy seeded longlines, monitor water quality (DO, salinity, pH, temp, chlorophyll-a), harvest mussels and oysters, navigate weather and tides. Full 3D three.js sim teaching boating navigation alongside aquaculture fundamentals.',
                 color: 'teal', ready: true
               },
-              { id: '_cat_SportsMovement', icon: '', label: '\uD83C\uDFC5 Sports & Movement Science', desc: '', color: 'slate', chip: 'applied', category: true },
+              { id: '_cat_SportsMovement', icon: '', label: '\uD83C\uDFC5 Sports & Movement Science', desc: '', color: 'slate', chip: 'applied', palette: ['orange', 'cyan', 'emerald'], category: true },
               {
                 id: 'throwlab', icon: '⚾', label: 'ThrowLab: Sports Physics',
                 desc: 'Pitcher\'s Mound: dial spin, speed, and release point and watch the Magnus + drag integrator shape the ball\'s path. 6 pitch types. Hot-Hand streaks + Rookie/Pro tiers.',
@@ -5663,12 +5717,36 @@
                 desc: 'How swimming works (stroke physics + survival skills) plus what every swimmer should know about cold water, rip currents, ice, life jackets, and rescue. Visual stroke breakdowns, the science of buoyancy and propulsion, and the survival skills (back float, eggbeater, HELP, huddle) that actually save lives. Sources: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Educational only — find a Water Safety Instructor for actual swim training.',
                 color: 'cyan', ready: true
               },
-              { id: '_cat_Strategy', icon: '', label: '\u2694\uFE0F Strategy Games', desc: '', color: 'slate', chip: 'strategy', category: true },
+              { id: '_cat_Strategy', icon: '', label: '\u2694\uFE0F Strategy Games', desc: '', color: 'slate', chip: 'strategy', palette: ['violet', 'indigo'], category: true },
               { id: 'arccity', icon: '🌆', label: 'Arc City', desc: 'Author functions, re-light a neon city, and battle across two function-powered Circuit Clash arenas.', color: 'fuchsia', ready: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '🛖', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
               { id: 'spaceExplorer', label: 'Space Explorer', icon: '🛸', desc: 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
               { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEAM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true }
             ];
+
+            // Category palettes are the visual source of truth. Cycling a small
+            // subject family keeps neighboring cards distinct while making each
+            // reordered section recognizable at a glance.
+            var _catalogColorById = {};
+            var _activeCatalogPalette = null;
+            var _activeCatalogBreaks = null;
+            var _catalogPaletteIndex = 0;
+            _allStemTools.forEach(function (tool) {
+              if (tool.category) {
+                _activeCatalogPalette = tool.palette || null;
+                _activeCatalogBreaks = tool.paletteBreaks || null;
+                _catalogPaletteIndex = 0;
+                return;
+              }
+              if (_activeCatalogBreaks && _activeCatalogBreaks[tool.id]) {
+                _activeCatalogPalette = _activeCatalogBreaks[tool.id];
+                _catalogPaletteIndex = 0;
+              }
+              if (!_activeCatalogPalette || !_activeCatalogPalette.length) return;
+              var _catalogColor = _activeCatalogPalette[_catalogPaletteIndex % _activeCatalogPalette.length];
+              if (_toolColorMap[_catalogColor]) _catalogColorById[tool.id] = _catalogColor;
+              _catalogPaletteIndex++;
+            });
             // ── Tool search filter ──
             // Lazily built id -> index-entry map; rebuilt if the index arrives late.
             var _stemToolIndexById = null;
@@ -6878,10 +6956,39 @@
                 }, tool.label));
               }
               var _ci = _cardIndex++;
-              var _cm = _toolColorMap[tool.color] || _toolColorMap.slate;
+              var _cardColor = _catalogColorById[tool.id] || tool.color;
+              var _cm = _toolColorMap[_cardColor] || _toolColorMap.blue;
+              var _cardTone = isContrast ? {
+                accent: '#fbbf24', iconBg: '#fbbf24', hover: '#1a1a1a',
+                surface: '#000000', border: '#fbbf24', title: '#fbbf24',
+                desc: '#ffffff', focus: '#fbbf24'
+              } : isDark ? {
+                accent: _cm.dark, iconBg: _cm.darkSoft, hover: '#1e293b',
+                surface: '#0f172a', border: '#475569', title: '#f1f5f9',
+                desc: '#cbd5e1', focus: '#fbbf24'
+              } : {
+                accent: _cm.light, iconBg: _cm.soft, hover: _cm.hover,
+                surface: '#ffffff', border: '#cbd5e1', title: '#0f172a',
+                desc: '#475569', focus: '#1d4ed8'
+              };
+              var _cardStyle = {
+                '--stem-card-accent': _cardTone.accent,
+                '--stem-card-icon-bg': _cardTone.iconBg,
+                '--stem-card-hover': _cardTone.hover,
+                '--stem-card-surface': _cardTone.surface,
+                '--stem-card-border': _cardTone.border,
+                '--stem-card-title': _cardTone.title,
+                '--stem-card-desc': _cardTone.desc,
+                '--stem-card-focus': _cardTone.focus
+              };
+              if (!_reduceMotion) {
+                _cardStyle.animation = 'stemCardIn 0.35s ease-out both';
+                _cardStyle.animationDelay = (_ci * 40) + 'ms';
+              }
               return /*#__PURE__*/React.createElement("button", { "aria-label": tool.label + ': ' + (tool.desc || 'STEM tool'),
                 key: tool.id,
                 'data-stem-tool-id': tool.id,
+                'data-stem-card-color': _cardColor,
                 onClick: function () {
                   if (tool.ready === false) { if (addToast) addToast(tool.label + ' is coming soon!', 'info'); return; }
                   _openStemTool(tool.id, tool.label);
@@ -6889,14 +6996,14 @@
                 onMouseEnter: function () { try { if (typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded(tool.id); } catch (e) {} },
                 onFocus: function () { try { if (typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded(tool.id); } catch (e) {} },
                 title: tool.desc || tool.label,
-                className: 'stem-tool-card group p-5 rounded-2xl border-2 text-left transition-all duration-200 ' + _cm.bg + ' ' + _cm.border + ' ' + _cm.hoverBorder,
-                style: _reduceMotion ? {} : { animation: 'stemCardIn 0.35s ease-out both', animationDelay: (_ci * 40) + 'ms' }
+                className: 'stem-tool-card group p-5 rounded-2xl border-2 text-left transition-all duration-200',
+                style: _cardStyle
               }, /*#__PURE__*/React.createElement("div", {
-                className: "text-3xl mb-2"
+                className: "stem-tool-card-icon text-3xl mb-2"
               }, tool.icon), /*#__PURE__*/React.createElement("h4", {
-                className: 'font-bold text-sm mb-1 ' + _cm.title
+                className: 'font-bold text-sm mb-1'
               }, tool.label), /*#__PURE__*/React.createElement("p", {
-                className: 'text-xs ' + _cm.desc
+                className: 'text-xs'
               }, tool.desc));
             })),
               // No results message
@@ -7269,6 +7376,11 @@
             var retried = typeof window.__alloRetryStemPlugin === 'function' ? window.__alloRetryStemPlugin(stemLabTool) : false;
             if (retried) {
               if (typeof announceToSR === 'function') announceToSR('Retrying ' + _pluginMeta.label);
+              setTimeout(function () {
+                var root = _stemDialogRef.current;
+                var back = root ? root.querySelector('.stem-active-tool-back') : null;
+                if (back && typeof back.focus === 'function') back.focus();
+              }, 0);
             } else if (addToast) {
               addToast('This tool could not be retried. Return to all tools and try opening it again.', 'error');
             }
@@ -7288,6 +7400,7 @@
               React.createElement('p', { role: 'alert', className: 'text-sm text-slate-600 mb-4' }, message),
               React.createElement('button', {
                 type: 'button', onClick: _retryCurrentStemPlugin,
+                'data-stem-plugin-retry': 'true',
                 className: 'mx-1 px-4 py-2 rounded-xl bg-indigo-600 text-white font-black text-sm',
                 'aria-label': 'Retry loading ' + _pluginMeta.label
               }, 'Retry'),

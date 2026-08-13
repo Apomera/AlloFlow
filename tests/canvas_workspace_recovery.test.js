@@ -51,19 +51,18 @@ describe('Canvas workspace recovery helpers', () => {
     expect(store.snapshots[0].workspace.activeResourceId).toBe('full-resource-59');
   });
 
-  // 2026-07-20: raised 3 → 8 at Aaron's request. 3 was only ever a UX floor
-  // ("Start Fresh must be nondestructive"), never a measured storage budget.
+  // Standard keeps a generous count cap while the byte budget remains the
+  // primary storage constraint. Start Fresh stays nondestructive until the cap.
   it('keeps up to MAX_SNAPSHOTS workspaces, newest first, so Start Fresh is nondestructive', () => {
-    expect(recovery.MAX_SNAPSHOTS).toBe(8);
+    expect(recovery.MAX_SNAPSHOTS).toBe(20);
     let store = recovery.emptyStore();
-    // nine saves, oldest first — the ninth must push exactly one out
-    const ids = ['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8', 'w9'];
+    const ids = Array.from({ length: 21 }, (_, index) => 'w' + (index + 1));
     ids.forEach((id, index) => {
-      store = recovery.upsert(store, snapshot(id, `2026-07-${String(10 + index).padStart(2, '0')}T12:00:00.000Z`));
+      store = recovery.upsert(store, snapshot(id, new Date(Date.UTC(2026, 6, 1, 0, index)).toISOString()));
     });
-    expect(store.snapshots).toHaveLength(8);
-    expect(store.snapshots.map(item => item.id)).toEqual(['w9', 'w8', 'w7', 'w6', 'w5', 'w4', 'w3', 'w2']);
-    expect(store.snapshots.some(item => item.id === 'w1')).toBe(false); // oldest evicted
+    expect(store.snapshots).toHaveLength(20);
+    expect(store.snapshots.map(item => item.id)).toEqual(Array.from({ length: 20 }, (_, index) => 'w' + (21 - index)));
+    expect(store.snapshots.some(item => item.id === 'w1')).toBe(false);
   });
 
   describe('byte-aware eviction: a tight device drops the OLDEST workspace', () => {
@@ -222,7 +221,7 @@ describe('Storage and Recovery Manager v1 policies', () => {
     expect(recovery.resolvePolicy('standard')).toMatchObject({
       id: 'standard',
       effectiveId: 'standard',
-      maxSnapshots: 8,
+      maxSnapshots: 20,
       maxTotalBytes: 150 * MB,
       maxOfflineItems: 50
     });
@@ -255,24 +254,27 @@ describe('Storage and Recovery Manager v1 policies', () => {
   });
 
   it('keeps pinned work through count pressure and makes unpinned work eligible again', () => {
-    const snapshots = Array.from({ length: 9 }, (_, index) => {
-      const item = snapshot('w' + (index + 1), `2026-07-${String(10 + index).padStart(2, '0')}T12:00:00.000Z`);
+    const snapshots = Array.from({ length: 21 }, (_, index) => {
+      const item = snapshot('w' + (index + 1), new Date(Date.UTC(2026, 6, 1, 0, index)).toISOString());
       item.pinned = index === 0;
       return item;
     });
     const retained = recovery.normalizeStore({ version: 1, snapshots });
-    expect(retained.snapshots.map(item => item.id)).toEqual(['w9', 'w8', 'w7', 'w6', 'w5', 'w4', 'w3', 'w1']);
+    expect(retained.snapshots.map(item => item.id)).toEqual([
+      ...Array.from({ length: 19 }, (_, index) => 'w' + (21 - index)),
+      'w1'
+    ]);
     expect(retained.snapshots.find(item => item.id === 'w1').pinned).toBe(true);
 
     const allPinned = recovery.normalizeStore({
       version: 1,
       snapshots: snapshots.map(item => ({ ...item, pinned: true }))
     });
-    expect(allPinned.snapshots).toHaveLength(9);
-    expect(recovery.retentionStatus(allPinned)).toMatchObject({ pinnedCount: 9, overTarget: true });
+    expect(allPinned.snapshots).toHaveLength(21);
+    expect(recovery.retentionStatus(allPinned)).toMatchObject({ pinnedCount: 21, overTarget: true });
 
     const unpinned = recovery.setPinned(allPinned, 'w1', false);
-    expect(unpinned.snapshots).toHaveLength(8);
+    expect(unpinned.snapshots).toHaveLength(20);
     expect(unpinned.snapshots.some(item => item.id === 'w1')).toBe(false);
   });
 
@@ -303,6 +305,7 @@ describe('Storage and Recovery Manager v1 policies', () => {
     expect(noMediaResult).toEqual(noMediaStore);
 
     const mediaOnly = snapshot('media-only', '2026-07-22T12:00:00.000Z', 0);
+    mediaOnly.workspace.units = [];
     mediaOnly.workspace.builderDraft = { imageUrl: 'data:image/png;base64,AAAA' };
     const mediaOnlyStore = recovery.upsert(recovery.emptyStore(), mediaOnly);
     expect(mediaOnlyStore.snapshots).toHaveLength(1);
@@ -326,6 +329,7 @@ describe('Storage and Recovery Manager v1 policies', () => {
 
   it('drops empty drafts, keeps meaningful drafts, and only ages drafts under Compact', () => {
     const whitespace = snapshot('whitespace', '2026-07-01T00:00:00.000Z', 0);
+    whitespace.workspace.units = [];
     whitespace.workspace.inputText = '   ';
     whitespace.workspace.builderDraft = { html: '  ', savedAt: '2026-07-01T00:00:00.000Z' };
     expect(recovery.normalizeSnapshot(whitespace)).toBeNull();
@@ -596,7 +600,7 @@ describe('Canvas workspace recovery integration contracts', () => {
     expect(erase).not.toContain('deviceStorage.set(ALLO_WORKSPACE_RECOVERY_NAMESPACE');
     expect(erase).not.toContain('deviceStorage.remove(ALLO_WORKSPACE_RECOVERY_NAMESPACE');
     expect(erase).toContain('canvasRecoveryCurrentIdRef.current === snapshotId');
-    expect(erase).toContain('clearCanvasWorkspaceState()');
+    expect(erase).toContain('clearCanvasWorkspaceState({ archivePlan: !canvasRecoveryVaultState.enabled })');
   });
 
   it('shows truthful Canvas device status instead of a permanent generic sync spinner', () => {

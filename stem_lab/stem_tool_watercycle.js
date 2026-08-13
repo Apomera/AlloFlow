@@ -452,13 +452,15 @@
       '.wc-precip-path-strip{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;gap:5px;margin-top:8px}.wc-precip-path-step{min-width:0;padding:7px 8px;border:1px solid rgba(14,165,233,.24);border-radius:9px;background:rgba(255,255,255,.72)}.wc-precip-path-step span,.wc-precip-path-step strong{display:block}.wc-precip-path-step span{font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#0369a1}.wc-precip-path-step strong{margin-top:2px;font-size:10px;line-height:1.3;color:#1e293b;overflow-wrap:anywhere}.wc-precip-path-arrow{align-self:center;color:#0284c7;font-size:16px;font-weight:900}.dark .wc-precip-path-step{background:rgba(15,23,42,.7);border-color:rgba(56,189,248,.24)}.dark .wc-precip-path-step span,.dark .wc-precip-path-arrow{color:#7dd3fc}.dark .wc-precip-path-step strong{color:#f8fafc}@media(max-width:560px){.wc-precip-path-strip{grid-template-columns:1fr}.wc-precip-path-arrow{display:none}}@media(forced-colors:active){.wc-precip-path-step{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-precip-path-step span,.wc-precip-path-step strong,.wc-precip-path-arrow{color:CanvasText}}',
       '.wc-precip-controls{display:grid;gap:9px;min-width:0}.wc-precip-control-group{padding:10px;border:1px solid rgba(14,165,233,.2);border-radius:12px;background:rgba(255,255,255,.62)}.wc-precip-control-title{display:block;margin-bottom:7px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#0369a1}.wc-precip-field{display:block;margin-top:8px}.wc-precip-field:first-of-type{margin-top:0}.wc-precip-field-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:10px;font-weight:800;color:#334155}.wc-precip-field-head output{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;font-weight:900;color:#0369a1}.wc-precip-field input[type="range"]{width:100%;min-height:32px;margin-top:3px;accent-color:#0284c7}.wc-precip-select-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.wc-precip-select-grid label{display:block;font-size:9px;font-weight:900;color:#475569}.wc-precip-select-grid select,.wc-precip-preset{width:100%;min-height:38px;margin-top:3px;padding:5px 24px 5px 7px;border:1px solid #bae6fd;border-radius:8px;background:#fff;color:#0f172a;font-size:10px;font-weight:800}.wc-precip-switch{display:flex;align-items:center;gap:7px;margin-top:9px;font-size:10px;font-weight:800;color:#334155}.wc-precip-switch input{width:16px;height:16px;accent-color:#0284c7}',
       '.wc-precip-profile-editor{margin:2px 0 8px;padding:7px;border:1px solid rgba(14,165,233,.2);border-radius:10px;background:rgba(224,242,254,.38)}.wc-precip-profile-chart{display:block;width:100%;height:auto;max-height:190px;overflow:visible}.wc-profile-cold-zone{fill:rgba(125,211,252,.2)}.wc-profile-warm-zone{fill:rgba(251,191,36,.14)}.wc-profile-grid-line,.wc-profile-level-line{stroke:rgba(100,116,139,.3);stroke-width:1}.wc-profile-level-line{stroke-dasharray:3 4}.wc-profile-freezing-line{stroke:#0284c7;stroke-width:2;stroke-dasharray:5 4}.wc-profile-temperature-line{fill:none;stroke:#7c3aed;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.wc-profile-temperature-point{fill:#fff;stroke:#7c3aed;stroke-width:3}.wc-profile-crossing-point{fill:#facc15;stroke:#713f12;stroke-width:1.5}.wc-profile-tick-label,.wc-profile-level-label,.wc-profile-point-value,.wc-profile-zone-label,.wc-profile-crossing-label{font-family:system-ui,sans-serif;font-weight:800;fill:#334155}.wc-profile-tick-label{font-size:9px}.wc-profile-level-label,.wc-profile-zone-label{font-size:8px;letter-spacing:.05em}.wc-profile-point-value{font-size:9px}.wc-profile-crossing-label{font-size:7px;fill:#854d0e}.wc-profile-cold-layer-band{fill:rgba(56,189,248,.16);stroke:rgba(2,132,199,.45);stroke-width:1;stroke-dasharray:4 3}.wc-profile-cold-layer-band.is-deep{fill:rgba(14,116,144,.22);stroke:rgba(8,145,178,.75);stroke-dasharray:none}.wc-profile-cold-layer-label{font-family:system-ui,sans-serif;font-size:7px;font-weight:900;letter-spacing:.04em;fill:#075985}.wc-precip-profile-hint{margin:4px 1px 0;font-size:9px;line-height:1.35;color:#475569}.wc-precip-profile-verdict{margin:5px 1px 0;padding:5px 7px;border-left:3px solid #0891b2;border-radius:0 7px 7px 0;background:rgba(14,116,144,.09);font-size:9px;line-height:1.4;color:#164e63}.wc-precip-profile-verdict strong{font-weight:900}.wc-precip-profile-verdict[data-cold-layer-outcome="freezing-rain"]{border-left-color:#0284c7;background:rgba(2,132,199,.08)}.dark .wc-precip-profile-editor{background:rgba(8,47,73,.46);border-color:rgba(56,189,248,.22)}.dark .wc-profile-grid-line,.dark .wc-profile-level-line{stroke:rgba(148,163,184,.34)}.dark .wc-profile-tick-label,.dark .wc-profile-level-label,.dark .wc-profile-point-value,.dark .wc-profile-zone-label{fill:#e2e8f0}.dark .wc-profile-crossing-label{fill:#fde68a}.dark .wc-profile-cold-layer-band{fill:rgba(56,189,248,.2);stroke:rgba(125,211,252,.5)}.dark .wc-profile-cold-layer-band.is-deep{fill:rgba(34,211,238,.22);stroke:rgba(103,232,249,.8)}.dark .wc-profile-cold-layer-label{fill:#bae6fd}.dark .wc-profile-temperature-point{fill:#0f172a}.dark .wc-precip-profile-hint{color:#cbd5e1}.dark .wc-precip-profile-verdict{background:rgba(14,116,144,.24);border-left-color:#22d3ee;color:#cffafe}.dark .wc-precip-profile-verdict[data-cold-layer-outcome="freezing-rain"]{background:rgba(2,132,199,.24);border-left-color:#7dd3fc}@media(forced-colors:active){.wc-precip-profile-editor{border-color:CanvasText;background:Canvas}.wc-profile-cold-zone,.wc-profile-warm-zone{fill:Canvas}.wc-profile-grid-line,.wc-profile-level-line,.wc-profile-freezing-line,.wc-profile-temperature-line{stroke:CanvasText}.wc-profile-temperature-point,.wc-profile-crossing-point{fill:Highlight;stroke:CanvasText}.wc-profile-cold-layer-band{fill:Canvas;stroke:CanvasText}.wc-profile-cold-layer-label{fill:CanvasText}.wc-profile-tick-label,.wc-profile-level-label,.wc-profile-point-value,.wc-profile-zone-label,.wc-profile-crossing-label{fill:CanvasText}.wc-precip-profile-hint{color:CanvasText}.wc-precip-profile-verdict{border-color:CanvasText;background:Canvas;color:CanvasText}}',
-      '.wc-thunder-lesson{margin-top:7px;padding:7px 8px;border-left:3px solid #facc15;border-radius:7px;background:rgba(254,249,195,.56);color:#713f12}.wc-thunder-lesson strong,.wc-thunder-lesson span{display:block}.wc-thunder-lesson strong{font-size:10px;font-weight:900}.wc-thunder-lesson span{margin-top:2px;font-size:10px;line-height:1.35}.dark .wc-thunder-lesson{background:rgba(113,63,18,.3);border-left-color:#facc15;color:#fde68a}@media(forced-colors:active){.wc-thunder-lesson{border-color:CanvasText;background:Canvas;color:CanvasText}}',
+      '.wc-storm-anatomy{margin-top:8px;padding:9px 10px;border:1px solid rgba(129,140,248,.32);border-radius:10px;background:rgba(238,242,255,.58);color:#312e81}.wc-storm-anatomy-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.wc-storm-anatomy-head h4{margin:0;font-size:12px;font-weight:900}.wc-storm-anatomy-head span{font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}.wc-storm-anatomy p{margin:4px 0 0;font-size:10px;line-height:1.35}.wc-storm-anatomy-readouts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:7px 0 0}.wc-storm-anatomy-readouts div{min-width:0;padding:5px 6px;border-top:2px solid rgba(79,70,229,.4);background:rgba(255,255,255,.5)}.wc-storm-anatomy-readouts dt{font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase}.wc-storm-anatomy-readouts dd{margin:2px 0 0;font-size:11px;font-weight:900;overflow-wrap:anywhere}.dark .wc-storm-anatomy{background:rgba(49,46,129,.26);border-color:rgba(165,180,252,.4);color:#e0e7ff}.dark .wc-storm-anatomy-readouts div{background:rgba(15,23,42,.45);border-top-color:#a5b4fc}@media(max-width:560px){.wc-storm-anatomy-readouts{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(forced-colors:active){.wc-storm-anatomy,.wc-storm-anatomy-readouts div{border-color:CanvasText;background:Canvas;color:CanvasText}}',      '.wc-thunder-lesson{margin-top:7px;padding:7px 8px;border-left:3px solid #facc15;border-radius:7px;background:rgba(254,249,195,.56);color:#713f12}.wc-thunder-lesson strong,.wc-thunder-lesson span{display:block}.wc-thunder-lesson strong{font-size:10px;font-weight:900}.wc-thunder-lesson span{margin-top:2px;font-size:10px;line-height:1.35}.dark .wc-thunder-lesson{background:rgba(113,63,18,.3);border-left-color:#facc15;color:#fde68a}@media(forced-colors:active){.wc-thunder-lesson{border-color:CanvasText;background:Canvas;color:CanvasText}}',
       '.wc-thunder-measure{margin-top:7px;padding:7px 8px;border:1px solid rgba(14,116,144,.28);border-radius:7px;background:rgba(224,242,254,.62);color:#164e63}.wc-thunder-measure strong,.wc-thunder-measure span{display:block}.wc-thunder-measure strong{font-size:10px;font-weight:900}.wc-thunder-measure span{margin-top:2px;font-size:10px;line-height:1.35}.wc-thunder-measure label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;font-size:10px;font-weight:800}.wc-thunder-measure input[type=range]{width:100%;accent-color:#0284c7}.wc-thunder-measure-result{margin:5px 0 0;padding:5px 6px;border-radius:5px;background:rgba(14,116,144,.1);font-size:10px;line-height:1.35;font-weight:700}.wc-thunder-measure[data-thunder-measurement=close]{border-color:#16a34a}.wc-thunder-measure[data-thunder-measurement=recheck]{border-color:#dc2626}.dark .wc-thunder-measure{background:rgba(8,47,73,.48);border-color:rgba(125,211,252,.5);color:#bae6fd}.dark .wc-thunder-measure-result{background:rgba(125,211,252,.1)}@media(forced-colors:active){.wc-thunder-measure{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-thunder-measure-result{background:Canvas;color:CanvasText}}@media(max-width:640px){.wc-thunder-measure label{display:block}.wc-thunder-measure label span{margin-top:2px}}',
       '.wc-storm-lifecycle{margin-top:8px;padding:9px 10px;border:1px solid rgba(14,165,233,.24);border-radius:11px;background:rgba(255,255,255,.7)}.wc-storm-lifecycle-head,.wc-storm-time-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.wc-storm-lifecycle-head strong{font-size:12px;color:#0f172a}.wc-storm-lifecycle-head span,.wc-storm-time-head{font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#0369a1}.wc-storm-stage-segments,.wc-storm-playback{display:flex;gap:5px;flex-wrap:wrap}.wc-storm-stage-segments{margin-top:7px}.wc-storm-stage-segments .wc-precip-btn{flex:1;min-width:88px;min-height:34px}.wc-storm-stage-segments .wc-precip-btn[aria-pressed="true"]{background:#0369a1;color:#fff}.wc-storm-time-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;margin-top:7px}.wc-storm-time-row input[type="range"]{width:100%;min-height:32px;accent-color:#0284c7}.wc-storm-playback .wc-precip-btn{min-height:34px}.wc-storm-stage-copy{margin:6px 0 0;font-size:10px;line-height:1.35;color:#475569}.wc-storm-accumulation{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:8px}.wc-storm-accumulation-item{min-width:0}.wc-storm-accumulation-item span,.wc-storm-accumulation-item strong{display:block;font-size:9px}.wc-storm-accumulation-item span{font-weight:900;color:#475569}.wc-storm-accumulation-item strong{margin-top:1px;color:#0f172a}.wc-storm-accumulation-track{height:5px;margin-top:3px;overflow:hidden;border-radius:4px;background:rgba(148,163,184,.28)}.wc-storm-accumulation-track i{display:block;height:100%;background:#0284c7}.dark .wc-storm-lifecycle{background:rgba(15,23,42,.7);border-color:rgba(56,189,248,.24)}.dark .wc-storm-lifecycle-head strong,.dark .wc-storm-accumulation-item strong{color:#f8fafc}.dark .wc-storm-lifecycle-head span,.dark .wc-storm-time-head{color:#7dd3fc}.dark .wc-storm-stage-copy,.dark .wc-storm-accumulation-item span{color:#cbd5e1}.dark .wc-storm-stage-segments .wc-precip-btn[aria-pressed="true"]{background:#0ea5e9;color:#082f49}@media(max-width:560px){.wc-storm-time-row{grid-template-columns:1fr}.wc-storm-playback{justify-content:space-between}.wc-storm-playback .wc-precip-btn{flex:1}.wc-storm-accumulation{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(forced-colors:active){.wc-storm-lifecycle,.wc-storm-accumulation-track{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-storm-accumulation-track i{background:Highlight}.wc-storm-stage-segments .wc-precip-btn[aria-pressed="true"]{background:Highlight;color:HighlightText}}',
       '.wc-precip-notebook{margin-top:12px;border-top:1px solid rgba(14,165,233,.2);border-bottom:1px solid rgba(14,165,233,.2)}.wc-precip-notebook summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;cursor:pointer;list-style:none;font-size:11px;font-weight:900;color:#075985}.wc-precip-notebook summary::-webkit-details-marker{display:none}.wc-precip-notebook summary::after{content:"+";display:grid;place-items:center;width:23px;height:23px;border-radius:6px;background:#e0f2fe;color:#075985;font-size:16px}.wc-precip-notebook[open] summary::after{content:"\\2212"}.wc-precip-notebook-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,.7fr);gap:10px;padding:3px 0 11px}.wc-precip-log-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:7px}.wc-precip-log-wrap{overflow-x:auto}.wc-precip-table{width:100%;border-collapse:collapse;font-size:10px;color:#334155}.wc-precip-table th,.wc-precip-table td{padding:5px 6px;border-top:1px solid rgba(14,165,233,.16);text-align:left;white-space:nowrap}.wc-precip-table th{font-size:9px;font-weight:900;color:#0369a1}.wc-precip-writing label{display:block;font-size:10px;font-weight:900;color:#334155}.wc-precip-writing textarea{width:100%;margin-top:4px;padding:7px;border:1px solid #bae6fd;border-radius:8px;background:#fff;color:#0f172a;font-size:11px;line-height:1.4}.wc-precip-prompts{margin-top:7px;padding:7px 9px;border-left:3px solid #f59e0b;border-radius:7px;background:#fffbeb;color:#78350f;font-size:10px;line-height:1.4}.wc-precip-model-note{margin:9px 0 0;font-size:9px;line-height:1.35;color:#64748b}',
       '@media(max-width:820px){.wc-precip-layout{grid-template-columns:1fr}.wc-precip-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-precip-control-group:last-child{grid-column:1/-1}}@media(max-width:560px){.wc-precip-lab{padding:10px}.wc-precip-head-actions{width:100%}.wc-precip-head-actions button{flex:1}.wc-precip-canvas{min-height:220px}.wc-precip-controls{grid-template-columns:1fr}.wc-precip-control-group:last-child{grid-column:auto}.wc-precip-metrics{grid-template-columns:1fr}.wc-precip-notebook-body{grid-template-columns:1fr}.wc-precip-select-grid{grid-template-columns:1fr}}',
       '.dark .wc-precip-lab{background:linear-gradient(145deg,rgba(15,23,42,.96),rgba(8,47,73,.8));border-color:rgba(56,189,248,.24);color:#e2e8f0}.dark .wc-precip-head h3,.dark .wc-precip-result-label,.dark .wc-precip-metric strong{color:#f8fafc}.dark .wc-precip-kicker,.dark .wc-precip-control-title,.dark .wc-precip-field-head output,.dark .wc-precip-table th{color:#7dd3fc}.dark .wc-precip-head p,.dark .wc-precip-result p,.dark .wc-precip-model-note{color:#cbd5e1}.dark .wc-precip-btn,.dark .wc-precip-control-group,.dark .wc-precip-result,.dark .wc-precip-metric{background:rgba(15,23,42,.7);border-color:rgba(56,189,248,.24);color:#bae6fd}.dark .wc-precip-btn.is-primary{background:#0ea5e9;color:#082f49}.dark .wc-precip-field-head,.dark .wc-precip-switch,.dark .wc-precip-select-grid label,.dark .wc-precip-writing label,.dark .wc-precip-table{color:#cbd5e1}.dark .wc-precip-select-grid select,.dark .wc-precip-preset,.dark .wc-precip-writing textarea{background:#0f172a;border-color:#075985;color:#f8fafc}.dark .wc-precip-result-badge,.dark .wc-precip-notebook summary::after{background:#075985;color:#e0f2fe}.dark .wc-precip-notebook summary{color:#bae6fd}.dark .wc-precip-table th,.dark .wc-precip-table td,.dark .wc-precip-notebook{border-color:rgba(56,189,248,.18)}.dark .wc-precip-prompts{background:rgba(120,53,15,.4);color:#fde68a}',
       '@media(prefers-contrast:more){.wc-precip-lab,.wc-precip-chamber,.wc-precip-canvas-dock,.wc-precip-control-group,.wc-precip-result{border-width:2px}}@media(forced-colors:active){.wc-precip-lab,.wc-precip-chamber,.wc-precip-canvas-dock,.wc-precip-control-group,.wc-precip-result,.wc-precip-metric,.wc-precip-btn,.wc-precip-pause,.wc-precip-select-grid select,.wc-precip-preset,.wc-precip-writing textarea{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-precip-btn.is-primary,.wc-precip-pause[aria-pressed="true"]{background:Highlight;color:HighlightText}.wc-precip-result{border-left-color:Highlight}.wc-precip-kicker,.wc-precip-control-title,.wc-precip-field-head output,.wc-precip-table th{color:CanvasText}}'
+      ,'.wc-lightning-study{margin:9px 0;padding:9px;border:1px solid rgba(14,165,233,.24);border-radius:10px;background:rgba(224,242,254,.38)}.wc-lightning-study-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}.wc-lightning-study-head strong{font-size:11px;color:#0f172a}.wc-lightning-study-head span{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#0369a1}.wc-lightning-study-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px}.wc-lightning-study-step{min-height:42px;padding:6px 7px;border:1px solid rgba(14,165,233,.28);border-radius:8px;background:rgba(255,255,255,.76);color:#334155;font-size:11px;font-weight:900;text-align:center}.wc-lightning-study-step:hover:not(:disabled){background:#fff;border-color:#0284c7}.wc-lightning-study-step[aria-pressed="true"]{border-color:#0369a1;background:#0369a1;color:#fff;box-shadow:0 0 0 2px rgba(56,189,248,.2)}.wc-lightning-study-step:disabled{cursor:not-allowed;opacity:.46}.wc-storm-anatomy .wc-lightning-study-copy{min-height:2.7em;margin:7px 0 0;font-size:11px;line-height:1.4;color:#334155}.wc-storm-anatomy .wc-lightning-study-note{margin:4px 0 0;font-size:11px;line-height:1.35;color:#075985}.dark .wc-lightning-study{border-color:rgba(56,189,248,.24);background:rgba(8,47,73,.44)}.dark .wc-lightning-study-head strong,.dark .wc-storm-anatomy .wc-lightning-study-copy{color:#e2e8f0}.dark .wc-lightning-study-head span,.dark .wc-storm-anatomy .wc-lightning-study-note{color:#7dd3fc}.dark .wc-lightning-study-step{border-color:rgba(125,211,252,.3);background:rgba(15,23,42,.76);color:#e2e8f0}.dark .wc-lightning-study-step[aria-pressed="true"]{border-color:#7dd3fc;background:#075985;color:#fff}@media(max-width:560px){.wc-lightning-study-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(forced-colors:active){.wc-lightning-study,.wc-lightning-study-step{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-lightning-study-step[aria-pressed="true"]{background:Highlight;color:HighlightText}.wc-lightning-study-head strong,.wc-lightning-study-head span,.wc-lightning-study-copy,.wc-lightning-study-note{color:CanvasText}}'
+      ,'.wc-precip-lab{--wc-precip-accent:#38bdf8;--wc-precip-accent-soft:rgba(56,189,248,.18);--wc-precip-accent-ink:#075985}.wc-precip-lab[data-precipitation-kind="snow"]{--wc-precip-accent:#f8fafc;--wc-precip-accent-soft:rgba(226,232,240,.22);--wc-precip-accent-ink:#475569}.wc-precip-lab[data-precipitation-kind="mix"]{--wc-precip-accent:#c4b5fd;--wc-precip-accent-soft:rgba(196,181,253,.2);--wc-precip-accent-ink:#6d28d9}.wc-precip-lab[data-precipitation-kind="freezing-rain"]{--wc-precip-accent:#67e8f9;--wc-precip-accent-soft:rgba(103,232,249,.2);--wc-precip-accent-ink:#0e7490}.wc-precip-lab[data-precipitation-kind="sleet"]{--wc-precip-accent:#93c5fd;--wc-precip-accent-soft:rgba(147,197,253,.2);--wc-precip-accent-ink:#1d4ed8}.wc-precip-lab[data-precipitation-kind="hail"]{--wc-precip-accent:#f1f5f9;--wc-precip-accent-soft:rgba(241,245,249,.22);--wc-precip-accent-ink:#334155}.wc-precip-lab[data-precipitation-kind="virga"]{--wc-precip-accent:#fbbf24;--wc-precip-accent-soft:rgba(251,191,36,.2);--wc-precip-accent-ink:#b45309}.wc-precip-lab[data-precipitation-kind="clear"]{--wc-precip-accent:#94a3b8;--wc-precip-accent-soft:rgba(148,163,184,.18);--wc-precip-accent-ink:#475569}.wc-precip-chamber{border-color:var(--wc-precip-accent);box-shadow:0 18px 38px rgba(2,6,23,.28)}.wc-precip-chamber::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 1px var(--wc-precip-accent-soft)}.wc-precip-canvas-dock{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,.58fr) auto;align-items:center;padding:8px 10px;border:0;border-top:1px solid rgba(186,230,253,.3);border-radius:0}.wc-precip-live-outcome{display:flex;align-items:center;gap:9px;min-width:0}.wc-precip-outcome-mark{display:grid!important;place-items:center;flex:0 0 34px;width:34px;height:34px;border:1px solid var(--wc-precip-accent);border-radius:50%;background:var(--wc-precip-accent-soft);color:var(--wc-precip-accent)!important;font-size:17px!important;line-height:1!important;letter-spacing:0!important}.wc-precip-live-copy{min-width:0}.wc-precip-live-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wc-precip-live-copy small{display:block;margin-top:2px;color:#bae6fd;font-size:9px;font-weight:800;line-height:1.25}.wc-precip-live-meter{min-width:0;padding-left:10px;border-left:1px solid rgba(186,230,253,.2)}.wc-precip-live-meter-head{display:flex;align-items:center;justify-content:space-between;gap:7px}.wc-precip-live-meter-head strong{font-size:10px;color:#fff}.wc-precip-live-meter meter{display:block;width:100%;height:8px;margin-top:4px;border:0;background:transparent;accent-color:var(--wc-precip-accent)}.wc-precip-live-meter meter::-webkit-meter-bar{height:6px;border:0;border-radius:99px;background:rgba(148,163,184,.28)}.wc-precip-live-meter meter::-webkit-meter-optimum-value{border-radius:99px;background:var(--wc-precip-accent)}.wc-precip-live-meter meter::-moz-meter-bar{border-radius:99px;background:var(--wc-precip-accent)}.wc-precip-result{border-left-color:var(--wc-precip-accent-ink);background:linear-gradient(100deg,var(--wc-precip-accent-soft),rgba(255,255,255,.8) 34%)}.wc-precip-result-badge{background:var(--wc-precip-accent-soft);color:var(--wc-precip-accent-ink)}.wc-precip-path-step{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:center;gap:8px;position:relative;border-top:3px solid var(--wc-precip-accent-ink);padding:8px}.wc-precip-path-icon{display:grid!important;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--wc-precip-accent-soft);color:var(--wc-precip-accent-ink)!important;font-size:14px!important;line-height:1!important;letter-spacing:0!important}.wc-precip-path-copy{display:block!important;min-width:0}.wc-precip-path-label{font-size:9px!important;letter-spacing:.07em!important;color:#0369a1!important}.wc-precip-path-arrow{color:var(--wc-precip-accent-ink)}.dark .wc-precip-result{background:linear-gradient(100deg,var(--wc-precip-accent-soft),rgba(15,23,42,.78) 38%)}.dark .wc-precip-result-badge{background:var(--wc-precip-accent-soft);color:#f8fafc}.dark .wc-precip-path-step{border-top-color:var(--wc-precip-accent)}.dark .wc-precip-path-icon,.dark .wc-precip-path-arrow{color:var(--wc-precip-accent)!important}.dark .wc-precip-path-label{color:#7dd3fc!important}@media(max-width:560px){.wc-precip-canvas-dock{grid-template-columns:minmax(0,1fr) auto}.wc-precip-live-meter{grid-column:1/-1;padding:7px 0 0;border-top:1px solid rgba(186,230,253,.2);border-left:0}.wc-precip-live-copy strong{white-space:normal}.wc-precip-path-step{grid-template-columns:30px minmax(0,1fr)}}@media(forced-colors:active){.wc-precip-outcome-mark,.wc-precip-path-icon{border-color:CanvasText;background:Canvas;color:CanvasText!important}.wc-precip-live-meter meter{forced-color-adjust:auto}.wc-precip-result,.wc-precip-path-step{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-precip-result-badge,.wc-precip-path-label{background:Canvas;color:CanvasText!important}}'
     ].join('');
     if (document.head) document.head.appendChild(st);
   })();
@@ -1488,6 +1490,36 @@
 
   function stewardClamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+  var WC_LIGHTNING_STUDY_STEPS = [
+    { key: 'auto', shortLabel: 'Auto', label: 'Automatic sequence',
+      explanation: 'Watch charge build, the lightning channel connect, and the thunder wave travel with the modeled timing.' },
+    { key: 'charge-separation', shortLabel: '1 Charge', label: 'Charge separation',
+      explanation: 'Collisions in the mixed-phase cloud sort smaller positive ice crystals upward and heavier negative graupel lower.' },
+    { key: 'stepped-leader', shortLabel: '2 Leader', label: 'Stepped leader',
+      explanation: 'A negatively charged channel advances from the cloud toward the ground in short steps.' },
+    { key: 'upward-streamer', shortLabel: '3 Streamer', label: 'Upward streamer',
+      explanation: 'Positive streamers rise from the ground as the leader approaches; a conducting connection is close.' },
+    { key: 'return-stroke', shortLabel: '4 Return', label: 'Return stroke',
+      explanation: 'After the channels connect, a bright return stroke propagates upward through the ionized pathway.' },
+    { key: 'pressure-wave', shortLabel: '5 Thunder', label: 'Thunder wave',
+      explanation: 'Rapid heating makes the air expand; the pressure wave travels outward at about 0.343 kilometres each second.' }
+  ];
+  var WC_LIGHTNING_STUDY_LOOKUP = Object.create(null);
+  WC_LIGHTNING_STUDY_STEPS.forEach(function(step) { WC_LIGHTNING_STUDY_LOOKUP[step.key] = step; });
+  function getWcLightningStudyStep(stepKey) {
+    return Object.prototype.hasOwnProperty.call(WC_LIGHTNING_STUDY_LOOKUP, stepKey)
+      ? WC_LIGHTNING_STUDY_LOOKUP[stepKey] : WC_LIGHTNING_STUDY_LOOKUP.auto;
+  }
+  function isWcLightningStudyStepAvailable(model, stepKey) {
+    if (stepKey === 'auto') return true;
+    if (!model || !model.stormAnatomy) return false;
+    if (stepKey === 'charge-separation') {
+      return !!(model.stormAnatomy.chargeSeparation &&
+        model.stormAnatomy.chargeSeparation.index >= 8);
+    }
+    return !!model.lightningEligible;
+  }
+
   var WC_PRECIP_DEFAULTS = {
     moisture: 76,
     tempC: 3,
@@ -1506,6 +1538,8 @@
     thunderEstimateChecked: false,
     terrain: 'plains',
     showAirflow: true,
+    showStormAnatomy: true,
+    lightningStudyStep: 'auto',
     paused: false,
     preset: 'gentleRain'
   };
@@ -1581,6 +1615,10 @@
     normalized.terrain = normalized.terrain === 'mountains' || normalized.terrain === 'coast'
       ? normalized.terrain : 'plains';
     normalized.showAirflow = normalized.showAirflow !== false;
+    normalized.showStormAnatomy = normalized.showStormAnatomy !== false;
+    normalized.lightningStudyStep = Object.prototype.hasOwnProperty.call(
+      WC_LIGHTNING_STUDY_LOOKUP, normalized.lightningStudyStep)
+      ? normalized.lightningStudyStep : 'auto';
     normalized.paused = !!normalized.paused;
     return normalized;
   }
@@ -1807,6 +1845,72 @@
     };
   }
 
+  function buildWcStormAnatomy(config, lifecycle, electrificationIndex, lightningEligible, thunder) {
+    var cfg = normalizeWcPrecipConfig(config);
+    var lifecycleChargeFactor = lifecycle && isFinite(lifecycle.lightningFactor)
+      ? lifecycle.lightningFactor : 0;
+    var mixedPhaseChargeEligible = cfg.tempC <= 0 && cfg.cloudDepth >= 6 && cfg.updraft >= 45;
+    var rawChargeIndex = Math.round(wcPrecipClamp(electrificationIndex * lifecycleChargeFactor, 0, 100));
+    var chargeIndex = mixedPhaseChargeEligible ? rawChargeIndex : 0;
+    var chargeActive = mixedPhaseChargeEligible && chargeIndex >= 8;
+    var chargeState = !chargeActive ? 'inactive' : chargeIndex >= 72 ? 'strong' : chargeIndex >= 35 ? 'building' : 'weak';
+    var pathwaySteps = ['stepped-leader', 'upward-streamer', 'return-stroke'];
+    var pathwayActive = !!lightningEligible;
+    var inducedGroundCharge = chargeActive && chargeIndex >= 35;
+    return {
+      enabled: cfg.showStormAnatomy,
+      chargeSeparation: {
+        active: chargeActive,
+        index: chargeIndex,
+        state: chargeState,
+        upperPolarity: 'positive',
+        upperCarrier: 'small ice crystals',
+        lowerPolarity: 'negative',
+        lowerCarrier: 'graupel and larger ice',
+        groundPolarity: inducedGroundCharge ? 'positive induced charge' : 'neutral'
+      },
+      lightningPathway: {
+        active: pathwayActive,
+        type: pathwayActive ? 'cloud-to-ground' : 'not-complete',
+        steps: pathwaySteps,
+        label: pathwayActive
+          ? 'Stepped leader -> upward streamer -> return stroke'
+          : chargeActive
+            ? 'Charge is organizing, but no completed lightning channel is modeled'
+            : 'No organized mixed-phase charge separation is modeled in this setup'
+      },
+      thunderWave: {
+        active: pathwayActive,
+        speedKmPerSecond: thunder.speedOfSoundKmPerSecond,
+        targetDistanceKm: thunder.distanceKm,
+        arrivalSeconds: thunder.delaySeconds,
+        label: pathwayActive
+          ? 'Rapid heating expands air into a pressure wave'
+          : 'No lightning channel, so no thunder pressure wave'
+      },
+      instruments: [
+        { id: 'charge', label: 'Charge separation', value: chargeIndex, unit: '/100' },
+        { id: 'updraft', label: 'Updraft', value: Math.round(cfg.updraft * (lifecycle ? lifecycle.updraftFactor : 1)), unit: '/100' },
+        { id: 'delay', label: 'Flash-to-thunder', value: pathwayActive ? thunder.delaySeconds : null, unit: pathwayActive ? 's' : '' },
+        { id: 'distance', label: 'Storm distance', value: pathwayActive ? thunder.distanceKm : null, unit: pathwayActive ? 'km' : '' }
+      ]
+    };
+  }
+
+  function wcThunderWaveAt(thunderModel, elapsedSeconds) {
+    var elapsed = Math.max(0, Number(elapsedSeconds) || 0);
+    var targetDistanceKm = wcPrecipClamp(thunderModel && thunderModel.distanceKm, 0.5, 20);
+    var speedKmPerSecond = thunderModel && isFinite(thunderModel.speedOfSoundKmPerSecond)
+      ? thunderModel.speedOfSoundKmPerSecond : 0.343;
+    var radiusKm = Math.min(targetDistanceKm, elapsed * speedKmPerSecond);
+    var progress = wcPrecipClamp(radiusKm / targetDistanceKm, 0, 1);
+    return {
+      elapsedSeconds: elapsed,
+      radiusKm: Math.round(radiusKm * 100) / 100,
+      progress: progress,
+      state: progress >= 1 ? 'arrived' : elapsed > 0 ? 'expanding' : 'waiting'
+    };
+  }
   function computeWcPrecipitationModel(config) {
     var cfg = normalizeWcPrecipConfig(config);
     var moisture = cfg.moisture / 100;
@@ -1940,10 +2044,12 @@
       0,
       1
     ) * 100);
-    var lightningEligible = reachesGround && electrificationIndex >= 72 && lifecycle.lightningFactor >= 0.62 &&
+    var mixedPhaseChargeEligible = cfg.tempC <= 0 && cfg.cloudDepth >= 6 && cfg.updraft >= 45;
+    var lightningEligible = mixedPhaseChargeEligible && reachesGround && electrificationIndex >= 72 && lifecycle.lightningFactor >= 0.62 &&
       (visualType === 'rain' || visualType === 'hail');
     var thunder = buildWcThunderModel(cfg, lifecycle, lightningEligible);
     var thunderEstimate = evaluateWcThunderEstimate(cfg, thunder);
+    var stormAnatomy = buildWcStormAnatomy(cfg, lifecycle, electrificationIndex, lightningEligible, thunder);
     var causalExplanation = liftLabel + ' and a ' + cfg.cloudDepth.toFixed(0) + ' km cloud produce a ' +
       Math.round(growthIndex * 100) + '/100 particle-growth index. ' +
       (visualType === 'virga'
@@ -1977,6 +2083,7 @@
       lightningEligible: lightningEligible,
       thunder: thunder,
       thunderEstimate: thunderEstimate,
+      stormAnatomy: stormAnatomy,
       causalExplanation: causalExplanation,
       driftDirection: cfg.windDirection === 'west' ? 'right to left' : 'left to right',
       terrainLift: Math.round(terrainLift * 100)
@@ -2028,9 +2135,12 @@
   window.WaterCyclePrecipitationKernel = {
     defaults: Object.assign({}, WC_PRECIP_DEFAULTS),
     presets: WC_PRECIP_PRESETS,
+    lightningStudySteps: WC_LIGHTNING_STUDY_STEPS.map(function(step) { return Object.assign({}, step); }),
+    studyStepAvailable: isWcLightningStudyStepAvailable,
     normalize: normalizeWcPrecipConfig,
     compute: computeWcPrecipitationModel,
     lifecycle: function(config) { return computeWcPrecipitationModel(config).lifecycle; },
+    thunderWaveAt: wcThunderWaveAt,
     phaseAt: wcPrecipPhaseAt,
     temperatureAt: wcPrecipTemperatureAt
   };
@@ -3588,6 +3698,20 @@ const d = labToolData.waterCycle || {};
             var iq = Object.assign({}, WC_PRECIP_DEFAULTS, iqStored);
             var precipModel = computeWcPrecipitationModel(iq);
             var precipConfig = precipModel.config;
+            var activeLightningStudy = getWcLightningStudyStep(precipConfig.lightningStudyStep);
+            var lightningStudyRequested = activeLightningStudy.key !== 'auto';
+            var lightningStudyActive = lightningStudyRequested && precipConfig.showStormAnatomy;
+            var lightningStudyPhysicallyAvailable = isWcLightningStudyStepAvailable(
+              precipModel, activeLightningStudy.key);
+            var lightningStudyAvailable = lightningStudyActive && lightningStudyPhysicallyAvailable;
+            var lightningStudyMode = !precipConfig.showStormAnatomy
+              ? 'hidden' : lightningStudyRequested
+                ? (lightningStudyPhysicallyAvailable ? 'guided' : 'unavailable') : 'automatic';
+            var lightningStudyCopy = !lightningStudyRequested && !precipModel.lightningEligible
+              ? 'Auto is ready, but this cloud does not complete a cloud-to-ground flash. Increase storm energy or choose a thunderstorm preset.'
+              : lightningStudyRequested && !lightningStudyPhysicallyAvailable
+                ? activeLightningStudy.explanation + ' This current cloud is not electrically active enough to produce this step; increase moisture, cloud depth, and updraft, or choose a thunderstorm preset.'
+                : activeLightningStudy.explanation;
             var activePrecipPreset = WC_PRECIP_PRESETS[iq.preset] ? iq.preset : 'custom';
 
             function setIQ(patch) {
@@ -3655,6 +3779,8 @@ const d = labToolData.waterCycle || {};
                 thunderEstimateKm: precipConfig.thunderEstimateKm,
                 thunderEstimateErrorKm: precipModel.thunderEstimate.errorKm,
                 thunderEstimateBand: precipModel.thunderEstimate.band,
+                chargeSeparation: precipModel.stormAnatomy.chargeSeparation.index,
+                lightningPathway: precipModel.stormAnatomy.lightningPathway.type,
                 soundEnabled: precipConfig.soundEnabled,
                 stormTime: precipModel.lifecycle.time,
                 stormStage: precipModel.lifecycle.stageLabel,
@@ -3699,12 +3825,19 @@ const d = labToolData.waterCycle || {};
                 journeyCanvas.dataset.precipitationLightningEligible = String(precipModel.lightningEligible);
                 journeyCanvas.dataset.stormStage = precipModel.lifecycle.stageKey;
                 journeyCanvas.dataset.thunderDelaySeconds = String(precipModel.thunder.delaySeconds);
+                journeyCanvas.dataset.stormDistanceKm = String(precipModel.thunder.distanceKm);
                 journeyCanvas.dataset.thunderCaption = precipModel.thunder.caption;
                 journeyCanvas.dataset.thunderSound = precipModel.thunder.soundEnabled ? 'enabled' : 'muted';
                 journeyCanvas.dataset.thunderEstimateKm = String(precipModel.thunderEstimate.estimateKm);
                 journeyCanvas.dataset.thunderEstimateChecked = precipModel.config.thunderEstimateChecked ? 'true' : 'false';
                 journeyCanvas.dataset.thunderEstimateBand = precipModel.config.thunderEstimateChecked ? precipModel.thunderEstimate.band : 'unsubmitted';
                 journeyCanvas.dataset.thunderEstimateErrorKm = String(precipModel.thunderEstimate.errorKm);
+                journeyCanvas.dataset.stormAnatomy = precipModel.config.showStormAnatomy ? 'visible' : 'hidden';
+                journeyCanvas.dataset.chargeSeparation = precipModel.stormAnatomy.chargeSeparation.state;
+                journeyCanvas.dataset.chargeSeparationIndex = String(precipModel.stormAnatomy.chargeSeparation.index);
+                journeyCanvas.dataset.lightningPathway = precipModel.stormAnatomy.lightningPathway.type;
+                journeyCanvas.dataset.lightningSequence = 'charge-separation>stepped-leader>upward-streamer>return-stroke>pressure-wave';
+                journeyCanvas.dataset.lightningStudyStep = precipModel.config.lightningStudyStep;
                 journeyCanvas.dataset.stormCloudFactor = String(precipModel.lifecycle.cloudFactor);
                 journeyCanvas.dataset.stormUpdraftFactor = String(precipModel.lifecycle.updraftFactor);
                 journeyCanvas.dataset.stormSnowAccumulation = String(precipModel.lifecycle.accumulation.snow);
@@ -3757,13 +3890,39 @@ const d = labToolData.waterCycle || {};
               var resizeObserver = null;
               var lifecycleTimer = null;
               var thunderTimer = null;
+              var thunderWaveStartTime = -1;
+              var thunderEventActive = false;
               var lastLightningCycle = -1;
               var visualTime = 0;
               var lastTimestamp = 0;
               var alive = true;
               var motionReduced = false;
+              var precipMotionMedia = null;
+              function syncPrecipMotionPreference(event) {
+                var nextMotionReduced = event && typeof event.matches === 'boolean'
+                  ? event.matches : !!(precipMotionMedia && precipMotionMedia.matches);
+                var preferenceChanged = nextMotionReduced !== motionReduced;
+                motionReduced = nextMotionReduced;
+                if (!preferenceChanged || !event || event.type !== 'change') return;
+                if (motionReduced) {
+                  cancelPrecipFrame();
+                  if (thunderTimer) { clearTimeout(thunderTimer); thunderTimer = null; }
+                  thunderEventActive = false;
+                  thunderWaveStartTime = -1;
+                  canvasEl.dataset.thunderStatus = model.config.showStormAnatomy &&
+                    model.config.lightningStudyStep !== 'auto' ? 'suppressed-study' : 'canceled';
+                  drawPrecipCanvas(true);
+                } else {
+                  lastTimestamp = 0;
+                  drawPrecipCanvas(true);
+                  schedulePrecipFrame();
+                }
+              }
               try {
-                motionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                precipMotionMedia = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+                syncPrecipMotionPreference(precipMotionMedia);
+                if (precipMotionMedia && precipMotionMedia.addEventListener) precipMotionMedia.addEventListener('change', syncPrecipMotionPreference);
+                else if (precipMotionMedia && precipMotionMedia.addListener) precipMotionMedia.addListener(syncPrecipMotionPreference);
               } catch (e) {}
 
               var particles = [];
@@ -3777,6 +3936,11 @@ const d = labToolData.waterCycle || {};
               }
 
               function setCanvasData() {
+                var canvasStudyStep = model.config.lightningStudyStep || 'auto';
+                var canvasStudyRequested = canvasStudyStep !== 'auto';
+                var canvasStudyActive = canvasStudyRequested && model.config.showStormAnatomy;
+                var canvasStudyPhysical = isWcLightningStudyStepAvailable(model, canvasStudyStep);
+                var canvasStudyAvailable = canvasStudyActive && canvasStudyPhysical;
                 canvasEl.dataset.precipitationType = model.visualType;
                 canvasEl.dataset.precipitationIntensity = String(model.relativeIntensity);
                 canvasEl.dataset.precipitationLift = String(model.liftIndex);
@@ -3790,6 +3954,7 @@ const d = labToolData.waterCycle || {};
                   ? 'none' : model.freezingLevel.toFixed(3);
                 canvasEl.dataset.profileTransitionCount = String(model.thermalLayers.crossings.length);
                 canvasEl.dataset.midLevelTemperature = model.config.midLevelTempC.toFixed(1);
+                canvasEl.dataset.temperatureRail = 'cloud-middle-surface';
                 canvasEl.dataset.secondaryTransitionKind = model.thermalLayers.crossings[1] ? model.thermalLayers.crossings[1].kind : 'none';
                 canvasEl.dataset.secondaryTransitionProgress = model.thermalLayers.crossings[1] ? model.thermalLayers.crossings[1].progress.toFixed(3) : 'none';
                 canvasEl.dataset.phasePath = model.phasePathLabel;
@@ -3800,17 +3965,46 @@ const d = labToolData.waterCycle || {};
                   return key + ':' + model.lifecycle.accumulation[key];
                 }).join(',');
                 canvasEl.dataset.thunderDelaySeconds = String(model.thunder.delaySeconds);
-                canvasEl.dataset.thunderCaption = model.thunder.caption;
+                canvasEl.dataset.stormDistanceKm = String(model.thunder.distanceKm);
+                canvasEl.dataset.thunderCaption = canvasStudyActive
+                  ? (canvasStudyAvailable
+                      ? getWcLightningStudyStep(canvasStudyStep).label + ' static study snapshot; thunder audio and automatic timing are paused.'
+                      : 'The selected lightning phase is not produced by this cloud.')
+                  : model.thunder.caption;
                 canvasEl.dataset.thunderSound = model.thunder.soundEnabled ? 'enabled' : 'muted';
                 canvasEl.dataset.thunderEstimateKm = String(model.thunderEstimate.estimateKm);
                 canvasEl.dataset.thunderEstimateChecked = model.config.thunderEstimateChecked ? 'true' : 'false';
                 canvasEl.dataset.thunderEstimateBand = model.config.thunderEstimateChecked ? model.thunderEstimate.band : 'unsubmitted';
                 canvasEl.dataset.thunderEstimateErrorKm = String(model.thunderEstimate.errorKm);
-                canvasEl.dataset.lightningMode = !model.lightningEligible
-                  ? 'none'
-                  : motionReduced
-                    ? 'suppressed-reduced-motion'
-                    : model.config.paused ? 'paused' : 'periodic';
+                var stormAnatomyVisible = model.config.showStormAnatomy;
+                canvasEl.dataset.stormAnatomy = stormAnatomyVisible ? 'visible' : 'hidden';
+                canvasEl.dataset.chargeSeparation = stormAnatomyVisible ? model.stormAnatomy.chargeSeparation.state : 'hidden';
+                canvasEl.dataset.chargeSeparationIndex = stormAnatomyVisible ? String(model.stormAnatomy.chargeSeparation.index) : '0';
+                canvasEl.dataset.chargeUpperPolarity = stormAnatomyVisible ? model.stormAnatomy.chargeSeparation.upperPolarity : 'hidden';
+                canvasEl.dataset.chargeLowerPolarity = stormAnatomyVisible ? model.stormAnatomy.chargeSeparation.lowerPolarity : 'hidden';
+                canvasEl.dataset.lightningPathway = stormAnatomyVisible ? model.stormAnatomy.lightningPathway.type : 'hidden';
+                canvasEl.dataset.lightningSequence = 'charge-separation>stepped-leader>upward-streamer>return-stroke>pressure-wave';
+                canvasEl.dataset.lightningStudyStep = canvasStudyStep;
+                canvasEl.dataset.lightningStudyMode = !model.config.showStormAnatomy
+                  ? 'hidden' : canvasStudyRequested
+                    ? (canvasStudyPhysical ? 'guided' : 'unavailable') : 'automatic';
+                canvasEl.dataset.thunderWave = !model.config.showStormAnatomy
+                  ? 'hidden' : canvasStudyActive
+                    ? (canvasStudyAvailable
+                        ? (canvasStudyStep === 'pressure-wave' ? 'study-static' : 'study-hidden')
+                        : 'study-unavailable')
+                    : !model.lightningEligible ? 'hidden' : motionReduced ? 'static-reduced-motion' : 'waiting';
+                canvasEl.dataset.thunderWaveRadiusKm = '0';
+                canvasEl.dataset.thunderWaveProgress = '0';
+                canvasEl.dataset.lightningMode = !model.config.showStormAnatomy
+                  ? 'hidden' : canvasStudyActive
+                    ? (canvasStudyAvailable ? 'guided-static' : 'study-unavailable')
+                    : !model.lightningEligible
+                      ? 'none'
+                      : motionReduced
+                        ? 'suppressed-reduced-motion'
+                        : model.config.paused ? 'paused' : 'periodic';
+                if (canvasStudyActive) canvasEl.dataset.thunderStatus = 'suppressed-study';
                 canvasEl.dataset.rendered = 'true';
               }
 
@@ -3853,7 +4047,6 @@ const d = labToolData.waterCycle || {};
 
               function scheduleStormLifecycleTick() {
                 if (lifecycleTimer) { clearTimeout(lifecycleTimer); lifecycleTimer = null; }
-                if (thunderTimer) { clearTimeout(thunderTimer); thunderTimer = null; }
                 if (!alive || motionReduced || !model.config.stormAutoPlay || isPrecipCanvasHidden()) return;
                 lifecycleTimer = setTimeout(function() {
                   lifecycleTimer = null;
@@ -3864,15 +4057,20 @@ const d = labToolData.waterCycle || {};
               }
 
               function scheduleThunderAfterFlash() {
-                if (thunderTimer) { clearTimeout(thunderTimer); thunderTimer = null; }
-                if (!model.config.soundEnabled || !model.lightningEligible || typeof setTimeout !== 'function') {
-                  canvasEl.dataset.thunderStatus = model.config.soundEnabled ? 'not-eligible' : 'muted';
-                  return;
-                }
-                canvasEl.dataset.thunderStatus = 'pending';
+                if ((model.config.showStormAnatomy && model.config.lightningStudyStep !== 'auto') ||
+                    thunderEventActive) return;
+                thunderEventActive = true;
+                thunderWaveStartTime = visualTime;
+                canvasEl.dataset.thunderWave = motionReduced ? 'static-reduced-motion' : 'expanding';
+                canvasEl.dataset.thunderStatus = model.config.soundEnabled ? 'pending' : 'muted';
+                if (!model.config.soundEnabled || !model.lightningEligible || typeof setTimeout !== 'function') return;
                 thunderTimer = setTimeout(function() {
                   thunderTimer = null;
-                  if (!alive || model.config.paused || motionReduced) return;
+                  if (!alive || motionReduced || isPrecipCanvasHidden() ||
+                      !model.config.soundEnabled || !model.lightningEligible || model.config.paused) {
+                    canvasEl.dataset.thunderStatus = 'canceled';
+                    return;
+                  }
                   playWcThunderRumble();
                   canvasEl.dataset.thunderStatus = 'heard';
                 }, Math.round(model.thunder.delaySeconds * 1000));
@@ -3898,7 +4096,161 @@ const d = labToolData.waterCycle || {};
                 ctx2.restore();
               }
 
-              function drawCloudPuff(ctx2, x, y, radius, depth, moistureValue) {
+              function drawStormChargeSeparation(ctx2, w, h, cloudCenter, cloudY, cloudBase, groundY) {
+                if (!model.config.showStormAnatomy || !model.stormAnatomy ||
+                    model.stormAnatomy.chargeSeparation.index < 8) return;
+                var chargeIndex = model.stormAnatomy.chargeSeparation.index;
+                var chargeAlpha = Math.min(0.96, 0.32 + chargeIndex / 135);
+                var markerCount = Math.max(3, Math.min(8, Math.round(3 + chargeIndex / 18)));
+                ctx2.save();
+                ctx2.textAlign = 'center';
+                ctx2.textBaseline = 'middle';
+                ctx2.font = '900 15px system-ui, sans-serif';
+                for (var positiveChargeIndex = 0; positiveChargeIndex < markerCount; positiveChargeIndex++) {
+                  var positiveChargeX = cloudCenter - 62 + (positiveChargeIndex % 4) * 40 +
+                    Math.sin(positiveChargeIndex * 2.1) * 5;
+                  var positiveChargeY = cloudY - 28 + Math.floor(positiveChargeIndex / 4) * 18;
+                  ctx2.fillStyle = 'rgba(253,230,138,' + chargeAlpha + ')';
+                  ctx2.fillText('+', positiveChargeX, positiveChargeY);
+                }
+                for (var negativeChargeIndex = 0; negativeChargeIndex < markerCount; negativeChargeIndex++) {
+                  var negativeChargeX = cloudCenter - 58 + (negativeChargeIndex % 4) * 39 +
+                    Math.cos(negativeChargeIndex * 1.8) * 5;
+                  var negativeChargeY = cloudBase - 28 + Math.floor(negativeChargeIndex / 4) * 15;
+                  ctx2.fillStyle = 'rgba(165,243,252,' + chargeAlpha + ')';
+                  ctx2.fillText('\u2212', negativeChargeX, negativeChargeY);
+                }
+                if (chargeIndex >= 35) {
+                  ctx2.fillStyle = 'rgba(253,230,138,' + Math.min(0.88, chargeAlpha) + ')';
+                  for (var groundChargeIndex = 0; groundChargeIndex < 5; groundChargeIndex++) {
+                    var groundChargeX = cloudCenter - 52 + groundChargeIndex * 26;
+                    ctx2.fillText('+', groundChargeX, terrainSurfaceYAt(groundChargeX, w, h, groundY) - 10);
+                  }
+                }
+                ctx2.font = '800 8px system-ui, sans-serif';
+                ctx2.textAlign = 'left';
+                ctx2.fillStyle = 'rgba(3,18,31,.78)';
+                ctx2.fillRect(Math.max(5, cloudCenter - 112), Math.max(4, cloudY - 56), 92, 14);
+                ctx2.fillRect(Math.max(5, cloudCenter - 112), cloudBase - 18, 82, 14);
+                ctx2.fillStyle = '#fef3c7';
+                ctx2.fillText('ICE CRYSTALS +', Math.max(9, cloudCenter - 108), Math.max(12, cloudY - 49));
+                ctx2.fillStyle = '#cffafe';
+                ctx2.fillText('GRAUPEL \u2212', Math.max(9, cloudCenter - 108), cloudBase - 11);
+                ctx2.restore();
+              }
+
+              function strokeStormLightningPath(ctx2, points, progress) {
+                var pathProgress = wcPrecipClamp(progress, 0, 1);
+                var totalLength = 0;
+                var segmentLengths = [];
+                for (var pathLengthIndex = 1; pathLengthIndex < points.length; pathLengthIndex++) {
+                  var pathDx = points[pathLengthIndex][0] - points[pathLengthIndex - 1][0];
+                  var pathDy = points[pathLengthIndex][1] - points[pathLengthIndex - 1][1];
+                  var segmentLength = Math.sqrt(pathDx * pathDx + pathDy * pathDy);
+                  segmentLengths.push(segmentLength);
+                  totalLength += segmentLength;
+                }
+                var remainingLength = totalLength * pathProgress;
+                ctx2.beginPath();
+                ctx2.moveTo(points[0][0], points[0][1]);
+                for (var pathIndex = 1; pathIndex < points.length && remainingLength > 0; pathIndex++) {
+                  var currentSegmentLength = segmentLengths[pathIndex - 1];
+                  if (remainingLength >= currentSegmentLength) {
+                    ctx2.lineTo(points[pathIndex][0], points[pathIndex][1]);
+                    remainingLength -= currentSegmentLength;
+                  } else {
+                    var segmentProgress = remainingLength / Math.max(0.001, currentSegmentLength);
+                    ctx2.lineTo(
+                      points[pathIndex - 1][0] + (points[pathIndex][0] - points[pathIndex - 1][0]) * segmentProgress,
+                      points[pathIndex - 1][1] + (points[pathIndex][1] - points[pathIndex - 1][1]) * segmentProgress
+                    );
+                    remainingLength = 0;
+                  }
+                }
+                ctx2.stroke();
+              }
+
+              function drawThunderWavefront(ctx2, w, h, cloudCenter, cloudBase, groundY) {
+                var studyStep = model.config.lightningStudyStep || 'auto';
+                var studyRequested = studyStep !== 'auto';
+                var studyActive = studyRequested && model.config.showStormAnatomy;
+                var studyAvailable = studyActive && isWcLightningStudyStepAvailable(model, studyStep);
+                if (!model.config.showStormAnatomy) {
+                  thunderEventActive = false;
+                  thunderWaveStartTime = -1;
+                  canvasEl.dataset.thunderWave = 'hidden';
+                  canvasEl.dataset.thunderWaveRadiusKm = '0';
+                  canvasEl.dataset.thunderWaveProgress = '0';
+                  return;
+                }
+                if (studyActive && !studyAvailable) {
+                  canvasEl.dataset.thunderWave = 'study-unavailable';
+                  canvasEl.dataset.thunderWaveRadiusKm = '0';
+                  canvasEl.dataset.thunderWaveProgress = '0';
+                  return;
+                }
+                if (studyActive && studyStep !== 'pressure-wave') {
+                  canvasEl.dataset.thunderWave = 'study-hidden';
+                  canvasEl.dataset.thunderWaveRadiusKm = '0';
+                  canvasEl.dataset.thunderWaveProgress = '0';
+                  return;
+                }
+                if (!studyActive && !model.lightningEligible) {
+                  thunderEventActive = false;
+                  thunderWaveStartTime = -1;
+                  canvasEl.dataset.thunderWave = 'hidden';
+                  canvasEl.dataset.thunderWaveRadiusKm = '0';
+                  canvasEl.dataset.thunderWaveProgress = '0';
+                  return;
+                }
+                var studyWave = studyAvailable && studyStep === 'pressure-wave';
+                if (!studyWave && motionReduced) {
+                  canvasEl.dataset.thunderWave = 'static-reduced-motion';
+                  canvasEl.dataset.thunderWaveRadiusKm = '0';
+                  canvasEl.dataset.thunderWaveProgress = '0';
+                  return;
+                }
+                if (!studyWave && thunderWaveStartTime < 0) {
+                  canvasEl.dataset.thunderWave = 'waiting';
+                  canvasEl.dataset.thunderWaveRadiusKm = '0';
+                  canvasEl.dataset.thunderWaveProgress = '0';
+                  return;
+                }
+                var waveElapsed = studyWave
+                  ? (model.thunder.distanceKm / model.thunder.speedOfSoundKmPerSecond) * 0.5
+                  : Math.max(0, visualTime - thunderWaveStartTime);
+                var waveState = wcThunderWaveAt(model.thunder, waveElapsed);
+                if (!studyWave && waveState.state === 'arrived') {
+                  thunderEventActive = false;
+                  thunderWaveStartTime = -1;
+                  canvasEl.dataset.thunderWave = 'arrived';
+                  canvasEl.dataset.thunderWaveRadiusKm = model.thunder.distanceKm.toFixed(2);
+                  canvasEl.dataset.thunderWaveProgress = '1';
+                  return;
+                }
+                var waveProgress = waveState.progress;
+                var waveX = cloudCenter + (model.config.windDirection === 'west' ? -1 : 1) * 12;
+                var waveY = cloudBase + (groundY - cloudBase) * 0.46;
+                var waveRadius = 15 + waveProgress * Math.min(w * 0.34, h * 0.44);
+                ctx2.save();
+                ctx2.globalAlpha = studyWave ? 0.58 : 0.28 + (1 - waveProgress) * 0.52;
+                ctx2.strokeStyle = '#fef3c7';
+                ctx2.lineWidth = studyWave ? 2 : 1.5;
+                ctx2.setLineDash([6, 4]);
+                ctx2.beginPath();
+                ctx2.ellipse(waveX, waveY, waveRadius, waveRadius * 0.58, 0, 0, Math.PI * 2);
+                ctx2.stroke();
+                ctx2.setLineDash([]);
+                ctx2.font = '800 8px system-ui, sans-serif';
+                ctx2.fillStyle = '#fef3c7';
+                ctx2.fillText((studyWave ? 'THUNDER WAVE SNAPSHOT \u00B7 ' : 'THUNDER WAVE \u00B7 ') +
+                  waveState.radiusKm.toFixed(1) + ' / ' + model.thunder.distanceKm.toFixed(1) + ' KM',
+                  Math.max(8, Math.min(w - 210, waveX - waveRadius)), Math.max(16, waveY - waveRadius * 0.58 - 5));
+                ctx2.restore();
+                canvasEl.dataset.thunderWave = studyWave ? 'study-static' : 'expanding';
+                canvasEl.dataset.thunderWaveRadiusKm = waveState.radiusKm.toFixed(2);
+                canvasEl.dataset.thunderWaveProgress = waveProgress.toFixed(3);
+              }              function drawCloudPuff(ctx2, x, y, radius, depth, moistureValue) {
                 var cloudGradient = ctx2.createRadialGradient(
                   x - radius * 0.25,
                   y - radius * 0.32,
@@ -4047,6 +4399,46 @@ const d = labToolData.waterCycle || {};
                     ctx2.setLineDash([]);
                   }
                 }
+                ctx2.restore();
+              }
+
+              function drawPrecipThermalRail(ctx2, w, cloudBase, groundY) {
+                var railX = 10;
+                var badgeX = 17;
+                var railNodes = [
+                  { label: 'CLOUD', temperatureC: model.config.tempC, y: Math.max(20, cloudBase - 38) },
+                  { label: 'MIDDLE', temperatureC: model.config.midLevelTempC, y: cloudBase + (groundY - cloudBase) * 0.52 },
+                  { label: 'SURFACE', temperatureC: model.config.surfaceTempC, y: groundY - 15 }
+                ];
+                ctx2.save();
+                ctx2.font = '800 9px system-ui, sans-serif';
+                ctx2.textAlign = 'left';
+                ctx2.textBaseline = 'middle';
+                ctx2.strokeStyle = 'rgba(224,242,254,.5)';
+                ctx2.lineWidth = 1;
+                ctx2.setLineDash([3, 4]);
+                ctx2.beginPath();
+                ctx2.moveTo(railX, railNodes[0].y);
+                ctx2.lineTo(railX, railNodes[railNodes.length - 1].y);
+                ctx2.stroke();
+                ctx2.setLineDash([]);
+                railNodes.forEach(function(railNode) {
+                  var signedTemperature = railNode.temperatureC > 0
+                    ? '+' + Math.round(railNode.temperatureC)
+                    : String(Math.round(railNode.temperatureC));
+                  var railText = railNode.label + ' ' + signedTemperature + '\u00B0C';
+                  var badgeWidth = Math.min(Math.max(82, ctx2.measureText(railText).width + 18), Math.max(82, w * 0.31));
+                  var thermalColor = railNode.temperatureC <= 0 ? '#7dd3fc' : '#fbbf24';
+                  ctx2.fillStyle = 'rgba(3,18,31,.78)';
+                  ctx2.fillRect(badgeX, railNode.y - 9, badgeWidth, 18);
+                  ctx2.fillStyle = thermalColor;
+                  ctx2.fillRect(badgeX, railNode.y - 9, 3, 18);
+                  ctx2.beginPath();
+                  ctx2.arc(railX, railNode.y, 3.2, 0, Math.PI * 2);
+                  ctx2.fill();
+                  ctx2.fillStyle = '#f8fafc';
+                  ctx2.fillText(railText, badgeX + 8, railNode.y + 0.5);
+                });
                 ctx2.restore();
               }
 
@@ -4229,11 +4621,9 @@ const d = labToolData.waterCycle || {};
                 context.quadraticCurveTo(cloudCenter, cloudBase + 10, cloudCenter - w * 0.23, cloudBase);
                 context.closePath();
                 context.fill();
+                drawStormChargeSeparation(context, w, h, cloudCenter, cloudY, cloudBase, groundY);
 
-                context.fillStyle = '#e0f2fe';
-                context.font = '600 11px system-ui, sans-serif';
-                context.fillText('CLOUD ' + model.config.tempC.toFixed(0) + '\u00B0C', 10, 18);
-                context.fillText('SURFACE ' + model.config.surfaceTempC.toFixed(0) + '\u00B0C', 10, groundY - 8);
+                drawPrecipThermalRail(context, w, cloudBase, groundY);
 
                 if (model.config.showAirflow) {
                   var airColor = model.config.tempC <= 0 ? '#bfdbfe' : '#fde68a';
@@ -4441,36 +4831,99 @@ const d = labToolData.waterCycle || {};
                 context.fillText(lifecycleBadge, w - lifecycleBadgeWidth, 21);
                 context.restore();
 
-                var lightningPhase = visualTime % 5.8;
-                var lightningCycle = Math.floor(visualTime / 5.8);
-                if (model.lightningEligible && !motionReduced && !model.config.paused && lightningPhase > 5.62 && lastLightningCycle !== lightningCycle) {
+                var lightningCadence = Math.max(5.8, model.thunder.delaySeconds + 1.15);
+                var lightningPhase = visualTime % lightningCadence;
+                var lightningCycle = Math.floor(visualTime / lightningCadence);
+                var lightningStudyStep = model.config.lightningStudyStep || 'auto';
+                var lightningStudyRequested = lightningStudyStep !== 'auto';
+                var lightningStudyActive = lightningStudyRequested && model.config.showStormAnatomy;
+                var lightningStudyAvailable = lightningStudyActive &&
+                  isWcLightningStudyStepAvailable(model, lightningStudyStep);
+                var lightningAnimationEligible = model.lightningEligible && !motionReduced && !lightningStudyActive;
+                var lightningStaticPathEligible = model.lightningEligible && motionReduced &&
+                  model.config.showStormAnatomy && !lightningStudyActive;
+                var lightningSequenceActive = lightningStaticPathEligible || (lightningAnimationEligible && !model.config.paused && !thunderEventActive);
+                var lightningLeaderStart = lightningCadence - 0.54;
+                var lightningReturnStart = lightningCadence - 0.18;
+                var lightningLeaderProgress = lightningStudyAvailable
+                  ? (lightningStudyStep === 'upward-streamer' ? 1 : lightningStudyStep === 'stepped-leader' ? 0.62 : 0)
+                  : motionReduced ? 1 : wcPrecipClamp((lightningPhase - lightningLeaderStart) / 0.36, 0, 1);
+                var lightningLeaderVisible = lightningStudyAvailable
+                  ? (lightningStudyStep === 'stepped-leader' || lightningStudyStep === 'upward-streamer')
+                  : model.config.showStormAnatomy && lightningSequenceActive &&
+                    (motionReduced || (lightningPhase > lightningLeaderStart && lightningPhase <= lightningReturnStart));
+                var lightningReturnVisible = lightningStudyAvailable
+                  ? lightningStudyStep === 'return-stroke'
+                  : lightningSequenceActive && !motionReduced && lightningPhase > lightningReturnStart;
+                var boltX = cloudCenter + windSign * w * 0.04;
+                var boltTop = cloudY + 12;
+                var boltBottom = terrainSurfaceYAt(boltX + windSign * 32, w, h, groundY) - 4;
+                var lightningPathPoints = [
+                  [boltX, boltTop],
+                  [boltX - 9, boltTop + (boltBottom - boltTop) * 0.28],
+                  [boltX + 5, boltTop + (boltBottom - boltTop) * 0.46],
+                  [boltX - 3, boltTop + (boltBottom - boltTop) * 0.67],
+                  [boltX + windSign * 27, boltBottom - 25],
+                  [boltX + windSign * 32, boltBottom]
+                ];
+                var lightningLeaderPathPoints = lightningPathPoints.slice(0, -1);
+                if (!lightningStudyActive && lightningReturnVisible && lastLightningCycle !== lightningCycle) {
                   lastLightningCycle = lightningCycle;
                   scheduleThunderAfterFlash();
                 }
-                if (model.lightningEligible && !motionReduced && !model.config.paused && lightningPhase > 5.62) {
-                  var boltX = cloudCenter + windSign * w * 0.04;
-                  var boltTop = cloudY + 12;
-                  var boltBottom = terrainSurfaceYAt(boltX + windSign * 32, w, h, groundY) - 4;
+                canvasEl.dataset.lightningPhase = lightningStudyActive
+                  ? (lightningStudyAvailable ? lightningStudyStep : 'study-unavailable')
+                  : !model.lightningEligible
+                    ? 'idle'
+                    : motionReduced
+                      ? (model.config.showStormAnatomy ? 'suppressed-reduced-motion-static-path' : 'suppressed-reduced-motion')
+                      : lightningLeaderVisible
+                        ? (lightningLeaderProgress > 0.72 ? 'upward-streamer' : 'stepped-leader')
+                        : lightningReturnVisible ? 'return-stroke' : 'charge-separation';
+                if (lightningLeaderVisible) {
+                  context.save();
+                  context.strokeStyle = '#fef3c7';
+                  context.globalAlpha = motionReduced ? 0.52 : 0.34 + lightningLeaderProgress * 0.34;
+                  context.lineWidth = 1.35;
+                  context.setLineDash([5, 5]);
+                  strokeStormLightningPath(context, lightningLeaderPathPoints, lightningLeaderProgress);
+                  if (lightningLeaderProgress > 0.72) {
+                    context.beginPath();
+                    context.moveTo(lightningPathPoints[5][0], lightningPathPoints[5][1]);
+                    context.lineTo(lightningPathPoints[4][0], lightningPathPoints[4][1]);
+                    context.stroke();
+                  }
+                  context.setLineDash([]);
+                  context.font = '800 8px system-ui, sans-serif';
+                  context.fillStyle = '#fef3c7';
+                  context.fillText(lightningStudyAvailable
+                    ? getWcLightningStudyStep(lightningStudyStep).label.toUpperCase() + ' \u00B7 STUDY'
+                    : motionReduced ? 'LIGHTNING PATHWAY \u00B7 STATIC' :
+                      (lightningLeaderProgress > 0.72 ? 'UPWARD STREAMER' : 'STEPPED LEADER'),
+                    Math.max(8, boltX - 68), Math.max(18, boltTop - 7));
+                  context.restore();
+                }
+                if (lightningReturnVisible) {
                   context.save();
                   context.strokeStyle = '#fef9c3';
                   context.shadowColor = '#fde047';
                   context.shadowBlur = 10;
                   context.lineWidth = 2.4;
-                  context.beginPath();
-                  context.moveTo(boltX, boltTop);
-                  context.lineTo(boltX - 9, boltTop + (boltBottom - boltTop) * 0.28);
-                  context.lineTo(boltX + 5, boltTop + (boltBottom - boltTop) * 0.46);
-                  context.lineTo(boltX - 3, boltTop + (boltBottom - boltTop) * 0.67);
-                  context.lineTo(boltX + windSign * 32, boltBottom);
-                  context.stroke();
+                  strokeStormLightningPath(context, lightningPathPoints, 1);
                   context.lineWidth = 1.2;
                   context.beginPath();
                   context.moveTo(boltX + 5, boltTop + (boltBottom - boltTop) * 0.46);
                   context.lineTo(boltX + 24, boltTop + (boltBottom - boltTop) * 0.58);
                   context.stroke();
+                  if (lightningStudyAvailable) {
+                    context.shadowBlur = 0;
+                    context.font = '800 8px system-ui, sans-serif';
+                    context.fillStyle = '#fef9c3';
+                    context.fillText('RETURN STROKE \u00B7 STUDY', Math.max(8, boltX - 62), Math.max(18, boltTop - 7));
+                  }
                   context.restore();
                 }
-
+                drawThunderWavefront(context, w, h, cloudCenter, cloudBase, groundY);
                 schedulePrecipFrame();
               }
 
@@ -4495,13 +4948,40 @@ const d = labToolData.waterCycle || {};
                 }
                 if (lifecycleTimer) { clearTimeout(lifecycleTimer); lifecycleTimer = null; }
                 if (thunderTimer) { clearTimeout(thunderTimer); thunderTimer = null; }
+                if (precipMotionMedia && precipMotionMedia.removeEventListener) precipMotionMedia.removeEventListener('change', syncPrecipMotionPreference);
+                else if (precipMotionMedia && precipMotionMedia.removeListener) precipMotionMedia.removeListener(syncPrecipMotionPreference);
                 canvasEl._wcPrecipAdvanceLifecycle = null;
                 canvasEl._wcPrecipSync = null;
                 canvasEl._wcPrecipCleanup = null;
               }
 
               canvasEl._wcPrecipSync = function(nextModel) {
+                var previousStudyActive = !!(model && model.config && model.config.showStormAnatomy &&
+                  model.config.lightningStudyStep !== 'auto');
+                var nextStudyActive = !!(nextModel && nextModel.config && nextModel.config.showStormAnatomy &&
+                  nextModel.config.lightningStudyStep !== 'auto');
                 model = nextModel;
+                if (nextStudyActive) {
+                  if (thunderTimer) { clearTimeout(thunderTimer); thunderTimer = null; }
+                  thunderEventActive = false;
+                  thunderWaveStartTime = -1;
+                  canvasEl.dataset.thunderStatus = 'suppressed-study';
+                } else {
+                  if (previousStudyActive) {
+                    var resumedLightningCadence = Math.max(5.8, model.thunder.delaySeconds + 1.15);
+                    lastLightningCycle = Math.floor(visualTime / resumedLightningCadence);
+                    canvasEl.dataset.thunderStatus = 'waiting';
+                  }
+                  if (!model.lightningEligible || model.config.paused) {
+                    if (thunderTimer) { clearTimeout(thunderTimer); thunderTimer = null; }
+                    thunderEventActive = false;
+                    thunderWaveStartTime = -1;
+                    canvasEl.dataset.thunderStatus = 'canceled';
+                  } else if (thunderTimer && !model.config.soundEnabled) {
+                    clearTimeout(thunderTimer); thunderTimer = null;
+                    canvasEl.dataset.thunderStatus = 'muted';
+                  }
+                }
                 lastTimestamp = 0;
                 setCanvasData();
                 cancelPrecipFrame();
@@ -4527,7 +5007,11 @@ const d = labToolData.waterCycle || {};
 
             var precipCanvasLabel = '2.5D precipitation chamber. ' + precipModel.displayLabel + '. ' +
               precipModel.formationLabel + ', ' + precipModel.cloudPhase + ', ' + precipModel.profileLabel + '. ' +
-              precipModel.phasePathLabel + '. ' + precipModel.thunder.explanation + ' ' + precipModel.thunder.caption + (precipConfig.thunderEstimateChecked ? '. Thunder estimate: ' + precipModel.thunderEstimate.feedback : '') + '. Storm lifecycle: ' + precipModel.lifecycle.stageLabel + ', time ' + precipModel.lifecycle.time + ' out of 100. ' +
+              precipModel.phasePathLabel + '. ' + precipModel.thunder.explanation + ' ' +
+              (lightningStudyActive
+                ? 'Static study snapshot. Thunder audio and automatic timing are paused; choose Auto to resume.'
+                : precipModel.thunder.caption) +
+              (precipConfig.thunderEstimateChecked ? '. Thunder estimate: ' + precipModel.thunderEstimate.feedback : '') + '. Storm lifecycle: ' + precipModel.lifecycle.stageLabel + ', time ' + precipModel.lifecycle.time + ' out of 100. ' +
               'Ground accumulation indices: snow ' + precipModel.lifecycle.accumulation.snow + ', glaze ' + precipModel.lifecycle.accumulation.glaze + ', hail ' + precipModel.lifecycle.accumulation.hail + ', puddling ' + precipModel.lifecycle.accumulation.puddling + ', runoff ' + precipModel.lifecycle.accumulation.runoff + '. Electrical activity index ' + precipModel.electrificationIndex + ' out of 100. ' +
               'Temperature profile: cloud ' + precipConfig.tempC.toFixed(0) + ' degrees Celsius, middle atmosphere ' +
               precipConfig.midLevelTempC.toFixed(0) + ' degrees Celsius, surface ' + precipConfig.surfaceTempC.toFixed(0) + ' degrees Celsius. ' +
@@ -4535,9 +5019,17 @@ const d = labToolData.waterCycle || {};
               precipConfig.updraft.toFixed(0) + ' out of 100, below-cloud humidity ' +
               precipConfig.lowLevelHumidity.toFixed(0) + ' percent, wind ' + precipConfig.wind.toFixed(0) +
               ' meters per second ' + precipModel.driftDirection + '. ' +
+              (lightningStudyActive
+                ? 'Guided lightning phase: ' + activeLightningStudy.label + '. ' + lightningStudyCopy + ' '
+                : 'Lightning sequence uses automatic modeled timing. ') +
               (precipConfig.terrain === 'mountains'
                 ? 'Air rises on the windward slope, while precipitation thins in the leeward rain shadow.'
-                : '');
+                : '') + (precipConfig.showStormAnatomy
+                  ? (precipModel.stormAnatomy.chargeSeparation.active
+                    ? ' Storm anatomy: positive small ice crystals occupy the upper cloud, negative graupel occupies the lower cloud. '
+                    : ' Storm anatomy: this setup lacks organized mixed-phase charge separation. ') +
+                    precipModel.stormAnatomy.lightningPathway.label + '. ' + precipModel.stormAnatomy.thunderWave.label + '.'
+                  : '');
 
             function precipSlider(spec) {
               var value = precipConfig[spec.key];
@@ -4735,11 +5227,36 @@ const d = labToolData.waterCycle || {};
                   : precipModel.visualType === 'sleet'
                     ? 'Ice pellets bounce and collect'
                     : precipModel.phaseLabel;
+            var precipVisualSymbol = ({
+              clear: '\u25CB',
+              virga: '\u2193',
+              rain: '\u25C6',
+              snow: '\u2744',
+              mix: '\u25D0',
+              'freezing-rain': '\u25C7',
+              sleet: '\u25CF',
+              hail: '\u2B22'
+            })[precipModel.visualType] || '\u25C6';
+            var precipReachLabel = precipModel.reachesGround
+              ? 'Reaches the surface'
+              : precipModel.visualType === 'virga'
+                ? 'Evaporates before landing'
+                : 'Remains suspended in the cloud';
+            var precipIntensityLabel = precipModel.relativeIntensity <= 0
+              ? 'None'
+              : precipModel.relativeIntensity < 34
+                ? 'Light'
+                : precipModel.relativeIntensity < 67
+                  ? 'Moderate'
+                  : 'Heavy';
+            function selectLightningStudyStep(stepKey) {
+              setIQ({ lightningStudyStep: getWcLightningStudyStep(stepKey).key });
+            }
 
             var thunderMeasure = precipModel.lightningEligible
               ? h('div', { className: 'wc-thunder-measure', 'data-thunder-measurement': precipConfig.thunderEstimateChecked ? precipModel.thunderEstimate.band : 'unsubmitted' },
                   h('strong', null, 'Measure the storm'),
-                  h('span', null, 'Observed delay: ' + precipModel.thunder.delaySeconds.toFixed(1) + ' seconds. Estimate the distance, then check your work.'),
+                  h('span', null, (lightningStudyActive ? 'Modeled delay: ' : 'Observed delay: ') + precipModel.thunder.delaySeconds.toFixed(1) + ' seconds. Estimate the distance, then check your work.'),
                   h('label', { htmlFor: 'wcPrecipThunderEstimate' },
                     h('span', null, 'Your estimate: ' + precipConfig.thunderEstimateKm.toFixed(1) + ' km'),
                     h('input', { id: 'wcPrecipThunderEstimate', type: 'range', min: 0.5, max: 20, step: 0.5,
@@ -4752,7 +5269,11 @@ const d = labToolData.waterCycle || {};
               : h('div', { className: 'wc-thunder-measure', 'data-thunder-measurement': 'unavailable' },
                   h('strong', null, 'Measure the storm'),
                   h('span', null, 'No lightning flash is modeled yet, so there is no flash-to-thunder interval to measure. Increase cloud depth, moisture, or updraft to build electrical activity.'));
-            return h('section', { className: 'wc-precip-lab', role: 'region', 'aria-labelledby': 'wcPrecipLabTitle' },
+            return h('section', { className: 'wc-precip-lab', role: 'region', 'aria-labelledby': 'wcPrecipLabTitle',
+              'data-precipitation-kind': precipModel.visualType,
+              'data-precipitation-reach': precipModel.reachesGround ? 'ground' : 'aloft',
+              'data-lightning-study-step': activeLightningStudy.key,
+              'data-lightning-study-mode': lightningStudyMode },
               h('div', { className: 'wc-precip-head' },
                 h('div', { className: 'wc-precip-head-copy' },
                   h('span', { className: 'wc-precip-kicker' }, 'Interactive storm chamber'),
@@ -4767,12 +5288,29 @@ const d = labToolData.waterCycle || {};
               ),
               h('div', { className: 'wc-precip-layout' },
                 h('div', { className: 'wc-precip-visual' },
-                  h('div', { className: 'wc-precip-chamber' },
+                  h('div', { className: 'wc-precip-chamber',
+                    'data-precipitation-kind': precipModel.visualType,
+                    'data-storm-stage': precipModel.lifecycle.stageKey },
                     h('canvas', { id: 'wcPrecipCanvas', ref: precipCanvasRef, className: 'wc-precip-canvas', role: 'img',
                       'aria-label': precipCanvasLabel, 'data-precipitation-chamber': '2.5d' },
                       'Animated cross-section of cloud growth, airflow, and precipitation.'),
-                    h('div', { className: 'wc-precip-canvas-dock' },
-                      h('div', null, h('span', null, '2.5D storm chamber'), h('strong', null, precipModel.displayLabel)),
+                    h('div', { className: 'wc-precip-canvas-dock', role: 'group',
+                      'aria-label': 'Live chamber status: ' + precipModel.displayLabel + ', ' +
+                        precipIntensityLabel + ' intensity, ' + precipReachLabel },
+                      h('div', { className: 'wc-precip-live-outcome' },
+                        h('span', { className: 'wc-precip-outcome-mark', 'aria-hidden': 'true' }, precipVisualSymbol),
+                        h('div', { className: 'wc-precip-live-copy' },
+                          h('span', null, '2.5D storm chamber'),
+                          h('strong', null, precipModel.displayLabel),
+                          h('small', null, precipReachLabel))),
+                      h('div', { className: 'wc-precip-live-meter' },
+                        h('div', { className: 'wc-precip-live-meter-head' },
+                          h('span', null, 'Intensity index'),
+                          h('strong', null, precipIntensityLabel + ' \u00B7 ' + precipModel.relativeIntensity + '/100')),
+                        h('meter', { min: 0, max: 100, value: precipModel.relativeIntensity,
+                          'aria-label': precipIntensityLabel + ' precipitation intensity index, ' +
+                            precipModel.relativeIntensity + ' out of 100' },
+                          precipModel.relativeIntensity + ' out of 100')),
                       h('button', { type: 'button', className: 'wc-precip-pause', 'aria-pressed': precipConfig.paused,
                         'aria-disabled': precipMotionReduced,
                         'aria-label': precipMotionReduced ? 'Animation is static because reduced motion is enabled' : (precipConfig.paused ? 'Resume precipitation animation' : 'Pause precipitation animation'),
@@ -4781,14 +5319,26 @@ const d = labToolData.waterCycle || {};
                     )
                   ),
                   h('div', { className: 'wc-precip-path-strip', role: 'group',
+                    'data-path-outcome': precipModel.visualType,
                     'aria-label': 'Precipitation fall sequence: ' + precipModel.cloudPhase + ', ' +
                       precipModel.thermalLayers.layerLabel + ', ' + precipSurfaceOutcomeLabel },
-                    h('div', { className: 'wc-precip-path-step' }, h('span', null, 'Cloud'), h('strong', null, precipModel.cloudPhase)),
+                    h('div', { className: 'wc-precip-path-step', 'data-path-step': 'cloud' },
+                      h('span', { className: 'wc-precip-path-icon', 'aria-hidden': 'true' }, '\u2601'),
+                      h('span', { className: 'wc-precip-path-copy' },
+                        h('span', { className: 'wc-precip-path-label' }, 'Cloud'),
+                        h('strong', null, precipModel.cloudPhase))),
                     h('span', { className: 'wc-precip-path-arrow', 'aria-hidden': 'true' }, '\u2192'),
-                    h('div', { className: 'wc-precip-path-step' }, h('span', null, 'Air layer'), h('strong', null, precipModel.thermalLayers.layerLabel)),
+                    h('div', { className: 'wc-precip-path-step', 'data-path-step': 'air-column' },
+                      h('span', { className: 'wc-precip-path-icon', 'aria-hidden': 'true' }, '0\u00B0'),
+                      h('span', { className: 'wc-precip-path-copy' },
+                        h('span', { className: 'wc-precip-path-label' }, 'Air column'),
+                        h('strong', null, precipModel.thermalLayers.layerLabel))),
                     h('span', { className: 'wc-precip-path-arrow', 'aria-hidden': 'true' }, '\u2192'),
-                    h('div', { className: 'wc-precip-path-step' }, h('span', null, 'Surface'), h('strong', null,
-                      precipSurfaceOutcomeLabel))
+                    h('div', { className: 'wc-precip-path-step', 'data-path-step': 'surface' },
+                      h('span', { className: 'wc-precip-path-icon', 'aria-hidden': 'true' }, precipVisualSymbol),
+                      h('span', { className: 'wc-precip-path-copy' },
+                        h('span', { className: 'wc-precip-path-label' }, 'Surface'),
+                        h('strong', null, precipSurfaceOutcomeLabel)))
                   ),
                   h('div', { className: 'wc-storm-lifecycle', role: 'group',
                     'aria-labelledby': 'wcStormLifecycleTitle', 'data-storm-lifecycle': precipModel.lifecycle.stageKey },
@@ -4833,12 +5383,63 @@ const d = labToolData.waterCycle || {};
                           h('div', { className: 'wc-storm-accumulation-track', 'aria-hidden': 'true' },
                             h('i', { style: { width: accumulationValue + '%' } })));
                       }))),
-                  h('div', { className: 'wc-thunder-lesson', role: 'group', 'aria-label': 'Thunder and lightning explanation' },
-                    h('strong', null, '⚡ Flash → thunder · ' + precipModel.thunder.caption),
+                  precipConfig.showStormAnatomy && h('section', { className: 'wc-storm-anatomy', role: 'region',
+                    'aria-labelledby': 'wcStormAnatomyTitle', 'data-storm-anatomy': precipModel.stormAnatomy.chargeSeparation.state },
+                    h('div', { className: 'wc-storm-anatomy-head' },
+                      h('h4', { id: 'wcStormAnatomyTitle' }, 'Storm anatomy'),
+                      h('span', null, 'Charge ' + precipModel.stormAnatomy.chargeSeparation.index + '/100 \u00B7 ' +
+                        precipModel.stormAnatomy.chargeSeparation.state)),
+                    h('p', null, precipModel.stormAnatomy.chargeSeparation.active
+                      ? 'Upper cloud: positive small ice crystals (+). Lower cloud: negative graupel and larger ice (\u2212). Collisions and strong updrafts help separate charge.'
+                      : 'This cloud lacks the mixed-phase ice and lift needed for organized storm-charge separation.'),
+                    h('p', null, precipModel.stormAnatomy.lightningPathway.label + '. ' +
+                      precipModel.stormAnatomy.thunderWave.label + '.'),
+                    h('div', { className: 'wc-lightning-study', role: 'group',
+                      'aria-labelledby': 'wcLightningStudyTitle', 'data-lightning-study-mode': lightningStudyMode },
+                      h('div', { className: 'wc-lightning-study-head' },
+                        h('strong', { id: 'wcLightningStudyTitle' }, 'Inspect the lightning sequence'),
+                        h('span', null, lightningStudyRequested
+                          ? (lightningStudyAvailable ? 'Guided still frame' : 'Unavailable in this cloud')
+                          : 'Automatic timing')),
+                      h('div', { className: 'wc-lightning-study-steps', role: 'group',
+                        'aria-label': 'Choose a lightning sequence phase' },
+                        WC_LIGHTNING_STUDY_STEPS.map(function(studyStep, studyIndex) {
+                          return h('button', { key: studyStep.key, type: 'button', className: 'wc-lightning-study-step',
+                            'data-lightning-study-choice': studyStep.key,
+                            'aria-label': studyStep.key === 'auto'
+                              ? studyStep.label : 'Step ' + studyIndex + ': ' + studyStep.label,
+                            'aria-pressed': activeLightningStudy.key === studyStep.key,
+                            onClick: function() { selectLightningStudyStep(studyStep.key); } },
+                            studyStep.shortLabel);
+                        })),
+                      h('p', { className: 'wc-lightning-study-copy', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                        activeLightningStudy.label + '. ' + lightningStudyCopy),
+                      lightningStudyActive && lightningStudyAvailable
+                        ? h('p', { className: 'wc-lightning-study-note' },
+                            'Study snapshots are static and silent. Choose Auto to resume flash-to-thunder timing.')
+                        : null),
+                    h('dl', { className: 'wc-storm-anatomy-readouts', 'aria-label': 'Storm instrument readouts' },
+                      precipModel.stormAnatomy.instruments.map(function(instrument) {
+                        var instrumentAvailable = instrument.value != null && isFinite(instrument.value);
+                        var instrumentValue = !instrumentAvailable ? 'N/A'
+                          : instrument.id === 'delay' || instrument.id === 'distance'
+                            ? Number(instrument.value).toFixed(1) : Math.round(instrument.value);
+                        return h('div', { key: instrument.id, 'data-storm-instrument': instrument.id,
+                          'data-instrument-available': instrumentAvailable ? 'true' : 'false' },
+                          h('dt', null, instrument.label),
+                          h('dd', null, instrumentValue + (instrumentAvailable && instrument.unit ? ' ' + instrument.unit : '')));
+                      }))),                  h('div', { className: 'wc-thunder-lesson', role: 'group', 'aria-label': 'Thunder and lightning explanation' },
+                    h('strong', null, lightningStudyActive
+                      ? '⚡ Study snapshot · ' + activeLightningStudy.label
+                      : '⚡ Flash → thunder · ' + precipModel.thunder.caption),
                     h('span', null, precipModel.thunder.explanation),
-                    precipModel.thunder.soundEnabled
-                      ? h('span', null, 'Sound is enabled; the rumble is scheduled after the modeled delay.')
-                      : h('span', null, 'Sound is muted; follow the captioned delay to observe the same idea.'),
+                    lightningStudyActive
+                      ? h('span', null, lightningStudyAvailable
+                          ? 'Static study snapshot. Thunder audio and automatic timing are paused; choose Auto to resume.'
+                          : 'This selected phase is not produced by the current cloud; no flash or thunder is scheduled.')
+                      : precipModel.thunder.soundEnabled
+                        ? h('span', null, 'Sound is enabled; the rumble is scheduled after the modeled delay.')
+                        : h('span', null, 'Sound is muted; follow the captioned delay to observe the same idea.'),
                     thunderMeasure),
                   h('div', { className: 'wc-precip-result', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
                     h('div', { className: 'wc-precip-result-top' },
@@ -4906,7 +5507,10 @@ const d = labToolData.waterCycle || {};
                     h('label', { className: 'wc-precip-switch', htmlFor: 'wcPrecipAirflow' },
                       h('input', { id: 'wcPrecipAirflow', type: 'checkbox', checked: precipConfig.showAirflow,
                         onChange: function(event) { setIQ({ showAirflow: event.target.checked }); } }),
-                      h('span', null, 'Show wind and updraft pathways')),
+                      h('span', null, 'Show wind and updraft pathways')),                    h('label', { className: 'wc-precip-switch', htmlFor: 'wcPrecipStormAnatomy' },
+                      h('input', { id: 'wcPrecipStormAnatomy', type: 'checkbox', checked: precipConfig.showStormAnatomy,
+                        onChange: function(event) { setIQ({ showStormAnatomy: event.target.checked }); } }),
+                      h('span', null, 'Show charge, lightning pathway, and thunder wavefront')),
                     h('button', { type: 'button', className: 'wc-precip-btn', onClick: resetPrecipLab }, '\u21BA Reset lab')
                   )
                 )
@@ -6855,7 +7459,20 @@ const d = labToolData.waterCycle || {};
             var alive3d = true;
             var frame3d = null;
             var motionReduced3d = false;
-            try { motionReduced3d = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+            var motionMedia3d = null;
+            function syncMotionPreference3d(event) {
+              motionReduced3d = event && typeof event.matches === 'boolean' ? event.matches : !!(motionMedia3d && motionMedia3d.matches);
+              if (motionReduced3d && stormThunderTimer3d) {
+                clearTimeout(stormThunderTimer3d);
+                stormThunderTimer3d = null;
+              }
+            }
+            try {
+              motionMedia3d = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+              syncMotionPreference3d(motionMedia3d);
+              if (motionMedia3d && motionMedia3d.addEventListener) motionMedia3d.addEventListener('change', syncMotionPreference3d);
+              else if (motionMedia3d && motionMedia3d.addListener) motionMedia3d.addListener(syncMotionPreference3d);
+            } catch (e) {}
 
             var width = Math.max(320, canvasEl.clientWidth || 800);
             var height = Math.max(260, canvasEl.clientHeight || 460);
@@ -7629,6 +8246,41 @@ const d = labToolData.waterCycle || {};
             cloudMicrophysicsGroup3d.add(cloudIceCrystalGroup3d);
             cloudMicrophysicsGroup3d.visible = false;
             cloudGroup3d.add(cloudMicrophysicsGroup3d);
+            var stormChargeGroup3d = new THREE.Group();
+            var stormUpperChargePoints3d = [];
+            var stormLowerChargePoints3d = [];
+            for (var stormChargeIndex3d = 0; stormChargeIndex3d < 8; stormChargeIndex3d++) {
+              var stormChargeX3d = -1.55 + (stormChargeIndex3d % 4) * 1.0;
+              var stormChargeZ3d = -0.42 + (stormChargeIndex3d % 3) * 0.42;
+              var stormUpperY3d = 0.54 + Math.floor(stormChargeIndex3d / 4) * 0.22;
+              stormUpperChargePoints3d.push(
+                new THREE.Vector3(stormChargeX3d - 0.11, stormUpperY3d, stormChargeZ3d),
+                new THREE.Vector3(stormChargeX3d + 0.11, stormUpperY3d, stormChargeZ3d),
+                new THREE.Vector3(stormChargeX3d, stormUpperY3d - 0.11, stormChargeZ3d),
+                new THREE.Vector3(stormChargeX3d, stormUpperY3d + 0.11, stormChargeZ3d)
+              );
+              var stormLowerY3d = -0.02 + Math.floor(stormChargeIndex3d / 4) * 0.17;
+              stormLowerChargePoints3d.push(
+                new THREE.Vector3(stormChargeX3d - 0.12, stormLowerY3d, stormChargeZ3d),
+                new THREE.Vector3(stormChargeX3d + 0.12, stormLowerY3d, stormChargeZ3d)
+              );
+            }
+            var stormUpperChargeMat3d = new THREE.LineBasicMaterial({
+              color: 0xfde68a, transparent: true, opacity: 0,
+              depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var stormLowerChargeMat3d = new THREE.LineBasicMaterial({
+              color: 0x67e8f9, transparent: true, opacity: 0,
+              depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var stormUpperCharge3d = new THREE.LineSegments(
+              new THREE.BufferGeometry().setFromPoints(stormUpperChargePoints3d), stormUpperChargeMat3d);
+            var stormLowerCharge3d = new THREE.LineSegments(
+              new THREE.BufferGeometry().setFromPoints(stormLowerChargePoints3d), stormLowerChargeMat3d);
+            stormChargeGroup3d.add(stormUpperCharge3d);
+            stormChargeGroup3d.add(stormLowerCharge3d);
+            stormChargeGroup3d.visible = false;
+            cloudGroup3d.add(stormChargeGroup3d);
             var distantClouds3d = new THREE.Group();
             var distantCloudMat3d = new THREE.MeshLambertMaterial({ color: 0xb8d6e5, transparent: true, opacity: 0.28, depthWrite: false });
             for (var distantCloudIndex3d = 0; distantCloudIndex3d < 12; distantCloudIndex3d++) {
@@ -8153,19 +8805,46 @@ const d = labToolData.waterCycle || {};
             stormPuddle3d.visible = false;
             world3d.add(stormPuddle3d);
 
+            var stormLightningPathPoints3d = [
+              new THREE.Vector3(0, 2.65, 0),
+              new THREE.Vector3(-0.18, 1.9, 0),
+              new THREE.Vector3(0.08, 1.28, 0),
+              new THREE.Vector3(-0.04, 0.52, 0),
+              new THREE.Vector3(0.22, -0.46, 0),
+              new THREE.Vector3(0.3, -0.9, 0)
+            ];
+            var stormLightningLeaderMat3d = new THREE.LineDashedMaterial({
+              color: 0xfef3c7, transparent: true, opacity: 0,
+              dashSize: 0.14, gapSize: 0.11, depthWrite: false,
+              blending: THREE.AdditiveBlending
+            });
+            var stormLightningLeaderGroup3d = new THREE.Group();
+            var stormLightningLeader3d = new THREE.Line(
+              new THREE.BufferGeometry().setFromPoints(stormLightningPathPoints3d),
+              stormLightningLeaderMat3d
+            );
+            stormLightningLeader3d.computeLineDistances();
+            stormLightningLeaderGroup3d.add(stormLightningLeader3d);
+            var stormUpwardStreamer3d = new THREE.Line(
+              new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0.38, -0.9, 0),
+                new THREE.Vector3(0.22, -0.46, 0)
+              ]),
+              stormLightningLeaderMat3d
+            );
+            stormUpwardStreamer3d.computeLineDistances();
+            stormLightningLeaderGroup3d.add(stormUpwardStreamer3d);
+            stormLightningLeaderGroup3d.position.set(1.2, 0, -0.8);
+            stormLightningLeaderGroup3d.visible = false;
+            world3d.add(stormLightningLeaderGroup3d);
+
             var stormLightningMat3d = new THREE.LineBasicMaterial({
               color: 0xfef9c3, transparent: true, opacity: 0,
               depthWrite: false, blending: THREE.AdditiveBlending
             });
             var stormLightningGroup3d = new THREE.Group();
             stormLightningGroup3d.add(new THREE.Line(
-              new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(0, 2.65, 0),
-                new THREE.Vector3(-0.18, 1.9, 0),
-                new THREE.Vector3(0.08, 1.28, 0),
-                new THREE.Vector3(-0.04, 0.52, 0),
-                new THREE.Vector3(0.3, -0.9, 0)
-              ]),
+              new THREE.BufferGeometry().setFromPoints(stormLightningPathPoints3d),
               stormLightningMat3d
             ));
             stormLightningGroup3d.add(new THREE.Line(
@@ -8178,6 +8857,61 @@ const d = labToolData.waterCycle || {};
             stormLightningGroup3d.position.set(1.2, 0, -0.8);
             stormLightningGroup3d.visible = false;
             world3d.add(stormLightningGroup3d);
+
+            var stormPressureWavePoints3d = [];
+            var stormPressureWaveSegments3d = 36;
+            for (var stormPressurePlane3d = 0; stormPressurePlane3d < 3; stormPressurePlane3d++) {
+              for (var stormPressureSegment3d = 0; stormPressureSegment3d < stormPressureWaveSegments3d; stormPressureSegment3d++) {
+                var stormPressureAngleA3d = stormPressureSegment3d / stormPressureWaveSegments3d * Math.PI * 2;
+                var stormPressureAngleB3d = (stormPressureSegment3d + 1) / stormPressureWaveSegments3d * Math.PI * 2;
+                var stormPressureCosA3d = Math.cos(stormPressureAngleA3d);
+                var stormPressureSinA3d = Math.sin(stormPressureAngleA3d);
+                var stormPressureCosB3d = Math.cos(stormPressureAngleB3d);
+                var stormPressureSinB3d = Math.sin(stormPressureAngleB3d);
+                if (stormPressurePlane3d === 0) {
+                  stormPressureWavePoints3d.push(
+                    new THREE.Vector3(stormPressureCosA3d, stormPressureSinA3d, 0),
+                    new THREE.Vector3(stormPressureCosB3d, stormPressureSinB3d, 0));
+                } else if (stormPressurePlane3d === 1) {
+                  stormPressureWavePoints3d.push(
+                    new THREE.Vector3(stormPressureCosA3d, 0, stormPressureSinA3d),
+                    new THREE.Vector3(stormPressureCosB3d, 0, stormPressureSinB3d));
+                } else {
+                  stormPressureWavePoints3d.push(
+                    new THREE.Vector3(0, stormPressureCosA3d, stormPressureSinA3d),
+                    new THREE.Vector3(0, stormPressureCosB3d, stormPressureSinB3d));
+                }
+              }
+            }
+            var stormPressureWaveMat3d = new THREE.LineBasicMaterial({
+              color: 0xfef3c7, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var stormPressureWave3d = new THREE.LineSegments(
+              new THREE.BufferGeometry().setFromPoints(stormPressureWavePoints3d), stormPressureWaveMat3d);
+            stormPressureWave3d.position.set(1.2, 0.88, -0.8);
+            stormPressureWave3d.visible = false;
+            world3d.add(stormPressureWave3d);
+
+            var stormGroundChargePoints3d = [];
+            for (var stormGroundChargeIndex3d = 0; stormGroundChargeIndex3d < 5; stormGroundChargeIndex3d++) {
+              var stormGroundChargeX3d = -0.75 + stormGroundChargeIndex3d * 0.38;
+              stormGroundChargePoints3d.push(
+                new THREE.Vector3(stormGroundChargeX3d - 0.09, 0, 0),
+                new THREE.Vector3(stormGroundChargeX3d + 0.09, 0, 0),
+                new THREE.Vector3(stormGroundChargeX3d, 0, -0.09),
+                new THREE.Vector3(stormGroundChargeX3d, 0, 0.09)
+              );
+            }
+            var stormGroundChargeMat3d = new THREE.LineBasicMaterial({
+              color: 0xfde68a, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var stormGroundCharge3d = new THREE.LineSegments(
+              new THREE.BufferGeometry().setFromPoints(stormGroundChargePoints3d), stormGroundChargeMat3d);
+            stormGroundCharge3d.position.set(1.2, -0.93, -0.8);
+            stormGroundCharge3d.visible = false;
+            world3d.add(stormGroundCharge3d);
 
             var percolationCount3d = 42;
             var percolationPositions3d = new Float32Array(percolationCount3d * 3);
@@ -8600,6 +9334,30 @@ const d = labToolData.waterCycle || {};
               delete processLabels3d.storm_freezing_layer;
               stormFreezingLayerLabel3d.scale.set(1.75, 0.44, 1);
               stormFreezingLayerLabel3d.visible = false;
+            }
+            var stormUpperChargeLabel3d = makeProcessLabel3d(
+              'storm_upper_charge', 'Upper + ice crystals', '#fde68a', [2.8, 4.1, -1.0]
+            );
+            if (stormUpperChargeLabel3d) {
+              delete processLabels3d.storm_upper_charge;
+              stormUpperChargeLabel3d.scale.set(1.55, 0.39, 1);
+              stormUpperChargeLabel3d.visible = false;
+            }
+            var stormLowerChargeLabel3d = makeProcessLabel3d(
+              'storm_lower_charge', 'Lower \u2212 graupel', '#67e8f9', [2.8, 3.4, -1.0]
+            );
+            if (stormLowerChargeLabel3d) {
+              delete processLabels3d.storm_lower_charge;
+              stormLowerChargeLabel3d.scale.set(1.45, 0.36, 1);
+              stormLowerChargeLabel3d.visible = false;
+            }
+            var stormPressureWaveLabel3d = makeProcessLabel3d(
+              'storm_pressure_wave', 'Thunder pressure wave', '#fef3c7', [2.8, 1.4, -0.8]
+            );
+            if (stormPressureWaveLabel3d) {
+              delete processLabels3d.storm_pressure_wave;
+              stormPressureWaveLabel3d.scale.set(1.65, 0.41, 1);
+              stormPressureWaveLabel3d.visible = false;
             }
             var canopyInterceptionLabel3d = makeProcessLabel3d(
               'canopy_interception', 'Canopy interception', '#7dd3fc', [4.2, 1.25, -0.6]
@@ -9100,8 +9858,13 @@ const d = labToolData.waterCycle || {};
               resizeObserver3d.observe(canvasEl);
             }
             var visualTime3d = 0;
+            var stormSequenceTime3d = 0;
             var stormThunderTimer3d = null;
+            var lastLightningFlashTime3d = -1;
+            var lightningFlashCount3d = 0;
             var lastLightningCycle3d = -1;
+            var stormEventActive3d = false;
+            var stormProfileWasEligible3d = false;
             var lastElapsed3d = 0;
             var waveFrame3d = 0;
             var lastUndergroundMode3d = null;
@@ -9161,7 +9924,16 @@ const d = labToolData.waterCycle || {};
               var precipElectrification3d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.precipitationElectrification || '0')));
               var precipLightningEligible3d = canvasEl.dataset.precipitationLightningEligible === 'true';
               var precipThunderDelay3d = Math.max(0.5, Math.min(60, parseFloat(canvasEl.dataset.thunderDelaySeconds || '8.7')));
+              var precipStormDistance3d = Math.max(0.5, Math.min(20, parseFloat(canvasEl.dataset.stormDistanceKm || String(precipThunderDelay3d * 0.343))));
               var precipSoundEnabled3d = canvasEl.dataset.thunderSound === 'enabled';
+              var precipStormAnatomy3d = canvasEl.dataset.stormAnatomy !== 'hidden';
+              var requestedLightningStudyStep3d = canvasEl.dataset.lightningStudyStep || 'auto';
+              var precipLightningStudyStep3d = Object.prototype.hasOwnProperty.call(
+                WC_LIGHTNING_STUDY_LOOKUP, requestedLightningStudyStep3d)
+                ? requestedLightningStudyStep3d : 'auto';
+              var precipLightningStudyRequested3d = precipLightningStudyStep3d !== 'auto';
+              var precipLightningStudyActive3d = precipLightningStudyRequested3d && precipStormAnatomy3d;
+              var precipChargeSeparationIndex3d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.chargeSeparationIndex || '0')));
               var precipStormStage3d = canvasEl.dataset.stormStage || 'mature';
               var precipStormCloudFactor3d = Math.max(0.35, Math.min(1.1, parseFloat(canvasEl.dataset.stormCloudFactor || '1')));
               var precipStormUpdraftFactor3d = Math.max(0.1, Math.min(1.1, parseFloat(canvasEl.dataset.stormUpdraftFactor || '1')));
@@ -9173,9 +9945,13 @@ const d = labToolData.waterCycle || {};
               var precipLifecycleUpdraft3d = precipUpdraft3d * precipStormUpdraftFactor3d;
               var journeyPaused3d = canvasEl.dataset.journeyPaused === 'true';
               var hydroPoints3d = Math.max(0, Math.min(120, parseFloat(canvasEl.dataset.hydroPoints || '0')));
-              var frameDelta3d = lastElapsed3d ? Math.min(0.05, Math.max(0, elapsed3d - lastElapsed3d)) : 0;
+              var rawFrameDelta3d = lastElapsed3d ? Math.max(0, elapsed3d - lastElapsed3d) : 0;
+              var frameDelta3d = Math.min(0.05, rawFrameDelta3d);
               lastElapsed3d = elapsed3d;
-              if (!motionReduced3d && !journeyPaused3d) visualTime3d += frameDelta3d;
+              if (!motionReduced3d && !journeyPaused3d) {
+                visualTime3d += frameDelta3d;
+                stormSequenceTime3d += Math.min(1, rawFrameDelta3d);
+              }
 
               var state3d = rawState3d === 'idle' ? (stageMap3d[stage3d] || stage3d) : rawState3d;
               var targetArray3d = stageTargets3d[state3d] || stageTargets3d.ocean;
@@ -10591,10 +11367,13 @@ const d = labToolData.waterCycle || {};
               stormUpdraft3d.position.x = stormCenterX3d;
               stormThermalLayer3d.position.x = stormCenterX3d;
               stormThermalLayerSecondary3d.position.x = stormCenterX3d;
+              stormLightningLeaderGroup3d.position.x = stormCenterX3d;
               stormLightningGroup3d.position.x = stormCenterX3d;
+              stormPressureWave3d.position.x = stormCenterX3d;
               var stormLandingX3d = stormCenterX3d + (precipLabSource3d ? precipWindSign3d * windVisual3d * 0.16 : 0);
               freezingGlaze3d.position.x = stormLandingX3d;
               stormPuddle3d.position.x = stormLandingX3d;
+              stormGroundCharge3d.position.x = stormLandingX3d;
               var hailImpactActive3d = precipitationFieldActive3d && precipLabSource3d && precipType3d === 'hail';
               rainImpactMist3d.visible = liquidRainActive3d;
               if (hailImpactActive3d) rainImpactMist3d.visible = true;
@@ -10702,6 +11481,21 @@ const d = labToolData.waterCycle || {};
                   precipType3d === 'freezing-rain' ? 0xa5f3fc : 0xcffafe);
               }
               var stormProfileVisible3d = precipitationFieldActive3d && precipLabSource3d;
+              var stormChargeVisible3d = stormProfileVisible3d && precipStormAnatomy3d && precipChargeSeparationIndex3d >= 8;
+              stormChargeGroup3d.visible = stormChargeVisible3d;
+              stormUpperChargeMat3d.opacity = stormChargeVisible3d ? Math.min(0.96, 0.24 + precipChargeSeparationIndex3d / 125) : 0;
+              stormLowerChargeMat3d.opacity = stormUpperChargeMat3d.opacity;
+              stormGroundCharge3d.visible = stormChargeVisible3d && precipChargeSeparationIndex3d >= 35;
+              stormGroundChargeMat3d.opacity = stormGroundCharge3d.visible ? Math.min(0.88, 0.2 + precipChargeSeparationIndex3d / 135) : 0;              if (stormUpperChargeLabel3d) {
+                stormUpperChargeLabel3d.visible = stormChargeVisible3d;
+                if (stormChargeVisible3d) stormUpperChargeLabel3d.position.set(
+                  stormCenterX3d + 1.65, cloudGroup3d.position.y + 0.72 * cloudGroup3d.scale.y, -0.72);
+              }
+              if (stormLowerChargeLabel3d) {
+                stormLowerChargeLabel3d.visible = stormChargeVisible3d;
+                if (stormChargeVisible3d) stormLowerChargeLabel3d.position.set(
+                  stormCenterX3d + 1.55, cloudGroup3d.position.y + 0.05 * cloudGroup3d.scale.y, -0.72);
+              }
               stormUpdraft3d.visible = stormProfileVisible3d && precipLifecycleUpdraft3d >= 18;
               stormUpdraftMat3d.opacity = stormUpdraft3d.visible ? 0.12 + precipLifecycleUpdraft3d / 180 : 0;
               stormUpdraftMarkers3d.material.opacity = stormUpdraft3d.visible ? 0.42 + precipLifecycleUpdraft3d / 220 : 0;
@@ -10750,7 +11544,8 @@ const d = labToolData.waterCycle || {};
                 if (stormFreezingLayerLabel3d.visible) {
                   stormFreezingLayerLabel3d.position.set(stormCenterX3d + 2.05, stormFreezingLayerY3d + 0.18, -0.8);
                 }
-              }              freezingGlaze3d.visible = stormProfileVisible3d && precipType3d === 'freezing-rain';
+              }
+              freezingGlaze3d.visible = stormProfileVisible3d && precipType3d === 'freezing-rain';
               freezingGlazeMat3d.opacity = freezingGlaze3d.visible ? Math.min(0.58, 0.08 + precipGlazeAccum3d / 190) : 0;
               if (freezingGlaze3d.visible) {
                 var freezingGlazeExtent3d = 0.58 + precipGlazeAccum3d / 105;
@@ -10766,24 +11561,171 @@ const d = labToolData.waterCycle || {};
                 var stormPuddlePulse3d = motionReduced3d || journeyPaused3d ? 0 : Math.sin(visualTime3d * 0.55) * 0.018;
                 stormPuddle3d.scale.set(stormPuddleExtent3d + stormPuddlePulse3d, 0.54 + precipPuddleAccum3d / 220, 1);
               }
-              var stormLightningCycle3d = visualTime3d % 5.8;
-              var stormLightningCycleIndex3d = Math.floor(visualTime3d / 5.8);
-              var stormLightningVisible3d = stormProfileVisible3d && precipLightningEligible3d &&
-                !motionReduced3d && !journeyPaused3d && stormLightningCycle3d > 5.62;
-              stormLightningGroup3d.visible = stormLightningVisible3d;
-              stormLightningMat3d.opacity = stormLightningVisible3d ? 0.92 : 0;
-              if (stormLightningVisible3d && stormLightningCycleIndex3d !== lastLightningCycle3d) {
-                lastLightningCycle3d = stormLightningCycleIndex3d;
+              var stormLightningCadence3d = Math.max(5.8, precipThunderDelay3d + 1.15);
+              var stormLightningCycle3d = stormSequenceTime3d % stormLightningCadence3d;
+              var stormLightningEventIndex3d = Math.floor((stormSequenceTime3d + 0.18) / stormLightningCadence3d);
+              var stormLightningLeaderStart3d = stormLightningCadence3d - 0.54;
+              var stormLightningReturnStart3d = stormLightningCadence3d - 0.18;
+              var stormProfileEligible3d = stormProfileVisible3d && precipLightningEligible3d;
+              var stormLightningStudyPhysical3d = precipLightningStudyStep3d === 'charge-separation'
+                ? precipChargeSeparationIndex3d >= 8 : precipLightningEligible3d;
+              var stormLightningStudyAvailable3d = precipLightningStudyActive3d &&
+                stormProfileVisible3d && stormLightningStudyPhysical3d;
+              var stormLightningStudyMode3d = !precipStormAnatomy3d
+                ? 'hidden' : precipLightningStudyActive3d
+                  ? (stormLightningStudyAvailable3d ? 'guided' : 'unavailable') : 'automatic';
+              var stormAutomaticSequenceActive3d = stormProfileEligible3d && !precipLightningStudyActive3d &&
+                (motionReduced3d || (!journeyPaused3d && !stormEventActive3d));
+              var stormLightningLeaderProgress3d = stormLightningStudyAvailable3d
+                ? (precipLightningStudyStep3d === 'upward-streamer' ? 1 :
+                    precipLightningStudyStep3d === 'stepped-leader' ? 0.62 : 0)
+                : motionReduced3d ? 1 :
+                  Math.max(0, Math.min(1, (stormLightningCycle3d - stormLightningLeaderStart3d) / 0.36));
+              var stormLightningLeaderVisible3d = stormLightningStudyAvailable3d
+                ? (precipLightningStudyStep3d === 'stepped-leader' || precipLightningStudyStep3d === 'upward-streamer')
+                : stormAutomaticSequenceActive3d && precipStormAnatomy3d &&
+                  (motionReduced3d || (stormLightningCycle3d > stormLightningLeaderStart3d && stormLightningCycle3d <= stormLightningReturnStart3d));
+              stormLightningLeaderGroup3d.visible = stormLightningLeaderVisible3d;
+              stormLightningLeaderMat3d.opacity = stormLightningLeaderVisible3d
+                ? (stormLightningStudyAvailable3d || motionReduced3d
+                    ? 0.52 : 0.2 + stormLightningLeaderProgress3d * 0.48) : 0;
+              if (stormLightningLeaderVisible3d) {
+                var stormLeaderVertexCount3d = stormLightningLeader3d.geometry.attributes.position.count;
+                stormLightningLeader3d.geometry.setDrawRange(0,
+                  Math.min(stormLeaderVertexCount3d - 1,
+                    Math.max(2, Math.ceil(1 + stormLightningLeaderProgress3d * (stormLeaderVertexCount3d - 1)))));
+                stormUpwardStreamer3d.visible = precipLightningStudyStep3d === 'upward-streamer' ||
+                  (!precipLightningStudyActive3d && (motionReduced3d || stormLightningLeaderProgress3d > 0.72));
+              } else {
+                stormUpwardStreamer3d.visible = false;
+              }
+              if (!stormProfileEligible3d && stormProfileWasEligible3d) {
                 if (stormThunderTimer3d) { clearTimeout(stormThunderTimer3d); stormThunderTimer3d = null; }
+                lastLightningFlashTime3d = -1;
+                lastLightningCycle3d = stormLightningEventIndex3d;
+                stormEventActive3d = false;
+                canvasEl.dataset.thunderStatus = 'canceled';
+              } else if (stormProfileEligible3d && !stormProfileWasEligible3d) {
+                lastLightningFlashTime3d = -1;
+                lastLightningCycle3d = stormLightningEventIndex3d;
+                stormEventActive3d = false;
+                canvasEl.dataset.thunderStatus = precipLightningStudyActive3d ? 'suppressed-study' : 'waiting';
+              }
+              stormProfileWasEligible3d = stormProfileEligible3d;
+              if (precipLightningStudyActive3d) {
+                if (stormThunderTimer3d) { clearTimeout(stormThunderTimer3d); stormThunderTimer3d = null; }
+                lastLightningFlashTime3d = -1;
+                lastLightningCycle3d = stormLightningEventIndex3d;
+                stormEventActive3d = false;
+                canvasEl.dataset.thunderStatus = 'suppressed-study';
+              } else if (stormThunderTimer3d && (!precipSoundEnabled3d || journeyPaused3d || motionReduced3d ||
+                  !stormProfileEligible3d || (typeof document !== 'undefined' && document.hidden))) {
+                clearTimeout(stormThunderTimer3d);
+                stormThunderTimer3d = null;
+                canvasEl.dataset.thunderStatus = 'canceled';
+              }
+              var stormLightningEventDue3d = stormProfileEligible3d && !precipLightningStudyActive3d &&
+                !motionReduced3d && !journeyPaused3d && !stormEventActive3d &&
+                stormLightningEventIndex3d > lastLightningCycle3d;
+              if (stormLightningEventDue3d) {
+                lastLightningCycle3d = stormLightningEventIndex3d;
+                lastLightningFlashTime3d = stormSequenceTime3d;
+                stormEventActive3d = true;
+                lightningFlashCount3d += 1;
                 canvasEl.dataset.thunderStatus = precipSoundEnabled3d ? 'pending' : 'muted';
-                if (precipSoundEnabled3d) {
+                if (precipSoundEnabled3d && !stormThunderTimer3d) {
                   stormThunderTimer3d = setTimeout(function() {
                     stormThunderTimer3d = null;
-                    if (alive3d && !motionReduced3d && !journeyPaused3d) {
+                    var currentState3d = canvasEl.dataset.journeyState || '';
+                    var thunderStillEnabled3d = alive3d &&
+                      canvasEl.dataset.thunderSound === 'enabled' &&
+                      (canvasEl.dataset.lightningStudyMode === 'automatic' ||
+                        canvasEl.dataset.lightningStudyMode === 'hidden') &&
+                      canvasEl.dataset.precipitationSource === 'lab' &&
+                      canvasEl.dataset.precipitationLightningEligible === 'true' &&
+                      currentState3d === 'precipitating' &&
+                      canvasEl.dataset.journeyPaused !== 'true' &&
+                      !(typeof document !== 'undefined' && document.hidden);
+                    if (thunderStillEnabled3d && !motionReduced3d) {
                       playWcThunderRumble();
                       canvasEl.dataset.thunderStatus = 'heard';
+                    } else {
+                      canvasEl.dataset.thunderStatus = 'canceled';
                     }
                   }, Math.round(precipThunderDelay3d * 1000));
+                }
+              }
+              var stormReturnStrokeAge3d = !precipLightningStudyActive3d && lastLightningFlashTime3d >= 0
+                ? Math.max(0, stormSequenceTime3d - lastLightningFlashTime3d) : Infinity;
+              var stormLightningVisible3d = stormLightningStudyAvailable3d
+                ? precipLightningStudyStep3d === 'return-stroke'
+                : stormProfileEligible3d && !motionReduced3d && !journeyPaused3d && stormReturnStrokeAge3d < 0.24;
+              stormLightningGroup3d.visible = stormLightningVisible3d;
+              stormLightningMat3d.opacity = stormLightningVisible3d
+                ? (stormLightningStudyAvailable3d ? 0.76 : 0.92) : 0;
+              var stormPressureWaveStatic3d = stormLightningStudyAvailable3d &&
+                precipLightningStudyStep3d === 'pressure-wave';
+              var stormPressureWaveElapsed3d = stormPressureWaveStatic3d
+                ? (precipStormDistance3d / 0.343) * 0.5
+                : !precipLightningStudyActive3d && lastLightningFlashTime3d >= 0
+                  ? Math.max(0, stormSequenceTime3d - lastLightningFlashTime3d) : -1;
+              var stormWaveModel3d = wcThunderWaveAt({
+                distanceKm: precipStormDistance3d,
+                speedOfSoundKmPerSecond: 0.343
+              }, Math.max(0, stormPressureWaveElapsed3d));
+              var stormPressureWaveProgress3d = stormPressureWaveElapsed3d < 0 ? 0 : stormWaveModel3d.progress;
+              if (!stormPressureWaveStatic3d && stormPressureWaveElapsed3d >= 0 && stormWaveModel3d.state === 'arrived') {
+                stormEventActive3d = false;
+              }
+              var stormPressureWaveActive3d = !precipLightningStudyActive3d && stormProfileVisible3d &&
+                precipStormAnatomy3d && precipLightningEligible3d && !motionReduced3d && !journeyPaused3d &&
+                stormPressureWaveElapsed3d >= 0 && stormWaveModel3d.state !== 'arrived';
+              stormPressureWave3d.visible = stormPressureWaveStatic3d || stormPressureWaveActive3d;
+              if (stormPressureWave3d.visible) {
+                var stormPressureWaveScale3d = 0.22 + stormPressureWaveProgress3d * 2.05;
+                stormPressureWave3d.scale.setScalar(stormPressureWaveScale3d);
+                stormPressureWaveMat3d.opacity = stormPressureWaveStatic3d
+                  ? 0.5 : (1 - stormPressureWaveProgress3d) * 0.72;
+              } else {
+                stormPressureWaveMat3d.opacity = 0;
+              }
+              canvasEl.dataset.chargeSeparation = !stormChargeVisible3d
+                ? 'hidden' : precipChargeSeparationIndex3d >= 72 ? 'strong' :
+                  precipChargeSeparationIndex3d >= 35 ? 'building' : 'weak';
+              canvasEl.dataset.chargeSeparationIndex = String(Math.round(precipChargeSeparationIndex3d));
+              canvasEl.dataset.chargeUpperPolarity = stormChargeVisible3d ? 'positive' : 'hidden';
+              canvasEl.dataset.chargeLowerPolarity = stormChargeVisible3d ? 'negative' : 'hidden';
+              canvasEl.dataset.lightningStudyStep = precipLightningStudyStep3d;
+              canvasEl.dataset.lightningStudyMode = stormLightningStudyMode3d;
+              canvasEl.dataset.lightningPhase = precipLightningStudyActive3d
+                ? (stormLightningStudyAvailable3d ? precipLightningStudyStep3d : 'study-unavailable')
+                : !stormProfileVisible3d || !precipLightningEligible3d
+                  ? 'idle' : motionReduced3d
+                    ? (precipStormAnatomy3d ? 'suppressed-reduced-motion-static-path' : 'suppressed-reduced-motion')
+                    : stormLightningLeaderVisible3d
+                      ? (stormLightningLeaderProgress3d > 0.72 ? 'upward-streamer' : 'stepped-leader')
+                      : stormLightningVisible3d ? 'return-stroke' :
+                        stormPressureWaveActive3d ? 'pressure-wave' : 'charge-separation';
+              canvasEl.dataset.lightningSequence = 'charge-separation>stepped-leader>upward-streamer>return-stroke>pressure-wave';
+              canvasEl.dataset.lightningFlashCount = String(lightningFlashCount3d);
+              canvasEl.dataset.thunderWave = precipLightningStudyActive3d
+                ? (stormLightningStudyAvailable3d
+                    ? (stormPressureWaveStatic3d ? 'study-static' : 'study-hidden') : 'study-unavailable')
+                : !precipStormAnatomy3d || !precipLightningEligible3d
+                  ? 'hidden' : motionReduced3d ? 'suppressed-reduced-motion' :
+                    stormPressureWaveActive3d ? 'expanding' :
+                      stormPressureWaveElapsed3d >= 0 && stormWaveModel3d.state === 'arrived' ? 'arrived' : 'waiting';
+              canvasEl.dataset.thunderWaveRadiusKm = stormPressureWaveElapsed3d >= 0
+                ? stormWaveModel3d.radiusKm.toFixed(2) : '0';
+              canvasEl.dataset.thunderWaveProgress = stormPressureWaveElapsed3d >= 0
+                ? stormPressureWaveProgress3d.toFixed(3) : '0';
+              if (stormPressureWaveLabel3d) {
+                stormPressureWaveLabel3d.visible = stormPressureWave3d.visible;
+                if (stormPressureWaveLabel3d.visible) {
+                  stormPressureWaveLabel3d.position.set(
+                    stormPressureWave3d.position.x + 1.45,
+                    stormPressureWave3d.position.y + 0.52,
+                    stormPressureWave3d.position.z);
                 }
               }
               canvasEl.dataset.thermalLayer = stormThermalLayer3d.visible ? precipTransitionKind3d +
@@ -10796,9 +11738,17 @@ const d = labToolData.waterCycle || {};
               canvasEl.dataset.stormPuddle = stormPuddle3d.visible ? 'visible' : 'hidden';
               canvasEl.dataset.groundAccumulationMode = precipLabSource3d ? ['snow:'+precipSnowAccum3d,'glaze:'+precipGlazeAccum3d,'hail:'+precipHailAccum3d,'puddling:'+precipPuddleAccum3d,'runoff:'+precipRunoffAccum3d].join(',') : 'legacy';
               canvasEl.dataset.thunderDelaySeconds = String(precipThunderDelay3d);
-              canvasEl.dataset.thunderCaption = precipLightningEligible3d ? 'Flash now; thunder in about ' + precipThunderDelay3d.toFixed(1) + ' seconds' : 'No lightning flash to trigger thunder';
-              canvasEl.dataset.lightningMode = !stormProfileVisible3d || !precipLightningEligible3d
-                ? 'none' : motionReduced3d ? 'suppressed-reduced-motion' : journeyPaused3d ? 'paused' : 'periodic';
+              canvasEl.dataset.thunderCaption = precipLightningStudyActive3d
+                ? (stormLightningStudyAvailable3d
+                    ? getWcLightningStudyStep(precipLightningStudyStep3d).label + ' study snapshot; thunder audio is suppressed.'
+                    : 'The selected lightning phase is not produced by this cloud.')
+                : precipLightningEligible3d
+                  ? 'Flash now; thunder in about ' + precipThunderDelay3d.toFixed(1) + ' seconds'
+                  : 'No lightning flash to trigger thunder';
+              canvasEl.dataset.lightningMode = precipLightningStudyActive3d
+                ? (stormLightningStudyAvailable3d ? 'guided-static' : 'study-unavailable')
+                : !stormProfileVisible3d || !precipLightningEligible3d
+                  ? 'none' : motionReduced3d ? 'suppressed-reduced-motion' : journeyPaused3d ? 'paused' : 'periodic';
               canvasEl.dataset.stormColumnAlignment = stormProfileVisible3d ? 'cloud-to-ground-synced' : 'legacy';
               canvasEl.dataset.updraftMotion = stormUpdraft3d.visible
                 ? (motionReduced3d ? 'static-markers' : journeyPaused3d ? 'paused-markers' : 'rising-markers')
@@ -10820,6 +11770,8 @@ const d = labToolData.waterCycle || {};
               alive3d = false;
               if (frame3d) cancelAnimationFrame(frame3d);
               if (stormThunderTimer3d) { clearTimeout(stormThunderTimer3d); stormThunderTimer3d = null; }
+              if (motionMedia3d && motionMedia3d.removeEventListener) motionMedia3d.removeEventListener('change', syncMotionPreference3d);
+              else if (motionMedia3d && motionMedia3d.removeListener) motionMedia3d.removeListener(syncMotionPreference3d);
               if (resizeObserver3d) resizeObserver3d.disconnect();
               canvasEl.removeEventListener('pointerdown', handleBranchPointerDown3d);
               canvasEl.removeEventListener('pointermove', handleBranchPointerMove3d);
@@ -10889,6 +11841,8 @@ const d = labToolData.waterCycle || {};
           var precipJourneyModel = d.precipLab3dActive && d.precipHunt
             ? computeWcPrecipitationModel(d.precipHunt)
             : null;
+          var precipJourneyLightningStudy = precipJourneyModel
+            ? getWcLightningStudyStep(precipJourneyModel.config.lightningStudyStep) : WC_LIGHTNING_STUDY_LOOKUP.auto;
           var journeyView = d.journeyView || '2d';
           var journeyActiveStageMap = { ocean: 'collection', evaporating: 'evaporation', condensing: 'condensation',
             precipitating: 'precipitation', ground_choice: 'precipitation', river_runoff: 'collection',
@@ -12040,8 +12994,17 @@ React.createElement("div", {
                 "data-precipitation-secondary-transition-kind": precipJourneyModel && precipJourneyModel.thermalLayers.crossings[1] ? precipJourneyModel.thermalLayers.crossings[1].kind : 'none',
                 "data-precipitation-secondary-transition-progress": precipJourneyModel && precipJourneyModel.thermalLayers.crossings[1] ? String(precipJourneyModel.thermalLayers.crossings[1].progress) : '',
                 "data-precipitation-electrification": precipJourneyModel ? String(precipJourneyModel.electrificationIndex) : '0',
+                "data-storm-anatomy": precipJourneyModel && precipJourneyModel.config.showStormAnatomy ? 'visible' : 'hidden',
+                "data-charge-separation": precipJourneyModel && precipJourneyModel.config.showStormAnatomy ? precipJourneyModel.stormAnatomy.chargeSeparation.state : 'hidden',
+                "data-charge-separation-index": precipJourneyModel && precipJourneyModel.config.showStormAnatomy ? String(precipJourneyModel.stormAnatomy.chargeSeparation.index) : '0',
+                "data-charge-upper-polarity": precipJourneyModel && precipJourneyModel.config.showStormAnatomy ? precipJourneyModel.stormAnatomy.chargeSeparation.upperPolarity : 'hidden',
+                "data-charge-lower-polarity": precipJourneyModel && precipJourneyModel.config.showStormAnatomy ? precipJourneyModel.stormAnatomy.chargeSeparation.lowerPolarity : 'hidden',
+                "data-lightning-pathway": precipJourneyModel && precipJourneyModel.config.showStormAnatomy ? precipJourneyModel.stormAnatomy.lightningPathway.type : 'hidden',
+                "data-lightning-sequence": 'charge-separation>stepped-leader>upward-streamer>return-stroke>pressure-wave',
+                "data-lightning-study-step": precipJourneyModel ? precipJourneyModel.config.lightningStudyStep : 'auto',
+                "data-storm-lightning-factor": precipJourneyModel ? String(precipJourneyModel.lifecycle.lightningFactor) : '0',
                 "data-storm-stage": precipJourneyModel ? precipJourneyModel.lifecycle.stageKey : '',                 "data-storm-time": precipJourneyModel ? String(precipJourneyModel.lifecycle.time) : '',                 "data-storm-cloud-factor": precipJourneyModel ? String(precipJourneyModel.lifecycle.cloudFactor) : '',                 "data-storm-updraft-factor": precipJourneyModel ? String(precipJourneyModel.lifecycle.updraftFactor) : '',                 "data-storm-snow-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.snow) : '',                 "data-storm-glaze-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.glaze) : '',                 "data-storm-hail-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.hail) : '',                 "data-storm-puddle-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.puddling) : '',                 "data-storm-runoff-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.runoff) : '',
-                "data-thunder-delay-seconds": precipJourneyModel ? String(precipJourneyModel.thunder.delaySeconds) : '',                 "data-thunder-caption": precipJourneyModel ? precipJourneyModel.thunder.caption : '',                 "data-thunder-sound": precipJourneyModel && precipJourneyModel.thunder.soundEnabled ? 'enabled' : 'muted',
+                "data-storm-distance-km": precipJourneyModel ? String(precipJourneyModel.thunder.distanceKm) : '',                 "data-thunder-delay-seconds": precipJourneyModel ? String(precipJourneyModel.thunder.delaySeconds) : '',                 "data-thunder-caption": precipJourneyModel ? precipJourneyModel.thunder.caption : '',                 "data-thunder-sound": precipJourneyModel && precipJourneyModel.thunder.soundEnabled ? 'enabled' : 'muted',
                 "data-thunder-estimate-km": precipJourneyModel ? String(precipJourneyModel.thunderEstimate.estimateKm) : '',
                 "data-thunder-estimate-checked": precipJourneyModel ? String(!!precipJourneyModel.config.thunderEstimateChecked) : 'false',
                 "data-thunder-estimate-band": precipJourneyModel && precipJourneyModel.config.thunderEstimateChecked ? precipJourneyModel.thunderEstimate.band : 'unsubmitted',
@@ -12057,6 +13020,23 @@ React.createElement("div", {
                 "Use left and right arrows to rotate, up and down arrows to zoom, and F to resume the guided droplet camera. At the land decision, select a highlighted route in the scene or use the route buttons. During river runoff, move across the estuary plume to compare river water, brackish mixing, and ocean water. With forest cover, water beads show rain stored on leaves, falling drops show delayed throughfall, and rising particles show intercepted water evaporating back to the air. The wind control changes ocean wave speed and breaking intensity. Wind streamlines and arrowheads show layered atmospheric transport, while stronger wind pushes rain farther downwind. During precipitation, airflow arcs upward over the mountains and produces windward rain or snow through orographic lift. Descending leeward air reveals a warmer, drier rain shadow with cracked ground and rising haze. During condensation, bright nuclei seed growing cloud droplets; connecting lines show coalescence, while crystal glints indicate freezing. During evaporation, solar energy, temperature, and wind change how many surface molecules escape and how quickly they rise. Cold conditions store water as snow; warming and sunlight release meltwater down the mountains into the river. The mountain gauge reports stored snow percentage and whether it is accumulating, stored, or melting."
               ),
               journeyView === '3d' && React.createElement("p", {
+                id: "wcJourney3dStormInstructions", className: "sr-only"
+              }, precipJourneyModel && precipJourneyModel.config.showStormAnatomy
+                ? (precipJourneyModel.stormAnatomy.lightningPathway.active
+                  ? "Storm anatomy shows positive small ice crystals in the upper cloud, negative graupel in the lower cloud, induced positive ground charge, a stepped leader meeting an upward streamer, a bright return stroke, and a pressure wave whose progress follows the modeled flash-to-thunder delay. Audio remains optional."
+                  : precipJourneyModel.stormAnatomy.chargeSeparation.active
+                    ? "Storm anatomy shows mixed-phase charge building, but this setup does not complete a cloud-to-ground lightning pathway."
+                    : "This setup does not have the mixed-phase ice and lift needed for organized storm-charge separation.")
+                : "Storm anatomy overlay is hidden.",
+                precipJourneyModel && precipJourneyModel.config.showStormAnatomy &&
+                  precipJourneyLightningStudy.key !== 'auto'
+                  ? " Guided study snapshot: " + precipJourneyLightningStudy.label + ". " +
+                    precipJourneyLightningStudy.explanation +
+                    (precipJourneyModel.lightningEligible
+                      ? " This snapshot is static and silent."
+                      : " This current cloud is not electrically active enough to produce the selected step.")
+                  : ""
+              ),              journeyView === '3d' && React.createElement("p", {
                 id: "wcJourney3dUrbanInstructions", className: "sr-only"
               }, "With urban cover, roof runoff converges through curb channels and a storm drain before pulsing rapidly toward the river."
               ),
@@ -12085,7 +13065,7 @@ React.createElement("div", {
                 tabIndex: 0,
                 "aria-label": "Three-dimensional tracked water parcel in the " + immersiveStageLabel + " stage. Water moves from " + currentStageFlow.from + " to " + currentStageFlow.to + ". " + journeyStatusLabel + ". Drag or use arrow keys to explore the scene.",
                 "aria-keyshortcuts": "ArrowLeft ArrowRight ArrowUp ArrowDown F",
-                "aria-describedby": "wcJourney3dInstructions wcJourney3dUrbanInstructions wcJourney3dGrassInstructions wcJourney3dRouteBalanceInstructions wcJourney3dGroundwaterInstructions wcJourney3dSedimentInstructions wcJourney3dFloodplainInstructions",
+                "aria-describedby": "wcJourney3dInstructions wcJourney3dStormInstructions wcJourney3dUrbanInstructions wcJourney3dGrassInstructions wcJourney3dRouteBalanceInstructions wcJourney3dGroundwaterInstructions wcJourney3dSedimentInstructions wcJourney3dFloodplainInstructions",
                 onKeyDown: handleJourney3dKey,
                 onClick: handleJourney3dSceneClick,
                 ref: journey3dRef,
@@ -12114,8 +13094,17 @@ React.createElement("div", {
                 "data-precipitation-secondary-transition-kind": precipJourneyModel && precipJourneyModel.thermalLayers.crossings[1] ? precipJourneyModel.thermalLayers.crossings[1].kind : 'none',
                 "data-precipitation-secondary-transition-progress": precipJourneyModel && precipJourneyModel.thermalLayers.crossings[1] ? String(precipJourneyModel.thermalLayers.crossings[1].progress) : '',
                 "data-precipitation-electrification": precipJourneyModel ? String(precipJourneyModel.electrificationIndex) : '0',
+                "data-storm-anatomy": precipJourneyModel && precipJourneyModel.config.showStormAnatomy ? 'visible' : 'hidden',
+                "data-charge-separation": precipJourneyModel && precipJourneyModel.config.showStormAnatomy ? precipJourneyModel.stormAnatomy.chargeSeparation.state : 'hidden',
+                "data-charge-separation-index": precipJourneyModel && precipJourneyModel.config.showStormAnatomy ? String(precipJourneyModel.stormAnatomy.chargeSeparation.index) : '0',
+                "data-charge-upper-polarity": precipJourneyModel && precipJourneyModel.config.showStormAnatomy ? precipJourneyModel.stormAnatomy.chargeSeparation.upperPolarity : 'hidden',
+                "data-charge-lower-polarity": precipJourneyModel && precipJourneyModel.config.showStormAnatomy ? precipJourneyModel.stormAnatomy.chargeSeparation.lowerPolarity : 'hidden',
+                "data-lightning-pathway": precipJourneyModel && precipJourneyModel.config.showStormAnatomy ? precipJourneyModel.stormAnatomy.lightningPathway.type : 'hidden',
+                "data-lightning-sequence": 'charge-separation>stepped-leader>upward-streamer>return-stroke>pressure-wave',
+                "data-lightning-study-step": precipJourneyModel ? precipJourneyModel.config.lightningStudyStep : 'auto',
+                "data-storm-lightning-factor": precipJourneyModel ? String(precipJourneyModel.lifecycle.lightningFactor) : '0',
                 "data-storm-stage": precipJourneyModel ? precipJourneyModel.lifecycle.stageKey : '',                 "data-storm-time": precipJourneyModel ? String(precipJourneyModel.lifecycle.time) : '',                 "data-storm-cloud-factor": precipJourneyModel ? String(precipJourneyModel.lifecycle.cloudFactor) : '',                 "data-storm-updraft-factor": precipJourneyModel ? String(precipJourneyModel.lifecycle.updraftFactor) : '',                 "data-storm-snow-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.snow) : '',                 "data-storm-glaze-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.glaze) : '',                 "data-storm-hail-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.hail) : '',                 "data-storm-puddle-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.puddling) : '',                 "data-storm-runoff-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.runoff) : '',
-                "data-thunder-delay-seconds": precipJourneyModel ? String(precipJourneyModel.thunder.delaySeconds) : '',                 "data-thunder-caption": precipJourneyModel ? precipJourneyModel.thunder.caption : '',                 "data-thunder-sound": precipJourneyModel && precipJourneyModel.thunder.soundEnabled ? 'enabled' : 'muted',
+                "data-storm-distance-km": precipJourneyModel ? String(precipJourneyModel.thunder.distanceKm) : '',                 "data-thunder-delay-seconds": precipJourneyModel ? String(precipJourneyModel.thunder.delaySeconds) : '',                 "data-thunder-caption": precipJourneyModel ? precipJourneyModel.thunder.caption : '',                 "data-thunder-sound": precipJourneyModel && precipJourneyModel.thunder.soundEnabled ? 'enabled' : 'muted',
                 "data-thunder-estimate-km": precipJourneyModel ? String(precipJourneyModel.thunderEstimate.estimateKm) : '',
                 "data-thunder-estimate-checked": precipJourneyModel ? String(!!precipJourneyModel.config.thunderEstimateChecked) : 'false',
                 "data-thunder-estimate-band": precipJourneyModel && precipJourneyModel.config.thunderEstimateChecked ? precipJourneyModel.thunderEstimate.band : 'unsubmitted',

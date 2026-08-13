@@ -15,7 +15,7 @@ const SHA256_RE = /^[a-f0-9]{64}$/u;
 const RUNNER_VERSION_RE = /^0\.[1-9][0-9]*\.[0-9]+(?:-[A-Za-z0-9.-]+)?$/u;
 const DEFAULT_RELEASE_CANARY_ATTEMPTS = 4;
 const EXPECTED = Object.freeze({
-  databaseSchema: 5,
+  databaseSchema: 7,
   checkpointSchema: 1,
   runnerProtocol: "remediation-run-v1",
   runnerService: "alloflow-remediation-runner",
@@ -58,9 +58,12 @@ function validateReadyPayload(value, expectedRunner) {
   }
   if (
     value?.database?.ok !== true ||
-    value?.database?.schema !== EXPECTED.databaseSchema
+    value?.database?.schema !== EXPECTED.databaseSchema ||
+    typeof value?.database?.admissionsOpen !== "boolean"
   ) {
     errors.push("database_schema_incompatible");
+  } else if (value.database.admissionsOpen !== false) {
+    errors.push("admissions_not_paused_during_release");
   }
   if (
     runner?.service !== EXPECTED.runnerService ||

@@ -96,6 +96,49 @@ describe('flightsim close-in ground detail', () => {
     });
   });
 
+  it('keeps the cruise darkening within budget', () => {
+    // Multiply blending can only darken, and mipmaps converge to the texture's
+    // MEAN — so that mean is exactly how much this layer dims the terrain at any
+    // distance where the noise has averaged out. It is the one property that
+    // cannot be checked by flying: the drone is ceilinged at 400 ft, the Cessna
+    // cannot reach cruise inside a SwiftShader budget, and the helicopter climbs
+    // ~120 ft/min at harness frame rates.
+    //
+    // So recompute it here from the SOURCE'S OWN constants — the noise helpers and
+    // both expressions are lifted out of the file and run — rather than from a
+    // copy that would keep passing after someone retunes the numbers.
+    eachSource((source, path) => {
+      const helpers = source.slice(source.indexOf('var fHash = function'), source.indexOf('var fImg ='));
+      const fN = source.match(/var fN = fOct\([^;]+;/);
+      const fS = source.match(/var fS = [^;]+;/);
+      expect(helpers.length, `${path}: could not lift the noise helpers`).toBeGreaterThan(200);
+      expect(fN && fS, `${path}: could not lift the noise expressions`).toBeTruthy();
+
+      // eslint-disable-next-line no-new-func
+      const mean = new Function(`
+        ${helpers}
+        var sum = 0;
+        for (var fpy = 0; fpy < 256; fpy++) {
+          for (var fpx = 0; fpx < 256; fpx++) {
+            ${fN[0]}
+            ${fS[0]}
+            sum += fS;
+          }
+        }
+        return sum / (256 * 256);
+      `)();
+
+      const darkening = 1 - mean / 255;
+      // Measured in the browser on the live material: luma mean 236.85 => 7.1%.
+      expect(mean, `${path}: noise mean ${mean.toFixed(2)} is not a plausible texture value`)
+        .toBeGreaterThan(180);
+      expect(darkening, `${path}: this layer now dims cruise terrain by ${(darkening * 100).toFixed(1)}% — too much`)
+        .toBeLessThan(0.10);
+      expect(darkening, `${path}: darkening ${(darkening * 100).toFixed(1)}% is so small the layer may be doing nothing`)
+        .toBeGreaterThan(0.03);
+    });
+  });
+
   it('guards the anisotropy lookup', () => {
     eachSource((source, path) => {
       // capabilities is absent on some fallback contexts; this must never be the

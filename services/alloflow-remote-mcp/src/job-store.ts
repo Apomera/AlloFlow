@@ -32,6 +32,13 @@ export type JobStatus =
 
 export type RemediationEffort = "standard" | "thorough";
 
+export type RemediationVerificationState =
+  | "complete"
+  | "complete-for-tested-scope"
+  | "review-required"
+  | "partial"
+  | "unavailable";
+
 export type JobRunStage =
   | "claimed"
   | "starting"
@@ -104,6 +111,8 @@ export type JobRow = {
   heartbeat_at: number | null;
   lease_expires_at: number | null;
   run_stage: JobRunStage | null;
+  throttle_wait_until: number | null;
+  verification_state: RemediationVerificationState | null;
   checkpoint_seq: number | null;
   checkpoint_key: string | null;
   checkpoint_sha256: string | null;
@@ -129,6 +138,7 @@ export type RunnerResult = {
   autoContinueRoundsRun: number;
   reportSizeBytes: number;
   reportSha256: string;
+  verificationState: RemediationVerificationState;
   beforeScore?: number;
   afterScore?: number;
 };
@@ -156,6 +166,26 @@ export type JobCheckpointCommitResult = {
 };
 
 export const RUNNING_JOB_LEASE_SECONDS = 5 * 60;
+export const THROTTLE_WAIT_LEASE_GRACE_SECONDS = 2 * 60;
+
+const RUNNER_VERIFICATION_STATES = new Set<RemediationVerificationState>([
+  "complete",
+  "complete-for-tested-scope",
+  "review-required",
+  "partial",
+  "unavailable",
+]);
+
+export function completionNeedsReview(
+  verificationState: RemediationVerificationState | null,
+): boolean {
+  return (
+    verificationState === null ||
+    verificationState === "review-required" ||
+    verificationState === "partial" ||
+    verificationState === "unavailable"
+  );
+}
 
 export type JobArtifactKeys = {
   resultKey: string;
@@ -332,6 +362,24 @@ function database(env: PilotEnv): D1Database {
   return env.PILOT_DB;
 }
 
+async function requireAdmissionsOpen(db: D1Database): Promise<void> {
+  let state: { admissions_open: number } | null;
+  try {
+    state = await db
+      .prepare(
+        `SELECT admissions_open
+         FROM pilot_admission_control
+         WHERE singleton = 1`,
+      )
+      .first<{ admissions_open: number }>();
+  } catch {
+    throw new PilotError("admission_control_unavailable", 503);
+  }
+  if (state?.admissions_open !== 1) {
+    throw new PilotError("admissions_paused", 503);
+  }
+}
+
 function ownerWhere(principal: PilotPrincipal): [string, string] {
   return [principal.institutionId, principal.ownerId];
 }
@@ -384,7 +432,12 @@ export async function createUpload(
         grant_hash, grant_expires_at, created_at, updated_at, input_expires_at
       )
       SELECT ?, ?, ?, ?, 'pending', 'application/pdf', ?, ?, ?, ?, ?
-      WHERE (
+      WHERE EXISTS (
+        SELECT 1
+        FROM pilot_admission_control
+        WHERE singleton = 1 AND admissions_open = 1
+      )
+      AND (
         SELECT COUNT(*)
         FROM uploads
         WHERE institution_id = ?
@@ -435,6 +488,7 @@ export async function createUpload(
     )
     .run();
   if (inserted.meta.changes !== 1) {
+    await requireAdmissionsOpen(database(env));
     throw new PilotError("upload_quota_exceeded", 429);
   }
 
@@ -607,6 +661,11 @@ export async function createJob(
           AND upload.status = 'uploaded'
           AND upload.input_expires_at > ?
           AND upload.deleted_at IS NULL
+          AND EXISTS (
+            SELECT 1
+            FROM pilot_admission_control
+            WHERE singleton = 1 AND admissions_open = 1
+          )
           AND NOT EXISTS (
             SELECT 1 FROM jobs WHERE jobs.upload_id = upload.id
           )
@@ -694,6 +753,7 @@ export async function createJob(
     if (raced) {
       return replayJob(raced, options);
     }
+    await requireAdmissionsOpen(db);
     const uploadReady = await db
       .prepare(
         `SELECT 1
@@ -803,6 +863,7 @@ export async function markJobRunning(
            error_code = NULL,
            heartbeat_at = ?,
            lease_expires_at = ?,
+           throttle_wait_until = NULL,
            run_stage = 'claimed',
            updated_at = ?
        WHERE id = ?
@@ -881,6 +942,7 @@ export async function claimJobAttempt(
            report_key = ?,
            heartbeat_at = ?,
            lease_expires_at = ?,
+           throttle_wait_until = NULL,
            run_stage = 'starting',
            error_code = NULL,
            updated_at = ?
@@ -950,6 +1012,7 @@ export async function renewJobLease(
       `UPDATE jobs
        SET heartbeat_at = ?,
            lease_expires_at = ?,
+           throttle_wait_until = NULL,
            run_stage = ?,
            updated_at = ?
        WHERE id = ?
@@ -969,6 +1032,47 @@ export async function renewJobLease(
   if (changed.meta.changes !== 1) {
     throw new PilotError("job_attempt_lost", 409);
   }
+}
+
+export async function markJobThrottleWait(
+  env: PilotEnv,
+  jobId: string,
+  attemptId: string,
+  retryAfterMs: number,
+): Promise<{ waitUntil: number; leaseExpiresAt: number }> {
+  if (
+    !validAttemptId(attemptId) ||
+    !Number.isSafeInteger(retryAfterMs) ||
+    retryAfterMs < 0 ||
+    retryAfterMs > 10 * 60 * 1000
+  ) {
+    throw new PilotError("invalid_throttle_wait", 500);
+  }
+  const now = nowSeconds();
+  const waitUntil = now + Math.ceil(retryAfterMs / 1000);
+  const leaseExpiresAt = Math.max(
+    now + RUNNING_JOB_LEASE_SECONDS,
+    waitUntil + THROTTLE_WAIT_LEASE_GRACE_SECONDS,
+  );
+  const changed = await database(env)
+    .prepare(
+      `UPDATE jobs
+       SET heartbeat_at = ?,
+           throttle_wait_until = ?,
+           lease_expires_at = ?,
+           run_stage = 'running',
+           updated_at = ?
+       WHERE id = ?
+         AND status = 'running'
+         AND attempt_id = ?
+         AND deleted_at IS NULL`,
+    )
+    .bind(now, waitUntil, leaseExpiresAt, now, jobId, attemptId)
+    .run();
+  if (changed.meta.changes !== 1) {
+    throw new PilotError("job_attempt_lost", 409);
+  }
+  return { waitUntil, leaseExpiresAt };
 }
 
 export async function getJobCheckpoint(
@@ -1174,7 +1278,8 @@ export async function completeJob(
       currentBeforeCompletion.auto_continue_rounds ||
     !Number.isSafeInteger(result.reportSizeBytes) ||
     result.reportSizeBytes <= 0 ||
-    !/^[0-9a-f]{64}$/u.test(result.reportSha256)
+    !/^[0-9a-f]{64}$/u.test(result.reportSha256) ||
+    !RUNNER_VERIFICATION_STATES.has(result.verificationState)
   ) {
     throw new PilotError("invalid_runner_result", 502);
   }
@@ -1191,6 +1296,7 @@ export async function completeJob(
            auto_continue_rounds_run = ?,
            report_size_bytes = ?,
            report_sha256 = ?,
+           verification_state = ?,
            before_score = ?,
            after_score = ?,
            completed_at = ?,
@@ -1198,6 +1304,7 @@ export async function completeJob(
            error_code = NULL,
            heartbeat_at = ?,
            lease_expires_at = NULL,
+           throttle_wait_until = NULL,
            run_stage = 'completed',
            updated_at = ?
          WHERE id = ?
@@ -1211,6 +1318,7 @@ export async function completeJob(
         result.autoContinueRoundsRun,
         result.reportSizeBytes,
         result.reportSha256,
+        result.verificationState,
         result.beforeScore ?? null,
         result.afterScore ?? null,
         now,
@@ -1246,6 +1354,7 @@ export async function completeJob(
       current.auto_continue_rounds_run === result.autoContinueRoundsRun &&
       current.report_size_bytes === result.reportSizeBytes &&
       current.report_sha256 === result.reportSha256 &&
+      current.verification_state === result.verificationState &&
       current.before_score === (result.beforeScore ?? null) &&
       current.after_score === (result.afterScore ?? null) &&
       current.completed_at !== null &&
@@ -1323,6 +1432,7 @@ export async function failJob(
            END,
            completed_at = COALESCE(completed_at, ?),
            lease_expires_at = NULL,
+           throttle_wait_until = NULL,
            updated_at = ?
        WHERE id = ?
          AND status IN (
@@ -1337,6 +1447,73 @@ export async function failJob(
     .bind(errorCode, now, now, jobId, attemptId, attemptId)
     .run();
   return changed.meta.changes === 1;
+}
+
+export async function failCurrentWorkflowAttempt(
+  env: PilotEnv,
+  jobId: string,
+  workflowInstanceId: string,
+  errorCode: string,
+): Promise<{ owned: boolean; attemptId: string | null }> {
+  if (!validAttemptId(workflowInstanceId)) {
+    throw new PilotError("invalid_job_attempt", 500);
+  }
+  const current = await getInternalJob(env, jobId);
+  if (
+    current.workflow_id !== workflowInstanceId ||
+    ![
+      "queued",
+      "running",
+      "cancelling",
+      "failed",
+      "cancelled",
+    ].includes(current.status)
+  ) {
+    return { owned: false, attemptId: null };
+  }
+  const attemptId = current.attempt_id;
+  const now = nowSeconds();
+  const changed = await database(env)
+    .prepare(
+      `UPDATE jobs
+       SET status = CASE
+             WHEN status IN ('cancelling', 'cancelled') THEN 'cancelled'
+             ELSE 'failed'
+           END,
+           error_code = ?,
+           run_stage = CASE
+             WHEN status IN ('cancelling', 'cancelled') THEN 'cancelled'
+             ELSE 'failed'
+           END,
+           completed_at = COALESCE(completed_at, ?),
+           lease_expires_at = NULL,
+           throttle_wait_until = NULL,
+           updated_at = ?
+       WHERE id = ?
+         AND workflow_id = ?
+         AND status IN (
+           'queued', 'running', 'cancelling', 'failed', 'cancelled'
+         )
+         AND (
+           attempt_id = ?
+           OR (attempt_id IS NULL AND ? IS NULL)
+         )
+         AND deleted_at IS NULL`,
+    )
+    .bind(
+      errorCode,
+      now,
+      now,
+      jobId,
+      workflowInstanceId,
+      attemptId,
+      attemptId,
+    )
+    .run();
+  return {
+    owned: changed.meta.changes === 1,
+    attemptId: changed.meta.changes === 1 ? attemptId : null,
+  };
 }
 
 export async function createDownloadGrant(

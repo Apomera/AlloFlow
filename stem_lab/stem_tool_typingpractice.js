@@ -259,7 +259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       dialog.setAttribute('aria-modal', 'true');
       dialog.setAttribute('aria-labelledby', idBase + '-title');
       dialog.setAttribute('aria-describedby', idBase + '-description');
-      dialog.style.cssText = 'box-sizing:border-box;width:min(34rem,100%);max-height:calc(100vh - 40px);overflow:auto;background:#fff;color:#0f172a;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.45);font-family:system-ui,sans-serif;';
+      dialog.style.cssText = 'box-sizing:border-box;width:min(34rem,100%);max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow:auto;background:#fff;color:#0f172a;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.45);font-family:system-ui,sans-serif;';
       var title = document.createElement('h2');
       title.id = idBase + '-title';
       title.textContent = String(options.title || 'Please confirm');
@@ -509,11 +509,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       }
       return value.length;
     }
-    ['accommodations', 'personalBest', 'lifetime', 'passagePrefs', 'battle'].forEach(function(key) {
+    ['accommodations', 'personalBest', 'lifetime', 'passagePrefs', 'battle', 'aiHintDismissed', 'aggregateErrors'].forEach(function(key) {
       if (backupState[key] !== undefined && (!backupState[key] || typeof backupState[key] !== 'object' || Array.isArray(backupState[key]))) {
         throw new Error(key + ' must be an object.');
       }
     });
+    if (backupState.battle) {
+      ['personalBest', 'personalBestVsBot'].forEach(function(key) {
+        var value = backupState.battle[key];
+        if (value !== undefined && (!value || typeof value !== 'object' || Array.isArray(value))) {
+          throw new Error('battle.' + key + ' must be an object.');
+        }
+      });
+    }
     if (backupState.keyboardLayout !== undefined && !Object.prototype.hasOwnProperty.call(KEYBOARD_LAYOUTS, backupState.keyboardLayout)) {
       throw new Error('Unknown keyboard layout.');
     }
@@ -532,6 +540,104 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       visualImages: objectCollection('visualGallery', 3, 'Visual gallery')
     };
   }
+
+  // Clone imported values without sharing DEFAULT_STATE references or honoring
+  // prototype-mutating keys from an untrusted JSON file.
+  function typingPracticeCloneBackupValue(value) {
+    if (Array.isArray(value)) {
+      return value.map(function(item) { return typingPracticeCloneBackupValue(item); });
+    }
+    if (!value || typeof value !== 'object') return value;
+    var clone = {};
+    Object.keys(value).forEach(function(key) {
+      if (key === '__proto__' || key === 'prototype' || key === 'constructor') return;
+      clone[key] = typingPracticeCloneBackupValue(value[key]);
+    });
+    return clone;
+  }
+
+  function typingPracticeMergeKnownBackupFields(defaults, imported) {
+    var sourceFields = imported && typeof imported === 'object' && !Array.isArray(imported) ? imported : {};
+    var merged = {};
+    Object.keys(defaults || {}).forEach(function(key) {
+      var value = Object.prototype.hasOwnProperty.call(sourceFields, key) && sourceFields[key] !== undefined
+        ? sourceFields[key]
+        : defaults[key];
+      merged[key] = typingPracticeCloneBackupValue(value);
+    });
+    return merged;
+  }
+
+  // A restore is a replacement, not a merge with whoever is using the device
+  // now. Older backups are expanded from defaults, while supplied learner-owned
+  // collections come only from the backup.
+  function typingPracticeNormalizeBackupState(backupState) {
+    typingPracticeValidateBackupState(backupState);
+    var normalized = {};
+    Object.keys(DEFAULT_STATE).forEach(function(key) {
+      var value = Object.prototype.hasOwnProperty.call(backupState, key) && backupState[key] !== undefined
+        ? backupState[key]
+        : DEFAULT_STATE[key];
+      normalized[key] = typingPracticeCloneBackupValue(value);
+    });
+    normalized.accommodations = typingPracticeMergeKnownBackupFields(DEFAULT_STATE.accommodations, backupState.accommodations);
+    normalized.passagePrefs = typingPracticeMergeKnownBackupFields(DEFAULT_STATE.passagePrefs, backupState.passagePrefs);
+    normalized.lifetime = typingPracticeMergeKnownBackupFields(DEFAULT_STATE.lifetime, backupState.lifetime);
+    normalized.aiHintDismissed = typingPracticeMergeKnownBackupFields(DEFAULT_STATE.aiHintDismissed, backupState.aiHintDismissed);
+    normalized.battle = typingPracticeMergeKnownBackupFields(DEFAULT_STATE.battle, backupState.battle);
+    var importedBattle = backupState.battle && typeof backupState.battle === 'object' && !Array.isArray(backupState.battle)
+      ? backupState.battle : {};
+    normalized.battle.personalBest = typingPracticeMergeKnownBackupFields(DEFAULT_STATE.battle.personalBest, importedBattle.personalBest);
+    normalized.battle.personalBestVsBot = typingPracticeMergeKnownBackupFields(DEFAULT_STATE.battle.personalBestVsBot, importedBattle.personalBestVsBot);
+    normalized.view = 'menu';
+    normalized.currentDrill = null;
+    normalized.battle.view = 'menu';
+    return normalized;
+  }
+
+  function typingPracticeUsableInterruptedDraft(draft) {
+    if (!draft || typeof draft !== 'object' || Array.isArray(draft) || !draft.drillId ||
+        typeof draft.target !== 'string' || typeof draft.typed !== 'string') return false;
+    var targetLength = typingPracticeGraphemes(draft.target).length;
+    var typedLength = typingPracticeGraphemes(draft.typed).length;
+    return targetLength > 0 && typedLength > 0 && typedLength < targetLength;
+  }
+
+  function typingPracticeInterruptedDraftMatches(draft, drillId, runId) {
+    return !!(typingPracticeUsableInterruptedDraft(draft) && draft.drillId === drillId && Number(draft.drillRunId) === Number(runId));
+  }
+
+  function typingPracticeInterruptedDraftConflicts(draft, drillId, runId) {
+    return !!(typingPracticeUsableInterruptedDraft(draft) && !typingPracticeInterruptedDraftMatches(draft, drillId, runId));
+  }
+
+  function typingPracticeBuildInterruptedDraft(snapshot, reason, now) {
+    snapshot = snapshot || {};
+    var typedLength = Math.max(0, Number(snapshot.typedLength) || 0);
+    var targetLength = Math.max(0, Number(snapshot.targetLength) || 0);
+    if (snapshot.view !== 'drill' || snapshot.drillComplete || snapshot.isWarmup || !snapshot.activeDrillId ||
+        typeof snapshot.target !== 'string' || typeof snapshot.typed !== 'string' || typedLength < 1 ||
+        targetLength < 1 || typedLength >= targetLength) return null;
+    var savedAtMs = Number(now);
+    if (!Number.isFinite(savedAtMs) || savedAtMs <= 0) savedAtMs = Date.now();
+    var pausedTotal = Math.max(0, Number(snapshot.pausedMs) || 0);
+    if (snapshot.pauseStartedAt) pausedTotal += Math.max(0, savedAtMs - Number(snapshot.pauseStartedAt));
+    return {
+      drillId: snapshot.activeDrillId,
+      drillRunId: Number(snapshot.drillRunId) || 0,
+      typed: snapshot.typed,
+      target: snapshot.target,
+      errorCount: Math.max(0, Number(snapshot.errorCount) || 0),
+      errorChars: typingPracticeCloneBackupValue(snapshot.errorChars || {}),
+      startedAt: Number(snapshot.startTime) || savedAtMs,
+      pausedMs: Math.max(0, pausedTotal),
+      inputMethods: typingPracticeCloneBackupValue(snapshot.inputMethods || {}),
+      inputGraphemes: typingPracticeCloneBackupValue(snapshot.inputGraphemeCounts || snapshot.inputGraphemes || {}),
+      savedAt: new Date(savedAtMs).toISOString(),
+      reason: reason || 'autosave'
+    };
+  }
+
 
 
   // ── Battle Mode (Solo Cascade) — Phase 1 ──
@@ -675,6 +781,121 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     next.pickerOpenedAt = 0;
     next.combo = 0;
     return next;
+  }
+
+
+  // Advance Battle from the state React supplies to the functional updater.
+  // Random candidates are selected by the caller so this transition remains
+  // deterministic and side-effect free under React Strict Mode.
+  function typingPracticeAdvanceBattleTick(current, now, config, candidates) {
+    if (!current || current.ended || current.paused || current.pickerOpen) return current;
+    config = config || {};
+    candidates = candidates || {};
+    var tickAt = Math.max(0, Number(now) || 0);
+    var riseMs = Math.max(1, Number(config.riseMs) || 1);
+    var isVsBot = config.isVsBot === true;
+    var msPerChar = Math.max(1, Number(config.msPerChar) || 1);
+    var stackLimit = Math.max(1, Number(config.stackLimit) || 1);
+    var next = current;
+    var playerStack = Array.isArray(current.stack) ? current.stack : [];
+    var botStack = Array.isArray(current.botStack) ? current.botStack : [];
+    var botTyped = String(current.botTyped || '');
+    var botCleared = Math.max(0, Number(current.botCleared) || 0);
+    var botNextKeyAt = Math.max(0, Number(current.botNextKeyAt) || 0);
+    var changed = false;
+
+    function writable() {
+      if (next === current) next = Object.assign({}, current);
+      return next;
+    }
+
+    if ((Number(current.pauseUntil) || 0) <= tickAt && tickAt - (Number(current.lastRiseAt) || 0) >= riseMs) {
+      playerStack = playerStack.concat([String(candidates.playerRiseWord || '')]).filter(Boolean);
+      writable().stack = playerStack;
+      next.lastRiseAt = tickAt;
+      changed = true;
+    }
+    if (isVsBot && tickAt - (Number(current.botLastRiseAt) || 0) >= riseMs) {
+      botStack = botStack.concat([String(candidates.botRiseWord || '')]).filter(Boolean);
+      writable().botStack = botStack;
+      next.botLastRiseAt = tickAt;
+      changed = true;
+    }
+    if (isVsBot && botStack.length > 0 && tickAt >= botNextKeyAt) {
+      var topBotWord = String(botStack[0] || '');
+      if (botTyped.length < topBotWord.length) {
+        if (candidates.botMakesError) {
+          botNextKeyAt = tickAt + msPerChar * 2;
+        } else {
+          botTyped += topBotWord[botTyped.length] || '';
+          if (botTyped.length >= topBotWord.length) {
+            botStack = botStack.slice(1);
+            botTyped = '';
+            botCleared += 1;
+            botNextKeyAt = tickAt + msPerChar * 3;
+            var sinceSend = Math.max(0, Number(current.botClearedSinceSend) || 0) + 1;
+            var sendEvery = Math.max(1, Number(config.botSendEvery) || 1);
+            if (sinceSend >= sendEvery) {
+              var attackWord = String(candidates.botAttackWord || '');
+              if (attackWord) playerStack = playerStack.concat([attackWord]);
+              writable().stack = playerStack;
+              next.incomingFlashTo = tickAt + 1200;
+              next.botClearedSinceSend = 0;
+            } else {
+              writable().botClearedSinceSend = sinceSend;
+            }
+          } else {
+            botNextKeyAt = tickAt + msPerChar;
+          }
+        }
+        writable().botStack = botStack;
+        next.botTyped = botTyped;
+        next.botCleared = botCleared;
+        next.botNextKeyAt = botNextKeyAt;
+        changed = true;
+      }
+    }
+
+    var playerCapped = playerStack.length >= stackLimit;
+    var botCapped = isVsBot && botStack.length >= stackLimit;
+    if (playerCapped || botCapped) {
+      writable().ended = true;
+      next.endedAt = tickAt;
+      next.outcome = isVsBot
+        ? (playerCapped && botCapped ? 'tie' : playerCapped ? 'loss' : 'win')
+        : 'solo';
+      return next;
+    }
+    return changed ? next : current;
+  }
+
+  function typingPracticeBuildBattleResult(finalState, battlePrefs) {
+    finalState = finalState || {};
+    battlePrefs = battlePrefs || {};
+    var inputContext = typingPracticeInputContext(finalState.inputMethods, finalState.inputGraphemes);
+    var assisted = !!finalState.assistedInput || inputContext.measurementComparable === false;
+    var note = inputContext.measurementNote;
+    if (assisted) {
+      note = (note ? note + ' ' : '') + 'This match remains valid practice but is excluded from Battle records.';
+    }
+    return {
+      mode: battlePrefs.mode || 'solo',
+      outcome: finalState.outcome || 'solo',
+      cleared: Math.max(0, Number(finalState.cleared) || 0),
+      errors: Math.max(0, Number(finalState.errors) || 0),
+      bestCombo: Math.max(0, Number(finalState.bestCombo) || 0),
+      botCleared: Math.max(0, Number(finalState.botCleared) || 0),
+      durationSec: Math.round(Math.max(0, (Number(finalState.endedAt) || 0) - (Number(finalState.startedAt) || 0)) / 1000),
+      difficulty: battlePrefs.difficulty,
+      botSpeed: battlePrefs.botSpeed,
+      inputMethods: inputContext.inputMethods,
+      primaryInputMethod: inputContext.primaryInputMethod,
+      inputEventCounts: inputContext.inputEventCounts,
+      inputGraphemeCounts: inputContext.inputGraphemeCounts,
+      measurementExclusionReasons: inputContext.measurementExclusionReasons,
+      measurementComparable: !assisted,
+      measurementNote: note
+    };
   }
 
   // Apply one text-input event to the current Battle word. This deliberately
@@ -4066,6 +4287,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
          brief + small — the HUD should feel alive, not distracting. */
       '@keyframes tp-live-tick-pulse { 0% { opacity: 0.55; transform: scale(0.96); } 40% { opacity: 1; transform: scale(1.04); } 100% { opacity: 1; transform: scale(1); } }',
       '.tp-root .tp-live-tick { display: inline-block; animation: tp-live-tick-pulse 180ms ease-out 1; }',
+      '@keyframes tp-pace-beat { 0%, 100% { opacity: 0.35; transform: scale(0.92); } 50% { opacity: 1; transform: scale(1.08); } }',
+      '.tp-root .tp-pace-beat { animation: tp-pace-beat var(--tp-pace-beat-duration, 600ms) ease-in-out infinite; }',
 
       /* ── Streak chip — keyed on current count so React re-mounts the
          chip each time the streak advances. Slightly stronger pulse than
@@ -4109,6 +4332,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  box-shadow: 0 3px 8px rgba(0,0,0,0.15);',
       '}',
 
+      '.tp-root { box-sizing: border-box; min-height: 100vh !important; min-height: 100dvh !important; min-height: var(--tp-visual-viewport-height, 100dvh) !important; padding-bottom: max(12px, env(safe-area-inset-bottom)); }',
+      '.tp-root .tp-drill-stage, .tp-root .tp-battle-stage { min-height: min(60dvh, var(--tp-visual-viewport-height, 60dvh)) !important; scroll-padding-block: 16px; }',
+      '.tp-root .tp-capture-shell { scroll-margin-block: 16px; }',
+      '.tp-root .tp-touch-keyboard-action { display: none; align-items: center; justify-content: center; margin-top: 10px; }',
       '.tp-root button { touch-action: manipulation; }',
       '.tp-root button:not(.tp-session-bar) { min-width: 24px; min-height: 24px; }',
       '.tp-root .tp-view-shell { scroll-margin-top: 12px; }',
@@ -4139,6 +4366,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root .tp-theme-quick-choice { max-width: 100%; }',
       '.tp-root .tp-theme-quick-label { min-width: 0; overflow-wrap: anywhere; }',
       '@media (pointer: coarse) {',
+      '  .tp-root { background-attachment: scroll !important; }',
+      '  .tp-root .tp-touch-keyboard-action { display: inline-flex; min-width: 44px; min-height: 44px; }',
       '  .tp-root button:not(.tp-session-bar),',
       '  .tp-root input[type="search"],',
       '  .tp-root input[type="text"],',
@@ -4174,7 +4403,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  .tp-root .tp-saved-passage-actions { width: 100%; flex-direction: row !important; flex-wrap: wrap; }',
       '  .tp-root .tp-saved-passage-actions button { flex: 1 1 120px; }',
       '  .tp-root .tp-visual-keyboard { margin-inline: -8px; border-radius: 8px; }',
-      '  .tp-root .tp-battle-stage, .tp-root .tp-battle-menu { padding: 12px !important; }',
+      '  .tp-root .tp-drill-stage, .tp-root .tp-battle-stage, .tp-root .tp-battle-menu { padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important; }',
       '  .tp-root .tp-battle-menu-hero { flex-direction: column; align-items: flex-start !important; }',
       '  .tp-root .tp-battle-menu-copy { width: 100%; min-width: 0 !important; }',
       '  .tp-root .tp-battle-hud-metrics { width: 100%; margin-left: 0 !important; justify-content: space-between; }',
@@ -4242,6 +4471,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  .tp-root .tp-sparkle,',
       '  .tp-root .tp-wrong-flash,',
       '  .tp-root .tp-live-tick,',
+      '  .tp-root .tp-pace-beat,',
       '  .tp-root .tp-streak-chip,',
       '  .tp-root .tp-word-pulse,',
       '  .tp-root .tp-progress-fill::after,',
@@ -4338,6 +4568,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
         var upd = function(key, val) { ctx.update('typingPractice', key, val); };
         var updMulti = function(obj) { ctx.updateMulti ? ctx.updateMulti('typingPractice', obj) : Object.keys(obj).forEach(function(k) { upd(k, obj[k]); }); };
+        var replaceTypingPracticeState = function(nextToolState) {
+          if (typeof ctx.setToolData === 'function') {
+            ctx.setToolData(function(previous) {
+              var next = Object.assign({}, previous || {});
+              next.typingPractice = nextToolState;
+              return next;
+            });
+          } else {
+            // Older hosts cannot remove unknown keys, but a normalized full
+            // state still prevents any known learner field from carrying over.
+            updMulti(nextToolState);
+          }
+        };
         var addToast = ctx.addToast || function(msg) { console.log('[TypingPractice]', msg); };
 
         var palette = getPalette(state.accommodations, state.accentColor, state.theme);
@@ -4408,6 +4651,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var drillSort = drillSortTuple[0], setDrillSort = drillSortTuple[1];
         var drillSearchRef = useRef(null);
         var viewRegionRef = useRef(null);
+        var typingRootRef = useRef(null);
         var previousViewRef = useRef(state.view);
         var previousSightReadRef = useRef(0);
         var progressMilestoneRef = useRef(0);
@@ -4530,19 +4774,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var editingCustomDrillIdTuple = useState(null);
         var editingCustomDrillId = editingCustomDrillIdTuple[0], setEditingCustomDrillId = editingCustomDrillIdTuple[1];
         var passageGenerationRef = useRef(0);
+        var imageGenerationRef = useRef(0);
         var genLoadingTuple = useState(false);
         var genLoading = genLoadingTuple[0], setGenLoading = genLoadingTuple[1];
         var genErrorTuple = useState(null);
         var genError = genErrorTuple[0], setGenError = genErrorTuple[1];
 
         var captureRef = useRef(null);
+        var captureNeedsTapTuple = useState(false);
+        var captureNeedsTap = captureNeedsTapTuple[0], setCaptureNeedsTap = captureNeedsTapTuple[1];
         var composingInputRef = useRef(false);
         var pendingInputKindRef = useRef('text-input');
         var skipComposedInputRef = useRef('');
-        var inputMethodCountsRef = useRef({ keyboard: 0, 'text-input': 0, ime: 0, paste: 0 });
+        var inputMethodCountsRef = useRef({ keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 });
+        var inputMethodGraphemeCountsRef = useRef({ keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 });
         var completionSavedRef = useRef(false);
         var interruptionPauseRef = useRef(false);
         var exitConfirmationPendingRef = useRef(false);
+        // Lifecycle events can fire between an input event and React's next
+        // render. This ref is updated synchronously so crash/pagehide saves
+        // always serialize the newest learner input and error data.
+        var latestDrillSnapshotRef = useRef(null);
+
+        var resetTypingPracticeLocalLearnerState = function(nextState) {
+          var prefs = (nextState && nextState.passagePrefs) || DEFAULT_STATE.passagePrefs;
+          passageGenerationRef.current += 1;
+          imageGenerationRef.current += 1;
+          latestDrillSnapshotRef.current = null;
+          completionSavedRef.current = true;
+          interruptionPauseRef.current = false;
+          exitConfirmationPendingRef.current = false;
+          inputMethodCountsRef.current = { keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 };
+          inputMethodGraphemeCountsRef.current = { keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 };
+          setCaptureNeedsTap(false);
+          setGenLoading(false); setGenError(null); setImgLoading(false); setImgError(null);
+          setTyped(''); setStartTime(null); setErrorCount(0); setErrorChars({});
+          setPaused(false); setPausedMs(0); setPauseStartedAt(null); setIsWarmup(false);
+          setLastSummary(null); setNoteDraft(''); setNoteSaved(false);
+          setGoalNumberDrafts({}); setGoalNumberTouched({});
+          setDraftTopic(prefs.topic || ''); setDraftGrade(prefs.gradeLevel || '2-3');
+          setDraftDifficulty(prefs.difficulty || 'on-level'); setDraftLength(prefs.length || 'medium');
+          setDraftLanguage(prefs.language || 'en');
+          setCustomTextDraft((nextState && nextState.customDrill && nextState.customDrill.text) || '');
+          setCustomLabelDraft((nextState && nextState.customDrill && nextState.customDrill.label) || '');
+          setCustomTextTouched(false); setEditingCustomDrillId(null);
+          setCompareMode(false); setCompareSelections([]); setSelectedDetailIdx(null);
+          setFilterStart(''); setFilterEnd(''); setFilterDrill(''); setNoteQuery('');
+          setDrillFilter('all'); setDrillQuery(''); setDrillSort('recommended');
+        };
 
         // ── Active drill and target text ──
         var activeDrill = state.currentDrill ? DRILLS[state.currentDrill] : null;
@@ -4575,9 +4854,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // generated passage cannot silently change while a learner is away.
         var interruptedDraft = state.interruptedDrill && typeof state.interruptedDrill === 'object' && !Array.isArray(state.interruptedDrill)
           ? state.interruptedDrill : null;
-        var interruptedDraftMatches = function(draft, drillId, runId) {
-          return !!(draft && draft.drillId === drillId && Number(draft.drillRunId) === Number(runId) && typeof draft.target === 'string' && typeof draft.typed === 'string');
-        };
+        var interruptedDraftMatches = typingPracticeInterruptedDraftMatches;
         if (interruptedDraftMatches(interruptedDraft, activeDrill && activeDrill.id, state.drillRunId)) {
           targetStr = typingPracticeNormalizeText(interruptedDraft.target);
         }
@@ -4594,25 +4871,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var typedLength = typedChars.length;
         var drillComplete = state.view === 'drill' && targetLength > 0 && typedLength >= targetLength;
 
+        // Keep a current-value snapshot for lifecycle listeners. Merely
+        // installing a fresh closure after each render is not enough: pagehide
+        // can arrive immediately after the final beforeinput event.
+        latestDrillSnapshotRef.current = {
+          view: state.view,
+          drillComplete: drillComplete,
+          isWarmup: isWarmup,
+          activeDrillId: activeDrill && activeDrill.id,
+          drillRunId: state.drillRunId || 0,
+          typed: typed,
+          typedLength: typedLength,
+          target: targetStr,
+          targetLength: targetLength,
+          errorCount: errorCount,
+          errorChars: Object.assign({}, errorChars),
+          startTime: startTime,
+          pausedMs: pausedMs,
+          pauseStartedAt: pauseStartedAt,
+          inputMethods: Object.assign({}, inputMethodCountsRef.current || {}),
+          inputGraphemes: Object.assign({}, inputMethodGraphemeCountsRef.current || {}),
+          inputGraphemeCounts: Object.assign({}, inputMethodGraphemeCountsRef.current || {}),
+          existingDraft: interruptedDraft
+        };
+
         // Keep unfinished work private and resumable. Checkpoints never enter
         // sessions, personal bests, mastery, or comparative progress.
         var saveInterruptedDrill = function(reason) {
-          if (state.view !== 'drill' || drillComplete || !activeDrill || !targetStr || typedLength < 1 || isWarmup) return false;
-          var pausedTotal = pausedMs + (pauseStartedAt ? Math.max(0, Date.now() - pauseStartedAt) : 0);
-          var methods = inputMethodCountsRef.current || {};
-          upd('interruptedDrill', {
-            drillId: activeDrill.id,
-            drillRunId: state.drillRunId || 0,
-            typed: typed,
-            target: targetStr,
-            errorCount: Math.max(0, Number(errorCount) || 0),
-            errorChars: Object.assign({}, errorChars),
-            startedAt: Number(startTime) || Date.now(),
-            pausedMs: Math.max(0, pausedTotal),
-            inputMethods: Object.assign({}, methods),
-            savedAt: new Date().toISOString(),
-            reason: reason || 'autosave'
+          var snapshot = latestDrillSnapshotRef.current;
+          if (!snapshot) return false;
+          snapshot = Object.assign({}, snapshot, {
+            inputMethods: Object.assign({}, inputMethodCountsRef.current || {}),
+            inputGraphemes: Object.assign({}, inputMethodGraphemeCountsRef.current || {}),
+            inputGraphemeCounts: Object.assign({}, inputMethodGraphemeCountsRef.current || {})
           });
+          // Defense in depth: even an unanticipated navigation route may never
+          // overwrite a different saved draft without explicit replacement.
+          if (typingPracticeInterruptedDraftConflicts(snapshot.existingDraft, snapshot.activeDrillId, snapshot.drillRunId)) return false;
+          var draft = typingPracticeBuildInterruptedDraft(snapshot, reason, Date.now());
+          if (!draft) return false;
+          upd('interruptedDrill', draft);
+          latestDrillSnapshotRef.current = Object.assign({}, snapshot, { existingDraft: draft });
           return true;
         };
 
@@ -4651,8 +4950,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             pendingInputKindRef.current = 'text-input';
             skipComposedInputRef.current = '';
             inputMethodCountsRef.current = resumeDraft && resumeDraft.inputMethods && typeof resumeDraft.inputMethods === 'object'
-              ? Object.assign({ keyboard: 0, 'text-input': 0, ime: 0, paste: 0 }, resumeDraft.inputMethods)
-              : { keyboard: 0, 'text-input': 0, ime: 0, paste: 0 };
+              ? Object.assign({ keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 }, resumeDraft.inputMethods)
+              : { keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 };
+            inputMethodGraphemeCountsRef.current = resumeDraft && resumeDraft.inputGraphemes && typeof resumeDraft.inputGraphemes === 'object'
+              ? Object.assign({ keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 }, resumeDraft.inputGraphemes)
+              : { keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 };
+            latestDrillSnapshotRef.current = {
+              view: 'drill', drillComplete: false, isWarmup: isWarmup,
+              activeDrillId: activeDrill && activeDrill.id, drillRunId: state.drillRunId || 0,
+              typed: resumedTyped, typedLength: typingPracticeGraphemes(resumedTyped).length,
+              target: targetStr, targetLength: targetLength,
+              errorCount: resumeDraft ? Math.max(0, Number(resumeDraft.errorCount) || 0) : 0,
+              errorChars: resumeDraft && resumeDraft.errorChars ? Object.assign({}, resumeDraft.errorChars) : {},
+              startTime: resumeDraft && Number(resumeDraft.startedAt) > 0 ? Number(resumeDraft.startedAt) : null,
+              pausedMs: resumePausedMs, pauseStartedAt: null,
+              inputMethods: Object.assign({}, inputMethodCountsRef.current),
+              inputGraphemes: Object.assign({}, inputMethodGraphemeCountsRef.current), existingDraft: resumeDraft
+            };
             // Clear any stale note draft from a prior summary
             setNoteDraft('');
             setNoteSaved(false);
@@ -4660,7 +4974,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // Keystroke handler will reject input while sightReadLeft > 0.
             var sr = state.accommodations && state.accommodations.sightReadSeconds;
             setSightReadLeft(resumeDraft ? 0 : (sr ? sr : 0));
-            // Focus the capture surface so keystrokes flow in
+            setCaptureNeedsTap(typingPracticeUsesCoarsePointer());
+            // Focus the capture surface so hardware keystrokes flow in. Mobile
+            // learners always retain a user-activated Show keyboard control.
             setTimeout(function() {
               if (captureRef.current && captureRef.current.focus) captureRef.current.focus();
             }, 50);
@@ -4675,9 +4991,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var timer = setTimeout(function() { saveInterruptedDrill('autosave'); }, 900);
           return function() { clearTimeout(timer); };
         // eslint-disable-next-line
-        }, [state.view, state.currentDrill, state.drillRunId, typedLength, paused, startTime, drillComplete]);
+        }, [state.view, state.currentDrill, state.drillRunId, typedLength, errorCount, paused, startTime, drillComplete]);
 
-        // ── Live clock: tick rapidly during drill so WPM + pace beat stay smooth ──
         // Move focus to the newly rendered view so keyboard and screen-reader
         // users receive the same navigation context as sighted pointer users.
         // Active drills and Battle are excluded because their capture surface
@@ -4695,13 +5010,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           return function() { clearTimeout(focusTimer); };
         }, [state.view]);
 
+        // ── Live clock: one accessible numeric update per second ──
+        // CSS owns the decorative pace pulse; the parent tree only rerenders
+        // for values a learner can actually perceive.
         useEffect(function() {
-          if (state.view !== 'drill' || drillComplete || paused) return;
-          // 100ms is cheap and keeps the pace-target beat dot fluid even at 40 WPM.
-          // Stop it while paused so background breaks do not burn render work.
-          var iv = setInterval(function() { setNowTick(Date.now()); }, 100);
+          if (state.view !== 'drill' || drillComplete || paused || !startTime) return;
+          var iv = setInterval(function() {
+            if (typeof document !== 'undefined' && document.hidden) return;
+            setNowTick(Date.now());
+          }, 1000);
           return function() { clearInterval(iv); };
-        }, [state.view, drillComplete, paused]);
+        }, [state.view, drillComplete, paused, startTime]);
+
+        // Rest reminders are effects, never render-time side effects.
+        useEffect(function() {
+          if (state.view !== 'drill' || drillComplete || paused || !startTime) return;
+          var restMins = state.accommodations && state.accommodations.restBreakMinutes;
+          if (!restMins || restNudgeShownRef.current) return;
+          var activeMs = Math.max(Date.now() - startTime - pausedMs, 0);
+          if (activeMs < restMins * 60000) return;
+          restNudgeShownRef.current = true;
+          addToast('⏸ ' + restMins + ' minutes of typing — consider a short break. Your WPM won\'t be affected.');
+          setAnnounceText(restMins + ' minutes of typing. Consider a short break. Your WPM will not be affected.');
+        }, [state.view, drillComplete, paused, startTime, pausedMs, state.accommodations.restBreakMinutes, _nowTick]);
+
+        // Track only this tool's active viewport. The variable follows the
+        // visible area above a soft keyboard without constraining zoom/reflow.
+        useEffect(function() {
+          if (state.view !== 'drill' && state.view !== 'battle') return;
+          if (typeof window === 'undefined') return;
+          var root = typingRootRef.current;
+          if (!root) return;
+          var viewport = window.visualViewport;
+          var ensureVisibleTimer = null;
+          var updateVisualViewport = function() {
+            var candidate = viewport && Number(viewport.height) > 0 ? Number(viewport.height) : Number(window.innerHeight);
+            if (Number.isFinite(candidate) && candidate > 0) root.style.setProperty('--tp-visual-viewport-height', Math.round(candidate) + 'px');
+          };
+          var onViewportResize = function() {
+            updateVisualViewport();
+            if (ensureVisibleTimer) clearTimeout(ensureVisibleTimer);
+            ensureVisibleTimer = setTimeout(function() {
+              if (state.view === 'drill' && captureRef.current && document.activeElement === captureRef.current) {
+                scrollTypingPracticeIntoView(captureRef.current.parentNode, 'center');
+              }
+            }, 80);
+          };
+          var onViewportScroll = function() { updateVisualViewport(); };
+          updateVisualViewport();
+          if (viewport) {
+            viewport.addEventListener('resize', onViewportResize);
+            viewport.addEventListener('scroll', onViewportScroll);
+          }
+          window.addEventListener('resize', onViewportResize);
+          return function() {
+            if (ensureVisibleTimer) clearTimeout(ensureVisibleTimer);
+            if (viewport) {
+              viewport.removeEventListener('resize', onViewportResize);
+              viewport.removeEventListener('scroll', onViewportScroll);
+            }
+            window.removeEventListener('resize', onViewportResize);
+            root.style.removeProperty('--tp-visual-viewport-height');
+          };
+        }, [state.view]);
 
         // ── Menu-level keyboard shortcuts ──
         // Power-user keys. Active ONLY when on the menu view and no
@@ -4849,10 +5220,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (!drillComplete || !startTime) return;
           if (completionSavedRef.current) return;
           completionSavedRef.current = true;
-          // A completed session supersedes any partial draft for this drill.
-          upd('interruptedDrill', null);
           var endMs = Date.now();
-          var inputContext = typingPracticeInputContext(inputMethodCountsRef.current);
+          var inputContext = typingPracticeInputContext(inputMethodCountsRef.current, inputMethodGraphemeCountsRef.current);
 
           // Warmup mode: skip all persistence. Show summary with a notice
           // that nothing was saved, then route back to menu.
@@ -4882,10 +5251,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               inputMethods: inputContext.inputMethods,
               primaryInputMethod: inputContext.primaryInputMethod,
               inputEventCounts: inputContext.inputEventCounts,
+              inputGraphemeCounts: inputContext.inputGraphemeCounts,
+              measurementExclusionReasons: inputContext.measurementExclusionReasons,
               inputMeasurementComparable: inputContext.measurementComparable,
               metricComparable: inputContext.measurementComparable && wmMetric.unit === 'WPM',
               measurementComparable: inputContext.measurementComparable,
-              measurementNote: 'Input method detected for this warmup. Warmups are not saved or included in performance comparisons.' + (wmMetric.unit === 'CPM' ? ' Character-rate metrics use CPM and are excluded from WPM comparisons.' : ''),
+              measurementNote: inputContext.measurementNote + ' Warmups are not saved or included in performance comparisons.' + (wmMetric.unit === 'CPM' ? ' Character-rate metrics use CPM and are excluded from WPM comparisons.' : ''),
               accommodationsUsed: []
             });
             setAnnounceText('Warmup complete. This session was not saved. ' + wmMetric.value +
@@ -4896,6 +5267,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
 
           // Subtract any accumulated paused time so breaks don't tank WPM.
+          // Completing a recorded run clears only its own resume draft. A
+          // warmup or unrelated run must never erase different saved work.
+          if (interruptedDraftMatches(state.interruptedDrill, activeDrill && activeDrill.id, state.drillRunId)) {
+            upd('interruptedDrill', null);
+          }
           // If the student is currently paused (unusual at completion), include
           // that final pause-so-far too.
           var pausedTotal = pausedMs + (pauseStartedAt ? (endMs - pauseStartedAt) : 0);
@@ -4936,6 +5312,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             inputMethods: inputContext.inputMethods,
             primaryInputMethod: inputContext.primaryInputMethod,
             inputEventCounts: inputContext.inputEventCounts,
+            inputGraphemeCounts: inputContext.inputGraphemeCounts,
+            measurementExclusionReasons: inputContext.measurementExclusionReasons,
             inputMeasurementComparable: inputContext.measurementComparable,
             metricComparable: inputContext.measurementComparable && sessionMetric.unit === 'WPM',
             measurementComparable: inputContext.measurementComparable,
@@ -4965,9 +5343,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           // Aggregate per-char errors across all sessions — cheaper than
           // recomputing from the (capped) session array on every render.
           var aggregateErrors = Object.assign({}, state.aggregateErrors || {});
-          Object.keys(errorChars).forEach(function(ch) {
-            aggregateErrors[ch] = (aggregateErrors[ch] || 0) + errorChars[ch];
-          });
+          if (summary.measurementComparable !== false) {
+            Object.keys(errorChars).forEach(function(ch) {
+              aggregateErrors[ch] = (aggregateErrors[ch] || 0) + errorChars[ch];
+            });
+          }
           var nextUpdates = { sessions: sessions, lifetime: lifetime, aggregateErrors: aggregateErrors };
 
           // Set baseline if first-ever session
@@ -5107,21 +5487,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var togglePause = function() {
           if (paused) {
             // Resume: add this paused chunk to total, then clear the marker.
+            var resumedPausedMs = pausedMs;
             if (pauseStartedAt) {
               var pausedChunk = Math.max(0, Date.now() - pauseStartedAt);
+              resumedPausedMs += pausedChunk;
               setPausedMs(function(total) { return total + pausedChunk; });
             }
+            latestDrillSnapshotRef.current = Object.assign({}, latestDrillSnapshotRef.current || {}, {
+              pausedMs: resumedPausedMs, pauseStartedAt: null
+            });
             interruptionPauseRef.current = false;
             setPauseStartedAt(null);
+            // Keep focus inside the Resume activation so mobile browsers may
+            // reopen the on-screen keyboard without a second tap.
+            if (captureRef.current) captureRef.current.focus();
+            setCaptureNeedsTap(false);
             setPaused(false);
             setAnnounceText('Typing resumed.');
-            setTimeout(function() {
-              if (captureRef.current) captureRef.current.focus();
-            }, 20);
           } else {
             // Pause: mark start-of-pause.
             interruptionPauseRef.current = true;
-            setPauseStartedAt(Date.now());
+            var manualPauseAt = Date.now();
+            latestDrillSnapshotRef.current = Object.assign({}, latestDrillSnapshotRef.current || {}, { pauseStartedAt: manualPauseAt });
+            setPauseStartedAt(manualPauseAt);
             setPaused(true);
             setAnnounceText('Typing paused. Your WPM is not affected.');
           }
@@ -5136,7 +5524,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var pauseForInterruption = function(reason) {
             if (paused || interruptionPauseRef.current) return;
             interruptionPauseRef.current = true;
-            setPauseStartedAt(Date.now());
+            var interruptionAt = Date.now();
+            latestDrillSnapshotRef.current = Object.assign({}, latestDrillSnapshotRef.current || {}, { pauseStartedAt: interruptionAt });
+            setPauseStartedAt(interruptionAt);
             setPaused(true);
             setAnnounceText('Typing paused because ' + reason + '. Resume when you are ready.');
             saveInterruptedDrill('interruption');
@@ -5178,6 +5568,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (resumeAfterCancel) {
             pausedForConfirmationAt = Date.now();
             interruptionPauseRef.current = true;
+            latestDrillSnapshotRef.current = Object.assign({}, latestDrillSnapshotRef.current || {}, {
+              pauseStartedAt: pausedForConfirmationAt
+            });
             setPauseStartedAt(pausedForConfirmationAt);
             setPaused(true);
           }
@@ -5194,6 +5587,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             if (!confirmed) {
               if (resumeAfterCancel && pausedForConfirmationAt !== null) {
                 var confirmationPauseMs = Math.max(0, Date.now() - pausedForConfirmationAt);
+                var snapshotBeforeResume = latestDrillSnapshotRef.current || {};
+                latestDrillSnapshotRef.current = Object.assign({}, snapshotBeforeResume, {
+                  pausedMs: Math.max(0, Number(snapshotBeforeResume.pausedMs) || 0) + confirmationPauseMs,
+                  pauseStartedAt: null
+                });
                 setPausedMs(function(total) { return total + confirmationPauseMs; });
                 interruptionPauseRef.current = false;
                 setPauseStartedAt(null);
@@ -5240,17 +5638,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (state.view !== 'drill' || drillComplete || !targetStr || paused || sightReadLeft > 0) return;
           var result = typingPracticeApplyTextInput(targetStr, typed, rawText, { errorTolerant: state.accommodations.errorTolerant, streak: streak, feedback: mistakeFeedback });
           if (!result.steps.length) return;
-          inputKind = inputKind || 'text-input';
+          inputKind = typingPracticeInputKindFromType('', rawText, inputKind) || 'text-input';
           if (!Object.prototype.hasOwnProperty.call(inputMethodCountsRef.current, inputKind)) inputKind = 'text-input';
           inputMethodCountsRef.current[inputKind] = (inputMethodCountsRef.current[inputKind] || 0) + 1;
+          inputMethodGraphemeCountsRef.current[inputKind] = (inputMethodGraphemeCountsRef.current[inputKind] || 0) + result.steps.length;
           var eventTime = Date.now();
-          if (startTime === null) setStartTime(eventTime);
-          setTyped(result.typed); setErrorCount(errorCount + result.errorCount); setLastWasWrong(result.lastWasWrong); setMistakeFeedback(result.feedback); setStreak(result.streak);
+          var nextStartTime = startTime === null ? eventTime : startTime;
+          var nextErrorCount = errorCount + result.errorCount;
+          var nextErrors = errorChars;
           if (result.errorCount > 0) {
-            var nextErrors = Object.assign({}, errorChars);
+            nextErrors = Object.assign({}, errorChars);
             Object.keys(result.errorsByCharacter).forEach(function(key) { nextErrors[key] = (nextErrors[key] || 0) + result.errorsByCharacter[key]; });
-            setErrorChars(nextErrors);
           }
+          latestDrillSnapshotRef.current = Object.assign({}, latestDrillSnapshotRef.current || {}, {
+            typed: result.typed,
+            typedLength: typingPracticeGraphemes(result.typed).length,
+            errorCount: nextErrorCount,
+            errorChars: Object.assign({}, nextErrors),
+            startTime: nextStartTime,
+            inputMethods: Object.assign({}, inputMethodCountsRef.current),
+            inputGraphemes: Object.assign({}, inputMethodGraphemeCountsRef.current),
+            inputGraphemeCounts: Object.assign({}, inputMethodGraphemeCountsRef.current)
+          });
+          if (startTime === null) setStartTime(eventTime);
+          setTyped(result.typed); setErrorCount(nextErrorCount); setLastWasWrong(result.lastWasWrong); setMistakeFeedback(result.feedback); setStreak(result.streak);
+          if (result.errorCount > 0) setErrorChars(nextErrors);
           var offset = typingPracticeActiveOffset(eventTime, startTime, pausedMs, pauseStartedAt);
           for (var i = 0; i < result.advancedCount; i++) keystrokeTimesRef.current.push(offset);
           var lastStep = result.steps[result.steps.length - 1];
@@ -5278,7 +5690,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (paused || sightReadLeft > 0) return;
           var current = typingPracticeGraphemes(typed);
           if (!current.length) return;
-          setTyped(current.slice(0, -1).join('')); setMistakeFeedback(null); setLastWasWrong(false);
+          var nextTyped = current.slice(0, -1).join('');
+          latestDrillSnapshotRef.current = Object.assign({}, latestDrillSnapshotRef.current || {}, {
+            typed: nextTyped, typedLength: typingPracticeGraphemes(nextTyped).length
+          });
+          setTyped(nextTyped); setMistakeFeedback(null); setLastWasWrong(false);
           if (keystrokeTimesRef.current.length > 0) keystrokeTimesRef.current.pop();
         }, [typed, paused, sightReadLeft]);
 
@@ -5308,7 +5724,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             pendingInputKindRef.current = 'text-input';
             return;
           }
-          var inputKind = pendingInputKindRef.current || 'text-input';
+          var nativeEvent = e.nativeEvent || e;
+          var inputType = nativeEvent.inputType || '';
+          var detectedInputKind = typingPracticeInputKindFromType(inputType);
+          var inputKind = typingPracticeInputKindFromType(inputType, value, detectedInputKind || pendingInputKindRef.current || 'text-input') || 'text-input';
           pendingInputKindRef.current = 'text-input';
           commitTypingText(value, inputKind);
         };
@@ -5336,9 +5755,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             removeLastTypedCharacter();
             return;
           }
-          if (inputType === 'insertFromPaste' || inputType === 'insertFromDrop') pendingInputKindRef.current = 'paste';
-          else if (inputType.indexOf('Composition') !== -1) pendingInputKindRef.current = 'ime';
-          else if (inputType.indexOf('insert') === 0) pendingInputKindRef.current = 'text-input';
+          var detectedInputKind = typingPracticeInputKindFromType(inputType);
+          if (detectedInputKind) pendingInputKindRef.current = detectedInputKind;
         };
         var onTypingPaste = function() { pendingInputKindRef.current = 'paste'; };
 
@@ -5388,6 +5806,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           // restores view='drill' without bumping drillRunId, so retries use
           // the same text AND skip the intro.
           updMulti({ view: 'drill-intro', currentDrill: drillId, drillRunId: (state.drillRunId || 0) + 1 });
+        };
+
+        // The saved-draft decision happens only when capture is about to begin,
+        // after browsing/setup is complete. Warmups coexist with saved work.
+        var beginPreparedDrill = async function(requestedUpdates) {
+          var updates = Object.assign({ view: 'drill' }, requestedUpdates || {});
+          var intendedDrillId = updates.currentDrill || state.currentDrill;
+          var intendedRunId = Object.prototype.hasOwnProperty.call(updates, 'drillRunId')
+            ? updates.drillRunId : state.drillRunId;
+          var savedDraft = state.interruptedDrill;
+          var hasConflict = typingPracticeInterruptedDraftConflicts(savedDraft, intendedDrillId, intendedRunId);
+          if (hasConflict && !isWarmup) {
+            var savedDrill = DRILLS[savedDraft.drillId];
+            var savedTyped = typingPracticeGraphemes(savedDraft.typed).length;
+            var savedTarget = Math.max(1, typingPracticeGraphemes(savedDraft.target).length);
+            var savedPercent = Math.min(99, Math.round((savedTyped / savedTarget) * 100));
+            var replacementConfirmed = await askTypingPracticeConfirmation(
+              'You have saved practice in ' + (savedDrill ? savedDrill.name : 'another drill') +
+              ' (' + savedPercent + ' percent complete). Replacing it permanently discards that unfinished draft. Completed sessions are unchanged.',
+              {
+                title: 'Replace saved practice?',
+                confirmText: 'Replace draft and start',
+                cancelText: 'Keep saved draft'
+              }
+            );
+            if (!replacementConfirmed) {
+              setAnnounceText('Saved practice kept. New drill not started.');
+              return false;
+            }
+            // Clear and enter capture in one update so no intermediate render
+            // can mistake the old draft for the newly selected run.
+            updates.interruptedDrill = null;
+            setAnnounceText('Saved practice replaced. Starting ' + ((DRILLS[intendedDrillId] && DRILLS[intendedDrillId].name) || 'typing practice') + '.');
+          } else {
+            setAnnounceText('Starting ' + ((DRILLS[intendedDrillId] && DRILLS[intendedDrillId].name) || 'typing practice') + '.');
+          }
+          updMulti(updates);
+          return true;
         };
 
         // ═════════════════════════════════════════════════════
@@ -7341,7 +7797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (acc.paceTargetWpm) activeAccLabels.push('pace target ' + acc.paceTargetWpm + ' WPM');
 
           var startNow = function() {
-            updMulti({ view: 'drill' });
+            beginPreparedDrill({ view: 'drill' });
           };
 
           // Companion mascot at idle — shows on the intro so the cast
@@ -7839,8 +8295,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // activation. The page-level shortcut is only for quiet space.
               if (typingPracticeIsInteractiveTarget(e.target)) return;
               e.preventDefault();
-              setAnnounceText('Starting ' + (activeDrill ? activeDrill.name : 'typing drill') + '.');
-              updMulti({ view: 'drill' });
+              beginPreparedDrill({ view: 'drill' });
             } else if (e.key === 'Escape') {
               e.preventDefault();
               upd('view', 'menu');
@@ -7849,7 +8304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           window.addEventListener('keydown', handler);
           return function() { window.removeEventListener('keydown', handler); };
         // eslint-disable-next-line
-        }, [state.view]);
+        }, [state.view, state.currentDrill, state.drillRunId, state.interruptedDrill, isWarmup]);
 
         // ═════════════════════════════════════════════════════
         // AI PASSAGE GENERATION — uses ctx.callGemini with jsonMode=FALSE
@@ -8833,17 +9288,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var liveAcc = (typedLength + errorCount) > 0 ? Math.round((typedLength / (typedLength + errorCount)) * 100) : 100;
           var liveSec = Math.round(activeMs / 1000);
 
-          // Rest-break nudge: fire once per drill if active time crosses the threshold.
-          // Async via setTimeout so we don't side-effect during render.
-          var restMins = state.accommodations.restBreakMinutes;
-          if (restMins && !restNudgeShownRef.current && activeMs >= restMins * 60000 && !paused && !drillComplete) {
-            restNudgeShownRef.current = true;
-            setTimeout(function() {
-              addToast('⏸ ' + restMins + ' minutes of typing — consider a short break. Your WPM won\'t be affected.');
-              setAnnounceText(restMins + ' minutes of typing. Consider a short break. Your WPM will not be affected.');
-            }, 0);
-          }
-
           // ── Predictive-assist: how many upcoming chars to highlight ──
           // Fades as accuracy climbs: 3 by default, 2 at >=85%, 1 at >=92%, 0 at >=96%.
           var predictiveCount = 0;
@@ -8945,13 +9389,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var nextChar = targetChars[typedLength] || '';
           var nextKeyMeta = findKeyMeta(nextChar, state.keyboardLayout);
 
-          // Pace-target beat dot: soft sinusoidal pulse at the target cadence
-          var beatOpacity = 1;
-          if (state.accommodations.paceTargetWpm) {
-            var msPerChar = 60000 / (state.accommodations.paceTargetWpm * 5);
-            var phase = (Date.now() % msPerChar) / msPerChar;
-            beatOpacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(phase * 2 * Math.PI));
-          }
+          // Pace-target beat cadence is handled by CSS, avoiding a full
+          // character-tree render for decorative animation frames.
+          var paceBeatDuration = state.accommodations.paceTargetWpm
+            ? Math.max(240, Math.round(60000 / (state.accommodations.paceTargetWpm * 5)))
+            : 600;
 
           // Companion mascot — opt-in via accommodations.showCompanion.
           // Reads existing drill state and maps to mascot states. No new
@@ -9495,7 +9937,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             h('div', {
               className: 'tp-capture-shell',
               style: { background: palette.surface, border: '2px solid ' + (lastWasWrong ? palette.danger : palette.border), borderRadius: '14px', padding: state.accommodations.largeKeys ? '28px 22px' : '22px 18px', lineHeight: '1.8', letterSpacing: '0.04em', cursor: 'text', minHeight: '100px', transition: 'border-color 120ms ease', userSelect: 'none', position: 'relative' },
-              onMouseDown: function() { if (captureRef.current) captureRef.current.focus(); }
+              onMouseDown: function() { if (captureRef.current) captureRef.current.focus(); },
+              onPointerDown: function() { if (captureRef.current) captureRef.current.focus(); }
             },
               h('div', { 'aria-hidden': 'true', style: { pointerEvents: 'none' } }, chars),
               h('span', { id: 'tp-typing-capture-label', className: 'sr-only', lang: uiLanguage },
@@ -9508,17 +9951,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 'aria-describedby': 'tp-capture-help tp-input-method-help tp-capture-progress-text tp-current-key-cue' + (showStuckKeySupport ? ' tp-stuck-key-support' : ''),
                 'aria-details': 'tp-target-transcript', 'aria-errormessage': mistakeFeedback ? 'tp-mistake-feedback' : undefined, 'aria-invalid': mistakeFeedback ? 'true' : 'false', 'aria-keyshortcuts': 'Escape F2', 'aria-disabled': paused || sightReadLeft > 0 ? 'true' : 'false', 'aria-busy': sightReadLeft > 0 ? 'true' : 'false', 'aria-multiline': targetLength > 60 ? 'true' : 'false',
                 onKeyDown: onKeyDown, onBeforeInput: onTypingBeforeInput, onInput: onAssistiveInput, onPaste: onTypingPaste, onCompositionStart: onCompositionStart, onCompositionEnd: onCompositionEnd,
-                onFocus: function(e) { e.currentTarget.style.outlineColor = palette.accent; if (e.currentTarget.parentNode) e.currentTarget.parentNode.style.borderColor = palette.accent; },
+                onFocus: function(e) { setCaptureNeedsTap(false); e.currentTarget.style.outlineColor = palette.accent; if (e.currentTarget.parentNode) e.currentTarget.parentNode.style.borderColor = palette.accent; },
                 onBlur: function(e) {
-                  e.currentTarget.style.outlineColor = 'transparent'; if (e.currentTarget.parentNode) e.currentTarget.parentNode.style.borderColor = lastWasWrong ? palette.danger : palette.border;
-                  if (e.relatedTarget) return;
-                  setTimeout(function() { if (!captureRef.current || state.view !== 'drill' || drillComplete) return; var active = document.activeElement; if (active && active !== document.body && active !== captureRef.current) return; captureRef.current.focus(); }, 10);
+                  e.currentTarget.style.outlineColor = 'transparent';
+                  if (e.currentTarget.parentNode) e.currentTarget.parentNode.style.borderColor = lastWasWrong ? palette.danger : palette.border;
+                  if (typingPracticeUsesCoarsePointer() && !paused && !drillComplete) setCaptureNeedsTap(true);
                 },
                 style: { position: 'absolute', inset: 0, width: '100%', height: '100%', boxSizing: 'border-box', resize: 'none', border: 0, padding: 0, margin: 0, background: 'transparent', color: 'transparent', caretColor: 'transparent', opacity: 0.02, cursor: 'text', zIndex: 2, outline: '3px solid transparent', outlineOffset: '3px' }
               })
             ),
 
-            h('p', { id: 'tp-input-method-help', style: { margin: '10px 0 0', fontSize: '11px', lineHeight: '1.5', color: palette.textMute } }, 'Use a physical keyboard or tap the typing area for your on-screen keyboard. Switch controls, paste, and language input methods are supported.'),
+            h('p', { id: 'tp-input-method-help', style: { margin: '10px 0 0', fontSize: '11px', lineHeight: '1.5', color: palette.textMute } }, 'Use a physical keyboard or tap the typing area for your on-screen keyboard. Switch controls, dictation, paste, and language input methods are supported. Tap outside to dismiss the on-screen keyboard; use the button below to continue.'),
+            h('button', {
+              type: 'button',
+              className: 'tp-touch-keyboard-action',
+              'aria-controls': 'tp-typing-capture',
+              'aria-label': captureNeedsTap ? 'Open the on-screen keyboard after it was dismissed' : 'Open the on-screen keyboard',
+              onClick: function() {
+                if (!captureRef.current) return;
+                if (typeof document !== 'undefined' && document.activeElement === captureRef.current && captureRef.current.blur) captureRef.current.blur();
+                captureRef.current.focus();
+                setCaptureNeedsTap(false);
+                setAnnounceText('Typing area focused. The on-screen keyboard is ready.');
+              },
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 14px', fontSize: '12px' })
+            }, 'Show keyboard'),
 
             // Hint row + pace beat dot
             h('div', {
@@ -9536,14 +9993,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                 state.accommodations.paceTargetWpm ? h('span', {
                   'aria-hidden': 'true',
+                  className: 'tp-pace-beat',
                   style: {
                     display: 'inline-block',
                     width: '10px',
                     height: '10px',
                     borderRadius: '50%',
                     background: palette.accent,
-                    opacity: beatOpacity,
-                    transition: 'opacity 100ms linear'
+                    '--tp-pace-beat-duration': paceBeatDuration + 'ms'
                   }
                 }) : null,
                 h('span', { id: 'tp-capture-help' }, paceHint + ' - F2 repeats the next key - Esc opens exit confirmation.')
@@ -9640,6 +10097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             setImgError('No text to illustrate.');
             return;
           }
+          var imageGenerationId = ++imageGenerationRef.current;
           setImgLoading(true);
           setImgError(null);
 
@@ -9664,6 +10122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             : ctx.callImagen(fullPrompt, 512, 0.85);
 
           Promise.resolve(run).then(function(result) {
+            if (imageGenerationRef.current !== imageGenerationId) return;
             if (!result) throw new Error('Image generation returned nothing.');
             // Normalize to data-URL so <img src> works directly.
             var dataUrl = ('' + result).indexOf('data:') === 0
@@ -9688,6 +10147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             });
             setImgLoading(false);
           }).catch(function(err) {
+            if (imageGenerationRef.current !== imageGenerationId) return;
             setImgLoading(false);
             setImgError('Could not generate image: ' + (err && err.message ? err.message : 'unknown error'));
           });
@@ -10749,7 +11209,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 style: { display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '14px' }
               },
                 h('button', {
-                  onClick: function() { updMulti({ view: 'drill', currentDrill: s.drillId }); },
+                  onClick: function() { beginPreparedDrill({ view: 'drill', currentDrill: s.drillId }); },
                   'aria-label': 'Retry ' + s.drillName + ' with the same text',
                   style: primaryBtnStyle(palette),
                   title: __alloT('stem.typingpractice.retry_the_same_text_to_beat_your_score', 'Retry the same text to beat your score')
@@ -10813,7 +11273,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 // to a different sample if they want variety instead of retry.
                 s.drillId !== 'passage' ? h('button', {
                   onClick: function() {
-                    updMulti({
+                    beginPreparedDrill({
                       view: 'drill',
                       currentDrill: s.drillId,
                       drillRunId: (state.drillRunId || 0) + 1
@@ -11938,6 +12398,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       };
                       try {
                         var json = JSON.stringify(backup, null, 2);
+                        if (json.length > MAX_BACKUP_FILE_CHARS) {
+                          throw new Error('Backup exceeds the 5 MB restore limit. Remove large visual gallery images and try again.');
+                        }
                         var blob = new Blob([json], { type: 'application/json' });
                         var url = URL.createObjectURL(blob);
                         var a = document.createElement('a');
@@ -11983,12 +12446,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                               return;
                             }
                             if (!parsed.state || typeof parsed.state !== 'object' || Array.isArray(parsed.state)) { addToast('⚠️ Backup is empty or corrupted.'); setAnnounceText('Restore failed because the backup is empty or corrupted.'); return; }
+                            if (parsed._version !== undefined && Number(parsed._version) !== 1) throw new Error('Unsupported backup version.');
                             if (parsed.state.keyboardLayout !== undefined && !Object.prototype.hasOwnProperty.call(KEYBOARD_LAYOUTS, parsed.state.keyboardLayout)) {
                               addToast('⚠️ Backup uses an unknown keyboard layout.');
                               setAnnounceText('Restore failed because the backup uses an unknown keyboard layout.');
                               return;
                             }
                             var backupSummary = typingPracticeValidateBackupState(parsed.state);
+                            var restoredState = typingPracticeNormalizeBackupState(parsed.state);
                             var n = backupSummary.sessions;
                             var layoutLabel = parsed.state.keyboardLayout ? typingPracticeKeyboardLayout(parsed.state.keyboardLayout).label : 'default profile';
                             var draftNotice = parsed.state.interruptedDrill ? ' It also contains a private unfinished resume draft.' : '';
@@ -11996,17 +12461,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                             if (!(await askTypingPracticeConfirmation(restorePreview, {
                               title: 'Restore full backup?', confirmText: 'Replace current data'
                             }))) return;
-                            // Apply each key individually via updMulti so React state updates batch cleanly.
-                            var safeKeys = Object.keys(DEFAULT_STATE);
-                            var updates = {};
-                            safeKeys.forEach(function(k) {
-                              if (parsed.state.hasOwnProperty(k)) updates[k] = parsed.state[k];
-                            });
-                            // Reset the view to menu so student lands somewhere coherent
-                            updates.view = 'menu';
-                            updMulti(updates);
-                            setGoalNumberDrafts({});
-                            setGoalNumberTouched({});
+                            // One functional host update replaces the whole learner
+                            // record, including fields absent from a legacy backup.
+                            replaceTypingPracticeState(restoredState);
+                            resetTypingPracticeLocalLearnerState(restoredState);
                             addToast('✓ Backup restored · ' + n + ' sessions loaded.');
                             setAnnounceText('Backup restored. ' + n + ' sessions loaded.');
                           } catch (err) {
@@ -12035,11 +12493,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       if (!(await askTypingPracticeConfirmation('This is the last chance to keep this student\'s typing practice data.', {
                         title: 'Are you absolutely sure?', confirmText: 'Permanently clear all data'
                       }))) return;
-                      var wiped = Object.assign({}, DEFAULT_STATE);
-                      wiped.view = 'menu';
-                      updMulti(wiped);
-                      setGoalNumberDrafts({});
-                      setGoalNumberTouched({});
+                      var wiped = typingPracticeNormalizeBackupState({});
+                      replaceTypingPracticeState(wiped);
+                      resetTypingPracticeLocalLearnerState(wiped);
                       addToast('All data cleared.');
                       setAnnounceText('All Typing Practice data permanently cleared.');
                     },
@@ -14467,7 +14923,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           cleared: 0, errors: 0, combo: 0, bestCombo: 0,
           paused: false, pausedAt: 0, pausedMs: 0, autoPaused: false, ended: false,
           feedback: null, lastWasWrong: false, assistedInput: false,
-          inputMethods: { keyboard: 0, 'text-input': 0, ime: 0, paste: 0 },
+          inputMethods: { keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 },
+          inputGraphemes: { keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 },
           // Bot side (only used in vs-bot mode)
           botStack: [], botTyped: '', botCleared: 0, botLastRiseAt: 0,
           botNextKeyAt: 0,
@@ -14495,6 +14952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var battleMenuHeadingRef = useRef(null);
         var battleSummaryHeadingRef = useRef(null);
         var battleExitPendingRef = useRef(false);
+        var battleCompletionSavedRef = useRef(false);
         var battleComposingRef = useRef(false);
         var battlePendingInputKindRef = useRef('text-input');
         var battleSkipComposedInputRef = useRef('');
@@ -14651,9 +15109,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           setBattleSt({
             stack: initialStack, typed: '', startedAt: now, lastRiseAt: now, pauseUntil: 0,
             cleared: 0, errors: 0, combo: 0, bestCombo: 0,
-            paused: false, pausedAt: 0, pausedMs: 0, autoPaused: false, ended: false,
+            paused: false, pausedAt: 0, pausedMs: 0, autoPaused: false, ended: false, endedAt: 0, outcome: null,
             feedback: null, lastWasWrong: false, assistedInput: false,
-            inputMethods: { keyboard: 0, 'text-input': 0, ime: 0, paste: 0 },
+            inputMethods: { keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 },
+          inputGraphemes: { keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 },
             botStack: botInitial, botTyped: '', botCleared: 0, botLastRiseAt: now,
             botNextKeyAt: isVsBot ? now + 1500 : 0,
             botClearedSinceSend: 0,
@@ -14661,130 +15120,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             pickerOpen: false, pickerOptions: [], pickerOpenedAt: 0
           });
           battlePauseInterruptionRef.current = false;
+          battleCompletionSavedRef.current = false;
           battleMistakeAnnouncementRef.current = { signature: '', at: 0 };
           updMulti({ battle: Object.assign({}, state.battle, { view: 'playing' }) });
         }
 
-        // Animation tick — advances player + bot rise timers, advances
-        // bot typing if vs-bot mode, and detects match-end on either side.
+        // Animation tick advances from React's latest state. The functional
+        // updater prevents bot work from rolling back a just-entered character.
         useEffect(function() {
-          if (state.battle.view !== 'playing') return;
-          if (battleSt.ended || battleSt.paused || battleSt.pickerOpen) return;
+          if (state.battle.view !== 'playing' || battleSt.ended || battleSt.paused || battleSt.pickerOpen) return;
           var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
           var isVsBot = state.battle.mode === 'vs-bot';
           var bot = isVsBot ? BATTLE_BOTS[state.battle.botSpeed || 'medium'] : null;
-          var msPerChar = bot ? Math.round(60000 / bot.wpm / 5) : 0;
+          var msPerChar = bot ? Math.round(60000 / bot.wpm / 5) : 1;
           var iv = setInterval(function() {
             var now = Date.now();
-            var patch = {};
-            var didChange = false;
-            var newPlayerStack = battleSt.stack;
-            var newBotStack = battleSt.botStack;
-            var newBotTyped = battleSt.botTyped;
-            var newBotCleared = battleSt.botCleared;
-            var newBotNextKey = battleSt.botNextKeyAt;
-            // Attack choice pauses this interval entirely. When play resumes,
-            // picker resolution shifts every deadline by the decision time.
-            if (battleSt.pauseUntil <= now && now - battleSt.lastRiseAt >= diff.riseMs) {
-              newPlayerStack = battleSt.stack.concat([pickBattleWord(diff.lengthMix)]);
-              patch.stack = newPlayerStack;
-              patch.lastRiseAt = now;
-              didChange = true;
-            }
-            // BOT stack rise
-            if (isVsBot && now - battleSt.botLastRiseAt >= diff.riseMs) {
-              newBotStack = newBotStack.concat([pickBattleWord(diff.lengthMix)]);
-              patch.botStack = newBotStack;
-              patch.botLastRiseAt = now;
-              didChange = true;
-            }
-            // BOT typing tick — advances 1 character per cadence
-            if (isVsBot && newBotStack.length > 0 && now >= newBotNextKey) {
-              var topBotWord = newBotStack[0];
-              if (newBotTyped.length < topBotWord.length) {
-                // Simulate occasional bot error: delay next key but don't actually typo
-                var isError = Math.random() < bot.errorRate;
-                if (isError) {
-                  newBotNextKey = now + msPerChar * 2;
-                } else {
-                  newBotTyped = newBotTyped + topBotWord[newBotTyped.length];
-                  if (newBotTyped.length >= topBotWord.length) {
-                    // Bot cleared a word
-                    newBotStack = newBotStack.slice(1);
-                    newBotTyped = '';
-                    newBotCleared += 1;
-                    newBotNextKey = now + msPerChar * 3; // brief pause between words
-                    // Bot send-attack — every BOT_SEND_EVERY[speed] cleared
-                    // words, push an attack word to the player's stack.
-                    var sinceSend = battleSt.botClearedSinceSend + 1;
-                    var sendInterval = BOT_SEND_EVERY[state.battle.botSpeed || 'medium'] || 5;
-                    if (sinceSend >= sendInterval) {
-                      var atkBot = BATTLE_ATTACK_WORDS[Math.floor(Math.random() * BATTLE_ATTACK_WORDS.length)];
-                      newPlayerStack = newPlayerStack.concat([atkBot]);
-                      patch.stack = newPlayerStack;
-                      patch.incomingFlashTo = now + 1200;
-                      patch.botClearedSinceSend = 0;
-                    } else {
-                      patch.botClearedSinceSend = sinceSend;
-                    }
-                  } else {
-                    newBotNextKey = now + msPerChar;
-                  }
-                }
-                patch.botStack = newBotStack;
-                patch.botTyped = newBotTyped;
-                patch.botCleared = newBotCleared;
-                patch.botNextKeyAt = newBotNextKey;
-                didChange = true;
-              }
-            }
-            // MATCH-END check
-            var playerCapped = newPlayerStack.length >= BATTLE_STACK_LIMIT;
-            var botCapped = isVsBot && newBotStack.length >= BATTLE_STACK_LIMIT;
-            if (playerCapped || botCapped) {
-              var outcome = isVsBot
-                ? (playerCapped && botCapped ? 'tie' : playerCapped ? 'loss' : 'win')
-                : 'solo';
-              var result = {
-                mode: state.battle.mode,
-                outcome: outcome,
-                cleared: battleSt.cleared, errors: battleSt.errors,
-                bestCombo: battleSt.bestCombo,
-                botCleared: newBotCleared,
-                durationSec: Math.round((now - battleSt.startedAt) / 1000),
-                difficulty: state.battle.difficulty,
-                botSpeed: state.battle.botSpeed,
-                inputMethods: typingPracticeInputContext(battleSt.inputMethods).inputMethods,
-                inputEventCounts: typingPracticeInputContext(battleSt.inputMethods).inputEventCounts,
-                measurementComparable: !battleSt.assistedInput && typingPracticeInputContext(battleSt.inputMethods).measurementComparable,
-                measurementNote: battleSt.assistedInput
-                  ? 'A multi-character assistive input event was used. This match remains valid practice but is excluded from Battle records.'
-                  : typingPracticeInputContext(battleSt.inputMethods).measurementNote
-              };
-              setBattleSt(Object.assign({}, battleSt, patch, { ended: true }));
-              var comparableBattle = result.measurementComparable !== false;
-              var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
-              var newPb = comparableBattle ? {
-                cleared: Math.max(pb.cleared, result.cleared),
-                longestStreak: Math.max(pb.longestStreak, result.bestCombo),
-                durationSec: Math.max(pb.durationSec, result.durationSec)
-              } : pb;
-              var pbBot = state.battle.personalBestVsBot || { wins: 0, losses: 0, ties: 0 };
-              var newPbBot = isVsBot && comparableBattle ? {
-                wins: pbBot.wins + (outcome === 'win' ? 1 : 0),
-                losses: pbBot.losses + (outcome === 'loss' ? 1 : 0),
-                ties: pbBot.ties + (outcome === 'tie' ? 1 : 0)
-              } : pbBot;
-              setAnnounceText(isVsBot
-                ? ('Battle complete. ' + (outcome === 'win' ? 'You won.' : outcome === 'loss' ? 'The bot won this round.' : 'The match was a tie.') + ' You cleared ' + result.cleared + ' words; the bot cleared ' + result.botCleared + '. Results summary ready.')
-                : ('Battle complete. You cleared ' + result.cleared + ' word' + (result.cleared === 1 ? '' : 's') + '. Results summary ready.'));
-              updMulti({ battle: Object.assign({}, state.battle, { view: 'summary', lastResult: result, personalBest: newPb, personalBestVsBot: newPbBot }) });
-              return;
-            }
-            if (didChange) setBattleSt(Object.assign({}, battleSt, patch));
+            var candidates = {
+              playerRiseWord: pickBattleWord(diff.lengthMix),
+              botRiseWord: pickBattleWord(diff.lengthMix),
+              botAttackWord: BATTLE_ATTACK_WORDS[Math.floor(Math.random() * BATTLE_ATTACK_WORDS.length)],
+              botMakesError: !!(bot && Math.random() < bot.errorRate)
+            };
+            setBattleSt(function(current) {
+              return typingPracticeAdvanceBattleTick(current, now, {
+                riseMs: diff.riseMs,
+                isVsBot: isVsBot,
+                msPerChar: msPerChar,
+                botErrorRate: bot ? bot.errorRate : 0,
+                botSendEvery: BOT_SEND_EVERY[state.battle.botSpeed || 'medium'] || 5,
+                stackLimit: BATTLE_STACK_LIMIT
+              }, candidates);
+            });
           }, 100);
           return function() { clearInterval(iv); };
-        }, [state.battle.view, state.battle.mode, state.battle.botSpeed, state.battle.difficulty, battleSt.ended, battleSt.paused, battleSt.lastRiseAt, battleSt.pauseUntil, battleSt.stack.length, battleSt.botLastRiseAt, battleSt.botStack.length, battleSt.botNextKeyAt, battleSt.botTyped, battleSt.pickerOpen]);
+        }, [state.battle.view, state.battle.mode, state.battle.botSpeed, state.battle.difficulty, battleSt.ended, battleSt.paused, battleSt.pickerOpen]);
+
+        // Persist exactly once from the final rendered state. This keeps the
+        // last error, input event, and grapheme ledger in the saved result.
+        useEffect(function() {
+          if (!battleSt.ended || !battleSt.endedAt || battleCompletionSavedRef.current) return;
+          battleCompletionSavedRef.current = true;
+          var result = typingPracticeBuildBattleResult(battleSt, {
+            mode: state.battle.mode,
+            difficulty: state.battle.difficulty,
+            botSpeed: state.battle.botSpeed
+          });
+          var comparableBattle = result.measurementComparable !== false;
+          var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
+          var newPb = comparableBattle ? {
+            cleared: Math.max(pb.cleared, result.cleared),
+            longestStreak: Math.max(pb.longestStreak, result.bestCombo),
+            durationSec: Math.max(pb.durationSec, result.durationSec)
+          } : pb;
+          var pbBot = state.battle.personalBestVsBot || { wins: 0, losses: 0, ties: 0 };
+          var newPbBot = state.battle.mode === 'vs-bot' && comparableBattle ? {
+            wins: pbBot.wins + (result.outcome === 'win' ? 1 : 0),
+            losses: pbBot.losses + (result.outcome === 'loss' ? 1 : 0),
+            ties: pbBot.ties + (result.outcome === 'tie' ? 1 : 0)
+          } : pbBot;
+          setAnnounceText(state.battle.mode === 'vs-bot'
+            ? ('Battle complete. ' + (result.outcome === 'win' ? 'You won.' : result.outcome === 'loss' ? 'The bot won this round.' : 'The match was a tie.') + ' You cleared ' + result.cleared + ' words; the bot cleared ' + result.botCleared + '. Results summary ready.')
+            : ('Battle complete. You cleared ' + result.cleared + ' word' + (result.cleared === 1 ? '' : 's') + '. Results summary ready.'));
+          updMulti({ battle: Object.assign({}, state.battle, { view: 'summary', lastResult: result, personalBest: newPb, personalBestVsBot: newPbBot }) });
+        }, [battleSt.ended, battleSt.endedAt, state.battle.view]);
 
         // A match must never progress while it is hidden or while its window
         // lacks focus. The ref deduplicates the common blur + visibilitychange
@@ -14835,13 +15233,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var transition = typingPracticeApplyBattleTextInput(battleSt, rawText, now, diff.postClearPauseMs);
           if (!transition.steps.length) return;
           inputKind = inputKind || 'text-input';
-          if (['keyboard', 'text-input', 'ime', 'paste'].indexOf(inputKind) === -1) inputKind = 'text-input';
+          inputKind = typingPracticeInputKindFromType('', rawText, inputKind) || 'text-input';
+          if (['keyboard', 'text-input', 'ime', 'dictation', 'paste'].indexOf(inputKind) === -1) inputKind = 'text-input';
           var next = transition.state;
-          var methods = Object.assign({ keyboard: 0, 'text-input': 0, ime: 0, paste: 0 }, battleSt.inputMethods || {});
+          var methods = Object.assign({ keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 }, battleSt.inputMethods || {});
           methods[inputKind] = (methods[inputKind] || 0) + 1;
           next.inputMethods = methods;
-          var insertedCount = typingPracticeGraphemes(rawText).length;
-          next.assistedInput = !!battleSt.assistedInput || inputKind === 'paste' || insertedCount > 1;
+          var inputGraphemes = Object.assign({ keyboard: 0, 'text-input': 0, ime: 0, dictation: 0, paste: 0 }, battleSt.inputGraphemes || {});
+          inputGraphemes[inputKind] = (inputGraphemes[inputKind] || 0) + transition.steps.length;
+          next.inputGraphemes = inputGraphemes;
+          next.assistedInput = !!battleSt.assistedInput || inputKind === 'paste' || inputKind === 'dictation';
           if (transition.wordCleared && state.battle.mode === 'vs-bot' && next.combo >= COMBO_SEND_THRESHOLD) {
             next.pickerOpen = true;
             next.pickerOptions = buildBattleAttackOptions();
@@ -14910,7 +15311,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             battlePendingInputKindRef.current = 'text-input';
             return;
           }
-          var inputKind = battlePendingInputKindRef.current || 'text-input';
+          var nativeEvent = e.nativeEvent || e;
+          var inputType = nativeEvent.inputType || '';
+          var detectedInputKind = typingPracticeInputKindFromType(inputType);
+          var inputKind = typingPracticeInputKindFromType(inputType, value, detectedInputKind || battlePendingInputKindRef.current || 'text-input') || 'text-input';
           battlePendingInputKindRef.current = 'text-input';
           commitBattleText(value, inputKind);
         };
@@ -14938,9 +15342,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             removeBattleCharacter();
             return;
           }
-          if (inputType === 'insertFromPaste' || inputType === 'insertFromDrop') battlePendingInputKindRef.current = 'paste';
-          else if (inputType.indexOf('Composition') !== -1) battlePendingInputKindRef.current = 'ime';
-          else if (inputType.indexOf('insert') === 0) battlePendingInputKindRef.current = 'text-input';
+          var detectedInputKind = typingPracticeInputKindFromType(inputType);
+          if (detectedInputKind) battlePendingInputKindRef.current = detectedInputKind;
         };
         var onBattlePaste = function() { battlePendingInputKindRef.current = 'paste'; };
 
@@ -15453,7 +15856,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 type: 'button',
                 'aria-keyshortcuts': 'Escape',
                 'aria-label': battleSt.paused ? 'Resume Battle Mode' : 'Pause Battle Mode',
-                onClick: function() { setBattlePaused(!battleSt.paused); },
+                onClick: function() {
+                  if (battleSt.paused && battleCaptureRef.current) battleCaptureRef.current.focus();
+                  setBattlePaused(!battleSt.paused);
+                },
                 style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 12, padding: '8px 12px', minWidth: 44, minHeight: 44 })
               }, battleSt.paused ? '▶ Resume' : '⏸ Pause'),
               h('button', {
@@ -15966,6 +16372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // overrides this only at the exact language-of-parts boundaries.
         var rootLang = uiLanguage;
         return h('div', {
+          ref: typingRootRef,
           className: 'tp-root tp-theme-' + (state.theme || 'default') + (state.accommodations && state.accommodations.reducedMotion ? ' tp-reduce-motion' : ''),
           lang: rootLang,
           style: {
@@ -15976,7 +16383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // these (CSS just truncates to the available layer count).
             backgroundRepeat: 'no-repeat, repeat, no-repeat',
             backgroundAttachment: 'fixed, scroll, scroll',
-            minHeight: '100%',
+            minHeight: 'var(--tp-visual-viewport-height, 100dvh)',
             color: palette.text,
             fontFamily: fontFamily
           }
@@ -16062,6 +16469,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       base.padding = '10px 12px';
     }
     return base;
+  }
+
+  function typingPracticeUsesCoarsePointer() {
+    if (typeof window === 'undefined') return false;
+    try {
+      return !!((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+        (typeof navigator !== 'undefined' && Number(navigator.maxTouchPoints) > 0));
+    } catch (err) { return false; }
   }
 
   function scrollTypingPracticeIntoView(element, block) {
@@ -17290,18 +17705,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     return updates;
   }
 
-  function typingPracticeInputContext(rawCounts) {
+  function typingPracticeInputKindFromType(inputType, rawText, hintedKind) {
+    var type = String(inputType || '');
+    var validKinds = ['keyboard', 'text-input', 'ime', 'dictation', 'paste'];
+    var hint = validKinds.indexOf(hintedKind) >= 0 ? hintedKind : null;
+    if (hint && hint !== 'text-input') return hint;
+    if (type === 'insertFromPaste' || type === 'insertFromPasteAsQuotation' ||
+        type === 'insertFromDrop' || type === 'insertFromYank') return 'paste';
+    if (type === 'insertFromDictation' || type === 'insertFromSpeech') return 'dictation';
+    if (type.indexOf('Composition') !== -1) return 'ime';
+    var valueLength = rawText === null || rawText === undefined ? 0 : Array.from(String(rawText)).length;
+    if ((type.indexOf('insert') === 0 || hint === 'text-input' || valueLength > 0) && valueLength > 1) return 'dictation';
+    if (type.indexOf('insert') === 0 || hint === 'text-input' || valueLength === 1) return 'text-input';
+    return null;
+  }
+
+  function typingPracticeInputContext(rawCounts, rawGraphemeCounts) {
     var counts = rawCounts || {};
+    var graphemeCounts = rawGraphemeCounts || counts;
     var normalized = {
       keyboard: Math.max(0, Number(counts.keyboard) || 0),
       'text-input': Math.max(0, Number(counts['text-input']) || 0),
       ime: Math.max(0, Number(counts.ime) || 0),
+      dictation: Math.max(0, Number(counts.dictation) || 0),
       paste: Math.max(0, Number(counts.paste) || 0)
+    };
+    var normalizedGraphemes = {
+      keyboard: Math.max(0, Number(graphemeCounts.keyboard) || 0),
+      'text-input': Math.max(0, Number(graphemeCounts['text-input']) || 0),
+      ime: Math.max(0, Number(graphemeCounts.ime) || 0),
+      dictation: Math.max(0, Number(graphemeCounts.dictation) || 0),
+      paste: Math.max(0, Number(graphemeCounts.paste) || 0)
     };
     var definitions = [
       { key: 'keyboard', label: 'Physical keyboard' },
       { key: 'text-input', label: 'Touch or assistive text input' },
       { key: 'ime', label: 'Language input method (IME)' },
+      { key: 'dictation', label: 'Dictation or speech input' },
       { key: 'paste', label: 'Pasted text' }
     ];
     var inputMethods = definitions.filter(function(item) {
@@ -17310,20 +17750,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       return item.label;
     });
     var primary = definitions.reduce(function(best, item) {
+      if (normalizedGraphemes[item.key] !== normalizedGraphemes[best.key]) {
+        return normalizedGraphemes[item.key] > normalizedGraphemes[best.key] ? item : best;
+      }
       return normalized[item.key] > normalized[best.key] ? item : best;
     }, definitions[0]);
-    var measurementComparable = normalized.paste === 0;
+    var exclusionReasons = [];
+    if (normalized.paste > 0) exclusionReasons.push('paste');
+    if (normalized.dictation > 0) exclusionReasons.push('dictation');
+    var measurementComparable = exclusionReasons.length === 0;
+    var note = 'Input method recorded for interpretation.';
+    if (!measurementComparable) {
+      var excludedInput = normalized.paste > 0 && normalized.dictation > 0
+        ? 'Pasted text and dictation or speech input were used'
+        : normalized.paste > 0
+          ? 'Pasted text was used'
+          : 'Dictation or speech input was used';
+      note = excludedInput + ', so this run is retained as practice but excluded from comparative performance metrics.';
+    }
     return {
       inputMethods: inputMethods.length ? inputMethods : ['Input method not detected'],
       primaryInputMethod: inputMethods.length ? primary.label : 'Input method not detected',
       inputEventCounts: normalized,
+      inputGraphemeCounts: normalizedGraphemes,
+      measurementExclusionReasons: exclusionReasons,
       measurementComparable: measurementComparable,
-      measurementNote: measurementComparable
-        ? 'Input method recorded for interpretation.'
-        : 'Pasted text was used, so this run is retained as practice but excluded from comparative performance metrics.'
+      measurementNote: note
     };
   }
-
   function typingPracticeComparableSessions(sessions) {
     return (sessions || []).filter(function(session) {
       return session && session.measurementComparable !== false && session.metricComparable !== false && session.metricUnit !== 'CPM';
@@ -17482,7 +17936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
       return s;
     };
-    var headers = ['date', 'drill_id', 'drill_name', 'wpm', 'metric_value', 'metric_unit', 'accuracy_pct', 'duration_sec', 'paused_sec', 'errors', 'chars_typed', 'accommodations_used', 'input_methods', 'primary_input_method', 'measurement_comparable', 'metric_comparable', 'measurement_note', 'tag', 'is_new_best', 'is_baseline', 'mastery_advanced', 'new_mastery_level', 'reflection', 'error_chars', 'note'];
+    var headers = ['date', 'drill_id', 'drill_name', 'wpm', 'metric_value', 'metric_unit', 'accuracy_pct', 'duration_sec', 'paused_sec', 'errors', 'chars_typed', 'accommodations_used', 'input_methods', 'primary_input_method', 'measurement_comparable', 'metric_comparable', 'measurement_note', 'tag', 'is_new_best', 'is_baseline', 'mastery_advanced', 'new_mastery_level', 'reflection', 'error_chars', 'note', 'input_event_counts', 'input_grapheme_counts', 'measurement_exclusion_reasons'];
     var rows = sessions.map(function(s) {
       // Serialize per-char errors as "a:2|d:1|k:3" for compact CSV consumption
       var errorChars = s.errorChars ? Object.keys(s.errorChars).map(function(k) {
@@ -17501,7 +17955,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         s.isNewBest ? 'yes' : '', s.isBaseline ? 'yes' : '',
         s.masteryAdvanced ? 'yes' : '', (s.newMasteryLevel || ''),
         s.reflection || '', errorChars,
-        s.note || ''
+        s.note || '',
+        s.inputEventCounts ? Object.keys(s.inputEventCounts).sort().map(function(k) { return k + ':' + s.inputEventCounts[k]; }).join('|') : '',
+        s.inputGraphemeCounts ? Object.keys(s.inputGraphemeCounts).sort().map(function(k) { return k + ':' + s.inputGraphemeCounts[k]; }).join('|') : '',
+        (s.measurementExclusionReasons || []).join('|')
       ].map(esc).join(',');
     });
     var csv = headers.join(',') + '\n' + rows.join('\n') + '\n';

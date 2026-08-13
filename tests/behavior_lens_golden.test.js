@@ -149,17 +149,13 @@ describe('layer 4 — storage-id migration is wired (ship-blocker #2, 2026-06-02
     });
   });
 
-  it('top-level auto-save passes student-scoped keys to the crash-consistent helper', () => {
+  it('top-level auto-save schedules one canonical student-scoped workspace write', () => {
     const src = H.BehaviorLens.toString();
-    expect(src).toMatch(/getBehaviorLensWorkspaceRuntime\(\)\.persistLocalWorkspace\(\{/);
+    expect(src).toMatch(/createWorkspacePersistenceScheduler\(\{/);
     expect(src).toMatch(/workspaceKey:\s*studentKey\('behaviorLens_workspace_'\)/);
     expect(src).toMatch(/dirtyKey:\s*studentKey\('behaviorLens_workspace_dirty_'\)/);
-    expect(src).toMatch(/abcKey:\s*studentKey\('behaviorLens_abc_'\)/);
-    expect(src).toMatch(/observationKey:\s*studentKey\('behaviorLens_obs_'\)/);
-    // The raw codename-keyed writes that caused student collisions must not
-    // return, even though the actual writes now live in the helper module.
-    expect(src).not.toMatch(/localStorage\.setItem\(`behaviorLens_abc_\$\{selectedStudent\}`/);
-    expect(src).not.toMatch(/localStorage\.setItem\(`behaviorLens_obs_\$\{selectedStudent\}`/);
+    expect(src).not.toMatch(/abcKey:\s*studentKey\('behaviorLens_abc_'\)/);
+    expect(src).not.toMatch(/observationKey:\s*studentKey\('behaviorLens_obs_'\)/);
   });
 
   it('demo loader keys writes on a precomputed demoId, not the codename', () => {

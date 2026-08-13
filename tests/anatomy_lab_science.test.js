@@ -250,7 +250,9 @@ describe('Anatomy Lab quiz transition integrity', () => {
 
   it('resets quiz feedback atomically across system, orientation, and level changes', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('return { system: systemId, selectedStructure: null, quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null');
+    expect(source).toContain('var patch = { system: systemId, selectedStructure: null, quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null');
+    expect(source).toContain("return Object.assign(patch, clinicalAtlasPackTransitionPatch(targetPack, 'system-selector', '', systemId));");
+    expect(source).toContain('return patch;');
     expect(source).toContain('view: v, selectedStructure: null, quizIdx: 0, quizScore: 0, quizFeedback: null');
     expect(source).toContain('complexity: lv.v, selectedStructure: null, quizIdx: 0, quizScore: 0, quizFeedback: null');
   });
@@ -1185,7 +1187,7 @@ describe('Anatomy Lens focused-diagram gallery', () => {
     expect(malformed).toContain('0/8 explored');
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('function openAnatomyLensItem(item)');
-    expect(source).toContain('function openAnatomyScaleBridge(structureId, stepIndex, announcement)');
+    expect(source).toContain('function openAnatomyScaleBridge(structureId, stepIndex, announcement, extraPatch)');
     expect(source).toContain('_regionalAtlasStep: safeStep');
     expect(source).toContain("_regionalAtlasOpen: item.structureId");
     expect(source).toContain('_anatomyLensViewed: viewedPatch');
@@ -1550,7 +1552,7 @@ describe('Anatomy Systems in Motion', () => {
     const html = renderAnatomy({
       system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
       _regionalAtlasOpen: 'biceps', _regionalAtlasStep: 3, _showSystemsMotion: true,
-      _systemsMotionStep: 0, _systemsMotionAnswer: 1, _systemsMotionCompleted: { 'muscle-force': true }
+      _systemsMotionStep: 0, _systemsMotionAnswer: 0, _systemsMotionCompleted: { 'muscle-force': true }
     });
     expect(html).toContain('data-systems-motion-answer="correct"');
     expect(html).toContain('1/4 checkpoints solved');
@@ -1837,7 +1839,7 @@ describe('Anatomy Systems in Motion', () => {
     const html = renderAnatomy({
       system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
       _regionalAtlasOpen: 'biceps', _showSystemsMotion: true, _systemsMotionScenario: 'exercise',
-      _systemsMotionStep: 0, _systemsMotionAnswer: 0
+      _systemsMotionStep: 0, _systemsMotionAnswer: 2
     });
     expect(html).toContain('data-systems-motion-answer=');
     expect(html).toContain('data-misconception=');

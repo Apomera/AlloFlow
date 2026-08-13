@@ -203,18 +203,24 @@ describe('blueprint plan rows: run status', () => {
     expect(r[2].textContent).toContain('Failed');
   });
 
-  it('mounts the production diagnostic download control and saved-run warning', () => {
+  it('mounts the production diagnostic copy/download controls and saved-run warning', () => {
     installRegistry();
+    const onCopyDiagnostics = vi.fn();
     const onDownloadDiagnostics = vi.fn();
     const el = mountRun({
       run: { ...RUN, persistenceWarning: 'Only compact diagnostics were restored.' },
+      onCopyDiagnostics,
       onDownloadDiagnostics,
     });
+    const copyButton = el.querySelector('[data-testid="bp-copy-diagnostics"]');
     const button = el.querySelector('[data-testid="bp-download-diagnostics"]');
+    expect(copyButton).not.toBeNull();
     expect(button).not.toBeNull();
     expect(button.getAttribute('aria-label')).toContain('Download Blueprint');
     expect(el.textContent).toContain('Only compact diagnostics were restored.');
+    act(() => copyButton.dispatchEvent(new MouseEvent('click', { bubbles: true })));
     act(() => button.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    expect(onCopyDiagnostics).toHaveBeenCalledTimes(1);
     expect(onDownloadDiagnostics).toHaveBeenCalledTimes(1);
   });
 
@@ -605,12 +611,19 @@ describe('a failed row explains itself in the panel', () => {
                     failReason: 'threw: quota exhausted' },
     'quiz-2': { uiId: 'quiz-2', tool: 'quiz', status: 'landed', resourceId: 'r1' },
   } };
+  const summarizeFailureReason = (value) => {
+    const text = String(value || '');
+    if (/bearer|api[ -]?key|auth/i.test(text)) return { code: 'authentication', summary: 'Authentication or permission failure.' };
+    if (/quota/i.test(text)) return { code: 'quota', summary: 'Provider quota or billing limit reached.' };
+    if (/returned no resource/i.test(text)) return { code: 'empty-output', summary: 'The generation step returned no usable resource.' };
+    return { code: 'generation-failure', summary: 'Generation failed; detailed text remains only in the on-device error log.' };
+  };
   const mountRun = (run = RUN) => {
     host = document.createElement('div');
     document.body.appendChild(host);
     root = ReactDOMClient.createRoot(host);
     act(() => root.render(React.createElement(Card, {
-      config: CFG, run, onUpdate: vi.fn(), onConfirm: vi.fn(), onCancel: vi.fn(),
+      config: CFG, run, summarizeFailureReason, onUpdate: vi.fn(), onConfirm: vi.fn(), onCancel: vi.fn(),
     })));
     return host;
   };
@@ -621,21 +634,31 @@ describe('a failed row explains itself in the panel', () => {
     expect(reasons).toHaveLength(2);           // the two failed rows, not the landed one
   });
 
-  it('shows the raw reason so a bug report is diagnosable', () => {
+  it('shows useful safe categories while keeping raw provider text off-screen', () => {
     const el = mountRun();
     const txt = Array.from(el.querySelectorAll('[data-testid="bp-fail-reason"]')).map((n) => n.textContent).join(' | ');
-    expect(txt).toContain('returned no resource');
-    expect(txt).toContain('quota exhausted');
+    expect(txt).toContain('returned no usable resource');
+    expect(txt).toContain('quota or billing limit');
+    expect(txt).toContain('on-device error log');
+    expect(txt).not.toContain('handleGenerate');
+    expect(txt).not.toContain('quota exhausted');
   });
 
-  it('leads with plain language, and distinguishes a throw from an empty return', () => {
+  it('labels each safe failure category for diagnostics and assistive technology', () => {
     const el = mountRun();
     const nodes = Array.from(el.querySelectorAll('[data-testid="bp-fail-reason"]'));
-    // Row 0 returned nothing -> points at the usual cause (no source text).
-    expect(nodes[0].textContent).toMatch(/no source text/i);
-    // Row 1 threw -> must NOT claim the source text is the problem.
-    expect(nodes[1].textContent).toMatch(/hit an error/i);
-    expect(nodes[1].textContent).not.toMatch(/no source text/i);
+    expect(nodes[0].dataset.failureCode).toBe('empty-output');
+    expect(nodes[1].dataset.failureCode).toBe('quota');
+  });
+
+  it('never renders a credential-bearing provider error in text or a title', () => {
+    const secret = 'SENTINEL_API_KEY';
+    const el = mountRun({ rows: {
+      'analysis-0': { uiId: 'analysis-0', tool: 'analysis', status: 'failed', failReason: 'Bearer ' + secret + ' rejected' },
+    } });
+    expect(el.textContent).toContain('Authentication or permission failure');
+    expect(el.textContent).not.toContain(secret);
+    expect(Array.from(el.querySelectorAll('[title]')).map(node => node.getAttribute('title')).join(' ')).not.toContain(secret);
   });
 
   it('says nothing on rows that succeeded', () => {

@@ -185,6 +185,189 @@ test.describe('Pets Lab sensory perspective — WebGL', () => {
     expect(Buffer.compare(before, after), 'walking forward did not change the view').not.toBe(0);
   });
 
+  test('renders a responsive 360-degree vision-field compass for every species', async ({ page }) => {
+    await harness.mount(page, seed({ sensorySpecies: 'human', sensoryReduceMotion: true }));
+
+    const compass = page.locator('.petslab-sensory-field');
+    const diagram = compass.locator('svg[data-compass-size="live"]');
+    const comparison = page.getByRole('region', {
+      name: 'Locked viewpoint comparison for human, dog, and cat vision',
+    });
+    await expect(compass).toHaveCount(1);
+    await expect(diagram).toHaveCount(1);
+    await expect(compass.getByText(/^Visible field/)).toBeVisible();
+    await expect(compass.getByText(/^Both eyes \/ depth zone/)).toBeVisible();
+    await expect(compass.getByText(/^Rear blind zone/).first()).toBeVisible();
+    await expect(compass.getByText('Forward', { exact: true })).toBeVisible();
+
+    // Capture only geometric SVG attributes. This proves species switches
+    // reshape the sectors rather than merely replacing a numeric caption.
+    const geometry = () => diagram.evaluate((svg) => {
+      const attrs = ['d', 'points', 'cx', 'cy', 'r', 'rx', 'ry', 'x', 'y',
+        'x1', 'y1', 'x2', 'y2', 'width', 'height', 'transform',
+        'stroke-dasharray', 'stroke-dashoffset'];
+      return Array.from(svg.querySelectorAll('*')).map((node) => attrs
+        .filter((name) => node.hasAttribute(name))
+        .map((name) => name + '=' + node.getAttribute(name))
+        .join(';')).filter(Boolean).join('|');
+    });
+
+    await expect(diagram).toHaveAccessibleName(/Human.*190.*120/i);
+    await expect(diagram).toHaveAttribute('data-total-field', '190');
+    await expect(diagram).toHaveAttribute('data-binocular-field', '120');
+    const humanGeometry = await geometry();
+
+    await page.getByRole('radio', { name: /^Dog / }).click();
+    await expect(diagram).toHaveAccessibleName(/Dog.*240.*65/i);
+    await expect(diagram).toHaveAttribute('data-total-field', '240');
+    await expect(diagram).toHaveAttribute('data-binocular-field', '65');
+    const dogGeometry = await geometry();
+
+    await page.getByRole('radio', { name: /^Cat / }).click();
+    await expect(diagram).toHaveAccessibleName(/Cat.*200.*100/i);
+    await expect(diagram).toHaveAttribute('data-total-field', '200');
+    await expect(diagram).toHaveAttribute('data-binocular-field', '100');
+    const catGeometry = await geometry();
+
+    expect(humanGeometry.length, 'human compass has no SVG geometry').toBeGreaterThan(100);
+    expect(new Set([humanGeometry, dogGeometry, catGeometry]).size,
+      'species labels changed but the compass sectors did not').toBe(3);
+
+    // Comparison cards use lightweight mini geometry, not extra renderers.
+    await expect(comparison.locator('.petslab-field-mini')).toHaveCount(3);
+    for (const species of ['human', 'dog', 'cat']) {
+      const mini = comparison.locator('[data-species="' + species + '"] .petslab-field-mini');
+      await expect(mini).toHaveCount(1);
+      await expect(mini.locator('svg[data-compass-size="comparison"]')).toHaveAttribute('data-vision-field', species);
+    }
+    expect(await page.evaluate(() => (window as any).__canvasCount())).toBe(1);
+    await expect(page.locator('.petslab-sensory-field canvas, .petslab-field-mini canvas')).toHaveCount(0);
+
+    // Check the complete page, not only the new figure, at the minimum width.
+    await page.setViewportSize({ width: 320, height: 1000 });
+    await page.locator('#wrap').evaluate((el) => { (el as HTMLElement).style.width = '320px'; });
+    await page.waitForTimeout(180);
+    const mobile = await page.evaluate(() => {
+      const wrap = document.getElementById('wrap');
+      const figure = document.querySelector('.petslab-sensory-field');
+      const box = figure && figure.getBoundingClientRect();
+      return {
+        pageWidth: document.documentElement.scrollWidth,
+        wrapWidth: wrap ? wrap.scrollWidth : 0,
+        compassWidth: figure ? figure.scrollWidth : 0,
+        compassClientWidth: figure ? figure.clientWidth : 0,
+        compassLeft: box ? box.left : -1,
+        compassRight: box ? box.right : 321,
+      };
+    });
+    expect(mobile.pageWidth).toBeLessThanOrEqual(320);
+    expect(mobile.wrapWidth).toBeLessThanOrEqual(320);
+    expect(mobile.compassWidth).toBeLessThanOrEqual(mobile.compassClientWidth);
+    expect(mobile.compassLeft).toBeGreaterThanOrEqual(0);
+    expect(mobile.compassRight).toBeLessThanOrEqual(320);
+    expect(await page.evaluate(() => (window as any).__canvasCount())).toBe(1);
+  });
+  test('captures a locked three-species comparison with one WebGL canvas', async ({ page }) => {
+    test.setTimeout(240_000);
+    await harness.mount(page, seed({ sensorySpecies: 'human', sensoryReduceMotion: true }));
+
+    const region = page.getByRole('region', {
+      name: 'Locked viewpoint comparison for human, dog, and cat vision',
+    });
+    await expect(region.locator('figure')).toHaveCount(3);
+    await expect(region.locator('.petslab-sensory-compare-empty')).toHaveCount(3);
+    expect(await page.evaluate(() => (window as any).__canvasCount())).toBe(1);
+
+    const canvas = page.locator('#wrap canvas').first();
+    const captureHuman = page.getByRole('button', { name: 'Capture Human comparison frame' });
+    await expect(captureHuman).toBeEnabled();
+    await captureHuman.focus();
+    await captureHuman.press('Enter');
+    await expect(region.locator('img')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Replace Human comparison frame' })).toBeFocused();
+
+    // Navigation is genuinely locked, including the global arrow-key path.
+    await expect(page.getByRole('button', { name: /Walk forward/ })).toBeDisabled();
+    await expect(page.getByRole('button', { name: /Reset/ })).toBeDisabled();
+    await expect(page.getByRole('button', { name: /Balls/ })).toBeDisabled();
+    await expect(page.getByRole('button', { name: /Lighting locked/ })).toBeDisabled();
+    const lockedBefore = await canvas.screenshot({ timeout: 60000 });
+    const arrowPrevented = await page.evaluate(() => {
+      const down = new KeyboardEvent('keydown', { code: 'ArrowDown', bubbles: true, cancelable: true });
+      window.dispatchEvent(down);
+      window.dispatchEvent(new KeyboardEvent('keyup', { code: 'ArrowDown', bubbles: true }));
+      return down.defaultPrevented;
+    });
+    expect(arrowPrevented, 'locked comparison swallowed an arrow key needed for page scrolling').toBe(false);
+    await page.evaluate(() => (window as any).__walk('ArrowUp', 450));
+    await page.waitForTimeout(350);
+    const lockedAfter = await canvas.screenshot({ timeout: 60000 });
+    expect(Buffer.compare(lockedBefore, lockedAfter), 'camera moved after comparison lock').toBe(0);
+
+    await page.getByRole('radio', { name: /^Dog / }).click();
+    await page.waitForTimeout(300);
+    await page.getByRole('button', { name: 'Capture Dog comparison frame' }).click();
+    await expect(region.locator('img')).toHaveCount(2);
+
+    await page.getByRole('radio', { name: /^Cat / }).click();
+    await page.waitForTimeout(300);
+    await page.getByRole('button', { name: 'Capture Cat comparison frame' }).click();
+    await expect(region.locator('img')).toHaveCount(3);
+    await expect(region.getByText(/Comparison complete/)).toBeVisible();
+
+    const captures = await region.locator('img').evaluateAll((images) => images.map((img) => {
+      const el = img as HTMLImageElement;
+      return { src: el.src, alt: el.alt, width: el.naturalWidth, height: el.naturalHeight };
+    }));
+    expect(new Set(captures.map((c) => c.src)).size).toBe(3);
+    expect(new Set(captures.map((c) => c.width + 'x' + c.height)).size).toBe(1);
+    expect(captures.reduce((sum, c) => sum + c.src.length, 0)).toBeLessThan(1_200_000);
+    for (const [index, species] of ['Human', 'Dog', 'Cat'].entries()) {
+      expect(captures[index].src).toMatch(/^data:image\/jpeg/);
+      expect(captures[index].width).toBeGreaterThan(200);
+      expect(captures[index].width).toBeLessThanOrEqual(520);
+      expect(captures[index].alt).toContain(species + ' comparison frame');
+      expect(captures[index].alt).toContain('acuity');
+      expect(captures[index].alt).toContain('Illustrative approximation');
+    }
+    expect(await page.evaluate(() => (window as any).__canvasCount())).toBe(1);
+    expect(await region.locator('canvas').count()).toBe(0);
+    const persisted = await page.evaluate(() =>
+      JSON.stringify((window as any).__toolData) + '|' + (localStorage.getItem('petsLab.state.v1') || ''));
+    expect(persisted).not.toContain('data:image');
+
+    // The complete page, not just the tray, now reflows to phone width.
+    await page.setViewportSize({ width: 320, height: 1000 });
+    await page.locator('#wrap').evaluate((el) => { (el as HTMLElement).style.width = '320px'; });
+    await page.waitForTimeout(180);
+    const mobile = await page.evaluate(() => {
+      const grid = document.querySelector('.petslab-sensory-compare-grid')!;
+      return {
+        pageWidth: document.documentElement.scrollWidth,
+        wrapWidth: document.getElementById('wrap')?.scrollWidth || 0,
+        columns: getComputedStyle(grid).gridTemplateColumns.split(' ').length,
+      };
+    });
+    expect(mobile.pageWidth).toBeLessThanOrEqual(320);
+    expect(mobile.wrapWidth).toBeLessThanOrEqual(320);
+    expect(mobile.columns).toBe(1);
+
+    await page.getByRole('button', { name: 'Clear comparison' }).click();
+    await expect(region.locator('img')).toHaveCount(0);
+    await expect(region.locator('.petslab-sensory-compare-empty')).toHaveCount(3);
+    await expect(page.getByRole('button', { name: /Reset/ })).toBeEnabled();
+    await expect(page.getByRole('button', { name: /Walk forward/ })).toBeEnabled();
+
+    // Captures are ephemeral: closing and reopening the room starts clean.
+    await page.getByRole('radio', { name: /^Human / }).click();
+    await page.getByRole('button', { name: 'Capture Human comparison frame' }).click();
+    await expect(region.locator('img')).toHaveCount(1);
+    await page.getByRole('button', { name: /Leave the room/ }).click();
+    await page.getByRole('button', { name: /Step into the room/ }).click();
+    await expect(page.locator('#wrap canvas')).toHaveCount(1);
+    await expect(region.locator('img')).toHaveCount(0);
+  });
+
   test('leaving the room releases the GL context', async ({ page }) => {
     await harness.mount(page, seed());
     expect(await page.evaluate(() => (window as any).__canvasCount())).toBe(1);

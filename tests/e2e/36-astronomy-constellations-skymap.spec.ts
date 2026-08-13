@@ -258,9 +258,14 @@ test.describe('Astronomy constellation and Sky Map visuals - real Chromium', () 
     }
 
     const target = page.getByLabel('Sky map target');
-    await expect(target).toHaveAttribute('aria-controls', 'astronomy-sky-map-diagram');
+    const initialControlledIds = ((await target.getAttribute('aria-controls')) || '').split(/\s+/);
+    expect(initialControlledIds).toContain('astronomy-sky-map-diagram');
     const selectedValue = await selectVisibleSkyTarget(page);
     expect(selectedValue).not.toBe('');
+    const controlledIds = ((await target.getAttribute('aria-controls')) || '').split(/\s+/);
+    expect(controlledIds).toEqual(expect.arrayContaining([
+      'astronomy-sky-map-diagram', 'astronomy-sky-target-timeline',
+    ]));
     await expect(page.locator('[data-sky-layer="target"]')).toHaveCount(1);
     await expect(page.locator('#astronomy-sky-target-status')).toContainText('highlighted:');
     await expect(page.locator('#astronomy-sky-map-diagram')).toContainText('TARGET');
@@ -268,23 +273,119 @@ test.describe('Astronomy constellation and Sky Map visuals - real Chromium', () 
     await expect(targetDetail).toBeVisible();
     await expect(targetDetail).toContainText('Altitude');
     await expect(targetDetail).toContainText('Next horizon event');
-    await expect(targetDetail).toContainText('Best in next 12 hours');
+    await expect(targetDetail).toContainText('Highest in next 12 hours');
+    const timeline = page.locator('#astronomy-sky-target-timeline');
+    await expect(timeline).toBeVisible();
+    await expect(timeline).toHaveAttribute('data-sky-target', selectedValue);
+    const timelineFigure = timeline.locator('svg[data-sky-target-timeline]');
+    await expect(timelineFigure).toHaveAttribute('role', 'img');
+    await expect(timelineFigure).toHaveAttribute('data-duration-hours', '12');
+    await expect(timelineFigure.locator('title')).toHaveCount(1);
+    await expect(timelineFigure.locator('desc')).toHaveCount(1);
+    await expect(timelineFigure.locator('[data-sky-twilight-bands] [data-twilight-band]')).not.toHaveCount(0);
+    await expect(timelineFigure.locator('[data-sky-axis="x"]')).toHaveCount(1);
+    await expect(timelineFigure.locator('[data-sky-axis="y"]')).toHaveCount(1);
+    await expect(timelineFigure.locator('[data-sky-horizon]')).toHaveCount(1);
+    await expect(timelineFigure.locator('[data-sky-altitude-path]')).toHaveCount(1);
+    await expect(timelineFigure.locator('[data-sky-altitude-sample]')).not.toHaveCount(0);
     const diagram = page.locator('#astronomy-sky-map-diagram');
     await expect(diagram).toHaveAttribute('role', 'img');
     await expect(diagram).toHaveAttribute('aria-label', /north at top, east at left/i);
+    await expect(diagram).toHaveAttribute('aria-label', /solid gold motion arc[^.]*next 12 hours/i);
+    const targetTrack = diagram.locator('[data-sky-target-track]');
+    await expect(targetTrack).toHaveCount(1);
+    await expect(targetTrack).toHaveAttribute('data-sky-target', selectedValue);
+    await expect(targetTrack).toHaveAttribute('clip-path', 'url(#astronomy-sky-dome-clip)');
+    await expect(targetTrack.locator('[data-sky-target-track-segment]')).not.toHaveCount(0);
+    const segmentCount = await targetTrack.locator('[data-sky-target-track-segment]').count();
+    await expect(targetTrack).toHaveAttribute('data-segment-count', String(segmentCount));
+    await expect(targetTrack).toHaveAttribute('data-visible-sample-count', /^\d+$/);
+    expect(Number(await targetTrack.getAttribute('data-visible-sample-count'))).toBeGreaterThan(0);
+    const segmentContracts = await targetTrack.locator('[data-sky-target-track-segment]').evaluateAll((segments) =>
+      segments.map((segment) => ({
+        d: segment.getAttribute('d') || '',
+        markerEnd: segment.getAttribute('marker-end'),
+        pointCount: Number(segment.getAttribute('data-point-count')),
+      })));
+    for (const segment of segmentContracts) {
+      expect(segment.d).toMatch(/^M/i);
+      expect(segment.d).not.toMatch(/NaN|Infinity|undefined/i);
+      expect(segment.markerEnd).toBe('url(#astronomy-sky-target-track-arrow)');
+      expect(segment.pointCount).toBeGreaterThan(1);
+    }
+    const waypointContracts = await targetTrack.locator('[data-sky-target-track-sample]').evaluateAll((samples) =>
+      samples.map((sample) => ({
+        hour: Number(sample.getAttribute('data-hour-offset')),
+        altitude: Number(sample.getAttribute('data-altitude')),
+        azimuth: Number(sample.getAttribute('data-azimuth')),
+        x: Number(sample.getAttribute('cx')),
+        y: Number(sample.getAttribute('cy')),
+      })));
+    for (const waypoint of waypointContracts) {
+      expect([4, 8, 12]).toContain(waypoint.hour);
+      expect([waypoint.altitude, waypoint.azimuth, waypoint.x, waypoint.y].every(Number.isFinite)).toBe(true);
+      expect(Math.hypot(waypoint.x - 190, waypoint.y - 190)).toBeLessThanOrEqual(178.01);
+    }
+    await expect(page.locator('#astronomy-sky-map-help')).toContainText(/solid gold arc traces.*next 12 hours/i);
+    await expect(page.locator('#astronomy-sky-focus-legend')).toContainText(/solid gold arc traces its next 12 hours/i);
     await expect(diagram).toBeVisible();
 
     await expectNoDocumentOverflow(page);
     await expectNoRuntimeIssues(page, issues);
   });
 
+  test('Bortle preview stays synchronized between Sky Map and Observing', async ({ page }) => {
+    await page.setViewportSize({ width: 1180, height: 1000 });
+    const issues = collectBrowserIssues(page);
+    await mount(page, 'skymap');
+
+    const darkness = page.locator('#astronomy-sky-darkness');
+    const darknessStatus = page.locator('#astronomy-sky-darkness-status');
+    const diagram = page.locator('#astronomy-sky-map-diagram');
+    await expect(darkness).toHaveValue('5');
+    await expect(darkness.locator('option')).toHaveCount(9);
+    await darkness.selectOption('9');
+    await expect(darkness).toHaveValue('9');
+    await expect(darknessStatus).toHaveAttribute('data-bortle-class', '9');
+    await expect(diagram).toHaveAttribute('data-bortle-class', '9');
+    await expect(page.getByRole('group', { name: 'Sky map layers' }).getByRole('button')).toHaveCount(5);
+    const selectedValue = await selectVisibleSkyTarget(page);
+    expect(selectedValue).not.toBe('');
+    await expect(page.locator('[data-sky-layer="target"]')).toHaveCount(1);
+
+    await page.locator('#astronomy-tab-observe').click();
+    const observeNine = page.getByRole('button', { name: /^Bortle class 9:/ });
+    await expect(observeNine).toHaveAttribute('aria-pressed', 'true');
+    const observeOne = page.getByRole('button', { name: /^Bortle class 1:/ });
+    await observeOne.click();
+    await expect(observeOne).toHaveAttribute('aria-pressed', 'true');
+
+    await page.locator('#astronomy-tab-skymap').click();
+    await expect(page.locator('#astronomy-sky-darkness')).toHaveValue('1');
+    await expect(page.locator('#astronomy-sky-darkness-status')).toHaveAttribute('data-bortle-class', '1');
+    await expect(page.locator('#astronomy-sky-map-diagram')).toHaveAttribute('data-bortle-class', '1');
+    await expect(page.getByRole('group', { name: 'Sky map layers' }).getByRole('button')).toHaveCount(5);
+
+    await expectNoDocumentOverflow(page);
+    await expectNoRuntimeIssues(page, issues);
+  });
   test('Sky Map controls and SVG reflow without horizontal overflow at 320px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 1100 });
     const issues = collectBrowserIssues(page);
     await mount(page, 'skymap');
 
     await expect(page.getByRole('group', { name: 'Sky map layers' }).getByRole('button')).toHaveCount(5);
+    await expect(page.locator('#astronomy-sky-darkness')).toHaveCount(1);
+    await expect(page.locator('#astronomy-sky-darkness-status')).toHaveCount(1);
     await selectVisibleSkyTarget(page);
+    const observingWindow = page.locator('#astronomy-sky-target-timeline [data-sky-observing-window]');
+    await expect(observingWindow).toHaveCount(1);
+    await expect(observingWindow).toHaveAttribute('data-state', /^(available|none|not-applicable)$/);
+    await expect(observingWindow).toHaveAttribute('data-kind', /^(sun|moon|planet|star)$/);
+    await expect(observingWindow.locator('[data-sky-observing-window-rail]')).toHaveCount(1);
+    await expect(observingWindow.locator('[data-sky-observing-window-summary]')).toBeVisible();
+    await expect(observingWindow.locator('[data-sky-observing-window-criteria]')).toBeVisible();
+    await expect(observingWindow.locator('[data-score], [data-quality-score], [data-sky-quality-score]')).toHaveCount(0);
     const geometry = await page.evaluate(() => {
       const bounds = (selector: string) => {
         const r = document.querySelector(selector)!.getBoundingClientRect();
@@ -295,7 +396,16 @@ test.describe('Astronomy constellation and Sky Map visuals - real Chromium', () 
         layout: bounds('#astronomy-sky-layout'),
         diagram: bounds('#astronomy-sky-map-diagram'),
         target: bounds('#astronomy-sky-target'),
+        darkness: bounds('#astronomy-sky-darkness'),
+        darknessStatus: bounds('#astronomy-sky-darkness-status'),
         targetDetail: bounds('#astronomy-sky-target-detail'),
+        targetTimeline: bounds('#astronomy-sky-target-timeline'),
+        targetTimelineFigure: bounds('#astronomy-sky-target-timeline [data-sky-target-timeline]'),
+        targetTrack: bounds('#astronomy-sky-map-diagram [data-sky-target-track]'),
+        observingWindow: bounds('#astronomy-sky-target-timeline [data-sky-observing-window]'),
+        observingWindowRail: bounds('#astronomy-sky-target-timeline [data-sky-observing-window-rail]'),
+        observingWindowSummary: bounds('#astronomy-sky-target-timeline [data-sky-observing-window-summary]'),
+        observingWindowCriteria: bounds('#astronomy-sky-target-timeline [data-sky-observing-window-criteria]'),
       };
     });
     for (const box of Object.values(geometry)) {

@@ -11,6 +11,11 @@ const {
 
 const serviceRoot = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(serviceRoot, '..', '..');
+const {
+  normalizeVendorAssetBytes,
+  NORMALIZED_VENDOR_TEXT_PATHS,
+} = require(path.join(repoRoot, 'desktop', 'mcp', 'remediation_headless_driver.cjs'));
+const normalizedVendorTextPaths = new Set(NORMALIZED_VENDOR_TEXT_PATHS);
 const destination = path.join(serviceRoot, '.runner-context');
 const runnerServerPath = path.join(serviceRoot, 'runner', 'server.cjs');
 const runnerDockerfilePath = path.join(serviceRoot, 'runner', 'Dockerfile');
@@ -42,11 +47,25 @@ try { vendorManifest = JSON.parse(fs.readFileSync(path.join(repoRoot, vendorMani
 if (!vendorManifest || vendorManifest.schema !== 1 || !Array.isArray(vendorManifest.files) || !vendorManifest.files.length) {
   throw new Error(`${vendorManifestSource} must contain a non-empty schema-1 files array`);
 }
+const vendorEntriesBySource = new Map();
 const vendorFiles = vendorManifest.files.map((entry) => {
-  if (!entry || typeof entry.path !== 'string' || entry.path.startsWith('/') || entry.path.includes('..') || !/^[A-Za-z0-9._/-]+$/u.test(entry.path)) {
+  if (!entry || typeof entry.path !== 'string' || entry.path.startsWith('/') || entry.path.includes('..') || !/^[A-Za-z0-9._/-]+$/u.test(entry.path)
+    || !Number.isSafeInteger(entry.bytes) || entry.bytes < 0 || !/^[a-f0-9]{64}$/u.test(entry.sha256)) {
     throw new Error(`${vendorManifestSource} contains an unsafe path: ${JSON.stringify(entry)}`);
   }
-  return path.join('desktop/mcp/vendor', entry.path);
+  if (entry.normalization !== undefined) {
+    if (!normalizedVendorTextPaths.has(entry.path) || entry.normalization !== 'lf') {
+      throw new Error(`${vendorManifestSource} contains an unsupported normalization policy: ${entry.path}`);
+    }
+  } else if (normalizedVendorTextPaths.has(entry.path)) {
+    throw new Error(`${vendorManifestSource} must declare normalization for text asset: ${entry.path}`);
+  }
+  const relative = path.join('desktop/mcp/vendor', entry.path);
+  if (vendorEntriesBySource.has(relative)) {
+    throw new Error(`${vendorManifestSource} contains a duplicate path: ${entry.path}`);
+  }
+  vendorEntriesBySource.set(relative, entry);
+  return relative;
 });
 const sourceFiles = [...baseSourceFiles, ...validatorSourceFiles, vendorManifestSource, ...vendorFiles];
 
@@ -77,6 +96,19 @@ function fileRecord(relative, bytes) {
   };
 }
 
+// Stage exactly the bytes the production driver verifies. Runtime vendor assets remain byte-exact;
+// only an explicitly allowlisted manifest text entry may request canonical LF materialization.
+function canonicalSourceBytes(relative) {
+  const rawBytes = fs.readFileSync(sourcePaths.get(relative));
+  const entry = vendorEntriesBySource.get(relative);
+  if (!entry) return rawBytes;
+  const bytes = normalizeVendorAssetBytes(entry, rawBytes);
+  if (bytes.length !== entry.bytes || digest(bytes) !== entry.sha256) {
+    throw new Error(`${vendorManifestSource} does not match canonical source bytes: ${entry.path}`);
+  }
+  return bytes;
+}
+
 function listFiles(root, prefix = '') {
   const result = [];
   for (const entry of fs.readdirSync(path.resolve(root, prefix), { withFileTypes: true })) {
@@ -99,8 +131,7 @@ function expectedManifest() {
   return {
     schema: 1,
     files: sourceFiles.map((relative) => {
-      const source = sourcePaths.get(relative);
-      return fileRecord(relative, fs.readFileSync(source));
+      return fileRecord(relative, canonicalSourceBytes(relative));
     }),
   };
 }
@@ -204,7 +235,7 @@ function verifyStagedContext() {
     throw new Error('Runner context manifest is stale; run npm run runner:stage');
   }
   for (const relative of sourceFiles) {
-    const source = fs.readFileSync(sourcePaths.get(relative));
+    const source = canonicalSourceBytes(relative);
     const staged = fs.readFileSync(path.resolve(destination, relative));
     if (!source.equals(staged)) {
       throw new Error(`Runner context dependency is stale: ${relative}`);
@@ -242,7 +273,9 @@ try {
     if (!isInside(temporary, target)) throw new Error(`Refusing unsafe target: ${relative}`);
     fs.mkdirSync(path.dirname(target), { recursive: true, mode: 0o700 });
     fs.copyFileSync(source, target, fs.constants.COPYFILE_EXCL);
-    const bytes = fs.readFileSync(target);
+    const bytes = canonicalSourceBytes(relative);
+    const stagedBytes = fs.readFileSync(target);
+    if (!stagedBytes.equals(bytes)) fs.writeFileSync(target, bytes);
     manifest.files.push(fileRecord(relative, bytes));
   }
 

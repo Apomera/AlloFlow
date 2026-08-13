@@ -1,7 +1,6 @@
 {
   "version": "1.0.0", "visibility": "public",
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T17:24:37.039Z",
   "libraryId": "praxis-plt-k6-5622-learning-library",
   "packId": "praxis-plt-k6-5622",
   "standard": {

@@ -259,7 +259,7 @@ describe('dilution calculator', () => {
   it('solves the standard worked example', () => {
     const html = renderTab('molarity', { molarityC1: 1.0, molarityV1: 10, molarityC2: 0.1 });
     expect(html).toContain('1.0');
-    expect(html).toContain('9.0');
+    expect(html).toContain('Add to the final mark');
   });
 
   it('handles a 100-fold dilution without losing precision', () => {

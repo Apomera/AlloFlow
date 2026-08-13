@@ -120,9 +120,10 @@
   var useMemo = React.useMemo;
 
   // ── Constants ───────────────────────────────────────────────────────
-  var TOOL_NAME = 'Throughline';        // display name; kept in one place for an easy future rename
+  var TOOL_NAME = 'Learning Web: Unit Path'; // display name; runtime aliases and persisted schema stay compatible
   var STORAGE_KEY = 'alloflow_throughline_v1';
   var SCHEMA_VERSION = 1;
+  var MAX_ALIGNMENT_IMPORT_BYTES = 2 * 1024 * 1024;
   var GENERATOR = 'throughline@1';
   var NODE_W = 230;
   var NODE_H = 120;
@@ -156,6 +157,12 @@
   var ALIGNMENT_VIEW_TYPES = ['audit', 'standard', 'standardsContext', 'auditArtifact', 'auditEvidence', 'auditFinding', 'auditRecommendation'];
   var ALIGNMENT_VIEW_SOURCES = ['audit-model', 'teacher', 'deterministic-check', 'unknown'];
   function alignmentViewText(value) { return value == null ? '' : String(value).trim(); }
+  function alignmentHttpsUrl(value) {
+    try {
+      var parsed = new URL(alignmentViewText(value));
+      return parsed.protocol === 'https:' ? parsed.href : '';
+    } catch (e) { return ''; }
+  }
   function alignmentViewSearchText(node) {
     return [node && node.id, node && node.label, node && node.type, node && node.category, node && node.dimension,
       node && node.evidence, node && node.notes, node && node.finding, node && node.recommendation,
@@ -548,6 +555,10 @@
     var show3DHook = useState(false); var show3D = show3DHook[0]; var setShow3D = show3DHook[1];
     var cg3dHook = useState('idle'); var cg3dState = cg3dHook[0]; var setCg3dState = cg3dHook[1];
     var graph3dHook = useState(null); var graph3d = graph3dHook[0]; var setGraph3d = graph3dHook[1];
+    // The spatial viewer can now show either the editable unit path or the
+    // read-only standards/evidence projection. The mode prevents unit-only AI
+    // arrangement and lesson-opening behavior leaking into the audit graph.
+    var graph3dModeHook = useState('unit'); var graph3dMode = graph3dModeHook[0]; var setGraph3dMode = graph3dModeHook[1];
     var aiBusyHook = useState(false); var aiBusy = aiBusyHook[0]; var setAiBusy = aiBusyHook[1];
     var alignmentView = useMemo(function () {
       if (!alignmentGraphExport) return null;
@@ -1010,14 +1021,29 @@
       return g;
     }
     function open3D() {
-      setShow3D(true); setCg3dState('loading');
+      setGraph3dMode('unit'); setShow3D(true); setCg3dState('loading');
       ensureConceptGraph().then(function (ok) {
         if (!mountedRef.current) return;
         if (!ok) { setCg3dState('error'); return; }
         setGraph3d(buildGraphForView()); setCg3dState('ready');
       });
     }
-    function close3D() { setShow3D(false); setCg3dState('idle'); setGraph3d(null); setAiBusy(false); }
+    function openAlignmentGraph3D() {
+      if (!alignmentView || !alignmentView.ok || !alignmentView.graph) {
+        addToast(t('throughline.alignment_graph_invalid') || 'The standards and evidence graph is not available.', 'info');
+        return;
+      }
+      setGraph3dMode('alignment'); setShow3D(true); setCg3dState('loading');
+      ensureConceptGraph().then(function (ok) {
+        if (!mountedRef.current) return;
+        if (!ok) { setCg3dState('error'); return; }
+        var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        var graph = alignmentView.graph;
+        if (E && typeof E.ensureDefaultAxisValues === 'function') graph = E.ensureDefaultAxisValues(graph);
+        setGraph3d(graph); setCg3dState('ready');
+      });
+    }
+    function close3D() { setShow3D(false); setCg3dState('idle'); setGraph3d(null); setGraph3dMode('unit'); setAiBusy(false); }
     // Ask Gemini to score nodes on named axes (x=sequence, y=Bloom, z=strand), then
     // re-render the 3D scene from those — so position carries real meaning.
     function arrange3DByMeaning() {
@@ -1513,6 +1539,10 @@
 
     function importAlignmentGraphFile(file) {
       if (!file || !onImportAlignmentGraph) return;
+      if (Number(file.size) > MAX_ALIGNMENT_IMPORT_BYTES) {
+        addToast('That graph file is too large. Open an AlloFlow alignment export smaller than 2 MB.', 'error');
+        return;
+      }
       var reader = new FileReader();
       reader.onload = function (ev) {
         try {
@@ -1598,6 +1628,7 @@
       tbBtn('🧾 ' + (t('throughline.outline') || 'Outline'), showOutline, function () { setShowOutline(!showOutline); }, t('throughline.outline_title') || 'Printable scope & sequence'),
       tbBtn('🛤 ' + (t('throughline.lanes') || 'Lanes'), showLanes, function () { setShowLanes(!showLanes); }, t('throughline.lanes_title') || 'Group lessons into strands / phases (swim-lanes)'),
       alignmentGraphExport && tbBtn('Graph: ' + (t('throughline.alignment_graph') || 'Standards graph'), showAlignmentGraph, toggleAlignmentGraph, t('throughline.alignment_graph_title') || 'Read the exported standards and audit graph with provenance filters'),
+      alignmentGraphExport && tbBtn('🧊 ' + (t('throughline.alignment_graph_3d') || 'View graph in 3D'), show3D && graph3dMode === 'alignment', openAlignmentGraph3D, t('throughline.alignment_graph_3d_title') || 'Explore the saved standards, evidence, and findings as a spatial Learning Web'),
       onImportAlignmentGraph && tbBtn('Open graph', false, function () { if (alignmentGraphFileInputRef.current) alignmentGraphFileInputRef.current.click(); }, 'Open a saved AlloFlow alignment graph export'),
       onImportAlignmentGraph && h('input', { ref: alignmentGraphFileInputRef, type: 'file', accept: 'application/json,.json', style: { display: 'none' }, 'aria-label': 'Open saved alignment graph export', onChange: function (e) { var f = e.target && e.target.files && e.target.files[0]; if (f) importAlignmentGraphFile(f); if (e.target) e.target.value = ''; } }),
       alignmentGraphIsImported && onClearImportedAlignmentGraph && tbBtn('Close imported', false, function () { onClearImportedAlignmentGraph(); setShowAlignmentGraph(false); }, 'Return to the current resource graph'),
@@ -1800,7 +1831,7 @@
                     h('div', { style: { marginLeft: 30, marginTop: 2, color: '#64748b', fontSize: 10 } }, typeLabel(node.type) + (context ? ' · ' + context : '')),
                     body && h('div', { style: { marginLeft: 30, marginTop: 4, color: '#334155', fontSize: 11, lineHeight: 1.4 } }, String(body).slice(0, 500)),
                     h('div', { style: { marginLeft: 30, marginTop: 4, color: '#64748b', fontSize: 10 } }, sources.length ? 'Attribution: ' + sources.join(', ') : 'Attribution source: not labeled on this node'),
-                    node.sourceUrl && h('a', { href: node.sourceUrl, target: '_blank', rel: 'noreferrer', style: { display: 'inline-block', marginLeft: 30, marginTop: 4, color: '#4338ca', fontSize: 10 } }, 'Open standards source'),
+                    alignmentHttpsUrl(node.sourceUrl) && h('a', { href: alignmentHttpsUrl(node.sourceUrl), target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', marginLeft: 30, marginTop: 4, color: '#4338ca', fontSize: 10 } }, 'Open standards source'),
                     linkedResource && onOpenLesson && h('button', { type: 'button', 'data-graph-resource-id': String(linkedResource.id), onClick: function () { onOpenLesson(linkedResource); }, style: { display: 'block', marginLeft: 30, marginTop: 6, padding: '4px 8px', borderRadius: 6, border: '1px solid #a5b4fc', background: '#eef2ff', color: '#3730a3', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, 'Open linked resource')
                   );
                 })
@@ -2168,18 +2199,26 @@
     // ── 3D view overlay ───────────────────────────────────────────
     var CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
     var _cg3dCenter = { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 24, color: '#cbd5e1', fontSize: 14, lineHeight: 1.5 };
+    var graph3dIsAlignment = graph3dMode === 'alignment';
+    var graph3dDialogLabel = graph3dIsAlignment
+      ? (t('throughline.alignment_graph_3d') || 'Standards and evidence graph in 3D')
+      : (t('throughline.view_3d') || 'View unit in 3D');
     var threeDModal = show3D && h('div', {
       ref: threeDDialogRef, tabIndex: -1, style: { position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.94)', zIndex: 140, display: 'flex', flexDirection: 'column' },
-      role: 'dialog', 'aria-modal': 'true', 'aria-label': t('throughline.view_3d') || 'View in 3D',
+      role: 'dialog', 'aria-modal': 'true', 'aria-label': graph3dDialogLabel,
     },
       h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: '#0b1020', borderBottom: '1px solid #1e293b', color: '#e2e8f0' } },
         h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, '🧊'),
         h('div', { style: { flex: 1, minWidth: 0 } },
           h('div', { style: { fontWeight: 800, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
-            (unit.title || (t('throughline.untitled_unit') || 'Untitled unit')) + ' — ' + (t('throughline.view_3d') || '3D concept map')),
+            graph3dIsAlignment
+              ? (t('throughline.learning_web_alignment_title') || 'Learning Web — standards and evidence')
+              : ((unit.title || (t('throughline.untitled_unit') || 'Untitled unit')) + ' — ' + (t('throughline.view_3d') || '3D concept map'))),
           h('div', { style: { fontSize: 11, color: '#94a3b8' } },
-            t('throughline.view_3d_controls') || 'Drag to orbit · scroll to zoom · depth = strand. A reading-order outline stays available to screen readers.')),
-        (typeof window.callGemini === 'function') && h('button', {
+            graph3dIsAlignment
+              ? (t('throughline.alignment_graph_3d_controls') || 'Drag to orbit · scroll to zoom · choose a node for details. The same reading order remains available without WebGL.')
+              : (t('throughline.view_3d_controls') || 'Drag to orbit · scroll to zoom · depth = strand. A reading-order outline stays available to screen readers.'))),
+        (!graph3dIsAlignment && typeof window.callGemini === 'function') && h('button', {
           onClick: arrange3DByMeaning, disabled: aiBusy || cg3dState !== 'ready',
           title: t('throughline.ai_arrange_title') || 'Use AI to position lessons by meaning: left→right = sequence, up = cognitive depth, depth = strand',
           style: { fontSize: 12, fontWeight: 800, minHeight: 44, padding: '8px 12px', borderRadius: 8, border: 'none', whiteSpace: 'nowrap',
@@ -2194,6 +2233,13 @@
         : cg3dState === 'error' ? h('div', { style: _cg3dCenter }, '⚠️ ' + (t('throughline.view_3d_failed') || 'The 3D view could not load here. Open the latest Canvas link and try again — the outline view still works.'))
         : (cg3dState === 'ready' && CG3D && CG3D.View && graph3d)
           ? h(CG3D.View, { graph: graph3d, t: t, height: '100%', onOpenNode: function (id) {
+              if (graph3dIsAlignment) {
+                var graphNode = null; (graph3d.nodes || []).forEach(function (node) { if (node && node.id === id) graphNode = node; });
+                var artifactId = graphNode && graphNode.artifactId;
+                var linked = artifactId ? hostHistory.filter(function (item) { return item && String(item.id) === String(artifactId); })[0] : null;
+                if (linked && onOpenLesson) { close3D(); onOpenLesson(linked); }
+                return;
+              }
               var nd = null; unit.nodes.forEach(function (n) { if (n.nodeId === id) nd = n; });
               if (nd && nd.lessonId) { close3D(); openNodeLesson(nd); }
             } })

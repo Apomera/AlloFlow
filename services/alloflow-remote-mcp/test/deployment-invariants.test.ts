@@ -15,6 +15,13 @@ describe("Cloudflare deployment invariants", () => {
     );
   });
 
+  it("rolls containers gradually and protects active remediation attempts", () => {
+    const config = readProjectFile("wrangler.pilot.example.jsonc");
+
+    expect(config).toContain('"rollout_step_percentage": [10, 100]');
+    expect(config).toContain('"rollout_active_grace_period": 1800');
+  });
+
   it("sends only staged runner inputs to the container builder", () => {
     const dockerIgnore = readProjectFile(".dockerignore");
 
@@ -60,23 +67,24 @@ describe("Cloudflare deployment invariants", () => {
     expect(packageJson.scripts["runner:stage:check"]).toContain("--check");
     expect(packageJson.scripts.check).toContain("runner:stage:check");
     expect(packageJson.scripts["deploy:staging"]).toContain(
-      "preflight:staging",
+      "pilot-deploy.cjs",
     );
-    expect(packageJson.scripts["deploy:staging"]).toContain(
-      "runner:stage",
+    expect(packageJson.scripts["deploy:staging"]).not.toContain(
+      "admission:pause:staging",
     );
-    expect(packageJson.scripts["deploy:staging"]).toContain(
-      "runner:stage:check",
-    );
-    expect(packageJson.scripts["deploy:staging"]).toContain(
-      "runner:canary",
-    );
-    expect(packageJson.scripts["deploy:staging"]).toContain(
-      "lifecycle:apply:staging",
-    );
-    expect(packageJson.scripts["deploy:staging"]).toContain(
-      "canary:staging",
-    );
+    const wrapper = readProjectFile("scripts/pilot-deploy.cjs");
+    for (const required of [
+      "pilot-admission.cjs",
+      '"pause"',
+      "stage-runner.cjs",
+      "pilot-preflight.cjs",
+      "pilot-lifecycle.cjs",
+      "pilot-release-canary.cjs",
+      '"deploy"',
+      "finally",
+    ]) {
+      expect(wrapper).toContain(required);
+    }
   });
 
   it("exports the ContainerProxy required by outbound interception", () => {
@@ -174,6 +182,33 @@ describe("Cloudflare deployment invariants", () => {
     expect(workflow).toContain('"http://r2.internal/checkpoint"');
     expect(workflow).toContain('"remove published checkpoints"');
     expect(operations).toContain("jobCheckpointPrefix(job)");
+  });
+
+  it("requires throttle and verification columns before new Worker admission", () => {
+    const migration = readProjectFile(
+      "migrations/0006_throttle_wait_and_verification.sql",
+    );
+    const readiness = readProjectFile("src/database-release.ts");
+
+    expect(migration).toContain("ADD COLUMN throttle_wait_until");
+    expect(migration).toContain("ADD COLUMN verification_state");
+    expect(migration).toContain("SET verification_state = 'unavailable'");
+    expect(migration).toContain("WHERE status = 'completed'");
+    expect(readiness).toContain("throttle_wait_until");
+    expect(readiness).toContain("verification_state");
+  });
+
+  it("requires the default-open migration and atomic release admission gate", () => {
+    const migration = readProjectFile("migrations/0007_admission_control.sql");
+    const store = readProjectFile("src/job-store.ts");
+    const readiness = readProjectFile("src/database-release.ts");
+
+    expect(migration).toContain("CREATE TABLE pilot_admission_control");
+    expect(migration).toContain("pause_token TEXT");
+    expect(migration).toContain("pause_token IS NOT NULL");
+    expect(migration).toContain("'default-open admission control'");
+    expect(store.match(/WHERE singleton = 1 AND admissions_open = 1/gu)).toHaveLength(2);
+    expect(readiness).toContain("ADMISSION_CONTROL_SENTINEL_SQL");
   });
 
   it("defers terminal states and input cleanup until shutdown is confirmed", () => {

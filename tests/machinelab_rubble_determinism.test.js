@@ -73,8 +73,14 @@ describe('Machine Lab: the 3D wall never decides anything', () => {
     }
   });
 
-  it('pushes the wall as static, so an idle wall costs no frames', () => {
-    expect(src).toMatch(/SIEGE_GL\.push\(\{[\s\S]{0,200}static: true/);
+  it('pushes the wall as static unless a stone is in the air', () => {
+    // Render-on-demand is still the default, and a shot in flight is the single
+    // exception: the throw needs frames and nothing else does. The idle half is
+    // proved empirically by dev-tools/ml_frame_budget.cjs, which measures 0
+    // frames in 2500 ms on an idle wall.
+    expect(src).toMatch(/SIEGE_GL\.push\(\{[\s\S]{0,1200}static: !d\.siegeFlight/);
+    // A bare `static: false` would mean a 60 fps wall forever.
+    expect(src).not.toMatch(/SIEGE_GL\.push\(\{[\s\S]{0,1200}static: false[,\s]/);
   });
 
   it('keeps block state out of the rebuild signature', () => {

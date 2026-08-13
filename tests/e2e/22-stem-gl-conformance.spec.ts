@@ -117,6 +117,21 @@ const MANIFEST: ToolEntry[] = [
     file: 'stem_lab/stem_tool_migration.js',
     note: '3D flight corridor on the default tab; other tabs mount 2D canvases',
   },
+  {
+    id: 'raptorHunt',
+    file: 'stem_lab/stem_tool_raptorhunt.js',
+    state: {
+      raptorHunt: {
+        activeSection: 'hunt',
+        selectedSpecies: 'peregrine',
+        activeMission: 'open',
+        flightSession: { speciesId: 'peregrine', missionId: 'open' },
+        huntTutorialDismissed: true,
+        graphicsQuality: 'balanced',
+      },
+    },
+    note: 'active flight session with weather, target feedback, and keyboard controls',
+  },
 ];
 
 // Still uncovered, with what a probe actually showed — so the next attempt
@@ -260,3 +275,200 @@ for (const tool of MANIFEST) {
     });
   });
 }
+
+test.describe('raptorHunt — deterministic celestial atmosphere', () => {
+  test.describe.configure({ timeout: 240_000 });
+  const harness = new GlHarness({
+    toolFile: 'stem_lab/stem_tool_raptorhunt.js',
+    toolId: 'raptorHunt',
+    width: 1280,
+    height: 820,
+    probes: 'window.AlloPostFXEnabled = false;',
+  });
+  const flightState = {
+    raptorHunt: {
+      activeSection: 'hunt',
+      selectedSpecies: 'baldEagle',
+      activeMission: 'highStoop',
+      flightSession: { speciesId: 'baldEagle', missionId: 'highStoop' },
+      huntTutorialDismissed: true,
+      graphicsQuality: 'balanced',
+    },
+  };
+
+  test.beforeAll(async () => { await harness.start(); });
+  test.afterAll(async () => { await harness.stop(); });
+  test.afterEach(async ({ page }) => { await harness.destroy(page); });
+
+  test('switches rendered sky, sun, moon, clouds, reflection, and compact weather metadata', async ({ page }) => {
+    await harness.mount(page, flightState, "document.querySelector('[data-raptor-canvas=true]')?._rhSnapshot");
+    const currentSnapshot = () => page.evaluate(
+      () => (document.querySelector('[data-raptor-canvas="true"]') as any)._rhSnapshot(),
+    );
+    const command = (action: string, value?: Record<string, number | string>) => page.evaluate(
+      ({ nextAction, nextValue }) => {
+        const canvas = document.querySelector('[data-raptor-canvas="true"]') as any;
+        canvas._rhCommand(nextAction, nextValue);
+      },
+      { nextAction: action, nextValue: value },
+    );
+    const snapshot = async (dayPhase: number, cloudCover: number) => {
+      await command('environment', { dayPhase, cloudCover, windDir: 0, windSpeed: 8 });
+      await expect.poll(async () => Math.round((await currentSnapshot()).cloudCover * 100), {
+        timeout: 5_000,
+      }).toBe(Math.round(cloudCover * 100));
+      await page.waitForTimeout(350);
+      return currentSnapshot();
+    };
+
+    const clearNoon = await snapshot(0.5, 0.05);
+    const cadenceStart = clearNoon;
+    await page.waitForTimeout(1_200);
+    const cadenceEnd = await currentSnapshot();
+    const clearNight = await snapshot(0, 0.05);
+    const overcastNight = await snapshot(0, 0.95);
+
+    expect(clearNoon.sunOpacity).toBeGreaterThan(clearNoon.moonOpacity);
+    expect(clearNoon.sunAltitude).toBeGreaterThan(0);
+    expect(clearNoon.moonAltitude).toBeLessThan(0);
+    expect(clearNoon.lakeSheenOpacity).toBeGreaterThan(0.1);
+    expect(clearNoon.skyColorHex).toBe(clearNoon.backgroundColorHex);
+    expect(clearNoon.skyBrightness).toBeGreaterThan(clearNight.skyBrightness);
+    expect(clearNoon.sunCameraDistance).toBeCloseTo(700, 1);
+    expect(clearNoon.moonCameraDistance).toBeCloseTo(690, 1);
+    expect(clearNoon.cameraAltitude).toBeGreaterThan(900);
+    expect(clearNoon.skyDomeMargin).toBeGreaterThan(895);
+
+    expect(clearNight.moonOpacity).toBeGreaterThan(clearNight.sunOpacity);
+    expect(clearNight.moonAltitude).toBeGreaterThan(0);
+    expect(clearNight.sunAltitude).toBeLessThan(0);
+    expect(clearNight.lakeSheenOpacity).toBeLessThan(0.01);
+    expect(clearNight.skyColorHex).toBe(clearNight.backgroundColorHex);
+    expect(clearNight.skyColorHex).not.toBe(clearNoon.skyColorHex);
+    expect(clearNight.starVisibility).toBeGreaterThan(overcastNight.starVisibility);
+    expect(overcastNight.fogFar).toBeLessThan(clearNight.fogFar);
+    expect(overcastNight.cloudOpacity).toBeGreaterThan(clearNight.cloudOpacity);
+
+    expect(await page.locator('.rh-flight-telemetry,.rh-flight-status,.rh-flight-energy').count()).toBe(0);
+
+    const initialAssist = await currentSnapshot();
+    expect(initialAssist.assistEnabled).toBe(true);
+    expect(initialAssist.preyCount).toBeGreaterThan(0);
+    expect(initialAssist.visibleBeaconCount).toBeLessThanOrEqual(1);
+    expect(initialAssist.activeTargetIndex).toBeGreaterThanOrEqual(-1);
+    expect(initialAssist.activeTargetIndex).toBeLessThan(initialAssist.preyCount);
+    await command('assist');
+    await expect.poll(async () => (await currentSnapshot()).assistEnabled, { timeout: 5_000 }).toBe(false);
+    expect((await currentSnapshot()).visibleBeaconCount).toBe(0);
+    await command('assist');
+    await expect.poll(async () => (await currentSnapshot()).assistEnabled, { timeout: 5_000 }).toBe(true);
+    await expect.poll(async () => (await currentSnapshot()).visibleBeaconCount, { timeout: 5_000 })
+      .toBeLessThanOrEqual(1);
+
+    const horizon = await currentSnapshot();
+    expect(horizon.distantTerrainCount).toBeGreaterThan(0);
+    expect(Math.abs(horizon.distantTerrainOffsetX)).toBeLessThan(0.01);
+    expect(Math.abs(horizon.distantTerrainOffsetZ)).toBeLessThan(0.01);
+    expect(Math.abs(horizon.distantTerrainWorldY)).toBeLessThan(0.01);
+
+    const poolCapacity = {
+      rain: horizon.rainCapacity,
+      snow: horizon.snowCapacity,
+    };
+    expect(poolCapacity.rain).toBeGreaterThan(0);
+    expect(poolCapacity.snow).toBeGreaterThan(0);
+    await command('environment', {
+      dayPhase: 0,
+      cloudCover: 0.95,
+      windDir: Math.PI / 2,
+      windSpeed: 12,
+      tempC: 14,
+      precipitationType: 'rain',
+      precipitationIntensity: 0.82,
+    });
+    await expect.poll(async () => {
+      const state = await currentSnapshot();
+      return [state.precipitationMode, state.rainVisible, state.snowVisible];
+    }, { timeout: 5_000 }).toEqual(['rain', true, false]);
+    const rain = await currentSnapshot();
+    expect(rain.activePrecipitationCount).toBeGreaterThan(0);
+    expect(rain.activePrecipitationCount).toBeLessThanOrEqual(rain.rainCapacity);
+    expect(rain.rainCapacity).toBe(poolCapacity.rain);
+    expect(rain.snowCapacity).toBe(poolCapacity.snow);
+    const rainWeather = await page.locator('[data-raptor-weather="true"]').evaluate((element) => ({
+      precipitation: (element as HTMLElement).dataset.precipitation,
+      windDirection: (element as HTMLElement).dataset.windDirection,
+      label: element.getAttribute('aria-label'),
+    }));
+    expect(rainWeather.precipitation).toBe('rain');
+    expect(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']).toContain(rainWeather.windDirection);
+    expect(rainWeather.label).toContain(rainWeather.windDirection);
+
+    await command('environment', {
+      dayPhase: 0,
+      cloudCover: 0.95,
+      windDir: 0,
+      windSpeed: 8,
+      tempC: -8,
+      precipitationType: 'snow',
+      precipitationIntensity: 0.72,
+    });
+    await expect.poll(async () => {
+      const state = await currentSnapshot();
+      return [state.precipitationMode, state.rainVisible, state.snowVisible];
+    }, { timeout: 5_000 }).toEqual(['snow', false, true]);
+    const snow = await currentSnapshot();
+    expect(snow.activePrecipitationCount).toBeGreaterThan(0);
+    expect(snow.activePrecipitationCount).toBeLessThanOrEqual(snow.snowCapacity);
+    expect(snow.rainCapacity).toBe(poolCapacity.rain);
+    expect(snow.snowCapacity).toBe(poolCapacity.snow);
+    await expect.poll(async () => (await currentSnapshot()).precipitationUpdates, { timeout: 5_000 })
+      .toBeGreaterThan(rain.precipitationUpdates);
+
+    const waterDelta = cadenceEnd.waterUpdates - cadenceStart.waterUpdates;
+    const frameDelta = cadenceEnd.renderFrames - cadenceStart.renderFrames;
+    const elapsedSeconds = (cadenceEnd.snapshotTimeMs - cadenceStart.snapshotTimeMs) / 1_000;
+    const waterRate = waterDelta / elapsedSeconds;
+    expect(elapsedSeconds).toBeGreaterThan(0.8);
+    expect(waterDelta).toBeGreaterThanOrEqual(1);
+    expect(waterRate).toBeLessThanOrEqual(cadenceEnd.waterHz + 2);
+    expect(frameDelta).toBeGreaterThan(0);
+
+    const canvas = page.locator('[data-raptor-canvas="true"]');
+    await canvas.evaluate((element: any) => element._rhCommand('pause'));
+    const pausedStart = await currentSnapshot();
+    await page.waitForTimeout(450);
+    const pausedEnd = await currentSnapshot();
+    expect(pausedEnd.renderFrames - pausedStart.renderFrames).toBeLessThanOrEqual(1);
+    expect(pausedEnd.waterUpdates - pausedStart.waterUpdates).toBe(0);
+    await canvas.evaluate((element: any) => element._rhCommand('pause'));
+    await expect.poll(async () => (await currentSnapshot()).renderFrames, {
+      timeout: 5_000,
+    }).toBeGreaterThan(pausedEnd.renderFrames + 2);
+
+    const weatherLocator = page.locator('[data-raptor-weather="true"]');
+    const weather = await weatherLocator.evaluate((element) => ({
+      display: getComputedStyle(element).display,
+      text: element.textContent,
+      dayPeriod: (element as HTMLElement).dataset.dayPeriod,
+      cloudBand: (element as HTMLElement).dataset.cloudBand,
+      precipitation: (element as HTMLElement).dataset.precipitation,
+      windDirection: (element as HTMLElement).dataset.windDirection,
+      label: element.getAttribute('aria-label'),
+    }));
+    expect(weather.display).not.toBe('none');
+    expect(weather.text).toContain('95%');
+    expect(weather.dayPeriod).toBe('night');
+    expect(weather.cloudBand).toBe('overcast');
+    expect(weather.precipitation).toBe('snow');
+    expect(weather.windDirection).toBe('N');
+    expect(weather.label).toContain('toward N');
+
+    await page.setViewportSize({ width: 700, height: 820 });
+    await expect(weatherLocator).toBeVisible();
+    await expect(page.locator('[data-raptor-mission-metric="true"]')).toBeHidden();
+
+    const errors = await page.evaluate(() => (window as any).__events.errors);
+    expect(errors).toEqual([]);
+  });
+});

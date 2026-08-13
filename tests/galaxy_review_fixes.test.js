@@ -282,8 +282,10 @@ describe('galaxy visuals', () => {
     expect(source).toContain('uZoomPointScale: { value: 1 }');
     expect(source).toContain('uZoomOpacity: { value: 1 }');
     expect(source).toContain('outerContextCompression');
-    expect(source).toContain('zoomPointTarget = 1 - outerContextCompression * 0.34');
-    expect(source).toContain('zoomOpacityTarget = 1 - outerContextCompression * 0.26');
+    expect(source).toContain('zoomPointTarget = 1 - outerContextCompression * 0.46');
+    expect(source).toContain('zoomOpacityTarget = 1 - outerContextCompression * 0.4');
+    expect(source).toContain('(spherical.r - 1.16) / 1.84');
+    expect(source).toContain('adaptiveDensePointMaterials.forEach(function (denseMaterial)');
     expect(source).not.toContain('outerDiskLift * 0.07');
   });
 
@@ -301,7 +303,7 @@ describe('galaxy visuals', () => {
     expect(source).toContain('pointScale: 0.48');
     expect(source).toContain('sparkleDensity: 0');
     expect(source).toContain('uDiffractionScale: { value: morphologyVisual.diffractionScale }');
-    expect(source).toContain("* uDiffractionScale;'");
+    expect(source).toContain("* uDiffractionScale * opticalPSF;'");
     expect(source).toContain('uPointScale: { value: morphologyVisual.pointScale }');
     expect(source).toContain('uStellarOpacity: { value: morphologyVisual.stellarOpacity }');
     expect(source).toContain('morphologyVisual.microStarOpacity');
@@ -309,20 +311,20 @@ describe('galaxy visuals', () => {
     expect(source).toContain('morphologyVisual.bloomStrength');
     expect(source).toContain('morphologyVisual.exposureBias');
     expect(source).toContain("atmosphereGroup.visible = galaxyType !== 'elliptical'");
-    expect(source).toContain("coreFlare.visible = galaxyType !== 'elliptical'");
-    expect(source).toContain("(galaxyType === 'elliptical' ? [] : [0, 1]).forEach");
+    expect(source).toContain('coreFlare.visible = isSpiralMorphology');
+    expect(source).toContain('(isSpiralMorphology ? [0, 1] : []).forEach');
     expect(source).toContain('var ellipticalEnvelope = Math.random() < 0.72');
     expect(source).toContain("uElliptical: { value: galaxyType === 'elliptical' ? 1 : 0 }");
     expect(source).toContain('vec3 orbitAxis = normalize');
     expect(source).toContain('data-galaxy-elliptical-kinematics');
     expect(source).toContain("var irCount = galaxyType === 'elliptical' ? 1100 : 1400");
     expect(source).toContain("var thermalCloudCount = galaxyType === 'elliptical' ? 0");
-    expect(source).toContain("var thermalLaneCount = galaxyType === 'elliptical' ? 0");
-    expect(source).toContain("dopplerVelocityFieldGroup.visible = galaxyType !== 'elliptical'");
-    expect(source).toContain("radioPolarizationGroup.visible = galaxyType !== 'elliptical'");
+    expect(source).toContain('var thermalLaneCount = isSpiralMorphology ?');
+    expect(source).toContain('dopplerVelocityFieldGroup.visible = isSpiralMorphology');
+    expect(source).toContain('radioPolarizationGroup.visible = isSpiralMorphology');
 
     const diffuse = source.slice(source.indexOf('var diskGrad ='), source.indexOf('var glowCount ='));
-    expect(diffuse).toContain("if (galaxyType !== 'elliptical')");
+    expect(diffuse).toContain('if (isSpiralMorphology)');
     expect(diffuse).toContain('diskSheen = new THREE.Sprite(diskSheenMat)');
     expect(diffuse).not.toContain("gType.arms || (galaxyType === 'elliptical' ? 2 : 3)");
 
@@ -331,6 +333,50 @@ describe('galaxy visuals', () => {
     expect(source.slice(source.indexOf("var dustGroup = new THREE.Group()"), source.indexOf('var gasGroup ='))).toContain("if (galaxyType === 'elliptical') return");
     expect(source.slice(source.indexOf("var gasGroup = new THREE.Group()"), source.indexOf('var atmosphereGroup ='))).toContain("if (galaxyType === 'elliptical') return");
   });
+
+  it.each(GALAXY_PATHS)('%s gives irregulars shared clumps without spiral fallbacks', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    expect(source).toContain("var isSpiralMorphology = galaxyType === 'barredSpiral' || galaxyType === 'grandDesign'");
+    expect(source).toContain('var irregularMorphologyAnchors = [');
+    expect(source).toContain('pickIrregularMorphologyAnchor');
+    expect(source).toContain('var irregularComponent = Math.random()');
+    expect(source).toContain('sampleIrregularPlumePosition');
+    expect(source).toContain("uIrregular: { value: galaxyType === 'irregular' ? 1 : 0 }");
+    expect(source).toContain("'  } else if (uIrregular > 0.5) {'");
+    expect(source).toContain('distribution[0] *= 18');
+    expect(source).toContain("galaxyType === 'irregular' ? {");
+    expect(source).toContain('hiddenLayers: { bulge: true }');
+    expect(source).toContain("instrument_irregular_radio_tracer', 'Clumpy H I reservoir + extended gas tail'");
+    expect(source).toContain("layer_not_characteristic_irregular', 'is not characteristic of irregular galaxies'");
+    expect(source).toContain('var dustAnchor = pickIrregularMorphologyAnchor');
+    expect(source).toContain('var gasAnchor = pickIrregularMorphologyAnchor');
+
+    const diffuse = source.slice(source.indexOf('var diskGrad ='), source.indexOf('var glowCount ='));
+    expect(diffuse).toContain('Patchy associations replace the logarithmic arm texture');
+    expect(diffuse).toContain('if (isSpiralMorphology)');
+    expect(diffuse).not.toContain("if (galaxyType !== 'elliptical')");
+    expect(diffuse).not.toContain('bezierCurveTo(342, 278, 403, 317, 486, 365)');
+
+    expect(source).toContain('for (var rr = 0; rr < (isSpiralMorphology ? 6 : 0); rr++)');
+    expect(source).toContain('radioPointMaterial.userData = { baseSize: radioBaseSize, baseOpacity: radioBaseOpacity }');
+    expect(source).toContain('adaptiveOverlayPointMaterials.forEach(function (overlayMaterial)');
+    expect(source).toContain('overlayPointScale:');
+    expect(source).toContain('overlayOpacityScale:');
+    expect(source).toContain('canvasEl._galaxyGetMorphologyVisualState = function ()');
+    expect(source).toContain('if (!isSpiralMorphology) return;');
+    expect(source).toContain("armScatteringCount = Math.round(armScatteringCount * 0.35)");
+    expect(source).toContain('irregularScatterAnchor = pickIrregularMorphologyAnchor');
+    expect(source).toContain("molecularCloudCount = Math.round(molecularCloudCount * 0.34)");
+    expect(source).toContain("var cavityCount = resolvedQuality === 'cinematic' ? 10 : resolvedQuality === 'high' ? 7 : 5");
+    expect(source).toContain("galaxyType === 'irregular' ? 0.035 : 0.06");
+    expect(source).toContain("galaxyType === 'irregular' ? 0.105 : 0.17");
+    expect(source).toContain("remnantCount = Math.round(remnantCount * 0.34)");
+    expect(source).toContain('var remnantAnchor = galaxyType === \'irregular\' ? pickIrregularMorphologyAnchor');
+    expect(source).toContain("galaxyType === 'irregular' ? 12 : 46");
+    expect(source).toContain('var shellAnchor = galaxyType === \'irregular\' ? pickIrregularMorphologyAnchor');
+    expect(source).toContain("var shellScale = galaxyType === 'irregular' ? 0.008");
+  });
+
   it.each(GALAXY_PATHS)('%s draws dust after the star field so lanes can darken it', (filePath) => {
     const source = readFileSync(filePath, 'utf8');
     const dust = source.slice(source.indexOf('var dustMat = new THREE.PointsMaterial'), source.indexOf('// ── Volumetric Emission Gas Clouds ──'));

@@ -190,6 +190,49 @@ describe('GIS Studio mounted interactions', function () {
     expect(errorSpy.mock.calls.flat().join(' ')).not.toMatch(/invalid hook call/i);
   });
 
+  it('searches, filters, sorts, and resets the accessible Data Explorer locally', async function () {
+    mountGIS({ gisBasemap: 'none' });
+
+    const table = () => host.querySelector('#gis-data-explorer-table');
+    const rows = () => Array.from(table().querySelectorAll('tbody tr'));
+    expect(rows()).toHaveLength(16);
+    expect(host.textContent).toContain('16 of 16 mapped records shown.');
+
+    const inputSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    const search = findLabeledControl('Search locations', 'input[type="search"]');
+    await React.act(async function () {
+      inputSetter.call(search, 'york');
+      search.dispatchEvent(new Event('input', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(rows()).toHaveLength(1);
+    expect(rows()[0].textContent).toContain('York');
+    expect(host.textContent).toContain('1 of 16 mapped records shown.');
+
+    await React.act(async function () {
+      findButton('Reset table view').click();
+      await Promise.resolve();
+    });
+    expect(rows()).toHaveLength(16);
+
+    const sort = findLabeledControl('Sort table rows', 'select');
+    await React.act(async function () {
+      sort.value = 'name-desc';
+      sort.dispatchEvent(new Event('change', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(rows()[0].querySelector('th').textContent).toBe('York');
+
+    const minimum = findLabeledControl('Minimum Population density', 'input[type="number"]');
+    await React.act(async function () {
+      inputSetter.call(minimum, '200');
+      minimum.dispatchEvent(new Event('input', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(rows()).toHaveLength(3);
+    expect(host.textContent).toContain('3 of 16 mapped records shown.');
+    expect(host.textContent).toContain('The map, analysis, project, and exports retain the complete mapped dataset.');
+  });
   it('previews arbitrary UTM columns and maps the reviewed WGS84 conversion', async function () {
     mountGIS({ gisBasemap: 'none' });
 

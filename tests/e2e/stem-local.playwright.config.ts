@@ -7,7 +7,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   workers: 1,
   reporter: 'list',
-  timeout: 180000,
+  timeout: 240000,
   use: {
     ...devices['Desktop Chrome'],
     baseURL: 'http://127.0.0.1:3000',
@@ -19,8 +19,16 @@ export default defineConfig({
   webServer: {
     command: 'npm --prefix ../../desktop/web-app start',
     url: 'http://127.0.0.1:3000',
-    timeout: 180000,
+    timeout: 600000,
     reuseExistingServer: !process.env.CI,
-    env: { BROWSER: 'none', PORT: '3000' },
+    // This server exists only to exercise the built browser behavior. Parsing and
+    // linting run in separate gates; skipping them here keeps the 3+ MB host bundle
+    // within CI/OneDrive memory limits and avoids generating unused source maps.
+    env: {
+      BROWSER: 'none',
+      PORT: '3000',
+      DISABLE_ESLINT_PLUGIN: 'true',
+      GENERATE_SOURCEMAP: 'false',
+    },
   },
 });

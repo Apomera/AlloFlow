@@ -1,6 +1,6 @@
 # Privacy — AlloFlow PDF Remediation connector
 
-_Last updated: 2026-07-29._
+_Last updated: 2026-08-12._
 
 This connector runs **entirely on your machine**. There is no AlloFlow server, account,
 telemetry, or analytics of any kind.
@@ -12,7 +12,7 @@ telemetry, or analytics of any kind.
 | The documents you audit/remediate (full content) | **Google Gemini API**, under the API key **you** provide | The pipeline's OCR, audits, and fixes are AI calls |
 | Background-job records (arguments, paths, status, capped logs, result/error metadata) | **Your local disk only**, under `~/.alloflow-mcp/jobs` by default | Lets status and results survive a client/server restart |
 | Nothing | AlloFlow / the connector author | The connector has no backend |
-| Core validation and pipeline libraries | **Your local machine** | veraPDF and the core browser libraries are packaged locally; optional Office export may fetch public libraries, without sending the source document |
+| Core validation and pipeline libraries | **Your local machine** | The preferred veraPDF Java CLI and core browser libraries are packaged locally; optional Office export may fetch public libraries, without sending the source document |
 | Output files (accessible HTML, tagged PDF, report JSON) | **Your local disk only**, at paths you choose | The deliverables |
 
 ## Your API key
@@ -42,3 +42,7 @@ institution's agreements cover Gemini API use for that data — or scrub the doc
   be evicted sooner when the bounded job store fills. To remove them immediately, stop the
   connector and delete its state directory.
 - Headless Chromium runs with a fresh, isolated browser context per document.
+- `pdf_validate_ua` uses the packaged local veraPDF Java CLI and an immutable private copy of the
+  selected PDF. Its result binds to that copy's SHA-256 and byte count. The legacy browser-based
+  validator downloads CheerpJ/pdf-lib and is disabled unless a direct driver integration explicitly
+  opts in with `ALLOFLOW_MCP_ALLOW_BROWSER_VERAPDF_EGRESS=1`; the MCP tool does not silently enable it.

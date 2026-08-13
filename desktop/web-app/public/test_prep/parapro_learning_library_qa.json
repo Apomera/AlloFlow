@@ -1,7 +1,6 @@
 {
   "packId": "parapro-1755-practice-1", "version": "0.7.0", "visibility": "public",
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T17:24:11.022Z",
   "libraryId": "parapro-1755-learning-library",
   "standard": {
     "label": "AlloFlow ParaPro learning-library source and editorial review v1",

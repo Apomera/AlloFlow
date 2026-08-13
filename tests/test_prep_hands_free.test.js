@@ -19,17 +19,28 @@ describe('Test Prep hands-free contracts', () => {
     rationale: 'The approved safeguard addresses the risk while preserving access.',
   };
 
-  it('builds complete, position-aware narration for every available option', () => {
+  it('builds complete narration with optional guided command coaching', () => {
     const speech = Hub.questionSpeechText(item, 2, 10);
     expect(speech).toContain('Question 3 of 10.');
     expect(speech).toContain('A, Ignore the issue');
     expect(speech).toContain('E, Escalate publicly');
-    expect(speech).toContain('Say choose A, B, C, D, or E.');
+    expect(speech).toContain('Say A, B, C, D, or E.');
+    expect(speech).toContain('You can also say 1, 2, 3, 4, or 5.');
+
+    const quickSpeech = Hub.questionSpeechText(item, 2, 10, 'quick');
+    expect(quickSpeech).toContain('E, Escalate publicly');
+    expect(quickSpeech).not.toContain('Say A');
+    expect(quickSpeech).not.toContain('You can also say');
   });
 
   it('routes deterministic answer, navigation, rate, help, and clarification commands', () => {
     expect(Hub.parseHandsFreeCommand('choose option B')).toMatchObject({ type: 'choose', choiceIndex: 1 });
+    expect(Hub.parseHandsFreeCommand('B')).toMatchObject({ type: 'choose', choiceIndex: 1 });
+    expect(Hub.parseHandsFreeCommand('2')).toMatchObject({ type: 'choose', choiceIndex: 1 });
+    expect(Hub.parseHandsFreeCommand('two')).toMatchObject({ type: 'choose', choiceIndex: 1 });
     expect(Hub.parseHandsFreeCommand('select fifth')).toMatchObject({ type: 'choose', choiceIndex: 4 });
+    expect(Hub.parseHandsFreeCommand('yes').type).toBe('confirm-yes');
+    expect(Hub.parseHandsFreeCommand('no').type).toBe('confirm-no');
     expect(Hub.parseHandsFreeCommand('check answer').type).toBe('submit');
     expect(Hub.parseHandsFreeCommand('next question').type).toBe('next');
     expect(Hub.parseHandsFreeCommand('repeat explanation').type).toBe('repeat-feedback');
@@ -58,7 +69,9 @@ describe('Test Prep hands-free contracts', () => {
     expect(source).toContain("priority: 'low', reason: 'test-prep-prewarm'");
     expect(source).toContain("practiceMode === 'simulation'");
     expect(source).toContain('AI content clarification is locked during a timed simulation.');
-    expect(source).toContain("window.__alloVoiceLoop.isActive()");
+    expect(source).toContain("acquireVoiceSession('test-prep'");
+    expect(source).toContain('if (wasGlobalVoiceActive && loop.stop) loop.stop();');
+    expect(source).toContain('handsFreeResumeGlobalVoiceRef.current = wasGlobalVoiceActive');
     expect(host).toMatch(/moduleKey="TestPrepHub"[\s\S]{0,500}callTTS,[\s\S]{0,120}callGemini,[\s\S]{0,120}selectedVoice,/);
   });
 
@@ -105,7 +118,9 @@ describe('Test Prep hands-free contracts', () => {
     expect(status).toContain('saved for review');
     expect(status).toContain('Confidence is marked unsure.');
     expect(status).toContain('2 minutes and 5 seconds');
+    expect(Hub.handsFreeHelpText('simulation', false)).toContain('A or 1 to choose an answer');
     expect(Hub.handsFreeHelpText('simulation', false)).toContain('add ten minutes');
+    expect(Hub.feedbackSpeechText(item, 1, 'quick')).not.toContain('Say mark sure');
     expect(Hub.handsFreeStatusText({ item, questionIndex: 0, totalQuestions: 1, selectedChoice: null })).toContain('No answer is selected.');
   });
 

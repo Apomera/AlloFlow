@@ -3047,7 +3047,7 @@
       setCurrentWordSoundsWord,
       wordSoundsPhonemes,
       setWordSoundsPhonemes,
-      wordSoundsLanguage,
+      wordSoundsLanguage: providedWordSoundsLanguage,
       setWordSoundsLanguage,
       wordSoundsFeedback,
       setWordSoundsFeedback,
@@ -3065,17 +3065,17 @@
       callImagen: providedCallImagen,
       selectedVoice,
       t,
-      wordSoundsDifficulty = "auto",
+      wordSoundsDifficulty: providedWordSoundsDifficulty = "auto",
       setWordSoundsDifficulty,
       wordSoundsAccuracyHistory = [],
       setWordSoundsAccuracyHistory,
       wordSoundsTtsSpeed = 1.0,
       setWordSoundsTtsSpeed,
-      orthoSessionGoal = 0,
+      orthoSessionGoal: providedOrthoSessionGoal = 0,
       setOrthoSessionGoal,
       wordSoundsStreak = 0,
       setWordSoundsStreak,
-      wordSoundsSessionGoal = 10,
+      wordSoundsSessionGoal: providedWordSoundsSessionGoal = 10,
       setWordSoundsSessionGoal,
       wordSoundsSessionProgress = 0,
       setWordSoundsSessionProgress,
@@ -3100,6 +3100,7 @@
       lessonPlanConfig = null,
       isProbeMode = false,
       probeGradeLevel = "K",
+      probeForm: providedProbeForm = null,
       onProbeComplete,
       getWordSoundsString,
       isParentMode = false,
@@ -3110,6 +3111,14 @@
       // them; a teacher still reaches review from the setup screen.
       isTeacherMode = false,
       allowRuntimeAi,
+      // Optional, versioned host handoff. Every field remains optional so
+      // older hosts that pass the long-standing individual props keep the
+      // exact same behavior. New hosts can carry one durable configuration
+      // object with the resource instead of rebuilding UI choices on launch.
+      sessionConfig = null,
+      learnerId = null,
+      sessionId = null,
+      resourceId = null,
     }) => {
       // One central boundary: student players receive prepared assets only.
       // Defaults to ALLOWED unless the host marks this device as a QR-student
@@ -3125,6 +3134,93 @@
       const callGemini = runtimeAiAllowed ? providedCallGemini : null;
       const callTTS = runtimeAiAllowed ? providedCallTTS : null;
       const callImagen = runtimeAiAllowed ? providedCallImagen : null;
+      const runtimeSessionConfig =
+        sessionConfig && typeof sessionConfig === "object" ? sessionConfig : {};
+      const configuredImageVisibilityModeRaw =
+        runtimeSessionConfig.imageVisibilityMode;
+      const configuredImageVisibilityMode =
+        configuredImageVisibilityModeRaw === "off" ? "alwaysOff" :
+        configuredImageVisibilityModeRaw === "on" ? "alwaysOn" : [
+          "smart",
+          "alwaysOn",
+          "alwaysOff",
+          "progressive",
+          "afterCompletion",
+        ].includes(configuredImageVisibilityModeRaw)
+          ? configuredImageVisibilityModeRaw
+          : "smart";
+      const configuredSessionGoal = Number(
+        runtimeSessionConfig.wordSoundsSessionGoal ?? runtimeSessionConfig.sessionGoal,
+      );
+      const wordSoundsSessionGoal =
+        Number.isFinite(configuredSessionGoal) && configuredSessionGoal > 0
+          ? Math.floor(configuredSessionGoal)
+          : providedWordSoundsSessionGoal;
+      const configuredOrthoGoal = Number(
+        runtimeSessionConfig.orthoSessionGoal ?? runtimeSessionConfig.orthoGoal,
+      );
+      const orthoSessionGoal =
+        Number.isFinite(configuredOrthoGoal) && configuredOrthoGoal >= 0
+          ? Math.floor(configuredOrthoGoal)
+          : providedOrthoSessionGoal;
+      const configuredDifficulty =
+        runtimeSessionConfig.wordSoundsDifficulty ?? runtimeSessionConfig.difficulty;
+      const wordSoundsDifficulty =
+        typeof configuredDifficulty === "string" && configuredDifficulty
+          ? configuredDifficulty
+          : providedWordSoundsDifficulty;
+      const configuredLanguage =
+        runtimeSessionConfig.wordSoundsLanguage ?? runtimeSessionConfig.language;
+      const wordSoundsLanguage =
+        typeof configuredLanguage === "string" && configuredLanguage
+          ? configuredLanguage
+          : providedWordSoundsLanguage;
+      const isFixedForm = isProbeMode || runtimeSessionConfig.fixedForm === true;
+      const configuredProbeItemCount = Number(runtimeSessionConfig.probeItemCount);
+      const probeItemGoal =
+        Number.isFinite(configuredProbeItemCount) && configuredProbeItemCount > 0
+          ? Math.floor(configuredProbeItemCount)
+          : wordSoundsSessionGoal;
+      const effectiveProbeGrade =
+        runtimeSessionConfig.probeGrade ?? runtimeSessionConfig.grade ?? probeGradeLevel;
+      const effectiveProbeForm =
+        runtimeSessionConfig.probeForm ??
+        runtimeSessionConfig.form ??
+        providedProbeForm;
+      const effectiveProbeFormId =
+        runtimeSessionConfig.formId ?? effectiveProbeForm ?? null;
+      // Explicit props win; config fields are the portable-resource fallback.
+      const historyLearnerId =
+        learnerId ?? runtimeSessionConfig.learnerId ?? null;
+      const configuredSessionId =
+        sessionId ?? runtimeSessionConfig.sessionId ?? null;
+      const historyResourceId =
+        resourceId ?? runtimeSessionConfig.resourceId ?? null;
+      const sessionConfigVersion =
+        runtimeSessionConfig.version ?? runtimeSessionConfig.schemaVersion ?? null;
+      const makeRuntimeSessionId = () =>
+        `ws-run-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      // Even an older host gets per-run provenance. A supplied session id is
+      // retained verbatim so live/session consumers can join the history row.
+      const activeHistorySessionIdRef = React.useRef(
+        configuredSessionId != null
+          ? String(configuredSessionId)
+          : makeRuntimeSessionId(),
+      );
+      // When a learner identity is supplied, never let another learner's
+      // device history steer this learner's adaptive difficulty. Legacy hosts
+      // omit the identity and retain the historical pooled behavior.
+      const learnerScopedHistory = React.useMemo(() => {
+        const rows = Array.isArray(wordSoundsHistory) ? wordSoundsHistory : [];
+        const languageKey = String(wordSoundsLanguage || "").toLowerCase();
+        return rows.filter((row) => {
+          if (!row) return false;
+          if (historyLearnerId != null && String(row.learnerId ?? "") !== String(historyLearnerId)) return false;
+          if (languageKey && row.language && String(row.language).toLowerCase() !== languageKey) return false;
+          return true;
+        });
+      }, [wordSoundsHistory, historyLearnerId, wordSoundsLanguage]);
+
       const estimateFirstPhoneme = (word) => {
         if (!word) return "";
         const w = word.toLowerCase();
@@ -3407,7 +3503,12 @@
           setActivitySequence(initialActivitySequence);
         }
       }, [initialActivitySequence]);
-      const [isStudentLocked, setIsStudentLocked] = React.useState(false);
+      const [isStudentLocked, setIsStudentLocked] = React.useState(
+        runtimeSessionConfig.studentLocked === true,
+      );
+      React.useEffect(() => {
+        setIsStudentLocked(runtimeSessionConfig.studentLocked === true);
+      }, [runtimeSessionConfig.studentLocked]);
       const audioCtxRef = React.useRef(null);
       const [playInstructions, setPlayInstructions] = React.useState(true);
       const [tracingPhase, setTracingPhase] = React.useState("upper");
@@ -3448,7 +3549,13 @@
         }
       }, [isProbeMode]);
       const [imageVisibilityMode, setImageVisibilityMode] =
-        React.useState("smart");
+        React.useState(configuredImageVisibilityMode);
+      React.useEffect(() => {
+        // A resource/session pushed into an already-mounted player must honor
+        // the teacher's saved image policy too, not only the first mount.
+        setImageVisibilityMode(configuredImageVisibilityMode);
+      }, [configuredImageVisibilityMode]);
+
       const [showImageForCurrentWord, setShowImageForCurrentWord] =
         React.useState(false);
       const SMART_IMAGE_VISIBILITY = {
@@ -3881,14 +3988,50 @@
       );
       const [optionImages, setOptionImages] = React.useState({});
       const optionImagesCache = React.useRef(new Map());
+      const buildNextMasteryStat = React.useCallback(
+        (current, isCorrect, evidence = {}) => {
+          const prior = current || {
+            attempted: 0,
+            correct: 0,
+            consecutiveStreak: 0,
+            completed: false,
+          };
+          const presentations = Math.max(1, Number(evidence.presentations) || 1);
+          const practiceOnly = evidence.practiceOnly === true;
+          const firstTryCorrect = !!isCorrect && presentations === 1 && !practiceOnly;
+          const aacAssisted = evidence.aacAssisted === true;
+          return {
+            ...prior,
+            attempted: (prior.attempted || 0) + 1,
+            correct: (prior.correct || 0) + (isCorrect ? 1 : 0),
+            firstTryCorrect: (prior.firstTryCorrect || 0) + (firstTryCorrect ? 1 : 0),
+            retryCorrect: (prior.retryCorrect || 0) + (isCorrect && !firstTryCorrect ? 1 : 0),
+            aacAssistedAttempts: (prior.aacAssistedAttempts || 0) + (aacAssisted ? 1 : 0),
+            practiceOnlyAttempts: (prior.practiceOnlyAttempts || 0) + (practiceOnly ? 1 : 0),
+            aacAssistedCorrect: (prior.aacAssistedCorrect || 0) + (isCorrect && aacAssisted ? 1 : 0),
+            independentCorrect: (prior.independentCorrect || 0) + (firstTryCorrect && !aacAssisted ? 1 : 0),
+            // A retry demonstrates learning, but not an independent mastery
+            // streak. AAC remains valid access evidence and is reported
+            // separately rather than silently pooled as unassisted work.
+            consecutiveStreak: firstTryCorrect
+              ? (prior.consecutiveStreak || 0) + 1
+              : 0,
+            independentConsecutiveStreak: firstTryCorrect && !aacAssisted
+              ? (prior.independentConsecutiveStreak || 0) + 1
+              : 0,
+            completed: !!prior.completed,
+          };
+        },
+        [],
+      );
       const shouldAdvanceActivity = React.useCallback(
-        (activityId, lessonPlanConfig) => {
+        (activityId, lessonPlanConfig, postAnswerStats = null) => {
           if (!lessonPlanConfig || !lessonPlanConfig.activities) return false;
           const activityConfig = lessonPlanConfig.activities.find(
             (a) => a.id === activityId,
           );
           if (!activityConfig) return false;
-          const stats = masteryStats[activityId] || {
+          const stats = postAnswerStats || masteryStats[activityId] || {
             attempted: 0,
             consecutiveStreak: 0,
           };
@@ -3902,26 +4045,11 @@
         [masteryStats],
       );
       const updateMasteryStats = React.useCallback(
-        (activityId, isCorrect, word) => {
-          setMasteryStats((prev) => {
-            const current = prev[activityId] || {
-              attempted: 0,
-              correct: 0,
-              consecutiveStreak: 0,
-              completed: false,
-            };
-            return {
-              ...prev,
-              [activityId]: {
-                attempted: current.attempted + 1,
-                correct: current.correct + (isCorrect ? 1 : 0),
-                consecutiveStreak: isCorrect
-                  ? current.consecutiveStreak + 1
-                  : 0,
-                completed: current.completed,
-              },
-            };
-          });
+        (activityId, isCorrect, word, evidence = {}) => {
+          setMasteryStats((prev) => ({
+            ...prev,
+            [activityId]: buildNextMasteryStat(prev[activityId], isCorrect, evidence),
+          }));
           if (!isCorrect && word) {
             setRevisitQueue((prev) => {
               if (prev.some((w) => w.word === word)) return prev;
@@ -3929,7 +4057,7 @@
             });
           }
         },
-        [],
+        [buildNextMasteryStat],
       );
       // Generate Imagen symbols for response option words in AAC mode.
       // Results are cached in optionImagesCache so each word is only generated once.
@@ -5377,7 +5505,9 @@
                         /*#__PURE__*/ React.createElement(
                         "button",
                         {
-                          "aria-label": t("common.volume"),
+                          "aria-label": showLetterHints
+                            ? `Choose /${String(opt).replace(/^\/+|\/+$/g, "")}/`
+                            : `Choose Sound ${idx + 1}`,
                           onClick: () => onCheckAnswer(opt),
                           className: `w-full h-32 rounded-2xl font-bold flex items-center justify-center shadow-sm transition-all active:scale-95 ${optionImages ? "flex-col gap-1 text-lg" : "text-4xl"} ${playingIndex === idx || externalHighlightedIndex === idx ? "bg-violet-50 border-violet-400 text-violet-700 ring-4 ring-violet-200 scale-105" : "bg-white border-b-4 border-slate-200 text-slate-700 hover:shadow-md hover:scale-[1.02] hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700"}`,
                         },
@@ -5412,14 +5542,18 @@
                         /*#__PURE__*/ React.createElement(
                         "button",
                         {
-                          "aria-label": t("common.listen"),
+                          "aria-label": showLetterHints
+                            ? `Listen to /${String(opt).replace(/^\/+|\/+$/g, "")}/`
+                            : `Listen to Sound ${idx + 1}`,
                           onClick: (e) => {
                             e.stopPropagation();
                             onPlayAudio(opt, true);
                           },
                           className:
                             "absolute top-2 right-2 w-10 h-10 bg-violet-100 hover:bg-violet-500 hover:text-white text-violet-600 rounded-xl flex items-center justify-center shadow-sm transition-all z-10",
-                          title: t("common.listen"),
+                          title: showLetterHints
+                            ? `Listen to /${String(opt).replace(/^\/+|\/+$/g, "")}/`
+                            : `Listen to Sound ${idx + 1}`,
                         },
                           /*#__PURE__*/ React.createElement(Volume2, {
                           size: 20,
@@ -6377,6 +6511,7 @@
       }, []);
       const [showProbeResults, setShowProbeResults] = React.useState(false);
       const probeStartTimeRef = React.useRef(null);
+      const probeCompletionSentRef = React.useRef(false);
       // The probe clock is wall-clock: elapsed time, and therefore the
       // items-per-minute a teacher may tier a child on, keeps running while the
       // tab is in the background. Minimising mid-probe is already blocked, but
@@ -6442,15 +6577,54 @@
         // its closure history predates the final setWordSoundsHistory —
         // without it the last item is missing from the banded payload.
         const _items = extraEntry
-          ? [...(wordSoundsHistory || []), extraEntry]
-          : wordSoundsHistory || [];
+          ? [...learnerScopedHistory, extraEntry]
+          : learnerScopedHistory;
         _items.forEach((h) => {
           if (!h || h.timestamp < _probeStart || h.activity !== wordSoundsActivity) return;
           const _b = _byBand[h.wordDifficulty] ? h.wordDifficulty : "medium";
           _byBand[_b].t++; if (h.correct) _byBand[_b].c++;
         });
         return _byBand;
-      }, [wordSoundsHistory, wordSoundsActivity]);
+      }, [learnerScopedHistory, wordSoundsActivity]);
+      const buildProbePayload = (score, extraEntry = null) => {
+        const correct = Math.max(0, Number(score?.correct) || 0);
+        const total = Math.max(0, Number(score?.total) || 0);
+        const totalTime = probeStartTimeRef.current
+          ? Math.max(0, (Date.now() - probeStartTimeRef.current) / 1000)
+          : 0;
+        const elapsedMinutes = Math.max(totalTime / 60, 0.01);
+        const hiddenMs = Math.round(probeHiddenMs());
+        return {
+          correct,
+          total,
+          accuracy: total > 0 ? Math.round((correct / total) * 100) : 0,
+          itemsPerMin: Math.round((correct / elapsedMinutes) * 10) / 10,
+          duration: totalTime,
+          elapsed: Math.round(totalTime),
+          activity: wordSoundsActivity,
+          grade: effectiveProbeGrade,
+          form: effectiveProbeForm,
+          formId: effectiveProbeFormId,
+          itemIds: Array.isArray(runtimeSessionConfig.itemIds)
+            ? [...runtimeSessionConfig.itemIds]
+            : [],
+          learnerId: historyLearnerId != null ? String(historyLearnerId) : null,
+          sessionId: activeHistorySessionIdRef.current,
+          resourceId: historyResourceId != null ? String(historyResourceId) : null,
+          sessionConfigVersion,
+          fixedForm: isFixedForm,
+          itemGoal: probeItemGoal,
+          hiddenMs,
+          interrupted: hiddenMs >= PROBE_INTERRUPTION_MS,
+          byDifficulty: computeProbeByBand(extraEntry),
+        };
+      };
+      const emitProbeComplete = (score, extraEntry = null) => {
+        if (!onProbeComplete || probeCompletionSentRef.current) return false;
+        probeCompletionSentRef.current = true;
+        onProbeComplete(buildProbePayload(score, extraEntry));
+        return true;
+      };
       const renderProbeResults = () => {
         const totalTime = probeStartTimeRef.current
           ? (Date.now() - probeStartTimeRef.current) / 1000
@@ -6473,7 +6647,7 @@
         // probe's history items (each tagged with wordDifficulty at answer time).
         const _probeStart = probeStartTimeRef.current || 0;
         const _byBand = { easy: { c: 0, t: 0 }, medium: { c: 0, t: 0 }, hard: { c: 0, t: 0 } };
-        (wordSoundsHistory || []).forEach((h) => {
+        learnerScopedHistory.forEach((h) => {
           if (!h || h.timestamp < _probeStart || h.activity !== wordSoundsActivity) return;
           const _b = _byBand[h.wordDifficulty] ? h.wordDifficulty : "medium";
           _byBand[_b].t++; if (h.correct) _byBand[_b].c++;
@@ -6494,7 +6668,7 @@
           ];
           const row = [
             new Date().toLocaleDateString(),
-            probeGradeLevel,
+            effectiveProbeGrade,
             wordSoundsActivity,
             total,
             correct,
@@ -6509,7 +6683,7 @@
           link.href = URL.createObjectURL(blob);
           link.download =
             "Probe_" +
-            probeGradeLevel +
+            effectiveProbeGrade +
             "_" +
             wordSoundsActivity +
             "_" +
@@ -6521,23 +6695,9 @@
           URL.revokeObjectURL(link.href);
         };
         const finishProbe = () => {
-          setShowProbeResults(false);
-          if (onProbeComplete)
-            onProbeComplete({
-              correct,
-              total,
-              accuracy,
-              itemsPerMin,
-              duration: totalTime,
-              // The other two completion paths send `elapsed` in whole seconds.
-              // A consumer reading one field name got nothing from this path.
-              elapsed: Math.round(totalTime),
-              activity: wordSoundsActivity,
-              hiddenMs: Math.round(probeHiddenMs()),
-              interrupted: probeHiddenMs() >= PROBE_INTERRUPTION_MS,
-              byDifficulty: { easy: { ..._byBand.easy }, medium: { ..._byBand.medium }, hard: { ..._byBand.hard } },
-            });
-          onClose();
+          emitProbeComplete(wordSoundsScore);
+          resetRuntimeSession();
+          onClose?.();
         };
         return /*#__PURE__*/ React.createElement(
           "div",
@@ -6578,7 +6738,7 @@
                   "text-xs font-bold text-slate-600 uppercase tracking-wider mb-6",
               },
               ts("word_sounds.grade_label") || "Grade ",
-              probeGradeLevel,
+              effectiveProbeGrade,
               " \u2022 ",
               wordSoundsActivity,
               " \u2022 ",
@@ -6856,7 +7016,7 @@
         // Only graded rows may drive difficulty. Letter Trace is coach-until-
         // right, so its rows are always correct:true — left in the pooled
         // fallback they push a struggling child straight to "hard".
-        const hist = (wordSoundsHistory || []).filter(wsIsGradedRow);
+        const hist = learnerScopedHistory.filter(wsIsGradedRow);
         // Adapt per-activity, not on a pooled window: a learner who is strong at
         // blending but weak at segmentation shouldn't get one averaged difficulty
         // that fits neither. Fall back to the pooled window until this activity
@@ -6884,7 +7044,7 @@
         if (accuracy >= 0.85 - levelBoost) return "hard";
         if (accuracy >= 0.6 - levelBoost) return "medium";
         return "easy";
-      }, [wordSoundsDifficulty, wordSoundsHistory, wordSoundsActivity, wordSoundsLevel]);
+      }, [wordSoundsDifficulty, learnerScopedHistory, wordSoundsActivity, wordSoundsLevel]);
       const categorizedPool = React.useMemo(() => {
         return wordPool.map((entry) => ({
           ...entry,
@@ -6938,6 +7098,66 @@
       const [draggedItem, setDraggedItem] = React.useState(null);
       const sessionQueueRef = React.useRef({});
       const [sessionWordLists, setSessionWordLists] = React.useState({});
+      // Reset only run-local evidence. Longitudinal history, badges, phoneme
+      // mastery, and confusion patterns deliberately survive between runs.
+      const resetRuntimeSession = React.useCallback(() => {
+        advanceEpochRef.current++;
+        audioRunIdRef.current++;
+        submissionLockRef.current = false;
+        autoDirectorCooldown.current = false;
+        activeHistorySessionIdRef.current =
+          configuredSessionId != null
+            ? String(configuredSessionId)
+            : makeRuntimeSessionId();
+        sessionWordResults.current = [];
+        sessionQueueRef.current = {};
+        sequenceIndexRef.current = 0;
+        probeStartTimeRef.current = null;
+        probeCompletionSentRef.current = false;
+        probeHiddenMsRef.current = 0;
+        probeHiddenSinceRef.current = null;
+        setSessionWordLists({});
+        setMasteryStats({});
+        setRevisitQueue([]);
+        setAttempts(0);
+        setCurrentWordIndex(0);
+        setSequenceIndex(0);
+        setProbeElapsed(0);
+        setShowProbeResults(false);
+        setShowSessionComplete(false);
+        setUserAnswer("");
+        setShowWordText(false);
+        setShowImageForCurrentWord(false);
+        setShowLetterHints(false);
+        setIsCelebrating(false);
+        setImageVisibilityMode(configuredImageVisibilityMode);
+        setWordSoundsScore?.({ correct: 0, total: 0, streak: 0 });
+        setWordSoundsSessionProgress?.(0);
+        setWordSoundsStreak?.(0);
+        setWordSoundsLevel?.(1);
+        setCurrentWordSoundsWord?.(null);
+        setWordSoundsPhonemes?.(null);
+        setWordSoundsFeedback?.(null);
+      }, [
+        configuredImageVisibilityMode,
+        configuredSessionId,
+        setCurrentWordSoundsWord,
+        setWordSoundsFeedback,
+        setWordSoundsLevel,
+        setWordSoundsPhonemes,
+        setWordSoundsScore,
+        setWordSoundsSessionProgress,
+        setWordSoundsStreak,
+      ]);
+      // A modal mount is a new run even when the legacy host still holds the
+      // previous run's score. Identity changes while mounted are also new runs.
+      const runtimeIdentityKey = `${historyLearnerId ?? ""}|${configuredSessionId ?? ""}|${historyResourceId ?? ""}`;
+      const lastRuntimeIdentityRef = React.useRef(null);
+      React.useEffect(() => {
+        if (lastRuntimeIdentityRef.current === runtimeIdentityKey) return;
+        lastRuntimeIdentityRef.current = runtimeIdentityKey;
+        resetRuntimeSession();
+      }, [runtimeIdentityKey, resetRuntimeSession]);
       const SESSION_LENGTH = 10;
       const easyPool = React.useMemo(
         () =>
@@ -6972,6 +7192,57 @@
             : [],
         [wordPool, categorizeWordDifficulty],
       );
+      // Targeted-majority fill keeps manual and Auto bands meaningfully
+      // distinct even when a teacher pack contains fewer than ten words in
+      // the requested band. At most two presentations of each primary-band
+      // word are forced; tiny bands therefore remain varied rather than
+      // repeating one item throughout the session.
+      const buildTargetedDifficultyPool = React.useCallback(
+        (pool, requestedDifficulty) => {
+          const fillOrder = {
+            easy: ["easy", "medium", "hard"],
+            medium: ["medium", "easy", "hard"],
+            hard: ["hard", "medium", "easy"],
+          };
+          const order = fillOrder[requestedDifficulty];
+          if (!Array.isArray(pool) || !order || !categorizeWordDifficulty) {
+            return Array.isArray(pool) ? [...pool] : [];
+          }
+          const bands = { easy: [], medium: [], hard: [] };
+          pool.forEach((entry) => {
+            const band = categorizeWordDifficulty(
+              entry.word || entry.targetWord || entry.displayWord,
+            );
+            (bands[band] || bands.medium).push(entry);
+          });
+          const primaryName = order.find((band) => bands[band].length > 0);
+          if (!primaryName) return [...pool];
+          const primary = bands[primaryName];
+          const majorityGoal = Math.ceil(SESSION_LENGTH * 0.6);
+          const safePrimaryGoal = Math.min(
+            SESSION_LENGTH,
+            Math.max(
+              primary.length,
+              Math.min(majorityGoal, primary.length * 2),
+            ),
+          );
+          const targeted = Array.from(
+            { length: safePrimaryGoal },
+            (_, index) => primary[index % primary.length],
+          );
+          const adjacent = order
+            .filter((band) => band !== primaryName)
+            .flatMap((band) => bands[band]);
+          const fillSource = adjacent.length > 0 ? adjacent : primary;
+          let fillIndex = 0;
+          while (targeted.length < SESSION_LENGTH && fillSource.length > 0) {
+            targeted.push(fillSource[fillIndex % fillSource.length]);
+            fillIndex += 1;
+          }
+          return targeted;
+        },
+        [categorizeWordDifficulty],
+      );
       const generateSessionQueue = React.useCallback(
         (activityId, difficulty) => {
           // Prepared pack words take precedence: a nonempty glossary-derived
@@ -7002,7 +7273,12 @@
               if (key) uniqueMap.set(key, w);
             });
           }
-          const effectivePool = Array.from(uniqueMap.values());
+          // Fixed forms are item sequences, not word sets: preserve authored
+          // order and repeated targets exactly. Practice pools still dedupe so
+          // an accidental duplicate does not crowd out varied practice.
+          const effectivePool = isFixedForm
+            ? [...(rawPool || [])]
+            : Array.from(uniqueMap.values());
           if (!effectivePool || effectivePool.length === 0) {
             warnLog(
               "⚠️ generateSessionQueue: No words available in pool or preloaded!",
@@ -7013,7 +7289,7 @@
             `🎲 Generating session queue for ${activityId} (${difficulty})`,
           );
           let diffFiltered = effectivePool;
-          if (categorizeWordDifficulty && difficulty !== "all") {
+          if (!isFixedForm && categorizeWordDifficulty && difficulty !== "all") {
             diffFiltered = effectivePool.filter((w) => {
               const wordDiff = categorizeWordDifficulty(
                 w.word || w.displayWord,
@@ -7025,20 +7301,28 @@
             );
           }
           let candidates = diffFiltered;
-          if (candidates.length < SESSION_LENGTH) {
+          if (!isFixedForm && candidates.length < SESSION_LENGTH) {
             debugLog(
               "⚠️ Not enough strict difficulty words, broadening pool...",
             );
             candidates = effectivePool;
           }
-          const activityHistory = (wordSoundsHistory || [])
+          // Replace whole-pool fallback with a bounded level mix; the strict
+          // filter above is retained for compatibility/logging but this queue
+          // is the source of truth for adaptive practice.
+          if (!isFixedForm) {
+            candidates = buildTargetedDifficultyPool(effectivePool, difficulty);
+          }
+          const activityHistory = learnerScopedHistory
             .filter((h) => h.activity === activityId && h.correct)
             .map((h) => h.word?.toLowerCase());
           const playedSet = new Set(activityHistory);
-          let freshCandidates = candidates.filter(
-            (c) => !playedSet.has(c.word?.toLowerCase()),
-          );
-          if (freshCandidates.length < SESSION_LENGTH && !isSequentialMode) {
+          let freshCandidates = isFixedForm
+            ? candidates
+            : candidates.filter(
+                (c) => !playedSet.has(c.word?.toLowerCase()),
+              );
+          if (!isFixedForm && freshCandidates.length < SESSION_LENGTH && !isSequentialMode) {
             debugLog("♻️ Pool exhausted, recycling words for queue...");
             freshCandidates = candidates;
           } else if (freshCandidates.length === 0 && isSequentialMode) {
@@ -7050,7 +7334,9 @@
             return [];
           }
           let selection = freshCandidates;
-          if (!isSequentialMode) {
+          if (isFixedForm) {
+            selection = [...freshCandidates];
+          } else if (!isSequentialMode) {
             selection = fisherYatesShuffle(freshCandidates);
           } else {
             selection = [...freshCandidates].sort((a, b) =>
@@ -7058,7 +7344,7 @@
             );
           }
           const queue = selection
-            .slice(0, SESSION_LENGTH)
+            .slice(0, isFixedForm ? probeItemGoal : SESSION_LENGTH)
             .map((entry) => ({
               singleWord: entry.displayWord || entry.word,
               fullTerm: entry.originalTerm,
@@ -7078,9 +7364,12 @@
         [
           wordPool,
           preloadedWords,
-          wordSoundsHistory,
+          learnerScopedHistory,
           categorizeWordDifficulty,
+          buildTargetedDifficultyPool,
           isSequentialMode,
+          isFixedForm,
+          probeItemGoal,
         ],
       );
       const generateSoundChips = React.useCallback((phonemes) => {
@@ -7149,27 +7438,62 @@
         return fisherYatesShuffle([...correctChips, ...distractors]);
       }, []);
       const updatePhonemeMastery = React.useCallback(
-        (phonemes, isCorrect) => {
+        (phonemes, isCorrect, evidence = {}) => {
           if (!phonemes || !Array.isArray(phonemes) || !setPhonemeMastery)
             return;
+          const presentations = Math.max(1, Number(evidence.presentations) || 1);
+          const firstTryCorrect = !!isCorrect && presentations === 1;
+          const aacAssisted = evidence.aacAssisted === true;
           setPhonemeMastery((prev) => {
             const updated = { ...prev };
-            (Array.isArray(phonemes) ? phonemes : []).forEach((phoneme) => {
-              const p = phoneme.toLowerCase();
-              if (!updated[p]) {
-                updated[p] = { correct: 0, total: 0 };
-              }
-              updated[p].total += 1;
-              if (isCorrect) {
-                updated[p].correct += 1;
-              }
-              // Consumers (teacher_module, student_analytics) filter on v.accuracy,
-              // which was never written -> the "mastered phonemes" list was always
-              // empty. Compute it at write time so per-phoneme mastery is readable.
-              updated[p].accuracy =
-                updated[p].total > 0
-                  ? Math.round((updated[p].correct / updated[p].total) * 100)
-                  : 0;
+            phonemes.forEach((phoneme) => {
+              const p = String(phoneme || "").toLowerCase().trim();
+              if (!p) return;
+              const prior = updated[p] || { correct: 0, total: 0 };
+              const total = (prior.total || 0) + 1;
+              const correct = (prior.correct || 0) + (isCorrect ? 1 : 0);
+              const weightedCorrect =
+                (prior.weightedCorrect ?? prior.correct ?? 0) +
+                (firstTryCorrect ? 1 : isCorrect ? 0.5 : 0);
+              const independentAttempts =
+                (prior.independentAttempts || 0) + (aacAssisted ? 0 : 1);
+              const independentCorrect =
+                (prior.independentCorrect || 0) +
+                (firstTryCorrect && !aacAssisted ? 1 : 0);
+              const aacAssistedAttempts =
+                (prior.aacAssistedAttempts || 0) + (aacAssisted ? 1 : 0);
+              const aacAssistedCorrect =
+                (prior.aacAssistedCorrect || 0) +
+                (isCorrect && aacAssisted ? 1 : 0);
+              updated[p] = {
+                ...prior,
+                total,
+                correct,
+                weightedCorrect,
+                firstTryCorrect:
+                  (prior.firstTryCorrect || 0) + (firstTryCorrect ? 1 : 0),
+                retryCorrect:
+                  (prior.retryCorrect || 0) +
+                  (isCorrect && !firstTryCorrect ? 1 : 0),
+                independentAttempts,
+                independentCorrect,
+                aacAssistedAttempts,
+                aacAssistedCorrect,
+                // Keep the long-standing accuracy field for consumers, but
+                // stop treating retry-correct as identical to first-try.
+                accuracy: Math.round((weightedCorrect / total) * 100),
+                firstTryAccuracy: Math.round(
+                  (((prior.firstTryCorrect || 0) + (firstTryCorrect ? 1 : 0)) / total) * 100,
+                ),
+                independentAccuracy:
+                  independentAttempts > 0
+                    ? Math.round((independentCorrect / independentAttempts) * 100)
+                    : null,
+                aacAccuracy:
+                  aacAssistedAttempts > 0
+                    ? Math.round((aacAssistedCorrect / aacAssistedAttempts) * 100)
+                    : null,
+              };
             });
             return updated;
           });
@@ -7199,26 +7523,51 @@
       const updateDailyProgress = React.useCallback(
         (isCorrect) => {
           if (!setWordSoundsDailyProgress) return;
-          const today = new Date().toISOString().split("T")[0];
+          // Match the host's single-day schema and local-day rollover. Migrate
+          // the former runtime's UTC-keyed map if one is encountered.
+          const now = new Date();
+          const today = now.toDateString();
+          const legacyKey = now.toISOString().split("T")[0];
           setWordSoundsDailyProgress((prev) => {
-            const updated = { ...prev };
-            if (!updated[today]) {
-              updated[today] = { total: 0, correct: 0, streak: 0 };
-            }
-            updated[today].total += 1;
-            if (isCorrect) {
-              updated[today].correct += 1;
-            }
-            return updated;
+            const previous = prev && typeof prev === "object" ? prev : {};
+            const legacy =
+              previous[legacyKey] && typeof previous[legacyKey] === "object"
+                ? previous[legacyKey]
+                : null;
+            const base =
+              previous.date === today
+                ? previous
+                : legacy
+                  ? {
+                      date: today,
+                      completed: Number(legacy.total) || 0,
+                      total: Number(legacy.total) || 0,
+                      correct: Number(legacy.correct) || 0,
+                      streak: Number(legacy.streak) || 0,
+                      goalMet: false,
+                    }
+                  : { date: today, completed: 0, total: 0, correct: 0, streak: 0, goalMet: false };
+            const completed = (Number(base.completed ?? base.total) || 0) + 1;
+            const correct = (Number(base.correct) || 0) + (isCorrect ? 1 : 0);
+            return {
+              ...base,
+              date: today,
+              completed,
+              total: completed,
+              correct,
+              streak: isCorrect ? (Number(base.streak) || 0) + 1 : 0,
+              goalMet: !!base.goalMet || correct >= wordSoundsSessionGoal,
+            };
           });
         },
-        [setWordSoundsDailyProgress],
+        [setWordSoundsDailyProgress, wordSoundsSessionGoal],
       );
       const checkAndAwardBadges = React.useCallback(
         (activity, isCorrect, currentStreak) => {
           if (!setWordSoundsBadges) return;
           const newBadges = [];
-          const history = wordSoundsHistory || [];
+          const history = learnerScopedHistory;
+          const postHistory = [...history, { activity, correct: isCorrect }];
           const totalCorrect =
             history.filter((h) => h.correct).length + (isCorrect ? 1 : 0);
           const badgeChecks = [
@@ -7248,8 +7597,8 @@
             },
             {
               id: "perfect_10",
-              condition:
-                history.slice(-10).filter((h) => h.correct).length === 10,
+              condition: postHistory.length >= 10 &&
+                postHistory.slice(-10).every((h) => h && h.correct),
               name: "Perfect 10",
               icon: "💯",
             },
@@ -7291,7 +7640,7 @@
           }
           return newBadges;
         },
-        [wordSoundsHistory, wordSoundsBadges, setWordSoundsBadges],
+        [learnerScopedHistory, wordSoundsBadges, setWordSoundsBadges],
       );
       const DifficultyIndicator = React.useCallback(() => {
         const effectiveDifficulty = getEffectiveDifficulty();
@@ -10970,7 +11319,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setBlendingProgress(0);
           setSoundChips([]);
           setShowSessionComplete(false);
-          sessionWordResults.current = [];
+          // Session recap/mastery spans adaptive activity transitions. It is
+          // cleared only by resetRuntimeSession at a genuinely new run.
           // Streak intentionally PERSISTS across activity changes: a correct
           // run is not wiped just because the student switched activities. A
           // wrong answer still resets it (see newStreak logic), and the auto-
@@ -11363,7 +11713,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           debugLog("🚀 Initializing Session Queue for", wordSoundsActivity);
           generateSessionQueue(
             wordSoundsActivity,
-            wordSoundsDifficulty || "medium",
+            getEffectiveDifficulty(),
           );
           if (!currentWordSoundsWord) {
             const hasWords =
@@ -11386,6 +11736,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         wordPool,
         preloadedWords.length,
         generateSessionQueue,
+        getEffectiveDifficulty,
         startActivity,
       ]);
       React.useEffect(() => {
@@ -12310,7 +12661,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               // Graded rows only: a Letter Trace block sits in history as five
               // correct answers, which used to mask a child who was actually
               // missing everything and withhold this scaffold from them.
-              const recentHistory = (wordSoundsHistory || [])
+              const recentHistory = learnerScopedHistory
                 .filter(wsIsGradedRow)
                 .slice(-5);
               const recentAccuracy =
@@ -12351,13 +12702,30 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             // Missed words are tracked via updateMasteryStats → revisitQueue (deferred review).
             // Legacy immediate re-queue was removed to prevent infinite-loop word cycling.
             // The student gets max 2 attempts per presentation, then progresses.
+            const _masteryEvidence = {
+              presentations: attempts + 1,
+              aacAssisted: aacMode,
+              practiceOnly: WS_NON_GRADED_ACTIVITIES.has(wordSoundsActivity),
+            };
+            const _postActivityMastery = buildNextMasteryStat(
+              masteryStats[wordSoundsActivity],
+              isCorrect,
+              _masteryEvidence,
+            );
             updateMasteryStats(
               wordSoundsActivity,
               isCorrect,
               currentWordSoundsWord,
+              _masteryEvidence,
             );
             const _historyEntry = {
               timestamp: Date.now(),
+              sessionId: activeHistorySessionIdRef.current,
+              ...(historyLearnerId != null ? { learnerId: String(historyLearnerId) } : {}),
+              ...(historyResourceId != null ? { resourceId: String(historyResourceId) } : {}),
+              ...(wordSoundsLanguage ? { language: String(wordSoundsLanguage) } : {}),
+              ...(sessionConfigVersion != null ? { sessionConfigVersion } : {}),
+              firstTry: attempts === 0,
               activity: wordSoundsActivity,
               word: currentWordSoundsWord,
               correct: isCorrect,
@@ -12425,12 +12793,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               // mid-probe: startActivity resets the probe clock without
               // resetting the score, permanently killing the payload arming.
               !isProbeMode &&
-              shouldAdvanceActivity(wordSoundsActivity, currentLessonConfig)
+              shouldAdvanceActivity(wordSoundsActivity, currentLessonConfig, _postActivityMastery)
             ) {
               debugLog(
                 "📋 Mastery achieved for:",
                 wordSoundsActivity,
-                masteryStats[wordSoundsActivity],
+                _postActivityMastery,
               );
               setMasteryStats((prev) => ({
                 ...prev,
@@ -12489,13 +12857,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 }
               }
             } else if (
-              !hasLessonPlan &&
-              isCorrect &&
-              wordSoundsActivity !== "orthography"
+              !hasLessonPlan && isCorrect
             ) {
-              const actStats = masteryStats[wordSoundsActivity] || {
-                attempted: 0,
-              };
+              const actStats = _postActivityMastery;
               const MIN_PRACTICE = 5;
               const queueRemaining =
                 sessionQueueRef.current[wordSoundsActivity] || [];
@@ -12523,87 +12887,61 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   "rhyming",
                   "word_families",
                   "sound_sort",
-                ];
-                const currentIdx = PHONO_ORDER.indexOf(wordSoundsActivity);
-                if (currentIdx >= 0 && currentIdx < PHONO_ORDER.length - 1) {
-                  const nextActivity = PHONO_ORDER[currentIdx + 1];
+                ].filter(wsActivityAvailableForLang);
+                const ORTHO_ORDER = [
+                  "orthography",
+                  "mapping",
+                  "spelling_bee",
+                  "word_scramble",
+                  "missing_letter",
+                  "read_sentence",
+                  "read_passage",
+                ].filter(wsActivityAvailableForLang);
+                const phonoIdx = PHONO_ORDER.indexOf(wordSoundsActivity);
+                const orthoIdx = ORTHO_ORDER.indexOf(wordSoundsActivity);
+                let nextActivity = null;
+                let transitionMessage = null;
+                if (phonoIdx >= 0 && phonoIdx < PHONO_ORDER.length - 1) {
+                  nextActivity = PHONO_ORDER[phonoIdx + 1];
+                  transitionMessage =
+                    ts("word_sounds.fb_great_work_next") ||
+                    `Great work! Let's try ${nextActivity}! \uD83C\uDF89`;
+                } else if (
+                  includeOrthographic &&
+                  phonoIdx === PHONO_ORDER.length - 1 &&
+                  postScore.correct >= wordSoundsSessionGoal &&
+                  ORTHO_ORDER.length > 0
+                ) {
+                  nextActivity = ORTHO_ORDER[0];
+                  transitionMessage =
+                    ts("word_sounds.fb_spelling_transition") ||
+                    "You're a pro! Testing your spelling now! \uD83D\uDC41\uFE0F";
+                } else if (orthoIdx >= 0 && orthoIdx < ORTHO_ORDER.length - 1) {
+                  nextActivity = ORTHO_ORDER[orthoIdx + 1];
+                  transitionMessage =
+                    ts("word_sounds.fb_spelling_transition") ||
+                    `Great spelling! Let's try ${nextActivity.replace(/_/g, " ")}! \uD83C\uDFC6`;
+                }
+                if (nextActivity) {
                   setWordSoundsFeedback({
                     type: "success",
-                    message:
-                      ts("word_sounds.fb_great_work_next") ||
-                      `Great work! Let's try ${nextActivity}! 🎉`,
+                    message: transitionMessage,
                   });
                   setWordSoundsScore((prev) => ({ ...prev, streak: 0 }));
-                  if (setWordSoundsStreak) setWordSoundsStreak(0);
+                  setWordSoundsStreak?.(0);
                   autoDirectorCooldown.current = true;
-                  debugLog(
-                    "🛑 Auto-director cooldown STARTED for:",
-                    nextActivity,
-                  );
+                  debugLog("Auto-director cooldown STARTED for:", nextActivity);
                   setTimeout(() => {
-                    if (!isMountedRef.current) return;
-                    if (!isProbeMode) setWordSoundsActivity(nextActivity);
+                    if (!isMountedRef.current || isProbeMode) return;
+                    // startActivity is the single capability-gated transition
+                    // path and fully prepares the next activity's first item.
+                    startActivity(nextActivity);
                     setTimeout(() => {
                       if (!isMountedRef.current) return;
                       autoDirectorCooldown.current = false;
-                      debugLog("✅ Auto-director cooldown CLEARED");
+                      debugLog("Auto-director cooldown CLEARED");
                     }, 15000);
                   }, 2000);
-                } else if (
-                  includeOrthographic &&
-                  wordSoundsScore.correct >= wordSoundsSessionGoal
-                ) {
-                  const ORTHO_ORDER = [
-                    "orthography",
-                    "mapping",
-                    "spelling_bee",
-                    "word_scramble",
-                    "missing_letter",
-                    // The bridge is the destination: once spelling is
-                    // mastered, an adaptive session arrives at connected
-                    // text and culminates in the story. English sessions
-                    // only — the sentence activities are language-gated
-                    // and the auto-director must never advance into an
-                    // activity the picker would hide.
-                    ...((!wordSoundsLanguage || String(wordSoundsLanguage).toLowerCase().indexOf("en") === 0)
-                      ? ["read_sentence", "read_passage"]
-                      : []),
-                  ];
-                  const orthoIdx = ORTHO_ORDER.indexOf(wordSoundsActivity);
-                  if (orthoIdx >= 0 && orthoIdx < ORTHO_ORDER.length - 1) {
-                    const nextOrtho = ORTHO_ORDER[orthoIdx + 1];
-                    setWordSoundsFeedback({
-                      type: "success",
-                      message:
-                        ts("word_sounds.fb_spelling_transition") ||
-                        `Great spelling! Let's try ${nextOrtho.replace(/_/g, " ")}! 🏆`,
-                    });
-                    setWordSoundsScore((prev) => ({ ...prev, streak: 0 }));
-                    if (setWordSoundsStreak) setWordSoundsStreak(0);
-                    autoDirectorCooldown.current = true;
-                    setTimeout(() => {
-                      if (!isMountedRef.current) return;
-                      if (!isProbeMode) setWordSoundsActivity(nextOrtho);
-                      setTimeout(() => {
-                        autoDirectorCooldown.current = false;
-                      }, 15000);
-                    }, 2000);
-                  } else if (orthoIdx === -1) {
-                    setWordSoundsFeedback({
-                      type: "success",
-                      message:
-                        ts("word_sounds.fb_spelling_transition") ||
-                        "You're a pro! Testing your spelling now! 👁️",
-                    });
-                    autoDirectorCooldown.current = true;
-                    setTimeout(() => {
-                      if (!isMountedRef.current) return;
-                      if (!isProbeMode) setWordSoundsActivity("orthography");
-                      setTimeout(() => {
-                        autoDirectorCooldown.current = false;
-                      }, 15000);
-                    }, 2000);
-                  }
                 }
               }
             }
@@ -12615,6 +12953,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               // in the word systematically diluted the per-phoneme data
               // teachers see in "mastered phonemes" reporting.
               const _wordLevelActs = [
+                "counting",
                 "rhyming",
                 "syllable_blending",
                 "syllable_counting",
@@ -12629,9 +12968,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 const _isoSound =
                   isolationStateRef.current?.correctSound ||
                   isolationState?.correctSound;
-                if (_isoSound) updatePhonemeMastery([_isoSound], isCorrect);
+                if (_isoSound) updatePhonemeMastery([_isoSound], isCorrect, _masteryEvidence);
               } else if (!_wordLevelActs.includes(wordSoundsActivity)) {
-                updatePhonemeMastery(wordSoundsPhonemes.phonemes, isCorrect);
+                updatePhonemeMastery(wordSoundsPhonemes.phonemes, isCorrect, _masteryEvidence);
               }
             }
             if (!isCorrect && answer && expectedAnswer) {
@@ -12689,7 +13028,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   } catch (e) {
                     debugLog("Level-up audio error", e);
                   }
-                  return 0;
+                  // Level XP can tick every ten; session progress stays cumulative.
+                  return newVal;
                 }
                 return newVal;
               });
@@ -12808,32 +13148,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 // mode — probes ran past their goal forever ("Word 11 of 10")
                 // and never banked an onProbeComplete payload.
                 const _goalMet = isProbeMode
-                  ? postScore.total >= wordSoundsSessionGoal
+                  ? postScore.total >= probeItemGoal
                   : postScore.correct >=
                     wordSoundsSessionGoal + (orthoSessionGoal || 0);
                 if (_goalMet) {
                   debugLog("WordSounds: Session Goal Met! Complete.");
-                  if (
-                    isProbeMode &&
-                    probeStartTimeRef.current &&
-                    onProbeComplete
-                  ) {
-                    const elapsedMinutes = Math.max(
-                      (Date.now() - probeStartTimeRef.current) / 60000,
-                      0.01,
-                    );
-                    onProbeComplete({
-                      itemsPerMin: Math.round(
-                        postScore.correct / elapsedMinutes,
-                      ),
-                      correct: postScore.correct,
-                      total: postScore.total,
-                      elapsed: Math.round(elapsedMinutes * 60),
-                      activity: wordSoundsActivity,
-                      hiddenMs: Math.round(probeHiddenMs()),
-                      interrupted: probeHiddenMs() >= PROBE_INTERRUPTION_MS,
-                      byDifficulty: computeProbeByBand(_historyEntry),
-                    });
+                  if (isProbeMode && probeStartTimeRef.current) {
+                    emitProbeComplete(postScore, _historyEntry);
                   }
                   setShowSessionComplete(true);
                   return;
@@ -13395,24 +13716,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     // the top of this timeout (queue-independent, postScore).
                     if (isProbeMode) {
                       debugLog("📊 Probe: Queue depleted. Ending probe.");
-                      if (probeStartTimeRef.current && onProbeComplete) {
-                        const elapsedMinutes = Math.max(
-                          (Date.now() - probeStartTimeRef.current) / 60000,
-                          0.01,
-                        );
-                        const itemsPerMin = Math.round(
-                          postScore.correct / elapsedMinutes,
-                        );
-                        onProbeComplete({
-                          itemsPerMin,
-                          correct: postScore.correct,
-                          total: postScore.total,
-                          elapsed: Math.round(elapsedMinutes * 60),
-                          activity: wordSoundsActivity,
-                          hiddenMs: Math.round(probeHiddenMs()),
-                          interrupted: probeHiddenMs() >= PROBE_INTERRUPTION_MS,
-                          byDifficulty: computeProbeByBand(_historyEntry),
-                        });
+                      if (probeStartTimeRef.current) {
+                        emitProbeComplete(postScore, _historyEntry);
                       }
                       setShowSessionComplete(true);
                     } else {
@@ -13465,7 +13770,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   }
                 }
               },
-              isProbeMode ? (isCorrect ? 800 : 1200) : isCorrect ? _rbAdvanceMs : 3000,
+              // Keep scored probe exposure intervals correctness-neutral.
+              // Otherwise incorrect responses received 400ms more elapsed
+              // time and depressed the reported correct-per-minute rate.
+              isProbeMode ? 800 : isCorrect ? _rbAdvanceMs : 3000,
             );
           } catch (e) {
             warnLog("CheckAnswer CRITICAL FAIL", e);
@@ -13515,7 +13823,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           isProbeMode,
           showLetterHints,
           aacMode,
-          wordSoundsHistory,
+          learnerScopedHistory,
         ],
       );
       React.useEffect(() => {
@@ -15108,6 +15416,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       : ts("word_sounds.mic_switch_mic") || "Use Microphone",
                   ),
                 ),
+              !isProbeMode &&
               /*#__PURE__*/ React.createElement(
                   "div",
                   { className: "flex gap-4 text-sm" },
@@ -16546,8 +16855,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           ? Math.round((wordSoundsScore.correct / wordSoundsScore.total) * 100)
           : 0;
       const closeSessionDialog = () => {
-        setShowSessionComplete(false);
-        onClose();
+        resetRuntimeSession();
+        onClose?.();
       };
       if (showProbeResults) return renderProbeResults();
       if (showSessionComplete) {
@@ -16837,12 +17146,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 },
                 "\uD83D\uDCCB " + (ts("word_sounds.parent_copy_button") || "Copy Summary for Teacher"),
               ),
+              !isProbeMode &&
               sessionWordResults.current.filter((r) => !r.correct).length > 0 &&
                 /*#__PURE__*/ React.createElement(
                 "button",
                 {
                   onClick: () => {
-                    setShowSessionComplete(false);
+                    // Capture missedWords before resetRuntimeSession clears the recap ref.
                     const missedWords = [
                       ...new Set(
                         sessionWordResults.current
@@ -16851,13 +17161,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       ),
                     ];
                     const actId = wordSoundsActivity || "segmentation";
+                    resetRuntimeSession();
                     sessionQueueRef.current[actId] = missedWords.map((w) => ({
                       word: w,
                       singleWord: w,
                     }));
-                    setWordSoundsScore({ correct: 0, total: 0 });
-                    setWordSoundsSessionProgress?.(0);
-                    sessionWordResults.current = [];
                     const firstMissed = missedWords[0];
                     setCurrentWordSoundsWord(firstMissed);
                     const preloaded = preloadedWords.find(
@@ -16897,10 +17205,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   onClick: () => {
-                    setShowSessionComplete(false);
-                    setWordSoundsScore({ correct: 0, total: 0 });
-                    setWordSoundsSessionProgress?.(0);
-                    sessionWordResults.current = [];
+                    resetRuntimeSession();
                     startActivity(wordSoundsActivity);
                   },
                   className:
@@ -16916,12 +17221,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   onClick: () => {
-                    setShowSessionComplete(false);
+                    resetRuntimeSession();
                     if (activitySequence.length > 0) {
                       const nextIdx =
                         (sequenceIndex + 1) % activitySequence.length;
                       setSequenceIndex(nextIdx);
-                      setWordSoundsActivity(activitySequence[nextIdx]);
+                      const nextActivity = activitySequence[nextIdx];
+                      setTimeout(() => {
+                        if (isMountedRef.current) startActivity(nextActivity);
+                      }, 0);
                     } else {
                       setWordSoundsActivity(null);
                     }
@@ -16972,7 +17280,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           isLoading: isLoadingPhonemes,
           onStartActivity: () => {
             hasStartedFromReview.current = true;
-            setWordSoundsHistory([]);
+            // Longitudinal evidence powers adaptation; only the run resets.
+            resetRuntimeSession();
             setShowReviewPanel(false);
             // Ensure an activity is selected — if none yet, default to first in sequence or 'counting'
             const targetActivity = wordSoundsActivity || (activitySequence && activitySequence.length > 0 ? activitySequence[0] : 'counting');
@@ -16997,13 +17306,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
             }, 50);
           },
-          onClose: onClose,
+          onClose: closeSessionDialog,
           onBackToSetup: () => {
-            setShowReviewPanel(false);
+            resetRuntimeSession();
             if (onBackToSetup) {
               onBackToSetup();
             } else {
-              onClose();
+              onClose?.();
             }
           },
           onPlayAudio: handleAudio,
@@ -17058,7 +17367,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   "aria-label": t("common.close_maximize"),
-                  onClick: onClose,
+                  onClick: closeSessionDialog,
                   className: "p-1 hover:bg-white/20 rounded transition-colors",
                   title: t("common.close"),
                 },
@@ -17309,7 +17618,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               /*#__PURE__*/ React.createElement(
                 "button",
                 {
-                  onClick: onClose,
+                  onClick: closeSessionDialog,
                   className:
                     "p-2 hover:bg-white/20 rounded-full transition-colors",
                   "aria-label": t("common.close"),
@@ -17517,6 +17826,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     ? /*#__PURE__*/ React.createElement(Check, { size: 16 })
                     : /*#__PURE__*/ React.createElement(Edit2, { size: 16 }),
                 ),
+                !isProbeMode &&
                 /*#__PURE__*/ React.createElement(
                   "button",
                   {
@@ -17536,6 +17846,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     ? /*#__PURE__*/ React.createElement(Mic, { size: 16 })
                     : /*#__PURE__*/ React.createElement(MicOff, { size: 16 }),
                 ),
+                !isProbeMode &&
                 /*#__PURE__*/ React.createElement(
                   "button",
                   {
@@ -17563,6 +17874,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ),
                 ),
                 /*#__PURE__*/ React.createElement(DifficultyIndicator, null),
+                !isProbeMode &&
                 availableLanguages.length > 1 &&
                 setWordSoundsLanguage &&
                   /*#__PURE__*/ React.createElement(
@@ -17609,6 +17921,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     }),
                   ),
                 ),
+                !isProbeMode &&
                 /*#__PURE__*/ React.createElement(
                   "button",
                   {
@@ -17629,6 +17942,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     ts("word_sounds.help") || "Help",
                   ),
                 ),
+                !isProbeMode &&
                 !isStudentLocked &&
                 setWordSoundsDifficulty &&
                   /*#__PURE__*/ React.createElement(
@@ -17667,6 +17981,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     ts("word_sounds.difficulty_hard_emoji") || "\uD83D\uDD34 Hard",
                   ),
                 ),
+                !isProbeMode &&
                 /*#__PURE__*/ React.createElement(
                   "div",
                   {

@@ -25,7 +25,9 @@ describe('Machine Lab: the camera is sent on every push', () => {
     const text = src();
     const i = text.indexOf(marker);
     expect(i, marker + ' not found').toBeGreaterThan(-1);
-    return text.slice(i, i + 500);
+    // Wide enough to clear the siege push's signature, which now names the
+    // machine and the standoff because both change the geometry of the field.
+    return text.slice(i, i + 1400);
   }
 
   it('includes rotY, rotX and zoom in the machine bay push', () => {
@@ -50,7 +52,21 @@ describe('Machine Lab: the camera is sent on every push', () => {
     // The homes exist and are not both flat-on, which is the state the bug left.
     const text = src();
     expect(text).toMatch(/MACHINE_HOME = \{ rotY: 22, rotX: 12, zoom: 1 \}/);
-    expect(text).toMatch(/WALL_HOME = \{ rotY: 14, rotX: 16, zoom: 1 \}/);
+
+    // The wall bay is a whole siege field now: the machine stands at negative z
+    // and throws towards the wall at the origin. The camera direction runs as
+    // (sin rotY, ., cos rotY), so a rotY near 0 puts the camera BEYOND the wall
+    // and you watch the siege from the defenders' side, through the back of the
+    // masonry, with your own machine a speck past it. It has to be on the
+    // attacker's side, which is rotY somewhere around 180.
+    const wall = text.match(/WALL_HOME = \{ rotY: (-?\d+(?:\.\d+)?), rotX: (-?\d+(?:\.\d+)?)/);
+    expect(wall, 'WALL_HOME not found').toBeTruthy();
+    const rotY = ((Number(wall[1]) % 360) + 360) % 360;
+    expect(rotY, 'the wall camera must sit behind the machine').toBeGreaterThan(135);
+    expect(rotY).toBeLessThan(225);
+    // Looking down at the field from above flattens it into a plan view.
+    expect(Number(wall[2])).toBeGreaterThan(0);
+    expect(Number(wall[2])).toBeLessThan(35);
   });
 });
 

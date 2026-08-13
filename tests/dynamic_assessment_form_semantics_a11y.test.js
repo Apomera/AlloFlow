@@ -45,7 +45,7 @@ walk(ast, (node) => {
 
 describe('Dynamic Assessment form and table accessibility', () => {
   it('gives every rendered native form control an explicit accessible name', () => {
-    expect(formControls).toHaveLength(85);
+    expect(formControls).toHaveLength(88);
     for (const control of formControls) {
       const names = propertiesFor(control).map(propertyName);
       expect(names.some((name) => name === 'aria-label' || name === 'aria-labelledby')).toBe(true);
@@ -75,7 +75,7 @@ describe('Dynamic Assessment form and table accessibility', () => {
     expect(source).toContain('var previousFocus = document.activeElement');
     expect(source).toContain('if (ta && ta.parentNode) ta.parentNode.removeChild(ta)');
     expect(source).toContain('previousFocus.focus()');
-    expect(source).toContain('input.setAttribute("aria-label", "Restore sessions from a JSON backup file")');
+    expect(source).toContain('input.setAttribute("aria-label", "Restore sessions from an encrypted or legacy JSON backup file")');
     expect(source).toContain('input.tabIndex = -1');
   });
 

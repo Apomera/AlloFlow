@@ -12,7 +12,7 @@ const ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
 // Full WCAG axe scans over the larger DinoLab panels are CPU-heavy. They pass
 // in well under this budget in isolation, but need headroom under full-suite
 // parallel load so a slow worker does not turn a clean audit into a timeout.
-const AXE_AUDIT_TIMEOUT_MS = 90000;
+const AXE_AUDIT_TIMEOUT_MS = 180000;
 
 describe('Dino Lab 3D Field Station accessibility contract', () => {
   it('supports focused keyboard rotation with live status and cleanup', () => {
@@ -179,10 +179,13 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('var rendererRef = React.useRef(null);');
     expect(source).toContain('var cameraControlRef = React.useRef(null);');
     expect(source).toContain('var visualMaterialsRef = React.useRef(null);');
-    expect(source).toContain('var bodyOpacityRef = React.useRef(28);');
+    expect(source).toContain('var requestedBodyOpacity = Math.max(10, Math.min(100, Number(props.bodyOpacity) || 28));');
+    expect(source).toContain('var bodyOpacityRef = React.useRef(requestedBodyOpacity);');
     expect(source).toContain('activeCameraControl = function (nextYaw, nextPitch, nextZoom, message)');
     expect(source).toContain('cameraControlRef.current(view.yaw, view.pitch, view.zoom, view.message);');
-    expect(source).toContain('materials.body.opacity = alpha;');
+    expect(source).toContain('materials.body.opacity = opaqueSurface ? 1 : alpha;');
+    expect(source).toContain('material.depthWrite = opaqueSurface;');
+    expect(source).toContain("{ id: 'life', label: 'Life view', detail: 'Opaque surface'");
     expect(source).toContain("'aria-label': 'Body inference opacity'");
     expect(source).toContain("className: 'dinolab-3d-view-controls'");
     expect(source).toContain('var previousSceneChildren = scene.children.slice();');
@@ -193,7 +196,33 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('label.visible = w >= 560');
     expect(source).toContain("className: 'dinolab-3d-canvas'");
     expect(source).toContain('function reconstructionProfileFor(dn)');
+    expect(source).toContain('function cranialSurfaceProfileFor(dn)');
+    expect(source).toContain('function postcranialSurfaceProfileFor(dn)');
     expect(source).toContain('function skeletalAnatomyProfileFor(dn)');
+    expect(source).toContain("'spinosaur-rostrum', 'Long narrow snout'");
+    expect(source).toContain("'tyrannosaur-deep', 'Deep power skull'");
+    expect(source).toContain("'hadrosaur-bill', 'Broad duck-bill'");
+    expect(source).toContain("id: 'powerful-theropod', shortLabel: 'Powerful pelvis'");
+    expect(source).toContain("id: 'high-shouldered-sauropod', shortLabel: 'High shoulders'");
+    expect(source).toContain("id: 'low-armored-barrel', shortLabel: 'Low armored barrel'");
+    expect(source).toContain('function addSoftTissueChain(points, radii, mat)');
+    expect(source).toContain('var thoraxCenter = new THREE.Vector3()');
+    expect(source).toContain('var abdomenShell = addEllipsoid(abdomenCenter');
+    expect(source).toContain('var pelvisShell = addEllipsoid(pelvisCenter');
+    expect(source).toContain('var neckMeshes = addSoftTissueChain([shoulder, neckMidA, neckMidB, head]');
+    expect(source).toContain('var tailMeshes = addSoftTissueChain([hip, tailMidA, tailMidB, tail]');
+    expect(source).toContain('idleMotion.tailSegments.forEach(function (tailEntry, tailIndex)');
+    expect(source).toContain("readoutChip('Body ' + postcranialSurface.shortLabel");
+    expect(source).toContain("'Visible body silhouette: '");
+    expect(source).toContain("'Species body silhouette'");
+    expect(source).toContain('var surfaceSnout = head.clone().add(new THREE.Vector3().subVectors(snout, head).multiplyScalar(cranialSurface.muzzleLengthScale));');
+    expect(source).toContain('var facialMuzzleDepthScale = cranialSurface.muzzleDepthScale');
+    expect(source).toContain("readoutChip('Head ' + cranialSurface.shortLabel");
+    expect(source).toContain("'Visible head silhouette: '");
+    expect(source).toContain("'Species head silhouette'");
+    expect(source).toContain("cranialSurface.crestMode !== 'none'");
+    expect(source).toContain('cranialSurface.frillScale > 0.08');
+    expect(source).toContain("/crest/i.test([dn.blurb, (dn.traits || []).join(' ')].join(' '))");
     expect(source).toContain("profile.label = 'Toothless ornithomimid runner'");
     expect(source).toContain("profile.label = 'Toothless oviraptorosaur'");
     expect(source).toContain('profile.manualDigits = isBasalTyrannosauroid ? 3 : 2;');
@@ -216,7 +245,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('function addSoftTissueCylinder(a, b, startRadius, endRadius, mat)');
     expect(source).toContain('function addBodyContour(mesh)');
     expect(source).toContain('wireframe: true, depthWrite: false');
-    expect(source).toContain('var neckShell = addSoftTissueCylinder(shoulder, head');
+    expect(source).toContain('var neckMeshes = addSoftTissueChain([shoulder, neckMidA, neckMidB, head]');
     expect(source).toContain('addSoftTissueCylinder(armStart, elbow');
     expect(source).toContain('function addTextLabel(text, pos, color, scaleFactor, parent)');
     expect(source).toContain('(parent || model).add(sprite);');
@@ -234,7 +263,8 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('new THREE.DodecahedronGeometry(rockSize, 0)');
     expect(source).toContain("var skinCanvas = document.createElement('canvas');");
     expect(source).toContain('roughness: 0.82, metalness: 0');
-    expect(source).toContain('var muzzleShell = addSoftTissueCylinder(head, snout');
+    expect(source).toContain('var muzzleShell = addSoftTissueCylinder(');
+    expect(source).toContain('                surfaceSnout,');
     expect(source).toContain('var faceScale = reconstructionProfile.head;');
     expect(source).toContain('var surveyCorners = [');
     expect(source).toContain('var compassCenter = vec(');
@@ -256,10 +286,10 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("else if (/Therizinosaur/i.test(cladeName))");
     expect(source).toContain('if (isPennaraptoran) {');
     expect(source).toContain("else if (/Tyrannosaur/i.test(cladeName))");
-    expect(source).toContain("else if (/Abelisaur/i.test(cladeName))");
-    expect(source).toContain("else if (/Oviraptor/i.test(cladeName))");
+    expect(source).toContain("else if (/Abelisaur/i.test(cladeName) && /horn/i.test");
+    expect(source).toContain("else if (/Oviraptor/i.test(cladeName) && /crest/i.test");
     expect(source).toContain("else if (/Iguanodont/i.test(cladeName))");
-    expect(source).toContain('var tyrantSnout = new THREE.Vector3().copy(head).lerp(snout, 0.60);');
+    expect(source).toContain('var tyrantSnout = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.60);');
     expect(source).toContain('var oviraptorCrest = addAccentCone');
     expect(source).toContain('var thumbBase = vec(');
     expect(source).toContain('var ribCount = isSauropod ? 10 : 9;');
@@ -862,6 +892,51 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(lastPatch?.field3dScanLogged?.shoulder).toBe(true);
     expect(lastPatch?.field3dScanTargetIdx).toBe(2);
     expect(host.querySelector('button[aria-label="Focus Skull evidence anchor, current focus"]')).toBeNull();
+
+    await api.React.act(async () => { root.unmount(); });
+    host.remove();
+  });
+  it('switches to an opaque Life view without changing the reconstruction hypothesis', async () => {
+    const api = setupDinoLab();
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    let data = baseData('field3d');
+    let lastPatch = null;
+    const render = () => root.render(api.tool.cfg.render({
+      React: api.React,
+      toolData: { dinoLab: data },
+      update: (_toolId, key, value) => { lastPatch = { [key]: value }; },
+      updateMulti: (_toolId, patch) => { lastPatch = patch; },
+      announceToSR: () => {},
+    }));
+
+    await api.React.act(async () => { render(); });
+    const lifeView = [...host.querySelectorAll('button')].find(button => button.textContent?.includes('Life view'));
+    expect(lifeView).not.toBeNull();
+    expect(lifeView?.getAttribute('aria-pressed')).toBe('false');
+    await api.React.act(async () => { lifeView?.click(); });
+    expect(lastPatch).toMatchObject({
+      field3dShowSkeleton: false,
+      field3dShowBody: true,
+      field3dShowHuman: false,
+      field3dShowEvidence: false,
+      field3dBodyOpacity: 100,
+    });
+    expect(lastPatch?.field3dReconstructionMode).toBeUndefined();
+
+    data = { ...data, ...lastPatch };
+    await api.React.act(async () => { render(); });
+    const activeLifeView = [...host.querySelectorAll('button')].find(button => button.textContent?.includes('Life view'));
+    expect(activeLifeView?.getAttribute('aria-pressed')).toBe('true');
+    const opacity = host.querySelector('input[aria-label="Body inference opacity"]');
+    expect(opacity?.value).toBe('100');
+    expect(opacity?.getAttribute('aria-valuetext')).toBe('Opaque life surface');
+    expect(host.textContent).toContain('Life surface opaque');
+    const readouts = host.querySelector('.dinolab-3d-readouts');
+    expect(readouts?.textContent).toContain('Life reconstruction');
+    expect(readouts?.textContent).not.toContain('Focus Skull');
+    expect(readouts?.textContent).not.toContain('Scan 0/3');
 
     await api.React.act(async () => { root.unmount(); });
     host.remove();

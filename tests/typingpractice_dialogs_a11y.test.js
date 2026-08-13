@@ -31,9 +31,9 @@ describe('Typing Practice decision and print-message accessibility', () => {
   });
 
   it('routes every decision step through the accessible service', () => {
-    expect(source.match(/askTypingPracticeConfirmation\(/g)).toHaveLength(11);
+    expect(source.match(/askTypingPracticeConfirmation\(/g)).toHaveLength(13);
+    expect(source).toContain("title: isWarmup ? 'Exit warmup?' : 'Save and exit?'");
     for (const title of [
-      'Exit without saving?',
       'Quit Battle Mode?',
       'Remove custom drill',
       'Remove saved passage',
@@ -41,6 +41,7 @@ describe('Typing Practice decision and print-message accessibility', () => {
       'Apply imported profile?',
       'Clear IEP goal?',
       'Restore full backup?',
+      'Replace saved practice?',
       'Clear all typing practice data?',
       'Are you absolutely sure?',
     ]) expect(source).toContain(`title: '${title}'`);

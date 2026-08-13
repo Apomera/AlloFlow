@@ -560,6 +560,35 @@ describe('ConceptGraphEngine — alignment audit projection', () => {
     expect(confirmed.meta.alignmentAudit.attributionConfirmations).toMatchObject({ mode: 'derived-copy-only', count: 1, edgeIds: [evidenceEdge.id] });
   });
 
+  it('keeps teacher-confirmation summary cumulative across sequential reviews', () => {
+    const graph = E.fromAlignmentAudit({
+      standards: { status: 'Aligned', perStandard: [{
+        standard: 'STD-1', overallDetermination: 'Pass',
+        analysis: {
+          textAlignment: { status: 'Aligned', evidence: 'Text evidence', artifactIds: ['lesson-1'] },
+          activityAlignment: { status: 'Aligned', evidence: 'Activity evidence', artifactIds: ['quiz-1'] },
+        },
+      }] },
+    }, { auditScope: { includedArtifacts: [{ id: 'lesson-1', type: 'lesson' }, { id: 'quiz-1', type: 'quiz' }] } });
+    const ids = graph.edges.filter((edge) => edge.relationType === 'evidenceFrom').map((edge) => edge.id);
+    const first = E.confirmExplicitAttributions(graph, [{ edgeId: ids[0] }]);
+    const second = E.confirmExplicitAttributions(first, [{ edgeId: ids[1] }]);
+    expect(second.meta.alignmentAudit.attributionConfirmations).toMatchObject({ count: 2 });
+    expect(new Set(second.meta.alignmentAudit.attributionConfirmations.edgeIds)).toEqual(new Set(ids));
+  });
+
+  it('bounds imported graph strings, depth, keys, and top-level fields', () => {
+    const graph = E.fromAlignmentAudit({ standards: { status: 'Aligned', perStandard: [{ standard: 'STD-1', overallDetermination: 'Pass' }] } });
+    graph.nodes[0].label = 'x'.repeat(E.ALIGNMENT_IMPORT_LIMITS.maxString + 50);
+    graph.nodes[0].nested = { one: { two: { three: { four: { five: { six: { seven: { eight: { secret: 'no' } } } } } } } } };
+    graph.untrustedTopLevel = { should: 'drop' };
+    const normalized = E.normalizeAlignmentGraphExport({ schema: E.ALIGNMENT_EXPORT_SCHEMA, graph });
+    expect(normalized.ok).toBe(true);
+    expect(normalized.graph.nodes[0].label).toHaveLength(E.ALIGNMENT_IMPORT_LIMITS.maxString);
+    expect(normalized.graph.untrustedTopLevel).toBeUndefined();
+    expect(normalized.graph.nodes[0].nested.one.two.three.four.five.six.seven).toBeNull();
+  });
+
   it('ignores confirmation requests that do not target explicit evidence or finding edges', () => {
     const graph = E.fromAlignmentAudit({
       standards: { status: 'Aligned', perStandard: [{ standard: 'STD-1', overallDetermination: 'Pass' }] },

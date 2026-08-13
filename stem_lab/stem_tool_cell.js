@@ -1157,8 +1157,38 @@ window.StemLab = window.StemLab || {
     }    cx2d.restore();
   }
 
+
+  function normalizeCellAnatomyFtuContext(candidate) {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate) || Number(candidate.schemaVersion) !== 1) return null;
+    function textValue(value, maxLength) { return (typeof value === 'string' ? value.trim() : '').slice(0, maxLength || 300); }
+    function safeId(value, pattern, maxLength) { var valueText = textValue(value, maxLength || 120); return pattern.test(valueText) ? valueText : ''; }
+    function safeUrl(value) { var url = textValue(value, 1200); return url.toLowerCase().indexOf('https://') === 0 ? url : ''; }
+    var packId = safeId(candidate.packId, /^[a-z0-9][a-z0-9._-]*$/i);
+    var tissueAtlasId = safeId(candidate.tissueAtlasId, /^[a-z0-9][a-z0-9._-]*$/i);
+    var cellId = safeId(candidate.cellId, /^CL:[0-9]+$/i);
+    var tissueOntologyId = safeId(candidate.tissueOntologyId, /^UBERON:[0-9]+$/i);
+    var organLabel = textValue(candidate.organLabel, 120);
+    var tissueLabel = textValue(candidate.tissueLabel, 160);
+    var cellLabel = textValue(candidate.cellLabel, 160);
+    var cellRole = textValue(candidate.cellRole, 500);
+    if (!packId || !tissueAtlasId || !cellId || !tissueOntologyId || !organLabel || !tissueLabel || !cellLabel || !cellRole) return null;
+    return {
+      schemaVersion: 1, packId: packId, packTitle: textValue(candidate.packTitle, 160),
+      systemId: safeId(candidate.systemId, /^[a-z0-9][a-z0-9_-]*$/i),
+      structureId: safeId(candidate.structureId, /^[a-z0-9][a-z0-9_-]*$/i),
+      bodyView: candidate.bodyView === 'posterior' ? 'posterior' : 'anterior',
+      organLabel: organLabel, anatomyConceptId: safeId(candidate.anatomyConceptId, /^UBERON:[0-9]+$/i),
+      tissueAtlasId: tissueAtlasId, tissueTitle: textValue(candidate.tissueTitle, 180),
+      tissueLabel: tissueLabel, tissueOntologyId: tissueOntologyId,
+      cellId: cellId, cellLabel: cellLabel, cellRole: cellRole,
+      mappedNodeCount: Math.max(0, Math.min(5000, Math.floor(Number(candidate.mappedNodeCount) || 0))),
+      sourceUrl: safeUrl(candidate.sourceUrl), licenseName: textValue(candidate.licenseName, 120),
+      licenseUrl: safeUrl(candidate.licenseUrl), attribution: textValue(candidate.attribution, 800)
+    };
+  }
+
   try {
-    window.__alloCellPure = { CELL_ORGANELLES: CELL_ORGANELLES, CELL_ULTRASTRUCTURE: CELL_ULTRASTRUCTURE, INTERIOR_GUIDES: INTERIOR_GUIDES, INTERIOR_SPECIALIZATIONS: INTERIOR_SPECIALIZATIONS, INTERIOR_CHECKS: INTERIOR_CHECKS, INTERIOR_GROUPS: INTERIOR_GROUPS, CELL_PROGRESS_SCHEMA_VERSION: CELL_PROGRESS_SCHEMA_VERSION, CELL_PROGRESS_TYPES: CELL_PROGRESS_TYPES, createCellProgressRecord: createCellProgressRecord, normalizeCellProgress: normalizeCellProgress, extractCellProgress: extractCellProgress, applyCellProgressToCell: applyCellProgressToCell, createEmptyCellProgress: createEmptyCellProgress, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorGeometry: interiorGeometry, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection, drawCellInterior: drawCellInterior };
+    window.__alloCellPure = { CELL_ORGANELLES: CELL_ORGANELLES, CELL_ULTRASTRUCTURE: CELL_ULTRASTRUCTURE, INTERIOR_GUIDES: INTERIOR_GUIDES, INTERIOR_SPECIALIZATIONS: INTERIOR_SPECIALIZATIONS, INTERIOR_CHECKS: INTERIOR_CHECKS, INTERIOR_GROUPS: INTERIOR_GROUPS, CELL_PROGRESS_SCHEMA_VERSION: CELL_PROGRESS_SCHEMA_VERSION, CELL_PROGRESS_TYPES: CELL_PROGRESS_TYPES, createCellProgressRecord: createCellProgressRecord, normalizeCellProgress: normalizeCellProgress, extractCellProgress: extractCellProgress, applyCellProgressToCell: applyCellProgressToCell, createEmptyCellProgress: createEmptyCellProgress, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorGeometry: interiorGeometry, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection, drawCellInterior: drawCellInterior, normalizeCellAnatomyFtuContext: normalizeCellAnatomyFtuContext };
   } catch (e) {}
 
   window.StemLab.registerTool('cell', {
@@ -22919,6 +22949,7 @@ var d = labToolData.cell || {};
               var microSourceTarget = d.microSourceTarget || null;
               var microSourceDepth = d.microSourceDepth == null ? microDepth : Math.max(0, Math.min(100, Number(d.microSourceDepth) || 0));
               var procedureSpecimen = d.procedureSpecimen && typeof d.procedureSpecimen === 'object' && !Array.isArray(d.procedureSpecimen) && d.procedureSpecimen.source === 'anatomy-procedure' ? d.procedureSpecimen : null;
+              var anatomyFtuContext = d._scaleJourneySource === 'anatomy' ? normalizeCellAnatomyFtuContext(d._anatomyFtuContext) : null;
               var linkedAnatomyProcedure = labToolData.anatomy && labToolData.anatomy.procedure && typeof labToolData.anatomy.procedure === 'object' ? labToolData.anatomy.procedure : {};
               var targetDef = microTarget && CELL_ORGANELLES[microTarget] ? CELL_ORGANELLES[microTarget] : null;
               var microKeys = interiorOrganelles(microType).filter(function(key) { return key !== 'cytoplasm'; });
@@ -22978,6 +23009,40 @@ var d = labToolData.cell || {};
                   h('div', null, h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-violet-700' }, 'Cell-scale investigation'), h('h4', { id: 'cell-micro-title', className: 'text-xl font-black text-slate-900' }, 'Microdissection Studio'), h('p', { className: 'mt-1 max-w-3xl text-sm leading-relaxed text-slate-600' }, 'Prepare a section, add contrast, isolate a cellular target, and preserve enough metadata for someone else to interpret your evidence.')),
                   h('span', { className: 'rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-black text-violet-800' }, (microType === 'bacterium' ? '1 µm' : '10 µm') + ' field scale')
                 ),
+                anatomyFtuContext ? h('aside', {
+                  className: 'mt-3 rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-cyan-50 p-3',
+                  'data-cell-anatomy-ftu-context': anatomyFtuContext.tissueAtlasId,
+                  'data-cell-anatomy-pack': anatomyFtuContext.packId,
+                  'data-cell-anatomy-ftu-cell': anatomyFtuContext.cellId,
+                  'aria-labelledby': 'cell-anatomy-ftu-context-title'
+                },
+                  h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                    h('div', { className: 'min-w-0 flex-1' },
+                      h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-emerald-700' }, 'HRA context carried from Anatomy · ' + (anatomyFtuContext.packTitle || anatomyFtuContext.packId)),
+                      h('h5', { id: 'cell-anatomy-ftu-context-title', className: 'mt-0.5 text-sm font-black text-emerald-950' }, anatomyFtuContext.organLabel + ' → ' + anatomyFtuContext.tissueLabel + ' → ' + anatomyFtuContext.cellLabel),
+                      h('p', { className: 'mt-1 text-[11px] font-bold text-emerald-800' }, (anatomyFtuContext.tissueTitle || anatomyFtuContext.tissueLabel) + ' · ' + anatomyFtuContext.tissueAtlasId),
+                      h('p', { className: 'mt-0.5 text-[10px] font-bold text-emerald-700' }, 'Pack ' + anatomyFtuContext.packId + ' · ' + anatomyFtuContext.tissueOntologyId + ' · ' + anatomyFtuContext.cellId),
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, anatomyFtuContext.cellRole),
+                      h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-600' }, anatomyFtuContext.mappedNodeCount + ' mapped nodes in the HRA illustration crosswalk. This is artwork metadata, not a biological cell count.')
+                    ),
+                    h('button', { type: 'button', 'data-cell-return-to-anatomy': 'true',
+                      onClick: function() { openCellScaleDestination('anatomy', 'anatomy', {
+                        _activeTab: 'explore', system: anatomyFtuContext.systemId || 'organs', view: anatomyFtuContext.bodyView,
+                        selectedStructure: anatomyFtuContext.structureId, _bodyView3d: false,
+                        _regionalAtlasOpen: anatomyFtuContext.structureId, _regionalAtlasSource: 'clinical-atlas',
+                        _clinicalAtlasPackId: anatomyFtuContext.packId, _clinicalAtlasConceptId: anatomyFtuContext.anatomyConceptId
+                      }, 'Anatomy tissue reference'); },
+                      className: 'rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs font-black text-emerald-900 hover:bg-emerald-100'
+                    }, 'Return to Anatomy tissue view')
+                  ),
+                  h('p', { className: 'mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] leading-relaxed text-amber-950' },
+                    'Model boundary: the generic cell canvas below remains a ' + microType + ' cell teaching schematic selected independently from the HRA concept. It is not a morphology model of ' + anatomyFtuContext.cellLabel + ' and does not show cell-type-specific shape or abundance.'),
+                  h('div', { className: 'mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-bold' },
+                    anatomyFtuContext.sourceUrl ? h('a', { href: anatomyFtuContext.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'text-sky-700 underline' }, 'HRA source') : null,
+                    anatomyFtuContext.licenseUrl ? h('a', { href: anatomyFtuContext.licenseUrl, target: '_blank', rel: 'noopener noreferrer', className: 'text-sky-700 underline' }, anatomyFtuContext.licenseName || 'License') : null,
+                    anatomyFtuContext.attribution ? h('span', { className: 'font-normal text-slate-600' }, anatomyFtuContext.attribution) : null
+                  )
+                ) : null,
                 procedureSpecimen ? h('div', { className: 'mt-3 rounded-xl border-2 border-rose-200 bg-rose-50 p-3', 'data-procedure-specimen-handoff': 'true' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                     h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-rose-700' }, 'Integrated procedure specimen'), h('div', { className: 'text-sm font-black text-rose-950' }, procedureSpecimen.targetName || 'Synthetic tissue target'), h('p', { className: 'mt-1 text-xs text-rose-900' }, 'Specimen ' + procedureSpecimen.id + ' · preserved integrity ' + Math.round(Number(procedureSpecimen.sampleIntegrity) || 0) + '% · planned at CT slice ' + Math.round(Number(procedureSpecimen.planSlice) || 0))),

@@ -1339,4 +1339,100 @@ window.AlloModules.createReadAloudAudioService = createReadAloudAudioService;
 window.AlloModules.createReadAloudLegacyBridge = createReadAloudLegacyBridge;
 window.AlloModules.ReadAloudAudioServiceModule = true;
 console.log('[ReadAloudAudioService] registered (resource adapters + lazy live dependencies)');
+let glossaryEntryIdSequence = 0;
+
+const createGlossaryEntryId = () => {
+    try {
+        const cryptoApi = typeof globalThis !== 'undefined' && globalThis.crypto;
+        if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
+            return 'glossary-' + cryptoApi.randomUUID();
+        }
+    } catch (_) {}
+    glossaryEntryIdSequence += 1;
+    return 'glossary-' + Date.now().toString(36) + '-' + glossaryEntryIdSequence.toString(36)
+        + '-' + Math.random().toString(36).slice(2, 10);
+};
+
+const cleanGlossaryEntryId = (value) => String(value == null ? '' : value).trim().slice(0, 160);
+
+// Legacy glossary entries predate durable item identity. Assign opaque IDs once
+// and persist the returned entries with the resource. IDs are deliberately not
+// derived from text or array position: edits and reordering must not relocate a
+// saved clip, and duplicate terms must remain independently addressable.
+const normalizeGlossaryEntries = (entries, options = {}) => {
+    const input = Array.isArray(entries) ? entries : [];
+    const makeId = typeof options.createId === 'function' ? options.createId : createGlossaryEntryId;
+    const used = new Set();
+    let changed = false;
+    const normalized = input.map((entry) => {
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return entry;
+        let entryId = cleanGlossaryEntryId(entry.entryId || entry.glossaryEntryId);
+        if (!entryId || used.has(entryId)) {
+            let attempts = 0;
+            do {
+                entryId = cleanGlossaryEntryId(makeId(entry));
+                attempts += 1;
+            } while ((!entryId || used.has(entryId)) && attempts < 20);
+            if (!entryId || used.has(entryId)) entryId = createGlossaryEntryId();
+            changed = true;
+        } else if (entry.entryId !== entryId) {
+            changed = true;
+        }
+        used.add(entryId);
+        return entry.entryId === entryId ? entry : Object.assign({}, entry, { entryId });
+    });
+    return { entries: changed ? normalized : input, changed };
+};
+
+const glossaryLanguageKey = (language) => {
+    const value = String(language == null ? '' : language).trim();
+    if (!value) return 'und';
+    try { return encodeURIComponent(value.normalize('NFKC').toLocaleLowerCase('en-US')); }
+    catch (_) { return encodeURIComponent(value.toLowerCase()); }
+};
+
+const glossaryEntryPathKey = (entryId) => encodeURIComponent(cleanGlossaryEntryId(entryId));
+
+// Canonical glossary adapter enumeration shared by the host and tests. The
+// caller should normalize/persist entry IDs first; entries without an ID are
+// ignored rather than falling back to an unstable index identity.
+const enumerateGlossaryReadAloudSegments = (resource, options = {}) => {
+    if (!resource || String(resource.type || '').toLowerCase() !== 'glossary') return [];
+    const entries = Array.isArray(resource.data) ? resource.data : [];
+    const defaultLanguage = String(options.defaultLanguage || resource.language || resource.baseLanguage || 'English').trim() || 'English';
+    const segments = [];
+    const add = (entry, field, text, language, segmentSuffix) => {
+        const spokenText = String(text == null ? '' : text).replace(/\s+/g, ' ').trim();
+        const entryId = cleanGlossaryEntryId(entry && entry.entryId);
+        if (!spokenText || !entryId) return;
+        segments.push({
+            text: spokenText,
+            spokenText,
+            entryId,
+            field,
+            kind: field,
+            language: String(language || defaultLanguage).trim() || defaultLanguage,
+            scopeId: 'main',
+            segmentId: 'entry/' + glossaryEntryPathKey(entryId) + '/' + segmentSuffix,
+        });
+    };
+    entries.forEach((entry) => {
+        if (!entry || typeof entry !== 'object') return;
+        add(entry, 'term', entry.term != null ? entry.term : entry.word, entry.termLanguage || defaultLanguage, 'term');
+        add(entry, 'definition', entry.def != null ? entry.def : entry.definition, entry.definitionLanguage || defaultLanguage, 'definition');
+        const translations = entry.translations && typeof entry.translations === 'object' && !Array.isArray(entry.translations)
+            ? entry.translations
+            : {};
+        Object.keys(translations).sort((a, b) => a.localeCompare(b)).forEach((language) => {
+            const translated = translations[language];
+            const text = translated && typeof translated === 'object'
+                ? (translated.text != null ? translated.text
+                    : (translated.translation != null ? translated.translation
+                        : [translated.term, translated.def || translated.definition].filter(Boolean).join(': ')))
+                : translated;
+            add(entry, 'translation', text, language, 'translation/' + glossaryLanguageKey(language));
+        });
+    });
+    return segments;
+};
 })();

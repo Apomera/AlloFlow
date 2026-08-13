@@ -1,0 +1,8 @@
+{
+  "note": "Deferred canvas callbacks reading a frozen render-scope value. Each entry was INVESTIGATED and is safe by construction TODAY, but the shape is one refactor away from biting - keep them listed so the gate stays honest and re-check if the surrounding UI changes. geo anonymous@1107: the globe's GeoJSON .then() captures geoTarget and installs it into polygonCapColor/polygonAltitude, which are set once and never re-applied. It is safe only because the globe lives solely on the globeView tab (default is findCountry, so a target already exists when it mounts), the container unmounts on every tab switch so a fresh node re-inits, and EVERY caller of pickTarget() sits on a different tab. BREAKS IF: a next/skip-country control is added to globeView, or the globe is ever rendered on a quiz tab - then the amber target highlight silently sticks to the country that was current when the GeoJSON fetch resolved. artstudio was previously listed here and is NOT a finding: its canvas carries key: 'stereo-' + d.stereoGen, so Render Stereogram remounts it. The scanner now recognises that (--keyed) and classifies it automatically. Regenerate with --update-baseline only after re-reading each site.",
+  "accepted": {
+    "stem_tool_geo.js": [
+      "anonymous: geoTarget"
+    ]
+  }
+}

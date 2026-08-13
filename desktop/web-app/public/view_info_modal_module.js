@@ -177,6 +177,8 @@ const OSS_CREDITS = [
         repo: "https://github.com/phetsims"
       },
       { name: "Human Reference Atlas kidney v1.3", use: "bundled female-left 3D reference organ and ontology crosswalk for Anatomy Clinical Atlas - Kristen Browne & Heidi Schlehlein / HuBMAP; derived from the NLM Visible Human Dataset", license: "CC BY 4.0", url: "https://cdn.humanatlas.io/digital-objects/ref-organ/kidney-female-left/v1.3/" },
+      { name: "Human Reference Atlas heart v1.3", use: "bundled female-heart 3D reference organ, ontology crosswalk, and pinned metadata for Anatomy Clinical Atlas - Kristen Browne & Heidi Schlehlein / HuBMAP; derived from the NLM Visible Human Dataset", license: "CC BY 4.0", url: "https://lod.humanatlas.io/ref-organ/heart-female/v1.3/" },
+      { name: "Human Reference Atlas renal corpuscle FTU v1.4", use: "bundled 2D renal-corpuscle illustration and Cell Ontology crosswalk for the Anatomy kidney Scale Bridge - Rachel Bajema / HuBMAP", license: "CC BY 4.0", url: "https://lod.humanatlas.io/2d-ftu/kidney-renal-corpuscle/v1.4/" },
       { name: "iframe-phone", use: "bridge to the CODAP window \u2014 Concord Consortium", license: "MIT", url: "https://github.com/concord-consortium/iframe-phone" },
       {
         name: "OpenSeadragon",
@@ -196,6 +198,7 @@ const OSS_CREDITS = [
     group: "3D, graphics, maps & media",
     items: [
       { name: "three.js", use: "3D graphics (Memory Palace, STEM tools)", license: "MIT", url: "https://threejs.org" },
+      { name: "moon-rover (REGOLITH \u2014 The Silence at Anaxagoras)", use: "technical inspiration for selected lunar-rover simulation techniques independently adapted for Moon Mission and Solar System Drone Mode", license: "MIT", url: "https://github.com/winchxyz/moon-rover" },
       { name: "Excalidraw", use: "the Whiteboard \u2014 freehand sketch & diagram canvas with graphic-organizer templates", license: "MIT", url: "https://excalidraw.com" },
       { name: "KayKit Dungeon Remastered", use: "3D decoration models (Memory Palace collectibles) \u2014 Kay Lousberg", license: "CC0 (credit appreciated, not required)", url: "https://kaylousberg.itch.io/kaykit-dungeon-remastered" },
       { name: "globe.gl", use: "interactive 3D globe", license: "MIT", url: "https://github.com/vasturiano/globe.gl" },
@@ -804,7 +807,7 @@ const ATLAS_HUBS = [
           "StoryForge",
           "Symbol Studio",
           "Test Prep Hub",
-          "Throughline",
+          "Learning Web: Unit Path",
           "Timeline Studio",
           "Video Studio",
           "Visual Organizer",

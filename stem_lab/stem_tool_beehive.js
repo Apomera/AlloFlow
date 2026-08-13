@@ -19662,6 +19662,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             routeMeadow.rotation.x = -Math.PI / 2; routeMeadow.position.set(0, -0.82, -1150); scene.add(routeMeadow);
             // Alternating crop rows remain inexpensive in Eco mode while giving the
             // open field readable scale, forward motion, and landing-height cues.
+            // (Measured: hiding all 18 unlit tint planes moves the near ground by
+            // 1 luma, so these are NOT what flattens the world — do not retune them
+            // looking for depth.)
             var fieldRowMaterials = [
               basic(0x1f6f3a, { transparent: true, opacity: 0.34, depthWrite: false }),
               basic(0xa3d977, { transparent: true, opacity: 0.2, depthWrite: false })
@@ -25636,8 +25639,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var cW = cv.parentElement ? cv.parentElement.clientWidth - 32 : 400;
                 var cH = 100;
                 var dpr = window.devicePixelRatio || 1;
-                cv.width = cW * dpr; cv.height = cH * dpr;
-                cv.style.width = cW + 'px'; cv.style.height = cH + 'px';
+                // Dimension guard: this ref callback fires on EVERY render, and
+                // assigning cv.width/cv.height resets the canvas (clears it and
+                // drops the transform) even when the size has not changed, which
+                // is the sparkline stutter. Only resize when it actually differs.
+                var _tw = Math.round(cW * dpr), _th = Math.round(cH * dpr);
+                if (cv.width !== _tw || cv.height !== _th) {
+                  cv.width = _tw; cv.height = _th;
+                  cv.style.width = cW + 'px'; cv.style.height = cH + 'px';
+                }
                 cCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
                 cCtx.clearRect(0, 0, cW, cH);
 

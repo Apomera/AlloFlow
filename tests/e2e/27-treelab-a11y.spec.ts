@@ -78,6 +78,9 @@ const SURFACES: Array<[string, string, string, Theme]> = [
   ['Spread map (dark)', 'spread', 'g68', 'dark'],
   ['Spread map (high contrast)', 'spread', 'g68', 'contrast'],
   ['Spread map (K-2)', 'spread', 'k2', 'light'],
+  ['Compare (light)', 'compare', 'g912', 'light'],
+  ['Compare (dark)', 'compare', 'g912', 'dark'],
+  ['Compare (high contrast)', 'compare', 'g912', 'contrast'],
   ['Knowledge check', 'quiz', 'g68', 'light'],
 ];
 

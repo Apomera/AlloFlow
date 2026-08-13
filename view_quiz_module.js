@@ -66,6 +66,259 @@ var MessageSquare = _lazyIcon('MessageSquare');
 var PenTool = _lazyIcon('PenTool');
 var ShieldCheck = _lazyIcon('ShieldCheck');
 var quizreducedMotionClass = 'motion-reduce:animate-none';
+var QUIZ_VOICE_CONTROL_EVENT = 'alloflow:quiz-voice-control';
+var QUIZ_VOICE_STATUS_EVENT = 'alloflow:quiz-voice-status';
+
+// Semantic voice helpers deliberately operate on quiz state, never DOM controls.
+function _quizVoiceNormalizeAction(value) {
+  return String(value || 'status').trim().toLowerCase().replace(/[_\s]+/g, '-');
+}
+function _quizVoiceChoiceIndex(value, optionCount) {
+  var count = Math.max(0, Math.min(8, Number(optionCount) || 0));
+  var index = -1;
+  if (typeof value === 'number' && isFinite(value)) {
+    index = Math.floor(value) - 1;
+  } else {
+    var normalized = String(value == null ? '' : value).trim().toLowerCase().replace(/^(?:choose|select|answer)\s+/, '').replace(/^(?:option|choice|answer)\s+/, '').replace(/[.]/g, '');
+    var ordinalMap = {
+      first: 0,
+      one: 0,
+      '1st': 0,
+      second: 1,
+      two: 1,
+      '2nd': 1,
+      third: 2,
+      three: 2,
+      '3rd': 2,
+      fourth: 3,
+      four: 3,
+      '4th': 3,
+      fifth: 4,
+      five: 4,
+      '5th': 4,
+      sixth: 5,
+      six: 5,
+      '6th': 5,
+      seventh: 6,
+      seven: 6,
+      '7th': 6,
+      eighth: 7,
+      eight: 7,
+      '8th': 7
+    };
+    if (/^[a-h]$/.test(normalized)) index = normalized.charCodeAt(0) - 97;else if (/^[1-8]$/.test(normalized)) index = Number(normalized) - 1;else if (Object.prototype.hasOwnProperty.call(ordinalMap, normalized)) index = ordinalMap[normalized];
+  }
+  return index >= 0 && index < count ? index : -1;
+}
+function _quizVoiceParseScopedUtterance(rawText) {
+  var raw = String(rawText || '').trim();
+  var text = raw.toLowerCase().replace(/[?!.,]+$/g, '');
+  if (!text) return null;
+  var direct = {
+    'describe quiz': 'quiz_describe',
+    'describe this quiz': 'quiz_describe',
+    'where am i': 'quiz_describe',
+    'quiz status': 'quiz_describe',
+    'list actions': 'quiz_list_actions',
+    'what can i do': 'quiz_list_actions',
+    'help': 'quiz_list_actions',
+    'read question': 'quiz_read_question',
+    'read the question': 'quiz_read_question',
+    'read current question': 'quiz_read_question',
+    'repeat question': 'quiz_read_question',
+    'read response': 'quiz_read_question',
+    'read my response': 'quiz_read_question',
+    'check answer': 'quiz_check',
+    'check my answer': 'quiz_check',
+    'check response': 'quiz_check',
+    'check my response': 'quiz_check',
+    'check selections': 'quiz_check',
+    'check value': 'quiz_check',
+    'submit assessment': 'quiz_submit',
+    'submit quiz': 'quiz_submit',
+    'finish assessment': 'quiz_submit',
+    'next': 'quiz_next',
+    'next question': 'quiz_next',
+    'previous': 'quiz_previous',
+    'previous question': 'quiz_previous',
+    'go back a question': 'quiz_previous',
+    'repeat feedback': 'quiz_repeat_feedback',
+    'repeat response': 'quiz_repeat_feedback',
+    'try again': 'quiz_try_again',
+    'reset answer': 'quiz_try_again',
+    'clear answer': 'quiz_try_again',
+    'close quiz': 'quiz_close',
+    'exit quiz': 'quiz_close'
+  };
+  if (direct[text]) return {
+    commandId: direct[text],
+    confidence: 0.98
+  };
+  var responseMatch = raw.match(/^(?:response|write|dictate|enter\s+(?:a\s+)?response|set\s+(?:my\s+)?answer\s+to|my\s+answer\s+is|answer\s+with)\s+(.+)$/i);
+  if (responseMatch && String(responseMatch[1] || '').trim()) {
+    return {
+      commandId: 'quiz_enter_response',
+      params: {
+        response: String(responseMatch[1]).trim()
+      },
+      confidence: 0.99
+    };
+  }
+  var selectionMatch = text.match(/^(select|choose|toggle|deselect|unselect|remove)(?:\s+(?:option|choice|pair|item|step|principle))?\s+(.+)$/);
+  if (selectionMatch) {
+    var selectionMode = selectionMatch[1] === 'deselect' || selectionMatch[1] === 'unselect' || selectionMatch[1] === 'remove' ? 'deselect' : selectionMatch[1] === 'toggle' ? 'toggle' : 'select';
+    return {
+      commandId: 'quiz_choose',
+      params: {
+        choice: selectionMatch[2],
+        mode: selectionMode
+      },
+      confidence: 0.99
+    };
+  }
+  if (/^(?:the\s+)?order\s+is\s+(?:correct|right)$/.test(text)) {
+    return {
+      commandId: 'quiz_choose',
+      params: {
+        choice: 'yes'
+      },
+      confidence: 0.99
+    };
+  }
+  if (/^(?:the\s+)?order\s+is\s+(?:wrong|incorrect|not correct)$/.test(text)) {
+    return {
+      commandId: 'quiz_choose',
+      params: {
+        choice: 'no'
+      },
+      confidence: 0.99
+    };
+  }
+  var explicitChoice = text.match(/^(?:choose|select|answer)(?:\s+(?:option|choice|answer))?\s+(.+)$/);
+  var choice = explicitChoice ? explicitChoice[1] : text;
+  if (_quizVoiceChoiceIndex(choice, 8) >= 0) {
+    return {
+      commandId: 'quiz_choose',
+      params: {
+        choice: choice
+      },
+      confidence: explicitChoice ? 0.99 : 0.97
+    };
+  }
+  return null;
+}
+function _quizVoiceRequestText(request) {
+  var input = request && typeof request === 'object' ? request : {};
+  var value = input.response != null ? input.response : input.text != null ? input.text : input.value;
+  return String(value == null ? '' : value).trim();
+}
+function _quizVoiceNamedChoiceIndex(value, options) {
+  var list = Array.isArray(options) ? options : [];
+  var positional = _quizVoiceChoiceIndex(value, list.length);
+  if (positional >= 0) return positional;
+  var normalized = String(value == null ? '' : value).trim().toLowerCase().replace(/[?!.,]+$/g, '').replace(/\s+/g, ' ');
+  if (!normalized) return -1;
+  for (var i = 0; i < list.length; i++) {
+    var candidate = String(list[i] == null ? '' : list[i]).trim().toLowerCase().replace(/[?!.,]+$/g, '').replace(/\s+/g, ' ');
+    if (candidate && candidate === normalized) return i;
+  }
+  return -1;
+}
+var _quizVoiceItemControllers = {};
+function _quizVoiceControllerKey(namespace, questionIdx) {
+  return String(namespace || 'local') + ':' + String(questionIdx);
+}
+function _quizGetVoiceItemController(namespace, questionIdx) {
+  return _quizVoiceItemControllers[_quizVoiceControllerKey(namespace, questionIdx)] || null;
+}
+function _quizUseVoiceController(p, controller) {
+  var currentRef = React.useRef(controller);
+  currentRef.current = controller;
+  React.useEffect(function () {
+    if (!p || typeof p.questionIdx !== 'number') return undefined;
+    var exposed = {
+      getState: function () {
+        var current = currentRef.current;
+        return current && typeof current.getState === 'function' ? current.getState() : null;
+      },
+      execute: function (action, request) {
+        var current = currentRef.current;
+        return current && typeof current.execute === 'function' ? current.execute(action, request || {}) : {
+          ok: false,
+          state: 'unavailable',
+          message: 'This item is not ready for voice input.'
+        };
+      }
+    };
+    if (typeof p.registerVoiceController === 'function') return p.registerVoiceController(p.questionIdx, exposed);
+    var key = _quizVoiceControllerKey(p.draftNamespace, p.questionIdx);
+    _quizVoiceItemControllers[key] = exposed;
+    return function () {
+      if (_quizVoiceItemControllers[key] === exposed) delete _quizVoiceItemControllers[key];
+    };
+  }, [p && p.registerVoiceController, p && p.draftNamespace, p && p.questionIdx]);
+}
+function _quizVoiceQuestionPayload(question, questionIdx, totalQuestions, selectedOptionIdx, itemState) {
+  var q = question && typeof question === 'object' ? question : {};
+  var type = q.type || 'mcq';
+  var state = itemState && typeof itemState === 'object' ? itemState : {};
+  var rawOptions = (type === 'mcq' || type === 'multi-select') && Array.isArray(q.options) ? q.options : [];
+  var selectedIndices = type === 'multi-select' && Array.isArray(state.selectedIndices) ? state.selectedIndices : [];
+  var options = rawOptions.map(function (option, optionIdx) {
+    return {
+      index: optionIdx,
+      number: optionIdx + 1,
+      label: String.fromCharCode(65 + optionIdx),
+      text: String(option == null ? '' : option),
+      selected: type === 'multi-select' ? selectedIndices.indexOf(optionIdx) >= 0 : selectedOptionIdx === optionIdx
+    };
+  });
+  var questionText = String(q.question || q.contextSentence || q.prompt || '');
+  var message = 'Question ' + (questionIdx + 1) + ' of ' + totalQuestions + '. ' + questionText;
+  if (options.length > 0) {
+    message += ' Options: ' + options.map(function (option) {
+      return option.label + ', ' + option.text;
+    }).join('. ') + '.';
+  }
+  if (typeof selectedOptionIdx === 'number' && options[selectedOptionIdx]) {
+    message += ' Option ' + options[selectedOptionIdx].label + ' is selected.';
+  }
+  if (type === 'multi-select' && selectedIndices.length > 0) {
+    message += ' Selected options: ' + selectedIndices.map(function (idx) {
+      return options[idx] ? options[idx].label : '';
+    }).filter(Boolean).join(', ') + '.';
+  }
+  if (type === 'numeric-response') {
+    if (q.unit) message += ' Include units such as ' + q.unit + '.';
+    if (state.response) message += ' Current response: ' + state.response + '.';
+  } else if (type === 'fill-blank' || type === 'short-answer' || type === 'self-explanation') {
+    if (state.response) message += ' Current response: ' + state.response + '.';else message += ' No written response has been entered.';
+  } else if (type === 'sequence-sense') {
+    var displayedItems = Array.isArray(state.displayedItems) ? state.displayedItems : [];
+    if (displayedItems.length > 0) message += ' Displayed sequence: ' + displayedItems.map(function (item, idx) {
+      return idx + 1 + ', ' + item;
+    }).join('. ') + '.';
+    if (state.prompt) message += ' ' + state.prompt;
+  } else if (type === 'relation-mismatch') {
+    var pairs = Array.isArray(state.pairs) ? state.pairs : Array.isArray(q.pairs) ? q.pairs : [];
+    if (pairs.length > 0) message += ' Pairs: ' + pairs.map(function (pair, idx) {
+      return idx + 1 + ', ' + String(pair && pair.left || '') + ' with ' + String(pair && pair.right || '');
+    }).join('. ') + '.';
+    if (state.prompt) message += ' ' + state.prompt;
+  }
+  return {
+    questionIndex: questionIdx,
+    questionNumber: questionIdx + 1,
+    totalQuestions: totalQuestions,
+    type: type,
+    question: questionText,
+    options: options,
+    selectedOptionIndex: typeof selectedOptionIdx === 'number' ? selectedOptionIdx : null,
+    selectedOptionLabel: typeof selectedOptionIdx === 'number' && options[selectedOptionIdx] ? options[selectedOptionIdx].label : null,
+    itemState: state,
+    message: message
+  };
+}
 function _quizFocusableElements(container) {
   if (!container || typeof container.querySelectorAll !== 'function') return [];
   var selector = 'a[href], area[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
@@ -957,13 +1210,14 @@ function SequenceSenseCard(p) {
     var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
     var score = partialCredit ? rawScore : rawScore === 3 ? 3 : 0;
     var status = score === 3 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
-    setGrade({
+    var gradeResult = {
       step1Correct: step1Correct,
       step2Correct: step2Correct,
       step3Correct: step3Correct,
       status: status,
       score: score
-    });
+    };
+    setGrade(gradeResult);
     setStep('done');
     if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
       try {
@@ -982,6 +1236,7 @@ function SequenceSenseCard(p) {
         });
       } catch (e) {}
     }
+    return gradeResult;
   }
   function reset() {
     setStep(1);
@@ -990,6 +1245,104 @@ function SequenceSenseCard(p) {
     setPrincipleAnswer(null);
     setGrade(null);
   }
+  _quizUseVoiceController(p, {
+    getState: function () {
+      var displayedItems = presentedOrder.map(function (canonicalIdx) {
+        return canonicalItems[canonicalIdx];
+      }).filter(function (item) {
+        return item != null;
+      });
+      var prompt = step === 1 ? 'Is the displayed order correct? Say the order is correct or the order is wrong.' : step === 2 ? 'Choose the misplaced item by its displayed number or exact text.' : step === 3 ? 'Choose the ordering principle: ' + principleOptions.join(', ') + '.' : grade ? 'This sequence response has been checked. Say try again to reset it.' : '';
+      return {
+        type: 'sequence-sense',
+        step: step,
+        displayedItems: displayedItems,
+        verifyAnswer: verifyAnswer,
+        selectedItemIndex: typeof clickedIdx === 'number' ? clickedIdx : null,
+        principleAnswer: principleAnswer,
+        graded: !!grade,
+        gradeStatus: grade && grade.status || null,
+        score: grade && typeof grade.score === 'number' ? grade.score : null,
+        actions: grade ? ['try-again'] : ['choose'],
+        prompt: prompt
+      };
+    },
+    execute: function (action, request) {
+      if (action === 'try-again' || action === 'reset') {
+        reset();
+        return {
+          ok: true,
+          state: 'reset',
+          message: 'Sequence response reset. Is the displayed order correct?'
+        };
+      }
+      if (action !== 'choose') {
+        return {
+          ok: false,
+          state: 'invalid-action',
+          message: 'Use choose to answer the current sequence step.'
+        };
+      }
+      if (grade || step === 'done') {
+        return {
+          ok: false,
+          state: 'locked',
+          message: 'This sequence response has already been checked. Say try again to reset it.'
+        };
+      }
+      var choice = request && (request.choice != null ? request.choice : request.value != null ? request.value : request.response);
+      if (step === 1) {
+        var normalized = String(choice == null ? '' : choice).trim().toLowerCase().replace(/[?!.,]+$/g, '');
+        var verify = /^(?:yes|correct|right|the order is correct|the order is right)$/.test(normalized) ? 'yes' : /^(?:no|wrong|incorrect|the order is wrong|the order is incorrect|the order is not correct)$/.test(normalized) ? 'no' : '';
+        if (!verify) return {
+          ok: false,
+          state: 'invalid-choice',
+          message: 'Say the order is correct or the order is wrong.'
+        };
+        answerVerify(verify);
+        return {
+          ok: true,
+          state: 'sequence-step',
+          step: verify === 'no' ? 2 : 3,
+          message: verify === 'no' ? 'Order marked wrong. Choose the misplaced item by its displayed number or exact text.' : 'Order marked correct. Choose the ordering principle: ' + principleOptions.join(', ') + '.'
+        };
+      }
+      if (step === 2) {
+        var displayed = presentedOrder.map(function (canonicalIdx) {
+          return canonicalItems[canonicalIdx];
+        });
+        var itemIdx = _quizVoiceNamedChoiceIndex(choice, displayed);
+        if (itemIdx < 0) return {
+          ok: false,
+          state: 'invalid-choice',
+          message: 'Choose an available displayed item by number or exact text.'
+        };
+        answerMisplaced(itemIdx);
+        return {
+          ok: true,
+          state: 'sequence-step',
+          step: 3,
+          selectedItemIndex: itemIdx,
+          message: 'Item ' + (itemIdx + 1) + ' selected. Choose the ordering principle: ' + principleOptions.join(', ') + '.'
+        };
+      }
+      var principleIdx = _quizVoiceNamedChoiceIndex(choice, principleOptions);
+      if (step !== 3 || principleIdx < 0) return {
+        ok: false,
+        state: 'invalid-choice',
+        message: 'Choose an available ordering principle by number or exact name.'
+      };
+      var result = answerPrinciple(principleOptions[principleIdx]);
+      var resultMessage = result.status === 'correct' ? 'Sequence response checked. All three parts are correct.' : result.status === 'partially-correct' ? 'Sequence response checked. You earned ' + result.score + ' of 3 points.' : 'Sequence response checked. This sequence needs review.';
+      return {
+        ok: true,
+        state: 'checked',
+        correct: result.status === 'correct',
+        score: result.score,
+        message: resultMessage
+      };
+    }
+  });
   if (canonicalItems.length === 0) return null;
   var statusColor = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade ? 'rose' : 'slate';
   return /*#__PURE__*/React.createElement("div", {
@@ -1237,12 +1590,13 @@ function RelationMismatchCard(p) {
     var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
     var score = partialCredit ? rawScore : rawScore === 2 ? 2 : 0;
     var status = score === 2 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
-    setGrade({
+    var gradeResult = {
       step1Correct: step1Correct,
       step2Correct: step2Correct,
       status: status,
       score: score
-    });
+    };
+    setGrade(gradeResult);
     setStep('done');
     if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
       try {
@@ -1260,6 +1614,7 @@ function RelationMismatchCard(p) {
         });
       } catch (e) {}
     }
+    return gradeResult;
   }
   function reset() {
     setStep(1);
@@ -1267,6 +1622,91 @@ function RelationMismatchCard(p) {
     setPartnerAnswer(null);
     setGrade(null);
   }
+  _quizUseVoiceController(p, {
+    getState: function () {
+      var partnerOptions = candidatePartners.length > 0 ? candidatePartners.slice() : [correctPartnerForWrong];
+      var prompt = step === 1 ? 'Choose the mismatched pair by number or by saying its exact left and right text.' : step === 2 ? 'Choose the replacement partner: ' + partnerOptions.join(', ') + '.' : grade ? 'This relation response has been checked. Say try again to reset it.' : '';
+      return {
+        type: 'relation-mismatch',
+        step: step,
+        pairs: pairs.map(function (pair) {
+          return {
+            left: String(pair.left),
+            right: String(pair.right)
+          };
+        }),
+        selectedPairIndex: typeof clickedPairIdx === 'number' ? clickedPairIdx : null,
+        partnerOptions: step === 2 ? partnerOptions : [],
+        partnerAnswer: partnerAnswer,
+        graded: !!grade,
+        gradeStatus: grade && grade.status || null,
+        score: grade && typeof grade.score === 'number' ? grade.score : null,
+        actions: grade ? ['try-again'] : ['choose'],
+        prompt: prompt
+      };
+    },
+    execute: function (action, request) {
+      if (action === 'try-again' || action === 'reset') {
+        reset();
+        return {
+          ok: true,
+          state: 'reset',
+          message: 'Relation response reset. Choose the mismatched pair.'
+        };
+      }
+      if (action !== 'choose') {
+        return {
+          ok: false,
+          state: 'invalid-action',
+          message: 'Use choose to answer the current relation step.'
+        };
+      }
+      if (grade || step === 'done') {
+        return {
+          ok: false,
+          state: 'locked',
+          message: 'This relation response has already been checked. Say try again to reset it.'
+        };
+      }
+      var choice = request && (request.choice != null ? request.choice : request.value != null ? request.value : request.response);
+      if (step === 1) {
+        var pairNames = pairs.map(function (pair) {
+          return String(pair.left) + ' with ' + String(pair.right);
+        });
+        var pairIdx = _quizVoiceNamedChoiceIndex(choice, pairNames);
+        if (pairIdx < 0) return {
+          ok: false,
+          state: 'invalid-choice',
+          message: 'Choose an available pair by number or exact pair text.'
+        };
+        answerWhichWrong(pairIdx);
+        var options = candidatePartners.length > 0 ? candidatePartners : [correctPartnerForWrong];
+        return {
+          ok: true,
+          state: 'relation-step',
+          step: 2,
+          selectedPairIndex: pairIdx,
+          message: 'Pair ' + (pairIdx + 1) + ' selected. Choose the replacement partner: ' + options.join(', ') + '.'
+        };
+      }
+      var partnerOptions = candidatePartners.length > 0 ? candidatePartners : [correctPartnerForWrong];
+      var partnerIdx = _quizVoiceNamedChoiceIndex(choice, partnerOptions);
+      if (step !== 2 || partnerIdx < 0) return {
+        ok: false,
+        state: 'invalid-choice',
+        message: 'Choose an available replacement partner by number or exact name.'
+      };
+      var result = answerPartner(partnerOptions[partnerIdx]);
+      var resultMessage = result.status === 'correct' ? 'Relation response checked. Both parts are correct.' : result.status === 'partially-correct' ? 'Relation response checked. You earned ' + result.score + ' of 2 points.' : 'Relation response checked. Both parts need review.';
+      return {
+        ok: true,
+        state: 'checked',
+        correct: result.status === 'correct',
+        score: result.score,
+        message: resultMessage
+      };
+    }
+  });
   if (pairs.length === 0) return null;
   var statusColor = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade ? 'rose' : 'slate';
   var wrongPairLeft = pairs[wrongPairIndex] ? pairs[wrongPairIndex].left : '';
@@ -2978,6 +3418,7 @@ function MultiSelectCard(p) {
     });
     setSubmittedAnswer(answer);
     _quizEmitDeterministicAnswer(p, 'multi-select', answer, confidence);
+    return answer;
   }
   function markIDK() {
     var answer = {
@@ -3000,6 +3441,94 @@ function MultiSelectCard(p) {
     setSubmittedAnswer(null);
     setConfidence(null);
   }
+  _quizUseVoiceController(p, {
+    getState: function () {
+      return {
+        type: 'multi-select',
+        selectedIndices: selected.slice(),
+        selectedOptions: selected.map(function (idx) {
+          return options[idx];
+        }).filter(function (value) {
+          return value != null;
+        }),
+        graded: !!grade,
+        gradeStatus: grade && grade.status || null,
+        score: grade && typeof grade.score === 'number' ? grade.score : null,
+        actions: grade ? ['try-again'] : selected.length > 0 ? ['choose', 'check'] : ['choose'],
+        prompt: grade ? 'These selections have been checked. Say try again to reset them.' : 'Select or deselect every answer that applies, then say check selections.'
+      };
+    },
+    execute: function (action, request) {
+      if (action === 'try-again' || action === 'reset') {
+        reset();
+        return {
+          ok: true,
+          state: 'reset',
+          message: 'Multi-select response reset. Choose every option that applies.'
+        };
+      }
+      if (grade) {
+        return {
+          ok: false,
+          state: 'locked',
+          message: 'These selections have already been checked. Say try again to reset them.'
+        };
+      }
+      if (action === 'choose') {
+        var choice = request && (request.choice != null ? request.choice : request.option != null ? request.option : request.value);
+        var optionIdx = _quizVoiceNamedChoiceIndex(choice, options);
+        if (optionIdx < 0) {
+          return {
+            ok: false,
+            state: 'invalid-choice',
+            message: 'Choose an available option by letter, number, ordinal, or exact option text.'
+          };
+        }
+        var mode = String(request && request.mode || 'select').toLowerCase();
+        var wasSelected = selected.indexOf(optionIdx) >= 0;
+        var shouldSelect = mode === 'toggle' ? !wasSelected : mode === 'deselect' ? false : true;
+        var nextSelected = shouldSelect ? wasSelected ? selected.slice() : selected.concat([optionIdx]).sort(function (a, b) {
+          return a - b;
+        }) : selected.filter(function (idx) {
+          return idx !== optionIdx;
+        });
+        setSelected(nextSelected);
+        var label = String.fromCharCode(65 + optionIdx);
+        return {
+          ok: true,
+          state: shouldSelect ? 'selected' : 'deselected',
+          selectedIndices: nextSelected,
+          message: 'Option ' + label + (shouldSelect ? ' selected.' : ' deselected.') + ' ' + nextSelected.length + ' option' + (nextSelected.length === 1 ? ' is' : 's are') + ' currently selected.'
+        };
+      }
+      if (action === 'check') {
+        if (selected.length === 0) return {
+          ok: false,
+          state: 'inapplicable',
+          message: 'Select at least one option before checking.'
+        };
+        if (correctAnswers.length === 0) return {
+          ok: false,
+          state: 'unsupported',
+          message: 'This multi-select item has no answer key to check.'
+        };
+        var result = submit();
+        var resultMessage = result.status === 'correct' ? 'Selections checked. All selections are correct.' : result.status === 'partially-correct' ? 'Selections checked. You earned ' + result.score + ' percent partial credit.' : 'Selections checked. Review the selected options and try again.';
+        return {
+          ok: true,
+          state: 'checked',
+          correct: result.status === 'correct',
+          score: result.score,
+          message: resultMessage
+        };
+      }
+      return {
+        ok: false,
+        state: 'invalid-action',
+        message: 'Use select, deselect, or check selections for this item.'
+      };
+    }
+  });
   if (options.length === 0) return null;
   var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
   return /*#__PURE__*/React.createElement("div", {
@@ -3393,11 +3922,12 @@ function NumericResponseCard(p) {
   function submit() {
     var parsed = _quizParseNumericResponse(response);
     if (!parsed) {
-      setGrade({
+      var invalid = {
         status: 'invalid',
         score: 0
-      });
-      return;
+      };
+      setGrade(invalid);
+      return invalid;
     }
     var expected = Number(q.correctValue);
     var tolerance = Math.max(0, Number(q.tolerance) || 0);
@@ -3420,6 +3950,7 @@ function NumericResponseCard(p) {
     setGrade(payload);
     setSubmitted(payload);
     _quizEmitDeterministicAnswer(p, 'numeric-response', payload, confidence);
+    return payload;
   }
   function markIDK() {
     var payload = {
@@ -3442,6 +3973,87 @@ function NumericResponseCard(p) {
     setSubmitted(null);
     setConfidence(null);
   }
+  _quizUseVoiceController(p, {
+    getState: function () {
+      var parsed = response ? _quizParseNumericResponse(response) : null;
+      var locked = !!grade && grade.status !== 'invalid';
+      return {
+        type: 'numeric-response',
+        response: response,
+        parsedValue: parsed ? parsed.value : null,
+        parsedUnit: parsed ? parsed.unit : '',
+        graded: locked,
+        gradeStatus: locked && grade ? grade.status : null,
+        score: locked && grade && typeof grade.score === 'number' ? grade.score : null,
+        actions: locked ? ['try-again'] : parsed ? ['enter-response', 'check'] : ['enter-response'],
+        prompt: locked ? 'This numeric response has been checked. Say try again to reset it.' : 'Say response followed by a number' + (q.unit ? ' and units such as ' + q.unit : '') + ', then say check value.'
+      };
+    },
+    execute: function (action, request) {
+      var locked = !!grade && grade.status !== 'invalid';
+      if (action === 'try-again' || action === 'reset') {
+        reset();
+        return {
+          ok: true,
+          state: 'reset',
+          message: 'Numeric response reset. Say response followed by the number and optional units.'
+        };
+      }
+      if (locked) {
+        return {
+          ok: false,
+          state: 'locked',
+          message: 'This numeric response has already been checked. Say try again to reset it.'
+        };
+      }
+      if (action === 'enter-response') {
+        var text = _quizVoiceRequestText(request);
+        var parsed = _quizParseNumericResponse(text);
+        if (!text || !parsed) {
+          return {
+            ok: false,
+            state: 'invalid-response',
+            message: 'I could not identify a number. Say response followed by a number and optional units.'
+          };
+        }
+        setResponse(text);
+        return {
+          ok: true,
+          state: 'response-entered',
+          response: text,
+          numericValue: parsed.value,
+          unit: parsed.unit,
+          message: 'Numeric response recorded as ' + parsed.value + (parsed.unit ? ' ' + parsed.unit : '') + '. Say check value when ready.'
+        };
+      }
+      if (action === 'check') {
+        if (!String(response || '').trim()) return {
+          ok: false,
+          state: 'inapplicable',
+          message: 'Enter a numeric response before checking.'
+        };
+        var result = submit();
+        if (!result || result.status === 'invalid') return {
+          ok: false,
+          state: 'invalid-response',
+          message: 'I could not identify a number and optional units in that response.'
+        };
+        var resultMessage = result.status === 'correct' ? 'Numeric response checked. The value and units are correct.' : result.status === 'partially-correct' ? 'Numeric response checked. Either the value or units needs review.' : 'Numeric response checked. The value and units need review.';
+        return {
+          ok: true,
+          state: 'checked',
+          correct: result.status === 'correct',
+          score: result.score,
+          message: resultMessage
+        };
+      }
+      return {
+        ok: false,
+        state: 'invalid-action',
+        message: 'Use enter response or check value for this numeric item.'
+      };
+    }
+  });
   var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
   return /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-5 rounded-xl border border-slate-300 shadow-sm"
@@ -4611,6 +5223,7 @@ function FreeformItemsBlock(p) {
         itemNumber: entry.idx + 1,
         questionIdx: entry.idx,
         draftNamespace: p.draftNamespace,
+        registerVoiceController: p.registerVoiceController,
         onSubmitLiveAnswer: p.onSubmitLiveAnswer,
         modeStrategy: p.modeStrategy,
         scoringPolicy: p.scoringPolicy
@@ -4631,6 +5244,7 @@ function FreeformItemsBlock(p) {
         itemNumber: entry.idx + 1,
         questionIdx: entry.idx,
         draftNamespace: p.draftNamespace,
+        registerVoiceController: p.registerVoiceController,
         onSubmitLiveAnswer: p.onSubmitLiveAnswer,
         modeStrategy: p.modeStrategy,
         scoringPolicy: p.scoringPolicy,
@@ -4642,6 +5256,7 @@ function FreeformItemsBlock(p) {
         itemNumber: entry.idx + 1,
         questionIdx: entry.idx,
         draftNamespace: p.draftNamespace,
+        registerVoiceController: p.registerVoiceController,
         onSubmitLiveAnswer: p.onSubmitLiveAnswer,
         modeStrategy: p.modeStrategy,
         scoringPolicy: p.scoringPolicy,
@@ -4655,6 +5270,7 @@ function FreeformItemsBlock(p) {
         itemNumber: entry.idx + 1,
         questionIdx: entry.idx,
         draftNamespace: p.draftNamespace,
+        registerVoiceController: p.registerVoiceController,
         onSubmitLiveAnswer: p.onSubmitLiveAnswer,
         modeStrategy: p.modeStrategy,
         scoringPolicy: p.scoringPolicy,
@@ -4668,6 +5284,7 @@ function FreeformItemsBlock(p) {
         itemNumber: entry.idx + 1,
         questionIdx: entry.idx,
         draftNamespace: p.draftNamespace,
+        registerVoiceController: p.registerVoiceController,
         callGemini: p.callGemini,
         callTTS: p.callTTS,
         gradeLevel: p.gradeLevel,
@@ -4844,6 +5461,86 @@ function FreeformItemCard(p) {
       });
     });
   }
+  _quizUseVoiceController(p, {
+    getState: function () {
+      var locked = grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted';
+      return {
+        type: q.type || 'short-answer',
+        response: response,
+        responseEntered: !!String(response || '').trim(),
+        grading: !!grade.loading,
+        gradeStatus: grade.status || null,
+        feedback: grade.feedback || '',
+        actions: locked ? grade.status === 'submitted' ? ['try-again'] : [] : String(response || '').trim() ? ['enter-response', 'check'] : ['enter-response'],
+        prompt: locked ? grade.loading ? 'This response is being graded.' : grade.status === 'submitted' ? 'This response was submitted for teacher review. Say try again to revise it.' : 'This response has been checked.' : 'Say response followed by your answer, then say check response.'
+      };
+    },
+    execute: function (action, request) {
+      if (action === 'try-again' || action === 'reset') {
+        if (grade.loading) return {
+          ok: false,
+          state: 'busy',
+          message: 'Wait for grading to finish before revising this response.'
+        };
+        setGrade({
+          status: null,
+          feedback: '',
+          loading: false
+        });
+        if (grade.status !== 'submitted') setResponse('');
+        setExplainer({
+          open: false,
+          loading: false,
+          text: '',
+          error: ''
+        });
+        return {
+          ok: true,
+          state: 'reset',
+          message: grade.status === 'submitted' ? 'Response reopened for revision.' : 'Written response reset. Say response followed by your answer.'
+        };
+      }
+      var locked = grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted';
+      if (locked) return {
+        ok: false,
+        state: grade.loading ? 'busy' : 'locked',
+        message: grade.loading ? 'This response is being graded.' : 'This response is locked. Say try again when revision is available.'
+      };
+      if (action === 'enter-response') {
+        var text = _quizVoiceRequestText(request);
+        if (!text) return {
+          ok: false,
+          state: 'invalid-response',
+          message: 'No response text was provided. Say response followed by your answer.'
+        };
+        setResponse(text);
+        return {
+          ok: true,
+          state: 'response-entered',
+          response: text,
+          message: 'Response recorded. ' + text + '. Say check response when ready.'
+        };
+      }
+      if (action === 'check') {
+        if (!String(response || '').trim()) return {
+          ok: false,
+          state: 'inapplicable',
+          message: 'Enter a response before checking or submitting it.'
+        };
+        submitGrade();
+        return {
+          ok: true,
+          state: teacherReviewWritten ? 'submitted-for-review' : 'grading',
+          message: teacherReviewWritten ? 'Response submitted for teacher review.' : 'Response submitted for grading. I will announce feedback when it is available.'
+        };
+      }
+      return {
+        ok: false,
+        state: 'invalid-action',
+        message: 'Use enter response or check response for this written item.'
+      };
+    }
+  });
   var statusColor = grade.status === 'correct' ? 'emerald' : grade.status === 'partially-correct' ? 'amber' : grade.status === 'submitted' ? 'indigo' : grade.status === 'incorrect' ? 'rose' : grade.status === 'error' ? 'rose' : grade.status === 'idk' ? 'sky' : 'slate';
   var statusLabel = grade.status === 'correct' ? 'Correct' : grade.status === 'partially-correct' ? 'Close' : grade.status === 'submitted' ? 'Submitted for review' : grade.status === 'incorrect' ? 'Not yet' : grade.status === 'unclear' ? 'Unclear' : grade.status === 'error' ? 'Error' : grade.status === 'idk' ? 'Marked I do not know' : '';
   var typeLabel = q.type === 'fill-blank' ? 'Fill-in-the-blank' : q.type === 'self-explanation' ? 'Explain your reasoning' : 'Brief written response';
@@ -5275,6 +5972,23 @@ function QuizView(props) {
   var currentQuestionState = React.useState(0);
   var currentQuestionIdx = currentQuestionState[0];
   var setCurrentQuestionIdx = currentQuestionState[1];
+  var quizVoiceLastFeedbackRef = React.useRef('');
+  var quizVoiceScopeRef = React.useRef({
+    getStatus: null,
+    getCommands: null
+  });
+  var quizItemVoiceControllersRef = React.useRef({});
+  var registerQuizItemVoiceController = React.useCallback(function (questionIdx, controller) {
+    quizItemVoiceControllersRef.current[questionIdx] = controller;
+    return function () {
+      if (quizItemVoiceControllersRef.current[questionIdx] === controller) {
+        delete quizItemVoiceControllersRef.current[questionIdx];
+      }
+    };
+  }, []);
+  function getQuizItemVoiceController(questionIdx) {
+    return quizItemVoiceControllersRef.current[questionIdx] || _quizGetVoiceItemController(draftNamespace, questionIdx);
+  }
   var initialTimeSeconds = deliverySettings.timeLimitMinutes > 0 ? Math.round(deliverySettings.timeLimitMinutes * 60) : 0;
   var timerStateHook = _quizUseDraftField(draftNamespace, 'root', 'timerState', function () {
     return {
@@ -5387,7 +6101,7 @@ function QuizView(props) {
     });
   }
   function submitAssessmentAttempt() {
-    if (!draftNamespace) return;
+    if (!draftNamespace) return null;
     var working = _quizReadWorkingDraft(draftNamespace);
     var progress = _quizBuildAttemptProgress(assessmentData, working);
     var submittedAt = Date.now();
@@ -5405,7 +6119,7 @@ function QuizView(props) {
     });
     if (!receipt) {
       if (typeof props.addToast === 'function') props.addToast('Could not save the completion receipt. Your draft is still safe—please try again.', 'error');
-      return;
+      return null;
     }
     if (typeof onSubmitLiveAnswer === 'function') {
       try {
@@ -5437,6 +6151,7 @@ function QuizView(props) {
     setReviewOpen(false);
     setAttemptReceipt(receipt);
     if (typeof props.addToast === 'function') props.addToast('Assessment submitted.', 'success');
+    return receipt;
   }
   function startAnotherAssessmentAttempt() {
     if (!_quizClearAttemptReceipt(learnerBaseDraftNamespace)) return;
@@ -6193,6 +6908,536 @@ function QuizView(props) {
     onGo: goToAssessmentQuestion,
     onSubmit: submitAssessmentAttempt
   });
+  // QUIZ VOICE SURFACE: semantic state actions; pointer and keyboard remain available.
+  function getQuizVoiceBoundaryStatus() {
+    var questions = Array.isArray(assessmentData.questions) ? assessmentData.questions : [];
+    var learnerSurface = !isTeacherMode && !isParentMode || isIndependentMode;
+    var ordinarySurface = learnerSurface && !isEditingQuiz && !isPresentationMode && !isReviewGame && !(escapeRoomState && escapeRoomState.isActive);
+    var canExit = typeof props.onClose === 'function' || typeof props.onExit === 'function';
+    if (!ordinarySurface) {
+      return {
+        ok: false,
+        ready: false,
+        mounted: true,
+        state: 'unsupported-mode',
+        surface: 'quiz',
+        actions: ['status'],
+        message: 'Quiz voice controls are available only in the ordinary learner quiz view.'
+      };
+    }
+    if (attemptReceipt) {
+      return {
+        ok: true,
+        ready: false,
+        mounted: true,
+        state: 'submitted',
+        surface: 'quiz',
+        actions: canExit ? ['status', 'describe', 'close'] : ['status', 'describe'],
+        message: 'This assessment has been submitted.'
+      };
+    }
+    if (questions.length === 0) {
+      return {
+        ok: false,
+        ready: false,
+        mounted: true,
+        state: 'empty',
+        surface: 'quiz',
+        actions: canExit ? ['status', 'close'] : ['status'],
+        message: 'This quiz does not contain any questions.'
+      };
+    }
+    var questionIdx = Math.max(0, Math.min(questions.length - 1, currentQuestionIdx));
+    var question = questions[questionIdx] || {};
+    var type = question.type || 'mcq';
+    var selectedOptionIdx = typeof studentMcqAnswers[questionIdx] === 'number' ? studentMcqAnswers[questionIdx] : null;
+    var itemController = getQuizItemVoiceController(questionIdx);
+    var itemState = itemController && typeof itemController.getState === 'function' ? itemController.getState() : null;
+    var itemActions = itemState && Array.isArray(itemState.actions) ? itemState.actions : [];
+    var actions = ['status', 'describe', 'list-actions', 'read-question'];
+    if (type === 'mcq' && Array.isArray(question.options) && question.options.length > 0) actions.push('choose');
+    itemActions.forEach(function (itemAction) {
+      if (actions.indexOf(itemAction) < 0) actions.push(itemAction);
+    });
+    if (type === 'mcq' && isIndependentMode && typeof handleToggleShowQuizAnswers === 'function') actions.push('check');
+    if (draftNamespace) actions.push('submit');
+    if (questionIdx > 0) actions.push('previous');
+    if (questionIdx < questions.length - 1) actions.push('next');
+    if (quizVoiceLastFeedbackRef.current) actions.push('repeat-feedback');
+    if (canExit) actions.push('close');
+    return Object.assign({
+      ok: true,
+      ready: true,
+      mounted: true,
+      state: reviewOpen ? 'review' : 'ready',
+      surface: 'quiz',
+      actions: actions,
+      canChooseByVoice: type === 'mcq' && Array.isArray(question.options) && question.options.length > 0 || itemActions.indexOf('choose') >= 0,
+      canEnterFreeformByVoice: itemActions.indexOf('enter-response') >= 0,
+      canResetByVoice: itemActions.indexOf('try-again') >= 0,
+      reviewOpen: reviewOpen,
+      checked: Boolean(showQuizAnswers),
+      message: reviewOpen ? 'Quiz review is open. Nothing is submitted until submission is confirmed.' : 'Quiz is ready at question ' + (questionIdx + 1) + ' of ' + questions.length + '.'
+    }, _quizVoiceQuestionPayload(question, questionIdx, questions.length, selectedOptionIdx, itemState));
+  }
+  function publishQuizVoiceBoundaryResult(result, request, action) {
+    var input = request && typeof request === 'object' ? request : {};
+    var payload = Object.assign({
+      surface: 'quiz',
+      action: action || 'status',
+      requestId: input.requestId == null ? null : input.requestId
+    }, result || {});
+    try {
+      if (typeof input.respond === 'function') input.respond(payload);
+    } catch (e) {}
+    try {
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof window.CustomEvent === 'function') {
+        window.dispatchEvent(new window.CustomEvent(QUIZ_VOICE_STATUS_EVENT, {
+          detail: payload
+        }));
+      }
+    } catch (e) {}
+    return payload;
+  }
+  function handleQuizVoiceChoice(request, status, question) {
+    if (!status.ready) return status;
+    if (!question || question.type && question.type !== 'mcq' || !Array.isArray(question.options)) {
+      var itemController = getQuizItemVoiceController(status.questionIndex);
+      if (itemController && typeof itemController.execute === 'function') {
+        var itemResult = itemController.execute('choose', request);
+        if (itemResult && itemResult.message) quizVoiceLastFeedbackRef.current = itemResult.message;
+        return Object.assign({}, status, itemResult || {});
+      }
+      return Object.assign({}, status, {
+        ok: false,
+        state: 'unsupported-item',
+        message: 'Choosing an option by voice is supported for multiple-choice items only. Voice entry for ' + status.type + ' is not available yet.'
+      });
+    }
+    var requestedIndex = typeof request.optionIndex === 'number' ? Math.floor(request.optionIndex) : _quizVoiceChoiceIndex(request.choice != null ? request.choice : request.option != null ? request.option : request.value, question.options.length);
+    if (requestedIndex < 0 || requestedIndex >= Math.min(8, question.options.length)) {
+      return Object.assign({}, status, {
+        ok: false,
+        state: 'invalid-choice',
+        message: 'Choose an available option by letter A through H, number 1 through 8, or ordinal such as first or second.'
+      });
+    }
+    selectMcqOption(status.questionIndex, requestedIndex, question.options[requestedIndex], question);
+    var choiceLabel = String.fromCharCode(65 + requestedIndex);
+    var choiceMessage = 'Option ' + choiceLabel + ' selected for question ' + status.questionNumber + '.';
+    quizVoiceLastFeedbackRef.current = choiceMessage;
+    return Object.assign({}, status, {
+      ok: true,
+      state: 'selected',
+      selectedOptionIndex: requestedIndex,
+      selectedOptionLabel: choiceLabel,
+      message: choiceMessage
+    });
+  }
+  function handleQuizVoiceCheck(status, question, selectedOptionIdx) {
+    if (!status.ready) return status;
+    if (!isIndependentMode) {
+      return Object.assign({}, status, {
+        ok: false,
+        state: 'inapplicable',
+        message: draftNamespace ? 'This learner assessment uses review and submit instead of check answers.' : 'Check answers is not available in this quiz mode.'
+      });
+    }
+    if (!question || question.type && question.type !== 'mcq' || !Array.isArray(question.options)) {
+      return Object.assign({}, status, {
+        ok: false,
+        state: 'unsupported-item',
+        message: 'Voice checking is currently available for multiple-choice items only.'
+      });
+    }
+    if (typeof selectedOptionIdx !== 'number') {
+      return Object.assign({}, status, {
+        ok: false,
+        state: 'inapplicable',
+        message: 'Choose an option before checking the answer.'
+      });
+    }
+    if (typeof handleToggleShowQuizAnswers !== 'function') {
+      return Object.assign({}, status, {
+        ok: false,
+        state: 'unsupported',
+        message: 'Check answers is unavailable because this quiz has no check-answer handler.'
+      });
+    }
+    if (!showQuizAnswers) handleToggleShowQuizAnswers();
+    var isCorrect = question.options[selectedOptionIdx] === question.correctAnswer;
+    var checkMessage = isCorrect ? 'Option ' + String.fromCharCode(65 + selectedOptionIdx) + ' is correct for question ' + status.questionNumber + '.' : 'Option ' + String.fromCharCode(65 + selectedOptionIdx) + ' is not correct for question ' + status.questionNumber + '. Try another option.';
+    quizVoiceLastFeedbackRef.current = checkMessage;
+    return Object.assign({}, status, {
+      ok: true,
+      state: 'checked',
+      checked: true,
+      correct: isCorrect,
+      message: checkMessage
+    });
+  }
+  function handleQuizVoiceSubmit(request, status) {
+    if (!status.ready) return status;
+    if (!draftNamespace) {
+      return Object.assign({}, status, {
+        ok: false,
+        state: 'inapplicable',
+        message: 'This quiz mode does not have a submit-assessment action. Use check instead when it is available.'
+      });
+    }
+    if (request.confirmed !== true) {
+      setReviewOpen(true);
+      var submitProgress = reviewProgress || _quizBuildAttemptProgress(assessmentData, _quizReadWorkingDraft(draftNamespace));
+      return Object.assign({}, status, {
+        ok: false,
+        state: 'confirmation-required',
+        reviewOpen: true,
+        confirmationRequired: true,
+        confirmationToken: 'submit-assessment',
+        message: 'Review opened. ' + submitProgress.answered + ' of ' + submitProgress.total + ' questions are answered. Confirm submit assessment to finish.'
+      });
+    }
+    var receipt = submitAssessmentAttempt();
+    if (!receipt) {
+      return Object.assign({}, status, {
+        ok: false,
+        state: 'error',
+        message: 'The assessment could not be submitted. The draft remains saved.'
+      });
+    }
+    var submitMessage = 'Assessment submitted with ' + receipt.summary.answered + ' of ' + receipt.summary.total + ' questions answered.';
+    quizVoiceLastFeedbackRef.current = submitMessage;
+    return {
+      ok: true,
+      ready: false,
+      mounted: true,
+      state: 'submitted',
+      surface: 'quiz',
+      receipt: {
+        submittedAt: receipt.submittedAt,
+        total: receipt.summary.total,
+        answered: receipt.summary.answered,
+        unanswered: receipt.summary.unanswered
+      },
+      message: submitMessage
+    };
+  }
+  function handleQuizVoiceOtherAction(action, status) {
+    if (action === 'next' || action === 'previous') {
+      if (!status.ready) return status;
+      var nextQuestionIdx = status.questionIndex + (action === 'next' ? 1 : -1);
+      if (nextQuestionIdx < 0 || nextQuestionIdx >= status.totalQuestions) {
+        return Object.assign({}, status, {
+          ok: false,
+          state: 'inapplicable',
+          message: action === 'next' ? 'This is the last question.' : 'This is the first question.'
+        });
+      }
+      goToAssessmentQuestion(nextQuestionIdx);
+      return Object.assign({}, _quizVoiceQuestionPayload(assessmentData.questions[nextQuestionIdx] || {}, nextQuestionIdx, status.totalQuestions, studentMcqAnswers[nextQuestionIdx]), {
+        ok: true,
+        ready: true,
+        mounted: true,
+        state: 'navigated',
+        surface: 'quiz',
+        message: 'Moved to question ' + (nextQuestionIdx + 1) + ' of ' + status.totalQuestions + '.'
+      });
+    }
+    if (action === 'repeat-feedback' || action === 'repeat-response') {
+      return quizVoiceLastFeedbackRef.current ? Object.assign({}, status, {
+        ok: true,
+        state: 'feedback',
+        message: quizVoiceLastFeedbackRef.current
+      }) : Object.assign({}, status, {
+        ok: false,
+        state: 'inapplicable',
+        message: 'There is no Quiz feedback to repeat yet.'
+      });
+    }
+    if (action === 'close' || action === 'exit') {
+      var exitHandler = typeof props.onClose === 'function' ? props.onClose : typeof props.onExit === 'function' ? props.onExit : null;
+      if (!exitHandler) {
+        return Object.assign({}, status, {
+          ok: false,
+          state: 'unsupported',
+          message: 'This Quiz host did not provide a close action.'
+        });
+      }
+      try {
+        exitHandler();
+        return Object.assign({}, status, {
+          ok: true,
+          state: 'closed',
+          message: 'Quiz closed.'
+        });
+      } catch (error) {
+        return Object.assign({}, status, {
+          ok: false,
+          state: 'error',
+          message: 'Quiz could not close.'
+        });
+      }
+    }
+    return null;
+  }
+  function executeQuizVoiceAction(request, action, status) {
+    var question = status.ready && Array.isArray(assessmentData.questions) ? assessmentData.questions[status.questionIndex] : null;
+    var selectedOptionIdx = status.ready && typeof studentMcqAnswers[status.questionIndex] === 'number' ? studentMcqAnswers[status.questionIndex] : null;
+    if (action === 'status') return status;
+    if (action === 'describe') {
+      if (!status.ready) return status;
+      var description = 'Ordinary learner quiz. Question ' + status.questionNumber + ' of ' + status.totalQuestions + '.';
+      var progress = reviewProgress;
+      if (progress) {
+        description += ' ' + progress.answered + ' answered and ' + progress.unanswered + ' unanswered.';
+      } else {
+        description += ' ' + Object.keys(studentMcqAnswers || {}).length + ' multiple-choice selection' + (Object.keys(studentMcqAnswers || {}).length === 1 ? '' : 's') + ' made.';
+      }
+      if (status.type === 'mcq') description += ' Say read question or choose an option.';else if (status.canEnterFreeformByVoice) description += ' Say response followed by your answer, then say check response.';else if (status.canChooseByVoice) description += ' Say read question, then choose an available item or option.';else description += ' This ' + status.type + ' item does not expose a safe voice answer action.';
+      return Object.assign({}, status, {
+        progress: progress ? {
+          total: progress.total,
+          answered: progress.answered,
+          unanswered: progress.unanswered,
+          flagged: progress.flagged
+        } : null,
+        timer: deliverySettings.timeLimitMinutes > 0 ? {
+          remainingSeconds: assessmentTimer.remainingSeconds,
+          running: assessmentTimer.running,
+          expired: assessmentTimer.expired
+        } : null,
+        message: description
+      });
+    }
+    if (action === 'list-actions' || action === 'actions') {
+      return Object.assign({}, status, {
+        message: status.ready ? 'Available Quiz voice actions: ' + status.actions.join(', ') + '.' : status.message
+      });
+    }
+    if (action === 'read' || action === 'read-question' || action === 'repeat-question') {
+      return status.ready ? Object.assign({}, status, {
+        state: 'reading'
+      }) : status;
+    }
+    if (action === 'choose' || action === 'select' || action === 'answer') {
+      return handleQuizVoiceChoice(request, status, question);
+    }
+    if (action === 'check' || action === 'submit-or-check' && !draftNamespace) {
+      if (question && question.type && question.type !== 'mcq') {
+        var checkController = getQuizItemVoiceController(status.questionIndex);
+        if (!checkController || typeof checkController.execute !== 'function') return Object.assign({}, status, {
+          ok: false,
+          state: 'unsupported-item',
+          message: 'This item does not expose a safe voice check action.'
+        });
+        var checkResult = checkController.execute('check', request);
+        if (checkResult && checkResult.message) quizVoiceLastFeedbackRef.current = checkResult.message;
+        return Object.assign({}, status, checkResult || {});
+      }
+      return handleQuizVoiceCheck(status, question, selectedOptionIdx);
+    }
+    if (action === 'enter-response' || action === 'try-again' || action === 'reset') {
+      var itemController = getQuizItemVoiceController(status.questionIndex);
+      if (!itemController || typeof itemController.execute !== 'function') return Object.assign({}, status, {
+        ok: false,
+        state: 'unsupported-item',
+        message: 'This item does not expose that voice action.'
+      });
+      var itemResult = itemController.execute(action, request);
+      if (itemResult && itemResult.message) quizVoiceLastFeedbackRef.current = itemResult.message;
+      return Object.assign({}, status, itemResult || {});
+    }
+    if (action === 'submit' || action === 'submit-or-check' && Boolean(draftNamespace)) {
+      return handleQuizVoiceSubmit(request, status);
+    }
+    var otherResult = handleQuizVoiceOtherAction(action, status);
+    return otherResult || Object.assign({}, status, {
+      ok: false,
+      state: 'invalid-action',
+      message: 'Unsupported Quiz voice action. Ask to list actions.'
+    });
+  }
+  function getQuizVoiceScopedCommands() {
+    var status = getQuizVoiceBoundaryStatus();
+    var command = function (id, label, aliases, extra) {
+      return Object.assign({
+        id: id,
+        label: label,
+        aliases: aliases || []
+      }, extra || {});
+    };
+    if (status.ready && status.canEnterFreeformByVoice) {
+      commands.push(command('quiz_enter_response', 'Enter a Quiz response', ['response followed by your answer', 'my answer is'], {
+        params: ['response']
+      }));
+    }
+    var commands = [command('quiz_describe', 'Describe this Quiz', ['describe quiz', 'quiz status']), command('quiz_list_actions', 'List Quiz actions', ['list actions', 'what can I do'])];
+    if (status.ready) commands.push(command('quiz_read_question', 'Read the current question', ['read question', 'repeat question']));
+    if (status.ready && status.canResetByVoice) commands.push(command('quiz_try_again', 'Reset this Quiz response', ['try again', 'reset answer', 'clear answer']));
+    if (status.ready && status.canChooseByVoice) {
+      commands.push(command('quiz_choose', 'Choose a Quiz answer', ['choose A', 'answer one', 'select first'], {
+        params: ['choice']
+      }));
+    }
+    if (status.ready && status.actions.indexOf('check') >= 0) {
+      commands.push(command('quiz_check', 'Check my Quiz answer', ['check answer', 'check my answer'], {
+        risk: 'state-change',
+        confirmation: 'never'
+      }));
+    }
+    if (status.ready && status.actions.indexOf('next') >= 0) commands.push(command('quiz_next', 'Next Quiz question', ['next', 'next question']));
+    if (status.ready && status.actions.indexOf('previous') >= 0) commands.push(command('quiz_previous', 'Previous Quiz question', ['previous', 'previous question']));
+    if (status.actions && status.actions.indexOf('repeat-feedback') >= 0) commands.push(command('quiz_repeat_feedback', 'Repeat Quiz feedback', ['repeat feedback', 'repeat response']));
+    if (status.ready && status.actions.indexOf('submit') >= 0) {
+      commands.push(command('quiz_submit', 'Submit this assessment', ['submit assessment', 'submit quiz', 'finish assessment'], {
+        risk: 'destructive',
+        confirmation: 'always',
+        confirmMessage: 'Submit this assessment now? Say yes or no.'
+      }));
+    }
+    if (status.actions && status.actions.indexOf('close') >= 0) commands.push(command('quiz_close', 'Close Quiz', ['close quiz', 'exit quiz']));
+    return commands;
+  }
+  function dispatchQuizVoiceScopeAction(action, params, meta) {
+    if (params && Object.prototype.hasOwnProperty.call(params, 'response')) detail.response = params.response;
+    if (params && Object.prototype.hasOwnProperty.call(params, 'mode')) detail.mode = params.mode;
+    if (params && Object.prototype.hasOwnProperty.call(params, 'value')) detail.value = params.value;
+    var response = null;
+    var detail = {
+      action: action,
+      requestId: 'quiz-scope-' + Date.now().toString(36),
+      respond: function (payload) {
+        response = payload;
+      }
+    };
+    if (params && Object.prototype.hasOwnProperty.call(params, 'choice')) detail.choice = params.choice;
+    if (meta && meta.confirmed === true) detail.confirmed = true;
+    var event = typeof window.CustomEvent === 'function' ? new window.CustomEvent(QUIZ_VOICE_CONTROL_EVENT, {
+      detail: detail
+    }) : {
+      type: QUIZ_VOICE_CONTROL_EVENT,
+      detail: detail
+    };
+    window.dispatchEvent(event);
+    return response || {
+      ok: false,
+      handled: true,
+      state: 'unavailable',
+      narration: 'Quiz did not respond to that command.'
+    };
+  }
+  // Keep one stable scope registration while exposing the latest React state.
+  // This preserves an in-flight destructive confirmation across timer rerenders.
+  quizVoiceScopeRef.current.getStatus = getQuizVoiceBoundaryStatus;
+  quizVoiceScopeRef.current.getCommands = getQuizVoiceScopedCommands;
+  function registerQuizVoiceCommandScope() {
+    var module = window.AlloModules && window.AlloModules.AlloCommands;
+    if (!module || typeof module.registerCommandScope !== 'function') return null;
+    return module.registerCommandScope({
+      id: 'quiz',
+      priority: 80,
+      isActive: function () {
+        var current = quizVoiceScopeRef.current;
+        var status = current && current.getStatus ? current.getStatus() : null;
+        return !!(status && status.mounted && status.state !== 'unsupported-mode');
+      },
+      getCommands: function () {
+        var current = quizVoiceScopeRef.current;
+        return current && current.getCommands ? current.getCommands() : [];
+      },
+      getCapabilities: function () {
+        var current = quizVoiceScopeRef.current;
+        var status = current && current.getStatus ? current.getStatus() : {
+          actions: []
+        };
+        return {
+          describe: true,
+          listActions: true,
+          readQuestion: status.ready,
+          chooseAnswer: status.canChooseByVoice,
+          checkAnswer: status.actions && status.actions.indexOf('check') >= 0,
+          submit: status.actions && status.actions.indexOf('submit') >= 0,
+          next: status.actions && status.actions.indexOf('next') >= 0,
+          previous: status.actions && status.actions.indexOf('previous') >= 0,
+          repeatFeedback: status.actions && status.actions.indexOf('repeat-feedback') >= 0,
+          close: status.actions && status.actions.indexOf('close') >= 0
+        };
+      },
+      getState: function () {
+        var current = quizVoiceScopeRef.current;
+        return current && current.getStatus ? current.getStatus() : {
+          ready: false,
+          state: 'unavailable'
+        };
+      },
+      help: function () {
+        var current = quizVoiceScopeRef.current;
+        var commands = current && current.getCommands ? current.getCommands() : [];
+        return commands.map(function (item) {
+          return item.label;
+        });
+      },
+      parse: function (text) {
+        return _quizVoiceParseScopedUtterance(text);
+      },
+      quiz_enter_response: 'enter-response',
+      execute: function (commandId, params, ctx, meta) {
+        var actionMap = {
+          quiz_try_again: 'try-again',
+          quiz_describe: 'describe',
+          quiz_list_actions: 'list-actions',
+          quiz_read_question: 'read-question',
+          quiz_choose: 'choose',
+          quiz_check: 'check',
+          quiz_submit: 'submit',
+          quiz_next: 'next',
+          quiz_previous: 'previous',
+          quiz_repeat_feedback: 'repeat-feedback',
+          quiz_close: 'close'
+        };
+        var action = actionMap[commandId];
+        if (!action) return {
+          ok: false,
+          narration: 'That Quiz command is not available.'
+        };
+        var result = dispatchQuizVoiceScopeAction(action, params, meta);
+        return Object.assign({}, result, {
+          narration: result && result.message ? result.message : 'Done.'
+        });
+      }
+    });
+  }
+  React.useEffect(function () {
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
+    var handleQuizVoiceControl = function (event) {
+      var request = event && event.detail && typeof event.detail === 'object' ? event.detail : {};
+      var action = _quizVoiceNormalizeAction(request.action);
+      var status = getQuizVoiceBoundaryStatus();
+      var result = executeQuizVoiceAction(request, action, status);
+      publishQuizVoiceBoundaryResult(result, request, action);
+    };
+    window.addEventListener(QUIZ_VOICE_CONTROL_EVENT, handleQuizVoiceControl);
+    return function () {
+      window.removeEventListener(QUIZ_VOICE_CONTROL_EVENT, handleQuizVoiceControl);
+    };
+  });
+  React.useEffect(function () {
+    if (typeof window === 'undefined') return undefined;
+    var unregister = registerQuizVoiceCommandScope();
+    if (typeof unregister === 'function') return unregister;
+    // Quiz can mount before the deferred AlloCommands script finishes.
+    // Retry briefly without introducing a second command engine.
+    var attempts = 0;
+    var timer = window.setInterval(function () {
+      attempts += 1;
+      unregister = registerQuizVoiceCommandScope();
+      if (typeof unregister === 'function' || attempts >= 40) window.clearInterval(timer);
+    }, 250);
+    return function () {
+      window.clearInterval(timer);
+      if (typeof unregister === 'function') unregister();
+    };
+  }, []);
   if (attemptReceipt && !isTeacherMode && !isParentMode && !isEditingQuiz && !isPresentationMode && !isReviewGame) {
     return /*#__PURE__*/React.createElement("div", {
       className: "space-y-6"
@@ -7071,6 +8316,13 @@ function QuizView(props) {
     }, "Type a response to enable submit")));
   }())))));
 }
+QuizView.voiceBoundary = Object.freeze({
+  controlEvent: QUIZ_VOICE_CONTROL_EVENT,
+  statusEvent: QUIZ_VOICE_STATUS_EVENT,
+  parseChoice: _quizVoiceChoiceIndex,
+  parseScopedUtterance: _quizVoiceParseScopedUtterance,
+  choiceRange: 'A-H / 1-8 / first-eighth'
+});
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.QuizView = QuizView;

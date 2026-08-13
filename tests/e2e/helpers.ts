@@ -22,10 +22,11 @@ export async function bootAlloFlow(page: Page, mode: 'learning' | 'full' = 'lear
 
   await waitLoader();
 
-  // Mode picker is divs with role="button" + aria-label starting with "Full Platform"/"Learning Tools"/etc
-  const card = mode === 'learning'
-    ? page.locator('[role="button"][aria-label^="Learning Tools."]').first()
-    : page.locator('[role="button"][aria-label^="Full Platform."]').first();
+  // Support both the current native buttons and older role="button" cards.
+  const card = page.getByRole('button', {
+    name: mode === 'learning' ? /^Learning Tools\b/i : /^Full Platform\b/i,
+  }).first();
+  const launchPad = page.getByRole('region', { name: /Choose how to use AlloFlow/i });
 
   // A remembered mode can restore directly into the app, so accept either
   // valid boot state instead of waiting forever for a first-run picker that
@@ -36,24 +37,41 @@ export async function bootAlloFlow(page: Page, mode: 'learning' | 'full' = 'lear
     card.waitFor({ state: 'visible', timeout: 30000 }).then(() => 'picker' as const),
     sourceInput.waitFor({ state: 'visible', timeout: 30000 }).then(() => 'app' as const),
   ]);
-  if (bootState === 'picker') {
+  // The app shell can become visible behind the modal a few milliseconds before
+  // the launch card. Re-check it so pointer-based tests never start under it.
+  const pickerVisible = bootState === 'picker'
+    || await card.waitFor({ state: 'visible', timeout: 3000 }).then(() => true).catch(() => false);
+  if (pickerVisible) {
     console.log('Mode picker card is visible! Clicking it...');
     await page.waitForTimeout(1000); // Allow hydration
     // Click without force to ensure standard actionability (not covered, etc.)
     await card.click({ timeout: 15000 });
-    await page.waitForTimeout(2000);
+    await launchPad.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(500);
   } else {
     console.log('AlloFlow restored directly into the ready app.');
   }
 
-  // Dismiss tutorial overlays
+  // Full Platform proceeds to role selection; use the educator workspace for
+  // shared app tests. Learning Tools currently selects its role directly.
+  const roleDialog = page.getByRole('dialog', { name: /Welcome to AlloFlow/i });
+  const teacherButton = roleDialog.getByRole('button', { name: /^Teacher\b/i });
+  if (await teacherButton.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false)) {
+    await teacherButton.click({ timeout: 15000 });
+    await roleDialog.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+  }
+
+  await expect(sourceInput).toBeVisible({ timeout: 30000 });
+
+  // Dismiss tutorial overlays only inside dialogs. Unscoped text selectors can
+  // otherwise click real controls such as Full Pack's own Dismiss button.
   for (const sel of [
-    'button:has-text("Got it")',
-    'button:has-text("Skip")',
-    'button:has-text("Dismiss")',
-    'button:has-text("Close")',
-    '[role="button"]:has-text("Got it")',
-    'button[aria-label*="close" i]:visible',
+    '[role="dialog"] button:has-text("Got it")',
+    '[role="dialog"] button:has-text("Skip")',
+    '[role="dialog"] button:has-text("Dismiss")',
+    '[role="dialog"] button:has-text("Close")',
+    '[role="dialog"] [role="button"]:has-text("Got it")',
+    '[role="dialog"] button[aria-label*="close" i]:visible',
   ]) {
     const btn = page.locator(sel).first();
     if (await btn.count() > 0 && await btn.isVisible().catch(() => false)) {

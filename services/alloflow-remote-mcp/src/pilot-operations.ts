@@ -6,6 +6,7 @@ import {
   clearJobCheckpoint,
   clearDispatchPending,
   clearTerminalArtifacts,
+  completionNeedsReview,
   createDownloadGrant,
   createJob,
   createUpload,
@@ -50,6 +51,7 @@ export type PublicJob = {
     | "queued"
     | "running"
     | "completed"
+    | "completed_with_review"
     | "failed"
     | "cancelling"
     | "cancelled"
@@ -70,11 +72,16 @@ export type PublicJob = {
   afterScore?: number;
   resultAvailable: boolean;
   reportAvailable: boolean;
+  verificationState?: JobRow["verification_state"];
+  requiresReview: boolean;
   resultExpiresAt?: string;
   errorCode?: string;
 };
 
-function publicJob(job: JobRow): PublicJob {
+export function publicJob(job: JobRow): PublicJob {
+  const requiresReview =
+    job.status === "completed" &&
+    completionNeedsReview(job.verification_state);
   const outputAvailable =
     job.status === "completed" &&
     Boolean(job.output_expires_at) &&
@@ -82,7 +89,7 @@ function publicJob(job: JobRow): PublicJob {
   return {
     jobId: job.id,
     uploadId: job.upload_id,
-    status: job.status,
+    status: requiresReview ? "completed_with_review" : job.status,
     createdAt: toIso(job.created_at),
     updatedAt: toIso(job.updated_at),
     startedAt: job.started_at ? toIso(job.started_at) : undefined,
@@ -103,6 +110,10 @@ function publicJob(job: JobRow): PublicJob {
       outputAvailable &&
       Boolean(job.report_key) &&
       Boolean(job.report_sha256),
+    verificationState:
+      job.verification_state ??
+      (job.status === "completed" ? "unavailable" : undefined),
+    requiresReview,
     resultExpiresAt: job.output_expires_at
       ? toIso(job.output_expires_at)
       : undefined,

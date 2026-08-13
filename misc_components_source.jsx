@@ -376,6 +376,8 @@ const WordSoundsReviewPanel = ({
     const [playingAudioKey, setPlayingAudioKey] = React.useState(null);
     const [audioProgress, setAudioProgress] = React.useState({ ready: 0, total: 0 });
     const [reviewError, setReviewError] = React.useState(null);
+    const [isCountingGuideOpen, setIsCountingGuideOpen] = React.useState(false);
+    const [deletedWordUndo, setDeletedWordUndo] = React.useState(null);
     const [showProbeEndConfirm, setShowProbeEndConfirm] = React.useState(false);
     const reviewDialogRef = React.useRef(null);
     const reviewBackRef = React.useRef(null);
@@ -587,20 +589,69 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
         onReorderWords(newList);
         setExpandedIndex(null);
     };
+    const focusReviewDeleteControl = (preferredIndex) => {
+        setTimeout(() => {
+            if (unmountedRef.current) return;
+            const buttons = reviewDialogRef.current?.querySelectorAll('[data-word-delete-button]');
+            const targetIndex = buttons?.length ? Math.min(preferredIndex, buttons.length - 1) : -1;
+            const target = targetIndex >= 0 ? buttons[targetIndex] : reviewBackRef.current;
+            target?.focus?.();
+        }, 0);
+    };
+    const deleteReviewWord = (event, word, index) => {
+        event.stopPropagation();
+        if (typeof onDeleteWord !== 'function') {
+            warnLog('onDeleteWord is not a function');
+            return;
+        }
+        const label = word?.targetWord || word?.word || (t('common.word') || 'Word') + ' ' + (index + 1);
+        setDeletedWordUndo({ word, index, label });
+        setExpandedIndex(null);
+        onDeleteWord(index);
+        focusReviewDeleteControl(index);
+    };
+    const undoReviewWordDelete = () => {
+        if (!deletedWordUndo || typeof onReorderWords !== 'function') return;
+        const currentWords = Array.isArray(latestWordsRef.current) ? [...latestWordsRef.current] : [];
+        const deletedId = deletedWordUndo.word?.id;
+        const isAlreadyPresent = currentWords.some((item) => item === deletedWordUndo.word || (deletedId != null && item?.id === deletedId));
+        if (!isAlreadyPresent) {
+            currentWords.splice(Math.min(deletedWordUndo.index, currentWords.length), 0, deletedWordUndo.word);
+            onReorderWords(currentWords);
+        }
+        const restoredIndex = Math.min(deletedWordUndo.index, Math.max(currentWords.length - 1, 0));
+        setDeletedWordUndo(null);
+        focusReviewDeleteControl(restoredIndex);
+    };
     return (
-        <div role="presentation" className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300">
-            <div ref={reviewDialogRef} role="dialog" aria-modal="true" aria-labelledby="word-sounds-review-title" aria-describedby="word-sounds-review-description" tabIndex={-1} onKeyDown={(event) => { const nested = event.target?.closest?.('[role="alertdialog"]'); if (nested) return; trapReviewFocus(event, reviewDialogRef.current, requestBackToSetup); }} className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-                <div className="p-6 border-b bg-gradient-to-r from-pink-500 to-violet-500 text-white flex-shrink-0">
-                    <h2 id="word-sounds-review-title" className="text-2xl font-black flex items-center gap-2">{t('word_sounds.pre_activity_review') || '📋 Pre-Activity Review'}
-                        <span className="relative group ml-2">
-                            <span className="cursor-help text-white/70 hover:text-white text-base">ℹ️</span>
-                            <div className="absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity motion-reduce:transition-none z-50 pointer-events-none">
+        <div role="presentation" className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-2 sm:p-4 animate-in motion-reduce:animate-none fade-in duration-300">
+            <div ref={reviewDialogRef} role="dialog" aria-modal="true" aria-labelledby="word-sounds-review-title" aria-describedby="word-sounds-review-description" tabIndex={-1} onKeyDown={(event) => { const nested = event.target?.closest?.('[role="alertdialog"]'); if (nested) return; trapReviewFocus(event, reviewDialogRef.current, requestBackToSetup); }} className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-4xl w-full max-h-[calc(100dvh-1rem)] sm:max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-pink-500 to-violet-500 text-white flex-shrink-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <h2 id="word-sounds-review-title" className="text-xl sm:text-2xl font-black">{t('word_sounds.pre_activity_review') || '📋 Pre-Activity Review'}</h2>
+                        <div className="relative ml-1 sm:ml-2">
+                            <button
+                                type="button"
+                                aria-label={t('word_sounds.phonics_counting_guide_title') || 'Phonics Counting Guide'}
+                                aria-expanded={isCountingGuideOpen}
+                                aria-controls="word-sounds-counting-guide"
+                                onClick={() => setIsCountingGuideOpen((open) => !open)}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Escape' && isCountingGuideOpen) {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        setIsCountingGuideOpen(false);
+                                    }
+                                }}
+                                className="min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-violet-500 text-base"
+                            ><span aria-hidden="true">ℹ️</span></button>
+                            {isCountingGuideOpen && <div id="word-sounds-counting-guide" role="note" className="absolute right-0 sm:left-0 sm:right-auto top-full mt-2 w-[min(18rem,calc(100vw-2rem))] p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl z-50">
                                 <strong className="block mb-1">{t('word_sounds.phonics_counting_guide_title') || '📖 Phonics Counting Guide'}</strong>
                                 <p className="mb-2">{t('word_sounds.r_controlled_explanation_prefix') || 'R-controlled vowels (ar, er, ir, or, ur) are counted as '}<strong>{t('word_sounds.single_sounds') || 'single sounds'}</strong>{t('word_sounds.r_controlled_explanation_suffix') || ' because the vowel and R blend together.'}</p>
-                                <p className="text-slate-600">{t('word_sounds.r_controlled_example') || 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.'}</p>
-                            </div>
-                        </span>
-                    </h2>
+                                <p className="text-slate-200">{t('word_sounds.r_controlled_example') || 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.'}</p>
+                            </div>}
+                        </div>
+                    </div>
                     <p id="word-sounds-review-description" className="text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap">
                         <span>{t('word_sounds.review_and_edit_words') || 'Review and edit words'} • {preloadedWords.length} {t('word_sounds.words_ready') || 'words ready'}</span>
                         {isLoading && <span role="status" aria-live="polite" className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse motion-reduce:animate-none"><div className="w-2 h-2 bg-white rounded-full animate-bounce motion-reduce:animate-none"/> {t('word_sounds.generating_more') || 'Generating more...'}</span>}
@@ -620,7 +671,17 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                     </p>
                     {reviewError && <p id="word-sounds-review-error" role="alert" className="mt-3 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-800">{reviewError.message}</p>}
                 </div>
-                <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                {deletedWordUndo && (
+                    <div className="mx-3 mt-3 sm:mx-6 sm:mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                        <span role="status" aria-live="polite" aria-atomic="true">&ldquo;{deletedWordUndo.label}&rdquo; {t('word_sounds.word_removed') || 'removed.'}</span>
+                        {typeof onReorderWords === 'function' && (
+                            <button type="button" onClick={undoReviewWordDelete} className="min-h-11 rounded-lg px-3 py-2 font-bold text-amber-900 underline decoration-2 underline-offset-2 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-700">
+                                {t('common.undo') || 'Undo'}
+                            </button>
+                        )}
+                    </div>
+                )}
+                <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 custom-scrollbar">
                     {/* Pack completeness: what the student device will actually
                         have, per activity — portable audio, board answers,
                         decoding pictures. Rendered only when something is
@@ -903,8 +964,8 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                 key={word.id || `word-${word.targetWord || word.word}-${idx}`}
                                 className={`border-2 rounded-2xl transition-all motion-reduce:transition-none ${expandedIndex === idx ? 'border-pink-300 bg-pink-50/50' : 'border-slate-100 hover:border-pink-200'}`}
                             >
-                                <div className="p-4 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
+                                <div className="p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3">
+                                    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:gap-3">
                                         <div className="relative z-50">
                                             <button
                                                 type="button"
@@ -959,26 +1020,11 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                         <div className="relative z-50" style={{ pointerEvents: 'auto' }}>
                                             <button
                                                 type="button"
-                                                onMouseDown={(e) => {
-                                                    e.stopPropagation();
-                                                    e.preventDefault();
-                                                    e.nativeEvent.stopImmediatePropagation();
-                                                    debugLog("🗑️ DELETE pressed for idx:", idx);
-                                                    if (typeof onDeleteWord === 'function') {
-                                                        onDeleteWord(idx);
-                                                        debugLog("✅ Called onDeleteWord for idx:", idx);
-                                                    } else {
-                                                        warnLog("❌ onDeleteWord is not a function");
-                                                    }
-                                                    return false;
-                                                }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    e.preventDefault();
-                                                    return false;
-                                                }}
-                                                className="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 transition-colors motion-reduce:transition-none border-2 border-red-200 hover:border-red-400"
+                                                onClick={(event) => deleteReviewWord(event, word, idx)}
+                                                aria-label={(t('common.delete_word') || 'Delete word') + ': ' + (word.targetWord || word.word || (t('common.word') || 'Word') + ' ' + (idx + 1))}
+                                                className="min-w-10 min-h-10 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 transition-colors motion-reduce:transition-none border-2 border-red-200 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                                                 style={{ pointerEvents: 'auto', cursor: 'pointer', position: 'relative', zIndex: 100 }}
+                                                data-word-delete-button="true"
                                                 data-help-key="word_sounds_review_delete_word" title={t('common.delete_word')}
                                             >🗑️</button>
                                         </div>
@@ -1092,8 +1138,8 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 </button>
                                             )}
                                         </div>
-                                        <span className="text-xl font-bold text-slate-800">{word.targetWord || word.word}</span>
-                                        <select aria-label={t('common.selection')}
+                                        <span className="min-w-0 break-words text-xl font-bold text-slate-800">{word.targetWord || word.word}</span>
+                                        <select aria-label={(t('word_sounds.difficulty') || 'Difficulty') + ': ' + (word.targetWord || word.word || (t('common.word') || 'Word') + ' ' + (idx + 1))}
                                             value={word.difficulty || 'medium'}
                                             onClick={(e) => e.stopPropagation()}
                                             onChange={(e) => onUpdateWord(idx, { ...word, difficulty: e.target.value })}
@@ -1677,24 +1723,24 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                         ))
                     )}
                 </div>
-                <div className="p-4 border-t bg-slate-50 flex justify-between items-center flex-shrink-0">
+                <div className="p-3 sm:p-4 border-t bg-slate-50 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 flex-shrink-0">
                     <button
                         ref={reviewBackRef}
                         type="button"
-                        aria-label={t('common.previous')}
+                        aria-label={t('word_sounds.back_to_setup') || 'Back to Setup'}
                         onClick={requestBackToSetup}
-                        data-help-key="word_sounds_review_back" className="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium flex items-center gap-2 hover:bg-slate-100 rounded-lg transition-colors motion-reduce:transition-none"
+                        data-help-key="word_sounds_review_back" className="w-full sm:w-auto min-h-11 px-4 py-2 text-slate-600 hover:text-slate-800 font-medium flex items-center justify-center gap-2 hover:bg-slate-100 rounded-lg transition-colors motion-reduce:transition-none"
                     >
-                        <ChevronLeft size={18} />
+                        <ChevronLeft size={18} aria-hidden="true" />
                         {t('word_sounds.back_to_setup') || 'Back to Setup'}
                     </button>
-                    <div className="flex gap-3">
+                    <div className="w-full sm:w-auto flex gap-3">
                         <button type="button"
-                            aria-label={t('common.play')}
+                            aria-label={t('word_sounds.start_activity') || 'Start Activity'}
                             onClick={onStartActivity}
-                            data-help-key="word_sounds_review_start" className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center gap-2"
+                            data-help-key="word_sounds_review_start" className="w-full sm:w-auto min-h-11 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center justify-center gap-2"
                         >
-                            <Play size={18} /> {t('word_sounds.start_activity') || 'Start Activity'}
+                            <Play size={18} aria-hidden="true" /> {t('word_sounds.start_activity') || 'Start Activity'}
                         </button>
                     </div>
                 </div>

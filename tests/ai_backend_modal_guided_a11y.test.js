@@ -87,6 +87,18 @@ describe('guided modal a11y', () => {
     }
   });
 
+  it('exposes the local-storage shortcut as a named, full-size button', async () => {
+    await render();
+    const section = container.querySelector('#ai-backend-guided-storage-shortcut');
+    const button = byHelpKey('ai_backend_guided_storage_btn');
+    expect(section.getAttribute('aria-labelledby')).toBe('ai-backend-guided-storage-title');
+    expect(container.querySelector('#ai-backend-guided-storage-title')).toBeTruthy();
+    expect(button.tagName).toBe('BUTTON');
+    expect(button.getAttribute('type')).toBe('button');
+    expect(button.textContent.trim()).toBe('Manage local storage');
+    expect(button.className).toContain('min-h-11');
+  });
+
   it('Advanced disclosure reports aria-expanded truthfully', async () => {
     await render();
     const toggle = byHelpKey('ai_backend_advanced_toggle');

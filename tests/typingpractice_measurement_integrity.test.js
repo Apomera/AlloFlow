@@ -87,8 +87,10 @@ describe('Typing Practice measurement integrity', () => {
     expect(source).toContain("pendingInputKindRef.current = 'paste'");
     expect(source).toContain("pendingInputKindRef.current = 'text-input'");
     expect(source).toContain('onPaste: onTypingPaste');
-    expect(source).toContain("inputType === 'insertFromPaste'");
-    expect(source).toContain("inputType.indexOf('Composition')");
+    expect(source).toContain('typingPracticeInputKindFromType(inputType)');
+    expect(source).toContain("type === 'insertFromPaste'");
+    expect(source).toContain("type.indexOf('Composition')");
+    expect(source).toContain("type === 'insertFromDictation'");
   });
 
   it('prevents pasted practice from changing clinical or comparative achievements', () => {

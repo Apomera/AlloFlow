@@ -8,11 +8,11 @@ Generated: 2026-07-22
 | --- | ---: |
 | Questions scanned | 1500 |
 | Incorrect options scanned | 4500 |
-| Questions with one or more warnings | 617 |
-| Incorrect options with one or more warnings | 1740 |
-| Insufficient-detail warnings | 644 |
-| Generic-template warnings | 1035 |
-| Choice-restatement warnings | 421 |
+| Questions with one or more warnings | 614 |
+| Incorrect options with one or more warnings | 1734 |
+| Insufficient-detail warnings | 642 |
+| Generic-template warnings | 1031 |
+| Choice-restatement warnings | 420 |
 | Full-key-echo warnings | 260 |
 | Wave-05 incorrect options with warnings | 0 of 24 |
 | Wave-06 incorrect options with warnings | 0 of 24 |

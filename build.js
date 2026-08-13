@@ -168,6 +168,19 @@ const MODULES = [
         name: 'AlloCrypto',
         filename: 'allo_crypto_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },    {
+        name: 'DeviceAccessCode',
+        filename: 'device_access_code_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AlloDeviceVault',
+        filename: 'allo_device_vault_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },    {
+        name: 'AlloRecoveryVaultIntegration',
+        filename: 'allo_recovery_vault_integration_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'SubmissionInbox',
@@ -222,6 +235,11 @@ const MODULES = [
     {
         name: 'StandardsProvider',
         filename: 'standards_provider_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LearningWebRegistry',
+        filename: 'learning_web_registry_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -607,6 +625,11 @@ const MODULES = [
     {
         name: 'ReadingLibrary',
         filename: 'reading_library_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LexicalGraph',
+        filename: 'lexical_graph_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {

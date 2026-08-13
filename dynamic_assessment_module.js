@@ -29,7 +29,13 @@
   // ═══════════════════════════════════════════════════════════
 
   var STORAGE_KEY = "alloflow_dynamic_assessment_v1";
-  var DA_SCHEMA_VERSION = "1.3.0";
+  var DA_SCHEMA_VERSION = "1.4.0";
+  var DA_AUDIT_TRAIL_VERSION = "1.0.0";
+  var DA_BACKUP_FORMAT = "alloflow-da-session-backup";
+  var DA_BACKUP_VERSION = "1.0.0";
+  var DA_ENCRYPTED_BACKUP_FORMAT = "alloflow-da-encrypted-backup";
+  var DA_ENCRYPTED_BACKUP_VERSION = "2.0.0";
+  var DA_BACKUP_MIN_PASSWORD_LENGTH = 12;
   var DA_PROBE_BANK_VERSION = "built-in-1.0.0";
   var DA_CUSTOM_PROBE_VERSION = "custom-1.0.0";
   var DA_VERSION_MANIFEST_VERSION = "1.0.0";
@@ -40,7 +46,107 @@
     "legacy": "legacy-1.0.0"
   };
 
-  // ── Reduced-motion CSS (WCAG 2.3.3) ──
+  // Versioned, authenticated full-history backups. Cryptography is intentionally
+  // delegated to the app-wide AlloCrypto module so password-envelope validation,
+  // limits, upgrades, and algorithm policy have one implementation.
+  function daBackupError(code, message) {
+    var error = new Error(message || "Dynamic Assessment backup error.");
+    error.code = code;
+    return error;
+  }
+
+  function daResolveBackupCrypto(cryptoApi) {
+    var api = cryptoApi || (typeof window !== "undefined" && window.AlloModules ? window.AlloModules.AlloCrypto : null);
+    if (!api || typeof api.encryptJSON !== "function" || typeof api.decryptJSON !== "function"
+      || typeof api.isEncryptedEnvelope !== "function") {
+      throw daBackupError("crypto-unavailable", "AlloFlow secure backup encryption has not loaded.");
+    }
+    return api;
+  }
+
+  function daNormalizeBackupPassword(password, requireMinimum) {
+    if (typeof password !== "string" || password.length === 0) throw daBackupError("password-required", "Enter the backup password.");
+    if (password.length > 1024) throw daBackupError("password-too-long", "Backup passwords must be 1,024 characters or fewer.");
+    if (requireMinimum && password.length < DA_BACKUP_MIN_PASSWORD_LENGTH) {
+      throw daBackupError("password-too-short", "Use at least " + DA_BACKUP_MIN_PASSWORD_LENGTH + " characters for the backup password.");
+    }
+    return password;
+  }
+
+  function daBackupTimestamp(value) {
+    var parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? new Date(parsed).toISOString() : new Date().toISOString();
+  }
+
+  function daBuildBackupPayload(sessions, exportedAt) {
+    var list = Array.isArray(sessions) ? sessions.slice() : [];
+    return {
+      _exportFormat: DA_BACKUP_FORMAT,
+      _exportVersion: DA_BACKUP_VERSION,
+      _exportedAt: daBackupTimestamp(exportedAt),
+      sessionCount: list.length,
+      sessions: list
+    };
+  }
+
+  function daValidateEncryptedBackupEnvelope(envelope, cryptoApi) {
+    if (!envelope || typeof envelope !== "object" || Array.isArray(envelope)) return { valid: false, reason: "invalid-envelope" };
+    if (envelope._exportFormat !== DA_ENCRYPTED_BACKUP_FORMAT) return { valid: false, reason: "unsupported-format" };
+    if (envelope._exportVersion !== DA_ENCRYPTED_BACKUP_VERSION) return { valid: false, reason: "unsupported-version" };
+    if (!Number.isFinite(Date.parse(envelope._encryptedAt))) return { valid: false, reason: "invalid-timestamp" };
+    try {
+      var api = daResolveBackupCrypto(cryptoApi);
+      return api.isEncryptedEnvelope(envelope.encryption)
+        ? { valid: true }
+        : { valid: false, reason: "unsupported-encryption" };
+    } catch (error) {
+      return { valid: false, reason: error && error.code ? error.code : "crypto-unavailable" };
+    }
+  }
+
+  function daEncryptBackupPayload(payload, password, cryptoApi, encryptedAt) {
+    var api, normalizedPassword;
+    try {
+      api = daResolveBackupCrypto(cryptoApi);
+      normalizedPassword = daNormalizeBackupPassword(password, true);
+    } catch (error) {
+      return Promise.reject(error);
+    }
+    return api.encryptJSON(payload, normalizedPassword).then(function (encrypted) {
+      return {
+        _exportFormat: DA_ENCRYPTED_BACKUP_FORMAT,
+        _exportVersion: DA_ENCRYPTED_BACKUP_VERSION,
+        _encryptedAt: daBackupTimestamp(encryptedAt),
+        encryption: encrypted
+      };
+    });
+  }
+
+  function daDecryptBackupEnvelope(envelope, password, cryptoApi) {
+    var api, normalizedPassword, validation;
+    try {
+      api = daResolveBackupCrypto(cryptoApi);
+      normalizedPassword = daNormalizeBackupPassword(password, false);
+      validation = daValidateEncryptedBackupEnvelope(envelope, api);
+      if (!validation.valid) throw daBackupError("invalid-envelope", "That file is not a supported encrypted Dynamic Assessment backup.");
+    } catch (error) {
+      return Promise.reject(error);
+    }
+    return api.decryptJSON(envelope.encryption, normalizedPassword).then(function (parsed) {
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)
+        || parsed._exportFormat !== DA_BACKUP_FORMAT || parsed._exportVersion !== DA_BACKUP_VERSION
+        || !Number.isFinite(Date.parse(parsed._exportedAt)) || !Array.isArray(parsed.sessions)
+        || !Number.isInteger(parsed.sessionCount) || parsed.sessionCount !== parsed.sessions.length) {
+        throw daBackupError("decrypt-failed", "The backup could not be decrypted.");
+      }
+      return parsed;
+    }).catch(function (error) {
+      if (error && (error.code === "crypto-unavailable" || error.code === "password-required" || error.code === "password-too-long")) throw error;
+      throw daBackupError("decrypt-failed", "The backup could not be decrypted. The password may be wrong, or the file may have changed.");
+    });
+  }
+
+  // Reduced-motion CSS (WCAG 2.3.3)
   (function () {
     if (typeof document === "undefined") return;
     if (document.getElementById("allo-da-motion-reduce-css")) return;
@@ -1623,6 +1729,105 @@
     return { manifestVersion: s.itemVersionManifestVersion || DA_VERSION_MANIFEST_VERSION, probeVersion: String(s.probeVersion || s.probeBankVersion || probeFallback), posttestForm: form, posttestFormVersion: String(s.posttestFormVersion || formFallback), itemManifest: manifest, versionFingerprint: fingerprint, legacy: !usable };
   }
 
+  var DA_AUDIT_EVENT_TYPES = {
+    "session-completed": true,
+    "session-archived-incomplete": true,
+    "primary-review-marked": true,
+    "primary-review-reopened": true,
+    "second-rater-review-created": true,
+    "second-rater-review-revised": true,
+    "session-imported": true,
+    "record-updated": true
+  };
+
+  var DA_AUDIT_DETAIL_KEYS = {
+    recordStatus: true, status: true, reason: true, revision: true,
+    agreementStatus: true, resolutionStatus: true, itemCount: true,
+    sessionSchemaVersion: true, versionFingerprint: true,
+    evidenceComplete: true, evidenceSufficient: true, source: true, importedFromVersion: true
+  };
+
+  function daNormalizeAuditDetails(details) {
+    var source = details && typeof details === "object" && !Array.isArray(details) ? details : {};
+    var safe = {};
+    Object.keys(source).forEach(function (key) {
+      if (!DA_AUDIT_DETAIL_KEYS[key]) return;
+      var value = source[key];
+      if (typeof value === "boolean") safe[key] = value;
+      else if (typeof value === "number" && Number.isFinite(value)) safe[key] = value;
+      else if (typeof value === "string") safe[key] = value.trim().slice(0, 120);
+    });
+    return safe;
+  }
+
+  function daNormalizeAuditTrail(trail) {
+    if (!Array.isArray(trail)) return [];
+    return trail.slice(0, 500).map(function (event, index) {
+      if (!event || typeof event !== "object") return null;
+      var requestedType = String(event.type || "").trim().slice(0, 80);
+      var type = DA_AUDIT_EVENT_TYPES[requestedType] ? requestedType : "record-updated";
+      var occurredAt = String(event.occurredAt || "").trim();
+      if (!requestedType || !Number.isFinite(Date.parse(occurredAt))) return null;
+      var sequence = Number.isInteger(event.sequence) && event.sequence > 0 ? event.sequence : index + 1;
+      var details = daNormalizeAuditDetails(event.details);
+      var eventId = String(event.eventId || "").trim().slice(0, 100);
+      if (!/^audit-[a-f0-9]{8}$/.test(eventId)) eventId = "audit-" + daHashString([type, occurredAt, sequence, JSON.stringify(details)].join("|")).toString(16).padStart(8, "0");
+      return { eventVersion: DA_AUDIT_TRAIL_VERSION, eventId: eventId, sequence: sequence, type: type, occurredAt: occurredAt, details: details };
+    }).filter(function (event) { return !!event; });
+  }
+
+  function daAppendAuditEvent(session, type, occurredAt, details) {
+    var source = session && typeof session === "object" ? session : {};
+    var trail = daNormalizeAuditTrail(source.auditTrail);
+    var timestamp = Number.isFinite(Date.parse(occurredAt)) ? new Date(occurredAt).toISOString() : new Date().toISOString();
+    var sequence = trail.length > 0 ? Math.max.apply(null, trail.map(function (event) { return event.sequence; })) + 1 : 1;
+    var safeDetails = daNormalizeAuditDetails(details);
+    var requestedType = String(type || "").trim().slice(0, 80);
+    var eventType = DA_AUDIT_EVENT_TYPES[requestedType] ? requestedType : "record-updated";
+    var event = {
+      eventVersion: DA_AUDIT_TRAIL_VERSION,
+      eventId: "audit-" + daHashString([source.id || "", eventType, timestamp, sequence, JSON.stringify(safeDetails)].join("|")).toString(16).padStart(8, "0"),
+      sequence: sequence, type: eventType, occurredAt: timestamp, details: safeDetails
+    };
+    return Object.assign({}, source, { auditTrailVersion: DA_AUDIT_TRAIL_VERSION, auditTrail: trail.concat([event]) });
+  }
+
+  function daValidateAuditTrail(trail) {
+    if (trail === undefined || trail === null) return { valid: true, legacy: true, events: [] };
+    if (!Array.isArray(trail) || trail.length > 500) return { valid: false, reason: "invalid-audit-trail" };
+    var normalized = daNormalizeAuditTrail(trail);
+    if (normalized.length !== trail.length) return { valid: false, reason: "invalid-audit-event" };
+    for (var i = 0; i < normalized.length; i++) {
+      var raw = trail[i];
+      if (!DA_AUDIT_EVENT_TYPES[String(raw && raw.type || "")]) return { valid: false, reason: "invalid-audit-event-type" };
+      if (normalized[i].sequence !== i + 1) return { valid: false, reason: "invalid-audit-sequence" };
+      var rawDetails = raw && raw.details;
+      if (rawDetails !== undefined && (!rawDetails || typeof rawDetails !== "object" || Array.isArray(rawDetails))) return { valid: false, reason: "invalid-audit-details" };
+      var keys = rawDetails ? Object.keys(rawDetails) : [];
+      for (var j = 0; j < keys.length; j++) {
+        var key = keys[j];
+        var value = rawDetails[key];
+        if (!DA_AUDIT_DETAIL_KEYS[key]) return { valid: false, reason: "invalid-audit-detail-key" };
+        if (!(typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value)) || (typeof value === "string" && value.length <= 120))) return { valid: false, reason: "invalid-audit-detail-value" };
+      }
+    }
+    return { valid: true, legacy: false, events: normalized };
+  }
+
+  function daAuditEventLabel(type) {
+    var labels = {
+      "session-completed": "Session completed",
+      "session-archived-incomplete": "Incomplete record saved",
+      "primary-review-marked": "Primary review completed",
+      "primary-review-reopened": "Primary review reopened",
+      "second-rater-review-created": "Second-rater review added",
+      "second-rater-review-revised": "Second-rater review revised",
+      "session-imported": "Session restored from backup",
+      "record-updated": "Record updated"
+    };
+    return labels[type] || "Record updated";
+  }
+
   // ═════════════════════════════════════════════════════════
   // SECTION 2 — Scoring + modifiability
   // ═════════════════════════════════════════════════════════
@@ -2247,7 +2452,8 @@
     familySummary: true,
     teacherHandoff: true,
     progressMonitoring: true,
-    secondRaterReview: true
+    secondRaterReview: true,
+    auditTrail: true
   };
 
   function daRedactSessionForExport(sessionRecord) {
@@ -2263,6 +2469,7 @@
         if (Object.prototype.hasOwnProperty.call(source.secondRaterReview, key)) redacted.secondRaterReview[key] = source.secondRaterReview[key];
       });
     }
+    redacted.auditTrail = daNormalizeAuditTrail(source.auditTrail);
     redacted.itemResults = (Array.isArray(source.itemResults) ? source.itemResults : []).map(function (result) {
       var safe = {};
       ["itemId", "phase", "promptLevelReached", "responseStatus", "supportType",
@@ -3202,7 +3409,15 @@
       progressMonitoring: null
     });
     delete record.dateCompleted;
-    return record;
+    return daAppendAuditEvent(record, "session-archived-incomplete", record.dateArchived, {
+      recordStatus: "incomplete",
+      reason: primaryReason,
+      itemCount: record.sessionItemIds.length,
+      sessionSchemaVersion: record.sessionSchemaVersion,
+      versionFingerprint: record.versionFingerprint,
+      evidenceComplete: !!evidence.complete,
+      evidenceSufficient: !!evidence.sufficient
+    });
   }
 
   var DA_SECOND_RATER_AGREEMENTS = { agree: true, disagree: true, uncertain: true };
@@ -3276,6 +3491,8 @@
       var secondRaterValidation = daValidateSecondRaterReview(session.secondRaterReview);
       if (!secondRaterValidation.valid) return { valid: false, reason: "invalid-second-rater-review", detail: secondRaterValidation.reason, evidence: evidence };
     }
+    var auditValidation = daValidateAuditTrail(session.auditTrail);
+    if (!auditValidation.valid) return { valid: false, reason: auditValidation.reason, evidence: evidence };
     if (session.recordStatus === "incomplete") {
       if (session.modifiabilityIndex !== null && session.modifiabilityIndex !== undefined) {
         return { valid: false, reason: "incomplete-record-has-index", evidence: evidence };
@@ -6141,6 +6358,25 @@
     var daInsufficientTitle = daText("dynamic_assessment.incomplete_title", "Insufficient evidence for an interpretation");
     var daInsufficientDescription = daText("dynamic_assessment.incomplete_description", "Complete all assessment phases before interpreting this index. This tool is descriptive, not a normed measure.");
     var daFullExportWarning = daText("dynamic_assessment.full_export_warning", "Full exports include response text, examiner notes, and AI mediation details. Store them securely and share only with authorized people.");
+    var daBackupEncryptedLabel = daText("dynamic_assessment.backup_encrypted_label", "Encrypted backup");
+    var daBackupEncryptedTitle = daText("dynamic_assessment.backup_encrypted_title", "Download a password-encrypted backup of every saved Dynamic Assessment session");
+    var daRestoreBackupLabel = daText("dynamic_assessment.restore_backup_label", "Restore backup");
+    var daBackupPasswordTitle = daText("dynamic_assessment.backup_password_title", "Protect this backup with a password");
+    var daBackupPasswordDescription = daText("dynamic_assessment.backup_password_description", "The file will contain your full local Dynamic Assessment history, encrypted on this device. You will need this password to restore it; AlloFlow cannot recover the password.");
+    var daBackupPasswordLabel = daText("dynamic_assessment.backup_password_label", "Backup password");
+    var daBackupPasswordConfirmLabel = daText("dynamic_assessment.backup_password_confirm_label", "Confirm backup password");
+    var daBackupPasswordRequirements = daText("dynamic_assessment.backup_password_requirements", "Use at least 12 characters. The password is used only for this download and is not saved by AlloFlow.");
+    var daBackupShowPasswordLabel = daText("dynamic_assessment.backup_show_password", "Show password");
+    var daBackupDownloadLabel = daText("dynamic_assessment.backup_download_encrypted", "Download encrypted backup");
+    var daBackupEncryptingLabel = daText("dynamic_assessment.backup_encrypting", "Encrypting?");
+    var daBackupDecryptTitle = daText("dynamic_assessment.backup_decrypt_title", "Unlock encrypted backup");
+    var daBackupDecryptDescription = daText("dynamic_assessment.backup_decrypt_description", "Enter the password used when this backup was created. Restored sessions are merged; existing local records are never overwritten.");
+    var daBackupDecryptLabel = daText("dynamic_assessment.backup_decrypt_action", "Unlock and restore");
+    var daBackupDecryptingLabel = daText("dynamic_assessment.backup_decrypting", "Decrypting?");
+    var daBackupCryptoUnavailable = daText("dynamic_assessment.backup_crypto_unavailable", "Secure backup encryption is unavailable in this browser. Update the browser or use a supported secure context.");
+    var daBackupPasswordMismatch = daText("dynamic_assessment.backup_password_mismatch", "The two passwords do not match.");
+    var daBackupWrongPassword = daText("dynamic_assessment.backup_wrong_password", "The backup could not be decrypted. The password may be wrong, or the file may have changed.");
+    var daBackupLegacyRestored = daText("dynamic_assessment.backup_legacy_restored", "This older backup was not encrypted. Consider replacing it with a new encrypted backup.");
     var daExportFullLabel = daText("dynamic_assessment.export_full", "Export full JSON");
     var daExportRedactedLabel = daText("dynamic_assessment.export_redacted", "Safe JSON");
     var daExportRedactedTitle = daText("dynamic_assessment.export_redacted_title", "Download a redacted JSON summary without response text or notes");
@@ -6182,6 +6418,21 @@
     var daVersionComparisonCaution = daText("dynamic_assessment.version_comparison_caution", "Probe or form revisions differ across these sessions. Treat the trajectory as descriptive; direct item-level comparisons are not valid.");
     var daVersionComparisonConsistent = daText("dynamic_assessment.version_comparison_consistent", "Probe-bank and posttest-form revisions match across these sessions. The trajectory is still descriptive, not a normed growth measurement.");
     var daVersionMismatchLabel = daText("dynamic_assessment.version_mismatch_label", "Version mismatch");
+    var daAuditHistoryTitle = daText("dynamic_assessment.audit_history_title", "Record history");
+    var daAuditHistoryDescription = daText("dynamic_assessment.audit_history_description", "Application-recorded history of completion, review, second-rater, and restore events. It excludes response text and reviewer identity and is not cryptographic proof.");
+    var daAuditHistoryLegacy = daText("dynamic_assessment.audit_history_legacy", "This legacy record predates audit tracking; earlier changes are unavailable.");
+    var daAuditHistoryEmpty = daText("dynamic_assessment.audit_history_empty", "No audit events are available for this record.");
+    var daAuditHistoryInvalid = daText("dynamic_assessment.audit_history_invalid", "Audit history could not be verified.");
+    var daAuditEventLabels = {
+      "session-completed": daText("dynamic_assessment.audit_event_completed", "Session completed"),
+      "session-archived-incomplete": daText("dynamic_assessment.audit_event_incomplete", "Incomplete record saved"),
+      "primary-review-marked": daText("dynamic_assessment.audit_event_reviewed", "Primary review completed"),
+      "primary-review-reopened": daText("dynamic_assessment.audit_event_reopened", "Primary review reopened"),
+      "second-rater-review-created": daText("dynamic_assessment.audit_event_second_created", "Second-rater review added"),
+      "second-rater-review-revised": daText("dynamic_assessment.audit_event_second_revised", "Second-rater review revised"),
+      "session-imported": daText("dynamic_assessment.audit_event_imported", "Session restored from backup"),
+      "record-updated": daText("dynamic_assessment.audit_event_updated", "Record updated")
+    };
     var daSecondRaterRoleOptions = [
       { id: "school-psychologist", label: daText("dynamic_assessment.second_rater_role_psychologist", "School psychologist") },
       { id: "slp", label: daText("dynamic_assessment.second_rater_role_slp", "Speech-language pathologist") },
@@ -6311,6 +6562,80 @@
     var daConfirmTuple = useState(null); // { message, confirmLabel, danger, onConfirm, _opener }
     var daConfirm = daConfirmTuple[0];
     var setDaConfirm = daConfirmTuple[1];
+    // Passwords are deliberately kept in transient component state only. Closing
+    // this dialog discards them; they are never included in persisted DA state.
+    var daBackupDialogTuple = useState(null);
+    var daBackupDialog = daBackupDialogTuple[0];
+    var setDaBackupDialog = daBackupDialogTuple[1];
+    function daOpenEncryptedBackupDialog() {
+      var sessions = state && Array.isArray(state.sessions) ? state.sessions : [];
+      if (sessions.length === 0) { addToast("No saved sessions to back up yet."); return; }
+      var opener = null;
+      try { opener = document.activeElement; } catch (_) {}
+      setDaBackupDialog({ mode: "export", password: "", confirmPassword: "", showPassword: false, busy: false, error: "", envelope: null, fileName: "", _opener: opener });
+    }
+    function daOpenEncryptedRestoreDialog(envelope, opener, fileName) {
+      setDaBackupDialog({ mode: "restore", password: "", confirmPassword: "", showPassword: false, busy: false, error: "", envelope: envelope, fileName: String(fileName || "").slice(0, 200), _opener: opener || null });
+    }
+    function daCloseBackupDialog(force) {
+      var dialog = daBackupDialog;
+      if (dialog && dialog.busy && !force) return;
+      setDaBackupDialog(null);
+      if (dialog && dialog._opener && typeof dialog._opener.focus === "function") {
+        setTimeout(function () {
+          try { if (document.contains(dialog._opener)) dialog._opener.focus(); } catch (_) {}
+        }, 0);
+      }
+    }
+    function daSetBackupDialogField(field, value) {
+      setDaBackupDialog(function (current) {
+        if (!current || current.busy) return current;
+        var next = Object.assign({}, current, { error: "" });
+        next[field] = value;
+        return next;
+      });
+    }
+    function daSetBackupDialogError(message) {
+      setDaBackupDialog(function (current) { return current && !current.busy ? Object.assign({}, current, { error: message }) : current; });
+    }
+    function daSubmitBackupDialog(event) {
+      if (event && typeof event.preventDefault === "function") event.preventDefault();
+      var dialog = daBackupDialog;
+      if (!dialog || dialog.busy) return;
+      var password = String(dialog.password || "");
+      if (!password) { daSetBackupDialogError("Enter the backup password."); return; }
+      if (password.length > 1024) { daSetBackupDialogError("Backup passwords must be 1,024 characters or fewer."); return; }
+      if (dialog.mode === "export" && password.length < DA_BACKUP_MIN_PASSWORD_LENGTH) {
+        daSetBackupDialogError("Use at least " + DA_BACKUP_MIN_PASSWORD_LENGTH + " characters for the backup password.");
+        return;
+      }
+      if (dialog.mode === "export" && password !== dialog.confirmPassword) {
+        daSetBackupDialogError(daBackupPasswordMismatch);
+        return;
+      }
+      setDaBackupDialog(function (current) { return current ? Object.assign({}, current, { busy: true, error: "" }) : current; });
+      if (dialog.mode === "export") {
+        exportAllSessionsEncrypted(password).then(function (count) {
+          daCloseBackupDialog(true);
+          addToast("\uD83D\uDD12 Backed up " + count + " session" + (count === 1 ? "" : "s") + " in an encrypted file.");
+          announce("Encrypted backup downloaded.");
+        }).catch(function (error) {
+          var message = error && error.code === "crypto-unavailable" ? daBackupCryptoUnavailable
+            : "Backup failed: " + (error && error.message ? error.message : "unknown error");
+          setDaBackupDialog(function (current) { return current ? Object.assign({}, current, { busy: false, error: message }) : current; });
+        });
+        return;
+      }
+      daDecryptBackupEnvelope(dialog.envelope, password).then(function (payload) {
+        var result = mergeImportedSessions(payload.sessions, { source: "encrypted-json-restore", version: payload._exportVersion });
+        daCloseBackupDialog(true);
+        addToast(daRestoreResultMessage(result, false));
+        announce(result.added + " session" + (result.added === 1 ? "" : "s") + " restored from encrypted backup.");
+      }).catch(function (error) {
+        var message = error && error.code === "crypto-unavailable" ? daBackupCryptoUnavailable : daBackupWrongPassword;
+        setDaBackupDialog(function (current) { return current ? Object.assign({}, current, { busy: false, error: message }) : current; });
+      });
+    }
     function daAskConfirm(opts) {
       var opener = null;
       try { opener = document.activeElement; } catch (_) {}
@@ -6367,6 +6692,80 @@
                 ? { padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--da-red-mid)", color: "var(--da-on-accent)", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
                 : { padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
             }, daConfirm.confirmLabel)
+          )
+        )
+      );
+    }
+
+    function renderDaBackupDialog() {
+      if (!daBackupDialog) return null;
+      var isExport = daBackupDialog.mode === "export";
+      var title = isExport ? daBackupPasswordTitle : daBackupDecryptTitle;
+      var description = isExport ? daBackupPasswordDescription : daBackupDecryptDescription;
+      var passwordType = daBackupDialog.showPassword ? "text" : "password";
+      function trapBackupDialogKeys(event) {
+        if ((event.key === "Escape" || event.key === "Esc") && !daBackupDialog.busy) {
+          event.preventDefault(); event.stopPropagation(); daCloseBackupDialog(false); return;
+        }
+        if (event.key !== "Tab") return;
+        event.stopPropagation();
+        var controls;
+        try { controls = event.currentTarget.querySelectorAll("input:not([disabled]), button:not([disabled])"); } catch (_) { return; }
+        if (!controls.length) return;
+        var first = controls[0], last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+      var fieldStyle = { width: "100%", boxSizing: "border-box", minHeight: 40, padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, background: "var(--da-surface)", color: "var(--da-ink)", font: "inherit" };
+      var labelStyle = { display: "grid", gap: 5, fontSize: 12, color: "var(--da-ink-2)", fontWeight: 800 };
+      return h("div", {
+        onKeyDown: trapBackupDialogKeys,
+        style: { position: "fixed", inset: 0, zIndex: 2100, background: "rgba(0,0,0,0.62)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }
+      },
+        h("div", {
+          role: "dialog", "aria-modal": "true", "aria-labelledby": "da-backup-dialog-title", "aria-describedby": "da-backup-dialog-description",
+          className: "da-card", style: { maxWidth: 500, width: "100%", padding: 20, boxShadow: "0 14px 44px rgba(0,0,0,0.4)" }
+        },
+          h("form", { onSubmit: daSubmitBackupDialog, "aria-busy": daBackupDialog.busy ? "true" : "false" },
+            h("h2", { id: "da-backup-dialog-title", style: { margin: "0 0 8px", fontSize: 19, color: "var(--da-ink)" } }, isExport ? "\uD83D\uDD12 " : "\uD83D\uDCC2 ", title),
+            h("p", { id: "da-backup-dialog-description", style: { margin: "0 0 14px", fontSize: 12.5, color: "var(--da-muted)", lineHeight: 1.55 } }, description),
+            !isExport && daBackupDialog.fileName ? h("p", { style: { margin: "-7px 0 12px", fontSize: 11, color: "var(--da-muted)", overflowWrap: "anywhere" } }, "File: ", daBackupDialog.fileName) : null,
+            h("div", { style: { display: "grid", gap: 12 } },
+              h("label", { style: labelStyle }, daBackupPasswordLabel,
+                h("input", {
+                  type: passwordType, value: daBackupDialog.password, maxLength: 1024, autoFocus: true, "aria-label": daBackupPasswordLabel,
+                  autoComplete: isExport ? "new-password" : "off", spellCheck: false, autoCapitalize: "none",
+                  "aria-invalid": daBackupDialog.error ? "true" : undefined,
+                  "aria-describedby": isExport ? "da-backup-password-help" : undefined,
+                  disabled: daBackupDialog.busy,
+                  onChange: function (event) { daSetBackupDialogField("password", event.target.value); }, style: fieldStyle
+                })
+              ),
+              isExport ? h("label", { style: labelStyle }, daBackupPasswordConfirmLabel,
+                h("input", {
+                  type: passwordType, value: daBackupDialog.confirmPassword, maxLength: 1024, "aria-label": daBackupPasswordConfirmLabel,
+                  autoComplete: "new-password", spellCheck: false, autoCapitalize: "none",
+                  "aria-invalid": daBackupDialog.error ? "true" : undefined, disabled: daBackupDialog.busy,
+                  onChange: function (event) { daSetBackupDialogField("confirmPassword", event.target.value); }, style: fieldStyle
+                })
+              ) : null,
+              h("label", { style: { display: "flex", alignItems: "center", gap: 7, fontSize: 12, color: "var(--da-ink-2)", cursor: daBackupDialog.busy ? "default" : "pointer" } },
+                h("input", { type: "checkbox", "aria-label": daBackupShowPasswordLabel, checked: !!daBackupDialog.showPassword, disabled: daBackupDialog.busy, onChange: function (event) { daSetBackupDialogField("showPassword", !!event.target.checked); } }),
+                daBackupShowPasswordLabel
+              ),
+              isExport ? h("p", { id: "da-backup-password-help", style: { margin: 0, fontSize: 11.5, lineHeight: 1.5, color: "var(--da-muted)" } }, daBackupPasswordRequirements) : null,
+              daBackupDialog.error ? h("p", { id: "da-backup-dialog-error", role: "alert", style: { margin: 0, padding: "8px 10px", borderRadius: 7, background: "var(--da-red-tint)", color: "var(--da-red-text)", fontSize: 12, lineHeight: 1.45 } }, daBackupDialog.error) : null
+            ),
+            h("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 18, flexWrap: "wrap" } },
+              h("button", {
+                type: "button", disabled: daBackupDialog.busy, onClick: function () { daCloseBackupDialog(false); },
+                style: { padding: "8px 16px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", fontSize: 13, fontWeight: 700, cursor: daBackupDialog.busy ? "not-allowed" : "pointer", fontFamily: "inherit" }
+              }, "Cancel"),
+              h("button", {
+                type: "submit", disabled: daBackupDialog.busy,
+                style: { padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontSize: 13, fontWeight: 800, cursor: daBackupDialog.busy ? "wait" : "pointer", fontFamily: "inherit" }
+              }, daBackupDialog.busy ? (isExport ? daBackupEncryptingLabel : daBackupDecryptingLabel) : (isExport ? daBackupDownloadLabel : daBackupDecryptLabel))
+            )
           )
         )
       );
@@ -6457,9 +6856,12 @@
         sessions: (state.sessions || []).map(function (session) {
           if (!session || session.id !== sessionId) return session;
           reviewed = session.reviewStatus !== "reviewed";
-          return Object.assign({}, session, {
+          var updated = Object.assign({}, session, {
             reviewStatus: reviewed ? "reviewed" : "unreviewed",
             reviewedAt: reviewed ? now : null
+          });
+          return daAppendAuditEvent(updated, reviewed ? "primary-review-marked" : "primary-review-reopened", now, {
+            status: updated.reviewStatus
           });
         })
       });
@@ -6489,7 +6891,14 @@
       patch(function (prev) {
         return {
           sessions: (prev.sessions || []).map(function (item) {
-            return item && item.id === sessionId ? Object.assign({}, item, { secondRaterReview: result.review }) : item;
+            if (!item || item.id !== sessionId) return item;
+            var eventType = item.secondRaterReview ? "second-rater-review-revised" : "second-rater-review-created";
+            var updated = Object.assign({}, item, { secondRaterReview: result.review });
+            return daAppendAuditEvent(updated, eventType, result.review.lastEditedAt, {
+              revision: result.review.revision,
+              agreementStatus: result.review.agreementStatus,
+              resolutionStatus: result.review.resolutionStatus
+            });
           })
         };
       });
@@ -8579,6 +8988,14 @@
         // Phase X — persist any monitoring plan drafted during this session
         progressMonitoring: progressMonitoring || null
       });
+      record = daAppendAuditEvent(record, "session-completed", record.dateCompleted, {
+        recordStatus: "complete",
+        itemCount: record.sessionItemIds.length,
+        sessionSchemaVersion: record.sessionSchemaVersion,
+        versionFingerprint: record.versionFingerprint,
+        evidenceComplete: !!evidence.complete,
+        evidenceSufficient: !!evidence.sufficient
+      });
       var newSessions = (state.sessions || []).concat([record]);
       patch({ activeSession: null, sessions: newSessions });
       // Reset ephemeral state across all output generators
@@ -8851,7 +9268,7 @@
         "aria-label": "Dynamic Assessment Studio",
         tabIndex: -1,
         onKeyDown: daTrapTab
-      }, view, renderDaConfirm());
+      }, view, renderDaConfirm(), renderDaBackupDialog());
     }
     // Phase U: if activeSession is paused, route to the start screen with
     // a resume banner instead of dropping into the item view.
@@ -10765,28 +11182,21 @@
             title: "Cohen's d, MI distribution, tier breakdown, local-norm reference data",
             style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-violet-mid-2)", background: "var(--da-violet-tint)", color: "var(--da-violet-mid-2)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "📈 Population stats") : null,
-          // Phase EE — back up all sessions to a JSON file (guards the trajectory
-          // + local-norm data against a cache clear / device change).
-          sufficientSessionCount >= 1 ? h("button", {
-            onClick: function () {
-              daAskConfirm({
-                message: daFullExportWarning,
-                confirmLabel: daExportFullLabel,
-                onConfirm: exportAllSessionsAsJson
-              });
-            },
-            "aria-label": "Back up all sessions to a JSON file",
-            title: "Save a JSON backup of your entire session history (protects trajectory + local-norm data)",
+          // Authenticated, password-encrypted full-history backup. This includes
+          // completed and incomplete records so every locally saved record is recoverable.
+          allSessions.length >= 1 ? h("button", {
+            onClick: daOpenEncryptedBackupDialog,
+            "aria-label": daBackupEncryptedTitle,
+            title: daBackupEncryptedTitle,
             style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
-          }, "💾 Back up") : null,
-          // Phase EE — restore from a JSON backup (always available — this is the
-          // recovery path after a cache clear or on a new device).
+          }, "\uD83D\uDD12 ", daBackupEncryptedLabel) : null,
+          // Restore accepts the new encrypted format and older plain JSON backups.
           h("button", {
             onClick: function () { importSessionsFromFile(); },
             "aria-label": "Restore sessions from a JSON backup file",
-            title: "Load a previously saved backup; merges in any sessions you don't already have",
+            title: "Load an encrypted or older JSON backup; existing sessions are never overwritten",
             style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-amber-text-3)", background: "var(--da-amber-tint)", color: "var(--da-amber-text-2)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
-          }, "📂 Restore")
+          }, "\uD83D\uDCC2 ", daRestoreBackupLabel)
         ),
 
         h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-surface-3)", borderColor: "var(--da-border-2)" } },
@@ -11082,6 +11492,43 @@
             h("div", { style: { marginTop: 9, fontSize: 11, color: "var(--da-muted)", fontWeight: 700 } }, daItemManifestLabel + " (" + manifestRows.length + " items)"),
             manifestRows.length > 0 ? h("ul", { style: { margin: "5px 0 0", paddingLeft: 20, fontSize: 10.5, lineHeight: 1.55 } }, manifestRows.map(function (entry, index) {
               return h("li", { key: "da-version-row-" + index }, String(entry.itemId || "missing") + " | probe " + String(entry.itemVersion || "missing") + " | posttest " + String(entry.posttestItemVersion || "missing") + " | " + String(entry.itemFingerprint || "missing") + " / " + String(entry.posttestItemFingerprint || "missing"));
+            })) : null
+          );
+        })(),
+
+        (function () {
+          var auditValidation = daValidateAuditTrail(sn.auditTrail);
+          var events = auditValidation.valid ? auditValidation.events.slice().reverse() : [];
+          var legacyAudit = sn.auditTrail === undefined || sn.auditTrail === null;
+          var detailSummary = function (details) {
+            var d = details || {};
+            var parts = [];
+            if (d.status) parts.push("Status: " + d.status);
+            if (d.reason) parts.push("Reason: " + d.reason);
+            if (d.revision != null) parts.push("Revision " + d.revision);
+            if (d.agreementStatus) parts.push("Agreement: " + d.agreementStatus);
+            if (d.resolutionStatus) parts.push("Resolution: " + d.resolutionStatus);
+            if (d.itemCount != null) parts.push(d.itemCount + " items");
+            if (d.source) parts.push("Source: " + d.source);
+            if (d.importedFromVersion) parts.push("Imported version: " + d.importedFromVersion);
+            if (d.versionFingerprint) parts.push("Fingerprint: " + d.versionFingerprint);
+            return parts.join(" | ");
+          };
+          return h("details", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-surface-2)", borderColor: auditValidation.valid ? "var(--da-border-2)" : "var(--da-red-border)" } },
+            h("summary", { style: { cursor: "pointer", fontSize: 12, fontWeight: 800, color: "var(--da-ink)" } }, daAuditHistoryTitle + " (" + events.length + ")"),
+            h("p", { style: { margin: "8px 0 0", fontSize: 11.5, color: "var(--da-ink-2)", lineHeight: 1.5 } }, daAuditHistoryDescription),
+            !auditValidation.valid ? h("p", { role: "alert", style: { margin: "8px 0 0", fontSize: 11.5, color: "var(--da-red-text)", fontWeight: 700 } }, daAuditHistoryInvalid) : null,
+            legacyAudit ? h("p", { style: { margin: "8px 0 0", fontSize: 11.5, color: "var(--da-amber-text-2)", fontWeight: 700 } }, daAuditHistoryLegacy) : null,
+            auditValidation.valid && events.length === 0 ? h("p", { style: { margin: "8px 0 0", fontSize: 11.5, color: "var(--da-muted)" } }, daAuditHistoryEmpty) : null,
+            events.length > 0 ? h("ol", { style: { margin: "10px 0 0", paddingLeft: 22, display: "grid", gap: 8 } }, events.map(function (event) {
+              var summary = detailSummary(event.details);
+              var shownAt = event.occurredAt;
+              try { shownAt = new Date(event.occurredAt).toLocaleString(); } catch (_) {}
+              return h("li", { key: event.eventId, style: { paddingLeft: 3, color: "var(--da-ink-2)" } },
+                h("div", { style: { fontSize: 11.5, fontWeight: 800, color: "var(--da-ink)" } }, daAuditEventLabels[event.type] || daAuditEventLabel(event.type)),
+                h("time", { dateTime: event.occurredAt, style: { display: "block", marginTop: 2, fontSize: 10.5, color: "var(--da-muted)" } }, shownAt),
+                summary ? h("div", { style: { marginTop: 2, fontSize: 10.5, color: "var(--da-ink-3)", lineHeight: 1.45 } }, summary) : null
+              );
             })) : null
           );
         })(),
@@ -11460,81 +11907,87 @@
       performExport();
     }
 
-    // ─── Phase EE — Full-history backup + restore (JSON, clinician-controlled) ───
-    // localStorage is the ONLY home for the session history, and the within-
-    // student trajectory (Phase CC) + local-norm context (Phase BB) both depend
-    // on it surviving. A cleared cache or a new device wipes everything. These
-    // reuse the existing per-session JSON machinery to save/restore the WHOLE
-    // history — no cloud, no privacy tradeoff (the clinician owns the file, the
-    // same trust model as the per-session export).
-    function exportAllSessionsAsJson() {
-      try {
-        var sessions = state.sessions || [];
-        if (sessions.length === 0) { addToast("No saved sessions to back up yet."); return; }
-        var payload = {
-          _exportFormat: "alloflow-da-session-backup",
-          _exportVersion: "1.0.0",
-          _exportedAt: new Date().toISOString(),
-          sessionCount: sessions.length,
-          sessions: sessions
-        };
-        var json = JSON.stringify(payload, null, 2);
-        var blob = new Blob([json], { type: "application/json" });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = url;
-        a.download = "da-sessions-backup-" + new Date().toISOString().slice(0, 10) + ".json";
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(function () { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) { /* ignore */ } }, 100);
-        addToast("📥 Backed up " + sessions.length + " session" + (sessions.length === 1 ? "" : "s") + ".");
-      } catch (e) {
-        addToast("Backup failed: " + (e && e.message ? e.message : "unknown error"));
-      }
+    // Phase EE - encrypted full-history backup + backward-compatible restore.
+    // The payload format belongs to Dynamic Assessment; encryption and envelope
+    // validation belong to the shared AlloCrypto security module.
+    function downloadDaBackup(value, fileName) {
+      var json = JSON.stringify(value, null, 2);
+      var blob = new Blob([json], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () {
+        try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (_) {}
+      }, 100);
     }
 
-    // Merge imported sessions into state.sessions. Dedup by id; EXISTING local
-    // sessions always win (a restore never overwrites what you already have).
-    function mergeImportedSessions(imported) {
-      // Validity filter. Accept interpreted completed records and explicit
-      // incomplete archives. In-progress shapes remain invalid; incomplete records
-      // must carry recordStatus="incomplete" and no Modifiability Index.
+    function exportAllSessionsEncrypted(password) {
+      var sessions = state.sessions || [];
+      if (sessions.length === 0) return Promise.reject(daBackupError("no-sessions", "No saved sessions to back up yet."));
+      var payload = daBuildBackupPayload(sessions, new Date().toISOString());
+      return daEncryptBackupPayload(payload, password).then(function (envelope) {
+        downloadDaBackup(envelope, "da-sessions-encrypted-" + new Date().toISOString().slice(0, 10) + ".json");
+        return sessions.length;
+      });
+    }
+
+    // Merge imported sessions into state.sessions. Existing local sessions always
+    // win, and every accepted record receives a privacy-safe restore audit event.
+    function mergeImportedSessions(imported, restoreOptions) {
+      var options = restoreOptions || {};
+      var importedAt = new Date().toISOString();
       var candidates = [], skipped = 0;
       (imported || []).forEach(function (s) {
         var validation = daValidateImportedSession(s);
         if (!validation.valid) { skipped++; return; }
         candidates.push(s);
       });
-      // Count added-vs-already-present against the current view (for the toast).
       var existing = state.sessions || [];
       var existingIds = {};
       existing.forEach(function (s) { if (s && s.id) existingIds[s.id] = true; });
       var added = 0;
-      candidates.forEach(function (c) { if (!existingIds[c.id]) added++; });
-      skipped += candidates.length - added; // already-present count as skipped
-      // Apply via the FUNCTIONAL form so a concurrent sessions mutation (e.g. a
-      // delete during the async file read) can't be clobbered by a stale closure.
-      // Dedup is recomputed against prev.sessions inside the updater.
+      candidates.forEach(function (candidate) { if (!existingIds[candidate.id]) added++; });
+      skipped += candidates.length - added;
       if (candidates.length > 0) {
         patch(function (prev) {
           var prevSessions = (prev && prev.sessions) || [];
           var seen = {};
           prevSessions.forEach(function (s) { if (s && s.id) seen[s.id] = true; });
           var fresh = [];
-          candidates.forEach(function (c) { if (!seen[c.id]) { seen[c.id] = true; fresh.push(c); } });
+          candidates.forEach(function (candidate) {
+            if (seen[candidate.id]) return;
+            seen[candidate.id] = true;
+            fresh.push(daAppendAuditEvent(candidate, "session-imported", importedAt, {
+              source: String(options.source || "json-restore").slice(0, 80),
+              importedFromVersion: String(options.version || candidate._exportVersion || candidate.sessionSchemaVersion || "legacy").slice(0, 40)
+            }));
+          });
           return fresh.length > 0 ? { sessions: prevSessions.concat(fresh) } : {};
         });
       }
       return { added: added, skipped: skipped };
     }
 
+    function daRestoreResultMessage(result, legacyPlaintext) {
+      var message = "Restored " + result.added + " session" + (result.added === 1 ? "" : "s");
+      if (result.skipped > 0) message += " (" + result.skipped + " already present or invalid, skipped)";
+      if (legacyPlaintext) message += ". " + daBackupLegacyRestored;
+      else message += ".";
+      return message;
+    }
+
     function importSessionsFromFile() {
       try {
+        var opener = null;
+        try { opener = document.activeElement; } catch (_) {}
         var input = document.createElement("input");
         input.type = "file";
         input.accept = "application/json,.json";
         input.tabIndex = -1;
-        input.setAttribute("aria-label", "Restore sessions from a JSON backup file");
+        input.setAttribute("aria-label", "Restore sessions from an encrypted or legacy JSON backup file");
         input.onchange = function (ev) {
           var file = ev.target && ev.target.files && ev.target.files[0];
           if (!file) return;
@@ -11542,24 +11995,27 @@
           reader.onload = function () {
             try {
               var parsed = JSON.parse(String(reader.result || ""));
-              // Accept a full backup {sessions:[...]}, a raw array, or a single-session export.
+              if (parsed && parsed._exportFormat === DA_ENCRYPTED_BACKUP_FORMAT) {
+                daOpenEncryptedRestoreDialog(parsed, opener, file.name);
+                return;
+              }
               var arr = null;
               if (parsed && Array.isArray(parsed.sessions)) arr = parsed.sessions;
               else if (Array.isArray(parsed)) arr = parsed;
               else if (parsed && parsed.id) arr = [parsed];
-              if (!arr) { addToast("That file doesn't look like a DA session backup."); return; }
-              var res = mergeImportedSessions(arr);
-              addToast("📂 Restored " + res.added + " session" + (res.added === 1 ? "" : "s")
-                + (res.skipped > 0 ? " (" + res.skipped + " already present or invalid, skipped)" : "") + ".");
-            } catch (e) {
-              addToast("Restore failed: that file isn't valid JSON.");
+              if (!arr) { addToast("That file does not look like a Dynamic Assessment backup."); return; }
+              var result = mergeImportedSessions(arr, { source: "legacy-json-restore", version: parsed && parsed._exportVersion });
+              addToast(daRestoreResultMessage(result, true));
+              announce(result.added + " session" + (result.added === 1 ? "" : "s") + " restored from an older unencrypted backup.");
+            } catch (error) {
+              addToast("Restore failed: that file is not valid JSON.");
             }
           };
           reader.readAsText(file);
         };
         input.click();
-      } catch (e) {
-        addToast("Restore failed: " + (e && e.message ? e.message : "unknown error"));
+      } catch (error) {
+        addToast("Restore failed: " + (error && error.message ? error.message : "unknown error"));
       }
     }
 
@@ -16088,7 +16544,7 @@
   }
 
   window.AlloModules.DynamicAssessment._meta = {
-    version: "1.3.0-da-flow", // codename consistency + versioned probes/forms + longitudinal comparison cautions
+    version: "1.4.0-da-flow", // versioned probes/forms + privacy-safe saved-record audit history
     storageKey: STORAGE_KEY,
     domains: ["math", "reading", "working-memory", "language"],
     itemCounts: {
@@ -16116,6 +16572,10 @@
     buildSessionVersionMetadata: daBuildSessionVersionMetadata,
     compareSessionVersions: daCompareSessionVersions,
     itemVersionFingerprint: daItemVersionFingerprint,
+    appendAuditEvent: daAppendAuditEvent,
+    normalizeAuditTrail: daNormalizeAuditTrail,
+    validateAuditTrail: daValidateAuditTrail,
+    auditEventLabel: daAuditEventLabel,
     evidencePhaseRows: daEvidencePhaseRows,
     interpretCohenD: interpretCohenD,
     aggregateItemStatistics: aggregateItemStatistics,
@@ -16140,7 +16600,11 @@
     incompleteReasonLabel: daIncompleteReasonLabel,
     buildParallelPosttestItem: daBuildParallelPosttestItem,
     evidenceStatus: daEvidenceStatus,
-    applyRetention: daApplyRetention
+    applyRetention: daApplyRetention,
+    buildBackupPayload: daBuildBackupPayload,
+    validateEncryptedBackupEnvelope: daValidateEncryptedBackupEnvelope,
+    encryptBackupPayload: daEncryptBackupPayload,
+    decryptBackupEnvelope: daDecryptBackupEnvelope
   };
   console.log("[CDN] DynamicAssessment loaded (Phases A–BB: math " + MATH_ITEMS.length + ", reading " + READING_ITEMS.length + ", working-memory " + WM_ITEMS.length + ", language " + LANGUAGE_ITEMS.length + " — " + (MATH_ITEMS.length + READING_ITEMS.length + WM_ITEMS.length + LANGUAGE_ITEMS.length) + " items total)");
 })();

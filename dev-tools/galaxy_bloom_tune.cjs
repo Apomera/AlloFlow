@@ -1,6 +1,6 @@
 // Measure how much of the galaxy the bloom is burning away.
 //
-//   node dev-tools/galaxy_bloom_tune.cjs <out-dir> [shape]
+//   node dev-tools/galaxy_bloom_tune.cjs <out-dir> [shape] [--single] [--mode=<mode>] [--zoom-out=<steps>]
 //
 // WHY THIS EXISTS. The star profile and bloom were retuned together in an
 // earlier pass and committed with the note "UNVERIFIED VISUALLY -- need a
@@ -25,11 +25,21 @@ const path = require('path');
 const ROOT = process.cwd();
 const OUT = process.argv[2] || '.';
 const SHAPE = process.argv[3] || 'barredSpiral';
+const SINGLE = process.argv.includes('--single');
+const SOURCE_ARG = process.argv.find((arg) => arg.startsWith('--source='));
+const TOOL_SOURCE = SOURCE_ARG ? SOURCE_ARG.slice('--source='.length) : 'stem_lab/stem_tool_galaxy.js';
+const MODE_ARG = process.argv.find((arg) => arg.startsWith('--mode='));
+
+const SELECTED_MODE = MODE_ARG ? MODE_ARG.slice('--mode='.length) : 'visible';
+
+const ZOOM_OUT_ARG = process.argv.find((arg) => arg.startsWith('--zoom-out='));
+const ZOOM_OUT_STEPS = Math.max(0, Math.min(7, Number.parseInt(ZOOM_OUT_ARG ? ZOOM_OUT_ARG.slice('--zoom-out='.length) : '0', 10) || 0));
+fs.mkdirSync(OUT, { recursive: true });
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const react = read('desktop/web-app/node_modules/react/umd/react.production.min.js');
 const reactDom = read('desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js');
 const three = read('vendor/three-r128/three.min.js');
-const tool = read('stem_lab/stem_tool_galaxy.js');
+const tool = read(TOOL_SOURCE);
 const uiStrings = read('ui_strings.js');
 
 // strength, threshold
@@ -54,7 +64,15 @@ const CANDIDATES = [
 ];
 
 function patchSource(src, cand) {
-  let out = src;
+  // Validation-only: retain the rendered framebuffer so the full WebGL canvas
+  // can be read directly, independent of Chromium viewport compositing.
+  let out = src.replace(
+    'canvas: canvasEl, antialias: true, alpha: true',
+    'canvas: canvasEl, antialias: true, alpha: true, preserveDrawingBuffer: true'
+  ).replace(
+    'var adaptationRate = prefersReducedMotion ? 1 : 0.04;',
+    'var adaptationRate = 1;'
+  );
   if (cand.bloom !== null) {
     out = out.replace(/var bloomModeStrength = [\d.]+/, 'var bloomModeStrength = ' + cand.bloom);
   }
@@ -132,7 +150,7 @@ window.__setBloom = function (strength, threshold) {
 (async () => {
   const { chromium } = require('playwright');
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-  const pg = await b.newPage({ viewport: { width: 1100, height: 820 } });
+  const pg = await b.newPage({ viewport: { width: 1100, height: 1400 } });
 
   // The star field is placed with Math.random(), so every page load builds a
   // DIFFERENT galaxy and cross-load numbers wobble by ~2.5 points — enough to
@@ -147,12 +165,12 @@ window.__setBloom = function (strength, threshold) {
 
   const shots = [];
 
-  for (let ci = 0; ci < CANDIDATES.length; ci++) {
+  for (let ci = 0; ci < (SINGLE ? 1 : CANDIDATES.length); ci++) {
     const cand = CANDIDATES[ci];
     const file = path.join(OUT, 'galaxy-bloom-tune-' + ci + '.html');
     fs.writeFileSync(file, `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <script src="https://cdn.tailwindcss.com"><\/script>
-<style>body{margin:0;padding:10px;background:#fff;font-family:system-ui}</style></head>
+<style>html,body{margin:0;min-height:100%;background:#020617;font-family:system-ui}body{padding:0}</style></head>
 <body><main id="slot"></main>
 <script>${react}<\/script><script>${reactDom}<\/script>
 <script>${three}<\/script>
@@ -161,11 +179,34 @@ window.__setBloom = function (strength, threshold) {
 <script>${patchSource(tool, cand)}<\/script></body></html>`, 'utf8');
     await pg.goto('file://' + file.replace(/\\/g, '/'));
     await pg.waitForTimeout(2500);
-    await pg.evaluate((s) => window.__mount({ simMode: 'galaxy', galaxyType: s }), SHAPE);
-    await pg.waitForTimeout(3500);
+    await pg.evaluate(({ shape, mode }) => window.__mount({
+      simMode: 'galaxy',
+      galaxyType: shape,
+      observeMode: mode
+    }), { shape: SHAPE, mode: SELECTED_MODE });
+    await pg.waitForFunction(() => {
+      const canvas = document.querySelector('[data-galaxy-canvas]');
+      return !!canvas && !document.querySelector('[data-galaxy-building]');
+    }, null, { timeout: 45000 });
+    await pg.waitForTimeout(900);
 
     const ok = await pg.evaluate(() => !!document.querySelector('[data-galaxy-canvas]'));
     if (!ok) { console.log(cand.label.padEnd(22) + 'no canvas'); continue; }
+
+    // Pin the complete canvas workspace inside the compositor viewport before
+    // sampling. SwiftShader only preserves visible WebGL tiles in screenshots;
+    // leaving part of this tall page below the fold produced a gray lower half.
+    await pg.evaluate(() => {
+      const cv = document.querySelector('[data-galaxy-canvas]');
+      const frame = cv && cv.parentElement;
+      if (!frame) return;
+      Object.assign(frame.style, {
+        position: 'fixed', inset: '0 auto auto 0', width: '1078px',
+        height: '618px', zIndex: '9999', borderRadius: '0'
+      });
+      window.dispatchEvent(new Event('resize'));
+    });
+    await pg.waitForTimeout(600);
 
     // Freeze before sampling: the galaxy auto-rotates, so otherwise each
     // sample is a different frame and the sweep measures rotation.
@@ -175,17 +216,42 @@ window.__setBloom = function (strength, threshold) {
     await pg.evaluate(() => {
       const cv = document.querySelector('[data-galaxy-canvas]');
       if (cv && cv._galaxySetAutoRotate) cv._galaxySetAutoRotate(false);
-      if (cv && cv._galaxyResetView) cv._galaxyResetView();
     });
-    await pg.waitForTimeout(1200);
+    if (ZOOM_OUT_STEPS) {
+      await pg.evaluate((steps) => {
+        const cv = document.querySelector('[data-galaxy-canvas]');
+        if (!cv || !cv._galaxyZoom) return;
+        for (let zi = 0; zi < steps; zi++) cv._galaxyZoom('out');
+      }, ZOOM_OUT_STEPS);
+    }
+    await pg.waitForTimeout(1400);
 
-    const canvasBox = await (await pg.$('[data-galaxy-canvas]')).boundingBox();
-    const name = 'bloom-' + SHAPE + '-' + ci + '.png';
-    await pg.screenshot({ path: path.join(OUT, name), clip: canvasBox });
-    shots.push({ strength: cand.label, threshold: '', name });
+    const capturedVisualState = await pg.evaluate(() => {
+      const cv = document.querySelector('[data-galaxy-canvas]');
+      return cv && cv._galaxyGetAdaptiveVisualState ? cv._galaxyGetAdaptiveVisualState() : null;
+    });
+    const name = 'bloom-' + SHAPE + '-' + SELECTED_MODE +
+      (ZOOM_OUT_STEPS ? '-zoomout' + ZOOM_OUT_STEPS : '') + '-' + ci + '.png';
+    const canvasDataUrl = await pg.evaluate(() => {
+      const cv = document.querySelector('[data-galaxy-canvas]');
+      return cv ? cv.toDataURL('image/png') : null;
+    });
+    if (!canvasDataUrl) { console.log(cand.label.padEnd(22) + 'canvas read failed'); continue; }
+    fs.writeFileSync(path.join(OUT, name), Buffer.from(canvasDataUrl.split(',')[1], 'base64'));
+    shots.push({
+      strength: cand.label,
+      threshold: '',
+      morphology: SHAPE,
+      observeMode: SELECTED_MODE,
+      zoomOutSteps: ZOOM_OUT_STEPS,
+      visualState: capturedVisualState,
+      name
+    });
   }
   await b.close();
   fs.writeFileSync(path.join(OUT, 'bloom-shots.json'), JSON.stringify(shots, null, 2));
-  console.log('wrote ' + shots.length + ' shots for ' + SHAPE + '; measure them with galaxy_bloom_measure.py');
-  shots.forEach((s) => console.log('   ' + s.name));
+  console.log('wrote ' + shots.length + ' shots for ' + SHAPE + ' / ' + SELECTED_MODE +
+    (ZOOM_OUT_STEPS ? ' / zoom out ' + ZOOM_OUT_STEPS : '') +
+    '; measure them with galaxy_bloom_measure.py');
+  shots.forEach((s) => console.log('   ' + s.name + (s.visualState ? ' · r=' + Number(s.visualState.distance).toFixed(2) + ' · points=' + Number(s.visualState.pointScale).toFixed(2) + ' · opacity=' + Number(s.visualState.opacity).toFixed(2) : '')));
 })();

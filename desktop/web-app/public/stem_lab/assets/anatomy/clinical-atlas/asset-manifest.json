@@ -33,6 +33,95 @@
       "attribution": "3D Reference Organ for Kidney, Female, Left v1.3, Kristen Browne and Heidi Schlehlein (2024), Human Reference Atlas/HuBMAP, DOI 10.48539/HBM449.JPXL.964, CC BY 4.0. Derived from the NLM Visible Human Dataset.",
       "modifications": "Source GLB and CSV are vendored byte-for-byte from the versioned HRA digital object; the viewer applies runtime centering, uniform scaling, and double-sided material rendering.",
       "usage": "Research and educational visualization; not medical advice or a diagnostic device."
+    },
+    {
+      "id": "hra-heart-female-v1.3",
+      "title": "Clinical Heart Atlas",
+      "publisher": "Human Reference Atlas / HuBMAP",
+      "creators": [
+        "Kristen Browne",
+        "Heidi Schlehlein"
+      ],
+      "projectLeads": [
+        "Katy Börner"
+      ],
+      "reviewers": [
+        "Shin Lin"
+      ],
+      "version": "1.3",
+      "releaseYear": 2024,
+      "assetType": "3d-reference-organ",
+      "referenceSex": "female",
+      "primaryOntologyId": "UBERON:0000948",
+      "modeledStructureCount": 17,
+      "model": "hra-heart-female-v1.3.glb",
+      "crosswalk": "hra-heart-female-v1.3-crosswalk.csv",
+      "metadata": "hra-heart-female-v1.3-metadata.yaml",
+      "sha256": {
+        "model": "98f66e46b149bfc3836592d9404c50290e21d302ec55c98813435e2d9847b1d9",
+        "crosswalk": "a529992b6e444d40fa9e361542fd694d773de429f611276b292133aa30be1cb2",
+        "metadata": "f0af7fb376c854d0d90ac7309720fe44cf698605338e5570a63f9d2d01820b8a"
+      },
+      "source": "https://lod.humanatlas.io/ref-organ/heart-female/v1.3/",
+      "sourceCommit": "https://github.com/hubmapconsortium/hra-kg/tree/95a6d456b235a79f32120d3f8aa8c73ec4054235/digital-objects/ref-organ/heart-female/v1.3/raw",
+      "canonicalIdentifier": "https://lod.humanatlas.io/ref-organ/heart-female/v1.3",
+      "doi": "https://doi.org/10.48539/HBM449.SHRV.225",
+      "hubmapId": "HBM449.SHRV.225",
+      "license": {
+        "name": "Creative Commons Attribution 4.0 International",
+        "spdx": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "attribution": "3D Reference Organ for Heart, Female v1.3, Kristen Browne and Heidi Schlehlein (2024), Human Reference Atlas/HuBMAP, HBM449.SHRV.225, CC BY 4.0. Derived from the NLM Visible Human Dataset.",
+      "modifications": "Source GLB, CSV, and metadata are vendored byte-for-byte from the versioned HRA digital object and pinned release; the viewer applies runtime centering, uniform scaling, concept highlighting, and double-sided material rendering.",
+      "usage": "Static single-donor reference visualization for research and education; not a population average, patient-specific scan, medical advice, or a diagnostic device."
+    }
+  ],
+  "tissueAtlases": [
+    {
+      "id": "hra-kidney-renal-corpuscle-v1.4",
+      "title": "Renal Corpuscle Functional Tissue Unit",
+      "publisher": "Human Reference Atlas / HuBMAP",
+      "creators": [
+        "Rachel Bajema"
+      ],
+      "projectLeads": [
+        "Katy Börner"
+      ],
+      "reviewers": [
+        "Sanjay Jain",
+        "Matthias Kretzler",
+        "M. Todd Valerius"
+      ],
+      "version": "1.4",
+      "releaseYear": 2026,
+      "assetType": "2d-functional-tissue-unit",
+      "organOntologyId": "UBERON:0002113",
+      "tissueOntologyId": "UBERON:0001229",
+      "illustrationNodeCount": 142,
+      "cellConceptCount": 9,
+      "image": "hra-kidney-renal-corpuscle-v1.4.png",
+      "imageWidth": 4031,
+      "imageHeight": 3037,
+      "crosswalk": "hra-kidney-renal-corpuscle-v1.4-crosswalk.csv",
+      "metadata": "hra-kidney-renal-corpuscle-v1.4-metadata.yaml",
+      "sha256": {
+        "image": "9d59249795cb4890ea6181864500a07b27ec9fbe255df9c164e6938da3de65fd",
+        "crosswalk": "31d7cfe3004493dd9d274891dbbdda3b96b6efd9e98fd4b4051b5fe1ffadd4fa",
+        "metadata": "c47939ee95792d12bf55314fbe6ef1436a5c2f91533a5b9fd1b2ca4b4c5121d2"
+      },
+      "source": "https://lod.humanatlas.io/2d-ftu/kidney-renal-corpuscle/v1.4/",
+      "sourceCommit": "https://github.com/hubmapconsortium/hra-kg/tree/f6555351f8256f301d927c82caf7444dcdd3619e/digital-objects/2d-ftu/kidney-renal-corpuscle/v1.4/raw",
+      "doi": "https://doi.org/10.48539/HBM489.GJJK.324",
+      "hubmapId": "HBM489.GJJK.324",
+      "license": {
+        "name": "Creative Commons Attribution 4.0 International",
+        "spdx": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "attribution": "2D Reference Renal Corpuscle FTU for Kidney v1.4, Rachel Bajema (2026), Human Reference Atlas/HuBMAP, HBM489.GJJK.324, CC BY 4.0.",
+      "modifications": "Source PNG, crosswalk, and metadata are vendored byte-for-byte from the pinned HRA release; the viewer adds responsive framing, accessible concept controls, and explanatory text.",
+      "usage": "Stylized healthy-reference illustration for research and education; not medical advice or a diagnostic image."
     }
   ]
 }

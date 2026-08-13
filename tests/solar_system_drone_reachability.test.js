@@ -157,8 +157,8 @@ describe('solar system vehicle mode reachability', () => {
       // drove in their starting direction forever and could never look up —
       // which is where Saturn's rings are.
       expect(source, `${path}: arrow-key look is gone`).toContain("case 'arrowup': lookState.up = pressed;");
-      expect(source).toContain('if (lookState.left) yaw += 0.028;');
-      expect(source).toContain('if (lookState.up) pitch = Math.min(1.2, pitch + 0.022);');
+      expect(source).toMatch(/if \(lookState\.left\) yaw \+= (0\.028|keyboardYawStep);/);
+      expect(source).toMatch(/if \(lookState\.up\) pitch = Math\.min\(1\.2, pitch \+ (0\.022|keyboardPitchStep)\);/);
     });
   });
 });

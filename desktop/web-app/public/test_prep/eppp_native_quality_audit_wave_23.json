@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-23",
+  "reviewedAt": "2026-08-12",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite eight source-checked questions, one in each current EPPP Part 1 domain, to increase applied and analytic demand while preserving every answer position and retiering five rewritten foundation items to advanced.",
+  "challengeCriteria": [
+    "require application or analysis of a construct in a concrete clinical, research, or professional context",
+    "include information that must be integrated rather than rewarding isolated definition recall",
+    "use homogeneous, plausible distractors representing neighboring constructs or common reasoning errors",
+    "retain a single best answer after relevant assumptions and limits are considered",
+    "verify each key and distinction against an item-specific authoritative or peer-reviewed source",
+    "preserve answer positions and provide substantive teaching feedback for every option"
+  ],
+  "calibrationBasis": {
+    "officialBlueprint": "https://asppb.net/wp-content/uploads/EPPP-Candidate-Handbook_01.2026.pdf",
+    "officialTopics": "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+    "currentExamModel": "The current EPPP Part 1 uses single-best-answer multiple-choice items across eight knowledge domains; this wave samples each domain once and retains one keyed option per item.",
+    "designIntent": "Increase exam-like challenge through applied vignettes, multistep interpretation, relevant qualifiers, and close distractors that represent plausible conceptual or procedural errors.",
+    "limitation": "Advanced is an editorial tier based on cognitive demand and distractor quality. It does not claim psychometric equivalence to operational EPPP items, which would require field testing and item-response data."
+  },
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "domainsCovered": 8,
+    "appliedOrAnalysisItems": 8,
+    "advancedDifficultyItems": 8,
+    "difficultyRetieredItems": 5,
+    "keyPositionsPreserved": 8,
+    "optionSpecificExplanations": 32,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 55,
+      "asymmetricExtremeDistractorCandidates": 120,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 82,
+      "semanticConceptDuplicateClusters": 46,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 55,
+      "asymmetricExtremeDistractorCandidates": 116,
+      "advancedDirectRecallCandidates": 4,
+      "semanticConceptDuplicatePairs": 81,
+      "semanticConceptDuplicateClusters": 45,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountContext": {
+      "before": "Current post-wave-22 and post-campaign diagnostic snapshot before the difficulty-calibration tranche.",
+      "after": "Wave 23 rewrites and retierings are evaluated against the same four warning families and then propagated through canonical, deployed, and generated EPPP artifacts.",
+      "interpretation": "The tranche replaces three advanced recall items and five foundation definition items with eight advanced application or analysis items while preserving the frozen key distribution."
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v3-biological-012",
+      "domainId": "biological",
+      "difficulty": "advanced",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "biological-analyze-passive-blood-brain-barrier-penetration",
+      "sourceCheck": "Abbott and colleagues describe tight junctions as the blood-brain barrier’s physical restriction and membrane transporters as a separate transport barrier. The revision therefore asks candidates to isolate passive transcellular penetration under controlled size, free-concentration, and influx-transporter conditions rather than recite a permeability label.",
+      "diagnosticsBefore": [
+        "advanced-direct-recall"
+      ],
+      "difficultyBefore": "advanced",
+      "difficultyAfter": "advanced",
+      "difficultyRetiered": false,
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-038",
+      "domainId": "cognitive-affective",
+      "difficulty": "advanced",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "cognitive-affective-distinguish-sensitivity-from-response-criterion",
+      "sourceCheck": "The Psychological Science tutorial treats signal detection as decision making under perceptual uncertainty and behavioral risk. The revision manipulates the cost of a miss and supplies the diagnostic hit, false-alarm, and stable d-prime pattern so candidates must distinguish criterion placement from sensitivity.",
+      "diagnosticsBefore": [
+        "advanced-direct-recall"
+      ],
+      "difficultyBefore": "advanced",
+      "difficultyAfter": "advanced",
+      "difficultyRetiered": false,
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b004-social-1",
+      "domainId": "social-cultural",
+      "difficulty": "advanced",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "social-cultural-integrate-acculturation-strategy-and-adaptation-context",
+      "sourceCheck": "Berry’s framework treats heritage maintenance and receiving-society participation as distinct dimensions and describes adaptation as variable across personal and societal conditions. The revision requires classification from both dimensions while preventing candidates from treating distress as the acculturation strategy itself.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "difficultyBefore": "foundation",
+      "difficultyAfter": "advanced",
+      "difficultyRetiered": true,
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b019-lifespan-2",
+      "domainId": "lifespan",
+      "difficulty": "advanced",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "lifespan-analyze-formal-operational-hypothesis-testing",
+      "sourceCheck": "The NCBI Bookshelf review identifies hypothetical-deductive thought, variable isolation, and examination of combinations as formal-operational processes and uses a pendulum investigation as an illustration. The revision contrasts systematic hypothesis testing with observable tasks that do not establish formal operations.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "difficultyBefore": "foundation",
+      "difficultyAfter": "advanced",
+      "difficultyRetiered": true,
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b021-assessment-3",
+      "domainId": "assessment",
+      "difficulty": "advanced",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "assessment-interpret-right-skew-and-resistant-center",
+      "sourceCheck": "The NIST handbook defines right skew by a longer positive tail and explains that mean, median, and mode represent different aspects of center under skewness. The revision supplies a concrete score pattern and divergent mean and median so candidates must connect tail direction with resistance to extreme magnitude.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "difficultyBefore": "foundation",
+      "difficultyAfter": "advanced",
+      "difficultyRetiered": true,
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b019-intervention-1",
+      "domainId": "intervention",
+      "difficulty": "advanced",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-adjust-behavioral-activation-from-functional-monitoring",
+      "sourceCheck": "The peer-reviewed intervention description includes activity monitoring, functional analysis, values and goals, graded task assignment, and modification of avoidance. The revision asks candidates to use those components to repair a poorly tailored schedule instead of selecting a generic increase in activity volume.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "difficultyBefore": "foundation",
+      "difficultyAfter": "advanced",
+      "difficultyRetiered": true,
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-research-017",
+      "domainId": "research",
+      "difficulty": "advanced",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "research-select-ancova-for-adjusted-randomized-group-comparison",
+      "sourceCheck": "The clinical-trial tutorial describes ANCOVA as adjustment of a continuous endpoint for a relevant baseline covariate to improve precision and estimate an adjusted treatment effect. The revision supplies prespecification, prognostic value, and approximate slope homogeneity so candidates must choose the model from its design and assumptions.",
+      "diagnosticsBefore": [
+        "advanced-direct-recall"
+      ],
+      "difficultyBefore": "advanced",
+      "difficultyAfter": "advanced",
+      "difficultyRetiered": false,
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b022-professional-2",
+      "domainId": "professional",
+      "difficulty": "advanced",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-respond-to-therapeutic-forensic-role-conflict",
+      "sourceCheck": "AP-LS Guideline 4.02.01 states that concurrent or sequential therapeutic-forensic services may impair objectivity or cause exploitation or harm, and encourages disclosure plus reasonable referral efforts. The revision tests why waiver language and quick sequencing do not substitute for an independent evaluator when referral is feasible.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "difficultyBefore": "foundation",
+      "difficultyAfter": "advanced",
+      "difficultyRetiered": true,
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

@@ -95,6 +95,8 @@ function testDatabase(): {
     "0003_upload_attempt_admission.sql",
     "0004_job_attempt_leases.sql",
     "0005_job_checkpoints.sql",
+    "0006_throttle_wait_and_verification.sql",
+    "0007_admission_control.sql",
   ]) {
     sqlite.exec(readFileSync(`${migrationDirectory}${migration}`, "utf8"));
   }

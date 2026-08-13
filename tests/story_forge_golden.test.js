@@ -281,7 +281,7 @@ describe('StoryForge production readiness', () => {
     expect(readiness.summary).toBe('Production-ready');
   });
 
-  it('flags unplaced and gutter-risk comic lettering as production blockers', () => {
+  it('flags unplaced and gutter-risk comic lettering as recommended layout fixes', () => {
     const paragraphs = [
       { id: 'p-1', text: 'The door opens.' },
       { id: 'p-2', text: 'A bright room appears.' },
@@ -309,7 +309,8 @@ describe('StoryForge production readiness', () => {
       vocabUsedCount: 1,
     });
 
-    expect(readiness.blockers.map(issue => issue.code)).toEqual(expect.arrayContaining([
+    expect(readiness.blockers).toEqual([]);
+    expect(readiness.warnings.map(issue => issue.code)).toEqual(expect.arrayContaining([
       'unplaced-lettering',
       'gutter-lettering-conflict',
     ]));

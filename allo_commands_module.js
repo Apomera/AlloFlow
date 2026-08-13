@@ -337,6 +337,8 @@ const PLAN_CONTRACTS = Object.freeze({
     demoSafe: false,
     reason: "Opens the recorder/editor itself; compose and run automatic demos from Video Studio instead."
   },
+  open_test_prep_hub: { produces: ["testPrep"] },
+  start_test_prep_hands_free: { requires: ["testPrep"], demoSafe: false },
   generate_quiz: { requires: ["source"], produces: ["quiz"] },
   generate_glossary: { requires: ["source"], produces: ["glossary"] },
   generate_simplified: { requires: ["source"], produces: ["source"], params: ["grade"] },
@@ -549,6 +551,7 @@ function _planCapabilities(ctx) {
   if (ctx && ctx.contentIsGlossary) out.add("glossary");
   if (ctx && ctx.contentLoaded) out.add("content");
   if (ctx && ctx.pipelineOpen) out.add("pipeline");
+  if (ctx && ctx.testPrepHubOpen) out.add("testPrep");
   return out;
 }
 function _contractPlanParams(p, contract) {
@@ -699,7 +702,64 @@ function buildAlloCommands(ctx, opts = {}) {
   const t = _mkT(ctx && ctx.t);
   const audience = getCommandAudience(ctx || {});
   const cmds = [
+    // Voice-first launch-pad choices. These are deliberately context-gated:
+    // they do not simulate DOM clicks and cannot fire once onboarding advances.
+    // chatSkip keeps setup-only choices out of agentic lesson plans.
+    { id: "onboarding_full_platform", chatSkip: true, icon: "\u{1F9ED}", roles: "all", when: (c) => c.onboardingStage === "path" && typeof c.chooseOnboardingPath === "function", label: t("cmd.onboarding_full_platform", "Choose Full Platform"), aliases: ["full platform", "full alloflow", "choose full platform", "complete workspace"], hint: t("cmd.onboarding_full_platform_hint", "Continue with the complete workspace"), run: (c) => {
+      c.chooseOnboardingPath("full");
+      return t("cmd.onboarding_full_platform_done", "Full Platform selected.");
+    } },
+    { id: "onboarding_guided_setup", chatSkip: true, icon: "\u{1F9ED}", roles: "all", when: (c) => c.onboardingStage === "path" && typeof c.chooseOnboardingPath === "function", label: t("cmd.onboarding_guided_setup", "Choose Guided Setup"), aliases: ["guided setup", "guided mode", "choose guided setup", "step by step setup"], hint: t("cmd.onboarding_guided_setup_hint", "Continue with step-by-step guidance"), run: (c) => {
+      c.chooseOnboardingPath("guided");
+      return t("cmd.onboarding_guided_setup_done", "Guided Setup selected.");
+    } },
+    { id: "onboarding_learning_tools", chatSkip: true, icon: "\u{1F393}", roles: "all", when: (c) => c.onboardingStage === "path" && typeof c.chooseOnboardingPath === "function", label: t("cmd.onboarding_learning_tools", "Choose Learning Tools"), aliases: ["learning tools", "student path", "student tools", "choose learning tools"], hint: t("cmd.onboarding_learning_tools_hint", "Continue to learner tools"), run: (c) => {
+      c.chooseOnboardingPath("learning");
+      return t("cmd.onboarding_learning_tools_done", "Learning Tools selected.");
+    } },
+    { id: "onboarding_educator_tools", chatSkip: true, icon: "\u{1F3EB}", roles: "all", when: (c) => c.onboardingStage === "path" && typeof c.chooseOnboardingPath === "function", label: t("cmd.onboarding_educator_tools", "Choose Educator Tools"), aliases: ["educator tools", "teacher tools", "educator path", "choose educator tools"], hint: t("cmd.onboarding_educator_tools_hint", "Continue to educator tools"), run: (c) => {
+      c.chooseOnboardingPath("educator");
+      return t("cmd.onboarding_educator_tools_done", "Educator Tools selected.");
+    } },
+    { id: "onboarding_student_role", chatSkip: true, icon: "\u{1F393}", roles: "all", when: (c) => c.onboardingStage === "role" && typeof c.chooseOnboardingRole === "function", label: t("cmd.onboarding_student_role", "Choose Student"), aliases: ["student", "i am a student", "student role", "choose student"], hint: t("cmd.onboarding_student_role_hint", "Continue as a student"), run: (c) => {
+      c.chooseOnboardingRole("student");
+      return t("cmd.onboarding_student_role_done", "Student selected.");
+    } },
+    { id: "onboarding_teacher_role", chatSkip: true, icon: "\u{1F3EB}", roles: "all", when: (c) => c.onboardingStage === "role" && typeof c.chooseOnboardingRole === "function", label: t("cmd.onboarding_teacher_role", "Choose Teacher"), aliases: ["teacher", "i am a teacher", "teacher role", "choose teacher"], hint: t("cmd.onboarding_teacher_role_hint", "Continue as a teacher"), run: (c) => {
+      c.chooseOnboardingRole("teacher");
+      return t("cmd.onboarding_teacher_role_done", "Teacher selected.");
+    } },
+    { id: "onboarding_parent_role", chatSkip: true, icon: "\u{1F46A}", roles: "all", when: (c) => c.onboardingStage === "role" && typeof c.chooseOnboardingRole === "function", label: t("cmd.onboarding_parent_role", "Choose Parent"), aliases: ["parent", "caregiver", "i am a parent", "parent role", "choose parent"], hint: t("cmd.onboarding_parent_role_hint", "Continue as a parent or caregiver"), run: (c) => {
+      c.chooseOnboardingRole("parent");
+      return t("cmd.onboarding_parent_role_done", "Parent selected.");
+    } },
+    { id: "onboarding_independent_role", chatSkip: true, icon: "\u{1F9ED}", roles: "all", when: (c) => c.onboardingStage === "role" && typeof c.chooseOnboardingRole === "function", label: t("cmd.onboarding_independent_role", "Choose Independent"), aliases: ["independent", "independent learner", "i am learning independently", "choose independent"], hint: t("cmd.onboarding_independent_role_hint", "Continue as an independent learner"), run: (c) => {
+      c.chooseOnboardingRole("independent");
+      return t("cmd.onboarding_independent_role_done", "Independent learner selected.");
+    } },
     // ── Navigate ──
+    // Universal semantic orientation actions. Hosts opt in by exposing a
+    // capability; commands never inspect or click the DOM themselves.
+    { id: "describe_current_screen", icon: "\u{1F9ED}", roles: "all", when: (c) => typeof c.describeCurrentScreen === "function", label: t("cmd.describe_current_screen", "Describe the current screen"), aliases: ["where am i", "describe this screen", "describe the screen", "what screen is this", "what is on this screen"], hint: t("cmd.describe_current_screen_hint", "Hear the current surface, state, and purpose"), run: (c) => {
+      const value = c.describeCurrentScreen();
+      return typeof value === "string" && value.trim() ? value : t("cmd.describe_current_screen_done", "Current screen described.");
+    } },
+    { id: "list_current_actions", icon: "\u{1F4CB}", roles: "all", when: (c) => typeof c.listCurrentActions === "function", label: t("cmd.list_current_actions", "List available actions"), aliases: ["what can i do here", "list actions", "available actions", "list my choices", "what are my choices"], hint: t("cmd.list_current_actions_hint", "Hear the actions available on the current surface"), run: (c) => {
+      const value = c.listCurrentActions();
+      return Array.isArray(value) ? t("cmd.list_current_actions_prefix", "Available actions: ") + value.join(", ") + "." : typeof value === "string" && value.trim() ? value : t("cmd.list_current_actions_done", "Available actions listed.");
+    } },
+    { id: "go_back", icon: "\u21A9\uFE0F", roles: "all", when: (c) => typeof c.goBack === "function", label: t("cmd.go_back", "Go back"), aliases: ["go back", "back", "previous screen", "return to the last screen"], hint: t("cmd.go_back_hint", "Return to the previous app surface"), run: (c) => {
+      const value = c.goBack();
+      return typeof value === "string" && value.trim() ? value : t("cmd.go_back_done", "Went back.");
+    } },
+    { id: "close_current_surface", icon: "\u2715", roles: "all", when: (c) => typeof c.closeCurrentSurface === "function", label: t("cmd.close_current_surface", "Close the current surface"), aliases: ["close this", "close this screen", "close this dialog", "dismiss this", "exit this screen"], hint: t("cmd.close_current_surface_hint", "Close the active dialog, panel, or tool"), run: (c) => {
+      const value = c.closeCurrentSurface();
+      return typeof value === "string" && value.trim() ? value : t("cmd.close_current_surface_done", "Closed the current surface.");
+    } },
+    { id: "repeat_last_response", icon: "\u{1F501}", roles: "all", when: (c) => typeof c.repeatLastResponse === "function", label: t("cmd.repeat_last_response", "Repeat the last response"), aliases: ["repeat that", "say that again", "repeat the last response", "what did you say"], hint: t("cmd.repeat_last_response_hint", "Hear the most recent app response again"), run: (c) => {
+      const value = c.repeatLastResponse();
+      return typeof value === "string" && value.trim() ? value : t("cmd.repeat_last_response_done", "Repeated the last response.");
+    } },
     { id: "open_educator_hub", opensPanel: "educatorHub", icon: "\u{1F3EB}", roles: "teacher", label: t("cmd.open_educator_hub", "Open the Educator Hub"), aliases: ["educator hub", "teacher hub", "hub", "document pipeline", "remediation pipeline", "make a document accessible", "fix a pdf"], hint: t("cmd.open_educator_hub_hint", "Lesson tools + the Document Pipeline card"), run: (c) => {
       c.setShowEducatorHub(true);
       return t("cmd.open_educator_hub_done", "Educator Hub opened \u2014 the Document Pipeline card is near the top.");
@@ -1008,9 +1068,14 @@ function buildAlloCommands(ctx, opts = {}) {
       }
       return t("cmd.print_page_done", "Opening the print dialog.");
     } },
-    { id: "read_page_aloud", icon: "\u{1F508}", roles: "all", when: (c) => typeof c.openReadThisPage === "function", label: t("cmd.read_page_aloud", "Read this page aloud"), aliases: ["read this page", "read aloud", "read it to me", "read the page"], hint: t("cmd.read_page_aloud_hint", "Opens the read-aloud overlay for the current page"), run: (c) => {
-      c.openReadThisPage();
-      return t("cmd.read_page_aloud_done", "Opening read-aloud for this page.");
+    { id: "read_page_aloud", icon: "\u{1F508}", roles: "all", when: (c) => typeof c.startReadThisPage === "function" || typeof c.openReadThisPage === "function" || typeof c.setShowReadThisPage === "function", label: t("cmd.read_page_aloud", "Read this page aloud"), aliases: ["read this page", "read aloud", "read it to me", "read the page"], hint: t("cmd.read_page_aloud_hint", "Starts reading the current page aloud"), run: (c) => {
+      if (typeof c.startReadThisPage === "function") {
+        c.startReadThisPage();
+        return t("cmd.read_page_aloud_done", "Reading this page aloud.");
+      }
+      if (typeof c.openReadThisPage === "function") c.openReadThisPage();
+      else c.setShowReadThisPage(true);
+      return t("cmd.read_page_aloud_opened", "Page reader opened. Choose where to start.");
     } },
     { id: "set_model_download_policy", icon: "\u2699\uFE0F", roles: "all", when: () => true, label: t("cmd.set_model_download_policy", "Set model download policy"), aliases: ["model download policy", "auto download models", "stop model downloads"], hint: t("cmd.set_model_download_policy_hint", "ask (default), auto (fetch on first voice use), or off"), run: (c, p) => {
       var v = modelCache.setPolicy(p && p.policy);
@@ -1116,6 +1181,14 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openTestPrepHub();
       return t("cmd.open_test_prep_hub_done", "Test Prep Hub opened.");
     } },
+    { id: "start_test_prep_hands_free", icon: "\u{1F3A4}", roles: "all", when: (c) => !!c.testPrepHubOpen && typeof c.requestTestPrepVoiceControl === "function", label: t("cmd.start_test_prep_hands_free", "Start hands-free Test Prep"), aliases: ["start hands free test prep", "start test prep voice", "hands free practice", "voice practice", "begin hands free"], hint: t("cmd.start_test_prep_hands_free_hint", "Start voice control for the active Test Prep practice set"), run: (c) => {
+      const status = c.requestTestPrepVoiceControl("start");
+      return status && status.message ? status.message : t("cmd.start_test_prep_hands_free_unavailable", "Hands-free Test Prep is not ready yet.");
+    } },
+    { id: "test_prep_hands_free_status", icon: "\u2139\uFE0F", roles: "all", when: (c) => !!c.testPrepHubOpen && typeof c.requestTestPrepVoiceControl === "function", label: t("cmd.test_prep_hands_free_status", "Check Test Prep voice status"), aliases: ["test prep voice status", "hands free status", "is test prep listening", "can i start hands free"], hint: t("cmd.test_prep_hands_free_status_hint", "Hear whether the active Test Prep set is ready for voice control"), run: (c) => {
+      const status = c.requestTestPrepVoiceControl("status");
+      return status && status.message ? status.message : t("cmd.test_prep_hands_free_status_unavailable", "Test Prep voice status is unavailable while the hub is loading.");
+    } },
     { id: "open_research_hub", opensPanel: "researchHub", icon: "\u{1F50D}", roles: "all", label: t("cmd.open_research_hub", "Open Research Hub"), aliases: ["research hub", "research", "credible sources", "source finder", "find sources", "research tool"], hint: t("cmd.open_research_hub_hint", "Find and organize credible research sources"), run: (c) => {
       c.openResearchHub();
       return t("cmd.open_research_hub_done", "Research Hub opened.");
@@ -1124,9 +1197,9 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openLitLab();
       return t("cmd.open_lit_lab_done", "Lit Lab opened.");
     } },
-    { id: "open_mind_map", opensPanel: "mindMap", icon: "\u{1F9ED}", roles: "all", label: t("cmd.open_mind_map", "Open Throughline"), aliases: ["throughline", "mind map", "unit map", "lesson map", "concept map", "visual map"], hint: t("cmd.open_mind_map_hint", "Map concepts, lessons, and unit connections"), run: (c) => {
+    { id: "open_mind_map", opensPanel: "mindMap", icon: "\u{1F9ED}", roles: "all", label: t("cmd.open_mind_map", "Open Learning Web: Unit Path"), aliases: ["learning web", "unit path", "throughline", "mind map", "unit map", "lesson map", "concept map", "visual map"], hint: t("cmd.open_mind_map_hint", "Map lessons and explore linked standards, evidence, and unit connections"), run: (c) => {
       c.openMindMap();
-      return t("cmd.open_mind_map_done", "Throughline opened.");
+      return t("cmd.open_mind_map_done", "Learning Web: Unit Path opened.");
     } },
     { id: "open_poet_tree", opensPanel: "poetTree", icon: "\u{1F333}", roles: "all", label: t("cmd.open_poet_tree", "Open Poet Tree"), aliases: ["poet tree", "poetry tree", "poem builder", "poetry lab", "write poetry"], hint: t("cmd.open_poet_tree_hint", "Build poems with guided branches"), run: (c) => {
       c.openPoetTree();
@@ -1430,6 +1503,47 @@ function buildAlloCommands(ctx, opts = {}) {
       return t("cmd.pipeline_new_doc_done", "Cleared \u2014 upload a new document to begin.");
     } }
   ];
+  const startPageReader = (c) => {
+    if (typeof c.startReadThisPage === "function") {
+      c.startReadThisPage();
+      return t("cmd.read_this_page_done", "Reading this page aloud.");
+    }
+    if (typeof c.openReadThisPage === "function") c.openReadThisPage();
+    else c.setShowReadThisPage(true);
+    return t("cmd.read_this_page_opened", "Page reader opened. Choose where to start.");
+  };
+  cmds.filter((command) => command.id === "read_page_aloud" || command.id === "read_this_page").forEach((command) => {
+    command.when = (c) => typeof c.startReadThisPage === "function" || typeof c.openReadThisPage === "function" || typeof c.setShowReadThisPage === "function";
+    command.hint = t("cmd.read_this_page_hint", "Starts reading the current page aloud");
+    command.run = startPageReader;
+  });
+  cmds.push(
+    { id: "pause_read_this_page", icon: "\u23F8", roles: "all", when: (c) => !!c.readThisPageIsOpen && typeof c.pauseReadThisPage === "function" && (!c.readThisPagePlaybackState || c.readThisPagePlaybackState === "reading"), label: t("cmd.pause_read_this_page", "Pause page reading"), aliases: ["pause page reader", "pause reading", "pause read aloud", "hold reading"], hint: t("cmd.pause_read_this_page_hint", "Pause the current page narration"), run: (c) => c.pauseReadThisPage() ? t("cmd.pause_read_this_page_done", "Page reading paused.") : t("cmd.pause_read_this_page_idle", "Nothing is currently being read.") },
+    { id: "resume_read_this_page", icon: "\u25B6", roles: "all", when: (c) => !!c.readThisPageIsOpen && typeof c.resumeReadThisPage === "function" && (!c.readThisPagePlaybackState || c.readThisPagePlaybackState === "paused"), label: t("cmd.resume_read_this_page", "Resume page reading"), aliases: ["resume page reader", "resume reading", "continue reading", "keep reading"], hint: t("cmd.resume_read_this_page_hint", "Continue the paused page narration"), run: (c) => c.resumeReadThisPage() ? t("cmd.resume_read_this_page_done", "Page reading resumed.") : t("cmd.resume_read_this_page_idle", "Page reading is not paused.") }
+  );
+  cmds.push(
+    { id: "next_read_this_page", icon: "\u23ED", roles: "all", when: (c) => !!c.readThisPageIsOpen && typeof c.nextReadThisPageItem === "function", label: t("cmd.next_read_this_page", "Read the next item"), aliases: ["next reading item", "read next section", "next section", "next paragraph"], hint: t("cmd.next_read_this_page_hint", "Move to and read the next page item"), run: (c) => {
+      const item = c.nextReadThisPageItem();
+      return !item ? t("cmd.read_this_page_no_content", "There is no readable content on this screen.") : item.atEnd ? t("cmd.next_read_this_page_end", "You are already at the last reading item.") : t("cmd.next_read_this_page_done", "Reading item ") + item.index + t("cmd.read_this_page_of", " of ") + item.total + ".";
+    } },
+    { id: "previous_read_this_page", icon: "\u23EE", roles: "all", when: (c) => !!c.readThisPageIsOpen && typeof c.previousReadThisPageItem === "function", label: t("cmd.previous_read_this_page", "Read the previous item"), aliases: ["previous reading item", "read previous section", "previous section", "previous paragraph", "go back one paragraph"], hint: t("cmd.previous_read_this_page_hint", "Move to and read the previous page item"), run: (c) => {
+      const item = c.previousReadThisPageItem();
+      return !item ? t("cmd.read_this_page_no_content", "There is no readable content on this screen.") : item.atStart ? t("cmd.previous_read_this_page_start", "You are already at the first reading item.") : t("cmd.previous_read_this_page_done", "Reading item ") + item.index + t("cmd.read_this_page_of", " of ") + item.total + ".";
+    } }
+  );
+  cmds.push(
+    { id: "repeat_read_this_page", icon: "\u21BB", roles: "all", when: (c) => !!c.readThisPageIsOpen && typeof c.repeatReadThisPageItem === "function", label: t("cmd.repeat_read_this_page", "Repeat the current item"), aliases: ["repeat reading item", "repeat this section", "read that again", "repeat current paragraph"], hint: t("cmd.repeat_read_this_page_hint", "Read the current page item again"), run: (c) => {
+      const item = c.repeatReadThisPageItem();
+      return !item ? t("cmd.read_this_page_no_content", "There is no readable content on this screen.") : t("cmd.repeat_read_this_page_done", "Repeating item ") + item.index + t("cmd.read_this_page_of", " of ") + item.total + ".";
+    } },
+    { id: "close_read_this_page", icon: "\u2715", roles: "all", when: (c) => !!c.readThisPageIsOpen && typeof c.closeReadThisPage === "function", label: t("cmd.close_read_this_page", "Close the page reader"), aliases: ["close page reader", "exit page reader", "close read aloud", "stop and close reader"], hint: t("cmd.close_read_this_page_hint", "Stop narration and close the page reader"), run: (c) => {
+      c.closeReadThisPage();
+      return t("cmd.close_read_this_page_done", "Page reader closed.");
+    } }
+  );
+  cmds.forEach((command) => {
+    if (["read_page_aloud", "read_this_page", "resume_read_this_page", "next_read_this_page", "previous_read_this_page", "repeat_read_this_page"].includes(command.id)) command.suppressVoiceReply = true;
+  });
   return cmds.reduce((visible, command) => {
     if (!_commandAllowsAudience(command, audience)) return visible;
     const availability = getCommandAvailability(command, ctx);
@@ -1443,6 +1557,659 @@ function buildAlloCommands(ctx, opts = {}) {
     return visible;
   }, []);
 }
+const LEARNER_COMMAND_RISKS = Object.freeze(["none", "state-change", "destructive"]);
+const LEARNER_CONFIRMATION_POLICIES = Object.freeze(["never", "low-confidence", "always"]);
+const _learnerCommandScopes = /* @__PURE__ */ new Map();
+let _learnerCommandScopeSerial = 0;
+function getLearnerCommandPolicy(command) {
+  const c = command || {};
+  const risk = LEARNER_COMMAND_RISKS.includes(c.risk) ? c.risk : c.destructive ? "destructive" : "none";
+  const hasExplicitConfirmation = LEARNER_CONFIRMATION_POLICIES.includes(c.confirmation);
+  let confirmation = hasExplicitConfirmation ? c.confirmation : risk === "state-change" ? "low-confidence" : "never";
+  if (risk === "destructive") confirmation = "always";
+  return { risk, confirmation };
+}
+function _learnerAdapterId(value) {
+  const id = String(value == null ? "" : value).trim();
+  if (!id || id.length > 80 || !/^[A-Za-z0-9][A-Za-z0-9._:-]*$/.test(id)) {
+    throw new TypeError("Learner command adapters need a stable id using letters, numbers, dot, colon, underscore, or dash.");
+  }
+  return id;
+}
+function createLearnerCommandAdapter(spec) {
+  const source = spec || {};
+  const id = _learnerAdapterId(source.id);
+  if (typeof source.getCommands !== "function") throw new TypeError('Learner command adapter "' + id + '" needs getCommands(ctx).');
+  if (source.parse != null && typeof source.parse !== "function") throw new TypeError('Learner command adapter "' + id + '" parse must be a function.');
+  if (source.isActive != null && typeof source.isActive !== "function") throw new TypeError('Learner command adapter "' + id + '" isActive must be a function.');
+  return Object.freeze({
+    id,
+    priority: Number.isFinite(Number(source.priority)) ? Number(source.priority) : 0,
+    isActive: typeof source.isActive === "function" ? source.isActive : () => true,
+    getCommands: source.getCommands,
+    parse: typeof source.parse === "function" ? source.parse : null,
+    execute: typeof source.execute === "function" ? source.execute : null,
+    getCapabilities: typeof source.getCapabilities === "function" ? source.getCapabilities : null,
+    getState: typeof source.getState === "function" ? source.getState : null,
+    help: typeof source.help === "function" ? source.help : null,
+    speak: typeof source.speak === "function" ? source.speak : null,
+    stop: typeof source.stop === "function" ? source.stop : null
+  });
+}
+function registerCommandScope(spec) {
+  const adapter = createLearnerCommandAdapter(spec);
+  const registration = { adapter, serial: ++_learnerCommandScopeSerial };
+  _learnerCommandScopes.set(adapter.id, registration);
+  let registered = true;
+  return function unregisterCommandScope() {
+    if (!registered) return false;
+    registered = false;
+    if (_learnerCommandScopes.get(adapter.id) !== registration) return false;
+    _learnerCommandScopes.delete(adapter.id);
+    return true;
+  };
+}
+const NAMED_FIELD_COMMAND_IDS = Object.freeze({
+  list: "named_fields_list",
+  select: "named_field_select",
+  set: "named_field_set",
+  append: "named_field_append",
+  clear: "named_field_clear",
+  read: "named_field_read",
+  targetHelp: "named_field_target_help"
+});
+function _namedFieldText(value) {
+  return String(value == null ? "" : value).toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
+}
+function _namedFieldOrdinal(value) {
+  const text = _namedFieldText(value).replace(/^(?:the\s+)?(?:field|response|answer|input|text area|textarea)(?:\s+number)?\s+/, "").replace(/\s+(?:field|response|answer|input|text area|textarea)$/, "");
+  const words = {
+    one: 1,
+    first: 1,
+    two: 2,
+    second: 2,
+    three: 3,
+    third: 3,
+    four: 4,
+    fourth: 4,
+    five: 5,
+    fifth: 5,
+    six: 6,
+    sixth: 6,
+    seven: 7,
+    seventh: 7,
+    eight: 8,
+    eighth: 8,
+    nine: 9,
+    ninth: 9,
+    ten: 10,
+    tenth: 10,
+    eleven: 11,
+    eleventh: 11,
+    twelve: 12,
+    twelfth: 12
+  };
+  if (Object.prototype.hasOwnProperty.call(words, text)) return words[text];
+  const match = text.match(/^(\d{1,2})(?:st|nd|rd|th)?$/);
+  return match ? Number(match[1]) : null;
+}
+function normalizeVoiceEditableFields(rawFields) {
+  const list = Array.isArray(rawFields) ? rawFields : [];
+  const ids = /* @__PURE__ */ new Set();
+  return list.reduce((out, raw, rawIndex) => {
+    if (!raw || typeof raw !== "object" || raw.hidden === true) return out;
+    const id = String(raw.id || "").trim().slice(0, 120);
+    const label = String(raw.label || raw.accessibleName || "").replace(/\s+/g, " ").trim().slice(0, 160);
+    if (!id || !label || ids.has(id)) return out;
+    ids.add(id);
+    const aliases = (Array.isArray(raw.aliases) ? raw.aliases : []).map((alias) => String(alias || "").replace(/\s+/g, " ").trim().slice(0, 160)).filter(Boolean).slice(0, 12);
+    out.push({
+      id,
+      label,
+      aliases,
+      value: typeof raw.value === "string" ? raw.value : String(raw.value == null ? "" : raw.value),
+      editable: raw.editable !== false && raw.disabled !== true,
+      readable: raw.readable !== false,
+      maxLength: Number.isFinite(Number(raw.maxLength)) ? Math.max(1, Math.min(2e4, Number(raw.maxLength))) : 8e3,
+      raw,
+      index: rawIndex + 1
+    });
+    return out;
+  }, []);
+}
+function resolveVoiceEditableField(rawFields, reference, selectedId) {
+  const fields = normalizeVoiceEditableFields(rawFields);
+  const selected = fields.find((field) => field.id === String(selectedId || "")) || null;
+  const rawReference = String(reference == null ? "" : reference).trim();
+  if (!rawReference) {
+    if (selected) return { field: selected, index: fields.indexOf(selected) + 1, via: "selected" };
+    if (fields.length === 1) return { field: fields[0], index: 1, via: "only" };
+    return { field: null, reason: fields.length ? "selection-required" : "no-fields", matches: [] };
+  }
+  if (/^(?:selected|current|this)(?:\s+(?:field|response|answer|input))?$/.test(_namedFieldText(rawReference))) {
+    return selected ? { field: selected, index: fields.indexOf(selected) + 1, via: "selected" } : { field: null, reason: "selection-required", matches: [] };
+  }
+  const ordinal = _namedFieldOrdinal(rawReference);
+  if (ordinal != null) {
+    const field = ordinal >= 1 && ordinal <= fields.length ? fields[ordinal - 1] : null;
+    return field ? { field, index: ordinal, via: "index" } : { field: null, reason: "out-of-range", matches: [] };
+  }
+  const needle = _namedFieldText(rawReference).replace(/^(?:the\s+)?/, "").replace(/\s+(?:field|text area|textarea)$/, "");
+  const matches = fields.filter((field) => {
+    const names = [field.id, field.label].concat(field.aliases || []);
+    return names.some((name) => _namedFieldText(name) === needle);
+  });
+  if (matches.length === 1) return { field: matches[0], index: fields.indexOf(matches[0]) + 1, via: "name" };
+  return { field: null, reason: matches.length > 1 ? "ambiguous" : "not-found", matches };
+}
+function _namedFieldExplicitIntent(reference) {
+  return /\b(field|response|answer|reflection|draft|source text|student work|essay)\b/.test(_namedFieldText(reference));
+}
+function parseNamedFieldVoiceUtterance(rawText, rawFields, selectedId) {
+  const text = String(rawText || "").trim().slice(0, 500);
+  if (!text) return null;
+  const fields = normalizeVoiceEditableFields(rawFields);
+  if (!fields.length) return null;
+  const resolve = (reference, commandId, value, explicit) => {
+    const hit = resolveVoiceEditableField(fields, reference, selectedId);
+    if (hit.field) {
+      const params = { field: hit.field.id };
+      if (value != null) params.value = String(value).trim().slice(0, 200);
+      return { commandId, params, confidence: 0.99 };
+    }
+    if (explicit || _namedFieldExplicitIntent(reference)) {
+      return { commandId: NAMED_FIELD_COMMAND_IDS.targetHelp, params: { field: String(reference || "").trim().slice(0, 160) }, confidence: 0.99 };
+    }
+    return null;
+  };
+  if (/^(?:(?:please\s+)?(?:list|name|tell me|what are|which are)\s+(?:the\s+)?(?:editable\s+|available\s+)?(?:fields|responses|response fields|text fields)|what (?:fields|responses) can i (?:edit|fill|write in))\??$/i.test(text)) {
+    return { commandId: NAMED_FIELD_COMMAND_IDS.list, params: {}, confidence: 0.99 };
+  }
+  let match = text.match(/^(?:select|choose|use|go to|edit)\s+(?:the\s+)?(.+?)\s*$/i);
+  if (match) return resolve(match[1], NAMED_FIELD_COMMAND_IDS.select, null, true);
+  match = text.match(/^(?:read|speak|say)\s+(?:the\s+)?(?:value|contents?|text)?\s*(?:of|in|from)?\s*(.+?)\s*$/i) || text.match(/^what(?:'s| is)\s+(?:written\s+)?(?:in|inside)\s+(?:the\s+)?(.+?)\s*\??$/i);
+  if (match) return resolve(match[1], NAMED_FIELD_COMMAND_IDS.read, null, false);
+  match = text.match(/^(?:clear|erase|delete)\s+(?:the\s+)?(?:value|contents?|text)?\s*(?:of|in|from)?\s*(.+?)\s*$/i);
+  if (match) return resolve(match[1], NAMED_FIELD_COMMAND_IDS.clear, null, true);
+  match = text.match(/^(?:set|replace)\s+(?:the\s+)?(.+?)\s+(?:to|with)\s+(.+)$/i);
+  if (match) return resolve(match[1], NAMED_FIELD_COMMAND_IDS.set, match[2], true);
+  match = text.match(/^(?:append|add)\s+(?:to\s+)?(?:the\s+)?(.+?)\s*(?::|\bcolon\b)\s*(.+)$/i);
+  if (match) return resolve(match[1], NAMED_FIELD_COMMAND_IDS.append, match[2], true);
+  match = text.match(/^(?:dictate|enter|write)\s+(?:into|in)\s+(?:the\s+)?(.+?)\s*(?::|\bcolon\b)\s*(.+)$/i);
+  if (match) return resolve(match[1], NAMED_FIELD_COMMAND_IDS.set, match[2], true);
+  match = text.match(/^(?:dictate|enter|write|put)\s+(.+)\s+(?:into|in)\s+(?:the\s+)?(.+?)\s*$/i);
+  if (match) return resolve(match[2], NAMED_FIELD_COMMAND_IDS.set, match[1], true);
+  match = text.match(/^(?:append|add)\s+(.+)\s+(?:to|onto)\s+(?:the\s+)?(.+?)\s*$/i);
+  if (match) return resolve(match[2], NAMED_FIELD_COMMAND_IDS.append, match[1], true);
+  if (selectedId) {
+    match = text.match(/^(?:dictate|enter|write|set)\s+(.+)$/i);
+    if (match) return resolve("", NAMED_FIELD_COMMAND_IDS.set, match[1], false);
+    match = text.match(/^(?:append|add)\s+(.+)$/i);
+    if (match) return resolve("", NAMED_FIELD_COMMAND_IDS.append, match[1], false);
+  }
+  return null;
+}
+function createNamedFieldCommandAdapter(options = {}) {
+  const spec = options || {};
+  const getRawFields = (ctx) => {
+    try {
+      const value = typeof spec.getFields === "function" ? spec.getFields(ctx || {}) : ctx && typeof ctx.listVoiceEditableFields === "function" ? ctx.listVoiceEditableFields() : [];
+      return Array.isArray(value) ? value : [];
+    } catch (_) {
+      return [];
+    }
+  };
+  const getSelectedId = (ctx) => {
+    try {
+      return String(typeof spec.getSelectedId === "function" ? spec.getSelectedId(ctx || {}) || "" : ctx && typeof ctx.getSelectedVoiceEditableFieldId === "function" ? ctx.getSelectedVoiceEditableFieldId() || "" : "");
+    } catch (_) {
+      return "";
+    }
+  };
+  const selectField = (ctx, id) => {
+    if (typeof spec.selectField === "function") return spec.selectField(ctx || {}, id);
+    if (ctx && typeof ctx.selectVoiceEditableField === "function") return ctx.selectVoiceEditableField(id);
+    return false;
+  };
+  const editField = (ctx, id, operation, value) => {
+    if (typeof spec.editField === "function") return spec.editField(ctx || {}, id, operation, value);
+    if (ctx && typeof ctx.editVoiceEditableField === "function") return ctx.editVoiceEditableField(id, operation, value);
+    return { ok: false, message: "That field cannot be edited by voice here." };
+  };
+  const fieldFor = (ctx, id) => resolveVoiceEditableField(getRawFields(ctx), id, getSelectedId(ctx)).field;
+  const targetFailure = (ctx, reference) => {
+    const fields = normalizeVoiceEditableFields(getRawFields(ctx));
+    if (!fields.length) return "There are no editable voice fields on this screen.";
+    const named = String(reference || "").trim();
+    const choices = fields.map((field, index) => index + 1 + ", " + field.label).join("; ");
+    return (named ? "I could not identify the field called " + named + ". " : "Choose a field first. ") + "Available fields are: " + choices + ".";
+  };
+  return createLearnerCommandAdapter({
+    id: spec.id || "named-editable-fields",
+    priority: Number.isFinite(Number(spec.priority)) ? Number(spec.priority) : 20,
+    isActive: (ctx) => normalizeVoiceEditableFields(getRawFields(ctx)).length > 0,
+    getCapabilities: (ctx) => ({ namedFieldEditing: true, fieldCount: normalizeVoiceEditableFields(getRawFields(ctx)).length, canSet: true, canAppend: true, canClearWithConfirmation: true, canRead: true }),
+    getState: (ctx) => {
+      const fields = normalizeVoiceEditableFields(getRawFields(ctx));
+      const selected = fields.find((field) => field.id === getSelectedId(ctx));
+      return { fieldCount: fields.length, selectedFieldId: selected ? selected.id : "", selectedFieldLabel: selected ? selected.label : "" };
+    },
+    getCommands: (ctx) => [
+      { id: NAMED_FIELD_COMMAND_IDS.list, label: "List editable fields", risk: "none", confirmation: "never" },
+      { id: NAMED_FIELD_COMMAND_IDS.select, label: "Select an editable field", params: ["field"], risk: "none", confirmation: "never" },
+      { id: NAMED_FIELD_COMMAND_IDS.set, label: "Dictate into an editable field", params: ["field", "value"], risk: "state-change", confirmation: "low-confidence", confirmMessage: (_liveCtx, params) => {
+        const field = fieldFor(ctx, params && params.field);
+        return "Update " + (field ? field.label : "that field") + "? The dictated text will not be repeated. Say yes to confirm, or no to cancel.";
+      } },
+      { id: NAMED_FIELD_COMMAND_IDS.append, label: "Append to an editable field", params: ["field", "value"], risk: "state-change", confirmation: "low-confidence", confirmMessage: (_liveCtx, params) => {
+        const field = fieldFor(ctx, params && params.field);
+        return "Append to " + (field ? field.label : "that field") + "? The dictated text will not be repeated. Say yes to confirm, or no to cancel.";
+      } },
+      { id: NAMED_FIELD_COMMAND_IDS.clear, label: "Clear an editable field", params: ["field"], risk: "destructive", confirmation: "always", confirmMessage: (_liveCtx, params) => {
+        const field = fieldFor(ctx, params && params.field);
+        return "Clear " + (field ? field.label : "that field") + "? Its current value will not be read aloud. Say yes to confirm, or no to cancel.";
+      } },
+      { id: NAMED_FIELD_COMMAND_IDS.read, label: "Read an editable field", params: ["field"], risk: "none", confirmation: "never" },
+      { id: NAMED_FIELD_COMMAND_IDS.targetHelp, label: "Identify an editable field", params: ["field"], risk: "none", confirmation: "never" }
+    ],
+    help: (ctx) => normalizeVoiceEditableFields(getRawFields(ctx)).map((field, index) => index + 1 + ", " + field.label),
+    parse: (text, ctx, meta) => {
+      const parsed = parseNamedFieldVoiceUtterance(text, getRawFields(ctx), getSelectedId(ctx));
+      if (!parsed) return null;
+      if (meta && typeof meta.confidence === "number" && Number.isFinite(meta.confidence)) parsed.confidence = meta.confidence;
+      return parsed;
+    },
+    execute: (commandId, params, ctx) => {
+      const fields = normalizeVoiceEditableFields(getRawFields(ctx));
+      if (commandId === NAMED_FIELD_COMMAND_IDS.list) {
+        if (!fields.length) return "There are no editable voice fields on this screen.";
+        return "Editable fields: " + fields.map((field2, index) => index + 1 + ", " + field2.label + (field2.value ? ", contains text" : ", blank")).join("; ") + ".";
+      }
+      if (commandId === NAMED_FIELD_COMMAND_IDS.targetHelp) return targetFailure(ctx, params && params.field);
+      const hit = resolveVoiceEditableField(fields, params && params.field, getSelectedId(ctx));
+      const field = hit.field;
+      if (!field) return targetFailure(ctx, params && params.field);
+      const position = fields.indexOf(field) + 1;
+      if (commandId === NAMED_FIELD_COMMAND_IDS.select) {
+        const selected = selectField(ctx, field.id);
+        return selected === false ? "That field is no longer available." : "Selected field " + position + ", " + field.label + ". Say dictate followed by your text, append followed by text, read selected field, or clear selected field.";
+      }
+      selectField(ctx, field.id);
+      if (commandId === NAMED_FIELD_COMMAND_IDS.read) {
+        if (!field.readable) return field.label + " cannot be read aloud for privacy.";
+        if (!field.value) return field.label + " is blank.";
+        const compact = field.value.replace(/\s+/g, " ").trim();
+        const words = compact ? compact.split(/\s+/).length : 0;
+        if (compact.length <= 240) return field.label + " contains: " + compact;
+        return field.label + " contains " + words + " words. It begins: " + compact.slice(0, 220).replace(/\s+\S*$/, "") + ". The remainder was not repeated in this short command response.";
+      }
+      if (!field.editable) return field.label + " is read-only right now.";
+      const operation = commandId === NAMED_FIELD_COMMAND_IDS.clear ? "clear" : commandId === NAMED_FIELD_COMMAND_IDS.append ? "append" : "set";
+      const value = operation === "clear" ? "" : String(params && params.value || "").trim();
+      if (operation !== "clear" && !value) return "No dictated text was provided, so " + field.label + " was not changed.";
+      const result = editField(ctx, field.id, operation, value);
+      if (result && typeof result === "object" && (result.message || result.narration)) return String(result.message || result.narration);
+      if (typeof result === "string" && result.trim()) return result;
+      return operation === "clear" ? field.label + " cleared." : operation === "append" ? "Text appended to " + field.label + "." : field.label + " updated.";
+    }
+  });
+}
+function _listActiveCommandScopeRegistrations(ctx) {
+  const active = [];
+  _learnerCommandScopes.forEach((registration) => {
+    try {
+      if (registration.adapter.isActive(ctx || {})) active.push(registration);
+    } catch (_) {
+    }
+  });
+  active.sort((a, b) => b.adapter.priority - a.adapter.priority || b.serial - a.serial || a.adapter.id.localeCompare(b.adapter.id));
+  return active;
+}
+function listActiveCommandScopes(ctx) {
+  return _listActiveCommandScopeRegistrations(ctx).map((entry) => entry.adapter);
+}
+function _commandsForLearnerAdapter(adapter, ctx) {
+  let commands = [];
+  try {
+    commands = adapter.getCommands(ctx || {});
+  } catch (_) {
+    commands = [];
+  }
+  if (!Array.isArray(commands)) return [];
+  const seen = /* @__PURE__ */ new Set();
+  return commands.reduce((out, raw) => {
+    if (!raw || typeof raw !== "object") return out;
+    const id = String(raw.id || "").trim();
+    if (!id || seen.has(id)) return out;
+    seen.add(id);
+    out.push(Object.assign({}, raw, { id, scopeId: adapter.id, policy: getLearnerCommandPolicy(raw) }));
+    return out;
+  }, []);
+}
+function _safeLearnerSnapshot(value, depth = 0) {
+  if (depth > 3 || value == null) return value == null ? null : void 0;
+  if (typeof value === "string") return value.slice(0, 240);
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "boolean") return value;
+  if (Array.isArray(value)) return value.slice(0, 30).map((item) => _safeLearnerSnapshot(item, depth + 1)).filter((item) => item !== void 0);
+  if (typeof value !== "object") return void 0;
+  const out = {};
+  Object.keys(value).slice(0, 40).forEach((key) => {
+    const safe = _safeLearnerSnapshot(value[key], depth + 1);
+    if (safe !== void 0) out[key] = safe;
+  });
+  return out;
+}
+function getLearnerContextSnapshot(ctx) {
+  const c = ctx || {};
+  const scopes = listActiveCommandScopes(c).map((adapter) => {
+    let capabilities = {}, state = {};
+    try {
+      if (adapter.getCapabilities) capabilities = adapter.getCapabilities(c) || {};
+    } catch (_) {
+    }
+    try {
+      if (adapter.getState) state = adapter.getState(c) || {};
+    } catch (_) {
+    }
+    return {
+      id: adapter.id,
+      priority: adapter.priority,
+      capabilities: _safeLearnerSnapshot(capabilities),
+      state: _safeLearnerSnapshot(state),
+      commandIds: _commandsForLearnerAdapter(adapter, c).map((command) => command.id)
+    };
+  });
+  return { audience: getCommandAudience(c), activeScopeIds: scopes.map((scope) => scope.id), scopes };
+}
+function _findLearnerScopedCommand(ctx, commandId, requestedScopeId) {
+  const id = String(commandId || "");
+  for (const registration of _listActiveCommandScopeRegistrations(ctx || {})) {
+    const adapter = registration.adapter;
+    if (requestedScopeId && adapter.id !== requestedScopeId) continue;
+    const command = _commandsForLearnerAdapter(adapter, ctx).find((candidate) => candidate.id === id);
+    if (command) return { adapter, command, registrationSerial: registration.serial };
+  }
+  return null;
+}
+function _sanitizeLearnerScopedParams(command, params) {
+  const clean = _cleanPlanParams(params || {});
+  const allowed = Array.isArray(command && command.params) ? command.params : command && command.contract && Array.isArray(command.contract.params) ? command.contract.params : [];
+  if (!allowed.length) return {};
+  return allowed.reduce((out, key) => {
+    if (Object.prototype.hasOwnProperty.call(clean, key)) out[key] = clean[key];
+    return out;
+  }, {});
+}
+async function routeScopedUtterance(ctx, rawText, meta = {}) {
+  const text = String(rawText || "").trim();
+  if (!text || text.length > 200) return null;
+  _throwIfCommandPlanningAborted(meta && meta.signal);
+  for (const registration of _listActiveCommandScopeRegistrations(ctx || {})) {
+    const adapter = registration.adapter;
+    if (!adapter.parse) continue;
+    let parsed = null;
+    try {
+      parsed = await adapter.parse(text, ctx || {}, meta || {});
+    } catch (error) {
+      if (error && error.name === "AbortError") throw error;
+      parsed = null;
+    }
+    _throwIfCommandPlanningAborted(meta && meta.signal);
+    if (!parsed || typeof parsed !== "object" || !parsed.commandId) continue;
+    const command = _commandsForLearnerAdapter(adapter, ctx).find((candidate) => candidate.id === String(parsed.commandId));
+    if (!command) continue;
+    return {
+      scopeId: adapter.id,
+      scopeSerial: registration.serial,
+      commandId: command.id,
+      params: _sanitizeLearnerScopedParams(command, parsed.params || {}),
+      confidence: typeof parsed.confidence === "number" && Number.isFinite(parsed.confidence) ? parsed.confidence : null,
+      confidenceDecision: parsed.confidenceDecision || null,
+      via: "scope"
+    };
+  }
+  return null;
+}
+function createCommandKernel(ctxFactory, opts = {}) {
+  const getCtx = typeof ctxFactory === "function" ? ctxFactory : () => ctxFactory || {};
+  const now = typeof opts.now === "function" ? opts.now : () => Date.now();
+  const confirmationMs = Math.max(1e3, Math.min(6e4, Number(opts.confirmationMs) || 15e3));
+  const lowConfidenceThreshold = Math.max(0, Math.min(1, Number(opts.lowConfidenceThreshold) || 0.8));
+  const defaultChannel = opts.channel || "unknown";
+  let pendingConfirmation = null;
+  let activeExecution = null;
+  let destroyed = false;
+  const confirmationExpired = () => !!(pendingConfirmation && pendingConfirmation.expiresAt <= now());
+  const clearExpiredConfirmation = () => {
+    if (!confirmationExpired()) return false;
+    pendingConfirmation = null;
+    return true;
+  };
+  const publicPendingConfirmation = () => {
+    clearExpiredConfirmation();
+    if (!pendingConfirmation) return null;
+    return {
+      commandId: pendingConfirmation.commandId,
+      scopeId: pendingConfirmation.scopeId || null,
+      prompt: pendingConfirmation.prompt,
+      expiresAt: pendingConfirmation.expiresAt,
+      risk: pendingConfirmation.risk
+    };
+  };
+  const getState = () => {
+    const firstScope = listActiveCommandScopes(getCtx() || {})[0];
+    return {
+      pendingConfirmation: publicPendingConfirmation(),
+      activeScopeId: firstScope ? firstScope.id : null,
+      activeCommandId: activeExecution ? activeExecution.commandId : null,
+      channel: defaultChannel,
+      destroyed
+    };
+  };
+  const confirmationPrompt = (command, ctx, channel, params) => {
+    const t = _mkT(ctx && ctx.t);
+    let prompt = _commandConfirmationText(command, ctx, t, params);
+    if (!prompt || channel === "voice" && /press enter/i.test(prompt)) {
+      prompt = t("cmd.voice_confirm", "Say yes to confirm, or no to cancel.");
+    }
+    if (channel === "voice" && !/say yes|confirm(?:ation)?/i.test(prompt)) {
+      prompt += " Say yes to confirm, or no to cancel.";
+    }
+    return String(prompt);
+  };
+  const shouldConfirm = (policy, meta) => {
+    if (meta && meta.confirmed) return false;
+    if (policy.confirmation === "always") return true;
+    if (policy.confirmation !== "low-confidence") return false;
+    if (meta && (meta.confidenceDecision === "confirm" || meta.lowConfidence === true)) return true;
+    return !!(meta && typeof meta.confidence === "number" && meta.confidence < lowConfidenceThreshold);
+  };
+  const rememberConfirmation = (detail) => {
+    pendingConfirmation = Object.assign({}, detail, { expiresAt: now() + confirmationMs });
+    return {
+      handled: true,
+      ok: false,
+      pending: true,
+      confirmationRequired: true,
+      commandId: detail.commandId,
+      scopeId: detail.scopeId || null,
+      narration: detail.prompt,
+      via: "confirm",
+      risk: detail.risk
+    };
+  };
+  const stopActiveExecution = (reason) => {
+    const active = activeExecution;
+    if (!active) return false;
+    activeExecution = null;
+    if (active.controller) {
+      try {
+        active.controller.abort(reason || "cancelled");
+      } catch (_) {
+      }
+    }
+    const ctx = getCtx() || {};
+    if (active.scopeId) {
+      const registration = _learnerCommandScopes.get(active.scopeId);
+      try {
+        if (registration && registration.serial === active.scopeSerial && registration.adapter.stop) {
+          registration.adapter.stop(reason || "cancelled", ctx);
+        }
+      } catch (_) {
+      }
+    } else {
+      try {
+        cancelCommand(ctx, active.commandId);
+      } catch (_) {
+      }
+    }
+    return true;
+  };
+  const trackExecution = (result, commandId, scopeId, scopeSerial, controller) => {
+    if (!result || !result.pending || !result.completion || typeof result.completion.then !== "function") return result;
+    if (activeExecution) stopActiveExecution("replaced");
+    const marker = { commandId, scopeId: scopeId || null, scopeSerial: scopeSerial || null, controller: controller || null };
+    activeExecution = marker;
+    const clear = () => {
+      if (activeExecution === marker) activeExecution = null;
+    };
+    Promise.resolve(result.completion).then(clear, clear);
+    return result;
+  };
+  const normalizeScopedResult = (value, command, adapter, via) => {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      return Object.assign({}, value, { handled: true, commandId: command.id, scopeId: adapter.id, via });
+    }
+    return { handled: true, ok: true, commandId: command.id, scopeId: adapter.id, via, narration: value == null ? "Done." : String(value) };
+  };
+  const runScoped = (ctx, scoped, safeParams, meta) => {
+    const { adapter, command } = scoped;
+    const via = meta.via || "scope";
+    let value;
+    try {
+      if (adapter.execute) value = adapter.execute(command.id, safeParams, ctx, Object.assign({}, meta, { command }));
+      else if (typeof command.runAsync === "function") value = command.runAsync(ctx, safeParams, meta);
+      else if (typeof command.run === "function") value = command.run(ctx, safeParams, meta);
+      else return { handled: true, ok: false, commandId: command.id, scopeId: adapter.id, via, narration: "This command is not executable in the current surface." };
+    } catch (error) {
+      return { handled: true, ok: false, commandId: command.id, scopeId: adapter.id, via, narration: "That did not work: " + (error && error.message || "unknown") };
+    }
+    if (!value || typeof value.then !== "function") return normalizeScopedResult(value, command, adapter, via);
+    const completion = Promise.resolve(value).then((done) => normalizeScopedResult(done, command, adapter, via)).catch((error) => ({
+      handled: true,
+      ok: false,
+      commandId: command.id,
+      scopeId: adapter.id,
+      via,
+      narration: "That did not work: " + (error && error.message || "unknown")
+    }));
+    return { handled: true, ok: true, pending: true, commandId: command.id, scopeId: adapter.id, via, narration: command.pendingNarration || "Working...", completion };
+  };
+  function execute(commandId, params, meta = {}) {
+    if (destroyed) return { handled: false, ok: false, reason: "destroyed" };
+    if (meta && meta.confidenceDecision === "reject") {
+      return { handled: true, ok: false, rejected: true, commandId: String(commandId || ""), narration: "I was not confident enough to do that. Please repeat the command." };
+    }
+    clearExpiredConfirmation();
+    const ctx = getCtx() || {};
+    const channel = meta.channel || defaultChannel;
+    const scoped = meta.globalOnly ? null : _findLearnerScopedCommand(ctx, commandId, meta.scopeId);
+    if (meta.scopeId && (!scoped || meta.scopeSerial != null && scoped.registrationSerial !== meta.scopeSerial)) {
+      return { handled: true, ok: false, unavailable: true, commandId: String(commandId || ""), scopeId: String(meta.scopeId), narration: "That action is no longer available here, so nothing was changed." };
+    }
+    if (scoped) {
+      const safeParams2 = _sanitizeLearnerScopedParams(scoped.command, params || {});
+      const policy2 = getLearnerCommandPolicy(scoped.command);
+      if (shouldConfirm(policy2, meta)) {
+        return rememberConfirmation({
+          commandId: scoped.command.id,
+          scopeId: scoped.adapter.id,
+          scopeSerial: scoped.registrationSerial,
+          params: safeParams2,
+          prompt: confirmationPrompt(scoped.command, ctx, channel, safeParams2),
+          risk: policy2.risk,
+          channel
+        });
+      }
+      pendingConfirmation = null;
+      if (activeExecution) stopActiveExecution("replaced");
+      const controller = typeof AbortController === "function" ? new AbortController() : null;
+      const executionMeta = Object.assign({}, meta, { channel, signal: meta.signal || (controller ? controller.signal : null) });
+      return trackExecution(runScoped(ctx, scoped, safeParams2, executionMeta), scoped.command.id, scoped.adapter.id, scoped.registrationSerial, controller);
+    }
+    const command = buildAlloCommands(ctx).find((candidate) => candidate.id === String(commandId || ""));
+    if (!command) return null;
+    const safeParams = sanitizeCommandParams(command, params || {});
+    const policy = getLearnerCommandPolicy(command);
+    if (shouldConfirm(policy, meta)) {
+      return rememberConfirmation({ commandId: command.id, scopeId: null, params: safeParams, prompt: confirmationPrompt(command, ctx, channel, safeParams), risk: policy.risk, channel });
+    }
+    pendingConfirmation = null;
+    if (activeExecution) stopActiveExecution("replaced");
+    return trackExecution(executeCommand(ctx, command, safeParams, Object.assign({}, meta, { confirmed: !!meta.confirmed, via: meta.via || channel })), command.id, null);
+  }
+  function confirm(answer, meta = {}) {
+    const expired = confirmationExpired();
+    if (expired) pendingConfirmation = null;
+    if (!pendingConfirmation) return { handled: true, ok: false, expired, narration: expired ? "That confirmation expired. Please ask again." : "There is nothing waiting for confirmation." };
+    const text = String(answer == null ? "" : answer).trim().toLowerCase();
+    if (/^(?:yes|confirm|do it|continue|proceed|okay|ok)$/.test(text)) {
+      const pending = pendingConfirmation;
+      pendingConfirmation = null;
+      return execute(pending.commandId, pending.params, Object.assign({}, meta, { confirmed: true, scopeId: pending.scopeId, scopeSerial: pending.scopeSerial, globalOnly: !pending.scopeId, channel: pending.channel, via: "confirm" }));
+    }
+    if (/^(?:no|cancel|never mind|nevermind|stop)$/.test(text)) {
+      pendingConfirmation = null;
+      return { handled: true, ok: false, cancelled: true, narration: "Cancelled." };
+    }
+    return { handled: true, ok: false, clarification: true, confirmationRequired: true, narration: pendingConfirmation.prompt };
+  }
+  function cancel(reason, cancelOpts = {}) {
+    const hadPending = !!pendingConfirmation;
+    const hadActive = !!activeExecution;
+    pendingConfirmation = null;
+    if (!cancelOpts.pendingOnly) stopActiveExecution(reason || "cancelled");
+    return { handled: hadPending || hadActive, ok: false, cancelled: true, reason: reason || "cancelled", narration: cancelOpts.silent ? "" : "Cancelled." };
+  }
+  async function handleUtterance(rawText, meta = {}) {
+    if (destroyed) return { handled: false, ok: false, reason: "destroyed" };
+    const text = String(rawText || "").trim();
+    if (!text || text.length > 200) return null;
+    clearExpiredConfirmation();
+    if (pendingConfirmation) return confirm(text, meta);
+    if (/^(?:cancel|never mind|nevermind|stop that)$/.test(text.toLowerCase())) return cancel("spoken-cancel");
+    const ctx = getCtx() || {};
+    const scoped = await routeScopedUtterance(ctx, text, meta);
+    if (scoped) {
+      const executionMeta = Object.assign({}, meta, scoped, { channel: meta.channel || defaultChannel });
+      if (scoped.confidence == null && typeof meta.confidence === "number" && Number.isFinite(meta.confidence)) executionMeta.confidence = meta.confidence;
+      return execute(scoped.commandId, scoped.params, executionMeta);
+    }
+    if (!scoped && text.length === 1) return null;
+    const result = await routeUtterance(ctx, text, { allowAi: meta.allowAi !== false, signal: meta.signal || null, confirmed: !!meta.confirmed });
+    if (result && result.confirmationRequired) {
+      const command = buildAlloCommands(ctx).find((candidate) => candidate.id === result.commandId);
+      const policy = getLearnerCommandPolicy(command);
+      return rememberConfirmation({
+        commandId: result.commandId,
+        scopeId: null,
+        params: result.params || {},
+        prompt: result.narration || confirmationPrompt(command, ctx, meta.channel || defaultChannel),
+        risk: policy.risk,
+        channel: meta.channel || defaultChannel
+      });
+    }
+    return trackExecution(result, result && result.commandId, null);
+  }
+  function destroy() {
+    if (destroyed) return false;
+    cancel("destroyed", { silent: true });
+    destroyed = true;
+    return true;
+  }
+  return { handleUtterance, execute, confirm, cancel, getState, destroy };
+}
 function _throwIfCommandPlanningAborted(signal) {
   if (!signal || !signal.aborted) return;
   const error = new Error("Command planning cancelled.");
@@ -1451,7 +2218,6 @@ function _throwIfCommandPlanningAborted(signal) {
 }
 async function routeUtterance(ctx, rawText, opts = {}) {
   const text = String(rawText || "").trim();
-  if (!text || text.length > 200) return null;
   const t = _mkT(ctx && ctx.t);
   const _looksLikeReadingFind = /^(?:find|recommend|suggest|show|get|help me find)\s+(?:me\s+)?(?:a\s+|some\s+|the\s+)?(?:books|book|readings|reading|stories|story|articles|article|sources|source|texts|text)\b/i.test(text);
   const _whereM = text.match(/^(?:where(?:'s| is| are)?|find|locate|show me where)\s+(?:the\s+|my\s+|is\s+|are\s+)?(.{2,60}?)\??$/i);
@@ -1522,10 +2288,10 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   }
   return null;
 }
-function _commandConfirmationText(command, ctx, t) {
+function _commandConfirmationText(command, ctx, t, params) {
   if (command && typeof command.confirmMessage === "function") {
     try {
-      const message = command.confirmMessage(ctx || {});
+      const message = command.confirmMessage(ctx || {}, params || {});
       if (message) return String(message);
     } catch (_) {
     }
@@ -1533,8 +2299,18 @@ function _commandConfirmationText(command, ctx, t) {
   if (command && command.confirmMessage) return String(command.confirmMessage);
   return t("palette.confirm", "Press Enter again to confirm.");
 }
+function _rememberCommandNarration(narration) {
+  const text = String(narration || "").trim();
+  if (!text) return "";
+  try {
+    if (typeof window !== "undefined") window.__alloLastCommandNarration = text.slice(0, 4e3);
+  } catch (_) {
+  }
+  return text;
+}
 function _emitCommandLifecycle(ctx, command, status, narration, via, notifyUser, metadata) {
   const detail = Object.assign({ commandId: command && command.id, label: command && command.label, status, narration: narration || "", via: via || "confirm", at: Date.now() }, metadata || {});
+  if (narration && status !== "pending") _rememberCommandNarration(narration);
   try {
     if (ctx && typeof ctx.onCommandState === "function") ctx.onCommandState(detail);
   } catch (_) {
@@ -1612,8 +2388,8 @@ function executeCommand(ctx, commandOrId, params, opts = {}) {
   const commands = buildAlloCommands(ctx);
   const cmd = commands.find((c) => c.id === id);
   if (!cmd) return null;
-  if (cmd.destructive && !opts.confirmed) return { handled: true, narration: _commandConfirmationText(cmd, ctx, t), commandId: cmd.id, via: "confirm", confirmationRequired: true };
   const safeParams = sanitizeCommandParams(cmd, params || {});
+  if (cmd.destructive && !opts.confirmed) return { handled: true, narration: _commandConfirmationText(cmd, ctx, t), commandId: cmd.id, params: safeParams, via: "confirm", confirmationRequired: true };
   const via = opts.via || "confirm";
   const stopRequested = typeof opts.shouldStop === "function" ? opts.shouldStop : null;
   if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
@@ -1690,9 +2466,11 @@ function executeCommand(ctx, commandOrId, params, opts = {}) {
   try {
     const message = cmd.run(ctx, safeParams);
     _recordCommandUse(cmd.id);
-    return { handled: true, narration: message || t("router.done", "Done."), commandId: cmd.id, via };
+    const narration = _rememberCommandNarration(message || t("router.done", "Done."));
+    return { handled: true, narration, commandId: cmd.id, via, suppressVoiceReply: !!cmd.suppressVoiceReply };
   } catch (error) {
-    return { handled: true, ok: false, narration: t("router.failed", "That did not work: ") + (error && error.message || "unknown"), commandId: cmd.id, via };
+    const narration = _rememberCommandNarration(t("router.failed", "That did not work: ") + (error && error.message || "unknown"));
+    return { handled: true, ok: false, narration, commandId: cmd.id, via };
   }
 }
 function cancelCommand(ctx, commandOrId, opts = {}) {
@@ -1914,7 +2692,7 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
 var MODEL_NS = "model_cache";
 var MODEL_POLICY_KEY = "allo_model_downloads";
 var MODEL_CHUNK_BYTES = 6 * 1024 * 1024;
-var DEVICE_STORAGE_URL = "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds3-storage-manager";
+var DEVICE_STORAGE_URL = "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds4-bridge-auth";
 var WHISPER_BASE = "https://huggingface.co/Xenova/whisper-tiny.en/resolve/main/";
 var WHISPER_FILES = [
   WHISPER_BASE + "config.json",
@@ -2284,10 +3062,57 @@ function detectNavigationIntent(text) {
   if (!target || NAV_READING_RE.test(target)) return { isNav: false, target: "" };
   return { isNav: true, target };
 }
-function createVoiceLoop(getCtx) {
+function createVoiceLoop(getCtx, opts = {}) {
   let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null;
   let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
-  let paused = false;
+  let paused = false, pauseResumeTimer = null;
+  const DEFAULT_SPOKEN_PAUSE_MS = 3e4;
+  const MIN_SPOKEN_PAUSE_MS = 5e3;
+  const MAX_SPOKEN_PAUSE_MS = 10 * 60 * 1e3;
+  const clearPauseResumeTimer = () => {
+    if (!pauseResumeTimer) return;
+    try {
+      clearTimeout(pauseResumeTimer);
+    } catch (_) {
+    }
+    pauseResumeTimer = null;
+  };
+  let pendingConfirmation = null, confirmationTimer = null;
+  const CONFIRMATION_TIMEOUT_MS = 2e4;
+  const commandKernel = opts.commandKernel || createCommandKernel(getCtx, { channel: "voice", confirmationMs: CONFIRMATION_TIMEOUT_MS });
+  const clearPendingConfirmation = () => {
+    if (confirmationTimer) {
+      try {
+        clearTimeout(confirmationTimer);
+      } catch (_) {
+      }
+      confirmationTimer = null;
+    }
+    pendingConfirmation = null;
+  };
+  const publicPendingConfirmation = () => {
+    const pending = pendingConfirmation;
+    if (!pending) return null;
+    return {
+      kind: pending.kind,
+      commandId: pending.commandId || null,
+      stepCommandIds: pending.steps ? pending.steps.map((step) => step.commandId) : null,
+      prompt: pending.prompt,
+      expiresAt: pending.expiresAt
+    };
+  };
+  let voiceLease = null;
+  const updateVoiceSession = (state, message, privacy) => {
+    const lease = voiceLease;
+    if (!lease || typeof lease.update !== "function" || typeof lease.isActive === "function" && !lease.isActive()) return false;
+    const detail = { state, mode: "commands", label: "Allo voice commands", message: message || "" };
+    if (privacy !== void 0) detail.privacy = privacy;
+    try {
+      return lease.update(detail);
+    } catch (_) {
+      return false;
+    }
+  };
   const cancelRoute = () => {
     routeSerial++;
     const controller = routeController;
@@ -2300,6 +3125,7 @@ function createVoiceLoop(getCtx) {
     }
   };
   let speaking = false, speakSerial = 0, replyAudio = null;
+  let externalSpeech = null, externalSpeechSerial = 0;
   let lastSpeechAt = 0, userSpeaking = false, pendingReply = null, pendingTimer = null;
   const QUIET_MS = 800;
   const HOLD_MAX_MS = 8e3;
@@ -2348,6 +3174,8 @@ function createVoiceLoop(getCtx) {
   };
   const cutReply = () => {
     if (!speaking) return;
+    const externalStop = externalSpeech && externalSpeech.stop;
+    const resumeNow = activeResume;
     try {
       if (replyAudio) replyAudio.pause();
     } catch (_) {
@@ -2357,7 +3185,12 @@ function createVoiceLoop(getCtx) {
     } catch (_) {
     }
     noteUserSpeech(true);
-    const resumeNow = activeResume;
+    if (typeof externalStop === "function") {
+      try {
+        externalStop("barge-in");
+      } catch (_) {
+      }
+    }
     stopBargeWatch();
     if (resumeNow) resumeNow();
   };
@@ -2403,8 +3236,79 @@ function createVoiceLoop(getCtx) {
     }).catch(function() {
     });
   };
+  const finishExternalSpeech = (token) => {
+    if (!externalSpeech || externalSpeech.token !== token) return false;
+    externalSpeech = null;
+    speaking = false;
+    activeResume = null;
+    stopBargeWatch();
+    if (active && !paused && rec) {
+      try {
+        rec.start();
+      } catch (_) {
+      }
+    }
+    if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
+    return true;
+  };
+  const stopExternalSpeech = (reason, stopOpts = {}) => {
+    const current = externalSpeech;
+    if (!current) return false;
+    externalSpeech = null;
+    try {
+      if (typeof current.stop === "function") current.stop(reason || "stopped");
+    } catch (_) {
+    }
+    speaking = false;
+    activeResume = null;
+    stopBargeWatch();
+    if (!stopOpts.suppressResume && active && !paused && rec) {
+      try {
+        rec.start();
+      } catch (_) {
+      }
+    }
+    if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
+    return true;
+  };
+  const beginExternalSpeech = (stopFn, meta = {}) => {
+    if (!active || paused || typeof stopFn !== "function") return null;
+    if (externalSpeech) stopExternalSpeech("replaced", { suppressResume: true });
+    ++speakSerial;
+    clearPendingReply();
+    try {
+      if (replyAudio) replyAudio.pause();
+    } catch (_) {
+    }
+    replyAudio = null;
+    try {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    } catch (_) {
+    }
+    const token = ++externalSpeechSerial;
+    externalSpeech = { token, stop: stopFn, source: String(meta.source || "external-audio") };
+    speaking = true;
+    updateVoiceSession("speaking", String(meta.message || "Playing spoken content."));
+    const end = () => finishExternalSpeech(token);
+    activeResume = end;
+    startBargeWatch();
+    if (active && rec) {
+      try {
+        rec.stop();
+      } catch (_) {
+      }
+    }
+    return Object.freeze({
+      end,
+      isActive: () => !!(externalSpeech && externalSpeech.token === token),
+      source: externalSpeech.source
+    });
+  };
   const speakReply = (msg, c) => {
-    if (!c || c.voiceSpeakReplies === false) return;
+    if (!c || c.voiceSpeakReplies === false) {
+      if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
+      return;
+    }
     if (userIsBusy()) {
       pendingReply = { msg, c, queuedAt: Date.now() };
       if (!pendingTimer) pendingTimer = setInterval(flushPendingReply, 250);
@@ -2427,17 +3331,57 @@ function createVoiceLoop(getCtx) {
     speakNow(held.msg, held.c);
   };
   const speakNow = (msg, c) => {
+    if (externalSpeech) stopExternalSpeech("voice-reply", { suppressResume: true });
     const my = ++speakSerial;
     const text = String(msg || "").slice(0, 300);
+    const requestedRate = Number(c && c.voiceSpeed);
+    const voiceRate = Number.isFinite(requestedRate) ? Math.max(0.5, Math.min(2, requestedRate)) : 1;
+    const requestedVolume = Number(c && c.voiceVolume);
+    const voiceVolume = Number.isFinite(requestedVolume) ? Math.max(0, Math.min(1, requestedVolume)) : 1;
     const resume2 = () => {
       if (speakSerial !== my || !speaking) return;
       speaking = false;
       stopBargeWatch();
-      if (active && rec) {
+      if (active && !paused && rec) {
         try {
           rec.start();
         } catch (_) {
         }
+      }
+      if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
+    };
+    const speakWithBrowser = () => {
+      if (speakSerial !== my) return false;
+      if (!window.speechSynthesis || typeof SpeechSynthesisUtterance !== "function") {
+        if (speaking) resume2();
+        else if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
+        return false;
+      }
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = c && c.voiceLang || "en-US";
+        u.rate = voiceRate;
+        u.volume = voiceVolume;
+        u.onend = resume2;
+        u.onerror = resume2;
+        speaking = true;
+        updateVoiceSession("speaking", "Speaking a response.");
+        activeResume = resume2;
+        startBargeWatch();
+        if (active && rec) {
+          try {
+            rec.stop();
+          } catch (_) {
+          }
+        }
+        window.speechSynthesis.speak(u);
+        setTimeout(resume2, 15e3);
+        return true;
+      } catch (_) {
+        if (speaking) resume2();
+        else if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
+        return false;
       }
     };
     try {
@@ -2452,6 +3396,7 @@ function createVoiceLoop(getCtx) {
           replyAudio = null;
         }
         speaking = true;
+        updateVoiceSession("speaking", "Speaking a response.");
         activeResume = resume2;
         startBargeWatch();
         if (active && rec) {
@@ -2460,14 +3405,15 @@ function createVoiceLoop(getCtx) {
           } catch (_) {
           }
         }
-        Promise.resolve(window._kokoroTTS.speak(text, kv, 1)).then((url) => {
+        Promise.resolve(window._kokoroTTS.speak(text, kv, voiceRate)).then((url) => {
           if (speakSerial !== my) return;
           if (!url) {
-            resume2();
+            speakWithBrowser();
             return;
           }
           const a = new Audio(url);
           replyAudio = a;
+          a.volume = voiceVolume;
           a.onended = resume2;
           a.onerror = resume2;
           a.onloadedmetadata = () => {
@@ -2475,37 +3421,20 @@ function createVoiceLoop(getCtx) {
             if (ms) setTimeout(resume2, ms);
           };
           Promise.resolve(a.play()).catch(resume2);
-        }).catch(resume2);
+        }).catch(() => {
+          if (speakSerial === my) speakWithBrowser();
+        });
         setTimeout(resume2, 3e4);
         return;
       }
     } catch (_) {
       speaking = false;
     }
-    if (!window.speechSynthesis || typeof SpeechSynthesisUtterance !== "function") return;
-    try {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = c && c.voiceLang || "en-US";
-      u.onend = resume2;
-      u.onerror = resume2;
-      speaking = true;
-      activeResume = resume2;
-      startBargeWatch();
-      if (active && rec) {
-        try {
-          rec.stop();
-        } catch (_) {
-        }
-      }
-      window.speechSynthesis.speak(u);
-      setTimeout(resume2, 15e3);
-    } catch (_) {
-      speaking = false;
-    }
+    speakWithBrowser();
   };
-  const announce = (msg) => {
+  const announce = (msg, speak = true) => {
     const c = getCtx();
+    _rememberCommandNarration(msg);
     try {
       if (window.alloAnnounce) window.alloAnnounce(msg);
     } catch (_) {
@@ -2514,11 +3443,64 @@ function createVoiceLoop(getCtx) {
       if (c && c.addToast) c.addToast(msg, "info");
     } catch (_) {
     }
-    speakReply(msg, c);
+    if (speak) speakReply(msg, c);
+    else if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
   };
-  const stop = (reason) => {
+  const armPendingConfirmation = (pending) => {
+    clearPendingConfirmation();
+    const expiresAt = Date.now() + CONFIRMATION_TIMEOUT_MS;
+    pendingConfirmation = Object.assign({}, pending, { expiresAt });
+    const expected = pendingConfirmation;
+    confirmationTimer = setTimeout(() => {
+      if (pendingConfirmation !== expected) return;
+      if (expected.kind === "kernel-command") {
+        try {
+          commandKernel.cancel("confirmation-timeout", { pendingOnly: true, silent: true });
+        } catch (_) {
+        }
+      }
+      clearPendingConfirmation();
+      if (active) announce("Confirmation timed out. Nothing was changed.");
+    }, CONFIRMATION_TIMEOUT_MS);
+  };
+  const voiceCommandPrompt = (ctx, result) => {
+    const cmd = buildAlloCommands(ctx, { includeGated: true }).find((item) => item.id === result.commandId);
+    const label = cmd && cmd.label ? String(cmd.label) : String(result.commandId || "this action").replace(/_/g, " ");
+    const details = String(result.narration || "").replace(/\s*Press Enter again to confirm\.?\s*$/i, "").trim();
+    return (details || "Confirm " + label + "?") + " Say yes to confirm, no to cancel, or repeat details.";
+  };
+  const voicePlanPrompt = (ctx, steps) => {
+    const menu = buildAlloCommands(ctx, { includeGated: true });
+    const names = steps.map((step, index) => {
+      const cmd = menu.find((item) => item.id === step.commandId);
+      return index + 1 + ", " + (cmd && cmd.label ? cmd.label : step.commandId.replace(/_/g, " "));
+    });
+    return "I prepared a " + steps.length + " step plan: " + names.join("; ") + ". Say yes to run this plan, no to cancel, or repeat details.";
+  };
+  const stop = (reason, stopOpts = {}) => {
+    if (externalSpeech) stopExternalSpeech("voice-stopped", { suppressResume: true });
     cancelRoute();
+    clearPendingConfirmation();
+    try {
+      if (commandKernel && commandKernel.cancel) commandKernel.cancel(reason || "voice-stopped", { silent: true });
+    } catch (_) {
+    }
     clearPendingReply();
+    clearPauseResumeTimer();
+    const lease = voiceLease;
+    if (lease && reason && typeof lease.update === "function") {
+      try {
+        lease.update({ state: "stopped", mode: "commands", message: String(reason) });
+      } catch (_) {
+      }
+    }
+    voiceLease = null;
+    if (lease && !stopOpts.skipVoiceLeaseRelease && typeof lease.release === "function") {
+      try {
+        lease.release(stopOpts.voiceReason || reason || "stopped");
+      } catch (_) {
+      }
+    }
     if (pageHideHandler) {
       try {
         window.removeEventListener("pagehide", pageHideHandler);
@@ -2579,7 +3561,7 @@ function createVoiceLoop(getCtx) {
     }
     if (reason) announce(reason);
   };
-  const handleUtterance = async (text) => {
+  const handleUtterance = async (text, recognitionMeta = {}) => {
     errStreak = 0;
     text = String(text || "").trim();
     if (!text) return;
@@ -2588,8 +3570,75 @@ function createVoiceLoop(getCtx) {
       stop("Voice control off \u2014 the microphone is released.");
       return;
     }
-    if (/^(pause listening|pause voice|hold on|one moment|wait a moment)\b/i.test(text)) {
-      pause();
+    const pauseRequest = /^(?:pause (?:listening|voice)|hold on|one moment|wait a moment)(?:\s+for\s+(\d+(?:\.\d+)?)\s*(seconds?|secs?|minutes?|mins?))?[.!]?$/i.exec(text);
+    if (pauseRequest) {
+      let autoResumeMs = DEFAULT_SPOKEN_PAUSE_MS;
+      if (pauseRequest[1]) {
+        const amount = Number(pauseRequest[1]);
+        const isMinutes = /^m/i.test(pauseRequest[2] || "");
+        autoResumeMs = amount * (isMinutes ? 6e4 : 1e3);
+      }
+      pause({ autoResumeMs });
+      return;
+    }
+    if (paused) return;
+    if (pendingConfirmation) {
+      updateVoiceSession("processing", "Processing your confirmation response.");
+      const pending = pendingConfirmation;
+      if (/^(?:repeat(?: the)? details|repeat|say that again|what will happen|details)[.!]?$/i.test(text)) {
+        if (pending.kind !== "kernel-command") armPendingConfirmation(pending);
+        announce(pending.prompt);
+        return;
+      }
+      if (/^(?:no|cancel(?: it)?|do not|don['’]?t|never ?mind|stop)[.!]?$/i.test(text)) {
+        if (pending.kind === "kernel-command") {
+          try {
+            commandKernel.confirm("no", { channel: "voice" });
+          } catch (_) {
+          }
+        }
+        clearPendingConfirmation();
+        announce("Cancelled. Nothing was changed.");
+        return;
+      }
+      if (/^(?:yes|confirm(?: it)?|do it|go ahead|proceed)(?: please)?[.!]?$/i.test(text)) {
+        clearPendingConfirmation();
+        if (pending.kind === "kernel-command") {
+          const result = commandKernel.confirm("yes", { channel: "voice" });
+          const resolved = result && typeof result.then === "function" ? await result : result;
+          if (!active) return;
+          if (!resolved || !resolved.handled || resolved.ok === false) announce(resolved && resolved.narration || "That action is no longer available here, so nothing was changed.");
+          else announce(resolved.narration || "Done.", !resolved.suppressVoiceReply);
+          return;
+        }
+        if (pending.kind === "command") {
+          const result = runCommandById(getCtx(), pending.commandId, pending.params, { confirmed: true, via: "voice-confirm" });
+          const resolved = result && typeof result.then === "function" ? await result : result;
+          if (!active) return;
+          if (!resolved || !resolved.handled) announce("That action is no longer available here, so nothing was changed.");
+          else announce(resolved.narration || "Done.");
+          return;
+        }
+        if (pending.kind === "plan") {
+          const fresh = getCtx();
+          const report = validatePlan(fresh, pending.steps, { allowInteractive: false });
+          if (!report.ok) {
+            announce("That plan is no longer available in the current app state, so no steps ran.");
+            return;
+          }
+          cancelRoute();
+          const currentRouteSerial2 = ++routeSerial;
+          const controller2 = typeof AbortController === "function" ? new AbortController() : null;
+          routeController = controller2;
+          announce("Starting the confirmed plan.");
+          const result = await runPlan(() => getCtx(), pending.steps, { signal: controller2 ? controller2.signal : null });
+          if (!active || currentRouteSerial2 !== routeSerial) return;
+          routeController = null;
+          announce(result && result.ok ? "Plan finished. " + pending.steps.length + " steps completed." : result && result.reason || "The plan stopped before it finished.");
+          return;
+        }
+      }
+      announce("I am waiting for confirmation. Say yes to continue, no to cancel, or repeat details.");
       return;
     }
     if (standby && engineName === "whisper") {
@@ -2615,6 +3664,7 @@ function createVoiceLoop(getCtx) {
         }
       }
     }
+    updateVoiceSession("processing", "Interpreting the spoken command.");
     if (routeController) {
       try {
         routeController.abort();
@@ -2626,9 +3676,31 @@ function createVoiceLoop(getCtx) {
     routeController = controller;
     const signal = controller ? controller.signal : null;
     try {
-      const r = await routeUtterance(cc, text, { allowAi: true, signal });
+      if (looksMultiStep(text)) {
+        const steps = await planUtterance(cc, text, { signal, allowInteractive: false });
+        if (!active || currentRouteSerial !== routeSerial || signal && signal.aborted) return;
+        if (!steps || steps.length < 2) {
+          announce("I could not make a safe multi-step plan from that request, so no actions ran. Try one command at a time.");
+          return;
+        }
+        const report = validatePlan(cc, steps, { allowInteractive: false });
+        if (!report.ok) {
+          announce("That multi-step plan is not available in the current app state, so no actions ran.");
+          return;
+        }
+        const exactSteps = report.items.map((item) => ({ commandId: item.commandId, params: Object.freeze(Object.assign({}, item.params || {})), why: item.why || "" }));
+        const prompt = voicePlanPrompt(cc, exactSteps);
+        armPendingConfirmation({ kind: "plan", steps: exactSteps, prompt });
+        announce(prompt);
+        return;
+      }
+      const r = await commandKernel.handleUtterance(text, Object.assign({}, recognitionMeta, { allowAi: true, signal, channel: "voice" }));
       if (!active || currentRouteSerial !== routeSerial || signal && signal.aborted) return;
-      if (r && r.handled) announce(r.narration);
+      if (r && r.confirmationRequired && r.commandId) {
+        const prompt = String(r.narration || voiceCommandPrompt(cc, r));
+        armPendingConfirmation({ kind: "kernel-command", commandId: r.commandId, scopeId: r.scopeId || null, prompt });
+        announce(prompt);
+      } else if (r && r.handled) announce(r.narration, !r.suppressVoiceReply);
       else announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or " + (getCommandAudience(cc) === "student" ? "\u201Cread directions\u201D." : "\u201Copen the educator hub\u201D."));
     } catch (error) {
       if (!active || currentRouteSerial !== routeSerial || error && error.name === "AbortError") return;
@@ -2686,6 +3758,7 @@ function createVoiceLoop(getCtx) {
     proc.connect(gain);
     gain.connect(ac.destination);
     whisperState = { stream, ac, proc, gain, seg, src, asr };
+    updateVoiceSession("listening", "On-device recognition is listening.", "Audio stays on this device.");
   };
   const beginWebSpeech = (c, standbyWanted) => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2696,6 +3769,7 @@ function createVoiceLoop(getCtx) {
     try {
       engineName = "webspeech";
       standby = false;
+      updateVoiceSession("starting", "Starting browser speech recognition.", "Browser speech may send audio to the browser's speech service.");
       if (standbyWanted) announce("\u201CHey Allo\u201D standby needs the on-device speech model \u2014 say \u201Cdownload voice models\u201D first. Tap-to-talk listening is on instead.");
       rec = new SR();
       rec.continuous = true;
@@ -2708,10 +3782,15 @@ function createVoiceLoop(getCtx) {
           return;
         }
         noteUserTurnEnd();
-        handleUtterance(String(last[0] && last[0].transcript || ""));
+        const alternative = last[0] || {};
+        const confidence = typeof alternative.confidence === "number" && Number.isFinite(alternative.confidence) ? alternative.confidence : null;
+        handleUtterance(String(alternative.transcript || ""), { confidence });
       };
       rec.onspeechstart = () => noteUserSpeech(true);
       rec.onspeechend = () => noteUserSpeech(false);
+      rec.onstart = () => {
+        if (active && !paused && rec) updateVoiceSession("listening", "Listening for a command.", "Browser speech may send audio to the browser's speech service.");
+      };
       rec.onerror = (ev) => {
         errStreak++;
         if (ev && (ev.error === "not-allowed" || ev.error === "service-not-allowed")) {
@@ -2737,7 +3816,27 @@ function createVoiceLoop(getCtx) {
   const start = () => {
     const c = getCtx();
     if (active) return true;
+    let acquiredLease = null;
+    const coordinator = opts && opts.voiceCoordinator || typeof window !== "undefined" && window.AlloFlowVoice;
+    if (coordinator && typeof coordinator.acquireVoiceSession === "function") {
+      try {
+        acquiredLease = coordinator.acquireVoiceSession("agent-command", {
+          mode: "commands",
+          label: "Allo voice commands",
+          state: "starting",
+          message: "Starting voice control.",
+          onStop: (reason) => {
+            if (voiceLease === acquiredLease) voiceLease = null;
+            stop(null, { skipVoiceLeaseRelease: true, voiceReason: reason || "replaced" });
+          }
+        });
+        voiceLease = acquiredLease;
+      } catch (_) {
+        voiceLease = null;
+      }
+    }
     active = true;
+    updateVoiceSession("starting", "Starting voice control.");
     errStreak = 0;
     awake = false;
     try {
@@ -2772,6 +3871,8 @@ function createVoiceLoop(getCtx) {
       beginWebSpeech(c, false);
     }, 2500);
     if (_voiceEnginePref() === "webspeech") {
+      clearTimeout(probeTimer);
+      engineChosen = true;
       beginWebSpeech(c, standbyWanted);
       return true;
     }
@@ -2788,6 +3889,7 @@ function createVoiceLoop(getCtx) {
       standby = standbyWanted;
       return startWhisperEngine().then(function() {
         if (!active) return;
+        updateVoiceSession("listening", standby ? "On-device recognition is waiting for Hey Allo." : "On-device recognition is listening.", "Audio stays on this device.");
         announce(standby ? "On-device listening in standby \u2014 say \u201Chey Allo\u201D before a command. Audio never leaves this device." : "On-device recognition active \u2014 audio stays on this device.");
       });
     }).catch(function(e) {
@@ -2801,9 +3903,15 @@ function createVoiceLoop(getCtx) {
     });
     return true;
   };
-  const pause = () => {
+  const pause = (pauseOpts = {}) => {
     if (!active || paused) return false;
+    if (externalSpeech) stopExternalSpeech("voice-paused", { suppressResume: true });
+    const hasAutoResume = !!pauseOpts && Object.prototype.hasOwnProperty.call(pauseOpts, "autoResumeMs");
+    const requestedAutoResumeMs = Number(pauseOpts && pauseOpts.autoResumeMs);
+    const autoResumeMs = hasAutoResume && Number.isFinite(requestedAutoResumeMs) ? Math.max(MIN_SPOKEN_PAUSE_MS, Math.min(MAX_SPOKEN_PAUSE_MS, requestedAutoResumeMs)) : 0;
     paused = true;
+    clearPauseResumeTimer();
+    updateVoiceSession("paused", "Microphone paused.");
     cancelRoute();
     try {
       if (rec) rec.stop();
@@ -2827,10 +3935,27 @@ function createVoiceLoop(getCtx) {
       } catch (_) {
       }
     }
-    announce("Paused \u2014 the microphone is off. Resume when you're ready.");
+    if (autoResumeMs) {
+      const totalSeconds = Math.round(autoResumeMs / 1e3);
+      const durationLabel = totalSeconds % 60 === 0 ? totalSeconds / 60 + " minute" + (totalSeconds === 60 ? "" : "s") : totalSeconds + " seconds";
+      const finishTimedPause = () => {
+        pauseResumeTimer = null;
+        if (!active || !paused) return;
+        if (speaking) {
+          pauseResumeTimer = setTimeout(finishTimedPause, 250);
+          return;
+        }
+        resume();
+      };
+      pauseResumeTimer = setTimeout(finishTimedPause, autoResumeMs);
+      announce("Paused for " + durationLabel + ". The microphone is off and will turn back on automatically.");
+    } else {
+      announce("Paused \u2014 the microphone is off. Resume when you're ready.");
+    }
     return true;
   };
   const resume = async () => {
+    clearPauseResumeTimer();
     if (!active || !paused) return false;
     paused = false;
     if (engineName === "whisper" && whisperState) {
@@ -2851,6 +3976,7 @@ function createVoiceLoop(getCtx) {
         whisperState.src = src2;
       } catch (e) {
         paused = true;
+        updateVoiceSession("paused", "Microphone could not resume.");
         announce("Could not turn the microphone back on: " + (e && e.message || "unknown"));
         return false;
       }
@@ -2860,6 +3986,7 @@ function createVoiceLoop(getCtx) {
       } catch (_) {
       }
     }
+    updateVoiceSession("listening", "Listening for a command.");
     announce("Listening again.");
     return true;
   };
@@ -2871,6 +3998,19 @@ function createVoiceLoop(getCtx) {
     isPaused: () => paused,
     isActive: () => active,
     engine: () => engineName,
+    beginExternalSpeech,
+    getState: () => ({
+      active,
+      paused,
+      speaking,
+      listening: active && !paused && !speaking,
+      engine: engineName,
+      standby,
+      awake,
+      routePending: !!routeController,
+      sessionOwned: !!(voiceLease && (typeof voiceLease.isActive !== "function" || voiceLease.isActive())),
+      confirmation: publicPendingConfirmation()
+    }),
     // Live standby switch. Refuses on Web Speech: standby means a hot mic,
     // and a hot mic is only acceptable when transcription is on-device.
     setStandby: (on) => {
@@ -2904,6 +4044,19 @@ function scoreCommand(cmd, q) {
   return best;
 }
 const CMD_GROUP = {
+  onboarding_full_platform: "navigate",
+  onboarding_guided_setup: "navigate",
+  onboarding_learning_tools: "navigate",
+  onboarding_educator_tools: "navigate",
+  onboarding_student_role: "navigate",
+  onboarding_teacher_role: "navigate",
+  onboarding_parent_role: "navigate",
+  onboarding_independent_role: "navigate",
+  describe_current_screen: "help",
+  list_current_actions: "help",
+  go_back: "navigate",
+  close_current_surface: "navigate",
+  repeat_last_response: "help",
   open_educator_hub: "navigate",
   open_learning_hub: "navigate",
   open_source_input: "navigate",
@@ -2949,6 +4102,12 @@ const CMD_GROUP = {
   open_text_settings: "accessibility",
   open_voice_settings: "accessibility",
   read_this_page: "accessibility",
+  pause_read_this_page: "accessibility",
+  resume_read_this_page: "accessibility",
+  next_read_this_page: "accessibility",
+  previous_read_this_page: "accessibility",
+  repeat_read_this_page: "accessibility",
+  close_read_this_page: "accessibility",
   toggle_focus_mode: "accessibility",
   toggle_reading_ruler: "accessibility",
   toggle_help_mode: "accessibility",
@@ -2983,6 +4142,8 @@ const CMD_GROUP = {
   open_cinematic_studio: "tools",
   open_allo_studio: "tools",
   open_it_coach: "tools",
+  start_test_prep_hands_free: "voice",
+  test_prep_hands_free_status: "voice",
   open_accessibility_lab: "tools",
   open_lumen: "tools",
   open_free_forms: "tools",
@@ -3106,6 +4267,8 @@ const CMD_CONTEXT = {
   open_lit_lab: ["learningHub", "litLab"],
   open_mind_map: ["learningHub", "content", "mindMap"],
   open_poet_tree: ["learningHub", "poetTree"],
+  start_test_prep_hands_free: ["testPrepHub"],
+  test_prep_hands_free_status: ["testPrepHub"],
   set_grade_level: ["sourceSetup"],
   set_source_tone: ["sourceSetup"],
   set_source_length: ["sourceSetup"],
@@ -3121,6 +4284,12 @@ const CMD_CONTEXT = {
   open_export_menu: ["content"],
   find_reading: ["content", "learningHub", "reading"],
   read_this_page: ["learningHub", "symbolStudio", "stemLab", "content", "reading"],
+  pause_read_this_page: ["reading"],
+  resume_read_this_page: ["reading"],
+  next_read_this_page: ["reading"],
+  previous_read_this_page: ["reading"],
+  repeat_read_this_page: ["reading"],
+  close_read_this_page: ["reading"],
   font_bigger: ["reading"],
   font_smaller: ["reading"],
   toggle_reading_ruler: ["reading"],
@@ -3213,7 +4382,7 @@ function _recordCommandUse(commandId) {
 }
 const CTX_FLAG = { liveSession: "liveSessionActive", pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", sourceSetup: "sourceSetupOpen", symbolStudio: "symbolStudioOpen", videoStudio: "videoStudioOpen", alloStudio: "alloStudioOpen", cinematicStudio: "cinematicStudioOpen", stemLab: "stemLabOpen", openGroove: "openGrooveOpen", timelineStudio: "timelineStudioOpen", linguaPractice: "linguaPracticeOpen", testPrepHub: "testPrepHubOpen", researchHub: "researchHubOpen", litLab: "litLabOpen", mindMap: "mindMapOpen", poetTree: "poetTreeOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
 const CTX_PRIORITY = ["sourceSetup", "liveSession", "videoStudio", "alloStudio", "cinematicStudio", "symbolStudio", "stemLab", "openGroove", "timelineStudio", "linguaPractice", "testPrepHub", "researchHub", "litLab", "mindMap", "poetTree", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
-const CONTEXT_LABEL_FALLBACK = { sourceSetup: "Here \u2014 Source setup", liveSession: "Here \u2014 Live session", pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", videoStudio: "Here \u2014 Video Studio", alloStudio: "Here \u2014 Page Designer", cinematicStudio: "Here \u2014 Cinematic Studio", stemLab: "Here \u2014 STEAM Lab", openGroove: "Here \u2014 Open Groove Studio", timelineStudio: "Here \u2014 Timeline Studio", linguaPractice: "Here \u2014 Lingua Practice", testPrepHub: "Here \u2014 Test Prep Hub", researchHub: "Here \u2014 Research Hub", litLab: "Here \u2014 Lit Lab", mindMap: "Here \u2014 Throughline", poetTree: "Here \u2014 Poet Tree", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
+const CONTEXT_LABEL_FALLBACK = { sourceSetup: "Here \u2014 Source setup", liveSession: "Here \u2014 Live session", pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", videoStudio: "Here \u2014 Video Studio", alloStudio: "Here \u2014 Page Designer", cinematicStudio: "Here \u2014 Cinematic Studio", stemLab: "Here \u2014 STEAM Lab", openGroove: "Here \u2014 Open Groove Studio", timelineStudio: "Here \u2014 Timeline Studio", linguaPractice: "Here \u2014 Lingua Practice", testPrepHub: "Here \u2014 Test Prep Hub", researchHub: "Here \u2014 Research Hub", litLab: "Here \u2014 Lit Lab", mindMap: "Here \u2014 Learning Web: Unit Path", poetTree: "Here \u2014 Poet Tree", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
 function _activeContexts(ctx) {
   if (!ctx) return [];
   return CTX_PRIORITY.filter((k) => {
@@ -3456,6 +4625,7 @@ const AlloCommandPalette = ({ ctx }) => {
     }
   }, [open, sel, selectedCommandId]);
   const announce = useCallback((msg, type = "success") => {
+    _rememberCommandNarration(msg);
     try {
       if (window.alloAnnounce) window.alloAnnounce(msg);
     } catch (_) {
@@ -3681,6 +4851,6 @@ const AlloCommandProgress = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { _voicePure: { downsampleAudio: downsampleAudio, detectWakeCommand: detectWakeCommand, createVadSegmenter: createVadSegmenter, createBargeDetector: createBargeDetector }, detectNavigationIntent: detectNavigationIntent, modelCache: modelCache, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
+  window.AlloModules.AlloCommands = { _voicePure: { downsampleAudio: downsampleAudio, detectWakeCommand: detectWakeCommand, createVadSegmenter: createVadSegmenter, createBargeDetector: createBargeDetector }, detectNavigationIntent: detectNavigationIntent, modelCache: modelCache, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan, LEARNER_COMMAND_RISKS: LEARNER_COMMAND_RISKS, LEARNER_CONFIRMATION_POLICIES: LEARNER_CONFIRMATION_POLICIES, getLearnerCommandPolicy: getLearnerCommandPolicy, createLearnerCommandAdapter: createLearnerCommandAdapter, registerCommandScope: registerCommandScope, normalizeVoiceEditableFields: normalizeVoiceEditableFields, resolveVoiceEditableField: resolveVoiceEditableField, parseNamedFieldVoiceUtterance: parseNamedFieldVoiceUtterance, createNamedFieldCommandAdapter: createNamedFieldCommandAdapter, listActiveCommandScopes: listActiveCommandScopes, getLearnerContextSnapshot: getLearnerContextSnapshot, routeScopedUtterance: routeScopedUtterance, createCommandKernel: createCommandKernel };
   console.log('[CDN] AlloCommands loaded');
 })();

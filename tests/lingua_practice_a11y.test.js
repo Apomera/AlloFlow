@@ -187,7 +187,7 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     expect(host.querySelector('#lingua-word-note-help').textContent).toContain('unless you download');
     await expectNoAxeViolations('saved-word editor with personal note and tags');
     await click('Cancel');
-  }, 30000); // 13 sequential axe sweeps — heavy under parallel CPU load
+  }, 60000); // 13 sequential axe sweeps — heavy under parallel CPU load
 
   it('has no axe violations in a read-only assignment submission dashboard', async () => {
     await mount({
@@ -488,7 +488,7 @@ describe('Lingua Practice describe-the-picture accessibility', () => {
     await mount();
     await click('Build practice set');
     await click('Describe');
-    expect(host.textContent).toContain('AI images are unavailable right now.');
+    expect(host.textContent).toContain('Picture generation is not available in this session.');
     await expectNoAxeViolations('picture tab unavailable');
     act(() => root.unmount());
     root = null;
@@ -552,10 +552,66 @@ describe('Lingua Practice enhanced accessibility behavior', () => {
     const response = host.querySelector('#lingua-conversation-response');
     const responseLabel = host.querySelector('label[for="lingua-conversation-response"]');
     const speechButton = host.querySelector('button[aria-label="Speak response"]');
+    const typingToolbar = host.querySelector('[role="toolbar"][aria-labelledby="lingua-conversation-response-typing-title"]');
     expect(response.lang).toBe('es-ES');
     expect(responseLabel.control).toBe(response);
     expect(response.parentElement.contains(speechButton)).toBe(true);
     expect(responseLabel.parentElement).not.toBe(response.parentElement);
+    expect(typingToolbar.lang).toBe('es-ES');
+    expect(typingToolbar.dir).toBe('ltr');
+    expect(typingToolbar.getAttribute('aria-describedby')).toBe('lingua-conversation-response-typing-help');
+    expect(host.querySelector('#lingua-conversation-response-typing-help').textContent).toContain('input method (IME)');
+    expect(Array.from(typingToolbar.querySelectorAll('button')).filter((node) => node.tabIndex === 0)).toHaveLength(1);
+  });
+
+  it('uses localized help and RTL-aware roving focus in the section navigator', async () => {
+    const arabicPack = Object.fromEntries(
+      Object.entries(Lingua._uiStrings.English).map(([key, value]) => [key, value]),
+    );
+    arabicPack.nav_keyboard_help = 'Localized RTL navigation help.';
+    localStorage.setItem('allo_lingua_profile_v1', JSON.stringify({
+      known: 'Arabic',
+      target: 'Spanish',
+      level: 'Beginner',
+      topic: 'Introductions',
+    }));
+    localStorage.setItem('allo_lingua_ui_i18n_v1', JSON.stringify({ Arabic: arabicPack }));
+
+    await mount();
+
+    const dialog = host.querySelector('[role="dialog"]');
+    const nav = host.querySelector('nav[aria-label="Lingua Practice sections"]');
+    const toolbar = nav.querySelector('[role="toolbar"]');
+    const navButton = (key) => nav.querySelector('[data-lingua-nav-key="' + key + '"]');
+    expect(dialog.dir).toBe('rtl');
+    expect(toolbar.getAttribute('aria-describedby')).toBe('lingua-nav-keyboard-help');
+    expect(nav.querySelector('#lingua-nav-keyboard-help').textContent).toBe('Localized RTL navigation help.');
+    expect(Array.from(nav.querySelectorAll('button:not(:disabled)')).filter(
+      (node) => node.tabIndex === 0,
+    )).toHaveLength(1);
+
+    await act(async () => { navButton('setup').focus(); });
+    const rtlForward = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      bubbles: true,
+      cancelable: true,
+    });
+    await act(async () => { navButton('setup').dispatchEvent(rtlForward); });
+    expect(rtlForward.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(navButton('saved'));
+    expect(navButton('setup').getAttribute('aria-current')).toBe('page');
+
+    const vertical = new KeyboardEvent('keydown', {
+      key: 'ArrowDown',
+      bubbles: true,
+      cancelable: true,
+    });
+    await act(async () => {
+      navButton('setup').focus();
+      navButton('setup').dispatchEvent(vertical);
+    });
+    expect(document.activeElement).toBe(navButton('studio'));
+    await expectNoAxeViolations('RTL section navigator');
   });
 
   it('announces speech-input fallback locally when capture is unavailable', async () => {
@@ -762,6 +818,22 @@ describe('Lingua Practice speech capture lifecycle', () => {
         captureOptions.onEnd();
       });
 
+      savedProgress = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
+      expect(savedProgress.spokenAttempts).toBe(0);
+      expect(savedProgress.languageStats['Mandarin Chinese'].spokenAttempts).toBe(0);
+      expect(savedProgress.activityLog.filter((item) => item.kind === 'spokenAttempts')).toHaveLength(0);
+      expect(savedProgress.pronunciationEvidence || []).toHaveLength(0);
+      expect(JSON.stringify(savedProgress)).not.toContain(privateTranscript);
+      expect(findButton('Keep this attempt')).toBeTruthy();
+      expect(findButton('Discard and try again')).toBeTruthy();
+      const stagedCapturedStatus = Array.from(host.querySelectorAll('[role="status"]')).find(
+        (node) => node.textContent === 'Speech captured.',
+      );
+      expect(stagedCapturedStatus).toBeTruthy();
+      expect(speakButton.getAttribute('aria-pressed')).toBe('false');
+      await expectNoAxeViolations('staged Mandarin transcript evidence');
+      await click('Keep this attempt');
+
       const renderedPhrase = Array.from(host.querySelectorAll('[lang="zh-CN"]')).find(
         (node) => node.textContent === mandarinLesson.phrases[0].target,
       );
@@ -775,10 +847,10 @@ describe('Lingua Practice speech capture lifecycle', () => {
       expect(host.textContent).toMatch(/(?:transcript evidence|compares the transcript).*(?:cannot|does not).*phonemes.*accent.*stress.*native-likeness/i);
       expect(host.textContent).not.toMatch(/64%\s+(?:pronunciation|accent)/i);
       expect(host.textContent).not.toMatch(/\brecognizer_[a-z_]+\b/);
-      const capturedStatus = Array.from(host.querySelectorAll('[role="status"]')).find(
-        (node) => node.textContent === 'Speech captured.',
+      const keptStatus = Array.from(host.querySelectorAll('[role="status"]')).find(
+        (node) => node.textContent === 'Attempt saved to your activity record.',
       );
-      expect(capturedStatus).toBeTruthy();
+      expect(keptStatus).toBeTruthy();
       expect(speakButton.getAttribute('aria-pressed')).toBe('false');
       savedProgress = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
       expect(savedProgress.spokenAttempts).toBe(1);

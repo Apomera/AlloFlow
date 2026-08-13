@@ -126,6 +126,35 @@ describe('Water heating curve', () => {
   });
 });
 
+describe('Insulated mug cooling model', () => {
+  it('uses the exact Newton-cooling solution and starts at the stated 90 degrees', () => {
+    const fibre = MATERIALS.find(m => m.id === 'fibre');
+    const curve = HEAT_MODELS.coolingCurve(fibre, 10, 60);
+    const rTotal = (0.010 / fibre.k) + 0.12;
+    const conductance = 0.045 / rTotal;
+    const expectedAfterHour = 20 + 70 * Math.exp(-(conductance * 3600) / (0.35 * 4186));
+
+    expect(curve).toHaveLength(61);
+    expect(curve[0]).toBe(90);
+    expect(curve[60]).toBeCloseTo(expectedAfterHour, 10);
+    for (let minute = 1; minute < curve.length; minute++) {
+      expect(curve[minute]).toBeLessThan(curve[minute - 1]);
+      expect(curve[minute]).toBeGreaterThan(20);
+    }
+  });
+
+  it('retains more heat with lower conductivity or greater thickness', () => {
+    const copper = MATERIALS.find(m => m.id === 'copper');
+    const fibre = MATERIALS.find(m => m.id === 'fibre');
+    const aerogel = MATERIALS.find(m => m.id === 'aerogel');
+    const afterHour = (material, mm) => HEAT_MODELS.coolingTemperature(material, mm, 60);
+
+    expect(afterHour(fibre, 20)).toBeGreaterThan(afterHour(fibre, 10));
+    expect(afterHour(aerogel, 10)).toBeGreaterThan(afterHour(fibre, 10));
+    expect(afterHour(fibre, 10)).toBeGreaterThan(afterHour(copper, 10));
+  });
+});
+
 describe('Conduction race model', () => {
   it('keeps a ten-second copper step finite, bounded, and equivalent to safe smaller steps', () => {
     const copper = MATERIALS.find(m => m.id === 'copper');
@@ -303,11 +332,24 @@ describe('Composite wall', () => {
 });
 
 describe('Radiation and thermal expansion', () => {
-  const SIGMA = 5.670374419e-8;
-  const rad = (c, a, e) => e * SIGMA * a * Math.pow(c + 273.15, 4);
-
   it('obeys the fourth-power law exactly', () => {
-    expect(rad(600 - 273.15, 1, 1) / rad(300 - 273.15, 1, 1)).toBeCloseTo(16, 2);
+    const hot = HEAT_MODELS.radiation(600 - 273.15, 20, 1, 1);
+    const cool = HEAT_MODELS.radiation(300 - 273.15, 20, 1, 1);
+    expect(hot.emittedW / cool.emittedW).toBeCloseTo(16, 10);
+  });
+
+  it('keeps net radiation signed and describes cold surfaces in the correct direction', () => {
+    const equal = HEAT_MODELS.radiation(20, 20, 1.8, 0.98);
+    const cold = HEAT_MODELS.radiation(-20, 20, 1.8, 0.98);
+    const warm = HEAT_MODELS.radiation(33, 20, 1.8, 0.98);
+    expect(equal.netToRoomW).toBeCloseTo(0, 12);
+    expect(cold.netToRoomW).toBeLessThan(0);
+    expect(warm.netToRoomW).toBeGreaterThan(0);
+
+    const html = renderTool('heatLab', { _heatLab: { radT: -20 } });
+    expect(html).toContain('Net absorbed from a 20 °C room');
+    expect(html).toMatch(/surface is colder than the room/i);
+    expect(html).not.toMatch(/Net into a 20 °C room/);
   });
 
   it('defaults to skin temperature, not core temperature', () => {
@@ -348,6 +390,31 @@ describe('Heat lab renders', () => {
   it('states the model limits rather than implying licensing accuracy', () => {
     const html = renderTool('heatLab', {});
     expect(html).toMatch(/order-of-magnitude accurate for teaching/i);
+  });
+
+  it('provides concise live results and phone-width slider layouts', () => {
+    const html = renderTool('heatLab', { _heatLab: { thickness: 10, energyIn: 200 } });
+    expect(html).toMatch(/aria-controls=.ht-insulation-status./);
+    expect(html).toMatch(/aria-controls=.ht-heating-status./);
+    expect(html).toMatch(/id=.ht-insulation-status./);
+    expect(html).toMatch(/id=.ht-heating-status./);
+    expect((html.match(/role=.status./g) || []).length).toBeGreaterThanOrEqual(3);
+    expect(SRC).toContain('grid-cols-[minmax(0,1fr)_auto]');
+    expect(SRC).toContain('grid-cols-1 sm:grid-cols-3');
+    expect(SRC).toMatch(/htmlFor: id, id: id \+ '-value'/);
+    expect(SRC).toContain('w-full min-w-0 h-11 accent-orange-500');
+  });
+
+  it('keeps chart data disclosures independent and explicitly connected', () => {
+    const html = renderTool('heatLab', {});
+    const collapsedDisclosures = html.match(/aria-expanded=.false./g);
+    expect(html).toMatch(/aria-controls=.ht-table-cooling./);
+    expect(html).toMatch(/aria-controls=.ht-table-heating./);
+    expect(collapsedDisclosures ? collapsedDisclosures.length : 0).toBeGreaterThanOrEqual(2);
+    expect(SRC).toMatch(/dataTable\('cooling'/);
+    expect(SRC).toMatch(/dataTable\('heating'/);
+    expect(SRC).toContain('var tableVisibility = stTables[0]');
+    expect(SRC).not.toContain('var showTables =');
   });
 
   // Same drift as the nuclear lab: sections were inserted without renumbering,

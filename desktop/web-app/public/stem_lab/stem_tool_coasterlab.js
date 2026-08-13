@@ -135,6 +135,40 @@
     .clab-root .gval.hot{font-weight:700}
   }
   `;
+  CLAB_CSS += `
+  /* @clab-inquiry-visuals-start */
+  .clab-root .clab-inquiry-loop{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:8px 0 6px}
+  .clab-root .clab-inquiry-step{position:relative;min-width:0;padding:7px 4px 6px;border:1px solid var(--line);border-radius:7px;background:var(--card);text-align:center;color:var(--ink3)}
+  .clab-root .clab-inquiry-step b{display:block;font:700 9px var(--mono);letter-spacing:.06em;overflow-wrap:anywhere}
+  .clab-root .clab-inquiry-step span{display:grid;place-items:center;width:20px;height:20px;margin:0 auto 4px;border:1px solid currentColor;border-radius:50%;font:700 10px var(--mono)}
+  .clab-root .clab-inquiry-step.is-done{color:var(--good);background:color-mix(in srgb,var(--good) 8%,var(--card))}
+  .clab-root .clab-inquiry-step.is-current{color:var(--accent);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 11%,var(--card));box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 18%,transparent)}
+  .clab-root .clab-inquiry-step.is-current:after{content:"CURRENT";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);padding:1px 4px;border-radius:4px;background:var(--accent);color:#211407;font:700 7px var(--mono);letter-spacing:.05em}
+  .clab-root .clab-inquiry-prompt{margin:9px 0 0;padding:7px 8px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--card));color:var(--ink2);font-size:11.5px}
+  .clab-root .clab-evidence-story{border-color:color-mix(in srgb,var(--accent) 52%,var(--line));background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 9%,var(--card)),var(--card))}
+  .clab-root .clab-evidence-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+  .clab-root .clab-evidence-head h3{margin:0;font-size:15px}.clab-root .clab-evidence-status{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border:1px solid currentColor;border-radius:999px;color:var(--warn);font:700 9px var(--mono);letter-spacing:.06em}
+  .clab-root .clab-evidence-status.is-met{color:var(--good)}
+  .clab-root .clab-goal-readout{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin:10px 0 4px;color:var(--ink2);font-size:11px}
+  .clab-root .clab-goal-readout b{color:var(--ink);font:700 16px var(--mono)}
+  .clab-root .clab-goal-meter{--measure:0%;--target:50%;position:relative;height:15px;border:1px solid var(--line2);border-radius:999px;background:var(--panel2);overflow:hidden;box-shadow:inset 0 1px 4px rgba(0,0,0,.45)}
+  .clab-root .clab-goal-meter>i{display:block;width:var(--measure);height:100%;background:linear-gradient(90deg,var(--ke),var(--accent));border-radius:inherit}
+  .clab-root .clab-goal-meter>span{position:absolute;left:var(--target);top:-2px;bottom:-2px;width:2px;background:var(--ink);box-shadow:0 0 0 1px var(--bg)}
+  .clab-root .clab-goal-meter>span:after{content:"TARGET";position:absolute;right:3px;top:1px;color:var(--ink);font:700 7px var(--mono);letter-spacing:.04em;text-shadow:0 1px 2px var(--bg)}
+  .clab-root .clab-story-steps{display:grid;grid-template-columns:1fr 20px 1fr 20px 1fr;gap:5px;align-items:stretch;margin:12px 0 0;padding:0;list-style:none}
+  .clab-root .clab-story-step{min-width:0;padding:8px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}
+  .clab-root .clab-story-step small{display:block;color:var(--ink3);font:700 8px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+  .clab-root .clab-story-step b{display:block;margin-top:3px;color:var(--ink);font:700 13px var(--mono);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  .clab-root .clab-story-step p{margin:4px 0 0;color:var(--ink2);font-size:10.5px;line-height:1.35}
+  .clab-root .clab-story-arrow{display:grid;place-items:center;color:var(--accent);font:700 16px var(--mono)}
+  .clab-root .clab-mechanism{margin:10px 0 0;padding:8px 9px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:7px;background:color-mix(in srgb,var(--accent) 5%,var(--panel2));color:var(--ink2);font-size:11.5px}
+  .clab-root .clab-cer-scaffold{margin-top:9px;border-top:1px solid var(--line);padding-top:8px}.clab-root .clab-cer-scaffold summary{color:var(--accent);font-weight:600}.clab-root .clab-cer-grid{display:grid;gap:5px;margin-top:7px}
+  .clab-root .clab-cer-grid p{margin:0;padding:6px 8px;border-left:3px solid var(--line2);background:var(--panel2);color:var(--ink2);font-size:11px}.clab-root .clab-cer-grid b{color:var(--ink)}
+  @media (max-width:720px){.clab-root .clab-story-steps{grid-template-columns:1fr}.clab-root .clab-story-arrow{transform:rotate(90deg);min-height:14px}.clab-root .clab-inquiry-step b{font-size:8px}}
+  @media (prefers-reduced-motion:reduce){.clab-root .clab-inquiry-step.is-current{box-shadow:none}}
+  @media (forced-colors:active){.clab-root .clab-inquiry-step.is-current,.clab-root .clab-evidence-status,.clab-root .clab-goal-meter{border-color:CanvasText}.clab-root .clab-goal-meter>span{background:CanvasText}}
+  /* @clab-inquiry-visuals-end */
+  `;
   var fxControl = '<button id="clab-btnFx" title="Lite mode disables shadows and trees for slower devices">FX: Full</button>';
   CLAB_HTML = CLAB_HTML.replace(fxControl, fxControl + '\n      <select id="clab-visualTheme" class="clab-sel" aria-label="Environment theme" title="Change the coaster environment"><option value="dusk">Dusk park</option><option value="daylight">Daylight</option><option value="neon">Neon night</option><option value="blueprint">Blueprint</option></select>\n      <select id="clab-trackViz" class="clab-sel" aria-label="Track analysis overlay" title="Color the track by a predicted physics measure"><option value="track">Track colors</option><option value="speed">Speed heatmap</option><option value="vertical">Vertical g heatmap</option><option value="lateral">Lateral g heatmap</option><option value="curvature">Curvature heatmap</option></select>\n      <button id="clab-btnVectors" aria-pressed="false" title="Show velocity, seat-force, and gravity arrows on the lead car">Vectors: Off</button>\n      <button id="clab-btnComfort" aria-pressed="false" title="Reduce camera movement, pulses, and decorative animation">Motion: Standard</button>');
   var packetShare = '<button id="clab-btnPacketExport" class="ghost" type="button">⬆ Lab packet</button><button id="clab-btnPacketImport" class="ghost" type="button">⬇ Open packet</button>';
@@ -142,7 +176,7 @@
   var guidedWelcome = '<div class="card" id="clab-guidedWelcome" hidden style="border-color:rgba(89,201,141,.55);background:linear-gradient(145deg,rgba(89,201,141,.11),rgba(63,143,210,.08)),var(--card);box-shadow:inset 3px 0 0 var(--good)"><p class="eyebrow">Guided first coaster</p><h3>Build, test, explain, and revise</h3><p class="hint" id="clab-guidedText" style="margin:0">Start with a small editable track. We will shape one hill, make a prediction, and run it before the advanced lab opens up.</p><ol style="display:grid;gap:6px;margin:10px 0 12px;padding:0;list-style:none"><li>1. Choose a glowing node and shape a hill.</li><li>2. Predict what will happen, then test the ride.</li><li>3. Read the evidence and revise one node.</li></ol><div id="clab-guidedStep" role="status" aria-live="polite" style="margin:8px 0;color:var(--ink2);font:600 11px var(--mono)"><b style="color:var(--good)">Step 1 of 4</b> - Shape the track</div><div id="clab-guidedRecord" role="status" aria-live="polite" style="color:var(--ink3);font:600 10px var(--mono);margin-top:5px">Attempts: 0 - revisions: 0</div><p id="clab-guidedConditions" role="status" aria-live="polite" style="color:var(--ink3);font:600 10px var(--mono);margin:4px 0 0">Controlled experiment starts with the current settings.</p><div id="clab-guidedPrediction" hidden style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><p class="eyebrow">Before the test</p><p class="hint" style="margin-bottom:8px">Make a prediction first. Then we will compare it with measured telemetry.</p><label class="hint" for="clab-guidedSpeed" style="display:block;margin:7px 0 4px">After the first drop, the train will</label><select id="clab-guidedSpeed" class="clab-sel" style="width:100%"><option value="">Choose one...</option><option value="speedUp">speed up</option><option value="slowDown">slow down</option></select><label class="hint" for="clab-guidedForce" style="display:block;margin:9px 0 4px">The strongest vertical force will appear near the</label><select id="clab-guidedForce" class="clab-sel" style="width:100%"><option value="">Choose one...</option><option value="valley">valley</option><option value="hill">hill</option><option value="turn">turn</option></select><p id="clab-guidedFeedback" role="status" aria-live="polite" hidden style="margin:9px 0 0;color:var(--ink2);font-size:12px"></p><p id="clab-guidedCompare" role="status" aria-live="polite" hidden style="margin:7px 0 0;color:var(--ink3);font:600 10px var(--mono)"></p></div><div class="btnrow"><button id="clab-guidedAction" class="primary" type="button">Begin guided build</button><button id="clab-guidedRevise" class="ghost" type="button" hidden>Revise one node</button><button id="clab-guidedExport" class="ghost" type="button" disabled>Copy experiment log</button><button id="clab-guidedClear" class="ghost" type="button" disabled>Clear notebook</button><button id="clab-guidedSkip" class="ghost" type="button">Use full lab</button></div></div>'
   CLAB_HTML = CLAB_HTML.replace('<div class="card clab-build-start" id="clab-buildStart">', guidedWelcome + '\n\n        <div class="card clab-build-start" id="clab-buildStart">');
   var safetyCard = '<div class="card clab-safety-card" id="clab-safetyCoach">';
-  CLAB_HTML = CLAB_HTML.replace(safetyCard, '<div class="card clab-workbench-card" id="clab-workbench"><p class="eyebrow">Designer workbench</p><div class="clab-history-row"><button id="clab-btnUndo" type="button">Undo</button><button id="clab-btnRedo" type="button">Redo</button></div><label class="hint" for="clab-designChallenge" style="display:block;margin-bottom:5px">Guided design challenge</label><select id="clab-designChallenge" class="clab-sel" style="width:100%"><option value="hill20">Build a smooth 20 m hill</option><option value="airtime3">Create 3 seconds of airtime</option><option value="gentle4">Finish below 4.0 vertical g</option></select><div class="clab-challenge-meter" aria-hidden="true" style="margin-top:9px"><i id="clab-challengeFill"></i></div><span id="clab-challengeStatus" role="status" aria-live="polite">Choose a challenge to begin.</span><div id="clab-adaptiveCoach" style="margin-top:10px;padding:9px 10px;border:1px solid var(--line2);border-radius:7px;background:var(--panel2)"><p class="eyebrow" style="margin:0 0 3px">Adaptive next challenge</p><b id="clab-adaptiveTitle" style="display:block;color:var(--accent)">Start with the foundation</b><div id="clab-adaptivePlan" style="margin:4px 0 7px;padding:8px 9px;border:1px solid var(--line);border-radius:6px;background:var(--card2)"><p class="eyebrow" style="margin:0 0 4px">Action plan</p><p id="clab-adaptiveAction" class="hint" style="margin:0 0 4px;color:var(--ink2)"><b>1. Change:</b> Raise one highlighted node into a smooth hill and leave the ride settings unchanged.</p><p id="clab-adaptiveReason" class="hint" style="margin:0 0 4px"><b>2. Why:</b> Start with one measurable hill so height, energy, and safety have a clear baseline.</p><p id="clab-adaptiveFocus" class="hint" style="margin:0 0 4px;color:var(--ink3)"><b>3. Test:</b> Capture a baseline that shows how the first drop changes speed.</p><p id="clab-adaptiveSuccess" class="hint" style="margin:0;color:var(--ink3)"><b>Done when:</b> The measured hill reaches at least 20 m with safe vertical-force limits.</p></div><div class="btnrow" style="margin-top:0"><button id="clab-btnAdaptiveInspect" type="button" class="ghost" disabled>Inspect evidence</button><button id="clab-btnAdaptiveAccept" type="button" class="ghost">Use recommendation</button></div><div id="clab-adaptiveProgress" role="group" aria-label="Adaptive challenge progress" style="margin-top:9px;padding-top:9px;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><span class="eyebrow" style="margin:0">Progress path</span><span id="clab-adaptiveProgressCount" class="chnote">0 of 3 goals met</span></div><div id="clab-adaptiveProgressTrack" role="list" aria-label="Three challenge milestones" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px"></div><p id="clab-adaptiveProgressHint" class="hint" style="margin:7px 0 0">Your first validated comparison unlocks the next engineering target.</p></div><button id="clab-btnChallengeRun" class="primary" type="button" style="margin-top:9px">Test this challenge</button></div>\n\n        ' + safetyCard);
+  CLAB_HTML = CLAB_HTML.replace(safetyCard, '<div class="card clab-workbench-card" id="clab-workbench"><p class="eyebrow">Designer workbench</p><div class="clab-history-row"><button id="clab-btnUndo" type="button">Undo</button><button id="clab-btnRedo" type="button">Redo</button></div><label class="hint" for="clab-designChallenge" style="display:block;margin-bottom:5px">Guided design challenge</label><select id="clab-designChallenge" class="clab-sel" style="width:100%"><option value="hill20">Build a smooth 20 m hill</option><option value="airtime3">Create 3 seconds of airtime</option><option value="gentle4">Finish below 4.0 vertical g</option></select><div class="clab-challenge-meter" aria-hidden="true" style="margin-top:9px"><i id="clab-challengeFill"></i></div><span id="clab-challengeStatus" role="status" aria-live="polite">Choose a challenge to begin.</span><div id="clab-adaptiveCoach" style="margin-top:10px;padding:9px 10px;border:1px solid var(--line2);border-radius:7px;background:var(--panel2)"><p class="eyebrow" style="margin:0 0 3px">Adaptive next challenge</p><b id="clab-adaptiveTitle" style="display:block;color:var(--accent)">Start with the foundation</b><div id="clab-inquiryLoop" class="clab-inquiry-loop" role="list" aria-label="Engineering learning cycle"><span class="clab-inquiry-step is-current" data-clab-inquiry-phase="predict" role="listitem"><span aria-hidden="true">1</span><b>Predict</b></span><span class="clab-inquiry-step" data-clab-inquiry-phase="test" role="listitem"><span aria-hidden="true">2</span><b>Test</b></span><span class="clab-inquiry-step" data-clab-inquiry-phase="explain" role="listitem"><span aria-hidden="true">3</span><b>Explain</b></span><span class="clab-inquiry-step" data-clab-inquiry-phase="revise" role="listitem"><span aria-hidden="true">4</span><b>Revise</b></span></div><p id="clab-inquiryPrompt" class="clab-inquiry-prompt" role="status" aria-live="polite">Predict what speed and force will do before the ride.</p><div id="clab-adaptivePlan" style="margin:4px 0 7px;padding:8px 9px;border:1px solid var(--line);border-radius:6px;background:var(--card2)"><p class="eyebrow" style="margin:0 0 4px">Action plan</p><p id="clab-adaptiveAction" class="hint" style="margin:0 0 4px;color:var(--ink2)"><b>1. Change:</b> Raise one highlighted node into a smooth hill and leave the ride settings unchanged.</p><p id="clab-adaptiveReason" class="hint" style="margin:0 0 4px"><b>2. Why:</b> Start with one measurable hill so height, energy, and safety have a clear baseline.</p><p id="clab-adaptiveFocus" class="hint" style="margin:0 0 4px;color:var(--ink3)"><b>3. Test:</b> Capture a baseline that shows how the first drop changes speed.</p><p id="clab-adaptiveSuccess" class="hint" style="margin:0;color:var(--ink3)"><b>Done when:</b> The measured hill reaches at least 20 m with safe vertical-force limits.</p></div><div class="btnrow" style="margin-top:0"><button id="clab-btnAdaptiveInspect" type="button" class="ghost" disabled>Inspect evidence</button><button id="clab-btnAdaptiveAccept" type="button" class="ghost">Use recommendation</button></div><div id="clab-adaptiveProgress" role="group" aria-label="Adaptive challenge progress" style="margin-top:9px;padding-top:9px;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><span class="eyebrow" style="margin:0">Progress path</span><span id="clab-adaptiveProgressCount" class="chnote">0 of 3 goals met</span></div><div id="clab-adaptiveProgressTrack" role="list" aria-label="Three challenge milestones" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px"></div><p id="clab-adaptiveProgressHint" class="hint" style="margin:7px 0 0">Your first validated comparison unlocks the next engineering target.</p></div><button id="clab-btnChallengeRun" class="primary" type="button" style="margin-top:9px">Test this challenge</button></div>\n\n        ' + safetyCard);
   var pointCoords = '<div class="coords" id="clab-ptCoords"></div>';
   CLAB_HTML = CLAB_HTML.replace(pointCoords, pointCoords + '\n          <div class="clab-node-lens" id="clab-nodeLens" role="group" aria-label="No track node selected"><span>Section <b id="clab-nodeSection">?</b></span><span>Speed <b id="clab-nodeSpeed">?</b></span><span>Vertical <b id="clab-nodeGV">?</b></span><span>Suggested bank <b id="clab-nodeBank">?</b></span><span class="wide">Bank match <b id="clab-nodeBankDelta">?</b></span><span class="wide clab-bank-key" aria-label="3-D banking guide: solid is the actual rail and dashed is the suggested bank"><i aria-hidden="true"></i>Actual rail<i class="suggested" aria-hidden="true"></i>Suggested</span></div>');
   var energyHud = '<div class="hudcol">\n          <span class="hudk">Energy budget</span>';
@@ -798,6 +832,7 @@ const GUIDED_STATE_KEY = 'coaster_lab_onboarding_v1';
 const GUIDED_RECORD_KEY = 'coaster_lab_guided_record_v1';
 const GUIDED_RUBRIC_KEY = 'coaster_lab_rubric_v1';
 const GUIDED_REVIEW_KEY = 'coaster_lab_review_v1';
+const GUIDED_HISTORY_LIMIT = 12;
 let hadSavedDesign = false;
 try{ hadSavedDesign = !!localStorage.getItem(STORE_KEY); }catch(_e){}
 let guidedState = (() => {
@@ -810,7 +845,7 @@ let guidedRecord = { attempts: 0, revisions: 0, prediction: null, history: [], c
 try{
   const rawRecord = JSON.parse(localStorage.getItem(GUIDED_RECORD_KEY) || 'null');
   if(rawRecord && typeof rawRecord === 'object'){
-    guidedRecord = { attempts: Math.max(0, Number(rawRecord.attempts) || 0), revisions: Math.max(0, Number(rawRecord.revisions) || 0), prediction: rawRecord.prediction && typeof rawRecord.prediction === 'object' ? rawRecord.prediction : null, history: Array.isArray(rawRecord.history) ? rawRecord.history.filter(item => item && typeof item === 'object').slice(-5) : [],
+    guidedRecord = { attempts: Math.max(0, Number(rawRecord.attempts) || 0), revisions: Math.max(0, Number(rawRecord.revisions) || 0), prediction: rawRecord.prediction && typeof rawRecord.prediction === 'object' ? rawRecord.prediction : null, history: Array.isArray(rawRecord.history) ? rawRecord.history.filter(item => item && typeof item === 'object').slice(-GUIDED_HISTORY_LIMIT) : [],
     conditions: rawRecord.conditions && typeof rawRecord.conditions === 'object' ? rawRecord.conditions : null, studentReflection: typeof rawRecord.studentReflection === 'string' ? rawRecord.studentReflection.slice(0, 2400) : '', teacherNotes: typeof rawRecord.teacherNotes === 'string' ? rawRecord.teacherNotes.slice(0, 2400) : '' };
   }
 }catch(_e){}
@@ -2902,6 +2937,13 @@ function startRun(cert){
   sim.tele = freshTele();
   sim.tele.designKey = JSON.stringify(design.points);
   sim.tele.fricUsed = cert ? false : friction;
+  sim.tele.experimentSignature = guidedExperimentSignature(design.points, {
+    friction: sim.tele.fricUsed ? 'realistic' : 'ideal',
+    cars: TRAIN_CARS,
+    propulsion: design.propulsion.mode,
+    accel: Number(design.propulsion.accel) || 0,
+    challenge: activeChallenge
+  });
   sim.tele.L = track.L;
   if(analysis){
     sim.tele.markSs = {};
@@ -2932,7 +2974,16 @@ function finishRun(status){
     setGuidedState(status === 'complete' ? 'tested' : 'building');
   }
   /* ride/explore runs are always ideal — record them under 'ideal' */
-  if(sim.ride || sim.exploreCheck) tele.fricUsed = false;
+  if(sim.ride || sim.exploreCheck){
+    tele.fricUsed = false;
+    tele.experimentSignature = guidedExperimentSignature(design.points, {
+      friction: 'ideal',
+      cars: TRAIN_CARS,
+      propulsion: design.propulsion.mode,
+      accel: Number(design.propulsion.accel) || 0,
+      challenge: activeChallenge
+    });
+  }
   if(status === 'complete'){
     runHistory[tele.fricUsed ? 'real' : 'ideal'] = tele;
     bridgeReport({ event: 'run' });
@@ -3802,10 +3853,75 @@ function renderGuidedEvidenceQuality(quality){
     '<div style="margin-top:4px">' + guidedHtmlEscape(safe.recommendation) + '</div>' + reasonHtml +
   '</div>';
 }
-function guidedAdaptiveNextChallenge(goal){
-  return ({ hill20: 'airtime3', airtime3: 'gentle4', gentle4: 'hill20' })[goal] || 'hill20';
+/* @clab-inquiry-phase-start */
+function guidedInquiryPhase(state, history, reflection, running){
+  const entries = Array.isArray(history) ? history.filter(entry => entry && typeof entry === 'object') : [];
+  if(running || state === 'testing') return 'test';
+  if(!entries.length || ['new', 'ready', 'building', 'predicting'].includes(state)) return 'predict';
+  if(String(reflection || '').trim().length < 40) return 'explain';
+  return 'revise';
 }
+/* @clab-inquiry-phase-end */
+function guidedInquiryPrompt(phase){
+  if(phase === 'test') return 'Keep the controls fixed and collect one complete telemetry trace.';
+  if(phase === 'explain') return 'Use the highlighted measurement to write a claim supported by evidence.';
+  if(phase === 'revise') return 'Change one track node, explain why, then repeat the same test.';
+  return 'Predict what speed and force will do before the ride.';
+}
+function updateGuidedInquiryLoop(){
+  const loop = __clabGet('clab-inquiryLoop');
+  const prompt = __clabGet('clab-inquiryPrompt');
+  if(!loop || !prompt) return;
+  const order = ['predict', 'test', 'explain', 'revise'];
+  const phase = guidedInquiryPhase(guidedState, guidedHistoryEntries(), guidedRecord.studentReflection, sim.running);
+  const currentIndex = order.indexOf(phase);
+  loop.dataset.phase = phase;
+  loop.setAttribute('aria-label', 'Engineering learning cycle. Current phase: ' + phase + '.');
+  loop.querySelectorAll('[data-clab-inquiry-phase]').forEach(step => {
+    const index = order.indexOf(step.dataset.clabInquiryPhase);
+    step.classList.toggle('is-current', index === currentIndex);
+    step.classList.toggle('is-done', index >= 0 && index < currentIndex);
+    if(index === currentIndex) step.setAttribute('aria-current', 'step');
+    else step.removeAttribute('aria-current');
+  });
+  prompt.textContent = guidedInquiryPrompt(phase);
+}
+/* @clab-adaptive-mastery-start */
+function guidedAdaptiveMastered(items){
+  return Array.isArray(items) && items.length === 3 && items.every(item => item && item.passed && item.evidence);
+}
+function guidedAdaptiveNextChallenge(goal, items){
+  const order = ['hill20', 'airtime3', 'gentle4'];
+  const start = Math.max(0, order.indexOf(goal));
+  for(let offset = 1; offset <= order.length; offset++){
+    const candidate = order[(start + offset) % order.length];
+    const item = Array.isArray(items) ? items.find(entry => entry && entry.goal === candidate) : null;
+    if(!item || !(item.passed && item.evidence)) return candidate;
+  }
+  return null;
+}
+function guidedAdaptiveMilestones(history){
+  const safeHistory = Array.isArray(history) ? history.filter(entry => entry && typeof entry === 'object') : [];
+  return ['hill20', 'airtime3', 'gentle4'].map(goal => {
+    const runs = safeHistory.filter(entry => entry.goal === goal);
+    let quality = null;
+    let validated = false;
+    outer: for(let toIndex = safeHistory.length - 1; toIndex > 0; toIndex--){
+      if(safeHistory[toIndex].goal !== goal) continue;
+      for(let fromIndex = toIndex - 1; fromIndex >= 0; fromIndex--){
+        if(safeHistory[fromIndex].goal !== goal) continue;
+        const candidate = guidedExperimentQuality(safeHistory, fromIndex, toIndex);
+        if(!quality || Number(candidate.score) > Number(quality.score)) quality = candidate;
+        const pairPassed = !!safeHistory[fromIndex].goalPassed || !!safeHistory[toIndex].goalPassed;
+        if(candidate.level === 'valid' && pairPassed){ quality = candidate; validated = true; break outer; }
+      }
+    }
+    return { goal, runs: runs.length, passed: runs.some(entry => !!entry.goalPassed), evidence: validated, quality };
+  });
+}
+/* @clab-adaptive-mastery-end */
 function guidedAdaptiveAction(goal, stage){
+  if(stage === 'mastery') return 'Compare your three validated investigations, explain the most important tradeoff, and choose a new stretch brief.';
   if(stage === 'foundation') return 'Raise one highlighted node into a smooth hill, then make a prediction before testing.';
   if(stage === 'safety') return 'Lower or broaden the steepest valley, then re-run with the same controlled settings.';
   if(stage === 'evidence') return 'Keep friction, train, propulsion, and goal fixed; change exactly one track node before repeating.';
@@ -3821,7 +3937,8 @@ function guidedAdaptivePlan(recommendation){
   const goal = rec.challenge || activeChallenge || 'hill20';
   const stage = rec.stage || 'foundation';
   let change = 'Record a baseline, then revise exactly one track node for the new target.';
-  if(stage === 'foundation') change = 'Raise one highlighted node into a smooth hill and leave the ride settings unchanged.';
+  if(stage === 'mastery') change = 'Compare the three validated investigations and identify the design tradeoff you would optimize next.';
+  else if(stage === 'foundation') change = 'Raise one highlighted node into a smooth hill and leave the ride settings unchanged.';
   else if(stage === 'safety') change = 'Lower or broaden the steepest valley and keep friction, train, and propulsion unchanged.';
   else if(stage === 'evidence') change = 'Change exactly one track node while holding settings and the challenge fixed.';
   else if(stage === 'refine'){
@@ -3829,17 +3946,36 @@ function guidedAdaptivePlan(recommendation){
     else if(goal === 'airtime3') change = 'Smoothly raise the crest or improve crest entry speed without adding a sharp force spike.';
     else change = 'Broaden the strongest valley and smooth the banking transition to reduce peak vertical force.';
   }
-  const success = goal === 'hill20' ? 'The measured hill reaches at least 20 m with safe vertical-force limits.' : goal === 'airtime3' ? 'Measured airtime reaches at least 3.0 s while the ride remains within force limits.' : 'Peak vertical force stays below 4.0 g.';
+  const success = stage === 'mastery' ? 'All three goals remain met with a valid controlled comparison for each investigation.' : goal === 'hill20' ? 'The measured hill reaches at least 20 m with safe vertical-force limits.' : goal === 'airtime3' ? 'Measured airtime reaches at least 3.0 s while the ride remains within force limits.' : 'Peak vertical force stays below 4.0 g.';
   return { change, why: rec.reason || 'Use the latest measured evidence to choose one targeted revision.', test: rec.focus || 'Run the design with the same settings and compare the measured result.', success };
+}
+/* @clab-experiment-signature-start */
+function guidedExperimentSignature(points, settings){
+  const source = settings && typeof settings === 'object' ? settings : {};
+  const normalizedPoints = (Array.isArray(points) ? points : []).map(point => [
+    Number(Number(point && point.x || 0).toFixed(4)),
+    Number(Number(point && point.y || 0).toFixed(4)),
+    Number(Number(point && point.z || 0).toFixed(4)),
+    Number(Number(point && point.bank || 0).toFixed(4))
+  ]);
+  const frictionMode = source.friction === false || source.friction === 'ideal' ? 'ideal' : 'realistic';
+  const cars = Math.max(1, Math.trunc(Number(source.cars) || 1));
+  const propulsion = source.propulsion === 'launch' ? 'launch' : 'chain';
+  const accel = Number(Number(source.accel || 0).toFixed(4));
+  const challenge = ['hill20', 'airtime3', 'gentle4'].includes(source.challenge) ? source.challenge : 'hill20';
+  return JSON.stringify({ design: normalizedPoints, friction: frictionMode, cars, propulsion, accel, challenge });
+}
+/* @clab-experiment-signature-end */
+function guidedCurrentExperimentSignature(){
+  return guidedExperimentSignature(design.points, { friction: friction ? 'realistic' : 'ideal', cars: TRAIN_CARS, propulsion: design.propulsion.mode, accel: Number(design.propulsion.accel) || 0, challenge: activeChallenge });
 }
 function guidedCurrentTelemetry(){
   if(!lastTele || lastTele.status !== 'complete' || !Array.isArray(lastTele.trace) || lastTele.trace.length <= 5) return null;
-  const currentKey = packetDesignKey(design.points);
-  const telemetryKey = lastTele.designKey ? packetDesignFingerprintFromKey(lastTele.designKey) : '';
-  if(telemetryKey && telemetryKey !== currentKey) return null;
+  if(typeof lastTele.experimentSignature !== 'string' || lastTele.experimentSignature !== guidedCurrentExperimentSignature()) return null;
   return lastTele;
 }function guidedEvidenceFocus(tele, goal, stage){
   const trace = tele && Array.isArray(tele.trace) ? tele.trace.filter(point => point && Number.isFinite(Number(point.s)) && Number.isFinite(Number(point.g))) : [];
+  if(stage === 'mastery') return 'Use the comparison board to connect each controlled track change with its measured speed, airtime, and force tradeoff.';
   if(stage === 'foundation') return 'Capture a baseline that shows how the first drop changes speed.';
   if(stage === 'progression') return 'Capture a baseline for the new ' + guidedGoalLabel(goal) + ' target before revising a node.';
   if(!trace.length) return goal === 'airtime3' ? 'Inspect the crest and run the design to measure airtime.' : goal === 'gentle4' ? 'Inspect the strongest valley or turn, then run the design to measure force.' : 'Inspect the highest editable node and run the design to measure hill height.';
@@ -3852,14 +3988,196 @@ function guidedCurrentTelemetry(){
   if(goal === 'airtime3') return 'Inspect the crest and compare the airtime trace before and after the next revision.';
   if(goal === 'hill20') return 'Inspect the highest editable node and compare the measured hill height with the 20 m target.';
   return 'Inspect the strongest valley or turn and compare the vertical-force trace with the 4.0 g target.';
-}function guidedEvidenceFocusPoint(tele){
-  const trace = tele && Array.isArray(tele.trace) ? tele.trace.filter(point => point && Number.isFinite(Number(point.s)) && Number.isFinite(Number(point.g))) : [];
-  if(!trace.length) return null;
-  return trace.reduce((best, point) => Math.abs(Number(point.g)) > Math.abs(Number(best.g)) ? point : best, trace[0]);
-}function guidedAdaptiveRecommendation(history){
+}
+/* @clab-adaptive-evidence-start */
+function guidedEvidenceTarget(trace, goal, hillS){
+  const points = Array.isArray(trace) ? trace.filter(point => point && Number.isFinite(Number(point.s)) && Number.isFinite(Number(point.g))) : [];
+  if(!points.length) return null;
+  const copy = (point, kind, label, startS = point && point.s, endS = point && point.s) => ({ ...point, evidenceKind: kind, evidenceLabel: label, evidenceStartS: Number(startS), evidenceEndS: Number(endS) });
+  if(goal === 'hill20' && Number.isFinite(Number(hillS))){
+    const targetS = Number(hillS);
+    const nearest = points.reduce((best, point) => Math.abs(Number(point.s) - targetS) < Math.abs(Number(best.s) - targetS) ? point : best, points[0]);
+    return copy(nearest, 'hill', 'highest editable hill');
+  }
+  if(goal === 'airtime3'){
+    let bestStart = -1, bestEnd = -1, start = -1;
+    for(let index = 0; index <= points.length; index++){
+      const lowG = index < points.length && Number(points[index].g) < 0.25;
+      if(lowG && start < 0) start = index;
+      if(!lowG && start >= 0){
+        const end = index - 1;
+        const span = Number(points[end].s) - Number(points[start].s);
+        const bestSpan = bestStart < 0 ? -1 : Number(points[bestEnd].s) - Number(points[bestStart].s);
+        if(span > bestSpan){ bestStart = start; bestEnd = end; }
+        start = -1;
+      }
+    }
+    if(bestStart >= 0){
+      const middleS = (Number(points[bestStart].s) + Number(points[bestEnd].s)) / 2;
+      const middle = points.slice(bestStart, bestEnd + 1).reduce((best, point) => Math.abs(Number(point.s) - middleS) < Math.abs(Number(best.s) - middleS) ? point : best, points[bestStart]);
+      return copy(middle, 'airtime', 'longest measured airtime region', points[bestStart].s, points[bestEnd].s);
+    }
+    const lowestG = points.reduce((best, point) => Number(point.g) < Number(best.g) ? point : best, points[0]);
+    return copy(lowestG, 'airtime', 'lowest measured vertical-force point');
+  }
+  if(goal === 'gentle4'){
+    const peak = points.reduce((best, point) => Number(point.g) > Number(best.g) ? point : best, points[0]);
+    return copy(peak, 'force', 'peak measured vertical-force point');
+  }
+  const strongest = points.reduce((best, point) => Math.abs(Number(point.g)) > Math.abs(Number(best.g)) ? point : best, points[0]);
+  return copy(strongest, 'force', 'strongest measured force point');
+}
+/* @clab-adaptive-evidence-end */
+function guidedEvidenceFocusPoint(tele, goal){
+  const trace = tele && Array.isArray(tele.trace) ? tele.trace : [];
+  let hillS = null;
+  if(goal === 'hill20' && track && Array.isArray(track.pos) && Array.isArray(track.s) && design && Array.isArray(design.points) && design.points.length){
+    const highest = design.points.reduce((best, point) => Number(point.y) > Number(best.y) ? point : best, design.points[0]);
+    let bestIndex = 0, bestDistance = Infinity;
+    for(let index = 0; index < track.pos.length; index++){
+      const point = track.pos[index]; if(!point) continue;
+      const distance = (Number(point.x) - Number(highest.x)) ** 2 + (Number(point.y) - Number(highest.y)) ** 2 + (Number(point.z) - Number(highest.z)) ** 2;
+      if(distance < bestDistance){ bestDistance = distance; bestIndex = index; }
+    }
+    hillS = Number(track.s[bestIndex]);
+  }
+  return guidedEvidenceTarget(trace, goal, hillS);
+}
+/* @clab-evidence-story-model-start */
+function guidedEvidenceStoryModel(tele, goal, points, focus){
+  if(!tele || typeof tele !== 'object' || tele.status !== 'complete') return null;
+  const safeGoal = ['hill20', 'airtime3', 'gentle4'].includes(goal) ? goal : 'hill20';
+  const designPoints = Array.isArray(points) ? points.filter(point => point && Number.isFinite(Number(point.y))) : [];
+  const highestY = designPoints.length ? Math.max(...designPoints.map(point => Number(point.y))) : 0;
+  const topSpeedKmh = Math.max(0, Number(tele.maxV) || 0) * 3.6;
+  const peakG = Number.isFinite(Number(tele.maxGV)) ? Number(tele.maxGV) : 0;
+  const minG = Number.isFinite(Number(tele.minGV)) ? Number(tele.minGV) : 0;
+  const airtime = Math.max(0, Number(tele.airtime) || 0);
+  const focusPoint = focus && typeof focus === 'object' ? focus : null;
+  let goalLabel = 'Smooth 20 m hill';
+  let value = highestY, target = 20, unit = 'm', comparison = 'at least', pass = value >= target;
+  let scaleMax = Math.max(30, value * 1.12);
+  let reasoning = 'Height stores gravitational potential energy. As the train descends, that energy becomes speed, and speed through curved track changes rider force.';
+  let steps = [
+    { label: 'Track shape', value: highestY, unit: 'm hill', decimals: 1, note: 'Height stores gravitational potential energy.' },
+    { label: 'Motion', value: topSpeedKmh, unit: 'km/h', decimals: 0, note: 'Descending converts stored energy into speed.' },
+    { label: 'Rider effect', value: peakG, unit: 'g peak', decimals: 1, note: 'Speed and curvature determine seat force.' }
+  ];
+  if(safeGoal === 'airtime3'){
+    goalLabel = '3 seconds of airtime';
+    value = airtime; target = 3; unit = 's'; comparison = 'at least'; pass = value >= target;
+    scaleMax = Math.max(4.5, value * 1.12);
+    const lowG = focusPoint && Number.isFinite(Number(focusPoint.g)) ? Number(focusPoint.g) : minG;
+    reasoning = 'At a crest, the track curves away beneath the train. Enough entry speed and a smooth crest reduce seat force, so the rider feels lighter for longer.';
+    steps = [
+      { label: 'Track shape', value: highestY, unit: 'm crest', decimals: 1, note: 'A broad crest creates a low-force region.' },
+      { label: 'Motion at crest', value: lowG, unit: 'g', decimals: 2, note: 'Lower vertical g signals a lighter rider.' },
+      { label: 'Rider effect', value: airtime, unit: 's airtime', decimals: 1, note: 'Add the low-g intervals across the run.' }
+    ];
+  } else if(safeGoal === 'gentle4'){
+    goalLabel = 'Peak force below 4.0 g';
+    value = peakG; target = 4; unit = 'g'; comparison = 'at most'; pass = value <= target;
+    scaleMax = Math.max(6, value * 1.12);
+    const focusS = focusPoint && Number.isFinite(Number(focusPoint.s)) ? Number(focusPoint.s) : 0;
+    reasoning = 'Higher speed and tighter curvature require more centripetal acceleration. Broadening the strongest valley or reducing entry speed lowers the seat force.';
+    steps = [
+      { label: 'Force zone', value: focusS, unit: 'm marker', decimals: 0, note: 'Locate where the trace reaches its peak.' },
+      { label: 'Motion', value: topSpeedKmh, unit: 'km/h', decimals: 0, note: 'More speed raises the force needed to curve.' },
+      { label: 'Rider effect', value: peakG, unit: 'g peak', decimals: 1, note: 'Compare peak force with the 4.0 g target.' }
+    ];
+  }
+  const measuredPct = Math.max(0, Math.min(100, value / Math.max(scaleMax, 0.001) * 100));
+  const targetPct = Math.max(0, Math.min(100, target / Math.max(scaleMax, 0.001) * 100));
+  const startS = focusPoint && Number.isFinite(Number(focusPoint.evidenceStartS)) ? Number(focusPoint.evidenceStartS) : focusPoint && Number.isFinite(Number(focusPoint.s)) ? Number(focusPoint.s) : null;
+  const endS = focusPoint && Number.isFinite(Number(focusPoint.evidenceEndS)) ? Number(focusPoint.evidenceEndS) : startS;
+  return { goal: safeGoal, goalLabel, value, target, unit, comparison, pass, measuredPct, targetPct, reasoning, steps, focusLabel: focusPoint && focusPoint.evidenceLabel || 'goal-relevant trace evidence', focusS: focusPoint && Number.isFinite(Number(focusPoint.s)) ? Number(focusPoint.s) : null, startS, endS };
+}
+/* @clab-evidence-story-model-end */
+function guidedEvidenceValueText(value, unit){
+  const digits = unit === 'g' ? 2 : 1;
+  const prefix = unit === 'g' && Number(value) > 0 ? '+' : '';
+  return prefix + fmt(Number(value) || 0, digits) + ' ' + unit;
+}
+function guidedEvidenceStoryContext(tele){
+  const history = guidedHistoryEntries();
+  const matching = [...history].reverse().find(entry => entry && tele && ((entry.experimentSignature && entry.experimentSignature === tele.experimentSignature) || (!entry.experimentSignature && entry.designKey === tele.designKey)));
+  const goal = matching && matching.goal || activeChallenge || 'hill20';
+  let storyPoints = design.points;
+  try{
+    const savedPoints = JSON.parse(matching && matching.designKey || tele && tele.designKey || '[]');
+    if(Array.isArray(savedPoints) && savedPoints.length) storyPoints = savedPoints;
+  }catch(_e){}
+  const current = tele && tele.experimentSignature && tele.experimentSignature === guidedCurrentExperimentSignature();
+  const hillS = goal === 'hill20' && tele && tele.markSs && Number.isFinite(Number(tele.markSs.A)) ? Number(tele.markSs.A) : null;
+  const focus = current ? guidedEvidenceFocusPoint(tele, goal) : guidedEvidenceTarget(tele && tele.trace, goal, hillS);
+  return { goal, focus, model: guidedEvidenceStoryModel(tele, goal, storyPoints, focus) };
+}
+function guidedCerStarter(model){
+  if(!model) return '';
+  const outcome = model.pass ? 'met' : 'did not yet meet';
+  const focus = model.startS != null && model.endS != null && Math.abs(model.endS - model.startS) > 1
+    ? fmt(model.startS, 0) + '-' + fmt(model.endS, 0) + ' m'
+    : model.focusS != null ? fmt(model.focusS, 0) + ' m' : 'the highlighted region';
+  return 'Claim: My design ' + outcome + ' the ' + model.goalLabel + ' goal after I changed ___.\n' +
+    'Evidence: I measured ' + guidedEvidenceValueText(model.value, model.unit) + '; the target was ' + model.comparison + ' ' + guidedEvidenceValueText(model.target, model.unit) + '. The trace near ' + focus + ' showed ___.\n' +
+    'Reasoning: ' + model.reasoning + ' This supports my claim because ___.';
+}
+function renderGuidedEvidenceStory(tele){
+  const context = guidedEvidenceStoryContext(tele);
+  const model = context.model;
+  if(!model) return '';
+  const measured = guidedEvidenceValueText(model.value, model.unit);
+  const target = model.comparison + ' ' + guidedEvidenceValueText(model.target, model.unit);
+  const focusText = model.startS != null && model.endS != null && Math.abs(model.endS - model.startS) > 1
+    ? model.focusLabel + ' from ' + fmt(model.startS, 0) + ' to ' + fmt(model.endS, 0) + ' m'
+    : model.focusS != null ? model.focusLabel + ' near ' + fmt(model.focusS, 0) + ' m' : model.focusLabel;
+  const stepHtml = model.steps.map(step =>
+    '<li class="clab-story-step"><small>' + guidedHtmlEscape(step.label) + '</small><b>' +
+    guidedHtmlEscape(fmt(step.value, step.decimals) + ' ' + step.unit) + '</b><p>' + guidedHtmlEscape(step.note) + '</p></li>'
+  );
+  const storyHtml = stepHtml[0] + '<li class="clab-story-arrow" aria-hidden="true">&rarr;</li>' + stepHtml[1] + '<li class="clab-story-arrow" aria-hidden="true">&rarr;</li>' + stepHtml[2];
+  const canExplain = guidedHistoryEntries().length > 0 && !guidedReview.locked;
+  return '<div class="card clab-evidence-story" data-clab-evidence-story="true" data-clab-evidence-goal="' + guidedHtmlEscape(model.goal) + '">' +
+    '<div class="clab-evidence-head"><div><p class="eyebrow">Goal evidence story</p><h3>' + guidedHtmlEscape(model.goalLabel) + '</h3></div>' +
+    '<span class="clab-evidence-status' + (model.pass ? ' is-met' : '') + '">' + (model.pass ? '&#10003; TARGET MET' : 'KEEP ITERATING') + '</span></div>' +
+    '<div class="clab-goal-readout"><span>Measured <b>' + guidedHtmlEscape(measured) + '</b></span><span>Target ' + guidedHtmlEscape(target) + '</span></div>' +
+    '<div class="clab-goal-meter" role="img" aria-label="' + guidedHtmlEscape('Measured ' + measured + '; target ' + target + '; ' + (model.pass ? 'target met' : 'target not yet met')) + '" style="--measure:' + fmt(model.measuredPct, 1) + '%;--target:' + fmt(model.targetPct, 1) + '%"><i aria-hidden="true"></i><span aria-hidden="true"></span></div>' +
+    '<ol class="clab-story-steps" aria-label="Physics mechanism from track shape to rider effect">' + storyHtml + '</ol>' +
+    '<p class="clab-mechanism"><b>Physics connection:</b> ' + guidedHtmlEscape(model.reasoning) + '<br><b>Evidence focus:</b> ' + guidedHtmlEscape(focusText) + '.</p>' +
+    '<details class="clab-cer-scaffold" data-clab-explain-scaffold><summary>Turn this evidence into a CER explanation</summary>' +
+    '<div class="clab-cer-grid"><p><b>Claim:</b> State whether the design met the goal and name the one change you tested.</p><p><b>Evidence:</b> Compare ' + guidedHtmlEscape(measured) + ' with the target of ' + guidedHtmlEscape(target) + '.</p><p><b>Reasoning:</b> Connect track shape, speed or curvature, and rider force.</p></div>' +
+    (canExplain ? '<div class="btnrow"><button type="button" data-clab-start-explanation>Start my CER</button><span class="chnote" data-clab-cer-status role="status" aria-live="polite"></span></div>' : guidedReview.locked ? '<p class="chnote">The finalized explanation is locked for review.</p>' : '') +
+    '</details></div>';
+}
+function bindGuidedEvidenceStory(tele){
+  const body = __clabGet('clab-reportBody');
+  const button = body && body.querySelector('[data-clab-start-explanation]');
+  if(!button) return;
+  button.addEventListener('click', () => {
+    if(guidedReview.locked){ banner('Reopen the teacher review before editing the explanation.', 'fail', 2600); return; }
+    const context = guidedEvidenceStoryContext(tele);
+    const starter = guidedCerStarter(context.model);
+    const textarea = body.querySelector('[data-clab-student-reflection]');
+    const status = body.querySelector('[data-clab-cer-status]');
+    if(!textarea){ if(status) status.textContent = 'Complete a guided run to save an explanation.'; return; }
+    if(!String(guidedRecord.studentReflection || '').trim()){
+      textarea.value = starter;
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      if(status) status.textContent = 'Sentence starter added. Replace each blank with your own reasoning.';
+    } else if(status) status.textContent = 'Your saved explanation is ready below.';
+    try{ textarea.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' }); textarea.focus({ preventScroll: true }); }catch(_e){}
+    updateGuidedInquiryLoop();
+  });
+}
+function guidedAdaptiveRecommendation(history){
   const safeHistory = Array.isArray(history) ? history : guidedHistoryEntries();
   if(!safeHistory.length) return { stage: 'foundation', challenge: 'hill20', title: 'Foundation: build a smooth 20 m hill', reason: 'Start with one measurable hill so height, energy, and safety have a clear baseline.', action: guidedAdaptiveAction('hill20', 'foundation'), focus: guidedEvidenceFocus(null, 'hill20', 'foundation') };
   const latest = safeHistory[safeHistory.length - 1];
+  const milestones = guidedAdaptiveMilestones(safeHistory);
+  if(guidedAdaptiveMastered(milestones)){
+    const goal = latest.goal || activeChallenge || 'gentle4';
+    return { stage: 'mastery', challenge: goal, title: 'Pathway mastered: all three goals validated', reason: 'You met every target and supported each one with a valid controlled comparison.', action: guidedAdaptiveAction(goal, 'mastery'), focus: guidedEvidenceFocus(guidedCurrentTelemetry(), goal, 'mastery') };
+  }
   const quality = guidedLatestEvidenceQuality(safeHistory);
   if(quality.level === 'needsRevision') return { stage: 'safety', challenge: 'gentle4', title: 'Safety reset: finish below 4.0 vertical g', reason: quality.recommendation, action: guidedAdaptiveAction('gentle4', 'safety'), focus: guidedEvidenceFocus(guidedCurrentTelemetry(), 'gentle4', 'safety') };
   if(quality.level === 'partial'){
@@ -3870,43 +4188,33 @@ function guidedCurrentTelemetry(){
     const goal = latest.goal || activeChallenge || 'hill20';
     return { stage: 'refine', challenge: goal, title: 'Refine: meet the ' + guidedGoalLabel(goal) + ' goal', reason: 'Your comparison is valid. Keep the controls fixed and make one more targeted track revision.', action: guidedAdaptiveAction(goal, 'refine'), focus: guidedEvidenceFocus(guidedCurrentTelemetry(), goal, 'refine') };
   }
-  const next = guidedAdaptiveNextChallenge(latest.goal || activeChallenge);
+  const next = guidedAdaptiveNextChallenge(latest.goal || activeChallenge, milestones) || latest.goal || activeChallenge || 'hill20';
   return { stage: 'progression', challenge: next, title: 'Next rung: ' + guidedGoalLabel(next), reason: 'The last comparison was valid and the goal was met. Try a new engineering target while preserving a clear baseline.', action: guidedAdaptiveAction(next, 'progression'), focus: guidedEvidenceFocus(guidedCurrentTelemetry(), next, 'progression') };
 }function guidedAdaptiveProgress(history){
   const safeHistory = Array.isArray(history) ? history : guidedHistoryEntries();
   const recommendation = guidedAdaptiveRecommendation(safeHistory);
-  const goals = ['hill20', 'airtime3', 'gentle4'];
-  const items = goals.map(goal => {
-    const runs = safeHistory.filter(entry => entry && entry.goal === goal);
-    let quality = null;
-    for(let i = safeHistory.length - 1; i > 0; i--){
-      if(safeHistory[i] && safeHistory[i].goal === goal && safeHistory[i - 1] && safeHistory[i - 1].goal === goal){
-        quality = guidedExperimentQuality(safeHistory, i - 1, i);
-        break;
-      }
-    }
-    return { goal, runs: runs.length, passed: runs.some(entry => !!entry.goalPassed), evidence: !!(quality && quality.level === 'valid'), active: recommendation.challenge === goal };
-  });
-  return { items, goalsMet: items.filter(item => item.passed).length, evidenceReady: items.filter(item => item.evidence).length, recommendation };
-}
-function renderAdaptiveProgress(history){
+  const mastered = recommendation.stage === 'mastery';
+  const items = guidedAdaptiveMilestones(safeHistory).map(item => ({ ...item, active: !mastered && recommendation.challenge === item.goal }));
+  return { items, goalsMet: items.filter(item => item.passed).length, evidenceReady: items.filter(item => item.evidence).length, mastered, recommendation };
+}function renderAdaptiveProgress(history){
   if(!adaptiveProgressEl || !adaptiveProgressTrackEl) return;
   const progress = guidedAdaptiveProgress(history);
   const labels = { hill20: '20 m hill', airtime3: '3 s airtime', gentle4: '< 4.0 g' };
   adaptiveProgressTrackEl.innerHTML = progress.items.map(item => {
     const color = item.active ? 'var(--accent)' : item.evidence || item.passed ? 'var(--good)' : item.runs ? 'var(--warn)' : 'var(--line2)';
-    const badge = item.active ? 'CURRENT' : item.evidence ? 'VALIDATED' : item.passed ? 'GOAL MET' : item.runs ? 'PRACTICE' : 'QUEUED';
-    const detail = item.evidence ? 'controlled comparison' : item.passed ? 'target reached' : item.runs ? 'keep testing' : 'not started';
+    const badge = progress.mastered && item.evidence && item.passed ? 'MASTERED' : item.active ? 'CURRENT' : item.evidence ? 'VALIDATED' : item.passed ? 'GOAL MET' : item.runs ? 'PRACTICE' : 'QUEUED';
+    const detail = item.evidence && item.passed ? 'goal + controlled evidence' : item.evidence ? 'controlled comparison' : item.passed ? 'target reached' : item.runs ? 'keep testing' : 'not started';
     return '<span data-clab-adaptive-step="' + item.goal + '" role="listitem" style="display:flex;flex-direction:column;gap:3px;min-width:0;padding:7px 6px;border:1px solid ' + color + ';border-radius:5px;background:var(--card2)"><b style="font-size:11px;color:' + color + ';overflow-wrap:anywhere">' + guidedHtmlEscape(labels[item.goal] || 'Challenge') + '</b><small class="chnote" style="color:' + color + '">' + badge + '</small><small class="chnote" style="overflow-wrap:anywhere">' + detail + '</small></span>';
   }).join('');
-  if(adaptiveProgressCountEl) adaptiveProgressCountEl.textContent = progress.goalsMet + '/3 goals met · ' + progress.evidenceReady + '/3 validated';
+  if(adaptiveProgressCountEl) adaptiveProgressCountEl.textContent = progress.mastered ? 'Pathway mastered - 3/3 validated' : progress.goalsMet + '/3 goals met - ' + progress.evidenceReady + '/3 validated';
   if(adaptiveProgressHintEl){
-    adaptiveProgressHintEl.textContent = progress.evidenceReady ? 'Validated comparisons unlock progression; use the current rung to decide what to revise next.' : progress.goalsMet ? 'A goal is met, but the next rung still needs a controlled before-and-after comparison.' : 'Complete a first run, revise one node, and keep the settings fixed to build the evidence path.';
+    adaptiveProgressHintEl.textContent = progress.mastered ? 'Mastery complete: use the three validated comparisons to explain the design tradeoffs.' : progress.evidenceReady ? 'Validated comparisons unlock progression; use the current rung to decide what to revise next.' : progress.goalsMet ? 'A goal is met, but the next rung still needs a controlled before-and-after comparison.' : 'Complete a first run, revise one node, and keep the settings fixed to build the evidence path.';
   }
 }function updateAdaptiveChallenge(){
   if(!adaptiveCoachEl) return;
   const recommendation = guidedAdaptiveRecommendation();
   const plan = guidedAdaptivePlan(recommendation);
+  const mastered = recommendation.stage === 'mastery';
   if(adaptiveTitleEl) adaptiveTitleEl.textContent = recommendation.title;
   if(adaptiveReasonEl) adaptiveReasonEl.textContent = '2. Why: ' + plan.why;
   if(adaptiveActionEl) adaptiveActionEl.textContent = '1. Change: ' + plan.change;
@@ -3917,17 +4225,22 @@ function renderAdaptiveProgress(history){
     adaptiveInspectEl.disabled = !ready || sim.running;
     adaptiveInspectEl.setAttribute('aria-label', ready ? 'Inspect evidence in the report and telemetry trace' : 'Run the current design before inspecting evidence');
   }
-  const selected = activeChallenge === recommendation.challenge;
+  const selected = mastered || activeChallenge === recommendation.challenge;
   const locked = guidedConditionsLocked();
   if(adaptiveAcceptEl){
     adaptiveAcceptEl.disabled = selected;
-    adaptiveAcceptEl.textContent = selected ? 'Current challenge' : locked ? 'Start new challenge' : 'Use recommendation';
-    adaptiveAcceptEl.setAttribute('aria-label', selected ? recommendation.title + ' is selected' : 'Use adaptive recommendation: ' + recommendation.title);
+    adaptiveAcceptEl.textContent = mastered ? 'Pathway mastered' : selected ? 'Current challenge' : locked ? 'Start new challenge' : 'Use recommendation';
+    adaptiveAcceptEl.setAttribute('aria-label', mastered ? 'All three adaptive challenges are mastered' : selected ? recommendation.title + ' is selected' : 'Use adaptive recommendation: ' + recommendation.title);
   }
   renderAdaptiveProgress();
+  updateGuidedInquiryLoop();
 }async function acceptAdaptiveChallenge(){
   if(sim.running || !adaptiveAcceptEl) return;
   const recommendation = guidedAdaptiveRecommendation();
+  if(recommendation.stage === 'mastery'){
+    banner('Adaptive pathway mastered. Review the three validated comparisons or begin a teacher-created stretch brief.', 'pass', 3600);
+    return;
+  }
   if(activeChallenge === recommendation.challenge){
     banner('The adaptive recommendation is already selected.', '', 2200);
     return;
@@ -4185,6 +4498,7 @@ function guidedReflectionPrompt(history, quality, recommendation){
   if(!latest) return 'What do you predict will happen, and what evidence will you collect?';
   if(safeQuality.level === 'needsRevision') return 'Which force spike or safety finding will you change first, and how will you test whether the new track is safer?';
   if(safeQuality.level === 'partial') return 'Which one track node will you revise while keeping friction, train, propulsion, and goal fixed? Why is that a fair test?';
+  if(safeRecommendation.stage === 'mastery') return 'Across your three validated investigations, which design tradeoff mattered most, and what evidence supports that conclusion?';
   if(safeRecommendation.stage === 'refine') return 'What measured result shows that your revision helped, and what single change will you make next to meet the goal?';
   if(safeRecommendation.stage === 'progression') return 'What tradeoff will you investigate in the next challenge, and what baseline measurement will you compare it with?';
   return 'How does your measured evidence support your claim, and what is your next engineering move?';
@@ -4247,6 +4561,7 @@ function bindClassroomRubric(){
       guidedRecord.studentReflection = String(target.value || '').slice(0, 2400);
       persistGuidedRecord();
       update();
+      updateGuidedInquiryLoop();
     }
     if(target && target.matches('[data-clab-reviewer]')){
       guidedReview.reviewer = String(target.value || '').slice(0, 120);
@@ -4317,6 +4632,7 @@ function renderReport(tele){
   html += stat('Max side g', '±' + fmt(tele.maxLat, 2), 'g');
   html += stat('Airtime', fmt(tele.airtime, 1), 's');
   html += '</div>';
+  html += renderGuidedEvidenceStory(tele);
   html += '<div class="card"><p class="eyebrow">Park rating</p>';
   html += rating('Excitement', excitement, adj(excitement, ['dull', 'gentle', 'fun', 'thrilling', 'legendary']));
   html += rating('Intensity',  intensity,  adj(intensity,  ['mild', 'moderate', 'strong', 'extreme', 'brutal']));
@@ -4388,6 +4704,7 @@ function renderReport(tele){
   bindGuidedHistoryExport();
   bindGuidedTeacherReport();
   bindClassroomRubric();
+  bindGuidedEvidenceStory(tele);
   if(tele.trace.length > 5){
     bindTelemetryReplay(tele);
     drawTraces(tele);
@@ -4527,6 +4844,23 @@ function drawChart(cv, pts, key, yMin, yMax, color, opts){
     g.beginPath(); g.moveTo(2, Y(val)); g.lineTo(w - 2, Y(val)); g.stroke();
     g.setLineDash([]);
   }
+  /* @clab-evidence-chart-focus-start */
+  if(Array.isArray(opts.focusRange) && opts.focusRange.length === 2 && opts.focusRange.every(value => Number.isFinite(Number(value)))){
+    let x0 = X(Math.max(0, Math.min(sMax, Number(opts.focusRange[0]))));
+    let x1 = X(Math.max(0, Math.min(sMax, Number(opts.focusRange[1]))));
+    if(x1 < x0){ const swap = x0; x0 = x1; x1 = swap; }
+    if(x1 - x0 < 5){ const center = (x0 + x1) / 2; x0 = Math.max(2, center - 2.5); x1 = Math.min(w - 2, center + 2.5); }
+    g.fillStyle = 'rgba(242,166,60,0.12)';
+    g.fillRect(x0, 10, Math.max(2, x1 - x0), hh - 14);
+    g.strokeStyle = eventAccent; g.globalAlpha = 0.72; g.lineWidth = 1; g.setLineDash([2, 2]);
+    g.strokeRect(x0, 10, Math.max(2, x1 - x0), hh - 14);
+    g.setLineDash([]); g.globalAlpha = 1;
+    if(opts.focusLabel){
+      g.fillStyle = eventAccent; g.font = '700 8px Consolas, monospace'; g.textAlign = x1 > w - 58 ? 'right' : 'left';
+      g.fillText(opts.focusLabel, x1 > w - 58 ? x0 - 3 : x1 + 3, 9);
+    }
+  }
+  /* @clab-evidence-chart-focus-end */
   if(opts.marks) for(const [k, sv] of Object.entries(opts.marks)){
     if(sv == null) continue;
     const col = '#' + MARKER_COL[k].toString(16).padStart(6, '0');
@@ -4610,20 +4944,26 @@ function drawTraces(tele){
   const cursorPoint = telemetryReplay.tele === tele ? tele.trace[telemetryReplay.index] : null;
   const cursorS = cursorPoint ? cursorPoint.s : null;
   const events = telemetryEvents(tele);
+  const evidencePoint = tele.experimentSignature === guidedCurrentExperimentSignature() ? guidedEvidenceFocusPoint(tele, activeChallenge) : null;
+  const focusRange = evidencePoint ? [evidencePoint.evidenceStartS, evidencePoint.evidenceEndS] : null;
   const peakSpeed = events.speed[0], peakG = events.vertical[0], minG = events.vertical[1], sideG = events.lateral[0];
   cvV.setAttribute('aria-label', `Speed over the full coaster circuit. Peak ${peakSpeed.label} at ${fmt(peakSpeed.s, 0)} meters. Click or drag to inspect; keyboard users can use the ride-position slider.`);
   cvG.setAttribute('aria-label', `Vertical seat force over the circuit. Maximum ${peakG.label}; minimum ${minG.label}. Click or drag to inspect; keyboard users can use the ride-position slider.`);
   cvL.setAttribute('aria-label', `Lateral seat force over the circuit. Largest side force ${sideG.label}. Click or drag to inspect; keyboard users can use the ride-position slider.`);
-  drawChart(cvV, tele.trace, 'v', 0, vTop, '#3f8fd2', { marks: tele.markSs, ghost: tele.ghostTrace, cursorS, cursorValue: cursorPoint ? cursorPoint.v : null, cursorLabel: cursorPoint ? fmt(cursorPoint.v, 1) + ' m/s' : '', events: events.speed });
+  if(evidencePoint){
+    const evidenceAria = ' Goal evidence highlighted at ' + evidencePoint.evidenceLabel + (Math.abs(Number(evidencePoint.evidenceEndS) - Number(evidencePoint.evidenceStartS)) > 1 ? ' from ' + fmt(evidencePoint.evidenceStartS, 0) + ' to ' + fmt(evidencePoint.evidenceEndS, 0) + ' meters.' : ' near ' + fmt(evidencePoint.s, 0) + ' meters.');
+    for(const canvas of [cvV, cvG, cvL]) canvas.setAttribute('aria-label', canvas.getAttribute('aria-label') + evidenceAria);
+  }
+  drawChart(cvV, tele.trace, 'v', 0, vTop, '#3f8fd2', { marks: tele.markSs, ghost: tele.ghostTrace, cursorS, cursorValue: cursorPoint ? cursorPoint.v : null, cursorLabel: cursorPoint ? fmt(cursorPoint.v, 1) + ' m/s' : '', events: events.speed, focusRange });
   drawChart(cvG, tele.trace, 'g', -2.5, 7.5, '#f2a63c', {
     bands: [[LIM.gvMax, 7.5], [-2.5, LIM.gvMin]],
     lines: [[1, true], [0, false]],
-    marks: tele.markSs, cursorS, cursorValue: cursorPoint ? cursorPoint.g : null, cursorLabel: cursorPoint ? `${cursorPoint.g >= 0 ? '+' : ''}${fmt(cursorPoint.g, 2)} g` : '', events: events.vertical
+    marks: tele.markSs, cursorS, cursorValue: cursorPoint ? cursorPoint.g : null, cursorLabel: cursorPoint ? `${cursorPoint.g >= 0 ? '+' : ''}${fmt(cursorPoint.g, 2)} g` : '', events: events.vertical, focusRange, focusLabel: evidencePoint ? 'GOAL EVIDENCE' : ''
   });
   drawChart(cvL, tele.trace, 'gl', -2, 2, '#23a884', {
     bands: [[LIM.glat, 2], [-2, -LIM.glat]],
     lines: [[0, false]],
-    marks: tele.markSs, cursorS, cursorValue: cursorPoint ? cursorPoint.gl : null, cursorLabel: cursorPoint ? `${cursorPoint.gl >= 0 ? '+' : ''}${fmt(cursorPoint.gl, 2)} g` : '', events: events.lateral
+    marks: tele.markSs, cursorS, cursorValue: cursorPoint ? cursorPoint.gl : null, cursorLabel: cursorPoint ? `${cursorPoint.gl >= 0 ? '+' : ''}${fmt(cursorPoint.gl, 2)} g` : '', events: events.lateral, focusRange
   });
 }
 /* ---------------- HUD ---------------- */
@@ -5126,6 +5466,7 @@ function guidedComparison(tele){
 }
 function syncGuidedWelcome(){
   if(!guidedWelcomeEl) return;
+  updateGuidedInquiryLoop();
   const active = ['ready', 'building', 'predicting', 'testing', 'tested'].includes(guidedState);
   guidedWelcomeEl.hidden = !active;
   if(!active) return;
@@ -5284,9 +5625,10 @@ function guidedPredictionCoach(actualSpeed, actualForce, speedCorrect, forceCorr
     goalValue: goalSnapshot.value,
     goalPassed: goalSnapshot.passed,
     designKey: tele.designKey,
+    experimentSignature: tele.experimentSignature,
     trace: guidedTraceSnapshot(tele)
   };
-  guidedRecord.history = [...(guidedRecord.history || []), historyEntry].slice(-5);
+  guidedRecord.history = [...(guidedRecord.history || []), historyEntry].slice(-GUIDED_HISTORY_LIMIT);
   persistGuidedRecord();
   if(guidedFeedbackEl){
     guidedFeedbackEl.textContent = guidedPrediction.feedback + ' Peak vertical force: ' + fmt(tele.maxGV, 1) + ' g.';
@@ -5360,7 +5702,7 @@ if(guidedSkipEl) guidedSkipEl.addEventListener('click', () => {
 });
 function updateDesignChallenge(tele = lastTele){
   if(!challengeSelect || !challengeFill || !challengeStatus) return;
-  const sameDesign = !!(tele && packetDesignFingerprintFromKey(tele.designKey) === packetDesignKey(design.points));
+  const sameExperiment = !!(tele && tele.experimentSignature === guidedCurrentExperimentSignature());
   let pct = 0, done = false, text = '';
   if(activeChallenge === 'hill20'){
     const maxH = Math.max(...design.points.map(p => p.y));
@@ -5368,12 +5710,12 @@ function updateDesignChallenge(tele = lastTele){
     done = maxH >= 20 && safetyFindings.length === 0;
     text = done ? 'Complete: the hill reaches 20 m and preflight is clear.' : `${fmt(maxH, 1)} of 20 m; ${safetyFindings.length ? 'resolve the numbered preflight findings too.' : 'preflight is clear.'}`;
   } else if(activeChallenge === 'airtime3'){
-    const airtime = sameDesign && tele.status === 'complete' ? tele.airtime : 0;
+    const airtime = sameExperiment && tele.status === 'complete' ? tele.airtime : 0;
     pct = Math.min(100, airtime / 3 * 100);
     done = airtime >= 3;
-    text = done ? `Complete: ${fmt(airtime, 1)} seconds of airtime.` : sameDesign ? `${fmt(airtime, 1)} of 3.0 seconds. Add a smooth camelback or increase crest speed.` : 'Run this design to measure airtime.';
+    text = done ? `Complete: ${fmt(airtime, 1)} seconds of airtime.` : sameExperiment ? `${fmt(airtime, 1)} of 3.0 seconds. Add a smooth camelback or increase crest speed.` : 'Run this design to measure airtime.';
   } else {
-    const maxG = sameDesign && tele.status === 'complete' ? tele.maxGV : null;
+    const maxG = sameExperiment && tele.status === 'complete' ? tele.maxGV : null;
     pct = maxG == null ? 0 : Math.min(100, 400 / Math.max(4, maxG) * 100);
     done = maxG != null && maxG <= 4;
     text = done ? `Complete: peak vertical force is ${fmt(maxG, 2)} g.` : maxG == null ? 'Run this design to measure its peak vertical force.' : `Peak is ${fmt(maxG, 2)} g. Broaden the strongest valley to get below 4.0 g.`;
@@ -5400,12 +5742,13 @@ challengeSelect.addEventListener('change', () => {
 function inspectAdaptiveEvidence(){
   const currentTelemetry = guidedCurrentTelemetry();
   if(!currentTelemetry){
-    banner('Run the current design before inspecting evidence.', 'fail', 2800);
+    banner('Run the current design with the current settings before inspecting evidence.', 'fail', 3000);
     return;
   }
+  const recommendation = guidedAdaptiveRecommendation();
   activateTab(__clabGet('clab-tab-report-btn'));
   requestAnimationFrame(() => {
-    const point = guidedEvidenceFocusPoint(currentTelemetry);
+    const point = guidedEvidenceFocusPoint(currentTelemetry, recommendation.challenge);
     if(point && telemetryReplay.tele){
       applyTelemetryFrame(telemetryIndexAtDistance(currentTelemetry.trace, point.s));
       drawTraces(currentTelemetry);
@@ -5416,7 +5759,7 @@ function inspectAdaptiveEvidence(){
       target.setAttribute('tabindex', '-1');
       try{ target.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' }); target.focus({ preventScroll: true }); }catch(_e){}
     }
-    banner('Evidence report opened at the strongest measured trace point.', 'pass', 3000);
+    banner('Evidence report opened at the ' + (point && point.evidenceLabel ? point.evidenceLabel : 'goal-relevant measured point') + '.', 'pass', 3200);
   });
 }if(adaptiveAcceptEl) adaptiveAcceptEl.addEventListener('click', acceptAdaptiveChallenge);if(adaptiveInspectEl) adaptiveInspectEl.addEventListener('click', inspectAdaptiveEvidence);
 __clabGet('clab-btnChallengeRun').addEventListener('click', () => {
@@ -6027,6 +6370,8 @@ function packetTelemetrySnapshot(tele){
   if(!tele || typeof tele !== 'object' || tele.status !== 'complete') return null;
   const expectedDesignKey = JSON.stringify(design.points);
   const expectedFingerprint = packetDesignKey(design.points);
+  const expectedExperimentSignature = guidedCurrentExperimentSignature();
+  if(tele.experimentSignature !== expectedExperimentSignature) return null;
 
   const trace = packetTrace(tele.trace);
   if(!trace.length) return null;
@@ -6034,6 +6379,7 @@ function packetTelemetrySnapshot(tele){
     status: 'complete',
     designKey: typeof tele.designKey === 'string' ? tele.designKey : expectedDesignKey,
     designFingerprint: packetDesignFingerprintFromKey(tele.designKey) || expectedFingerprint,
+    experimentSignature: expectedExperimentSignature,
 
     fricUsed: !!tele.fricUsed,
     L: packetNumber(tele.L, track && track.L ? track.L : 0),
@@ -6054,15 +6400,23 @@ function packetTelemetrySnapshot(tele){
     seats: packetSeats(tele.seats)
   };
 }
-function packetTelemetryRestore(raw, expectedDesignKey, expectedFingerprint){
+function packetTelemetryRestore(raw, expectedDesignKey, expectedFingerprint, expectedExperimentSignature){
   if(!raw || typeof raw !== 'object' || raw.status !== 'complete') return null;
   if(raw.designKey && !packetDesignFingerprintFromKey(raw.designKey)) return null;
+  const restoredFingerprint = raw.designFingerprint || packetDesignFingerprintFromKey(raw.designKey);
+  if(restoredFingerprint && restoredFingerprint !== expectedFingerprint) return null;
+  let expectedSettings;
+  try{ expectedSettings = JSON.parse(expectedExperimentSignature); }catch(_e){ return null; }
+  if(!!raw.fricUsed !== (expectedSettings.friction === 'realistic')) return null;
+  const experimentSignature = typeof raw.experimentSignature === 'string' ? raw.experimentSignature : expectedExperimentSignature;
+  if(!expectedExperimentSignature || experimentSignature !== expectedExperimentSignature) return null;
   const trace = packetTrace(raw.trace);
   if(!trace.length) return null;
   return {
     status: 'complete',
     designKey: typeof raw.designKey === 'string' ? raw.designKey : expectedDesignKey,
     designFingerprint: raw.designFingerprint || packetDesignFingerprintFromKey(raw.designKey) || expectedFingerprint,
+    experimentSignature,
     fricUsed: !!raw.fricUsed,
     L: Math.max(0, packetNumber(raw.L)),
     duration: Math.max(0, packetNumber(raw.duration)),
@@ -6106,7 +6460,7 @@ function exportLabPacket(){
         const history = guidedHistoryEntries();
         const progress = guidedAdaptiveProgress(history);
         const plan = guidedAdaptivePlan(progress.recommendation);
-        return { stage: progress.recommendation.stage, challenge: progress.recommendation.challenge, action: progress.recommendation.action, focus: progress.recommendation.focus, change: plan.change, why: plan.why, test: plan.test, success: plan.success, reflectionPrompt: guidedReflectionPrompt(history, null, progress.recommendation), goalsMet: progress.goalsMet, evidenceReady: progress.evidenceReady, milestones: progress.items.map(item => ({ goal: item.goal, runs: item.runs, passed: item.passed, evidence: item.evidence })) };
+        return { stage: progress.recommendation.stage, challenge: progress.recommendation.challenge, action: progress.recommendation.action, focus: progress.recommendation.focus, change: plan.change, why: plan.why, test: plan.test, success: plan.success, reflectionPrompt: guidedReflectionPrompt(history, null, progress.recommendation), goalsMet: progress.goalsMet, evidenceReady: progress.evidenceReady, mastered: progress.mastered, milestones: progress.items.map(item => ({ goal: item.goal, runs: item.runs, passed: item.passed, evidence: item.evidence })) };
       })(),
       challenge: activeChallenge,
       rubric: guidedRubricWeights,
@@ -6137,7 +6491,7 @@ function importLabPacket(str){
   const importedDesign = parseDesignJson(JSON.stringify(packet.design));
   const expectedDesignKey = JSON.stringify(importedDesign.points);
   const expectedFingerprint = packetDesignKey(importedDesign.points);
-  const importedEvidence = packetTelemetryRestore(packet.evidence, expectedDesignKey, expectedFingerprint);
+
   const guided = packet.guided && typeof packet.guided === 'object' ? packet.guided : {};
   const rawRecord = guided.record && typeof guided.record === 'object' ? guided.record : {};
   const rawSettings = packet.settings && typeof packet.settings === 'object' ? packet.settings : {};
@@ -6151,7 +6505,7 @@ function importLabPacket(str){
     attempts: Math.max(0, Math.trunc(Number(rawRecord.attempts) || 0)),
     revisions: Math.max(0, Math.trunc(Number(rawRecord.revisions) || 0)),
     prediction: rawRecord.prediction && typeof rawRecord.prediction === 'object' ? rawRecord.prediction : null,
-    history: Array.isArray(rawRecord.history) ? rawRecord.history.filter(item => item && typeof item === 'object').slice(-5) : [],
+    history: Array.isArray(rawRecord.history) ? rawRecord.history.filter(item => item && typeof item === 'object').slice(-GUIDED_HISTORY_LIMIT) : [],
     studentReflection: typeof rawRecord.studentReflection === 'string' ? rawRecord.studentReflection.slice(0, 2400) : '',
     teacherNotes: typeof rawRecord.teacherNotes === 'string' ? rawRecord.teacherNotes.slice(0, 2400) : '',
     conditions: rawConditions ? {
@@ -6163,6 +6517,14 @@ function importLabPacket(str){
     } : null
   };
   const frictionSetting = rawSettings.friction || (rawConditions && rawConditions.friction);
+  const expectedExperimentSignature = guidedExperimentSignature(importedDesign.points, {
+    friction: frictionSetting === 'ideal' ? 'ideal' : 'realistic',
+    cars: importedDesign.cars,
+    propulsion: importedDesign.propulsion.mode,
+    accel: importedDesign.propulsion.accel,
+    challenge: importedChallenge
+  });
+  const importedEvidence = packetTelemetryRestore(packet.evidence, expectedDesignKey, expectedFingerprint, expectedExperimentSignature);
   design = importedDesign;
   const importedReview = normalizeGuidedReview(guided.review);
   guidedRubricWeights = normalizeGuidedRubricWeights(guided.rubric);
@@ -8510,8 +8872,11 @@ rootEl._selftest = selfTest();
 rootEl._lab = {
   analysis: () => analysis,
   setCertBank: deg => {
-    design.points[design.certTurnIdx].bank = deg;
+    const bank = Number(deg);
+    if(!Number.isFinite(bank)) return false;
+    design.points[design.certTurnIdx].bank = bank;
     fullRebuild();
+    return true;
   },
   /* run the whole sim synchronously — physics identical, render-rate-free */
   fastRun: (cert, exploreCheck) => {
@@ -8541,6 +8906,7 @@ rootEl._lab = {
     if(!t) return null;
     return {
       status: t.status,
+      experimentSignature: typeof t.experimentSignature === 'string' ? t.experimentSignature : '',
       duration: +(t.duration || 0).toFixed(3),
       maxV: +(t.maxV || 0).toFixed(3),
       minGV: +(t.minGV == null ? 0 : t.minGV).toFixed(3),
@@ -8552,26 +8918,44 @@ rootEl._lab = {
     };
   },
   designInfo: () => ({ pts: design.points.length, mode: design.propulsion.mode }),
-  guidedInfo: () => ({ state: guidedState, points: design.points.length, welcomeVisible: !!guidedWelcomeEl && !guidedWelcomeEl.hidden, prediction: { speed: guidedPrediction.speed, force: guidedPrediction.force, feedback: guidedPrediction.feedback, coach: guidedPrediction.coach || '', speedCorrect: guidedPrediction.speedCorrect, forceCorrect: guidedPrediction.forceCorrect }, notebook: { attempts: guidedRecord.attempts, revisions: guidedRecord.revisions, hasPrediction: !!guidedRecord.prediction, historyLength: Array.isArray(guidedRecord.history) ? guidedRecord.history.length : 0, exportReady: Array.isArray(guidedRecord.history) && guidedRecord.history.length > 0, packetReady: (() => { try{ return exportLabPacket().length > 0; }catch(_e){ return false; } })(), clearReady: !!(guidedRecord.attempts || guidedRecord.revisions || (Array.isArray(guidedRecord.history) && guidedRecord.history.length)), conditionsLocked: guidedConditionsLocked(), conditions: guidedRecord.conditions, packetEvidenceReady: !!(lastTele && lastTele.status === 'complete' && Array.isArray(lastTele.trace) && lastTele.trace.length), packetControlsVisible: !!(__clabGet('clab-btnPacketExport') && __clabGet('clab-btnPacketImport')) }, evidenceVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-prediction-evidence]')), comparisonVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-guided-comparison]')), timelineVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-experiment-timeline]')), comparisonBoardVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-experiment-compare]')), conclusionVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-comparison-conclusion]')), historyExportVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-history-csv]')), historyTrendVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-history-trend]')), traceOverlayVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-trace-overlay]')), teacherReportVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-teacher-report]')), classroomRubricVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-classroom-rubric]')), evidenceQualityVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-evidence-quality]')), adaptiveVisible: !!adaptiveCoachEl, adaptiveActionVisible: !!adaptiveActionEl, adaptiveAction: guidedAdaptiveRecommendation().action, adaptiveFocusVisible: !!adaptiveFocusEl, adaptiveFocus: guidedAdaptiveRecommendation().focus, adaptivePlanVisible: !!adaptivePlanEl && !!adaptiveSuccessEl, adaptivePlan: guidedAdaptivePlan(), adaptiveInspectVisible: !!adaptiveInspectEl, adaptiveInspectReady: !!guidedCurrentTelemetry(), adaptiveChallenge: guidedAdaptiveRecommendation().challenge, adaptiveStage: guidedAdaptiveRecommendation().stage, adaptiveProgressVisible: !!adaptiveProgressEl && !!adaptiveProgressTrackEl, reflectionPromptVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-reflection-prompt]')), reflectionPrompt: guidedReflectionPrompt(), adaptiveProgress: (() => { const progress = guidedAdaptiveProgress(); return { goalsMet: progress.goalsMet, evidenceReady: progress.evidenceReady }; })(), reviewVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-review-status]')), reviewLocked: !!guidedReview.locked }),
+  learningJourney: () => {
+    const context = lastTele ? guidedEvidenceStoryContext(lastTele) : null;
+    const model = context && context.model;
+    const loop = __clabGet('clab-inquiryLoop');
+    const body = __clabGet('clab-reportBody');
+    const chartLabels = ['chV', 'chG', 'chL'].map(id => __clabGet(id)).filter(Boolean).map(canvas => canvas.getAttribute('aria-label') || '');
+    return {
+      inquiryVisible: !!loop,
+      inquiryPhase: guidedInquiryPhase(guidedState, guidedHistoryEntries(), guidedRecord.studentReflection, sim.running),
+      inquiryPrompt: (__clabGet('clab-inquiryPrompt') && __clabGet('clab-inquiryPrompt').textContent) || '',
+      evidenceStoryVisible: !!(body && body.querySelector('[data-clab-evidence-story]')),
+      cerScaffoldVisible: !!(body && body.querySelector('[data-clab-explain-scaffold]')),
+      chartEvidenceLabels: chartLabels.length === 3 && chartLabels.every(label => label.includes('Goal evidence highlighted')),
+      evidence: model ? { goal: model.goal, pass: model.pass, value: model.value, target: model.target, startS: model.startS, endS: model.endS, starter: guidedCerStarter(model) } : null
+    };
+  },
+  guidedInfo: () => ({ state: guidedState, points: design.points.length, welcomeVisible: !!guidedWelcomeEl && !guidedWelcomeEl.hidden, prediction: { speed: guidedPrediction.speed, force: guidedPrediction.force, feedback: guidedPrediction.feedback, coach: guidedPrediction.coach || '', speedCorrect: guidedPrediction.speedCorrect, forceCorrect: guidedPrediction.forceCorrect }, notebook: { attempts: guidedRecord.attempts, revisions: guidedRecord.revisions, hasPrediction: !!guidedRecord.prediction, historyLength: Array.isArray(guidedRecord.history) ? guidedRecord.history.length : 0, exportReady: Array.isArray(guidedRecord.history) && guidedRecord.history.length > 0, packetReady: (() => { try{ return exportLabPacket().length > 0; }catch(_e){ return false; } })(), clearReady: !!(guidedRecord.attempts || guidedRecord.revisions || (Array.isArray(guidedRecord.history) && guidedRecord.history.length)), conditionsLocked: guidedConditionsLocked(), conditions: guidedRecord.conditions, packetEvidenceReady: !!guidedCurrentTelemetry(), packetControlsVisible: !!(__clabGet('clab-btnPacketExport') && __clabGet('clab-btnPacketImport')) }, evidenceVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-prediction-evidence]')), comparisonVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-guided-comparison]')), timelineVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-experiment-timeline]')), comparisonBoardVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-experiment-compare]')), conclusionVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-comparison-conclusion]')), historyExportVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-history-csv]')), historyTrendVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-history-trend]')), traceOverlayVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-trace-overlay]')), teacherReportVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-teacher-report]')), classroomRubricVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-classroom-rubric]')), evidenceQualityVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-evidence-quality]')), adaptiveVisible: !!adaptiveCoachEl, adaptiveActionVisible: !!adaptiveActionEl, adaptiveAction: guidedAdaptiveRecommendation().action, adaptiveFocusVisible: !!adaptiveFocusEl, adaptiveFocus: guidedAdaptiveRecommendation().focus, adaptivePlanVisible: !!adaptivePlanEl && !!adaptiveSuccessEl, adaptivePlan: guidedAdaptivePlan(), adaptiveEvidenceTarget: (() => { const tele = guidedCurrentTelemetry(); const recommendation = guidedAdaptiveRecommendation(); const point = tele ? guidedEvidenceFocusPoint(tele, recommendation.challenge) : null; return point ? { kind: point.evidenceKind, label: point.evidenceLabel, s: Number(point.s) } : null; })(), adaptiveInspectVisible: !!adaptiveInspectEl, adaptiveInspectReady: !!guidedCurrentTelemetry(), adaptiveChallenge: guidedAdaptiveRecommendation().challenge, adaptiveStage: guidedAdaptiveRecommendation().stage, adaptiveProgressVisible: !!adaptiveProgressEl && !!adaptiveProgressTrackEl, reflectionPromptVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-reflection-prompt]')), reflectionPrompt: guidedReflectionPrompt(), adaptiveProgress: (() => { const progress = guidedAdaptiveProgress(); return { goalsMet: progress.goalsMet, evidenceReady: progress.evidenceReady, mastered: progress.mastered }; })(), reviewVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-review-status]')), reviewLocked: !!guidedReview.locked }),
   packetRoundTrip: () => {
-    const before = { points: design.points.length, attempts: guidedRecord.attempts, revisions: guidedRecord.revisions, state: guidedState, rubric: JSON.stringify(guidedRubricWeights), review: JSON.stringify(guidedReview), studentReflection: guidedRecord.studentReflection || '', teacherNotes: guidedRecord.teacherNotes || '' };
+    const before = { points: design.points.length, attempts: guidedRecord.attempts, revisions: guidedRecord.revisions, state: guidedState, rubric: JSON.stringify(guidedRubricWeights), review: JSON.stringify(guidedReview), studentReflection: guidedRecord.studentReflection || '', teacherNotes: guidedRecord.teacherNotes || '', telemetrySignature: lastTele && lastTele.experimentSignature || '', expectedSignature: guidedCurrentExperimentSignature() };
 
     try{
       const exportedPacket = exportLabPacket();
       const parsedPacket = JSON.parse(exportedPacket);
       const adaptivePacket = parsedPacket.guided && parsedPacket.guided.adaptive;
+      const packetSignature = parsedPacket.evidence && parsedPacket.evidence.experimentSignature || '';
       importLabPacket(exportedPacket);
       const controls = !!(__clabGet('clab-btnPacketExport') && __clabGet('clab-btnPacketImport'));
-      const adaptive = !!(adaptivePacket && typeof adaptivePacket.action === 'string' && typeof adaptivePacket.focus === 'string' && typeof adaptivePacket.change === 'string' && typeof adaptivePacket.why === 'string' && typeof adaptivePacket.test === 'string' && typeof adaptivePacket.success === 'string' && typeof adaptivePacket.reflectionPrompt === 'string' && Array.isArray(adaptivePacket.milestones) && Number.isFinite(Number(adaptivePacket.goalsMet)) && Number.isFinite(Number(adaptivePacket.evidenceReady)));
+      const adaptive = !!(adaptivePacket && typeof adaptivePacket.action === 'string' && typeof adaptivePacket.focus === 'string' && typeof adaptivePacket.change === 'string' && typeof adaptivePacket.why === 'string' && typeof adaptivePacket.test === 'string' && typeof adaptivePacket.success === 'string' && typeof adaptivePacket.reflectionPrompt === 'string' && typeof adaptivePacket.mastered === 'boolean' && Array.isArray(adaptivePacket.milestones) && Number.isFinite(Number(adaptivePacket.goalsMet)) && Number.isFinite(Number(adaptivePacket.evidenceReady)));
       return {
-        pass: controls && adaptive && !!(lastTele && lastTele.status === 'complete' && Array.isArray(lastTele.trace) && lastTele.trace.length) && design.points.length === before.points && guidedRecord.attempts === before.attempts && guidedRecord.revisions === before.revisions && guidedState === before.state && !!guidedRecord.conditions && JSON.stringify(guidedRubricWeights) === before.rubric && JSON.stringify(guidedReview) === before.review && (guidedRecord.studentReflection || '') === before.studentReflection && (guidedRecord.teacherNotes || '') === before.teacherNotes && !!(guidedRecord.history[guidedRecord.history.length - 1] && Array.isArray(guidedRecord.history[guidedRecord.history.length - 1].trace) && guidedRecord.history[guidedRecord.history.length - 1].trace.length),
+        pass: controls && adaptive && !!guidedCurrentTelemetry() && design.points.length === before.points && guidedRecord.attempts === before.attempts && guidedRecord.revisions === before.revisions && guidedState === before.state && !!guidedRecord.conditions && JSON.stringify(guidedRubricWeights) === before.rubric && JSON.stringify(guidedReview) === before.review && (guidedRecord.studentReflection || '') === before.studentReflection && (guidedRecord.teacherNotes || '') === before.teacherNotes && !!(guidedRecord.history[guidedRecord.history.length - 1] && Array.isArray(guidedRecord.history[guidedRecord.history.length - 1].trace) && guidedRecord.history[guidedRecord.history.length - 1].trace.length),
         controls,
         adaptive,
-        evidence: !!(lastTele && lastTele.status === 'complete' && Array.isArray(lastTele.trace) && lastTele.trace.length),
+        evidence: !!guidedCurrentTelemetry(),
         points: design.points.length,
         attempts: guidedRecord.attempts,
         revisions: guidedRecord.revisions,
-        state: guidedState
+        state: guidedState,
+        signature: { before: before.telemetrySignature, expectedBefore: before.expectedSignature, packet: packetSignature, restored: lastTele && lastTele.experimentSignature || '', expectedAfter: guidedCurrentExperimentSignature() }
       };
     }catch(e){
       return { pass: false, error: String(e && e.message || e) };

@@ -113,9 +113,7 @@ describe("remediation workflow privacy and capacity invariants", () => {
     expect(source).toContain(
       "error instanceof NonRetryableError",
     );
-    expect(source).toContain(
-      "throw await runnerRequestError(this.env, response)",
-    );
+    expect(source).toContain("throw await runnerRequestError(");
   });
 
   it("propagates bounded provider backoff and shares retry spend across attempts", () => {
@@ -140,6 +138,15 @@ describe("remediation workflow privacy and capacity invariants", () => {
     expect(source).toContain(
       'workflowMetric(env, "model_retry_budget_exhausted"',
     );
+    expect(source).toContain("await markJobThrottleWait(");
+    expect(source).toContain('workflowMetric(env, "model_throttle_wait"');
+  });
+
+  it("resolves failure ownership from D1 instead of mutable Workflow memory", () => {
+    expect(source).toContain("await failCurrentWorkflowAttempt(");
+    expect(source).toContain("event.instanceId");
+    expect(source).not.toContain("attemptState");
+    expect(source).not.toContain("await failJob(");
   });
 
   it("emits bounded checkpoint and lease lifecycle metrics without identifiers", () => {

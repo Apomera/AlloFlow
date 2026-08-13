@@ -6,11 +6,11 @@ const moduleText = fs.readFileSync('ui_modals_module.js', 'utf8');
 
 describe('Shared UI modal accessibility', () => {
   it('exposes Teacher Gate as a named and described Escape-dismissible dialog', () => {
-    expect(source).toContain('useFocusTrap(gateRef, isOpen, onClose)');
+    expect(source).toContain('useFocusTrap(gateRef, isOpen, closeGate)');
     expect(source).toContain('data-allo-ui-modal="teacher-gate"');
     expect(source).toContain('aria-labelledby="teacher-gate-title"');
     expect(source).toContain('aria-describedby="teacher-gate-helper"');
-    expect(source).toContain('aria-invalid={error}');
+    expect(source).toContain('aria-invalid={Boolean(error)}');
     expect(source).toContain('aria-labelledby="teacher-gate-access-code-label"');
     expect(source).toContain("aria-describedby={error ? 'teacher-gate-helper teacher-gate-error' : 'teacher-gate-helper'}");
   });
@@ -26,6 +26,20 @@ describe('Shared UI modal accessibility', () => {
     expect(source).not.toContain("aria-label={t('common.confirm')}");
     expect(source).toContain('<p id="role-mic-status" className="sr-only" role="status" aria-live="polite" aria-atomic="true">');
     expect(source).toContain("micStatus === 'requesting' ? <RefreshCw aria-hidden=\"true\"");
+  });
+
+  it('hands role-selection Voice Access to the host coordinator without a second recognizer', () => {
+    expect(source).toContain('const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceAccess }) => {');
+    expect(source).toContain("if (typeof onStartVoiceAccess === 'function') {");
+    expect(source).toContain('const started = await onStartVoiceAccess();');
+    expect(source).toContain("setMicStatus(started === false ? 'denied' : 'granted');");
+    expect(source).toContain('// Safe legacy fallback: probe permission only when the host has not');
+    expect(source.indexOf("if (typeof onStartVoiceAccess === 'function') {")).toBeLessThan(
+      source.indexOf('const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;'),
+    );
+    expect(source).toContain("roleCopy('roles.voice_access_enable', 'Enable Voice Access')");
+    expect(source).toContain('continuous voice command listening starts');
+    expect(source).toContain('Voice Access is optional; touch, pointer, and keyboard remain available.');
   });
 
   it('names Student Entry and Welcome and connects Escape to their focus traps', () => {

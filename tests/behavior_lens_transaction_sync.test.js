@@ -153,4 +153,119 @@ describe('Behavior Lens atomic cloud revisions', () => {
       code: 'behavior-lens/transaction-unavailable'
     });
   });
+  it('coalesces rapid local changes and retains independent student workspaces', () => {
+    const runtime = window.AlloModules.BehaviorLensWorkspace;
+    const scheduled = [];
+    const cleared = [];
+    const persisted = [];
+    let nextHandle = 0;
+    const scheduler = runtime.createWorkspacePersistenceScheduler({
+      delayMs: 300,
+      keyForValue: (value) => value.studentId,
+      persist: (value, context) => persisted.push({ value, context }),
+      setTimeout: (callback, delay) => {
+        const handle = { id: ++nextHandle, callback, delay };
+        scheduled.push(handle);
+        return handle;
+      },
+      clearTimeout: (handle) => cleared.push(handle.id)
+    });
+
+    scheduler.schedule({ studentId: 'student-a', edit: 1 });
+    scheduler.schedule({ studentId: 'student-a', edit: 2 });
+    scheduler.schedule({ studentId: 'student-b', edit: 1 });
+
+    expect(scheduler.pendingCount()).toBe(2);
+    expect(scheduled.map(({ delay }) => delay)).toEqual([300, 300, 300]);
+    expect(cleared).toEqual([1, 2]);
+
+    const result = scheduler.flush({ reason: 'student-switch' });
+
+    expect(result).toMatchObject({ ok: true, flushedCount: 2, pendingCount: 0 });
+    expect(persisted).toEqual([
+      { value: { studentId: 'student-a', edit: 2 }, context: { reason: 'student-switch' } },
+      { value: { studentId: 'student-b', edit: 1 }, context: { reason: 'student-switch' } }
+    ]);
+  });
+
+  it('keeps a failed scheduled save pending for a later flush', () => {
+    const runtime = window.AlloModules.BehaviorLensWorkspace;
+    let attempts = 0;
+    const failure = new Error('quota');
+    const onError = vi.fn();
+    const scheduler = runtime.createWorkspacePersistenceScheduler({
+      keyForValue: (value) => value.studentId,
+      persist: () => {
+        attempts += 1;
+        if (attempts === 1) throw failure;
+        return 'saved';
+      },
+      onError,
+      setTimeout: () => 1,
+      clearTimeout: () => {}
+    });
+    scheduler.schedule({ studentId: 'student-a', edit: 1 });
+
+    expect(scheduler.flush({ reason: 'delay' })).toMatchObject({
+      ok: false,
+      flushedCount: 0,
+      failedCount: 1,
+      pendingCount: 1
+    });
+    expect(onError).toHaveBeenCalledWith(failure, { studentId: 'student-a', edit: 1 }, { reason: 'delay' });
+    expect(scheduler.flush({ reason: 'retry' })).toMatchObject({ ok: true, flushedCount: 1, pendingCount: 0 });
+  });
+
+  it('does not let a stale cloud acknowledgement replace a newer browser edit', () => {
+    const runtime = window.AlloModules.BehaviorLensWorkspace;
+    const acknowledged = { student: 'Student A', revision: 4, savedAt: '2026-08-12T12:00:00.000Z',
+      snapshotId: 'tab-a:1', abcEntries: [{ id: 'older-edit' }] };
+    const newer = { student: 'Student A', revision: 4, savedAt: '2026-08-12T12:00:00.000Z',
+      snapshotId: 'tab-a:2', abcEntries: [{ id: 'newer-edit' }] };
+    const values = new Map([
+      ['workspace', JSON.stringify(newer)],
+      ['dirty', JSON.stringify({ pending: true, revision: 4, savedAt: newer.savedAt, snapshotId: newer.snapshotId })]
+    ]);
+    const storage = {
+      get length() { return values.size; },
+      key: (index) => Array.from(values.keys())[index] || null,
+      getItem: (key) => values.get(key) || null,
+      setItem: vi.fn((key, value) => values.set(key, value)),
+      removeItem: vi.fn((key) => values.delete(key))
+    };
+    const result = runtime.acknowledgeCloudWorkspace({ storage, workspaceKey: 'workspace', dirtyKey: 'dirty',
+      workspace: acknowledged, revision: 5, updatedAt: '2026-08-12T12:00:01.000Z' });
+
+    expect(result).toMatchObject({ applied: false, stale: true, revision: 5 });
+    expect(JSON.parse(values.get('workspace')).abcEntries[0].id).toBe('newer-edit');
+    expect(values.has('dirty')).toBe(true);
+    expect(storage.setItem).not.toHaveBeenCalled();
+    expect(storage.removeItem).not.toHaveBeenCalled();
+  });
+
+  it('acknowledges the exact cloud snapshot and clears only its dirty marker', () => {
+    const runtime = window.AlloModules.BehaviorLensWorkspace;
+    const local = { student: 'Student A', revision: 4, savedAt: '2026-08-12T12:00:00.000Z',
+      snapshotId: 'tab-a:7', abcEntries: [{ id: 'committed-edit' }] };
+    const values = new Map([
+      ['workspace', JSON.stringify(local)],
+      ['dirty', JSON.stringify({ pending: true, revision: 4, savedAt: local.savedAt, snapshotId: local.snapshotId })]
+    ]);
+    const storage = {
+      get length() { return values.size; },
+      key: (index) => Array.from(values.keys())[index] || null,
+      getItem: (key) => values.get(key) || null,
+      setItem: vi.fn((key, value) => values.set(key, value)),
+      removeItem: vi.fn((key) => values.delete(key))
+    };
+    const result = runtime.acknowledgeCloudWorkspace({ storage, workspaceKey: 'workspace', dirtyKey: 'dirty',
+      workspace: local, revision: 5, updatedAt: '2026-08-12T12:00:01.000Z' });
+
+    expect(result).toMatchObject({ applied: true, stale: false, revision: 5 });
+    expect(JSON.parse(values.get('workspace'))).toMatchObject({
+      revision: 5, snapshotId: 'tab-a:7', updatedAt: '2026-08-12T12:00:01.000Z'
+    });
+    expect(values.has('dirty')).toBe(false);
+  });
+
 });

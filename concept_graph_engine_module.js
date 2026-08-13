@@ -1306,13 +1306,20 @@
     });
     var alignmentMap = graph.meta && graph.meta.alignmentMap ? graph.meta.alignmentMap : {};
     var alignmentAudit = graph.meta && graph.meta.alignmentAudit ? graph.meta.alignmentAudit : {};
+    // The summary describes the whole derived snapshot, not merely this click.
+    // Recompute it from the resulting edges so sequential confirmations remain
+    // cumulative even when older snapshots had incomplete summary metadata.
+    var confirmedEdgeIds = edges.filter(function (edge) {
+      if (!edge || edge.attributionSource !== 'teacher' || edge.attribution !== 'explicit') return false;
+      return edge.relationType === 'evidenceFrom' || edge.relationType === 'findingFrom';
+    }).map(function (edge) { return auditText(edge.id); }).filter(Boolean).slice(0, 100);
     var meta = Object.assign({}, graph.meta || {}, {
       alignmentMap: Object.assign({}, alignmentMap, { attributionConfirmationPolicy: 'derived-copy-only' }),
       alignmentAudit: Object.assign({}, alignmentAudit, {
         attributionConfirmations: {
           mode: 'derived-copy-only',
-          count: changedEdgeIds.length,
-          edgeIds: changedEdgeIds.slice(0, 100)
+          count: confirmedEdgeIds.length,
+          edgeIds: confirmedEdgeIds
         }
       })
     });
@@ -1334,23 +1341,72 @@
       return true;
     });
   }
+  var ALIGNMENT_IMPORT_LIMITS = { maxString: 4000, maxDepth: 8, maxKeys: 80, maxArray: 500, maxTotalText: 600000 };
+  function sanitizeAlignmentValue(value, depth, state) {
+    if (value == null || typeof value === 'boolean') return value;
+    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+    if (typeof value === 'string') {
+      var remaining = Math.max(0, ALIGNMENT_IMPORT_LIMITS.maxTotalText - state.text);
+      var out = value.slice(0, Math.min(ALIGNMENT_IMPORT_LIMITS.maxString, remaining));
+      state.text += out.length;
+      return out;
+    }
+    if (depth >= ALIGNMENT_IMPORT_LIMITS.maxDepth) return null;
+    if (Array.isArray(value)) {
+      return value.slice(0, ALIGNMENT_IMPORT_LIMITS.maxArray).map(function (item) {
+        return sanitizeAlignmentValue(item, depth + 1, state);
+      }).filter(function (item) { return item !== undefined; });
+    }
+    if (typeof value !== 'object') return null;
+    var outObject = {};
+    Object.keys(value).slice(0, ALIGNMENT_IMPORT_LIMITS.maxKeys).forEach(function (key) {
+      if (key === '__proto__' || key === 'prototype' || key === 'constructor') return;
+      var safeKey = String(key).slice(0, 120);
+      var safeValue = sanitizeAlignmentValue(value[key], depth + 1, state);
+      if (safeValue !== undefined) outObject[safeKey] = safeValue;
+    });
+    return outObject;
+  }
   function boundedAlignmentGraph(graph, opts) {
     opts = opts || {};
     var maxNodes = Math.max(1, Math.min(500, parseInt(opts.maxNodes, 10) || 240));
     var maxEdges = Math.max(1, Math.min(1000, parseInt(opts.maxEdges, 10) || 480));
+    var state = { text: 0 };
     var sourceNodes = graph && Array.isArray(graph.nodes) ? graph.nodes : [];
-    var nodes = sourceNodes.slice(0, maxNodes);
     var nodeIds = {};
-    nodes.forEach(function (node) { if (node && node.id) nodeIds[node.id] = true; });
-    var edges = (graph && Array.isArray(graph.edges) ? graph.edges : []).filter(function (edge) {
-      return edge && nodeIds[edge.fromId] && nodeIds[edge.toId];
-    }).slice(0, maxEdges);
-    var graphMeta = graph && graph.meta && typeof graph.meta === 'object' ? graph.meta : {};
+    var nodes = sourceNodes.slice(0, maxNodes).map(function (node) {
+      var safe = sanitizeAlignmentValue(node, 0, state);
+      if (!safe || typeof safe !== 'object') return null;
+      var id = auditText(safe.id).slice(0, 240);
+      if (!id || nodeIds[id]) return null;
+      safe.id = id;
+      nodeIds[id] = true;
+      return safe;
+    }).filter(Boolean);
+    var sourceEdges = graph && Array.isArray(graph.edges) ? graph.edges : [];
+    var edges = sourceEdges.map(function (edge) {
+      var safe = sanitizeAlignmentValue(edge, 0, state);
+      if (!safe || typeof safe !== 'object') return null;
+      safe.fromId = auditText(safe.fromId).slice(0, 240);
+      safe.toId = auditText(safe.toId).slice(0, 240);
+      return nodeIds[safe.fromId] && nodeIds[safe.toId] ? safe : null;
+    }).filter(Boolean).slice(0, maxEdges);
+    var graphMeta = graph && graph.meta && typeof graph.meta === 'object'
+      ? sanitizeAlignmentValue(graph.meta, 0, state)
+      : {};
     var viewMeta = graphMeta.alignmentView && typeof graphMeta.alignmentView === 'object' ? graphMeta.alignmentView : {};
     var meta = Object.assign({}, graphMeta, {
-      alignmentView: Object.assign({}, viewMeta, { bounded: true, maxNodes: maxNodes, maxEdges: maxEdges, truncated: nodes.length < sourceNodes.length || edges.length < ((graph && Array.isArray(graph.edges)) ? graph.edges.length : 0) })
+      alignmentView: Object.assign({}, viewMeta, { bounded: true, maxNodes: maxNodes, maxEdges: maxEdges, truncated: nodes.length < sourceNodes.length || edges.length < sourceEdges.length })
     });
-    var bounded = Object.assign({}, graph, { nodes: nodes, edges: edges, meta: meta });
+    var bounded = {
+      version: VERSION,
+      title: auditText(graph && graph.title).slice(0, 400),
+      axes: sanitizeAlignmentValue(graph && graph.axes, 0, state),
+      nodes: nodes,
+      edges: edges,
+      layers: [],
+      meta: meta
+    };
     bounded.layers = deriveLanes(bounded);
     return bounded;
   }
@@ -1590,6 +1646,7 @@
     adaptGenerated: adaptGenerated,
     fromAlignmentAudit: fromAlignmentAudit,
     ALIGNMENT_EXPORT_SCHEMA: ALIGNMENT_EXPORT_SCHEMA,
+    ALIGNMENT_IMPORT_LIMITS: Object.assign({}, ALIGNMENT_IMPORT_LIMITS),
     ALIGNMENT_NODE_TYPES: ALIGNMENT_NODE_TYPES.slice(),
     ALIGNMENT_ATTRIBUTION_SOURCES: ALIGNMENT_ATTRIBUTION_SOURCES.slice(),
     normalizeAlignmentGraphExport: normalizeAlignmentGraphExport,

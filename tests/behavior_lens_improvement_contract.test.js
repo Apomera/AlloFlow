@@ -146,6 +146,20 @@ describe('Behavior Lens improvement contracts', () => {
     expect(source).toContain('Local changes pending');
   });
 
+  it('preflights browser capacity and bounds every workspace import path', () => {
+    expect(workspaceSource).toContain('function assessLocalStorageWrite(storage, plan, options)');
+    expect(workspaceSource).toContain('function validateWorkspaceImport(data, options)');
+    expect(workspaceSource).toContain('function validateSharedWorkspaceImport(data, options)');
+    expect(workspaceSource).toContain('MAX_WORKSPACE_IMPORT_BYTES');
+    expect(workspaceSource).toContain('MAX_SHARED_WORKSPACE_IMPORT_BYTES');
+    expect(source).toContain('workspaceCapacityWarning');
+    expect(source).toContain('Storage near limit');
+    expect(source).toContain('Export backup now');
+    expect(source).toContain('Comparison is limited to 10 workspace files at a time.');
+    expect(source).toContain('validateSharedWorkspaceImport(decoded');
+    expect(source).toContain('Share code exceeds the 5,000-character safety limit.');
+  });
+
   it('hardens CSV output and names its analytics denominators', () => {
     expect(source).toContain('String.fromCharCode(0xFEFF)');
     expect(source).toContain('const numeric =');
@@ -160,4 +174,24 @@ describe('Behavior Lens improvement contracts', () => {
     expect(source).toContain("setAttribute('tabindex', '-1')");
     expect(source).toContain("role: 'alert', 'aria-live': 'assertive'");
   });
+  it('coalesces canonical browser saves and rejects stale cloud acknowledgements', () => {
+    expect(workspaceSource).toContain('function createWorkspacePersistenceScheduler(options)');
+    expect(workspaceSource).toContain('function acknowledgeCloudWorkspace(options)');
+    expect(workspaceSource).toContain('function sameWorkspaceEdit(left, right)');
+    expect(source).toContain('workspaceSnapshotSequenceRef');
+    expect(source).toContain("flush({ reason: 'before-hydration' })");
+    expect(source).toContain("flush({ reason: 'page-lifecycle', silent: true })");
+    expect(source).toContain('workspaceRuntime.acknowledgeCloudWorkspace({');
+    expect(source).toContain('localWorkspaceSaveSchedulerRef.current.schedule({');
+  });
+
+  it('bounds the live ABC table without truncating the filtered dataset', () => {
+    expect(workspaceSource).toContain('function paginateCollection(items, requestedPageIndex, requestedPageSize, options)');
+    expect(workspaceSource).toContain('COLLECTION_MAX_PAGE_SIZE = 100');
+    expect(source).toContain('const visibleEntries = page.items;');
+    expect(source).toContain('visibleEntries.map((entry, idx) =>');
+    expect(source).toContain("'aria-label': 'ABC entry pages'");
+    expect(source).toContain("'aria-label': 'Select all entries on this page'");
+  });
+
 });

@@ -5123,6 +5123,23 @@ const APP_CONFIG = {
     scaffolds: true
   }
 };
+const ALLO_EDUCATOR_ACCESS_CODE_STORAGE_KEY = 'alloflow_educator_access_code_v1';
+const _alloEducatorAccessCodeRequirement = () => {
+  if (APP_CONFIG._cfg_validation_key) return 'configured';
+  if (_isCanvasEnv && window.__alloPrefsHydrationStatus !== 'ready') {
+    return window.__alloPrefsHydrationStatus === 'unavailable' ? 'unavailable' : 'pending';
+  }
+  try {
+    return localStorage.getItem(ALLO_EDUCATOR_ACCESS_CODE_STORAGE_KEY) ? 'configured' : 'off';
+  } catch (_) {
+    return 'unavailable';
+  }
+};
+const _alloEducatorAccessCodeRequired = () => _alloEducatorAccessCodeRequirement() !== 'off';
+if (typeof window !== 'undefined') {
+  window._alloEducatorAccessCodeRequirement = _alloEducatorAccessCodeRequirement;
+  window._alloEducatorAccessCodeRequired = _alloEducatorAccessCodeRequired;
+}
 const TEACHER_ONLY_TYPES = [
     'lesson-plan',
     // Source-material analysis (2026-07-20, Aaron): reading-level scan, key
@@ -8878,12 +8895,266 @@ const MAX_OFFLINE_ITEMS = 50;
 // any value other than '1.0' with no migration path, so a shared version would
 // make a future bump unreadable instead of upgradable.
 const ALLO_BLUEPRINT_STORE_KEY = 'alloflow-blueprint-run-v1';
-const ALLO_BLUEPRINT_STORE_VERSION = 1;
+const ALLO_BLUEPRINT_STORE_VERSION = 2;
 const ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT = 'blueprint-execution-v2';
 const ALLO_FULL_PACK_STORE_KEY = 'alloflow-full-pack-run-v1';
-const ALLO_FULL_PACK_STORE_VERSION = 1;
+const ALLO_FULL_PACK_STORE_VERSION = 2;
 const ALLO_FULL_PACK_CAPABILITY_FINGERPRINT = 'full-pack-plan-v2';
 const ALLO_FULL_PACK_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+const ALLO_GENERATION_METRICS_KEY = 'alloflow-generation-metrics-v1';
+
+// BEGIN GENERATION_PERSISTENCE_MIGRATIONS
+const _migrateBlueprintEnvelope = (input) => {
+  if (!input || typeof input !== 'object') return null;
+  const hasVersion = Object.prototype.hasOwnProperty.call(input, 'v');
+  const numericVersion = hasVersion && typeof input.v === 'number' ? input.v : NaN;
+  if (hasVersion && (!Number.isInteger(numericVersion) || numericVersion < 0 || numericVersion > ALLO_BLUEPRINT_STORE_VERSION)) return null;
+  let envelope = input;
+  let fromVersion = hasVersion ? numericVersion : 0;
+  const hasEnvelopeShape = Object.prototype.hasOwnProperty.call(input, 'plan') || Object.prototype.hasOwnProperty.call(input, 'run');
+  if (!hasEnvelopeShape && Array.isArray(input.resourcePlan)) {
+    envelope = { plan: input, run: null, savedAt: null };
+    fromVersion = 0;
+  } else if (!hasEnvelopeShape) return null;
+  if (fromVersion !== 0 && fromVersion !== 1 && fromVersion !== ALLO_BLUEPRINT_STORE_VERSION) return null;
+  return Object.assign({}, envelope, {
+    v: ALLO_BLUEPRINT_STORE_VERSION,
+    capabilityFingerprint: envelope.capabilityFingerprint || (fromVersion === ALLO_BLUEPRINT_STORE_VERSION ? ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT : 'blueprint-execution-v1'),
+    migratedFromVersion: fromVersion === ALLO_BLUEPRINT_STORE_VERSION ? (envelope.migratedFromVersion ?? null) : fromVersion,
+    plan: envelope.plan || null,
+    run: envelope.run || null,
+  });
+};
+
+const _migrateFullPackEnvelope = (input) => {
+  if (!input || typeof input !== 'object') return null;
+  const hasVersion = Object.prototype.hasOwnProperty.call(input, 'v');
+  const numericVersion = hasVersion && typeof input.v === 'number' ? input.v : NaN;
+  if (hasVersion && (!Number.isInteger(numericVersion) || numericVersion < 0 || numericVersion > ALLO_FULL_PACK_STORE_VERSION)) return null;
+  let envelope = input;
+  let fromVersion = hasVersion ? numericVersion : 0;
+  const hasEnvelopeShape = Object.prototype.hasOwnProperty.call(input, 'run');
+  if (!hasEnvelopeShape && (input.status || input.resources || input.groups)) {
+    envelope = { run: input, savedAt: input.savedAt || null };
+    fromVersion = 0;
+  } else if (!hasEnvelopeShape) return null;
+  if (fromVersion !== 0 && fromVersion !== 1 && fromVersion !== ALLO_FULL_PACK_STORE_VERSION) return null;
+  return Object.assign({}, envelope, {
+    v: ALLO_FULL_PACK_STORE_VERSION,
+    capabilityFingerprint: envelope.capabilityFingerprint || (fromVersion === ALLO_FULL_PACK_STORE_VERSION ? ALLO_FULL_PACK_CAPABILITY_FINGERPRINT : 'full-pack-plan-v1'),
+    migratedFromVersion: fromVersion === ALLO_FULL_PACK_STORE_VERSION ? (envelope.migratedFromVersion ?? null) : fromVersion,
+    run: envelope.run || null,
+  });
+};
+// END GENERATION_PERSISTENCE_MIGRATIONS
+
+// BEGIN GENERATION_DIAGNOSTIC_PRIVACY
+const _alloDiagnosticReason = (value) => {
+  const text = String(value || '');
+  if (/safety|content policy|policy violation|blocked content|refus(?:al|ed)/i.test(text)) return { code: 'safety', summary: 'The provider blocked the request for safety or policy reasons.' };
+  if (/auth(?:entication|orization)?|api[ -]?key|bearer|credential|access[ -]?token|unauthoriz|forbidden|permission/i.test(text)) return { code: 'authentication', summary: 'Authentication or permission failure.' };
+  if (/quota exhausted|insufficient quota|billing/i.test(text)) return { code: 'quota', summary: 'Provider quota or billing limit reached.' };
+  if (/rate.?limit|429/i.test(text)) return { code: 'rate-limit', summary: 'Provider rate limit reached.' };
+  if (/timeout|timed out/i.test(text)) return { code: 'timeout', summary: 'The provider request timed out.' };
+  if (/network|fetch|connection|502|503|504|overload/i.test(text)) return { code: 'network', summary: 'Transient provider or network failure.' };
+  if (/context length|too many tokens|payload too large|\b413\b/i.test(text)) return { code: 'capacity', summary: 'The request exceeded the provider capacity or context limit.' };
+  if (/returned no resource|produced no resource|empty response|no usable output/i.test(text)) return { code: 'empty-output', summary: 'The generation step returned no usable resource.' };
+  if (/unsupported|invalid (?:configuration|config)|not configured|unknown resource type|module not loaded|dispatcher.*not loaded/i.test(text)) return { code: 'configuration', summary: 'Unsupported or invalid generation configuration.' };
+  if (/unusable|malformed|invalid output|parse/i.test(text)) return { code: 'malformed-output', summary: 'The generator returned malformed or unusable output.' };
+  if (/abort|stopp/i.test(text)) return { code: 'stopped', summary: 'Generation was stopped.' };
+  return { code: 'generation-failure', summary: 'Generation failed; detailed text remains only in the on-device error log.' };
+};const _alloDiagnosticResourceTypes = new Set([
+  'analysis', 'simplified', 'quiz', 'adventure', 'sentence-frames', 'brainstorm',
+  'faq', 'outline', 'image', 'timeline', 'lesson-plan', 'glossary', 'persona',
+  'concept-sort', 'dbq', 'note-taking', 'anchor-chart',
+]);
+const _alloDiagnosticResourceType = value => {
+  const type = String(value || '').toLowerCase();
+  return _alloDiagnosticResourceTypes.has(type) ? type : 'unknown';
+};
+const _alloDiagnosticBoundedInt = (value, max = 1000000000) => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Math.max(0, Math.min(max, Math.floor(numeric))) : 0;
+};
+const _alloDiagnosticTimestamp = value => {
+  if (typeof value !== 'string' || value.length > 40) return null;
+  const numeric = Date.parse(value);
+  return Number.isFinite(numeric) ? new Date(numeric).toISOString() : null;
+};
+const _alloDiagnosticRunId = (value, prefix) => {
+  const text = String(value || '');
+  const pattern = prefix === 'blueprint'
+    ? /^blueprint-\d{10,17}-[a-z0-9]{4,12}$/i
+    : /^full-pack-\d{10,17}-[a-z0-9]{4,12}$/i;
+  return pattern.test(text) ? text : null;
+};
+const _alloDiagnosticProviderFamily = value => {
+  const provider = String(value || '').toLowerCase();
+  if (['alloflow-local', 'ollama', 'localai', 'lmstudio'].includes(provider)) return 'local';
+  if (/openai|azure/.test(provider)) return 'openai';
+  if (/anthropic|claude/.test(provider)) return 'anthropic';
+  if (/gemini|google/.test(provider)) return 'gemini';
+  if (provider === 'auto') return 'auto';
+  return 'other';
+};
+const _alloSanitizeFullPackCapacity = capacity => {
+  if (!capacity || typeof capacity !== 'object') return null;
+  const basis = ['provider-defaults', 'observed-device-history'].includes(capacity.estimateBasis)
+    ? capacity.estimateBasis
+    : 'unknown';
+  const warningCodes = Array.isArray(capacity.warningCodes)
+    ? capacity.warningCodes.filter(code => ['local-serial', 'large-pack', 'image-quota'].includes(code)).slice(0, 3)
+    : [];
+  return {
+    aiCalls: _alloDiagnosticBoundedInt(capacity.aiCalls, 100000),
+    textCalls: _alloDiagnosticBoundedInt(capacity.textCalls, 100000),
+    imageCalls: _alloDiagnosticBoundedInt(capacity.imageCalls, 100000),
+    estimatedMinutes: _alloDiagnosticBoundedInt(capacity.estimatedMinutes, 10080),
+    providerFamily: _alloDiagnosticProviderFamily(capacity.provider),
+    modelConfigured: Boolean(String(capacity.model || '').trim()),
+    imageProviderFamily: _alloDiagnosticProviderFamily(capacity.imageProvider),
+    imageModelConfigured: Boolean(String(capacity.imageModel || '').trim()),
+    isLocal: capacity.isLocal === true,
+    requestConcurrency: _alloDiagnosticBoundedInt(capacity.requestConcurrency, 64),
+    estimateBasis: basis,
+    observedSamples: {
+      text: _alloDiagnosticBoundedInt(capacity.observedSamples && capacity.observedSamples.text),
+      image: _alloDiagnosticBoundedInt(capacity.observedSamples && capacity.observedSamples.image),
+    },
+    warningCodes,
+  };
+};
+const _alloSanitizeFullPackPreflight = (preflight) => {
+  if (!preflight || typeof preflight !== 'object') return null;
+  const differentiation = preflight.differentiation && typeof preflight.differentiation === 'object'
+    ? preflight.differentiation
+    : {};
+  return {
+    createdAt: _alloDiagnosticTimestamp(preflight.createdAt),
+    sourceTextChars: _alloDiagnosticBoundedInt(preflight.sourceTextChars, 50000000),
+    sourceFingerprintPresent: Boolean(preflight.sourceFingerprint),
+    selected: Array.isArray(preflight.selected) ? preflight.selected.slice(0, 300).map(item => ({
+      type: _alloDiagnosticResourceType(item && item.type),
+      index: _alloDiagnosticBoundedInt(item && item.index, 100000),
+    })) : [],
+    skipped: Array.isArray(preflight.skipped) ? preflight.skipped.slice(0, 300).map(item => {
+      const reason = _alloDiagnosticReason(item && item.reason);
+      return {
+        type: _alloDiagnosticResourceType(item && item.type),
+        index: _alloDiagnosticBoundedInt(item && item.index, 100000),
+        reasonCode: reason.code,
+        reason: reason.summary,
+      };
+    }) : [],
+    differentiation: {
+      range: ['None', '1', '2', 'Both', 'Custom'].includes(differentiation.range) ? differentiation.range : 'unknown',
+      types: Array.isArray(differentiation.types)
+        ? differentiation.types.slice(0, 30).map(_alloDiagnosticResourceType)
+        : [],
+      levelCount: _alloDiagnosticBoundedInt(differentiation.levelCount, 30),
+    },
+    estimatedResourceGenerations: _alloDiagnosticBoundedInt(preflight.estimatedResourceGenerations, 100000),
+    planSchemaVersion: _alloDiagnosticBoundedInt(preflight.planSchemaVersion, 100),
+    capabilityCompatible: preflight.capabilityFingerprint === ALLO_FULL_PACK_CAPABILITY_FINGERPRINT,
+    capacity: _alloSanitizeFullPackCapacity(preflight.capacity),
+  };
+};
+// END GENERATION_DIAGNOSTIC_PRIVACY
+
+// Local-only aggregate observability. It records counts and duration totals,
+// never prompts, source text, directives, student/roster fields, run ids, or keys.
+const ALLO_GENERATION_METRICS = (() => {
+  const MAX_COUNT = 1000000000;
+  const MAX_DURATION_TOTAL = 30 * 60 * 1000 * MAX_COUNT;
+  const resourceTypes = new Set([
+    'simplified', 'quiz', 'adventure', 'sentence-frames', 'brainstorm', 'faq',
+    'outline', 'image', 'timeline', 'lesson-plan', 'glossary', 'persona',
+    'concept-sort', 'dbq', 'note-taking', 'anchor-chart',
+  ]);
+  const blank = () => ({
+    v: 1,
+    updatedAt: null,
+    runs: { started: 0, completed: 0, partial: 0, failed: 0, stopped: 0 },
+    failures: { transient: 0, configuration: 0, unknown: 0 },
+    retries: { scheduled: 0, recovered: 0, exhausted: 0 },
+    storageFallbacks: { blueprint: 0, fullPack: 0 },
+    resources: {},
+  });
+  const bounded = (value, max = MAX_COUNT) => {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? Math.max(0, Math.min(max, Math.floor(numeric))) : 0;
+  };
+  const safeType = value => {
+    const type = String(value || '').toLowerCase();
+    return resourceTypes.has(type) ? type : 'unknown';
+  };
+  const safeTimestamp = value => {
+    if (typeof value !== 'string' || value.length > 40) return null;
+    const numeric = Date.parse(value);
+    return Number.isFinite(numeric) ? new Date(numeric).toISOString() : null;
+  };
+  const read = () => {
+    const state = blank();
+    try {
+      const parsed = JSON.parse(localStorage.getItem(ALLO_GENERATION_METRICS_KEY) || 'null');
+      if (!parsed || parsed.v !== 1 || typeof parsed !== 'object') return state;
+      state.updatedAt = safeTimestamp(parsed.updatedAt);
+      Object.keys(state.runs).forEach(key => { state.runs[key] = bounded(parsed.runs && parsed.runs[key]); });
+      Object.keys(state.failures).forEach(key => { state.failures[key] = bounded(parsed.failures && parsed.failures[key]); });
+      Object.keys(state.retries).forEach(key => { state.retries[key] = bounded(parsed.retries && parsed.retries[key]); });
+      Object.keys(state.storageFallbacks).forEach(key => { state.storageFallbacks[key] = bounded(parsed.storageFallbacks && parsed.storageFallbacks[key]); });
+      const resources = parsed.resources && typeof parsed.resources === 'object' ? parsed.resources : {};
+      Object.entries(resources).slice(0, 100).forEach(([rawType, rawMetric]) => {
+        if (!rawMetric || typeof rawMetric !== 'object') return;
+        const type = safeType(rawType);
+        const current = state.resources[type] || { landed: 0, failed: 0, durationMsTotal: 0, durationSamples: 0 };
+        current.landed = bounded(current.landed + bounded(rawMetric.landed));
+        current.failed = bounded(current.failed + bounded(rawMetric.failed));
+        current.durationMsTotal = bounded(current.durationMsTotal + bounded(rawMetric.durationMsTotal, MAX_DURATION_TOTAL), MAX_DURATION_TOTAL);
+        current.durationSamples = bounded(current.durationSamples + bounded(rawMetric.durationSamples));
+        state.resources[type] = current;
+      });
+      return state;
+    } catch (_) { return state; }
+  };
+  const write = (state) => {
+    try { localStorage.setItem(ALLO_GENERATION_METRICS_KEY, JSON.stringify(state)); } catch (_) {}
+  };
+  const bump = (record, key) => { record[key] = bounded(record[key] + 1); };
+  const record = (event, payload = {}) => {
+    const state = read();
+    if (event === 'run-start') bump(state.runs, 'started');
+    if (event === 'run-finish' && Object.prototype.hasOwnProperty.call(state.runs, payload.status)) bump(state.runs, payload.status);
+    if (event === 'failure') {
+      const category = Object.prototype.hasOwnProperty.call(state.failures, payload.category) ? payload.category : 'unknown';
+      bump(state.failures, category);
+    }
+    if (event === 'retry-scheduled') bump(state.retries, 'scheduled');
+    if (event === 'retry-recovered') bump(state.retries, 'recovered');
+    if (event === 'retry-exhausted') bump(state.retries, 'exhausted');
+    if (event === 'storage-fallback') {
+      const mode = payload.mode === 'blueprint' ? 'blueprint' : 'fullPack';
+      bump(state.storageFallbacks, mode);
+    }
+    if (event === 'resource-finish') {
+      const type = safeType(payload.type);
+      const current = state.resources[type] || { landed: 0, failed: 0, durationMsTotal: 0, durationSamples: 0 };
+      const status = payload.status === 'landed' ? 'landed' : 'failed';
+      bump(current, status);
+      const durationMs = bounded(payload.durationMs, 30 * 60 * 1000);
+      if (durationMs > 0) {
+        current.durationMsTotal = bounded(current.durationMsTotal + durationMs, MAX_DURATION_TOTAL);
+        current.durationSamples = bounded(current.durationSamples + 1);
+      }
+      state.resources[type] = current;
+    }
+    state.updatedAt = new Date().toISOString();
+    write(state);
+    return state;
+  };
+  return { record, snapshot: read, reset: () => write(blank()) };
+})();
+if (typeof window !== 'undefined') window.AlloGenerationMetrics = ALLO_GENERATION_METRICS;
 const ALLO_WORKSPACE_RECOVERY_NAMESPACE = 'workspace_recovery';
 const ALLO_WORKSPACE_RECOVERY_KEY = 'store_v1';
 const ALLO_WORKSPACE_RECOVERY = (() => {
@@ -8964,6 +9235,11 @@ const ALLO_WORKSPACE_RECOVERY = (() => {
       (typeof workspace.inputText === 'string' && workspace.inputText.trim())
       || (typeof workspace.sourceTopic === 'string' && workspace.sourceTopic.trim())
       || hasMeaningfulDraftValue(workspace.builderDraft)
+      || (Array.isArray(workspace.units) && workspace.units.length > 0)
+      || (Array.isArray(workspace.profiles) && workspace.profiles.length > 0)
+      || hasMeaningfulDraftValue(workspace.guidedProgress)
+      || hasMeaningfulDraftValue(workspace.projectState)
+      || hasMeaningfulDraftValue(workspace.wordSoundsState)
     ));
     if (!workspace || !history || (history.length === 0 && !hasDraft)) return null;
     const savedMs = Date.parse(candidate.savedAt || '');
@@ -9633,7 +9909,12 @@ const _alloLoadScriptGlobal = (url, readGlobal, options = {}) => {
       if (error) reject(error);
       else resolve(value);
     };
-    script.src = url;
+    const useBundledLocalDependency = typeof window !== 'undefined'
+      && /^(localhost|127\.0\.0\.1)$/i.test(window.location?.hostname || '')
+      && (window.location?.pathname || '').startsWith('/app/');
+    script.src = useBundledLocalDependency
+      ? String(url).replace(/^https:\/\/alloflow-cdn\.pages\.dev\//, './')
+      : url;
     script.async = true;
     script.onload = () => {
       let registered = null;
@@ -9768,7 +10049,7 @@ const _alloGetCanvasDeviceStorage = async () => {
     window.__alloDeviceStoragePromise = window.alloDeviceStorage
       ? Promise.resolve(window.alloDeviceStorage)
       : _alloLoadScriptGlobal(
-          'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds3-storage-manager',
+          'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds4-bridge-auth',
           () => window.alloDeviceStorage,
           { label: 'Device storage module', timeoutMs: ALLO_STORAGE_SCRIPT_TIMEOUT_MS }
         );
@@ -9798,6 +10079,41 @@ const _alloGetCanvasDeviceStorage = async () => {
     _alloClearCachedDeviceStoragePromises();
     throw error;
   }
+};
+
+const _alloGetRecoveryVaultStack = async () => {
+  if (typeof window === 'undefined') throw new Error('Recovery-workspace protection is unavailable outside the browser.');
+  const securityModuleUrl = (fileName) => _isDesktopBundledApp
+    ? `./${fileName}?v=security-v2`
+    : `https://alloflow-cdn.pages.dev/${fileName}?v=security-v2`;
+  const [crypto, vault, integration] = await Promise.all([
+    _alloLoadScriptGlobal(
+      securityModuleUrl('allo_crypto_module.js'),
+      () => {
+        const api = window.AlloModules?.AlloCrypto;
+        return api && ['createVaultKey', 'wrapVaultKey', 'unwrapVaultKey', 'encryptRecord', 'decryptRecord', 'generateRecoveryCode', 'normalizeRecoveryCode', 'validateRecoveryCode'].every(name => typeof api[name] === 'function') ? api : null;
+      },
+      { cacheKey: 'allo-crypto-security-v2', label: 'Encryption module' }
+    ),
+    _alloLoadScriptGlobal(
+      securityModuleUrl('allo_device_vault_module.js'),
+      () => {
+        const api = window.AlloModules?.AlloDeviceVault;
+        return api && typeof api.createRecoveryVaultController === 'function' && typeof api.validateVaultStore === 'function' && typeof api.isVaultStore === 'function' ? api : null;
+      },
+      { cacheKey: 'allo-device-vault-v2', label: 'Recovery vault module' }
+    ),
+    _alloLoadScriptGlobal(
+      securityModuleUrl('allo_recovery_vault_integration_module.js'),
+      () => {
+        const api = window.AlloModules?.AlloRecoveryVaultIntegration;
+        return api && typeof api.createController === 'function' ? api : null;
+      },
+      { cacheKey: 'allo-recovery-vault-integration-v2', label: 'Recovery vault storage integration' }
+    )
+  ]);
+  if (!crypto || !vault || !integration) throw new Error('Recovery-workspace protection did not finish loading.');
+  return { crypto, vault, integration };
 };
 const LENGTH_THRESHOLDS = {
     MIN_VARIANCE: 0.6,
@@ -11850,6 +12166,23 @@ function advReducer(state, action) {
   if (action.type === 'ADV_RESET') return { ...ADV_INITIAL_STATE };
   return state;
 }
+const getWordSoundsMasteryScopeKey = (learnerId, language) => {
+  const learner = learnerId == null || String(learnerId).trim() === ''
+    ? 'legacy'
+    : String(learnerId).trim();
+  const languageKey = String(language || 'en')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-') || 'en';
+  // Keep learner identifiers out of localStorage keys while retaining a
+  // deterministic per-learner/per-language scope.
+  let hash = 2166136261;
+  for (let index = 0; index < learner.length; index += 1) {
+    hash ^= learner.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return languageKey + ':' + (hash >>> 0).toString(36);
+};
 const WS_INITIAL_STATE = {
   wsPreloadedWords: [],
   wsActivitySequence: [],
@@ -11859,6 +12192,8 @@ const WS_INITIAL_STATE = {
   wordSoundsSessionGoal: 30,
   orthoSessionGoal: 0,
   wordSoundsSessionProgress: 0,
+  wordSoundsSessionConfig: null,
+  wordSoundsMasteryScopeKey: getWordSoundsMasteryScopeKey(null, 'en'),
   wordSoundsTtsSpeed: 1.0,
   wordSoundsFamilies: {},
   wordSoundsAudioLibrary: {},
@@ -11874,6 +12209,55 @@ function wsReducer(state, action) {
   if (action.type === 'WS_SET') {
     const val = typeof action.value === 'function' ? action.value(state[action.field]) : action.value;
     return { ...state, [action.field]: val };
+  }
+  if (action.type === 'WS_BEGIN_SESSION') {
+    const config = action.config && typeof action.config === 'object' ? action.config : {};
+    const requestedGoal = Number(config.sessionGoal ?? config.probeItemCount ?? config.itemCount);
+    const requestedOrthoGoal = Number(config.orthoSessionGoal);
+    const sessionGoal = Number.isFinite(requestedGoal) && requestedGoal > 0
+      ? Math.floor(requestedGoal)
+      : WS_INITIAL_STATE.wordSoundsSessionGoal;
+    const orthoGoal = Number.isFinite(requestedOrthoGoal) && requestedOrthoGoal >= 0
+      ? Math.floor(requestedOrthoGoal)
+      : WS_INITIAL_STATE.orthoSessionGoal;
+    return {
+      ...state,
+      isWordSoundsMode: true,
+      wordSoundsDifficulty: config.difficulty || state.wordSoundsDifficulty,
+      wordSoundsSessionGoal: sessionGoal,
+      orthoSessionGoal: config.fixedForm ? 0 : orthoGoal,
+      wordSoundsSessionProgress: 0,
+      wordSoundsAccuracyHistory: [],
+      wordSoundsStreak: 0,
+      wordSoundsScore: { correct: 0, total: 0, streak: 0 },
+      currentWordSoundsWord: null,
+      wordSoundsPhonemes: null,
+      wordSoundsFeedback: null,
+      wordSoundsLanguage: config.language || state.wordSoundsLanguage,
+      wordSoundsActivity: config.initialActivity || state.wordSoundsActivity,
+      wordSoundsSessionConfig: config,
+      wordSoundsMasteryScopeKey: getWordSoundsMasteryScopeKey(
+        config.learnerId,
+        config.language || state.wordSoundsLanguage,
+      ),
+    };
+  }
+  if (action.type === 'WS_END_SESSION') {
+    return {
+      ...state,
+      isWordSoundsMode: false,
+      wsActivitySequence: [],
+      wordSoundsSessionGoal: WS_INITIAL_STATE.wordSoundsSessionGoal,
+      orthoSessionGoal: WS_INITIAL_STATE.orthoSessionGoal,
+      wordSoundsSessionProgress: 0,
+      wordSoundsAccuracyHistory: [],
+      wordSoundsStreak: 0,
+      wordSoundsScore: { correct: 0, total: 0, streak: 0 },
+      currentWordSoundsWord: null,
+      wordSoundsPhonemes: null,
+      wordSoundsFeedback: null,
+      wordSoundsSessionConfig: null,
+    };
   }
   if (action.type === 'WS_RESET') return { ...WS_INITIAL_STATE };
   return state;
@@ -14280,6 +14664,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Throughline (the unit builder, registered as MindMap): a chosen units-feature
   // unitId to pre-build the canvas from, set by "Visualize in Throughline".
   const [throughlineSeedUnitId, setThroughlineSeedUnitId] = useState(null);
+  // Saved audit graphs live on their owning history resource. A graph opened
+  // from disk is deliberately separate, session-only state: it must never enter
+  // history, workspace recovery, cloud sync, or a live lesson by accident.
+  const [importedAlignmentGraphExport, setImportedAlignmentGraphExport] = useState(null);
+  const [, setLearningWebRegistryRevision] = useState(0);
   const openThroughlineForUnit = React.useCallback((unitId) => { setThroughlineSeedUnitId(unitId || null); setShowMindMap(true); }, [setShowMindMap]);
   const [showPoetTree, _setShowPoetTreeRaw] = useState(false);
   const setShowPoetTree = React.useCallback((v) => { if (v && window.__alloLazyPoetTree) { try { window.__alloLazyPoetTree(); } catch(_) {} } _setShowPoetTreeRaw(v); }, []);
@@ -14580,7 +14969,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '4697943eb';
+    var pluginCdnVersion = '1786570857410';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -14894,28 +15283,31 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=4697943eb');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=4697943eb');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=4697943eb');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=4697943eb');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('DeviceAccessCode', './device_access_code_module.js');
+    loadModule('AlloDeviceVault', './allo_device_vault_module.js');
+    loadModule('AlloRecoveryVaultIntegration', './allo_recovery_vault_integration_module.js');
     // Shared quest/goal vocabulary for directions goals, STEAM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=355fa3d9a');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=4697943eb');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=ce049d79');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=4697943eb');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=4697943eb');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=4697943eb');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=4697943eb');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=4697943eb');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=4697943eb');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=7fc4bd32');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=4ced3dc7');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=4697943eb');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=4697943eb');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=4697943eb');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
     // eagerly here for EVERY user at boot, including the majority who never open
     // it. It registers exactly one component, WordSoundsModal, and the only
@@ -14928,40 +15320,40 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=4697943eb'); }; })();
-    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=4697943eb');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=4697943eb');
-    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=4697943eb');
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', './word_sounds_module.js'); }; })();
+    loadModule('AlloSheetTransferAdapter', './allo_sheet/transfer_adapter.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('AlloSheetHostBridge', './allo_sheet/host_bridge.js');
     (function queueBehaviorLensModules() {
       const startBehaviorLens = function() {
         if (!(window.AlloModules && window.AlloModules.BehaviorLensWorkspace)) return false;
         window.removeEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=4697943eb');
+        loadModule('BehaviorLens', './behavior_lens_module.js');
         return true;
       };
       if (!startBehaviorLens()) {
         window.addEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=4697943eb');
+        loadModule('BehaviorLensWorkspace', './behavior_lens_workspace_module.js');
       }
     })();
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=4697943eb');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=4697943eb');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=4697943eb');
+    loadModule('ReportWriter', './report_writer_module.js');
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=4697943eb'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=4697943eb'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=4697943eb'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=4697943eb'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', './seating_chart_module.js'); }; })();
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080306'); }; })();
@@ -14973,97 +15365,97 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=ah080304'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
-    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=4697943eb'); }; })();
+    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', './stem_lab/stem_tool_eligibility.js'); }; })();
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=4697943eb');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=4697943eb');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=4697943eb');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=4697943eb');
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=4697943eb');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=4697943eb');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=4697943eb');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=4697943eb');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=4697943eb');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=4697943eb');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=4697943eb');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=4697943eb');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=4697943eb');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=4697943eb');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=4697943eb'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=4697943eb'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=4697943eb'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=4697943eb'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    loadModule('ReadingLibrary', './reading_library_module.js');
+    loadModule('AccessibilityEvidence', './accessibility_evidence_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=4697943eb');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=4697943eb');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=4697943eb');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=216a1867');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=4697943eb');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=4697943eb');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=4697943eb');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=4697943eb');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=4697943eb');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=4697943eb'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // Process Provenance (Work Story). Stable label pin, like the storage
     // module: this file is not in build.js MODULES, so a hash pin would freeze.
     window.__alloLazyProvenance = (function() { var L=false; return function() { if(L)return; L=true; loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=4697943eb');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=4697943eb');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=4697943eb'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=4697943eb'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=4697943eb'); }; })();
-    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=4697943eb'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=4697943eb'); }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0b3560bb'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=4697943eb'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=4697943eb');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=4697943eb');
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=4697943eb');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=1bec0c44');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=4697943eb');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=4697943eb');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=4697943eb');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=4697943eb');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=4697943eb');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=4697943eb'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=4697943eb'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=4697943eb'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=4697943eb'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=4697943eb'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=4697943eb'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=4697943eb'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=4697943eb'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=4697943eb'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=4697943eb'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=4697943eb'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=4697943eb'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=4697943eb');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=4697943eb');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=4697943eb');
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', './view_video_library_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js');
+    loadModule('LiveLessonRun', './view_live_lesson_run_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', './lexical_graph_module.js'); loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=4697943eb');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=4697943eb');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=4697943eb');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=4697943eb');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=4697943eb');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=4697943eb');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=4697943eb');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=4697943eb');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=4697943eb');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=4697943eb');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=4697943eb');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
+    loadModule('PdfAuditView', './view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', './view_export_preview_module.js');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -15100,13 +15492,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=fdf46ad3');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=4697943eb');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=4697943eb');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=4697943eb');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=4697943eb');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=4697943eb');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
     // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
     // caps against this instead of dumping every tool name, and unlike
@@ -15129,15 +15521,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=4697943eb');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=4697943eb');
-    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=4697943eb');
-    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=4697943eb');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('StandardsContext', './standards_context_module.js');
+    loadModule('StandardsProvider', './standards_provider_module.js');
+    // Learning Web owns durable cross-view graph snapshots; domain modules keep
+    // their richer standards, audit, unit, and lexical records. The engine is
+    // eager here because the Alignment Map can render before Throughline opens.
+    loadModule('ConceptGraphEngine', './concept_graph_engine_module.js');
+    loadModule('LearningWebRegistry', './learning_web_registry_module.js');
     // Driving Questions Board. The contract carries the invariants both
     // transports enforce; the view module is inert until a surface mounts it.
-    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=4697943eb');
-    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=4697943eb');
-    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=4697943eb');
+    loadModule('QuestionBoardContract', './question_board_contract_module.js');
+    loadModule('QuestionBoardView', './question_board_view_module.js');
+    loadModule('QuestionBoardTransport', './question_board_transport_module.js');
 
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
@@ -15149,66 +15546,66 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('StandardsSnapshotMaScienceG5', 'https://alloflow-cdn.pages.dev/standards_snapshots/ma-science-grade-5.js?v=e805fe3c7');
     loadModule('StandardsSnapshotCcssMath', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-math.js?v=e805fe3c7');
     loadModule('StandardsSnapshotCcssEla', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-ela.js?v=e805fe3c7');
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=4697943eb');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=4697943eb');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=4697943eb');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=4697943eb');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=4697943eb');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=4697943eb');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=4697943eb');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=4697943eb');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=398e7a6a');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
-    loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
+    loadModule('WordTimingModule', './word_timing_module.js');
     // Unified live-session content channel (SessionTransport stage 1).
-    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=b57c8bf0');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=ce9cc503');
-    loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
-    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=b41bcb0a');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=4697943eb');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=4697943eb');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=4697943eb');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=4697943eb');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=4697943eb');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=4697943eb');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=75c9c68d');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=4697943eb');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=4697943eb');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=4697943eb');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=4697943eb');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=4697943eb');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=4697943eb');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=7c43afe4');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=4697943eb');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=4697943eb');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=4697943eb');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=4697943eb');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=4697943eb');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=0315c93c');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=4697943eb');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=4697943eb');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=4697943eb');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=4697943eb');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=4697943eb');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=4697943eb');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=fb834a79');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=4697943eb');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=4697943eb');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=4697943eb');
+    loadModule('SessionTransportModule', './session_transport_module.js');
+    loadModule('ReadAloudAudioServiceModule', './read_aloud_audio_service_module.js');
+    loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js');
+    loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js');
+    loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=4697943eb');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=4697943eb');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=4697943eb');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=4697943eb');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=4697943eb');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=4697943eb');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=4697943eb');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=4697943eb');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=4697943eb');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=4697943eb');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('LivePolling', './live_polling_module.js');
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -15440,6 +15837,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         var states = window[stateKey] || {};
         window[stateKey] = states;
         var loadTimeoutMs = 20000;
+        // Dependency work is intentionally separate from per-file state. This
+        // lets the selected tool report loading while support files load without
+        // pretending that the tool's own script has already started.
+        var dependencyStates = {};
+        var dependencyJobs = {};
 
         function publicState(state) {
           if (!state) return null;
@@ -15449,14 +15851,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             error: state.error || '',
             attempt: state.attempt || 0,
             startedAt: state.startedAt || 0,
-            finishedAt: state.finishedAt || 0
+            finishedAt: state.finishedAt || 0,
+            phase: state.phase || '',
+            dependency: state.dependency || ''
           };
         }
 
-        function fireProgress(mod) {
+        function fireProgress(mod, stateOverride) {
           try {
             window.dispatchEvent(new CustomEvent('allo-plugins-changed', {
-              detail: { label: label, module: mod || null, state: publicState(mod ? states[mod] : null) }
+              detail: { label: label, module: mod || null, state: publicState(stateOverride || (mod ? states[mod] : null)) }
             }));
           } catch (_) {}
         }
@@ -15465,6 +15869,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           var loading = Object.keys(states).some(function(mod) {
             return states[mod] && states[mod].status === 'loading';
           });
+          if (!loading) {
+            loading = Object.keys(dependencyStates).some(function(mod) {
+              return dependencyStates[mod] && dependencyStates[mod].status === 'loading';
+            });
+          }
           window['__allo' + label + 'PluginsLoading'] = loading;
         }
 
@@ -15527,12 +15936,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         }
 
         function loadOne(mod, force) {
-          if (!mod) return false;
+          if (!mod) return Promise.resolve(null);
           var previous = states[mod];
-          if (!force && previous && (previous.status === 'loading' || previous.status === 'loaded')) return true;
+          if (!force && previous && previous.status === 'loading') {
+            return previous.promise || Promise.resolve(publicState(previous));
+          }
+          if (!force && previous && previous.status === 'loaded') return Promise.resolve(publicState(previous));
+          if (force && previous && typeof previous.cancel === 'function') previous.cancel();
           if (force) removePriorScript(mod);
 
           var attempt = (previous && previous.attempt || 0) + 1;
+          var settleLoad = null;
           var state = states[mod] = {
             module: mod,
             status: 'loading',
@@ -15541,6 +15955,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             startedAt: Date.now(),
             finishedAt: 0
           };
+          state.promise = new Promise(function(resolve) { settleLoad = resolve; });
           syncLoadingFlag();
           fireProgress(mod);
 
@@ -15549,24 +15964,34 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           s.src = pluginCdnBase + mod + '?v=' + pluginCdnVersion + retrySuffix;
           s.setAttribute('data-allo-plugin-module', mod);
           s.setAttribute('data-allo-plugin-attempt', String(attempt));
-          // Keep the generated Cell Atlas snapshot and its consumer ordered;
-          // every unrelated plugin remains parallel.
-          var orderedCellAtlasDependency = mod === 'stem_lab/stem_data_cellatlas_muraro.js' || mod === 'stem_lab/stem_tool_cellatlas.js';
-          var orderedDataKernelDependency = mod === 'data_kernel_loader.js' || mod === 'stem_lab/stem_tool_datastudio.js';
-          s.async = !(orderedCellAtlasDependency || orderedDataKernelDependency);
+          // Dependency order is enforced by loadStemModuleWithDependencies;
+          // this individual download can remain asynchronous.
+          s.async = true;
           s.crossOrigin = 'anonymous';
 
           var timeoutId = null;
           function finish(status, error) {
             // A late event from a superseded request must not overwrite the retry.
             if (!states[mod] || states[mod].attempt !== attempt) return;
+            // A timed-out request is terminal. Without this guard, a very late
+            // onload could silently flip the visible error back to loaded.
+            if (state.status !== 'loading') return;
             if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
             state.status = status;
             state.error = error || '';
             state.finishedAt = Date.now();
             syncLoadingFlag();
             fireProgress(mod);
+            if (settleLoad) settleLoad(publicState(state));
           }
+          state.cancel = function() {
+            if (state.status !== 'loading') return;
+            if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+            try { if (s.parentNode) s.parentNode.removeChild(s); } catch (_) {}
+            state.status = 'superseded';
+            state.finishedAt = Date.now();
+            if (settleLoad) settleLoad(publicState(state));
+          };
           // Mirror plugin load outcomes into the diagnostics ring buffer as well as
           // the console: in Canvas the console is unreachable, and these two lines are
           // the difference between "never requested", "download blocked" and "ran but
@@ -15591,35 +16016,132 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             finish('error', 'The plugin file could not be downloaded. Check the connection or school network filter, then try again.');
           };
           timeoutId = setTimeout(function() {
+            try { if (s.parentNode) s.parentNode.removeChild(s); } catch (_) {}
             finish('error', 'The plugin took longer than 20 seconds to load. Check the connection, then try again.');
           }, loadTimeoutMs);
-          document.head.appendChild(s);
-          return true;
+          try {
+            document.head.appendChild(s);
+          } catch (appendError) {
+            finish('error', 'The plugin could not be added to this page. Check the browser content policy, then try again.');
+          }
+          return state.promise;
         }
 
         if (label === 'Stem') {
-          function loadStemModuleWithDependencies(mod) {
-            if (mod === 'stem_lab/stem_tool_cellatlas.js') loadOne('stem_lab/stem_data_cellatlas_muraro.js', false);
-            if (mod === 'stem_lab/stem_tool_datastudio.js') loadOne('data_kernel_loader.js', false);
-            return loadOne(mod, false);
+          // Only tools with real script prerequisites belong here. Dependencies
+          // are resolved recursively and serially, so opening one tile never
+          // triggers the full STEM manifest or races a consumer ahead of its data.
+          var stemModuleDependencies = {
+            'stem_lab/stem_tool_cellatlas.js': ['stem_lab/stem_data_cellatlas_muraro.js'],
+            'stem_lab/stem_tool_dataplot.js': ['data_kernel_loader.js'],
+            'stem_lab/stem_tool_statslab.js': ['data_kernel_loader.js'],
+            // Regression mode embeds Data Plotter, which in turn owns the kernel.
+            'stem_lab/stem_tool_datastudio.js': ['stem_lab/stem_tool_dataplot.js'],
+            'stem_lab/stem_lumen_study.js': ['stem_lab/stem_lumen_evidence.js'],
+            'stem_lab/stem_tool_lumen.js': ['stem_lab/stem_lumen_study.js']
+          };
+
+          function loadStemModuleWithDependencies(mod, force, ancestors) {
+            if (!force && dependencyJobs[mod]) return dependencyJobs[mod];
+            var existing = states[mod];
+            if (!force && existing && existing.status === 'loading') {
+              return existing.promise || Promise.resolve(publicState(existing));
+            }
+            if (!force && existing && existing.status === 'loaded') return Promise.resolve(publicState(existing));
+
+            var dependencies = stemModuleDependencies[mod] || [];
+            if (!dependencies.length) return loadOne(mod, !!force);
+
+            var lineage = (ancestors || []).concat(mod);
+            var dependencyState = {
+              module: mod,
+              status: 'loading',
+              error: '',
+              attempt: (existing && existing.attempt || 0) + 1,
+              startedAt: Date.now(),
+              finishedAt: 0,
+              phase: 'dependencies',
+              dependency: dependencies[0] || ''
+            };
+            dependencyStates[mod] = dependencyState;
+            syncLoadingFlag();
+            fireProgress(mod, dependencyState);
+
+            var job = Promise.resolve(null);
+            dependencies.forEach(function(dependency) {
+              job = job.then(function() {
+                if (lineage.indexOf(dependency) !== -1) {
+                  return { status: 'error', error: 'A circular plugin dependency was detected.', module: dependency };
+                }
+                dependencyState.dependency = dependency;
+                fireProgress(mod, dependencyState);
+                return loadStemModuleWithDependencies(dependency, !!force, lineage);
+              }).then(function(result) {
+                if (!result || result.status !== 'loaded') {
+                  var failure = new Error((result && result.error) || 'The support file did not finish loading.');
+                  failure.dependency = (result && result.dependency) || dependency;
+                  throw failure;
+                }
+                return result;
+              });
+            });
+
+            var trackedJob = job.then(function() {
+              // A newer forced retry owns the visible state and must not be
+              // overwritten by this older dependency chain.
+              if (dependencyJobs[mod] !== trackedJob) return publicState(states[mod]);
+              delete dependencyStates[mod];
+              syncLoadingFlag();
+              return loadOne(mod, !!force);
+            }).then(function(result) {
+              if (dependencyJobs[mod] === trackedJob) {
+                delete dependencyJobs[mod];
+                delete dependencyStates[mod];
+                syncLoadingFlag();
+              }
+              return result;
+            }, function(error) {
+              if (dependencyJobs[mod] !== trackedJob) return publicState(states[mod]);
+              delete dependencyJobs[mod];
+              delete dependencyStates[mod];
+              var failedDependency = error && error.dependency ? error.dependency : dependencyState.dependency;
+              var failureState = states[mod] = {
+                module: mod,
+                status: 'error',
+                error: 'A required support file could not load (' + failedDependency.replace(/^.*\//, '') + '). ' + ((error && error.message) || 'Try again.'),
+                attempt: dependencyState.attempt,
+                startedAt: dependencyState.startedAt,
+                finishedAt: Date.now(),
+                phase: 'dependencies',
+                dependency: failedDependency
+              };
+              syncLoadingFlag();
+              fireProgress(mod, failureState);
+              return publicState(failureState);
+            });
+            dependencyJobs[mod] = trackedJob;
+            return trackedJob;
           }
           window.__alloEnsureStemPluginLoaded = function(toolOrModule) {
             var mod = resolveModule(toolOrModule);
             if (!mod) return false;
-            return loadStemModuleWithDependencies(mod);
+            loadStemModuleWithDependencies(mod, false);
+            return true;
           };
           window.__alloGetStemPluginState = function(toolOrModule) {
             var mod = resolveModule(toolOrModule);
-            return publicState(mod ? states[mod] : null);
+            return publicState(mod ? (dependencyStates[mod] || states[mod]) : null);
           };
           // Expose the raw per-module load states so the Platform Diagnostics panel
           // can show them. Canvas has no reachable console, so without this a tool
           // stuck on its skeleton gives the teacher nothing to report.
           window.__alloStemPluginStates = states;
+          window.__alloStemPluginDependencyStates = dependencyStates;
           window.__alloRetryStemPlugin = function(toolOrModule) {
             var mod = resolveModule(toolOrModule);
             if (!mod) return false;
-            return loadOne(mod, true);
+            loadStemModuleWithDependencies(mod, true);
+            return true;
           };
         }
 
@@ -16122,6 +16644,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const rtpReadingRef = useRef(false);
   const rtpStopRef = useRef(false);
   const rtpCurrentAudioRef = useRef(null);
+  const rtpCurrentIndexRef = useRef(-1);
+  const rtpReadRunRef = useRef(0);
+  const rtpAudioFinishRef = useRef(null);
+  const rtpPauseWaitersRef = useRef([]);
+  const rtpPreviousFocusRef = useRef(null);
+  const rtpPanelRef = useRef(null);
+  const rtpControllerRef = useRef(null);
+  const rtpStartRequestRef = useRef(0);
+  const rtpPausedRef = useRef(false);
+  const rtpVoiceSpeechLeaseRef = useRef(null);
+  const [rtpPlaybackState, setRtpPlaybackState] = useState('idle');
+  const [rtpCurrentIndex, setRtpCurrentIndex] = useState(-1);
   const [showAIBackendModal, setShowAIBackendModal] = React.useState(false);
   const [aiBackendModuleTick, setAiBackendModuleTick] = React.useState(0);
   const desktopAISetupPromptedRef = useRef(false);
@@ -16261,8 +16795,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       return [];
   });
   const [wsState, wsDispatch] = useReducer(wsReducer, WS_INITIAL_STATE);
-  const { wsPreloadedWords, wsActivitySequence, wordSoundsDifficulty, wordSoundsAccuracyHistory, wordSoundsStreak, wordSoundsSessionGoal, orthoSessionGoal, wordSoundsSessionProgress, wordSoundsTtsSpeed, wordSoundsFamilies, wordSoundsAudioLibrary, isWordSoundsMode, wordSoundsActivity, wordSoundsScore, currentWordSoundsWord, wordSoundsPhonemes, wordSoundsLanguage, wordSoundsFeedback } = wsState;
-  const setWsPreloadedWords = (v) => wsDispatch({ type: 'WS_SET', field: 'wsPreloadedWords', value: v });
+  const { wsPreloadedWords, wsActivitySequence, wordSoundsDifficulty, wordSoundsAccuracyHistory, wordSoundsStreak, wordSoundsSessionGoal, orthoSessionGoal, wordSoundsSessionProgress, wordSoundsSessionConfig, wordSoundsMasteryScopeKey, wordSoundsTtsSpeed, wordSoundsFamilies, wordSoundsAudioLibrary, isWordSoundsMode, wordSoundsActivity, wordSoundsScore, currentWordSoundsWord, wordSoundsPhonemes, wordSoundsLanguage, wordSoundsFeedback } = wsState;
+  const latestWsPreloadedWordsRef = useRef(wsPreloadedWords);
+  const latestIsWordSoundsModeRef = useRef(isWordSoundsMode);
+  const pendingWordSoundsSessionConfigRef = useRef(null);
+  useEffect(() => {
+    latestIsWordSoundsModeRef.current = isWordSoundsMode;
+  }, [isWordSoundsMode]);
+  const setWsPreloadedWords = (v) => {
+    const next = typeof v === 'function' ? v(latestWsPreloadedWordsRef.current) : v;
+    latestWsPreloadedWordsRef.current = Array.isArray(next) ? next : [];
+    wsDispatch({ type: 'WS_SET', field: 'wsPreloadedWords', value: next });
+  };
   const setWsActivitySequence = (v) => wsDispatch({ type: 'WS_SET', field: 'wsActivitySequence', value: v });
   const setWordSoundsDifficulty = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsDifficulty', value: v });
   const setWordSoundsAccuracyHistory = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsAccuracyHistory', value: v });
@@ -16273,7 +16817,60 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const setWordSoundsTtsSpeed = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsTtsSpeed', value: v });
   const setWordSoundsFamilies = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsFamilies', value: v });
   const setWordSoundsAudioLibrary = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsAudioLibrary', value: v });
-  const setIsWordSoundsMode = (v) => wsDispatch({ type: 'WS_SET', field: 'isWordSoundsMode', value: v });
+  const prepareWordSoundsSession = (config = {}) => {
+    pendingWordSoundsSessionConfigRef.current = config && typeof config === 'object' ? { ...config } : {};
+  };
+  const setIsWordSoundsMode = (v) => {
+    const wasOpen = latestIsWordSoundsModeRef.current;
+    const next = typeof v === 'function' ? v(wasOpen) : v;
+    latestIsWordSoundsModeRef.current = !!next;
+    if (next === true && !wasOpen) {
+      const words = Array.isArray(latestWsPreloadedWordsRef.current)
+        ? latestWsPreloadedWordsRef.current
+        : [];
+      const firstWord = words[0] || {};
+      const resourceConfig = generatedContent?.sessionConfig
+        || generatedContent?.wordSoundsProbeConfig
+        || {};
+      const preparedConfig = pendingWordSoundsSessionConfigRef.current || resourceConfig;
+      pendingWordSoundsSessionConfigRef.current = null;
+      const fixedForm = !!(preparedConfig.fixedForm || firstWord.probeFixedForm);
+      const requestedCount = Number(
+        preparedConfig.sessionGoal
+        ?? preparedConfig.probeItemCount
+        ?? preparedConfig.itemCount
+        ?? firstWord.probeItemCount
+      );
+      const sessionGoal = fixedForm && words.length > 0
+        ? Math.min(words.length, Number.isFinite(requestedCount) && requestedCount > 0 ? Math.floor(requestedCount) : words.length)
+        : (Number.isFinite(requestedCount) && requestedCount > 0 ? Math.floor(requestedCount) : WS_INITIAL_STATE.wordSoundsSessionGoal);
+      const config = {
+        schema: preparedConfig.schema || 'alloflow-word-sounds-session/v1',
+        version: preparedConfig.version || 1,
+        ...preparedConfig,
+        fixedForm,
+        sessionGoal,
+        probeItemCount: fixedForm ? sessionGoal : null,
+        language: preparedConfig.language || wordSoundsLanguage || 'en',
+        learnerId: preparedConfig.learnerId
+          ?? (!isTeacherMode ? (user?.uid || studentNickname || null) : null),
+        initialActivity: preparedConfig.initialActivity
+          || preparedConfig.runtimeActivity
+          || firstWord.probeRuntimeActivity
+          || wordSoundsActivity,
+        resourceId: preparedConfig.resourceId || generatedContent?.id || null,
+        sessionId: 'ws-session-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+        startedAt: new Date().toISOString(),
+      };
+      wsDispatch({ type: 'WS_BEGIN_SESSION', config });
+      return;
+    }
+    if (next === false) {
+      wsDispatch({ type: 'WS_END_SESSION' });
+      return;
+    }
+    wsDispatch({ type: 'WS_SET', field: 'isWordSoundsMode', value: next });
+  };
   // Pull in the lazily-registered Word Sounds player. Driven by an effect on the
   // STATE rather than wrapped around setIsWordSoundsMode, so it also covers any
   // path that flips the flag without going through that setter (a restored
@@ -16321,15 +16918,53 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       return [];
   });
-  const [phonemeMastery, setPhonemeMastery] = useState(() => {
+  const [phonemeMasteryStore, setPhonemeMasteryStore] = useState(() => {
       if (typeof window !== 'undefined') {
           try {
-              const saved = safeGetItem('allo_phoneme_mastery');
-              if (saved) return JSON.parse(saved);
+              const savedV2 = safeGetItem('allo_phoneme_mastery_v2');
+              if (savedV2) {
+                  const parsedV2 = JSON.parse(savedV2);
+                  if (parsedV2 && parsedV2.version === 2 && parsedV2.scopes && typeof parsedV2.scopes === 'object') {
+                      return parsedV2;
+                  }
+              }
+              // Preserve legacy evidence in an anonymous legacy scope. It is
+              // never copied into a named learner, because the old flat map may
+              // already contain responses from several people on this device.
+              const savedLegacy = safeGetItem('allo_phoneme_mastery');
+              if (savedLegacy) {
+                  const legacy = JSON.parse(savedLegacy);
+                  if (legacy && typeof legacy === 'object' && !Array.isArray(legacy)) {
+                      return {
+                          version: 2,
+                          scopes: {
+                              [getWordSoundsMasteryScopeKey(null, 'en')]: legacy,
+                          },
+                      };
+                  }
+              }
           } catch (e) { warnLog("Failed to load phoneme mastery", e); }
       }
-      return {};
+      return { version: 2, scopes: {} };
   });
+  const phonemeMastery = phonemeMasteryStore.scopes?.[wordSoundsMasteryScopeKey] || {};
+  const setPhonemeMastery = useCallback((nextValue) => {
+      setPhonemeMasteryStore(prevStore => {
+          const store = prevStore && prevStore.version === 2
+              ? prevStore
+              : { version: 2, scopes: {} };
+          const current = store.scopes?.[wordSoundsMasteryScopeKey] || {};
+          const next = typeof nextValue === 'function' ? nextValue(current) : nextValue;
+          return {
+              version: 2,
+              scopes: {
+                  ...(store.scopes || {}),
+                  [wordSoundsMasteryScopeKey]:
+                      next && typeof next === 'object' && !Array.isArray(next) ? next : {},
+              },
+          };
+      });
+  }, [wordSoundsMasteryScopeKey]);
   const [wordSoundsDailyProgress, setWordSoundsDailyProgress] = useState(() => {
       if (typeof window !== 'undefined') {
           try {
@@ -16400,8 +17035,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [wordSoundsBadges, lzLoaded]);
   useEffect(() => {
       if (!lzLoaded) return;
-      try { safeSetItem('allo_phoneme_mastery', JSON.stringify(phonemeMastery)); } catch(e) { warnLog('localStorage write failed', e); }
-  }, [phonemeMastery, lzLoaded]);
+      try { safeSetItem('allo_phoneme_mastery_v2', JSON.stringify(phonemeMasteryStore)); } catch(e) { warnLog('localStorage write failed', e); }
+  }, [phonemeMasteryStore, lzLoaded]);
   // Concept mastery is DEVICE-LOCAL by design (FERPA posture): the per-concept
   // attempt history that used to live in the cloud conceptMastery/{uid} doc now
   // stays on the student's device. It reaches the teacher only through
@@ -18963,7 +19598,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!wantsFamily) return;
       _alloFamilyLinkHandledRef.current = true;
       setHasSelectedMode(true);
-      if (APP_CONFIG._cfg_validation_key) {
+      if (_alloEducatorAccessCodeRequired()) {
           setPendingRole('parent');
           setIsGateOpen(true);
       } else {
@@ -18990,7 +19625,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (_alloShellRoleHandledRef.current || hasSelectedRole) return;
           _alloShellRoleHandledRef.current = true;
           setHasSelectedMode(true);
-          if (APP_CONFIG._cfg_validation_key) {
+          if (_alloEducatorAccessCodeRequired()) {
               setPendingRole(cfg.forceRole);
               setIsGateOpen(true);
           } else {
@@ -19021,7 +19656,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!Number.isFinite(saved.at) || (Date.now() - saved.at) > ALLO_SESSION_RESUME_MS) return;
       _alloSessionResumeHandledRef.current = true;
       setHasSelectedMode(true);
-      if (APP_CONFIG._cfg_validation_key) {
+      if (_alloEducatorAccessCodeRequired()) {
           setPendingRole(saved.role);
           setIsGateOpen(true);
       } else {
@@ -19716,6 +20351,273 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         setToasts(prev => prev.filter(t => t.id !== id));
     }, 3000);
   };
+  // BEGIN LEARNING_WEB_HOST_BRIDGE
+  // The Alignment Map renderer and Throughline already share the acg/v1
+  // contract. This host bridge gives that contract an owning resource and the
+  // app's normal durable-history lifecycle. Imported files remain read-only and
+  // isolated in memory; only an explicit confirmation/export updates a resource.
+  const _alloAlignmentExportSchema = 'alloflow-alignment-graph-export/v1';
+  const _alloIsAlignmentGraph = (graph) => !!(graph
+      && graph.version === 'acg/v1'
+      && Array.isArray(graph.nodes)
+      && Array.isArray(graph.edges)
+      && graph.meta
+      && graph.meta.alignmentMap
+      && graph.meta.alignmentMap.version === 'alloflow-alignment-map/v2');
+  const _alloAlignmentAuditSummary = (resource, graph) => {
+      const comprehensive = resource?.data?.comprehensive || {};
+      const standards = comprehensive.standards || {};
+      const graphAudit = graph?.meta?.alignmentAudit || {};
+      const boundedString = (value, max) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+      return {
+          resourceId: boundedString(resource?.id, 160),
+          title: boundedString(resource?.title || 'Curriculum alignment audit', 200),
+          status: boundedString(standards.status || comprehensive.overall?.readinessLevel, 80),
+          standardsCount: Math.max(0, Math.min(500, Array.isArray(standards.perStandard) ? standards.perStandard.length : 0)),
+          provider: boundedString(graphAudit.provider, 120),
+          datasetVersion: boundedString(graphAudit.datasetVersion, 120),
+      };
+  };
+  const _alloLearningWebWorkspaceKey = 'alloflow_learning_web_active_workspace_v1';
+  const _alloLearningWebScopeId = () => {
+      const raw = String(canvasRecoveryCurrentIdRef?.current || '').trim().slice(0, 200);
+      return 'workspace:' + (raw || 'session');
+  };
+  const _alloAlignmentRegistryRecordFromResource = (resource, scopeId) => {
+      if (!resource || resource.type !== 'alignment-report') return null;
+      const comprehensive = resource?.data?.comprehensive;
+      const graph = comprehensive?.alignmentMapGraph;
+      if (!_alloIsAlignmentGraph(graph)) return null;
+      const confirmations = (graph.edges || []).flatMap(edge => Array.isArray(edge?.attributionHistory) ? edge.attributionHistory : []);
+      const confirmedAt = confirmations.map(item => Date.parse(item?.confirmedAt || '')).filter(Number.isFinite).sort((a, b) => b - a)[0];
+      const resourceTime = Date.parse(resource?.updatedAt || resource?.timestamp || graph?.meta?.alignmentAudit?.generatedAt || '') || Date.now();
+      return {
+          id: 'alignment-map:' + String(resource.id || '').slice(0, 200),
+          graph,
+          scopeId,
+          kind: 'alignment-map',
+          title: String(resource.title || 'Alignment Map').slice(0, 200),
+          resourceId: String(resource.id || '').slice(0, 200),
+          resourceType: resource.type,
+          resourceTitle: resource.title,
+          updatedAt: new Date(confirmedAt || resourceTime).toISOString(),
+          provenance: graph?.meta?.alignmentAudit || {},
+      };
+  };
+  const _alloAlignmentExportFromRegistryEntry = (entry, linkedResourceId) => {
+      if (!_alloIsAlignmentGraph(entry?.graph)) return null;
+      const provenance = entry?.provenance || {};
+      return {
+          schema: _alloAlignmentExportSchema,
+          graph: entry.graph,
+          originalGraph: null,
+          audit: {
+              registryGraphId: String(entry.id || '').slice(0, 240),
+              linkedResourceId: String(linkedResourceId || '').slice(0, 240),
+              title: String(entry.title || 'Alignment Map').slice(0, 200),
+              provider: String(provenance.provider || '').slice(0, 120),
+              datasetVersion: String(provenance.datasetVersion || '').slice(0, 120),
+          },
+      };
+  };
+  const _alloAlignmentGraphExportForContext = (resource, selectedUnitId, projectHistory) => {
+      const items = Array.isArray(projectHistory) ? projectHistory : [];
+      const unitId = String(selectedUnitId || '');
+      const candidateIds = unitId
+          ? items.filter(item => String(item?.unitId || '') === unitId).map(item => String(item?.id || '')).filter(Boolean)
+          : [String(resource?.id || '')].filter(Boolean);
+      // A unit launch is an explicit context boundary. Never leak the unrelated
+      // currently viewed resource's graph into another selected unit.
+      if (!candidateIds.length) return null;
+      const candidateSet = new Set(candidateIds);
+      const scopeId = _alloLearningWebScopeId();
+      try {
+          const registryApi = window.AlloModules && window.AlloModules.LearningWebRegistry;
+          const registry = registryApi && typeof registryApi.getDefaultRegistry === 'function'
+              ? registryApi.getDefaultRegistry()
+              : null;
+          const entry = registry && typeof registry.getLatestForResources === 'function'
+              ? registry.getLatestForResources(candidateIds, 'alignment-map', scopeId)
+              : (registry && candidateIds.length === 1 && typeof registry.getLatestForResource === 'function'
+                  ? registry.getLatestForResource(candidateIds[0], 'alignment-map', scopeId)
+                  : null);
+          const fromRegistry = _alloAlignmentExportFromRegistryEntry(entry, candidateIds[0]);
+          if (fromRegistry) return fromRegistry;
+      } catch (_) {}
+      // Module loading and project hydration can race. Embedded audit resources
+      // remain the project-file source of truth and provide a deterministic fallback.
+      const embedded = items.filter(item => {
+          if (!item || item.type !== 'alignment-report' || !_alloIsAlignmentGraph(item?.data?.comprehensive?.alignmentMapGraph)) return false;
+          if (candidateSet.has(String(item.id || ''))) return true;
+          const scope = item.data.comprehensive.alignmentMapGraph?.meta?.alignmentAudit?.auditScope;
+          const refs = Array.isArray(scope?.includedArtifacts) ? scope.includedArtifacts : [];
+          const ids = refs.map(ref => String(ref?.id || ref?.resourceId || ref?.artifactId || '')).filter(Boolean);
+          return ids.some(id => candidateSet.has(id));
+      }).sort((a, b) => (Date.parse(b?.updatedAt || b?.timestamp || '') || 0) - (Date.parse(a?.updatedAt || a?.timestamp || '') || 0));
+      const direct = (!unitId && resource?.type === 'alignment-report' && _alloIsAlignmentGraph(resource?.data?.comprehensive?.alignmentMapGraph))
+          ? resource
+          : embedded[0];
+      if (!direct) return null;
+      const graph = direct.data.comprehensive.alignmentMapGraph;
+      const originalGraph = _alloIsAlignmentGraph(direct.data.comprehensive.alignmentMapGraphOriginal)
+          ? direct.data.comprehensive.alignmentMapGraphOriginal
+          : null;
+      return { schema: _alloAlignmentExportSchema, graph, originalGraph, audit: _alloAlignmentAuditSummary(direct, graph) };
+  };
+  const _alloNormalizeAlignmentGraphExportForHost = (payload) => {
+      const engine = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+      if (!engine || typeof engine.normalizeAlignmentGraphExport !== 'function') return null;
+      const normalized = engine.normalizeAlignmentGraphExport(payload, { maxNodes: 240, maxEdges: 480 });
+      return normalized && normalized.ok && _alloIsAlignmentGraph(normalized.graph) ? normalized : null;
+  };
+  const _alloPersistCurrentAlignmentGraph = (graph, originalGraph) => {
+      const resourceId = String(generatedContent?.id || '');
+      if (!resourceId || generatedContent?.type !== 'alignment-report' || !generatedContent?.data?.comprehensive) return null;
+      const savedOriginal = generatedContent.data.comprehensive.alignmentMapGraphOriginal;
+      const originalCandidate = _alloIsAlignmentGraph(originalGraph)
+          ? originalGraph
+          : (_alloIsAlignmentGraph(savedOriginal) ? savedOriginal : null);
+      const normalized = _alloNormalizeAlignmentGraphExportForHost({
+          schema: _alloAlignmentExportSchema,
+          graph,
+          originalGraph: originalCandidate,
+          audit: _alloAlignmentAuditSummary(generatedContent, graph),
+      });
+      if (!normalized) return null;
+      const updateResource = (resource) => {
+          if (!resource || String(resource.id || '') !== resourceId || resource.type !== 'alignment-report') return resource;
+          const data = resource.data;
+          if (!data || typeof data !== 'object' || Array.isArray(data) || !data.comprehensive) return resource;
+          const nextComprehensive = { ...data.comprehensive, alignmentMapGraph: normalized.graph };
+          if (normalized.originalGraph) nextComprehensive.alignmentMapGraphOriginal = normalized.originalGraph;
+          return { ...resource, data: { ...data, comprehensive: nextComprehensive } };
+      };
+      setGeneratedContent(prev => updateResource(prev));
+      setHistory(prev => prev.map(item =>
+          String(item?.id || '') === resourceId ? updateResource(item) : item
+      ));
+      // The resource remains the project-file source of truth. The registry is
+      // the bounded, on-device cross-view index used by Learning Web explorers.
+      try {
+          const registryApi = window.AlloModules && window.AlloModules.LearningWebRegistry;
+          const registry = registryApi && typeof registryApi.getDefaultRegistry === 'function'
+              ? registryApi.getDefaultRegistry()
+              : null;
+          if (registry && typeof registry.saveGraph === 'function') {
+              const registrySaved = registry.saveGraph(normalized.graph, {
+                  id: 'alignment-map:' + resourceId,
+                  scopeId: _alloLearningWebScopeId(),
+                  kind: 'alignment-map',
+                  title: String(generatedContent?.title || 'Alignment Map').slice(0, 200),
+                  resourceId,
+                  resourceType: generatedContent.type,
+                  resourceTitle: generatedContent.title,
+                  provenance: normalized.graph?.meta?.alignmentAudit || {},
+              });
+              if (registrySaved && registrySaved.storagePersisted === false) {
+                  addToast('The audit was saved, but the Learning Web index is session-only because device storage is unavailable.', 'warning');
+              }
+          }
+      } catch (_) {}
+      return normalized;
+  };
+  const handleConfirmAlignmentAttribution = (payload) => {
+      const graph = payload && payload.graph;
+      const edgeId = String(payload?.edgeId || '').trim();
+      const engine = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+      if (!edgeId || !_alloIsAlignmentGraph(graph) || !engine || typeof engine.confirmExplicitAttributions !== 'function') {
+          addToast('That graph relationship could not be confirmed. Reload the audit and try again.', 'error');
+          return false;
+      }
+      const targetEdge = graph.edges.find(edge => String(edge?.id || '') === edgeId);
+      if (targetEdge?.attributionSource === 'teacher') {
+          addToast('That source was already confirmed or is not an explicit evidence relationship.', 'info');
+          return false;
+      }
+      const existingOriginal = generatedContent?.data?.comprehensive?.alignmentMapGraphOriginal;
+      const originalGraph = _alloIsAlignmentGraph(existingOriginal) ? existingOriginal : graph;
+      const derived = engine.confirmExplicitAttributions(graph, [{
+          edgeId,
+          confirmedAt: new Date().toISOString(),
+          confirmedBy: 'teacher',
+      }]);
+      const changedIds = derived?.meta?.alignmentAudit?.attributionConfirmations?.edgeIds || [];
+      if (!changedIds.includes(edgeId)) {
+          addToast('That source was already confirmed or is not an explicit evidence relationship.', 'info');
+          return false;
+      }
+      if (!_alloPersistCurrentAlignmentGraph(derived, originalGraph)) {
+          addToast('The confirmation could not be saved to this audit resource.', 'error');
+          return false;
+      }
+      addToast('Source confirmed and saved with this audit.', 'success');
+      return true;
+  };
+  const handleExportAlignmentGraph = (payload) => {
+      const graph = payload && payload.graph;
+      const existingOriginal = generatedContent?.data?.comprehensive?.alignmentMapGraphOriginal;
+      const normalized = _alloNormalizeAlignmentGraphExportForHost({
+          schema: _alloAlignmentExportSchema,
+          graph,
+          originalGraph: _alloIsAlignmentGraph(existingOriginal) ? existingOriginal : null,
+          audit: _alloAlignmentAuditSummary(generatedContent, graph),
+      });
+      if (!normalized) {
+          addToast('This alignment graph is not a valid AlloFlow graph export.', 'error');
+          return false;
+      }
+      // Export is also a deliberate save affordance for an unconfirmed base
+      // graph. The graph is stored on the audit resource before download.
+      const persisted = _alloPersistCurrentAlignmentGraph(normalized.graph, normalized.originalGraph);
+      if (!persisted) {
+          addToast('The graph is valid, but it could not be saved to the current audit resource.', 'error');
+          return false;
+      }
+      const exportPayload = {
+          schema: _alloAlignmentExportSchema,
+          exportedAt: new Date().toISOString(),
+          graph: persisted.graph,
+          originalGraph: persisted.originalGraph,
+          audit: _alloAlignmentAuditSummary(generatedContent, persisted.graph),
+      };
+      const safeTitle = String(generatedContent?.title || 'alignment')
+          .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'alignment';
+      safeDownloadBlob(new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' }), safeTitle + '-learning-web.json');
+      addToast('Alignment graph saved and exported.', 'success');
+      return true;
+  };
+  const handleImportAlignmentGraph = (payload) => {
+      const engine = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+      if (!engine || typeof engine.normalizeAlignmentGraphExport !== 'function') {
+          throw new Error('The Learning Web graph tools are still loading.');
+      }
+      const normalized = engine.normalizeAlignmentGraphExport(payload, { maxNodes: 240, maxEdges: 480 });
+      if (!normalized || !normalized.ok || !_alloIsAlignmentGraph(normalized.graph)) {
+          throw new Error('Invalid AlloFlow alignment graph export.');
+      }
+      const rawAudit = normalized.audit && typeof normalized.audit === 'object' ? normalized.audit : {};
+      const boundedString = (value, max) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+      setImportedAlignmentGraphExport({
+          schema: _alloAlignmentExportSchema,
+          graph: normalized.graph,
+          originalGraph: normalized.originalGraph,
+          audit: {
+              resourceId: boundedString(rawAudit.resourceId, 160),
+              title: boundedString(rawAudit.title, 200),
+              status: boundedString(rawAudit.status, 80),
+              standardsCount: Math.max(0, Math.min(500, Number(rawAudit.standardsCount) || 0)),
+              provider: boundedString(rawAudit.provider, 120),
+              datasetVersion: boundedString(rawAudit.datasetVersion, 120),
+          },
+          importedAt: new Date().toISOString(),
+          sourceFileName: boundedString(payload?.sourceFileName, 160),
+      });
+      return true;
+  };
+  const clearImportedAlignmentGraph = () => {
+      setImportedAlignmentGraphExport(null);
+  };
+  // END LEARNING_WEB_HOST_BRIDGE
   // Adventure free-response democracy reuses Live Polling's P2P response,
   // moderation, and peer-showcase path. The scene context seeds the teacher
   // composer, but no student proposal or vote is written to the session doc.
@@ -21228,10 +22130,35 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [canvasRecoveryStoreAuthoritative, setCanvasRecoveryStoreAuthoritative] = useState(false);
   const [canvasRecoverySaveStatus, setCanvasRecoverySaveStatus] = useState(() => isCanvas ? 'checking' : 'inactive');
   const [canvasRecoveryError, setCanvasRecoveryError] = useState('');
+  const [canvasRecoveryErrorCode, setCanvasRecoveryErrorCode] = useState('');
   const [canvasRecoveryEraseId, setCanvasRecoveryEraseId] = useState(null);
   const [canvasRecoveryRemoveMediaId, setCanvasRecoveryRemoveMediaId] = useState(null);
   const [canvasRecoveryBusyId, setCanvasRecoveryBusyId] = useState(null);
   const [canvasRecoveryRevision, setCanvasRecoveryRevision] = useState(0);
+  const [canvasRecoveryVaultState, setCanvasRecoveryVaultState] = useState(() => ({
+      available: isCanvas,
+      enabled: false,
+      locked: false,
+      recoveryEnabled: false,
+      snapshotCount: 0
+  }));
+  const [canvasRecoveryVaultForm, setCanvasRecoveryVaultForm] = useState(() => ({
+      mode: 'idle',
+      password: '',
+      confirmPassword: '',
+      currentPassword: '',
+      useRecoveryKey: true,
+      recoveryCode: '',
+      recoveryConfirmation: '',
+      recoveryInput: '',
+      newPassword: '',
+      confirmNewPassword: '',
+      eraseConfirmation: '',
+      backupUseRecoveryKey: false
+  }));
+  const [educatorAccessState, setEducatorAccessState] = useState(() => ({
+      configured: false, mode: 'idle', currentCode: '', newCode: '', confirmCode: '', busy: false, error: ''
+  }));
   // On-device speech models (Whisper for recognition, Kokoro for the voice).
   // Both persist in the durable model_cache namespace; this surfaces whether
   // they are actually present and lets the teacher fetch them deliberately
@@ -21298,9 +22225,46 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       error: ''
   }));
   const canvasRecoveryStoreRef = useRef(canvasRecoveryStore);
+  const canvasRecoveryVaultControllerRef = useRef(null);
+  const canvasRecoveryVaultPendingActionRef = useRef(null);
+  const canvasRecoveryVaultImportRef = useRef(null);
   const storageManagerRefreshTokenRef = useRef(0);
-  const canvasRecoveryCurrentIdRef = useRef(ALLO_WORKSPACE_RECOVERY.newId());
+  const _alloStoredLearningWebWorkspaceCandidate = !isCanvas
+      ? String(safeGetItem(_alloLearningWebWorkspaceKey, '') || '').trim().slice(0, 120)
+      : '';
+  const _alloStoredLearningWebWorkspaceId = /^[A-Za-z0-9._:-]{1,120}$/.test(_alloStoredLearningWebWorkspaceCandidate)
+      ? _alloStoredLearningWebWorkspaceCandidate
+      : '';
+  const canvasRecoveryCurrentIdRef = useRef(_alloStoredLearningWebWorkspaceId || ALLO_WORKSPACE_RECOVERY.newId());
   const canvasRecoveryBootCheckedRef = useRef(false);
+  useEffect(() => {
+      if (!isCanvas) safeSetItem(_alloLearningWebWorkspaceKey, canvasRecoveryCurrentIdRef.current);
+  }, [isCanvas]);
+  useEffect(() => {
+      if (!isHistoryLoaded || (isCanvas && !canvasRecoveryDecisionMade)) return undefined;
+      let cancelled = false;
+      const reconcileLearningWeb = () => {
+          try {
+              const api = window.AlloModules && window.AlloModules.LearningWebRegistry;
+              const registry = api && typeof api.getDefaultRegistry === 'function' ? api.getDefaultRegistry() : null;
+              if (!registry || typeof registry.reconcileGraphs !== 'function') return false;
+              const scopeId = _alloLearningWebScopeId();
+              const records = (Array.isArray(history) ? history : [])
+                  .map(item => _alloAlignmentRegistryRecordFromResource(item, scopeId))
+                  .filter(Boolean);
+              const result = registry.reconcileGraphs(records, { scopeId, kind: 'alignment-map' });
+              if (!cancelled && result) setLearningWebRegistryRevision(value => value + 1);
+              return true;
+          } catch (_) { return false; }
+      };
+      const onModuleChange = () => { Promise.resolve().then(reconcileLearningWeb); };
+      window.addEventListener('alloflow:module-registry-changed', onModuleChange);
+      reconcileLearningWeb();
+      return () => {
+          cancelled = true;
+          window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
+      };
+  }, [history, isHistoryLoaded, isCanvas, canvasRecoveryDecisionMade]);
   const localDataHydrationGenerationRef = useRef(0);
   const invalidateLocalDataHydration = () => {
       localDataHydrationGenerationRef.current += 1;
@@ -21420,8 +22384,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const onKeyDown = (event) => {
           if (event.key === 'Escape') {
               event.preventDefault();
-              if (canvasRecoveryDialogMode === 'manage' && !canvasRecoveryDecisionMade) setCanvasRecoveryDialogMode('choice');
-              else if (canvasRecoveryDecisionMade) setCanvasRecoveryDialogMode(null);
+              if (canvasRecoveryVaultForm.mode === 'confirm-recovery-code') return;
+              if (canvasRecoveryDialogMode === 'manage' && !canvasRecoveryDecisionMade) closeCanvasRecoveryDialog('choice');
+              else if (canvasRecoveryDecisionMade) closeCanvasRecoveryDialog(null);
               return;
           }
           if (event.key !== 'Tab') return;
@@ -21437,7 +22402,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           clearTimeout(timer);
           dialog.removeEventListener('keydown', onKeyDown);
       };
-  }, [canvasRecoveryDialogMode, canvasRecoveryDecisionMade]);
+  }, [canvasRecoveryDialogMode, canvasRecoveryDecisionMade, canvasRecoveryVaultForm.mode]);
   // Video Studio 'video-ref' card player: clicking a video-ref history item
   // opens this overlay (bytes are never in packs — playback comes from the
   // teacher's hosted link or a re-attached local file).
@@ -21963,6 +22928,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const hydrateWordSoundsFromSync = (target) => {
       if (!target || target.type !== 'word-sounds') return;
       try {
+          // Shared resources deliberately carry no raw learner identity. Never
+          // let a previously selected local learner inherit an anonymous probe.
+          if (target.isProbeMode) setProbeTargetStudent(null);
           const words = (Array.isArray(target.wsPreloadedWords) && target.wsPreloadedWords.length > 0)
               ? target.wsPreloadedWords
               : (Array.isArray(target.data) ? target.data : []);
@@ -22766,6 +23734,31 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                 const rawStore = await deviceStorage.get(ALLO_WORKSPACE_RECOVERY_NAMESPACE, ALLO_WORKSPACE_RECOVERY_KEY);
                 if (cancelled) return;
                 if (isCanvasStudentEntry()) { protectCanvasStudentEntry(); return; }
+                const vaultModule = (await _alloGetRecoveryVaultStack()).vault;
+                if (vaultModule?.isVaultStore?.(rawStore)) {
+                    const controller = await getCanvasRecoveryVaultController();
+                    const status = await controller.getStatus();
+                    if (cancelled) return;
+                    canvasRecoverySaveTokenRef.current += 1;
+                    setCanvasRecoveryVaultState({ available: true, ...status });
+                    const lockedStore = ALLO_WORKSPACE_RECOVERY.normalizeStore({
+                        version: ALLO_WORKSPACE_RECOVERY.VERSION,
+                        retentionPolicy: status.retentionPolicy,
+                        effectiveRetentionPolicy: status.effectiveRetentionPolicy,
+                        legacyMigrationComplete: true,
+                        snapshots: []
+                    });
+                    canvasRecoveryStoreRef.current = lockedStore;
+                    setCanvasRecoveryStore(lockedStore);
+                    setCanvasRecoveryStoreAuthoritative(true);
+                    setCanvasRecoveryDecisionMade(false);
+                    setCanvasRecoverySaveStatus('locked');
+                    setCanvasRecoveryDialogMode('vault-locked');
+                    clearCanvasRecoveryVaultSecrets('unlock');
+                    setCanvasRecoveryError('');
+                    return;
+                }
+                setCanvasRecoveryVaultState(current => ({ ...current, available: true, enabled: false, locked: false, recoveryEnabled: false, snapshotCount: 0 }));
                 if (!ALLO_WORKSPACE_RECOVERY.isSupportedPayload(rawStore)) {
                     const unsupported = new Error('Saved work was created by a newer AlloFlow version. Export or update AlloFlow before changing it.');
                     unsupported.code = 'allo/recovery-version-unsupported';
@@ -22864,6 +23857,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
             } catch (error) {
                 if (cancelled || isCanvasStudentEntry()) return;
                 warnLog('Canvas workspace recovery check failed:', error);
+                setCanvasRecoveryErrorCode(String(error?.code || ''));
                 setCanvasRecoveryError(String(error?.message || 'Saved work could not be checked on this device.'));
                 setCanvasRecoverySaveStatus('error');
                 setCanvasRecoveryStoreAuthoritative(false);
@@ -23080,7 +24074,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [history, isHistoryLoaded, isOnline, isTeacherMode, activeSessionCode, lzLoaded, canvasRecoveryRevision]);
   useEffect(() => {
       const owner = offlineProfileWriteRef.current;
-      if (!lzLoaded) {
+      if (!lzLoaded || isCanvas) {
           owner.sequence += 1;
           return;
       }
@@ -23099,10 +24093,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           clearTimeout(timeoutId);
           if (owner.sequence === sequence) owner.sequence += 1;
       };
-  }, [profiles, lzLoaded]);
+  }, [profiles, lzLoaded, isCanvas]);
   useEffect(() => {
       const owner = offlineUnitWriteRef.current;
-      if (!lzLoaded) {
+      if (!lzLoaded || isCanvas) {
           owner.sequence += 1;
           return;
       }
@@ -23121,7 +24115,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           clearTimeout(timeoutId);
           if (owner.sequence === sequence) owner.sequence += 1;
       };
-  }, [units, lzLoaded]);
+  }, [units, lzLoaded, isCanvas]);
   useEffect(() => {
       return () => {
           if (sessionUnsubscribeRef.current) {
@@ -27813,6 +28807,341 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     }
     return [];
   }, [activeView, inputText, generatedContent, filteredGlossaryData]);
+  // @section READ_THIS_PAGE_VOICE_CONTROLLER
+  // Keep Read This Page behind one controller so pointer, keyboard, palette,
+  // and hands-free commands all operate the same audio and reading position.
+  function _settleReadThisPagePauseWaiters() {
+    const waiters = rtpPauseWaitersRef.current.splice(0);
+    waiters.forEach((resolve) => { try { resolve(); } catch (_) {} });
+  }
+
+  function _finishReadThisPageAudio() {
+    const finish = rtpAudioFinishRef.current;
+    if (typeof finish === 'function') {
+      try { finish(); } catch (_) {}
+      return;
+    }
+    const audio = rtpCurrentAudioRef.current;
+    if (audio) {
+      try { audio.pause(); audio.currentTime = 0; } catch (_) {}
+      rtpCurrentAudioRef.current = null;
+    }
+  }
+  function _releaseReadThisPageVoiceSpeech() {
+    const lease = rtpVoiceSpeechLeaseRef.current;
+    rtpVoiceSpeechLeaseRef.current = null;
+    if (lease && typeof lease.end === 'function') {
+      try { lease.end(); } catch (_) {}
+    }
+  }
+  function _beginReadThisPageVoiceSpeech() {
+    const current = rtpVoiceSpeechLeaseRef.current;
+    if (current && (typeof current.isActive !== 'function' || current.isActive())) return current;
+    rtpVoiceSpeechLeaseRef.current = null;
+    try {
+      const loop = window.__alloVoiceLoop;
+      if (!loop || typeof loop.beginExternalSpeech !== 'function' || (typeof loop.isActive === 'function' && !loop.isActive())) return null;
+      const lease = loop.beginExternalSpeech(() => pauseReadThisPage({ fromVoiceLoop: true }), {
+        source: 'read-this-page',
+        message: 'Reading page content aloud.'
+      });
+      if (lease) rtpVoiceSpeechLeaseRef.current = lease;
+      return lease || null;
+    } catch (_) {
+      return null;
+    }
+  }
+  function stopReadThisPage(options = {}) {
+    rtpStartRequestRef.current += 1;
+    rtpStopRef.current = true;
+    rtpPausedRef.current = false;
+    rtpReadingRef.current = false;
+    rtpReadRunRef.current += 1;
+    _finishReadThisPageAudio();
+    if (options && options.fromVoiceLoop) rtpVoiceSpeechLeaseRef.current = null;
+    else _releaseReadThisPageVoiceSpeech();
+    _settleReadThisPagePauseWaiters();
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      try { window.speechSynthesis.cancel(); } catch (_) {}
+    }
+    setRtpPlaybackState('idle');
+    if (options && options.resetIndex) {
+      rtpCurrentIndexRef.current = -1;
+      setRtpCurrentIndex(-1);
+    }
+    return true;
+  }
+
+  function pauseReadThisPage(options = {}) {
+    if (!rtpReadingRef.current && !rtpCurrentAudioRef.current) return false;
+    rtpPausedRef.current = true;
+    const audio = rtpCurrentAudioRef.current;
+    if (audio) {
+      try { audio.pause(); } catch (_) {}
+    } else if (typeof window !== 'undefined' && window.speechSynthesis) {
+      try { window.speechSynthesis.pause(); } catch (_) {}
+    }
+    setRtpPlaybackState('paused');
+    return true;
+    if (options && options.fromVoiceLoop) rtpVoiceSpeechLeaseRef.current = null;
+    else _releaseReadThisPageVoiceSpeech();
+  }
+
+  function resumeReadThisPage() {
+    if (!rtpPausedRef.current) return false;
+    rtpPausedRef.current = false;
+    _settleReadThisPagePauseWaiters();
+    const audio = rtpCurrentAudioRef.current;
+    _beginReadThisPageVoiceSpeech();
+    if (audio) {
+      try {
+        const playPromise = audio.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.catch(() => stopReadThisPage());
+        }
+      } catch (_) {
+        stopReadThisPage();
+        return false;
+      }
+    } else if (typeof window !== 'undefined' && window.speechSynthesis) {
+      try { window.speechSynthesis.resume(); } catch (_) {}
+    }
+    setRtpPlaybackState('reading');
+    return true;
+  }
+
+  function _waitForReadThisPageResume() {
+    if (!rtpPausedRef.current) return Promise.resolve();
+    return new Promise((resolve) => rtpPauseWaitersRef.current.push(resolve));
+  }
+  function _playReadThisPageText(text, runId) {
+    return Promise.resolve()
+      .then(() => callTTS(text, selectedVoice))
+      .catch((error) => {
+        try { warnLog('[ReadThisPage] TTS generation failed:', error); } catch (_) {}
+        return null;
+      })
+      .then(async (url) => {
+        if (runId !== rtpReadRunRef.current || rtpStopRef.current) {
+          if (url) { try { URL.revokeObjectURL(url); } catch (_) {} }
+          return;
+        }
+        await _waitForReadThisPageResume();
+        if (runId !== rtpReadRunRef.current || rtpStopRef.current) {
+          if (url) { try { URL.revokeObjectURL(url); } catch (_) {} }
+          return;
+        }
+        if (!rtpVoiceSpeechLeaseRef.current) _beginReadThisPageVoiceSpeech();
+        if (url) {
+          return new Promise((resolve) => {
+            const audio = new Audio(url);
+            let settled = false;
+            const finish = () => {
+              if (settled) return;
+              settled = true;
+              try { audio.removeEventListener('ended', finish); audio.removeEventListener('error', finish); } catch (_) {}
+              if (rtpCurrentAudioRef.current === audio) rtpCurrentAudioRef.current = null;
+              if (rtpAudioFinishRef.current === interrupt) rtpAudioFinishRef.current = null;
+              try { URL.revokeObjectURL(url); } catch (_) {}
+              resolve();
+            };
+            const interrupt = () => {
+              try { audio.pause(); audio.currentTime = 0; } catch (_) {}
+              finish();
+            };
+            rtpCurrentAudioRef.current = audio;
+            rtpAudioFinishRef.current = interrupt;
+            try {
+              audio.playbackRate = Number(voiceSpeed) || 1;
+              audio.volume = Math.max(0, Math.min(1, Number(voiceVolume ?? 0.8)));
+            } catch (_) {}
+            audio.addEventListener('ended', finish);
+            audio.addEventListener('error', finish);
+            try {
+              const playPromise = audio.play();
+              if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(finish);
+            } catch (_) { finish(); }
+          });
+        }
+        if (typeof window === 'undefined' || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') return;
+        return new Promise((resolve) => {
+          const utterance = new SpeechSynthesisUtterance(text);
+          let settled = false;
+          const finish = () => {
+            if (settled) return;
+            settled = true;
+            if (rtpAudioFinishRef.current === interrupt) rtpAudioFinishRef.current = null;
+            resolve();
+          };
+          const interrupt = () => {
+            try { window.speechSynthesis.cancel(); } catch (_) {}
+            finish();
+          };
+          utterance.rate = Number(voiceSpeed) || 1;
+          utterance.volume = Math.max(0, Math.min(1, Number(voiceVolume ?? 0.8)));
+          utterance.lang = (typeof document !== 'undefined' && document.documentElement.lang) || 'en';
+          utterance.onend = finish;
+          utterance.onerror = finish;
+          rtpAudioFinishRef.current = interrupt;
+          try { window.speechSynthesis.speak(utterance); } catch (_) { finish(); }
+        });
+      });
+  }
+
+  async function _runReadThisPage(startIndex = 0, continueThrough = true) {
+    const items = getReadableContent();
+    if (!Array.isArray(items) || !items.length) {
+      try { addToast(t('read_this_page.no_content') || 'There is no readable content on this screen yet.', 'info'); } catch (_) {}
+      return false;
+    }
+
+    stopReadThisPage();
+    const runId = rtpReadRunRef.current;
+    const firstIndex = Math.max(0, Math.min(items.length - 1, Number(startIndex) || 0));
+    rtpStopRef.current = false;
+    rtpReadingRef.current = true;
+    rtpPausedRef.current = false;
+    setRtpPlaybackState('reading');
+
+    for (let index = firstIndex; index < items.length; index += 1) {
+      await _waitForReadThisPageResume();
+      if (runId !== rtpReadRunRef.current || rtpStopRef.current) break;
+      rtpCurrentIndexRef.current = index;
+      setRtpCurrentIndex(index);
+      setTimeout(() => {
+        try {
+          const item = document.querySelector('[data-rtp-idx="' + index + '"]');
+          if (item) item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (_) {}
+      }, 0);
+      await _playReadThisPageText(items[index].text, runId);
+      if (!continueThrough || runId !== rtpReadRunRef.current || rtpStopRef.current) break;
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    }
+
+    if (runId === rtpReadRunRef.current) {
+      rtpReadingRef.current = false;
+      rtpPausedRef.current = false;
+      setRtpPlaybackState('idle');
+      _settleReadThisPagePauseWaiters();
+      _releaseReadThisPageVoiceSpeech();
+    }
+    return runId === rtpReadRunRef.current && !rtpStopRef.current;
+  }
+  function openReadThisPagePanel() {
+    if (!showReadThisPage && typeof document !== 'undefined') {
+      const active = document.activeElement;
+      if (active && active !== document.body) rtpPreviousFocusRef.current = active;
+    }
+    setShowReadThisPage(true);
+    setTimeout(() => {
+      const panel = rtpPanelRef.current;
+      if (panel && typeof panel.focus === 'function') {
+        try { panel.focus({ preventScroll: true }); } catch (_) { try { panel.focus(); } catch (_) {} }
+      }
+    }, 0);
+    return true;
+  }
+
+  function readAllReadThisPage() {
+    if (!showReadThisPage) openReadThisPagePanel();
+    Promise.resolve(_runReadThisPage(0, true)).catch((error) => {
+      try { warnLog('[ReadThisPage] Read All failed:', error); } catch (_) {}
+      stopReadThisPage();
+    });
+    return true;
+  }
+
+  function startReadThisPage() {
+    openReadThisPagePanel();
+    const requestId = ++rtpStartRequestRef.current;
+    setTimeout(() => {
+      if (requestId !== rtpStartRequestRef.current) return;
+      const controller = rtpControllerRef.current;
+      if (controller && typeof controller.readAll === 'function') controller.readAll();
+    }, 80);
+    return true;
+  }
+
+  function _readThisPageItemAt(index) {
+    const items = getReadableContent();
+    if (!Array.isArray(items) || !items.length) return null;
+    const target = Math.max(0, Math.min(items.length - 1, Number(index) || 0));
+    if (!showReadThisPage) openReadThisPagePanel();
+    Promise.resolve(_runReadThisPage(target, false)).catch((error) => {
+      try { warnLog('[ReadThisPage] Item reading failed:', error); } catch (_) {}
+      stopReadThisPage();
+    });
+    return { index: target + 1, total: items.length, text: String(items[target].text || '') };
+  }
+
+  function nextReadThisPageItem() {
+    const items = getReadableContent();
+    if (!Array.isArray(items) || !items.length) return null;
+    const current = rtpCurrentIndexRef.current;
+    if (current >= items.length - 1) return { index: items.length, total: items.length, text: String(items[items.length - 1].text || ''), atEnd: true };
+    return _readThisPageItemAt(current < 0 ? 0 : current + 1);
+  }
+
+  function previousReadThisPageItem() {
+    const items = getReadableContent();
+    if (!Array.isArray(items) || !items.length) return null;
+    const current = rtpCurrentIndexRef.current;
+    if (current <= 0) return { index: 1, total: items.length, text: String(items[0].text || ''), atStart: true };
+    return _readThisPageItemAt(current - 1);
+  }
+
+  function repeatReadThisPageItem() {
+    return _readThisPageItemAt(rtpCurrentIndexRef.current < 0 ? 0 : rtpCurrentIndexRef.current);
+  }
+
+  function closeReadThisPage() {
+    const previousFocus = rtpPreviousFocusRef.current;
+    rtpPreviousFocusRef.current = null;
+    stopReadThisPage({ resetIndex: true });
+    setFocusNarrationEnabled(false);
+    setShowReadThisPage(false);
+    setTimeout(() => {
+      const fallback = typeof document !== 'undefined' ? document.querySelector('[data-help-key="read_this_page_toggle"]') : null;
+      const target = previousFocus && previousFocus.isConnected ? previousFocus : fallback;
+      if (target && typeof target.focus === 'function') {
+        try { target.focus({ preventScroll: true }); } catch (_) { try { target.focus(); } catch (_) {} }
+      }
+    }, 0);
+    return true;
+  }
+
+  rtpControllerRef.current = {
+    start: startReadThisPage,
+    readAll: readAllReadThisPage,
+    stop: stopReadThisPage,
+    pause: pauseReadThisPage,
+    resume: resumeReadThisPage,
+    next: nextReadThisPageItem,
+    previous: previousReadThisPageItem,
+    repeat: repeatReadThisPageItem,
+    close: closeReadThisPage,
+  };
+  // @endsection READ_THIS_PAGE_VOICE_CONTROLLER
+
+  useEffect(() => {
+    if (showReadThisPage) return undefined;
+    stopReadThisPage({ resetIndex: true });
+    return undefined;
+  }, [showReadThisPage]);
+
+  useEffect(() => () => {
+    rtpStartRequestRef.current += 1;
+    rtpStopRef.current = true;
+    rtpReadRunRef.current += 1;
+    _finishReadThisPageAudio();
+    _settleReadThisPagePauseWaiters();
+    _releaseReadThisPageVoiceSpeech();
+  }, []);
+
+
+
+
 
   const focusNarrationAudioRef = useRef(null);
   useEffect(() => {
@@ -28375,6 +29704,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isExecutingBlueprint, setIsExecutingBlueprint] = useState(false);
   const [blueprintExecutionResult, setBlueprintExecutionResult] = useState(null);
   const [fullPackRun, setFullPackRun] = useState(null);
+  const [showCompletedFullPackRows, setShowCompletedFullPackRows] = useState(true);
+  useEffect(() => { setShowCompletedFullPackRows(true); }, [fullPackRun?.runId]);
   // A row frozen at 'running' is a spinner that never resolves on a row that
   // can never be rebuilt. EVERY path that installs a run record from storage
   // must demote in-flight rows, not just the boot hydrate — extracted so the
@@ -28400,19 +29731,77 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const _blueprintStorageWarningRef = useRef(false);
   const _compactBlueprintRunForStorage = (run, diagnosticsOnly = false) => {
     if (!run || typeof run !== 'object') return run;
-    const rows = Object.fromEntries(Object.entries(run.rows || {}).map(([key, row]) => {
-      if (!row || typeof row !== 'object') return [key, row];
-      const allowed = diagnosticsOnly
-        ? ['uiId', 'stepId', 'tool', 'status', 'failReason', 'resourceId', 'startedAt', 'finishedAt', 'elapsedMs']
-        : Object.keys(row).filter(field => !['error', 'stack', 'rawResponse', 'generatedContent'].includes(field));
+    const statuses = new Set(['planned', 'queued', 'running', 'retrying', 'landed', 'completed', 'partial', 'failed', 'interrupted', 'stopped', 'skipped', 'ready']);
+    const failureCodes = new Set(['safety', 'authentication', 'quota', 'rate-limit', 'timeout', 'network', 'capacity', 'empty-output', 'configuration', 'malformed-output', 'stopped', 'generation-failure']);
+    const sensitiveFields = new Set(['error', 'errormessage', 'stack', 'rawresponse', 'responsebody', 'requestbody', 'generatedcontent', 'prompt', 'prompttext', 'sourcetext', 'apikey', 'accesstoken', 'authorization', 'credential', 'secret', 'password']);
+    const isSensitiveField = field => sensitiveFields.has(String(field || '').replace(/[_-]/g, '').toLowerCase());
+    const safeStatus = status => statuses.has(status) ? status : 'unknown';
+    const assignFailure = (target, field, value, existingCode) => {
+      if (value) {
+        const safeReason = _alloDiagnosticReason(value);
+        target[field] = safeReason.summary;
+        target.failureCode = safeReason.code;
+      } else if (failureCodes.has(existingCode)) {
+        target.failureCode = existingCode;
+      }
+    };
+    const rowEntries = Object.entries(run.rows || {});
+    const rows = Object.fromEntries(rowEntries.slice(0, diagnosticsOnly ? 1000 : rowEntries.length).map(([key, row], index) => {
+      const storageKey = diagnosticsOnly ? 'row-' + (index + 1) : key;
+      if (!row || typeof row !== 'object') return [storageKey, { status: 'unknown' }];
+      if (diagnosticsOnly) {
+        const compact = {
+          tool: _alloDiagnosticResourceType(row.tool),
+          index: _alloDiagnosticBoundedInt(row.index, 100000),
+          status: safeStatus(row.status),
+          elapsedMs: _alloDiagnosticBoundedInt(row.elapsedMs, 24 * 60 * 60 * 1000),
+          attempts: _alloDiagnosticBoundedInt(row.attempts, 100),
+          startedAt: _alloDiagnosticTimestamp(row.startedAt),
+          finishedAt: _alloDiagnosticTimestamp(row.finishedAt),
+        };
+        assignFailure(compact, 'failReason', row.failReason, row.failureCode);
+        return [storageKey, compact];
+      }
+      const allowed = Object.keys(row).filter(field => field !== 'failureCode' && !isSensitiveField(field));
       const compact = {};
       allowed.forEach(field => {
         if (row[field] === undefined) return;
-        compact[field] = field === 'failReason' && typeof row[field] === 'string' ? row[field].slice(0, 2000) : row[field];
+        if (field === 'failReason' || field === 'reason') {
+          assignFailure(compact, field, row[field], row.failureCode);
+        } else {
+          compact[field] = row[field];
+        }
       });
-      return [key, compact];
+      if (!compact.failureCode) assignFailure(compact, 'failReason', null, row.failureCode);
+      return [storageKey, compact];
     }));
-    return Object.assign({}, run, { rows });
+    if (diagnosticsOnly) {
+      const compact = {
+        runId: _alloDiagnosticRunId(run.runId, 'blueprint'),
+        status: safeStatus(run.status),
+        startedAt: _alloDiagnosticTimestamp(run.startedAt),
+        finishedAt: _alloDiagnosticTimestamp(run.finishedAt),
+        elapsedMs: _alloDiagnosticBoundedInt(run.elapsedMs, 24 * 60 * 60 * 1000),
+        failureCount: _alloDiagnosticBoundedInt(run.failureCount, 100000),
+        done: run.done === true,
+        stopped: run.stopped === true,
+        restored: run.restored === true,
+        persistenceWarning: run.persistenceWarning ? 'Compact persistence fallback was used.' : null,
+        rows,
+      };
+      if (run.failReason) assignFailure(compact, 'failReason', run.failReason, run.failureCode);
+      else assignFailure(compact, 'reason', run.reason, run.failureCode);
+      return compact;
+    }
+    const compact = {};
+    Object.keys(run).forEach(field => {
+      if (field === 'rows' || field === 'failureCode' || isSensitiveField(field) || run[field] === undefined) return;
+      if (field === 'failReason' || field === 'reason') assignFailure(compact, field, run[field], run.failureCode);
+      else compact[field] = run[field];
+    });
+    if (!compact.failureCode) assignFailure(compact, 'reason', null, run.failureCode);
+    compact.rows = rows;
+    return compact;
   };
   useEffect(() => {
     if (_blueprintHydratedRef.current) return;
@@ -28420,12 +29809,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     try {
       const raw = localStorage.getItem(ALLO_BLUEPRINT_STORE_KEY);
       if (!raw) return;
-      const env = JSON.parse(raw);
-      // The envelope carries its OWN version. NEVER the contract's
-      // SCHEMA_VERSION — validateBlueprint hard-fails on any non-'1.0' value
-      // with no migration path, so borrowing it would make a future bump
-      // unreadable rather than upgradable.
-      if (!env || env.v !== ALLO_BLUEPRINT_STORE_VERSION) return;
+      const env = _migrateBlueprintEnvelope(JSON.parse(raw));
+      // Storage schema migration is independent of the agent-core contract.
+      // Unknown future envelopes fail closed; legacy v0/v1 envelopes migrate.
+      if (!env) return;
       const incompatibleCapability = env.capabilityFingerprint !== ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT;
       if (env.plan) setActiveBlueprint(env.plan);
       if (env.run && env.run.rows) {
@@ -28475,6 +29862,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           run: Object.assign({}, _compactBlueprintRunForStorage(blueprintExecutionResult, true), { persistenceWarning: warning }),
         }));
         warnLog('[Blueprint] saved compact diagnostics after storage quota failure:', primaryError?.message || primaryError);
+        ALLO_GENERATION_METRICS.record('storage-fallback', { mode: 'blueprint' });
+        if (blueprintExecutionResult && !blueprintExecutionResult.persistenceWarning) {
+          setBlueprintExecutionResult(prev => prev ? Object.assign({}, prev, { persistenceWarning: warning }) : prev);
+        }
       } catch (fallbackError) {
         safeRemoveItem(ALLO_BLUEPRINT_STORE_KEY);
         warnLog('[Blueprint] could not save even compact diagnostics:', fallbackError?.message || fallbackError);
@@ -28494,7 +29885,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const out = {};
     Object.keys(resourcesIn || {}).forEach((k) => {
       const r = resourcesIn[k];
-      out[k] = (r && r.status === 'running') ? Object.assign({}, r, { status: 'interrupted' }) : r;
+      out[k] = (r && (r.status === 'running' || r.status === 'retrying')) ? Object.assign({}, r, { status: 'interrupted' }) : r;
     });
     return out;
   };
@@ -28504,7 +29895,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const group = groupsIn[key];
       const missingReadyPlan = group && group.status === 'ready' && !group.planPayload;
       out[key] = group ? Object.assign({}, group, {
-        status: (group.status === 'running' || group.status === 'planning' || missingReadyPlan) ? 'interrupted' : group.status,
+        status: (group.status === 'running' || group.status === 'retrying' || group.status === 'planning' || missingReadyPlan) ? 'interrupted' : group.status,
         reason: missingReadyPlan ? (group.persistenceWarning || 'This saved group plan was incomplete. Refresh the plan before generating.') : group.reason,
         resources: _demoteFullPackResources(group.resources),
       }) : group;
@@ -28513,28 +29904,114 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   };
   const _compactFullPackRunForStorage = (run, diagnosticsOnly = false) => {
     if (!run || typeof run !== 'object') return run;
-    const compactResource = (resource) => {
-      if (!resource || typeof resource !== 'object') return resource;
-      const keep = diagnosticsOnly
-        ? ['key', 'type', 'index', 'uiId', 'directive', 'status', 'reason', 'elapsedMs', 'attempts', 'startedAt', 'finishedAt']
-        : Object.keys(resource).filter(key => !['error', 'stack', 'rawResponse'].includes(key));
+    const statuses = new Set(['planned', 'queued', 'planning', 'ready', 'running', 'retrying', 'landed', 'completed', 'partial', 'failed', 'interrupted', 'stopped', 'skipped']);
+    const failureCodes = new Set(['safety', 'authentication', 'quota', 'rate-limit', 'timeout', 'network', 'capacity', 'empty-output', 'configuration', 'malformed-output', 'stopped', 'generation-failure']);
+    const sensitiveFields = new Set(['error', 'errormessage', 'stack', 'rawresponse', 'responsebody', 'requestbody', 'generatedcontent', 'prompt', 'prompttext', 'sourcetext', 'apikey', 'accesstoken', 'authorization', 'credential', 'secret', 'password']);
+    const isSensitiveField = field => sensitiveFields.has(String(field || '').replace(/[_-]/g, '').toLowerCase());
+    const safeStatus = status => statuses.has(status) ? status : 'unknown';
+    const stripFields = (value, omitted = []) => {
+      if (!value || typeof value !== 'object') return {};
+      const omit = new Set(omitted);
       const out = {};
-      keep.forEach(key => {
-        if (resource[key] === undefined) return;
-        out[key] = key === 'reason' && typeof resource[key] === 'string' ? resource[key].slice(0, 2000) : resource[key];
+      Object.keys(value).forEach(field => {
+        if (field === 'failureCode' || omit.has(field) || isSensitiveField(field) || value[field] === undefined) return;
+        out[field] = value[field];
       });
       return out;
     };
-    const compactResources = resources => Object.fromEntries(Object.entries(resources || {}).map(([key, resource]) => [key, compactResource(resource)]));
-    const compactGroup = group => group ? Object.assign({}, group, {
-      planPayload: diagnosticsOnly ? null : group.planPayload,
-      resources: compactResources(group.resources),
-    }) : group;
-    return Object.assign({}, run, {
-      planPayload: diagnosticsOnly ? null : run.planPayload,
-      resources: compactResources(run.resources),
-      groups: Object.fromEntries(Object.entries(run.groups || {}).map(([key, group]) => [key, compactGroup(group)])),
-    });
+    const compactFailureFields = (reason, existingCode) => {
+      if (!reason) return failureCodes.has(existingCode) ? { failureCode: existingCode } : {};
+      const safeReason = _alloDiagnosticReason(reason);
+      return { reason: safeReason.summary, failureCode: safeReason.code };
+    };
+    const compactPreflight = preflight => {
+      if (!preflight || typeof preflight !== 'object') return diagnosticsOnly ? null : preflight;
+      if (diagnosticsOnly) return _alloSanitizeFullPackPreflight(preflight);
+      const out = stripFields(preflight, ['reason', 'selected', 'skipped']);
+      Object.assign(out, compactFailureFields(preflight.reason, preflight.failureCode));
+      out.selected = Array.isArray(preflight.selected)
+        ? preflight.selected.map(item => item && typeof item === 'object' ? stripFields(item) : null).filter(Boolean)
+        : [];
+      out.skipped = Array.isArray(preflight.skipped)
+        ? preflight.skipped.map(item => {
+            if (!item || typeof item !== 'object') return null;
+            return Object.assign(stripFields(item, ['reason']), compactFailureFields(item.reason, item.failureCode));
+          }).filter(Boolean)
+        : [];
+      return out;
+    };
+    const compactResource = resource => {
+      if (!resource || typeof resource !== 'object') return diagnosticsOnly ? { type: 'unknown', status: 'unknown' } : null;
+      if (diagnosticsOnly) {
+        return Object.assign({
+          type: _alloDiagnosticResourceType(resource.type),
+          index: _alloDiagnosticBoundedInt(resource.index, 100000),
+          status: safeStatus(resource.status),
+          elapsedMs: _alloDiagnosticBoundedInt(resource.elapsedMs, 24 * 60 * 60 * 1000),
+          attempts: _alloDiagnosticBoundedInt(resource.attempts, 100),
+          startedAt: _alloDiagnosticTimestamp(resource.startedAt),
+          finishedAt: _alloDiagnosticTimestamp(resource.finishedAt),
+          retryable: resource.retryable === true,
+        }, compactFailureFields(resource.reason, resource.failureCode));
+      }
+      return Object.assign(
+        stripFields(resource, ['reason']),
+        compactFailureFields(resource.reason, resource.failureCode)
+      );
+    };
+    const compactResources = resources => {
+      const allEntries = Object.entries(resources || {});
+      const entries = diagnosticsOnly ? allEntries.slice(0, 1000) : allEntries;
+      return Object.fromEntries(entries.map(([key, resource], index) => [diagnosticsOnly ? 'resource-' + (index + 1) : key, compactResource(resource)]));
+    };
+    const compactGroup = group => {
+      if (!group || typeof group !== 'object') return diagnosticsOnly ? { status: 'unknown', resources: {} } : null;
+      if (diagnosticsOnly) {
+        return Object.assign({
+          status: safeStatus(group.status),
+          startedAt: _alloDiagnosticTimestamp(group.startedAt),
+          finishedAt: _alloDiagnosticTimestamp(group.finishedAt),
+          elapsedMs: _alloDiagnosticBoundedInt(group.elapsedMs, 24 * 60 * 60 * 1000),
+          failureCount: _alloDiagnosticBoundedInt(group.failureCount, 100000),
+          persistenceWarning: group.persistenceWarning ? 'Compact persistence fallback was used.' : null,
+          preflight: compactPreflight(group.preflight),
+          planPayload: null,
+          resources: compactResources(group.resources),
+        }, compactFailureFields(group.reason, group.failureCode));
+      }
+      return Object.assign(
+        stripFields(group, ['reason', 'resources', 'groups', 'preflight', 'planPayload']),
+        compactFailureFields(group.reason, group.failureCode),
+        { preflight: compactPreflight(group.preflight), planPayload: group.planPayload, resources: compactResources(group.resources) }
+      );
+    };
+    if (diagnosticsOnly) {
+      return Object.assign({
+        runId: _alloDiagnosticRunId(run.runId, 'full-pack'),
+        targetMode: ['all-groups', 'current-settings'].includes(run.targetMode) ? run.targetMode : null,
+        status: safeStatus(run.status),
+        startedAt: _alloDiagnosticTimestamp(run.startedAt),
+        finishedAt: _alloDiagnosticTimestamp(run.finishedAt),
+        elapsedMs: _alloDiagnosticBoundedInt(run.elapsedMs, 24 * 60 * 60 * 1000),
+        failureCount: _alloDiagnosticBoundedInt(run.failureCount, 100000),
+        restored: run.restored === true,
+        persistenceWarning: run.persistenceWarning ? 'Compact persistence fallback was used.' : null,
+        preflight: compactPreflight(run.preflight),
+        planPayload: null,
+        resources: compactResources(run.resources),
+        groups: Object.fromEntries(Object.values(run.groups || {}).slice(0, 100).map((group, index) => ['group-' + (index + 1), compactGroup(group)])),
+      }, compactFailureFields(run.reason, run.failureCode));
+    }
+    return Object.assign(
+      stripFields(run, ['reason', 'resources', 'groups', 'preflight', 'planPayload']),
+      compactFailureFields(run.reason, run.failureCode),
+      {
+        preflight: compactPreflight(run.preflight),
+        planPayload: run.planPayload,
+        resources: compactResources(run.resources),
+        groups: Object.fromEntries(Object.entries(run.groups || {}).map(([key, group]) => [key, compactGroup(group)])),
+      }
+    );
   };
   useEffect(() => {
     if (_fullPackHydratedRef.current) return;
@@ -28542,14 +30019,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     try {
       const raw = localStorage.getItem(ALLO_FULL_PACK_STORE_KEY);
       if (!raw) return;
-      const env = JSON.parse(raw);
-      if (!env || env.v !== ALLO_FULL_PACK_STORE_VERSION || !env.run) return;
+      const env = _migrateFullPackEnvelope(JSON.parse(raw));
+      if (!env || !env.run) return;
       const savedMs = Date.parse(env.savedAt || '');
       if (Number.isFinite(savedMs) && Date.now() - savedMs > ALLO_FULL_PACK_RETENTION_MS) {
         safeRemoveItem(ALLO_FULL_PACK_STORE_KEY);
         return;
       }
-      const wasRunning = env.run.status === 'running' || env.run.status === 'planning';
+      const wasRunning = env.run.status === 'running' || env.run.status === 'retrying' || env.run.status === 'planning';
       const hasSavedGroupPlan = Object.values(env.run.groups || {}).some(group => group && group.planPayload);
       const missingReadyPlan = env.run.status === 'ready' && !env.run.planPayload && !hasSavedGroupPlan;
       const incompatibleCapability = env.capabilityFingerprint !== ALLO_FULL_PACK_CAPABILITY_FINGERPRINT;
@@ -28577,11 +30054,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       _fullPackStorageWarningRef.current = false;
     } catch (primaryError) {
       const warning = 'Browser storage was full, so only compact diagnostics were saved. Refresh the plan before generating.';
-      const diagnosticRun = Object.assign({}, _compactFullPackRunForStorage(fullPackRun, true), {
-        status: fullPackRun.status === 'ready' ? 'interrupted' : fullPackRun.status,
-        reason: fullPackRun.status === 'ready' ? warning : fullPackRun.reason,
-        persistenceWarning: warning,
-      });
+      const diagnosticRun = _compactFullPackRunForStorage(fullPackRun, true);
+      if (fullPackRun.status === 'ready') Object.assign(diagnosticRun, { status: 'interrupted', reason: warning, failureCode: 'configuration' });
+      diagnosticRun.persistenceWarning = warning;
       try {
         localStorage.setItem(ALLO_FULL_PACK_STORE_KEY, JSON.stringify({
           v: ALLO_FULL_PACK_STORE_VERSION,
@@ -28591,6 +30066,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           run: diagnosticRun,
         }));
         warnLog('[FullPack] saved compact diagnostics after storage quota failure:', primaryError?.message || primaryError);
+        ALLO_GENERATION_METRICS.record('storage-fallback', { mode: 'fullPack' });
+        if (!fullPackRun.persistenceWarning) {
+          setFullPackRun(prev => prev ? Object.assign({}, prev, { persistenceWarning: warning }) : prev);
+        }
         if (!_fullPackStorageWarningRef.current) {
           _fullPackStorageWarningRef.current = true;
           addToast(warning + ' Copy or download diagnostics before reloading.', 'warning');
@@ -29593,6 +31072,19 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       getGroupDifferentiationContext,
       getAssetManifest,
       getDifferentiationGrades,
+      aiProviderProfile: (() => {
+        const backend = String(_aiConfig?.backend || 'gemini').toLowerCase();
+        const models = _aiConfig?.models || {};
+        const isLocal = ['alloflow-local', 'ollama', 'localai', 'lmstudio'].includes(backend);
+        return {
+          backend,
+          model: String(models.default || models.text || models.flash || ''),
+          imageProvider: String(_aiConfig?.imageProvider || 'auto'),
+          imageModel: String(models.image || models.imagen || ''),
+          isLocal,
+          metricsSnapshot: ALLO_GENERATION_METRICS.snapshot(),
+        };
+      })(),
       complexityLevel,
       generatedContent,
       saveOriginalOnAdjust,
@@ -32349,6 +33841,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // above its definition. As a const function expression there, it crashed AlloFlowContent on mount
   // with a temporal-dead-zone ReferenceError. (Still recreated each render, so no behavior change.)
   function stopPlayback(reason = 'manual', contentIdOverride = null, playbackSessionIdOverride = null) {
+    if (rtpReadingRef.current || rtpCurrentAudioRef.current || rtpPausedRef.current) stopReadThisPage();
     const stoppedContentId = contentIdOverride || playingContentId;
     const stoppedPlaybackSessionId = playbackSessionIdOverride ?? playbackSessionRef.current;
     const normalizedStopReason = typeof reason === 'string' && reason ? reason : 'manual';
@@ -35949,7 +37442,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setSelectedProfileId('');
   };
 
-  const clearCanvasWorkspaceState = () => {
+  const clearCanvasWorkspaceState = (options = {}) => {
       cancelActiveProjectLoad();
       cancelActiveFileIntakeOperations('canvas-workspace-clear');
       invalidateLocalDataHydration();
@@ -35971,7 +37464,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // Continuity: the archive key is deliberately NOT cleared here, and the
       // outgoing plan is filed before the wipe — clearing a workspace must not
       // silently empty the cabinet, or the archive is worse than nothing.
-      archiveLivePlan();
+      if (options.archivePlan !== false) archiveLivePlan();
       setActiveBlueprint(null);
       setBlueprintExecutionResult(null);
       resetCanvasWorkspaceSettings();
@@ -35980,6 +37473,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setStickers([]);
       setGuidedMode(false);
       resetGuidedProgress();
+      setAdventureState(ADVENTURE_INITIAL);
+      setHasSavedAdventure(false);
       setWordSoundsHistory([]);
       wsDispatch({ type: 'WS_RESET' });
       setWordSoundsBadges([]);
@@ -36287,18 +37782,30 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               if (automatic.effectiveId !== currentRecoveryStore.effectiveRetentionPolicy) {
                   let adjustedStore = null;
                   if (isCanvas && deviceStorage) {
-                      const policyResult = await deviceStorage.mutateRecovery(
-                          ALLO_WORKSPACE_RECOVERY_NAMESPACE,
-                          ALLO_WORKSPACE_RECOVERY_KEY,
-                          {
-                              version: ALLO_WORKSPACE_RECOVERY.VERSION,
-                              action: 'setPolicy',
-                              policyId: 'automatic',
-                              effectivePolicyId: automatic.effectiveId
-                          },
-                          { queue: false }
-                      );
-                      adjustedStore = ALLO_WORKSPACE_RECOVERY.normalizeStore(policyResult.store);
+                      if (canvasRecoveryVaultState.enabled) {
+                          const controller = await getCanvasRecoveryVaultController();
+                          await controller.setPolicy('automatic', automatic.effectiveId);
+                          if (canvasRecoveryVaultState.locked) {
+                              const status = await controller.getStatus();
+                              publishCanvasRecoveryVaultLockedState(status);
+                          } else {
+                              const synced = await syncCanvasRecoveryVaultState(controller);
+                              adjustedStore = synced.store;
+                          }
+                      } else {
+                          const policyResult = await deviceStorage.mutateRecovery(
+                              ALLO_WORKSPACE_RECOVERY_NAMESPACE,
+                              ALLO_WORKSPACE_RECOVERY_KEY,
+                              {
+                                  version: ALLO_WORKSPACE_RECOVERY.VERSION,
+                                  action: 'setPolicy',
+                                  policyId: 'automatic',
+                                  effectivePolicyId: automatic.effectiveId
+                              },
+                              { queue: false }
+                          );
+                          adjustedStore = ALLO_WORKSPACE_RECOVERY.normalizeStore(policyResult.store);
+                      }
                   } else if (!isCanvas) {
                       adjustedStore = ALLO_WORKSPACE_RECOVERY.setPolicy(currentRecoveryStore, 'automatic', pressureEstimate);
                   }
@@ -36330,10 +37837,947 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
   };
 
+  const getCanvasRecoveryVaultController = async () => {
+      if (canvasRecoveryVaultControllerRef.current) return canvasRecoveryVaultControllerRef.current;
+      const deviceStorage = await _alloGetCanvasDeviceStorage();
+      const stack = await _alloGetRecoveryVaultStack();
+      const controller = stack.integration.createController(deviceStorage, {
+          vaultModule: stack.vault,
+          crypto: stack.crypto
+      });
+      canvasRecoveryVaultControllerRef.current = controller;
+      return controller;
+  };
+
+  const emptyCanvasRecoveryVaultView = (status = {}) => ALLO_WORKSPACE_RECOVERY.normalizeStore({
+      version: ALLO_WORKSPACE_RECOVERY.VERSION,
+      retentionPolicy: status.retentionPolicy,
+      effectiveRetentionPolicy: status.effectiveRetentionPolicy,
+      legacyMigrationComplete: true,
+      snapshots: []
+  });
+
+  const readUnlockedCanvasRecoveryVaultStore = async (controller) => {
+      const plain = await controller.readPlainStore();
+      return ALLO_WORKSPACE_RECOVERY.normalizeStore(plain);
+  };
+
+  const publishCanvasRecoveryVaultLockedState = (status = {}) => {
+      const lockedStatus = { available: true, ...status, enabled: true, locked: true };
+      const empty = emptyCanvasRecoveryVaultView(lockedStatus);
+      canvasRecoveryStoreRef.current = empty;
+      setCanvasRecoveryStore(empty);
+      setCanvasRecoveryStoreAuthoritative(true);
+      setCanvasRecoveryVaultState(lockedStatus);
+      setCanvasRecoverySaveStatus('locked');
+      return empty;
+  };
+
+  const syncCanvasRecoveryVaultState = async (controller, options = {}) => {
+      const status = await controller.getStatus();
+      if (status.enabled && !status.locked && options.loadPlaintext !== false) {
+          try {
+              const store = await readUnlockedCanvasRecoveryVaultStore(controller);
+              canvasRecoveryStoreRef.current = store;
+              setCanvasRecoveryStore(store);
+              setCanvasRecoveryStoreAuthoritative(true);
+              setCanvasRecoveryVaultState({ available: true, ...status });
+              return { status, store };
+          } catch (error) {
+              controller.lock();
+              publishCanvasRecoveryVaultLockedState({ ...status, locked: true });
+              throw error;
+          }
+      }
+      if (status.enabled && status.locked) publishCanvasRecoveryVaultLockedState(status);
+      else setCanvasRecoveryVaultState({ available: true, ...status });
+      return { status, store: null };
+  };
+
+  const clearCanvasRecoveryVaultSecrets = (nextMode = 'idle') => {
+      setCanvasRecoveryVaultForm(current => ({
+          ...current,
+          mode: nextMode,
+          password: '',
+          confirmPassword: '',
+          currentPassword: '',
+          recoveryCode: '',
+          recoveryConfirmation: '',
+          recoveryInput: '',
+          newPassword: '',
+          confirmNewPassword: '',
+          eraseConfirmation: '',
+          backupUseRecoveryKey: false
+      }));
+  };
+
+  const commitCanvasRecoveryVaultEnable = async (password, recoveryCode) => {
+      if (canvasRecoveryMutationInProgressRef.current) return;
+      canvasRecoveryMutationInProgressRef.current = true;
+      canvasRecoverySaveTokenRef.current += 1;
+      setCanvasRecoveryBusyId('vault-enable');
+      let committed = false;
+      let controller = null;
+      try {
+          await canvasRecoveryWriteQueueRef.current.catch(() => undefined);
+          controller = await getCanvasRecoveryVaultController();
+          await queueCanvasRecoveryStorage(() => controller.enableProtection(password, {
+              createRecoveryKey: Boolean(recoveryCode),
+              recoveryCode: recoveryCode || undefined
+          }));
+          committed = true;
+          await syncCanvasRecoveryVaultState(controller);
+          canvasRecoveryVaultPendingActionRef.current = null;
+          clearCanvasRecoveryVaultSecrets('idle');
+          setCanvasRecoveryError('');
+          setCanvasRecoverySaveStatus(canvasRecoveryStoreRef.current.snapshots.length ? 'saved' : 'idle');
+          addToast('Recovery workspaces are now encrypted on this device.', 'success');
+      } catch (error) {
+          if (committed) {
+              try { controller?.lock(); } catch (_) {}
+              canvasRecoveryVaultPendingActionRef.current = null;
+              clearCanvasRecoveryVaultSecrets('idle');
+              publishCanvasRecoveryVaultLockedState({
+                  ...canvasRecoveryVaultState,
+                  recoveryEnabled: Boolean(recoveryCode)
+              });
+              setCanvasRecoveryDialogMode('vault-locked');
+          }
+          setCanvasRecoveryError(committed
+              ? 'Protection was enabled, but saved work could not be reopened. Reload AlloFlow and unlock it with the password you just chose.'
+              : String(error?.message || 'Recovery-workspace protection could not be enabled. No plaintext migration was committed.'));
+      } finally {
+          canvasRecoveryMutationInProgressRef.current = false;
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const enableCanvasRecoveryVault = async () => {
+      const form = canvasRecoveryVaultForm;
+      if (!form.password || form.password.length < 10) {
+          setCanvasRecoveryError('Use a saved-work password of at least 10 characters.');
+          return;
+      }
+      if (form.password !== form.confirmPassword) {
+          setCanvasRecoveryError('The saved-work passwords do not match.');
+          return;
+      }
+      if (!form.useRecoveryKey) {
+          await commitCanvasRecoveryVaultEnable(form.password, null);
+          return;
+      }
+      try {
+          const stack = await _alloGetRecoveryVaultStack();
+          const recoveryCode = stack.crypto.generateRecoveryCode();
+          canvasRecoveryVaultPendingActionRef.current = { action: 'enable', password: form.password };
+          setCanvasRecoveryVaultForm(current => ({
+              ...current,
+              mode: 'confirm-recovery-code',
+              password: '',
+              confirmPassword: '',
+              recoveryCode,
+              recoveryConfirmation: ''
+          }));
+          setCanvasRecoveryError('');
+      } catch (error) {
+          setCanvasRecoveryError(String(error?.message || 'A recovery key could not be generated.'));
+      }
+  };
+
+  const downloadCanvasRecoveryCode = () => {
+      const code = canvasRecoveryVaultForm.recoveryCode;
+      if (!code) return;
+      const text = 'AlloFlow recovery key\n\n' + code + '\n\nKeep this somewhere private. Anyone with this key and an encrypted backup can unlock the protected recovery workspaces.\n';
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'AlloFlow-Recovery-Key.txt';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+  };
+
+  const confirmCanvasRecoveryCode = async () => {
+      const pending = canvasRecoveryVaultPendingActionRef.current;
+      const controller = await getCanvasRecoveryVaultController();
+      if (!pending || !controller.confirmRecoveryCode(
+          canvasRecoveryVaultForm.recoveryCode,
+          canvasRecoveryVaultForm.recoveryConfirmation
+      )) {
+          setCanvasRecoveryError('The recovery-key confirmation does not match. Save the displayed key, then enter it exactly.');
+          return;
+      }
+      if (pending.action === 'enable') {
+          await commitCanvasRecoveryVaultEnable(pending.password, canvasRecoveryVaultForm.recoveryCode);
+          return;
+      }
+      if (pending.action === 'rotate') {
+          setCanvasRecoveryBusyId('vault-rotate-recovery');
+          try {
+              await controller.rotateRecoveryKey(canvasRecoveryVaultForm.recoveryCode);
+              await syncCanvasRecoveryVaultState(controller, { loadPlaintext: false });
+              canvasRecoveryVaultPendingActionRef.current = null;
+              clearCanvasRecoveryVaultSecrets('idle');
+              setCanvasRecoveryError('');
+              addToast('New recovery key confirmed. The earlier recovery key no longer works.', 'success');
+          } catch (error) {
+              setCanvasRecoveryError(String(error?.message || 'The new recovery key could not be committed; the earlier key is still valid.'));
+          } finally {
+              setCanvasRecoveryBusyId(null);
+          }
+      }
+  };
+
+  const unlockCanvasRecoveryVault = async () => {
+      if (!canvasRecoveryVaultForm.password) return;
+      setCanvasRecoveryBusyId('vault-unlock');
+      try {
+          const controller = await getCanvasRecoveryVaultController();
+          await controller.unlock(canvasRecoveryVaultForm.password);
+          const { store } = await syncCanvasRecoveryVaultState(controller);
+          clearCanvasRecoveryVaultSecrets('idle');
+          setCanvasRecoveryError('');
+          setCanvasRecoverySaveStatus(store?.snapshots?.length ? 'saved' : 'idle');
+          if (!canvasRecoveryDecisionMade && store?.snapshots?.length) setCanvasRecoveryDialogMode('choice');
+          else setCanvasRecoveryDialogMode('manage');
+      } catch (error) {
+          clearCanvasRecoveryVaultSecrets('unlock');
+          setCanvasRecoveryError('That password could not unlock the protected recovery workspaces.');
+      } finally {
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const recoverCanvasRecoveryVault = async () => {
+      const form = canvasRecoveryVaultForm;
+      if (!form.recoveryInput || !form.newPassword || form.newPassword.length < 10) {
+          setCanvasRecoveryError('Enter the complete recovery key and a new password of at least 10 characters.');
+          return;
+      }
+      if (form.newPassword !== form.confirmNewPassword) {
+          setCanvasRecoveryError('The new passwords do not match.');
+          return;
+      }
+      setCanvasRecoveryBusyId('vault-recover');
+      let committed = false;
+      try {
+          const controller = await getCanvasRecoveryVaultController();
+          await controller.recoverWithKey(form.recoveryInput, form.newPassword);
+          committed = true;
+          await syncCanvasRecoveryVaultState(controller);
+          clearCanvasRecoveryVaultSecrets('idle');
+          setCanvasRecoveryError('');
+          setCanvasRecoveryDialogMode('manage');
+          addToast('Saved-work password replaced. The existing recovery key remains valid.', 'success');
+      } catch (error) {
+          clearCanvasRecoveryVaultSecrets(committed ? 'unlock' : 'recover');
+          setCanvasRecoveryError(committed
+              ? 'The password was replaced, but saved work could not be reopened. Reload and use the new password.'
+              : 'The recovery key is incorrect, damaged, or no recovery key was configured.');
+      } finally {
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const lockCanvasRecoveryVault = async () => {
+      const controller = canvasRecoveryVaultControllerRef.current;
+      if (!controller || canvasRecoveryMutationInProgressRef.current) return;
+      canvasRecoveryMutationInProgressRef.current = true;
+      canvasRecoverySaveTokenRef.current += 1;
+      setCanvasRecoveryBusyId('vault-lock');
+      try {
+          await canvasRecoveryWriteQueueRef.current.catch(() => undefined);
+          const hasMeaningfulWorkspace = history.length > 0
+              || units.length > 0
+              || profiles.length > 0
+              || Object.keys(studentResponses || {}).length > 0
+              || (typeof inputText === 'string' && Boolean(inputText.trim()))
+              || (typeof sourceTopic === 'string' && Boolean(sourceTopic.trim()))
+              || Boolean(guidedPlanBrief);
+          if (canvasRecoveryDecisionMade && hasMeaningfulWorkspace) {
+              let snapshot = await buildCanvasWorkspaceSnapshot(canvasRecoveryCurrentIdRef.current);
+              let quotaSave = await queueCanvasRecoveryStorage(() => ALLO_WORKSPACE_RECOVERY.saveWithQuotaFallback(
+                  snapshot,
+                  candidate => controller.upsertSnapshot(candidate)
+              ));
+              if (quotaSave.result?.saved === false && quotaSave.result?.reason === 'removed') {
+                  const replacementId = ALLO_WORKSPACE_RECOVERY.newId();
+                  canvasRecoveryCurrentIdRef.current = replacementId;
+                  snapshot = { ...snapshot, id: replacementId, createdAt: new Date().toISOString(), savedAt: new Date().toISOString(), pinned: false };
+                  quotaSave = await queueCanvasRecoveryStorage(() => ALLO_WORKSPACE_RECOVERY.saveWithQuotaFallback(
+                      snapshot,
+                      candidate => controller.upsertSnapshot(candidate)
+                  ));
+              }
+              if (quotaSave.result?.saved === false) throw new Error('The latest workspace could not be saved before locking.');
+          }
+          controller.lock();
+          const status = await controller.getStatus();
+          publishCanvasRecoveryVaultLockedState(status);
+          canvasRecoveryPendingSaveCountRef.current = 0;
+          clearCanvasWorkspaceState({ archivePlan: false });
+          setLastSaved(null);
+          setPendingSync(false);
+          clearCanvasRecoveryVaultSecrets('unlock');
+          setCanvasRecoveryDialogMode('vault-locked');
+      } catch (error) {
+          setCanvasRecoveryError(String(error?.message || 'Protected work could not be saved, so this tab was not locked.'));
+      } finally {
+          canvasRecoveryMutationInProgressRef.current = false;
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const changeCanvasRecoveryVaultPassword = async () => {
+      const form = canvasRecoveryVaultForm;
+      if (!form.currentPassword || !form.newPassword || form.newPassword.length < 10
+          || form.newPassword !== form.confirmNewPassword) {
+          setCanvasRecoveryError('Enter the current password and matching new passwords of at least 10 characters.');
+          return;
+      }
+      setCanvasRecoveryBusyId('vault-change-password');
+      try {
+          const controller = await getCanvasRecoveryVaultController();
+          await controller.changePassword(form.currentPassword, form.newPassword);
+          clearCanvasRecoveryVaultSecrets('idle');
+          setCanvasRecoveryError('');
+          addToast('Saved-work password changed. Other already-unlocked tabs are not revoked.', 'success');
+      } catch (error) {
+          clearCanvasRecoveryVaultSecrets('change-password');
+          setCanvasRecoveryError('The current password was incorrect or the vault could not be updated.');
+      } finally {
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const rotateCanvasRecoveryKey = async () => {
+      if (!canvasRecoveryVaultForm.currentPassword) {
+          setCanvasRecoveryError('Enter the saved-work password before creating a new recovery key.');
+          return;
+      }
+      setCanvasRecoveryBusyId('vault-rotate-recovery');
+      try {
+          const controller = await getCanvasRecoveryVaultController();
+          await controller.unlock(canvasRecoveryVaultForm.currentPassword);
+          const stack = await _alloGetRecoveryVaultStack();
+          const recoveryCode = stack.crypto.generateRecoveryCode();
+          canvasRecoveryVaultPendingActionRef.current = { action: 'rotate' };
+          setCanvasRecoveryVaultForm(current => ({
+              ...current,
+              mode: 'confirm-recovery-code',
+              currentPassword: '',
+              recoveryCode,
+              recoveryConfirmation: ''
+          }));
+          setCanvasRecoveryError('');
+      } catch (error) {
+          clearCanvasRecoveryVaultSecrets('rotate-recovery');
+          setCanvasRecoveryError('The saved-work password was incorrect, so the existing recovery key was not changed.');
+      } finally {
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const removeCanvasRecoveryKey = async () => {
+      if (!canvasRecoveryVaultForm.currentPassword) {
+          setCanvasRecoveryError('Enter the saved-work password before removing the recovery key.');
+          return;
+      }
+      const confirmed = typeof window !== 'undefined' && typeof window.confirm === 'function'
+          ? window.confirm('Remove the optional recovery key? If you later forget the password, protected saved work cannot be recovered.')
+          : false;
+      if (!confirmed) return;
+      setCanvasRecoveryBusyId('vault-remove-recovery');
+      try {
+          const controller = await getCanvasRecoveryVaultController();
+          await controller.removeRecoveryKey(canvasRecoveryVaultForm.currentPassword);
+          await syncCanvasRecoveryVaultState(controller, { loadPlaintext: false });
+          clearCanvasRecoveryVaultSecrets('idle');
+          setCanvasRecoveryError('');
+          addToast('Optional recovery key removed.', 'info');
+      } catch (error) {
+          clearCanvasRecoveryVaultSecrets('remove-recovery');
+          setCanvasRecoveryError('The saved-work password was incorrect or the recovery key could not be removed.');
+      } finally {
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const disableCanvasRecoveryVault = async () => {
+      if (!canvasRecoveryVaultForm.currentPassword) {
+          setCanvasRecoveryError('Enter the saved-work password before turning off encryption.');
+          return;
+      }
+      const confirmed = typeof window !== 'undefined' && typeof window.confirm === 'function'
+          ? window.confirm('Turn off recovery-workspace encryption? Saved work will be written back to device storage as readable browser data.')
+          : false;
+      if (!confirmed) return;
+      setCanvasRecoveryBusyId('vault-disable');
+      let committed = false;
+      try {
+          const controller = await getCanvasRecoveryVaultController();
+          await controller.unlock(canvasRecoveryVaultForm.currentPassword);
+          await controller.disableProtection(canvasRecoveryVaultForm.currentPassword);
+          committed = true;
+          canvasRecoveryVaultControllerRef.current = null;
+          const deviceStorage = await _alloGetCanvasDeviceStorage();
+          const rawStore = await deviceStorage.get(ALLO_WORKSPACE_RECOVERY_NAMESPACE, ALLO_WORKSPACE_RECOVERY_KEY);
+          const store = ALLO_WORKSPACE_RECOVERY.normalizeStore(rawStore);
+          canvasRecoveryStoreRef.current = store;
+          setCanvasRecoveryStore(store);
+          setCanvasRecoveryVaultState({ available: true, enabled: false, locked: false, recoveryEnabled: false, snapshotCount: store.snapshots.length });
+          clearCanvasRecoveryVaultSecrets('idle');
+          setCanvasRecoveryError('');
+          addToast('Recovery-workspace encryption turned off.', 'info');
+      } catch (error) {
+          clearCanvasRecoveryVaultSecrets(committed ? 'idle' : 'disable');
+          setCanvasRecoveryError(committed
+              ? 'Encryption was turned off, but the readable store could not be refreshed. Reload before making more changes.'
+              : String(error?.message || 'Encryption could not be turned off.'));
+      } finally {
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const exportCanvasRecoveryVaultBackup = async () => {
+      try {
+          const controller = await getCanvasRecoveryVaultController();
+          const backup = await controller.exportEncryptedBackup();
+          const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json;charset=utf-8' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'AlloFlow-Protected-Recovery-' + new Date().toISOString().slice(0, 10) + '.json';
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+      } catch (error) {
+          setCanvasRecoveryError(String(error?.message || 'The encrypted backup could not be created.'));
+      }
+  };
+
+  const importCanvasRecoveryVaultBackup = async () => {
+      const backup = canvasRecoveryVaultImportRef.current;
+      const form = canvasRecoveryVaultForm;
+      const credential = form.backupUseRecoveryKey ? form.recoveryInput : form.password;
+      if (!backup || !credential) {
+          setCanvasRecoveryError('Choose an encrypted AlloFlow backup and enter its password or recovery key.');
+          return;
+      }
+      if (form.backupUseRecoveryKey && (!form.newPassword || form.newPassword.length < 10 || form.newPassword !== form.confirmNewPassword)) {
+          setCanvasRecoveryError('When using a recovery key, choose matching new passwords of at least 10 characters.');
+          return;
+      }
+      const confirmed = typeof window !== 'undefined' && typeof window.confirm === 'function'
+          ? window.confirm('Importing this encrypted backup will replace the recovery workspaces currently stored on this device. Continue?')
+          : false;
+      if (!confirmed) return;
+      setCanvasRecoveryBusyId('vault-import');
+      canvasRecoveryMutationInProgressRef.current = true;
+      canvasRecoverySaveTokenRef.current += 1;
+      let committed = false;
+      try {
+          const controller = await getCanvasRecoveryVaultController();
+          await queueCanvasRecoveryStorage(() => controller.importEncryptedBackup(backup, credential, {
+              replace: true,
+              useRecoveryKey: form.backupUseRecoveryKey,
+              newPassword: form.backupUseRecoveryKey ? form.newPassword : undefined
+          }));
+          committed = true;
+          const { store } = await syncCanvasRecoveryVaultState(controller);
+          canvasRecoveryVaultImportRef.current = null;
+          clearCanvasRecoveryVaultSecrets('idle');
+          setCanvasRecoveryDecisionMade(false);
+          setCanvasRecoveryDialogMode(store?.snapshots?.length ? 'choice' : 'manage');
+          setCanvasRecoveryError('');
+          addToast('Encrypted recovery backup imported and verified.', 'success');
+      } catch (error) {
+          setCanvasRecoveryError(committed
+              ? 'The encrypted backup was imported, but its workspaces could not be reopened. Reload and unlock with the imported credential.'
+              : String(error?.message || 'The encrypted backup could not be imported.'));
+      } finally {
+          canvasRecoveryMutationInProgressRef.current = false;
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const eraseAllCanvasRecoveryVault = async () => {
+      if (canvasRecoveryVaultForm.eraseConfirmation !== 'ERASE') {
+          setCanvasRecoveryError('Type ERASE exactly to confirm permanent removal of protected recovery workspaces.');
+          return;
+      }
+      setCanvasRecoveryBusyId('vault-erase-all');
+      canvasRecoveryMutationInProgressRef.current = true;
+      canvasRecoverySaveTokenRef.current += 1;
+      try {
+          const controller = await getCanvasRecoveryVaultController();
+          await queueCanvasRecoveryStorage(() => controller.eraseAll());
+          const status = await controller.getStatus();
+          if (status.enabled || status.snapshotCount !== 0) throw new Error('Erase verification failed.');
+          canvasRecoveryVaultControllerRef.current = null;
+          canvasRecoveryVaultImportRef.current = null;
+          canvasRecoveryVaultPendingActionRef.current = null;
+          const empty = ALLO_WORKSPACE_RECOVERY.emptyStore();
+          canvasRecoveryStoreRef.current = empty;
+          setCanvasRecoveryStore(empty);
+          setCanvasRecoveryVaultState({ available: true, enabled: false, locked: false, recoveryEnabled: false, snapshotCount: 0 });
+          canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
+          clearCanvasWorkspaceState({ archivePlan: false });
+          clearCanvasRecoveryVaultSecrets('idle');
+          setCanvasRecoveryDecisionMade(true);
+          setCanvasRecoveryDialogMode(null);
+          setCanvasRecoveryError('');
+          setCanvasRecoverySaveStatus('idle');
+          addToast('Protected recovery workspaces were permanently erased from this device.', 'info');
+      } catch (error) {
+          setCanvasRecoveryError(String(error?.message || 'Protected saved work could not be erased or verified.'));
+      } finally {
+          canvasRecoveryMutationInProgressRef.current = false;
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const getEducatorAccessCodeApi = async () => _alloLoadScriptGlobal(
+      'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=security-v2',
+      () => {
+          const api = window.AlloModules?.DeviceAccessCode;
+          return api && api.MIN_CODE_LENGTH >= 6 && typeof api.verify === 'function' && typeof api.setCode === 'function' ? api : null;
+      },
+      { cacheKey: 'allo-device-access-code-v2', label: 'Educator access-code module' }
+  );
+
+  const refreshEducatorAccessState = async () => {
+      try {
+          const api = await getEducatorAccessCodeApi();
+          const status = api.status();
+          setEducatorAccessState(current => ({ ...current, configured: status.configured, error: '' }));
+      } catch (error) {
+          setEducatorAccessState(current => ({ ...current, error: String(error?.message || 'Educator access-code settings are unavailable.') }));
+      }
+  };
+
+  const saveEducatorAccessCode = async () => {
+      const form = educatorAccessState;
+      if (!form.newCode || form.newCode !== form.confirmCode) {
+          setEducatorAccessState(current => ({ ...current, error: 'Enter matching new educator access codes.' }));
+          return;
+      }
+      setEducatorAccessState(current => ({ ...current, busy: true, error: '' }));
+      try {
+          const api = await getEducatorAccessCodeApi();
+          if (form.configured) {
+              const result = await api.changeCode(form.currentCode, form.newCode);
+              if (!result.ok) throw new Error(result.reason === 'backoff'
+                  ? 'Too many attempts. Wait before trying the current code again.'
+                  : 'The current educator access code was incorrect.');
+          } else {
+              await api.setCode(form.newCode);
+          }
+          setEducatorAccessState({ configured: true, mode: 'idle', currentCode: '', newCode: '', confirmCode: '', busy: false, error: '' });
+          addToast(form.configured ? 'Educator access code changed.' : 'Educator access code enabled on this device.', 'success');
+      } catch (error) {
+          setEducatorAccessState(current => ({ ...current, busy: false, currentCode: '', error: String(error?.message || 'The educator access code could not be saved.') }));
+      }
+  };
+
+  const removeEducatorAccessCode = async () => {
+      setEducatorAccessState(current => ({ ...current, busy: true, error: '' }));
+      try {
+          const api = await getEducatorAccessCodeApi();
+          const result = await api.removeCode(educatorAccessState.currentCode);
+          if (!result.ok) throw new Error(result.reason === 'backoff'
+              ? 'Too many attempts. Wait before trying again.'
+              : 'The current educator access code was incorrect.');
+          setEducatorAccessState({ configured: false, mode: 'idle', currentCode: '', newCode: '', confirmCode: '', busy: false, error: '' });
+          addToast('Educator access code removed from this device.', 'info');
+      } catch (error) {
+          setEducatorAccessState(current => ({ ...current, busy: false, currentCode: '', error: String(error?.message || 'The educator access code could not be removed.') }));
+      }
+  };
+
+  const closeCanvasRecoveryDialog = (nextMode = null) => {
+      if (canvasRecoveryVaultForm.mode === 'confirm-recovery-code') return;
+      canvasRecoveryVaultImportRef.current = null;
+      canvasRecoveryVaultPendingActionRef.current = null;
+      clearCanvasRecoveryVaultSecrets('idle');
+      setCanvasRecoveryDialogMode(nextMode);
+  };
+
+  const renderCanvasRecoveryCodeConfirmation = () => {
+      const pendingAction = canvasRecoveryVaultPendingActionRef.current?.action;
+      return (
+          <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-4">
+            <h4 className="font-black text-amber-950">Save this shown-once recovery key</h4>
+            <p className="mt-1 text-xs leading-relaxed text-amber-900">
+              {pendingAction === 'rotate'
+                ? 'Your earlier recovery key remains valid until you confirm and commit this replacement.'
+                : 'Encryption has not been enabled yet. Save and re-enter this key before AlloFlow commits protection.'}
+              {' '}The key cannot be looked up later and is not stored in readable form.
+            </p>
+            <div className="mt-3 select-all break-all rounded-xl border border-amber-300 bg-white p-3 font-mono text-sm font-black tracking-wide text-slate-900"
+              aria-label="Shown-once AlloFlow recovery key">
+              {canvasRecoveryVaultForm.recoveryCode}
+            </div>
+            <button type="button" onClick={downloadCanvasRecoveryCode}
+              className="mt-3 min-h-11 rounded-lg border border-amber-400 bg-white px-3 py-2 text-sm font-bold text-amber-950 hover:bg-amber-100">
+              Download recovery key
+            </button>
+            <label className="mt-4 block text-sm font-bold text-slate-800">
+              Re-enter the complete recovery key
+              <input value={canvasRecoveryVaultForm.recoveryConfirmation}
+                onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, recoveryConfirmation: event.target.value }))}
+                autoComplete="off" spellCheck={false} maxLength={80} data-recovery-autofocus="true"
+                className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 font-mono" />
+            </label>
+            <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={() => void confirmCanvasRecoveryCode()}
+              className="mt-3 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 font-black text-white hover:bg-indigo-800 disabled:opacity-60">
+              {canvasRecoveryBusyId ? 'Verifying and saving…' : 'Confirm recovery key and commit'}
+            </button>
+            <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={() => {
+                canvasRecoveryVaultPendingActionRef.current = null;
+                clearCanvasRecoveryVaultSecrets('idle');
+                setCanvasRecoveryError('');
+              }} className="mt-2 min-h-11 rounded-xl border border-amber-400 bg-white px-4 py-3 font-bold text-amber-950 hover:bg-amber-100 disabled:opacity-60">
+              {pendingAction === 'rotate' ? 'Keep existing key' : 'Cancel setup'}
+            </button>
+            <p className="mt-2 text-xs font-semibold text-amber-950">The key remains usable until you replace or remove it, but it will not be shown again after confirmation.</p>
+          </div>
+      );
+  };
+
+  const renderCanvasRecoveryBackupImportForm = () => (
+      <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
+        <h4 className="font-black text-slate-900">Import encrypted recovery backup</h4>
+        <p className="mt-1 text-xs leading-relaxed text-slate-600">Every encrypted workspace is authenticated before the backup replaces this device's recovery workspaces.</p>
+        <label className="mt-3 flex min-h-11 items-center gap-2 text-sm font-bold text-slate-800">
+          <input type="checkbox" checked={canvasRecoveryVaultForm.backupUseRecoveryKey}
+            onChange={event => setCanvasRecoveryVaultForm(current => ({
+              ...current, backupUseRecoveryKey: event.target.checked, password: '', recoveryInput: ''
+            }))} />
+          Use the backup's recovery key instead of its password
+        </label>
+        {canvasRecoveryVaultForm.backupUseRecoveryKey ? (
+          <>
+            <label className="mt-2 block text-sm font-bold text-slate-800">Recovery key
+              <input value={canvasRecoveryVaultForm.recoveryInput} autoComplete="off" spellCheck={false} maxLength={80}
+                onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, recoveryInput: event.target.value }))}
+                className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono" />
+            </label>
+            <label className="mt-2 block text-sm font-bold text-slate-800">Choose a new password
+              <input type="password" value={canvasRecoveryVaultForm.newPassword} autoComplete="new-password" maxLength={4096}
+                onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, newPassword: event.target.value }))}
+                className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
+            </label>
+            <label className="mt-2 block text-sm font-bold text-slate-800">Confirm new password
+              <input type="password" value={canvasRecoveryVaultForm.confirmNewPassword} autoComplete="new-password" maxLength={4096}
+                onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, confirmNewPassword: event.target.value }))}
+                className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
+            </label>
+          </>
+        ) : (
+          <label className="mt-2 block text-sm font-bold text-slate-800">Backup password
+            <input type="password" value={canvasRecoveryVaultForm.password} autoComplete="current-password" maxLength={4096}
+              onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, password: event.target.value }))}
+              className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
+          </label>
+        )}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={() => void importCanvasRecoveryVaultBackup()}
+            className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-black text-white hover:bg-indigo-800 disabled:opacity-60">
+            {canvasRecoveryBusyId === 'vault-import' ? 'Verifying…' : 'Verify and replace saved work'}
+          </button>
+          <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
+            onClick={() => { canvasRecoveryVaultImportRef.current = null; clearCanvasRecoveryVaultSecrets(canvasRecoveryVaultState.locked ? 'unlock' : 'idle'); }}
+            className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
+            Cancel
+          </button>
+        </div>
+      </div>
+  );
+
+  const renderCanvasRecoveryProtectionSection = () => {
+      if (!isCanvas) return null;
+      const mode = canvasRecoveryVaultForm.mode;
+      return (
+        <section aria-labelledby="recovery-protection-title" className="mb-5 rounded-2xl border border-violet-200 bg-violet-50 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 id="recovery-protection-title" className="font-black text-slate-900">Protect Gemini Canvas recovery workspaces</h3>
+              <p className="mt-1 max-w-xl text-xs leading-relaxed text-slate-600">
+                Optional AES-GCM encryption for titles and content inside the Canvas recovery vault.
+                Dates, counts, approximate sizes, and pins remain readable. Preferences, legacy offline caches, speech models, downloads, and other Canvas storage are not encrypted by this setting.
+              </p>
+            </div>
+            <span className={'rounded-full px-2.5 py-1 text-xs font-black ' + (canvasRecoveryVaultState.enabled ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-200 text-slate-700')}>
+              {canvasRecoveryVaultState.enabled ? (canvasRecoveryVaultState.locked ? 'Protected · locked' : 'Protected · unlocked') : 'Optional · off'}
+            </span>
+          </div>
+          {mode === 'confirm-recovery-code' ? renderCanvasRecoveryCodeConfirmation() : mode === 'import-backup' ? renderCanvasRecoveryBackupImportForm() : !canvasRecoveryVaultState.enabled ? (
+            <div className="mt-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="text-sm font-bold text-slate-800">Saved-work password
+                  <input type="password" value={canvasRecoveryVaultForm.password} autoComplete="new-password" maxLength={4096}
+                    onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, password: event.target.value }))}
+                    className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
+                </label>
+                <label className="text-sm font-bold text-slate-800">Confirm password
+                  <input type="password" value={canvasRecoveryVaultForm.confirmPassword} autoComplete="new-password" maxLength={4096}
+                    onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, confirmPassword: event.target.value }))}
+                    className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
+                </label>
+              </div>
+              <label className="mt-3 flex min-h-11 items-center gap-2 text-sm font-bold text-slate-800">
+                <input type="checkbox" checked={canvasRecoveryVaultForm.useRecoveryKey}
+                  onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, useRecoveryKey: event.target.checked }))} />
+                Create a shown-once recovery key in case the password is forgotten
+              </label>
+              <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={() => void enableCanvasRecoveryVault()}
+                className="mt-3 min-h-11 rounded-xl bg-violet-700 px-4 py-3 font-black text-white hover:bg-violet-800 disabled:opacity-60">
+                {canvasRecoveryBusyId === 'vault-enable' ? 'Encrypting and verifying…' : 'Enable optional protection'}
+              </button>
+              <p className="mt-2 text-xs text-slate-600">There is no password lookup. Without the optional recovery key, forgetting the password means the protected work can only be erased.</p>
+            </div>
+          ) : (
+            <div className="mt-4">
+              {mode === 'import-backup' ? renderCanvasRecoveryBackupImportForm() : (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={() => void lockCanvasRecoveryVault()}
+                      className="min-h-11 rounded-lg bg-violet-700 px-3 py-2 text-sm font-black text-white hover:bg-violet-800 disabled:opacity-60">Lock this tab</button>
+                    <button type="button" onClick={() => void exportCanvasRecoveryVaultBackup()}
+                      className="min-h-11 rounded-lg border border-violet-300 bg-white px-3 py-2 text-sm font-bold text-violet-900 hover:bg-violet-100">Export encrypted backup</button>
+                    <button type="button" onClick={() => canvasRecoveryImportInputRef.current?.click()}
+                      className="min-h-11 rounded-lg border border-violet-300 bg-white px-3 py-2 text-sm font-bold text-violet-900 hover:bg-violet-100">Import encrypted backup</button>
+                    <button type="button" onClick={() => { clearCanvasRecoveryVaultSecrets('change-password'); setCanvasRecoveryError(''); }}
+                      className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">Change password</button>
+                    <button type="button" onClick={() => { clearCanvasRecoveryVaultSecrets('rotate-recovery'); setCanvasRecoveryError(''); }}
+                      className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
+                      {canvasRecoveryVaultState.recoveryEnabled ? 'Replace recovery key' : 'Add recovery key'}
+                    </button>
+                    {canvasRecoveryVaultState.recoveryEnabled && (
+                      <button type="button" onClick={() => { clearCanvasRecoveryVaultSecrets('remove-recovery'); setCanvasRecoveryError(''); }}
+                        className="min-h-11 rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm font-bold text-amber-800 hover:bg-amber-50">Remove recovery key</button>
+                    )}
+                    <button type="button" onClick={() => { clearCanvasRecoveryVaultSecrets('disable'); setCanvasRecoveryError(''); }}
+                      className="min-h-11 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50">Turn off encryption</button>
+                  </div>
+                  {['change-password', 'rotate-recovery', 'remove-recovery', 'disable'].includes(mode) && (
+                    <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
+                      <label className="block text-sm font-bold text-slate-800">Current saved-work password
+                        <input type="password" value={canvasRecoveryVaultForm.currentPassword} autoComplete="current-password" maxLength={4096}
+                          onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, currentPassword: event.target.value }))}
+                          className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2" />
+                      </label>
+                      {mode === 'change-password' && (
+                        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                          <label className="text-sm font-bold text-slate-800">New password
+                            <input type="password" value={canvasRecoveryVaultForm.newPassword} autoComplete="new-password" maxLength={4096}
+                              onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, newPassword: event.target.value }))}
+                              className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2" />
+                          </label>
+                          <label className="text-sm font-bold text-slate-800">Confirm new password
+                            <input type="password" value={canvasRecoveryVaultForm.confirmNewPassword} autoComplete="new-password" maxLength={4096}
+                              onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, confirmNewPassword: event.target.value }))}
+                              className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2" />
+                          </label>
+                        </div>
+                      )}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
+                          onClick={() => void (mode === 'change-password' ? changeCanvasRecoveryVaultPassword()
+                            : mode === 'rotate-recovery' ? rotateCanvasRecoveryKey()
+                              : mode === 'remove-recovery' ? removeCanvasRecoveryKey()
+                                : disableCanvasRecoveryVault())}
+                          className={'min-h-11 rounded-lg px-3 py-2 text-sm font-black text-white disabled:opacity-60 ' + (mode === 'disable' ? 'bg-red-700 hover:bg-red-800' : 'bg-violet-700 hover:bg-violet-800')}>
+                          {mode === 'change-password' ? 'Change password'
+                            : mode === 'rotate-recovery' ? 'Verify password and show new key'
+                              : mode === 'remove-recovery' ? 'Remove recovery key'
+                                : 'Turn off encryption'}
+                        </button>
+                        <button type="button" onClick={() => clearCanvasRecoveryVaultSecrets('idle')}
+                          className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">Cancel</button>
+                      </div>
+                    </div>
+                  )}
+                  <p className="mt-3 text-xs text-slate-600">Lock affects this tab. A password change controls future unlocks but cannot revoke another tab that is already unlocked.</p>
+                </>
+              )}
+            </div>
+          )}
+        </section>
+      );
+  };
+
+  const renderEducatorAccessCodeSection = () => {
+      if (!isTeacherMode) return null;
+      const changing = educatorAccessState.mode === 'change';
+      const removing = educatorAccessState.mode === 'remove';
+      return (
+        <section aria-labelledby="educator-access-code-title" className="mb-5 rounded-2xl border border-slate-200 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 id="educator-access-code-title" className="font-black text-slate-900">Educator access code</h3>
+              <p className="mt-1 max-w-xl text-xs leading-relaxed text-slate-600">
+                Optional shared-device friction for educator screens. The code is stored only as a salted verifier, but it does not encrypt data and is not a server authorization boundary.
+              </p>
+            </div>
+            <span className={'rounded-full px-2.5 py-1 text-xs font-black ' + (educatorAccessState.configured ? 'bg-indigo-100 text-indigo-900' : 'bg-slate-100 text-slate-600')}>
+              {educatorAccessState.configured ? 'Enabled on this device' : 'Off'}
+            </span>
+          </div>
+          {!educatorAccessState.configured || changing ? (
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {educatorAccessState.configured && (
+                <label className="sm:col-span-2 text-sm font-bold text-slate-800">Current access code
+                  <input type="password" value={educatorAccessState.currentCode} autoComplete="current-password" maxLength={256}
+                    onChange={event => setEducatorAccessState(current => ({ ...current, currentCode: event.target.value }))}
+                    className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2" />
+                </label>
+              )}
+              <label className="text-sm font-bold text-slate-800">New access code
+                <input type="password" value={educatorAccessState.newCode} autoComplete="new-password" maxLength={256}
+                  onChange={event => setEducatorAccessState(current => ({ ...current, newCode: event.target.value }))}
+                  className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2" />
+              </label>
+              <label className="text-sm font-bold text-slate-800">Confirm new access code
+                <input type="password" value={educatorAccessState.confirmCode} autoComplete="new-password" maxLength={256}
+                  onChange={event => setEducatorAccessState(current => ({ ...current, confirmCode: event.target.value }))}
+                  className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2" />
+              </label>
+              <div className="sm:col-span-2 flex flex-wrap gap-2">
+                <button type="button" disabled={educatorAccessState.busy} onClick={() => void saveEducatorAccessCode()}
+                  className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-black text-white hover:bg-indigo-800 disabled:opacity-60">
+                  {educatorAccessState.busy ? 'Saving…' : educatorAccessState.configured ? 'Change access code' : 'Enable access code'}
+                </button>
+                {educatorAccessState.configured && (
+                  <button type="button" onClick={() => setEducatorAccessState(current => ({ ...current, mode: 'idle', currentCode: '', newCode: '', confirmCode: '', error: '' }))}
+                    className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">Cancel</button>
+                )}
+              </div>
+            </div>
+          ) : removing ? (
+            <div className="mt-3">
+              <label className="block text-sm font-bold text-slate-800">Current access code
+                <input type="password" value={educatorAccessState.currentCode} autoComplete="current-password" maxLength={256}
+                  onChange={event => setEducatorAccessState(current => ({ ...current, currentCode: event.target.value }))}
+                  className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2" />
+              </label>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button type="button" disabled={educatorAccessState.busy} onClick={() => void removeEducatorAccessCode()}
+                  className="min-h-11 rounded-lg bg-red-700 px-3 py-2 text-sm font-black text-white hover:bg-red-800 disabled:opacity-60">Remove access code</button>
+                <button type="button" onClick={() => setEducatorAccessState(current => ({ ...current, mode: 'idle', currentCode: '', error: '' }))}
+                  className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" onClick={() => setEducatorAccessState(current => ({ ...current, mode: 'change', error: '' }))}
+                className="min-h-11 rounded-lg border border-indigo-300 px-3 py-2 text-sm font-bold text-indigo-800 hover:bg-indigo-50">Change access code</button>
+              <button type="button" onClick={() => setEducatorAccessState(current => ({ ...current, mode: 'remove', error: '' }))}
+                className="min-h-11 rounded-lg border border-red-300 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50">Remove access code</button>
+            </div>
+          )}
+          {educatorAccessState.error && <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 p-2 text-xs font-semibold text-red-800">{educatorAccessState.error}</p>}
+        </section>
+      );
+  };
+
+  const renderCanvasRecoveryLockedScreen = () => {
+      const mode = canvasRecoveryVaultForm.mode;
+      if (mode === 'import-backup') return renderCanvasRecoveryBackupImportForm();
+      if (mode === 'recover') return (
+        <div>
+          <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-950">
+            Enter the recovery key, then choose a new password. The recovery key stays valid until you explicitly replace or remove it.
+          </p>
+          <label className="mt-3 block text-sm font-bold text-slate-800">Recovery key
+            <input value={canvasRecoveryVaultForm.recoveryInput} autoComplete="off" spellCheck={false} maxLength={80} data-recovery-autofocus="true"
+              onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, recoveryInput: event.target.value }))}
+              className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 font-mono" />
+          </label>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            <label className="text-sm font-bold text-slate-800">New password
+              <input type="password" value={canvasRecoveryVaultForm.newPassword} autoComplete="new-password" maxLength={4096}
+                onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, newPassword: event.target.value }))}
+                className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </label>
+            <label className="text-sm font-bold text-slate-800">Confirm new password
+              <input type="password" value={canvasRecoveryVaultForm.confirmNewPassword} autoComplete="new-password" maxLength={4096}
+                onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, confirmNewPassword: event.target.value }))}
+                className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </label>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={() => void recoverCanvasRecoveryVault()}
+              className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-black text-white hover:bg-indigo-800 disabled:opacity-60">
+              {canvasRecoveryBusyId === 'vault-recover' ? 'Recovering…' : 'Recover and replace password'}
+            </button>
+            <button type="button" onClick={() => clearCanvasRecoveryVaultSecrets('unlock')}
+              className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">Back to password</button>
+          </div>
+        </div>
+      );
+      if (mode === 'erase-all') return (
+        <div>
+          <p className="rounded-xl border-2 border-red-300 bg-red-50 p-4 text-sm font-semibold leading-relaxed text-red-900">
+            If both the password and recovery key are lost, encrypted work cannot be recovered. Erasing remains available without either credential and permanently removes every protected recovery workspace from this device.
+          </p>
+          <label className="mt-3 block text-sm font-black text-red-900">Type ERASE to confirm
+            <input value={canvasRecoveryVaultForm.eraseConfirmation} autoComplete="off" maxLength={16} data-recovery-autofocus="true"
+              onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, eraseConfirmation: event.target.value }))}
+              className="mt-1 min-h-11 w-full rounded-lg border-2 border-red-300 px-3 py-2" />
+          </label>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={() => void eraseAllCanvasRecoveryVault()}
+              className="min-h-11 rounded-lg bg-red-700 px-3 py-2 text-sm font-black text-white hover:bg-red-800 disabled:opacity-60">Permanently erase protected work</button>
+            <button type="button" onClick={() => clearCanvasRecoveryVaultSecrets('unlock')}
+              className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">Cancel</button>
+          </div>
+        </div>
+      );
+      return (
+        <div>
+          <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="font-black text-slate-900">Protected recovery is locked</div>
+              <span className="rounded-full bg-violet-200 px-2.5 py-1 text-xs font-black text-violet-950">
+                {canvasRecoveryVaultState.snapshotCount} protected {canvasRecoveryVaultState.snapshotCount === 1 ? 'workspace' : 'workspaces'}
+              </span>
+            </div>
+            <p className="mt-2 text-xs leading-relaxed text-slate-600">Contents and titles remain encrypted. Dates, counts, approximate sizes, and pins are minimal readable retention metadata.</p>
+          </div>
+          <form className="mt-4" onSubmit={event => { event.preventDefault(); void unlockCanvasRecoveryVault(); }}>
+            <label className="block text-sm font-black text-slate-800">Saved-work password
+              <input type="password" value={canvasRecoveryVaultForm.password} autoComplete="current-password" maxLength={4096} data-recovery-autofocus="true"
+                onChange={event => setCanvasRecoveryVaultForm(current => ({ ...current, password: event.target.value }))}
+                className="mt-1 min-h-12 w-full rounded-xl border border-slate-300 px-3 py-2" />
+            </label>
+            <button type="submit" disabled={Boolean(canvasRecoveryBusyId)}
+              className="mt-3 min-h-12 w-full rounded-xl bg-indigo-700 px-4 py-3 font-black text-white hover:bg-indigo-800 disabled:opacity-60">
+              {canvasRecoveryBusyId === 'vault-unlock' ? 'Unlocking and verifying…' : 'Unlock protected saved work'}
+            </button>
+          </form>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            {canvasRecoveryVaultState.recoveryEnabled && (
+              <button type="button" onClick={() => clearCanvasRecoveryVaultSecrets('recover')}
+                className="min-h-11 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-900 hover:bg-amber-100">Forgot password? Use recovery key</button>
+            )}
+            <button type="button" onClick={() => void exportCanvasRecoveryVaultBackup()}
+              className="min-h-11 rounded-lg border border-violet-300 px-3 py-2 text-sm font-bold text-violet-900 hover:bg-violet-50">Export encrypted backup</button>
+            <button type="button" onClick={() => canvasRecoveryImportInputRef.current?.click()}
+              className="min-h-11 rounded-lg border border-violet-300 px-3 py-2 text-sm font-bold text-violet-900 hover:bg-violet-50">Import encrypted backup</button>
+            <button type="button" onClick={continueWithoutCanvasRecovery}
+              className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">Work without unlocking</button>
+          </div>
+          <p className="mt-3 text-xs leading-relaxed text-slate-600">If you work without unlocking, this tab will not save changes into protected recovery storage until you return and unlock it.</p>
+          <button type="button" onClick={() => clearCanvasRecoveryVaultSecrets('erase-all')}
+            className="mt-4 min-h-11 rounded-lg border border-red-300 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50">Erase protected work without a password</button>
+        </div>
+      );
+  };
+
   const openCanvasRecoveryManager = () => {
       setCanvasRecoveryEraseId(null);
       setCanvasRecoveryRemoveMediaId(null);
-      setCanvasRecoveryDialogMode('manage');
+      setCanvasRecoveryDialogMode(canvasRecoveryVaultState.enabled && canvasRecoveryVaultState.locked ? 'vault-locked' : 'manage');
+      if (isTeacherMode) setTimeout(() => { void refreshEducatorAccessState(); }, 0);
       setTimeout(() => { void refreshStorageManagerInventory(); }, 0);
   };
 
@@ -36382,6 +38826,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           let nextStore;
           if (isCanvas) {
               nextStore = await queueCanvasRecoveryStorage(async () => {
+                  if (canvasRecoveryVaultState.enabled) {
+                      if (canvasRecoveryVaultState.locked) throw new Error('Unlock protected recovery workspaces before changing retention.');
+                      const controller = await getCanvasRecoveryVaultController();
+                      await controller.setPolicy(policy.id, policy.effectiveId);
+                      return (await syncCanvasRecoveryVaultState(controller)).store;
+                  }
                   const deviceStorage = await _alloGetCanvasDeviceStorage();
                   const result = await deviceStorage.mutateRecovery(
                       ALLO_WORKSPACE_RECOVERY_NAMESPACE,
@@ -36420,6 +38870,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setCanvasRecoveryBusyId('pin:' + snapshotId);
       try {
           const nextStore = await queueCanvasRecoveryStorage(async () => {
+              if (canvasRecoveryVaultState.enabled) {
+                  if (canvasRecoveryVaultState.locked) throw new Error('Unlock protected recovery workspaces before changing a pin.');
+                  const controller = await getCanvasRecoveryVaultController();
+                  await controller.setPinned(snapshotId, pinned === true);
+                  return (await syncCanvasRecoveryVaultState(controller)).store;
+              }
               const deviceStorage = await _alloGetCanvasDeviceStorage();
               const result = await deviceStorage.mutateRecovery(
                   ALLO_WORKSPACE_RECOVERY_NAMESPACE,
@@ -36448,6 +38904,29 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setCanvasRecoveryBusyId('media:' + snapshotId);
       try {
           const mediaResult = await queueCanvasRecoveryStorage(async () => {
+              if (canvasRecoveryVaultState.enabled) {
+                  if (canvasRecoveryVaultState.locked) throw new Error('Unlock protected recovery workspaces before removing media.');
+                  const controller = await getCanvasRecoveryVaultController();
+                  const target = await controller.restoreSnapshot(snapshotId);
+                  const previousOmitted = Math.max(0, Number(target?.omittedAssets) || 0);
+                  const stripped = ALLO_WORKSPACE_RECOVERY.normalizeSnapshot(
+                      ALLO_WORKSPACE_RECOVERY.stripLargeAssets(target, 'user-remove-media')
+                  );
+                  if (!stripped) {
+                      return { store: canvasRecoveryStoreRef.current, applied: false, reason: 'would-empty-workspace' };
+                  }
+                  if (Math.max(0, Number(stripped.omittedAssets) || 0) <= previousOmitted) {
+                      return { store: canvasRecoveryStoreRef.current, applied: false, reason: 'no-media' };
+                  }
+                  const replacement = {
+                      ...stripped,
+                      savedAt: new Date().toISOString(),
+                      approximateBytes: ALLO_WORKSPACE_RECOVERY.measureBytes(stripped)
+                  };
+                  const saved = await controller.upsertSnapshot(replacement);
+                  if (!saved.saved) throw new Error('The protected workspace changed before media could be removed.');
+                  return { store: (await syncCanvasRecoveryVaultState(controller)).store, applied: true, reason: 'media-removed' };
+              }
               const deviceStorage = await _alloGetCanvasDeviceStorage();
               const result = await deviceStorage.mutateRecovery(
                   ALLO_WORKSPACE_RECOVERY_NAMESPACE,
@@ -36476,23 +38955,86 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
   };
 
+  const approveAndRetryCanvasRecoveryStorage = async () => {
+      if (canvasRecoveryMutationInProgressRef.current) return;
+      const deviceStorage = window.alloDeviceStorage;
+      if (!deviceStorage || typeof deviceStorage.connectWithApproval !== 'function') {
+          setCanvasRecoveryError('The device-storage approval window is unavailable. Reload AlloFlow and try again.');
+          return;
+      }
+      canvasRecoveryMutationInProgressRef.current = true;
+      setCanvasRecoveryBusyId('storage-approval');
+      setCanvasRecoverySaveStatus('checking');
+      try {
+          const approvalPromise = deviceStorage.connectWithApproval();
+          await approvalPromise;
+          _alloClearCachedDeviceStoragePromises();
+          window.__alloDeviceStoragePromise = Promise.resolve(deviceStorage);
+          window.__alloDeviceStorageReadyPromise = Promise.resolve(deviceStorage);
+          let prefsHydration = null;
+          if (typeof window.__alloRetryPrefsHydration === 'function') {
+              const beforeWorkspaceEntry = !canvasRecoveryDecisionMade;
+              prefsHydration = await window.__alloRetryPrefsHydration({ replaceExisting: beforeWorkspaceEntry });
+              if (beforeWorkspaceEntry && Number(prefsHydration?.applied || 0) > 0) {
+                  setCanvasRecoveryErrorCode('');
+                  setCanvasRecoveryError('Device storage approved. Reloading once to apply your restored preferences and recovery work.');
+                  window.location.reload();
+                  return;
+              }
+              if (!beforeWorkspaceEntry && Number(prefsHydration?.skippedExisting || 0) > 0) {
+                  addToast('Device storage is approved. Reload AlloFlow when convenient to restore saved preferences everywhere.', 'info');
+              }
+          }
+          setCanvasRecoveryErrorCode('');
+          setCanvasRecoveryError('Device storage approved. Checking saved recovery work now.');
+      } catch (error) {
+          setCanvasRecoveryStoreAuthoritative(false);
+          setCanvasRecoveryErrorCode('allo/approval-required');
+          setCanvasRecoveryError(String(error?.message || 'Device storage approval was not completed.'));
+          setCanvasRecoverySaveStatus('error');
+          setCanvasRecoveryDialogMode('error');
+          return;
+      } finally {
+          canvasRecoveryMutationInProgressRef.current = false;
+          setCanvasRecoveryBusyId(null);
+      }
+      await retryCanvasRecoveryStorage();
+  };
+
   const retryCanvasRecoveryStorage = async () => {
       if (canvasRecoveryMutationInProgressRef.current) return;
       canvasRecoveryMutationInProgressRef.current = true;
       setCanvasRecoveryBusyId('storage-retry');
+      setCanvasRecoveryErrorCode('');
       setCanvasRecoverySaveStatus('checking');
       try {
-          const store = await queueCanvasRecoveryStorage(async () => {
-              const deviceStorage = await _alloGetCanvasDeviceStorage();
-              const rawStore = await deviceStorage.get(ALLO_WORKSPACE_RECOVERY_NAMESPACE, ALLO_WORKSPACE_RECOVERY_KEY);
-              if (!ALLO_WORKSPACE_RECOVERY.isSupportedPayload(rawStore)) {
-                  throw new Error('Saved work was created by a newer AlloFlow version and cannot be changed by this version.');
+          const deviceStorage = await _alloGetCanvasDeviceStorage();
+          const rawStore = await deviceStorage.get(ALLO_WORKSPACE_RECOVERY_NAMESPACE, ALLO_WORKSPACE_RECOVERY_KEY);
+          const stack = await _alloGetRecoveryVaultStack();
+          if (stack.vault.isVaultStore(rawStore)) {
+              const controller = await getCanvasRecoveryVaultController();
+              const status = await controller.getStatus();
+              if (status.locked) {
+                  publishCanvasRecoveryVaultLockedState(status);
+                  setCanvasRecoveryDialogMode('vault-locked');
+                  clearCanvasRecoveryVaultSecrets('unlock');
+              } else {
+                  const { store } = await syncCanvasRecoveryVaultState(controller);
+                  setCanvasRecoverySaveStatus(store.snapshots.length ? 'saved' : 'idle');
+                  if (store.snapshots.length && !canvasRecoveryDecisionMade) setCanvasRecoveryDialogMode('choice');
               }
-              return ALLO_WORKSPACE_RECOVERY.normalizeStore(rawStore);
-          });
+              setCanvasRecoveryError('');
+              setCanvasRecoveryRevision(value => value + 1);
+              return;
+          }
+          if (!ALLO_WORKSPACE_RECOVERY.isSupportedPayload(rawStore)) {
+              throw new Error('Saved work was created by a newer AlloFlow version and cannot be changed by this version.');
+          }
+          const store = ALLO_WORKSPACE_RECOVERY.normalizeStore(rawStore);
           canvasRecoveryStoreRef.current = store;
           setCanvasRecoveryStore(store);
           setCanvasRecoveryStoreAuthoritative(true);
+          setCanvasRecoveryVaultState({ available: true, enabled: false, locked: false, recoveryEnabled: false, snapshotCount: store.snapshots.length });
           setCanvasRecoveryError('');
           if (store.snapshots.length > 0) {
               setCanvasRecoverySaveStatus('saved');
@@ -36507,6 +39049,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setCanvasRecoveryRevision(value => value + 1);
       } catch (error) {
           setCanvasRecoveryStoreAuthoritative(false);
+          setCanvasRecoveryErrorCode(String(error?.code || ''));
           setCanvasRecoveryError(String(error?.message || 'Saved work could not be checked on this device.'));
           setCanvasRecoverySaveStatus('error');
           if (!canvasRecoveryDecisionMade) setCanvasRecoveryDialogMode('error');
@@ -36519,7 +39062,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const continueWithoutCanvasRecovery = () => {
       setCanvasRecoveryDecisionMade(true);
       setCanvasRecoveryRemoveMediaId(null);
-      setCanvasRecoveryDialogMode(null);
+      closeCanvasRecoveryDialog(null);
   };
 
   const requestCanvasRecoveryErase = (snapshotId) => {
@@ -36534,6 +39077,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const exportCanvasRecoverySnapshot = (candidate) => {
       const snapshot = ALLO_WORKSPACE_RECOVERY.normalizeSnapshot(candidate);
       if (!snapshot) return;
+      if (canvasRecoveryVaultState.enabled) {
+          const confirmed = typeof window !== 'undefined' && typeof window.confirm === 'function'
+              ? window.confirm('Export a readable copy? This file will not be encrypted, even though the device recovery workspace is protected.')
+              : false;
+          if (!confirmed) return;
+      }
       const project = {
           mode: 'teacher',
           timestamp: snapshot.savedAt,
@@ -36564,13 +39113,21 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               const deviceStorage = await _alloGetCanvasDeviceStorage();
               const target = canvasRecoveryStoreRef.current.snapshots.find(item => item.id === snapshotId);
               const isLegacyMigration = Boolean(target?.omittedAssetManifest?.some(item => item?.kind === 'legacy-cache'));
-              const mutationResult = await deviceStorage.mutateRecovery(
-                  ALLO_WORKSPACE_RECOVERY_NAMESPACE,
-                  ALLO_WORKSPACE_RECOVERY_KEY,
-                  { version: ALLO_WORKSPACE_RECOVERY.VERSION, action: 'remove', snapshotId },
-                  { queue: false }
-              );
-              const next = ALLO_WORKSPACE_RECOVERY.normalizeStore(mutationResult.store);
+              let next;
+              if (canvasRecoveryVaultState.enabled) {
+                  if (canvasRecoveryVaultState.locked) throw new Error('Unlock protected recovery workspaces before erasing one item.');
+                  const controller = await getCanvasRecoveryVaultController();
+                  await controller.deleteSnapshot(snapshotId);
+                  next = (await syncCanvasRecoveryVaultState(controller)).store;
+              } else {
+                  const mutationResult = await deviceStorage.mutateRecovery(
+                      ALLO_WORKSPACE_RECOVERY_NAMESPACE,
+                      ALLO_WORKSPACE_RECOVERY_KEY,
+                      { version: ALLO_WORKSPACE_RECOVERY.VERSION, action: 'remove', snapshotId },
+                      { queue: false }
+                  );
+                  next = ALLO_WORKSPACE_RECOVERY.normalizeStore(mutationResult.store);
+              }
               if (isLegacyMigration) {
                   try { await deviceStorage.remove('app_kv', 'allo_offline_history', { queue: false }); } catch (_) {}
                   try { await storageDB.del('allo_offline_history'); } catch (_) {}
@@ -36583,7 +39140,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setCanvasRecoveryEraseId(null);
           if (canvasRecoveryCurrentIdRef.current === snapshotId) {
               canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
-              clearCanvasWorkspaceState();
+              clearCanvasWorkspaceState({ archivePlan: !canvasRecoveryVaultState.enabled });
               setLastSaved(null);
               setCanvasRecoverySaveStatus('idle');
           }
@@ -36608,6 +39165,21 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       reader.onload = async (loadEvent) => {
           try {
               const parsed = JSON.parse(String(loadEvent?.target?.result || ''));
+              const vaultStack = await _alloGetRecoveryVaultStack();
+              if (parsed && parsed.kind === vaultStack.vault.BACKUP_KIND) {
+                  vaultStack.vault.validateVaultStore(parsed.vault);
+                  canvasRecoveryVaultImportRef.current = parsed;
+                  setCanvasRecoveryVaultForm(current => ({
+                      ...current, mode: 'import-backup', password: '', recoveryInput: '',
+                      newPassword: '', confirmNewPassword: '', backupUseRecoveryKey: false
+                  }));
+                  setCanvasRecoveryError('');
+                  setCanvasRecoveryDialogMode(canvasRecoveryVaultState.locked ? 'vault-locked' : 'manage');
+                  return;
+              }
+              if (canvasRecoveryVaultState.enabled && canvasRecoveryVaultState.locked) {
+                  throw new Error('Unlock protected recovery workspaces before importing a readable project file.');
+              }
               if (parsed && Object.prototype.hasOwnProperty.call(parsed, 'workspaceRecovery')) {
                   if (!ALLO_WORKSPACE_RECOVERY.isSupportedPayload(parsed.workspaceRecovery)) {
                       throw new Error('This recovery file was created by a newer AlloFlow version.');
@@ -36645,12 +39217,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
 
   useEffect(() => {
-      if (!isCanvas || !canvasRecoveryDecisionMade || !isHistoryLoaded || isStorageDisabled || canvasRecoveryMutationInProgressRef.current) return undefined;
+      if (!isCanvas || !canvasRecoveryDecisionMade || !isHistoryLoaded || isStorageDisabled
+          || canvasRecoveryMutationInProgressRef.current
+          || (canvasRecoveryVaultState.enabled && canvasRecoveryVaultState.locked)) return undefined;
       const liveStudentEntry = _alloHasAnyStudentEntry()
           || (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()));
       const hasMeaningfulWorkspace = history.length > 0
+          || units.length > 0
+          || profiles.length > 0
+          || Object.keys(studentResponses || {}).length > 0
           || (typeof inputText === 'string' && Boolean(inputText.trim()))
-          || (typeof sourceTopic === 'string' && Boolean(sourceTopic.trim()));
+          || (typeof sourceTopic === 'string' && Boolean(sourceTopic.trim()))
+          || Boolean(guidedPlanBrief);
       if (liveStudentEntry || !hasMeaningfulWorkspace) return undefined;
       const saveToken = ++canvasRecoverySaveTokenRef.current;
       const workspaceId = canvasRecoveryCurrentIdRef.current;
@@ -36672,24 +39250,30 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                       || canvasRecoveryMutationInProgressRef.current
                       || canvasRecoveryCurrentIdRef.current !== workspaceId) return null;
                   const deviceStorage = await _alloGetCanvasDeviceStorage();
-                  const currentPolicyStore = canvasRecoveryStoreRef.current;
+                  const controller = canvasRecoveryVaultState.enabled ? await getCanvasRecoveryVaultController() : null;
+                  let currentPolicyStore = canvasRecoveryStoreRef.current;
                   if (currentPolicyStore.retentionPolicy === ALLO_WORKSPACE_RECOVERY.POLICY_IDS.AUTOMATIC
                       && typeof deviceStorage.estimate === 'function') {
                       try {
                           const estimate = await deviceStorage.estimate();
                           const automatic = ALLO_WORKSPACE_RECOVERY.resolvePolicy('automatic', estimate, currentPolicyStore.effectiveRetentionPolicy);
                           if (automatic.effectiveId !== currentPolicyStore.effectiveRetentionPolicy) {
-                              await deviceStorage.mutateRecovery(
-                                  ALLO_WORKSPACE_RECOVERY_NAMESPACE,
-                                  ALLO_WORKSPACE_RECOVERY_KEY,
-                                  {
-                                      version: ALLO_WORKSPACE_RECOVERY.VERSION,
-                                      action: 'setPolicy',
-                                      policyId: 'automatic',
-                                      effectivePolicyId: automatic.effectiveId
-                                  },
-                                  { queue: false }
-                              );
+                              if (controller) {
+                                  await controller.setPolicy('automatic', automatic.effectiveId);
+                              } else {
+                                  await deviceStorage.mutateRecovery(
+                                      ALLO_WORKSPACE_RECOVERY_NAMESPACE,
+                                      ALLO_WORKSPACE_RECOVERY_KEY,
+                                      {
+                                          version: ALLO_WORKSPACE_RECOVERY.VERSION,
+                                          action: 'setPolicy',
+                                          policyId: 'automatic',
+                                          effectivePolicyId: automatic.effectiveId
+                                      },
+                                      { queue: false }
+                                  );
+                              }
+                              currentPolicyStore = ALLO_WORKSPACE_RECOVERY.setPolicy(currentPolicyStore, 'automatic', estimate);
                           }
                       } catch (error) {
                           warnLog('Automatic storage policy check skipped during autosave:', error?.message || error);
@@ -36700,17 +39284,41 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                       || canvasRecoveryCurrentIdRef.current !== workspaceId) return null;
                   const quotaSave = await ALLO_WORKSPACE_RECOVERY.saveWithQuotaFallback(
                       snapshot,
-                      candidate => deviceStorage.mutateRecovery(
-                          ALLO_WORKSPACE_RECOVERY_NAMESPACE,
-                          ALLO_WORKSPACE_RECOVERY_KEY,
-                          { version: ALLO_WORKSPACE_RECOVERY.VERSION, action: 'upsert', snapshot: candidate },
-                          { queue: false }
-                      )
+                      controller
+                          ? candidate => controller.upsertSnapshot(candidate)
+                          : candidate => deviceStorage.mutateRecovery(
+                              ALLO_WORKSPACE_RECOVERY_NAMESPACE,
+                              ALLO_WORKSPACE_RECOVERY_KEY,
+                              { version: ALLO_WORKSPACE_RECOVERY.VERSION, action: 'upsert', snapshot: candidate },
+                              { queue: false }
+                          )
                   );
                   const mutationResult = quotaSave.result;
                   const degraded = quotaSave.degraded;
-                  const nextStore = ALLO_WORKSPACE_RECOVERY.normalizeStore(mutationResult.store);
-                  return { nextStore, degraded };
+                  if (!controller && mutationResult?.applied === false && mutationResult.reason === 'stale-snapshot') {
+                      const conflict = new Error('This workspace changed in another tab before the latest edit could be saved. Reload or start a fresh workspace.');
+                      conflict.code = 'allo/recovery-save-stale';
+                      throw conflict;
+                  }
+                  if (controller) {
+                      if (mutationResult?.saved === false && mutationResult.reason === 'stale') {
+                          const conflict = new Error('This workspace changed in another tab before the latest edit could be saved. Reload or start a fresh workspace.');
+                          conflict.code = 'allo/recovery-save-stale';
+                          throw conflict;
+                      }
+                      let nextStore = mutationResult?.saved === false
+                          ? (mutationResult.reason === 'removed'
+                              ? ALLO_WORKSPACE_RECOVERY.remove(currentPolicyStore, workspaceId)
+                              : currentPolicyStore)
+                          : ALLO_WORKSPACE_RECOVERY.upsert(currentPolicyStore, quotaSave.savedSnapshot);
+                      const keptIds = new Set((mutationResult?.store?.records || []).map(record => record.id));
+                      nextStore = ALLO_WORKSPACE_RECOVERY.normalizeStore({
+                          ...nextStore,
+                          snapshots: nextStore.snapshots.filter(item => keptIds.has(item.id))
+                      });
+                      return { nextStore, degraded };
+                  }
+                  return { nextStore: ALLO_WORKSPACE_RECOVERY.normalizeStore(mutationResult.store), degraded };
               });
               if (!result) return;
               canvasRecoveryStoreRef.current = result.nextStore;
@@ -36759,7 +39367,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       fullPackTargetGroup, studentProjectSettings, guidedMode, guidedStep, guidedSelectedIds, guidedCompletedIds, guidedSkippedIds, guidedCreatedHistoryIds, guidedDeliveryEvidence, guidedPlanBrief, studentResponses,
       studentProgressLog, stickers, wordSoundsHistory, wordSoundsFamilies, wordSoundsAudioLibrary,
       wordSoundsBadges, phonemeMastery, wordSoundsDailyProgress, wordSoundsConfusionPatterns,
-      wordSoundsScore, canvasRecoveryRevision
+      wordSoundsScore, canvasRecoveryRevision, canvasRecoveryVaultState.enabled, canvasRecoveryVaultState.locked
   ]);  const getSkippedResources = () => {
     const skipped = history.filter(item => item && NON_EXPORTABLE_TYPES.has(item.type));
     return skipped.map(item => item.title || getDefaultTitle(item.type, item));
@@ -37226,30 +39834,48 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         },
         onProjectLoadStart: () => {
             invalidateLocalDataHydration();
-            if (!isCanvas) return;
-            if (canvasRecoveryMutationInProgressRef.current) {
+            if (isCanvas && canvasRecoveryMutationInProgressRef.current) {
                 throw new Error('Another saved-work operation is still running.');
             }
             canvasRecoveryImportPreviousIdRef.current = canvasRecoveryCurrentIdRef.current;
+            canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
+            if (!isCanvas) {
+                safeSetItem(_alloLearningWebWorkspaceKey, canvasRecoveryCurrentIdRef.current);
+                return;
+            }
             canvasRecoveryMutationInProgressRef.current = true;
             canvasRecoverySaveTokenRef.current += 1;
             canvasRecoveryPendingSaveCountRef.current = 0;
-            canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
             setPendingSync(false);
             setCanvasRecoveryBusyId('project-import');
             setCanvasRecoverySaveStatus('restoring');
         },
         onProjectLoadComplete: ({ success }) => {
-            if (!isCanvas || !canvasRecoveryImportPreviousIdRef.current) return;
+            if (!canvasRecoveryImportPreviousIdRef.current) return;
             if (!success) {
                 canvasRecoveryCurrentIdRef.current = canvasRecoveryImportPreviousIdRef.current;
-                setCanvasRecoverySaveStatus(canvasRecoveryStoreRef.current.snapshots.length > 0 ? 'saved' : 'idle');
-            } else {
+                if (!isCanvas) safeSetItem(_alloLearningWebWorkspaceKey, canvasRecoveryCurrentIdRef.current);
+                if (isCanvas) setCanvasRecoverySaveStatus(canvasRecoveryStoreRef.current.snapshots.length > 0 ? 'saved' : 'idle');
+            } else if (isCanvas) {
                 setCanvasRecoveryDecisionMade(true);
                 setCanvasRecoveryDialogMode(null);
                 setCanvasRecoverySaveStatus('idle');
                 setLastSaved(null);
                 setCanvasRecoveryRevision(value => value + 1);
+            } else {
+                // A non-Canvas import replaces the one active local project.
+                // Remove its prior scoped index after the import commits; the
+                // embedded history remains the authoritative graph source.
+                safeSetItem(_alloLearningWebWorkspaceKey, canvasRecoveryCurrentIdRef.current);
+                try {
+                    const registryApi = window.AlloModules && window.AlloModules.LearningWebRegistry;
+                    const registry = registryApi && typeof registryApi.getDefaultRegistry === 'function'
+                        ? registryApi.getDefaultRegistry()
+                        : null;
+                    if (registry && typeof registry.removeScope === 'function') {
+                        registry.removeScope('workspace:' + canvasRecoveryImportPreviousIdRef.current);
+                    }
+                } catch (_) {}
             }
             canvasRecoveryImportPreviousIdRef.current = null;
             canvasRecoveryMutationInProgressRef.current = false;
@@ -37443,6 +40069,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setActiveView(item.type === 'word-sounds' ? 'word-sounds-generator' : item.type);
       setIsMapLocked(false);
       if (item.type === 'word-sounds') {
+          // Saved/shared probe resources are anonymous by design. A local
+          // Assessment Center selection from an earlier run must not receive
+          // this result merely because the resource was reopened.
+          if (item.isProbeMode) setProbeTargetStudent(null);
           if (item.wsPreloadedWords && Array.isArray(item.wsPreloadedWords) && item.wsPreloadedWords.length > 0) {
               debugLog("📥 Restoring preloaded words from saved wsPreloadedWords:", item.wsPreloadedWords.length);
               // ttsReady means "a portable clip is in _ttsAssets", and it is
@@ -39734,6 +42364,126 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // the voice loop. Assembled from the same named handlers the rest of
   // the app already uses — the agent has no special powers.
   const [alloVoiceActive, setAlloVoiceActive] = useState(false);
+  const [alloVoiceSessionStatus, setAlloVoiceSessionStatus] = useState({ state: 'idle', owner: null, reason: null });
+  const alloVoiceAccessListening = alloVoiceSessionStatus.owner === 'agent-command' && alloVoiceSessionStatus.state === 'listening';
+  useEffect(() => {
+    let cancelled = false;
+    let unsubscribe = null;
+    let retryTimer = null;
+    const attach = () => {
+      if (cancelled) return;
+      const voice = window.AlloFlowVoice;
+      if (!voice || typeof voice.subscribeToVoiceSessionStatus !== 'function') {
+        retryTimer = setTimeout(attach, 250);
+        return;
+      }
+      const update = (status) => {
+        if (cancelled) return;
+        const next = status && typeof status === 'object' ? status : { state: 'idle', owner: null, reason: null };
+        setAlloVoiceSessionStatus(next);
+        if (next.owner === 'agent-command' && next.state === 'starting') setMicPermissionStatus('requesting');
+        if (next.owner === 'agent-command' && ['listening', 'processing', 'speaking', 'paused'].includes(next.state)) {
+          setMicPermissionStatus('granted');
+          setMicBannerDismissed(true);
+        }
+        if (next.state === 'error' || /denied|not-allowed|permission/i.test(String(next.reason || next.message || ''))) setMicPermissionStatus('denied');
+      };
+      try { if (typeof voice.getActiveVoiceSessionStatus === 'function') update(voice.getActiveVoiceSessionStatus()); } catch (_) {}
+      unsubscribe = voice.subscribeToVoiceSessionStatus(update);
+    };
+    attach();
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      try { if (typeof unsubscribe === 'function') unsubscribe(); } catch (_) {}
+    };
+  }, []);
+  const _voiceEditableFieldSelectionRef = useRef('');
+  const _listMainVoiceEditableFields = () => {
+    const fields = [];
+    const sourceOpen = activeSidebarTab === 'create' && activeView === 'input' && !showUrlInput && !showSourceGen;
+    if (sourceOpen) {
+      fields.push({
+        id: 'source-text',
+        label: 'Source text',
+        aliases: ['source input', 'source material', 'reading text'],
+        value: inputText,
+        maxLength: 20000,
+        setValue: (next) => setInputText(next)
+      });
+    }
+    if (generatedContent && generatedContent.id && generatedContent.type === 'sentence-frames' && !isEditingScaffolds) {
+      const responses = studentResponses[generatedContent.id] || {};
+      if (generatedContent.data && generatedContent.data.mode === 'list') {
+        (generatedContent.data.items || []).forEach((item, index) => {
+          fields.push({
+            id: 'sentence-frame-' + index,
+            label: 'Sentence frame response ' + (index + 1),
+            aliases: ['response ' + (index + 1), 'answer ' + (index + 1), 'sentence frame ' + (index + 1)],
+            value: responses[index] || '',
+            maxLength: 8000,
+            setValue: (next) => handleStudentInput(generatedContent.id, index, next)
+          });
+        });
+      } else if (generatedContent.data && typeof generatedContent.data.text === 'string') {
+        let responseIndex = 0;
+        generatedContent.data.text.split(/(\[.*?\])/).forEach((part, renderIndex) => {
+          if (!part.startsWith('[')) return;
+          responseIndex += 1;
+          const key = 'paragraph-' + renderIndex;
+          fields.push({
+            id: 'sentence-frame-' + renderIndex,
+            label: 'Sentence frame response ' + responseIndex,
+            aliases: ['response ' + responseIndex, 'answer ' + responseIndex, 'sentence frame ' + responseIndex],
+            value: responses[key] || '',
+            maxLength: 2000,
+            setValue: (next) => handleStudentInput(generatedContent.id, key, next)
+          });
+        });
+      }
+    }
+    if (generatedContent && generatedContent.id && generatedContent.type === 'math') {
+      const responses = studentResponses[generatedContent.id] || {};
+      const problems = Array.isArray(generatedContent.data) ? generatedContent.data : [];
+      problems.forEach((problem, index) => {
+        if (problem && problem.manipulativeResponse) return;
+        fields.push({
+          id: 'math-work-' + index,
+          label: 'Show your work for problem ' + (index + 1),
+          aliases: ['math response ' + (index + 1), 'problem ' + (index + 1), 'student work ' + (index + 1)],
+          value: responses[index] || '',
+          maxLength: 8000,
+          setValue: (next) => handleStudentInput(generatedContent.id, index, next)
+        });
+      });
+    }
+    return fields;
+  };
+  const _selectMainVoiceEditableField = (fieldId) => {
+    const field = _listMainVoiceEditableFields().find((candidate) => candidate.id === fieldId);
+    if (!field) return false;
+    _voiceEditableFieldSelectionRef.current = field.id;
+    return true;
+  };
+  const _editMainVoiceEditableField = (fieldId, operation, dictatedValue) => {
+    const field = _listMainVoiceEditableFields().find((candidate) => candidate.id === fieldId);
+    if (!field || typeof field.setValue !== 'function') return { ok: false, message: 'That field is no longer available.' };
+    const current = String(field.value || '');
+    const incoming = String(dictatedValue || '').trim();
+    let next = operation === 'clear'
+      ? ''
+      : (operation === 'append' ? [current.trim(), incoming].filter(Boolean).join(' ') : incoming);
+    const limit = Math.max(1, Number(field.maxLength) || 8000);
+    if (next.length > limit) next = next.slice(0, limit);
+    field.setValue(next);
+    _voiceEditableFieldSelectionRef.current = field.id;
+    return {
+      ok: true,
+      message: operation === 'clear'
+        ? field.label + ' cleared.'
+        : (operation === 'append' ? 'Text appended to ' + field.label + '.' : field.label + ' updated.')
+    };
+  };
   const _alloCmdCtxRef = useRef(null);
   // Holds a command the bot chat has PROPOSED (via a confirm chip) but not yet
   // run. Nothing executes until the user clicks "Do it" — see handleSendUDLMessage.
@@ -39915,8 +42665,282 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     // banner props and the "Create Homework QR" button), which threw
     // "createGuidedHomeworkShare is not defined" and crashed the whole app
     // to the error boundary. The ctx below still sees them via closure.
+    const chooseOnboardingPath = (path) => {
+      const choice = String(path || '').toLowerCase();
+      if (choice === 'full') { setHasSelectedMode(true); setGuidedMode(false); return true; }
+      if (choice === 'guided') { setHasSelectedMode(true); setGuidedMode(true); return true; }
+      if (choice === 'learning' || choice === 'learning_tools') {
+        setShowLearningHub(true); setIsTeacherMode(false); setShowWizard(false);
+        setHasSelectedRole(true); setHasSelectedMode(true); return true;
+      }
+      if (choice === 'educator') {
+        setHasSelectedMode(true); setHasSelectedRole(false); setShowWizard(false);
+        return true;
+      }
+      return false;
+    };
+    const chooseOnboardingRole = (role) => {
+      const choice = String(role || '').toLowerCase();
+      if (!['student', 'teacher', 'parent', 'independent'].includes(choice)) return false;
+      if (_alloEducatorAccessCodeRequired() && ['teacher', 'parent', 'independent'].includes(choice)) {
+        setPendingRole(choice);
+        setIsGateOpen(true);
+        return true;
+      }
+      executeRoleSelect(choice);
+      return true;
+    };
+    // @section VOICE_SEMANTIC_HOST
+    // State-derived orientation: direct app state only, never simulated clicks.
+    const describeCurrentScreen = () => {
+      if (showAIBackendModal) return 'AI Backend Settings is open. Choose a provider and model, test the connection, or close the dialog.';
+      if (showTextSettings) return 'Text Settings is open. Change text size, spacing, font, reading theme, or color support.';
+      if (showVoiceSettings) return 'Voice Settings is open. Choose a voice and change read-aloud speed or volume.';
+      if (isTranslateModalOpen) return 'The Translation dialog is open. Choose a language, translate the current resource, or close the dialog.';
+      if (isGateOpen) return 'Protected educator access is open. Enter the access code or cancel. Voice commands will not speak or expose the code.';
+      if (isProjectSettingsOpen) return 'Project Settings is open for learner permissions, accessibility supports, and project options.';
+      if (showDirectionsComposer) return 'The Assignment Directions editor is open for directions, goals, and success criteria.';
+      if (showAssessmentBuilder) return 'Assessment Builder is open for designing an assessment and supporting activities.';
+      if (showUDLGuide) return 'The UDL Guide is open with accessibility supports and lesson guidance.';
+      if (showLivePollingPanel) return 'The Live Poll composer is open. Review the prompt and choices before broadcasting.';
+      if (showStudentSignals) return 'The Teacher Signal panel is open. Choose help, more time, or ready.';
+      if (showLiveDock) return 'The Live Session Center is open with polls, quick checks, groups, and classroom activities.';
+      if (showExportPreview) return 'Document Builder is open for reviewing, differentiating, and exporting the current resource.';
+      if (showExportMenu) return 'The Export Menu is open. Choose an available download or sharing format.';
+      if (showSessionModal) return 'The Class Session dialog is open for starting, joining, or managing a live class.';
+      if (showRecentQrShares) return 'Share and Collect is open with recent links, polls, surveys, and response results.';
+      if (showClassAnalytics) return 'Class Analytics is open with learner progress and classroom evidence.';
+      if (showNotebook) return 'The Notebook is open with saved notes and entries.';
+      if (!hasSelectedMode) return 'AlloFlow launch pad. Choose Full Platform, Guided Setup, Learning Tools, or Educator Tools. You can also enable Voice Access.';
+      if (!hasSelectedRole) return 'Role selection. Choose Student, Teacher, Parent, or Independent Learner. Protected roles may ask for an access code.';
+      if (showReadThisPage) return 'Read This Page is open. Read everything, move between items, pause or resume, stop, or close the reader.';
+      if (isTestPrepHubOpen) return 'Test Prep Hub is open. Choose a practice set, study resource, or hands-free practice session.';
+      if (isLinguaPracticeOpen) return 'Lingua Practice is open for language learning and practice.';
+      if (isTimelineStudioOpen) return 'Timeline Studio is open for exploring and creating timelines.';
+      if (isOpenGrooveOpen) return 'Open Groove Studio is open for music creation.';
+      if (showResearchHub) return 'Research Hub is open for finding and organizing sources.';
+      if (showLitLab) return 'Lit Lab is open for literature and reading activities.';
+      if (showMindMap) return 'Learning Web: Unit Path is open for connected lessons, standards, and evidence.';
+      if (showPoetTree) return 'Poet Tree is open for guided poetry writing.';
+      if (showStemLab) return stemLabTool ? ('STEAM Lab is open to ' + String(stemLabTool).replace(/[-_]/g, ' ') + '.') : 'STEAM Lab is open. Choose a tool to explore.';
+      if (showStoryForge) return 'StoryForge is open for creating and reviewing a story.';
+      if (isAlloHavenOpen) return 'AlloHaven is open.';
+      if (showBehaviorLens) return 'BehaviorLens is open for reviewing behavior evidence and supports.';
+      if (showReportWriter) return 'Report Writer is open for preparing an educator report.';
+      if (isSymbolStudioOpen) return 'Symbol Studio is open for creating visual and symbol supports.';
+      if (isVideoStudioOpen) return 'Video Studio is open for recording and reviewing instructional video.';
+      if (isAlloStudioOpen) return 'AlloStudio is open for creating media and learning materials.';
+      if (showCinematicStudio) return 'Cinematic Studio is open for building a narrated visual sequence.';
+      if (isAccessibilityLabOpen) return 'Accessibility Lab is open for checking and improving access supports.';
+      if (isCommunityCatalogOpen) return 'Community Catalog is open for browsing shared learning resources.';
+      if (isReadingLibraryOpen) return 'Reading Library is open for finding and reading accessible books and texts.';
+      if (isDynamicAssessmentOpen) return 'Dynamic Assessment is open for adaptive practice and review.';
+      if (showSelHub) return 'SEL Hub is open for social-emotional learning activities.';
+      if (showLearningHub) return 'Learning Hub is open. Browse learner tools and resources.';
+      if (showEducatorHub) return 'Educator Hub is open. Browse teaching, accessibility, and classroom tools.';
+      if (activeView === 'dashboard') return 'AlloFlow dashboard is open.';
+      if (activeView === 'input') return 'Source input is open.';
+      if (activeView === 'history' || (activeSidebarTab === 'history' && !generatedContent)) return 'History is open with saved and recent work.';
+      if (generatedContent) {
+        const title = String(generatedContent.title || generatedContent.name || '').trim();
+        const type = String(generatedContent.type || 'resource').replace(/[-_]/g, ' ');
+        return (title ? (title + '. ') : '') + 'A ' + type + ' resource is open.';
+      }
+      return 'AlloFlow workspace is open.';
+    };
+    const listCurrentActions = () => {
+      // Production responses come from the same gated registry that will
+      // execute the spoken phrase. The static branches below remain only as a
+      // compatibility fallback while the command module is still loading.
+      try {
+        const commandApi = window.AlloModules && window.AlloModules.AlloCommands;
+        if (commandApi && typeof commandApi.buildAlloCommands === 'function') {
+          const orientation = ['describe_current_screen', 'repeat_last_response'];
+          let ids = orientation;
+          if (showAIBackendModal) {
+            ids = ['describe_current_screen', 'close_current_surface', 'repeat_last_response'];
+          } else if (showTextSettings) {
+            ids = ['font_bigger', 'font_smaller', 'line_spacing_more', 'line_spacing_less', 'cycle_reading_theme', 'close_current_surface', 'repeat_last_response'];
+          } else if (showVoiceSettings) {
+            ids = ['voice_speed_up', 'voice_speed_down', 'close_current_surface', 'repeat_last_response'];
+          } else if (isTranslateModalOpen || isGateOpen || isProjectSettingsOpen || showDirectionsComposer || showAssessmentBuilder || showUDLGuide || showLivePollingPanel || showStudentSignals || showLiveDock || showExportPreview || showExportMenu || showSessionModal || showRecentQrShares || showClassAnalytics || showNotebook) {
+            ids = ['describe_current_screen', 'close_current_surface', 'repeat_last_response'];
+          } else if (!hasSelectedMode) {
+            ids = ['onboarding_full_platform', 'onboarding_guided_setup', 'onboarding_learning_tools', 'onboarding_educator_tools'];
+          } else if (!hasSelectedRole) {
+            ids = ['onboarding_student_role', 'onboarding_teacher_role', 'onboarding_parent_role', 'onboarding_independent_role', 'go_back'];
+          } else if (showReadThisPage) {
+            ids = ['stop_reading', 'close_current_surface', 'repeat_last_response'];
+          } else if (isTestPrepHubOpen) {
+            // Test Prep's local completion grammar is still being consolidated;
+            // do not advertise phrases the platform kernel cannot execute yet.
+            ids = ['describe_current_screen', 'close_current_surface', 'repeat_last_response'];
+          } else if (isLinguaPracticeOpen || isTimelineStudioOpen || isOpenGrooveOpen || showResearchHub || showLitLab || showMindMap || showPoetTree || showStemLab || showStoryForge || isAlloHavenOpen || showBehaviorLens || showReportWriter || isSymbolStudioOpen || isVideoStudioOpen || isAlloStudioOpen || showCinematicStudio || isAccessibilityLabOpen || isCommunityCatalogOpen || isReadingLibraryOpen || isDynamicAssessmentOpen || showSelHub) {
+            ids = ['describe_current_screen', 'close_current_surface', 'repeat_last_response'];
+          } else if (showLearningHub) {
+            ids = ['open_test_prep_hub', 'open_reading_library', 'open_stem_lab', 'open_notebook', 'describe_current_screen', 'close_current_surface'];
+          } else if (showEducatorHub) {
+            ids = ['open_source_input', 'open_assessment_builder', 'open_class_analytics', 'describe_current_screen', 'close_current_surface'];
+          } else if (activeView === 'input') {
+            ids = ['open_source_url', 'open_source_generator', 'go_back', 'describe_current_screen'];
+          } else if (activeView === 'history' || (activeSidebarTab === 'history' && !generatedContent)) {
+            ids = ['go_back', 'describe_current_screen', 'repeat_last_response'];
+          } else if (generatedContent && activeView !== 'dashboard') {
+            ids = commandAudience === 'student'
+              ? ['read_this_page', 'check_assignment_progress', 'next_assignment_step', 'save_my_work', 'submit_work', 'review_teacher_feedback', 'close_current_surface', 'repeat_last_response']
+              : ['read_this_page', 'open_export_menu', 'open_translate', 'close_current_surface', 'repeat_last_response'];
+          } else if (activeView === 'dashboard') {
+            ids = commandAudience === 'student'
+              ? ['open_learning_hub', 'open_test_prep_hub', 'open_notebook', 'describe_current_screen']
+              : ['open_educator_hub', 'open_learning_hub', 'open_source_input', 'open_history', 'describe_current_screen'];
+          } else {
+            ids = ['describe_current_screen', 'close_current_surface', 'repeat_last_response'];
+          }
+          const byId = new Map(commandApi.buildAlloCommands(ctx).map((command) => [command.id, command]));
+          const labels = ids.map((id) => byId.get(id)).filter(Boolean).map((command) => command.label);
+          if (labels.length) return labels;
+        }
+      } catch (_) {}
+      if (showAIBackendModal) return ['choose an AI provider', 'choose a model', 'test the connection', 'close the current surface'];
+      if (showTextSettings) return ['make text bigger', 'make text smaller', 'change line spacing', 'change the reading theme', 'close the current surface'];
+      if (showVoiceSettings) return ['choose a voice', 'change voice speed', 'change voice volume', 'close the current surface'];
+      if (isTranslateModalOpen) return ['choose a translation language', 'translate the current resource', 'close the current surface'];
+      if (isGateOpen) return ['enter the access code', 'cancel protected access', 'repeat the last response'];
+      if (isProjectSettingsOpen) return ['review learner permissions', 'change project options', 'close the current surface'];
+      if (showDirectionsComposer) return ['edit directions', 'edit goals', 'save assignment directions', 'close the current surface'];
+      if (showAssessmentBuilder) return ['add an assessment item', 'review the assessment', 'save the assessment', 'close the current surface'];
+      if (showLivePollingPanel) return ['review the poll', 'broadcast the poll', 'close the current surface'];
+      if (showStudentSignals) return ['send a help signal', 'ask for more time', 'send a ready signal', 'close the current surface'];
+      if (showReadThisPage) return ['read everything', 'next reading item', 'previous reading item', 'repeat this item', 'pause reading', 'resume reading', 'stop reading', 'close the current surface'];
+      if (!hasSelectedMode) return ['choose Full Platform', 'choose Guided Setup', 'choose Learning Tools', 'choose Educator Tools', 'enable Voice Access'];
+      if (!hasSelectedRole) return ['choose Student', 'choose Teacher', 'choose Parent', 'choose Independent Learner', 'enable Voice Access'];
+      if (isTestPrepHubOpen) return ['choose a practice set', 'start hands-free practice', 'open progress', 'describe the current screen', 'close the current surface'];
+      if (showLearningHub) return ['open Test Prep Hub', 'open Reading Library', 'open STEAM Lab', 'close the current surface'];
+      if (showEducatorHub) return ['open source input', 'open Assessment Builder', 'open Class Analytics', 'close the current surface'];
+      if (showNotebook) return ['review notebook entries', 'open a notebook entry', 'close the current surface'];
+      if (showLiveDock) return ['open a live poll', 'run a quick check', 'open group tools', 'close the current surface'];
+      if (showExportPreview) return ['review the document', 'change document options', 'export the document', 'close the current surface'];
+      if (showExportMenu) return ['list export choices', 'choose an export format', 'close the current surface'];
+      if (showSessionModal) return ['start a class session', 'join a class session', 'manage the active session', 'close the current surface'];
+      if (showRecentQrShares || showClassAnalytics || showUDLGuide) return ['describe the current screen', 'list available actions', 'close the current surface'];
+      if (isLinguaPracticeOpen || isTimelineStudioOpen || isOpenGrooveOpen || showResearchHub || showLitLab || showMindMap || showPoetTree || showStemLab || showStoryForge || isAlloHavenOpen || showBehaviorLens || showReportWriter || isSymbolStudioOpen || isVideoStudioOpen || isAlloStudioOpen || showCinematicStudio || isAccessibilityLabOpen || isCommunityCatalogOpen || isReadingLibraryOpen || isDynamicAssessmentOpen || showSelHub) {
+        return ['describe the current screen', 'list available actions', 'close the current surface'];
+      }
+      if (generatedContent) {
+        const actions = ['read this page'];
+        if (assignmentDirections) actions.push('check assignment progress', 'go to the next assignment step');
+        if (commandAudience === 'student') {
+          if (Array.isArray(history) && history.length > 0) actions.push('save my work');
+          actions.push('submit work', 'review teacher feedback');
+        } else {
+          actions.push('open the export menu', 'open translation');
+        }
+        actions.push('close the current surface');
+        return actions;
+      }
+      if (activeSidebarTab === 'history') return ['review recent work', 'open saved work', 'go back'];
+      if (activeView === 'input') return ['write source text', 'find a resource online', 'generate source from a topic', 'go back'];
+      return commandAudience === 'student'
+        ? ['open Learning Hub', 'open Test Prep Hub', 'open my notebook', 'describe the current screen']
+        : ['open Educator Hub', 'open Learning Hub', 'open source input', 'open history', 'describe the current screen'];
+    };
+    const closeCurrentSurface = () => {
+      if (showAIBackendModal) { setShowAIBackendModal(false); return 'AI Backend Settings closed.'; }
+      if (showTextSettings) { setShowTextSettings(false); return 'Text Settings closed.'; }
+      if (showVoiceSettings) { setShowVoiceSettings(false); return 'Voice Settings closed.'; }
+      if (isTranslateModalOpen) { setIsTranslateModalOpen(false); return 'Translation closed.'; }
+      if (isGateOpen) { setIsGateOpen(false); setPendingRole(null); return 'Protected educator access canceled.'; }
+      if (isProjectSettingsOpen) { setIsProjectSettingsOpen(false); return 'Project Settings closed.'; }
+      if (showDirectionsComposer) { setShowDirectionsComposer(false); return 'Assignment Directions closed.'; }
+      if (showAssessmentBuilder) { setShowAssessmentBuilder(false); return 'Assessment Builder closed.'; }
+      if (showUDLGuide) { setShowUDLGuide(false); return 'UDL Guide closed.'; }
+      if (showLivePollingPanel) { setShowLivePollingPanel(false); return 'Live Poll closed.'; }
+      if (showStudentSignals) { setShowStudentSignals(false); return 'Teacher Signal panel closed.'; }
+      if (showLiveDock) { setShowLiveDock(false); return 'Live Session Center closed.'; }
+      if (showExportPreview) { setShowExportPreview(false); return 'Document Builder closed.'; }
+      if (showExportMenu) { setShowExportMenu(false); return 'Export Menu closed.'; }
+      if (showSessionModal) { setShowSessionModal(false); return 'Class Session closed.'; }
+      if (showRecentQrShares) { setShowRecentQrShares(false); return 'Share and Collect closed.'; }
+      if (showClassAnalytics) { setShowClassAnalytics(false); return 'Class Analytics closed.'; }
+      if (showNotebook) { setShowNotebook(false); return 'Notebook closed.'; }
+      if (!hasSelectedMode || !hasSelectedRole) return 'This required setup screen cannot be closed. Say list available actions to hear your choices.';
+      if (showReadThisPage) { closeReadThisPage(); return 'Read This Page closed.'; }
+      if (isTestPrepHubOpen) { setIsTestPrepHubOpen(false); return 'Test Prep Hub closed.'; }
+      if (isLinguaPracticeOpen) { setIsLinguaPracticeOpen(false); return 'Lingua Practice closed.'; }
+      if (isTimelineStudioOpen) { setIsTimelineStudioOpen(false); return 'Timeline Studio closed.'; }
+      if (isOpenGrooveOpen) { setIsOpenGrooveOpen(false); return 'Open Groove Studio closed.'; }
+      if (showResearchHub) { setShowResearchHub(false); return 'Research Hub closed.'; }
+      if (showLitLab) { setShowLitLab(false); return 'Lit Lab closed.'; }
+      if (showMindMap) { setShowMindMap(false); setThroughlineSeedUnitId(null); return 'Learning Web: Unit Path closed.'; }
+      if (showPoetTree) { setShowPoetTree(false); return 'Poet Tree closed.'; }
+      if (showStemLab) { setShowStemLab(false); return 'STEAM Lab closed.'; }
+      if (showStoryForge) { setShowStoryForge(false); return 'StoryForge closed.'; }
+      if (isAlloHavenOpen) { setIsAlloHavenOpen(false); return 'AlloHaven closed.'; }
+      if (showBehaviorLens) { setShowBehaviorLens(false); return 'BehaviorLens closed.'; }
+      if (showReportWriter) { setShowReportWriter(false); return 'Report Writer closed.'; }
+      if (isSymbolStudioOpen) { setIsSymbolStudioOpen(false); return 'Symbol Studio closed.'; }
+      if (isVideoStudioOpen) { setIsVideoStudioOpen(false); return 'Video Studio closed.'; }
+      if (isAlloStudioOpen) { setIsAlloStudioOpen(false); return 'AlloStudio closed.'; }
+      if (showCinematicStudio) { setShowCinematicStudio(false); return 'Cinematic Studio closed.'; }
+      if (isAccessibilityLabOpen) { setIsAccessibilityLabOpen(false); return 'Accessibility Lab closed.'; }
+      if (isCommunityCatalogOpen) { setIsCommunityCatalogOpen(false); return 'Community Catalog closed.'; }
+      if (isReadingLibraryOpen) { setIsReadingLibraryOpen(false); return 'Reading Library closed.'; }
+      if (isDynamicAssessmentOpen) { setIsDynamicAssessmentOpen(false); return 'Dynamic Assessment closed.'; }
+      if (showSelHub) { setShowSelHub(false); return 'SEL Hub closed.'; }
+      if (showLearningHub) { setShowLearningHub(false); return 'Learning Hub closed.'; }
+      if (showEducatorHub) { setShowEducatorHub(false); return 'Educator Hub closed.'; }
+      if (activeView !== 'dashboard') { handleSetActiveViewToDashboard(); return 'Returned to the dashboard.'; }
+      return 'Nothing is open to close.';
+    };
+    const goBack = () => {
+      if (isGateOpen) return closeCurrentSurface();
+      if (!hasSelectedMode) return 'You are already at the launch pad.';
+      if (!hasSelectedRole) {
+        setHasSelectedMode(false);
+        return 'Returned to the AlloFlow launch pad.';
+      }
+      return closeCurrentSurface();
+    };
+    const repeatLastResponse = () => {
+      try {
+        const previous = String(window.__alloLastCommandNarration || '').trim();
+        return previous || 'There is no previous command response to repeat yet.';
+      } catch (_) { return 'There is no previous command response to repeat yet.'; }
+    };
+    const requestTestPrepVoiceControl = (action = 'status') => {
+      let response = null;
+      try {
+        const requestId = `global-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        window.dispatchEvent(new CustomEvent('alloflow:test-prep-voice-control', {
+          detail: {
+            action,
+            requestId,
+            respond: (payload) => { response = payload || null; },
+          },
+        }));
+      } catch (_) {}
+      if (response) return response;
+      return {
+        ok: false,
+        ready: false,
+        active: false,
+        state: isTestPrepHubOpen ? 'loading' : 'closed',
+        message: isTestPrepHubOpen
+          ? 'Test Prep voice controls are still loading. Try again in a moment.'
+          : 'Open Test Prep Hub first.',
+      };
+    };
+
     const ctx = {
       t, addToast, callGemini, commandAudience,
+      onboardingStage: !hasSelectedMode ? 'path' : (!hasSelectedRole ? 'role' : null),
+      chooseOnboardingPath, chooseOnboardingRole,
+      describeCurrentScreen, listCurrentActions, goBack, closeCurrentSurface, repeatLastResponse,
+      requestTestPrepVoiceControl,
+      listVoiceEditableFields: _listMainVoiceEditableFields,
+      getSelectedVoiceEditableFieldId: () => _voiceEditableFieldSelectionRef.current,
+      selectVoiceEditableField: _selectMainVoiceEditableField,
+      editVoiceEditableField: _editMainVoiceEditableField,
       setShowEducatorHub, setShowLearningHub, openExportPreview, setShowWizard,
       setShowNotebook, openTranslateModal: handleSetIsTranslateModalOpenToTrue,
       setShowSessionModal, setShowClassAnalytics, setShowExportMenu, setShowAIBackendModal,
@@ -40073,7 +43097,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       saveStudentWork: initiateSaveStudentProject,
       getNextAssignmentStep,
       openNextAssignmentStep: () => { const step = getNextAssignmentStep(); if (step && step.item) handleRestoreView(step.item); return step; },
-      readAssignmentDirections: () => { if (!assignmentDirections) return false; handleRestoreView(assignmentDirections); setTimeout(() => setShowReadThisPage(true), 80); return true; },
+      readAssignmentDirections: () => { if (!assignmentDirections) return false; handleRestoreView(assignmentDirections); setTimeout(() => startReadThisPage(), 80); return true; },
       getSuccessCriteria,
       getTeacherFeedback,
       sendTeacherSignal: (signal) => {
@@ -40141,7 +43165,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // Voice loop (opt-in only; singleton lives on window so an old
       // session can never leave a hidden live mic)
       voiceActive: alloVoiceActive,
+      voiceSessionStatus: alloVoiceSessionStatus,
       voiceAvailable: !!(window.SpeechRecognition || window.webkitSpeechRecognition) || _isDesktopBundledApp,
+      selectedVoice,
+      voiceSpeed,
+      voiceVolume,
       setVoiceActive: setAlloVoiceActive,
       // Voice recognition follows the UI language when the slug is a real
       // BCP-47 code ('es', 'fr', 'pt-BR'…); nonstandard pack slugs (karen,
@@ -40151,8 +43179,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       startVoiceLoop: () => {
         const AC = window.AlloModules && window.AlloModules.AlloCommands;
         if (!AC || !AC.createVoiceLoop) { addToast(t('toasts.voice_module_missing') || 'Voice control is still loading — try again in a moment.', 'info'); return; }
-        if (!window.__alloVoiceLoop) window.__alloVoiceLoop = AC.createVoiceLoop(() => _alloCmdCtxRef.current || _alloCmdCtx());
-        window.__alloVoiceLoop.start();
+        try {
+          if (!window.__alloVoiceLoop) window.__alloVoiceLoop = AC.createVoiceLoop(() => _alloCmdCtxRef.current || _alloCmdCtx());
+          const started = window.__alloVoiceLoop.start();
+          return started !== false && !!(window.__alloVoiceLoop.isActive && window.__alloVoiceLoop.isActive());
+        } catch (error) {
+          setAlloVoiceActive(false);
+          addToast((error && error.message) || 'Voice control could not start.', 'error');
+          return false;
+        }
       },
       stopVoiceLoop: () => { try { if (window.__alloVoiceLoop) window.__alloVoiceLoop.stop(); } catch (_) {} },
       // "Where is X?" — answer by POINTING: score every visible
@@ -40243,7 +43278,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           sessionModal: () => setShowSessionModal(false),
           exportMenu: () => setShowExportMenu(false),
           exportPreview: () => setShowExportPreview(false),
-          readThisPage: () => setShowReadThisPage(false),
+          readThisPage: () => closeReadThisPage(),
           // Tool workspaces (2026-06-13): launching a tool from the palette/voice/bot now
           // closes any other open tool or hub instead of stacking. Lumen rides on stemLab.
           behaviorLens: () => setShowBehaviorLens(false),
@@ -40354,7 +43389,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // ── More command-coverage capabilities (2026-06-13, discovery w59vf8skj) ── each maps to ONE
       // existing host handler (verified by symbol in this file). Cycle/spacing read current state
       // (readingTheme/lineHeight) the same way fontBigger reads sliderFontSize — ctx rebuilds per render.
-      stopReading: stopPlayback,
+      stopReading: (...args) => { stopReadThisPage(); return stopPlayback(...args); },
       toggleMute: () => { const next = !isGlobalMuted(); setGlobalMute(next); return next; },
       cycleReadingTheme: () => { const order = ['default','warm','sepia','dark','highContrast','blue','green','rose','dyslexia','dim']; const i = order.indexOf(readingTheme); const next = order[(i + 1) % order.length]; setReadingTheme(next); return next; },
       lineSpacingMore: () => { const v = Math.min(2.5, Math.round(((lineHeight || 1.6) + 0.1) * 10) / 10); setLineHeight(v); return v; },
@@ -40382,7 +43417,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setGlossaryFilterChoice: (tier) => { if (tier === 'academic') handleSetGlossaryFilterToAcademic(); else if (tier === 'domain') handleSetGlossaryFilterToDomain(); else handleSetGlossaryFilterToAll(); return tier; },
       contentIsQuiz: !!generatedContent && generatedContent.type === 'quiz',
       contentIsSimplified: !!generatedContent && generatedContent.type === 'simplified',
-      openReadThisPage: () => { setShowReadThisPage(true); return true; },
+      openReadThisPage: openReadThisPagePanel,
+      startReadThisPage,
+      stopReadThisPage,
+      pauseReadThisPage,
+      resumeReadThisPage,
+      nextReadThisPageItem,
+      previousReadThisPageItem,
+      repeatReadThisPageItem,
+      closeReadThisPage,
+      readThisPageIsOpen: showReadThisPage,
+      readThisPagePlaybackState: rtpPlaybackState,
       toggleQuizAnswers: () => { handleToggleShowQuizAnswers(); return true; },
       togglePresentationMode: () => { handleToggleIsPresentationMode(); return true; },
       toggleSideBySide: () => { setIsSideBySide(prev => !prev); return true; },
@@ -40442,6 +43487,73 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     };
     _alloCmdCtxRef.current = ctx;
     return ctx;
+  };
+  useEffect(() => {
+    let disposed = false;
+    let unregister = null;
+    let retryTimer = null;
+    const attach = () => {
+      if (disposed || unregister) return;
+      const commands = window.AlloModules && window.AlloModules.AlloCommands;
+      if (!commands || typeof commands.createNamedFieldCommandAdapter !== 'function' || typeof commands.registerCommandScope !== 'function') {
+        retryTimer = setTimeout(attach, 250);
+        return;
+      }
+      unregister = commands.registerCommandScope(commands.createNamedFieldCommandAdapter({
+        id: 'main-editable-fields',
+        priority: 20
+      }));
+    };
+    attach();
+    return () => {
+      disposed = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      try { if (typeof unregister === 'function') unregister(); } catch (_) {}
+    };
+  }, []);
+  const enableGlobalVoiceAccess = async () => {
+    setMicPermissionStatus('requesting');
+    const ctx = _alloCmdCtxRef.current || _alloCmdCtx();
+    if (!ctx.voiceAvailable) {
+      setMicPermissionStatus('unavailable');
+      return false;
+    }
+    const started = await Promise.resolve(ctx.startVoiceLoop());
+    if (!started) {
+      setMicPermissionStatus('unknown');
+      return false;
+    }
+    const voice = window.AlloFlowVoice;
+    if (!voice || typeof voice.subscribeToVoiceSessionStatus !== 'function') {
+      const active = !!(window.__alloVoiceLoop && window.__alloVoiceLoop.isActive && window.__alloVoiceLoop.isActive());
+      setMicPermissionStatus(active ? 'granted' : 'unknown');
+      if (active) setMicBannerDismissed(true);
+      return active;
+    }
+    return new Promise((resolve) => {
+      let settled = false;
+      let unsubscribe = null;
+      let timer = null;
+      const finish = (ok, status) => {
+        if (settled) return;
+        settled = true;
+        if (timer) clearTimeout(timer);
+        try { if (typeof unsubscribe === 'function') unsubscribe(); } catch (_) {}
+        setMicPermissionStatus(ok ? 'granted' : (/denied|not-allowed|permission/i.test(String(status && (status.reason || status.message) || '')) ? 'denied' : 'unknown'));
+        if (ok) setMicBannerDismissed(true);
+        resolve(ok);
+      };
+      const inspect = (status) => {
+        if (status && status.owner === 'agent-command' && status.state === 'listening') finish(true, status);
+        else if (status && (status.state === 'error' || (status.state === 'idle' && !(window.__alloVoiceLoop && window.__alloVoiceLoop.isActive && window.__alloVoiceLoop.isActive())))) finish(false, status);
+      };
+      try { inspect(voice.getActiveVoiceSessionStatus && voice.getActiveVoiceSessionStatus()); } catch (_) {}
+      if (!settled) unsubscribe = voice.subscribeToVoiceSessionStatus(inspect);
+      timer = setTimeout(() => {
+        const status = voice.getActiveVoiceSessionStatus ? voice.getActiveVoiceSessionStatus() : null;
+        finish(!!(status && status.owner === 'agent-command' && status.state === 'listening'), status);
+      }, 5000);
+    });
   };
   // The chat's delivery path to the conversational UdlChat module. Split out so
   // handleSendUDLMessage (below) can reach it after the command preview/confirm
@@ -41344,15 +44456,78 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     }
     throw new Error("[handleRebuildBlueprintStep] PhaseOHandlers module not loaded - reload the page");
   };
-  const handleDownloadBlueprintDiagnostics = () => {
-    if (!blueprintExecutionResult) return false;
+  const buildSanitizedBlueprintDiagnostic = () => {
+    if (!blueprintExecutionResult) return null;
+    const resourceStatuses = ['planned', 'running', 'retrying', 'landed', 'failed', 'interrupted', 'stopped', 'skipped'];
+    const rows = Object.values(blueprintExecutionResult.rows || {}).slice(0, 1000).map((row, index) => {
+      if (!row) return { row: index + 1, status: 'unknown' };
+      const safeReason = row.failReason ? _alloDiagnosticReason(row.failReason) : null;
+      return {
+        row: index + 1,
+        tool: _alloDiagnosticResourceType(row.tool),
+        status: resourceStatuses.includes(row.status) ? row.status : 'unknown',
+        failureCode: safeReason ? safeReason.code : null,
+        failReason: safeReason ? safeReason.summary : null,
+        elapsedMs: _alloDiagnosticBoundedInt(row.elapsedMs, 24 * 60 * 60 * 1000),
+        startedAt: _alloDiagnosticTimestamp(row.startedAt),
+        finishedAt: _alloDiagnosticTimestamp(row.finishedAt),
+      };
+    });
+    return {
+      reportVersion: 2,
+      generatorCapability: ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT,
+      exportedAt: new Date().toISOString(),
+      runId: _alloDiagnosticRunId(blueprintExecutionResult.runId, 'blueprint'),
+      done: blueprintExecutionResult.done === true,
+      persistenceWarning: blueprintExecutionResult.persistenceWarning ? 'Compact persistence fallback was used.' : null,
+      rows,
+      observability: ALLO_GENERATION_METRICS.snapshot(),
+    };
+  };
+  const _copySanitizedDiagnostic = async diagnostic => {
+    const text = JSON.stringify(diagnostic, null, 2);
     try {
-      const rows = Object.fromEntries(Object.entries(blueprintExecutionResult.rows || {}).map(([key, row]) => [key, row ? {
-        uiId: row.uiId || key, tool: row.tool || null, status: row.status,
-        failReason: row.failReason || null, resourceId: row.resourceId || null,
-        elapsedMs: row.elapsedMs || 0, startedAt: row.startedAt || null, finishedAt: row.finishedAt || null,
-      } : row]));
-      const report = { reportVersion: 1, generatorCapability: ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT, exportedAt: new Date().toISOString(), runId: blueprintExecutionResult.runId || null, done: !!blueprintExecutionResult.done, persistenceWarning: blueprintExecutionResult.persistenceWarning || null, rows };
+      if (typeof window !== 'undefined' && typeof window.alloCopyText === 'function') {
+        if (await window.alloCopyText(text)) return true;
+      }
+    } catch (_) {}
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (_) {}
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      const copied = document.execCommand('copy');
+      textarea.remove();
+      return copied === true;
+    } catch (_) {
+      return false;
+    }
+  };
+  const handleCopyBlueprintDiagnostics = async () => {
+    const diagnostic = buildSanitizedBlueprintDiagnostic();
+    if (!diagnostic) return false;
+    try {
+      if (!(await _copySanitizedDiagnostic(diagnostic))) throw new Error('Clipboard write was unavailable');
+      addToast('Sanitized Blueprint diagnostics copied.', 'success');
+      return true;
+    } catch (error) {
+      warnLog('[Blueprint] could not copy diagnostics:', error && (error.message || error));
+      addToast('Could not copy Blueprint diagnostics.', 'warning');
+      return false;
+    }
+  };
+  const handleDownloadBlueprintDiagnostics = () => {
+    const report = buildSanitizedBlueprintDiagnostic();
+    if (!report) return false;
+    try {
       const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -41369,8 +44544,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       addToast('Could not download Blueprint diagnostics.', 'warning');
       return false;
     }
-  };
-  // Stops the in-flight blueprint run. Cooperative: the executor checks the
+  };  // Stops the in-flight blueprint run. Cooperative: the executor checks the
   // abort signal between steps, so the current resource finishes and every
   // unreached row is demoted to interrupted (each with its Rebuild button).
   // Safe when nothing is running - the module ignores a stop with no
@@ -41811,54 +44985,114 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   const handleDismissFullPackRun = () => setFullPackRun(null);
   const buildSanitizedFullPackDiagnostic = () => {
     if (!fullPackRun) return null;
+    const safeGradeBand = value => {
+      const grade = String(value || '').toLowerCase();
+      if (!grade) return null;
+      if (/pre[ -]?k|preschool/.test(grade)) return 'pre-k';
+      if (/kindergarten/.test(grade) || grade === 'k') return 'kindergarten';
+      const match = grade.match(/\b(\d{1,2})(?:st|nd|rd|th)?\b/);
+      const numeric = match ? Number(match[1]) : NaN;
+      if (Number.isInteger(numeric) && numeric >= 1 && numeric <= 12) return 'grade-' + numeric;
+      if (/college|university|adult|postsecondary/.test(grade)) return 'postsecondary';
+      return 'custom';
+    };
+    const safeDok = value => {
+      const match = String(value || '').match(/[1-4]/);
+      return match ? 'dok-' + match[0] : (value ? 'custom' : null);
+    };
     const sanitizeSettings = settings => {
-      const out = Object.assign({}, settings || {});
-      delete out.studentInterests;
-      delete out.rosterSignature;
-      return out;
+      const source = settings && typeof settings === 'object' ? settings : {};
+      const language = String(source.leveledTextLanguage || '');
+      const resourceCountValue = String(source.resourceCount || '');
+      return {
+        gradeBand: safeGradeBand(source.gradeLevel),
+        primaryLanguageConfigured: Boolean(language),
+        primaryLanguageIsEnglish: /^english$/i.test(language),
+        dokLevel: safeDok(source.dokLevel),
+        selectedLanguageCount: Array.isArray(source.selectedLanguages) ? Math.min(200, source.selectedLanguages.length) : 0,
+        targetStandardCount: Array.isArray(source.targetStandards) ? Math.min(200, source.targetStandards.length) : 0,
+        studentInterestCount: Array.isArray(source.studentInterests) ? Math.min(200, source.studentInterests.length) : (source.studentInterests ? 1 : 0),
+        useEmojis: source.useEmojis === true,
+        textFormatConfigured: Boolean(source.textFormat),
+        differentiationRange: ['None', '1', '2', 'Both', 'Custom'].includes(source.differentiationRange) ? source.differentiationRange : 'unknown',
+        differentiationTypes: Array.isArray(source.differentiationTypes)
+          ? source.differentiationTypes.slice(0, 30).map(_alloDiagnosticResourceType)
+          : [],
+        differentiationCustomGradeCount: Array.isArray(source.differentiationCustomGrades) ? Math.min(30, source.differentiationCustomGrades.length) : 0,
+        packSize: /^auto$/i.test(resourceCountValue)
+          ? 'auto'
+          : (_alloDiagnosticBoundedInt(resourceCountValue, 1000) || null),
+        isAutoConfigEnabled: source.isAutoConfigEnabled !== false,
+        targetMode: source.fullPackTargetGroup === 'all' ? 'all-groups' : 'current-settings',
+      };
     };
+    const resourceStatuses = ['planned', 'running', 'retrying', 'landed', 'failed', 'interrupted', 'stopped', 'skipped'];
+    const runStatuses = ['planning', 'ready', 'running', 'retrying', 'completed', 'partial', 'failed', 'stopped', 'interrupted'];
     const sanitizeResource = resource => {
-      if (!resource || typeof resource !== 'object') return resource;
-      const out = {};
-      ['key', 'type', 'index', 'uiId', 'status', 'reason', 'failureCategory', 'retryable', 'suggestedDelayMs', 'elapsedMs', 'attempts', 'startedAt', 'finishedAt'].forEach(key => {
-        if (resource[key] !== undefined) out[key] = resource[key];
-      });
-      return out;
+      if (!resource || typeof resource !== 'object') return { status: 'unknown' };
+      const safeReason = resource.reason ? _alloDiagnosticReason(resource.reason) : null;
+      return {
+        type: _alloDiagnosticResourceType(resource.type),
+        index: _alloDiagnosticBoundedInt(resource.index, 100000),
+        status: resourceStatuses.includes(resource.status) ? resource.status : 'unknown',
+        failureCode: safeReason ? safeReason.code : null,
+        reason: safeReason ? safeReason.summary : null,
+        failureCategory: ['transient', 'configuration', 'unknown'].includes(resource.failureCategory) ? resource.failureCategory : null,
+        retryable: resource.retryable !== false,
+        suggestedDelayMs: _alloDiagnosticBoundedInt(resource.suggestedDelayMs, 24 * 60 * 60 * 1000),
+        elapsedMs: _alloDiagnosticBoundedInt(resource.elapsedMs, 24 * 60 * 60 * 1000),
+        attempts: _alloDiagnosticBoundedInt(resource.attempts, 100),
+        startedAt: _alloDiagnosticTimestamp(resource.startedAt),
+        finishedAt: _alloDiagnosticTimestamp(resource.finishedAt),
+      };
     };
-    const sanitizeResources = resources => Object.fromEntries(Object.entries(resources || {}).map(([key, resource]) => [key, sanitizeResource(resource)]));
-    const sanitizeGroup = group => group ? {
-      groupId: group.groupId || null,
-      status: group.status,
-      reason: group.reason || null,
-      elapsedMs: group.elapsedMs || 0,
-      settingsSnapshot: sanitizeSettings(group.settingsSnapshot),
-      preflight: group.preflight || null,
-      resources: sanitizeResources(group.resources),
-    } : group;
+    const sanitizeResources = resources => Object.fromEntries(
+      Object.values(resources || {}).slice(0, 1000).map((resource, index) => ['resource-' + (index + 1), sanitizeResource(resource)])
+    );
+    const sanitizeGroup = (group, index) => {
+      if (!group) return null;
+      const safeReason = group.reason ? _alloDiagnosticReason(group.reason) : null;
+      return {
+        group: index + 1,
+        status: runStatuses.includes(group.status) ? group.status : 'unknown',
+        failureCode: safeReason ? safeReason.code : null,
+        reason: safeReason ? safeReason.summary : null,
+        elapsedMs: _alloDiagnosticBoundedInt(group.elapsedMs, 24 * 60 * 60 * 1000),
+        settingsSnapshot: sanitizeSettings(group.settingsSnapshot),
+        preflight: _alloSanitizeFullPackPreflight(group.preflight),
+        resources: sanitizeResources(group.resources),
+      };
+    };
+    const rootReason = fullPackRun.reason ? _alloDiagnosticReason(fullPackRun.reason) : null;
     return {
-      reportVersion: 1,
+      reportVersion: 2,
       generatorCapability: ALLO_FULL_PACK_CAPABILITY_FINGERPRINT,
       exportedAt: new Date().toISOString(),
-      runId: fullPackRun.runId,
-      retryOf: fullPackRun.retryOf || null,
-      approvedFrom: fullPackRun.approvedFrom || null,
-      status: fullPackRun.status,
-      reason: fullPackRun.reason || null,
-      startedAt: fullPackRun.startedAt,
-      finishedAt: fullPackRun.finishedAt || null,
-      elapsedMs: fullPackRun.elapsedMs || 0,
-      failureCount: fullPackRun.failureCount || 0,
+      runId: _alloDiagnosticRunId(fullPackRun.runId, 'full-pack'),
+      wasRetry: Boolean(fullPackRun.retryOf),
+      usedApprovedPlan: Boolean(fullPackRun.approvedFrom),
+      status: runStatuses.includes(fullPackRun.status) ? fullPackRun.status : 'unknown',
+      failureCode: rootReason ? rootReason.code : null,
+      reason: rootReason ? rootReason.summary : null,
+      startedAt: _alloDiagnosticTimestamp(fullPackRun.startedAt),
+      finishedAt: _alloDiagnosticTimestamp(fullPackRun.finishedAt),
+      elapsedMs: _alloDiagnosticBoundedInt(fullPackRun.elapsedMs, 24 * 60 * 60 * 1000),
+      failureCount: _alloDiagnosticBoundedInt(fullPackRun.failureCount, 100000),
+      persistenceWarning: fullPackRun.persistenceWarning ? 'Compact persistence fallback was used.' : null,
       settingsSnapshot: sanitizeSettings(fullPackRun.settingsSnapshot),
-      preflight: fullPackRun.preflight || null,
+      preflight: _alloSanitizeFullPackPreflight(fullPackRun.preflight),
       resources: sanitizeResources(fullPackRun.resources),
-      groups: Object.fromEntries(Object.entries(fullPackRun.groups || {}).map(([key, group]) => [key, sanitizeGroup(group)])),
+      groups: Object.fromEntries(
+        Object.values(fullPackRun.groups || {}).slice(0, 100).map((group, index) => ['group-' + (index + 1), sanitizeGroup(group, index)])
+      ),
+      observability: ALLO_GENERATION_METRICS.snapshot(),
     };
   };
   const handleCopyFullPackDiagnostics = async () => {
     const diagnostic = buildSanitizedFullPackDiagnostic();
     if (!diagnostic) return false;
     try {
-      await navigator.clipboard.writeText(JSON.stringify(diagnostic, null, 2));
+      if (!(await _copySanitizedDiagnostic(diagnostic))) throw new Error('Clipboard write was unavailable');
       addToast('Sanitized Full Pack diagnostics copied.', 'success');
       return true;
     } catch (error) {
@@ -44067,6 +47301,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <p className="mb-1 text-xs font-black uppercase tracking-[0.18em] text-indigo-600">Storage and recovery</p>
                 <h2 id="canvas-recovery-title" className="text-2xl font-black text-slate-900">
                   {canvasRecoveryDialogMode === 'checking' ? 'Checking this device…'
+                    : canvasRecoveryDialogMode === 'vault-locked' ? 'Unlock protected saved work'
                     : canvasRecoveryDialogMode === 'error' ? 'Device recovery needs attention'
                     : canvasRecoveryDialogMode === 'manage' ? 'Storage and recovery manager'
                     : 'Continue where you left off?'}
@@ -44074,15 +47309,17 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <p id="canvas-recovery-description" className="mt-2 text-sm leading-relaxed text-slate-600">
                   {canvasRecoveryDialogMode === 'checking'
                     ? 'AlloFlow is securely checking this browser for earlier resource-pack work.'
-                    : canvasRecoveryDialogMode === 'error'
-                      ? 'No saved work will be overwritten unless AlloFlow can first read the device store.'
-                      : canvasRecoveryDialogMode === 'manage'
-                        ? 'Review approximate usage, choose a retention policy, and manage recoverable work kept by this browser.'
-                        : 'AlloFlow found saved resource history and authoring state from an earlier Gemini Canvas session.'}
+                    : canvasRecoveryDialogMode === 'vault-locked'
+                      ? 'Recovery-workspace contents are encrypted on this device. Unlock to restore or save protected work.'
+                      : canvasRecoveryDialogMode === 'error'
+                        ? 'No saved work will be overwritten unless AlloFlow can first read the device store.'
+                        : canvasRecoveryDialogMode === 'manage'
+                          ? 'Review approximate usage, choose a retention policy, and manage recoverable work kept by this browser.'
+                          : 'AlloFlow found saved resource history and authoring state from an earlier Gemini Canvas session.'}
                 </p>
               </div>
-              {canvasRecoveryDecisionMade && (
-                <button type="button" onClick={() => setCanvasRecoveryDialogMode(null)}
+              {canvasRecoveryDecisionMade && canvasRecoveryVaultForm.mode !== 'confirm-recovery-code' && (
+                <button type="button" onClick={() => closeCanvasRecoveryDialog(null)}
                   className="min-h-11 min-w-11 rounded-xl border border-slate-200 text-xl text-slate-600 hover:bg-slate-100"
                   aria-label="Close saved work manager">×</button>
               )}
@@ -44094,6 +47331,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <p className="font-bold text-slate-900">Checking saved work…</p>
                 <p className="mt-2 text-sm text-slate-600">This can take a few seconds in Gemini Canvas.</p>
               </div>
+            ) : canvasRecoveryDialogMode === 'vault-locked' ? (
+              renderCanvasRecoveryLockedScreen()
             ) : canvasRecoveryDialogMode === 'error' ? (
               <div>
                 <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800">
@@ -44102,9 +47341,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <button type="button" data-recovery-autofocus="true"
                     disabled={Boolean(canvasRecoveryBusyId)}
-                    onClick={retryCanvasRecoveryStorage}
+                    onClick={canvasRecoveryErrorCode === 'allo/approval-required'
+                      ? () => void approveAndRetryCanvasRecoveryStorage()
+                      : retryCanvasRecoveryStorage}
                     className="min-h-12 rounded-xl bg-indigo-700 px-4 py-3 font-black text-white hover:bg-indigo-800 disabled:opacity-60">
-                    {canvasRecoveryBusyId === 'storage-retry' ? 'Checking…' : 'Retry device recovery'}
+                    {canvasRecoveryBusyId === 'storage-retry' ? 'Checking…' : (canvasRecoveryErrorCode === 'allo/approval-required' ? 'Open device storage' : 'Retry device recovery')}
                   </button>
                   <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
                     onClick={continueWithoutCanvasRecovery}
@@ -44113,7 +47354,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   </button>
                 </div>
                 <p className="mt-4 text-xs leading-relaxed text-slate-600">
-                  Continuing leaves unknown saved data untouched. AlloFlow will retry reading it before any later device write.
+                  {canvasRecoveryErrorCode === 'allo/approval-required'
+                    ? 'Gemini Canvas requires a brief device-storage approval window. Continuing leaves unknown saved data untouched and recovery saving paused.'
+                    : 'Continuing leaves unknown saved data untouched. AlloFlow will retry reading it before any later device write.'}
                 </p>
               </div>
             ) : canvasRecoveryDialogMode === 'choice' ? (() => {
@@ -44169,12 +47412,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     removes the oldest — so export anything you want to keep for good.
                   </p>
                   <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">
-                    Shared computer? Saved work can be opened by another person using this browser profile. Export anything important, then erase it from Manage saved work.
+                    {canvasRecoveryVaultState.enabled
+                      ? 'Shared computer? Protected workspace contents are unreadable after you lock this tab or reload. They remain visible while this tab is unlocked.'
+                      : 'Shared computer? Saved work can be opened by another person using this browser profile. Enable optional protection or export and erase important work.'}
                   </p>
                 </>
               );
             })() : (
               <>
+                {renderCanvasRecoveryProtectionSection()}
+                {renderEducatorAccessCodeSection()}
                 {(() => {
                   const retention = ALLO_WORKSPACE_RECOVERY.retentionStatus(canvasRecoveryStore);
                   const policyOptions = [
@@ -44191,7 +47438,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     {
                       id: 'standard',
                       name: 'Standard',
-                      detail: 'Current behavior: targets 8 workspaces / 150 MB and 50 offline resources.'
+                      detail: 'Current behavior: targets 20 workspaces / 150 MB and 50 offline resources.'
                     }
                   ];
                   const origin = storageManagerInventory.origin || {};
@@ -44408,7 +47655,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                           )}
                           <button type="button" onClick={() => exportCanvasRecoverySnapshot(snapshot)}
                             className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
-                            Export
+                            {canvasRecoveryVaultState.enabled ? 'Export readable copy' : 'Export'}
                           </button>
                           {canvasRecoveryEraseId === snapshot.id ? (
                             <>
@@ -44442,7 +47689,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       Back
                     </button>
                   ) : (
-                    <button type="button" onClick={() => setCanvasRecoveryDialogMode(null)}
+                    <button type="button" onClick={() => closeCanvasRecoveryDialog(null)}
                       className="min-h-11 flex-1 rounded-xl border border-slate-300 px-4 py-3 font-bold text-slate-700 hover:bg-slate-100">
                       Close
                     </button>
@@ -44563,7 +47810,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
  * color utilities). Contrast matrix + drift enforced by
  * tests/docsuite_theme_contrast.test.js.
  * Scope class .allo-docsuite covers: docsuite (PDF remediation + Document Hub modals); selsuite (4 Tailwind SEL tools); appsuite (main-content artifact views + sidebar);
- * plus the main-content JSX region of ANTI. Union 1071 tokens. */
+ * plus the main-content JSX region of ANTI. Union 1075 tokens. */
 .theme-dark .allo-docsuite { color-scheme: dark; }
 .theme-dark .allo-docsuite input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .theme-dark .allo-docsuite textarea,
@@ -44596,7 +47843,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-dark .allo-docsuite .ring-blue-200, .theme-dark .allo-docsuite .ring-blue-400, .theme-dark .allo-docsuite .ring-blue-500, .theme-dark .allo-docsuite [class~="ring-blue-500/20"], .theme-dark .allo-docsuite [class~="ring-blue-500/30"], .theme-dark .allo-docsuite .ring-blue-600 { --tw-ring-color:#1d4ed8 !important; }
 .theme-dark .allo-docsuite .ring-indigo-100, .theme-dark .allo-docsuite .ring-indigo-200, .theme-dark .allo-docsuite .ring-indigo-300, .theme-dark .allo-docsuite .ring-indigo-400, .theme-dark .allo-docsuite [class~="ring-indigo-400/50"], .theme-dark .allo-docsuite .ring-indigo-500, .theme-dark .allo-docsuite [class~="ring-indigo-500/20"], .theme-dark .allo-docsuite [class~="ring-indigo-500/30"], .theme-dark .allo-docsuite .ring-indigo-600 { --tw-ring-color:#4338ca !important; }
 .theme-dark .allo-docsuite .ring-slate-200, .theme-dark .allo-docsuite .ring-slate-300, .theme-dark .allo-docsuite .ring-slate-400, .theme-dark .allo-docsuite .ring-slate-500, .theme-dark .allo-docsuite .ring-slate-600, .theme-dark .allo-docsuite .ring-slate-700 { --tw-ring-color:#475569 !important; }
-.theme-dark .allo-docsuite .ring-violet-200, .theme-dark .allo-docsuite .ring-violet-300, .theme-dark .allo-docsuite .ring-violet-400, .theme-dark .allo-docsuite [class~="ring-violet-400/40"], .theme-dark .allo-docsuite .ring-violet-500, .theme-dark .allo-docsuite [class~="ring-violet-500/20"] { --tw-ring-color:#6d28d9 !important; }
+.theme-dark .allo-docsuite .ring-violet-200, .theme-dark .allo-docsuite .ring-violet-300, .theme-dark .allo-docsuite .ring-violet-400, .theme-dark .allo-docsuite [class~="ring-violet-400/40"], .theme-dark .allo-docsuite .ring-violet-500, .theme-dark .allo-docsuite [class~="ring-violet-500/20"], .theme-dark .allo-docsuite .ring-violet-600 { --tw-ring-color:#6d28d9 !important; }
 .theme-dark .allo-docsuite .ring-purple-100, .theme-dark .allo-docsuite .ring-purple-200, .theme-dark .allo-docsuite .ring-purple-300, .theme-dark .allo-docsuite .ring-purple-400, .theme-dark .allo-docsuite .ring-purple-500, .theme-dark .allo-docsuite [class~="ring-purple-500/30"], .theme-dark .allo-docsuite .ring-purple-600 { --tw-ring-color:#7e22ce !important; }
 .theme-dark .allo-docsuite .ring-yellow-100, .theme-dark .allo-docsuite .ring-yellow-200, .theme-dark .allo-docsuite .ring-yellow-300, .theme-dark .allo-docsuite .ring-yellow-400, .theme-dark .allo-docsuite [class~="ring-yellow-400/50"], .theme-dark .allo-docsuite .ring-yellow-500, .theme-dark .allo-docsuite .ring-yellow-600 { --tw-ring-color:#a16207 !important; }
 .theme-dark .allo-docsuite .ring-fuchsia-400 { --tw-ring-color:#a21caf !important; }
@@ -44613,7 +47860,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-dark .allo-docsuite .bg-slate-50, .theme-dark .allo-docsuite [class~="bg-slate-50/30"], .theme-dark .allo-docsuite [class~="bg-slate-50/50"], .theme-dark .allo-docsuite [class~="bg-slate-50/60"], .theme-dark .allo-docsuite [class~="bg-slate-50/70"], .theme-dark .allo-docsuite [class~="bg-slate-50/80"], .theme-dark .allo-docsuite [class~="bg-slate-50/90"], .theme-dark .allo-docsuite .bg-stone-50 { background-color:#0f172a !important; }
 .theme-dark .allo-docsuite .bg-blue-100, .theme-dark .allo-docsuite [class~="bg-blue-100/50"], .theme-dark .allo-docsuite .bg-blue-200, .theme-dark .allo-docsuite [class~="bg-blue-200/20"], .theme-dark .allo-docsuite [class~="bg-blue-200/30"], .theme-dark .allo-docsuite .bg-blue-300, .theme-dark .allo-docsuite .bg-blue-50, .theme-dark .allo-docsuite [class~="bg-blue-50/50"], .theme-dark .allo-docsuite [class~="bg-blue-50/60"], .theme-dark .allo-docsuite [class~="bg-blue-50/95"] { background-color:#172554 !important; }
 .theme-dark .allo-docsuite .bg-indigo-100, .theme-dark .allo-docsuite [class~="bg-indigo-100/20"], .theme-dark .allo-docsuite [class~="bg-indigo-100/50"], .theme-dark .allo-docsuite [class~="bg-indigo-100/60"], .theme-dark .allo-docsuite [class~="bg-indigo-100/80"], .theme-dark .allo-docsuite .bg-indigo-200, .theme-dark .allo-docsuite [class~="bg-indigo-200/50"], .theme-dark .allo-docsuite .bg-indigo-300, .theme-dark .allo-docsuite [class~="bg-indigo-300/20"], .theme-dark .allo-docsuite .bg-indigo-50, .theme-dark .allo-docsuite [class~="bg-indigo-50/30"], .theme-dark .allo-docsuite [class~="bg-indigo-50/40"], .theme-dark .allo-docsuite [class~="bg-indigo-50/50"], .theme-dark .allo-docsuite [class~="bg-indigo-50/60"], .theme-dark .allo-docsuite [class~="bg-indigo-50/70"], .theme-dark .allo-docsuite [class~="bg-indigo-50/80"] { background-color:#1e1b4b !important; }
-.theme-dark .allo-docsuite .bg-slate-100, .theme-dark .allo-docsuite [class~="bg-slate-100/50"], .theme-dark .allo-docsuite .bg-white { background-color:#1e293b !important; }
+.theme-dark .allo-docsuite .bg-slate-100, .theme-dark .allo-docsuite [class~="bg-slate-100/50"], .theme-dark .allo-docsuite [class~="bg-slate-100/90"], .theme-dark .allo-docsuite .bg-white { background-color:#1e293b !important; }
 .theme-dark .allo-docsuite .bg-slate-200 { background-color:#26334a !important; }
 .theme-dark .allo-docsuite .bg-violet-100, .theme-dark .allo-docsuite [class~="bg-violet-100/50"], .theme-dark .allo-docsuite .bg-violet-200, .theme-dark .allo-docsuite .bg-violet-50, .theme-dark .allo-docsuite [class~="bg-violet-50/40"], .theme-dark .allo-docsuite [class~="bg-violet-50/50"], .theme-dark .allo-docsuite [class~="bg-violet-50/60"], .theme-dark .allo-docsuite [class~="bg-violet-50/70"] { background-color:#2e1065 !important; }
 .theme-dark .allo-docsuite .bg-slate-300 { background-color:#334155 !important; }
@@ -44653,7 +47900,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-dark .allo-docsuite .border-emerald-400, .theme-dark .allo-docsuite [class~="border-emerald-400/40"], .theme-dark .allo-docsuite .border-emerald-500, .theme-dark .allo-docsuite [class~="border-emerald-500/30"], .theme-dark .allo-docsuite [class~="border-emerald-500/40"], .theme-dark .allo-docsuite [class~="border-emerald-500/50"], .theme-dark .allo-docsuite .border-emerald-600 { border-color:#047857 !important; }
 .theme-dark .allo-docsuite .border-emerald-100, .theme-dark .allo-docsuite [class~="border-emerald-100/50"], .theme-dark .allo-docsuite .border-emerald-200, .theme-dark .allo-docsuite [class~="border-emerald-200/60"], .theme-dark .allo-docsuite .border-emerald-300, .theme-dark .allo-docsuite [class~="border-emerald-300/30"], .theme-dark .allo-docsuite [class~="border-emerald-300/40"] { border-color:#065f46 !important; }
 .theme-dark .allo-docsuite .border-sky-100, .theme-dark .allo-docsuite .border-sky-200, .theme-dark .allo-docsuite [class~="border-sky-200/60"], .theme-dark .allo-docsuite .border-sky-300 { border-color:#075985 !important; }
-.theme-dark .allo-docsuite .border-cyan-400, .theme-dark .allo-docsuite [class~="border-cyan-500/30"], .theme-dark .allo-docsuite .border-cyan-600 { border-color:#0e7490 !important; }
+.theme-dark .allo-docsuite .border-cyan-400, .theme-dark .allo-docsuite .border-cyan-500, .theme-dark .allo-docsuite [class~="border-cyan-500/30"], .theme-dark .allo-docsuite .border-cyan-600 { border-color:#0e7490 !important; }
 .theme-dark .allo-docsuite .border-teal-400, .theme-dark .allo-docsuite .border-teal-500, .theme-dark .allo-docsuite [class~="border-teal-500/30"], .theme-dark .allo-docsuite [class~="border-teal-500/40"], .theme-dark .allo-docsuite .border-teal-600 { border-color:#0f766e !important; }
 .theme-dark .allo-docsuite .border-teal-100, .theme-dark .allo-docsuite [class~="border-teal-100/50"], .theme-dark .allo-docsuite .border-teal-200, .theme-dark .allo-docsuite .border-teal-300, .theme-dark .allo-docsuite [class~="border-teal-300/40"] { border-color:#115e59 !important; }
 .theme-dark .allo-docsuite .border-cyan-100, .theme-dark .allo-docsuite .border-cyan-200, .theme-dark .allo-docsuite .border-cyan-300, .theme-dark .allo-docsuite [class~="border-cyan-300/25"], .theme-dark .allo-docsuite [class~="border-cyan-300/80"] { border-color:#155e75 !important; }
@@ -44706,10 +47953,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-dark .allo-docsuite .text-rose-400, .theme-dark .allo-docsuite .text-rose-500, .theme-dark .allo-docsuite .text-rose-600, .theme-dark .allo-docsuite .text-rose-700, .theme-dark .allo-docsuite .text-rose-800, .theme-dark .allo-docsuite .text-rose-900 { color:#fda4af !important; }
 .theme-dark .allo-docsuite .text-orange-400, .theme-dark .allo-docsuite .text-orange-500, .theme-dark .allo-docsuite .text-orange-600, .theme-dark .allo-docsuite .text-orange-700, .theme-dark .allo-docsuite .text-orange-800, .theme-dark .allo-docsuite .text-orange-900 { color:#fdba74 !important; }
 .theme-dark .allo-docsuite .text-yellow-400, .theme-dark .allo-docsuite .text-yellow-500, .theme-dark .allo-docsuite .text-yellow-600, .theme-dark .allo-docsuite [class~="text-yellow-600/70"], .theme-dark .allo-docsuite .text-yellow-700, .theme-dark .allo-docsuite .text-yellow-800, .theme-dark .allo-docsuite .text-yellow-900 { color:#fde047 !important; }
-.theme-contrast .allo-docsuite .ring-amber-100, .theme-contrast .allo-docsuite .ring-amber-200, .theme-contrast .allo-docsuite .ring-amber-300, .theme-contrast .allo-docsuite [class~="ring-amber-300/30"], .theme-contrast .allo-docsuite .ring-amber-400, .theme-contrast .allo-docsuite .ring-amber-500, .theme-contrast .allo-docsuite [class~="ring-amber-500/20"], .theme-contrast .allo-docsuite .ring-amber-600, .theme-contrast .allo-docsuite .ring-amber-700, .theme-contrast .allo-docsuite .ring-blue-200, .theme-contrast .allo-docsuite .ring-blue-400, .theme-contrast .allo-docsuite .ring-blue-500, .theme-contrast .allo-docsuite [class~="ring-blue-500/20"], .theme-contrast .allo-docsuite [class~="ring-blue-500/30"], .theme-contrast .allo-docsuite .ring-blue-600, .theme-contrast .allo-docsuite .ring-cyan-200, .theme-contrast .allo-docsuite .ring-cyan-300, .theme-contrast .allo-docsuite .ring-cyan-400, .theme-contrast .allo-docsuite [class~="ring-cyan-400/50"], .theme-contrast .allo-docsuite .ring-cyan-500, .theme-contrast .allo-docsuite .ring-emerald-200, .theme-contrast .allo-docsuite .ring-emerald-300, .theme-contrast .allo-docsuite [class~="ring-emerald-300/60"], .theme-contrast .allo-docsuite .ring-emerald-400, .theme-contrast .allo-docsuite .ring-emerald-500, .theme-contrast .allo-docsuite [class~="ring-emerald-500/20"], .theme-contrast .allo-docsuite .ring-emerald-600, .theme-contrast .allo-docsuite .ring-emerald-700, .theme-contrast .allo-docsuite .ring-fuchsia-400, .theme-contrast .allo-docsuite .ring-green-200, .theme-contrast .allo-docsuite .ring-green-300, .theme-contrast .allo-docsuite .ring-green-400, .theme-contrast .allo-docsuite .ring-green-500, .theme-contrast .allo-docsuite .ring-green-800, .theme-contrast .allo-docsuite .ring-indigo-100, .theme-contrast .allo-docsuite .ring-indigo-200, .theme-contrast .allo-docsuite .ring-indigo-300, .theme-contrast .allo-docsuite .ring-indigo-400, .theme-contrast .allo-docsuite [class~="ring-indigo-400/50"], .theme-contrast .allo-docsuite .ring-indigo-500, .theme-contrast .allo-docsuite [class~="ring-indigo-500/20"], .theme-contrast .allo-docsuite [class~="ring-indigo-500/30"], .theme-contrast .allo-docsuite .ring-indigo-600, .theme-contrast .allo-docsuite .ring-indigo-700, .theme-contrast .allo-docsuite .ring-orange-200, .theme-contrast .allo-docsuite .ring-orange-300, .theme-contrast .allo-docsuite .ring-orange-400, .theme-contrast .allo-docsuite .ring-orange-500, .theme-contrast .allo-docsuite .ring-pink-200, .theme-contrast .allo-docsuite .ring-pink-400, .theme-contrast .allo-docsuite .ring-pink-500, .theme-contrast .allo-docsuite .ring-purple-100, .theme-contrast .allo-docsuite .ring-purple-200, .theme-contrast .allo-docsuite .ring-purple-300, .theme-contrast .allo-docsuite .ring-purple-400, .theme-contrast .allo-docsuite .ring-purple-500, .theme-contrast .allo-docsuite [class~="ring-purple-500/30"], .theme-contrast .allo-docsuite .ring-purple-600, .theme-contrast .allo-docsuite .ring-red-300, .theme-contrast .allo-docsuite [class~="ring-red-300/30"], .theme-contrast .allo-docsuite .ring-red-400, .theme-contrast .allo-docsuite .ring-red-500, .theme-contrast .allo-docsuite .ring-red-700, .theme-contrast .allo-docsuite .ring-rose-200, .theme-contrast .allo-docsuite .ring-rose-300, .theme-contrast .allo-docsuite .ring-rose-400, .theme-contrast .allo-docsuite .ring-rose-500, .theme-contrast .allo-docsuite .ring-rose-600, .theme-contrast .allo-docsuite .ring-rose-700, .theme-contrast .allo-docsuite .ring-sky-200, .theme-contrast .allo-docsuite .ring-sky-400, .theme-contrast .allo-docsuite .ring-sky-500, .theme-contrast .allo-docsuite .ring-slate-200, .theme-contrast .allo-docsuite .ring-slate-300, .theme-contrast .allo-docsuite .ring-slate-400, .theme-contrast .allo-docsuite .ring-slate-500, .theme-contrast .allo-docsuite .ring-slate-600, .theme-contrast .allo-docsuite .ring-slate-700, .theme-contrast .allo-docsuite .ring-teal-100, .theme-contrast .allo-docsuite .ring-teal-200, .theme-contrast .allo-docsuite .ring-teal-300, .theme-contrast .allo-docsuite .ring-teal-400, .theme-contrast .allo-docsuite .ring-teal-500, .theme-contrast .allo-docsuite .ring-teal-700, .theme-contrast .allo-docsuite .ring-violet-200, .theme-contrast .allo-docsuite .ring-violet-300, .theme-contrast .allo-docsuite .ring-violet-400, .theme-contrast .allo-docsuite [class~="ring-violet-400/40"], .theme-contrast .allo-docsuite .ring-violet-500, .theme-contrast .allo-docsuite [class~="ring-violet-500/20"], .theme-contrast .allo-docsuite .ring-violet-700, .theme-contrast .allo-docsuite .ring-white, .theme-contrast .allo-docsuite [class~="ring-white/10"], .theme-contrast .allo-docsuite [class~="ring-white/20"], .theme-contrast .allo-docsuite [class~="ring-white/50"], .theme-contrast .allo-docsuite .ring-yellow-100, .theme-contrast .allo-docsuite .ring-yellow-200, .theme-contrast .allo-docsuite .ring-yellow-300, .theme-contrast .allo-docsuite .ring-yellow-400, .theme-contrast .allo-docsuite [class~="ring-yellow-400/50"], .theme-contrast .allo-docsuite .ring-yellow-500, .theme-contrast .allo-docsuite .ring-yellow-600, .theme-contrast .allo-docsuite .ring-yellow-700 { --tw-ring-color:#ffff00 !important; }
-.theme-contrast .allo-docsuite .bg-amber-100, .theme-contrast .allo-docsuite [class~="bg-amber-100/50"], .theme-contrast .allo-docsuite .bg-amber-200, .theme-contrast .allo-docsuite [class~="bg-amber-200/50"], .theme-contrast .allo-docsuite [class~="bg-amber-200/60"], .theme-contrast .allo-docsuite .bg-amber-300, .theme-contrast .allo-docsuite [class~="bg-amber-300/15"], .theme-contrast .allo-docsuite [class~="bg-amber-300/50"], .theme-contrast .allo-docsuite .bg-amber-400, .theme-contrast .allo-docsuite [class~="bg-amber-400/10"], .theme-contrast .allo-docsuite [class~="bg-amber-400/20"], .theme-contrast .allo-docsuite [class~="bg-amber-400/30"], .theme-contrast .allo-docsuite .bg-amber-50, .theme-contrast .allo-docsuite [class~="bg-amber-50/50"], .theme-contrast .allo-docsuite [class~="bg-amber-50/60"], .theme-contrast .allo-docsuite [class~="bg-amber-50/70"], .theme-contrast .allo-docsuite [class~="bg-amber-50/80"], .theme-contrast .allo-docsuite .bg-amber-500, .theme-contrast .allo-docsuite [class~="bg-amber-500/15"], .theme-contrast .allo-docsuite [class~="bg-amber-500/20"], .theme-contrast .allo-docsuite .bg-amber-600, .theme-contrast .allo-docsuite .bg-amber-700, .theme-contrast .allo-docsuite [class~="bg-amber-700/40"], .theme-contrast .allo-docsuite .bg-amber-800, .theme-contrast .allo-docsuite [class~="bg-amber-900/20"], .theme-contrast .allo-docsuite [class~="bg-amber-900/30"], .theme-contrast .allo-docsuite [class~="bg-amber-900/40"], .theme-contrast .allo-docsuite [class~="bg-amber-900/50"], .theme-contrast .allo-docsuite [class~="bg-amber-900/60"], .theme-contrast .allo-docsuite [class~="bg-amber-900/80"], .theme-contrast .allo-docsuite .bg-blue-100, .theme-contrast .allo-docsuite [class~="bg-blue-100/50"], .theme-contrast .allo-docsuite .bg-blue-200, .theme-contrast .allo-docsuite [class~="bg-blue-200/20"], .theme-contrast .allo-docsuite [class~="bg-blue-200/30"], .theme-contrast .allo-docsuite .bg-blue-300, .theme-contrast .allo-docsuite .bg-blue-400, .theme-contrast .allo-docsuite .bg-blue-50, .theme-contrast .allo-docsuite [class~="bg-blue-50/50"], .theme-contrast .allo-docsuite [class~="bg-blue-50/60"], .theme-contrast .allo-docsuite [class~="bg-blue-50/95"], .theme-contrast .allo-docsuite [class~="bg-blue-500/10"], .theme-contrast .allo-docsuite .bg-blue-600, .theme-contrast .allo-docsuite .bg-blue-700, .theme-contrast .allo-docsuite .bg-blue-800, .theme-contrast .allo-docsuite [class~="bg-blue-900/30"], .theme-contrast .allo-docsuite [class~="bg-blue-900/50"], .theme-contrast .allo-docsuite .bg-cyan-100, .theme-contrast .allo-docsuite [class~="bg-cyan-100/80"], .theme-contrast .allo-docsuite .bg-cyan-200, .theme-contrast .allo-docsuite .bg-cyan-400, .theme-contrast .allo-docsuite [class~="bg-cyan-400/20"], .theme-contrast .allo-docsuite .bg-cyan-50, .theme-contrast .allo-docsuite [class~="bg-cyan-50/50"], .theme-contrast .allo-docsuite [class~="bg-cyan-50/60"], .theme-contrast .allo-docsuite .bg-cyan-500, .theme-contrast .allo-docsuite .bg-cyan-600, .theme-contrast .allo-docsuite .bg-cyan-700, .theme-contrast .allo-docsuite .bg-cyan-800, .theme-contrast .allo-docsuite [class~="bg-cyan-900/60"], .theme-contrast .allo-docsuite .bg-emerald-100, .theme-contrast .allo-docsuite .bg-emerald-200, .theme-contrast .allo-docsuite .bg-emerald-300, .theme-contrast .allo-docsuite .bg-emerald-400, .theme-contrast .allo-docsuite [class~="bg-emerald-400/20"], .theme-contrast .allo-docsuite .bg-emerald-50, .theme-contrast .allo-docsuite [class~="bg-emerald-50/40"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/50"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/60"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/70"], .theme-contrast .allo-docsuite .bg-emerald-500, .theme-contrast .allo-docsuite [class~="bg-emerald-500/15"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/20"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/25"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/30"], .theme-contrast .allo-docsuite .bg-emerald-600, .theme-contrast .allo-docsuite .bg-emerald-700, .theme-contrast .allo-docsuite .bg-emerald-800, .theme-contrast .allo-docsuite [class~="bg-emerald-800/60"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/20"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/30"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/40"], .theme-contrast .allo-docsuite .bg-emerald-950, .theme-contrast .allo-docsuite [class~="bg-emerald-950/70"], .theme-contrast .allo-docsuite .bg-fuchsia-100, .theme-contrast .allo-docsuite .bg-fuchsia-50, .theme-contrast .allo-docsuite [class~="bg-fuchsia-50/50"], .theme-contrast .allo-docsuite .bg-fuchsia-500, .theme-contrast .allo-docsuite .bg-fuchsia-600, .theme-contrast .allo-docsuite [class~="bg-fuchsia-600/60"], .theme-contrast .allo-docsuite .bg-fuchsia-700, .theme-contrast .allo-docsuite [class~="bg-fuchsia-700/50"], .theme-contrast .allo-docsuite [class~="bg-fuchsia-900/40"], .theme-contrast .allo-docsuite .bg-green-100, .theme-contrast .allo-docsuite [class~="bg-green-100/50"], .theme-contrast .allo-docsuite .bg-green-200, .theme-contrast .allo-docsuite .bg-green-300, .theme-contrast .allo-docsuite .bg-green-400, .theme-contrast .allo-docsuite .bg-green-50, .theme-contrast .allo-docsuite [class~="bg-green-50/50"], .theme-contrast .allo-docsuite .bg-green-500, .theme-contrast .allo-docsuite .bg-green-600, .theme-contrast .allo-docsuite .bg-green-700, .theme-contrast .allo-docsuite .bg-green-800, .theme-contrast .allo-docsuite .bg-indigo-100, .theme-contrast .allo-docsuite [class~="bg-indigo-100/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/60"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/80"], .theme-contrast .allo-docsuite .bg-indigo-200, .theme-contrast .allo-docsuite [class~="bg-indigo-200/50"], .theme-contrast .allo-docsuite .bg-indigo-300, .theme-contrast .allo-docsuite [class~="bg-indigo-300/20"], .theme-contrast .allo-docsuite .bg-indigo-400, .theme-contrast .allo-docsuite .bg-indigo-50, .theme-contrast .allo-docsuite [class~="bg-indigo-50/30"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/60"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/70"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/80"], .theme-contrast .allo-docsuite .bg-indigo-500, .theme-contrast .allo-docsuite [class~="bg-indigo-500/10"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/15"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/25"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/30"], .theme-contrast .allo-docsuite .bg-indigo-600, .theme-contrast .allo-docsuite [class~="bg-indigo-600/10"], .theme-contrast .allo-docsuite [class~="bg-indigo-600/30"], .theme-contrast .allo-docsuite .bg-indigo-700, .theme-contrast .allo-docsuite [class~="bg-indigo-700/80"], .theme-contrast .allo-docsuite .bg-indigo-800, .theme-contrast .allo-docsuite [class~="bg-indigo-800/50"], .theme-contrast .allo-docsuite .bg-indigo-900, .theme-contrast .allo-docsuite [class~="bg-indigo-900/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/30"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/50"], .theme-contrast .allo-docsuite .bg-indigo-950, .theme-contrast .allo-docsuite [class~="bg-indigo-950/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-950/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-950/80"], .theme-contrast .allo-docsuite .bg-lime-500, .theme-contrast .allo-docsuite .bg-lime-600, .theme-contrast .allo-docsuite .bg-orange-100, .theme-contrast .allo-docsuite [class~="bg-orange-100/50"], .theme-contrast .allo-docsuite .bg-orange-200, .theme-contrast .allo-docsuite [class~="bg-orange-200/30"], .theme-contrast .allo-docsuite .bg-orange-300, .theme-contrast .allo-docsuite .bg-orange-400, .theme-contrast .allo-docsuite [class~="bg-orange-400/15"], .theme-contrast .allo-docsuite .bg-orange-50, .theme-contrast .allo-docsuite [class~="bg-orange-50/50"], .theme-contrast .allo-docsuite [class~="bg-orange-50/80"], .theme-contrast .allo-docsuite .bg-orange-600, .theme-contrast .allo-docsuite .bg-orange-700, .theme-contrast .allo-docsuite .bg-orange-800, .theme-contrast .allo-docsuite .bg-pink-100, .theme-contrast .allo-docsuite .bg-pink-200, .theme-contrast .allo-docsuite .bg-pink-50, .theme-contrast .allo-docsuite [class~="bg-pink-50/50"], .theme-contrast .allo-docsuite .bg-pink-500, .theme-contrast .allo-docsuite [class~="bg-pink-500/30"], .theme-contrast .allo-docsuite .bg-pink-600, .theme-contrast .allo-docsuite .bg-pink-700, .theme-contrast .allo-docsuite .bg-pink-800, .theme-contrast .allo-docsuite [class~="bg-pink-800/60"], .theme-contrast .allo-docsuite [class~="bg-pink-900/40"], .theme-contrast .allo-docsuite .bg-purple-100, .theme-contrast .allo-docsuite [class~="bg-purple-100/50"], .theme-contrast .allo-docsuite .bg-purple-200, .theme-contrast .allo-docsuite .bg-purple-300, .theme-contrast .allo-docsuite [class~="bg-purple-300/20"], .theme-contrast .allo-docsuite .bg-purple-400, .theme-contrast .allo-docsuite .bg-purple-50, .theme-contrast .allo-docsuite [class~="bg-purple-50/50"], .theme-contrast .allo-docsuite .bg-purple-500, .theme-contrast .allo-docsuite .bg-purple-600, .theme-contrast .allo-docsuite [class~="bg-purple-600/10"], .theme-contrast .allo-docsuite .bg-purple-700, .theme-contrast .allo-docsuite .bg-red-100, .theme-contrast .allo-docsuite [class~="bg-red-100/50"], .theme-contrast .allo-docsuite .bg-red-200, .theme-contrast .allo-docsuite .bg-red-300, .theme-contrast .allo-docsuite .bg-red-400, .theme-contrast .allo-docsuite .bg-red-50, .theme-contrast .allo-docsuite .bg-red-500, .theme-contrast .allo-docsuite [class~="bg-red-500/30"], .theme-contrast .allo-docsuite .bg-red-600, .theme-contrast .allo-docsuite .bg-red-700, .theme-contrast .allo-docsuite .bg-red-800, .theme-contrast .allo-docsuite [class~="bg-red-900/50"], .theme-contrast .allo-docsuite [class~="bg-red-900/90"], .theme-contrast .allo-docsuite [class~="bg-red-950/40"], .theme-contrast .allo-docsuite [class~="bg-red-950/70"], .theme-contrast .allo-docsuite .bg-rose-100, .theme-contrast .allo-docsuite .bg-rose-200, .theme-contrast .allo-docsuite .bg-rose-300, .theme-contrast .allo-docsuite .bg-rose-50, .theme-contrast .allo-docsuite [class~="bg-rose-50/50"], .theme-contrast .allo-docsuite [class~="bg-rose-50/70"], .theme-contrast .allo-docsuite [class~="bg-rose-50/80"], .theme-contrast .allo-docsuite .bg-rose-500, .theme-contrast .allo-docsuite .bg-rose-600, .theme-contrast .allo-docsuite .bg-rose-700, .theme-contrast .allo-docsuite .bg-rose-800, .theme-contrast .allo-docsuite [class~="bg-rose-900/20"], .theme-contrast .allo-docsuite [class~="bg-rose-900/30"], .theme-contrast .allo-docsuite [class~="bg-rose-900/40"], .theme-contrast .allo-docsuite .bg-sky-100, .theme-contrast .allo-docsuite .bg-sky-200, .theme-contrast .allo-docsuite .bg-sky-50, .theme-contrast .allo-docsuite [class~="bg-sky-50/50"], .theme-contrast .allo-docsuite [class~="bg-sky-50/70"], .theme-contrast .allo-docsuite .bg-sky-500, .theme-contrast .allo-docsuite .bg-sky-600, .theme-contrast .allo-docsuite .bg-sky-700, .theme-contrast .allo-docsuite .bg-slate-100, .theme-contrast .allo-docsuite [class~="bg-slate-100/50"], .theme-contrast .allo-docsuite .bg-slate-200, .theme-contrast .allo-docsuite .bg-slate-300, .theme-contrast .allo-docsuite .bg-slate-400, .theme-contrast .allo-docsuite .bg-slate-50, .theme-contrast .allo-docsuite [class~="bg-slate-50/30"], .theme-contrast .allo-docsuite [class~="bg-slate-50/50"], .theme-contrast .allo-docsuite [class~="bg-slate-50/60"], .theme-contrast .allo-docsuite [class~="bg-slate-50/70"], .theme-contrast .allo-docsuite [class~="bg-slate-50/80"], .theme-contrast .allo-docsuite [class~="bg-slate-50/90"], .theme-contrast .allo-docsuite [class~="bg-slate-500/20"], .theme-contrast .allo-docsuite .bg-slate-600, .theme-contrast .allo-docsuite .bg-slate-700, .theme-contrast .allo-docsuite [class~="bg-slate-700/50"], .theme-contrast .allo-docsuite [class~="bg-slate-700/90"], .theme-contrast .allo-docsuite .bg-slate-800, .theme-contrast .allo-docsuite [class~="bg-slate-800/40"], .theme-contrast .allo-docsuite [class~="bg-slate-800/50"], .theme-contrast .allo-docsuite [class~="bg-slate-800/60"], .theme-contrast .allo-docsuite [class~="bg-slate-800/70"], .theme-contrast .allo-docsuite [class~="bg-slate-800/80"], .theme-contrast .allo-docsuite [class~="bg-slate-800/90"], .theme-contrast .allo-docsuite [class~="bg-slate-800/95"], .theme-contrast .allo-docsuite .bg-slate-900, .theme-contrast .allo-docsuite [class~="bg-slate-900/40"], .theme-contrast .allo-docsuite [class~="bg-slate-900/50"], .theme-contrast .allo-docsuite [class~="bg-slate-900/60"], .theme-contrast .allo-docsuite [class~="bg-slate-900/70"], .theme-contrast .allo-docsuite [class~="bg-slate-900/80"], .theme-contrast .allo-docsuite [class~="bg-slate-900/90"], .theme-contrast .allo-docsuite [class~="bg-slate-900/95"], .theme-contrast .allo-docsuite .bg-slate-950, .theme-contrast .allo-docsuite [class~="bg-slate-950/40"], .theme-contrast .allo-docsuite [class~="bg-slate-950/55"], .theme-contrast .allo-docsuite [class~="bg-slate-950/60"], .theme-contrast .allo-docsuite [class~="bg-slate-950/70"], .theme-contrast .allo-docsuite [class~="bg-slate-950/75"], .theme-contrast .allo-docsuite [class~="bg-slate-950/80"], .theme-contrast .allo-docsuite [class~="bg-slate-950/90"], .theme-contrast .allo-docsuite [class~="bg-slate-950/95"], .theme-contrast .allo-docsuite .bg-stone-50, .theme-contrast .allo-docsuite .bg-stone-700, .theme-contrast .allo-docsuite .bg-teal-100, .theme-contrast .allo-docsuite .bg-teal-200, .theme-contrast .allo-docsuite .bg-teal-300, .theme-contrast .allo-docsuite .bg-teal-400, .theme-contrast .allo-docsuite .bg-teal-50, .theme-contrast .allo-docsuite [class~="bg-teal-50/50"], .theme-contrast .allo-docsuite [class~="bg-teal-50/60"], .theme-contrast .allo-docsuite .bg-teal-500, .theme-contrast .allo-docsuite [class~="bg-teal-500/15"], .theme-contrast .allo-docsuite .bg-teal-600, .theme-contrast .allo-docsuite .bg-teal-700, .theme-contrast .allo-docsuite .bg-teal-800, .theme-contrast .allo-docsuite .bg-teal-950, .theme-contrast .allo-docsuite .bg-violet-100, .theme-contrast .allo-docsuite [class~="bg-violet-100/50"], .theme-contrast .allo-docsuite .bg-violet-200, .theme-contrast .allo-docsuite .bg-violet-400, .theme-contrast .allo-docsuite .bg-violet-50, .theme-contrast .allo-docsuite [class~="bg-violet-50/40"], .theme-contrast .allo-docsuite [class~="bg-violet-50/50"], .theme-contrast .allo-docsuite [class~="bg-violet-50/60"], .theme-contrast .allo-docsuite [class~="bg-violet-50/70"], .theme-contrast .allo-docsuite .bg-violet-500, .theme-contrast .allo-docsuite .bg-violet-600, .theme-contrast .allo-docsuite [class~="bg-violet-600/30"], .theme-contrast .allo-docsuite [class~="bg-violet-600/40"], .theme-contrast .allo-docsuite [class~="bg-violet-600/60"], .theme-contrast .allo-docsuite .bg-violet-700, .theme-contrast .allo-docsuite [class~="bg-violet-700/20"], .theme-contrast .allo-docsuite .bg-violet-800, .theme-contrast .allo-docsuite [class~="bg-violet-900/50"], .theme-contrast .allo-docsuite .bg-white, .theme-contrast .allo-docsuite [class~="bg-white/10"], .theme-contrast .allo-docsuite [class~="bg-white/15"], .theme-contrast .allo-docsuite [class~="bg-white/20"], .theme-contrast .allo-docsuite [class~="bg-white/30"], .theme-contrast .allo-docsuite [class~="bg-white/35"], .theme-contrast .allo-docsuite [class~="bg-white/5"], .theme-contrast .allo-docsuite [class~="bg-white/50"], .theme-contrast .allo-docsuite [class~="bg-white/60"], .theme-contrast .allo-docsuite [class~="bg-white/70"], .theme-contrast .allo-docsuite [class~="bg-white/80"], .theme-contrast .allo-docsuite [class~="bg-white/90"], .theme-contrast .allo-docsuite [class~="bg-white/95"], .theme-contrast .allo-docsuite .bg-yellow-100, .theme-contrast .allo-docsuite [class~="bg-yellow-100/5"], .theme-contrast .allo-docsuite .bg-yellow-200, .theme-contrast .allo-docsuite [class~="bg-yellow-200/30"], .theme-contrast .allo-docsuite .bg-yellow-300, .theme-contrast .allo-docsuite .bg-yellow-400, .theme-contrast .allo-docsuite [class~="bg-yellow-400/20"], .theme-contrast .allo-docsuite [class~="bg-yellow-400/30"], .theme-contrast .allo-docsuite .bg-yellow-50, .theme-contrast .allo-docsuite [class~="bg-yellow-50/50"], .theme-contrast .allo-docsuite .bg-yellow-500, .theme-contrast .allo-docsuite [class~="bg-yellow-500/20"], .theme-contrast .allo-docsuite .bg-yellow-600, .theme-contrast .allo-docsuite .bg-yellow-700, .theme-contrast .allo-docsuite .bg-yellow-900, .theme-contrast .allo-docsuite .bg-zinc-500, .theme-contrast .allo-docsuite .bg-zinc-600 { background-color:#000000 !important; }
+.theme-contrast .allo-docsuite .ring-amber-100, .theme-contrast .allo-docsuite .ring-amber-200, .theme-contrast .allo-docsuite .ring-amber-300, .theme-contrast .allo-docsuite [class~="ring-amber-300/30"], .theme-contrast .allo-docsuite .ring-amber-400, .theme-contrast .allo-docsuite .ring-amber-500, .theme-contrast .allo-docsuite [class~="ring-amber-500/20"], .theme-contrast .allo-docsuite .ring-amber-600, .theme-contrast .allo-docsuite .ring-amber-700, .theme-contrast .allo-docsuite .ring-blue-200, .theme-contrast .allo-docsuite .ring-blue-400, .theme-contrast .allo-docsuite .ring-blue-500, .theme-contrast .allo-docsuite [class~="ring-blue-500/20"], .theme-contrast .allo-docsuite [class~="ring-blue-500/30"], .theme-contrast .allo-docsuite .ring-blue-600, .theme-contrast .allo-docsuite .ring-cyan-200, .theme-contrast .allo-docsuite .ring-cyan-300, .theme-contrast .allo-docsuite .ring-cyan-400, .theme-contrast .allo-docsuite [class~="ring-cyan-400/50"], .theme-contrast .allo-docsuite .ring-cyan-500, .theme-contrast .allo-docsuite .ring-cyan-700, .theme-contrast .allo-docsuite .ring-emerald-200, .theme-contrast .allo-docsuite .ring-emerald-300, .theme-contrast .allo-docsuite [class~="ring-emerald-300/60"], .theme-contrast .allo-docsuite .ring-emerald-400, .theme-contrast .allo-docsuite .ring-emerald-500, .theme-contrast .allo-docsuite [class~="ring-emerald-500/20"], .theme-contrast .allo-docsuite .ring-emerald-600, .theme-contrast .allo-docsuite .ring-emerald-700, .theme-contrast .allo-docsuite .ring-fuchsia-400, .theme-contrast .allo-docsuite .ring-green-200, .theme-contrast .allo-docsuite .ring-green-300, .theme-contrast .allo-docsuite .ring-green-400, .theme-contrast .allo-docsuite .ring-green-500, .theme-contrast .allo-docsuite .ring-green-800, .theme-contrast .allo-docsuite .ring-indigo-100, .theme-contrast .allo-docsuite .ring-indigo-200, .theme-contrast .allo-docsuite .ring-indigo-300, .theme-contrast .allo-docsuite .ring-indigo-400, .theme-contrast .allo-docsuite [class~="ring-indigo-400/50"], .theme-contrast .allo-docsuite .ring-indigo-500, .theme-contrast .allo-docsuite [class~="ring-indigo-500/20"], .theme-contrast .allo-docsuite [class~="ring-indigo-500/30"], .theme-contrast .allo-docsuite .ring-indigo-600, .theme-contrast .allo-docsuite .ring-indigo-700, .theme-contrast .allo-docsuite .ring-orange-200, .theme-contrast .allo-docsuite .ring-orange-300, .theme-contrast .allo-docsuite .ring-orange-400, .theme-contrast .allo-docsuite .ring-orange-500, .theme-contrast .allo-docsuite .ring-pink-200, .theme-contrast .allo-docsuite .ring-pink-400, .theme-contrast .allo-docsuite .ring-pink-500, .theme-contrast .allo-docsuite .ring-purple-100, .theme-contrast .allo-docsuite .ring-purple-200, .theme-contrast .allo-docsuite .ring-purple-300, .theme-contrast .allo-docsuite .ring-purple-400, .theme-contrast .allo-docsuite .ring-purple-500, .theme-contrast .allo-docsuite [class~="ring-purple-500/30"], .theme-contrast .allo-docsuite .ring-purple-600, .theme-contrast .allo-docsuite .ring-red-300, .theme-contrast .allo-docsuite [class~="ring-red-300/30"], .theme-contrast .allo-docsuite .ring-red-400, .theme-contrast .allo-docsuite .ring-red-500, .theme-contrast .allo-docsuite .ring-red-700, .theme-contrast .allo-docsuite .ring-rose-200, .theme-contrast .allo-docsuite .ring-rose-300, .theme-contrast .allo-docsuite .ring-rose-400, .theme-contrast .allo-docsuite .ring-rose-500, .theme-contrast .allo-docsuite .ring-rose-600, .theme-contrast .allo-docsuite .ring-rose-700, .theme-contrast .allo-docsuite .ring-sky-200, .theme-contrast .allo-docsuite .ring-sky-400, .theme-contrast .allo-docsuite .ring-sky-500, .theme-contrast .allo-docsuite .ring-slate-200, .theme-contrast .allo-docsuite .ring-slate-300, .theme-contrast .allo-docsuite .ring-slate-400, .theme-contrast .allo-docsuite .ring-slate-500, .theme-contrast .allo-docsuite .ring-slate-600, .theme-contrast .allo-docsuite .ring-slate-700, .theme-contrast .allo-docsuite .ring-teal-100, .theme-contrast .allo-docsuite .ring-teal-200, .theme-contrast .allo-docsuite .ring-teal-300, .theme-contrast .allo-docsuite .ring-teal-400, .theme-contrast .allo-docsuite .ring-teal-500, .theme-contrast .allo-docsuite .ring-teal-700, .theme-contrast .allo-docsuite .ring-violet-200, .theme-contrast .allo-docsuite .ring-violet-300, .theme-contrast .allo-docsuite .ring-violet-400, .theme-contrast .allo-docsuite [class~="ring-violet-400/40"], .theme-contrast .allo-docsuite .ring-violet-500, .theme-contrast .allo-docsuite [class~="ring-violet-500/20"], .theme-contrast .allo-docsuite .ring-violet-600, .theme-contrast .allo-docsuite .ring-violet-700, .theme-contrast .allo-docsuite .ring-white, .theme-contrast .allo-docsuite [class~="ring-white/10"], .theme-contrast .allo-docsuite [class~="ring-white/20"], .theme-contrast .allo-docsuite [class~="ring-white/50"], .theme-contrast .allo-docsuite .ring-yellow-100, .theme-contrast .allo-docsuite .ring-yellow-200, .theme-contrast .allo-docsuite .ring-yellow-300, .theme-contrast .allo-docsuite .ring-yellow-400, .theme-contrast .allo-docsuite [class~="ring-yellow-400/50"], .theme-contrast .allo-docsuite .ring-yellow-500, .theme-contrast .allo-docsuite .ring-yellow-600, .theme-contrast .allo-docsuite .ring-yellow-700 { --tw-ring-color:#ffff00 !important; }
+.theme-contrast .allo-docsuite .bg-amber-100, .theme-contrast .allo-docsuite [class~="bg-amber-100/50"], .theme-contrast .allo-docsuite .bg-amber-200, .theme-contrast .allo-docsuite [class~="bg-amber-200/50"], .theme-contrast .allo-docsuite [class~="bg-amber-200/60"], .theme-contrast .allo-docsuite .bg-amber-300, .theme-contrast .allo-docsuite [class~="bg-amber-300/15"], .theme-contrast .allo-docsuite [class~="bg-amber-300/50"], .theme-contrast .allo-docsuite .bg-amber-400, .theme-contrast .allo-docsuite [class~="bg-amber-400/10"], .theme-contrast .allo-docsuite [class~="bg-amber-400/20"], .theme-contrast .allo-docsuite [class~="bg-amber-400/30"], .theme-contrast .allo-docsuite .bg-amber-50, .theme-contrast .allo-docsuite [class~="bg-amber-50/50"], .theme-contrast .allo-docsuite [class~="bg-amber-50/60"], .theme-contrast .allo-docsuite [class~="bg-amber-50/70"], .theme-contrast .allo-docsuite [class~="bg-amber-50/80"], .theme-contrast .allo-docsuite .bg-amber-500, .theme-contrast .allo-docsuite [class~="bg-amber-500/15"], .theme-contrast .allo-docsuite [class~="bg-amber-500/20"], .theme-contrast .allo-docsuite .bg-amber-600, .theme-contrast .allo-docsuite .bg-amber-700, .theme-contrast .allo-docsuite [class~="bg-amber-700/40"], .theme-contrast .allo-docsuite .bg-amber-800, .theme-contrast .allo-docsuite [class~="bg-amber-900/20"], .theme-contrast .allo-docsuite [class~="bg-amber-900/30"], .theme-contrast .allo-docsuite [class~="bg-amber-900/40"], .theme-contrast .allo-docsuite [class~="bg-amber-900/50"], .theme-contrast .allo-docsuite [class~="bg-amber-900/60"], .theme-contrast .allo-docsuite [class~="bg-amber-900/80"], .theme-contrast .allo-docsuite .bg-blue-100, .theme-contrast .allo-docsuite [class~="bg-blue-100/50"], .theme-contrast .allo-docsuite .bg-blue-200, .theme-contrast .allo-docsuite [class~="bg-blue-200/20"], .theme-contrast .allo-docsuite [class~="bg-blue-200/30"], .theme-contrast .allo-docsuite .bg-blue-300, .theme-contrast .allo-docsuite .bg-blue-400, .theme-contrast .allo-docsuite .bg-blue-50, .theme-contrast .allo-docsuite [class~="bg-blue-50/50"], .theme-contrast .allo-docsuite [class~="bg-blue-50/60"], .theme-contrast .allo-docsuite [class~="bg-blue-50/95"], .theme-contrast .allo-docsuite [class~="bg-blue-500/10"], .theme-contrast .allo-docsuite .bg-blue-600, .theme-contrast .allo-docsuite .bg-blue-700, .theme-contrast .allo-docsuite .bg-blue-800, .theme-contrast .allo-docsuite [class~="bg-blue-900/30"], .theme-contrast .allo-docsuite [class~="bg-blue-900/50"], .theme-contrast .allo-docsuite .bg-cyan-100, .theme-contrast .allo-docsuite [class~="bg-cyan-100/80"], .theme-contrast .allo-docsuite .bg-cyan-200, .theme-contrast .allo-docsuite .bg-cyan-400, .theme-contrast .allo-docsuite [class~="bg-cyan-400/20"], .theme-contrast .allo-docsuite .bg-cyan-50, .theme-contrast .allo-docsuite [class~="bg-cyan-50/50"], .theme-contrast .allo-docsuite [class~="bg-cyan-50/60"], .theme-contrast .allo-docsuite .bg-cyan-500, .theme-contrast .allo-docsuite .bg-cyan-600, .theme-contrast .allo-docsuite .bg-cyan-700, .theme-contrast .allo-docsuite .bg-cyan-800, .theme-contrast .allo-docsuite .bg-cyan-900, .theme-contrast .allo-docsuite [class~="bg-cyan-900/60"], .theme-contrast .allo-docsuite .bg-emerald-100, .theme-contrast .allo-docsuite .bg-emerald-200, .theme-contrast .allo-docsuite .bg-emerald-300, .theme-contrast .allo-docsuite .bg-emerald-400, .theme-contrast .allo-docsuite [class~="bg-emerald-400/20"], .theme-contrast .allo-docsuite .bg-emerald-50, .theme-contrast .allo-docsuite [class~="bg-emerald-50/40"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/50"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/60"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/70"], .theme-contrast .allo-docsuite .bg-emerald-500, .theme-contrast .allo-docsuite [class~="bg-emerald-500/15"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/20"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/25"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/30"], .theme-contrast .allo-docsuite .bg-emerald-600, .theme-contrast .allo-docsuite .bg-emerald-700, .theme-contrast .allo-docsuite .bg-emerald-800, .theme-contrast .allo-docsuite [class~="bg-emerald-800/60"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/20"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/30"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/40"], .theme-contrast .allo-docsuite .bg-emerald-950, .theme-contrast .allo-docsuite [class~="bg-emerald-950/70"], .theme-contrast .allo-docsuite .bg-fuchsia-100, .theme-contrast .allo-docsuite .bg-fuchsia-50, .theme-contrast .allo-docsuite [class~="bg-fuchsia-50/50"], .theme-contrast .allo-docsuite .bg-fuchsia-500, .theme-contrast .allo-docsuite .bg-fuchsia-600, .theme-contrast .allo-docsuite [class~="bg-fuchsia-600/60"], .theme-contrast .allo-docsuite .bg-fuchsia-700, .theme-contrast .allo-docsuite [class~="bg-fuchsia-700/50"], .theme-contrast .allo-docsuite [class~="bg-fuchsia-900/40"], .theme-contrast .allo-docsuite .bg-green-100, .theme-contrast .allo-docsuite [class~="bg-green-100/50"], .theme-contrast .allo-docsuite .bg-green-200, .theme-contrast .allo-docsuite .bg-green-300, .theme-contrast .allo-docsuite .bg-green-400, .theme-contrast .allo-docsuite .bg-green-50, .theme-contrast .allo-docsuite [class~="bg-green-50/50"], .theme-contrast .allo-docsuite .bg-green-500, .theme-contrast .allo-docsuite .bg-green-600, .theme-contrast .allo-docsuite .bg-green-700, .theme-contrast .allo-docsuite .bg-green-800, .theme-contrast .allo-docsuite .bg-indigo-100, .theme-contrast .allo-docsuite [class~="bg-indigo-100/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/60"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/80"], .theme-contrast .allo-docsuite .bg-indigo-200, .theme-contrast .allo-docsuite [class~="bg-indigo-200/50"], .theme-contrast .allo-docsuite .bg-indigo-300, .theme-contrast .allo-docsuite [class~="bg-indigo-300/20"], .theme-contrast .allo-docsuite .bg-indigo-400, .theme-contrast .allo-docsuite .bg-indigo-50, .theme-contrast .allo-docsuite [class~="bg-indigo-50/30"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/60"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/70"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/80"], .theme-contrast .allo-docsuite .bg-indigo-500, .theme-contrast .allo-docsuite [class~="bg-indigo-500/10"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/15"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/25"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/30"], .theme-contrast .allo-docsuite .bg-indigo-600, .theme-contrast .allo-docsuite [class~="bg-indigo-600/10"], .theme-contrast .allo-docsuite [class~="bg-indigo-600/30"], .theme-contrast .allo-docsuite .bg-indigo-700, .theme-contrast .allo-docsuite [class~="bg-indigo-700/80"], .theme-contrast .allo-docsuite .bg-indigo-800, .theme-contrast .allo-docsuite [class~="bg-indigo-800/50"], .theme-contrast .allo-docsuite .bg-indigo-900, .theme-contrast .allo-docsuite [class~="bg-indigo-900/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/30"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/50"], .theme-contrast .allo-docsuite .bg-indigo-950, .theme-contrast .allo-docsuite [class~="bg-indigo-950/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-950/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-950/80"], .theme-contrast .allo-docsuite .bg-lime-500, .theme-contrast .allo-docsuite .bg-lime-600, .theme-contrast .allo-docsuite .bg-orange-100, .theme-contrast .allo-docsuite [class~="bg-orange-100/50"], .theme-contrast .allo-docsuite .bg-orange-200, .theme-contrast .allo-docsuite [class~="bg-orange-200/30"], .theme-contrast .allo-docsuite .bg-orange-300, .theme-contrast .allo-docsuite .bg-orange-400, .theme-contrast .allo-docsuite [class~="bg-orange-400/15"], .theme-contrast .allo-docsuite .bg-orange-50, .theme-contrast .allo-docsuite [class~="bg-orange-50/50"], .theme-contrast .allo-docsuite [class~="bg-orange-50/80"], .theme-contrast .allo-docsuite .bg-orange-600, .theme-contrast .allo-docsuite .bg-orange-700, .theme-contrast .allo-docsuite .bg-pink-100, .theme-contrast .allo-docsuite .bg-pink-200, .theme-contrast .allo-docsuite .bg-pink-50, .theme-contrast .allo-docsuite [class~="bg-pink-50/50"], .theme-contrast .allo-docsuite .bg-pink-500, .theme-contrast .allo-docsuite [class~="bg-pink-500/30"], .theme-contrast .allo-docsuite .bg-pink-600, .theme-contrast .allo-docsuite .bg-pink-700, .theme-contrast .allo-docsuite .bg-pink-800, .theme-contrast .allo-docsuite [class~="bg-pink-800/60"], .theme-contrast .allo-docsuite [class~="bg-pink-900/40"], .theme-contrast .allo-docsuite .bg-purple-100, .theme-contrast .allo-docsuite [class~="bg-purple-100/50"], .theme-contrast .allo-docsuite .bg-purple-200, .theme-contrast .allo-docsuite .bg-purple-300, .theme-contrast .allo-docsuite [class~="bg-purple-300/20"], .theme-contrast .allo-docsuite .bg-purple-400, .theme-contrast .allo-docsuite .bg-purple-50, .theme-contrast .allo-docsuite [class~="bg-purple-50/50"], .theme-contrast .allo-docsuite .bg-purple-500, .theme-contrast .allo-docsuite .bg-purple-600, .theme-contrast .allo-docsuite [class~="bg-purple-600/10"], .theme-contrast .allo-docsuite .bg-purple-700, .theme-contrast .allo-docsuite .bg-red-100, .theme-contrast .allo-docsuite [class~="bg-red-100/50"], .theme-contrast .allo-docsuite .bg-red-200, .theme-contrast .allo-docsuite .bg-red-300, .theme-contrast .allo-docsuite .bg-red-400, .theme-contrast .allo-docsuite .bg-red-50, .theme-contrast .allo-docsuite .bg-red-500, .theme-contrast .allo-docsuite [class~="bg-red-500/30"], .theme-contrast .allo-docsuite .bg-red-600, .theme-contrast .allo-docsuite .bg-red-700, .theme-contrast .allo-docsuite .bg-red-800, .theme-contrast .allo-docsuite [class~="bg-red-900/50"], .theme-contrast .allo-docsuite [class~="bg-red-900/90"], .theme-contrast .allo-docsuite [class~="bg-red-950/40"], .theme-contrast .allo-docsuite [class~="bg-red-950/70"], .theme-contrast .allo-docsuite .bg-rose-100, .theme-contrast .allo-docsuite .bg-rose-200, .theme-contrast .allo-docsuite .bg-rose-300, .theme-contrast .allo-docsuite .bg-rose-50, .theme-contrast .allo-docsuite [class~="bg-rose-50/50"], .theme-contrast .allo-docsuite [class~="bg-rose-50/70"], .theme-contrast .allo-docsuite [class~="bg-rose-50/80"], .theme-contrast .allo-docsuite .bg-rose-500, .theme-contrast .allo-docsuite .bg-rose-600, .theme-contrast .allo-docsuite .bg-rose-700, .theme-contrast .allo-docsuite [class~="bg-rose-900/20"], .theme-contrast .allo-docsuite [class~="bg-rose-900/30"], .theme-contrast .allo-docsuite [class~="bg-rose-900/40"], .theme-contrast .allo-docsuite .bg-sky-100, .theme-contrast .allo-docsuite .bg-sky-200, .theme-contrast .allo-docsuite .bg-sky-50, .theme-contrast .allo-docsuite [class~="bg-sky-50/50"], .theme-contrast .allo-docsuite [class~="bg-sky-50/70"], .theme-contrast .allo-docsuite .bg-sky-500, .theme-contrast .allo-docsuite .bg-sky-600, .theme-contrast .allo-docsuite .bg-sky-700, .theme-contrast .allo-docsuite .bg-slate-100, .theme-contrast .allo-docsuite [class~="bg-slate-100/50"], .theme-contrast .allo-docsuite [class~="bg-slate-100/90"], .theme-contrast .allo-docsuite .bg-slate-200, .theme-contrast .allo-docsuite .bg-slate-300, .theme-contrast .allo-docsuite .bg-slate-400, .theme-contrast .allo-docsuite .bg-slate-50, .theme-contrast .allo-docsuite [class~="bg-slate-50/30"], .theme-contrast .allo-docsuite [class~="bg-slate-50/50"], .theme-contrast .allo-docsuite [class~="bg-slate-50/60"], .theme-contrast .allo-docsuite [class~="bg-slate-50/70"], .theme-contrast .allo-docsuite [class~="bg-slate-50/80"], .theme-contrast .allo-docsuite [class~="bg-slate-50/90"], .theme-contrast .allo-docsuite [class~="bg-slate-500/20"], .theme-contrast .allo-docsuite .bg-slate-600, .theme-contrast .allo-docsuite .bg-slate-700, .theme-contrast .allo-docsuite [class~="bg-slate-700/50"], .theme-contrast .allo-docsuite [class~="bg-slate-700/90"], .theme-contrast .allo-docsuite .bg-slate-800, .theme-contrast .allo-docsuite [class~="bg-slate-800/40"], .theme-contrast .allo-docsuite [class~="bg-slate-800/50"], .theme-contrast .allo-docsuite [class~="bg-slate-800/60"], .theme-contrast .allo-docsuite [class~="bg-slate-800/70"], .theme-contrast .allo-docsuite [class~="bg-slate-800/80"], .theme-contrast .allo-docsuite [class~="bg-slate-800/90"], .theme-contrast .allo-docsuite [class~="bg-slate-800/95"], .theme-contrast .allo-docsuite .bg-slate-900, .theme-contrast .allo-docsuite [class~="bg-slate-900/40"], .theme-contrast .allo-docsuite [class~="bg-slate-900/50"], .theme-contrast .allo-docsuite [class~="bg-slate-900/60"], .theme-contrast .allo-docsuite [class~="bg-slate-900/70"], .theme-contrast .allo-docsuite [class~="bg-slate-900/80"], .theme-contrast .allo-docsuite [class~="bg-slate-900/90"], .theme-contrast .allo-docsuite [class~="bg-slate-900/95"], .theme-contrast .allo-docsuite .bg-slate-950, .theme-contrast .allo-docsuite [class~="bg-slate-950/40"], .theme-contrast .allo-docsuite [class~="bg-slate-950/55"], .theme-contrast .allo-docsuite [class~="bg-slate-950/60"], .theme-contrast .allo-docsuite [class~="bg-slate-950/70"], .theme-contrast .allo-docsuite [class~="bg-slate-950/75"], .theme-contrast .allo-docsuite [class~="bg-slate-950/80"], .theme-contrast .allo-docsuite [class~="bg-slate-950/90"], .theme-contrast .allo-docsuite [class~="bg-slate-950/95"], .theme-contrast .allo-docsuite .bg-stone-50, .theme-contrast .allo-docsuite .bg-stone-700, .theme-contrast .allo-docsuite .bg-teal-100, .theme-contrast .allo-docsuite .bg-teal-200, .theme-contrast .allo-docsuite .bg-teal-300, .theme-contrast .allo-docsuite .bg-teal-400, .theme-contrast .allo-docsuite .bg-teal-50, .theme-contrast .allo-docsuite [class~="bg-teal-50/50"], .theme-contrast .allo-docsuite [class~="bg-teal-50/60"], .theme-contrast .allo-docsuite .bg-teal-500, .theme-contrast .allo-docsuite [class~="bg-teal-500/15"], .theme-contrast .allo-docsuite .bg-teal-600, .theme-contrast .allo-docsuite .bg-teal-700, .theme-contrast .allo-docsuite .bg-teal-800, .theme-contrast .allo-docsuite .bg-teal-950, .theme-contrast .allo-docsuite .bg-violet-100, .theme-contrast .allo-docsuite [class~="bg-violet-100/50"], .theme-contrast .allo-docsuite .bg-violet-200, .theme-contrast .allo-docsuite .bg-violet-400, .theme-contrast .allo-docsuite .bg-violet-50, .theme-contrast .allo-docsuite [class~="bg-violet-50/40"], .theme-contrast .allo-docsuite [class~="bg-violet-50/50"], .theme-contrast .allo-docsuite [class~="bg-violet-50/60"], .theme-contrast .allo-docsuite [class~="bg-violet-50/70"], .theme-contrast .allo-docsuite .bg-violet-500, .theme-contrast .allo-docsuite .bg-violet-600, .theme-contrast .allo-docsuite [class~="bg-violet-600/30"], .theme-contrast .allo-docsuite [class~="bg-violet-600/40"], .theme-contrast .allo-docsuite [class~="bg-violet-600/60"], .theme-contrast .allo-docsuite .bg-violet-700, .theme-contrast .allo-docsuite [class~="bg-violet-700/20"], .theme-contrast .allo-docsuite .bg-violet-800, .theme-contrast .allo-docsuite [class~="bg-violet-900/50"], .theme-contrast .allo-docsuite .bg-white, .theme-contrast .allo-docsuite [class~="bg-white/10"], .theme-contrast .allo-docsuite [class~="bg-white/15"], .theme-contrast .allo-docsuite [class~="bg-white/20"], .theme-contrast .allo-docsuite [class~="bg-white/30"], .theme-contrast .allo-docsuite [class~="bg-white/35"], .theme-contrast .allo-docsuite [class~="bg-white/5"], .theme-contrast .allo-docsuite [class~="bg-white/50"], .theme-contrast .allo-docsuite [class~="bg-white/60"], .theme-contrast .allo-docsuite [class~="bg-white/70"], .theme-contrast .allo-docsuite [class~="bg-white/80"], .theme-contrast .allo-docsuite [class~="bg-white/90"], .theme-contrast .allo-docsuite [class~="bg-white/95"], .theme-contrast .allo-docsuite .bg-yellow-100, .theme-contrast .allo-docsuite [class~="bg-yellow-100/5"], .theme-contrast .allo-docsuite .bg-yellow-200, .theme-contrast .allo-docsuite [class~="bg-yellow-200/30"], .theme-contrast .allo-docsuite .bg-yellow-300, .theme-contrast .allo-docsuite .bg-yellow-400, .theme-contrast .allo-docsuite [class~="bg-yellow-400/20"], .theme-contrast .allo-docsuite [class~="bg-yellow-400/30"], .theme-contrast .allo-docsuite .bg-yellow-50, .theme-contrast .allo-docsuite [class~="bg-yellow-50/50"], .theme-contrast .allo-docsuite .bg-yellow-500, .theme-contrast .allo-docsuite [class~="bg-yellow-500/20"], .theme-contrast .allo-docsuite .bg-yellow-600, .theme-contrast .allo-docsuite .bg-yellow-700, .theme-contrast .allo-docsuite .bg-yellow-900, .theme-contrast .allo-docsuite .bg-zinc-500, .theme-contrast .allo-docsuite .bg-zinc-600 { background-color:#000000 !important; }
 .theme-contrast .allo-docsuite .from-amber-100, .theme-contrast .allo-docsuite .from-amber-300, .theme-contrast .allo-docsuite .from-amber-400, .theme-contrast .allo-docsuite [class~="from-amber-400/20"], .theme-contrast .allo-docsuite .from-amber-50, .theme-contrast .allo-docsuite [class~="from-amber-50/80"], .theme-contrast .allo-docsuite .from-amber-500, .theme-contrast .allo-docsuite .from-amber-600, .theme-contrast .allo-docsuite [class~="from-amber-600/80"], .theme-contrast .allo-docsuite .from-amber-700, .theme-contrast .allo-docsuite .from-amber-800, .theme-contrast .allo-docsuite .from-amber-900, .theme-contrast .allo-docsuite [class~="from-amber-900/40"], .theme-contrast .allo-docsuite .from-black, .theme-contrast .allo-docsuite .from-blue-100, .theme-contrast .allo-docsuite .from-blue-400, .theme-contrast .allo-docsuite .from-blue-50, .theme-contrast .allo-docsuite [class~="from-blue-50/60"], .theme-contrast .allo-docsuite .from-blue-500, .theme-contrast .allo-docsuite .from-blue-600, .theme-contrast .allo-docsuite .from-blue-700, .theme-contrast .allo-docsuite [class~="from-blue-900/40"], .theme-contrast .allo-docsuite .from-cyan-400, .theme-contrast .allo-docsuite .from-cyan-50, .theme-contrast .allo-docsuite [class~="from-cyan-50/60"], .theme-contrast .allo-docsuite .from-cyan-500, .theme-contrast .allo-docsuite .from-cyan-600, .theme-contrast .allo-docsuite [class~="from-cyan-900/40"], .theme-contrast .allo-docsuite [class~="from-emerald-400/20"], .theme-contrast .allo-docsuite .from-emerald-50, .theme-contrast .allo-docsuite .from-emerald-500, .theme-contrast .allo-docsuite .from-emerald-600, .theme-contrast .allo-docsuite .from-emerald-700, .theme-contrast .allo-docsuite [class~="from-emerald-900/40"], .theme-contrast .allo-docsuite .from-fuchsia-50, .theme-contrast .allo-docsuite .from-fuchsia-600, .theme-contrast .allo-docsuite .from-green-400, .theme-contrast .allo-docsuite .from-green-50, .theme-contrast .allo-docsuite .from-green-500, .theme-contrast .allo-docsuite .from-green-700, .theme-contrast .allo-docsuite .from-green-800, .theme-contrast .allo-docsuite .from-indigo-400, .theme-contrast .allo-docsuite .from-indigo-50, .theme-contrast .allo-docsuite [class~="from-indigo-50/60"], .theme-contrast .allo-docsuite [class~="from-indigo-50/80"], .theme-contrast .allo-docsuite [class~="from-indigo-50/95"], .theme-contrast .allo-docsuite .from-indigo-500, .theme-contrast .allo-docsuite .from-indigo-600, .theme-contrast .allo-docsuite .from-indigo-700, .theme-contrast .allo-docsuite [class~="from-indigo-900/40"], .theme-contrast .allo-docsuite [class~="from-indigo-900/50"], .theme-contrast .allo-docsuite .from-lime-600, .theme-contrast .allo-docsuite [class~="from-orange-50/80"], .theme-contrast .allo-docsuite .from-orange-500, .theme-contrast .allo-docsuite .from-pink-100, .theme-contrast .allo-docsuite .from-pink-500, .theme-contrast .allo-docsuite .from-pink-600, .theme-contrast .allo-docsuite [class~="from-pink-900/40"], .theme-contrast .allo-docsuite .from-purple-50, .theme-contrast .allo-docsuite .from-purple-600, .theme-contrast .allo-docsuite .from-purple-900, .theme-contrast .allo-docsuite [class~="from-purple-900/40"], .theme-contrast .allo-docsuite [class~="from-red-50/70"], .theme-contrast .allo-docsuite .from-red-800, .theme-contrast .allo-docsuite .from-rose-100, .theme-contrast .allo-docsuite .from-rose-50, .theme-contrast .allo-docsuite .from-rose-500, .theme-contrast .allo-docsuite .from-rose-600, .theme-contrast .allo-docsuite [class~="from-rose-900/40"], .theme-contrast .allo-docsuite .from-sky-50, .theme-contrast .allo-docsuite [class~="from-sky-50/80"], .theme-contrast .allo-docsuite .from-sky-500, .theme-contrast .allo-docsuite .from-sky-600, .theme-contrast .allo-docsuite [class~="from-sky-900/40"], .theme-contrast .allo-docsuite .from-slate-50, .theme-contrast .allo-docsuite .from-slate-600, .theme-contrast .allo-docsuite .from-slate-700, .theme-contrast .allo-docsuite .from-slate-800, .theme-contrast .allo-docsuite .from-slate-900, .theme-contrast .allo-docsuite .from-stone-600, .theme-contrast .allo-docsuite .from-teal-50, .theme-contrast .allo-docsuite [class~="from-teal-50/80"], .theme-contrast .allo-docsuite .from-teal-500, .theme-contrast .allo-docsuite .from-teal-600, .theme-contrast .allo-docsuite .from-teal-700, .theme-contrast .allo-docsuite .from-violet-100, .theme-contrast .allo-docsuite .from-violet-50, .theme-contrast .allo-docsuite .from-violet-500, .theme-contrast .allo-docsuite .from-violet-600, .theme-contrast .allo-docsuite .from-violet-700, .theme-contrast .allo-docsuite [class~="from-violet-900/40"], .theme-contrast .allo-docsuite .from-white, .theme-contrast .allo-docsuite [class~="from-white/0"], .theme-contrast .allo-docsuite .from-yellow-300, .theme-contrast .allo-docsuite .from-yellow-400, .theme-contrast .allo-docsuite .from-yellow-50, .theme-contrast .allo-docsuite .from-yellow-600, .theme-contrast .allo-docsuite .from-zinc-600, .theme-contrast .allo-docsuite .to-amber-50, .theme-contrast .allo-docsuite [class~="to-amber-50/40"], .theme-contrast .allo-docsuite .to-amber-500, .theme-contrast .allo-docsuite .to-amber-600, .theme-contrast .allo-docsuite .to-amber-800, .theme-contrast .allo-docsuite [class~="to-amber-800/20"], .theme-contrast .allo-docsuite [class~="to-amber-800/80"], .theme-contrast .allo-docsuite .to-blue-50, .theme-contrast .allo-docsuite .to-blue-500, .theme-contrast .allo-docsuite .to-blue-600, .theme-contrast .allo-docsuite .to-blue-700, .theme-contrast .allo-docsuite [class~="to-blue-900/40"], .theme-contrast .allo-docsuite [class~="to-cyan-400/10"], .theme-contrast .allo-docsuite .to-cyan-50, .theme-contrast .allo-docsuite .to-cyan-500, .theme-contrast .allo-docsuite .to-cyan-600, .theme-contrast .allo-docsuite .to-cyan-700, .theme-contrast .allo-docsuite .to-emerald-400, .theme-contrast .allo-docsuite .to-emerald-50, .theme-contrast .allo-docsuite .to-emerald-500, .theme-contrast .allo-docsuite .to-emerald-600, .theme-contrast .allo-docsuite .to-emerald-700, .theme-contrast .allo-docsuite .to-emerald-800, .theme-contrast .allo-docsuite .to-emerald-900, .theme-contrast .allo-docsuite .to-fuchsia-100, .theme-contrast .allo-docsuite .to-fuchsia-500, .theme-contrast .allo-docsuite .to-fuchsia-600, .theme-contrast .allo-docsuite [class~="to-fuchsia-900/40"], .theme-contrast .allo-docsuite .to-gray-700, .theme-contrast .allo-docsuite .to-green-700, .theme-contrast .allo-docsuite .to-indigo-100, .theme-contrast .allo-docsuite .to-indigo-50, .theme-contrast .allo-docsuite [class~="to-indigo-50/30"], .theme-contrast .allo-docsuite .to-indigo-500, .theme-contrast .allo-docsuite .to-indigo-600, .theme-contrast .allo-docsuite .to-indigo-700, .theme-contrast .allo-docsuite [class~="to-indigo-900/40"], .theme-contrast .allo-docsuite .to-lime-50, .theme-contrast .allo-docsuite .to-orange-100, .theme-contrast .allo-docsuite [class~="to-orange-100/40"], .theme-contrast .allo-docsuite .to-orange-400, .theme-contrast .allo-docsuite .to-orange-50, .theme-contrast .allo-docsuite .to-orange-500, .theme-contrast .allo-docsuite [class~="to-orange-500/20"], .theme-contrast .allo-docsuite .to-orange-600, .theme-contrast .allo-docsuite .to-orange-700, .theme-contrast .allo-docsuite .to-orange-800, .theme-contrast .allo-docsuite .to-orange-900, .theme-contrast .allo-docsuite [class~="to-orange-900/40"], .theme-contrast .allo-docsuite .to-pink-50, .theme-contrast .allo-docsuite .to-pink-500, .theme-contrast .allo-docsuite .to-pink-600, .theme-contrast .allo-docsuite [class~="to-pink-900/40"], .theme-contrast .allo-docsuite .to-purple-50, .theme-contrast .allo-docsuite [class~="to-purple-50/80"], .theme-contrast .allo-docsuite [class~="to-purple-50/95"], .theme-contrast .allo-docsuite .to-purple-500, .theme-contrast .allo-docsuite .to-purple-600, .theme-contrast .allo-docsuite .to-purple-700, .theme-contrast .allo-docsuite .to-purple-800, .theme-contrast .allo-docsuite [class~="to-purple-900/40"], .theme-contrast .allo-docsuite .to-red-600, .theme-contrast .allo-docsuite .to-rose-50, .theme-contrast .allo-docsuite [class~="to-rose-50/30"], .theme-contrast .allo-docsuite .to-rose-500, .theme-contrast .allo-docsuite .to-rose-600, .theme-contrast .allo-docsuite .to-rose-700, .theme-contrast .allo-docsuite .to-rose-800, .theme-contrast .allo-docsuite .to-rose-900, .theme-contrast .allo-docsuite [class~="to-rose-900/40"], .theme-contrast .allo-docsuite .to-sky-50, .theme-contrast .allo-docsuite .to-sky-600, .theme-contrast .allo-docsuite [class~="to-sky-900/40"], .theme-contrast .allo-docsuite .to-slate-50, .theme-contrast .allo-docsuite .to-slate-700, .theme-contrast .allo-docsuite .to-slate-800, .theme-contrast .allo-docsuite .to-slate-900, .theme-contrast .allo-docsuite .to-stone-600, .theme-contrast .allo-docsuite .to-stone-700, .theme-contrast .allo-docsuite [class~="to-teal-100/40"], .theme-contrast .allo-docsuite .to-teal-50, .theme-contrast .allo-docsuite .to-teal-500, .theme-contrast .allo-docsuite .to-teal-600, .theme-contrast .allo-docsuite .to-teal-700, .theme-contrast .allo-docsuite .to-violet-100, .theme-contrast .allo-docsuite .to-violet-50, .theme-contrast .allo-docsuite [class~="to-violet-50/30"], .theme-contrast .allo-docsuite [class~="to-violet-50/40"], .theme-contrast .allo-docsuite .to-violet-500, .theme-contrast .allo-docsuite .to-violet-600, .theme-contrast .allo-docsuite .to-violet-700, .theme-contrast .allo-docsuite [class~="to-violet-900/50"], .theme-contrast .allo-docsuite .to-white, .theme-contrast .allo-docsuite [class~="to-white/20"], .theme-contrast .allo-docsuite .to-yellow-300, .theme-contrast .allo-docsuite .to-yellow-50, .theme-contrast .allo-docsuite .to-yellow-500, .theme-contrast .allo-docsuite .to-yellow-600, .theme-contrast .allo-docsuite .to-zinc-700, .theme-contrast .allo-docsuite .via-amber-400, .theme-contrast .allo-docsuite [class~="via-black/40"], .theme-contrast .allo-docsuite [class~="via-blue-50/40"], .theme-contrast .allo-docsuite [class~="via-green-50/30"], .theme-contrast .allo-docsuite [class~="via-indigo-50/40"], .theme-contrast .allo-docsuite [class~="via-indigo-50/50"], .theme-contrast .allo-docsuite .via-indigo-950, .theme-contrast .allo-docsuite .via-orange-300, .theme-contrast .allo-docsuite [class~="via-orange-50/40"], .theme-contrast .allo-docsuite .via-purple-500, .theme-contrast .allo-docsuite .via-white, .theme-contrast .allo-docsuite [class~="via-white/20"], .theme-contrast .allo-docsuite [class~="via-white/95"] { background-image:none !important;background-color:#000000 !important; }
-.theme-contrast .allo-docsuite .border-amber-100, .theme-contrast .allo-docsuite [class~="border-amber-100/50"], .theme-contrast .allo-docsuite .border-amber-200, .theme-contrast .allo-docsuite [class~="border-amber-200/30"], .theme-contrast .allo-docsuite [class~="border-amber-200/50"], .theme-contrast .allo-docsuite [class~="border-amber-200/60"], .theme-contrast .allo-docsuite .border-amber-300, .theme-contrast .allo-docsuite [class~="border-amber-300/40"], .theme-contrast .allo-docsuite .border-amber-400, .theme-contrast .allo-docsuite [class~="border-amber-400/40"], .theme-contrast .allo-docsuite [class~="border-amber-400/50"], .theme-contrast .allo-docsuite .border-amber-500, .theme-contrast .allo-docsuite [class~="border-amber-500/30"], .theme-contrast .allo-docsuite [class~="border-amber-500/40"], .theme-contrast .allo-docsuite [class~="border-amber-500/50"], .theme-contrast .allo-docsuite .border-amber-600, .theme-contrast .allo-docsuite [class~="border-amber-600/30"], .theme-contrast .allo-docsuite [class~="border-amber-600/40"], .theme-contrast .allo-docsuite .border-amber-700, .theme-contrast .allo-docsuite [class~="border-amber-700/50"], .theme-contrast .allo-docsuite .border-black, .theme-contrast .allo-docsuite [class~="border-black/20"], .theme-contrast .allo-docsuite [class~="border-black/5"], .theme-contrast .allo-docsuite .border-blue-100, .theme-contrast .allo-docsuite .border-blue-200, .theme-contrast .allo-docsuite [class~="border-blue-200/50"], .theme-contrast .allo-docsuite .border-blue-300, .theme-contrast .allo-docsuite [class~="border-blue-300/30"], .theme-contrast .allo-docsuite [class~="border-blue-300/40"], .theme-contrast .allo-docsuite .border-blue-400, .theme-contrast .allo-docsuite [class~="border-blue-400/50"], .theme-contrast .allo-docsuite .border-blue-500, .theme-contrast .allo-docsuite [class~="border-blue-500/30"], .theme-contrast .allo-docsuite [class~="border-blue-500/40"], .theme-contrast .allo-docsuite .border-blue-600, .theme-contrast .allo-docsuite .border-blue-700, .theme-contrast .allo-docsuite .border-blue-800, .theme-contrast .allo-docsuite .border-cyan-100, .theme-contrast .allo-docsuite .border-cyan-200, .theme-contrast .allo-docsuite .border-cyan-300, .theme-contrast .allo-docsuite [class~="border-cyan-300/25"], .theme-contrast .allo-docsuite [class~="border-cyan-300/80"], .theme-contrast .allo-docsuite .border-cyan-400, .theme-contrast .allo-docsuite [class~="border-cyan-500/30"], .theme-contrast .allo-docsuite .border-cyan-600, .theme-contrast .allo-docsuite .border-cyan-700, .theme-contrast .allo-docsuite .border-emerald-100, .theme-contrast .allo-docsuite [class~="border-emerald-100/50"], .theme-contrast .allo-docsuite .border-emerald-200, .theme-contrast .allo-docsuite [class~="border-emerald-200/60"], .theme-contrast .allo-docsuite .border-emerald-300, .theme-contrast .allo-docsuite [class~="border-emerald-300/30"], .theme-contrast .allo-docsuite [class~="border-emerald-300/40"], .theme-contrast .allo-docsuite .border-emerald-400, .theme-contrast .allo-docsuite [class~="border-emerald-400/40"], .theme-contrast .allo-docsuite .border-emerald-500, .theme-contrast .allo-docsuite [class~="border-emerald-500/30"], .theme-contrast .allo-docsuite [class~="border-emerald-500/40"], .theme-contrast .allo-docsuite [class~="border-emerald-500/50"], .theme-contrast .allo-docsuite .border-emerald-600, .theme-contrast .allo-docsuite .border-emerald-700, .theme-contrast .allo-docsuite [class~="border-emerald-700/50"], .theme-contrast .allo-docsuite .border-fuchsia-200, .theme-contrast .allo-docsuite .border-fuchsia-300, .theme-contrast .allo-docsuite .border-fuchsia-400, .theme-contrast .allo-docsuite [class~="border-fuchsia-500/20"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/30"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/40"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/50"], .theme-contrast .allo-docsuite .border-fuchsia-600, .theme-contrast .allo-docsuite .border-fuchsia-700, .theme-contrast .allo-docsuite .border-green-100, .theme-contrast .allo-docsuite .border-green-200, .theme-contrast .allo-docsuite .border-green-300, .theme-contrast .allo-docsuite .border-green-400, .theme-contrast .allo-docsuite .border-green-500, .theme-contrast .allo-docsuite .border-green-600, .theme-contrast .allo-docsuite .border-indigo-100, .theme-contrast .allo-docsuite [class~="border-indigo-100/50"], .theme-contrast .allo-docsuite .border-indigo-200, .theme-contrast .allo-docsuite [class~="border-indigo-200/50"], .theme-contrast .allo-docsuite [class~="border-indigo-200/60"], .theme-contrast .allo-docsuite [class~="border-indigo-200/70"], .theme-contrast .allo-docsuite .border-indigo-300, .theme-contrast .allo-docsuite [class~="border-indigo-300/30"], .theme-contrast .allo-docsuite .border-indigo-400, .theme-contrast .allo-docsuite [class~="border-indigo-400/30"], .theme-contrast .allo-docsuite .border-indigo-50, .theme-contrast .allo-docsuite .border-indigo-500, .theme-contrast .allo-docsuite [class~="border-indigo-500/20"], .theme-contrast .allo-docsuite [class~="border-indigo-500/30"], .theme-contrast .allo-docsuite [class~="border-indigo-500/40"], .theme-contrast .allo-docsuite [class~="border-indigo-500/50"], .theme-contrast .allo-docsuite .border-indigo-600, .theme-contrast .allo-docsuite [class~="border-indigo-600/60"], .theme-contrast .allo-docsuite .border-indigo-700, .theme-contrast .allo-docsuite [class~="border-indigo-700/50"], .theme-contrast .allo-docsuite [class~="border-indigo-700/70"], .theme-contrast .allo-docsuite .border-indigo-800, .theme-contrast .allo-docsuite [class~="border-indigo-800/30"], .theme-contrast .allo-docsuite .border-indigo-900, .theme-contrast .allo-docsuite [class~="border-indigo-900/20"], .theme-contrast .allo-docsuite [class~="border-lime-500/30"], .theme-contrast .allo-docsuite .border-orange-100, .theme-contrast .allo-docsuite .border-orange-200, .theme-contrast .allo-docsuite .border-orange-300, .theme-contrast .allo-docsuite [class~="border-orange-300/30"], .theme-contrast .allo-docsuite .border-orange-400, .theme-contrast .allo-docsuite .border-orange-500, .theme-contrast .allo-docsuite .border-orange-600, .theme-contrast .allo-docsuite .border-pink-200, .theme-contrast .allo-docsuite .border-pink-300, .theme-contrast .allo-docsuite .border-pink-400, .theme-contrast .allo-docsuite .border-pink-500, .theme-contrast .allo-docsuite [class~="border-pink-500/30"], .theme-contrast .allo-docsuite .border-pink-600, .theme-contrast .allo-docsuite [class~="border-pink-700/50"], .theme-contrast .allo-docsuite .border-purple-100, .theme-contrast .allo-docsuite .border-purple-200, .theme-contrast .allo-docsuite .border-purple-300, .theme-contrast .allo-docsuite .border-purple-400, .theme-contrast .allo-docsuite .border-purple-500, .theme-contrast .allo-docsuite [class~="border-purple-500/30"], .theme-contrast .allo-docsuite [class~="border-purple-500/40"], .theme-contrast .allo-docsuite .border-purple-600, .theme-contrast .allo-docsuite [class~="border-purple-700/50"], .theme-contrast .allo-docsuite .border-red-100, .theme-contrast .allo-docsuite .border-red-200, .theme-contrast .allo-docsuite [class~="border-red-200/60"], .theme-contrast .allo-docsuite .border-red-300, .theme-contrast .allo-docsuite .border-red-400, .theme-contrast .allo-docsuite .border-red-500, .theme-contrast .allo-docsuite .border-red-600, .theme-contrast .allo-docsuite .border-red-700, .theme-contrast .allo-docsuite [class~="border-red-700/60"], .theme-contrast .allo-docsuite .border-rose-100, .theme-contrast .allo-docsuite .border-rose-200, .theme-contrast .allo-docsuite [class~="border-rose-200/50"], .theme-contrast .allo-docsuite .border-rose-300, .theme-contrast .allo-docsuite .border-rose-400, .theme-contrast .allo-docsuite .border-rose-500, .theme-contrast .allo-docsuite [class~="border-rose-500/30"], .theme-contrast .allo-docsuite [class~="border-rose-500/40"], .theme-contrast .allo-docsuite [class~="border-rose-500/50"], .theme-contrast .allo-docsuite .border-rose-600, .theme-contrast .allo-docsuite .border-rose-700, .theme-contrast .allo-docsuite .border-sky-100, .theme-contrast .allo-docsuite .border-sky-200, .theme-contrast .allo-docsuite [class~="border-sky-200/60"], .theme-contrast .allo-docsuite .border-sky-300, .theme-contrast .allo-docsuite .border-sky-500, .theme-contrast .allo-docsuite [class~="border-sky-500/30"], .theme-contrast .allo-docsuite [class~="border-sky-500/40"], .theme-contrast .allo-docsuite .border-sky-600, .theme-contrast .allo-docsuite .border-sky-700, .theme-contrast .allo-docsuite .border-slate-100, .theme-contrast .allo-docsuite .border-slate-200, .theme-contrast .allo-docsuite [class~="border-slate-200/80"], .theme-contrast .allo-docsuite .border-slate-300, .theme-contrast .allo-docsuite .border-slate-400, .theme-contrast .allo-docsuite .border-slate-50, .theme-contrast .allo-docsuite .border-slate-500, .theme-contrast .allo-docsuite [class~="border-slate-500/30"], .theme-contrast .allo-docsuite [class~="border-slate-500/40"], .theme-contrast .allo-docsuite .border-slate-600, .theme-contrast .allo-docsuite .border-slate-700, .theme-contrast .allo-docsuite [class~="border-slate-700/50"], .theme-contrast .allo-docsuite .border-slate-800, .theme-contrast .allo-docsuite .border-slate-900, .theme-contrast .allo-docsuite .border-stone-300, .theme-contrast .allo-docsuite .border-stone-500, .theme-contrast .allo-docsuite [class~="border-stone-500/20"], .theme-contrast .allo-docsuite [class~="border-stone-500/30"], .theme-contrast .allo-docsuite [class~="border-stone-500/40"], .theme-contrast .allo-docsuite .border-stone-700, .theme-contrast .allo-docsuite .border-teal-100, .theme-contrast .allo-docsuite [class~="border-teal-100/50"], .theme-contrast .allo-docsuite .border-teal-200, .theme-contrast .allo-docsuite .border-teal-300, .theme-contrast .allo-docsuite [class~="border-teal-300/40"], .theme-contrast .allo-docsuite .border-teal-400, .theme-contrast .allo-docsuite .border-teal-500, .theme-contrast .allo-docsuite [class~="border-teal-500/30"], .theme-contrast .allo-docsuite [class~="border-teal-500/40"], .theme-contrast .allo-docsuite .border-teal-600, .theme-contrast .allo-docsuite .border-teal-700, .theme-contrast .allo-docsuite .border-teal-900, .theme-contrast .allo-docsuite .border-violet-100, .theme-contrast .allo-docsuite .border-violet-200, .theme-contrast .allo-docsuite .border-violet-300, .theme-contrast .allo-docsuite .border-violet-400, .theme-contrast .allo-docsuite .border-violet-50, .theme-contrast .allo-docsuite .border-violet-500, .theme-contrast .allo-docsuite [class~="border-violet-500/30"], .theme-contrast .allo-docsuite .border-violet-600, .theme-contrast .allo-docsuite .border-violet-700, .theme-contrast .allo-docsuite [class~="border-violet-700/50"], .theme-contrast .allo-docsuite .border-violet-800, .theme-contrast .allo-docsuite .border-white, .theme-contrast .allo-docsuite [class~="border-white/10"], .theme-contrast .allo-docsuite [class~="border-white/15"], .theme-contrast .allo-docsuite [class~="border-white/20"], .theme-contrast .allo-docsuite [class~="border-white/25"], .theme-contrast .allo-docsuite [class~="border-white/30"], .theme-contrast .allo-docsuite [class~="border-white/40"], .theme-contrast .allo-docsuite [class~="border-white/50"], .theme-contrast .allo-docsuite [class~="border-white/90"], .theme-contrast .allo-docsuite .border-yellow-100, .theme-contrast .allo-docsuite .border-yellow-200, .theme-contrast .allo-docsuite [class~="border-yellow-200/50"], .theme-contrast .allo-docsuite .border-yellow-300, .theme-contrast .allo-docsuite .border-yellow-400, .theme-contrast .allo-docsuite [class~="border-yellow-400/30"], .theme-contrast .allo-docsuite .border-yellow-500, .theme-contrast .allo-docsuite [class~="border-yellow-500/60"], .theme-contrast .allo-docsuite .border-yellow-600, .theme-contrast .allo-docsuite [class~="border-zinc-500/30"], .theme-contrast .allo-docsuite .divide-slate-100 > * + *, .theme-contrast .allo-docsuite .divide-slate-200 > * + *, .theme-contrast .allo-docsuite .divide-slate-700 > * + *, .theme-contrast .allo-docsuite .divide-violet-100 > * + *, .theme-contrast .allo-docsuite .divide-white > * + * { border-color:#ffff00 !important; }
+.theme-contrast .allo-docsuite .border-amber-100, .theme-contrast .allo-docsuite [class~="border-amber-100/50"], .theme-contrast .allo-docsuite .border-amber-200, .theme-contrast .allo-docsuite [class~="border-amber-200/30"], .theme-contrast .allo-docsuite [class~="border-amber-200/50"], .theme-contrast .allo-docsuite [class~="border-amber-200/60"], .theme-contrast .allo-docsuite .border-amber-300, .theme-contrast .allo-docsuite [class~="border-amber-300/40"], .theme-contrast .allo-docsuite .border-amber-400, .theme-contrast .allo-docsuite [class~="border-amber-400/40"], .theme-contrast .allo-docsuite [class~="border-amber-400/50"], .theme-contrast .allo-docsuite .border-amber-500, .theme-contrast .allo-docsuite [class~="border-amber-500/30"], .theme-contrast .allo-docsuite [class~="border-amber-500/40"], .theme-contrast .allo-docsuite [class~="border-amber-500/50"], .theme-contrast .allo-docsuite .border-amber-600, .theme-contrast .allo-docsuite [class~="border-amber-600/30"], .theme-contrast .allo-docsuite [class~="border-amber-600/40"], .theme-contrast .allo-docsuite .border-amber-700, .theme-contrast .allo-docsuite [class~="border-amber-700/50"], .theme-contrast .allo-docsuite .border-black, .theme-contrast .allo-docsuite [class~="border-black/20"], .theme-contrast .allo-docsuite [class~="border-black/5"], .theme-contrast .allo-docsuite .border-blue-100, .theme-contrast .allo-docsuite .border-blue-200, .theme-contrast .allo-docsuite [class~="border-blue-200/50"], .theme-contrast .allo-docsuite .border-blue-300, .theme-contrast .allo-docsuite [class~="border-blue-300/30"], .theme-contrast .allo-docsuite [class~="border-blue-300/40"], .theme-contrast .allo-docsuite .border-blue-400, .theme-contrast .allo-docsuite [class~="border-blue-400/50"], .theme-contrast .allo-docsuite .border-blue-500, .theme-contrast .allo-docsuite [class~="border-blue-500/30"], .theme-contrast .allo-docsuite [class~="border-blue-500/40"], .theme-contrast .allo-docsuite .border-blue-600, .theme-contrast .allo-docsuite .border-blue-700, .theme-contrast .allo-docsuite .border-blue-800, .theme-contrast .allo-docsuite .border-cyan-100, .theme-contrast .allo-docsuite .border-cyan-200, .theme-contrast .allo-docsuite .border-cyan-300, .theme-contrast .allo-docsuite [class~="border-cyan-300/25"], .theme-contrast .allo-docsuite [class~="border-cyan-300/80"], .theme-contrast .allo-docsuite .border-cyan-400, .theme-contrast .allo-docsuite .border-cyan-500, .theme-contrast .allo-docsuite [class~="border-cyan-500/30"], .theme-contrast .allo-docsuite .border-cyan-600, .theme-contrast .allo-docsuite .border-cyan-700, .theme-contrast .allo-docsuite .border-emerald-100, .theme-contrast .allo-docsuite [class~="border-emerald-100/50"], .theme-contrast .allo-docsuite .border-emerald-200, .theme-contrast .allo-docsuite [class~="border-emerald-200/60"], .theme-contrast .allo-docsuite .border-emerald-300, .theme-contrast .allo-docsuite [class~="border-emerald-300/30"], .theme-contrast .allo-docsuite [class~="border-emerald-300/40"], .theme-contrast .allo-docsuite .border-emerald-400, .theme-contrast .allo-docsuite [class~="border-emerald-400/40"], .theme-contrast .allo-docsuite .border-emerald-500, .theme-contrast .allo-docsuite [class~="border-emerald-500/30"], .theme-contrast .allo-docsuite [class~="border-emerald-500/40"], .theme-contrast .allo-docsuite [class~="border-emerald-500/50"], .theme-contrast .allo-docsuite .border-emerald-600, .theme-contrast .allo-docsuite .border-emerald-700, .theme-contrast .allo-docsuite [class~="border-emerald-700/50"], .theme-contrast .allo-docsuite .border-fuchsia-200, .theme-contrast .allo-docsuite .border-fuchsia-300, .theme-contrast .allo-docsuite .border-fuchsia-400, .theme-contrast .allo-docsuite [class~="border-fuchsia-500/20"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/30"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/40"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/50"], .theme-contrast .allo-docsuite .border-fuchsia-600, .theme-contrast .allo-docsuite .border-fuchsia-700, .theme-contrast .allo-docsuite .border-green-100, .theme-contrast .allo-docsuite .border-green-200, .theme-contrast .allo-docsuite .border-green-300, .theme-contrast .allo-docsuite .border-green-400, .theme-contrast .allo-docsuite .border-green-500, .theme-contrast .allo-docsuite .border-green-600, .theme-contrast .allo-docsuite .border-indigo-100, .theme-contrast .allo-docsuite [class~="border-indigo-100/50"], .theme-contrast .allo-docsuite .border-indigo-200, .theme-contrast .allo-docsuite [class~="border-indigo-200/50"], .theme-contrast .allo-docsuite [class~="border-indigo-200/60"], .theme-contrast .allo-docsuite [class~="border-indigo-200/70"], .theme-contrast .allo-docsuite .border-indigo-300, .theme-contrast .allo-docsuite [class~="border-indigo-300/30"], .theme-contrast .allo-docsuite .border-indigo-400, .theme-contrast .allo-docsuite [class~="border-indigo-400/30"], .theme-contrast .allo-docsuite .border-indigo-50, .theme-contrast .allo-docsuite .border-indigo-500, .theme-contrast .allo-docsuite [class~="border-indigo-500/20"], .theme-contrast .allo-docsuite [class~="border-indigo-500/30"], .theme-contrast .allo-docsuite [class~="border-indigo-500/40"], .theme-contrast .allo-docsuite [class~="border-indigo-500/50"], .theme-contrast .allo-docsuite .border-indigo-600, .theme-contrast .allo-docsuite [class~="border-indigo-600/60"], .theme-contrast .allo-docsuite .border-indigo-700, .theme-contrast .allo-docsuite [class~="border-indigo-700/50"], .theme-contrast .allo-docsuite [class~="border-indigo-700/70"], .theme-contrast .allo-docsuite .border-indigo-800, .theme-contrast .allo-docsuite [class~="border-indigo-800/30"], .theme-contrast .allo-docsuite .border-indigo-900, .theme-contrast .allo-docsuite [class~="border-indigo-900/20"], .theme-contrast .allo-docsuite [class~="border-lime-500/30"], .theme-contrast .allo-docsuite .border-orange-100, .theme-contrast .allo-docsuite .border-orange-200, .theme-contrast .allo-docsuite .border-orange-300, .theme-contrast .allo-docsuite [class~="border-orange-300/30"], .theme-contrast .allo-docsuite .border-orange-400, .theme-contrast .allo-docsuite .border-orange-500, .theme-contrast .allo-docsuite .border-orange-600, .theme-contrast .allo-docsuite .border-pink-200, .theme-contrast .allo-docsuite .border-pink-300, .theme-contrast .allo-docsuite .border-pink-400, .theme-contrast .allo-docsuite .border-pink-500, .theme-contrast .allo-docsuite [class~="border-pink-500/30"], .theme-contrast .allo-docsuite .border-pink-600, .theme-contrast .allo-docsuite [class~="border-pink-700/50"], .theme-contrast .allo-docsuite .border-purple-100, .theme-contrast .allo-docsuite .border-purple-200, .theme-contrast .allo-docsuite .border-purple-300, .theme-contrast .allo-docsuite .border-purple-400, .theme-contrast .allo-docsuite .border-purple-500, .theme-contrast .allo-docsuite [class~="border-purple-500/30"], .theme-contrast .allo-docsuite [class~="border-purple-500/40"], .theme-contrast .allo-docsuite .border-purple-600, .theme-contrast .allo-docsuite [class~="border-purple-700/50"], .theme-contrast .allo-docsuite .border-red-100, .theme-contrast .allo-docsuite .border-red-200, .theme-contrast .allo-docsuite [class~="border-red-200/60"], .theme-contrast .allo-docsuite .border-red-300, .theme-contrast .allo-docsuite .border-red-400, .theme-contrast .allo-docsuite .border-red-500, .theme-contrast .allo-docsuite .border-red-600, .theme-contrast .allo-docsuite .border-red-700, .theme-contrast .allo-docsuite [class~="border-red-700/60"], .theme-contrast .allo-docsuite .border-rose-100, .theme-contrast .allo-docsuite .border-rose-200, .theme-contrast .allo-docsuite [class~="border-rose-200/50"], .theme-contrast .allo-docsuite .border-rose-300, .theme-contrast .allo-docsuite .border-rose-400, .theme-contrast .allo-docsuite .border-rose-500, .theme-contrast .allo-docsuite [class~="border-rose-500/30"], .theme-contrast .allo-docsuite [class~="border-rose-500/40"], .theme-contrast .allo-docsuite [class~="border-rose-500/50"], .theme-contrast .allo-docsuite .border-rose-600, .theme-contrast .allo-docsuite .border-rose-700, .theme-contrast .allo-docsuite .border-sky-100, .theme-contrast .allo-docsuite .border-sky-200, .theme-contrast .allo-docsuite [class~="border-sky-200/60"], .theme-contrast .allo-docsuite .border-sky-300, .theme-contrast .allo-docsuite .border-sky-500, .theme-contrast .allo-docsuite [class~="border-sky-500/30"], .theme-contrast .allo-docsuite [class~="border-sky-500/40"], .theme-contrast .allo-docsuite .border-sky-600, .theme-contrast .allo-docsuite .border-sky-700, .theme-contrast .allo-docsuite .border-slate-100, .theme-contrast .allo-docsuite .border-slate-200, .theme-contrast .allo-docsuite [class~="border-slate-200/80"], .theme-contrast .allo-docsuite .border-slate-300, .theme-contrast .allo-docsuite .border-slate-400, .theme-contrast .allo-docsuite .border-slate-50, .theme-contrast .allo-docsuite .border-slate-500, .theme-contrast .allo-docsuite [class~="border-slate-500/30"], .theme-contrast .allo-docsuite [class~="border-slate-500/40"], .theme-contrast .allo-docsuite .border-slate-600, .theme-contrast .allo-docsuite .border-slate-700, .theme-contrast .allo-docsuite [class~="border-slate-700/50"], .theme-contrast .allo-docsuite [class~="border-slate-700/70"], .theme-contrast .allo-docsuite .border-slate-800, .theme-contrast .allo-docsuite .border-slate-900, .theme-contrast .allo-docsuite .border-stone-300, .theme-contrast .allo-docsuite .border-stone-500, .theme-contrast .allo-docsuite [class~="border-stone-500/20"], .theme-contrast .allo-docsuite [class~="border-stone-500/30"], .theme-contrast .allo-docsuite [class~="border-stone-500/40"], .theme-contrast .allo-docsuite .border-stone-700, .theme-contrast .allo-docsuite .border-teal-100, .theme-contrast .allo-docsuite [class~="border-teal-100/50"], .theme-contrast .allo-docsuite .border-teal-200, .theme-contrast .allo-docsuite .border-teal-300, .theme-contrast .allo-docsuite [class~="border-teal-300/40"], .theme-contrast .allo-docsuite .border-teal-400, .theme-contrast .allo-docsuite .border-teal-500, .theme-contrast .allo-docsuite [class~="border-teal-500/30"], .theme-contrast .allo-docsuite [class~="border-teal-500/40"], .theme-contrast .allo-docsuite .border-teal-600, .theme-contrast .allo-docsuite .border-teal-700, .theme-contrast .allo-docsuite .border-teal-900, .theme-contrast .allo-docsuite .border-violet-100, .theme-contrast .allo-docsuite .border-violet-200, .theme-contrast .allo-docsuite .border-violet-300, .theme-contrast .allo-docsuite .border-violet-400, .theme-contrast .allo-docsuite .border-violet-50, .theme-contrast .allo-docsuite .border-violet-500, .theme-contrast .allo-docsuite [class~="border-violet-500/30"], .theme-contrast .allo-docsuite .border-violet-600, .theme-contrast .allo-docsuite .border-violet-700, .theme-contrast .allo-docsuite [class~="border-violet-700/50"], .theme-contrast .allo-docsuite .border-violet-800, .theme-contrast .allo-docsuite .border-white, .theme-contrast .allo-docsuite [class~="border-white/10"], .theme-contrast .allo-docsuite [class~="border-white/15"], .theme-contrast .allo-docsuite [class~="border-white/20"], .theme-contrast .allo-docsuite [class~="border-white/25"], .theme-contrast .allo-docsuite [class~="border-white/30"], .theme-contrast .allo-docsuite [class~="border-white/40"], .theme-contrast .allo-docsuite [class~="border-white/50"], .theme-contrast .allo-docsuite [class~="border-white/90"], .theme-contrast .allo-docsuite .border-yellow-100, .theme-contrast .allo-docsuite .border-yellow-200, .theme-contrast .allo-docsuite [class~="border-yellow-200/50"], .theme-contrast .allo-docsuite .border-yellow-300, .theme-contrast .allo-docsuite .border-yellow-400, .theme-contrast .allo-docsuite [class~="border-yellow-400/30"], .theme-contrast .allo-docsuite .border-yellow-500, .theme-contrast .allo-docsuite [class~="border-yellow-500/60"], .theme-contrast .allo-docsuite .border-yellow-600, .theme-contrast .allo-docsuite [class~="border-zinc-500/30"], .theme-contrast .allo-docsuite .divide-slate-100 > * + *, .theme-contrast .allo-docsuite .divide-slate-200 > * + *, .theme-contrast .allo-docsuite .divide-slate-700 > * + *, .theme-contrast .allo-docsuite .divide-violet-100 > * + *, .theme-contrast .allo-docsuite .divide-white > * + * { border-color:#ffff00 !important; }
 .theme-contrast .allo-docsuite .text-amber-100, .theme-contrast .allo-docsuite [class~="text-amber-100/70"], .theme-contrast .allo-docsuite [class~="text-amber-100/80"], .theme-contrast .allo-docsuite .text-amber-200, .theme-contrast .allo-docsuite [class~="text-amber-200/50"], .theme-contrast .allo-docsuite [class~="text-amber-200/80"], .theme-contrast .allo-docsuite .text-amber-300, .theme-contrast .allo-docsuite [class~="text-amber-300/60"], .theme-contrast .allo-docsuite [class~="text-amber-300/70"], .theme-contrast .allo-docsuite .text-amber-400, .theme-contrast .allo-docsuite [class~="text-amber-400/70"], .theme-contrast .allo-docsuite .text-amber-50, .theme-contrast .allo-docsuite .text-amber-500, .theme-contrast .allo-docsuite .text-amber-600, .theme-contrast .allo-docsuite .text-amber-700, .theme-contrast .allo-docsuite [class~="text-amber-700/90"], .theme-contrast .allo-docsuite .text-amber-800, .theme-contrast .allo-docsuite .text-amber-900, .theme-contrast .allo-docsuite .text-amber-950, .theme-contrast .allo-docsuite .text-black, .theme-contrast .allo-docsuite .text-blue-100, .theme-contrast .allo-docsuite .text-blue-200, .theme-contrast .allo-docsuite .text-blue-300, .theme-contrast .allo-docsuite .text-blue-400, .theme-contrast .allo-docsuite [class~="text-blue-400/70"], .theme-contrast .allo-docsuite .text-blue-50, .theme-contrast .allo-docsuite .text-blue-500, .theme-contrast .allo-docsuite [class~="text-blue-500/70"], .theme-contrast .allo-docsuite .text-blue-600, .theme-contrast .allo-docsuite .text-blue-700, .theme-contrast .allo-docsuite .text-blue-800, .theme-contrast .allo-docsuite [class~="text-blue-800/80"], .theme-contrast .allo-docsuite .text-blue-900, .theme-contrast .allo-docsuite .text-blue-950, .theme-contrast .allo-docsuite .text-cyan-100, .theme-contrast .allo-docsuite .text-cyan-200, .theme-contrast .allo-docsuite .text-cyan-300, .theme-contrast .allo-docsuite .text-cyan-500, .theme-contrast .allo-docsuite .text-cyan-600, .theme-contrast .allo-docsuite [class~="text-cyan-600/60"], .theme-contrast .allo-docsuite .text-cyan-700, .theme-contrast .allo-docsuite .text-cyan-800, .theme-contrast .allo-docsuite .text-cyan-900, .theme-contrast .allo-docsuite [class~="text-cyan-900/80"], .theme-contrast .allo-docsuite .text-cyan-950, .theme-contrast .allo-docsuite .text-emerald-100, .theme-contrast .allo-docsuite .text-emerald-200, .theme-contrast .allo-docsuite .text-emerald-300, .theme-contrast .allo-docsuite .text-emerald-500, .theme-contrast .allo-docsuite .text-emerald-600, .theme-contrast .allo-docsuite [class~="text-emerald-600/70"], .theme-contrast .allo-docsuite .text-emerald-700, .theme-contrast .allo-docsuite [class~="text-emerald-700/70"], .theme-contrast .allo-docsuite .text-emerald-800, .theme-contrast .allo-docsuite .text-emerald-900, .theme-contrast .allo-docsuite [class~="text-emerald-900/90"], .theme-contrast .allo-docsuite .text-emerald-950, .theme-contrast .allo-docsuite .text-fuchsia-100, .theme-contrast .allo-docsuite .text-fuchsia-200, .theme-contrast .allo-docsuite .text-fuchsia-300, .theme-contrast .allo-docsuite [class~="text-fuchsia-300/70"], .theme-contrast .allo-docsuite .text-fuchsia-400, .theme-contrast .allo-docsuite .text-fuchsia-500, .theme-contrast .allo-docsuite .text-fuchsia-600, .theme-contrast .allo-docsuite .text-fuchsia-700, .theme-contrast .allo-docsuite .text-fuchsia-800, .theme-contrast .allo-docsuite .text-fuchsia-900, .theme-contrast .allo-docsuite .text-gray-600, .theme-contrast .allo-docsuite .text-green-200, .theme-contrast .allo-docsuite .text-green-300, .theme-contrast .allo-docsuite .text-green-400, .theme-contrast .allo-docsuite .text-green-500, .theme-contrast .allo-docsuite .text-green-600, .theme-contrast .allo-docsuite .text-green-700, .theme-contrast .allo-docsuite .text-green-800, .theme-contrast .allo-docsuite .text-green-900, .theme-contrast .allo-docsuite .text-green-950, .theme-contrast .allo-docsuite .text-indigo-100, .theme-contrast .allo-docsuite [class~="text-indigo-100/70"], .theme-contrast .allo-docsuite .text-indigo-200, .theme-contrast .allo-docsuite .text-indigo-300, .theme-contrast .allo-docsuite .text-indigo-400, .theme-contrast .allo-docsuite .text-indigo-500, .theme-contrast .allo-docsuite .text-indigo-600, .theme-contrast .allo-docsuite [class~="text-indigo-600/80"], .theme-contrast .allo-docsuite .text-indigo-700, .theme-contrast .allo-docsuite [class~="text-indigo-700/80"], .theme-contrast .allo-docsuite .text-indigo-800, .theme-contrast .allo-docsuite .text-indigo-900, .theme-contrast .allo-docsuite .text-indigo-950, .theme-contrast .allo-docsuite .text-lime-300, .theme-contrast .allo-docsuite .text-orange-100, .theme-contrast .allo-docsuite .text-orange-300, .theme-contrast .allo-docsuite .text-orange-400, .theme-contrast .allo-docsuite .text-orange-500, .theme-contrast .allo-docsuite .text-orange-600, .theme-contrast .allo-docsuite .text-orange-700, .theme-contrast .allo-docsuite .text-orange-800, .theme-contrast .allo-docsuite .text-orange-900, .theme-contrast .allo-docsuite .text-pink-100, .theme-contrast .allo-docsuite .text-pink-200, .theme-contrast .allo-docsuite .text-pink-300, .theme-contrast .allo-docsuite .text-pink-600, .theme-contrast .allo-docsuite .text-pink-700, .theme-contrast .allo-docsuite .text-pink-800, .theme-contrast .allo-docsuite .text-pink-900, .theme-contrast .allo-docsuite .text-purple-200, .theme-contrast .allo-docsuite .text-purple-300, .theme-contrast .allo-docsuite .text-purple-400, .theme-contrast .allo-docsuite .text-purple-500, .theme-contrast .allo-docsuite .text-purple-600, .theme-contrast .allo-docsuite .text-purple-700, .theme-contrast .allo-docsuite .text-purple-800, .theme-contrast .allo-docsuite .text-purple-900, .theme-contrast .allo-docsuite .text-purple-950, .theme-contrast .allo-docsuite .text-red-200, .theme-contrast .allo-docsuite .text-red-300, .theme-contrast .allo-docsuite .text-red-400, .theme-contrast .allo-docsuite .text-red-500, .theme-contrast .allo-docsuite .text-red-600, .theme-contrast .allo-docsuite .text-red-700, .theme-contrast .allo-docsuite [class~="text-red-700/70"], .theme-contrast .allo-docsuite [class~="text-red-700/80"], .theme-contrast .allo-docsuite .text-red-800, .theme-contrast .allo-docsuite .text-red-900, .theme-contrast .allo-docsuite .text-red-950, .theme-contrast .allo-docsuite .text-rose-100, .theme-contrast .allo-docsuite .text-rose-200, .theme-contrast .allo-docsuite .text-rose-300, .theme-contrast .allo-docsuite .text-rose-400, .theme-contrast .allo-docsuite .text-rose-500, .theme-contrast .allo-docsuite .text-rose-600, .theme-contrast .allo-docsuite .text-rose-700, .theme-contrast .allo-docsuite .text-rose-800, .theme-contrast .allo-docsuite .text-rose-900, .theme-contrast .allo-docsuite .text-sky-200, .theme-contrast .allo-docsuite .text-sky-300, .theme-contrast .allo-docsuite .text-sky-400, .theme-contrast .allo-docsuite .text-sky-500, .theme-contrast .allo-docsuite .text-sky-600, .theme-contrast .allo-docsuite .text-sky-700, .theme-contrast .allo-docsuite .text-sky-800, .theme-contrast .allo-docsuite .text-sky-900, .theme-contrast .allo-docsuite .text-sky-950, .theme-contrast .allo-docsuite .text-slate-100, .theme-contrast .allo-docsuite .text-slate-200, .theme-contrast .allo-docsuite .text-slate-300, .theme-contrast .allo-docsuite [class~="text-slate-300/60"], .theme-contrast .allo-docsuite .text-slate-400, .theme-contrast .allo-docsuite .text-slate-500, .theme-contrast .allo-docsuite .text-slate-600, .theme-contrast .allo-docsuite .text-slate-700, .theme-contrast .allo-docsuite .text-slate-800, .theme-contrast .allo-docsuite .text-slate-900, .theme-contrast .allo-docsuite [class~="text-slate-900/95"], .theme-contrast .allo-docsuite .text-slate-950, .theme-contrast .allo-docsuite .text-stone-100, .theme-contrast .allo-docsuite .text-stone-300, .theme-contrast .allo-docsuite .text-stone-700, .theme-contrast .allo-docsuite .text-teal-100, .theme-contrast .allo-docsuite .text-teal-200, .theme-contrast .allo-docsuite .text-teal-300, .theme-contrast .allo-docsuite .text-teal-400, .theme-contrast .allo-docsuite .text-teal-50, .theme-contrast .allo-docsuite .text-teal-500, .theme-contrast .allo-docsuite [class~="text-teal-500/70"], .theme-contrast .allo-docsuite .text-teal-600, .theme-contrast .allo-docsuite [class~="text-teal-600/60"], .theme-contrast .allo-docsuite .text-teal-700, .theme-contrast .allo-docsuite .text-teal-800, .theme-contrast .allo-docsuite .text-teal-900, .theme-contrast .allo-docsuite .text-teal-950, .theme-contrast .allo-docsuite .text-violet-100, .theme-contrast .allo-docsuite .text-violet-200, .theme-contrast .allo-docsuite .text-violet-300, .theme-contrast .allo-docsuite .text-violet-400, .theme-contrast .allo-docsuite .text-violet-500, .theme-contrast .allo-docsuite .text-violet-600, .theme-contrast .allo-docsuite .text-violet-700, .theme-contrast .allo-docsuite [class~="text-violet-700/70"], .theme-contrast .allo-docsuite .text-violet-800, .theme-contrast .allo-docsuite .text-violet-900, .theme-contrast .allo-docsuite .text-violet-950, .theme-contrast .allo-docsuite .text-white, .theme-contrast .allo-docsuite [class~="text-white/50"], .theme-contrast .allo-docsuite [class~="text-white/60"], .theme-contrast .allo-docsuite [class~="text-white/70"], .theme-contrast .allo-docsuite [class~="text-white/80"], .theme-contrast .allo-docsuite [class~="text-white/90"], .theme-contrast .allo-docsuite .text-yellow-100, .theme-contrast .allo-docsuite .text-yellow-200, .theme-contrast .allo-docsuite .text-yellow-300, .theme-contrast .allo-docsuite [class~="text-yellow-300/50"], .theme-contrast .allo-docsuite .text-yellow-400, .theme-contrast .allo-docsuite .text-yellow-500, .theme-contrast .allo-docsuite .text-yellow-600, .theme-contrast .allo-docsuite [class~="text-yellow-600/70"], .theme-contrast .allo-docsuite .text-yellow-700, .theme-contrast .allo-docsuite .text-yellow-800, .theme-contrast .allo-docsuite .text-yellow-900, .theme-contrast .allo-docsuite .text-zinc-200, .theme-contrast .allo-docsuite .text-zinc-300 { color:#ffff00 !important; }
       `}</style>
       <a
@@ -46979,7 +50226,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       })}
         {/* ── UDL Guide Modal — extracted to view_misc_modals_module.js (CDN) ── */}
         {(showUDLGuide) && window.AlloModules && window.AlloModules.UDLGuideModal && React.createElement(window.AlloModules.UDLGuideModal, {
-          InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult, isExecutingBlueprint, handleStopBlueprintRun, handleRebuildBlueprintStep, handleDownloadBlueprintDiagnostics, handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview, lessonTemplates, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan, archiveLivePlan, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate, aiStandardQuery,
+          InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult, isExecutingBlueprint, handleStopBlueprintRun, handleRebuildBlueprintStep, handleDownloadBlueprintDiagnostics, handleCopyBlueprintDiagnostics, getSafeGenerationFailureReason: _alloDiagnosticReason, handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview, lessonTemplates, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan, archiveLivePlan, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate, aiStandardQuery,
           aiStandardRegion, autoSendVoice, chatStyles, handleAutoFillToggle, handleBlueprintUIUpdate,
           handleExecuteBlueprint, handleFindStandards, handleSendUDLMessage, handleSetShowUDLGuideToFalse, handleToggleAutoSendVoice,
           handleToggleIsShowMeMode, handleToggleIsUDLGuideExpanded, hasUsedAutoFill, isAutoFillMode, isChatProcessing,
@@ -47860,8 +51107,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     )}
                 </div>
                 <button
-                    aria-label={fullPackRun?.status === 'ready' ? 'Generate original Full Pack plan' : 'Plan Full Pack'}
+                    aria-label={fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_original_aria') || 'Generate original Full Pack plan') : (t('fullpack.action_plan_aria') || 'Plan Full Pack')}
                     data-help-key="fullpack_generate"
+                    data-testid="full-pack-primary-action"
                     onClick={fullPackRun?.status === 'ready' ? handleApproveFullPack : handlePlanFullPack}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
@@ -47869,25 +51117,26 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <div>
                         <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 to-purple-700 group-hover:from-indigo-600 group-hover:to-purple-600 flex items-center gap-2">
                             {isProcessing ? <RefreshCw className="animate-spin text-indigo-600" size={18} /> : <Sparkles size={18} className="text-yellow-600 fill-yellow-600" />}
-                            {fullPackRun?.status === 'ready' ? 'Generate original plan' : 'Plan full pack'}
+                            {fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_original') || 'Generate original plan') : (t('fullpack.action_plan') || 'Plan full pack')}
                         </span>
-                        <span className="text-[11px] text-slate-600 block mt-0.5">{fullPackRun?.status === 'ready' ? 'Plan reviewed? Generate these exact resources.' : 'Review resources, settings, and estimated generations before creating them.'}</span>
+                        <span className="text-[11px] text-slate-600 block mt-0.5">{fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_help') || 'Plan reviewed? Generate these exact resources.') : (t('fullpack.action_plan_help') || 'Review resources, settings, and estimated generations before creating them.')}</span>
                     </div>
                     <ArrowRight size={16} className="text-indigo-300 group-hover:text-indigo-600" />
                 </button>
-                {['running', 'planning'].includes(fullPackRun?.status) && (
+                {['running', 'retrying', 'planning'].includes(fullPackRun?.status) && (
                     <button
                         type="button"
+                        data-testid="full-pack-stop"
                         onClick={handleStopFullPack}
                         className="mt-2 w-full rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 flex items-center justify-center gap-2"
-                        title="Stop generation now"
+                        title={t('fullpack.stop_generation') || 'Stop generation'}
                     >
                         <StopCircle size={15} />
-                        Stop generation
+                        {t('fullpack.stop_generation') || 'Stop generation'}
                     </button>
                 )}
                 {fullPackRun && (() => {
-                    const statusLabels = { planning: 'Planning', ready: 'Ready for review', queued: 'Queued', running: 'Generating', retrying: 'Retrying', landed: 'Complete', completed: 'Complete', partial: 'Partially complete', failed: 'Needs attention', interrupted: 'Interrupted', stopped: 'Stopped' };
+                    const statusLabels = { planning: t('fullpack.status_planning') || 'Planning', ready: t('fullpack.status_ready') || 'Ready for review', queued: t('fullpack.status_queued') || 'Queued', running: t('fullpack.status_running') || 'Generating', retrying: t('fullpack.status_retrying') || 'Retrying', landed: t('fullpack.status_complete') || 'Complete', completed: t('fullpack.status_complete') || 'Complete', partial: t('fullpack.status_partial') || 'Partially complete', failed: t('fullpack.status_failed') || 'Needs attention', interrupted: t('fullpack.status_interrupted') || 'Interrupted', stopped: t('fullpack.status_stopped') || 'Stopped' };
                     const statusStyles = {
                         planning: 'border-blue-200 bg-blue-50 text-blue-800',
                         ready: 'border-indigo-200 bg-indigo-50 text-indigo-800',
@@ -47923,10 +51172,20 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     const planImageCalls = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.imageCalls || 0), 0);
                     const planMinutes = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.estimatedMinutes || 0), 0);
                     const capacityWarnings = Array.from(new Set(planSummaries.flatMap(plan => plan.capacity?.warnings || [])));
+                    const capacityWarningCodes = Array.from(new Set(planSummaries.flatMap(plan => plan.capacity?.warningCodes || [])));
+                    const capacityProfiles = planSummaries.map(plan => plan.capacity).filter(Boolean);
+                    const providerSummary = Array.from(new Set(capacityProfiles.map(capacity => [capacity.provider, capacity.model].filter(Boolean).join(' · ')).filter(Boolean))).join(', ');
+                    const usesObservedEstimate = capacityProfiles.some(capacity => capacity.estimateBasis === 'observed-device-history');
+                    const localizedCapacityWarnings = capacityWarningCodes.length ? capacityWarningCodes.map(code => ({
+                        'local-serial': t('fullpack.warning_local_serial') || 'Local models run this pack sequentially; keep the app open and consider a smaller pack for faster completion.',
+                        'large-pack': t('fullpack.warning_large_pack') || 'Large pack: provider rate limits are more likely. Consider fewer resources or groups.',
+                        'image-quota': t('fullpack.warning_image_quota') || 'Image generation may extend the run and consume additional provider quota.',
+                    }[code])).filter(Boolean) : capacityWarnings;
                     const allRows = sections.flatMap(buildRows);
                     const settled = allRows.filter(row => row && !['queued', 'running', 'retrying'].includes(row.status)).length;
                     const total = allRows.length;
                     const retryable = allRows.some(row => row && ['failed', 'interrupted', 'stopped'].includes(row.status) && row.retryable !== false);
+                    const completedRows = allRows.filter(row => row && ['landed', 'completed'].includes(row.status)).length;
                     const progress = total ? Math.round((settled / total) * 100) : 0;
                     const elapsedSeconds = Math.max(0, Math.round(Number(fullPackRun.elapsedMs || 0) / 1000));
                     const currentRosterSignature = JSON.stringify(Object.entries(rosterKey?.groups || {}).sort(([a], [b]) => String(a).localeCompare(String(b))).map(([id, group]) => {
@@ -47934,37 +51193,43 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         return { id, name: group?.name || id, gradeLevel: profile.gradeLevel || '', leveledTextLanguage: profile.leveledTextLanguage || '', studentInterests: Array.isArray(profile.studentInterests) ? profile.studentInterests : String(profile.studentInterests || ''), dokLevel: profile.dokLevel || '', selectedLanguages: Array.isArray(profile.selectedLanguages) ? profile.selectedLanguages : [], targetStandards: Array.isArray(profile.targetStandards) ? profile.targetStandards : [], useEmojis: profile.useEmojis, textFormat: profile.textFormat || '' };
                     }));
                     const currentPlanSettings = { gradeLevel, leveledTextLanguage, studentInterests, dokLevel, selectedLanguages, targetStandards, useEmojis, textFormat, differentiationRange, differentiationTypes, differentiationCustomGrades, resourceCount, isAutoConfigEnabled, fullPackTargetGroup, rosterSignature: currentRosterSignature };
-                    const changeLabels = { gradeLevel: 'grade', leveledTextLanguage: 'language', studentInterests: 'interests', dokLevel: 'depth of knowledge', selectedLanguages: 'translation languages', targetStandards: 'standards', useEmojis: 'emoji preference', textFormat: 'text format', differentiationRange: 'differentiation range', differentiationTypes: 'differentiated resources', differentiationCustomGrades: 'custom grade levels', resourceCount: 'pack size', isAutoConfigEnabled: 'auto-configure', fullPackTargetGroup: 'target group', rosterSignature: 'roster groups' };
+                    const changeLabels = { gradeLevel: t('fullpack.setting_grade') || 'grade', leveledTextLanguage: t('fullpack.setting_language') || 'language', studentInterests: t('fullpack.setting_interests') || 'interests', dokLevel: t('fullpack.setting_dok') || 'depth of knowledge', selectedLanguages: t('fullpack.setting_translation_languages') || 'translation languages', targetStandards: t('fullpack.setting_standards') || 'standards', useEmojis: t('fullpack.setting_emoji') || 'emoji preference', textFormat: t('fullpack.setting_text_format') || 'text format', differentiationRange: t('fullpack.setting_diff_range') || 'differentiation range', differentiationTypes: t('fullpack.setting_diff_resources') || 'differentiated resources', differentiationCustomGrades: t('fullpack.setting_custom_grades') || 'custom grade levels', resourceCount: t('fullpack.setting_pack_size') || 'pack size', isAutoConfigEnabled: t('fullpack.setting_auto_configure') || 'auto-configure', fullPackTargetGroup: t('fullpack.setting_target_group') || 'target group', rosterSignature: t('fullpack.setting_roster_groups') || 'roster groups' };
                     const originalPlanSettings = fullPackRun.settingsSnapshot || {};
                     const planChanges = fullPackRun.status === 'ready' ? Object.keys(changeLabels).filter(key => JSON.stringify(originalPlanSettings[key] ?? null) !== JSON.stringify(currentPlanSettings[key] ?? null)) : [];
                     const formatPlanValue = value => {
-                        if (value === undefined || value === null || value === '') return 'Not set';
-                        if (typeof value === 'boolean') return value ? 'On' : 'Off';
-                        if (Array.isArray(value)) return value.length ? value.join(', ') : 'None';
+                        if (value === undefined || value === null || value === '') return t('fullpack.not_set') || 'Not set';
+                        if (typeof value === 'boolean') return value ? (t('fullpack.on') || 'On') : (t('fullpack.off') || 'Off');
+                        if (Array.isArray(value)) return value.length ? value.join(', ') : (t('fullpack.none') || 'None');
                         const rendered = String(value);
                         return rendered.length > 120 ? rendered.slice(0, 117) + '...' : rendered;
                     };
                     return (
-                        <div className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">Full Pack {statusLabels[fullPackRun.status] || fullPackRun.status}. {settled} of {total} resources finished.</div>
+                        <div data-testid="full-pack-review-panel" className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{fullPackRun.status === 'ready' ? (t('fullpack.panel_plan') || 'Full Pack plan') : (t('fullpack.panel_progress') || 'Full Pack progress')}. {settled} of {total} {t('fullpack.finished') || 'finished'}.</div>
                             <div className="flex items-start justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-3 py-2.5">
                                 <div>
-                                    <div className="text-[11px] font-black uppercase tracking-wide text-slate-800">{fullPackRun.status === 'ready' ? 'Full Pack plan' : 'Full Pack progress'}</div>
+                                    <div className="text-[11px] font-black uppercase tracking-wide text-slate-800">{fullPackRun.status === 'ready' ? (t('fullpack.panel_plan') || 'Full Pack plan') : (t('fullpack.panel_progress') || 'Full Pack progress')}</div>
                                     <div className="mt-0.5 text-[10px] text-slate-600">
-                                        {planSummaries.length ? `${planSelected} selected · ${planSkipped} skipped · ~${planGenerations} resource generations` : 'Preparing generation plan…'}
+                                        {planSummaries.length ? `${planSelected} ${t('fullpack.selected') || 'selected'} · ${planSkipped} ${t('fullpack.skipped') || 'skipped'} · ~${planGenerations} ${t('fullpack.resource_generations') || 'resource generations'}` : (t('fullpack.preparing_plan') || 'Preparing generation plan…')}
                                     </div>
                                 </div>
                                 <span className={`shrink-0 rounded-full border px-2 py-1 text-[9px] font-black uppercase tracking-wide ${statusStyles[fullPackRun.status] || statusStyles.queued}`}>
                                     {statusLabels[fullPackRun.status] || fullPackRun.status}
                                 </span>
                             </div>
+                            {fullPackRun.persistenceWarning && (
+                                <div data-testid="full-pack-storage-warning" role="status" className="mx-3 mt-2 flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] leading-relaxed text-amber-950">
+                                    <AlertTriangle size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
+                                    <div><span className="font-black">{t('blueprint.saved_run_warning') || 'Saved-run warning'}:</span> {fullPackRun.persistenceWarning}</div>
+                                </div>
+                            )}
                             {fullPackRun.status === 'ready' && planChanges.length > 0 && (
                                 <div role="status" aria-live="polite" className="mx-3 mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] leading-relaxed text-amber-950">
-                                    <div className="font-black">Settings changed after this plan was created</div>
+                                    <div className="font-black">{t('fullpack.settings_changed') || 'Settings changed after this plan was created'}</div>
                                     <div className="mt-0.5 break-words">{planChanges.map(key => changeLabels[key]).join(', ')}.</div>
-                                    <div className="mt-1 font-semibold">Generate original plan uses the reviewed settings. Choose Refresh plan to use the current settings.</div>
+                                    <div className="mt-1 font-semibold">{t('fullpack.original_plan_help') || 'Generate original plan uses the reviewed settings. Choose Refresh plan to use the current settings.'}</div>
                                     <details className="mt-2 rounded-lg border border-amber-300 bg-white/70">
-                                        <summary className="cursor-pointer px-2 py-1 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">Review original and current values</summary>
+                                        <summary className="cursor-pointer px-2 py-1 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">{t('fullpack.review_values') || 'Review original and current values'}</summary>
                                         <div className="space-y-1 border-t border-amber-200 px-2 py-1.5">
                                             {planChanges.map(key => (
                                                 <div key={key} className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-1">
@@ -47978,16 +51243,24 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 </div>
                             )}
                             {fullPackRun.status === 'ready' && planSummaries.length > 0 && (
-                                <div className={'mx-3 mt-2 rounded-xl border px-3 py-2 text-[10px] leading-relaxed ' + (capacityWarnings.length ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-sky-200 bg-sky-50 text-sky-900')}>
-                                    <div className="font-black">Capacity preview</div>
-                                    <div>~{planGenerations} AI calls · {planImageCalls} image calls · approximately {Math.max(1, planMinutes)} minutes</div>
-                                    {capacityWarnings.map((warning, index) => <div key={index} className="mt-1 font-semibold">{warning}</div>)}
+                                <div data-testid="full-pack-capacity" className={'mx-3 mt-2 rounded-xl border px-3 py-2 text-[10px] leading-relaxed ' + (localizedCapacityWarnings.length ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-sky-200 bg-sky-50 text-sky-900')}>
+                                    <div className="flex flex-wrap items-center justify-between gap-1">
+                                        <div className="font-black">{t('fullpack.capacity_preview') || 'Capacity preview'}</div>
+                                        {providerSummary && <div className="flex min-w-0 items-center gap-1 text-[9px] font-semibold"><Cpu size={11} aria-hidden="true" /><span className="truncate">{t('fullpack.provider') || 'Provider'}: {providerSummary}</span></div>}
+                                    </div>
+                                    <div className="mt-2 grid grid-cols-3 gap-1.5" aria-label={t('fullpack.capacity_preview') || 'Capacity preview'}>
+                                        <div className="flex min-w-0 items-center gap-1 rounded-lg border border-current/15 bg-white/70 px-2 py-1.5"><Cpu size={12} aria-hidden="true" className="shrink-0" /><span className="font-black">~{planGenerations}</span><span className="min-w-0 truncate">{t('fullpack.ai_calls') || 'AI calls'}</span></div>
+                                        <div className="flex min-w-0 items-center gap-1 rounded-lg border border-current/15 bg-white/70 px-2 py-1.5"><ImageIcon size={12} aria-hidden="true" className="shrink-0" /><span className="font-black">{planImageCalls}</span><span className="min-w-0 truncate">{t('fullpack.image_calls') || 'image calls'}</span></div>
+                                        <div className="flex min-w-0 items-center gap-1 rounded-lg border border-current/15 bg-white/70 px-2 py-1.5"><Clock size={12} aria-hidden="true" className="shrink-0" /><span className="font-black">~{Math.max(1, planMinutes)}</span><span className="min-w-0 truncate">{t('fullpack.minutes') || 'minutes'}</span></div>
+                                    </div>
+                                    <div className="mt-1 text-[9px] opacity-80">{usesObservedEstimate ? (t('fullpack.estimate_observed') || 'Estimate uses recent timings from this device') : (t('fullpack.estimate_defaults') || 'Estimate uses provider defaults')}</div>
+                                    {localizedCapacityWarnings.map((warning, index) => <div key={index} className="mt-1 font-semibold">{warning}</div>)}
                                 </div>
                             )}
                             {total > 0 && (
                                 <div className="px-3 pt-2.5">
-                                    <div className="mb-1 flex justify-between text-[10px] font-bold text-slate-600"><span>{settled} of {total} finished</span><span>{progress}%</span></div>
-                                    <div className="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="Full Pack generation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow={progress}>
+                                    <div className="mb-1 flex justify-between text-[10px] font-bold text-slate-600"><span>{settled} of {total} {t('fullpack.finished') || 'finished'}</span><span>{progress}%</span></div>
+                                    <div className="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label={t('fullpack.progress_aria') || 'Full Pack generation progress'} aria-valuemin="0" aria-valuemax="100" aria-valuenow={progress}>
                                         <div className="h-full rounded-full bg-indigo-600 transition-[width] motion-reduce:transition-none" style={{ width: `${progress}%` }} />
                                     </div>
                                 </div>
@@ -47995,15 +51268,18 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             <div className="max-h-64 space-y-3 overflow-y-auto px-3 py-2.5">
                                 {sections.map((section, sectionIndex) => {
                                     const rows = buildRows(section);
+                                    const visibleRows = showCompletedFullPackRows ? rows : rows.filter(row => row && !['landed', 'completed'].includes(row.status));
                                     return (
                                         <div key={section.groupId || section.runId || sectionIndex}>
                                             {groupRuns.length > 0 && <div className="mb-1.5 text-[10px] font-black uppercase tracking-wide text-indigo-800">{section.groupName || `Group ${sectionIndex + 1}`}</div>}
                                             <div className="space-y-1.5">
-                                                {rows.length === 0 && <div className="rounded-lg border border-dashed border-slate-200 px-2.5 py-2 text-[10px] text-slate-500">Waiting to plan this group…</div>}
-                                                {rows.map((row, index) => {
+                                                {rows.length === 0 && <div className="rounded-lg border border-dashed border-slate-200 px-2.5 py-2 text-[10px] text-slate-500">{t('fullpack.waiting_group') || 'Waiting to plan this group…'}</div>}
+                                                {rows.length > 0 && visibleRows.length === 0 && <div className="rounded-lg border border-dashed border-emerald-200 bg-emerald-50/60 px-2.5 py-2 text-[10px] text-emerald-800">{t('fullpack.completed_hidden') || 'Completed resources are hidden.'}</div>}
+                                                {visibleRows.map((row, index) => {
                                                     const rowKey = row.key || `${row.type}-${index}`;
                                                     const rowTitle = String(row.type || 'resource').replace(/-/g, ' ');
-                                                    const rowStatus = <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold ${statusStyles[row.status] || statusStyles.queued}`}>{statusLabels[row.status] || row.status || 'Queued'}{row.elapsedMs ? ` · ${Math.max(1, Math.round(row.elapsedMs / 1000))}s` : ''}</span>;
+                                                    const safeRowReason = row.reason ? _alloDiagnosticReason(row.reason) : null;
+                                                    const rowStatus = <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold ${statusStyles[row.status] || statusStyles.queued}`}>{statusLabels[row.status] || row.status || (t('fullpack.status_queued') || 'Queued')}{row.elapsedMs ? ` · ${Math.max(1, Math.round(row.elapsedMs / 1000))}s` : ''}</span>;
                                                     if (fullPackRun.status === 'ready') {
                                                         const snapshot = section.settingsSnapshot || originalPlanSettings;
                                                         const differentiation = section.preflight?.differentiation;
@@ -48015,9 +51291,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                                                     <span className="flex shrink-0 items-center gap-1.5">{rowStatus}<ChevronDown size={13} aria-hidden="true" className="text-slate-500 transition-transform motion-reduce:transition-none group-open/plan:rotate-180" /></span>
                                                                 </summary>
                                                                 <div className="space-y-1 border-t border-slate-200 bg-white px-2.5 py-2 text-[10px] leading-relaxed text-slate-700">
-                                                                    <div className="break-words"><span className="font-bold text-slate-900">Instruction:</span> {row.directive || 'Standard generation guidance'}</div>
-                                                                    <div><span className="font-bold text-slate-900">Audience:</span> {snapshot.gradeLevel || 'Current grade'} · {snapshot.leveledTextLanguage || 'Default language'}</div>
-                                                                    <div><span className="font-bold text-slate-900">Differentiation:</span> {isDifferentiated ? `${Math.max(1, differentiation.levelCount || 1)} levels` : 'Single version'}</div>
+                                                                    <div className="break-words"><span className="font-bold text-slate-900">{t('fullpack.instruction') || 'Instruction'}:</span> {row.directive || (t('fullpack.standard_guidance') || 'Standard generation guidance')}</div>
+                                                                    <div><span className="font-bold text-slate-900">{t('fullpack.audience') || 'Audience'}:</span> {snapshot.gradeLevel || (t('fullpack.current_grade') || 'Current grade')} · {snapshot.leveledTextLanguage || (t('fullpack.default_language') || 'Default language')}</div>
+                                                                    <div><span className="font-bold text-slate-900">{t('fullpack.differentiation') || 'Differentiation'}:</span> {isDifferentiated ? `${Math.max(1, differentiation.levelCount || 1)} ${t('fullpack.levels') || 'levels'}` : (t('fullpack.single_version') || 'Single version')}</div>
                                                                 </div>
                                                             </details>
                                                         );
@@ -48026,7 +51302,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                                         <div key={rowKey} className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50/70 px-2.5 py-2">
                                                             <div className="min-w-0">
                                                                 <div className="truncate text-[11px] font-bold capitalize text-slate-800">{rowTitle}</div>
-                                                                {row.reason && <div className="truncate text-[9px] text-rose-700" title={row.reason}>{row.reason}</div>}
+                                                                {safeRowReason && <div className="truncate text-[9px] text-rose-700" title={safeRowReason.summary}>{safeRowReason.summary}</div>}
                                                             </div>
                                                             {rowStatus}
                                                         </div>
@@ -48037,13 +51313,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                     );
                                 })}
                             </div>
-                            <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t border-slate-200 bg-white/95 px-3 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.06)] backdrop-blur motion-reduce:backdrop-blur-none">
-                                {elapsedSeconds > 0 && <span className="me-auto text-[9px] font-semibold text-slate-500">Run {fullPackRun.runId?.slice(-8)} · {elapsedSeconds}s</span>}
-                                {fullPackRun.status === 'ready' && <button type="button" onClick={handlePlanFullPack} className="rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">Refresh plan</button>}
-                                {retryable && fullPackRun.status !== 'running' && <button type="button" onClick={handleRetryFailedFullPack} className="rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">Retry failures</button>}
-                                <button type="button" onClick={handleCopyFullPackDiagnostics} className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">Copy diagnostics</button>
-                                <button type="button" onClick={handleDownloadFullPackDiagnostics} className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">Download report</button>
-                                {fullPackRun.status !== 'running' && <button type="button" onClick={handleDismissFullPackRun} className="rounded-lg px-2 py-1.5 text-[10px] font-bold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">Dismiss</button>}
+                            <div data-testid="full-pack-sticky-actions" className="sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t border-slate-200 bg-white/95 px-3 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.06)] backdrop-blur motion-reduce:backdrop-blur-none">
+                                {elapsedSeconds > 0 && <span className="me-auto text-[9px] font-semibold text-slate-500">{t('fullpack.run') || 'Run'} {fullPackRun.runId?.slice(-8)} · {elapsedSeconds}s</span>}
+                                {completedRows > 0 && <button type="button" data-testid="full-pack-toggle-completed" aria-pressed={!showCompletedFullPackRows} onClick={() => setShowCompletedFullPackRows(value => !value)} className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-emerald-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2">{showCompletedFullPackRows ? <EyeOff size={12} aria-hidden="true" /> : <Eye size={12} aria-hidden="true" />}{showCompletedFullPackRows ? (t('fullpack.hide_completed') || 'Hide completed') : (t('fullpack.show_completed') || 'Show completed')}</button>}
+                                {fullPackRun.status === 'ready' && <button type="button" data-testid="full-pack-refresh-plan" onClick={handlePlanFullPack} className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"><RefreshCw size={12} aria-hidden="true" />{t('fullpack.refresh_plan') || 'Refresh plan'}</button>}
+                                {retryable && !['running', 'retrying', 'planning'].includes(fullPackRun.status) && <button type="button" data-testid="full-pack-retry" onClick={handleRetryFailedFullPack} className="inline-flex items-center gap-1 rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"><RefreshCw size={12} aria-hidden="true" />{t('fullpack.retry_failures') || 'Retry failures'}</button>}
+                                <button type="button" data-testid="full-pack-copy-diagnostics" onClick={handleCopyFullPackDiagnostics} className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"><Copy size={12} aria-hidden="true" />{t('fullpack.copy_diagnostics') || 'Copy diagnostics'}</button>
+                                <button type="button" data-testid="full-pack-download-diagnostics" onClick={handleDownloadFullPackDiagnostics} className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"><Download size={12} aria-hidden="true" />{t('fullpack.download_report') || 'Download report'}</button>
+                                {!['running', 'retrying', 'planning'].includes(fullPackRun.status) && <button type="button" onClick={handleDismissFullPackRun} className="rounded-lg px-2 py-1.5 text-[10px] font-bold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">{t('fullpack.dismiss') || 'Dismiss'}</button>}
                             </div>
                         </div>
                     );
@@ -48131,7 +51408,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             })}
           {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventure} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} t={t} />}
-            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
+            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
         </aside>
         {!isFullscreen && !isZenMode && (
             <div
@@ -48651,7 +51928,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 })}
                 {activeView === 'word-sounds' && !isWordSoundsMode && window.AlloModules && window.AlloModules.WordSoundsPreviewView && React.createElement(window.AlloModules.WordSoundsPreviewView, {
                     generatedContent, wsActivitySequence,
-                    setWordSoundsActivity, setIsWordSoundsMode, setWordSoundsAutoReview
+                    setWordSoundsActivity, setIsWordSoundsMode, setWordSoundsAutoReview,
+                    prepareWordSoundsSession
                 })}
                 {isWordSoundsMode && (activeView === 'word-sounds' || generatedContent?.type === 'glossary' || generatedContent?.type === 'word-sounds' || (wsPreloadedWords && wsPreloadedWords.length > 0)) && (() => {
                     const WS = window.AlloModules && window.AlloModules.WordSoundsModal;
@@ -48661,6 +51939,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         {React.createElement(WS, {
                             alloBotRef,
                             lessonPlanConfig: generatedContent?.lessonPlanConfig,
+                            sessionConfig: wordSoundsSessionConfig || generatedContent?.sessionConfig || generatedContent?.wordSoundsProbeConfig || null,
+                            learnerId: wordSoundsSessionConfig?.learnerId
+                                || (isProbeMode ? probeTargetStudent : null)
+                                || (!isTeacherMode ? (user?.uid || studentNickname || null) : null),
+                            sessionId: wordSoundsSessionConfig?.sessionId || null,
+                            resourceId: wordSoundsSessionConfig?.resourceId || generatedContent?.id || null,
                             audioCache: glossaryAudioCache,
                             glossaryTerms: generatedContent?.type === 'glossary' ? (generatedContent?.data || []) : (latestGlossary || []),
                             onClose: () => { setIsWordSoundsMode(false); setCurrentWordSoundsWord(null); setWordSoundsPhonemes(null); setWordSoundsFeedback(null); setWordSoundsActivity(null); setWordSoundsAutoReview(false); setActiveView('input'); },
@@ -48698,16 +51982,52 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             // preparing the activity: on a student device they
                             // are a way to read the answers before answering.
                             isTeacherMode,
-                            isProbeMode, probeGradeLevel, getWordSoundsString,
+                            isProbeMode, probeGradeLevel,
+                            probeForm: wordSoundsSessionConfig?.probeForm || wordSoundsSessionConfig?.form || generatedContent?.probeForm || mathProbeForm,
+                            getWordSoundsString,
                             onProbeComplete: (results) => {
                                     setIsProbeMode(false);
+                                    const probeConfig = wordSoundsSessionConfig
+                                        || generatedContent?.wordSoundsProbeConfig
+                                        || generatedContent?.sessionConfig
+                                        || {};
+                                    const total = Math.max(0, Number(results?.total) || 0);
+                                    const correct = Math.max(0, Math.min(total, Number(results?.correct) || 0));
+                                    const reportedAccuracy = Number(results?.accuracy);
+                                    const accuracy = Number.isFinite(reportedAccuracy)
+                                        ? Math.max(0, Math.min(100, Math.round(reportedAccuracy)))
+                                        : (total ? Math.round((correct / total) * 100) : 0);
+                                    const resultGrade = results?.grade
+                                        ?? probeConfig.probeGrade
+                                        ?? probeConfig.grade
+                                        ?? generatedContent?.probeGradeLevel
+                                        ?? probeGradeLevel;
+                                    const resultForm = results?.form
+                                        ?? probeConfig.probeForm
+                                        ?? probeConfig.form
+                                        ?? generatedContent?.probeForm
+                                        ?? mathProbeForm;
+                                    const resultActivity = results?.activity
+                                        ?? probeConfig.probeActivity
+                                        ?? probeConfig.activity
+                                        ?? probeActivity;
                                     const fullResult = {
                                         ...results,
+                                        correct,
+                                        total,
+                                        accuracy,
                                         date: new Date().toISOString(),
-                                        grade: probeGradeLevel,
-                                        activity: probeActivity,
-                                        student: probeTargetStudent,
-                                        form: mathProbeForm,
+                                        grade: resultGrade,
+                                        activity: resultActivity,
+                                        student: probeTargetStudent || probeConfig.learnerId || null,
+                                        form: resultForm,
+                                        formId: results?.formId || probeConfig.formId || null,
+                                        itemIds: Array.isArray(results?.itemIds)
+                                            ? results.itemIds
+                                            : (Array.isArray(probeConfig.itemIds) ? probeConfig.itemIds : []),
+                                        fixedForm: !!probeConfig.fixedForm,
+                                        sessionId: wordSoundsSessionConfig?.sessionId || results?.sessionId || null,
+                                        resourceId: wordSoundsSessionConfig?.resourceId || generatedContent?.id || null,
                                     };
                                     setLatestProbeResult(fullResult);
                                     if (probeTargetStudent) saveProbeResult(probeTargetStudent, fullResult);
@@ -48723,19 +52043,19 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                         try {
                                             const liveProbeRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
                                             writeToSession(liveProbeRef, { [`roster.${user.uid}.wsProbeResult`]: {
-                                                activity: typeof probeActivity === 'string' ? probeActivity.slice(0, 32) : null,
-                                                correct: results.correct || 0,
-                                                total: results.total || 0,
-                                                accuracy: results.total ? Math.round(((results.correct || 0) / results.total) * 100) : 0,
-                                                itemsPerMin: typeof results.itemsPerMin === 'number' && isFinite(results.itemsPerMin) ? results.itemsPerMin : null,
-                                                elapsed: typeof results.elapsed === 'number' && isFinite(results.elapsed) ? results.elapsed : null,
-                                                grade: probeGradeLevel != null ? String(probeGradeLevel).slice(0, 16) : null,
-                                                form: mathProbeForm != null ? String(mathProbeForm).slice(0, 8) : null,
+                                                activity: typeof resultActivity === 'string' ? resultActivity.slice(0, 32) : null,
+                                                correct: fullResult.correct,
+                                                total: fullResult.total,
+                                                accuracy: fullResult.accuracy,
+                                                itemsPerMin: typeof fullResult.itemsPerMin === 'number' && isFinite(fullResult.itemsPerMin) ? fullResult.itemsPerMin : null,
+                                                elapsed: typeof fullResult.elapsed === 'number' && isFinite(fullResult.elapsed) ? fullResult.elapsed : null,
+                                                grade: resultGrade != null ? String(resultGrade).slice(0, 16) : null,
+                                                form: resultForm != null ? String(resultForm).slice(0, 8) : null,
                                                 at: Date.now(),
                                             } }).catch(() => {});
                                         } catch (e) { /* transport must never block completion UX */ }
                                     }
-                                    addToast(t('toasts.probe_complete', { correct: results.correct, total: results.total, accuracy: results.accuracy }) || `Probe complete: ${results.correct}/${results.total} (${results.accuracy}%)`, 'success');
+                                    addToast(t('toasts.probe_complete', { correct, total, accuracy }) || ('Probe complete: ' + correct + '/' + total + ' (' + accuracy + '%)'), 'success');
                                     if (screenerSession && screenerSession.status === 'running') {
                                         const updatedResults = [...screenerSession.results, fullResult];
                                         if (screenerSession.currentIndex + 1 < screenerSession.subtests.length) {
@@ -49111,6 +52431,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     // attempt receipt is namespaced by content hash, so directions
                     // goals cannot find it. This reports by resourceId instead.
                     onResourceComplete: recordResourceCompletion,
+                    onClose: handleSetActiveViewToDashboard,
                     isPresentationMode, isReviewGame, isEditingQuiz,
                     escapeRoomState, escapeTimeLeft, isEscapeTimerRunning,
                     gameTeams, reviewGameState, scoreAnimation, soundEnabled,
@@ -49349,6 +52670,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   (generatedContent?.data?.comprehensive && (generatedContent.data.comprehensive.overall?.dimensionsEvaluated || 0) > 0)
                 ) && window.AlloModules && window.AlloModules.AlignmentReportView && React.createElement(window.AlloModules.AlignmentReportView, {
                     t, generatedContent,
+                    onConfirmAttribution: handleConfirmAlignmentAttribution,
+                    onExportAlignmentGraph: handleExportAlignmentGraph,
                     onApplyFixes: () => setIsAuditRemediatorOpen(true),
                     // Plan S+ Audit↔Quiz bridge: turn audit findings into a Pre-Check Quiz.
                     // Pulls top-priority recommendations and feeds them as customInstructions
@@ -49916,16 +53239,30 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               isCanvasEnv={_isCanvasEnv}
               ttsSpeed={wordSoundsTtsSpeed || 1}
               wordSoundsLanguage={wordSoundsLanguage}
+              probeGradeLevel={probeGradeLevel}
+              probeForm={mathProbeForm}
               onRequestKokoroOffer={() => setShowKokoroOfferModal(true)}
               glossaryTerms={generatedContent?.type === 'glossary' ? (generatedContent?.data || []) : (latestGlossary || [])}
               t={t}
               gradeLevel={gradeLevel || 'K-2'}
-              onStartGame={(words, sequence, lessonPlanConfig, configSummary, probeOptions) => {
-                   // 5th arg (optional): the setup screen's Practice/Assessment choice.
+              onStartGame={(words, sequence, lessonPlanConfig, configSummary, probeOptions, sessionConfig) => {
+                   // Optional fifth/sixth args carry the Practice/Assessment
+                   // choice and the exact session contract.
                    // A probe is a single timed skill, so it ignores any lesson-plan
                    // sequence and pins the activity the teacher selected.
                    const _isProbe = !!(probeOptions && probeOptions.isProbe);
                    const _probeAct = probeOptions && probeOptions.activity;
+                   const _probeGrade = probeOptions && probeOptions.grade;
+                   const _probeForm = probeOptions && probeOptions.form;
+                   const _sessionConfig = sessionConfig && typeof sessionConfig === 'object'
+                       ? { ...sessionConfig }
+                       : {};
+                   const {
+                       learnerId: _sessionLearnerId,
+                       sessionId: _discardedSessionId,
+                       startedAt: _discardedSessionStartedAt,
+                       ..._persistedSessionConfig
+                   } = _sessionConfig;
                    // Duplicate-history guard: relaunching the same pack (same
                    // words + sequence + config + probe choice) refreshes the
                    // existing entry in place instead of minting another copy —
@@ -49939,6 +53276,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                            configSummary || '',
                            _isProbe,
                            _isProbe ? (_probeAct || null) : null,
+                           _persistedSessionConfig,
                        ]);
                    } catch (_) {}
                    const _existingWs = _wsFingerprint
@@ -49959,7 +53297,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                        configSummary: configSummary || (t('output.quick_practice_mode') || 'Quick Practice Mode'),
                        isProbeMode: _isProbe,
                        probeActivity: _isProbe ? (_probeAct || null) : null,
-                       probeStudent: _isProbe ? ((probeOptions && probeOptions.student) || null) : null,
+                       probeGradeLevel: _isProbe ? (_probeGrade || probeGradeLevel) : null,
+                       probeForm: _isProbe ? (_probeForm || mathProbeForm || 'A') : null,
+                       sessionConfig: { ..._persistedSessionConfig, resourceId },
                        _fingerprint: _wsFingerprint,
                    };
                    setGeneratedContent(wordSoundsResource);
@@ -49975,8 +53315,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                        _updatedHistory[_latestWsIndex] = wordSoundsResource;
                        return _updatedHistory;
                    });
+                   // End any previous run before hydrating the next one. The
+                   // synchronous mode ref makes this false -> true transition
+                   // reliable even when both updates happen in one event turn.
+                   setIsWordSoundsMode(false);
                    setWsPreloadedWords(words);
-                   if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
+                   setWsActivitySequence(Array.isArray(sequence) ? sequence : []);
                    setIsProbeMode(_isProbe);
                    // Whose record this probe belongs in. probeTargetStudent is a
                    // single sticky value that only the Assessment Center's Active
@@ -49989,6 +53333,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                    // Assessment Center launches its own probes without passing
                    // through here and relies on the selector's value surviving.
                    if (_isProbe) {
+                       if (_probeGrade) setProbeGradeLevel(_probeGrade);
+                       if (_probeForm) setMathProbeForm(_probeForm);
                        setProbeTargetStudent(
                            (probeOptions && probeOptions.student) || null,
                        );
@@ -50000,9 +53346,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                    } else {
                        initialActivity = (sequence && sequence.length > 0) ? sequence[0] : 'counting';
                    }
+                   prepareWordSoundsSession({
+                       ..._persistedSessionConfig,
+                       initialActivity,
+                       resourceId,
+                       learnerId: _sessionLearnerId
+                           || (probeOptions && probeOptions.student)
+                           || null,
+                   });
                    setWordSoundsActivity(initialActivity);
                    setWordSoundsAutoReview(true);
-                   setIsWordSoundsMode(false);
                    setTimeout(() => {
                        setIsWordSoundsMode(true);
                        setActiveView('output');
@@ -50227,7 +53580,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       quizzes: history.filter(h => h.type === 'quiz').length,
                       wordsAttempted: wordSoundsHistory.length,
                       wordsCorrect: wordSoundsHistory.filter(h => h.correct).length,
-                      phonemesMastered: Object.entries(phonemeMastery).filter(([_,v]) => v.accuracy >= 80).length,
+                      phonemesMastered: Object.entries(phonemeMastery).filter(([_, v]) => {
+                          const independentAttempts = Number(v?.independentAttempts) || 0;
+                          const independentAccuracy = Number(v?.independentAccuracy);
+                          return independentAttempts >= 5 &&
+                              Number.isFinite(independentAccuracy) &&
+                              independentAccuracy >= 80;
+                      }).length,
                       sessionCount: studentProgressLog.length,
                       progressLog: studentProgressLog,
                       focusData: {
@@ -50261,6 +53620,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {!hasSelectedRole && hasSelectedMode && (
         <RoleSelectionModal
             onSelect={executeRoleSelect}
+            onStartVoiceAccess={enableGlobalVoiceAccess}
             onGateRequired={(role) => {
                 setPendingRole(role);
                 setIsGateOpen(true);
@@ -52059,6 +55419,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               setWsPreloadedWords={setWsPreloadedWords}
               setWordSoundsActivity={setWordSoundsActivity}
               setIsWordSoundsMode={setIsWordSoundsMode}
+              prepareWordSoundsSession={prepareWordSoundsSession}
               setActiveView={setActiveView}
               setGeneratedContent={setGeneratedContent}
               setIsFluencyMode={setIsFluencyMode}
@@ -52156,6 +55517,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && window.AlloModules && window.AlloModules.LaunchPadView && React.createElement(window.AlloModules.LaunchPadView, {
           t, micBannerDismissed, _isCanvasEnv, micPermissionStatus, APP_CONFIG,
           requestMicPermission,
+          enableVoiceAccess: enableGlobalVoiceAccess,
+          voiceAccessActive: alloVoiceAccessListening,
           setHasSelectedMode, setMicBannerDismissed, setGuidedMode,
           setHasSelectedRole, setShowWizard, setIsTeacherMode,
           setShowLearningHub, setShowEducatorHub,
@@ -52183,7 +55546,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       break;
                   case 'educator':
                       setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false);
-                      if (APP_CONFIG._cfg_validation_key) {
+                      if (_alloEducatorAccessCodeRequired()) {
                           setPendingRole('educator_hub'); setIsGateOpen(true);
                       } else {
                           setIsTeacherMode(true); setShowEducatorHub(true);
@@ -53828,7 +57191,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     },
             })}
         </CDNModuleGate>
-        <CDNModuleGate moduleKey="MindMap" isOpen={showMindMap} onClose={() => { setShowMindMap(false); setThroughlineSeedUnitId(null); }} icon="🧭" displayName="Throughline" t={t}>
+        <CDNModuleGate moduleKey="MindMap" isOpen={showMindMap} onClose={() => { setShowMindMap(false); setThroughlineSeedUnitId(null); }} icon="🧭" displayName="Learning Web: Unit Path" t={t}>
             {(MindMap) => React.createElement(MindMap, {
                 isOpen: true,
                 onClose: () => { setShowMindMap(false); setThroughlineSeedUnitId(null); },
@@ -53843,6 +57206,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 seedUnitId: throughlineSeedUnitId,
                 onProposeUnit,
                 onGenerateUnitLesson,
+                alignmentGraphExport: _alloAlignmentGraphExportForContext(generatedContent, throughlineSeedUnitId, history),
+                importedAlignmentGraphExport,
+                onImportAlignmentGraph: handleImportAlignmentGraph,
+                onClearImportedAlignmentGraph: clearImportedAlignmentGraph,
             })}
         </CDNModuleGate>
         <CDNModuleGate moduleKey="PoetTree" isOpen={showPoetTree} onClose={() => setShowPoetTree(false)} icon="🌳" displayName="Poet Tree" t={t}>
@@ -53971,63 +57338,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           const items = getReadableContent();
           const typeColors = { heading: '#f59e0b', text: '#94a3b8', status: '#a78bfa', term: '#38bdf8', question: '#f472b6', option: '#60a5fa' };
           const typeIcons = { heading: '\u{1F4E2}', text: '\u{1F4C4}', status: '\u{1F4CD}', term: '\u{1F4D6}', question: '\u{2753}', option: '\u{1F520}' };
-          const handleReadAll = async () => {
-              if (rtpReadingRef.current) return;
-              rtpReadingRef.current = true;
-              rtpStopRef.current = false;
-              const btn = document.getElementById('rtp-read-all-btn');
-              if (btn) { btn.textContent = '\u25B6 ' + (t('read_this_page.reading') || 'Reading...'); btn.style.background = '#16a34a'; }
-              for (let i = 0; i < items.length; i++) {
-                  if (rtpStopRef.current) break;
-                  const itemEls = document.querySelectorAll('[data-rtp-idx]');
-                  itemEls.forEach(el => el.style.background = 'none');
-                  if (itemEls[i]) { itemEls[i].style.background = '#7c3aed33'; itemEls[i].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-                  // callTTS returns a blob URL; wrap in <audio> + await ended,
-                  // otherwise the URL is discarded and Read All runs silent.
-                  let url = null;
-                  try { url = await callTTS(items[i].text, selectedVoice); } catch(e) { warnLog && warnLog('[readToPlay] callTTS failed for item ' + i + ':', e); }
-                  if (rtpStopRef.current) { if (url) { try { URL.revokeObjectURL(url); } catch(_) {} } break; }
-                  if (url) {
-                      await new Promise(resolve => {
-                          const audio = new Audio(url);
-                          rtpCurrentAudioRef.current = audio;
-                          const done = () => { try { URL.revokeObjectURL(url); } catch(_) {} rtpCurrentAudioRef.current = null; resolve(); };
-                          audio.addEventListener('ended', done);
-                          audio.addEventListener('error', done);
-                          audio.play().catch(done);
-                      });
-                  }
-                  if (!rtpStopRef.current) await new Promise(r => setTimeout(r, 300));
-              }
-              rtpReadingRef.current = false;
-              if (btn) { btn.textContent = '\u25B6 ' + (t('read_this_page.read_all_button') || 'Read All'); btn.style.background = '#7c3aed'; }
-              document.querySelectorAll('[data-rtp-idx]').forEach(el => el.style.background = 'none');
-          };
-          const handleStop = () => {
-              rtpStopRef.current = true;
-              rtpReadingRef.current = false;
-              if (rtpCurrentAudioRef.current) { try { rtpCurrentAudioRef.current.pause(); } catch(_) {} rtpCurrentAudioRef.current = null; }
-              if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-              const btn = document.getElementById('rtp-read-all-btn');
-              if (btn) { btn.textContent = '\u25B6 ' + (t('read_this_page.read_all_button') || 'Read All'); btn.style.background = '#7c3aed'; }
-              document.querySelectorAll('[data-rtp-idx]').forEach(el => el.style.background = 'none');
-          };
-          const handleItemClick = (idx) => {
-              if (items[idx]) {
-                  // callTTS returns a blob URL; wrap in <audio> + play.
-                  Promise.resolve(callTTS(items[idx].text, selectedVoice)).then(url => {
-                      if (!url) return;
-                      const audio = new Audio(url);
-                      const revoke = () => { try { URL.revokeObjectURL(url); } catch(_) {} };
-                      audio.addEventListener('ended', revoke);
-                      audio.addEventListener('error', revoke);
-                      audio.play().catch(() => {});
-                  }).catch(() => {});
-              }
-          };
+          const handleReadAll = () => readAllReadThisPage();
+          const handleStop = () => stopReadThisPage();
+          const handleItemClick = (idx) => _readThisPageItemAt(idx);
           return (
               <div className="fixed top-16 right-4 z-[45] w-[360px] max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl shadow-2xl border-s-4 border-purple-500 overflow-hidden animate-in slide-in-from-right-5 duration-300"
                   style={{ background: theme === 'contrast' ? '#000' : '#0f172a', color: theme === 'contrast' ? '#fbbf24' : '#e2e8f0', fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}
+                  ref={rtpPanelRef} tabIndex={-1} aria-busy={rtpPlaybackState === 'reading'}
                   role="complementary" aria-label={t('read_this_page.panel_aria') || 'Read This Page panel'}
               >
                   {/* Header */}
@@ -54039,13 +57356,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       <div className="flex items-center gap-1">
                           <button id="rtp-read-all-btn" onClick={handleReadAll}
                               className="px-3 py-1 rounded-lg text-white text-[11px] font-bold transition-colors hover:brightness-110"
-                              style={{ background: '#7c3aed' }}
+                              style={{ background: rtpPlaybackState === 'reading' ? '#16a34a' : '#7c3aed' }}
+                              aria-pressed={rtpPlaybackState === 'reading'}
                           >{'\u25B6'} {t('read_this_page.read_all_button') || 'Read All'}</button>
                           <button onClick={handleStop}
                               className="px-2 py-1 rounded-lg text-white text-[11px] font-bold hover:bg-red-600 transition-colors"
                               style={{ background: '#dc2626' }}
                           >{'\u23F9'} {t('read_this_page.stop_button') || 'Stop'}</button>
-                          <button onClick={() => { handleStop(); setShowReadThisPage(false); setFocusNarrationEnabled(false); }}
+                          <button onClick={closeReadThisPage}
+                              aria-label={(t('common.close') || 'Close') + ': ' + (t('read_this_page.title') || 'Read This Page')}
                               className="ms-1 px-2 py-1 rounded-lg text-slate-600 hover:text-white hover:bg-slate-700 transition-colors text-[11px] font-bold"
                           >{'\u2715'}</button>
                       </div>
@@ -54078,7 +57397,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                           <div key={idx} data-rtp-idx={idx}
                               onClick={() => handleItemClick(idx)}
                               className="px-3 py-2 rounded-lg cursor-pointer transition-colors hover:bg-white/5"
-                              style={{ color: typeColors[item.type] || '#94a3b8', lineHeight: 1.5 }}
+                              style={{ color: typeColors[item.type] || '#94a3b8', lineHeight: 1.5, background: rtpCurrentIndex === idx ? '#7c3aed33' : 'none' }}
                               role="button" tabIndex={0}
                               aria-label={t('read_this_page.item_aria', { text: item.text.substring(0, 80) }) || `Click to hear: ${item.text.substring(0, 80)}`}
                               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(idx); } }}

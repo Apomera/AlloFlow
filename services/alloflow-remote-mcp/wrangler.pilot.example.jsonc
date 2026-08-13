@@ -113,7 +113,9 @@
       "image": "./runner/Dockerfile",
       "image_build_context": ".",
       "max_instances": 2,
-      "instance_type": "standard-2"
+      "instance_type": "standard-2",
+      "rollout_step_percentage": [10, 100],
+      "rollout_active_grace_period": 1800
     }
   ],
   "ratelimits": [

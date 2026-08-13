@@ -27,6 +27,21 @@ const OUTPUT = path.join(ROOT, 'story_forge_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'story_forge_module.js');
 const TMP = path.join(ROOT, '_tmp_story_forge_entry.jsx');
 
+const writeFileWithRetry = (target, contents, attempts = 12) => {
+    let lastError;
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+        try {
+            fs.writeFileSync(target, contents, 'utf-8');
+            return;
+        } catch (error) {
+            lastError = error;
+            if (!['UNKNOWN', 'EBUSY', 'EPERM'].includes(error && error.code) || attempt === attempts) throw error;
+            Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 250);
+        }
+    }
+    throw lastError;
+};
+
 if (!fs.existsSync(SOURCE)) {
     console.error('❌ Source not found:', SOURCE);
     process.exit(1);
@@ -135,14 +150,14 @@ ${compiled}
   window.AlloModules.StoryForge = StoryForge;
   // Test seam (read-only): expose pure reading-level and comic layout helpers for characterization
   // tests (tests/story_forge_golden.test.js). Zero behavior change.
-  try { window.AlloModules.StoryForge._meta = { computeReadingLevel: computeReadingLevel, gradeLevelToNumber: gradeLevelToNumber, clampComicLetteringWidth: clampComicLetteringWidth, sanitizePanelThumbnails: sanitizePanelThumbnails, createComicProductionSnapshot: createComicProductionSnapshot, sanitizeStoryForgeDraft: sanitizeStoryForgeDraft, sanitizeStoryForgeProject: sanitizeStoryForgeProject, sanitizeAudioSegments: sanitizeAudioSegments, getImageBase64Payload: getImageBase64Payload, sanitizeContinuityReferences: sanitizeContinuityReferences, sanitizeComicContinuityAudit: sanitizeComicContinuityAudit, isStoryForgeDraftMeaningful: isStoryForgeDraftMeaningful, isStoryForgeProjectMeaningful: isStoryForgeProjectMeaningful, getComicPageProductionStats: getComicPageProductionStats, getComicContinuityAudit: getComicContinuityAudit, getStoryForgeProjectReadiness: getStoryForgeProjectReadiness }; } catch (e) {}
+  try { window.AlloModules.StoryForge._meta = { computeReadingLevel: computeReadingLevel, gradeLevelToNumber: gradeLevelToNumber, clampComicLetteringWidth: clampComicLetteringWidth, sanitizePanelThumbnails: sanitizePanelThumbnails, createComicProductionSnapshot: createComicProductionSnapshot, getStoryForgeReviewSignature: getStoryForgeReviewSignature, getStoryForgeRestoredPhase: getStoryForgeRestoredPhase, validateStoryForgeImport: validateStoryForgeImport, normalizeStoryForgeModeSelection: normalizeStoryForgeModeSelection, sanitizeStoryForgeDraft: sanitizeStoryForgeDraft, sanitizeStoryForgeProject: sanitizeStoryForgeProject, sanitizeAudioSegments: sanitizeAudioSegments, getImageBase64Payload: getImageBase64Payload, sanitizeContinuityReferences: sanitizeContinuityReferences, sanitizeComicContinuityAudit: sanitizeComicContinuityAudit, isStoryForgeDraftMeaningful: isStoryForgeDraftMeaningful, isStoryForgeProjectMeaningful: isStoryForgeProjectMeaningful, getComicPageProductionStats: getComicPageProductionStats, getComicContinuityAudit: getComicContinuityAudit, getStoryForgeProjectReadiness: getStoryForgeProjectReadiness }; } catch (e) {}
 
   console.log('[StoryForge] Module registered');
 })();
 `;
 
-fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
-fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
+writeFileWithRetry(OUTPUT, outputCode);
+writeFileWithRetry(DEPLOY_OUT, outputCode);
 const lineCount = outputCode.split('\n').length;
 console.log(`✅ Built ${OUTPUT} (${lineCount} lines)`);
 console.log(`✅ Synced to ${DEPLOY_OUT}`);

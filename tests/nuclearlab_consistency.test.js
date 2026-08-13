@@ -301,9 +301,38 @@ describe('safety, provenance, and mobile reading safeguards', () => {
     expect(SRC).toContain('deuterium-tritium operation in 2039');
     expect(SRC).toContain('.nk-readable .text-\\\\[11px\\\\]');
   });
+
+  it('keeps sliders unit-aware and reflows them at phone width', () => {
+    expect(SRC).toMatch(/className: 'nk-slider flex/);
+    expect(SRC).toMatch(/aria-valuetext': valueText/);
+    expect(SRC).toMatch(/h\('output', \{ htmlFor: id/);
+    expect(SRC).toMatch(/\.nk-readable \.nk-slider\{display:grid!important/);
+  });
+
+  it('qualifies half-life invariance and radiocarbon dating limits', () => {
+    expect(SRC).toMatch(/practical rule rather than a universal law/);
+    expect(SRC).toMatch(/especially electron capture/);
+    expect(SRC).toMatch(/idealised radiocarbon age/);
+    expect(SRC).toMatch(/use a calibration curve/);
+    expect(SRC).not.toMatch(/which nothing can change/);
+    expect(SRC).not.toMatch(/the one rule that never changes/);
+  });
+
+  it('keeps Fukushima evidence categories explicit and source-linked', () => {
+    expect(SRC).toContain('Japan Reconstruction Agency disaster-related deaths (2026)');
+    expect(SRC).toContain('Japan MHLW Fukushima worker health report (2024)');
+    expect(SRC).toMatch(/2,350 disaster-related deaths/);
+    expect(SRC).toMatch(/legal category/);
+    expect(SRC).not.toMatch(/2,200 people died because of the Fukushima evacuation/);
+    expect(SRC).not.toMatch(/one from radiation/);
+  });
 });
 
 describe('route progressive disclosure', () => {
+  it('exposes native route progress semantics', () => {
+    expect(SRC).toMatch(/h\('progress', \{/);
+  });
+
   it('filters rendered sections when a question route is active', () => {
     expect(SRC).toContain('nkPath.steps.indexOf(id) === -1');
     expect(SRC).toContain('var nkVisible = nkPath');

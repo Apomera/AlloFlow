@@ -79,7 +79,7 @@ describe("checkpoint orphan cleanup contracts", () => {
     expect(success).toContain("await deleteCheckpointObjects(");
     expect(success).toContain("await clearJobCheckpoint(");
 
-    const fence = failure.indexOf("await failJob(");
+    const fence = failure.indexOf("await failCurrentWorkflowAttempt(");
     const sweep = failure.indexOf("await deleteCheckpointObjects(");
     expect(fence).toBeGreaterThan(-1);
     expect(fence).toBeLessThan(sweep);

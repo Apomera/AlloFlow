@@ -10874,7 +10874,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Multiply blending, so it modulates the lit terrain instead of painting
           // over it — an unlit overlay would wash the colour out. It also means the
           // layer fades ITSELF: mipmaps average the speckle toward its own mean as
-          // it recedes, so by cruise it is a uniform ~4% darkening rather than
+          // it recedes, so by cruise it is a uniform 7.1% darkening rather than
           // visible tiling, and no altitude fade logic is needed.
           var fCan = document.createElement('canvas');
           fCan.width = 256; fCan.height = 256;
@@ -10913,9 +10913,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               // spread survived as only ~2 luma of the 6 it carried.
               var fN = fOct(fpx, fpy, 16) * 0.7 + fOct(fpx, fpy, 48) * 0.22 + fOct(fpx, fpy, 96) * 0.08;
               // Skewed rather than linear: most texels sit near white with a tail
-              // running down to ~0.73. That keeps the MEAN near 0.91 — so at cruise,
-              // where mipmaps have averaged this to its mean, it is a uniform ~9%
-              // darkening and not a visible pattern — while giving the near ground
+              // running down into the 0.75 range. MEASURED on the generated texture:
+              // mean 236.85/255 = 0.929, min 191.6, max 254.6. Because mipmaps
+              // converge to that mean, 7.1% IS the uniform darkening this layer
+              // applies at any distance where the noise has averaged out — no
+              // pattern, just a slightly deeper green. The skew buys the near ground
               // far more contrast than an even spread at the same mean could.
               var fS = 255 - Math.round(Math.pow(fN, 2.2) * 70);
               var fI = (fpy * 256 + fpx) * 4;

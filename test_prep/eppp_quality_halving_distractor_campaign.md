@@ -6,7 +6,7 @@ Reviewed: 2026-07-25
 
 - 263 source-backed items are in the deep-rewrite campaign.
 - All 263 answer positions were preserved.
-- Distractor metrics moved from 57 / 120 / 7 / 85 / 49 to 55 / 120 / 7 / 82 / 46.
+- Distractor metrics moved from 55 / 116 / 4 / 81 / 45 to 55 / 116 / 4 / 81 / 45.
 - The campaign is **pass** against the post-Wave 16 halving ceilings.
 
 This is a source-grounded editorial campaign, not psychometric calibration or independent licensed-psychologist validation.

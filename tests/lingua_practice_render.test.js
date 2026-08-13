@@ -78,6 +78,70 @@ describe('Lingua Practice render flow', () => {
     expect(host.textContent).toContain('neh-seh-SEE-toh oon LAH-pees');
   });
 
+  it('provides a roving section toolbar without activating sections while focus moves', async () => {
+    const lesson = {
+      title: 'Navigator practice',
+      goal: 'Move between activities.',
+      scenario: 'Practice at school.',
+      vocabulary: [{ term: 'bonjour', meaning: 'hello', example: 'Bonjour, Marie.', translation: 'Hello, Marie.' }],
+      phrases: [{ target: 'Bonjour, Marie.', translation: 'Hello, Marie.' }],
+      conversation: [{ coach: 'Bonjour !', translation: 'Hello!', sample: 'Bonjour, Marie.' }],
+    };
+    await mount(React.createElement(Lingua, {
+      isOpen: true,
+      onClose: () => {},
+      callGemini: async () => JSON.stringify(lesson),
+    }));
+    await act(async () => {
+      button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const nav = host.querySelector('nav[aria-label="Lingua Practice sections"]');
+    const toolbar = nav.querySelector('[role="toolbar"]');
+    const navButton = (key) => nav.querySelector('[data-lingua-nav-key="' + key + '"]');
+    const enabledButtons = Array.from(nav.querySelectorAll('button:not(:disabled)'));
+    expect(toolbar.getAttribute('aria-describedby')).toBe('lingua-nav-keyboard-help');
+    expect(nav.querySelector('#lingua-nav-keyboard-help').textContent).toMatch(/arrow keys.+Enter or Space/i);
+    expect(enabledButtons.filter((node) => node.tabIndex === 0)).toHaveLength(1);
+    expect(navButton('vocabulary').getAttribute('aria-current')).toBe('page');
+    expect(navButton('vocabulary').tabIndex).toBe(0);
+    expect(navButton('forms').disabled).toBe(true);
+
+    const move = async (node, key) => {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      await act(async () => { node.dispatchEvent(event); });
+      expect(event.defaultPrevented).toBe(true);
+    };
+    await act(async () => { navButton('vocabulary').focus(); });
+    await move(navButton('vocabulary'), 'ArrowRight');
+    expect(document.activeElement).toBe(navButton('listening'));
+    expect(navButton('vocabulary').getAttribute('aria-current')).toBe('page');
+    await move(navButton('listening'), 'Home');
+    expect(document.activeElement).toBe(navButton('setup'));
+    await move(navButton('setup'), 'ArrowDown');
+    expect(document.activeElement).toBe(navButton('studio'));
+    await move(navButton('studio'), 'End');
+    expect(document.activeElement).toBe(navButton('saved'));
+    await move(navButton('saved'), 'ArrowUp');
+    expect(document.activeElement).toBe(navButton('review'));
+
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    await act(async () => { navButton('review').dispatchEvent(enter); });
+    expect(enter.defaultPrevented).toBe(false);
+
+    const speakButton = navButton('speak');
+    const scrollCalls = [];
+    speakButton.scrollIntoView = (options) => scrollCalls.push(options);
+    await act(async () => {
+      button('Practice speaking').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(speakButton.getAttribute('aria-current')).toBe('page');
+    expect(scrollCalls).toContainEqual({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
+    expect(document.activeElement.textContent).toContain('Make the phrase your own');
+  });
+
   it('keeps a word-form answer hidden, offers typing characters, and records one private attempt', async () => {
     const privateTypedAnswer = 'PRIVATE learner form answer';
     const lesson = {
@@ -130,18 +194,32 @@ describe('Lingua Practice render flow', () => {
     expect(answer.autocomplete).toBe('off');
     expect(panel.textContent).not.toContain('habl\u00e9');
 
-    let palette = panel.querySelector('[role="group"][aria-label="Typing characters"]');
+    let palette = panel.querySelector('[role="toolbar"][aria-labelledby="lingua-form-answer-typing-title"]');
     expect(palette).toBeTruthy();
+    expect(palette.lang).toBe('es-ES');
+    expect(palette.dir).toBe('ltr');
+    const characterButtons = Array.from(palette.querySelectorAll('button[data-lingua-typing-key]'));
+    expect(characterButtons.filter((node) => node.tabIndex === 0)).toHaveLength(1);
     const accentButton = Array.from(palette.querySelectorAll('button')).find(
       (node) => node.textContent === '\u00e9',
     );
     expect(accentButton).toBeTruthy();
+    expect(accentButton.getAttribute('aria-label')).toBe('Insert \u00e9');
+    expect(accentButton.tabIndex).toBe(0);
+    await act(async () => {
+      accentButton.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+    });
+    expect(document.activeElement).toBe(characterButtons[1]);
+    expect(characterButtons.filter((node) => node.tabIndex === 0)).toEqual([characterButtons[1]]);
+    await act(async () => { characterButtons[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true })); });
+    expect(document.activeElement).toBe(accentButton);
     await act(async () => {
       accentButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       await new Promise((resolveTimer) => setTimeout(resolveTimer, 0));
     });
     expect(answer.value).toBe('\u00e9');
     expect(document.activeElement).toBe(answer);
+    expect(panel.querySelector('[role="status"]').textContent).toContain('Inserted \u00e9.');
 
     const revealButton = Array.from(panel.querySelectorAll('button')).find(
       (node) => /reveal/i.test(node.textContent) || node.textContent === 'forms_reveal',
@@ -152,7 +230,7 @@ describe('Lingua Practice render flow', () => {
     });
     expect(panel.textContent).toContain('habl\u00e9');
     expect(answer.disabled).toBe(true);
-    expect(panel.querySelector('[role="group"][aria-label="Typing characters"]')).toBe(null);
+    expect(panel.querySelector('[role="toolbar"][aria-labelledby="lingua-form-answer-typing-title"]')).toBe(null);
     let progress = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
     expect(progress.languageStats?.Spanish?.formAttempts || 0).toBe(0);
     expect(progress.formEvidence || []).toHaveLength(0);
@@ -168,7 +246,7 @@ describe('Lingua Practice render flow', () => {
     expect(answer.disabled).toBe(false);
     expect(answer.value).toBe('');
     expect(panel.textContent).not.toContain('habl\u00e9');
-    palette = panel.querySelector('[role="group"][aria-label="Typing characters"]');
+    palette = panel.querySelector('[role="toolbar"][aria-labelledby="lingua-form-answer-typing-title"]');
     expect(palette).toBeTruthy();
 
     const inputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
@@ -199,7 +277,7 @@ describe('Lingua Practice render flow', () => {
     expect(progress.formEvidence[0].itemId).toMatch(/^practice-form-[a-z0-9]+$/);
     expect(JSON.stringify(progress)).not.toContain(privateTypedAnswer);
     expect(answer.disabled).toBe(true);
-    expect(panel.querySelector('[role="group"][aria-label="Typing characters"]')).toBe(null);
+    expect(panel.querySelector('[role="toolbar"][aria-labelledby="lingua-form-answer-typing-title"]')).toBe(null);
     expect(panel.textContent).toContain('habl\u00e9');
     expect(host.textContent).not.toMatch(/\b(?:nav_forms|forms_[a-z_]+)\b/);
   });
@@ -615,9 +693,9 @@ describe('Lingua Practice render flow', () => {
     expect(button('Review set-aside cards')).toBeFalsy();
   });
 
-  it('reverses an established card to target-to-known recall and schedules Hard', async () => {
+  it('reverses an established card, offers known-language typing characters, and schedules Hard', async () => {
     localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [{
-      id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', example: 'Hola.', translation: 'Hello.', reviewStage: 1, nextReviewAt: 0, reviews: 1,
+      id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'caf\u00e9', example: 'Hola.', translation: 'Hello.', reviewStage: 1, nextReviewAt: 0, reviews: 1,
     }] }));
     await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
     await act(async () => { button('Review (1)').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
@@ -625,8 +703,12 @@ describe('Lingua Practice render flow', () => {
     expect(host.textContent).toContain('Spanish → English');
     expect(host.textContent).toContain('hola');
     expect(host.querySelector('#lingua-review-recall').lang).toBe('en-US');
+    const knownToolbar = host.querySelector('[role="toolbar"][lang="en-US"]');
+    expect(knownToolbar).toBeTruthy();
+    expect(Array.from(knownToolbar.querySelectorAll('button')).some((node) => node.textContent === '\u00e9')).toBe(true);
+    expect(knownToolbar.textContent).not.toContain('\u00bf');
     await act(async () => { button('Reveal answer').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    expect(document.activeElement.textContent).toBe('hello');
+    expect(document.activeElement.textContent).toBe('caf\u00e9');
     expect(button('Hard').textContent).toContain('Next in 1 day');
     await act(async () => { button('Hard').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     const saved = JSON.parse(localStorage.getItem('allo_lingua_progress_v1')).saved[0];
@@ -1001,6 +1083,50 @@ describe('Lingua Practice Set Studio', () => {
   });
 });
 
+describe('Lingua Practice bounded interactive text requests', () => {
+  it('settles a stalled build with the offline starter', async () => {
+    const pending = new Promise(() => {});
+    await mount(React.createElement(Lingua, {
+      isOpen: true, onClose: () => {}, callGemini: () => pending,
+      textRequestTimeoutMs: 10, addToast: () => {},
+    }));
+
+    act(() => { button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('Building practice set');
+    await act(async () => { await new Promise((resolveWait) => setTimeout(resolveWait, 25)); });
+    expect(host.textContent).toContain('Hola');
+    expect(JSON.parse(localStorage.getItem('allo_lingua_sets_v1'))).toHaveLength(1);
+
+  });
+
+  it('re-enables a stalled Studio refresh and preserves the draft', async () => {
+    localStorage.setItem('allo_lingua_sets_v1', JSON.stringify([{
+      id: 'timeout-set', language: 'Spanish', name: 'Timeout set', archived: false, createdAt: 1, updatedAt: 1,
+      lesson: {
+        title: 'Timeout set', goal: 'Practice', scenario: 'In class.',
+        vocabulary: [{ term: 'hola', meaning: 'hello' }],
+        phrases: [{ target: 'Hola.', translation: 'Hello.' }],
+        conversation: [{ coach: 'Hola?', translation: 'Hello?', sample: 'Hola.' }],
+      },
+    }]));
+    const pending = new Promise(() => {});
+    const toasts = [];
+    await mount(React.createElement(Lingua, {
+      isOpen: true, onClose: () => {}, callGemini: () => pending,
+      textRequestTimeoutMs: 10, addToast: (text, type) => toasts.push([text, type]),
+    }));
+    await act(async () => { button('Practice sets').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => { button('Edit').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    act(() => { button('Refresh with AI').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(button('Refreshing').disabled).toBe(true);
+    await act(async () => { await new Promise((resolveWait) => setTimeout(resolveWait, 25)); });
+    expect(button('Refresh with AI').disabled).toBe(false);
+    expect(host.querySelector('#lingua-studio-vocabulary-0-term').value).toBe('hola');
+    expect(toasts.some(([text, type]) => type === 'error' && text.includes('could not be refreshed'))).toBe(true);
+
+  });
+});
 describe('Lingua Practice Set Studio portability', () => {
   it('exports a set and imports a validated set from another language', async () => {
     const spanishLesson = {
@@ -1758,7 +1884,7 @@ describe('Lingua Practice AI illustrations', () => {
 
     expect(button('Add pictures')).toBeUndefined();
     await act(async () => { button('Describe').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    expect(host.textContent).toContain('AI images are unavailable right now.');
+    expect(host.textContent).toContain('Picture generation is not available in this session.');
     expect(button('Create a picture')).toBeUndefined();
   });
 

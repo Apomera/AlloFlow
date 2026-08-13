@@ -304,6 +304,30 @@ describe('City Planning Lab - regressions the screenshots caught', () => {
     });
   });
 
+  it('never lists an indicator the open town does not model', () => {
+    // Harborlight has no aquifer. Its water indicators were both zero and
+    // still appeared under "did not move at all", which is true and
+    // completely meaningless.
+    const realUseState = React.useState;
+    try {
+      let swapped = false;
+      React.useState = function (init) {
+        if (!swapped && init === 'design') { swapped = true; return realUseState('assume'); }
+        return realUseState(init);
+      };
+      window.localStorage.setItem(STORE_KEY,
+        JSON.stringify(Object.assign(P.basePlan('harborlight'), { assumptionSetId: 'central' })));
+      const html = renderPanel(makeCtx());
+      expect(html).toContain('Harborlight');
+      expect(html, 'a water indicator leaked into a town with no water model')
+        .not.toContain('Water left under the safe yield');
+      expect(html).not.toContain('Water demand (cubic metres per day)');
+    } finally {
+      React.useState = realUseState;
+      clearPlan();
+    }
+  });
+
   it('carries park access in the table as well as on the map', () => {
     // The map marks "no park within 5 minutes" with a star. If the table
     // omits it, the table is a summary rather than the peer path it claims.

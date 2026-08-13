@@ -321,7 +321,7 @@ test('engine compatibility includes normalized base, primary, and fallback model
   }
 });
 
-test('checkpoint option compatibility fences model retry budget drift', () => {
+test('checkpoint option compatibility ignores operational retry budget drift', () => {
   const options = {
     targetScore: 95,
     fixPasses: 2,
@@ -336,13 +336,13 @@ test('checkpoint option compatibility fences model retry budget drift', () => {
     modelRetryBudget: 4,
   };
   const digest = checkpointOptionsDigest(options);
-  assert.notEqual(
+  assert.equal(
     checkpointOptionsDigest({ ...options, modelRetryBudget: 2 }),
     digest,
   );
   const legacy = { ...options };
   delete legacy.modelRetryBudget;
-  assert.notEqual(checkpointOptionsDigest(legacy), digest);
+  assert.equal(checkpointOptionsDigest(legacy), digest);
 });
 
 test('invalid and unserializable enabled snapshots fail before storage', async () => {

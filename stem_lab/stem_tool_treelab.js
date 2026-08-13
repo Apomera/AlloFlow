@@ -3727,6 +3727,147 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         });
       }
 
+      // ── The comparison itself ────────────────────────────────────────────────
+      // Five species were drawn as five separate sparklines in five separate boxes,
+      // each stretched to its own width with preserveAspectRatio="none". To compare
+      // them you had to compare five pictures — which is the one thing a comparison
+      // view must not make you do. Overlaid on shared axes, the whole point of the
+      // view lands in a glance: which one is fastest early, which one is still going
+      // at 300 years, and which ones never got there at all.
+      //
+      // Slots are assigned by the species' fixed position in SPECIES, never by how
+      // tall they finished. A palette that follows rank repaints every survivor the
+      // moment the years slider changes the ordering.
+      var SPECIES_HUE_LIGHT = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4'];
+      var SPECIES_HUE_DARK = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181'];
+      // High contrast collapses every decorative hue onto one accent, so five lines
+      // would be five identical yellow lines. There the identity channel becomes the
+      // dash pattern — the line equivalent of the texture fallback.
+      // Solid / medium dash / fine dot / long dash / dash-dot. A first set put two
+      // dash-dot patterns next to each other and they read as the same line.
+      var SPECIES_DASH = ['', '9 5', '2 4', '16 5', '7 4 2 4'];
+
+      function compareChart(runs, years, maxH) {
+        var W = 640, H = 250, PADL = 42, PADR = 14, PADT = 12, PADB = 30;
+        var PW = W - PADL - PADR, PH = H - PADT - PADB;
+        var yTop = Math.max(1, Math.ceil(maxH / 5) * 5);
+        var sx = function (yr) { return PADL + PW * clamp(yr / Math.max(1, years), 0, 1); };
+        var sy = function (m) { return PADT + PH * (1 - clamp(m / yTop, 0, 1)); };
+
+        function hueFor(i) { return isDark ? SPECIES_HUE_DARK[i % 5] : SPECIES_HUE_LIGHT[i % 5]; }
+
+        var lines = [], marks = [], labels = [];
+        runs.forEach(function (r, i) {
+          if (!r.track.length) return;
+          var hue = isContrast ? T.accent : hueFor(i);
+          var dash = isContrast ? SPECIES_DASH[i % 5] : '';
+          var mine = r.sp.id === sp.id;
+          var pts = r.track.map(function (v, k) {
+            // compareRuns samples every OTHER year, so the index is half the age.
+            return round(sx(k * 2), 1) + ',' + round(sy(v), 1);
+          }).join(' ');
+          lines.push(h('polyline', {
+            key: 'l' + r.sp.id, 'data-species': r.sp.id, points: pts, fill: 'none', stroke: hue,
+            strokeWidth: mine ? 3 : 2, strokeLinejoin: 'round', strokeLinecap: 'round',
+            strokeDasharray: dash || undefined,
+            strokeOpacity: 1
+          }));
+          var lastX = sx((r.track.length - 1) * 2);
+          var lastY = sy(r.track[r.track.length - 1]);
+          if (r.diedAt != null) {
+            // Where a run STOPS is the most informative point on it, so it gets a mark
+            // rather than being left as a line that merely runs out.
+            marks.push(h('g', {
+              key: 'd' + r.sp.id, 'data-died': r.sp.id, stroke: hue, strokeWidth: 2, strokeLinecap: 'round'
+            }, [
+              h('line', { key: 'a', x1: lastX - 4, y1: lastY - 4, x2: lastX + 4, y2: lastY + 4 }),
+              h('line', { key: 'b', x1: lastX - 4, y1: lastY + 4, x2: lastX + 4, y2: lastY - 4 })
+            ]));
+          } else {
+            marks.push(h('circle', {
+              key: 'e' + r.sp.id, cx: lastX, cy: lastY, r: 4,
+              fill: hue, stroke: T.card, strokeWidth: 2
+            }));
+          }
+          // ONE direct label, on the student's own species. Five end-labels on curves
+          // that finish close together stack into noise; the legend carries the rest.
+          if (mine) {
+            labels.push(h('text', {
+              key: 'lab' + r.sp.id,
+              x: clamp(lastX - 6, PADL, PADL + PW - 4), y: clamp(lastY - 9, PADT + 9, PADT + PH),
+              textAnchor: 'end',
+              style: { fontSize: '11px', fontWeight: 700, fill: T.text }
+            }, __alloT('stem.treelab.your_tree', 'your tree')));
+          }
+        });
+
+        var alt = __alloT('stem.treelab.compare_alt',
+          'Height against age for five species under identical conditions over ' + years + ' years. '
+          + runs.map(function (r) {
+            return __alloT('stem.treelab.species_' + r.sp.id, r.sp.name) + ' '
+              + (r.diedAt != null
+                ? 'died at ' + r.diedAt + ' years'
+                : 'reached ' + round(r.tree.heightM, 1) + ' metres');
+          }).join('; ') + '.');
+
+        return h('div', { key: 'chart', style: { marginTop: 4 } }, [
+          h('svg', {
+            key: 'svg', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': alt,
+            style: { width: '100%', height: 'auto', display: 'block' }
+          }, [
+            h('g', { key: 'grid', stroke: T.border, strokeWidth: 1, fill: 'none' }, [
+              h('line', { key: 'x', x1: PADL, y1: PADT + PH, x2: PADL + PW, y2: PADT + PH }),
+              h('line', { key: 'y', x1: PADL, y1: PADT, x2: PADL, y2: PADT + PH }),
+              h('line', { key: 'h', x1: PADL, y1: PADT, x2: PADL + PW, y2: PADT, strokeOpacity: 0.5 })
+            ]),
+            h('g', { key: 'lines' }, lines),
+            h('g', { key: 'marks' }, marks),
+            h('g', { key: 'labels' }, labels),
+            h('text', {
+              key: 'yt', x: PADL - 6, y: PADT + 4, textAnchor: 'end',
+              style: { fontSize: '10px', fill: T.dim, fontVariantNumeric: 'tabular-nums' }
+            }, yTop + ' m'),
+            h('text', {
+              key: 'y0', x: PADL - 6, y: PADT + PH, textAnchor: 'end',
+              style: { fontSize: '10px', fill: T.dim, fontVariantNumeric: 'tabular-nums' }
+            }, '0'),
+            h('text', {
+              key: 'x0', x: PADL, y: H - 10, textAnchor: 'start',
+              style: { fontSize: '10px', fill: T.dim }
+            }, '0 ' + __alloT('stem.treelab.yr', 'yr')),
+            h('text', {
+              key: 'x1', x: PADL + PW, y: H - 10, textAnchor: 'end',
+              style: { fontSize: '10px', fill: T.dim }
+            }, years + ' ' + __alloT('stem.treelab.yr', 'yr'))
+          ]),
+          // A legend is always present once there is more than one series: it is the
+          // dependable identity channel, and nobody should have to match hues by eye.
+          h('div', {
+            key: 'legend',
+            style: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6, justifyContent: 'center' }
+          }, runs.map(function (r, i) {
+            return h('span', {
+              key: r.sp.id,
+              style: { display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: T.dim }
+            }, [
+              h('svg', {
+                key: 'k', width: 18, height: 8, viewBox: '0 0 18 8', 'aria-hidden': 'true',
+                style: { flex: '0 0 auto' }
+              }, h('line', {
+                x1: 0, y1: 4, x2: 18, y2: 4,
+                stroke: isContrast ? T.accent : hueFor(i), strokeWidth: 2, strokeLinecap: 'round',
+                strokeDasharray: (isContrast ? SPECIES_DASH[i % 5] : '') || undefined
+              })),
+              h('span', { key: 'n', style: { color: r.sp.id === sp.id ? T.text : T.dim, fontWeight: r.sp.id === sp.id ? 700 : 400 } },
+                __alloT('stem.treelab.species_' + r.sp.id, r.sp.name)
+                + (r.diedAt != null ? ' ✕' + r.diedAt : ''))
+            ]);
+          })),
+          h('div', { key: 'key', style: { fontSize: 11, color: T.dim, marginTop: 4, textAlign: 'center' } },
+            __alloT('stem.treelab.compare_key', 'A cross is where a run ended. Every figure is also written out species by species below.'))
+        ]);
+      }
+
       function viewCompare() {
         var years = clamp(d.compareYears || 120, 20, 400);
         var runs = compareRuns(years);
@@ -3748,7 +3889,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               onChange: function (e) { upd('compareYears', parseInt(e.target.value, 10)); },
               style: { width: '100%', accentColor: T.accent }
             })
-          ])
+          ]),
+          compareChart(runs, years, maxH)
         ])];
 
         runs.forEach(function (r) {

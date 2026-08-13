@@ -4,9 +4,9 @@
   "generatedAt": "2026-07-28",
   "docketCycle": "eppp-distractor-action-cycle-02",
   "sourceBank": "test_prep/eppp_native_items.json",
-  "sourceBankSha256": "bba4cf58cc215e3ae634dcd64c88a5d2ceffa9b24f2439d636749b99fc7530ee",
+  "sourceBankSha256": "a205d0fef2669752e29dc068411216abd86fe509a3865fc8b8a2c5604f1e2833",
   "sourceDiagnostics": "test_prep/eppp_distractor_quality_diagnostics.json",
-  "sourceDiagnosticsSha256": "463e30073cce6b02ec333282a290225d6203dec65965f37fad55b29443b4044b",
+  "sourceDiagnosticsSha256": "9090096f69ba142071b8256525e29383b359129526cf3e7d5f64fdc387bf6054",
   "sourceAdjudications": [
     {
       "reviewWave": "eppp-distractor-review-wave-01",
@@ -31,14 +31,14 @@
   },
   "summary": {
     "rawPriorityDocketItems": 20,
-    "currentAdjudicationsApplied": 20,
-    "retiredAdjudications": 3,
-    "staleAdjudications": 0,
-    "actionItems": 0,
+    "currentAdjudicationsApplied": 3,
+    "retiredAdjudications": 7,
+    "staleAdjudications": 13,
+    "actionItems": 17,
     "learnerFacingItemsChanged": 0,
     "independentExpertValidated": 0,
     "expertValidationStatus": "pending",
-    "status": "pass"
+    "status": "review-required"
   },
   "appliedAdjudications": [
     {
@@ -67,159 +67,6 @@
       "sourceReportType": "assisted-editorial-warning-adjudication",
       "originalDiagnosticRank": 3,
       "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b019-intervention-1",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-treatment-mechanism-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 4,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b019-intervention-3",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-modeling-component-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 5,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b019-lifespan-2",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-developmental-stage-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 6,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b020-cognitive-1",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-attention-mechanism-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 7,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b021-assessment-3",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-statistical-definition-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 8,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b021-assessment-4",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-assessment-method-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 9,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b021-cognitive-1",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-processing-depth-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 10,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b021-intervention-4",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-self-regulation-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 11,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b021-lifespan-2",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-guided-performance-boundary",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 12,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b022-intervention-2",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-family-therapy-model-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 13,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b022-professional-2",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-forensic-role-conflict-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 14,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b022-professional-3",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-lawful-disclosure-process-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 15,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b023-biological-1",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-spectrum-variability-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 16,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b023-intervention-2",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-developmental-medium-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 17,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b023-professional-2",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-permission-assent-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 18,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b024-biological-2",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-adverse-effect-profile-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 19,
-      "mismatchReasons": []
-    },
-    {
-      "id": "eppp-b024-cognitive-1",
-      "resolution": "reviewed-no-revision",
-      "classification": "source-aligned-probabilistic-metacognition-contrast",
-      "reviewWave": "eppp-distractor-review-wave-02",
-      "sourceReportType": "assisted-editorial-warning-adjudication",
-      "originalDiagnosticRank": 20,
-      "mismatchReasons": []
     }
   ],
   "retiredAdjudications": [
@@ -237,6 +84,56 @@
       "retirementReason": "reviewed-warning-cleared-by-later-quality-work"
     },
     {
+      "id": "eppp-b019-intervention-1",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-treatment-mechanism-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 4,
+      "mismatchReasons": [
+        "not-in-current-raw-docket",
+        "prompt-changed",
+        "keyed-choice-changed",
+        "item-fingerprint-changed",
+        "source-references-changed",
+        "extreme-warning-cleared"
+      ],
+      "retirementReason": "reviewed-warning-cleared-by-later-quality-work"
+    },
+    {
+      "id": "eppp-b019-lifespan-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-developmental-stage-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 6,
+      "mismatchReasons": [
+        "not-in-current-raw-docket",
+        "prompt-changed",
+        "keyed-choice-changed",
+        "item-fingerprint-changed",
+        "extreme-warning-cleared"
+      ],
+      "retirementReason": "reviewed-warning-cleared-by-later-quality-work"
+    },
+    {
+      "id": "eppp-b021-assessment-3",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-statistical-definition-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 8,
+      "mismatchReasons": [
+        "not-in-current-raw-docket",
+        "prompt-changed",
+        "keyed-choice-changed",
+        "item-fingerprint-changed",
+        "source-references-changed",
+        "extreme-warning-cleared"
+      ],
+      "retirementReason": "reviewed-warning-cleared-by-later-quality-work"
+    },
+    {
       "id": "eppp-b022-assessment-1",
       "resolution": "reviewed-no-revision",
       "classification": "different-instrument-distinct-decision",
@@ -246,6 +143,22 @@
       "mismatchReasons": [
         "not-in-current-raw-docket",
         "duplicate-pair-fingerprint-changed"
+      ],
+      "retirementReason": "reviewed-warning-cleared-by-later-quality-work"
+    },
+    {
+      "id": "eppp-b022-professional-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-forensic-role-conflict-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 14,
+      "mismatchReasons": [
+        "not-in-current-raw-docket",
+        "prompt-changed",
+        "keyed-choice-changed",
+        "item-fingerprint-changed",
+        "extreme-warning-cleared"
       ],
       "retirementReason": "reviewed-warning-cleared-by-later-quality-work"
     },
@@ -263,6 +176,474 @@
       "retirementReason": "reviewed-warning-cleared-by-later-quality-work"
     }
   ],
-  "staleAdjudications": [],
-  "actionItems": []
+  "staleAdjudications": [
+    {
+      "id": "eppp-b019-intervention-3",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-modeling-component-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 4,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    },
+    {
+      "id": "eppp-b020-cognitive-1",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-attention-mechanism-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 5,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    },
+    {
+      "id": "eppp-b021-assessment-4",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-assessment-method-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 6,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    },
+    {
+      "id": "eppp-b021-cognitive-1",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-processing-depth-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 7,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    },
+    {
+      "id": "eppp-b021-intervention-4",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-self-regulation-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 8,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    },
+    {
+      "id": "eppp-b021-lifespan-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-guided-performance-boundary",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 9,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    },
+    {
+      "id": "eppp-b022-intervention-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-family-therapy-model-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 10,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    },
+    {
+      "id": "eppp-b022-professional-3",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-lawful-disclosure-process-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 11,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    },
+    {
+      "id": "eppp-b023-biological-1",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-spectrum-variability-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 12,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    },
+    {
+      "id": "eppp-b023-intervention-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-developmental-medium-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 13,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    },
+    {
+      "id": "eppp-b023-professional-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-permission-assent-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 14,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    },
+    {
+      "id": "eppp-b024-biological-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-adverse-effect-profile-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 15,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    },
+    {
+      "id": "eppp-b024-cognitive-1",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-probabilistic-metacognition-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 16,
+      "mismatchReasons": [
+        "warning-fingerprint-changed"
+      ]
+    }
+  ],
+  "actionItems": [
+    {
+      "id": "eppp-b019-intervention-3",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 17,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "In a modeling intervention, observational learning is most directly promoted by having a learner:",
+      "keyedChoice": "Attend to a demonstration, retain it, reproduce it, and have motivation to perform",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 4,
+      "originalDiagnosticRank": 4,
+      "actionRank": 1,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b020-cognitive-1",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 22,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "At a noisy reception, a person follows one conversation yet notices their name spoken across the room. This cocktail-party phenomenon illustrates:",
+      "keyedChoice": "Selective attention with some processing of unattended auditory information",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 5,
+      "originalDiagnosticRank": 5,
+      "actionRank": 2,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b021-assessment-4",
+      "domainId": "assessment",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 48,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "A defining feature of a projective assessment technique is that it:",
+      "keyedChoice": "Uses relatively ambiguous stimuli to elicit individually organized responses",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 6,
+      "originalDiagnosticRank": 6,
+      "actionRank": 3,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b021-cognitive-1",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 38,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Which study strategy best exemplifies elaborative rather than maintenance rehearsal?",
+      "keyedChoice": "Explaining how a new concept relates to prior knowledge and generating examples",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 7,
+      "originalDiagnosticRank": 7,
+      "actionRank": 4,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b021-intervention-4",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 52,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Biofeedback training uses monitoring equipment to help a person:",
+      "keyedChoice": "Observe physiological activity and learn greater voluntary regulation of it",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 8,
+      "originalDiagnosticRank": 8,
+      "actionRank": 5,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b021-lifespan-2",
+      "domainId": "lifespan",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 44,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Vygotsky’s zone of proximal development is the range of tasks a learner:",
+      "keyedChoice": "Cannot yet do alone but can accomplish with appropriate guidance or collaboration",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 9,
+      "originalDiagnosticRank": 9,
+      "actionRank": 6,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b022-intervention-2",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 70,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Strategic family therapy is especially associated with the deliberate use of:",
+      "keyedChoice": "Directives, including carefully selected paradoxical tasks, to alter patterns",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 10,
+      "originalDiagnosticRank": 10,
+      "actionRank": 7,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b022-professional-3",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 75,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "If a psychologist believes a court order requires disclosure beyond what is appropriate, the psychologist should:",
+      "keyedChoice": "Seek lawful clarification or protection, then comply with binding obligations",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 11,
+      "originalDiagnosticRank": 11,
+      "actionRank": 8,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b023-biological-1",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 77,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Which statement best characterizes fetal alcohol spectrum disorders (FASDs)?",
+      "keyedChoice": "Prenatal alcohol exposure can produce varied learning, behavioral, adaptive, and physical effects",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 12,
+      "originalDiagnosticRank": 12,
+      "actionRank": 9,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b023-intervention-2",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 91,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "A central rationale for using play in psychotherapy with children is that play can:",
+      "keyedChoice": "Provide a developmentally appropriate medium for expression, relationship, and therapeutic work",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 13,
+      "originalDiagnosticRank": 13,
+      "actionRank": 10,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b023-professional-2",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 94,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "When providing psychological services to a minor who cannot legally give full informed consent, the psychologist generally should:",
+      "keyedChoice": "Obtain authorized permission and seek the minor's assent when feasible while explaining relevant limits",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 14,
+      "originalDiagnosticRank": 14,
+      "actionRank": 11,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b024-biological-2",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 98,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Compared with first-generation antipsychotics as a class, many second-generation antipsychotics are more strongly associated with:",
+      "keyedChoice": "Metabolic adverse effects such as weight gain, dyslipidemia, and glucose dysregulation",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 15,
+      "originalDiagnosticRank": 15,
+      "actionRank": 12,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b024-cognitive-1",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 99,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "The original Dunning-Kruger studies most directly suggested that people with low skill in a domain may:",
+      "keyedChoice": "Overestimate their performance partly because the same deficits impair self-evaluation",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 16,
+      "originalDiagnosticRank": 16,
+      "actionRank": 13,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b024-intervention-1",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "practiceBank": 5,
+      "itemInBank": 10,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Lithium is most accurately described as:",
+      "keyedChoice": "A mood stabilizer used in bipolar disorder that requires safety monitoring",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 17,
+      "originalDiagnosticRank": 17,
+      "actionRank": 14,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b024-lifespan-2",
+      "domainId": "lifespan",
+      "difficulty": "foundation",
+      "practiceBank": 5,
+      "itemInBank": 5,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Classic disengagement theory proposed that typical aging involves:",
+      "keyedChoice": "A gradual mutual withdrawal between older adults and society",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 18,
+      "originalDiagnosticRank": 18,
+      "actionRank": 15,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b025-cognitive-2",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "practiceBank": 5,
+      "itemInBank": 19,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Which study plan best applies retrieval-practice evidence to durable learning?",
+      "keyedChoice": "Attempt spaced recall and use corrective feedback to repair errors",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 19,
+      "originalDiagnosticRank": 19,
+      "actionRank": 16,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b025-professional-2",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "practiceBank": 5,
+      "itemInBank": 34,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Which statement about the HIPAA Privacy Rule is most accurate for a covered provider?",
+      "keyedChoice": "Permitted treatment, payment, and operations uses can occur subject to the Rule's conditions",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 20,
+      "originalDiagnosticRank": 20,
+      "actionRank": 17,
+      "status": "editorial-review-needed"
+    }
+  ]
 }

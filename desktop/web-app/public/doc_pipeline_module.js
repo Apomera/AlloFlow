@@ -15325,6 +15325,29 @@ var createDocPipeline = function(deps) {
     }
     return { ok: true, state: 'committed', commitRevision: commitRevision };
   };
+  const _startBatchCheckpointRoot = (options) => {
+    const o = options && typeof options === 'object' ? options : {};
+    const timeoutMs = Math.max(1, Math.min(30000, Number(o.timeoutMs) || 5000));
+    const deadlineTs = Date.now() + timeoutMs;
+    let expired = false;
+    const operation = Promise.resolve(o.startWrite).then(async (rootWriteId) => {
+      const root = _normalizeBatchCheckpointId(rootWriteId);
+      if (!root) return false;
+      if (expired || Date.now() > deadlineTs || (typeof o.isCurrent === 'function' && !o.isCurrent())) {
+        // _withTimeout cannot cancel IndexedDB. If its root write finishes late,
+        // fence cleanup by the exact root token so it cannot become a phantom
+        // resumable batch or delete a newer writer that reused the batch id.
+        await _clearActiveBatch(o.batchId, root);
+        return false;
+      }
+      if (typeof o.onCommitted === 'function') o.onCommitted(root);
+      return root;
+    });
+    return _withTimeout(operation, timeoutMs, 'batch checkpoint initialization').catch(() => {
+      expired = true;
+      return false;
+    });
+  };
   const _loadActiveBatch = async () => {
     if (typeof window === 'undefined' || !window.idbKeyval) return null;
     try {
@@ -16919,14 +16942,14 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
     }
     // Complete the heavy owner record before any lightweight status write.
     let _batchRootWriteId = null;
-    const _batchStartWrite = _withTimeout(
-      _saveBatchFiles(queue, _batchSettings, startTime, _batchId, _batchRunIsCurrent),
-      5000,
-      'batch checkpoint initialization'
-    ).then((rootWriteId) => {
-      _batchRootWriteId = _normalizeBatchCheckpointId(rootWriteId);
-      return _batchRootWriteId;
-    }).catch(() => {
+    const _batchStartWrite = _startBatchCheckpointRoot({
+      startWrite: _saveBatchFiles(queue, _batchSettings, startTime, _batchId, _batchRunIsCurrent),
+      batchId: _batchId,
+      isCurrent: _batchRunIsCurrent,
+      timeoutMs: 5000,
+      onCommitted: (rootWriteId) => { _batchRootWriteId = rootWriteId; },
+    }).then((rootWriteId) => {
+      if (rootWriteId) return rootWriteId;
       _batchCheckpointDegraded = true;
       _warnBatchCheckpointOnce('Browser storage did not finish the batch checkpoint in time. This run continues, but closing the tab may lose unfinished files.');
       return false;

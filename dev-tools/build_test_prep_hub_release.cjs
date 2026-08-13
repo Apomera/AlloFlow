@@ -437,7 +437,25 @@ function embedPack(pack) {
     .deriveGuidedReviewItems(pack.items.slice(0, sourceItemCount))
     .slice(0, guidedItemCount);
   if (JSON.stringify(derived) !== JSON.stringify(pack.items.slice(embeddedItemCount))) {
-    throw new Error((pack.id || 'pack') + ': runtime guided-review derivation diverges from the shipped items JSON — update test_prep_guided_expansion_core.cjs and re-run the expansion.');
+    // Derivation no longer reproduces the shipped guided items, so omitting them
+    // would make the runtime reconstruct DIFFERENT questions than the reviewed
+    // JSON — a silent content change. Ship the pack whole instead.
+    //
+    // This used to throw, which blocked the release build entirely. That was the
+    // wrong trade once measured: omission saves 0.02 MiB across all 24 packs
+    // (5.52 -> 5.50 compressed) while the compression in compressedPackExpression
+    // saves ~42 MiB. Refusing to build over a 0.4% optimisation left the module
+    // stale and UNCOMPRESSED at 49.2 MiB — double Cloudflare's 25 MiB per-file
+    // limit, which is the class that froze the CDN for three days in July.
+    // Embedding the full pack is also strictly safer for students: they get the
+    // exact independently reviewed items, not a runtime derivation of them.
+    //
+    // The divergence is still real and still worth fixing at the source (update
+    // test_prep_guided_expansion_core.cjs so it reproduces the shipped items, or
+    // re-run the expansion and refresh the bound review evidence). It is reported
+    // loudly here rather than silently swallowed.
+    console.warn('[test-prep] ' + (pack.id || 'pack') + ': guided-review derivation diverges from the shipped items JSON — embedding the full pack (no omission). Fix test_prep_guided_expansion_core.cjs to re-enable the split payload.');
+    return pack;
   }
   return { ...pack, items: pack.items.slice(0, embeddedItemCount) };
 }

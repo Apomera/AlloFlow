@@ -55,7 +55,7 @@ describe('Ecosystem comparison replay and display profiles', () => {
     expect(html).toContain('Projection');
     expect(html).toContain('Run comparison workspace');
     expect(html).toContain('Shared replay timeline');
-    expect(html).toContain('Step 1 of 2');
+    expect(html).toContain('Time 0.1 of 0.2');
     expect(html).toContain('Current run');
     expect(html).toContain('Fewer predators');
     expect(html).toContain('Prey solid');

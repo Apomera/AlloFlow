@@ -17,8 +17,8 @@ describe('BirdLab visual-state QA harness', () => {
 
     expect(Array.isArray(CORE_STATES)).toBe(true);
     expect(Array.isArray(EXHAUSTIVE_STATES)).toBe(true);
-    expect(CORE_STATES.length).toBeGreaterThan(0);
-    expect(EXHAUSTIVE_STATES.length).toBeGreaterThanOrEqual(360);
+    expect(CORE_STATES.length).toBeGreaterThanOrEqual(68);
+    expect(EXHAUSTIVE_STATES.length).toBeGreaterThanOrEqual(387);
 
     for (const states of [CORE_STATES, EXHAUSTIVE_STATES]) {
       const ids = states.map((state) => state && state.id);
@@ -37,6 +37,19 @@ describe('BirdLab visual-state QA harness', () => {
     const coreStateData = JSON.stringify(CORE_STATES);
     for (const behavior of ['feeder-grab-go', 'hover-aim-dive', 'ground-forage-flush']) {
       expect(coreStateData, 'missing core behavior checkpoints: ' + behavior).toContain(behavior);
+    }
+    const scriptedStates = CORE_STATES.filter((state) => state.behaviorId);
+    expect(scriptedStates.length).toBeGreaterThan(0);
+    for (const state of scriptedStates) {
+      if (state.targetId) {
+        expect(state.dwellProgress).toBeGreaterThan(0);
+        expect(state.frozenBehavior).toMatchObject({
+          script: state.behaviorId,
+          state: state.behaviorCheckpoint,
+        });
+      } else {
+        expect(state.frozenBehavior).toBeNull();
+      }
     }
 
     const habitats = new Set(EXHAUSTIVE_STATES.map((state) => state.habitat));
@@ -58,14 +71,49 @@ describe('BirdLab visual-state QA harness', () => {
       'sceneMotion',
       'lifecycleMs',
       'behaviorMs',
+      'frozenBehavior',
       'targetId',
       'dwellProgress',
+      'assignmentSearchActive',
+      'assignmentComplete',
+      'assignmentDate',
+      'assignmentClueStage',
     ]) {
       expect(
         EXHAUSTIVE_STATES.some((state) => Object.prototype.hasOwnProperty.call(state, field)),
         'missing state field: ' + field,
       ).toBe(true);
     }
+
+    const targetStates = CORE_STATES.filter((state) => state.targetScenario);
+    expect(targetStates.length).toBeGreaterThanOrEqual(5);
+    expect(targetStates.map((state) => state.targetScenario)).toEqual(expect.arrayContaining([
+      'target-active',
+      'target-complete',
+      'target-mobile',
+      'target-reduced',
+      'target-acquiring',
+      'target-clue-field-mark-mobile',
+      'target-clue-posture-reduced',
+    ]));
+    expect(targetStates.every((state) => /^\d{4}-\d{2}-\d{2}$/.test(state.assignmentDate))).toBe(true);
+    expect(targetStates.some((state) => state.assignmentComplete)).toBe(true);
+    expect(targetStates.some((state) => state.assignmentSearchActive && state.viewport.id === 'mobile')).toBe(true);
+    expect(targetStates.some((state) => state.assignmentSearchActive && state.reducedMotion)).toBe(true);
+    expect(targetStates.some((state) => state.assignmentSearchActive && state.targetId && state.dwellProgress > 0)).toBe(true);
+
+    const clueStates = CORE_STATES.filter((state) => state.assignmentClueStage);
+    expect(new Set(clueStates.map((state) => state.assignmentClueStage))).toEqual(new Set([
+      'habitat', 'silhouette', 'behavior', 'field-mark', 'spatial',
+    ]));
+    expect(clueStates.every((state) => state.assignmentSearchActive && !state.assignmentComplete)).toBe(true);
+    expect(clueStates.filter((state) => state.assignmentClueStage !== 'spatial').every((state) => !state.targetId)).toBe(true);
+    expect(clueStates.some((state) => state.assignmentClueStage === 'spatial')).toBe(true);
+    const mobileFieldMark = clueStates.find((state) => state.targetScenario === 'target-clue-field-mark-mobile');
+    expect(mobileFieldMark).toMatchObject({ assignmentClueStage: 'field-mark' });
+    expect(mobileFieldMark.viewport.id).toBe('mobile');
+    const reducedPosture = clueStates.find((state) => state.targetScenario === 'target-clue-posture-reduced');
+    expect(reducedPosture).toMatchObject({ assignmentClueStage: 'behavior', reducedMotion: true });
   });
 
   it('keeps check and capture as explicit package commands', () => {
@@ -81,5 +129,17 @@ describe('BirdLab visual-state QA harness', () => {
     const harnessSource = fs.readFileSync(harnessPath, 'utf8');
     expect(harnessSource).toContain('--check');
     expect(harnessSource).toContain('--capture');
+    expect(harnessSource).toContain('assertTargetSearchDoesNotRewriteScene');
+    expect(harnessSource).toContain('assignmentClueStage: state.assignmentClueStage');
+    expect(harnessSource).toContain("'data-birdlab-target-clue-stage'");
+    expect(harnessSource).toContain("'data-birdlab-target-clue-kind'");
+    expect(harnessSource).toContain("'data-birdlab-target-clue-spatial'");
+    expect(harnessSource).toMatch(/assignmentClueStage[^\n]*spatial|spatial[^\n]*assignmentClueStage/);
+    expect(harnessSource).toContain('frozenBehavior: state.frozenBehavior');
+    expect(harnessSource).toContain("'data-birdlab-behavior-frozen'");
+    expect(harnessSource).toContain('must freeze its acquired behavior checkpoint');
+    expect(harnessSource).toContain("querySelector('[data-birdlab-target-search]')");
+    expect(harnessSource).toContain("querySelector('[data-birdlab-target-search-state]')");
+    expect(harnessSource).toContain("querySelectorAll('[data-birdlab-assignment-target=\"true\"]')");
   });
 });

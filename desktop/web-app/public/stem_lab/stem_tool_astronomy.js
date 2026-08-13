@@ -224,12 +224,267 @@
     out.stars = BRIGHT_STARS.map(function (s) { return Object.assign({ name: s.name, con: s.con, mag: s.mag }, place(s.ra * 15, s.dec)); });
     return out;
   }
+  // Clear-sky visual transmission using the Kasten-Young relative-airmass
+  // approximation and a representative broadband extinction coefficient.
+  // The optional transmission floor keeps schematic markers discoverable at the horizon.
+  function atmosphericVisibility(altitudeDeg, baseOpacity, floor) {
+    var numericAltitude = Number(altitudeDeg);
+    var altitude = Number.isFinite(numericAltitude) ? Math.max(0.5, Math.min(90, numericAltitude)) : 0.5;
+    var airMass = 1 / (sind(altitude) + 0.50572 * Math.pow(altitude + 6.07995, -1.6364));
+    var transmission = Math.pow(10, -0.4 * 0.18 * Math.max(0, airMass - 1));
+    var numericBase = Number(baseOpacity), numericFloor = Number(floor);
+    var opacity = Number.isFinite(numericBase) ? Math.max(0, Math.min(1, numericBase)) : 1;
+    var minimum = Number.isFinite(numericFloor) ? Math.max(0, Math.min(1, numericFloor)) : 0.08;
+    return opacity * Math.max(minimum, Math.min(1, transmission));
+  }
+  // Illustrative reference-star contrast for the Sky Map. Bortle class describes
+  // a site-wide visual impression; this deliberately avoids visibility cutoffs.
+  function bortleSkyPreview(bortleValue, sunAltitudeDeg) {
+    var numericClass = Number(bortleValue);
+    var skyClass = Number.isInteger(numericClass) && numericClass >= 1 && numericClass <= 9 ? numericClass : 5;
+    var numericSunAltitude = Number(sunAltitudeDeg);
+    var sunAltitude = Number.isFinite(numericSunAltitude) ? numericSunAltitude : 90;
+    var darknessMix = Math.max(0, Math.min(1, (-sunAltitude - 6) / 12));
+    var mode = darknessMix <= 0 ? 'daylight' : darknessMix < 1 ? 'twilight' : 'dark';
+    var nightFills = ['#070b18', '#0a1020', '#0d1626', '#111c2e', '#162438', '#1a2a40', '#203148', '#26384f', '#2b3f55'];
+    var prominentWeights = [1, 1, 0.99, 0.98, 0.97, 0.95, 0.93, 0.90, 0.86];
+    function mixHex(first, second, amount) {
+      function channel(hex, offset) { return parseInt(hex.slice(offset, offset + 2), 16); }
+      var parts = [1, 3, 5].map(function(offset) {
+        var value = channel(first, offset) + (channel(second, offset) - channel(first, offset)) * amount;
+        return ('0' + Math.round(value).toString(16)).slice(-2);
+      });
+      return '#' + parts.join('');
+    }
+    return {
+      class: skyClass,
+      active: darknessMix > 0,
+      mode: mode,
+      darknessMix: darknessMix,
+      naturalDarkness: 1 - (skyClass - 1) / 8,
+      starOpacityScale: 0.08 + (prominentWeights[skyClass - 1] - 0.08) * darknessMix,
+      domeFill: mixHex('#1d3a63', nightFills[skyClass - 1], darknessMix),
+      atmosphereHazeColor: mixHex('#fbbf24', '#64748b', darknessMix),
+      atmosphereHazeOpacity: 0.12 + 0.06 * darknessMix
+    };
+  }
+  function bortleStarContrast(bortleValue, magnitudeValue, altitudeDeg, sunAltitudeDeg) {
+    var preview = bortleSkyPreview(bortleValue, sunAltitudeDeg);
+    var magnitude = Number(magnitudeValue);
+    var altitude = Number(altitudeDeg);
+    var safeMagnitude = Number.isFinite(magnitude) ? magnitude : 9;
+    var band = safeMagnitude <= 1.5 ? 'prominent' : safeMagnitude <= 2.5 ? 'pattern' : 'faint-reference';
+    var weights = {
+      prominent: [1, 1, 0.99, 0.98, 0.97, 0.95, 0.93, 0.90, 0.86],
+      pattern: [1, 0.98, 0.94, 0.88, 0.81, 0.72, 0.61, 0.49, 0.37],
+      'faint-reference': [1, 0.94, 0.86, 0.74, 0.61, 0.47, 0.33, 0.20, 0.10]
+    };
+    function smoothMix(first, second, amount) {
+      var bounded = Math.max(0, Math.min(1, amount));
+      var eased = bounded * bounded * (3 - 2 * bounded);
+      return first + (second - first) * eased;
+    }
+    var classIndex = preview.class - 1;
+    var darkWeight = safeMagnitude <= 0.5
+      ? weights.prominent[classIndex]
+      : safeMagnitude <= 2
+        ? smoothMix(weights.prominent[classIndex], weights.pattern[classIndex], (safeMagnitude - 0.5) / 1.5)
+        : safeMagnitude <= 3.5
+          ? smoothMix(weights.pattern[classIndex], weights['faint-reference'][classIndex], (safeMagnitude - 2) / 1.5)
+          : weights['faint-reference'][classIndex];
+    var skyglowFactor = 0.08 + (darkWeight - 0.08) * preview.darknessMix;
+    var altitudeFactor = atmosphericVisibility(Number.isFinite(altitude) ? altitude : 0.5, 1, 0.08);
+    var opacity = Math.max(0, Math.min(1, skyglowFactor * altitudeFactor));
+    return { opacity: opacity, band: band };
+  }
+  // Transparent planning rules for the Sky Map's suggested observing window.
+  // These are intentionally simple heuristics, not a calibrated visibility score.
+  function observingWindowEligibility(targetKind, targetBody, skySnapshot) {
+    var kind = String(targetKind || '').toLowerCase();
+    var targetAltitude = Number(targetBody && targetBody.alt);
+    if (!Number.isFinite(targetAltitude) || kind === 'sun') return false;
+    if (kind === 'moon') return targetAltitude >= 20;
+    var sunAltitude = Number(skySnapshot && skySnapshot.sun && skySnapshot.sun.alt);
+    if (!Number.isFinite(sunAltitude)) return false;
+    if (kind === 'planet') {
+      var planetId = String(targetBody && targetBody.id || '').toLowerCase();
+      var isInnerPlanet = planetId === 'mercury' || planetId === 'venus';
+      return targetAltitude >= (isInnerPlanet ? 10 : 20) && sunAltitude <= (isInnerPlanet ? -6 : -12);
+    }
+    if (kind !== 'star' || targetAltitude < 20 || sunAltitude > -18) return false;
+    var moon = skySnapshot && skySnapshot.moon;
+    var moonAltitude = Number(moon && moon.alt);
+    if (!Number.isFinite(moonAltitude)) return false;
+    if (moonAltitude <= 0) return true;
+    var moonIllumination = Number(moon && moon.phase && moon.phase.illum);
+    if (Number.isFinite(moonIllumination) && moonIllumination < 0.25) return true;
+    var targetRa = Number(targetBody && targetBody.ra), targetDec = Number(targetBody && targetBody.dec);
+    var moonRa = Number(moon && moon.ra), moonDec = Number(moon && moon.dec);
+    if (![targetRa, targetDec, moonRa, moonDec].every(Number.isFinite)) return false;
+    return angularSep(targetRa, targetDec, moonRa, moonDec) >= 60 - 1e-9;
+  }
+  function buildObservingWindows(samples, targetKind) {
+    var kind = String(targetKind || '').toLowerCase();
+    if (kind === 'sun') return { state: 'not-applicable', intervals: [], selected: null, peak: null };
+    var ordered = (Array.isArray(samples) ? samples : []).filter(function(sample) {
+      return sample && Number.isFinite(Number(sample.step));
+    }).sort(function(first, second) { return Number(first.step) - Number(second.step); });
+    var normalized = [];
+    ordered.forEach(function(sample) {
+      var clean = { step: Number(sample.step), time: sample.time, body: sample.body, sky: sample.sky };
+      if (normalized.length && Math.abs(normalized[normalized.length - 1].step - clean.step) < 1e-10) normalized[normalized.length - 1] = clean;
+      else normalized.push(clean);
+    });
+    function finiteValue(value) { return Number.isFinite(Number(value)); }
+    function sampleIsValid(sample) {
+      if (!sample || !sample.body || !sample.sky || !finiteValue(sample.body.alt)) return false;
+      if (kind === 'moon') return true;
+      if (!sample.sky.sun || !finiteValue(sample.sky.sun.alt)) return false;
+      if (kind === 'planet') return true;
+      var moon = sample.sky.moon;
+      return kind === 'star' && moon && moon.phase &&
+        [sample.body.ra, sample.body.dec, moon.alt, moon.ra, moon.dec, moon.phase.illum].every(finiteValue);
+    }
+    function blendNumber(first, second, fraction) {
+      var a = Number(first), b = Number(second);
+      return Number.isFinite(a) && Number.isFinite(b) ? a + (b - a) * fraction : NaN;
+    }
+    function blendAngle(first, second, fraction) {
+      var a = Number(first), b = Number(second);
+      if (!Number.isFinite(a) || !Number.isFinite(b)) return NaN;
+      var delta = ((b - a + 540) % 360) - 180;
+      return rev(a + delta * fraction);
+    }
+    function interpolateSample(first, second, fraction) {
+      var firstMoon = first.sky.moon || {}, secondMoon = second.sky.moon || {};
+      var firstSun = first.sky.sun || {}, secondSun = second.sky.sun || {};
+      return {
+        step: blendNumber(first.step, second.step, fraction),
+        body: {
+          id: (first.body && first.body.id) || (second.body && second.body.id),
+          alt: blendNumber(first.body && first.body.alt, second.body && second.body.alt, fraction),
+          ra: blendAngle(first.body && first.body.ra, second.body && second.body.ra, fraction),
+          dec: blendNumber(first.body && first.body.dec, second.body && second.body.dec, fraction)
+        },
+        sky: {
+          sun: { alt: blendNumber(firstSun.alt, secondSun.alt, fraction) },
+          moon: {
+            alt: blendNumber(firstMoon.alt, secondMoon.alt, fraction),
+            ra: blendAngle(firstMoon.ra, secondMoon.ra, fraction),
+            dec: blendNumber(firstMoon.dec, secondMoon.dec, fraction),
+            phase: { illum: blendNumber(firstMoon.phase && firstMoon.phase.illum, secondMoon.phase && secondMoon.phase.illum, fraction) }
+          }
+        }
+      };
+    }
+    function addLinearCut(cuts, firstValue, secondValue, threshold) {
+      var a = Number(firstValue), b = Number(secondValue);
+      if (!Number.isFinite(a) || !Number.isFinite(b) || Math.abs(b - a) < 1e-14) return;
+      var fraction = (threshold - a) / (b - a);
+      if (fraction > 1e-9 && fraction < 1 - 1e-9) cuts.push(fraction);
+    }
+    function separationAt(first, second, fraction) {
+      var sample = interpolateSample(first, second, fraction);
+      return angularSep(sample.body.ra, sample.body.dec, sample.sky.moon.ra, sample.sky.moon.dec);
+    }
+    function addSeparationCuts(cuts, first, second) {
+      var divisions = 32, previousFraction = 0, previousValue = separationAt(first, second, 0) - 60;
+      for (var division = 1; division <= divisions; division++) {
+        var fraction = division / divisions;
+        var value = separationAt(first, second, fraction) - 60;
+        if (!Number.isFinite(previousValue) || !Number.isFinite(value)) return;
+        if (Math.abs(value) < 1e-10 && fraction < 1 - 1e-9) cuts.push(fraction);
+        if (previousValue * value < 0) {
+          var low = previousFraction, high = fraction, lowValue = previousValue;
+          for (var iteration = 0; iteration < 40; iteration++) {
+            var middle = (low + high) / 2;
+            var middleValue = separationAt(first, second, middle) - 60;
+            if (lowValue * middleValue <= 0) high = middle;
+            else { low = middle; lowValue = middleValue; }
+          }
+          cuts.push((low + high) / 2);
+        }
+        previousFraction = fraction;
+        previousValue = value;
+      }
+    }
+    var intervals = [], eligibleProbes = [];
+    function addEligibleSpan(start, end, probe) {
+      if (!Number.isFinite(start) || !Number.isFinite(end) || end - start <= 1e-10) return;
+      var previous = intervals[intervals.length - 1];
+      if (previous && Math.abs(previous.end - start) < 1e-7) previous.end = end;
+      else intervals.push({ start: start, end: end });
+      if (probe && probe.body && finiteValue(probe.body.alt)) eligibleProbes.push({ step: Number(probe.step), altitude: Number(probe.body.alt) });
+    }
+    for (var index = 0; index < normalized.length - 1; index++) {
+      var first = normalized[index], second = normalized[index + 1];
+      var stepGap = second.step - first.step;
+      if (stepGap <= 0 || stepGap > 0.250001 || !sampleIsValid(first) || !sampleIsValid(second)) continue;
+      var cuts = [0, 1];
+      var firstBody = first.body, secondBody = second.body;
+      if (kind === 'moon') {
+        addLinearCut(cuts, firstBody.alt, secondBody.alt, 20);
+      } else if (kind === 'planet') {
+        var planetId = String(firstBody.id || secondBody.id || '').toLowerCase();
+        var innerPlanet = planetId === 'mercury' || planetId === 'venus';
+        addLinearCut(cuts, firstBody.alt, secondBody.alt, innerPlanet ? 10 : 20);
+        addLinearCut(cuts, first.sky.sun.alt, second.sky.sun.alt, innerPlanet ? -6 : -12);
+      } else if (kind === 'star') {
+        addLinearCut(cuts, firstBody.alt, secondBody.alt, 20);
+        addLinearCut(cuts, first.sky.sun.alt, second.sky.sun.alt, -18);
+        addLinearCut(cuts, first.sky.moon.alt, second.sky.moon.alt, 0);
+        addLinearCut(cuts, first.sky.moon.phase.illum, second.sky.moon.phase.illum, 0.25);
+        addSeparationCuts(cuts, first, second);
+      }
+      cuts.sort(function(a, b) { return a - b; });
+      var uniqueCuts = cuts.filter(function(cut, cutIndex) { return !cutIndex || Math.abs(cut - cuts[cutIndex - 1]) > 1e-8; });
+      for (var cutIndex = 0; cutIndex < uniqueCuts.length - 1; cutIndex++) {
+        var cutStart = uniqueCuts[cutIndex], cutEnd = uniqueCuts[cutIndex + 1];
+        if (cutEnd - cutStart <= 1e-10) continue;
+        var midpoint = (cutStart + cutEnd) / 2;
+        var probe = interpolateSample(first, second, midpoint);
+        if (!observingWindowEligibility(kind, probe.body, probe.sky)) continue;
+        addEligibleSpan(first.step + stepGap * cutStart, first.step + stepGap * cutEnd, probe);
+      }
+    }
+    if (!intervals.length) return { state: 'none', intervals: [], selected: null, peak: null };
+    function peakForInterval(interval) {
+      var candidates = eligibleProbes.filter(function(candidate) {
+        return candidate.step >= interval.start - 1e-9 && candidate.step <= interval.end + 1e-9;
+      });
+      normalized.forEach(function(sample) {
+        if (!sampleIsValid(sample) || sample.step < interval.start - 1e-9 || sample.step > interval.end + 1e-9 ||
+            !observingWindowEligibility(kind, sample.body, sample.sky)) return;
+        candidates.push({ step: sample.step, altitude: Number(sample.body.alt) });
+      });
+      return candidates.reduce(function(best, candidate) {
+        return !best || candidate.altitude > best.altitude || (candidate.altitude === best.altitude && candidate.step < best.step) ? candidate : best;
+      }, null);
+    }
+    var selected = intervals[0], selectedPeak = peakForInterval(selected);
+    intervals.slice(1).forEach(function(interval) {
+      var candidatePeak = peakForInterval(interval);
+      var selectedAltitude = selectedPeak ? selectedPeak.altitude : -Infinity;
+      var candidateAltitude = candidatePeak ? candidatePeak.altitude : -Infinity;
+      var selectedDuration = selected.end - selected.start, candidateDuration = interval.end - interval.start;
+      if (candidateAltitude > selectedAltitude ||
+          (candidateAltitude === selectedAltitude && candidateDuration > selectedDuration) ||
+          (candidateAltitude === selectedAltitude && candidateDuration === selectedDuration && interval.start < selected.start)) {
+        selected = interval;
+        selectedPeak = candidatePeak;
+      }
+    });
+    return { state: 'available', intervals: intervals, selected: selected, peak: selectedPeak };
+  }
   try {
     window.__alloAstroPure = {
       astroDayNumber: astroDayNumber, obliquity: obliquity, sunRaDec: sunRaDec, sunEcliptic: sunEcliptic,
       moonRaDec: moonRaDec, moonPhaseAt: moonPhaseAt, moonPhaseFromAge: moonPhaseFromAge, moonGlyphGeometry: moonGlyphGeometry,
       moonAgeAtDate: moonAgeAtDate, amEclipseState: amEclipseState, AM_SYNODIC: AM_SYNODIC, planetRaDec: planetRaDec, siderealTime: siderealTime,
-      equToHorizon: equToHorizon, angularSep: angularSep, skyNow: skyNow, BRIGHT_STARS: BRIGHT_STARS, PLANET_EL: PLANET_EL
+      equToHorizon: equToHorizon, angularSep: angularSep, skyNow: skyNow, atmosphericVisibility: atmosphericVisibility,
+      bortleSkyPreview: bortleSkyPreview, bortleStarContrast: bortleStarContrast,
+      observingWindowEligibility: observingWindowEligibility, buildObservingWindows: buildObservingWindows,
+      BRIGHT_STARS: BRIGHT_STARS, PLANET_EL: PLANET_EL
     };
   } catch (e) {}
 
@@ -1828,11 +2083,18 @@
             timeZone: loc.timeZone, weekday: 'short', hour: 'numeric', minute: '2-digit'
           });
         }
+        var targetKind = skyTarget === 'sun' ? 'sun' : skyTarget === 'moon' ? 'moon'
+          : skyTarget.indexOf('planet:') === 0 ? 'planet' : 'star';
         var targetForecast = null;
         if (selectedTarget.body) {
+          var forecastSamples = [{ step: 0, time: localShown, sky: sky, body: selectedTarget.body }];
+          var forecastSteps = [];
+          for (var quarterStep = 1; quarterStep <= 48; quarterStep++) forecastSteps.push(quarterStep / 4);
+          for (var futureHour = 13; futureHour <= 24; futureHour++) forecastSteps.push(futureHour);
           var bestBody = selectedTarget.body, bestInstant = localShown;
           var nextCrossing = null, wasUp = selectedTarget.body.alt > 0;
-          for (var forecastStep = 1; forecastStep <= 24; forecastStep++) {
+          for (var forecastIndex = 0; forecastIndex < forecastSteps.length; forecastIndex++) {
+            var forecastStep = forecastSteps[forecastIndex];
             var forecastInstant = new Date(localShown.getTime() + forecastStep * 60 * 60000);
             var forecastUt = forecastInstant.getUTCHours() + forecastInstant.getUTCMinutes() / 60;
             var forecastSky = skyNow(
@@ -1841,21 +2103,29 @@
             );
             var forecastBody = targetBodyFromSky(forecastSky, skyTarget);
             if (!forecastBody) continue;
+            var previousForecastSample = forecastSamples[forecastSamples.length - 1];
+            forecastSamples.push({ step: forecastStep, time: forecastInstant, sky: forecastSky, body: forecastBody });
             if (forecastStep <= 12 && forecastBody.alt > bestBody.alt) {
               bestBody = forecastBody;
               bestInstant = forecastInstant;
             }
             var isUp = forecastBody.alt > 0;
             if (!nextCrossing && isUp !== wasUp) {
+              var previousAltitude = Number(previousForecastSample.body.alt), currentAltitude = Number(forecastBody.alt);
+              var crossingFraction = Number.isFinite(previousAltitude) && Number.isFinite(currentAltitude) && currentAltitude !== previousAltitude
+                ? Math.max(0, Math.min(1, -previousAltitude / (currentAltitude - previousAltitude))) : 1;
               nextCrossing = {
                 kind: isUp ? __alloT('stem.astronomy.rises', 'Rises') : __alloT('stem.astronomy.sets', 'Sets'),
-                time: forecastInstant
+                time: new Date(previousForecastSample.time.getTime() +
+                  (forecastInstant.getTime() - previousForecastSample.time.getTime()) * crossingFraction)
               };
             }
             wasUp = isUp;
           }
-          var targetKind = skyTarget === 'sun' ? 'sun' : skyTarget === 'moon' ? 'moon'
-            : skyTarget.indexOf('planet:') === 0 ? 'planet' : 'star';
+          var fineForecastSamples = forecastSamples.filter(function(sample) { return Number(sample.step) <= 12 + 1e-9; });
+          var hourlyForecastSamples = fineForecastSamples.filter(function(sample) {
+            return Math.abs(Number(sample.step) - Math.round(Number(sample.step))) < 1e-9;
+          });
           var brightnessText = targetKind === 'star' && Number.isFinite(selectedTarget.body.mag)
             ? __alloT('stem.astronomy.magnitude_short', 'Magnitude ') + selectedTarget.body.mag.toFixed(1)
             : targetKind === 'moon'
@@ -1869,7 +2139,7 @@
               ? __alloT('stem.astronomy.moon_equipment', 'Easy with the unaided eye; binoculars reveal craters and maria.')
               : targetKind === 'planet'
                 ? __alloT('stem.astronomy.planet_equipment', 'Visible without a telescope; binoculars help identify it and a telescope may reveal detail.')
-                : __alloT('stem.astronomy.star_equipment', 'Visible without a telescope under a reasonably clear sky.');
+                : __alloT('stem.astronomy.star_equipment', 'A naked-eye target when it is above the horizon after dark under reasonably clear skies.');
           if (selectedTarget.body.alt > 0 && selectedTarget.body.alt < 15 && targetKind !== 'sun') {
             equipmentText += ' ' + __alloT('stem.astronomy.wait_until_higher', 'Wait until it climbs higher for a steadier, clearer view.');
           }
@@ -1881,15 +2151,22 @@
               : __alloT('stem.astronomy.no_crossing_24h', 'No horizon crossing in the next 24 hours.'),
             best: bestBody.alt > 0
               ? Math.round(bestBody.alt) + '\u00B0 ' + __alloT('stem.astronomy.high_at', 'high at ') + forecastTimeLabel(bestInstant)
-              : __alloT('stem.astronomy.not_up_12h', 'Not above the horizon in the next 12 hours.')
+              : __alloT('stem.astronomy.not_up_12h', 'Not above the horizon in the next 12 hours.'),
+            timeline: hourlyForecastSamples,
+            window: buildObservingWindows(fineForecastSamples, targetKind),
+            kind: targetKind
           };
         }
 
         // Dome geometry: overhead view with north up and east at left.
         var R = 178, cx = 190, cy = 190;
         function proj(alt, az) { var rp = R * (90 - alt) / 90; return [cx - rp * sind(az), cy - rp * cosd(az)]; }
-        var night = !sky.daytime;
-        var domeFill = night ? '#070b18' : '#1d3a63';
+        var bortlePreview = bortleSkyPreview(bortleClass, sky.sun.alt);
+        var bortleInfo = BORTLE.find(function(item) { return item.class === bortlePreview.class; }) || BORTLE[4];
+        var domeFill = bortlePreview.domeFill;
+        var horizonHazeColor = bortlePreview.atmosphereHazeColor;
+        var horizonHazeOpacity = bortlePreview.atmosphereHazeOpacity;
+        var referenceStarCount = 0;
         var gridEls = [], guideEls = [], markerEls = [], labelCandidates = [];
 
         [30, 60].forEach(function (a) {
@@ -1933,7 +2210,7 @@
                 key: guide.id + '-' + edgeIndex,
                 'data-sky-guide-edge': guide.id + ':' + edge[0] + ':' + edge[1],
                 x1: p1[0], y1: p1[1], x2: p2[0], y2: p2[1],
-                stroke: '#818cf8', strokeWidth: 1.35, strokeLinecap: 'round', opacity: 0.82
+                stroke: '#818cf8', strokeWidth: 1.35, strokeLinecap: 'round', opacity: 1
               }));
             });
           });
@@ -1953,9 +2230,23 @@
           sky.stars.forEach(function (s, i) {
             if (s.alt <= 0) return;
             var p = proj(s.alt, s.az), rad = Math.max(0.7, 3 - s.mag * 0.5), key = 'star:' + s.name;
-            var starBaseOpacity = night ? Math.min(1, Math.max(0.4, 1 - s.mag * 0.18)) : 0.25;
-            starMarkers.push(h('circle', { key: 'st' + i, cx: p[0], cy: p[1], r: rad, fill: '#fff', opacity: skyFocusActive ? (key === skyTarget ? starBaseOpacity : Math.max(0.12, starBaseOpacity * 0.28)) : starBaseOpacity }));
-            if ((night && s.mag < 0.9) || skyTarget === key) addLabel(key, p, s.name, '#e2e8f0', targetPriority(key, 20 - s.mag), 9.5, 750, skyFocusActive && key !== skyTarget ? 0.38 : 1);
+            var starNightBaseOpacity = Math.min(1, Math.max(0.4, 1 - s.mag * 0.18));
+            var starBaseOpacity = 0.25 + (starNightBaseOpacity - 0.25) * bortlePreview.darknessMix;
+            var starTransmission = atmosphericVisibility(s.alt, 1, 0.08);
+            var starContrast = bortleStarContrast(bortleClass, s.mag, s.alt, sky.sun.alt);
+            var starAtmosphereOpacity = starBaseOpacity * starContrast.opacity;
+            var starOpacity = skyFocusActive
+              ? (key === skyTarget ? starAtmosphereOpacity : Math.max(0.025, starAtmosphereOpacity * 0.28))
+              : starAtmosphereOpacity;
+            referenceStarCount++;
+            starMarkers.push(h('circle', {
+              key: 'st' + i, cx: p[0], cy: p[1], r: rad, fill: '#fff', opacity: starOpacity,
+              'data-sky-object': key, 'data-star-magnitude': s.mag.toFixed(2), 'data-sky-altitude': s.alt.toFixed(2),
+              'data-sky-transmission': starTransmission.toFixed(3), 'data-sky-bortle-opacity': starContrast.opacity.toFixed(3),
+              'data-sky-bortle-band': starContrast.band,
+              'data-sky-opacity': starOpacity.toFixed(3)
+            }));
+            if ((bortlePreview.mode === 'dark' && s.mag < 0.9) || skyTarget === key) addLabel(key, p, s.name, '#e2e8f0', targetPriority(key, 20 - s.mag), 9.5, 750, skyFocusActive && key !== skyTarget ? 0.38 : 1);
           });
           markerEls.push(h('g', { key: 'star-layer', 'data-sky-layer': 'stars' }, starMarkers));
         }
@@ -1965,8 +2256,12 @@
           sky.planets.forEach(function (pl, i) {
             if (pl.alt <= 0) return;
             var p = proj(pl.alt, pl.az), key = 'planet:' + pl.id;
-            planetMarkers.push(h('circle', { key: 'pl' + i, cx: p[0], cy: p[1], r: 4.3, fill: pl.color, stroke: '#e2e8f0', strokeWidth: 0.8, opacity: skyFocusActive && key !== skyTarget ? 0.30 : 1 }));
-            addLabel(key, p, pl.icon + ' ' + pl.name, readableAccent(pl.color, domeFill), targetPriority(key, 70), 10.5, 800, skyFocusActive && key !== skyTarget ? 0.38 : 1);
+            var planetTransmission = atmosphericVisibility(pl.alt, 1, 0.24);
+            var planetOpacity = skyFocusActive
+              ? (key === skyTarget ? Math.max(0.72, planetTransmission) : Math.max(0.10, planetTransmission * 0.30))
+              : planetTransmission;
+            planetMarkers.push(h('circle', { key: 'pl' + i, cx: p[0], cy: p[1], r: 4.3, fill: pl.color, stroke: '#e2e8f0', strokeWidth: 0.8, opacity: planetOpacity, 'data-sky-object': key, 'data-sky-altitude': pl.alt.toFixed(2), 'data-sky-transmission': planetTransmission.toFixed(3), 'data-sky-opacity': planetOpacity.toFixed(3) }));
+            addLabel(key, p, pl.icon + ' ' + pl.name, '#f8fafc', targetPriority(key, 70), 10.5, 800, skyFocusActive && key !== skyTarget ? 0.38 : 1);
           });
           markerEls.push(h('g', { key: 'planet-layer', 'data-sky-layer': 'planets' }, planetMarkers));
         }
@@ -1990,6 +2285,99 @@
           markerEls.push(h('g', { key: 'solar-layer', 'data-sky-layer': 'sun-moon' }, solarMarkers));
         }
 
+        var targetTrack = null, targetTrackSummary = '';
+        if (selectedTarget.body && targetForecast && Array.isArray(targetForecast.timeline)) {
+          var trackSamples = targetForecast.timeline.filter(function(sample) {
+            return sample && sample.body && Number.isFinite(Number(sample.step)) &&
+              Number.isFinite(Number(sample.body.alt)) && Number.isFinite(Number(sample.body.az));
+          });
+          var trackSegments = [], currentTrackSegment = [];
+          function appendTrackPoint(segment, point) {
+            var previous = segment[segment.length - 1];
+            if (!previous || Math.abs(previous.step - point.step) > 0.000001) segment.push(point);
+          }
+          function horizonTrackCrossing(first, second) {
+            var firstAltitude = Number(first.body.alt), secondAltitude = Number(second.body.alt);
+            var fraction = (0 - firstAltitude) / (secondAltitude - firstAltitude);
+            fraction = Math.max(0, Math.min(1, fraction));
+            var azimuthDelta = ((Number(second.body.az) - Number(first.body.az) + 540) % 360) - 180;
+            return {
+              step: Number(first.step) + (Number(second.step) - Number(first.step)) * fraction,
+              alt: 0,
+              az: rev(Number(first.body.az) + azimuthDelta * fraction)
+            };
+          }
+          function trackPoint(sample) {
+            return { step: Number(sample.step), alt: Number(sample.body.alt), az: Number(sample.body.az) };
+          }
+          for (var trackIndex = 0; trackIndex < trackSamples.length - 1; trackIndex++) {
+            var firstTrackSample = trackSamples[trackIndex], secondTrackSample = trackSamples[trackIndex + 1];
+            var firstAbove = Number(firstTrackSample.body.alt) >= 0;
+            var secondAbove = Number(secondTrackSample.body.alt) >= 0;
+            if (firstAbove && secondAbove) {
+              appendTrackPoint(currentTrackSegment, trackPoint(firstTrackSample));
+              appendTrackPoint(currentTrackSegment, trackPoint(secondTrackSample));
+            } else if (firstAbove && !secondAbove) {
+              appendTrackPoint(currentTrackSegment, trackPoint(firstTrackSample));
+              appendTrackPoint(currentTrackSegment, horizonTrackCrossing(firstTrackSample, secondTrackSample));
+              if (currentTrackSegment.length > 1) trackSegments.push(currentTrackSegment);
+              currentTrackSegment = [];
+            } else if (!firstAbove && secondAbove) {
+              currentTrackSegment = [horizonTrackCrossing(firstTrackSample, secondTrackSample)];
+              appendTrackPoint(currentTrackSegment, trackPoint(secondTrackSample));
+            }
+          }
+          if (currentTrackSegment.length > 1) trackSegments.push(currentTrackSegment);
+          var projectedTrackSegments = trackSegments.map(function(segment) {
+            return segment.map(function(point) {
+              var projected = proj(point.alt, point.az);
+              return Object.assign({}, point, { x: projected[0], y: projected[1] });
+            });
+          }).filter(function(segment) { return segment.length > 1; });
+          if (projectedTrackSegments.length) {
+            var visibleTrackSamples = trackSamples.filter(function(sample) { return Number(sample.body.alt) >= 0; });
+            var trackWaypoints = trackSamples.filter(function(sample) {
+              return Number(sample.body.alt) >= 0 && [4, 8, 12].indexOf(Number(sample.step)) >= 0;
+            });
+            var firstTrackPoint = projectedTrackSegments[0][0];
+            var lastTrackSegment = projectedTrackSegments[projectedTrackSegments.length - 1];
+            var lastTrackPoint = lastTrackSegment[lastTrackSegment.length - 1];
+            targetTrackSummary = 'A solid gold motion arc traces the target\'s next 12 hours above the horizon, from ' +
+              azCompass(firstTrackPoint.az) + ' toward ' + azCompass(lastTrackPoint.az) + '.';
+            targetTrack = h('g', {
+              'data-sky-target-track': 'true', 'data-sky-target': skyTarget,
+              'data-segment-count': projectedTrackSegments.length,
+              'data-visible-sample-count': visibleTrackSamples.length,
+              clipPath: 'url(#astronomy-sky-dome-clip)', 'aria-hidden': 'true', pointerEvents: 'none'
+            },
+              projectedTrackSegments.map(function(segment, segmentIndex) {
+                var trackPath = pointsToPath(segment.map(function(point) { return [point.x, point.y]; }));
+                return h('g', { key: 'target-track-segment-' + segmentIndex },
+                  h('path', { d: trackPath, fill: 'none', stroke: '#0a0e1a', strokeWidth: 5.2, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.82 }),
+                  h('path', {
+                    d: trackPath, fill: 'none', stroke: '#fbbf24', strokeWidth: 2.2,
+                    strokeLinecap: 'round', strokeLinejoin: 'round', markerEnd: 'url(#astronomy-sky-target-track-arrow)',
+                    'data-sky-target-track-segment': segmentIndex,
+                    'data-point-count': segment.length
+                  })
+                );
+              }),
+              trackWaypoints.map(function(sample) {
+                var waypoint = proj(Number(sample.body.alt), Number(sample.body.az));
+                return h('circle', {
+                  key: 'target-track-waypoint-' + sample.step,
+                  cx: waypoint[0], cy: waypoint[1], r: 3.2,
+                  fill: '#fbbf24', stroke: '#0a0e1a', strokeWidth: 1.2,
+                  'data-sky-target-track-sample': 'true',
+                  'data-hour-offset': Number(sample.step).toFixed(0),
+                  'data-altitude': Number(sample.body.alt).toFixed(3),
+                  'data-azimuth': Number(sample.body.az).toFixed(3)
+                });
+              })
+            );
+          }
+        }
+
         var targetOverlay = null;
         if (selectedTarget.body && selectedTarget.body.alt > 0) {
           var tp = proj(selectedTarget.body.alt, selectedTarget.body.az), tr = 12;
@@ -1997,7 +2385,7 @@
             h('circle', { cx: tp[0], cy: tp[1], r: tr, fill: 'none', stroke: '#fbbf24', strokeWidth: 2.2 }),
             h('path', { d: 'M ' + (tp[0] - tr - 5) + ' ' + tp[1] + ' h 7 M ' + (tp[0] + tr - 2) + ' ' + tp[1] + ' h 7 M ' + tp[0] + ' ' + (tp[1] - tr - 5) + ' v 7 M ' + tp[0] + ' ' + (tp[1] + tr - 2) + ' v 7', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinecap: 'round' })
           );
-          addLabel(skyTarget, tp, targetDisplayName + ' \u00B7 TARGET', '#fde68a', 110, 10.5, 900);
+          addLabel(skyTarget, tp, targetDisplayName + ' \u00B7 TARGET', '#fde68a', 110, 15.5, 900);
         }
 
         labelCandidates.sort(function(a, b) { return b.priority - a.priority || a.key.localeCompare(b.key); });
@@ -2065,6 +2453,241 @@
             h('dd', { style: { color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.4, margin: 0, overflowWrap: 'anywhere' } }, value)
           );
         }
+        function twilightCategory(sunAltitude) {
+          if (sunAltitude >= 0) return 'daylight';
+          if (sunAltitude >= -6) return 'civil';
+          if (sunAltitude >= -12) return 'nautical';
+          if (sunAltitude >= -18) return 'astronomical';
+          return 'night';
+        }
+        function twilightBandsFromSamples(samples) {
+          var thresholds = [0, -6, -12, -18], bands = [];
+          for (var index = 0; index < samples.length - 1; index++) {
+            var first = samples[index], second = samples[index + 1];
+            var start = Number(first.step), end = Number(second.step);
+            var startAltitude = Number(first.sky && first.sky.sun && first.sky.sun.alt);
+            var endAltitude = Number(second.sky && second.sky.sun && second.sky.sun.alt);
+            if (![start, end, startAltitude, endAltitude].every(Number.isFinite) || end <= start) continue;
+            var cuts = [start, end];
+            thresholds.forEach(function(threshold) {
+              if ((startAltitude < threshold && endAltitude > threshold) || (startAltitude > threshold && endAltitude < threshold)) {
+                var fraction = (threshold - startAltitude) / (endAltitude - startAltitude);
+                cuts.push(start + (end - start) * fraction);
+              }
+            });
+            cuts.sort(function(a, b) { return a - b; });
+            for (var cutIndex = 0; cutIndex < cuts.length - 1; cutIndex++) {
+              var bandStart = cuts[cutIndex], bandEnd = cuts[cutIndex + 1];
+              if (bandEnd - bandStart <= 0.000001) continue;
+              var midpointFraction = (((bandStart + bandEnd) / 2) - start) / (end - start);
+              var midpointAltitude = startAltitude + (endAltitude - startAltitude) * midpointFraction;
+              var category = twilightCategory(midpointAltitude);
+              var previous = bands[bands.length - 1];
+              if (previous && previous.category === category && Math.abs(previous.end - bandStart) < 0.000001) previous.end = bandEnd;
+              else bands.push({ start: bandStart, end: bandEnd, category: category });
+            }
+          }
+          return bands;
+        }
+        function renderAltitudeTimeline(samples, observingWindow) {
+          var timelineSamples = Array.isArray(samples) ? samples.filter(function(sample) {
+            return sample && Number.isFinite(Number(sample.step)) && sample.step >= 0 && sample.step <= 12 && sample.body && Number.isFinite(Number(sample.body.alt));
+          }) : [];
+          if (timelineSamples.length < 2) return null;
+          var chartWidth = 220, chartHeight = 136, plotLeft = 31, plotRight = 214, plotTop = 14, plotBottom = 102;
+          var plotWidth = plotRight - plotLeft, plotHeight = plotBottom - plotTop;
+          function chartX(hour) { return plotLeft + Math.max(0, Math.min(12, hour)) / 12 * plotWidth; }
+          function chartY(altitude) { return plotTop + (90 - Math.max(-90, Math.min(90, altitude))) / 180 * plotHeight; }
+          function compactTime(instant) {
+            return instant.toLocaleString(undefined, { timeZone: loc.timeZone, hour: 'numeric' });
+          }
+          var twilightMeta = {
+            daylight: { label: __alloT('stem.astronomy.daylight', 'Daylight'), color: '#17385f' },
+            civil: { label: __alloT('stem.astronomy.civil_twilight', 'Civil twilight'), color: '#49311f' },
+            nautical: { label: __alloT('stem.astronomy.nautical_twilight', 'Nautical twilight'), color: '#272c56' },
+            astronomical: { label: __alloT('stem.astronomy.astronomical_twilight', 'Astronomical twilight'), color: '#171d35' },
+            night: { label: __alloT('stem.astronomy.night', 'Night'), color: '#070b18' }
+          };
+          var bands = twilightBandsFromSamples(timelineSamples);
+          var altitudePath = timelineSamples.map(function(sample, index) {
+            return (index ? 'L ' : 'M ') + chartX(Number(sample.step)).toFixed(2) + ' ' + chartY(Number(sample.body.alt)).toFixed(2);
+          }).join(' ');
+          var titleId = 'astronomy-sky-target-timeline-title';
+          var descId = 'astronomy-sky-target-timeline-desc';
+          var xTicks = [0, 4, 8, 12];
+          var yTicks = [-90, 0, 90];
+          var windowModel = observingWindow && typeof observingWindow === 'object'
+            ? observingWindow : { state: 'none', intervals: [], selected: null, peak: null };
+          var windowState = ['available', 'none', 'not-applicable'].indexOf(windowModel.state) >= 0 ? windowModel.state : 'none';
+          var qualifyingWindows = Array.isArray(windowModel.intervals) ? windowModel.intervals.filter(function(interval) {
+            return interval && Number.isFinite(Number(interval.start)) && Number.isFinite(Number(interval.end)) &&
+              Number(interval.end) > Number(interval.start);
+          }).map(function(interval) {
+            return { start: Math.max(0, Math.min(12, Number(interval.start))), end: Math.max(0, Math.min(12, Number(interval.end))) };
+          }).filter(function(interval) { return interval.end > interval.start; }) : [];
+          var selectedWindow = windowModel.selected && Number.isFinite(Number(windowModel.selected.start)) && Number.isFinite(Number(windowModel.selected.end))
+            ? { start: Math.max(0, Math.min(12, Number(windowModel.selected.start))), end: Math.max(0, Math.min(12, Number(windowModel.selected.end))) }
+            : null;
+          if (selectedWindow && selectedWindow.end <= selectedWindow.start) selectedWindow = null;
+          var windowIntervals = selectedWindow ? [selectedWindow] : [];
+          var additionalWindowCount = Math.max(0, qualifyingWindows.length - windowIntervals.length);
+          var bortleInfo = BORTLE.find(function(item) { return item.class === bortleClass; }) || BORTLE[4];
+          function windowClock(hour) {
+            var roundedMinutes = Math.round(Number(hour) * 2) * 30;
+            var instant = new Date(timelineSamples[0].time.getTime() + roundedMinutes * 60000);
+            return instant.toLocaleString(undefined, {
+              timeZone: loc.timeZone, weekday: 'short', hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+            });
+          }
+          var windowSummary = '';
+          if (windowState === 'not-applicable') {
+            windowSummary = 'Use a certified solar filter or safe projection for every Sun observation; never look directly at the Sun.';
+          } else if (windowState === 'available' && selectedWindow) {
+            var windowDuration = selectedWindow.end - selectedWindow.start;
+            if (windowDuration < 1) {
+              var peakHour = windowModel.peak && Number.isFinite(Number(windowModel.peak.step))
+                ? Number(windowModel.peak.step) : (selectedWindow.start + selectedWindow.end) / 2;
+              windowSummary = 'Suggested observing time: around ' + windowClock(peakHour) + ' local time.';
+            } else if (selectedWindow.start <= 0.001 && selectedWindow.end >= 11.999) {
+              windowSummary = 'Suggested observing window: throughout this 12-hour chart.';
+            } else if (selectedWindow.start <= 0.001) {
+              windowSummary = 'Suggested observing window: Now to about ' + windowClock(selectedWindow.end) + ' local time.';
+            } else if (selectedWindow.end >= 11.999) {
+              windowSummary = 'Suggested observing window: about ' + windowClock(selectedWindow.start) + ' through the end of this 12-hour chart.';
+            } else {
+              windowSummary = 'Suggested observing window: about ' + windowClock(selectedWindow.start) + '\u2013' + windowClock(selectedWindow.end) + ' local time.';
+            }
+            if (additionalWindowCount) {
+              windowSummary += ' ' + additionalWindowCount + ' additional qualifying interval' + (additionalWindowCount === 1 ? '' : 's') + ' also occurs in the chart.';
+            }
+          } else {
+            windowSummary = 'No suggested observing window in the next 12 hours under these rules. The target may still be observable outside this guide.';
+          }
+          var innerPlanetWindow = targetKind === 'planet' && ['mercury', 'venus'].indexOf(String(selectedTarget.body && selectedTarget.body.id || '').toLowerCase()) >= 0;
+          var ruleText = targetKind === 'sun'
+            ? 'No dark-sky window applies. Certified solar viewing equipment or safe projection is required.'
+            : targetKind === 'moon'
+              ? 'Rule: target must reach at least 20\u00B0 altitude; darkness is not required. In daylight, keep all optics pointed well away from the Sun.'
+              : targetKind === 'planet'
+                ? (innerPlanetWindow
+                  ? 'Rules: Mercury or Venus must reach at least 10\u00B0 altitude while the Sun is at or below -6\u00B0. Moon glare does not change this twilight timing guide.'
+                  : 'Rules: target must reach at least 20\u00B0 altitude while the Sun is at or below -12\u00B0. Moon glare does not change this planet timing guide.')
+                : 'Rules: target must reach at least 20\u00B0 altitude, the Sun must be at or below -18\u00B0, and the Moon must be below the horizon, under 25% illuminated, or at least 60\u00B0 away.';
+          if (targetKind !== 'sun') {
+            ruleText += ' Bortle ' + bortleInfo.class + ' site context (set in Observing) may affect contrast, but it does not change this timing estimate.';
+          }
+          ruleText += ' Weather, haze, local obstructions, and atmospheric seeing are not modeled.';
+          return h('div', {
+            id: 'astronomy-sky-target-timeline', 'data-sky-target': skyTarget,
+            style: { minWidth: 0, maxWidth: '100%', marginTop: 12, paddingTop: 9, borderTop: '1px solid #475569' }
+          },
+            h('div', { style: { color: '#e2e8f0', fontSize: 11.5, fontWeight: 800, marginBottom: 4 } },
+              __alloT('stem.astronomy.altitude_next_12h', 'Altitude over the next 12 hours')),
+            h('svg', {
+              viewBox: '0 0 ' + chartWidth + ' ' + chartHeight,
+              role: 'img', 'aria-labelledby': titleId + ' ' + descId,
+              'data-sky-target-timeline': 'true', 'data-duration-hours': '12',
+              style: { display: 'block', width: '100%', maxWidth: '100%', height: 'auto' }
+            },
+              h('title', { id: titleId }, targetDisplayName + ' altitude for the next 12 hours'),
+              h('desc', { id: descId }, 'A 12-hour altitude timeline for ' + targetDisplayName + ' using hourly computed positions. The gold dashed line is the geometric zero-degree horizon. Background bands use conventional Sun-altitude thresholds for civil, nautical, and astronomical twilight; boundaries are approximate between samples. A hatched band and bracket mark the suggested observing window that best meets the stated target-altitude, Sun-altitude, and applicable Moon rules. This is a planning suggestion, not a visibility forecast. Weather and atmospheric refraction are not modeled.'),
+              h('defs', null,
+                h('pattern', { id: 'astronomy-sky-window-hatch', patternUnits: 'userSpaceOnUse', width: 6, height: 6 },
+                  h('path', { d: 'M -1 1 L 1 -1 M 0 6 L 6 0 M 5 7 L 7 5', fill: 'none', stroke: '#86efac', strokeWidth: 1.35, opacity: 0.75 })
+                )
+              ),
+              h('g', { 'data-sky-twilight-bands': 'true', 'aria-hidden': 'true' }, bands.map(function(band, bandIndex) {
+                return h('rect', {
+                  key: 'twilight-' + bandIndex, x: chartX(band.start), y: plotTop,
+                  width: Math.max(0.01, chartX(band.end) - chartX(band.start)), height: plotHeight,
+                  fill: twilightMeta[band.category].color,
+                  'data-twilight-band': band.category,
+                  'data-start-hour': band.start.toFixed(6), 'data-end-hour': band.end.toFixed(6)
+                });
+              })),
+              h('g', { 'data-sky-observing-window-overlay': 'true', 'aria-hidden': 'true', pointerEvents: 'none' },
+                windowIntervals.map(function(interval, intervalIndex) {
+                  var startX = chartX(interval.start), endX = chartX(interval.end), bracketY = chartY(0) + 7;
+                  return h('g', { key: 'observing-window-overlay-' + intervalIndex },
+                    h('rect', { x: startX, y: plotTop, width: Math.max(0.6, endX - startX), height: plotHeight, fill: 'url(#astronomy-sky-window-hatch)' }),
+                    h('path', { d: 'M ' + startX.toFixed(2) + ' ' + (bracketY - 4).toFixed(2) + ' V ' + bracketY.toFixed(2) + ' H ' + endX.toFixed(2) + ' V ' + (bracketY - 4).toFixed(2), fill: 'none', stroke: '#86efac', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' })
+                  );
+                })
+              ),
+              h('rect', { x: plotLeft, y: plotTop, width: plotWidth, height: plotHeight, fill: 'none', stroke: '#94a3b8', strokeWidth: 1, 'aria-hidden': 'true' }),
+              h('line', { x1: plotLeft, y1: plotBottom, x2: plotRight, y2: plotBottom, stroke: '#94a3b8', strokeWidth: 1, 'data-sky-axis': 'x', 'aria-hidden': 'true' }),
+              h('line', { x1: plotLeft, y1: plotTop, x2: plotLeft, y2: plotBottom, stroke: '#94a3b8', strokeWidth: 1, 'data-sky-axis': 'y', 'aria-hidden': 'true' }),
+              yTicks.map(function(value) {
+                var y = chartY(value);
+                return h('g', { key: 'altitude-tick-' + value, 'aria-hidden': 'true' },
+                  value === 0 ? null : h('line', { x1: plotLeft, y1: y, x2: plotRight, y2: y, stroke: '#64748b', strokeWidth: 0.8 }),
+                  h('text', { x: plotLeft - 4, y: y + 3.5, fill: '#e2e8f0', fontSize: 11, textAnchor: 'end' }, value + '\u00B0')
+                );
+              }),
+              h('line', { x1: plotLeft, y1: chartY(0), x2: plotRight, y2: chartY(0), stroke: '#fbbf24', strokeWidth: 1.4, strokeDasharray: '4 3', 'data-sky-horizon': 'true', 'aria-hidden': 'true' }),
+              xTicks.map(function(value, tickIndex) {
+                var sample = timelineSamples.find(function(item) { return Number(item.step) === value; }) || timelineSamples[Math.min(timelineSamples.length - 1, tickIndex * 4)];
+                return h('g', { key: 'time-tick-' + value, 'aria-hidden': 'true' },
+                  h('line', { x1: chartX(value), y1: plotBottom, x2: chartX(value), y2: plotBottom + 4, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('text', { x: chartX(value), y: plotBottom + 15, fill: '#e2e8f0', fontSize: 11, textAnchor: tickIndex === 0 ? 'start' : (tickIndex === xTicks.length - 1 ? 'end' : 'middle') }, compactTime(sample.time))
+                );
+              }),
+              h('text', { x: plotLeft, y: 11, fill: '#e2e8f0', fontSize: 11, fontWeight: 700, 'aria-hidden': 'true' }, __alloT('stem.astronomy.altitude_degrees', 'Altitude (\u00B0)')),
+              h('text', { x: (plotLeft + plotRight) / 2, y: 133, fill: '#e2e8f0', fontSize: 11, textAnchor: 'middle', 'aria-hidden': 'true' }, __alloT('stem.astronomy.local_time', 'Local time')),
+              h('path', { d: altitudePath, fill: 'none', stroke: '#f8fafc', strokeWidth: 2.4, strokeLinejoin: 'round', strokeLinecap: 'round', 'data-sky-altitude-path': 'true', 'aria-hidden': 'true' }),
+              timelineSamples.map(function(sample, sampleIndex) {
+                var altitude = Math.max(-90, Math.min(90, Number(sample.body.alt)));
+                return h('circle', {
+                  key: 'altitude-sample-' + sample.step,
+                  cx: chartX(Number(sample.step)), cy: chartY(altitude), r: sampleIndex === 0 ? 3.1 : 1.7,
+                  fill: sampleIndex === 0 ? '#fde68a' : '#f8fafc', stroke: '#0f172a', strokeWidth: 0.7,
+                  'data-sky-altitude-sample': 'true', 'data-hour-offset': Number(sample.step).toFixed(2),
+                  'data-altitude': altitude.toFixed(3), 'aria-hidden': 'true'
+                });
+              })
+            ),
+            h('div', {
+              'data-sky-observing-window': 'true', 'data-kind': targetKind, 'data-state': windowState,
+              'data-bortle-class': bortleInfo.class, role: 'note', 'aria-label': 'Observing guidance',
+              style: { minWidth: 0, maxWidth: '100%', marginTop: 7 }
+            },
+              h('div', {
+                'data-sky-observing-window-rail': 'true', 'aria-hidden': 'true',
+                style: { position: 'relative', width: '100%', height: 10, boxSizing: 'border-box', overflow: 'hidden', background: '#1e293b', border: '1px solid #64748b' }
+              }, windowIntervals.map(function(interval, intervalIndex) {
+                return h('span', {
+                  key: 'observing-window-segment-' + intervalIndex,
+                  'data-sky-observing-window-segment': 'true',
+                  'data-start-hour': interval.start.toFixed(6), 'data-end-hour': interval.end.toFixed(6),
+                  style: {
+                    position: 'absolute', top: 0, bottom: 0,
+                    left: (interval.start / 12 * 100).toFixed(4) + '%',
+                    width: ((interval.end - interval.start) / 12 * 100).toFixed(4) + '%',
+                    minWidth: interval.end - interval.start < 0.08 ? 2 : 0,
+                    boxSizing: 'border-box', borderLeft: '1px solid #86efac', borderRight: '1px solid #86efac',
+                    background: 'repeating-linear-gradient(135deg,rgba(134,239,172,.9) 0 2px,rgba(134,239,172,.18) 2px 5px)'
+                  }
+                });
+              })),
+              h('div', { 'data-sky-observing-window-summary': 'true', style: { display: 'flex', alignItems: 'flex-start', gap: 6, minWidth: 0, marginTop: 5, color: '#e2e8f0', fontSize: 11.5, fontWeight: 800, lineHeight: 1.45, overflowWrap: 'anywhere' } },
+                windowIntervals.length ? h('span', { 'data-sky-observing-window-swatch': 'true', 'aria-hidden': 'true', style: { flex: '0 0 auto', display: 'inline-block', width: 12, height: 10, marginTop: 2, boxSizing: 'border-box', border: '1px solid #86efac', background: 'repeating-linear-gradient(135deg,rgba(134,239,172,.9) 0 2px,rgba(134,239,172,.18) 2px 5px)' } }) : null,
+                h('span', null, windowSummary)
+              ),
+              h('div', { 'data-sky-observing-window-criteria': 'true', style: { minWidth: 0, marginTop: 3, color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5, overflowWrap: 'anywhere' } }, ruleText)
+            ),
+            h('div', { 'aria-label': __alloT('stem.astronomy.twilight_key', 'Twilight key'), style: { display: 'flex', flexWrap: 'wrap', gap: '4px 9px', marginTop: 5 } },
+              ['daylight', 'civil', 'nautical', 'astronomical', 'night'].map(function(category) {
+                return h('span', { key: category, style: { display: 'inline-flex', alignItems: 'center', gap: 4, color: '#cbd5e1', fontSize: 11 } },
+                  h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: 10, height: 10, background: twilightMeta[category].color, border: '1px solid #94a3b8' } }),
+                  twilightMeta[category].label
+                );
+              }),
+              h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, color: '#cbd5e1', fontSize: 11 } },
+                h('span', { 'aria-hidden': 'true', style: { color: '#fde68a', fontSize: 14, lineHeight: 1 } }, '\u25CF'),
+                __alloT('stem.astronomy.current_time', 'Current time'))
+            )
+          );
+        }
         var targetDetailPanel = selectedTarget.body && targetForecast
           ? sectionCard('\uD83C\uDFAF ' + targetDisplayName,
               h('div', { id: 'astronomy-sky-target-detail', 'aria-label': targetDisplayName + ' observing details' },
@@ -2075,8 +2698,9 @@
                   targetFact(__alloT('stem.astronomy.direction', 'Direction'), azCompass(selectedTarget.body.az) + ' Â· ' + Math.round(selectedTarget.body.az) + '\u00B0 ' + __alloT('stem.astronomy.azimuth', 'azimuth')),
                   targetFact(__alloT('stem.astronomy.brightness', 'Brightness'), targetForecast.brightness),
                   targetFact(__alloT('stem.astronomy.next_horizon_event', 'Next horizon event'), targetForecast.nextEvent),
-                  targetFact(__alloT('stem.astronomy.best_next_12h', 'Best in next 12 hours'), targetForecast.best)
+                  targetFact(__alloT('stem.astronomy.highest_next_12h', 'Highest in next 12 hours'), targetForecast.best)
                 ),
+                renderAltitudeTimeline(targetForecast.timeline, targetForecast.window),
                 h('div', { style: { color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.5, marginTop: 9, paddingTop: 8, borderTop: '1px solid #475569' } },
                   h('strong', { style: { color: '#c7d2fe' } }, __alloT('stem.astronomy.viewing_tip', 'Viewing tip: ')),
                   targetForecast.equipment)
@@ -2111,8 +2735,25 @@
             : targetDisplayName + ' is below the horizon for this place and time.')
           : 'Overview shows all enabled sky layers.';
         var skyFocusLegend = selectedTarget.body
-          ? __alloT('stem.astronomy.skymap_focus_active', 'Focus mode: unrelated marks are dimmed; the gold ring and TARGET label show the selection.')
+          ? (targetTrack
+            ? __alloT('stem.astronomy.skymap_focus_track_active', 'Focus mode: unrelated marks are dimmed; the gold ring marks the target and the solid gold arc traces its next 12 hours above the horizon.')
+            : __alloT('stem.astronomy.skymap_focus_active', 'Focus mode: unrelated marks are dimmed; the gold ring and TARGET label show the selection.'))
           : __alloT('stem.astronomy.skymap_focus_hint', 'Choose a target to dim unrelated marks and follow one object.');
+        var bortleEffect = bortlePreview.class <= 2
+          ? 'Very low skyglow preserves strong reference-star contrast.'
+          : bortlePreview.class <= 4
+            ? 'Low skyglow slightly softens the faintest reference stars.'
+            : bortlePreview.class <= 6
+              ? 'Moderate skyglow softens fainter reference stars.'
+              : bortlePreview.class === 7
+                ? 'Strong skyglow makes fainter reference stars recede.'
+                : 'City skyglow makes all but the brighter reference stars recede.';
+        var bortleStatus = bortlePreview.mode === 'daylight'
+          ? 'Preview: Bortle ' + bortleInfo.class + ' \u00B7 ' + bortleInfo.name + ' selected. Daylight dominates while the Sun is up, and civil twilight still masks the cue; Bortle class does not affect this bright-sky view. The cue fades in through nautical and astronomical twilight.'
+          : bortlePreview.mode === 'twilight'
+            ? 'Preview: Bortle ' + bortleInfo.class + ' \u00B7 ' + bortleInfo.name + '. Twilight dominates; the reference-star cue fades in as the Sun descends.'
+            : 'Preview: Bortle ' + bortleInfo.class + ' \u00B7 ' + bortleInfo.name + '. ' + bortleEffect + ' Guide overlays and observing-window timing stay unchanged.';
+        bortleStatus += ' This curated bright reference-star preview is illustrative, not calibrated; it does not forecast visibility.';
         var BUSTS = [
           ['Planets WANDER', 'The word planet means â€œwanderer.â€ Unlike the fixed star patterns, planets drift along the ecliptic night to night. Step the date forward and watch a planet move against the stars.'],
           ['A phase is NOT Earthâ€™s shadow', 'The Moonâ€™s phase is just how much of its sunlit half faces us (Sunâ€“Moonâ€“Earth geometry). Earthâ€™s shadow only falls on the Moon during a lunar eclipse â€” thatâ€™s a different, rare event.'],
@@ -2147,11 +2788,29 @@
               layerToggle('planets', __alloT('stem.astronomy.layer_planets', 'Planets')),
               layerToggle('sunMoon', __alloT('stem.astronomy.layer_sun_moon', 'Sun and Moon')),
               layerToggle('ecliptic', __alloT('stem.astronomy.layer_ecliptic', 'Ecliptic'))),
+            h('div', { id: 'astronomy-sky-darkness-field', style: { display: 'flex', flexWrap: 'wrap', gap: '6px 8px', alignItems: 'center', minWidth: 0, marginBottom: 9 } },
+              h('label', { htmlFor: 'astronomy-sky-darkness', style: { color: '#e2e8f0', fontSize: 11.5, fontWeight: 800 } }, 'Sky darkness'),
+              h('select', {
+                id: 'astronomy-sky-darkness', value: bortlePreview.class,
+                'aria-label': 'Sky darkness (Bortle class)', 'aria-describedby': 'astronomy-sky-darkness-status',
+                'aria-controls': 'astronomy-sky-map-diagram',
+                onChange: function(event) {
+                  var nextBortleClass = Number(event.target.value);
+                  upd({ bortleClass: Number.isInteger(nextBortleClass) && nextBortleClass >= 1 && nextBortleClass <= 9 ? nextBortleClass : 5 });
+                },
+                style: { flex: '1 1 220px', width: '100%', maxWidth: '100%', minWidth: 0, padding: '7px 9px', borderRadius: 7, border: '1px solid #64748b', background: '#0f172a', color: '#f8fafc' }
+              }, BORTLE.map(function(item) { return h('option', { key: item.class, value: item.class }, 'Bortle ' + item.class + ' \u2014 ' + item.name); })),
+              h('div', {
+                id: 'astronomy-sky-darkness-status', 'data-bortle-class': bortlePreview.class,
+                'data-preview-mode': bortlePreview.mode,
+                style: { flex: '1 1 100%', minWidth: 0, overflowWrap: 'anywhere', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.45 }
+              }, bortleStatus)
+            ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 10 } },
               h('label', { htmlFor: 'astronomy-sky-target', style: { color: '#e2e8f0', fontSize: 11.5, fontWeight: 800 } }, __alloT('stem.astronomy.sky_map_target', 'Sky map target')),
               h('select', {
                 id: 'astronomy-sky-target', value: skyTarget,
-                'aria-label': 'Sky map target', 'aria-controls': 'astronomy-sky-map-diagram',
+                'aria-label': 'Sky map target', 'aria-controls': selectedTarget.body ? 'astronomy-sky-map-diagram astronomy-sky-target-timeline' : 'astronomy-sky-map-diagram',
                 onChange: function(event) { upd({ skyTarget: event.target.value }); },
                 style: { flex: '1 1 220px', width: '100%', maxWidth: '100%', minWidth: 0, padding: '7px 9px', borderRadius: 7, border: '1px solid #64748b', background: '#0f172a', color: '#f8fafc' }
               }, targetOptions.map(function(option) { return h('option', { key: option.id || 'overview', value: option.id }, option.label); })),
@@ -2163,26 +2822,45 @@
             h('div', { style: { flex: '1 1 380px', minWidth: 0, maxWidth: 480, width: '100%' } },
               h('svg', {
                 id: 'astronomy-sky-map-diagram', viewBox: '0 0 380 410',
-                role: 'img', 'aria-label': skyAria(sky, loc, localShown, targetStatus, skyLayers),
+                role: 'img', 'aria-label': skyAria(sky, loc, localShown, targetStatus, skyLayers, targetTrackSummary, bortlePreview, referenceStarCount),
                 'aria-describedby': 'astronomy-sky-map-help',
+                'data-bortle-class': bortlePreview.class, 'data-sky-preview-mode': bortlePreview.mode,
+                'data-sky-reference-star-count': referenceStarCount,
                 style: { display: 'block', width: '100%', maxWidth: '100%', height: 'auto' }
               },
                 h('defs', null,
                   h('clipPath', { id: 'astronomy-sky-dome-clip' },
                     h('circle', { cx: cx, cy: cy, r: R })
-                  )
+                  ),
+                  h('radialGradient', { id: 'astronomy-sky-horizon-haze', cx: cx, cy: cy, r: R, gradientUnits: 'userSpaceOnUse' },
+                    h('stop', { offset: '0%', stopColor: horizonHazeColor, stopOpacity: 0 }),
+                    h('stop', { offset: '66%', stopColor: horizonHazeColor, stopOpacity: 0 }),
+                    h('stop', { offset: '84%', stopColor: horizonHazeColor, stopOpacity: horizonHazeOpacity * 0.35 }),
+                    h('stop', { offset: '100%', stopColor: horizonHazeColor, stopOpacity: horizonHazeOpacity })
+                  ),
+                  h('marker', {
+                    id: 'astronomy-sky-target-track-arrow', viewBox: '0 0 6 5',
+                    refX: 5.2, refY: 2.5, markerWidth: 5, markerHeight: 5,
+                    orient: 'auto', markerUnits: 'strokeWidth'
+                  }, h('path', { d: 'M 0 0 L 6 2.5 L 0 5 Z', fill: '#fbbf24' }))
                 ),
-                h('circle', { cx: cx, cy: cy, r: R, fill: domeFill, stroke: '#94a3b8', strokeWidth: 1.8 }),
+                h('circle', { cx: cx, cy: cy, r: R, fill: domeFill, stroke: '#94a3b8', strokeWidth: 1.8, 'data-sky-dome': 'true', 'data-bortle-class': bortlePreview.class }),
+                h('circle', { cx: cx, cy: cy, r: R, fill: 'url(#astronomy-sky-horizon-haze)', 'data-sky-atmosphere': 'haze', 'aria-hidden': 'true', pointerEvents: 'none' }),
+                h('circle', { cx: cx, cy: cy, r: R, fill: 'none', stroke: '#94a3b8', strokeWidth: 1.8, 'aria-hidden': 'true', pointerEvents: 'none' }),
                 guideEls,
                 gridEls,
                 markerEls,
+                targetTrack,
                 targetOverlay,
                 labelEls,
-                sky.daytime ? h('text', { x: cx, y: 399, fill: '#fbbf24', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, __alloT('stem.astronomy.daytime_note', '\u2600 Daytime â€” stars are up but the Sun outshines them')) :
+                bortlePreview.mode === 'daylight' ? h('text', { x: cx, y: 399, fill: '#fbbf24', fontSize: 12, fontWeight: 800, textAnchor: 'middle' },
+                  sky.sun.alt >= 0
+                    ? __alloT('stem.astronomy.daytime_note', '\u2600 Daytime Ã¢â‚¬â€ stars are up but the Sun outshines them')
+                    : __alloT('stem.astronomy.civil_twilight_note', 'Civil twilight Ã¢â‚¬â€ the bright sky masks most stars')) :
                   h('text', { x: cx, y: 399, fill: '#e2e8f0', fontSize: 11.5, fontWeight: 650, textAnchor: 'middle' }, localShown.toLocaleString(undefined, { timeZone: loc.timeZone, weekday: 'short', hour: 'numeric', minute: '2-digit' }) + ' \u00B7 ' + loc.name)),
               h('div', { id: 'astronomy-sky-map-help', style: { width: '100%', maxWidth: '100%', marginTop: 7, padding: '8px 10px', borderRadius: 8, background: '#0f172a', border: '1px solid #64748b', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.55 } },
                 h('strong', { style: { color: '#f8fafc' } }, 'Diagram guide: '),
-                'North is at the top and east is on the left. The outer circle is the horizon; inner rings mark 30\u00B0 and 60\u00B0 altitude; the center is directly overhead. When enabled, the gold dashed path shows the ecliptic and indigo lines show conventional recognition guides, not official constellation boundaries.'
+                'North is at the top and east is on the left. The outer circle is the horizon; inner rings mark 30\u00B0 and 60\u00B0 altitude; the center is directly overhead. When enabled, the gold dashed path shows the ecliptic and indigo lines show conventional recognition guides, not official constellation boundaries. A solid gold arc traces the selected target\'s visible motion during the next 12 hours whenever it is above the horizon; visible dots mark 4-hour intervals and the arrow shows direction. A faint, class-independent horizon haze and altitude dimming approximate clear-sky atmospheric extinction for stars and planets. Sky darkness separately changes the night background and the contrast of this map\'s curated reference stars. It does not model clouds, transparency, local glare, or the full number of stars visible; constellation lines and target markers remain guide overlays.'
               )),
             h('div', { style: { flex: '1 1 240px', minWidth: 0 } },
               targetDetailPanel,
@@ -2203,7 +2881,7 @@
           h('div', { style: { fontSize: 10.5, color: '#cbd5e1', marginTop: 10, lineHeight: 1.5 } }, __alloT('stem.astronomy.skymap_disclaimer', 'Positions are computed (schematic, accurate to about a degree). They are geocentric and ignore atmospheric refraction near the horizon, so rise/set timing is approximate. For pinpoint observing use Stellarium or your local planetarium.'))
         );
       }
-      function skyAria(sky, loc, when, targetStatus, skyLayers) {
+      function skyAria(sky, loc, when, targetStatus, skyLayers, targetTrackSummary, bortlePreview, referenceStarCount) {
         function positionText(name, body) {
           if (!body || !Number.isFinite(body.alt) || body.alt <= 0) return null;
           return name + ' is ' + Math.round(body.alt) + ' degrees above the ' + azCompass(body.az) + ' horizon';
@@ -2221,12 +2899,19 @@
           ? 'Moon phase: ' + sky.moon.phase.name + ', ' + Math.round(sky.moon.phase.illum * 100) + '% lit. '
           : 'The Sun and Moon layer is hidden. ';
         var starSummary = skyLayers.stars
-          ? sky.stars.filter(function(star) { return star.alt > 0; }).length + ' reference stars are above the horizon. '
+          ? referenceStarCount + ' curated bright reference-star positions are plotted above the horizon; their contrast changes continuously with altitude, twilight, and the illustrative darkness preview. '
           : 'Reference stars are hidden by the layer controls. ';
-        return 'Computed sky for ' + loc.name + '. ' + (sky.daytime ? 'Daytime. ' : 'Night. ') +
+        var previewInfo = BORTLE.find(function(item) { return item.class === bortlePreview.class; }) || BORTLE[4];
+        var previewSummary = bortlePreview.mode === 'daylight'
+          ? 'Bortle class ' + previewInfo.class + ' is selected, but daylight or civil twilight controls the current background and pauses the contrast preview. '
+          : 'Reference-star contrast preview: Bortle class ' + previewInfo.class + ', ' + previewInfo.name + '; the preview is illustrative, not calibrated, and does not forecast visibility. ';
+        var solarState = sky.sun.alt >= 0 ? 'Daytime. '
+          : sky.sun.alt >= -6 ? 'Civil twilight. '
+            : sky.sun.alt > -18 ? 'Twilight. ' : 'Night. ';
+        return 'Computed sky for ' + loc.name + '. ' + solarState +
           'Overhead chart: north at top, east at left, horizon at the outer circle, zenith at the center. ' +
-          moonSummary + bodySummary + starSummary +
-          (targetStatus || '') + ' Shown for ' + when.toLocaleString(undefined, {
+          moonSummary + bodySummary + starSummary + previewSummary +
+          (targetStatus || '') + (targetTrackSummary ? ' ' + targetTrackSummary : '') + ' Shown for ' + when.toLocaleString(undefined, {
             timeZone: loc.timeZone, month: 'short', day: 'numeric', year: 'numeric',
             hour: 'numeric', minute: '2-digit'
           }) + ' in ' + loc.name + '.';

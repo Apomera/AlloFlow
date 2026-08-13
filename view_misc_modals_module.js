@@ -76,7 +76,9 @@ function UDLGuideModal(props) {
     handleRestoreArchivedPlan,
     handleDeleteArchivedPlan,
     handleRebuildBlueprintStep,
+    handleCopyBlueprintDiagnostics,
     handleDownloadBlueprintDiagnostics,
+    getSafeGenerationFailureReason,
     lessonTemplates,
     handleSaveLessonTemplate,
     handleApplyLessonTemplate,
@@ -137,6 +139,24 @@ function UDLGuideModal(props) {
     udlStandardFramework,
     udlStandardGrade
   } = props;
+  const stopLegacyDictation = React.useCallback(() => {
+    try {
+      const voice = window.AlloFlowVoice;
+      if (voice && typeof voice.stopActiveDictation === "function") voice.stopActiveDictation(true);
+    } catch (_) {
+    }
+    setIsDictationMode(false);
+  }, [setIsDictationMode]);
+  const closeGuide = React.useCallback(() => {
+    stopLegacyDictation();
+    setIsConversationMode(false);
+    handleSetShowUDLGuideToFalse();
+  }, [handleSetShowUDLGuideToFalse, setIsConversationMode, stopLegacyDictation]);
+  React.useEffect(() => {
+    if (alloVoiceActive || voicePaused || !showUDLGuide) stopLegacyDictation();
+    if (!alloVoiceActive || !showUDLGuide) setIsConversationMode(false);
+    if (!alloVoiceActive) setVoicePaused(false);
+  }, [alloVoiceActive, setIsConversationMode, showUDLGuide, stopLegacyDictation, voicePaused]);
   const [standardToolsOpen, setStandardToolsOpen] = useState(() => {
     try {
       return localStorage.getItem("allo_udl_standard_tools_open") === "1";
@@ -169,7 +189,7 @@ function UDLGuideModal(props) {
       "button",
       {
         type: "button",
-        onClick: handleSetShowUDLGuideToFalse,
+        onClick: closeGuide,
         className: "hover:bg-white/20 p-1 rounded transition-colors",
         "aria-label": t("common.close")
       },
@@ -185,14 +205,12 @@ function UDLGuideModal(props) {
       onClick: (e) => {
         if (isHelpMode) return;
         e.preventDefault();
+        const next = !alloVoiceActive;
+        stopLegacyDictation();
         if (typeof onToggleVoiceAgent === "function") onToggleVoiceAgent();
         setVoicePaused(false);
-        const next = !alloVoiceActive;
-        setIsConversationMode(next);
-        if (next) {
-          setIsDictationMode(true);
-          setIsBotVisible(true);
-        }
+        setIsConversationMode(false);
+        if (next) setIsBotVisible(true);
         let seenHint = false;
         try {
           seenHint = !!localStorage.getItem("allo_agent_voice_hint_v1");
@@ -203,15 +221,15 @@ function UDLGuideModal(props) {
             localStorage.setItem("allo_agent_voice_hint_v1", "1");
           } catch (_) {
           }
-          setUdlMessages((prev) => [...prev, { role: "model", text: t("chat_guide.talk_hint") || "Listening. Ask a question or say what you want done \u2014 \u201Copen the learning hub\u201D, \u201Csimplify this to grade 3 then make a quiz\u201D, or \u201Cwhere is the export button?\u201D. Say \u201Cstop listening\u201D to finish. Typing works exactly the same way: single actions get a confirm chip, and multi-step asks get a plan card you review before anything runs. Privacy note: speech recognition sends microphone audio to your browser\u2019s speech service (Google on Chrome) while listening \u2014 best to keep it off during student conversations. Prefer fully on-device? Say or type \u201Cdownload voice models\u201D for a one-time download, after which recognition and the spoken voice both stay on this device." }]);
+          setUdlMessages((prev) => [...prev, { role: "model", text: t("chat_guide.talk_hint") || "Listening for app commands. Try \u201Copen the learning hub\u201D, \u201Cread this page\u201D, or \u201Cwhere is the export button?\u201D. Say \u201Cpause listening\u201D to pause AlloBot commands or \u201Cstop listening\u201D to finish. To ask a question or request several steps, type below; typed multi-step requests get a plan card you review before anything runs. Privacy note: AlloBot uses your selected recognition engine. A browser speech service may send command audio to its provider; on-device Whisper keeps recognition audio on this device." }]);
         }
       },
-      className: `hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${alloVoiceActive ? "bg-red-600 text-white border-red-400 animate-pulse" : "border-white/40"}`,
-      title: alloVoiceActive ? t("chat_guide.talk_stop_tooltip", "Stop listening") : t("chat_guide.talk_start_tooltip", "Talk to AlloBot: ask a question or say what you want done")
+      className: `hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${alloVoiceActive ? voicePaused ? "bg-amber-400 text-indigo-900 border-amber-500" : "bg-red-600 text-white border-red-400 animate-pulse" : "border-white/40"}`,
+      title: alloVoiceActive ? voicePaused ? t("chat_guide.talk_stop_paused_tooltip", "Stop the paused AlloBot voice session") : t("chat_guide.talk_stop_tooltip", "Stop AlloBot command listening") : t("chat_guide.talk_start_tooltip", "Start AlloBot command listening")
     },
     /* @__PURE__ */ React.createElement(Headphones, { size: 12 }),
     " ",
-    alloVoiceActive ? t("chat_guide.talk_on") || "Listening" : t("chat_guide.talk") || "Talk"
+    alloVoiceActive ? voicePaused ? t("chat_guide.talk_paused", "Paused") : t("chat_guide.talk_on") || "Listening" : t("chat_guide.talk") || "Talk"
   ), alloVoiceActive && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -219,6 +237,7 @@ function UDLGuideModal(props) {
       "data-help-key": "chat_talk_pause",
       "aria-pressed": voicePaused ? "true" : "false",
       onClick: () => {
+        stopLegacyDictation();
         const loop = window.__alloVoiceLoop;
         if (!loop) return;
         if (voicePaused) {
@@ -229,7 +248,7 @@ function UDLGuideModal(props) {
         }
       },
       className: `hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${voicePaused ? "bg-amber-400 text-indigo-900 border-amber-500" : "border-white/40"}`,
-      title: voicePaused ? t("chat_guide.resume_tooltip", "Turn the microphone back on") : t("chat_guide.pause_tooltip", "Pause listening \u2014 releases the microphone but keeps your session")
+      title: voicePaused ? t("chat_guide.resume_tooltip", "Resume AlloBot command listening") : t("chat_guide.pause_tooltip", "Pause AlloBot command listening and release its microphone session")
     },
     voicePaused ? t("chat_guide.resume", "Resume") : t("chat_guide.pause", "Pause")
   ), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
@@ -259,20 +278,6 @@ function UDLGuideModal(props) {
     },
     /* @__PURE__ */ React.createElement(Eye, { size: 14, className: "mt-0.5 shrink-0" }),
     /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.show_me", "Point things out on screen")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-500" }, isShowMeMode ? t("common.on", "On") : t("common.off", "Off"), " \u2014 ", t("chat_guide.show_me_desc", "Asking \u201Cwhere is\u2026\u201D always points, with or without this.")))
-  ), alloVoiceActive && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      role: "menuitemcheckbox",
-      "aria-checked": autoSendVoice ? "true" : "false",
-      type: "button",
-      onClick: () => {
-        handleToggleAutoSendVoice();
-        setChatMenuOpen(false);
-      },
-      className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100"
-    },
-    /* @__PURE__ */ React.createElement(Zap, { size: 14, className: "mt-0.5 shrink-0" }),
-    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.auto_send_on", "Send as soon as I stop talking")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-500" }, autoSendVoice ? t("common.on", "On") : t("common.off", "Off")))
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -307,7 +312,7 @@ function UDLGuideModal(props) {
       "aria-label": t("chat_guide.collapse") || "Collapse to a bar (keeps the conversation)"
     },
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 18 })
-  ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "chat_close", onClick: handleSetShowUDLGuideToFalse, className: "hover:bg-white/20 p-1 rounded", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), /* @__PURE__ */ React.createElement("div", { className: `flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`, ref: udlScrollRef }, udlMessages.map((msg, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: `flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}` }, !msg.type && /* @__PURE__ */ React.createElement("div", { className: `max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${msg.role === "user" ? `${chatStyles.userBubble} rounded-br-none` : `${chatStyles.modelBubble} rounded-bl-none`}` }, renderFormattedText(msg.text)), msg.type === "blueprint" && activeBlueprint && /* @__PURE__ */ React.createElement("div", { className: "w-full" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "chat_close", onClick: closeGuide, className: "hover:bg-white/20 p-1 rounded", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), /* @__PURE__ */ React.createElement("div", { className: `flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`, ref: udlScrollRef }, udlMessages.map((msg, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: `flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}` }, !msg.type && /* @__PURE__ */ React.createElement("div", { className: `max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${msg.role === "user" ? `${chatStyles.userBubble} rounded-br-none` : `${chatStyles.modelBubble} rounded-bl-none`}` }, renderFormattedText(msg.text)), msg.type === "blueprint" && activeBlueprint && /* @__PURE__ */ React.createElement("div", { className: "w-full" }, /* @__PURE__ */ React.createElement(
     InteractiveBlueprintCard,
     {
       config: activeBlueprint,
@@ -315,7 +320,9 @@ function UDLGuideModal(props) {
       isRunning: !!isExecutingBlueprint,
       onStopRun: handleStopBlueprintRun,
       onRebuildStep: handleRebuildBlueprintStep,
+      onCopyDiagnostics: handleCopyBlueprintDiagnostics,
       onDownloadDiagnostics: handleDownloadBlueprintDiagnostics,
+      summarizeFailureReason: getSafeGenerationFailureReason,
       onSaveTemplate: handleSaveLessonTemplate,
       onPreviewStep: handlePreviewBlueprintStep,
       onUpdate: handleBlueprintUIUpdate,
@@ -418,7 +425,9 @@ function UDLGuideModal(props) {
       isRunning: !!isExecutingBlueprint,
       onStopRun: handleStopBlueprintRun,
       onRebuildStep: handleRebuildBlueprintStep,
+      onCopyDiagnostics: handleCopyBlueprintDiagnostics,
       onDownloadDiagnostics: handleDownloadBlueprintDiagnostics,
+      summarizeFailureReason: getSafeGenerationFailureReason,
       onSaveTemplate: handleSaveLessonTemplate,
       onPreviewStep: handlePreviewBlueprintStep,
       onUpdate: handleBlueprintUIUpdate,
@@ -1438,6 +1447,9 @@ function AIBackendModalBody(props) {
     ));
   };
   const guidedTestVisible = advancedOpen || guidedView === "gemini" || guidedView === "private" || guidedView.startsWith("connect-detail:");
+  const openDeviceStorageManager = () => {
+    if (typeof window.__alloOpenDeviceStorageProbe === "function") window.__alloOpenDeviceStorageProbe();
+  };
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300", onClick: () => setShowAIBackendModal(false) }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "ai_backend_modal_panel", "data-student-ai-setup": isStudentAiSetup ? "true" : "false", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: (e) => {
     if (e.key === "Escape") setShowAIBackendModal(false);
   }, onClick: (e) => e.stopPropagation() }, isStudentAiSetup && /* @__PURE__ */ React.createElement("style", null, `
@@ -1450,7 +1462,7 @@ function AIBackendModalBody(props) {
               [data-student-ai-setup="true"] #ai-backend-device-storage-section {
                 display: none !important;
               }
-            `), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, isStudentAiSetup ? "Connect Personal AI" : t("ai_backend.title") || "AI Backend Settings")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, isStudentAiSetup && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, "Personal AI for this session"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, "Use only your own provider account. Your credential is stored only in this browser tab and transmitted only to the provider you choose; it is never placed in the QR, Class Mailbox, or student submission."), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, "Your prompts and activity content are sent directly to the provider you choose and may create charges. Follow your school or district rules, do not include private student information, and use a restricted, low-budget key. Avoid shared devices.")), !advancedOpen && !isStudentAiSetup && renderGuidedStep(), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
+            `), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, isStudentAiSetup ? "Connect Personal AI" : t("ai_backend.title") || "AI Backend Settings")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, isStudentAiSetup && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, "Personal AI for this session"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, "Use only your own provider account. Your credential is stored only in this browser tab and transmitted only to the provider you choose; it is never placed in the QR, Class Mailbox, or student submission."), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, "Your prompts and activity content are sent directly to the provider you choose and may create charges. Follow your school or district rules, do not include private student information, and use a restricted, low-budget key. Avoid shared devices.")), !advancedOpen && !isStudentAiSetup && renderGuidedStep(), !advancedOpen && !isStudentAiSetup && /* @__PURE__ */ React.createElement("section", { id: "ai-backend-guided-storage-shortcut", className: "rounded-xl border border-cyan-200 bg-cyan-50 p-3", "aria-labelledby": "ai-backend-guided-storage-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "ai-backend-guided-storage-title", className: "text-xs font-black text-cyan-950" }, "Local storage & downloads"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-cyan-900" }, "Review space used by saved work and offline models such as Whisper and Kokoro, export a backup, or erase local data.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ai_backend_guided_storage_btn", onClick: openDeviceStorageManager, className: "min-h-11 shrink-0 rounded-xl border-2 border-cyan-600 bg-white px-4 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2" }, "Manage local storage"))), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
     "select",
     {
       "data-help-key": "ai_backend_provider_select",
@@ -1678,9 +1690,7 @@ function AIBackendModalBody(props) {
   ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), !isStudentAiSetup && /* @__PURE__ */ React.createElement(PlatformDiagnosticsSection, { t }), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-device-storage-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: () => {
-        if (typeof window.__alloOpenDeviceStorageProbe === "function") window.__alloOpenDeviceStorageProbe();
-      },
+      onClick: openDeviceStorageManager,
       className: "bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
     },
     "\u{1F50C} ",

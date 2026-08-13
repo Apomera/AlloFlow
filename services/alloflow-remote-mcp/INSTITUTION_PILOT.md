@@ -336,26 +336,32 @@ The endpoint compares the non-local Worker version, the Worker's declared
 database/checkpoint schema contract, runner protocol and identity, idle state,
 staged manifest, runner bytes, model route, and checkpoint-engine identity. It
 also queries D1 for every lease and checkpoint column introduced by migrations
-0004 and 0005. It returns 503 if that live schema sentinel or any runner check
+0004 through 0006 and validates migration 0007's singleton admission-control
+row. It returns 503 if that live schema sentinel or any runner check
 fails. The canary command retries a cold or transient failure, emits only
 bounded release identifiers and hashes, and exits non-zero if compatibility is
 not proven.
 
-The two checked deployment commands execute this order:
+After migration 0007 exists, the two checked deployment commands execute this
+order:
 
-1. rebuild and verify the staged runner closure;
-2. run `runner:canary` against the runner's checkpoint/resume contract;
-3. run staging preflight;
-4. replace the remote bucket policy with the exact checked R2 lifecycle policy
-   using Wrangler's forced lifecycle update;
-5. deploy the Worker and container definition; and
-6. run the authenticated post-deploy release canary.
+1. explicitly pause new upload/job admissions with operator and reason audit
+   fields, then poll the atomic D1 gate until active jobs reach zero;
+2. rebuild and verify the staged runner closure;
+3. run `runner:canary` and staging preflight;
+4. replace the remote bucket policy and read it back through the R2 API,
+   failing unless the normalized policy exactly matches the checked source;
+5. deploy the Worker and container definition;
+6. run the authenticated post-deploy release canary while admissions remain
+   paused; and
+7. attempt a token-fenced resume in a `finally` path only when this release
+   acquired the pause.
 
 The lifecycle policy remains in force if a later deploy or canary step fails.
 The command stops on a failed step, but a failed post-deploy canary does not
 automatically undo the deployment. Keep admissions stopped and follow the
 coordinated rollback procedure below. The Durable Object migration declared
-in Wrangler deploys with the Worker; the five D1 SQL migrations are separate
+in Wrangler deploys with the Worker; the seven D1 SQL migrations are separate
 and must already have been applied in order.
 
 Run `npm run alerts:check` every five minutes from the institution's external
@@ -436,21 +442,25 @@ resources and do not upload real documents.
     ```
 
     Inspect the first list and stop on any unexpected migration state. Require
-    the final list to show no pending migrations. The five SQL files must apply
+    the final list to show no pending migrations. The seven SQL files must apply
     in order:
     `migrations/0001_institution_pilot.sql`,
     `migrations/0002_remediation_effort_and_admission.sql`, then
     `migrations/0003_upload_attempt_admission.sql`, then
     `migrations/0004_job_attempt_leases.sql`, then
-    `migrations/0005_job_checkpoints.sql`.
+    `migrations/0005_job_checkpoints.sql`, then
+    `migrations/0006_throttle_wait_and_verification.sql`, then
+    `migrations/0007_admission_control.sql`.
     `/readyz` verifies that the live D1 `jobs` table exposes every required
-    lease/checkpoint column. Still verify the remote migration history: the
+    lease/checkpoint/throttle-wait/verification column. Still verify the remote migration history: the
     sentinel does not prove migration ordering or index creation.
 13. Build the container as `linux/amd64` on an x64 CI host. The deny-by-default
     `.dockerignore` permits only runner inputs and the hash-recorded staged
     closure into the build context.
-14. With the protected `RELEASE_CANARY_SECRET` available to the deployment
-    process, run `npm run deploy:staging`. It reapplies the exact checked R2
+14. Set `ALLOFLOW_RELEASE_OPERATOR` to the bounded institution operator or CI
+    identity. With protected `RELEASE_CANARY_SECRET`,
+    `CLOUDFLARE_ACCOUNT_ID`, and `CLOUDFLARE_API_TOKEN` available to the
+    deployment process, run `npm run deploy:staging`. It reapplies the exact checked R2
     lifecycle policy before deploy and must finish with a compatible
     authenticated `/readyz` response. A non-zero result is a failed release,
     even if Wrangler already uploaded the Worker.
@@ -468,27 +478,19 @@ resources and do not upload real documents.
 
 For an upgrade of an already-running pilot, use this order:
 
-1. Establish an institution-controlled maintenance window that prevents new
-   upload and remediation-start calls while old jobs finish. This repository
-   does not provide an admission-only runtime switch. Do not unset
-   `PILOT_ACCEPTANCE_VERSION` or set `PILOT_ENABLED=false` and call that a
-   graceful drain: those settings also remove status, cancel, delete, and
-   transfer access.
-2. Let existing work complete or cancel it through the normal fenced path,
-   then run the remote drain query:
-
-   ```sh
-   npx wrangler d1 execute PILOT_DB --remote --config wrangler.pilot.local.jsonc --command "SELECT status, COUNT(*) AS count FROM jobs WHERE status IN ('queued','running','cancelling','deleting') GROUP BY status;"
-   ```
-
-   Require zero active counts and verify no Workflow/container attempt remains
-   active. Migration 0004's one-hour legacy lease is a safety margin, not a
-   substitute for this drain.
+1. Apply the backward-compatible migration 0007 first. It creates the
+   singleton gate in the open state, so old code remains available.
+2. Set `ALLOFLOW_RELEASE_OPERATOR`, then use `npm run deploy:staging` (or the
+   accepted variant). The command explicitly pauses admission before its
+   bounded 35-minute drain. Do not unset `PILOT_ACCEPTANCE_VERSION` or set
+   `PILOT_ENABLED=false`; those settings also remove status, cancel, delete,
+   and transfer access. Migration 0004's lease is a safety margin, not a
+   substitute for the checked drain.
 3. Record the currently accepted Worker version, source revision, matching
    runner manifest/build hashes, container release, checked config, and D1
    migration list as the rollback target. Preserve secrets through the
    institution's normal protected backup/recovery process.
-4. List, apply, and re-list migrations 0004 and 0005 with the remote D1
+4. List, apply, and re-list migrations 0004 through 0007 with the remote D1
    commands above, in that order, after the drain and before deploying code
    that reads their lease/checkpoint columns. Require no pending migrations.
    Do not improvise a destructive down-migration during release recovery.
@@ -505,6 +507,16 @@ For an upgrade of an already-running pilot, use this order:
    the authenticated canary and synthetic checkpoint/resume job before
    reopening admissions. The two-day R2 lifecycle privacy backstop should
    remain in force.
+
+The wrapper acquires only an open gate, rechecks its unique local pause token
+before every release step, and attempts a fenced resume even after a failed
+release. It will not reopen an existing incident pause or a pause changed by an
+operator during release. If ownership was lost or resume fails, admissions
+remain closed and it prints the recovery command
+`npm run admission:resume:staging`; this command is an explicit operator
+`--force` override. Inspect the current pause owner/reason before using it. A
+standalone pause prints the token needed for a deliberate fenced release; do
+not copy that token into Worker configuration, telemetry, or shared logs.
 
 Wrangler bindings are non-inheritable. If staging and production use
 `env.*`, repeat KV, D1, R2, Workflow, Durable Object, Container, and route

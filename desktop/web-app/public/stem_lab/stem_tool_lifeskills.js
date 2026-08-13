@@ -1634,11 +1634,16 @@ window.StemLab = window.StemLab || {
         var record = lifeSkills3dPassport[lab.id] || {};
         return !record.complete && (Number(record.completed) || 0) < (Number(record.total) || 6);
       }) || null;
-      var lifeSkills3dPassportHint = lifeSkills3dNextLab ? 'Next suggested lab: ' + lifeSkills3dNextLab.title + '.' : 'All ' + LIFE_SKILLS_3D_LABS.length + ' 3D labs are complete. Revisit any lab to strengthen transfer skills.';
       var lifeSkills3dReadinessCount = LIFE_SKILLS_3D_LABS.filter(function(lab) { return !!(lifeSkills3dPassport[lab.id] || {}).confidence; }).length;
       var lifeSkills3dNextStepCount = LIFE_SKILLS_3D_LABS.filter(function(lab) { return !!(lifeSkills3dPassport[lab.id] || {}).nextStep; }).length;
       var lifeSkills3dConfidenceNames = { 'not-yet': 'Not yet', 'getting-there': 'Getting there', ready: 'Ready to try' };
       var lifeSkills3dNextStepNames = { replay: 'Replay a target', explain: 'Explain it to someone', checklist: 'Use a checklist' };
+      var lifeSkills3dCapstoneTaskNames = { stove: 'Stove safety', lint: 'Dryer airflow', shutoff: 'Water shutoff', alarm: 'Alarm response', visibility: 'Visible transit stop' };
+      var lifeSkills3dCapstoneRecord = lifeSkills3dPassport.capstone || {};
+      var lifeSkills3dTransferFocus = lifeSkills3dCapstoneTaskNames[lifeSkills3dCapstoneRecord.recommendedTask] || '';
+      var lifeSkills3dContextTransfer = Math.max(0, Math.min(5, Number(lifeSkills3dCapstoneRecord.contextTransfer) || 0));
+      var lifeSkills3dProcedurePractice = Math.max(0, Math.min(5, Number(lifeSkills3dCapstoneRecord.procedurePractice) || 0));
+      var lifeSkills3dPassportHint = lifeSkills3dNextLab ? 'Next suggested lab: ' + lifeSkills3dNextLab.title + '.' : lifeSkills3dTransferFocus ? 'Transfer focus: Rehearse ' + lifeSkills3dTransferFocus + ' in a changed capstone context.' : lifeSkills3dProcedurePractice < 5 ? 'Action goal: Practice the three-step actions in the capstone.' : lifeSkills3dContextTransfer < 5 ? 'Transfer goal: Complete changed-context practice in the capstone.' : 'All ' + LIFE_SKILLS_3D_LABS.length + ' 3D labs are complete with procedural and context-transfer evidence.';
 
       // ── State helpers ──
       function upd(k, v) {
@@ -1738,6 +1743,14 @@ window.StemLab = window.StemLab || {
           var record = Object.assign({ completed: 0, total: lifeSkills3dTotal(source), complete: false, confidence: '', nextStep: '' }, next[labId] || {});
           if (signals && Object.prototype.hasOwnProperty.call(signals, 'confidence')) record.confidence = lifeSkills3dConfidenceNames[signals.confidence] ? signals.confidence : '';
           if (signals && Object.prototype.hasOwnProperty.call(signals, 'nextStep')) record.nextStep = lifeSkills3dNextStepNames[signals.nextStep] ? signals.nextStep : '';
+          if (labId === 'capstone' && signals) {
+            if (Object.prototype.hasOwnProperty.call(signals, 'firstTry')) record.firstTry = Math.max(0, Math.min(5, Math.round(Number(signals.firstTry) || 0)));
+            if (Object.prototype.hasOwnProperty.call(signals, 'selfCorrected')) record.selfCorrected = Math.max(0, Math.min(5, Math.round(Number(signals.selfCorrected) || 0)));
+            if (Object.prototype.hasOwnProperty.call(signals, 'coached')) record.coached = Math.max(0, Math.min(5, Math.round(Number(signals.coached) || 0)));
+            if (Object.prototype.hasOwnProperty.call(signals, 'contextTransfer')) record.contextTransfer = Math.max(0, Math.min(5, Math.round(Number(signals.contextTransfer) || 0)));
+            if (Object.prototype.hasOwnProperty.call(signals, 'procedurePractice')) record.procedurePractice = Math.max(0, Math.min(5, Math.round(Number(signals.procedurePractice) || 0)));
+            if (Object.prototype.hasOwnProperty.call(signals, 'recommendedTask')) record.recommendedTask = lifeSkills3dCapstoneTaskNames[signals.recommendedTask] ? signals.recommendedTask : '';
+          }
           record.updatedAt = Date.now();
           next[labId] = record;
           return next;
@@ -1780,7 +1793,26 @@ window.StemLab = window.StemLab || {
           var progressTotal = Number(data.total) || lifeSkills3dTotal(data.source);
           var progressCompleted = Math.max(0, Number(data.completed) || 0);
           updateLifeSkills3dPassport(data.source, progressCompleted, progressTotal, progressCompleted >= progressTotal);
-          updateLifeSkills3dPassportSignals(data.source, { confidence: data.confidence, nextStep: data.nextStep });
+          updateLifeSkills3dPassportSignals(data.source, { confidence: data.confidence, nextStep: data.nextStep, firstTry: data.firstTry, selfCorrected: data.selfCorrected, coached: data.coached, contextTransfer: data.contextTransfer, procedurePractice: data.procedurePractice, recommendedTask: data.recommendedTask });
+          return;
+        }
+        if (/-targeted-replay-start$/.test(type)) {
+          upd('lifeSkills3dStatus', label + ' targeted replay started with less support.');
+          announceToSR('Started a targeted 3D ' + label + ' replay with less support.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+          return;
+        }
+        if (/-procedure-start$/.test(type)) {
+          upd('lifeSkills3dStatus', label + ' three-step action practice started.');
+          announceToSR('Started three-step action practice in the 3D ' + label + ' lab.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+          return;
+        }
+        if (/-procedure-practiced$/.test(type)) {
+          updateLifeSkills3dPassportSignals(data.source, { procedurePractice: data.procedurePractice });
+          upd('lifeSkills3dStatus', label + ' action sequence practiced.');
+          announceToSR('Completed a three-step action sequence in the 3D ' + label + ' lab.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
           return;
         }
         if (/-challenge-start$/.test(type)) {
@@ -1845,7 +1877,7 @@ window.StemLab = window.StemLab || {
             if (key.indexOf(data.source + ':') === 0) delete bridge.seen[key];
           });
           updateLifeSkills3dPassport(data.source, 0, lifeSkills3dTotal(data.source), false);
-          updateLifeSkills3dPassportSignals(data.source, { confidence: '', nextStep: '' });
+          updateLifeSkills3dPassportSignals(data.source, { confidence: '', nextStep: '', firstTry: 0, selfCorrected: 0, coached: 0, contextTransfer: 0, procedurePractice: 0, recommendedTask: '' });
           upd('lifeSkills3dStatus', label + ' progress reset.');
           return;
         }
@@ -1985,11 +2017,15 @@ window.StemLab = window.StemLab || {
           if (/^(localhost|127\.0\.0\.1)$/i.test(host) || /alloflow/i.test(host)) capstoneBase = window.location.origin + '/life_skills_capstone/life_skills_capstone.html';
         } catch (_) {}
         var capstoneFoundations = LIFE_SKILLS_3D_LABS.filter(function(lab) { return lab.id !== 'capstone'; });
-        var capstoneFocusLab = capstoneFoundations.find(function(lab) { return (lifeSkills3dPassport[lab.id] || {}).confidence === 'not-yet'; }) || (lifeSkills3dNextLab && lifeSkills3dNextLab.id !== 'capstone' ? lifeSkills3dNextLab : null) || capstoneFoundations.find(function(lab) { var record = lifeSkills3dPassport[lab.id] || {}; return !record.complete && (Number(record.completed) || 0) < (Number(record.total) || Number(lab.total) || 6); }) || capstoneFoundations[0];
+        var capstoneEvidenceRecord = lifeSkills3dPassport.capstone || {};
+        var capstoneRecommendedLabId = ({ alarm: 'safety', shutoff: 'repair', stove: 'kitchen', lint: 'laundry', visibility: 'transit' })[capstoneEvidenceRecord.recommendedTask] || '';
+        var capstoneRecommendedLab = capstoneFoundations.find(function(lab) { return lab.id === capstoneRecommendedLabId; }) || null;
+        var capstoneFocusLab = capstoneFoundations.find(function(lab) { return (lifeSkills3dPassport[lab.id] || {}).confidence === 'not-yet'; }) || capstoneRecommendedLab || (lifeSkills3dNextLab && lifeSkills3dNextLab.id !== 'capstone' ? lifeSkills3dNextLab : null) || capstoneFoundations.find(function(lab) { var record = lifeSkills3dPassport[lab.id] || {}; return !record.complete && (Number(record.completed) || 0) < (Number(record.total) || Number(lab.total) || 6); }) || capstoneFoundations[0];
         var capstoneFocusRecord = lifeSkills3dPassport[capstoneFocusLab.id] || {};
         var capstoneFoundationsComplete = capstoneFoundations.every(function(lab) { var record = lifeSkills3dPassport[lab.id] || {}; return !!record.complete || (Number(record.completed) || 0) >= (Number(record.total) || Number(lab.total) || 6); });
-        var capstoneSupport = capstoneFocusRecord.confidence === 'not-yet' || !(Number(capstoneFocusRecord.completed) || 0) ? 'supported' : capstoneFoundationsComplete ? 'independent' : 'guided';
-        var query = '?v=2&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark') + '&focus=' + encodeURIComponent(capstoneFocusLab.id) + '&support=' + encodeURIComponent(capstoneSupport);
+        var capstoneNeedsReplay = !!capstoneRecommendedLab && (Number(capstoneEvidenceRecord.coached) + Number(capstoneEvidenceRecord.selfCorrected) > 0);
+        var capstoneSupport = capstoneFocusRecord.confidence === 'not-yet' || !(Number(capstoneFocusRecord.completed) || 0) ? 'supported' : capstoneNeedsReplay ? 'guided' : capstoneFoundationsComplete ? 'independent' : 'guided';
+        var query = '?v=3&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark') + '&focus=' + encodeURIComponent(capstoneFocusLab.id) + '&support=' + encodeURIComponent(capstoneSupport);
         var w = null;
         try { w = window.open(capstoneBase + query, 'alloflow-life-capstone-3d', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) { announceToSR('The 3D day-in-the-life capstone was blocked. Allow pop-ups for this page, then try again.'); upd('capstone3dMsg', 'Pop-up blocked — allow pop-ups for this page, then try again.'); return; }
@@ -3643,6 +3679,11 @@ window.StemLab = window.StemLab || {
                 var done = !!record.complete || completed >= total;
                 var readiness = lifeSkills3dConfidenceNames[record.confidence] || 'Not set';
                 var nextStep = lifeSkills3dNextStepNames[record.nextStep] || 'Choose a next step';
+                var transferTotal = lab.id === 'capstone' ? Math.max(0, Number(record.firstTry) || 0) + Math.max(0, Number(record.selfCorrected) || 0) + Math.max(0, Number(record.coached) || 0) : 0;
+                var transferEvidence = transferTotal ? (Number(record.firstTry) || 0) + ' first try, ' + (Number(record.selfCorrected) || 0) + ' self-corrected, ' + (Number(record.coached) || 0) + ' coached' : '';
+                var contextEvidence = lab.id === 'capstone' ? Math.max(0, Math.min(5, Number(record.contextTransfer) || 0)) + '/5 context shifts' : '';
+                var procedureEvidence = lab.id === 'capstone' ? Math.max(0, Math.min(5, Number(record.procedurePractice) || 0)) + '/5 action sequences' : '';
+                var transferFocusName = lab.id === 'capstone' ? (lifeSkills3dCapstoneTaskNames[record.recommendedTask] || '') : '';
                 return h('button', {
                   key: lab.id,
                   type: 'button',
@@ -3650,7 +3691,7 @@ window.StemLab = window.StemLab || {
                   onClick: function() { openLifeSkills3dById(lab.id); },
                   className: 'group relative overflow-hidden text-left rounded-xl border bg-gradient-to-br from-white to-slate-50 p-3 shadow-sm hover:-translate-y-0.5 hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-teal-700',
                   style: { borderColor: lab.accent + '66' },
-                  'aria-label': 'Open ' + lab.title + ' 3D lab, ' + completed + ' of ' + total + ' steps complete'
+                  'aria-label': 'Open ' + lab.title + ' 3D lab, ' + completed + ' of ' + total + ' steps complete' + (transferEvidence ? ', transfer evidence: ' + transferEvidence : '') + (contextEvidence ? ', ' + contextEvidence : '') + (procedureEvidence ? ', ' + procedureEvidence : '')
                 },
                   h('span', { className: 'absolute left-0 top-0 bottom-0 w-1 rounded-l-xl', style: { background: done ? '#059669' : lab.accent }, 'aria-hidden': 'true' }),
                   h('div', { className: 'flex items-start justify-between gap-2 pl-1' },
@@ -3668,11 +3709,16 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'h-2 rounded-full bg-slate-200 overflow-hidden mt-2 ml-1', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': total, 'aria-valuenow': completed, 'aria-label': lab.title + ' progress' },
                     h('div', { className: 'h-full rounded-full transition-all', style: { width: percent + '%', background: done ? '#059669' : lab.accent } })
                   ),
+                  transferTotal > 0 && h('div', { className: 'flex h-1.5 rounded-full overflow-hidden mt-2 ml-1 bg-slate-200', role: 'img', 'aria-label': 'Transfer evidence: ' + transferEvidence, 'data-lifeskills-transfer-evidence': 'true' },
+                    Number(record.firstTry) > 0 && h('span', { style: { width: (Number(record.firstTry) / transferTotal * 100) + '%', background: '#059669' }, 'aria-hidden': 'true' }),
+                    Number(record.selfCorrected) > 0 && h('span', { style: { width: (Number(record.selfCorrected) / transferTotal * 100) + '%', background: '#0891b2' }, 'aria-hidden': 'true' }),
+                    Number(record.coached) > 0 && h('span', { style: { width: (Number(record.coached) / transferTotal * 100) + '%', background: '#d97706' }, 'aria-hidden': 'true' })
+                  ),
                   h('div', { className: 'flex items-center justify-between gap-2 mt-2 ml-1 text-[10px] text-slate-600' },
                     h('span', null, 'Readiness: ' + readiness),
                     h('span', { className: 'text-right' }, nextStep)
                   ),
-                  h('p', { className: 'text-[10px] text-slate-600 mt-2 ml-1' }, done ? 'Revisit for transfer practice.' : 'Open the scene and practice safely.')
+                  h('p', { className: 'text-[10px] text-slate-600 mt-2 ml-1' }, transferEvidence ? 'Evidence: ' + transferEvidence + (contextEvidence ? ' | ' + contextEvidence : '') + (procedureEvidence ? ' | ' + procedureEvidence : '') + (transferFocusName ? ' | Next focus: ' + transferFocusName : '') : done ? 'Revisit for transfer practice.' + (contextEvidence ? ' ' + contextEvidence + '.' : '') + (procedureEvidence ? ' ' + procedureEvidence + '.' : '') : 'Open the scene and practice safely.')
                 );
               })
             )

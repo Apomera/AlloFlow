@@ -107,8 +107,11 @@ caps. For student-identifiable documents prefer the keyless tools, or the fully 
 anywhere.
 
 The full AI audit/remediation path requires the Gemini API (**document content is sent to it**).
-Core browser libraries and veraPDF are bundled and run locally. The one-time setup downloads
-Chromium, and the editable-Office/ePub/DAISY/Braille exporters fetch pinned public libraries.
+Core browser libraries and the preferred veraPDF Java CLI are bundled and run locally. The
+legacy browser-based veraPDF compatibility path downloads CheerpJ/pdf-lib and is disabled unless
+`ALLOFLOW_MCP_ALLOW_BROWSER_VERAPDF_EGRESS=1` is explicitly set; MCP validation fails closed when
+the local Java CLI is unavailable. The one-time setup downloads Chromium, and the
+editable-Office/ePub/DAISY/Braille exporters fetch pinned public libraries.
 Those dependency requests do not intentionally include document content. All other tools listed
 in `dataHandling.offlineToolNames` need no network, AlloFlow, Cloudflare, paid Worker, or
 institution account.
@@ -211,7 +214,7 @@ The Canvas app never needs this — only this connector does.
 | `generate_resource_pack` | Calls the normal app's existing `generateFullPackHTML` exporter with app-shaped JSON to produce the same student/teacher resource pack. **No Gemini key, account, Worker, or upload.** This is a transport adapter, not a second renderer. | collision-safe `.html` | seconds |
 | `remediation_setup` | One-time environment setup: downloads the Chromium binary via Playwright (~200MB, 1–5 min). Idempotent — returns instantly when already installed. No key needed. | Playwright browser cache | 1–5 min once |
 | `pdf_audit` | Accessibility audit: score, per-severity issues, scanned/searchable detection, language, page count. Accepts `.pdf`, `.docx`, `.pptx` (Office files audit deterministically from extracted text). | nothing | 1–3 min |
-| `pdf_validate_ua` | Independent **PDF/UA-1 (ISO 14289-1)** validation via the packaged veraPDF CLI and local Java, with the bundled browser JVM as fallback. **No Gemini key, account, Worker, or upload.** | nothing | ~30–120 s |
+| `pdf_validate_ua` | Independent **PDF/UA-1 (ISO 14289-1)** validation via the packaged veraPDF CLI and local Java. Validates one immutable snapshot, supports cancellation, emits progress pulses, and returns its SHA-256, byte count, profile, validator version, and validation time. **No Gemini key, account, Worker, upload, or automatic CDN fallback.** | nothing | ~30–300 s |
 | `pdf_remediate` | Full pipeline, **synchronous**: audit → accessible HTML rebuild → AI fix passes to `target_score` → honesty-gated verification → tagged-PDF export. Blocks until done — use the job tools if your client enforces tool timeouts. | `<stem>-accessible.html`, `<stem>-tagged.pdf`, `<stem>-remediation-report.json` (collision-safe names, never overwrites) | 5–30 min |
 | `pdf_remediate_start` | Same run as a **background job**; returns a `jobId` immediately. Jobs run one at a time in start order. | same as above | instant return |
 | `pdf_batch_audit_start` | Background job **auditing** every document in a folder (non-recursive, ≤200 files) into one triage scoreboard. The cheap pass before remediating: find out *which* files need work instead of remediating a folder blind. Resumable (`skip_existing`, default true) and carries prior rows forward so a resumed scoreboard stays complete. | `accessibility-audit-scoreboard.json` + `.csv` (collision-safe) | instant return; 1–3 min per document |
@@ -429,11 +432,11 @@ count is not known up front, and inventing one would be a fake ETA.
 ```
 
 For `pdf_audit` and `pdf_remediate` this closes the run's browser context, which kills queued and
-in-flight Gemini calls within seconds (the same mechanism `remediation_job_cancel` uses). No
-response is sent for a cancelled request, per spec. Two honest limits: `pdf_validate_ua` runs
-outside the single-flight lane and deliberately owns no cancellable context (so a job cancel can
-never kill a validation) — cancelling it stops the answer, not the work; and quota already spent
-is spent. Output files written before the cancel stay on disk.
+in-flight Gemini calls within seconds (the same mechanism `remediation_job_cancel` uses).
+`pdf_validate_ua` terminates its dedicated Java child and deletes its private immutable input
+snapshot; it remains outside the remediation single-flight lane, so cancelling a remediation job
+cannot accidentally kill an unrelated validation. No response is sent for a cancelled request,
+per spec. Quota already spent is spent, and output files written before a cancel stay on disk.
 
 ## Behavior under throttling
 
@@ -467,6 +470,7 @@ no retry grind); 429s are classified per-minute (throttle, retried/deferred) vs 
 | `ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL` | `gemini-2.5-flash-lite` | one retry on a 404/config failure |
 | `ALLOFLOW_MCP_MAX_RUN_MINUTES` | `30` | hard wall clock per run |
 | `ALLOFLOW_MCP_VERAPDF_URL` | local loopback server | override validator page URL (host must support HTTP Range) |
+| `ALLOFLOW_MCP_ALLOW_BROWSER_VERAPDF_EGRESS` | off | `1` explicitly enables the legacy network-dependent CheerpJ browser validator for direct driver integrations; the MCP tool remains local-CLI-first and fail-closed |
 | `ALLOFLOW_MCP_STATE_DIR` | `~/.alloflow-mcp/jobs` | where job records persist (kept 30 days) |
 | `ALLOFLOW_MCP_ALLOWED_ROOTS` | unrestricted | OS path list; when set, every file/folder argument must resolve inside one of these roots |
 | `ALLOFLOW_MCP_VERBOSE` | off | forward ALL page console lines to stderr |
@@ -485,13 +489,15 @@ hash-verified `vendor/` browser runtime plus its third-party notices, `PRIVACY.m
 `io.modelcontextprotocol/skills` extension and serves that file through `skills/list`,
 `skills/get`, `resources/list`, and `resources/read` with a SHA-256 digest. Supporting clients can
 therefore import the safe workflow without a separately maintained copy; other clients ignore the
-extension and keep using the same 28 tools. The installer may accept an optional Gemini API key
+extension and keep using the same 29 tools. The installer may accept an optional Gemini API key
 (stored by Claude Desktop and injected as `GEMINI_API_KEY`; never embedded in the bundle).
 Install by dragging the `.mcpb` into Claude Desktop Settings > Extensions. Host machines
 still need Node 18+ on PATH and a one-time `npx playwright install chromium`; capabilities
 report separately on Playwright, Chromium, pipeline modules, and vendor hash integrity.
-`--lean` skips `node_modules` for personal development. Distribution builds require the official
-pinned MCPB validator; `--allow-unvalidated` creates only an explicitly labelled diagnostic ZIP.
+`--lean` skips `node_modules` for personal development and verifies protocol, registry parity, and
+vendor integrity without pretending Playwright is bundled. Full distribution builds additionally
+require the extracted artifact to resolve its own packaged Playwright. Distribution builds require
+the official pinned MCPB validator; `--allow-unvalidated` creates only an explicitly labelled diagnostic ZIP.
 
 ## Releases
 
@@ -531,7 +537,7 @@ removed, verifies every vendored runtime hash, and confirms the bundle cannot si
 assets or dependencies from the repository checkout.
 
 Every build also extracts the exact emitted .mcpb into a fresh temporary directory, clears
-NODE_PATH, launches only the shipped server, and verifies all 28 tools, manifest/server parity,
+NODE_PATH, launches only the shipped server, and verifies the unique 29-tool name set, manifest/server parity,
 pipeline modules, keyless mode, and every bundled vendor-file hash. Repeat that acceptance check
 without rebuilding with npm run verify:mcpb-artifact (which also requires packaged Playwright),
 or pass a lean diagnostic artifact directly to

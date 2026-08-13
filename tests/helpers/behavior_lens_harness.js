@@ -76,7 +76,7 @@ const LUCIDE_ICONS = [
   'PieChart', 'Play', 'PlayCircle', 'Plus', 'Power', 'Printer',
   'RefreshCw', 'Repeat', 'RotateCw', 'Save', 'Search', 'Send', 'Settings',
   'Share', 'Share2', 'Shield', 'ShieldAlert', 'ShieldCheck', 'Smile',
-  'Speaker', 'Square', 'Star', 'Sun', 'Target', 'ThumbsDown', 'ThumbsUp',
+  'Sparkles', 'Speaker', 'Square', 'Star', 'Sun', 'Target', 'ThumbsDown', 'ThumbsUp',
   'Trash', 'Trash2', 'TrendingDown', 'TrendingUp', 'Trophy', 'Type',
   'Upload', 'User', 'UserCheck', 'UserPlus', 'Users', 'Video', 'Volume2',
   'Wifi', 'WifiOff', 'Wind', 'X', 'XCircle', 'Zap', 'ZoomIn', 'ZoomOut'

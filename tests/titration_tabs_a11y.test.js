@@ -15,7 +15,7 @@ describe('Titration Lab tabs accessibility', () => {
     expect(source).toContain('role: "tablist"');
     expect(source).toContain("var _TITR_TABS = ['titrate', 'challenge', 'incidents', 'equipment', 'molarity', 'buffers'];");
     expect(source).toContain("id: 'titration-tab-' + tab.id");
-    expect(source).toContain("'aria-controls': 'titration-panel-' + tab.id");
+    expect(source).toContain("'aria-controls': 'titration-panel'");
     expect(source).toContain("'aria-selected': active ? \"true\" : \"false\"");
     expect(source).toContain('tabIndex: active ? 0 : -1');
     expect(source).toContain('onKeyDown: function(e) { onTitrTabKey(e, _TITR_TABS.indexOf(tab.id)); }');
@@ -28,7 +28,7 @@ describe('Titration Lab tabs accessibility', () => {
   it('links the active lab section to its tabpanel', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain('role: "tabpanel"');
-    expect(source).toContain("id: 'titration-panel-' + labTab");
+    expect(source).toContain("id: 'titration-panel'");
     expect(source).toContain("'aria-labelledby': 'titration-tab-' + labTab");
     expect(source).toContain('tabIndex: 0');
   });

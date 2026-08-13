@@ -39,15 +39,43 @@ if (!fs.existsSync(server)) {
   process.exit(2);
 }
 
-const rest = argv.slice(2).filter(a => !a.startsWith('--'));
-const flag = (name) => argv.includes(`--${name}`);
-const flagValue = (name, fallback) => {
-  const i = argv.indexOf(`--${name}`);
-  return i >= 0 && argv[i + 1] ? argv[i + 1] : fallback;
-};
+// Parse flags and positional arguments together. The old filter-only parser removed
+// `--timeout` but left its value behind, so `call ... tool --timeout 60000` tried to
+// open a file literally named `60000` as the tool's JSON arguments.
+const rest = [];
+let timeoutValue = '1800000';
+let showStderr = false;
+for (let i = 2; i < argv.length; i++) {
+  const arg = argv[i];
+  if (arg === '--stderr') {
+    showStderr = true;
+    continue;
+  }
+  if (arg === '--timeout') {
+    const value = argv[++i];
+    if (!value || value.startsWith('--')) {
+      console.error('--timeout requires a positive millisecond value');
+      process.exit(2);
+    }
+    timeoutValue = value;
+    continue;
+  }
+  if (arg.startsWith('--timeout=')) {
+    timeoutValue = arg.slice('--timeout='.length);
+    continue;
+  }
+  if (arg.startsWith('--')) {
+    console.error(`Unknown option: ${arg}`);
+    process.exit(2);
+  }
+  rest.push(arg);
+}
 
-const timeoutMs = Number(flagValue('timeout', 1800000));
-const showStderr = flag('stderr');
+const timeoutMs = Number(timeoutValue);
+if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
+  console.error('--timeout must be a positive integer number of milliseconds');
+  process.exit(2);
+}
 
 const child = spawn(process.execPath, [server], { stdio: ['pipe', 'pipe', 'pipe'] });
 let stdoutBuf = '';
