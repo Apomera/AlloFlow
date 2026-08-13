@@ -2,14 +2,46 @@
 
 **Date:** 2026-08-13
 **Status:** next bounded feature; not yet implemented
-**Primary user:** a nontechnical school principal currently completing a Google Form that emails each teacher a PDF
-**Product goal:** provide immediate value without replacing the district's approved Google Form workflow
+**Scope:** formative walkthrough and coaching support only, never the summative evaluation instrument
+**Primary user:** a nontechnical school principal currently completing a locally built walkthrough Google Form that emails each teacher a PDF
+**Product goal:** provide immediate value without replacing the school's existing walkthrough workflow
 
 ## Outcome
 
-Build an optional, human-controlled Walkthrough Copilot that helps a principal turn shorthand classroom notes into a clear Danielson-organized draft. It must generate text that can be reviewed and copied into the principal's existing Google Form. It must not submit the form, assign ratings, make personnel decisions, or alter the source notes.
+Build an optional, human-controlled Walkthrough Copilot that helps a principal turn shorthand classroom notes into a clear, framework-organized **formative coaching draft**. It must generate text that can be reviewed and copied into the principal's existing walkthrough Google Form. It must not submit the form, assign ratings, make personnel decisions, or alter the source notes.
 
 The first version should work with synthetic data and may run locally without a shared evaluation repository. Any use with real personnel records still requires district approval of the workflow, device, AI provider, and transmission channel.
+
+## Scope boundary: formative coaching, not summative evaluation
+
+This copilot supports **formative walkthroughs and instructional coaching only**. It is not the district's summative evaluation instrument and must never be described, positioned, or configured as one.
+
+That boundary is not established by the label on the product. It holds only while all three of the following are true, and only the school or district can confirm them:
+
+1. **Use.** Output does not feed the summative evaluation, directly or as remembered context that later shows up in a summative narrative.
+2. **Retention.** Drafts and delivered feedback are not retained as personnel records. Note that the existing workflow already emails a PDF to each teacher, so copies persist in mailboxes and sent folders regardless of what this tool clears on close. Treat "transient in the app" as a property of the app, not of the workflow.
+3. **Local agreement.** The collective bargaining agreement and the district's approved educator-effectiveness plan do not already govern classroom walkthrough observations in a way this workflow would cross. Many agreements cover informal observations, notice, and what may be recorded.
+
+If any of the three fails, this becomes an evaluation tool and belongs in the authenticated, district-approved portal path instead.
+
+### Open question specific to Portland Public Schools (ME)
+
+Condition 1 above cannot currently be assumed at PPS, and this must be resolved with the district before any real-data use.
+
+PPS evaluates on **The Portland Framework for Teaching**, a local adaptation of Danielson with four domains and 22 components, jointly developed with the Portland Education Association. In the implementation guidebook that describes that system, evaluators collect **at least nine pieces of evidence per year**, and the evidence types named there **explicitly include classroom walk-throughs**. Written feedback from a collection of evidence is required to identify whether it came from an observation cycle or an additional collection, to state the evidence collected, and to reference the Framework. Additional collections need not be announced and must be documented in writing within 48 hours, and any evidence used for evaluation or employment decisions must be shared with the educator.
+
+If a walkthrough at PPS counts as one of those collections, it is by design an input to the summative evaluation, and the formative-only framing does not hold there regardless of what the tool is called.
+
+Two consequences for the build:
+
+- Do not ship a claim that walkthrough output is formative and outside evaluation. That is why the formative sentence in the disclosure is separately editable and why only the school can assert it.
+- The documentation requirements are a better product fit than generic drafting. A copilot that helps produce written feedback which names the evidence, references the district's framework, marks the collection type, and lands inside 48 hours is solving a real compliance burden. Build toward that shape, and treat the collection-type tag as a first-class field rather than an afterthought.
+
+**Currency caveat:** the guidebook consulted is an early gradual-implementation version and may be superseded. The current Educator Handbook for Professional Growth and Evaluation and the current PEA collective bargaining agreement are the authorities. Confirm against those, not against this note. Performance levels in that guidebook were unsatisfactory, novice/needs improvement, proficient, and excellent, which differ from Danielson's own level names; an administrator arriving from a Danielson state will expect different labels.
+
+Build the product so the safe use is the easy one and the unsafe use requires a deliberate, visible act. Do not rely on this document to hold the line; a reader of the interface will never see it.
+
+**Who decides.** The administrator using the tool owns the labor and policy determination, not the tool's author. When the author is a district employee outside the administrative bargaining unit, that separation should be explicit rather than assumed.
 
 ## Required workflow
 
@@ -27,6 +59,30 @@ The first version should work with synthetic data and may run locally without a 
 8. Flag unsupported generalizations, missing evidence, contradictory notes, and empty domains.
 9. Produce a plain-text Google Form copy view matching the fields in the principal's current walkthrough form.
 10. Require the principal to review and explicitly approve every suggested component and every teacher-facing statement before copy/export. No automatic submission.
+
+## Disclosure to the observed teacher
+
+A teacher who later learns that AI helped draft feedback about them, when nobody said so, will reasonably treat it as something that was hidden. Disclosure is therefore a default of the product, not a per-principal preference.
+
+- Every draft carries a short, plain disclosure line stating that AI assisted in organizing the observer's notes and that the observer wrote and approved the final feedback.
+- The disclosure travels with the copy output. Copying a domain field copies its disclosure, and "Copy all" includes it once at the top. It must not be a separate control the user can skip while still exporting.
+- Wording is configurable so a school can match its own voice, but the field cannot be emptied. A blank disclosure blocks export the same way an unapproved suggestion does.
+- The disclosure states assistance, never endorsement. It must not imply the AI verified, scored, or agreed with anything.
+- Suggested default: "Notes from this walkthrough were organized with AI assistance. The observer wrote, reviewed, and approved all feedback below. This is formative coaching feedback and is not part of a summative evaluation."
+- The last sentence must be editable separately, because it is a factual claim about local practice that only the school can make truthfully.
+
+## Mode gate: synthetic and approved use
+
+"Phase one is synthetic" is policy prose until the product enforces it. The primary user's day-one intent is to type real notes about a real teacher, so the boundary has to be visible in the interface.
+
+The tool opens in **Demo mode** and stays there until someone deliberately leaves it:
+
+- **Demo mode.** Synthetic fixtures only. A persistent banner names the mode. Copy and export are watermarked with a line marking the content as a demo draft. Suitable for showing the workflow to an administrator, a reviewer, or a staff meeting.
+- **Approved mode.** Reachable only through an explicit affirmation naming the district approval that exists: the approved AI provider and data flow, the confirmed formative scope, and the person who approved it. Record that affirmation locally with a timestamp and show it in a persistent banner while the mode is active. Leaving the app returns to Demo mode.
+
+Approved mode changes no analysis behavior. It removes the demo watermark and permits real notes. It is a statement of authorization, not a feature unlock, and it must never be presented as one.
+
+Do not let Approved mode be the remembered default. A principal who approved it once in September should still be told, in March, which mode they are in and under whose authorization.
 
 ## Non-negotiable truth and safety rules
 
@@ -58,6 +114,14 @@ Every transition must preserve the original source notes. Editing a suggestion m
 WalkthroughDraft {
   id
   createdAt
+  mode: demo | approved
+  approval?: { affirmedAt, affirmedBy, providerApproved, scopeConfirmed }
+  framework: {                     // supplied by config, never hardcoded
+    id                             // e.g. "danielson-2022", "district-local"
+    domains[]: { id, label }       // count and labels vary by model
+    components[]: { id, domainId, label }
+  }
+  disclosure: { text, includeFormativeSentence }
   sourceNotesOriginal
   sourceNotesFrozenAt
   context: { teacherDisplayName?, date?, period?, subject? }
@@ -73,10 +137,10 @@ WalkthroughDraft {
     decision: pending | accepted | edited | rejected
     approvedText?
   }
-  domainDrafts: { d1, d2, d3, d4 }
+  domainDrafts: Map<domainId, draftText>   // keyed by framework.domains
   globalWarnings[]
   principalApproval: { approvedAt?, approvedSuggestionIds[] }
-  googleFormOutput?
+  formOutput?
 }
 ```
 
@@ -133,6 +197,16 @@ Do not use `apps_script/session_mailbox/` for evaluation records. Its anonymous 
 
 ## Acceptance tests
 
+- The tool opens in Demo mode, and only synthetic fixtures load there.
+- Reaching Approved mode requires the explicit affirmation; cancelling it leaves the mode unchanged.
+- Demo-mode copy and export carry the demo watermark; Approved mode removes only that watermark and changes no analysis behavior.
+- The active mode, and in Approved mode the recorded affirmation, are visible without opening a menu.
+- Closing and reopening returns to Demo mode rather than remembering Approved.
+- The disclosure line is present in every copy path, including single-field copy, and cannot be emptied.
+- Export is blocked when the disclosure is blank, with the same clarity as an unapproved suggestion.
+- The formative sentence in the disclosure is separately editable and can be removed without emptying the disclosure itself.
+- Domains render from the configured framework, so a framework with other than four domains still renders, exports, and flags empty sections correctly.
+- No Danielson performance-level language ships in the repository; rubric text loads from configuration.
 - Original notes remain exactly unchanged through analyze, edit, copy, cancel, and retry.
 - Every suggested claim has a valid source-note citation or is marked insufficient evidence.
 - Interpretation and objective evidence are rendered in distinct labeled fields.
@@ -147,8 +221,8 @@ Do not use `apps_script/session_mailbox/` for evaluation records. Its anonymous 
 
 ## Recommended implementation order
 
-1. Add pure note-analysis schemas, validators, and deterministic synthetic fixtures.
-2. Build the four-stage local UI with a fake provider and immutable-note tests.
+1. Add pure note-analysis schemas, validators, and deterministic synthetic fixtures. Include the framework config so no domain shape is hardcoded from the start.
+2. Build the four-stage local UI with a fake provider and immutable-note tests. Build the mode gate and the disclosure in this step, not later: retrofitting a boundary after the workflow feels finished is how it ends up optional.
 3. Add the existing configured AI-provider seam only after the provider/privacy warning and human-approval gate are enforced.
 4. Add configurable Google Form field mapping and clipboard output.
 5. Mount the shared surface in AlloFlow and the focused standalone/desktop entry.
