@@ -153,6 +153,7 @@ test.describe('Solar System — real WebGL', () => {
     await expect(canvas).toHaveAttribute('data-rover-visual-profile', 'procedural-contact-v1');
     await expect(canvas).toHaveAttribute('data-rover-contact-pad-count', '6');
     await expect(canvas).toHaveAttribute('data-rover-dust-capacity', /^(36|42|60)$/);
+    await expect(canvas).toHaveAttribute('data-rover-obstacle-count', /^[1-9]\d*$/);
     await expect(canvas).toHaveAttribute('data-rover-impact', /^\d\.\d{3}$/);
     await expect(canvas).toHaveAttribute('data-rover-impact-count', /^\d+$/);
 
@@ -205,8 +206,11 @@ test.describe('Solar System — real WebGL', () => {
     await expect(canvas).toHaveAttribute('data-rover-mission-status', 'ready');
     await expect(traverseButton).toHaveText('Start traverse');
 
-    await page.keyboard.press('KeyV');
     await expect(page.locator('#hud-mode')).toContainText('3RD PERSON');
+    await expect(canvas).toHaveAttribute('data-rover-view', 'third-person');
+    await page.keyboard.press('KeyV');
+    await expect(page.locator('#hud-mode')).toContainText('1ST PERSON');
+    await expect(canvas).toHaveAttribute('data-rover-view', 'first-person');
 
     const errs: string[] = (await page.evaluate(() => (window as any).__events.errors))
       .filter((m: string) => !/ResizeObserver loop/.test(m));

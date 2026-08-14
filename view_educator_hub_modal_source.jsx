@@ -78,7 +78,7 @@ function EducatorHubModal(props) {
     addToast = (() => {}),
     setIsAccessibilityLabOpen, setIsCommunityCatalogOpen, setIsSymbolStudioOpen,
     setPdfAuditResult, setPdfBatchMode, setPendingPdfBase64, setPendingPdfFile,
-    setShowBehaviorLens, setShowEducatorHub, setShowReportWriter, setShowCinematicStudio = (() => {}), showEducatorHub, t,
+    setShowBehaviorLens, setShowEducatorHub, setShowMindMap = (() => {}), setShowReportWriter, setShowCinematicStudio = (() => {}), showEducatorHub, t,
     userRole = '',
     setShowRecentQrShares = (() => {}),
     beginPdfDocumentIntake = (() => null),
@@ -473,7 +473,17 @@ function EducatorHubModal(props) {
                   <button type="button" data-hub-section-toggle="plan" aria-expanded={!hubCollapsedSections.includes('plan')} aria-label={hubCollapsedSections.includes('plan') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('plan')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('plan') ? '+' : '-'}</button>
                 </div>
               </div>
-              <div className="relative group" data-hub-id="page-designer" data-hub-label="Page Designer" data-hub-section="plan">
+              <div className="relative group" data-hub-id="throughline" data-hub-label="Learning Web: Unit Path" data-hub-section="plan">
+                <button type="button" data-hub-launch="true" onClick={() => { setShowEducatorHub(false); setShowMindMap(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">{'🗺️'}</span>
+                <div>
+                  <h3 className="font-bold text-amber-800">{t('educator_hub.throughline_title') || 'Learning Web: Unit Path'}</h3>
+                  <p className="text-xs text-amber-700 mt-1">{t('educator_hub.throughline_desc') || 'Arrange lessons into a teachable sequence, then inspect linked standards and evidence in the shared Learning Web.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('throughline')} aria-label={hubFavoriteIds.includes('throughline') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Learning Web: Unit Path' : tr('hub.add_favorite', 'Add to favorites') + ': Learning Web: Unit Path'} title={hubFavoriteIds.includes('throughline') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('throughline'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('throughline') ? '★' : '☆'}</button>
+              </div>              <div className="relative group" data-hub-id="page-designer" data-hub-label="Page Designer" data-hub-section="plan">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_allo_studio_card" onClick={() => { setShowEducatorHub(false); setIsAlloStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">🎨</span>
                 <div>

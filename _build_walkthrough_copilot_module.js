@@ -25,16 +25,17 @@ const SOURCE = path.join(ROOT, 'walkthrough_copilot_source.jsx');
 const CORE = path.join(ROOT, 'walkthrough_copilot_module.js');
 const FIXTURES = path.join(ROOT, 'walkthrough_copilot_fixtures.js');
 const SCENARIOS = path.join(ROOT, 'walkthrough_copilot_scenarios.js');
+const SCRIPT_SOURCE = path.join(ROOT, 'walkthrough_script_source_module.js');
 const OUTPUT = path.join(ROOT, 'walkthrough_copilot_cdn_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'walkthrough_copilot_cdn_module.js');
 const TMP = path.join(ROOT, '_tmp_walkthrough_copilot_entry.jsx');
 
-for (const required of [SOURCE, CORE, FIXTURES, SCENARIOS]) {
+for (const required of [SOURCE, CORE, FIXTURES, SCENARIOS, SCRIPT_SOURCE]) {
     if (!fs.existsSync(required)) { console.error('Not found:', required); process.exit(1); }
 }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React */\n\n${source}\n\nwindow.__wcopExports = { WalkthroughCopilotPanel, WcopSuggestion, WcopIntro, WcopFlag, WcopFrozenNotes, WCOP_STAGES, WCOP_STEPS, WCOP_ADVISORY_QUESTIONS };\n`;
+const entry = `/* global React */\n\n${source}\n\nwindow.__wcopExports = { WalkthroughCopilotPanel, WcopSuggestion, WcopIntro, WcopSetup, WcopAffirm, WcopManualEntry, WcopFlag, WcopFrozenNotes, WCOP_STAGES, WCOP_STEPS, WCOP_ADVISORY_QUESTIONS };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 
 console.log('Compiling walkthrough_copilot_source.jsx with esbuild...');
@@ -54,7 +55,7 @@ const compiled = fs.readFileSync(TMP + '.compiled.js', 'utf-8')
 fs.unlinkSync(TMP);
 fs.unlinkSync(TMP + '.compiled.js');
 
-const logic = [CORE, FIXTURES, SCENARIOS]
+const logic = [CORE, FIXTURES, SCENARIOS, SCRIPT_SOURCE]
     .map((file) => '/* bundled from ' + path.basename(file) + ' */\n' + fs.readFileSync(file, 'utf-8').trim())
     .join('\n\n');
 
@@ -109,6 +110,9 @@ ${compiled}
   wcopMerged._testing = {
     WcopSuggestion: WcopSuggestion,
     WcopIntro: WcopIntro,
+    WcopSetup: WcopSetup,
+    WcopAffirm: WcopAffirm,
+    WcopManualEntry: WcopManualEntry,
     WcopFlag: WcopFlag,
     WcopFrozenNotes: WcopFrozenNotes,
     WCOP_STAGES: WCOP_STAGES,

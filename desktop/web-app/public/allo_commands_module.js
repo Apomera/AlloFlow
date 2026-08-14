@@ -382,6 +382,9 @@ const PLAN_CONTRACTS = Object.freeze({
   generate_source_text: { params: ["topic"], produces: ["source"] },
   generate_faq: { requires: ["source"], produces: ["faq"] },
   generate_brainstorm: { requires: ["source"], produces: ["brainstorm"] },
+  surprise_me_contextually: { demoSafe: false, interaction: "interactive", reason: "Chooses and runs one contextual AI-assisted next action." },
+  suggest_contextual_next_steps: { demoSafe: false, interaction: "interactive", reason: "Generates three contextual options for educator review." },
+  use_contextual_suggestion: { demoSafe: false, interaction: "interactive", params: ["option"], reason: "Runs a previously suggested option after the user chooses it." },
   print_page: { demoSafe: false, interaction: "external", reason: "Opens the browser's print dialog over the recorded workflow." },
   export_pack: {
     demoSafe: false,
@@ -705,11 +708,11 @@ function buildAlloCommands(ctx, opts = {}) {
     // Voice-first launch-pad choices. These are deliberately context-gated:
     // they do not simulate DOM clicks and cannot fire once onboarding advances.
     // chatSkip keeps setup-only choices out of agentic lesson plans.
-    { id: "onboarding_full_platform", chatSkip: true, icon: "\u{1F9ED}", roles: "all", when: (c) => c.onboardingStage === "path" && typeof c.chooseOnboardingPath === "function", label: t("cmd.onboarding_full_platform", "Choose Full Platform"), aliases: ["full platform", "full alloflow", "choose full platform", "complete workspace"], hint: t("cmd.onboarding_full_platform_hint", "Continue with the complete workspace"), run: (c) => {
+    { id: "onboarding_full_platform", chatSkip: true, icon: "\u{1F9F0}", roles: "all", when: (c) => c.onboardingStage === "path" && typeof c.chooseOnboardingPath === "function", label: t("cmd.onboarding_full_platform", "Choose Full Platform"), aliases: ["full platform", "full alloflow", "choose full platform", "complete workspace"], hint: t("cmd.onboarding_full_platform_hint", "Continue with the complete workspace"), run: (c) => {
       c.chooseOnboardingPath("full");
       return t("cmd.onboarding_full_platform_done", "Full Platform selected.");
     } },
-    { id: "onboarding_guided_setup", chatSkip: true, icon: "\u{1F9ED}", roles: "all", when: (c) => c.onboardingStage === "path" && typeof c.chooseOnboardingPath === "function", label: t("cmd.onboarding_guided_setup", "Choose Guided Setup"), aliases: ["guided setup", "guided mode", "choose guided setup", "step by step setup"], hint: t("cmd.onboarding_guided_setup_hint", "Continue with step-by-step guidance"), run: (c) => {
+    { id: "onboarding_guided_setup", chatSkip: true, icon: "\u{1FBE9}", roles: "all", when: (c) => c.onboardingStage === "path" && typeof c.chooseOnboardingPath === "function", label: t("cmd.onboarding_guided_setup", "Choose Guided Setup"), aliases: ["guided setup", "guided mode", "choose guided setup", "step by step setup"], hint: t("cmd.onboarding_guided_setup_hint", "Continue with step-by-step guidance"), run: (c) => {
       c.chooseOnboardingPath("guided");
       return t("cmd.onboarding_guided_setup_done", "Guided Setup selected.");
     } },
@@ -733,14 +736,14 @@ function buildAlloCommands(ctx, opts = {}) {
       c.chooseOnboardingRole("parent");
       return t("cmd.onboarding_parent_role_done", "Parent selected.");
     } },
-    { id: "onboarding_independent_role", chatSkip: true, icon: "\u{1F9ED}", roles: "all", when: (c) => c.onboardingStage === "role" && typeof c.chooseOnboardingRole === "function", label: t("cmd.onboarding_independent_role", "Choose Independent"), aliases: ["independent", "independent learner", "i am learning independently", "choose independent"], hint: t("cmd.onboarding_independent_role_hint", "Continue as an independent learner"), run: (c) => {
+    { id: "onboarding_independent_role", chatSkip: true, icon: "\u{1F331}", roles: "all", when: (c) => c.onboardingStage === "role" && typeof c.chooseOnboardingRole === "function", label: t("cmd.onboarding_independent_role", "Choose Independent"), aliases: ["independent", "independent learner", "i am learning independently", "choose independent"], hint: t("cmd.onboarding_independent_role_hint", "Continue as an independent learner"), run: (c) => {
       c.chooseOnboardingRole("independent");
       return t("cmd.onboarding_independent_role_done", "Independent learner selected.");
     } },
     // ── Navigate ──
     // Universal semantic orientation actions. Hosts opt in by exposing a
     // capability; commands never inspect or click the DOM themselves.
-    { id: "describe_current_screen", icon: "\u{1F9ED}", roles: "all", when: (c) => typeof c.describeCurrentScreen === "function", label: t("cmd.describe_current_screen", "Describe the current screen"), aliases: ["where am i", "describe this screen", "describe the screen", "what screen is this", "what is on this screen"], hint: t("cmd.describe_current_screen_hint", "Hear the current surface, state, and purpose"), run: (c) => {
+    { id: "describe_current_screen", icon: "\u{1F441}\uFE0F", roles: "all", when: (c) => typeof c.describeCurrentScreen === "function", label: t("cmd.describe_current_screen", "Describe the current screen"), aliases: ["where am i", "describe this screen", "describe the screen", "what screen is this", "what is on this screen"], hint: t("cmd.describe_current_screen_hint", "Hear the current surface, state, and purpose"), run: (c) => {
       const value = c.describeCurrentScreen();
       return typeof value === "string" && value.trim() ? value : t("cmd.describe_current_screen_done", "Current screen described.");
     } },
@@ -852,7 +855,7 @@ function buildAlloCommands(ctx, opts = {}) {
     // unrestricted posture. Distinct from open_screen_coach, which stays with
     // the recorder: that one coaches while you record, this one is the tool you
     // open when a website is fighting you.
-    { id: "open_it_coach", icon: "\u{1F9ED}", roles: "all", when: () => typeof window !== "undefined" && typeof window.open === "function", label: t("cmd.open_it_coach", "Coach me through another website"), aliases: ["it coach", "help me use this website", "help me use another website", "guide me through a website", "walk me through this site", "how do i use this site", "stuck on a website"], hint: t("cmd.open_it_coach_hint", "Opens a coach that watches a site you share and suggests the next step \u2014 it advises, you do the clicking"), run: (c) => {
+    { id: "open_it_coach", icon: "\u{1F469}\u200D\u{1F3EB}", roles: "all", when: () => typeof window !== "undefined" && typeof window.open === "function", label: t("cmd.open_it_coach", "Coach me through another website"), aliases: ["it coach", "help me use this website", "help me use another website", "guide me through a website", "walk me through this site", "how do i use this site", "stuck on a website"], hint: t("cmd.open_it_coach_hint", "Opens a coach that watches a site you share and suggests the next step \u2014 it advises, you do the clicking"), run: (c) => {
       const posture = c && c.isTeacherMode && !c.isParentMode ? "educator" : "learner";
       const VS = window.AlloModules && window.AlloModules.VideoStudio || null;
       let win;
@@ -1060,6 +1063,9 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "generate_faq", icon: "\u2753", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateFaq === "function", label: t("cmd.generate_faq", "Make an FAQ list"), aliases: ["faq", "frequently asked questions", "question list"], hint: t("cmd.generate_faq_hint", "Generate an FAQ list from the current content"), runAsync: (c) => Promise.resolve(c.generateFaq()).then(() => t("cmd.generate_faq_ready", "FAQ list ready.")) },
     { id: "generate_note_taking", icon: "\u{1F4DD}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateNoteTaking === "function", label: t("cmd.generate_note_taking", "Create a note-taking guide"), aliases: ["note taking", "guided notes", "notes template", "cornell notes"], hint: t("cmd.generate_note_taking_hint", "Generate a structured note-taking guide from the current content"), runAsync: (c) => Promise.resolve(c.generateNoteTaking()).then(() => t("cmd.generate_note_taking_ready", "Note-taking guide ready \u2014 it\u2019s in the output panel.")) },
     { id: "generate_source_text", icon: "\u{1F4C4}", roles: "teacher", when: (c) => typeof c.generateSourceText === "function", label: t("cmd.generate_source_text", "Generate source text on a topic"), aliases: ["generate a source", "write a passage about", "make a reading about", "source text on"], hint: t("cmd.generate_source_text_hint", "Writes an original reading passage on your topic to build resources from"), pendingNarration: t("cmd.generate_source_text_working", "Writing a source passage..."), runAsync: (c, p) => Promise.resolve(c.generateSourceText(p && p.topic ? String(p.topic) : "")).then(() => t("cmd.generate_source_text_ready", "Source passage ready \u2014 you can now generate resources from it.")) },
+    { id: "surprise_me_contextually", icon: "\u{1F3B2}", roles: ["teacher", "independent", "parent"], when: (c) => !!c.contextualIdeaAvailable && typeof c.surpriseMeContextually === "function", label: t("cmd.surprise_me_contextually", "Surprise me with a useful next step"), aliases: ["surprise me", "give me a surprise", "choose a next step for me", "pick something useful", "do something useful here"], hint: t("cmd.surprise_me_contextually_hint", "Chooses one sensible, low-risk next action from the current lesson context"), pendingNarration: t("cmd.surprise_me_contextually_working", "Reading the current lesson context and choosing a useful next step..."), runAsync: (c) => Promise.resolve(c.surpriseMeContextually()) },
+    { id: "suggest_contextual_next_steps", icon: "\u{1F4A1}", roles: ["teacher", "independent", "parent"], when: (c) => !!c.contextualIdeaAvailable && typeof c.suggestContextualNextSteps === "function", label: t("cmd.suggest_contextual_next_steps", "Suggest 3 next steps"), aliases: ["suggest 3 next steps", "suggest three next steps", "give me three options", "what should i do next", "propose three next actions", "three next steps"], hint: t("cmd.suggest_contextual_next_steps_hint", "Offers three context-aware options without choosing or running one"), pendingNarration: t("cmd.suggest_contextual_next_steps_working", "Reading the current lesson context and preparing three options..."), runAsync: (c) => Promise.resolve(c.suggestContextualNextSteps()) },
+    { id: "use_contextual_suggestion", icon: "\u2705", roles: ["teacher", "independent", "parent"], when: (c) => Number(c.contextualSuggestionCount) > 0 && typeof c.useContextualSuggestion === "function", label: t("cmd.use_contextual_suggestion", "Use a suggested next step"), aliases: ["use option", "choose option", "use suggested option", "do option"], hint: t("cmd.use_contextual_suggestion_hint", "Runs option 1, 2, or 3 from the latest suggestions"), pendingNarration: t("cmd.use_contextual_suggestion_working", "Starting the selected next step..."), runAsync: (c, p) => Promise.resolve(c.useContextualSuggestion(p && p.option)) },
     { id: "open_screen_coach", opensPanel: "videoStudio", icon: "\u{1F9ED}", roles: "teacher", when: (c) => typeof c.openVideoStudio === "function", label: t("cmd.open_screen_coach", "Open the Screen Coach"), aliases: ["screen coach", "coach me", "guide me through", "help me use another site", "watch my screen"], hint: t("cmd.open_screen_coach_hint", "AI guidance over any tab you capture \u2014 it advises with on-screen highlights; you do the clicking"), run: (c) => {
       c.openVideoStudio();
       return t("cmd.open_screen_coach_done", "Opening Video Studio \u2014 the Screen Coach panel is at the top of the Record tab. Use \u201CWatch without recording\u201D to coach without saving anything.");
@@ -1180,7 +1186,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openLinguaPractice();
       return t("cmd.open_lingua_practice_done", "Lingua Practice opened.");
     } },
-    { id: "open_test_prep_hub", opensPanel: "testPrepHub", icon: "\u{1F9ED}", roles: "all", label: t("cmd.open_test_prep_hub", "Open Test Prep Hub"), aliases: ["test prep", "test prep hub", "exam prep", "practice questions", "study exams"], hint: t("cmd.open_test_prep_hub_hint", "Open free practice sets and study tools"), run: (c) => {
+    { id: "open_test_prep_hub", opensPanel: "testPrepHub", icon: "\u{1F4DD}", roles: "all", label: t("cmd.open_test_prep_hub", "Open Test Prep Hub"), aliases: ["test prep", "test prep hub", "exam prep", "practice questions", "study exams"], hint: t("cmd.open_test_prep_hub_hint", "Open free practice sets and study tools"), run: (c) => {
       c.openTestPrepHub();
       return t("cmd.open_test_prep_hub_done", "Test Prep Hub opened.");
     } },
@@ -1204,7 +1210,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openLearningWebExplorer();
       return t("cmd.open_learning_web_explorer_done", "Learning Web: Explore opened.");
     } },
-    { id: "open_mind_map", opensPanel: "mindMap", icon: "\u{1F9ED}", roles: "all", label: t("cmd.open_mind_map", "Open Learning Web: Unit Path"), aliases: ["learning web", "unit path", "throughline", "mind map", "unit map", "lesson map", "concept map", "visual map"], hint: t("cmd.open_mind_map_hint", "Map lessons and explore linked standards, evidence, and unit connections"), run: (c) => {
+    { id: "open_mind_map", opensPanel: "mindMap", icon: "\u{1F5FA}\uFE0F", roles: "teacher", label: t("cmd.open_mind_map", "Open Learning Web: Unit Path"), aliases: ["learning web", "unit path", "throughline", "mind map", "unit map", "lesson map", "concept map", "visual map"], hint: t("cmd.open_mind_map_hint", "Map lessons and explore linked standards, evidence, and unit connections"), run: (c) => {
       c.openMindMap();
       return t("cmd.open_mind_map_done", "Learning Web: Unit Path opened.");
     } },
@@ -1379,7 +1385,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.startAppTour();
       return t("cmd.app_tour_done", "Starting the tour \u2014 use Next to walk through.");
     } },
-    { id: "pipeline_tour", icon: "\u{1F9ED}", roles: "teacher", when: (c) => !!c.pipelineOpen && !!c.startPipelineTour, label: t("cmd.pipeline_tour", "Show me around these results"), aliases: ["pipeline tour", "explain this screen", "walk me through the results"], hint: t("cmd.pipeline_tour_hint", "A 60-second tour of the remediation results"), run: (c) => {
+    { id: "pipeline_tour", icon: "\u{1F50E}", roles: "teacher", when: (c) => !!c.pipelineOpen && !!c.startPipelineTour, label: t("cmd.pipeline_tour", "Show me around these results"), aliases: ["pipeline tour", "explain this screen", "walk me through the results"], hint: t("cmd.pipeline_tour_hint", "A 60-second tour of the remediation results"), run: (c) => {
       c.startPipelineTour("results");
       return t("cmd.pipeline_tour_done", "Starting the results tour.");
     } },
@@ -1388,6 +1394,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.startLessonFlow(p || {});
       return p && p.topic ? t("cmd.create_lesson_done", "Starting a lesson flow about \u201C") + p.topic + "\u201D" + (p.grade ? t("cmd.create_lesson_done2", " for grade ") + p.grade : "") + t("cmd.create_lesson_done3", " \u2014 AlloBot will guide the next steps.") : t("cmd.create_lesson_done_blank", "Starting the guided lesson flow \u2014 AlloBot will ask for your topic.");
     } },
+    { id: "use_contextual_suggestion", re: /^(?:use|choose|do|take|select)\s+(?:the\s+)?(?:suggested\s+)?(?:option|step|choice)\s*(?:number\s*)?([123])\s*\??$/i, params: (m) => ({ option: m[1] }) },
     { id: "set_grade_level", icon: "\u{1F39A}\uFE0F", roles: ["teacher", "independent", "parent"], when: (c) => !!c.setSetupGradeLevel, label: t("cmd.set_grade_level", "Set the grade level"), aliases: ["set grade level", "grade level", "target grade", "reading level", "set target level"], hint: t("cmd.set_grade_level_hint", "e.g. set grade level to 5"), run: (c, p) => {
       const v = c.setSetupGradeLevel(p && p.grade);
       return v ? t("cmd.set_grade_level_done", "Grade level set to ") + v + "." : t("cmd.set_grade_level_pick", "Say a grade like grade 5.");
@@ -4690,6 +4697,9 @@ const CMD_GROUP = {
   generate_faq: "create",
   generate_note_taking: "create",
   generate_source_text: "create",
+  surprise_me_contextually: "create",
+  suggest_contextual_next_steps: "create",
+  use_contextual_suggestion: "create",
   start_bingo_game: "create",
   start_crossword_game: "create",
   start_matching_game: "create",
@@ -4739,10 +4749,13 @@ const CMD_CONTEXT = {
   open_research_hub: ["learningHub", "content", "researchHub"],
   open_lit_lab: ["learningHub", "litLab"],
   open_learning_web_explorer: ["learningHub", "content", "learningWebExplorer"],
-  open_mind_map: ["learningHub", "content", "mindMap"],
+  open_mind_map: ["educatorHub", "content", "mindMap"],
   open_poet_tree: ["learningHub", "poetTree"],
   start_test_prep_hands_free: ["testPrepHub"],
   test_prep_hands_free_status: ["testPrepHub"],
+  surprise_me_contextually: ["sourceSetup", "content"],
+  suggest_contextual_next_steps: ["sourceSetup", "content"],
+  use_contextual_suggestion: ["sourceSetup", "content"],
   set_grade_level: ["sourceSetup"],
   set_source_tone: ["sourceSetup"],
   set_source_length: ["sourceSetup"],

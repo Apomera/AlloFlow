@@ -15,7 +15,7 @@ function idsInOrder(text) {
 describe('hub workflow ordering', () => {
   it('keeps educator tools in workflow and DOM order', () => {
     expect(idsInOrder(source('view_educator_hub_modal_source.jsx'))).toEqual([
-      'lesson', 'lumen', 'document', 'whiteboard',
+      'lesson', 'lumen', 'document', 'whiteboard', 'throughline',
       'page-designer', 'video-studio', 'symbol-studio', 'allosheet',
       'polls-signups', 'dynamic-assessment', 'behavior-lens', 'report-writer',
       'pdf-accessibility', 'accessibility-lab',
@@ -27,7 +27,7 @@ describe('hub workflow ordering', () => {
     expect(idsInOrder(source('view_learning_hub_modal_source.jsx'))).toEqual([
       'lumen-study', 'reading-library', 'stem-lab', 'text-inquiry',
       'lingua-practice', 'test-prep', 'sel-hub', 'screen-coach',
-      'research-hub', 'throughline', 'timeline-studio',
+      'research-hub', 'learning-web-explorer', 'timeline-studio',
       'storyforge', 'litlab', 'poettree', 'open-groove', 'allohaven'
     ]);
   });

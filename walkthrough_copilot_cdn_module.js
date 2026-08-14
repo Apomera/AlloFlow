@@ -515,6 +515,106 @@
   }
 
   /* ---------------------------------------------------------------------- *
+   * Approval affirmation
+   *
+   * Approved mode is a statement about authorization that already exists, not
+   * a switch that grants one. It therefore records WHO affirmed WHAT, and it
+   * is never remembered across sessions: a principal who affirmed in September
+   * should be asked again in March rather than discovering months later that
+   * the tool has been treating their notes as approved all along.
+   * ---------------------------------------------------------------------- */
+
+  var APPROVAL_TERMS = [
+    {
+      key: 'providerApproved',
+      text: 'My district has approved the AI provider and data flow used here for observation notes.'
+    },
+    {
+      key: 'scopeConfirmed',
+      text: 'I have confirmed how a walkthrough is treated in our evaluation system, and I am using this within that scope.'
+    }
+  ];
+
+  function describeApproval() {
+    return {
+      terms: APPROVAL_TERMS.map(function (term) { return { key: term.key, text: term.text }; }),
+      requiresName: true,
+      remembered: false,
+      note: 'Approved mode changes no analysis. It removes the practice watermark and permits real '
+        + 'notes. It is not remembered after this session.'
+    };
+  }
+
+  /* ---------------------------------------------------------------------- *
+   * Manual evidence entry
+   *
+   * The observer selects a component and quotes their own frozen notes. No
+   * model is involved, so this works with no provider configured and no
+   * district AI decision, while keeping every integrity rule: the quote has to
+   * exist verbatim in the notes, evidence stays separate from interpretation,
+   * and the same warnings apply.
+   *
+   * The quote is located here rather than trusted from the caller, for the
+   * same reason model output is: an offset nobody verified is not a citation.
+   * ---------------------------------------------------------------------- */
+
+  function locateQuote(notes, quote) {
+    if (!isString(notes) || !isNonEmptyString(quote)) {
+      return bad([error('quote-empty', 'quote', 'Quote the line of your notes this is based on.')]);
+    }
+    var needle = quote.trim();
+    var at = notes.indexOf(needle);
+    if (at === -1) {
+      return bad([error('quote-missing', 'quote',
+        'That text does not appear in your notes. Copy the wording exactly as you wrote it.')]);
+    }
+    if (notes.indexOf(needle, at + 1) !== -1) {
+      return bad([error('quote-ambiguous', 'quote',
+        'That text appears more than once in your notes. Quote a longer stretch so the citation is unambiguous.')]);
+    }
+    return ok({ start: at, end: at + needle.length, text: needle });
+  }
+
+  function addManualSuggestion(draft, input) {
+    if (!isObject(draft) || !Array.isArray(draft.suggestions)) {
+      return bad([error('draft-invalid', 'draft', 'Lock your notes before adding evidence.')]);
+    }
+    var entry = isObject(input) ? input : {};
+    var span = locateQuote(draft.sourceNotesOriginal, entry.quote);
+    if (!span.ok) return span;
+
+    var id = isNonEmptyString(entry.id)
+      ? entry.id
+      : 'manual-' + (draft.suggestions.length + 1) + '-' + String(entry.componentId || 'x');
+
+    var taken = draft.suggestions.some(function (existing) { return existing.id === id; });
+    if (taken) {
+      return bad([error('suggestion-duplicate', 'id', 'That evidence id is already used in this draft.')]);
+    }
+
+    var candidate = {
+      id: id,
+      componentId: entry.componentId,
+      objectiveEvidence: entry.objectiveEvidence,
+      interpretation: entry.interpretation,
+      sourceSpans: [span.value]
+    };
+
+    // Validate the new claim ALONE against the frozen notes, then append it.
+    // Re-validating the whole list would work, but it rebuilds every existing
+    // suggestion and so resets their decisions, which then have to be carried
+    // back by hand. Validating one and appending keeps decisions untouched
+    // because the existing entries are never rebuilt.
+    var report = validateSuggestions(draft, [candidate]);
+    if (!report.ok) return report;
+
+    var next = clone(draft);
+    next.suggestions = draft.suggestions.concat(report.value.suggestions);
+    next.globalWarnings = globalWarnings(next);
+    return ok(next, report.warnings);
+  }
+
+  /* ---------------------------------------------------------------------- *
    * Human decisions
    *
    * Every transition returns a new draft. The frozen notes are copied forward
@@ -798,6 +898,134 @@
   }
 
   /* ---------------------------------------------------------------------- *
+   * Delivery to a principal-owned Apps Script
+   *
+   * The script runs in the principal's own Google account, writes to their own
+   * Drive, and shares each note with one named teacher. This module never
+   * talks to an AlloFlow server, and it refuses to hand over anything the
+   * human has not approved.
+   *
+   * Delivery carries the RECORD, never the draft. buildFormOutput already
+   * strips rejected suggestions, confidence values and warnings, so what goes
+   * over the wire is exactly what the observer approved.
+   * ---------------------------------------------------------------------- */
+
+  var EXEC_URL_PATTERN = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/;
+  var EMAIL_PATTERN = /^[^@\s]+@[^@\s.]+\.[^@\s]+$/;
+
+  function validateExecUrl(value) {
+    var url = isString(value) ? value.trim() : '';
+    if (!url) return bad([error('url-empty', 'execUrl', 'Paste the web app URL from your deployment.')]);
+    if (url.indexOf('http://') === 0) {
+      return bad([error('url-insecure', 'execUrl', 'That URL is not secure. A deployment URL always begins with https.')]);
+    }
+    if (!EXEC_URL_PATTERN.test(url)) {
+      return bad([error('url-shape', 'execUrl',
+        'That does not look like an Apps Script web app URL. It should begin with https://script.google.com/macros/s/ and end with /exec.')]);
+    }
+    return ok(url);
+  }
+
+  function validateRecipient(email, allowedDomain) {
+    var value = isString(email) ? email.trim().toLowerCase() : '';
+    if (!EMAIL_PATTERN.test(value)) {
+      return bad([error('recipient-invalid', 'teacherEmail',
+        'Enter the teacher\'s school email address. Feedback is shared with a named account, never by link.')]);
+    }
+    if (isNonEmptyString(allowedDomain)) {
+      var at = value.lastIndexOf('@');
+      if (value.slice(at + 1) !== String(allowedDomain).toLowerCase()) {
+        return bad([error('recipient-domain', 'teacherEmail',
+          'That address is outside ' + allowedDomain + '. Check it before sending staff feedback outside your school domain.')]);
+      }
+    }
+    return ok(value);
+  }
+
+  // The transport is injected so this stays testable and so the module never
+  // assumes fetch exists (Canvas, Desktop and Node all differ).
+  function createDelivery(options) {
+    var settings = isObject(options) ? options : {};
+    var urlReport = validateExecUrl(settings.execUrl);
+    if (!urlReport.ok) return urlReport;
+    var post = typeof settings.post === 'function' ? settings.post : null;
+    if (!post) return bad([error('transport-missing', 'post', 'No transport was supplied for delivery.')]);
+
+    var execUrl = urlReport.value;
+    var token = isNonEmptyString(settings.token) ? settings.token : '';
+
+    function call(action, payload) {
+      var body = { action: action };
+      Object.keys(payload || {}).forEach(function (key) { body[key] = payload[key]; });
+      if (token) body.token = token;
+      return post(execUrl, body);
+    }
+
+    return ok({
+      execUrl: execUrl,
+      hasToken: !!token,
+      claim: function () {
+        return call('claim', {}).then(function (result) {
+          if (!result || result.ok === false) {
+            return bad([error((result && result.code) || 'claim-failed', 'claim',
+              (result && result.error) || 'The script did not accept the connection.')]);
+          }
+          token = isNonEmptyString(result.token) ? result.token : token;
+          return ok({ token: token, owner: result.owner || '', version: result.version });
+        });
+      },
+      selfTest: function () {
+        return call('selftest', {}).then(function (result) {
+          if (!result || result.ok === false) {
+            return bad([error((result && result.code) || 'selftest-failed', 'selftest',
+              (result && result.error) || 'The script did not answer the self-test.')]);
+          }
+          return ok(result);
+        });
+      },
+      deliver: function (draft, fieldMap, deliveryOptions) {
+        var opts = isObject(deliveryOptions) ? deliveryOptions : {};
+        var recipient = validateRecipient(opts.teacherEmail, opts.allowedDomain);
+        if (!recipient.ok) return Promise.resolve(recipient);
+
+        var output = buildFormOutput(draft, fieldMap, opts);
+        if (!output.ok) return Promise.resolve(output);
+
+        if (draft.mode === 'demo') {
+          return Promise.resolve(bad([error('demo-mode', 'mode',
+            'This draft is practice material. Delivery is only available for an approved observation.')]));
+        }
+
+        var fields = output.value.fields
+          .filter(function (field) { return !field.empty; })
+          .map(function (field) { return { label: field.key, text: field.text }; });
+
+        return call('deliver', {
+          teacherEmail: recipient.value,
+          teacherDisplayName: (draft.context && draft.context.teacherDisplayName) || '',
+          subject: opts.subject || 'Walkthrough feedback',
+          disclosure: output.value.disclosure,
+          fields: fields,
+          notify: opts.notify !== false,
+          restrictToDomain: opts.restrictToDomain !== false
+        }).then(function (result) {
+          if (!result || result.ok === false) {
+            return bad([error((result && result.code) || 'deliver-failed', 'deliver',
+              (result && result.error) || 'The script did not save the feedback.')]);
+          }
+          return ok({
+            url: result.url,
+            fileId: result.fileId,
+            sharedWith: result.sharedWith,
+            notified: !!result.notified,
+            at: result.at
+          });
+        });
+      }
+    });
+  }
+
+  /* ---------------------------------------------------------------------- *
    * Session teardown
    * ---------------------------------------------------------------------- */
 
@@ -830,6 +1058,12 @@
     buildFormOutput: buildFormOutput,
     exportDraft: exportDraft,
     compareToReference: compareToReference,
+    validateExecUrl: validateExecUrl,
+    validateRecipient: validateRecipient,
+    createDelivery: createDelivery,
+    locateQuote: locateQuote,
+    addManualSuggestion: addManualSuggestion,
+    describeApproval: describeApproval,
     clearDraft: clearDraft
   };
 
@@ -1456,6 +1690,68 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })();
 
+/* bundled from walkthrough_script_source_module.js */
+/**
+ * AlloFlow Walkthrough Records - Apps Script source, shipped inside the app.
+ *
+ * Auto-generated by _build_walkthrough_script_source.js - DO NOT EDIT MANUALLY.
+ * Source: apps_script/walkthrough_records/Code.gs
+ *
+ * Ships the principal-owned delivery script so the copy button works offline
+ * and inside Gemini Canvas. Frozen, with a digest so drift from the repository
+ * copy is detectable rather than silent.
+ */
+(function() {
+  'use strict';
+  window.AlloModules = window.AlloModules || {};
+  var previous = window.AlloModules.WalkthroughScriptSource;
+  if (previous && previous.version === 1 && previous.sha256 === "78cc9261019f5ec3b5dbc9178f33c4ac5940a167c80b7f0e930d635fe67bc5a1") {
+    console.log('[CDN] WalkthroughScriptSource already loaded, skipping');
+    return;
+  }
+  window.AlloModules.WalkthroughScriptSource = Object.freeze({
+    service: 'alloflow-walkthrough-records',
+    version: 1,
+    sha256: "78cc9261019f5ec3b5dbc9178f33c4ac5940a167c80b7f0e930d635fe67bc5a1",
+    filename: 'Code.gs',
+    projectName: 'AlloFlow Walkthrough Records',
+    newProjectUrl: 'https://script.new',
+    steps: Object.freeze([
+    {
+      "n": 1,
+      "text": "Type script.new into your browser address bar, signed into the Google account that should own these records. A school account is the right choice."
+    },
+    {
+      "n": 2,
+      "text": "Delete the starter code and paste the script copied below."
+    },
+    {
+      "n": 3,
+      "text": "Rename the project to AlloFlow Walkthrough Records and save."
+    },
+    {
+      "n": 4,
+      "text": "Click Deploy, then New deployment, and choose type Web app."
+    },
+    {
+      "n": 5,
+      "text": "Set Execute as: Me and Who has access: Anyone. Click Deploy."
+    },
+    {
+      "n": 6,
+      "text": "Authorize when prompted. Google warns that it has not verified the app, because a script you just wrote is an unpublished OAuth app. Continue only if you created this project, read the code, and recognize the account."
+    },
+    {
+      "n": 7,
+      "text": "Copy the Web app URL, which ends in /exec, and paste it below."
+    }
+  ]),
+    execUrlPattern: '^https://script\\.google\\.com/macros/s/[A-Za-z0-9_-]+/exec$',
+    source: "/**\n * AlloFlow Walkthrough Records - principal-owned delivery script.\n *\n * WHAT THIS IS. A small Apps Script that a principal deploys in their OWN\n * Google account. AlloFlow sends it walkthrough feedback the principal has\n * already written and approved. The script writes that feedback to a folder in\n * the principal's own Drive and shares each file with exactly one named teacher\n * account, then sends that teacher a notification containing no feedback text.\n *\n * WHY IT IS SHAPED THIS WAY. The Class Mailbox proves the deployment pattern,\n * but its security model does not transfer: there, possession of a link stands\n * in for a student's identity, which is acceptable for anonymous class traffic\n * and unacceptable for anything about a named staff member. Here the token only\n * authorizes the principal's own tool to write to the principal's own Drive.\n * The TEACHER's identity is enforced by Google at the sharing boundary: the\n * file is Restricted and shared with one address, so opening it requires\n * signing in as that person. A forwarded link grants nothing.\n *\n * WHAT THIS IS NOT. Not an evaluation system of record, not a rating engine,\n * and not a substitute for a district-authorized portal. It stores feedback a\n * human wrote and approved, and it never scores anyone. For a district-run\n * system of record with verified identity, assignments and a tamper-evident\n * audit trail, see apps_script/educator_evaluation/.\n *\n * SCOPES. drive.file only, so the consent screen reads \"see, edit, create and\n * delete only the specific Google Drive files you use with this app\" rather\n * than granting access to the principal's whole Drive. Everything below is\n * designed to stay inside that scope: the working folder id is remembered in\n * Script Properties rather than found by searching Drive, because searching\n * would require broader access.\n */\n\nvar WR_SERVICE = 'alloflow-walkthrough-records';\nvar WR_VERSION = 1;\nvar WR_FOLDER_NAME = 'AlloFlow Walkthrough Records';\nvar WR_PROP_TOKEN = 'wr_admin_token';\nvar WR_PROP_FOLDER = 'wr_folder_id';\nvar WR_PROP_DOMAIN = 'wr_allowed_domain';\nvar WR_MAX_FIELD = 20000;\nvar WR_MAX_FIELDS = 24;\n\nfunction wrProps_() {\n  return PropertiesService.getScriptProperties();\n}\n\nfunction wrJson_(payload) {\n  return ContentService.createTextOutput(JSON.stringify(payload))\n    .setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction wrError_(code, message) {\n  return { ok: false, code: code, error: message };\n}\n\nfunction wrString_(value, max) {\n  if (typeof value !== 'string') return '';\n  var trimmed = value.trim();\n  return trimmed.length > max ? trimmed.slice(0, max) : trimmed;\n}\n\nfunction wrToken_() {\n  var bytes = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');\n  return bytes.slice(0, 48);\n}\n\nfunction wrEmailOk_(email) {\n  return /^[^@\\s]+@[^@\\s.]+\\.[^@\\s]+$/.test(String(email || ''));\n}\n\nfunction wrDomainOf_(email) {\n  var at = String(email || '').lastIndexOf('@');\n  return at === -1 ? '' : String(email).slice(at + 1).toLowerCase();\n}\n\nfunction wrOwnerEmail_() {\n  try { return String(Session.getEffectiveUser().getEmail() || '').toLowerCase(); } catch (err) { return ''; }\n}\n\n/**\n * The working folder is remembered by id. It is never located by searching\n * Drive, which drive.file would not permit anyway.\n */\nfunction wrFolder_() {\n  var props = wrProps_();\n  var id = props.getProperty(WR_PROP_FOLDER);\n  if (id) {\n    try { return DriveApp.getFolderById(id); } catch (err) { /* recreate below */ }\n  }\n  var folder = DriveApp.createFolder(WR_FOLDER_NAME);\n  props.setProperty(WR_PROP_FOLDER, folder.getId());\n  return folder;\n}\n\nfunction wrAuthorize_(request) {\n  var stored = wrProps_().getProperty(WR_PROP_TOKEN);\n  if (!stored) return wrError_('not_claimed', 'This script has not been connected yet. Connect it from AlloFlow first.');\n  var supplied = wrString_(request && request.token, 128);\n  if (!supplied || supplied !== stored) return wrError_('denied', 'This request did not carry the connecting device token.');\n  return null;\n}\n\nfunction doGet(e) {\n  // Deliberately no HTML UI. This script is a delivery endpoint, not a portal.\n  var mode = String((e && e.parameter && e.parameter.api) || '');\n  if (mode === 'health') {\n    return wrJson_({\n      ok: true,\n      service: WR_SERVICE,\n      version: WR_VERSION,\n      claimed: !!wrProps_().getProperty(WR_PROP_TOKEN),\n      owner: wrOwnerEmail_()\n    });\n  }\n  return wrJson_(wrError_('not_found', 'This endpoint serves the AlloFlow Walkthrough Records API.'));\n}\n\nfunction doPost(e) {\n  var request;\n  try {\n    request = JSON.parse((e && e.postData && e.postData.contents) || '{}');\n  } catch (parseErr) {\n    return wrJson_(wrError_('bad_request', 'The request body was not valid JSON.'));\n  }\n  var action = wrString_(request.action, 40);\n\n  try {\n    if (action === 'claim') return wrJson_(wrClaim_());\n    if (action === 'selftest') return wrJson_(wrSelfTest_(request));\n    if (action === 'deliver') return wrJson_(wrDeliver_(request));\n    if (action === 'revoke') return wrJson_(wrRevoke_(request));\n    return wrJson_(wrError_('unknown_action', 'Unrecognized action.'));\n  } catch (err) {\n    return wrJson_(wrError_('failed', String((err && err.message) || err)));\n  }\n}\n\n/**\n * First caller claims the script. Re-claiming requires the existing token, so a\n * stranger who finds the URL cannot take it over.\n */\nfunction wrClaim_() {\n  var props = wrProps_();\n  if (props.getProperty(WR_PROP_TOKEN)) {\n    return wrError_('already_claimed', 'This script is already connected to a device. Use \"Forget this connection\" in the Apps Script editor to reset it.');\n  }\n  var token = wrToken_();\n  props.setProperty(WR_PROP_TOKEN, token);\n  var owner = wrOwnerEmail_();\n  if (owner) props.setProperty(WR_PROP_DOMAIN, wrDomainOf_(owner));\n  return { ok: true, token: token, owner: owner, service: WR_SERVICE, version: WR_VERSION };\n}\n\nfunction wrSelfTest_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n  var folder = wrFolder_();\n  return {\n    ok: true,\n    service: WR_SERVICE,\n    version: WR_VERSION,\n    owner: wrOwnerEmail_(),\n    folderName: folder.getName(),\n    allowedDomain: wrProps_().getProperty(WR_PROP_DOMAIN) || '',\n    canSendMail: MailApp.getRemainingDailyQuota() > 0\n  };\n}\n\n/**\n * Writes one walkthrough to Drive and shares it with exactly one teacher.\n *\n * request: {\n *   token, teacherEmail, teacherDisplayName?, subject?, disclosure,\n *   fields: [{label, text}], notify?: boolean, restrictToDomain?: boolean\n * }\n */\nfunction wrDeliver_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n\n  var teacherEmail = wrString_(request.teacherEmail, 320).toLowerCase();\n  if (!wrEmailOk_(teacherEmail)) {\n    return wrError_('bad_recipient', 'A valid teacher email address is required. Feedback is never shared by link.');\n  }\n\n  // Optional, on by default: keep delivery inside the deploying account's\n  // domain so a typo cannot send staff feedback to a personal address.\n  var allowedDomain = wrProps_().getProperty(WR_PROP_DOMAIN) || '';\n  var restrict = request.restrictToDomain !== false;\n  if (restrict && allowedDomain && wrDomainOf_(teacherEmail) !== allowedDomain) {\n    return wrError_('outside_domain', 'That address is outside ' + allowedDomain + '. Correct it, or turn off the domain restriction deliberately.');\n  }\n\n  var disclosure = wrString_(request.disclosure, 2000);\n  if (!disclosure) {\n    return wrError_('disclosure_required', 'Feedback cannot be delivered without its disclosure line.');\n  }\n\n  var rawFields = Array.isArray(request.fields) ? request.fields : [];\n  if (!rawFields.length) return wrError_('empty', 'There is no approved feedback to deliver.');\n  if (rawFields.length > WR_MAX_FIELDS) return wrError_('too_many', 'Too many sections in one delivery.');\n\n  var fields = [];\n  for (var i = 0; i < rawFields.length; i++) {\n    var label = wrString_(rawFields[i] && rawFields[i].label, 200);\n    var text = wrString_(rawFields[i] && rawFields[i].text, WR_MAX_FIELD);\n    if (label && text) fields.push({ label: label, text: text });\n  }\n  if (!fields.length) return wrError_('empty', 'There is no approved feedback to deliver.');\n\n  var subject = wrString_(request.subject, 200) || 'Walkthrough feedback';\n  var teacherName = wrString_(request.teacherDisplayName, 200);\n  var stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');\n\n  var body = [];\n  body.push(subject);\n  body.push(teacherName ? 'For: ' + teacherName : '');\n  body.push('Shared: ' + stamp);\n  body.push('');\n  body.push(disclosure);\n  body.push('');\n  for (var f = 0; f < fields.length; f++) {\n    body.push(fields[f].label);\n    body.push(fields[f].text);\n    body.push('');\n  }\n\n  var folder = wrFolder_();\n  var fileName = subject + ' - ' + (teacherName || teacherEmail) + ' - ' + stamp;\n  var file = folder.createFile(fileName + '.txt', body.join('\\n'), MimeType.PLAIN_TEXT);\n\n  // Restricted by construction. The file is never made link-accessible, so a\n  // forwarded URL is worthless without the named account.\n  try {\n    file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);\n  } catch (shareErr) { /* new files are private by default */ }\n  file.addViewer(teacherEmail);\n\n  var notified = false;\n  if (request.notify !== false) {\n    try {\n      // The notification deliberately carries no feedback text. The content\n      // lives behind Google sign-in, not in an inbox.\n      MailApp.sendEmail({\n        to: teacherEmail,\n        subject: 'Walkthrough feedback shared with you',\n        body: [\n          'A walkthrough note has been shared with you in Google Drive.',\n          '',\n          'Open it here (you will be asked to sign in with your school account):',\n          file.getUrl(),\n          '',\n          'This message intentionally contains no feedback text.'\n        ].join('\\n')\n      });\n      notified = true;\n    } catch (mailErr) { notified = false; }\n  }\n\n  return {\n    ok: true,\n    fileId: file.getId(),\n    url: file.getUrl(),\n    sharedWith: teacherEmail,\n    notified: notified,\n    at: new Date().toISOString()\n  };\n}\n\n/**\n * Removes a teacher's access to one previously delivered file. Only files this\n * script created are reachable under drive.file.\n */\nfunction wrRevoke_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n  var fileId = wrString_(request.fileId, 200);\n  var teacherEmail = wrString_(request.teacherEmail, 320).toLowerCase();\n  if (!fileId || !wrEmailOk_(teacherEmail)) return wrError_('bad_request', 'A file id and a teacher email are required.');\n  var file = DriveApp.getFileById(fileId);\n  file.removeViewer(teacherEmail);\n  return { ok: true, fileId: fileId, revokedFor: teacherEmail };\n}\n\n/**\n * Run from the Apps Script editor to disconnect this script from a device.\n * Deliberately not exposed over HTTP: resetting the token is an owner action.\n */\nfunction forgetConnection() {\n  wrProps_().deleteProperty(WR_PROP_TOKEN);\n  return 'Connection forgotten. Reconnect from AlloFlow to issue a new token.';\n}\n"
+  });
+  console.log('[CDN] WalkthroughScriptSource loaded');
+})();
+
   var React = window.React;
   if (!React) { console.error('[WalkthroughCopilot] React not found on window'); return; }
 
@@ -1476,8 +1772,63 @@ const WCOP_STAGES = [
   { id: "feedback", n: "Step 3", label: "Read the feedback" },
   { id: "copy", n: "Step 4", label: "Copy to your form" }
 ];
+const WCOP_STORE_KEY = "allo_wcop_delivery_v1";
+const WCOP_TIERS = [
+  {
+    key: "practice",
+    name: "Practice, on this device",
+    cost: "Nothing to set up",
+    body: "Invented scenarios, no AI contacted, nothing saved. This is what you are in now, and what to use for training or a staff meeting."
+  },
+  {
+    key: "deliver",
+    name: "Deliver to your teachers",
+    cost: "You deploy a script, about three minutes",
+    body: "A small script in your own Google account saves each finished note to your Drive and shares it with one named teacher. Your district permits it rather than administering it."
+  },
+  {
+    key: "district",
+    name: "District system of record",
+    cost: "Your district deploys and runs it",
+    body: "Verified identity, evaluator assignments, teacher acknowledgment and a tamper-evident audit trail. A separate portal your district opens, not something this panel can switch on."
+  }
+];
 function wcopCore() {
   return window.AlloModules && window.AlloModules.WalkthroughCopilot || null;
+}
+function wcopScriptSource() {
+  return window.AlloModules && window.AlloModules.WalkthroughScriptSource || null;
+}
+function wcopPost(url, body) {
+  return window.fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(body)
+  }).then((response) => response.json());
+}
+function wcopLoadConnection() {
+  try {
+    const raw = window.localStorage.getItem(WCOP_STORE_KEY);
+    if (!raw) return { execUrl: "", token: "", owner: "" };
+    const saved = JSON.parse(raw);
+    return {
+      execUrl: typeof saved.execUrl === "string" ? saved.execUrl : "",
+      token: typeof saved.token === "string" ? saved.token : "",
+      owner: typeof saved.owner === "string" ? saved.owner : ""
+    };
+  } catch (err) {
+    return { execUrl: "", token: "", owner: "" };
+  }
+}
+function wcopSaveConnection(connection) {
+  try {
+    window.localStorage.setItem(WCOP_STORE_KEY, JSON.stringify({
+      execUrl: connection.execUrl,
+      token: connection.token,
+      owner: connection.owner
+    }));
+  } catch (err) {
+  }
 }
 function wcopFixtures() {
   return window.AlloModules && window.AlloModules.WalkthroughCopilotFixtures || null;
@@ -1663,7 +2014,276 @@ function WcopIntro(props) {
       "p",
       { className: "text-xs text-slate-500 mt-2" },
       "This build analyzes the practice scenarios only. Analyzing notes you write yourself needs an approved AI provider, which is a separate decision."
+    ),
+    React.createElement(
+      "p",
+      { className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-3" },
+      "Three ways this gets used"
+    ),
+    React.createElement(
+      "div",
+      { className: "grid gap-2 sm:grid-cols-3" },
+      WCOP_TIERS.map((tier) => React.createElement(
+        "div",
+        {
+          key: tier.key,
+          className: "rounded border p-2 " + (tier.key === "practice" ? "border-teal-600 bg-teal-50" : tier.key === "deliver" && props.connected ? "border-emerald-600 bg-emerald-50" : "border-slate-200 bg-white")
+        },
+        React.createElement("h4", { className: "text-sm font-bold" }, tier.name),
+        React.createElement("p", { className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold" }, tier.cost),
+        React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tier.body),
+        tier.key === "deliver" && props.connected ? React.createElement(
+          "p",
+          { className: "text-xs text-emerald-800 font-semibold mt-1" },
+          "Connected to " + (props.owner || "your Google account") + "."
+        ) : null,
+        tier.key === "deliver" && !props.connected ? React.createElement("button", {
+          type: "button",
+          className: "mt-2 px-2 py-1 rounded border border-slate-300 text-xs font-semibold",
+          onClick: props.onSetup
+        }, "Set up delivery") : null
+      ))
     )
+  );
+}
+function WcopAffirm(props) {
+  const described = props.described;
+  return React.createElement(
+    "div",
+    null,
+    React.createElement("h3", { className: "font-bold text-slate-800 mb-1" }, "Use this for a real observation"),
+    React.createElement("p", { className: "text-xs text-slate-500 mb-3" }, described.note),
+    React.createElement(
+      "div",
+      { className: "rounded-lg border border-slate-200 bg-white p-4 mb-3" },
+      React.createElement(
+        "p",
+        { className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1" },
+        "Confirm each of these"
+      ),
+      described.terms.map((term) => React.createElement(
+        "label",
+        {
+          key: term.key,
+          className: "flex gap-2 items-start text-sm my-2"
+        },
+        React.createElement("input", {
+          type: "checkbox",
+          className: "w-5 h-5 mt-0.5 flex-none",
+          checked: !!props.checks[term.key],
+          onChange: (e) => props.onCheck(term.key, e.target.checked)
+        }),
+        React.createElement("span", null, term.text)
+      )),
+      React.createElement(
+        "label",
+        { className: "block text-xs font-semibold mt-3 mb-1", htmlFor: "wcop-affirm-name" },
+        "Your name, recorded with the affirmation"
+      ),
+      React.createElement("input", {
+        id: "wcop-affirm-name",
+        type: "text",
+        className: "w-full rounded border border-slate-300 p-2 text-sm",
+        value: props.name,
+        onChange: (e) => props.onName(e.target.value)
+      }),
+      props.message ? React.createElement(WcopFlag, { tone: "stop" }, props.message) : null,
+      React.createElement(
+        "div",
+        { className: "flex flex-wrap gap-2 mt-3" },
+        React.createElement("button", {
+          type: "button",
+          className: "px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold",
+          onClick: props.onAffirm
+        }, "Affirm and continue"),
+        React.createElement("button", {
+          type: "button",
+          className: "px-3 py-2 rounded border border-slate-300 text-sm",
+          onClick: props.onCancel
+        }, "Stay in practice mode")
+      )
+    ),
+    React.createElement(
+      "div",
+      { className: "rounded-lg border border-slate-200 bg-white p-4" },
+      React.createElement("h4", { className: "font-semibold text-sm mb-1" }, "What this does and does not change"),
+      React.createElement(
+        "p",
+        { className: "text-xs text-slate-600" },
+        "It removes the practice watermark and lets you work from your own notes. It changes nothing about how evidence is checked. It is not remembered after this session, and it is not a substitute for your district actually having approved anything."
+      )
+    )
+  );
+}
+function WcopManualEntry(props) {
+  return React.createElement(
+    "div",
+    { className: "rounded-lg border border-slate-200 bg-white p-3 mb-3" },
+    React.createElement("h4", { className: "font-semibold text-sm mb-1" }, "Add evidence"),
+    React.createElement(
+      "p",
+      { className: "text-xs text-slate-500 mb-2" },
+      "Pick the component, quote the line of your notes it rests on, then say what you observed. Keep any conclusion in the separate interpretation field."
+    ),
+    React.createElement(
+      "label",
+      { className: "block text-xs font-semibold mb-1", htmlFor: "wcop-manual-component" },
+      "Component"
+    ),
+    React.createElement(
+      "select",
+      {
+        id: "wcop-manual-component",
+        className: "w-full rounded border border-slate-300 p-2 text-sm mb-2",
+        value: props.entry.componentId,
+        onChange: (e) => props.onField("componentId", e.target.value)
+      },
+      React.createElement("option", { value: "" }, "Choose a component"),
+      props.components.map((component) => React.createElement(
+        "option",
+        { key: component.id, value: component.id },
+        component.id + " " + component.label
+      ))
+    ),
+    [
+      ["quote", "Quote from your notes", "Paste the exact line this rests on"],
+      ["evidence", "What you observed", "Describe only what happened"],
+      ["interpretation", "What it might mean (optional)", "Your reading of it, kept separate"]
+    ].map((spec) => React.createElement(
+      "div",
+      { key: spec[0], className: "mb-2" },
+      React.createElement(
+        "label",
+        { className: "block text-xs font-semibold mb-1", htmlFor: "wcop-manual-" + spec[0] },
+        spec[1]
+      ),
+      React.createElement("textarea", {
+        id: "wcop-manual-" + spec[0],
+        className: "w-full rounded border border-slate-300 p-2 text-sm",
+        rows: 2,
+        placeholder: spec[2],
+        value: props.entry[spec[0]],
+        onChange: (e) => props.onField(spec[0], e.target.value)
+      })
+    )),
+    props.message ? React.createElement(WcopFlag, { tone: "stop" }, props.message) : null,
+    React.createElement("button", {
+      type: "button",
+      className: "px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold",
+      onClick: props.onAdd
+    }, "Add this evidence")
+  );
+}
+function WcopSetup(props) {
+  const source = wcopScriptSource();
+  if (!source) {
+    return React.createElement(
+      "div",
+      { className: "p-1" },
+      React.createElement(
+        WcopFlag,
+        { tone: "stop" },
+        "The script could not be loaded, so the copy button is unavailable. Close and reopen this tool."
+      ),
+      React.createElement("button", {
+        type: "button",
+        className: "mt-2 px-3 py-2 rounded border border-slate-300 text-sm",
+        onClick: props.onBack
+      }, "Back")
+    );
+  }
+  return React.createElement(
+    "div",
+    null,
+    React.createElement("h3", { className: "font-bold text-slate-800 mb-1" }, "Set up delivery to your teachers"),
+    React.createElement(
+      "p",
+      { className: "text-xs text-slate-500 mb-3" },
+      "This runs in your own Google account. Finished notes are saved to your Drive and shared with one named teacher at a time. Nothing goes to an AlloFlow server, and there is no AlloFlow database."
+    ),
+    React.createElement(
+      "div",
+      { className: "rounded-lg border border-slate-200 bg-white p-4 mb-3" },
+      React.createElement("h4", { className: "font-semibold text-sm mb-1" }, "Deploy the script"),
+      React.createElement(
+        "ol",
+        { className: "list-decimal ml-5 text-sm text-slate-700" },
+        source.steps.map((step) => React.createElement("li", { key: step.n, className: "mb-1" }, step.text))
+      ),
+      React.createElement(
+        "div",
+        { className: "flex flex-wrap gap-2 items-center mt-2" },
+        React.createElement("button", {
+          type: "button",
+          className: "px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold",
+          onClick: () => props.onCopyScript(source.source)
+        }, "Copy script code"),
+        React.createElement(
+          "span",
+          { className: "text-xs text-slate-500" },
+          source.source.length + " characters. The script ships inside this tool, so this works offline."
+        )
+      )
+    ),
+    React.createElement(
+      "div",
+      { className: "rounded-lg border border-slate-200 bg-white p-4 mb-3" },
+      React.createElement("h4", { className: "font-semibold text-sm mb-1" }, "Connect it"),
+      React.createElement(
+        "label",
+        { className: "block text-xs font-semibold mb-1", htmlFor: "wcop-exec-url" },
+        "Web app URL (ends in /exec)"
+      ),
+      React.createElement("input", {
+        id: "wcop-exec-url",
+        type: "text",
+        className: "w-full rounded border border-slate-300 p-2 text-sm",
+        placeholder: "https://script.google.com/macros/s/.../exec",
+        value: props.execUrl,
+        onChange: (e) => props.onExecUrl(e.target.value)
+      }),
+      React.createElement(
+        "div",
+        { className: "flex flex-wrap gap-2 mt-2" },
+        React.createElement("button", {
+          type: "button",
+          disabled: props.busy,
+          onClick: props.onConnect,
+          className: "px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold " + (props.busy ? "opacity-50" : "")
+        }, props.connected ? "Reconnect" : "Connect"),
+        props.connected ? React.createElement("button", {
+          type: "button",
+          className: "px-3 py-2 rounded border border-slate-300 text-sm",
+          onClick: props.onForget
+        }, "Forget this connection") : null
+      ),
+      props.message ? React.createElement(WcopFlag, { tone: props.tone }, props.message) : null,
+      props.selfTest ? React.createElement(
+        "p",
+        { className: "text-xs text-slate-500 mt-2" },
+        "Owner: " + (props.selfTest.owner || "unknown") + " | folder: " + (props.selfTest.folderName || "not created yet") + " | email quota available: " + (props.selfTest.canSendMail ? "yes" : "no")
+      ) : null
+    ),
+    React.createElement(
+      "div",
+      { className: "rounded-lg border border-slate-200 bg-white p-4 mb-3" },
+      React.createElement("h4", { className: "font-semibold text-sm mb-1" }, "Before you use this on a real staff member"),
+      React.createElement(
+        "p",
+        { className: "text-xs text-slate-500" },
+        "This stores feedback you wrote and approved. It does not rate anyone and it is not an evaluation system of record. Using it on real staff is a district decision. Get answers to:"
+      ),
+      React.createElement(
+        "ul",
+        { className: "list-disc ml-5 text-sm text-slate-700 mt-1" },
+        WCOP_ADVISORY_QUESTIONS.map((q, i) => React.createElement("li", { key: i, className: "mb-1" }, q))
+      )
+    ),
+    React.createElement("button", {
+      type: "button",
+      className: "px-3 py-2 rounded border border-slate-300 text-sm",
+      onClick: props.onBack
+    }, "Back to the tool")
   );
 }
 function WalkthroughCopilotPanel(props) {
@@ -1680,6 +2300,17 @@ function WalkthroughCopilotPanel(props) {
   const [editText, setEditText] = React.useState("");
   const [comparison, setComparison] = React.useState(null);
   const [problem, setProblem] = React.useState("");
+  const [connection, setConnection] = React.useState(wcopLoadConnection);
+  const [setupState, setSetupState] = React.useState({ busy: false, message: "", tone: "warn", selfTest: null });
+  const [sendTo, setSendTo] = React.useState("");
+  const [sendResult, setSendResult] = React.useState(null);
+  const [approval, setApproval] = React.useState(null);
+  const [affirmChecks, setAffirmChecks] = React.useState({});
+  const [affirmName, setAffirmName] = React.useState("");
+  const [affirmMessage, setAffirmMessage] = React.useState("");
+  const [manual, setManual] = React.useState({ componentId: "", quote: "", evidence: "", interpretation: "" });
+  const [manualMessage, setManualMessage] = React.useState("");
+  const [realNotes, setRealNotes] = React.useState("");
   if (!core || !fixtures || !scenarioLib) {
     return React.createElement(
       "div",
@@ -1774,6 +2405,144 @@ function WalkthroughCopilotPanel(props) {
     }
     wcopAnnounce("Could not copy. Select the text and copy manually.");
   }
+  const connected = !!connection.execUrl && !!connection.token;
+  function deliveryClient(nextToken) {
+    return core.createDelivery({
+      execUrl: connection.execUrl,
+      token: typeof nextToken === "string" ? nextToken : connection.token,
+      post: wcopPost
+    });
+  }
+  function runSelfTest(token) {
+    const built = deliveryClient(token);
+    if (!built.ok) return;
+    built.value.selfTest().then((result) => {
+      setSetupState(result.ok ? { busy: false, message: "Self-test passed.", tone: "go", selfTest: result.value } : { busy: false, message: result.errors[0].message, tone: "stop", selfTest: null });
+    }, () => {
+      setSetupState({ busy: false, message: "The self-test could not reach the script.", tone: "stop", selfTest: null });
+    });
+  }
+  function connect() {
+    const check = core.validateExecUrl(connection.execUrl);
+    if (!check.ok) {
+      setSetupState({ busy: false, message: check.errors[0].message, tone: "stop", selfTest: null });
+      return;
+    }
+    const cleaned = Object.assign({}, connection, { execUrl: check.value, token: "" });
+    setConnection(cleaned);
+    setSetupState({ busy: true, message: "Connecting...", tone: "warn", selfTest: null });
+    const built = core.createDelivery({ execUrl: check.value, post: wcopPost });
+    if (!built.ok) {
+      setSetupState({ busy: false, message: built.errors[0].message, tone: "stop", selfTest: null });
+      return;
+    }
+    built.value.claim().then((result) => {
+      if (!result.ok) {
+        setSetupState({ busy: false, message: result.errors[0].message, tone: "stop", selfTest: null });
+        return;
+      }
+      const next = { execUrl: check.value, token: result.value.token, owner: result.value.owner || "" };
+      setConnection(next);
+      wcopSaveConnection(next);
+      setSetupState({ busy: false, message: "Connected to " + (next.owner || "your Google account") + ".", tone: "go", selfTest: null });
+      wcopAnnounce("Connected.");
+      runSelfTest(next.token);
+    }, (err) => {
+      setSetupState({
+        busy: false,
+        message: 'Could not reach the script. Check the URL, and that the deployment is set to "Anyone". (' + (err && err.message || "network error") + ")",
+        tone: "stop",
+        selfTest: null
+      });
+    });
+  }
+  function forget() {
+    try {
+      window.localStorage.removeItem(WCOP_STORE_KEY);
+    } catch (err) {
+    }
+    setConnection({ execUrl: "", token: "", owner: "" });
+    setSetupState({ busy: false, message: "", tone: "warn", selfTest: null });
+    wcopAnnounce("Connection forgotten on this device. The script and your Drive files are untouched.");
+  }
+  function deliver() {
+    const built = deliveryClient();
+    if (!built.ok) {
+      setSendResult({ ok: false, message: built.errors[0].message });
+      return;
+    }
+    setSetupState((current) => Object.assign({}, current, { busy: true }));
+    built.value.deliver(draft, fixtures.SAMPLE_FIELD_MAP, {
+      teacherEmail: sendTo,
+      allowedDomain: setupState.selfTest && setupState.selfTest.allowedDomain
+    }).then((result) => {
+      setSetupState((current) => Object.assign({}, current, { busy: false }));
+      const message = result.ok ? "Saved and shared with " + result.value.sharedWith + (result.value.notified ? ". A notification was sent." : ". The notification could not be sent, so tell them directly.") : result.errors[0].message;
+      setSendResult({ ok: result.ok, message });
+      wcopAnnounce(message);
+    }, (err) => {
+      setSetupState((current) => Object.assign({}, current, { busy: false }));
+      setSendResult({ ok: false, message: "Could not reach the script. Nothing was saved. (" + (err && err.message || "network error") + ")" });
+    });
+  }
+  function affirmApproval() {
+    const described = core.describeApproval();
+    const missing = described.terms.filter((term) => !affirmChecks[term.key]);
+    const named = affirmName.trim();
+    if (missing.length || !named) {
+      setAffirmMessage(
+        missing.length && !named ? "Confirm each statement and enter your name." : missing.length ? "Confirm each statement. These are claims about your district, not settings." : "Enter your name so the affirmation records who made it."
+      );
+      return;
+    }
+    const affirmed = { affirmedBy: named };
+    described.terms.forEach((term) => {
+      affirmed[term.key] = true;
+    });
+    setApproval(affirmed);
+    setAffirmMessage("");
+    setScenario(null);
+    setNotes("");
+    setRealNotes("");
+    setDraft(null);
+    setComparison(null);
+    setStage("capture");
+    wcopAnnounce("Real observation mode. Affirmed by " + named + " for this session.");
+  }
+  function lockRealNotes() {
+    const created = core.createDraft({
+      framework: fixtures.PORTLAND_FRAMEWORK,
+      sourceNotes: realNotes,
+      mode: "approved",
+      approval,
+      collectionType: "walkthrough"
+    });
+    if (!created.ok) {
+      setProblem(created.errors[0].message);
+      return;
+    }
+    setProblem("");
+    setDraft(created.value);
+    setStage("analyze");
+    wcopAnnounce("Notes locked. Add the evidence you observed.");
+  }
+  function addManual() {
+    const report = core.addManualSuggestion(draft, {
+      componentId: manual.componentId,
+      quote: manual.quote,
+      objectiveEvidence: manual.evidence,
+      interpretation: manual.interpretation
+    });
+    if (!report.ok) {
+      setManualMessage(report.errors[0].message);
+      wcopAnnounce(report.errors[0].message);
+      return;
+    }
+    setDraft(report.value);
+    setManual({ componentId: "", quote: "", evidence: "", interpretation: "" });
+    setManualMessage("");
+    wcopAnnounce("Evidence added. " + report.value.suggestions.length + " recorded so far.");
+  }
   function clearAll() {
     core.clearDraft(draft);
     setDraft(null);
@@ -1793,17 +2562,19 @@ function WalkthroughCopilotPanel(props) {
     if (id === "copy") return !!readiness && readiness.ok;
     return false;
   }
+  const liveMode = draft ? draft.mode === "approved" : !!approval;
+  const affirmedBy = draft && draft.approval && draft.approval.affirmedBy || approval && approval.affirmedBy || "you";
   const banner = React.createElement(
     "div",
     {
-      className: "flex flex-wrap gap-x-4 gap-y-1 items-center rounded border border-violet-300 bg-violet-50 text-violet-800 px-3 py-2 text-sm font-semibold mb-3"
+      className: "flex flex-wrap gap-x-4 gap-y-1 items-center rounded border px-3 py-2 text-sm font-semibold mb-3 " + (liveMode ? "border-emerald-300 bg-emerald-50 text-emerald-900" : "border-violet-300 bg-violet-50 text-violet-800")
     },
-    React.createElement("span", null, draft && draft.mode === "approved" ? "Approved mode" : "Demo mode"),
+    React.createElement("span", null, liveMode ? "Real observation" : "Practice mode"),
     React.createElement("span", { className: "opacity-60 font-normal" }, "|"),
     React.createElement(
       "span",
       { className: "font-normal" },
-      "Synthetic practice only. Nothing here is a record of a real observation."
+      liveMode ? "Affirmed by " + affirmedBy + " for this session only." : "Synthetic practice only. Nothing here is a record of a real observation."
     ),
     React.createElement("span", { className: "opacity-60 font-normal" }, "|"),
     React.createElement("span", { className: "font-normal" }, "Nothing is saved. Closing discards everything.")
@@ -1829,11 +2600,105 @@ function WalkthroughCopilotPanel(props) {
     ))
   );
   let bodyNode = null;
-  if (stage === "capture") {
+  if (stage === "setup") {
+    bodyNode = React.createElement(WcopSetup, {
+      execUrl: connection.execUrl,
+      connected,
+      busy: setupState.busy,
+      message: setupState.message,
+      tone: setupState.tone,
+      selfTest: setupState.selfTest,
+      onExecUrl: (value) => setConnection((current) => Object.assign({}, current, { execUrl: value })),
+      onConnect: connect,
+      onForget: forget,
+      onCopyScript: (text) => copyText(text, "Script code"),
+      onBack: () => setStage("capture")
+    });
+  } else if (stage === "affirm") {
+    bodyNode = React.createElement(WcopAffirm, {
+      described: core.describeApproval(),
+      checks: affirmChecks,
+      name: affirmName,
+      message: affirmMessage,
+      onCheck: (key, value) => setAffirmChecks((current) => Object.assign({}, current, { [key]: value })),
+      onName: setAffirmName,
+      onAffirm: affirmApproval,
+      onCancel: () => {
+        setAffirmMessage("");
+        setStage("capture");
+      }
+    });
+  } else if (stage === "capture" && approval) {
     bodyNode = React.createElement(
       "div",
       null,
-      introOpen ? React.createElement(WcopIntro, { onHide: () => setIntroOpen(false) }) : React.createElement("button", {
+      React.createElement(
+        "div",
+        { className: "rounded-lg border border-slate-200 bg-white p-4 mb-3" },
+        React.createElement("h3", { className: "font-bold text-slate-800 mb-1" }, "Your observation notes"),
+        React.createElement(
+          "p",
+          { className: "text-xs text-slate-500 mb-2" },
+          "Type the shorthand you wrote during the visit. Locking it keeps your original wording exactly as written, and every claim you record afterwards has to quote a line from it."
+        ),
+        React.createElement("textarea", {
+          className: "w-full rounded border border-slate-300 p-2 font-mono text-[13px]",
+          rows: 10,
+          "aria-label": "Observation notes",
+          value: realNotes,
+          onChange: (e) => setRealNotes(e.target.value)
+        }),
+        React.createElement(
+          "div",
+          { className: "flex flex-wrap gap-2 mt-3" },
+          React.createElement("button", {
+            type: "button",
+            disabled: !realNotes.trim(),
+            onClick: lockRealNotes,
+            className: "px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold " + (!realNotes.trim() ? "opacity-50 cursor-not-allowed" : "")
+          }, "Lock these notes"),
+          React.createElement("button", {
+            type: "button",
+            className: "px-3 py-2 rounded border border-slate-300 text-sm",
+            onClick: () => {
+              setApproval(null);
+              setRealNotes("");
+              setDraft(null);
+              wcopAnnounce("Back in practice mode.");
+            }
+          }, "Back to practice")
+        )
+      ),
+      React.createElement(
+        "p",
+        { className: "text-xs text-slate-500" },
+        "There is no AI connected in this build, so you will write each piece of evidence yourself in the next step. The tool still checks that every claim quotes your notes, keeps what you observed separate from what you concluded, and flags language that reaches past the evidence."
+      )
+    );
+  } else if (stage === "capture") {
+    bodyNode = React.createElement(
+      "div",
+      null,
+      React.createElement(
+        "div",
+        { className: "flex flex-wrap gap-2 items-center mb-3" },
+        React.createElement("button", {
+          type: "button",
+          className: "px-3 py-1.5 rounded border border-slate-300 text-sm",
+          onClick: () => setStage("affirm")
+        }, "Use this for a real observation"),
+        React.createElement(
+          "span",
+          { className: "text-xs text-slate-500" },
+          "Requires confirming what your district has approved."
+        )
+      ),
+      introOpen ? React.createElement(WcopIntro, {
+        onHide: () => setIntroOpen(false),
+        connected,
+        owner: connection.owner,
+        onSetup: () => setStage("setup")
+      }) : React.createElement("button", {
         type: "button",
         className: "mb-4 px-3 py-1.5 rounded border border-slate-300 text-sm",
         onClick: () => setIntroOpen(true)
@@ -1931,6 +2796,13 @@ function WalkthroughCopilotPanel(props) {
           { className: "text-xs text-slate-500 mb-3" },
           "Nothing reaches your form until you decide on it. Keep what the notes genuinely support, reword anything you would put differently, and throw out the rest. Rejecting a lot is a normal outcome, not a sign something went wrong."
         ),
+        draft.mode === "approved" ? React.createElement(WcopManualEntry, {
+          entry: manual,
+          message: manualMessage,
+          components: draft.framework.components,
+          onField: (key, value) => setManual((current) => Object.assign({}, current, { [key]: value })),
+          onAdd: addManual
+        }) : null,
         draft.suggestions.map((s) => React.createElement(WcopSuggestion, {
           key: s.id,
           suggestion: s,
@@ -2081,6 +2953,57 @@ function WalkthroughCopilotPanel(props) {
         ),
         React.createElement("pre", { className: "whitespace-pre-wrap break-words text-[13px] mt-1 font-mono" }, f.text)
       )),
+      React.createElement(
+        "div",
+        { className: "rounded-lg border border-slate-200 bg-white p-4 mt-3" },
+        React.createElement("h4", { className: "font-semibold text-sm mb-1" }, "Send it to the teacher"),
+        !connected ? React.createElement(
+          "div",
+          null,
+          React.createElement(
+            "p",
+            { className: "text-xs text-slate-500 mb-2" },
+            "You can paste the fields above into whatever form your school uses. If you would rather have this saved to your Drive and shared with the teacher directly, set that up once."
+          ),
+          React.createElement("button", {
+            type: "button",
+            className: "px-3 py-2 rounded border border-slate-300 text-sm",
+            onClick: () => setStage("setup")
+          }, "Set up delivery")
+        ) : draft.mode === "demo" ? React.createElement(
+          WcopFlag,
+          null,
+          "Delivery is connected, but this is a practice scenario. Sending is only available for a real observation, so nothing here can reach a colleague by accident."
+        ) : React.createElement(
+          "div",
+          null,
+          React.createElement(
+            "label",
+            { className: "block text-xs font-semibold mb-1", htmlFor: "wcop-send-to" },
+            "Teacher school email"
+          ),
+          React.createElement("input", {
+            id: "wcop-send-to",
+            type: "text",
+            className: "w-full rounded border border-slate-300 p-2 text-sm",
+            placeholder: "teacher@yourschool.org",
+            value: sendTo,
+            onChange: (e) => setSendTo(e.target.value)
+          }),
+          React.createElement(
+            "p",
+            { className: "text-xs text-slate-500 my-2" },
+            "The note is saved to your Drive and shared with that one address. Google asks them to sign in to open it, so a forwarded link shows nothing. The notification email contains no feedback text."
+          ),
+          React.createElement("button", {
+            type: "button",
+            disabled: setupState.busy,
+            onClick: deliver,
+            className: "px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold " + (setupState.busy ? "opacity-50" : "")
+          }, "Save to my Drive and share")
+        ),
+        sendResult ? React.createElement(WcopFlag, { tone: sendResult.ok ? "go" : "stop" }, sendResult.message) : null
+      ),
       React.createElement("button", {
         type: "button",
         onClick: clearAll,
@@ -2124,6 +3047,9 @@ function WalkthroughCopilotPanel(props) {
   wcopMerged._testing = {
     WcopSuggestion: WcopSuggestion,
     WcopIntro: WcopIntro,
+    WcopSetup: WcopSetup,
+    WcopAffirm: WcopAffirm,
+    WcopManualEntry: WcopManualEntry,
     WcopFlag: WcopFlag,
     WcopFrozenNotes: WcopFrozenNotes,
     WCOP_STAGES: WCOP_STAGES,

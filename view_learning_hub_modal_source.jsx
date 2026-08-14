@@ -11,7 +11,7 @@
 function LearningHubModal(props) {
   const {
     setIsAlloHavenOpen, setIsLinguaPracticeOpen, setIsOpenGrooveOpen, setIsTestPrepHubOpen, setIsTimelineStudioOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
-    setShowLearningWebExplorer, setShowMindMap, setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
+    setShowLearningWebExplorer, setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
     setStemLabTab, setStemLabTool, setLabToolData, showLearningHub,
     // Family Bridge launcher (2026-06-28): opens live two-way translation. Optional
     // default so a host that hasn't wired the setter still renders the hub.
@@ -437,19 +437,6 @@ function LearningHubModal(props) {
                     </div>
                   </button>
                   <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('learning-web-explorer')} aria-label={hubFavoriteIds.includes('learning-web-explorer') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Learning Web: Explore' : tr('hub.add_favorite', 'Add to favorites') + ': Learning Web: Explore'} title={hubFavoriteIds.includes('learning-web-explorer') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('learning-web-explorer'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-violet-700 text-lg leading-none shadow-sm hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('learning-web-explorer') ? '★' : '☆'}</button>
-                </div>
-              )}
-              {setShowMindMap && (
-                <div className="relative group" data-hub-id="throughline" data-hub-label="Learning Web: Unit Path" data-hub-section="explore">
-                  <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowMindMap(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
-                  <span className="text-4xl" aria-hidden="true">🧭</span>
-                  <div>
-                    <h3 className="font-bold text-amber-800">{t('learning_hub.throughline_title') || 'Learning Web: Unit Path'}</h3>
-                    <p className="text-xs text-amber-700 mt-1">{t('learning_hub.throughline_desc') || 'Arrange lessons as a unit path, then explore linked standards and evidence in the shared Learning Web'}</p>
-                  </div>
-                </button>
-
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('throughline')} aria-label={hubFavoriteIds.includes('throughline') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Learning Web: Unit Path' : tr('hub.add_favorite', 'Add to favorites') + ': Learning Web: Unit Path'} title={hubFavoriteIds.includes('throughline') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('throughline'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('throughline') ? '★' : '☆'}</button>
                 </div>
               )}
               {typeof setIsTimelineStudioOpen === 'function' && (

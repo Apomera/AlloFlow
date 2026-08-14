@@ -2118,7 +2118,7 @@ function SourceGenPanel(props) {
                           autoFocus
                         />
                       </div>
-                      <SurpriseTopicLauncher addToast={addToast} gradeLevel={sourceLevel} setSourceTopic={setSourceTopic} setSourceTone={setSourceTone} setSourceVocabulary={setSourceVocabulary} setStandardInputValue={setStandardInputValue} sourceVocabulary={sourceVocabulary} studentInterests={studentInterests} />
+
                       <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="block text-xs font-medium text-indigo-900 mb-1">{t('input.tone')}</label>

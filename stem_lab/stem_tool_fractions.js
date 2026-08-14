@@ -2019,20 +2019,30 @@ window.StemLab = window.StemLab || {
       );
     };
 
-    var drawBar = function(num, den, color) {
+    var drawBar = function(num, den, color, options) {
+      options = options || {};
       if (den <= 0) den = 1;
+      var barHeight = options.height || 48;
       var segs = [];
       for (var i = 0; i < den; i++) {
         segs.push(h('div', {
           key: i,
-          style: { flex: 1, backgroundColor: i < num ? (color || '#f43f5e') : '#e2e8f0', transition: 'background-color 0.3s' },
+          style: { flex: '1 1 0%', minWidth: 0, backgroundColor: i < num ? (color || '#f43f5e') : '#e2e8f0', transition: 'background-color 0.3s' },
           className: 'border-r border-white/50'
         }));
       }
       return h('div', {
-        role: 'img', 'aria-label': num + ' of ' + den + ' parts shaded',
-        className: 'flex h-10 rounded-lg overflow-hidden border-2',
-        style: { borderColor: color || '#f43f5e' }
+        role: 'img', 'aria-label': 'Horizontal fraction bar showing ' + num + ' of ' + den + ' parts shaded',
+        className: 'flex rounded-lg overflow-hidden border-2',
+        'data-fraction-model': 'bar',
+        style: {
+          borderColor: color || '#f43f5e',
+          width: options.width || '100%',
+          maxWidth: options.maxWidth || 520,
+          height: barHeight + 'px',
+          minHeight: barHeight + 'px',
+          boxSizing: 'border-box'
+        }
       }, segs);
     };
 
@@ -2254,33 +2264,37 @@ window.StemLab = window.StemLab || {
     // divided into denominator-many equal segments, with numerator-many filled.
     var drawLengthModel = function(num, den, options) {
       options = options || {};
-      var width = options.width || 400;
+      // "length" is the pedagogical horizontal dimension. Keep accepting
+      // options.width for existing callers, but avoid making the concept read
+      // like a rectangle's vertical width in the UI.
+      var length = options.length || options.width || 400;
       var height = options.height || 40;
       var elements = [];
-      // Background bar
-      elements.push(h('rect', { key: 'bg', x: 0, y: 0, width: width, height: height,
+      // Background strip: one whole, measured horizontally.
+      elements.push(h('rect', { key: 'bg', x: 0, y: 0, width: length, height: height,
         fill: palBg, stroke: palAccent, strokeWidth: 2, rx: 6 }));
-      // Filled portion
-      var fillW = den > 0 ? (num / den) * width : 0;
-      elements.push(h('rect', { key: 'fill', x: 0, y: 0, width: fillW, height: height,
+      // Filled portion of the horizontal length.
+      var fillLength = den > 0 ? (num / den) * length : 0;
+      elements.push(h('rect', { key: 'fill', x: 0, y: 0, width: fillLength, height: height,
         fill: palMain, stroke: 'none', rx: 6 }));
-      // Tick marks at each segment boundary
+      // Tick marks at each equal-length segment boundary.
       for (var ti = 1; ti < den; ti++) {
-        var x = (ti / den) * width;
+        var x = (ti / den) * length;
         elements.push(h('line', { key: 't-' + ti, x1: x, y1: 0, x2: x, y2: height,
           stroke: '#fff', strokeWidth: 1.5, strokeOpacity: 0.8 }));
       }
-      // Label
-      elements.push(h('text', { key: 'lbl', x: width / 2, y: height / 2 + 5,
+      // Fraction label stays centered on the whole length.
+      elements.push(h('text', { key: 'lbl', x: length / 2, y: height / 2 + 5,
         textAnchor: 'middle', fontSize: 14, fontWeight: 'bold',
         fill: '#fff', style: { textShadow: '0 0 4px rgba(0,0,0,0.4)' } }, num + '/' + den));
       return h('svg', {
-        viewBox: '0 0 ' + width + ' ' + height,
+        viewBox: '0 0 ' + length + ' ' + height,
         width: '100%',
         height: height,
         role: 'img',
-        'aria-label': 'Length model: ' + num + ' over ' + den,
-        style: { maxWidth: width + 'px' }
+        'aria-label': 'Horizontal length model (fraction strip): ' + num + ' over ' + den,
+        'data-fraction-model': 'length',
+        style: { maxWidth: length + 'px' }
       }, elements);
     };
 
@@ -2338,7 +2352,7 @@ window.StemLab = window.StemLab || {
       { id: 'numberline', icon: '⊢',  label: __alloT('stem.fractions.number_line', 'Number line'),  desc: __alloT('stem.fractions.position_on_a_number_line_great_for_ma', 'Position on a number line (great for magnitude)') },
       { id: 'area',       icon: '⬛', label: __alloT('stem.fractions.area', 'Area'),         desc: __alloT('stem.fractions.rectangle_as_rows_columns_for_multipli', 'Rectangle as rows × columns (for multiplication)') },
       { id: 'set',        icon: '◯◯', label: 'Set',          desc: __alloT('stem.fractions.parts_of_a_discrete_collection', 'Parts of a discrete collection') },
-      { id: 'length',     icon: '┃',  label: __alloT('stem.fractions.length', 'Length'),       desc: __alloT('stem.fractions.fraction_strip_cuisenaire_rod', 'Fraction strip / Cuisenaire rod') },
+      { id: 'length',     icon: '┃',  label: __alloT('stem.fractions.length', 'Length'),       desc: __alloT('stem.fractions.fraction_strip_cuisenaire_rod', 'Horizontal length / fraction strip (Cuisenaire rod)') },
       { id: 'volume',     icon: '🥛', label: __alloT('stem.fractions.volume', 'Volume'),       desc: __alloT('stem.fractions.how_full_a_container_is', 'How full a container is') }
     ];
 
@@ -2348,7 +2362,7 @@ window.StemLab = window.StemLab || {
       var modelId = options.modelOverride || currentModel;
       switch (modelId) {
         case 'pie':        return drawPie(num, den, options.size || 240, palMain);
-        case 'bar':        return drawBar(num, den, palMain);
+        case 'bar':        return drawBar(num, den, palMain, { height: 56, maxWidth: 520 });
         case 'numberline': return drawNumberLine([{ n: num, d: den, color: palMain }], { maxVal: num >= den ? 2 : 1 });
         case 'area':       return drawAreaModel(num, den, options);
         case 'set':        return drawSetModel(num, den, options);

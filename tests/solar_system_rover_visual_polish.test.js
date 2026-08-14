@@ -95,6 +95,20 @@ describe('solar rocky rover visual polish', () => {
     expect(boundedLead(false, 1, 0)).toBe(0);
   });
 
+  it('smooths rocky landmarks, registers rover obstacles, and defaults to third person', () => {
+    expect(source).toContain('var roverObstacleColliders = []');
+    expect(source).toContain('new THREE.DodecahedronGeometry(rScale, 1)');
+    expect(source).toContain('flatShading: false');
+    expect(source).toContain('addRoverObstacle(rx, rz');
+    expect(source).toContain('addRoverObstacle(bx, bz');
+    expect(source).toContain('addRoverObstacle(omX, omZ');
+    expect(source).toContain('var resolveRoverObstacleCollisions = function');
+    expect(source).toContain('resolveRoverObstacleCollisions(roverFrameStartX, roverFrameStartZ);');
+    expect(source).toContain('var roverTerrainTooSteep = function');
+    expect(source).toContain('var thirdPerson = true;');
+    expect(source).toContain("canvasEl.dataset.roverView = 'third-person';");
+    expect(source).toContain("canvasEl.dataset.roverView = thirdPerson ? 'third-person' : 'first-person';");
+  });
   it('publishes stable visual hooks and disposes every owned pad resource once', () => {
     expect(source).toContain("canvasEl.dataset.roverVisualProfile = isFluid ? 'none' : 'procedural-contact-v1';");
     expect(source).toContain("canvasEl.dataset.roverContactPadCount = '0';");

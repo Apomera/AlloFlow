@@ -18,7 +18,7 @@ describe('Learning Web Explorer host integration', () => {
     const build = read('build.js');
     expect(build).toContain("name: 'LearningWebExplorer'");
     expect(build).toContain("filename: 'learning_web_explorer_module.js'");
-    expect(host).toContain("loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js')");
+    expect(host).toContain("loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=87f85b53d')");
     expect(host).toContain('moduleKey="LearningWebExplorer"');
     expect(host).toContain('displayName="Learning Web: Explore"');
     expect(host).toContain('moduleKey="MindMap"');
@@ -37,6 +37,7 @@ describe('Learning Web Explorer host integration', () => {
     expect(mount).toContain('React.createElement(LearningWebExplorer.View || LearningWebExplorer, {');
     expect(mount).toContain('graph: explorerPayload.graph');
     expect(mount).toContain('registrySnapshot: explorerPayload.registrySnapshot');
+    expect(mount).toContain('isModal: true');
     expect(mount).toContain('scopeId: explorerPayload.scopeId');
     expect(mount).toContain("currentResourceId: String(generatedContent?.id || '').slice(0, 200)");
     expect(mount).not.toContain('history:');
@@ -80,11 +81,16 @@ describe('Learning Web Explorer host integration', () => {
     const commandSource = read('allo_commands_source.jsx');
     expect(hubSource).toContain('data-hub-id="learning-web-explorer"');
     expect(hubSource).toContain("'Learning Web: Explore'");
-    expect(hubSource).toContain('data-hub-id="throughline"');
+    expect(hubSource).not.toContain('data-hub-id="throughline"');
+    const educatorSource = read('view_educator_hub_modal_source.jsx');
+    expect(educatorSource).toContain('data-hub-id="throughline"');
+    expect(educatorSource).toContain('setShowMindMap(true)');
     expect(commandSource).toContain("id: 'open_learning_web_explorer'");
-    expect(commandSource).toContain("opensPanel: 'learningWebExplorer'");
+    expect(commandSource).toContain("roles: 'teacher'");
+    expect(commandSource).toContain("open_mind_map:['educatorHub','content','mindMap']");
     expect(commandSource).toContain("id: 'open_mind_map'");
-    expect(commandSource).toContain("learningWebExplorer:'Here — Learning Web: Explore'");
+    expect(commandSource).toContain("roles: 'teacher'");
+    expect(commandSource).toContain("open_mind_map:['educatorHub','content','mindMap']");
   });
 
   it('keeps generated launch modules synchronized with their public mirrors', () => {

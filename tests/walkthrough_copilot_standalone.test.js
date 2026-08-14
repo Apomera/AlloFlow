@@ -15,15 +15,31 @@ import { resolve } from 'node:path';
 const require = createRequire(import.meta.url);
 const root = process.cwd();
 
-function loadPage() {
+let fetchCalls = [];
+let fetchResponder = () => ({ ok: false, error: 'no responder' });
+
+// Reloading the page without wiping storage is how we test that a saved
+// connection survives, so clearing is opt-in rather than baked into the loader.
+function loadPage(options) {
   document.body.innerHTML = '<div class="wrap"><div id="app"></div>'
     + '<p id="live" role="status" aria-live="polite"></p><footer id="foot"></footer></div>';
   delete window.AlloModules;
+  if (!(options && options.keepStorage)) {
+    try { window.localStorage.clear(); } catch (err) { /* jsdom always has one */ }
+  }
+  fetchCalls = [];
+  // No test may reach the network. Every call is recorded and answered here.
+  window.fetch = (url, options) => {
+    const body = JSON.parse(options.body);
+    fetchCalls.push({ url, options, body });
+    return Promise.resolve({ json: () => Promise.resolve(fetchResponder(body)) });
+  };
   // Same load order as walkthrough-copilot.html.
   for (const file of [
     'walkthrough_copilot_module.js',
     'walkthrough_copilot_fixtures.js',
     'walkthrough_copilot_scenarios.js',
+    'walkthrough_script_source_module.js',
   ]) {
     const source = readFileSync(resolve(root, file), 'utf8');
     // eslint-disable-next-line no-new-func
@@ -64,8 +80,8 @@ describe('walkthrough copilot standalone surface', () => {
     loadPage();
   });
 
-  it('boots into stage one with the demo banner and no draft', () => {
-    expect(text()).toContain('Demo mode');
+  it('boots into practice mode with no draft', () => {
+    expect(text()).toContain('Practice mode');
     expect(text()).toContain('Nothing is saved');
     expect(text()).toContain('Choose a practice scenario');
     // Later stages are unreachable until notes are frozen.
@@ -131,6 +147,233 @@ describe('walkthrough copilot standalone surface', () => {
     clickId('freeze-btn');
     expect(text()).toMatch(/normal outcome/i);
   });
+
+  it('shows the three ways this gets used, not just the one it is in', () => {
+    const shown = text();
+    expect(shown).toContain('Three ways this gets used');
+    expect(shown).toContain('Practice, on this device');
+    expect(shown).toContain('Deliver to your teachers');
+    expect(shown).toContain('District system of record');
+    // Honest about what each one costs.
+    expect(shown).toContain('Nothing to set up');
+    expect(shown).toMatch(/You deploy a script/);
+    expect(shown).toMatch(/Your district deploys and runs it/);
+    // And honest that the district tier is not something this page can enable.
+    expect(shown).toMatch(/not something this page can switch on/i);
+  });
+
+  it('walks the user through deploying their own script', () => {
+    click('Set up delivery');
+    const shown = text();
+    expect(shown).toContain('Set up delivery to your teachers');
+    expect(shown).toContain('script.new');
+    expect(shown).toContain('Who has access: Anyone');
+    expect(shown).toMatch(/has not verified/i);
+    expect(shown).toContain('/exec');
+    // The script ships in the page, so this works with no network.
+    expect(byText('Copy script code')).toBeTruthy();
+    expect(shown).toMatch(/works offline/i);
+  });
+
+  it('rejects a URL that is not a deployment before calling anything', () => {
+    click('Set up delivery');
+    const url = document.getElementById('exec-url');
+    url.value = 'https://script.google.com/home/projects/abc/edit';
+    url.dispatchEvent(new window.Event('input'));
+    clickId('connect-btn');
+    expect(text()).toMatch(/end with \/exec/i);
+    expect(fetchCalls, 'a malformed URL must not be contacted').toHaveLength(0);
+  });
+
+  it('connects, stores the token, and self-tests', async () => {
+    fetchResponder = (body) => {
+      if (body.action === 'claim') return { ok: true, token: 'tok-abc', owner: 'principal@school.org', version: 1 };
+      if (body.action === 'selftest') return { ok: true, owner: 'principal@school.org', folderName: 'AlloFlow Walkthrough Records', allowedDomain: 'school.org', canSendMail: true };
+      return { ok: false };
+    };
+    click('Set up delivery');
+    const url = document.getElementById('exec-url');
+    url.value = 'https://script.google.com/macros/s/AKfycbxTEST_id/exec';
+    url.dispatchEvent(new window.Event('input'));
+    clickId('connect-btn');
+
+    await vi.waitFor(() => expect(text()).toMatch(/Self-test passed/));
+    expect(fetchCalls[0].body.action).toBe('claim');
+    // Apps Script cannot answer a preflight, so the body must be text/plain.
+    expect(fetchCalls[0].options.headers['Content-Type']).toMatch(/text\/plain/);
+    expect(fetchCalls[1].body.token, 'the claimed token must travel on later calls').toBe('tok-abc');
+    expect(text()).toContain('AlloFlow Walkthrough Records');
+
+    // And it survives a reload, because the connection is config, not content.
+    loadPage({ keepStorage: true });
+    expect(text()).toMatch(/Connected to principal@school\.org/);
+  });
+
+  it('stores only connection config, never observation content', async () => {
+    fetchResponder = () => ({ ok: true, token: 'tok-abc', owner: 'principal@school.org' });
+    click('Set up delivery');
+    const url = document.getElementById('exec-url');
+    url.value = 'https://script.google.com/macros/s/AKfycbxTEST_id/exec';
+    url.dispatchEvent(new window.Event('input'));
+    clickId('connect-btn');
+    await vi.waitFor(() => expect(window.localStorage.getItem('allo_wcop_delivery_v1')).toBeTruthy());
+
+    const saved = window.localStorage.getItem('allo_wcop_delivery_v1');
+    expect(saved).toContain('execUrl');
+    expect(saved).not.toContain('9:05');
+    expect(saved).not.toContain('sourceNotes');
+    expect(saved).not.toContain('suggestions');
+  });
+
+  it('reports a refusal from the script instead of claiming success', async () => {
+    fetchResponder = () => ({ ok: false, code: 'already_claimed', error: 'This script is already connected to a device.' });
+    click('Set up delivery');
+    const url = document.getElementById('exec-url');
+    url.value = 'https://script.google.com/macros/s/AKfycbxTEST_id/exec';
+    url.dispatchEvent(new window.Event('input'));
+    clickId('connect-btn');
+    await vi.waitFor(() => expect(text()).toMatch(/already connected to a device/i));
+  });
+
+  it('never offers to send practice material to a colleague', async () => {
+    fetchResponder = (body) => body.action === 'claim'
+      ? { ok: true, token: 'tok-abc', owner: 'principal@school.org' }
+      : { ok: true, owner: 'principal@school.org', allowedDomain: 'school.org', canSendMail: true };
+    click('Set up delivery');
+    const url = document.getElementById('exec-url');
+    url.value = 'https://script.google.com/macros/s/AKfycbxTEST_id/exec';
+    url.dispatchEvent(new window.Event('input'));
+    clickId('connect-btn');
+    await vi.waitFor(() => expect(text()).toMatch(/Self-test passed/));
+
+    click('Back to the tool');
+    click('A five-minute drop-in');
+    clickId('freeze-btn');
+    while (buttons().some((n) => n.textContent === 'Keep' || (n.textContent === 'Accept' && n.getAttribute('aria-pressed') === 'false'))) {
+      const next = buttons().find((n) => n.textContent === 'Accept' && n.getAttribute('aria-pressed') === 'false');
+      if (!next) break;
+      next.click();
+    }
+    click('Continue to the feedback');
+    click('Continue to copy');
+
+    const shown = text();
+    expect(shown).toMatch(/this is a practice scenario/i);
+    expect(byText('Save to my Drive and share'), 'sending must be unavailable for practice').toBeFalsy();
+  });
+
+  it('offers setup from the copy step when delivery is not connected', () => {
+    click('A five-minute drop-in');
+    clickId('freeze-btn');
+    while (buttons().some((n) => n.textContent === 'Accept' && n.getAttribute('aria-pressed') === 'false')) {
+      buttons().find((n) => n.textContent === 'Accept' && n.getAttribute('aria-pressed') === 'false').click();
+    }
+    click('Continue to the feedback');
+    click('Continue to copy');
+    expect(text()).toContain('Send it to the teacher');
+    expect(byText('Set up delivery')).toBeTruthy();
+  });
+
+  function affirm(name) {
+    click('Use this for a real observation');
+    document.getElementById('affirm-providerApproved').checked = true;
+    document.getElementById('affirm-scopeConfirmed').checked = true;
+    document.getElementById('affirm-name').value = name || 'A. Principal';
+    clickId('affirm-btn');
+  }
+
+  it('offers a route to a real observation from practice mode', () => {
+    expect(byText('Use this for a real observation')).toBeTruthy();
+    click('Use this for a real observation');
+    const shown = text();
+    expect(shown).toContain('Use this for a real observation');
+    expect(shown).toMatch(/approved the AI provider and data flow/i);
+    expect(shown).toMatch(/how a walkthrough is treated in our evaluation system/i);
+    expect(shown).toMatch(/not remembered after this session/i);
+    expect(shown).toMatch(/changes no analysis/i);
+  });
+
+  it('refuses to leave practice mode without every confirmation and a name', () => {
+    click('Use this for a real observation');
+    clickId('affirm-btn');
+    expect(document.getElementById('affirm-msg').textContent).toMatch(/confirm each statement/i);
+    expect(text(), 'still in the affirmation, not the tool').toContain('Confirm each of these');
+
+    document.getElementById('affirm-providerApproved').checked = true;
+    document.getElementById('affirm-scopeConfirmed').checked = true;
+    clickId('affirm-btn');
+    expect(document.getElementById('affirm-msg').textContent).toMatch(/enter your name/i);
+  });
+
+  it('records who affirmed and shows it in the banner', () => {
+    affirm('J. Nauhaus');
+    expect(text()).toContain('Real observation');
+    expect(text()).toContain('Affirmed by J. Nauhaus for this session only');
+    expect(text()).not.toContain('Practice mode');
+  });
+
+  it('never remembers the affirmation across a reload', () => {
+    affirm();
+    expect(text()).toContain('Real observation');
+    loadPage({ keepStorage: true });
+    expect(text(), 'a new session must ask again').toContain('Practice mode');
+    expect(window.localStorage.getItem('allo_wcop_delivery_v1') || '').not.toMatch(/affirm/i);
+  });
+
+  it('swaps scenarios for your own notes once affirmed', () => {
+    affirm();
+    const shown = text();
+    expect(shown).toContain('Your observation notes');
+    expect(shown).not.toContain('Choose a practice scenario');
+    expect(document.getElementById('notes-input').value).toBe('');
+    // Locking is unavailable until something is typed.
+    expect(document.getElementById('freeze-btn').disabled).toBe(true);
+  });
+
+  it('lets an observer record evidence by hand, with no AI involved', () => {
+    affirm();
+    const notes = document.getElementById('notes-input');
+    notes.value = '9:14 T circulates, stops at four desks, quiet check-ins.';
+    notes.dispatchEvent(new window.Event('input'));
+    render_lock();
+
+    expect(text()).toContain('Add evidence');
+    document.getElementById('manual-component').value = '3d';
+    document.getElementById('manual-component').dispatchEvent(new window.Event('change'));
+    document.getElementById('manual-quote').value = '9:14 T circulates, stops at four desks, quiet check-ins.';
+    document.getElementById('manual-quote').dispatchEvent(new window.Event('input'));
+    document.getElementById('manual-evidence').value = 'The teacher circulated and stopped at four desks.';
+    document.getElementById('manual-evidence').dispatchEvent(new window.Event('input'));
+    clickId('manual-add');
+
+    expect(document.querySelectorAll('.sugg').length).toBe(1);
+    expect(text()).toContain('The teacher circulated and stopped at four desks.');
+    expect(fetchCalls, 'manual entry must not contact anything').toHaveLength(0);
+  });
+
+  it('refuses a hand-written quote that is not in the notes', () => {
+    affirm();
+    const notes = document.getElementById('notes-input');
+    notes.value = '9:14 T circulates, stops at four desks.';
+    notes.dispatchEvent(new window.Event('input'));
+    render_lock();
+
+    document.getElementById('manual-component').value = '3d';
+    document.getElementById('manual-component').dispatchEvent(new window.Event('change'));
+    document.getElementById('manual-quote').value = 'the teacher praised three students by name';
+    document.getElementById('manual-quote').dispatchEvent(new window.Event('input'));
+    document.getElementById('manual-evidence').value = 'Praise was given.';
+    document.getElementById('manual-evidence').dispatchEvent(new window.Event('input'));
+    clickId('manual-add');
+
+    expect(text()).toMatch(/does not appear in your notes/i);
+    expect(document.querySelectorAll('.sugg').length).toBe(0);
+  });
+
+  // The lock button is the same id in both capture modes.
+  function render_lock() {
+    clickId('freeze-btn');
+  }
 
   it('lists every practice scenario as a real button', () => {
     const scenarios = require('../walkthrough_copilot_scenarios.js');

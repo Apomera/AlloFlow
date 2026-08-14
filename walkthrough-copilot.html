@@ -56,6 +56,10 @@
     }
     .banner .sep { opacity: .55; font-weight: 400; }
 
+    .banner-live { background: var(--go-bg); color: var(--go); }
+    .check { display: flex; gap: .5rem; align-items: flex-start; font-size: .88rem; margin: .4rem 0; }
+    .check input { width: 1.1rem; height: 1.1rem; flex: 0 0 auto; margin-top: .15rem; }
+    select { width: 100%; padding: .45rem .6rem; border: 1px solid var(--rule); border-radius: 5px; background: var(--paper); color: var(--ink); font: inherit; font-size: .88rem; }
     .stages { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 1.1rem; padding: 0; list-style: none; }
     .stages li { flex: 1 1 9rem; }
     .stages button {
@@ -134,6 +138,15 @@
     .intro ul { margin: .2rem 0 .8rem; padding-left: 1.2rem; }
     .intro ul li { margin: 0 0 .3rem; font-size: .9rem; }
     .progress { font-size: .84rem; font-weight: 700; color: var(--accent); margin: 0 0 .5rem; }
+    .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: .7rem; margin: .3rem 0 0; }
+    .tier { border: 1px solid var(--rule); border-radius: 7px; padding: .7rem; background: var(--paper); }
+    .tier h4 { margin: 0 0 .15rem; font-size: .92rem; }
+    .tier-cost { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; margin: 0 0 .4rem; }
+    .tier-active { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+    .tier-connected { border-color: var(--go); box-shadow: inset 3px 0 0 var(--go); }
+    .tier-district { opacity: .85; }
+    .steps { margin: .3rem 0 .8rem; padding-left: 1.2rem; }
+    .steps li { margin: 0 0 .4rem; font-size: .88rem; }
     .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     .note { font-size: .84rem; color: var(--muted); }
     footer { margin: 2rem 0 0; padding-top: .9rem; border-top: 1px solid var(--rule); font-size: .8rem; color: var(--muted); }
@@ -154,6 +167,7 @@
   <script src="./walkthrough_copilot_module.js"></script>
   <script src="./walkthrough_copilot_fixtures.js"></script>
   <script src="./walkthrough_copilot_scenarios.js"></script>
+  <script src="./walkthrough_script_source_module.js"></script>
   <script src="./walkthrough_copilot_standalone.js"></script>
 </body>
 </html>

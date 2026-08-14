@@ -1561,6 +1561,11 @@ AFRAME.registerComponent('stretch-lab', {
       }
     }
     var tg = this.targets();
+    // Frame-rate-independent smoothing toward the target extents, and an
+    // instant snap when reduce-motion is set. This declaration was dropped in
+    // c0c90a996 while its three uses on the next line survived, so every tick
+    // threw 'k is not defined' — restored verbatim from c0c90a996~1.
+    var k = this.reduceMotion ? 1 : Math.min(1, (dt || 16) / 130);
     this.cx += (tg.x - this.cx) * k; this.cy += (tg.y - this.cy) * k; this.cz += (tg.z - this.cz) * k;
     var bodySignature = [this.cx.toFixed(4), this.cy.toFixed(4), this.cz.toFixed(4)].join('|');
     var bodyChanged = bodySignature !== this.bodyTransformSignature;
@@ -2541,7 +2546,7 @@ window.addEventListener('load', function () {
     }
     if (!s.silent) lastHapticState = { d: s.d, axis: s.axis, activeValue: s.activeValue };
     var visualPreview = !!(stateComponent && (stateComponent.previewActive || stateComponent.showcaseActive)); if (visualPreview) { lastMissionState = s; if (immersiveActive) positionMeasurePanel(s, MISSIONS[missionIndex]); else positionDesktopWorkspace(s); } else updateMission(s);
-    if (!(stateComponent && stateComponent.showcaseActive)) updateGuide(s);
+    if (!(stateComponent && stateComponent.showcaseActive)) guideState(s);
     updateHistoryTimeline();
     if (!(stateComponent && (stateComponent.previewActive || stateComponent.showcaseActive))) saveLabState(s);
   });

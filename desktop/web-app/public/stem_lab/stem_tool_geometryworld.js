@@ -205,11 +205,11 @@
 
   // ── Environment Presets ──
   var ENV_PRESETS = {
-    day:     { sky: [0.53, 0.81, 0.92], fog: [0.53, 0.81, 0.92], sunIntensity: 1.0, ambientIntensity: 0.45, fogNear: 30, fogFar: 80, cloudOpacity: 0.5, label: '\u2600\uFE0F Day' },
-    sunrise: { sky: [0.95, 0.6, 0.4],   fog: [0.9, 0.55, 0.4],  sunIntensity: 0.7, ambientIntensity: 0.3, fogNear: 20, fogFar: 60, cloudOpacity: 0.6, label: '\uD83C\uDF05 Sunrise' },
-    sunset:  { sky: [0.85, 0.35, 0.2],  fog: [0.8, 0.3, 0.2],   sunIntensity: 0.6, ambientIntensity: 0.25, fogNear: 18, fogFar: 55, cloudOpacity: 0.55, label: '\uD83C\uDF07 Sunset' },
-    night:   { sky: [0.06, 0.05, 0.15], fog: [0.06, 0.05, 0.15], sunIntensity: 0.1, ambientIntensity: 0.12, fogNear: 10, fogFar: 40, cloudOpacity: 0.15, label: '\uD83C\uDF19 Night' },
-    golden:  { sky: [1.0, 0.85, 0.5],   fog: [0.95, 0.8, 0.45], sunIntensity: 0.85, ambientIntensity: 0.35, fogNear: 25, fogFar: 70, cloudOpacity: 0.45, label: '\uD83C\uDF1F Golden' },
+    day:     { sky: [0.31, 0.66, 0.98], fog: [0.55, 0.79, 0.98], sunIntensity: 1.05, ambientIntensity: 0.52, fogNear: 55, fogFar: 145, cloudOpacity: 0.5, label: '\u2600\uFE0F Day' },
+    sunrise: { sky: [1.0, 0.55, 0.32],  fog: [0.95, 0.62, 0.45], sunIntensity: 0.8, ambientIntensity: 0.38, fogNear: 45, fogFar: 120, cloudOpacity: 0.6, label: '\uD83C\uDF05 Sunrise' },
+    sunset:  { sky: [0.94, 0.31, 0.16], fog: [0.86, 0.38, 0.26], sunIntensity: 0.72, ambientIntensity: 0.34, fogNear: 42, fogFar: 112, cloudOpacity: 0.55, label: '\uD83C\uDF07 Sunset' },
+    night:   { sky: [0.07, 0.09, 0.28], fog: [0.08, 0.10, 0.26], sunIntensity: 0.18, ambientIntensity: 0.22, fogNear: 32, fogFar: 95, cloudOpacity: 0.15, label: '\uD83C\uDF19 Night' },
+    golden:  { sky: [1.0, 0.82, 0.38],  fog: [0.98, 0.84, 0.52], sunIntensity: 0.95, ambientIntensity: 0.44, fogNear: 50, fogFar: 130, cloudOpacity: 0.45, label: '\uD83C\uDF1F Golden' },
   };
 
   // Centralized display profiles keep the WebGL workload predictable and make
@@ -918,10 +918,35 @@
     return checkpoint;
   }
 
+  // A retrieval answer may legitimately be ZERO. The 'volume_difference' checkpoint
+  // sets expected = Math.abs(volume - previousVolume), which is exactly 0 whenever a
+  // student builds two structures of the same volume — a common and pedagogically
+  // interesting case. parseVolumePrediction() rejects 0 because a predicted VOLUME of
+  // zero is meaningless, and that guard is correct for its other callers (they parse
+  // stored structure volumes), so this is a separate parser rather than a loosened
+  // shared one. Before this, the student typed the right answer and was told
+  // "Enter a positive number or fraction." — refused as invalid input, not even
+  // marked wrong.
+  function parseRetrievalAnswer(value) {
+    var text = String(value == null ? '' : value).trim();
+    if (!text) return null;
+    var mixed = text.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+    var number;
+    if (mixed && Number(mixed[3]) !== 0) {
+      number = Number(mixed[1]) + Number(mixed[2]) / Number(mixed[3]);
+    } else if (/^\d+\/\d+$/.test(text)) {
+      var fraction = text.split('/').map(Number);
+      number = fraction[1] ? fraction[0] / fraction[1] : NaN;
+    } else {
+      number = Number(text);
+    }
+    return Number.isFinite(number) && number >= 0 ? number : null;
+  }
+
   function checkRetrievalAnswer(checkpoint, value, attemptNumber) {
     if (!checkpoint || !Number.isFinite(checkpoint.expected)) return null;
-    var answer = parseVolumePrediction(value);
-    if (answer === null) return { correct: false, valid: false, feedback: 'Enter a positive number or fraction.' };
+    var answer = parseRetrievalAnswer(value);
+    if (answer === null) return { correct: false, valid: false, feedback: 'Enter a number or fraction (0 is allowed).' };
     var correct = Math.abs(answer - checkpoint.expected) < 0.0001;
     return {
       correct: correct,
@@ -1219,8 +1244,14 @@
         { type: 'fill', x1: 6, y1: 2, z1: 12, x2: 6, y2: 3, z2: 15, block: 'stone' },
         { type: 'fill', x1: 2, y1: 2, z1: 12, x2: 6, y2: 3, z2: 12, block: 'stone' },
         { type: 'fill', x1: 2, y1: 2, z1: 15, x2: 6, y2: 3, z2: 15, block: 'stone' },
+        // L-block, part A (5x3x3). Part B below is a DIFFERENT block so the two
+        // rectangular prisms read as two parts — the NPC asks the student to measure
+        // each and add, and a single-colour L-block hides exactly the decomposition
+        // being taught. Gold/cyan is a yellow-blue pair, which stays distinguishable
+        // under red-green colour vision deficiency; two similar hues would not.
         { type: 'fill', x1: 16, y1: 1, z1: 10, x2: 20, y2: 3, z2: 12, block: 'gold' },
-        { type: 'fill', x1: 16, y1: 1, z1: 13, x2: 18, y2: 3, z2: 15, block: 'gold' },
+        // L-block, part B (3x3x3).
+        { type: 'fill', x1: 16, y1: 1, z1: 13, x2: 18, y2: 3, z2: 15, block: 'diamond' },
       ],
       npcs: [
         { position: [4, 1, 4], name: 'Professor Block', color: 0x7c3aed,
@@ -1435,8 +1466,10 @@
         { type: 'fill', x1: 35, y1: 1, z1: 4, x2: 35, y2: 1, z2: 4, block: 'diamond' },
 
         // ── Station 6: The L-Block (composition) ──
+        // Two-tone for the same reason as the volumeExplorer L-block: the composition
+        // is the lesson, so the parts must be separable at a glance.
         { type: 'fill', x1: 32, y1: 1, z1: -6, x2: 36, y2: 3, z2: -4, block: 'diamond' },
-        { type: 'fill', x1: 32, y1: 1, z1: -3, x2: 34, y2: 3, z2: -1, block: 'diamond' },
+        { type: 'fill', x1: 32, y1: 1, z1: -3, x2: 34, y2: 3, z2: -1, block: 'gold' },
 
         // ── Station 7: Nested cubes (volume displacement) ──
         // Outer shell: 5x5x5 hollow
@@ -3025,8 +3058,8 @@
         engine.blocks = {};
         engine.npcs = [];
         engine.scene = new THREE.Scene();
-        engine.scene.background = new THREE.Color(0x87CEEB);
-        engine.scene.fog = new THREE.Fog(0x87CEEB, 30, 80);
+        engine.scene.background = new THREE.Color(0x4FA8FA);
+        engine.scene.fog = new THREE.Fog(0x8CC9FA, 55, 145);
 
         engine.camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 200);
         engine.camera.position.set(2, 3, 2);
@@ -3063,9 +3096,21 @@
         };
         engine.applyRenderQuality(d.renderQuality || 'auto');
         engine.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        engine.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        engine.renderer.toneMappingExposure = 1.1;
-        engine.renderer.outputColorSpace = THREE.SRGBColorSpace || engine.renderer.outputEncoding;
+        // Colour management. This used to read:
+        //   renderer.outputColorSpace = THREE.SRGBColorSpace || renderer.outputEncoding
+        // which did NOTHING on the three r128 this tool vendors: SRGBColorSpace does
+        // not exist there (r152+), so it fell back to outputEncoding's current value
+        // and assigned it to outputColorSpace, a property r128 ignores. The renderer
+        // stayed on LinearEncoding and every colour reached the display without gamma
+        // correction. Set the property the running revision actually reads.
+        if (typeof THREE.sRGBEncoding !== 'undefined') engine.renderer.outputEncoding = THREE.sRGBEncoding;
+        else if (THREE.SRGBColorSpace) engine.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        // ACES Filmic is an HDR photographic curve that rolls off and DESATURATES
+        // bright colours by design. On a flat-shaded voxel world with an already
+        // low-dynamic-range palette it only mutes the hues, which is what made the
+        // scene look drab. No tone mapping keeps the authored block colours intact.
+        engine.renderer.toneMapping = THREE.NoToneMapping;
+        engine.renderer.toneMappingExposure = 1.0;
 
         // ── Bloom post-processing: glow on the sun + golden-hour / night highlights ──
         // Same guarded, graceful-upgrade pattern as solarsystem: renders plain until the

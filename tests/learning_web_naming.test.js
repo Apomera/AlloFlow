@@ -8,7 +8,7 @@ describe('Learning Web product naming', () => {
   it('uses Learning Web as the umbrella and Unit Path as the existing unit-builder view', () => {
     expect(read('AlloFlowANTI.txt')).toContain('displayName="Learning Web: Unit Path"');
     expect(read('mind_map_module.js')).toContain("var TOOL_NAME = 'Learning Web: Unit Path'");
-    expect(read('view_learning_hub_modal_module.js')).toContain('Learning Web: Unit Path');
+    expect(read('view_educator_hub_modal_module.js')).toContain('Learning Web: Unit Path');
     expect(read('allo_commands_module.js')).toContain('Open Learning Web: Unit Path');
     expect(read('view_history_panel_module.js')).toContain('Open this unit in Learning Web: Unit Path');
   });

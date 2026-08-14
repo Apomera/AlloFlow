@@ -39854,7 +39854,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // Agentic plans (2026-07-07, docs/AGENTIC_ALLOBOT_DESIGN.md): a proposed
   // multi-step plan awaiting the teacher's confirm chip, mirroring
   // _pendingBotCmdRef. {steps, originalText}. Never runs without confirm.
-  const _pendingBotPlanRef = useRef(null);
+  const _pendingBotPlanRef = useRef(null);  const _contextualSuggestionRef = useRef({ options: [], state: null, createdAt: 0 });
+
   // Live plan execution state (2026-07-10): `running` makes the chat
   // single-flight — a second plan or command can't race the one in flight —
   // and `stop` is polled by runPlan's shouldStop between steps and cancels
@@ -40509,7 +40510,238 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         return previous || 'There is no previous command response to repeat yet.';
       } catch (_) { return 'There is no previous command response to repeat yet.'; }
     };
-    const requestTestPrepVoiceControl = (action = 'status') => {
+    const _contextualText = (value, limit) => String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, limit || 240);
+    const _contextualLessonState = () => {
+      const modules = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules : {};
+      const standardsApi = modules.StandardsProvider;
+      const provider = standardsApi && typeof standardsApi.getRegisteredProvider === 'function'
+        ? standardsApi.getRegisteredProvider()
+        : null;
+      const engine = modules.SurpriseMeEngine;
+      const rawQueries = [
+        ...(Array.isArray(targetStandards) ? targetStandards : []),
+        standardInputValue,
+        standardsInput,
+      ].map((value) => String(value || '').trim()).filter(Boolean);
+      let standard = null;
+      let standardText = rawQueries[0] || '';
+      if (provider && typeof provider.resolveStandard === 'function') {
+        for (const raw of rawQueries) {
+          const attempts = [raw, raw.split(':')[0].trim()].filter((value, index, all) => value && all.indexOf(value) === index);
+          for (const query of attempts) {
+            try {
+              const resolution = provider.resolveStandard(query);
+              if (resolution && resolution.status === 'resolved' && resolution.match) {
+                standard = resolution.match;
+                standardText = query;
+                break;
+              }
+            } catch (_) {}
+          }
+          if (standard) break;
+        }
+      }
+      let hood = null;
+      if (standard && provider && engine && typeof engine.buildHood === 'function') {
+        try { hood = engine.buildHood(provider, standard.id); } catch (_) { hood = null; }
+      }
+      const topic = _contextualText(sourceTopic || (generatedContent && generatedContent.title) || inputText || standardText, 800);
+      const sourceReady = !!hasSourceOrAnalysis || !!generatedContent || (Array.isArray(history) && history.some((item) => item && item.id && item.type && item.type !== 'directions'));
+      const graphBrief = (record) => {
+        if (!record) return '';
+        const code = _contextualText(record.code, 40);
+        const label = _contextualText(record.label || record.text, 150);
+        return [code, label].filter(Boolean).join(' ');
+      };
+      const graph = hood ? {
+        prerequisites: (hood.prerequisites || []).slice(0, 4).map(graphBrief).filter(Boolean),
+        leadsTo: (hood.leadsTo || []).slice(0, 4).map(graphBrief).filter(Boolean),
+        related: (hood.related || []).slice(0, 4).map(graphBrief).filter(Boolean),
+        provider: _contextualText(hood.dataset && hood.dataset.provider, 100),
+      } : { prerequisites: [], leadsTo: [], related: [], provider: '' };
+      const actions = [];
+      const addAction = (actionId, label, description, focus) => actions.push({ actionId, label, description, focus: focus || '' });
+      if (sourceReady) {
+        addAction('generate_quiz', 'Create a quiz', 'Turn the current content into a check for understanding.');
+        addAction('generate_glossary', 'Build a glossary', 'Pull out key vocabulary and student-friendly meanings.');
+        addAction('generate_simplified', 'Make a leveled version', 'Adapt the current content for the selected grade level.');
+        addAction('generate_sentence_frames', 'Add sentence frames', 'Add structured language support for explaining the content.');
+        addAction('generate_analysis', 'Analyze the content', 'Surface key ideas, evidence, and possible teaching moves.');
+        addAction('generate_note_taking', 'Create guided notes', 'Turn the content into a structured note-taking support.');
+        addAction('generate_anchor_chart', 'Make an anchor chart', 'Create a concise visual reference for the lesson.');
+        addAction('generate_concept_sort', 'Make a concept sort', 'Create a compare-and-classify activity around the content.');
+        addAction('generate_faq', 'Make an FAQ', 'Anticipate common learner questions and answers.');
+        addAction('generate_brainstorm', 'Make a brainstorm web', 'Open the topic into connected ideas and examples.');
+      } else if (topic) {
+        addAction('generate_source_text', 'Build a source passage', 'Create an original passage that establishes the lesson context.', 'Use a clear, accessible entry point.');
+        addAction('generate_source_text', 'Build a source passage through a story', 'Create an original passage with a narrative hook.', 'Use a brief narrative hook before explaining the concept.');
+        addAction('generate_source_text', 'Build a source passage with examples', 'Create an original passage anchored in concrete examples.', 'Lead with a real-world example before introducing formal vocabulary.');
+      }
+      const latestTitles = (Array.isArray(history) ? history : []).slice().reverse().filter((item) => item && item.title).slice(0, 4).map((item) => _contextualText(item.title, 100));
+      const resourceType = generatedContent && generatedContent.type ? _contextualText(generatedContent.type, 60).replace(/[-_]/g, ' ') : '';
+      return {
+        available: !!(topic || standard || sourceReady),
+        gradeLevel: _contextualText(gradeLevel, 60),
+        topic,
+        sourceExcerpt: _contextualText(inputText, 1200),
+        standard: standard ? { code: _contextualText(standard.code, 80), label: _contextualText(standard.label || standard.text, 220) } : null,
+        standardText: _contextualText(standardText, 220),
+        activeView: _contextualText(activeView, 60),
+        resourceType,
+        latestTitles,
+        studentInterests: Array.isArray(studentInterests) ? studentInterests.slice(0, 6).map((value) => _contextualText(value, 80)).filter(Boolean) : [],
+        dokLevel: _contextualText(dokLevel, 80),
+        graph,
+        actions,
+      };
+    };
+    const _contextualPrompt = (state, mode) => {
+      const standardLine = state.standard ? state.standard.code + ': ' + state.standard.label : state.standardText;
+      const graphLines = [
+        state.graph.prerequisites.length ? 'Prerequisites: ' + state.graph.prerequisites.join('; ') : '',
+        state.graph.leadsTo.length ? 'Builds toward: ' + state.graph.leadsTo.join('; ') : '',
+        state.graph.related.length ? 'Related: ' + state.graph.related.join('; ') : '',
+      ].filter(Boolean).join('\n');
+      const catalog = state.actions.map((action, index) => (index + 1) + '. ' + action.actionId + ' | ' + action.label + ' | ' + action.description + (action.focus ? ' | ' + action.focus : '')).join('\n');
+      return [
+        'You are AlloBot, a context-aware K-12 lesson partner.',
+        mode === 'surprise'
+          ? 'Choose exactly one available action. The choice should feel useful and slightly surprising, but never arbitrary or unsafe.'
+          : 'Choose exactly three distinct available options. Do not execute any option; the teacher will choose later.',
+        'Use only the action IDs in the catalog. Do not invent an action, standard, prerequisite, or student detail.',
+        'Current app view: ' + state.activeView,
+        state.gradeLevel ? 'Grade setting: ' + state.gradeLevel : '',
+        state.topic ? 'Current topic or intent: ' + state.topic : '',
+        state.sourceExcerpt ? 'Current source excerpt: ' + state.sourceExcerpt : '',
+        standardLine ? 'Target standard: ' + standardLine : '',
+        state.resourceType ? 'Open resource type: ' + state.resourceType : '',
+        state.dokLevel ? 'Depth target: ' + state.dokLevel : '',
+        state.studentInterests.length ? 'Student interests: ' + state.studentInterests.join(', ') : '',
+        graphLines ? 'Source-provided graph context:\n' + graphLines : 'No graph context is available for this state.',
+        state.latestTitles.length ? 'Recent work titles: ' + state.latestTitles.join('; ') : '',
+        'AVAILABLE ACTIONS:\n' + catalog,
+        mode === 'surprise'
+          ? 'Return ONLY JSON: {"actionId":"...","title":"...","why":"...","focus":"..."}'
+          : 'Return ONLY JSON: {"options":[{"actionId":"...","title":"...","why":"...","focus":"..."},{"actionId":"...","title":"...","why":"...","focus":"..."},{"actionId":"...","title":"...","why":"...","focus":"..."}]}',
+      ].filter(Boolean).join('\n');
+    };
+    const _parseContextualPayload = (raw) => {
+      const text = (typeof cleanJson === 'function' ? cleanJson(String(raw || '')) : String(raw || '')).trim();
+      const candidates = [text];
+      const objectStart = text.indexOf('{');
+      const objectEnd = text.lastIndexOf('}');
+      if (objectStart >= 0 && objectEnd > objectStart) candidates.push(text.slice(objectStart, objectEnd + 1));
+      const arrayStart = text.indexOf('[');
+      const arrayEnd = text.lastIndexOf(']');
+      if (arrayStart >= 0 && arrayEnd > arrayStart) candidates.push(text.slice(arrayStart, arrayEnd + 1));
+      for (const candidate of candidates) {
+        try {
+          const parsed = typeof safeJsonParse === 'function' ? safeJsonParse(candidate) : JSON.parse(candidate);
+          if (parsed) return parsed;
+        } catch (_) {}
+      }
+      return null;
+    };
+    const _fallbackContextualOptions = (state) => {
+      const shuffled = state.actions.slice();
+      for (let i = shuffled.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const swap = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = swap;
+      }
+      return shuffled.slice(0, 3).map((action) => Object.assign({}, action, { title: action.label, why: action.description }));
+    };
+    const _normalizeContextualOptions = (state, payload) => {
+      const rawOptions = payload && Array.isArray(payload.options) ? payload.options : [];
+      const options = [];
+      const seen = new Set();
+      rawOptions.forEach((raw) => {
+        const actionId = _contextualText(raw && (raw.actionId || raw.action || raw.id), 80);
+        const action = state.actions.find((candidate) => candidate.actionId === actionId);
+        if (!action) return;
+        const key = action.actionId + '|' + _contextualText(raw && raw.focus, 160);
+        if (seen.has(key)) return;
+        seen.add(key);
+        options.push(Object.assign({}, action, {
+          title: _contextualText(raw && raw.title, 100) || action.label,
+          why: _contextualText(raw && raw.why, 220) || action.description,
+          focus: _contextualText(raw && raw.focus, 220) || action.focus,
+        }));
+      });
+      const fallback = _fallbackContextualOptions(state);
+      for (const option of fallback) {
+        if (options.length >= 3) break;
+        const key = option.actionId + '|' + _contextualText(option.focus, 160);
+        if (!seen.has(key)) { seen.add(key); options.push(option); }
+      }
+      return options.slice(0, 3);
+    };
+    const _runContextualAction = async (option, state) => {
+      const actionId = option && option.actionId;
+      if (actionId === 'generate_source_text') {
+        const baseTopic = _contextualText(state.topic, 700);
+        if (!baseTopic) throw new Error('There is no lesson topic to build from yet.');
+        const focus = _contextualText(option.focus, 220);
+        const nextTopic = focus && baseTopic.toLowerCase().indexOf(focus.toLowerCase()) < 0 ? baseTopic + ' — ' + focus : baseTopic;
+        setSourceTopic(nextTopic);
+        return handleGenerate({ topic: nextTopic });
+      }
+      const actions = {
+        generate_quiz: () => handleGenerate('quiz', null, false, null, { rethrowErrors: true }),
+        generate_glossary: () => handleGenerate('glossary', null, false, null, { rethrowErrors: true }),
+        generate_simplified: () => handleGenerate('simplified', null, false, null, { rethrowErrors: true }),
+        generate_sentence_frames: () => handleGenerate('sentence-frames', null, false, null, { rethrowErrors: true }),
+        generate_analysis: () => handleGenerate('analysis', null, false, null, { rethrowErrors: true }),
+        generate_note_taking: () => handleGenerate('note-taking', null, false, null, { rethrowErrors: true }),
+        generate_anchor_chart: () => handleGenerate('anchor-chart', null, false, null, { rethrowErrors: true }),
+        generate_concept_sort: () => handleGenerate('concept-sort', null, false, null, { rethrowErrors: true }),
+        generate_faq: () => handleGenerate('faq', null, false, null, { rethrowErrors: true }),
+        generate_brainstorm: () => handleGenerate('brainstorm', null, false, null, { rethrowErrors: true }),
+      };
+      if (!actions[actionId]) throw new Error('That contextual action is not available in the current app state.');
+      return actions[actionId]();
+    };
+    const surpriseMeContextually = async () => {
+      const state = _contextualLessonState();
+      if (!state.available || !state.actions.length) return 'I need a current topic, source, standard, or open resource before I can choose a useful surprise.';
+      let option = null;
+      try {
+        const raw = await callGemini(_contextualPrompt(state, 'surprise'), true, false, 0.95);
+        const payload = _parseContextualPayload(raw);
+        const actionId = _contextualText(payload && (payload.actionId || payload.action || payload.id), 80);
+        const action = state.actions.find((candidate) => candidate.actionId === actionId);
+        if (action) option = Object.assign({}, action, { title: _contextualText(payload.title, 100) || action.label, why: _contextualText(payload.why, 220) || action.description, focus: _contextualText(payload.focus, 220) || action.focus });
+      } catch (_) {}
+      if (!option) {
+        const fallback = _fallbackContextualOptions(state);
+        option = fallback[0] || state.actions[0];
+      }
+      await _runContextualAction(option, state);
+      const graphNote = state.standard ? ' I used the resolved standard' + (state.graph.provider ? ' and its ' + state.graph.provider + ' graph context' : '') + ' when choosing.' : '';
+      return 'Surprise me chose "' + option.title + '". ' + option.why + ' I started that next step.' + graphNote;
+    };
+    const suggestContextualNextSteps = async () => {
+      const state = _contextualLessonState();
+      if (!state.available || !state.actions.length) return 'I need a current topic, source, standard, or open resource before I can suggest next steps.';
+      let options = [];
+      try {
+        const raw = await callGemini(_contextualPrompt(state, 'suggest'), true, false, 0.75);
+        options = _normalizeContextualOptions(state, _parseContextualPayload(raw));
+      } catch (_) { options = _fallbackContextualOptions(state); }
+      if (options.length < 3) options = _normalizeContextualOptions(state, { options });
+      _contextualSuggestionRef.current = { options, state, createdAt: Date.now() };
+      return 'Here are three next steps. ' + options.map((option, index) => 'Option ' + (index + 1) + ': ' + option.title + '. ' + option.why).join(' ') + ' Say use option 1, 2, or 3 when you are ready.';
+    };
+    const useContextualSuggestion = async (rawOption) => {
+      const packet = _contextualSuggestionRef.current || {};
+      const number = Number(rawOption);
+      if (!Array.isArray(packet.options) || !packet.options.length || !packet.createdAt || Date.now() - packet.createdAt > 30 * 60 * 1000) return 'Those suggestions have expired. Say suggest 3 next steps to make a fresh set.';
+      if (!Number.isInteger(number) || number < 1 || number > packet.options.length) return 'Say use option 1, 2, or 3.';
+      const option = packet.options[number - 1];
+      const state = _contextualLessonState();
+      await _runContextualAction(option, state);
+      _contextualSuggestionRef.current = { options: [], state: null, createdAt: 0 };
+      return 'Using option ' + number + ': ' + option.title + '. I started that next step.';
+    };    const requestTestPrepVoiceControl = (action = 'status') => {
       let response = null;
       try {
         const requestId = `global-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -40538,6 +40770,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       onboardingStage: !hasSelectedMode ? 'path' : (!hasSelectedRole ? 'role' : null),
       chooseOnboardingPath, chooseOnboardingRole,
       describeCurrentScreen, listCurrentActions, goBack, closeCurrentSurface, repeatLastResponse,
+      contextualIdeaAvailable: _contextualLessonState().available,
+      contextualSuggestionCount: (_contextualSuggestionRef.current && Array.isArray(_contextualSuggestionRef.current.options)) ? _contextualSuggestionRef.current.options.length : 0,
+      surpriseMeContextually,
+      suggestContextualNextSteps,
+      useContextualSuggestion,
       requestTestPrepVoiceControl,
       getTutorialVoiceState,
       invokeTutorialVoiceAction,
@@ -48932,7 +49169,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                             })}
                                             {/* the directions node (start of the trail) */}
                                             <circle cx="34" cy="62" r="15" fill="#fef3c7" stroke="#d97706" strokeWidth="2.5" />
-                                            <text x="34" y="67" textAnchor="middle" fontSize="13" aria-hidden="true">🧭</text>
+                                            <text x="34" y="67" textAnchor="middle" fontSize="13" aria-hidden="true">{'\uD83D\uDEA9'}</text>
                                             <text x="34" y="92" textAnchor="middle" fontSize="7.5" fill="#92400e" fontWeight="bold">{(t('directions.map_start') || 'Start here')}</text>
                                             {/* resource stations: ONE silhouette + emblem + tint per resource type
                                                 (_ALLO_STATION_STYLES), emerald once visited. Clicking a station travels
@@ -50548,7 +50785,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     {isStudyTimerRunning ? <span style={{marginLeft:'auto',fontSize:'0.68rem',fontWeight:800,color:'#15803d',fontVariantNumeric:'tabular-nums'}}>{formatTime(studyTimeLeft)}</span> : null}
                   </button>
                   <button style={dockCardStyle} onClick={() => toggleSessionMode()}>
-                    <span aria-hidden="true">{sessionData && sessionData.mode === 'sync' ? '🧑‍🏫' : '🧭'}</span>
+                    <span aria-hidden="true">{sessionData && sessionData.mode === 'sync' ? '🧑‍🏫' : '\uD83C\uDF92'}</span>
                     {(sessionData && sessionData.mode === 'sync') ? (t('session.teacher_paced') || 'Teacher-paced') : (t('session.student_paced') || 'Student-paced')}
                     <span style={{marginLeft:'auto',fontSize:'0.68rem',fontWeight:700,color:'#1d4ed8'}}>{t('live_dock.toggle') || 'toggle'}</span>
                   </button>
@@ -52450,8 +52687,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   activeSessionCode, studentNickname, isTeacherMode
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} addToast={addToast} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
-        {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowLearningWebExplorer={setShowLearningWebExplorer} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
+        {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} addToast={addToast} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setShowMindMap={setShowMindMap} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
+        {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowLearningWebExplorer={setShowLearningWebExplorer} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
                 onClose: () => setShowReportWriter(false),
@@ -53946,6 +54183,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     registrySnapshot: explorerPayload.registrySnapshot,
                     scopeId: explorerPayload.scopeId,
                     currentResourceId: String(generatedContent?.id || '').slice(0, 200),
+                    isModal: true,
                     openableResourceIds: _alloOpenableLearningWebResourceIds(),
                     onOpenResource: handleOpenLearningWebResource,
                     onClose: () => setShowLearningWebExplorer(false),
@@ -53954,7 +54192,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               </CDNModuleGate>
             );
         })()}
-        <CDNModuleGate moduleKey="MindMap" isOpen={showMindMap} onClose={() => { setShowMindMap(false); setThroughlineSeedUnitId(null); }} icon="🧭" displayName="Learning Web: Unit Path" t={t}>
+        <CDNModuleGate moduleKey="MindMap" isOpen={showMindMap} onClose={() => { setShowMindMap(false); setThroughlineSeedUnitId(null); }} icon={'\uD83D\uDDFA\uFE0F'} displayName="Learning Web: Unit Path" t={t}>
             {(MindMap) => React.createElement(MindMap, {
                 isOpen: true,
                 onClose: () => { setShowMindMap(false); setThroughlineSeedUnitId(null); },

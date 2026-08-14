@@ -10816,7 +10816,7 @@ const d = labToolData.solarSystem || {};
                           rockyHorizonGeo.computeVertexNormals();
                           rockyHorizonMat = new THREE.MeshStandardMaterial({
                             color: new THREE.Color(sel.terrainColor || '#886644').multiplyScalar(0.48),
-                            roughness: 0.99, metalness: 0, flatShading: true, fog: true, side: THREE.DoubleSide
+                            roughness: 0.99, metalness: 0, flatShading: false, fog: true, side: THREE.DoubleSide
                           });
                           rockyHorizonMesh = new THREE.Mesh(rockyHorizonGeo, rockyHorizonMat);
                           rockyHorizonMesh.userData.horizonPeak = true;
@@ -10848,7 +10848,23 @@ const d = labToolData.solarSystem || {};
                         // Store terrain reference for rover ground-following
                         var _terrainMesh = null;
                         var _terrainHeightAt = function(x, z) { return 0; }; // will be overridden for rocky planets
+                        // Ground height follows the terrain mesh; these additional colliders
+                        // keep the rover from passing through discrete rocks and mountains.
+                        var roverObstacleColliders = [];
+                        var roverCollisionRadius = 0.82;
+                        var addRoverObstacle = function(x, z, radius, type) {
+                          if (!isFinite(x) || !isFinite(z) || !isFinite(radius)) return;
+                          roverObstacleColliders.push({ x: x, z: z, radius: Math.max(0.45, radius), type: type || 'obstacle' });
+                        };
 
+                        var roverTerrainTooSteep = function(x, z, heading) {
+                          var probe = 1.15;
+                          var forwardX = -Math.sin(heading), forwardZ = -Math.cos(heading);
+                          var rightX = Math.cos(heading), rightZ = -Math.sin(heading);
+                          var forwardGrade = (_terrainHeightAt(x + forwardX * probe, z + forwardZ * probe) - _terrainHeightAt(x - forwardX * probe, z - forwardZ * probe)) / (2 * probe);
+                          var crossGrade = (_terrainHeightAt(x + rightX * probe, z + rightZ * probe) - _terrainHeightAt(x - rightX * probe, z - rightZ * probe)) / (2 * probe);
+                          return Math.max(Math.abs(forwardGrade), Math.abs(crossGrade)) > 0.78;
+                        };
                         if (isOcean) {
                           // ═══ OCEAN FLOOR TERRAIN (Earth Underwater) ═══
                           var terrainGeo = new THREE.PlaneGeometry(250, 250, 150, 150);
@@ -11277,7 +11293,7 @@ const d = labToolData.solarSystem || {};
                           // The grayscale micro map describes height, not reflectance. Using
                           // it as roughness made dark pits/fissures incorrectly glossy because
                           // MeshStandardMaterial multiplies the map by scalar roughness.
-                          var terrainMat = new THREE.MeshStandardMaterial({ map: terrainTex, bumpMap: terrainMicroTex, bumpScale: terrainBumpScale, roughness: 0.96, metalness: 0.03, flatShading: true });
+                          var terrainMat = new THREE.MeshStandardMaterial({ map: terrainTex, bumpMap: terrainMicroTex, bumpScale: terrainBumpScale, roughness: 0.96, metalness: 0.03, flatShading: false });
                           var terrain = new THREE.Mesh(terrainGeo, terrainMat);
                           terrain.rotation.x = -Math.PI / 2; scene.add(terrain);
                           _terrainMesh = terrain;
@@ -11311,11 +11327,11 @@ const d = labToolData.solarSystem || {};
                           };
 
                           // Add scattered rocks and boulders for visual detail
-                          var rockMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(sel.terrainColor || '#886644').multiplyScalar(0.7), roughness: 0.95, metalness: 0.05, flatShading: true });
+                          var rockMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(sel.terrainColor || '#886644').multiplyScalar(0.7), roughness: 0.95, metalness: 0.05, flatShading: false });
                           for (var ri = 0; ri < 60; ri++) {
                             var rx = (Math.random() - 0.5) * 180, rz = (Math.random() - 0.5) * 180;
                             var rScale = 0.2 + Math.random() * 1.5;
-                            var rockGeo = new THREE.DodecahedronGeometry(rScale, 0);
+                            var rockGeo = new THREE.DodecahedronGeometry(rScale, 1);
                             // Deform vertices for natural look
                             var rPos = rockGeo.attributes.position.array;
                             for (var rvi = 0; rvi < rPos.length; rvi += 3) {
@@ -11329,6 +11345,7 @@ const d = labToolData.solarSystem || {};
                             rock.position.set(rx, ry + rScale * 0.3, rz);
                             rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
                             scene.add(rock);
+                            addRoverObstacle(rx, rz, Math.max(0.45, rScale * 0.85), 'rock');
                           }
 
                           // ═══ PLANET-SPECIFIC TERRAIN FEATURES ═══
@@ -11378,11 +11395,12 @@ const d = labToolData.solarSystem || {};
                                 }
                               }
                               pdGeo.computeVertexNormals();
-                              var pdMat = new THREE.MeshStandardMaterial({ color: 0x8a5a3a, roughness: 0.85, flatShading: true });
+                              var pdMat = new THREE.MeshStandardMaterial({ color: 0x8a5a3a, roughness: 0.85, flatShading: false });
                               var pdMesh = new THREE.Mesh(pdGeo, pdMat);
                               var pdY = _terrainHeightAt(pdX, pdZ);
                               pdMesh.position.set(pdX, pdY + pdH * 0.3, pdZ);
                               scene.add(pdMesh);
+                              addRoverObstacle(pdX, pdZ, pdR * 0.9, 'volcano');
                             }
                           }
 
@@ -11392,17 +11410,18 @@ const d = labToolData.solarSystem || {};
                               var ctX = (Math.random() - 0.5) * 120;
                               var ctZ = (Math.random() - 0.5) * 120;
                               var ctR = 1 + Math.random() * 2.5;
-                              var ctGeo = new THREE.DodecahedronGeometry(ctR, 0);
+                              var ctGeo = new THREE.DodecahedronGeometry(ctR, 1);
                               var ctPos2 = ctGeo.attributes.position.array;
                               for (var ctv = 0; ctv < ctPos2.length; ctv += 3) {
                                 ctPos2[ctv + 1] *= 0.35; // flatten into ridge mound
                               }
                               ctGeo.computeVertexNormals();
-                              var ctMat = new THREE.MeshStandardMaterial({ color: 0xb8d4e3, roughness: 0.4, metalness: 0.15, flatShading: true });
+                              var ctMat = new THREE.MeshStandardMaterial({ color: 0xb8d4e3, roughness: 0.4, metalness: 0.15, flatShading: false });
                               var ctMesh = new THREE.Mesh(ctGeo, ctMat);
                               ctMesh.position.set(ctX, _terrainHeightAt(ctX, ctZ) + ctR * 0.2, ctZ);
                               ctMesh.rotation.y = Math.random() * Math.PI * 2;
                               scene.add(ctMesh);
+                              addRoverObstacle(ctX, ctZ, Math.max(1, ctR * 0.9), 'ridge');
                             }
                           }
 
@@ -12519,7 +12538,7 @@ const d = labToolData.solarSystem || {};
                             bGeo.computeVertexNormals();
                             var bMat = new THREE.MeshStandardMaterial({
                               color: rockColor2.clone().offsetHSL(0, -0.05, -0.1),
-                              roughness: 0.95, metalness: 0.05, flatShading: true
+                              roughness: 0.95, metalness: 0.05, flatShading: false
                             });
                             var boulder2 = new THREE.Mesh(bGeo, bMat);
                             var bx = (Math.random() - 0.5) * 120, bz = (Math.random() - 0.5) * 120;
@@ -12528,6 +12547,7 @@ const d = labToolData.solarSystem || {};
                             boulder2.rotation.y = Math.random() * Math.PI * 2;
                             scene.add(boulder2);
                             envObjects.push(boulder2);
+                            addRoverObstacle(bx, bz, Math.max(1, bSize * 0.95), 'boulder');
                           }
                         }
 
@@ -12642,7 +12662,7 @@ const d = labToolData.solarSystem || {};
                             // Volcano cone
                             var vCone = new THREE.Mesh(
                               new THREE.ConeGeometry(8, 12, 8),
-                              new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.95, flatShading: true })
+                              new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.95, flatShading: false })
                             );
                             var vcPos = vCone.geometry.attributes.position.array;
                             for (var vci = 0; vci < vcPos.length; vci += 3) { vcPos[vci] *= 0.8 + Math.random() * 0.4; vcPos[vci + 2] *= 0.8 + Math.random() * 0.4; }
@@ -12676,6 +12696,7 @@ const d = labToolData.solarSystem || {};
                             vGroup._volcanoPhase = vvi2 * Math.PI;
                             scene.add(vGroup);
                             venusVolcanoes.push(vGroup);
+                            addRoverObstacle(vx, vz, 8.5, 'volcano');
                           }
                         }
 
@@ -12689,11 +12710,12 @@ const d = labToolData.solarSystem || {};
                             omPos2[omi + 2] *= 0.9 + Math.random() * 0.2;
                           }
                           omGeo.computeVertexNormals();
-                          var omMat = new THREE.MeshStandardMaterial({ color: 0xb5452a, roughness: 0.95, flatShading: true });
+                          var omMat = new THREE.MeshStandardMaterial({ color: 0xb5452a, roughness: 0.95, flatShading: false });
                           var olympusMons = new THREE.Mesh(omGeo, omMat);
                           var omX = 80, omZ = -60;
                           olympusMons.position.set(omX, _terrainHeightAt(omX, omZ) + 5, omZ);
                           scene.add(olympusMons);
+                          addRoverObstacle(omX, omZ, 18, 'mountain');
                           // Caldera at summit
                           var calderaGeo = new THREE.CylinderGeometry(4, 4, 1.5, 12, 1, true);
                           var calderaMat = new THREE.MeshStandardMaterial({ color: 0x8a3a1a, roughness: 0.9, side: THREE.DoubleSide });
@@ -12721,10 +12743,11 @@ const d = labToolData.solarSystem || {};
                           scene.add(tRegio);
                           // Cryovolcano (nitrogen ice volcano)
                           var cryoGeo = new THREE.ConeGeometry(3, 5, 8);
-                          var cryoMat = new THREE.MeshStandardMaterial({ color: 0xbbccdd, roughness: 0.6, flatShading: true });
+                          var cryoMat = new THREE.MeshStandardMaterial({ color: 0xbbccdd, roughness: 0.6, flatShading: false });
                           var cryo = new THREE.Mesh(cryoGeo, cryoMat);
                           cryo.position.set(trX + 20, _terrainHeightAt(trX + 20, trZ - 10) + 2, trZ - 10);
                           scene.add(cryo);
+                          addRoverObstacle(trX + 20, trZ - 10, 3.2, 'volcano');
                           // Nitrogen geyser particles
                           var geyserParts = new THREE.BufferGeometry();
                           var geyserPos = new Float32Array(40 * 3);
@@ -12962,6 +12985,45 @@ const d = labToolData.solarSystem || {};
                           impactSpring: 0,
                           impactDustBurst: 0
                         };
+                        var resolveRoverObstacleCollisions = function(previousX, previousZ) {
+                          if (isFluid || !roverObstacleColliders.length) return false;
+                          var blocked = false;
+                          // A few passes handle two nearby rocks without requiring a physics engine.
+                          for (var obstaclePass = 0; obstaclePass < 3; obstaclePass++) {
+                            var passBlocked = false;
+                            for (var obstacleIndex = 0; obstacleIndex < roverObstacleColliders.length; obstacleIndex++) {
+                              var obstacle = roverObstacleColliders[obstacleIndex];
+                              var dx = playerPos.x - obstacle.x;
+                              var dz = playerPos.z - obstacle.z;
+                              var minDistance = obstacle.radius + roverCollisionRadius;
+                              var distanceSq = dx * dx + dz * dz;
+                              if (distanceSq >= minDistance * minDistance) continue;
+                              var distance = Math.sqrt(distanceSq);
+                              if (distance < 0.0001) {
+                                dx = playerPos.x - previousX;
+                                dz = playerPos.z - previousZ;
+                                distance = Math.sqrt(dx * dx + dz * dz);
+                              }
+                              if (distance < 0.0001) { dx = 1; dz = 0; distance = 1; }
+                              playerPos.x = obstacle.x + (dx / distance) * minDistance;
+                              playerPos.z = obstacle.z + (dz / distance) * minDistance;
+                              passBlocked = true;
+                              blocked = true;
+                            }
+                            if (!passBlocked) break;
+                          }
+                          if (!isFluid && (playerPos.x !== previousX || playerPos.z !== previousZ) && roverTerrainTooSteep(playerPos.x, playerPos.z, yaw)) {
+                            playerPos.x = previousX;
+                            playerPos.z = previousZ;
+                            blocked = true;
+                          }
+                          if (blocked) {
+                            roverDrive.speed *= 0.08;
+                            roverDrive.velocity.set(0, 0, 0);
+                            if (roverDrive.impactCooldown <= 0) triggerRoverImpact(0.42);
+                          }
+                          return blocked;
+                        };
                         var roverForward = new THREE.Vector3();
                         var roverTerrainState = {
                           probeDistance: 1,
@@ -13013,6 +13075,8 @@ const d = labToolData.solarSystem || {};
                         canvasEl.dataset.roverSurfaceProfile = isFluid ? 'none' : rockySurfaceProfile;
                         canvasEl.dataset.roverVisualProfile = isFluid ? 'none' : 'procedural-contact-v1';
                         canvasEl.dataset.roverContactPadCount = '0';
+                        canvasEl.dataset.roverObstacleCount = String(isFluid ? 0 : roverObstacleColliders.length);
+                        canvasEl.dataset.roverView = 'third-person';
                         canvasEl.dataset.roverDustCapacity = isFluid ? '0' : String(typeof dustTrailCapacity === 'number' ? dustTrailCapacity : 0);
 
                         function publishRoverImpactTelemetry(force) {
@@ -14711,7 +14775,9 @@ const d = labToolData.solarSystem || {};
 
                         // â"€â"€ 3rd-person camera toggle (V key) + Mission card (M key) â"€â"€
 
-                        var thirdPerson = false;
+                        var thirdPerson = true;
+                        var initialViewLabel = document.getElementById('hud-mode');
+                        if (initialViewLabel) initialViewLabel.textContent = modeLabel + ' [3RD PERSON]';
 
                         var tpOffset = new THREE.Vector3(0, 3, 6);
                         var chaseCameraPos = new THREE.Vector3();
@@ -14733,6 +14799,7 @@ const d = labToolData.solarSystem || {};
                           if (e.key === 'v' || e.key === 'V') {
 
                             thirdPerson = !thirdPerson;
+                            canvasEl.dataset.roverView = thirdPerson ? 'third-person' : 'first-person';
                             chaseCameraReady = false;
                             resetRoverImpactDetection();
 
@@ -14788,7 +14855,7 @@ const d = labToolData.solarSystem || {};
 
                             var modeEl = document.getElementById('hud-mode');
 
-                            if (modeEl) { var icons = { simple: '\uD83D\uDFE2', standard: '\uD83D\uDFE1', full: '\uD83D\uDD34' }; modeEl.textContent = modeLabel + ' [' + icons[hudMode] + ' ' + hudMode.toUpperCase() + ']'; }
+                            if (modeEl) { var icons = { simple: '\uD83D\uDFE2', standard: '\uD83D\uDFE1', full: '\uD83D\uDD34' }; modeEl.textContent = modeLabel + (thirdPerson ? ' [3RD PERSON]' : ' [1ST PERSON]') + ' [' + icons[hudMode] + ' ' + hudMode.toUpperCase() + ']'; }
 
                           }
 
@@ -16052,6 +16119,7 @@ const d = labToolData.solarSystem || {};
                             roverForward.set(-Math.sin(yaw), 0, -Math.cos(yaw));
                             roverDrive.velocity.copy(roverForward).multiplyScalar(roverDrive.speed);
                             playerPos.addScaledVector(roverDrive.velocity, droneFrameDt);
+                            resolveRoverObstacleCollisions(roverFrameStartX, roverFrameStartZ);
                             var wheelSlipOffset = throttleInput * roverDrive.tractionSlip * 0.55;
                             if (opposingThrottle) {
                               roverDrive.drivenWheelSpeed = Math.sign(roverDrive.speed) * Math.max(0, Math.abs(roverDrive.speed) - Math.abs(wheelSlipOffset));
@@ -18059,6 +18127,8 @@ const d = labToolData.solarSystem || {};
                           delete canvasEl.dataset.roverSurfaceProfile;
                           delete canvasEl.dataset.roverVisualProfile;
                           delete canvasEl.dataset.roverContactPadCount;
+                          delete canvasEl.dataset.roverObstacleCount;
+                          delete canvasEl.dataset.roverView;
                           delete canvasEl.dataset.roverDustCapacity;
 
                           // Fifth-pass rocky surface resources are not owned by renderer.dispose().

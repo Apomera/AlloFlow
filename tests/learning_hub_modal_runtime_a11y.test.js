@@ -60,7 +60,6 @@ describe('Learning Hub modal runtime accessibility', () => {
         setShowLearningHub: setOpen,
         setShowLitLab: setter,
         setShowLearningWebExplorer: setter,
-        setShowMindMap: setter,
         setShowPoetTree: setter,
         setShowResearchHub: setter,
         setShowSelHub: setter,
@@ -79,10 +78,10 @@ describe('Learning Hub modal runtime accessibility', () => {
     const buttons = Array.from(dialog.querySelectorAll('button'));
     const launchers = Array.from(dialog.querySelectorAll('button[data-hub-launch="true"]'));
     const favorites = Array.from(dialog.querySelectorAll('button[data-hub-favorite="true"]'));
-    expect(launchers.length).toBeGreaterThanOrEqual(16);
+    expect(launchers.length).toBeGreaterThanOrEqual(15);
     expect(favorites).toHaveLength(launchers.length);
     expect(launchers.some((button) => button.textContent.includes('Learning Web: Explore'))).toBe(true);
-    expect(launchers.some((button) => button.textContent.includes('Learning Web: Unit Path'))).toBe(true);
+    expect(launchers.some((button) => button.textContent.includes('Learning Web: Unit Path'))).toBe(false);
     expect(buttons.length).toBeGreaterThan(launchers.length);
     expect(document.activeElement).toBe(buttons[0]);
     expect(dialog.getAttribute('aria-labelledby')).toBe('learning-hub-title');

@@ -143,11 +143,10 @@ describe('both proposal entry points use JSON mode and recover without a dead en
 });
 
 describe('the launcher follows the visible target-level control', () => {
-  it('SourceGenPanel passes sourceLevel, not the unrelated global grade level', () => {
+  it('SourceGenPanel no longer mounts the standalone surprise launcher', () => {
     const panelStart = miscSource.indexOf('function SourceGenPanel(props) {');
     expect(panelStart).toBeGreaterThanOrEqual(0);
     const panel = miscSource.slice(panelStart);
-    expect(panel).toMatch(/<SurpriseTopicLauncher[^>]*gradeLevel=\{sourceLevel\}/);
-    expect(panel).not.toMatch(/<SurpriseTopicLauncher[^>]*gradeLevel=\{gradeLevel\}/);
+    expect(panel).not.toContain('<SurpriseTopicLauncher');
   });
 });

@@ -30,6 +30,12 @@
     { id: 'copy', n: 'Stage 4', label: 'Copy to your form' }
   ];
 
+  var scriptSource = window.AlloModules && window.AlloModules.WalkthroughScriptSource;
+
+  // Connection CONFIG only: the deployment URL and the device token. No
+  // observation content is ever persisted here.
+  var STORE_KEY = 'allo_wcop_delivery_v1';
+
   var state = {
     stage: 'capture',
     scenario: null,
@@ -37,7 +43,66 @@
     draft: null,
     disclosure: null,
     lastComparison: null,
-    introOpen: true
+    introOpen: true,
+    delivery: { execUrl: '', token: '', owner: '', selfTest: null, busy: false, message: '', tone: 'warn' },
+    sendTo: '',
+    sendResult: null,
+    // Session-only. Deliberately never written to storage: a principal who
+    // affirmed in September should be asked again in March.
+    approval: null,
+    context: {},
+    manual: { componentId: '', quote: '', evidence: '', interpretation: '', message: '' }
+  };
+
+  function loadConnection() {
+    try {
+      var raw = window.localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      var saved = JSON.parse(raw);
+      if (saved && typeof saved.execUrl === 'string') {
+        state.delivery.execUrl = saved.execUrl;
+        state.delivery.token = typeof saved.token === 'string' ? saved.token : '';
+        state.delivery.owner = typeof saved.owner === 'string' ? saved.owner : '';
+      }
+    } catch (err) { /* a missing or unreadable store is simply "not connected" */ }
+  }
+
+  function saveConnection() {
+    try {
+      window.localStorage.setItem(STORE_KEY, JSON.stringify({
+        execUrl: state.delivery.execUrl,
+        token: state.delivery.token,
+        owner: state.delivery.owner
+      }));
+    } catch (err) { /* private browsing: the connection just will not persist */ }
+  }
+
+  function forgetConnection() {
+    try { window.localStorage.removeItem(STORE_KEY); } catch (err) { /* nothing to clear */ }
+    state.delivery = { execUrl: '', token: '', owner: '', selfTest: null, busy: false, message: '', tone: 'warn' };
+  }
+
+  // Apps Script answers exactly one request shape. A JSON content type would
+  // trigger a CORS preflight it cannot respond to, so the body is sent as
+  // text/plain and parsed as JSON on the other side.
+  function postToScript(url, body) {
+    return window.fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    }).then(function (response) { return response.json(); });
+  }
+
+  function deliveryClient() {
+    return core.createDelivery({
+      execUrl: state.delivery.execUrl,
+      token: state.delivery.token,
+      post: postToScript
+    });
+  }
+
+  var isConnected = function () {
+    return !!state.delivery.execUrl && !!state.delivery.token;
   };
 
   // A generic "check with your district" line gets skimmed and ignored. This
@@ -120,18 +185,103 @@
     return list;
   }
 
+  function activeMode() {
+    if (state.draft) return state.draft.mode;
+    return state.approval ? 'approved' : 'demo';
+  }
+
   function renderBanner() {
-    var mode = state.draft ? state.draft.mode : 'demo';
-    var banner = el('div', 'banner');
+    var mode = activeMode();
+    var banner = el('div', 'banner' + (mode === 'approved' ? ' banner-live' : ''));
     banner.setAttribute('role', 'note');
-    add(banner, el('span', null, mode === 'demo' ? 'Demo mode' : 'Approved mode'));
+    add(banner, el('span', null, mode === 'demo' ? 'Practice mode' : 'Real observation'));
     add(banner, el('span', 'sep', '|'));
-    add(banner, el('span', null, mode === 'demo'
-      ? 'Synthetic practice only. Nothing here is a record of a real observation.'
-      : 'Real notes permitted under the recorded approval.'));
+    if (mode === 'demo') {
+      add(banner, el('span', null, 'Synthetic practice only. Nothing here is a record of a real observation.'));
+    } else {
+      var by = (state.draft && state.draft.approval && state.draft.approval.affirmedBy)
+        || (state.approval && state.approval.affirmedBy) || 'you';
+      add(banner, el('span', null, 'Affirmed by ' + by + ' for this session only.'));
+    }
     add(banner, el('span', 'sep', '|'));
     add(banner, el('span', null, 'Nothing is saved. Closing this page discards everything.'));
     return banner;
+  }
+
+  /* ---------------------------------------------------------------- *
+   * Approval affirmation
+   * ---------------------------------------------------------------- */
+
+  function renderAffirm() {
+    var described = core.describeApproval();
+    var wrap = el('div');
+    add(wrap, el('h2', null, 'Use this for a real observation'));
+    add(wrap, el('p', 'note', described.note));
+
+    var card = el('div', 'card');
+    add(card, el('p', 'lab', 'Confirm each of these'));
+
+    var checks = {};
+    described.terms.forEach(function (term) {
+      var row = el('label', 'check');
+      var box = el('input');
+      box.type = 'checkbox';
+      box.id = 'affirm-' + term.key;
+      checks[term.key] = box;
+      add(row, box, el('span', null, term.text));
+      add(card, row);
+    });
+
+    var field = el('div', 'field');
+    field.style.marginTop = '.6rem';
+    var label = el('label', null, 'Your name, recorded with the affirmation');
+    label.setAttribute('for', 'affirm-name');
+    var name = el('input');
+    name.type = 'text';
+    name.id = 'affirm-name';
+    name.value = (state.approval && state.approval.affirmedBy) || '';
+    add(field, label, name);
+    add(card, field);
+
+    var msg = el('div');
+    msg.id = 'affirm-msg';
+    add(card, msg);
+
+    var row = el('div', 'row');
+    var confirm = button('Affirm and continue', 'primary', function () {
+      var affirmed = { affirmedBy: name.value.trim() };
+      described.terms.forEach(function (term) { affirmed[term.key] = checks[term.key].checked; });
+
+      var missing = described.terms.filter(function (term) { return !affirmed[term.key]; });
+      if (missing.length || !affirmed.affirmedBy) {
+        msg.textContent = '';
+        add(msg, el('span', 'flag stop',
+          !affirmed.affirmedBy && missing.length ? 'Confirm each statement and enter your name.'
+            : missing.length ? 'Confirm each statement. These are claims about your district, not settings.'
+              : 'Enter your name so the affirmation records who made it.'));
+        return;
+      }
+      state.approval = affirmed;
+      state.scenario = null;
+      state.notes = '';
+      state.draft = null;
+      goto('capture');
+      say('Real observation mode. Affirmed by ' + affirmed.affirmedBy + ' for this session.');
+    });
+    confirm.id = 'affirm-btn';
+    add(row, confirm);
+    add(row, button('Stay in practice mode', null, function () { goto('capture'); }));
+    add(card, row);
+    add(wrap, card);
+
+    var why = el('div', 'card');
+    add(why, el('h3', null, 'What this does and does not change'));
+    add(why, el('p', 'note',
+      'It removes the practice watermark and lets you work from your own notes. It changes nothing '
+      + 'about how evidence is checked. It is not remembered after this session, and it is not a '
+      + 'substitute for your district actually having approved anything.'));
+    add(wrap, why);
+    return wrap;
   }
 
   /* ---------------------------------------------------------------- *
@@ -179,11 +329,216 @@
     add(card, el('p', 'note',
       'This build has no AI connected and cannot analyze notes you write yourself. '
       + 'It works through the practice scenarios below.'));
+
+    add(card, el('p', 'lab', 'Three ways this gets used'));
+    var tiers = el('div', 'tiers');
+    [
+      {
+        name: 'Practice, on this device',
+        cost: 'Nothing to set up',
+        body: 'Invented scenarios, no AI contacted, nothing saved. This is what you are in now, and what to use for training or a staff meeting.',
+        state: 'active'
+      },
+      {
+        name: 'Deliver to your teachers',
+        cost: 'You deploy a script, about three minutes',
+        body: 'A small script in your own Google account saves each finished note to your Drive and shares it with one named teacher. Your district permits it rather than administering it.',
+        state: isConnected() ? 'connected' : 'available'
+      },
+      {
+        name: 'District system of record',
+        cost: 'Your district deploys and runs it',
+        body: 'Verified identity, evaluator assignments, teacher acknowledgment and a tamper-evident audit trail. A separate portal your district opens, not something this page can switch on.',
+        state: 'district'
+      }
+    ].forEach(function (tier) {
+      var box = el('div', 'tier tier-' + tier.state);
+      add(box, el('h4', null, tier.name));
+      add(box, el('p', 'tier-cost', tier.cost));
+      add(box, el('p', 'note', tier.body));
+      if (tier.state === 'connected') add(box, el('span', 'flag go', 'Connected to ' + (state.delivery.owner || 'your Google account') + '.'));
+      if (tier.state === 'available') {
+        add(box, button('Set up delivery', null, function () { goto('setup'); }));
+      }
+      add(tiers, box);
+    });
+    add(card, tiers);
     return card;
   }
 
-  function renderCapture() {
+  /* ---------------------------------------------------------------- *
+   * Delivery setup
+   * ---------------------------------------------------------------- */
+
+  function renderSetup() {
     var wrap = el('div');
+    add(wrap, el('h2', null, 'Set up delivery to your teachers'));
+    add(wrap, el('p', 'note',
+      'This runs in your own Google account. Finished notes are saved to your Drive and shared with '
+      + 'one named teacher at a time. Nothing goes to an AlloFlow server, and there is no AlloFlow database.'));
+
+    if (!scriptSource) {
+      add(wrap, el('span', 'flag stop',
+        'The script could not be loaded, so the copy button is unavailable. Open this page from the repository folder or reload.'));
+      add(wrap, button('Back', null, function () { goto('capture'); }));
+      return wrap;
+    }
+
+    var stepsCard = el('div', 'card');
+    add(stepsCard, el('h3', null, 'Deploy the script'));
+    var list = el('ol', 'steps');
+    scriptSource.steps.forEach(function (step) {
+      add(list, el('li', null, step.text));
+    });
+    add(stepsCard, list);
+
+    var copyRow = el('div', 'row');
+    add(copyRow, button('Copy script code', 'primary', function () {
+      copyText(scriptSource.source, 'Script code');
+    }));
+    add(copyRow, el('span', 'note',
+      scriptSource.source.length.toLocaleString() + ' characters. The script ships inside this page, so this works offline.'));
+    add(stepsCard, copyRow);
+    add(wrap, stepsCard);
+
+    var connectCard = el('div', 'card');
+    add(connectCard, el('h3', null, 'Connect it'));
+
+    var field = el('div', 'field');
+    var label = el('label', null, 'Web app URL (ends in /exec)');
+    label.setAttribute('for', 'exec-url');
+    var input = el('input');
+    input.type = 'text';
+    input.id = 'exec-url';
+    input.value = state.delivery.execUrl;
+    input.placeholder = 'https://script.google.com/macros/s/.../exec';
+    input.addEventListener('input', function () { state.delivery.execUrl = input.value; });
+    add(field, label, input);
+    add(connectCard, field);
+
+    var actions = el('div', 'row');
+    var connect = button(isConnected() ? 'Reconnect' : 'Connect', 'primary', doConnect, { disabled: state.delivery.busy });
+    connect.id = 'connect-btn';
+    add(actions, connect);
+    if (isConnected()) {
+      add(actions, button('Run self-test', null, doSelfTest, { disabled: state.delivery.busy }));
+      add(actions, button('Forget this connection', null, function () {
+        forgetConnection();
+        render();
+        say('Connection forgotten on this device. The script and your Drive files are untouched.');
+      }));
+    }
+    add(connectCard, actions);
+
+    if (state.delivery.message) {
+      add(connectCard, el('span', 'flag ' + (state.delivery.tone === 'go' ? 'go' : state.delivery.tone === 'stop' ? 'stop' : ''),
+        state.delivery.message));
+    }
+    if (state.delivery.selfTest) {
+      var t = state.delivery.selfTest;
+      add(connectCard, el('p', 'note',
+        'Owner: ' + (t.owner || 'unknown')
+        + ' | folder: ' + (t.folderName || 'not created yet')
+        + ' | email quota available: ' + (t.canSendMail ? 'yes' : 'no')));
+    }
+    add(wrap, connectCard);
+
+    var noteCard = el('div', 'card');
+    add(noteCard, el('h3', null, 'Before you use this on a real staff member'));
+    add(noteCard, el('p', 'note',
+      'This stores feedback you wrote and approved. It does not rate anyone and it is not an '
+      + 'evaluation system of record. Using it on real staff is a district decision. Get answers to:'));
+    var qs = el('ul');
+    ADVISORY_QUESTIONS.forEach(function (q) { add(qs, el('li', null, q)); });
+    add(noteCard, qs);
+    add(wrap, noteCard);
+
+    add(wrap, button('Back to the tool', null, function () { goto('capture'); }));
+    return wrap;
+  }
+
+  function doConnect() {
+    var check = core.validateExecUrl(state.delivery.execUrl);
+    if (!check.ok) {
+      state.delivery.message = check.errors[0].message;
+      state.delivery.tone = 'stop';
+      render();
+      say(check.errors[0].message);
+      return;
+    }
+    state.delivery.execUrl = check.value;
+    state.delivery.token = '';
+    state.delivery.busy = true;
+    state.delivery.message = 'Connecting...';
+    state.delivery.tone = 'warn';
+    render();
+
+    var built = deliveryClient();
+    if (!built.ok) {
+      state.delivery.busy = false;
+      state.delivery.message = built.errors[0].message;
+      state.delivery.tone = 'stop';
+      render();
+      return;
+    }
+    built.value.claim().then(function (result) {
+      state.delivery.busy = false;
+      if (!result.ok) {
+        state.delivery.message = result.errors[0].message;
+        state.delivery.tone = 'stop';
+        render();
+        say(result.errors[0].message);
+        return;
+      }
+      state.delivery.token = result.value.token;
+      state.delivery.owner = result.value.owner || '';
+      saveConnection();
+      state.delivery.message = 'Connected to ' + (state.delivery.owner || 'your Google account') + '.';
+      state.delivery.tone = 'go';
+      render();
+      say('Connected.');
+      doSelfTest();
+    }, function (err) {
+      state.delivery.busy = false;
+      state.delivery.message = 'Could not reach the script. Check the URL, and that the deployment is set to "Anyone". (' + (err && err.message ? err.message : 'network error') + ')';
+      state.delivery.tone = 'stop';
+      render();
+    });
+  }
+
+  function doSelfTest() {
+    var built = deliveryClient();
+    if (!built.ok) return;
+    state.delivery.busy = true;
+    render();
+    built.value.selfTest().then(function (result) {
+      state.delivery.busy = false;
+      if (!result.ok) {
+        state.delivery.message = result.errors[0].message;
+        state.delivery.tone = 'stop';
+      } else {
+        state.delivery.selfTest = result.value;
+        state.delivery.message = 'Self-test passed.';
+        state.delivery.tone = 'go';
+      }
+      render();
+    }, function () {
+      state.delivery.busy = false;
+      state.delivery.message = 'The self-test could not reach the script.';
+      state.delivery.tone = 'stop';
+      render();
+    });
+  }
+
+  function renderCapture() {
+    if (state.approval) return renderRealCapture();
+    var wrap = el('div');
+
+    var modeRow = el('div', 'row');
+    modeRow.style.margin = '0 0 1rem';
+    add(modeRow, button('Use this for a real observation', null, function () { goto('affirm'); }));
+    add(modeRow, el('span', 'note', 'Requires confirming what your district has approved.'));
+    add(wrap, modeRow);
 
     if (state.introOpen) {
       add(wrap, renderIntro());
@@ -284,6 +639,165 @@
     }
     freeze.disabled = !state.scenario || edited;
     restore.hidden = !edited;
+  }
+
+  /* ---------------------------------------------------------------- *
+   * Real observation capture
+   * ---------------------------------------------------------------- */
+
+  function renderRealCapture() {
+    var wrap = el('div');
+
+    var card = el('div', 'card');
+    add(card, el('h2', null, 'Your observation notes'));
+    add(card, el('p', 'note',
+      'Type the shorthand you wrote during the visit. Locking it keeps your original wording exactly '
+      + 'as written, and every claim you record afterwards has to quote a line from it.'));
+
+    var area = el('textarea');
+    area.id = 'notes-input';
+    area.value = state.notes;
+    area.setAttribute('aria-label', 'Observation notes');
+    area.addEventListener('input', function () {
+      state.notes = area.value;
+      // Partial update: a full re-render would steal focus mid-sentence, and
+      // leaving the button stale would make it lie about what it will do.
+      var lockBtn = document.getElementById('freeze-btn');
+      if (lockBtn) lockBtn.disabled = !state.notes.trim();
+    });
+    add(card, area);
+
+    var ctx = el('div', 'row');
+    ctx.style.marginTop = '.6rem';
+    ['teacherDisplayName', 'date', 'period', 'subject'].forEach(function (key) {
+      var field = el('div', 'field');
+      field.style.flex = '1 1 9rem';
+      field.style.margin = '0';
+      var label = el('label', null, key === 'teacherDisplayName' ? 'Teacher' : key.charAt(0).toUpperCase() + key.slice(1));
+      label.setAttribute('for', 'ctx-' + key);
+      var input = el('input');
+      input.type = 'text';
+      input.id = 'ctx-' + key;
+      input.value = state.context ? (state.context[key] || '') : '';
+      input.addEventListener('input', function () {
+        state.context = state.context || {};
+        state.context[key] = input.value;
+      });
+      add(field, label, input);
+      add(ctx, field);
+    });
+    add(card, ctx);
+
+    var row = el('div', 'row');
+    row.style.marginTop = '.7rem';
+    var lock = button('Lock these notes', 'primary', function () {
+      var created = core.createDraft({
+        framework: fixtures.PORTLAND_FRAMEWORK,
+        sourceNotes: state.notes,
+        context: state.context || {},
+        mode: 'approved',
+        approval: state.approval,
+        collectionType: 'walkthrough'
+      });
+      if (!created.ok) {
+        say(created.errors[0].message);
+        state.manual.message = created.errors[0].message;
+        render();
+        return;
+      }
+      state.draft = created.value;
+      goto('analyze');
+      say('Notes locked. Add the evidence you observed.');
+    }, { disabled: !state.notes || !state.notes.trim() });
+    lock.id = 'freeze-btn';
+    add(row, lock);
+    add(row, button('Back to practice', null, function () {
+      state.approval = null;
+      state.notes = '';
+      state.draft = null;
+      goto('capture');
+      say('Back in practice mode.');
+    }));
+    add(card, row);
+    if (state.manual.message) add(card, el('span', 'flag stop', state.manual.message));
+    add(wrap, card);
+
+    var noteCard = el('div', 'card');
+    add(noteCard, el('p', 'note',
+      'There is no AI connected in this build, so you will write each piece of evidence yourself in '
+      + 'the next step. The tool still checks that every claim quotes your notes, keeps what you '
+      + 'observed separate from what you concluded, and flags language that reaches past the evidence.'));
+    add(wrap, noteCard);
+    return wrap;
+  }
+
+  function renderManualEntry() {
+    var card = el('div', 'card');
+    add(card, el('h3', null, 'Add evidence'));
+    add(card, el('p', 'note',
+      'Pick the component, quote the line of your notes it rests on, then say what you observed. '
+      + 'Keep any conclusion in the separate interpretation field.'));
+
+    var compField = el('div', 'field');
+    var compLabel = el('label', null, 'Component');
+    compLabel.setAttribute('for', 'manual-component');
+    var select = el('select');
+    select.id = 'manual-component';
+    var blank = el('option', null, 'Choose a component');
+    blank.value = '';
+    add(select, blank);
+    state.draft.framework.components.forEach(function (component) {
+      var option = el('option', null, component.id + ' ' + component.label);
+      option.value = component.id;
+      if (state.manual.componentId === component.id) option.selected = true;
+      add(select, option);
+    });
+    select.addEventListener('change', function () { state.manual.componentId = select.value; });
+    add(compField, compLabel, select);
+    add(card, compField);
+
+    [
+      ['quote', 'Quote from your notes', 'Paste the exact line this rests on'],
+      ['evidence', 'What you observed', 'Describe only what happened'],
+      ['interpretation', 'What it might mean (optional)', 'Your reading of it, kept separate']
+    ].forEach(function (spec) {
+      var field = el('div', 'field');
+      var label = el('label', null, spec[1]);
+      label.setAttribute('for', 'manual-' + spec[0]);
+      var input = el('textarea');
+      input.id = 'manual-' + spec[0];
+      input.style.minHeight = '3.4rem';
+      input.placeholder = spec[2];
+      input.value = state.manual[spec[0]];
+      input.addEventListener('input', function () { state.manual[spec[0]] = input.value; });
+      add(field, label, input);
+      add(card, field);
+    });
+
+    var row = el('div', 'row');
+    var addBtn = button('Add this evidence', 'primary', function () {
+      var report = core.addManualSuggestion(state.draft, {
+        componentId: state.manual.componentId,
+        quote: state.manual.quote,
+        objectiveEvidence: state.manual.evidence,
+        interpretation: state.manual.interpretation
+      });
+      if (!report.ok) {
+        state.manual.message = report.errors[0].message;
+        render();
+        say(report.errors[0].message);
+        return;
+      }
+      state.draft = report.value;
+      state.manual = { componentId: '', quote: '', evidence: '', interpretation: '', message: '' };
+      render();
+      say('Evidence added. ' + state.draft.suggestions.length + ' recorded so far.');
+    });
+    addBtn.id = 'manual-add';
+    add(row, addBtn);
+    add(card, row);
+    if (state.manual.message) add(card, el('span', 'flag stop', state.manual.message));
+    return card;
   }
 
   function pickScenario(id) {
@@ -451,6 +965,8 @@
       'Nothing reaches your form until you decide on it. Keep what the notes genuinely support, '
       + 'reword anything you would put differently, and throw out the rest. Rejecting a lot is a '
       + 'normal outcome, not a sign something went wrong.'));
+
+    if (state.draft.mode === 'approved') add(right, renderManualEntry());
 
     state.draft.suggestions.forEach(function (suggestion, index) {
       add(right, renderSuggestion(suggestion, index));
@@ -697,12 +1213,72 @@
       add(wrap, box);
     });
 
+    var deliverCard = el('div', 'card');
+    add(deliverCard, el('h3', null, 'Send it to the teacher'));
+    if (!isConnected()) {
+      add(deliverCard, el('p', 'note',
+        'You can paste the fields above into whatever form your school uses. If you would rather have '
+        + 'this saved to your Drive and shared with the teacher directly, set that up once.'));
+      add(deliverCard, button('Set up delivery', null, function () { goto('setup'); }));
+    } else if (state.draft.mode === 'demo') {
+      add(deliverCard, el('span', 'flag',
+        'Delivery is connected, but this is a practice scenario. Sending is only available for a real '
+        + 'observation, so nothing here can reach a colleague by accident.'));
+    } else {
+      var field = el('div', 'field');
+      var label = el('label', null, 'Teacher school email');
+      label.setAttribute('for', 'send-to');
+      var input = el('input');
+      input.type = 'text';
+      input.id = 'send-to';
+      input.value = state.sendTo;
+      input.placeholder = 'teacher@yourschool.org';
+      input.addEventListener('input', function () { state.sendTo = input.value; });
+      add(field, label, input);
+      add(deliverCard, field);
+      add(deliverCard, el('p', 'note',
+        'The note is saved to your Drive and shared with that one address. Google asks them to sign in '
+        + 'to open it, so a forwarded link shows nothing. The notification email contains no feedback text.'));
+      add(deliverCard, button('Save to my Drive and share', 'primary', doDeliver, { disabled: state.delivery.busy }));
+    }
+    if (state.sendResult) {
+      add(deliverCard, el('span', 'flag ' + (state.sendResult.ok ? 'go' : 'stop'), state.sendResult.message));
+    }
+    add(wrap, deliverCard);
+
     var end = el('div', 'row');
     end.style.marginTop = '1rem';
     add(end, button('Clear and start over', null, clearAll));
     add(end, el('span', 'note', 'Clearing discards the notes, the suggestions, and everything you rejected.'));
     add(wrap, end);
     return wrap;
+  }
+
+  function doDeliver() {
+    var built = deliveryClient();
+    if (!built.ok) {
+      state.sendResult = { ok: false, message: built.errors[0].message };
+      render();
+      return;
+    }
+    state.delivery.busy = true;
+    render();
+    built.value.deliver(state.draft, fixtures.SAMPLE_FIELD_MAP, {
+      teacherEmail: state.sendTo,
+      allowedDomain: state.delivery.selfTest && state.delivery.selfTest.allowedDomain
+    }).then(function (result) {
+      state.delivery.busy = false;
+      state.sendResult = result.ok
+        ? { ok: true, message: 'Saved and shared with ' + result.value.sharedWith
+            + (result.value.notified ? '. A notification was sent.' : '. The notification could not be sent, so tell them directly.') }
+        : { ok: false, message: result.errors[0].message };
+      render();
+      say(state.sendResult.message);
+    }, function (err) {
+      state.delivery.busy = false;
+      state.sendResult = { ok: false, message: 'Could not reach the script. Nothing was saved. (' + (err && err.message ? err.message : 'network error') + ')' };
+      render();
+    });
   }
 
   function clearAll() {
@@ -722,7 +1298,9 @@
   function render() {
     app.textContent = '';
     add(app, renderBanner(), renderStages());
-    if (state.stage === 'capture') add(app, renderCapture());
+    if (state.stage === 'setup') add(app, renderSetup());
+    else if (state.stage === 'affirm') add(app, renderAffirm());
+    else if (state.stage === 'capture') add(app, renderCapture());
     else if (state.stage === 'analyze') add(app, renderAnalyze());
     else if (state.stage === 'feedback') add(app, renderFeedback());
     else add(app, renderCopy());
@@ -744,6 +1322,7 @@
       return;
     }
     state.disclosure = core.normalizeDisclosure({});
+    loadConnection();
     render();
   }
 

@@ -1728,7 +1728,7 @@ function SourceGenPanel(props) {
       onKeyDown: (e) => e.key === "Enter" && handleGenerateSource(),
       autoFocus: true
     }
-  )), /* @__PURE__ */ React.createElement(SurpriseTopicLauncher, { addToast, gradeLevel: sourceLevel, setSourceTopic, setSourceTone, setSourceVocabulary, setStandardInputValue, sourceVocabulary, studentInterests }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.tone")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.tone")), /* @__PURE__ */ React.createElement(
     "select",
     {
       value: sourceTone,

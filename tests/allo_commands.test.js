@@ -269,11 +269,12 @@ describe('buildAlloCommands (role + when filtering)', () => {
   it('exposes source/history and Learning Hub tool launchers across roles', () => {
     const teacher = ids({});
     expect(teacher).toEqual(expect.arrayContaining([
-      'open_source_input', 'open_source_url', 'open_source_generator', 'open_history', 'open_research_hub', 'open_lit_lab', 'open_mind_map', 'open_poet_tree',
+      'open_source_input', 'open_source_url', 'open_source_generator', 'open_history', 'open_research_hub', 'open_lit_lab', 'open_poet_tree',
     ]));
     const student = ids({ isIndependentMode: true });
+    expect(student).not.toContain('open_mind_map');
     expect(student).toEqual(expect.arrayContaining([
-      'open_source_input', 'open_source_url', 'open_source_generator', 'open_history', 'open_research_hub', 'open_lit_lab', 'open_mind_map', 'open_poet_tree',
+      'open_source_input', 'open_source_url', 'open_source_generator', 'open_history', 'open_research_hub', 'open_lit_lab', 'open_poet_tree',
     ]));
   });
 

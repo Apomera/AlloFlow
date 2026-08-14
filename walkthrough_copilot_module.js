@@ -481,6 +481,106 @@
   }
 
   /* ---------------------------------------------------------------------- *
+   * Approval affirmation
+   *
+   * Approved mode is a statement about authorization that already exists, not
+   * a switch that grants one. It therefore records WHO affirmed WHAT, and it
+   * is never remembered across sessions: a principal who affirmed in September
+   * should be asked again in March rather than discovering months later that
+   * the tool has been treating their notes as approved all along.
+   * ---------------------------------------------------------------------- */
+
+  var APPROVAL_TERMS = [
+    {
+      key: 'providerApproved',
+      text: 'My district has approved the AI provider and data flow used here for observation notes.'
+    },
+    {
+      key: 'scopeConfirmed',
+      text: 'I have confirmed how a walkthrough is treated in our evaluation system, and I am using this within that scope.'
+    }
+  ];
+
+  function describeApproval() {
+    return {
+      terms: APPROVAL_TERMS.map(function (term) { return { key: term.key, text: term.text }; }),
+      requiresName: true,
+      remembered: false,
+      note: 'Approved mode changes no analysis. It removes the practice watermark and permits real '
+        + 'notes. It is not remembered after this session.'
+    };
+  }
+
+  /* ---------------------------------------------------------------------- *
+   * Manual evidence entry
+   *
+   * The observer selects a component and quotes their own frozen notes. No
+   * model is involved, so this works with no provider configured and no
+   * district AI decision, while keeping every integrity rule: the quote has to
+   * exist verbatim in the notes, evidence stays separate from interpretation,
+   * and the same warnings apply.
+   *
+   * The quote is located here rather than trusted from the caller, for the
+   * same reason model output is: an offset nobody verified is not a citation.
+   * ---------------------------------------------------------------------- */
+
+  function locateQuote(notes, quote) {
+    if (!isString(notes) || !isNonEmptyString(quote)) {
+      return bad([error('quote-empty', 'quote', 'Quote the line of your notes this is based on.')]);
+    }
+    var needle = quote.trim();
+    var at = notes.indexOf(needle);
+    if (at === -1) {
+      return bad([error('quote-missing', 'quote',
+        'That text does not appear in your notes. Copy the wording exactly as you wrote it.')]);
+    }
+    if (notes.indexOf(needle, at + 1) !== -1) {
+      return bad([error('quote-ambiguous', 'quote',
+        'That text appears more than once in your notes. Quote a longer stretch so the citation is unambiguous.')]);
+    }
+    return ok({ start: at, end: at + needle.length, text: needle });
+  }
+
+  function addManualSuggestion(draft, input) {
+    if (!isObject(draft) || !Array.isArray(draft.suggestions)) {
+      return bad([error('draft-invalid', 'draft', 'Lock your notes before adding evidence.')]);
+    }
+    var entry = isObject(input) ? input : {};
+    var span = locateQuote(draft.sourceNotesOriginal, entry.quote);
+    if (!span.ok) return span;
+
+    var id = isNonEmptyString(entry.id)
+      ? entry.id
+      : 'manual-' + (draft.suggestions.length + 1) + '-' + String(entry.componentId || 'x');
+
+    var taken = draft.suggestions.some(function (existing) { return existing.id === id; });
+    if (taken) {
+      return bad([error('suggestion-duplicate', 'id', 'That evidence id is already used in this draft.')]);
+    }
+
+    var candidate = {
+      id: id,
+      componentId: entry.componentId,
+      objectiveEvidence: entry.objectiveEvidence,
+      interpretation: entry.interpretation,
+      sourceSpans: [span.value]
+    };
+
+    // Validate the new claim ALONE against the frozen notes, then append it.
+    // Re-validating the whole list would work, but it rebuilds every existing
+    // suggestion and so resets their decisions, which then have to be carried
+    // back by hand. Validating one and appending keeps decisions untouched
+    // because the existing entries are never rebuilt.
+    var report = validateSuggestions(draft, [candidate]);
+    if (!report.ok) return report;
+
+    var next = clone(draft);
+    next.suggestions = draft.suggestions.concat(report.value.suggestions);
+    next.globalWarnings = globalWarnings(next);
+    return ok(next, report.warnings);
+  }
+
+  /* ---------------------------------------------------------------------- *
    * Human decisions
    *
    * Every transition returns a new draft. The frozen notes are copied forward
@@ -764,6 +864,134 @@
   }
 
   /* ---------------------------------------------------------------------- *
+   * Delivery to a principal-owned Apps Script
+   *
+   * The script runs in the principal's own Google account, writes to their own
+   * Drive, and shares each note with one named teacher. This module never
+   * talks to an AlloFlow server, and it refuses to hand over anything the
+   * human has not approved.
+   *
+   * Delivery carries the RECORD, never the draft. buildFormOutput already
+   * strips rejected suggestions, confidence values and warnings, so what goes
+   * over the wire is exactly what the observer approved.
+   * ---------------------------------------------------------------------- */
+
+  var EXEC_URL_PATTERN = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/;
+  var EMAIL_PATTERN = /^[^@\s]+@[^@\s.]+\.[^@\s]+$/;
+
+  function validateExecUrl(value) {
+    var url = isString(value) ? value.trim() : '';
+    if (!url) return bad([error('url-empty', 'execUrl', 'Paste the web app URL from your deployment.')]);
+    if (url.indexOf('http://') === 0) {
+      return bad([error('url-insecure', 'execUrl', 'That URL is not secure. A deployment URL always begins with https.')]);
+    }
+    if (!EXEC_URL_PATTERN.test(url)) {
+      return bad([error('url-shape', 'execUrl',
+        'That does not look like an Apps Script web app URL. It should begin with https://script.google.com/macros/s/ and end with /exec.')]);
+    }
+    return ok(url);
+  }
+
+  function validateRecipient(email, allowedDomain) {
+    var value = isString(email) ? email.trim().toLowerCase() : '';
+    if (!EMAIL_PATTERN.test(value)) {
+      return bad([error('recipient-invalid', 'teacherEmail',
+        'Enter the teacher\'s school email address. Feedback is shared with a named account, never by link.')]);
+    }
+    if (isNonEmptyString(allowedDomain)) {
+      var at = value.lastIndexOf('@');
+      if (value.slice(at + 1) !== String(allowedDomain).toLowerCase()) {
+        return bad([error('recipient-domain', 'teacherEmail',
+          'That address is outside ' + allowedDomain + '. Check it before sending staff feedback outside your school domain.')]);
+      }
+    }
+    return ok(value);
+  }
+
+  // The transport is injected so this stays testable and so the module never
+  // assumes fetch exists (Canvas, Desktop and Node all differ).
+  function createDelivery(options) {
+    var settings = isObject(options) ? options : {};
+    var urlReport = validateExecUrl(settings.execUrl);
+    if (!urlReport.ok) return urlReport;
+    var post = typeof settings.post === 'function' ? settings.post : null;
+    if (!post) return bad([error('transport-missing', 'post', 'No transport was supplied for delivery.')]);
+
+    var execUrl = urlReport.value;
+    var token = isNonEmptyString(settings.token) ? settings.token : '';
+
+    function call(action, payload) {
+      var body = { action: action };
+      Object.keys(payload || {}).forEach(function (key) { body[key] = payload[key]; });
+      if (token) body.token = token;
+      return post(execUrl, body);
+    }
+
+    return ok({
+      execUrl: execUrl,
+      hasToken: !!token,
+      claim: function () {
+        return call('claim', {}).then(function (result) {
+          if (!result || result.ok === false) {
+            return bad([error((result && result.code) || 'claim-failed', 'claim',
+              (result && result.error) || 'The script did not accept the connection.')]);
+          }
+          token = isNonEmptyString(result.token) ? result.token : token;
+          return ok({ token: token, owner: result.owner || '', version: result.version });
+        });
+      },
+      selfTest: function () {
+        return call('selftest', {}).then(function (result) {
+          if (!result || result.ok === false) {
+            return bad([error((result && result.code) || 'selftest-failed', 'selftest',
+              (result && result.error) || 'The script did not answer the self-test.')]);
+          }
+          return ok(result);
+        });
+      },
+      deliver: function (draft, fieldMap, deliveryOptions) {
+        var opts = isObject(deliveryOptions) ? deliveryOptions : {};
+        var recipient = validateRecipient(opts.teacherEmail, opts.allowedDomain);
+        if (!recipient.ok) return Promise.resolve(recipient);
+
+        var output = buildFormOutput(draft, fieldMap, opts);
+        if (!output.ok) return Promise.resolve(output);
+
+        if (draft.mode === 'demo') {
+          return Promise.resolve(bad([error('demo-mode', 'mode',
+            'This draft is practice material. Delivery is only available for an approved observation.')]));
+        }
+
+        var fields = output.value.fields
+          .filter(function (field) { return !field.empty; })
+          .map(function (field) { return { label: field.key, text: field.text }; });
+
+        return call('deliver', {
+          teacherEmail: recipient.value,
+          teacherDisplayName: (draft.context && draft.context.teacherDisplayName) || '',
+          subject: opts.subject || 'Walkthrough feedback',
+          disclosure: output.value.disclosure,
+          fields: fields,
+          notify: opts.notify !== false,
+          restrictToDomain: opts.restrictToDomain !== false
+        }).then(function (result) {
+          if (!result || result.ok === false) {
+            return bad([error((result && result.code) || 'deliver-failed', 'deliver',
+              (result && result.error) || 'The script did not save the feedback.')]);
+          }
+          return ok({
+            url: result.url,
+            fileId: result.fileId,
+            sharedWith: result.sharedWith,
+            notified: !!result.notified,
+            at: result.at
+          });
+        });
+      }
+    });
+  }
+
+  /* ---------------------------------------------------------------------- *
    * Session teardown
    * ---------------------------------------------------------------------- */
 
@@ -796,6 +1024,12 @@
     buildFormOutput: buildFormOutput,
     exportDraft: exportDraft,
     compareToReference: compareToReference,
+    validateExecUrl: validateExecUrl,
+    validateRecipient: validateRecipient,
+    createDelivery: createDelivery,
+    locateQuote: locateQuote,
+    addManualSuggestion: addManualSuggestion,
+    describeApproval: describeApproval,
     clearDraft: clearDraft
   };
 
