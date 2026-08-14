@@ -477,7 +477,7 @@ const createGeminiAPI = (deps) => {
 
     // One attempt. The retrying wrapper `callGemini` is defined immediately below —
     // call THAT everywhere, not this.
-    const _callGeminiAttempt = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false) => {
+    const _callGeminiAttempt = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null) => {
       if (!_resolveApiKey() && !_isCanvasEnv) {
         console.warn('[callGemini] No API key available — skipping request.');
         if (jsonMode) return "{}";
@@ -541,10 +541,12 @@ const createGeminiAPI = (deps) => {
         // breaking the loop after the request finishes).
         const _signal = signal || (getAbortSignal ? getAbortSignal() : null) || null;
         const _fetchOpts = { method: 'POST', headers: _geminiHeaders(true), body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) };
+        const _innerTelemetry = telemetry && typeof telemetry === 'object' ? telemetry : null;
         let response;
         let _modelUsed = GEMINI_MODELS.default;
         try {
-          response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.default), _fetchOpts);
+          if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(GEMINI_MODELS.default);
+          response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.default), _fetchOpts, 5, 120000, _innerTelemetry);
         } catch (primaryErr) {
           if (primaryErr?.name === 'AbortError') {
             // Respect caller's abort — don't fall back to the secondary model
@@ -561,7 +563,8 @@ const createGeminiAPI = (deps) => {
           if (shouldFallback && GEMINI_MODELS.fallback && GEMINI_MODELS.fallback !== GEMINI_MODELS.default) {
             console.warn(`[callGemini] Primary model (${GEMINI_MODELS.default}) ${cls.kind} — falling back to ${GEMINI_MODELS.fallback}`);
             try {
-              response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.fallback), _fetchOpts);
+              if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(GEMINI_MODELS.fallback);
+              response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.fallback), _fetchOpts, 5, 120000, _innerTelemetry);
               _modelUsed = GEMINI_MODELS.fallback;
             } catch (fbErr) {
               // Both models failed — the original error is more informative
@@ -724,7 +727,7 @@ const createGeminiAPI = (deps) => {
     const CANVAS_AUTH_RETRIES = CANVAS_AUTH_BACKOFF_MS.length; // attempts = retries + 1
     const _sleep = (ms) => (ms > 0 ? new Promise((r) => setTimeout(r, ms)) : Promise.resolve());
 
-    const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false) => {
+    const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null) => {
       let lastErr = null;
       for (let attempt = 0; attempt <= CANVAS_AUTH_RETRIES; attempt++) {
         // The auth banner debounces on CONSECUTIVE USER-LEVEL failures
@@ -735,13 +738,17 @@ const createGeminiAPI = (deps) => {
         // defeating the debounce it exists to provide.
         const _streakBefore = _authFailStreak;
         try {
-          return await _callGeminiAttempt(prompt, jsonMode, useSearch, temperature, searchQuery, signal, useCodeExecution);
+          return await _callGeminiAttempt(prompt, jsonMode, useSearch, temperature, searchQuery, signal, useCodeExecution, telemetry);
         } catch (err) {
           lastErr = err;
           // Never retry a caller-initiated abort — Stop must stop.
           if (err && err.name === 'AbortError') throw err;
           const retryable = !!(err && err.canvasTransientAuth && !err.isQuota && !err.isConfig);
-          if (!retryable || attempt === CANVAS_AUTH_RETRIES) throw err;
+          if (!retryable) throw err;
+          if (telemetry && typeof telemetry.onAuthRung === 'function') {
+            try { telemetry.onAuthRung(attempt + 1); } catch (_) {}
+          }
+          if (attempt === CANVAS_AUTH_RETRIES) throw err;
           // Respect an abort that landed while we were waiting to retry.
           if (signal && signal.aborted) throw err;
           // Roll the streak back: this call has not failed yet, it is retrying.
@@ -848,13 +855,16 @@ const createGeminiAPI = (deps) => {
         generationConfig: { maxOutputTokens: 65536 }
       };
       const _fetchOpts = { method: 'POST', headers: _geminiHeaders(true), body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) };
+      const _innerTelemetry = options && options.diagnosticTelemetry && typeof options.diagnosticTelemetry === 'object'
+        ? options.diagnosticTelemetry : null;
       let response;
       let modelUsed = primaryModel;
       try {
         try {
           // Use the same backoff wrapper callGemini uses — this gives Vision
           // the same 429/5xx retry behavior + signal propagation.
-          response = await fetchWithExponentialBackoff(_visionUrl(primaryModel), _fetchOpts);
+          if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(primaryModel);
+          response = await fetchWithExponentialBackoff(_visionUrl(primaryModel), _fetchOpts, 5, 120000, _innerTelemetry);
           _throwIfVisionAborted();
         } catch (primaryErr) {
           _throwIfVisionAborted();
@@ -864,7 +874,8 @@ const createGeminiAPI = (deps) => {
           if (shouldFallback && fallbackModel && fallbackModel !== primaryModel) {
             console.warn(`[Vision] ${primaryModel} ${cls.kind} — falling back to ${fallbackModel}`);
             try {
-              response = await fetchWithExponentialBackoff(_visionUrl(fallbackModel), _fetchOpts);
+              if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(fallbackModel);
+              response = await fetchWithExponentialBackoff(_visionUrl(fallbackModel), _fetchOpts, 5, 120000, _innerTelemetry);
               _throwIfVisionAborted();
               modelUsed = fallbackModel;
             } catch (fbErr) {
@@ -945,7 +956,7 @@ const createGeminiAPI = (deps) => {
       }
     };
 
-    return { callGemini, callGeminiImageEdit, callGeminiVision, probeModelHealth, listAvailableModels, _classifyGeminiError };
+    return { callGemini, callGeminiSingleAttempt: _callGeminiAttempt, callGeminiImageEdit, callGeminiVision, probeModelHealth, listAvailableModels, _classifyGeminiError };
 };
 
 // Registration shim — attach factory to window.AlloModules, then trigger the

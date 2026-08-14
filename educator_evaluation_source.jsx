@@ -12,6 +12,7 @@
  */
 
 const AE_STORAGE_KEY = 'allo_educator_evaluation_workspace_v1';
+const AE_ONBOARDING_KEY = 'allo_educator_evaluation_onboarding_v1';
 const AE_EXPORT_KIND = 'alloflow-educator-evaluation-workspace';
 const AE_FRAMEWORK = 'pa-act13-classroom-2021';
 
@@ -129,6 +130,17 @@ function aeLoad() {
 function aeStore(workspace) {
   try { localStorage.setItem(AE_STORAGE_KEY, JSON.stringify(workspace)); return true; }
   catch (_) { return false; }
+}
+
+function aeReadOnboardingChoice() {
+  try {
+    const choice = localStorage.getItem(AE_ONBOARDING_KEY);
+    return choice === 'blank' || choice === 'sample' ? choice : '';
+  } catch (_) { return ''; }
+}
+
+function aeSaveOnboardingChoice(choice) {
+  try { localStorage.setItem(AE_ONBOARDING_KEY, choice === 'sample' ? 'sample' : 'blank'); } catch (_) {}
 }
 
 function aeClone(value) { return JSON.parse(JSON.stringify(value)); }
@@ -624,12 +636,35 @@ const AE_STYLES = `
 .ae-table-wrap{width:100%;overflow:auto;border:1px solid var(--ae-line);border-radius:12px}.ae-table{border-collapse:collapse;width:100%;font-size:12px;background:#fff}.ae-table th,.ae-table td{padding:10px 11px;text-align:left;border-bottom:1px solid #e4e9f1;vertical-align:top}.ae-table th{background:#f2f5f9;color:#36445b;font-weight:850;white-space:nowrap}.ae-table tr:last-child td{border-bottom:0}.ae-table tbody tr:hover{background:#f8fbff}.ae-row-btn{border:0;background:transparent;color:#1d4ed8;text-align:left;font-weight:800;padding:2px 0;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}.ae-empty{text-align:center;padding:34px 16px;color:var(--ae-muted)}
 .ae-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.ae-toolbar .ae-input,.ae-toolbar .ae-select{width:auto;min-width:170px}.ae-record{border:1px solid var(--ae-line);border-radius:13px;background:#fff;padding:13px;margin-bottom:10px}.ae-record-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.ae-record h4{margin:0 0 3px}.ae-meta{font-size:11px;color:var(--ae-muted);display:flex;gap:8px;flex-wrap:wrap}.ae-evidence{white-space:pre-wrap;background:#f8fafc;border-left:4px solid #64748b;padding:10px 12px;margin:10px 0;border-radius:0 9px 9px 0}.ae-interpretation{border-left-color:#2563eb;background:#eff6ff}.ae-thread{border-top:1px solid var(--ae-line);margin-top:14px;padding-top:12px}.ae-comment{padding:9px 11px;border-radius:10px;background:#f3f6fa;margin:7px 0}.ae-comment-teacher{background:#f3e8ff}.ae-comment strong{font-size:12px}.ae-comment p{margin:3px 0;white-space:pre-wrap}.ae-comment time{font-size:10px;color:var(--ae-muted)}
 .ae-stepper{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:12px 0 18px;list-style:none;padding:0}.ae-step{font-size:9px;text-align:center;color:#69758a;position:relative;padding-top:24px}.ae-step:before{content:"";width:18px;height:18px;border-radius:50%;background:#d9e0ea;border:2px solid #fff;box-shadow:0 0 0 1px #aeb9ca;position:absolute;top:0;left:50%;transform:translateX(-50%)}.ae-step:after{content:"";height:2px;background:#ccd5e2;position:absolute;top:9px;left:calc(50% + 10px);right:calc(-50% + 10px)}.ae-step:last-child:after{display:none}.ae-step-done{color:#154e39;font-weight:750}.ae-step-done:before{background:#16a34a;box-shadow:0 0 0 1px #15803d}.ae-step-done:after{background:#16a34a}.ae-step-current:before{background:#2563eb;box-shadow:0 0 0 3px #bfdbfe}.ae-domain{border:1px solid var(--ae-line);border-radius:12px;margin:8px 0;overflow:hidden}.ae-domain summary{cursor:pointer;padding:11px 12px;font-weight:800;background:#f8fafc}.ae-domain-body{padding:8px 12px 12px}.ae-domain-component{display:flex;gap:7px;align-items:flex-start;padding:5px 0;font-size:12px}.ae-domain-component strong{min-width:26px}.ae-rating-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.ae-rating-card{border:1px solid var(--ae-line);border-radius:12px;padding:10px}.ae-rating-card h4{min-height:40px;margin:0 0 8px}.ae-score{font-size:28px;font-weight:900;color:#173e70}.ae-timeline{border-left:2px solid #c8d2e1;margin:10px 0 0 8px;padding-left:18px}.ae-event{position:relative;padding:0 0 16px}.ae-event:before{content:"";position:absolute;width:11px;height:11px;border-radius:50%;background:#2563eb;left:-24.5px;top:4px;border:2px solid #fff;box-shadow:0 0 0 1px #2563eb}.ae-event h4{margin:0;font-size:12px}.ae-event p{margin:2px 0;font-size:11px;color:var(--ae-muted)}.ae-live{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.ae-footer{padding:10px 20px;border-top:1px solid var(--ae-line);background:#fff;color:#667085;font-size:10px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.ae-footer a{color:#1d4ed8}
+.ae-onboarding-overlay{position:fixed;inset:0;z-index:290;background:rgba(7,18,38,.72);display:flex;align-items:center;justify-content:center;padding:16px}.ae-onboarding-card{width:min(720px,100%);max-height:92vh;overflow:auto;background:#fff;border:1px solid #cbd5e1;border-radius:22px;box-shadow:0 30px 90px rgba(7,18,38,.42);padding:24px}.ae-onboarding-kicker{color:#1d4ed8;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.ae-onboarding-card h2{margin:5px 0 7px;color:#172033;font-size:24px;line-height:1.2}.ae-onboarding-card>p{margin:0;color:#5b667a;font-size:13px;line-height:1.55}.ae-onboarding-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}.ae-onboarding-option{border:2px solid #d8deea;border-radius:16px;background:#fff;color:#172033;text-align:left;padding:16px;min-height:150px;cursor:pointer;display:flex;flex-direction:column;gap:8px}.ae-onboarding-option:hover{border-color:#2563eb;background:#f8fbff}.ae-onboarding-option strong{font-size:16px;color:#173e70}.ae-onboarding-option span{font-size:12px;line-height:1.5;color:#5b667a}.ae-onboarding-note{margin-top:16px;background:#fff8e8;border:1px solid #f2cc72;color:#624409;border-radius:12px;padding:11px 12px;font-size:11px;line-height:1.5}@media(max-width:640px){.ae-onboarding-card{padding:18px}.ae-onboarding-options{grid-template-columns:1fr}.ae-onboarding-card h2{font-size:21px}}
 @media(max-width:1000px){.ae-span-4,.ae-span-5,.ae-span-6,.ae-span-7,.ae-span-8{grid-column:span 12}.ae-rating-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ae-workspace{height:97vh}.ae-main{padding:14px}.ae-stepper{grid-template-columns:repeat(10,minmax(72px,1fr));overflow-x:auto;padding-bottom:8px}.ae-step{font-size:9px;min-width:72px}.ae-step:before{width:16px;height:16px}.ae-step:after{top:8px}.ae-donut-wrap{justify-content:center}.ae-top{align-items:flex-start}.ae-brand p{display:none}}
 @media(max-width:640px){.ae-overlay{padding:0}.ae-workspace{height:100vh;border-radius:0}.ae-top{padding:11px 12px}.ae-brand h1{font-size:15px}.ae-mark{width:36px;height:36px}.ae-local-banner{padding:8px 12px;display:block}.ae-tabs{padding:0 5px}.ae-tab{padding:10px 9px;font-size:12px}.ae-main{padding:10px}.ae-heading{display:block}.ae-heading .ae-actions{margin-top:10px}.ae-form-grid,.ae-rating-grid{grid-template-columns:1fr}.ae-donut-wrap{display:block}.ae-donut{margin:12px auto}.ae-legend{margin-top:12px}.ae-toolbar .ae-input,.ae-toolbar .ae-select{width:100%}.ae-top-actions{gap:4px}.ae-role button{padding:6px 7px;font-size:11px}.ae-brand p{display:none}.ae-footer{padding:8px 12px}}
 @media(prefers-reduced-motion:reduce){.ae-shell *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 `;
 
 function AeStyles() { return <style>{AE_STYLES}</style>; }
+
+function AeLocalOnboarding({ onChoose }) {
+  return <div className="ae-onboarding-overlay" role="dialog" aria-modal="true" aria-labelledby="ae-onboarding-title" aria-describedby="ae-onboarding-description">
+    <section className="ae-onboarding-card">
+      <div className="ae-onboarding-kicker">First-time setup</div>
+      <h2 id="ae-onboarding-title">Choose how to start Educator Evaluation</h2>
+      <p id="ae-onboarding-description">This AlloFlow entry is a local demonstration unless you connect a district-authenticated portal. Choose a blank workspace for your own walkthroughs, or explore fictional data to see the workflow before entering anything.</p>
+      <div className="ae-onboarding-options" role="group" aria-label="Choose evaluation workspace starting point">
+        <button type="button" className="ae-onboarding-option" onClick={() => onChoose('blank')}>
+          <strong>Start with a blank workspace</strong>
+          <span>No educators or records are preloaded. Add your own fictional test entries as you explore.</span>
+        </button>
+        <button type="button" className="ae-onboarding-option" onClick={() => onChoose('sample')}>
+          <strong>Explore simulated data</strong>
+          <span>Open a fictional school roster with example statuses, ratings, and workflow history. Nothing represents real personnel.</span>
+        </button>
+      </div>
+      <div className="ae-onboarding-note"><strong>Important:</strong> Local workspaces stay in this browser and are not secure personnel records. Connect the district portal only after your LEA authorizes its deployment and access controls.</div>
+    </section>
+  </div>;
+}
+
 
 function AeStatus({ status }) {
   const meta = AE_STATUS_META[status] || AE_STATUS_META.not_started;
@@ -681,7 +716,7 @@ function AeThread({ workspace, recordType, recordId, teacherId, role, onAdd }) {
 function AeFrameworkReference() {
   return <div className="ae-card">
     <h3>Evidence map · Pennsylvania classroom-teacher framework</h3>
-    <p className="ae-sub">Component names organize evidence. Rubric-level performance descriptors are not reproduced in this prototype.</p>
+    <p className="ae-sub">Component names organize evidence. Rubric-level performance descriptors are not reproduced in this workspace.</p>
     {AE_DOMAINS.map((domain) => <details className="ae-domain" key={domain.id}>
       <summary>Domain {domain.code} · {domain.label} <span className="ae-chip ae-chip-neutral">{domain.weight}% of O&amp;P</span></summary>
       <div className="ae-domain-body">{domain.components.map(([code, label]) => <div className="ae-domain-component" key={code}><strong>{code}</strong><span>{label}</span></div>)}</div>
@@ -830,7 +865,7 @@ function AeTrends({ workspace, selectedTeacher, setSelectedTeacherId, role, isRe
   const months = Object.keys(activity).sort();
   return <div className="ae-page">
     <div className="ae-heading"><div><h2>{isEvaluator ? 'Teacher trends and cohort context' : 'My trends'}</h2><p>Finalized formal-observation ratings and workflow activity over time. Annual cycle releases are reported separately. Evidence text, comments, and rationales are never aggregated.</p></div></div>
-    <div className="ae-note ae-warn" style={{ marginBottom: 16 }}><strong>Privacy-aware aggregate—not FERPA certification.</strong> Formal-observation cohort values appear only when at least {AE_MIN_TREND_COHORT} eligible peers contribute; small groups are suppressed. Results are descriptive and must not be the sole basis for personnel decisions. {isRemote ? 'District authorization, retention, and employment-policy requirements still apply.' : 'This local prototype has no authentication—do not enter real personnel or student information.'}</div>
+    <div className="ae-note ae-warn" style={{ marginBottom: 16 }}><strong>Privacy-aware aggregate—not FERPA certification.</strong> Formal-observation cohort values appear only when at least {AE_MIN_TREND_COHORT} eligible peers contribute; small groups are suppressed. Results are descriptive and must not be the sole basis for personnel decisions. {isRemote ? 'District authorization, retention, and employment-policy requirements still apply.' : 'This local demonstration has no authentication—do not enter real personnel or student information.'}</div>
     <section className="ae-card" style={{ marginBottom: 16 }}><fieldset style={{ border: 0, padding: 0, margin: 0 }}><legend style={{ fontWeight: 850, marginBottom: 10 }}>Trend filters</legend><div className="ae-form-grid">
       {isEvaluator && <label className="ae-field"><span>Educator</span><select className="ae-select" value={selectedTeacher ? selectedTeacher.id : ''} onChange={(event) => setSelectedTeacherId(event.target.value)}><option value="">Choose an educator</option>{workspace.teachers.filter((teacher) => teacher.active !== false).map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.name} · {teacher.code}</option>)}</select></label>}
       <label className="ae-field"><span>Metric</span><select className="ae-select" value={metric} onChange={(event) => setMetric(event.target.value)}>{Object.keys(metricLabels).map((key) => <option key={key} value={key}>{metricLabels[key]}</option>)}</select></label>
@@ -934,7 +969,7 @@ function AeFormalRecordSummary({ observation, role }) {
     {canSeeEvidence && <Item label="Published observation evidence" value={observation.evidence}/>}
     {canSeeReflection && <Item label="Teacher reflection" value={observation.reflection}/>}
     {canSeeConference && <Item label="Post-conference discussion and follow-up" value={observation.postConferenceNotes}/>}
-    <div className="ae-note ae-warn" style={{ marginTop: 12 }}>This local MVP stores text and district-authorized document references only. Secure file upload, malware scanning, versioning, and retention require the production backend.</div>
+    <div className="ae-note ae-warn" style={{ marginTop: 12 }}>This local demonstration stores text and district-authorized document references only. Secure file upload, malware scanning, versioning, and retention require the production backend.</div>
   </div>;
 }
 function AeFormalObservations({ workspace, selectedTeacher, setSelectedTeacherId, role, createObservation, updateObservation, updateTeacher, addComment }) {
@@ -1015,7 +1050,7 @@ function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv,
     <div className="ae-heading"><div><h2>{isEvaluator ? 'Audit, reports, and handoff' : 'My evaluation timeline'}</h2><p>Submission, approval, acknowledgment, comment, and finalization events are distinct.</p></div></div>
     <div className="ae-grid">
       <section className={'ae-card ' + (isEvaluator ? 'ae-span-7' : 'ae-span-12')}>
-        <div className="ae-record-head"><div><h3>Audit timeline</h3><p className="ae-sub">{isRemote ? 'This permission-filtered timeline is loaded from the district repository; the server owns the authoritative audit history.' : 'Local prototype events; production requires server-side tamper-evident logs.'}</p></div>{isEvaluator && <select className="ae-select" style={{ width: 'auto' }} value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filter audit timeline"><option value="selected">Selected educator</option><option value="all">All educators</option></select>}</div>
+        <div className="ae-record-head"><div><h3>Audit timeline</h3><p className="ae-sub">{isRemote ? 'This permission-filtered timeline is loaded from the district repository; the server owns the authoritative audit history.' : 'Local demonstration events; production requires server-side tamper-evident logs.'}</p></div>{isEvaluator && <select className="ae-select" style={{ width: 'auto' }} value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filter audit timeline"><option value="selected">Selected educator</option><option value="all">All educators</option></select>}</div>
         {events.length === 0 ? <div className="ae-empty">No matching audit events.</div> : <div className="ae-timeline">{events.slice(0, 150).map((event) => <div className="ae-event" key={event.id}><h4>{event.event.replace(/_/g, ' ')} · {event.summary}</h4><p>{event.actor} · {event.role} · {aeDateTime(event.at)}</p><p>{event.entityType} · version {event.version || 1}</p></div>)}</div>}
       </section>
       {isRemote ? <section className="ae-card ae-span-12"><h3>District exports unavailable</h3><div className="ae-note ae-warn" style={{ marginTop: 12 }}><strong>District export policy not configured.</strong><br/>Downloads, imports, and reset are disabled for every portal role until the LEA approves an export policy and an audited server export workflow is implemented.</div></section> : isEvaluator ? <section className="ae-card ae-span-5">
@@ -1024,11 +1059,11 @@ function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv,
         <div className="ae-actions" style={{ marginTop: 12 }}><button type="button" className="ae-btn" onClick={exportWorkspace}>Export workspace JSON</button><button type="button" className="ae-btn" onClick={exportCsv}>Export status CSV</button><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportSummary}>Workflow summary HTML</button></div>
         <hr style={{ border: 0, borderTop: '1px solid #d8deea', margin: '18px 0' }}/>
         <h4>Import another device export</h4>
-        <p className="ae-sub">Import replaces this local prototype workspace after validation. Export first if you need a backup.</p>
+        <p className="ae-sub">Import replaces this local demonstration workspace after validation. Export first if you need a backup.</p>
         <button type="button" className="ae-btn" onClick={() => fileRef.current && fileRef.current.click()}>Choose JSON export</button>
         <input ref={fileRef} hidden tabIndex={-1} aria-label="Import evaluation workspace JSON" type="file" accept="application/json,.json" onChange={(event) => { const file = event.target.files && event.target.files[0]; if (file) importWorkspace(file); event.target.value = ''; }}/>
         <div className="ae-note ae-warn" style={{ marginTop: 16 }}>This export assists front-end supervision work. PEERS or your LEA-authorized system remains the official summative rating record for this MVP.</div>
-        {workspace.config.sampleMode && <div style={{ marginTop: 18 }}><h4>Sample workspace</h4>{!clearStep ? <button type="button" className="ae-btn ae-btn-danger" onClick={() => setClearStep(true)}>Replace sample with blank workspace</button> : <div className="ae-note ae-danger"><strong>This removes all current local prototype records.</strong><div className="ae-actions" style={{ marginTop: 8 }}><button className="ae-btn" type="button" onClick={() => setClearStep(false)}>Cancel</button><button className="ae-btn ae-btn-danger" type="button" onClick={() => { setClearStep(false); resetWorkspace(); }}>Confirm and start blank</button></div></div>}</div>}
+        {workspace.config.sampleMode && <div style={{ marginTop: 18 }}><h4>Sample workspace</h4>{!clearStep ? <button type="button" className="ae-btn ae-btn-danger" onClick={() => setClearStep(true)}>Replace sample with blank workspace</button> : <div className="ae-note ae-danger"><strong>This removes all current local demonstration records.</strong><div className="ae-actions" style={{ marginTop: 8 }}><button className="ae-btn" type="button" onClick={() => setClearStep(false)}>Cancel</button><button className="ae-btn ae-btn-danger" type="button" onClick={() => { setClearStep(false); resetWorkspace(); }}>Confirm and start blank</button></div></div>}</div>}
       </section> : <section className="ae-card ae-span-12"><h3>My copy</h3><p className="ae-sub">Download only the selected educator’s workflow summary.</p><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportSummary}>Download my summary HTML</button><div className="ae-note" style={{ marginTop: 12 }}>Teacher view cannot export or import the full workspace or view organization-wide audit events.</div></section>}
     </div>
   </div>;
@@ -1037,12 +1072,12 @@ function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv,
 function AeAbout({ workspace, updateConfig, role, isRemote = false, currentUser = null }) {
   const set = (field, value) => updateConfig(field, value);
   return <div className="ae-page">
-    <div className="ae-heading"><div><h2>Setup, sources, and {isRemote ? 'district boundary' : 'production boundary'}</h2><p>{isRemote ? 'Review the authenticated repository boundary and the approvals that still belong to your district.' : 'Configure this prototype and review what is required before a school adopts it.'}</p></div></div>
+    <div className="ae-heading"><div><h2>Setup, sources, and {isRemote ? 'district boundary' : 'production boundary'}</h2><p>{isRemote ? 'Review the authenticated repository boundary and the approvals that still belong to your district.' : 'Configure this local demonstration and review what is required before a school adopts it.'}</p></div></div>
     <div className="ae-grid">
       <section className="ae-card ae-span-6"><h3>Workspace setup</h3><fieldset disabled={isRemote || role !== 'evaluator'} style={{ border: 0, padding: 0, margin: 0 }}><label className="ae-field"><span>Organization / LEA</span><input className="ae-input" value={workspace.config.organization} onChange={(event) => set('organization', event.target.value)}/></label><div className="ae-form-grid"><label className="ae-field"><span>Building</span><input className="ae-input" value={workspace.config.building} onChange={(event) => set('building', event.target.value)}/></label><label className="ae-field"><span>Academic year</span><input className="ae-input" value={workspace.config.academicYear} onChange={(event) => set('academicYear', event.target.value)}/></label><label className="ae-field"><span>Evaluator name</span><input className="ae-input" value={workspace.config.evaluatorName} onChange={(event) => set('evaluatorName', event.target.value)}/></label><label className="ae-field"><span>Evaluator initials</span><input className="ae-input" value={workspace.config.evaluatorInitials} onChange={(event) => set('evaluatorInitials', event.target.value)}/></label></div></fieldset>{isRemote && <div className="ae-note ae-warn" style={{ marginBottom: 12 }}>Portal configuration is read-only. An authorized district administrator or IT must use the reviewed setup process to change repository configuration.</div>}<div className="ae-note">Framework snapshot: Pennsylvania Act 13 classroom-teacher framework, June 2021. Full performance-level rubric text is not bundled.</div></section>
       <section className="ae-card ae-span-6"><h3>Official references</h3><ul><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness">Pennsylvania Department of Education · Educator Effectiveness</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pacodeandbulletin.gov/secure/pacode/data/022/chapter19/s19.2a.html">22 Pa. Code § 19.2a · Classroom teachers</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pdesas.org/Page/Viewer/ViewPage/75">PDE/SAS Act 13 Toolkit</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">Danielson Group · Framework access and licensing</a></li></ul><div className="ae-note ae-warn">The older 50% observation model is not the default current Act 13 classroom-teacher composition. This workspace uses assignment-aware 70/10/10/10, 80% O&amp;P where Building Level Data is unavailable, and 100% O&amp;P for temporary classroom teachers.</div></section>
       {isRemote ? <section className="ae-card ae-span-12"><h3>District-hosted portal boundary</h3><div className="ae-grid"><div className="ae-span-4"><h4>Verified identity</h4><p className="ae-sub">Signed in as {currentUser && currentUser.email ? currentUser.email : 'a managed district user'}. The server—not an emailed link—determines role and record assignments.</p></div><div className="ae-span-4"><h4>Repository and audit</h4><p className="ae-sub">The district Apps Script repository validates authorized mutations, versions saves, filters reads, and records server-side audit events. Drive is not exposed as an open storage bin.</p></div><div className="ae-span-4"><h4>District responsibilities</h4><p className="ae-sub">The LEA still controls deployment, membership, evaluator assignments, retention, legal hold, incident response, approved forms, and any licensed Danielson content.</p></div></div><div className="ae-note ae-warn"><strong>Google Workspace does not make a custom app automatically FERPA compliant.</strong> Use this portal for real records only after your LEA authorizes the deployment and confirms its privacy, security, records, and employment-policy requirements.</div></section> :
-      <section className="ae-card ae-span-12"><h3>What production still requires</h3><div className="ae-grid"><div className="ae-span-4"><h4>Identity and permissions</h4><p className="ae-sub">District SSO/MFA, tenant isolation, assigned-evaluator access, co-evaluator rules, and an educator-only view.</p></div><div className="ae-span-4"><h4>Records and security</h4><p className="ae-sub">Encrypted server datastore and backups, retention/legal hold, malware-scanned attachments with version history, conflict handling, and tamper-evident audit. This MVP accepts text and approved document references only.</p></div><div className="ae-span-4"><h4>Approval and licensing</h4><p className="ae-sub">LEA authorization, FERPA/security review, approved rating forms/process, and permission for any licensed Danielson descriptor content.</p></div></div><div className="ae-note ae-danger"><strong>Do not use this local prototype as a personnel record.</strong> Role switching is only a demonstration; it is not authentication or access control. Do not enter real names, student information, ratings, or confidential evidence until a district-authorized production backend is connected.</div></section>}
+      <section className="ae-card ae-span-12"><h3>What production still requires</h3><div className="ae-grid"><div className="ae-span-4"><h4>Identity and permissions</h4><p className="ae-sub">District SSO/MFA, tenant isolation, assigned-evaluator access, co-evaluator rules, and an educator-only view.</p></div><div className="ae-span-4"><h4>Records and security</h4><p className="ae-sub">Encrypted server datastore and backups, retention/legal hold, malware-scanned attachments with version history, conflict handling, and tamper-evident audit. This MVP accepts text and approved document references only.</p></div><div className="ae-span-4"><h4>Approval and licensing</h4><p className="ae-sub">LEA authorization, FERPA/security review, approved rating forms/process, and permission for any licensed Danielson descriptor content.</p></div></div><div className="ae-note ae-danger"><strong>This local demonstration is not an official personnel-record system.</strong> Role switching is only a demonstration; it is not authentication or access control. Do not enter real names, student information, ratings, or confidential evidence until a district-authorized production backend is connected.</div></section>}
     </div>
   </div>;
 }
@@ -1064,7 +1099,9 @@ function aeRemoteScopedWorkspace(value, currentUser) {
 function EducatorEvaluationPanel(props) {
   const { onClose = (() => {}), addToast = (() => {}), standalone = false, repository = null, initialRoute = null } = props || {};
   const isRemote = !!repository && typeof repository.bootstrap === 'function' && typeof repository.saveWorkspace === 'function';
-  const [workspace, setWorkspace] = React.useState(() => isRemote ? aeBlankWorkspace() : (aeLoad() || aeSampleWorkspace()));
+  const firstLocalWorkspace = !isRemote ? aeLoad() : null;
+  const [workspace, setWorkspace] = React.useState(() => isRemote ? aeBlankWorkspace() : (firstLocalWorkspace || aeSampleWorkspace()));
+  const [showLocalOnboarding, setShowLocalOnboarding] = React.useState(() => !isRemote && !firstLocalWorkspace && !aeReadOnboardingChoice());
   const [role, setRole] = React.useState('evaluator');
   const [tab, setTab] = React.useState('overview');
   const [selectedTeacherId, setSelectedTeacherId] = React.useState(() => (workspace.teachers[0] && workspace.teachers[0].id) || '');
@@ -1083,7 +1120,7 @@ function EducatorEvaluationPanel(props) {
   const remoteInFlightRef = React.useRef(false);
   const selectedTeacher = workspace.teachers.find((teacher) => teacher.id === selectedTeacherId) || null;
 
-  React.useEffect(() => { workspaceRef.current = workspace; if (!isRemote) aeStore(workspace); }, [workspace, isRemote]);
+  React.useEffect(() => { workspaceRef.current = workspace; if (!isRemote && !showLocalOnboarding) aeStore(workspace); }, [workspace, isRemote, showLocalOnboarding]);
   React.useEffect(() => {
     if (!selectedTeacher && workspace.teachers[0]) setSelectedTeacherId(workspace.teachers[0].id);
     if (isRemote && role === 'teacher' && remoteState.currentUser && remoteState.currentUser.teacherId && selectedTeacherId !== remoteState.currentUser.teacherId) {
@@ -1439,14 +1476,27 @@ function EducatorEvaluationPanel(props) {
 
   const updateConfig = (field, value) => commit((next) => { next.config[field] = value; }, { event: 'CONFIG_UPDATED', summary: 'Workspace configuration updated', entityType: 'workspace', entityId: 'config' }, null);
 
+  const chooseLocalStart = (mode) => {
+    const next = mode === 'sample' ? aeSampleWorkspace() : aeBlankWorkspace();
+    aeSaveOnboardingChoice(mode);
+    workspaceRef.current = next;
+    setWorkspace(next);
+    setSelectedTeacherId((next.teachers[0] && next.teachers[0].id) || '');
+    setTab('overview');
+    setShowLocalOnboarding(false);
+    announce(mode === 'sample' ? 'Simulated evaluation workspace opened' : 'Blank evaluation workspace started');
+    addToast(mode === 'sample' ? 'Simulated data loaded' : 'Blank workspace started', 'success');
+  };
+
   const resetWorkspace = () => {
     const blank = aeBlankWorkspace();
     workspaceRef.current = blank;
     setWorkspace(blank);
     setSelectedTeacherId('');
     setTab('overview');
-    announce('Blank prototype workspace started');
-    addToast('Blank prototype workspace started', 'success');
+    aeSaveOnboardingChoice('blank');
+    announce('Blank evaluation workspace started');
+    addToast('Blank workspace started', 'success');
   };
 
   const exportWorkspace = () => { const payload = Object.assign({}, workspace, { kind: AE_EXPORT_KIND, exportedAt: aeNow() }); aeDownload('alloflow-evaluation-' + aeToday() + '.json', 'application/json', JSON.stringify(payload, null, 2)); commit(() => {}, { event: 'EXPORTED', summary: 'Workspace JSON exported', entityType: 'workspace', entityId: 'workspace' }, 'Workspace export created'); };
@@ -1499,7 +1549,7 @@ function EducatorEvaluationPanel(props) {
   const body = <div ref={dialogRef} tabIndex={-1} className="ae-workspace" role={standalone ? undefined : 'dialog'} aria-modal={standalone ? undefined : 'true'} aria-labelledby="ae-title">
     <header className="ae-top">
       <div className="ae-brand"><div className="ae-mark" aria-hidden="true">A✓</div><div><h1 id="ae-title">Educator Growth &amp; Evaluation</h1><p>{workspace.config.organization} · {workspace.config.academicYear}</p></div></div>
-      <div className="ae-top-actions">{!isRemote && <div className="ae-role" aria-label="Prototype role view"><button type="button" aria-pressed={role === 'evaluator'} onClick={() => setRole('evaluator')}>Evaluator</button><button type="button" aria-pressed={role === 'teacher'} onClick={() => setRole('teacher')}>Teacher</button></div>}{!standalone && <button type="button" className="ae-close" onClick={onClose} aria-label="Close Educator Growth and Evaluation">×</button>}</div>
+      <div className="ae-top-actions">{!isRemote && <div className="ae-role" aria-label="Demo role view"><button type="button" aria-pressed={role === 'evaluator'} onClick={() => setRole('evaluator')}>Evaluator</button><button type="button" aria-pressed={role === 'teacher'} onClick={() => setRole('teacher')}>Teacher</button></div>}{!standalone && <button type="button" className="ae-close" onClick={onClose} aria-label="Close Educator Growth and Evaluation">×</button>}</div>
     </header>
     {isRemote ? <div className={'ae-local-banner ae-remote-banner ' + (remoteState.status === 'error' ? 'ae-sync-error' : '')} role={remoteState.status === 'error' ? 'alert' : 'status'} aria-live="polite">
       <strong>District Google account</strong>
@@ -1507,7 +1557,7 @@ function EducatorEvaluationPanel(props) {
       {remoteState.status === 'saved' && <button type="button" className="ae-btn" onClick={loadRemoteWorkspace}>Refresh</button>}
       {remoteState.status === 'error' && <button type="button" className="ae-btn" onClick={loadRemoteWorkspace}>Reload district copy</button>}
       {typeof repository.sendNotification === 'function' && <button type="button" className="ae-btn" disabled={!selectedTeacher || notificationState.status === 'sending' || remoteState.status === 'saving'} onClick={sendPortalNotice}>{notificationState.status === 'sending' ? 'Sending notice…' : (role === 'teacher' ? 'Email evaluator a portal notice' : 'Email educator a portal notice')}</button>}
-    </div> : <div className={'ae-local-banner ' + (workspace.config.sampleMode ? 'ae-sample' : '')}><strong>{workspace.config.sampleMode ? 'Sample workspace' : 'Local prototype'}</strong><span>Data stays in this browser. Role switching is a demonstration, not secure access. Do not enter confidential personnel or student information.</span></div>}
+    </div> : <div className={'ae-local-banner ' + (workspace.config.sampleMode ? 'ae-sample' : '')}><strong>{workspace.config.sampleMode ? 'Simulated data' : 'Blank local workspace'}</strong><span>This is a local demonstration. Data stays in this browser; role switching is not secure access. Do not enter confidential personnel or student information.</span></div>}
     <nav className="ae-tabs" role="tablist" aria-label="Evaluation workspace sections">{tabs.map(([id, label], index) => <button type="button" role="tab" key={id} id={'ae-tab-' + id} aria-selected={tab === id} aria-controls="ae-panel" tabIndex={tab === id ? 0 : -1} className="ae-tab" onClick={() => setTab(id)} onKeyDown={(event) => tabKey(event, index)}>{label}</button>)}</nav>
     <main className="ae-main" id="ae-panel" role="tabpanel" tabIndex={-1} aria-labelledby={'ae-tab-' + tab} aria-busy={remoteState.inFlight ? 'true' : undefined} aria-disabled={isRemote && remoteState.status === 'error' ? 'true' : undefined} onClickCapture={blockRemoteMutation} onChangeCapture={blockRemoteMutation} onInputCapture={blockRemoteMutation} onSubmitCapture={blockRemoteMutation}>
       {tab === 'overview' && <AeOverview workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} updateTeacher={updateTeacher} setTab={setTab}/>}
@@ -1521,5 +1571,5 @@ function EducatorEvaluationPanel(props) {
     </main>
     <footer className="ae-footer"><span>No AI scoring · evidence and judgments stay separate · published records are append-only in the workflow model</span><span><a href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness" target="_blank" rel="noreferrer">PDE Educator Effectiveness</a> · <a href="https://www.pdesas.org/Page/Viewer/ViewPage/75" target="_blank" rel="noreferrer">Act 13 Toolkit</a></span></footer><div className="ae-live" aria-live="polite" aria-atomic="true"><span key={liveMessage.id}>{liveMessage.text}</span></div>
   </div>;
-  return <div className={'ae-shell ' + (standalone ? 'ae-standalone' : 'ae-overlay')} role={standalone ? undefined : 'presentation'} onClick={standalone ? undefined : (event) => { if (event.target === event.currentTarget) onClose(); }}><AeStyles/>{body}</div>;
+  return <div className={'ae-shell ' + (standalone ? 'ae-standalone' : 'ae-overlay')} role={standalone ? undefined : 'presentation'} onClick={standalone ? undefined : (event) => { if (event.target === event.currentTarget) onClose(); }}><AeStyles/><div aria-hidden={!isRemote && showLocalOnboarding ? 'true' : undefined}>{body}</div>{!isRemote && showLocalOnboarding && <AeLocalOnboarding onChoose={chooseLocalStart}/>}</div>;
 }

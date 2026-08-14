@@ -191,25 +191,23 @@ describe('success-gated recovery (2026-07-15 rework): elapsed time NEVER raises 
     expect(s.waiters).toBe(2);
   });
 
-  it('exactly 4 consecutive successes restore the run ceiling and clear the cooldown', () => {
+  it('exactly 3 consecutive successes restore the run ceiling and clear the cooldown', () => {
     const g = makeGate();
     for (let i = 0; i < 3; i++) g.api.noteFail();
     g.advance(30000);
-    for (let i = 0; i < 3; i++) g.api.noteSuccess();
-    expect(g.api.state().cap).toBe(1);        // 3 is not enough
-    g.api.noteSuccess();                      // the 4th clean success
+    for (let i = 0; i < 3; i++) g.api.noteSuccess(); // the 3rd clean success
     expect(g.api.state().cap).toBe(3);
     expect(g.api.info().storming).toBe(false);
     expect(g.api.info().cooldownRemainingMs).toBe(0);
   });
 
-  it('an intermittent failure trickle resets the streak — the run stays serialized until 4 CLEAN successes (deliberate: a trickle IS the throttle still easing)', () => {
+  it('an intermittent failure trickle resets the streak — the run stays serialized until 3 CLEAN successes (deliberate: a trickle IS the throttle still easing)', () => {
     const g = makeGate();
     for (let i = 0; i < 3; i++) g.api.noteFail();
     g.advance(30000);
     for (let round = 0; round < 3; round++) {
-      for (let i = 0; i < 3; i++) g.api.noteSuccess();
-      g.api.noteFail();                       // one blip resets the ok-streak (streak 1 — arms no new cooldown)
+      for (let i = 0; i < 2; i++) g.api.noteSuccess();
+      g.api.noteFail();                       // one blip resets the ok-streak (streak 0 — arms no new cooldown)
     }
     expect(g.api.state().cap).toBe(1);        // never recovered — progress continues serially, never re-fans
   });
@@ -223,6 +221,7 @@ describe('anti-drift: the pacing wiring ships in the source', () => {
     expect(dp).toMatch(/var _geminiLastStartAt = 0;/);
   });
   it('cooldown expiry alone cannot raise the cap; successful calls recover toward the run ceiling', () => {
+    expect(dp).toContain('var _GEMINI_RECOVER_HITS = 3;');
     expect(dp).not.toMatch(/_geminiCap = Math\.min\(_geminiEffectiveMax, _geminiCap \+ 1\)/);
     expect(dp).toMatch(/if \(_geminiOkStreak >= _GEMINI_RECOVER_HITS\)/);
     expect(dp).toContain("_geminiCap = _geminiEffectiveMax; // restore to THIS run's ceiling");
@@ -246,5 +245,9 @@ describe('anti-drift: the pacing wiring ships in the source', () => {
     expect(dp).toContain("_applyGeminiPacing(true, { maxConcurrent: 2, staggerMs: 1500, label: _imageInputMime ? 'the opening image audit' : 'the opening PDF audit' })");
     expect(dp).toContain("_pipeLog('API-start'");
     expect(dp).toContain("_pipeLog('Vision-start'");
+  });
+  it('describes stagger as a minimum floor, not guaranteed actual spacing', () => {
+    expect(dp).toContain('minimum gap between call starts');
+    expect(dp).not.toContain('staggering actual call starts');
   });
 });

@@ -18,8 +18,12 @@ import { describe, it, expect, beforeAll } from 'vitest';
 
 const SRC = 'doc_pipeline_source.jsx';
 let src;
+let host;
 
-beforeAll(() => { src = fs.readFileSync(SRC, 'utf8'); });
+beforeAll(() => {
+  src = fs.readFileSync(SRC, 'utf8');
+  host = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
+});
 
 describe('throttle telemetry — wiring', () => {
   it('records at every decision point, not per call', () => {
@@ -29,6 +33,10 @@ describe('throttle telemetry — wiring', () => {
     expect(src).toContain("_pipeThrottleEvent('recovered'");
     expect(src).toContain('_pipeThrottleScoreProbe("ok", null);');
     expect((src.match(/_pipeThrottleScoreProbe\("fail", owner\);/g) || []).length).toBe(2);
+    expect(src).toContain('capBefore: _capBefore');
+    expect(src).toContain('cleanPrefixEvents: _cleanPrefixEvents');
+    expect(src).toContain("respBytes + ' bytes response)'");
+    expect(src).not.toContain("Math.round(respLen / 1000) + 'KB response)'");
   });
 
   it('scores whether the first call after a cooldown recovered', () => {
@@ -39,7 +47,8 @@ describe('throttle telemetry — wiring', () => {
 
   it('emits a rollup when a run that hit the gate finishes', () => {
     expect(src).toContain('_pipeLog("ThrottleSummary"');
-    expect(src).toContain('if (_throttleTrace.length) _pipeThrottleSummary(null);');
+    expect(src).toContain('options.forceThrottleSummary !== false');
+    expect(src).toContain('var forcedSummary = null;');
   });
 
   it('bounds its own buffer so a long run cannot grow without limit', () => {
@@ -101,11 +110,54 @@ describe('throttle telemetry — says when its own numbers are untrustworthy', (
     expect(r.out.tuneable).toBe(0);
   });
 
+  it('keeps the visible decision prefix tuneable when hidden timing begins later', () => {
+    const started = Date.now() - 600000;
+    const r = build({
+      _throttleRunStartedAt: started,
+      _throttleTrace: [
+        { kind: 'auth_trip', hidden: 0, atMs: started + 100000, hiddenMs: 0, cooldownMs: 12000 },
+        { kind: 'transient_trip', hidden: 0, atMs: started + 200000, hiddenMs: 0, cooldownMs: 12000 },
+        { kind: 'post_cooldown_ok', hidden: 1, atMs: started + 210000, hiddenMs: 5000 },
+      ],
+      _throttleHiddenTotalMs: () => 300000,
+      _throttleHiddenDecisions: 1,
+    });
+    expect(r.out.cleanPrefixEvents).toBe(2);
+    expect(r.out.cleanPrefixTrips).toBe(2);
+    expect(r.out.cleanPrefixTuneable).toBe(1);
+    expect(r.out.tuneable).toBe(1);
+    expect(r.logged[0].line).toContain('clean prefix 2/3');
+  });
   it('reports hidden time as numbers only, carrying no content', () => {
     const r = build({ _throttleHiddenTotalMs: () => 5000, _throttleHiddenDecisions: 1 });
     for (const k of ['hiddenMs', 'hiddenDecisions', 'hiddenPctOfRun', 'tuneable']) {
       expect(typeof r.out[k], k + ' must be a number').toBe('number');
     }
+  });
+});
+
+describe('diagnostic bundle — bounded and privacy-safe', () => {
+  it('exports structured evidence without putting payload text in the snapshot seam', () => {
+    expect(src).toContain('getDiagnosticSnapshot: _getDiagnosticSnapshot');
+    expect(src).toContain('callLedger: []');
+    expect(src).toContain('httpAttempts: []');
+    expect(src).toContain('innerRetries: 0');
+    expect(src).toContain('heartbeat: _diagnosticSafeClone');
+    expect(src).toContain('var _DIAGNOSTIC_FORBIDDEN_KEY');
+    const start = src.indexOf('var _getDiagnosticSnapshot = function');
+    const end = src.indexOf('\n  };', start) + 5;
+    const body = src.slice(start, end);
+    for (const field of ['prompt:', 'text:', 'content:', 'response:', 'body:']) {
+      expect(body, 'snapshot must not expose ' + field).not.toContain(field);
+    }
+  });
+
+  it('threads a call correlation id into nested retry telemetry', () => {
+    expect(src).toContain('onInnerAttempt');
+    expect(src).toContain('onInnerResponse');
+    expect(src).toContain('onInnerRetry');
+    expect(src).toContain('onAuthRung');
+    expect(src).toContain('diagnosticTelemetry');
   });
 });
 
@@ -189,5 +241,21 @@ describe('throttle telemetry — computes what the constants rest on', () => {
     expect(summary.out.authTrip).toBe(2);
     expect(summary.out.transientTrip).toBe(3);
     expect(summary.out.baseCooldownMs).toBe(12000);
+  });
+});
+
+describe('retry-layer routing', () => {
+  it('routes the document pipeline and recovery probe through one Gemini attempt', () => {
+    expect(src).toContain('var _rawCallGemini = deps.callGeminiSingleAttempt || deps.callGemini;');
+    expect(src).toContain('_rawCallGemini(_prompt, false, false, null, null, _sig)');
+    expect(host).toContain('callGeminiSingleAttempt: _livePipelineCall');
+    expect(host).toContain('callGeminiSingleAttempt = api.callGeminiSingleAttempt || api.callGemini;');
+  });
+
+  it('keeps retry budgets at least as large as the first cloud attempt', () => {
+    expect(src).toContain('_localTextCall ? 420000 : 180000, _localTextCall ? 300000 : 180000');
+    expect(src).toContain("}, 120000, 120000, 'callGeminiVision'" );
+    expect(src).toContain('textRetryMs: 180000');
+    expect(src).toContain('visionRetryMs: 120000');
   });
 });

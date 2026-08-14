@@ -96,6 +96,7 @@ describe('district evaluation portal launcher', () => {
     expect(container.textContent).toContain('District portal connected');
     expect(container.querySelector('#principal-evaluation-portal-url').value).toBe(url);
     expect(button(container, 'Open district portal')).toBeTruthy();
+    expect(container.textContent).toContain('Portal QR code');
     act(() => button(container, 'Open district portal').click());
     expect(open).toHaveBeenCalledOnce();
     act(() => button(container, 'Update connection').click());

@@ -31,7 +31,15 @@ describe('host capture — warnLog/debugLog mirror into a capped ring buffer on 
 describe('view panel — floating, copyable, live, self-contained', () => {
   it('defines PdfDiagnosticsLog and renders it inside the audit modal', () => {
     expect(view).toContain('function PdfDiagnosticsLog(props) {');
-    expect(view).toContain('<PdfDiagnosticsLog t={t} addToast={addToast} />');
+    expect(view).toContain('<PdfDiagnosticsLog t={t} addToast={addToast} docPipeline={_docPipeline} />');
+  });
+  it('adds the developer bundle affordance beside the teacher log controls', () => {
+    expect(view).toContain('getDiagnosticSnapshot');
+    expect(view).toContain("zip.file('bundle.json', bundleJson)");
+    expect(view).toContain("zip.file('log.txt', logText)");
+    expect(view).toContain("zip.file('README.md', readme)");
+    expect(view).toContain('alloflow-diag-');
+    expect(view).toContain('const copied = await _copyText(bundleJson)');
   });
   it('reads the host buffer and supports warnings-only filtering', () => {
     expect(view).toContain('Array.isArray(window.__alloDiagLog)');

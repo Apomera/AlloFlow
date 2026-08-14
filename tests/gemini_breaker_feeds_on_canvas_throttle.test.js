@@ -15,7 +15,7 @@
 // The M15 pins were all STRUCTURAL ("there is one classifier", "the slot waits for it"). None
 // asserted what the classifier DECIDES, which is why they stayed green through this. This one
 // drives a real throttled call through the real gate and reads the real breaker state.
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { loadAlloModule } from './setup.js';
 
 function makePipeline(callGemini) {
@@ -53,7 +53,64 @@ describe('the breaker is fed by a Canvas throttle', () => {
     expect(after.authStreak, 'the breaker never saw the throttle — this is the 2026-07-27 regression').toBeGreaterThan(0);
     expect(after.storming, 'storming must be true so wait-not-stop actually paces the run').toBe(true);
     expect(after.capped, 'concurrency must drop, or every later pass re-fans into the throttle').toBe(true);
-    expect(after.cooldownRemainingMs).toBeGreaterThan(0);
+    const bundle = p.getDiagnosticSnapshot();
+    expect(bundle.throttle.trace.some((event) => event.kind === 'auth_trip' && event.cooldownMs > 0)).toBe(true);
+  }, 60000);
+
+  it('counts one logical Canvas throttle once across its inline retry', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    try {
+      const p = makePipeline(async () => { throw canvasThrottleError(); });
+      await p.auditOutputAccessibility('<main><h1>x</h1><p>y</p></main>', {
+        owner: { runId: 'r2-once', operation: 'audit', chunkId: 'whole', passNumber: 1 },
+      });
+      const state = p.geminiThrottleInfo();
+      expect(state.authStreak, 'one logical call must not count its inline retry as a second breaker failure').toBe(1);
+      expect(state.storming).toBe(false);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  }, 60000);
+  it('suppresses repeated generic failures for one signature without masking distinct failures', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    try {
+      const failing = async () => { throw new Error('Timeout after 1s'); };
+      const p = makePipeline(failing);
+      const owner = { runId: 'f1-test', operation: 'auto-fix', chunkId: '1', passNumber: 1 };
+      const run = async () => {
+        const pending = p.auditOutputAccessibility('<main><h1>x</h1><p>y</p></main>', { owner });
+        await pending;
+      };
+
+      await run();
+      await run();
+      const state = p.geminiThrottleInfo();
+      expect(state.transientStreak, 'the same deterministic signature must not ratchet the shared breaker').toBe(1);
+      expect(state.storming).toBe(false);
+      const bundle = p.getDiagnosticSnapshot();
+      expect(bundle.run.repeatOffenderSuppressions).toBeGreaterThan(0);
+      expect(bundle.calls.some((row) => row.breakerSuppressed === 1)).toBe(true);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  }, 60000);
+
+  it('still trips the transient breaker when distinct signatures fail', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    try {
+      const p = makePipeline(async () => { throw new Error('Timeout after 1s'); });
+      for (const chunkId of ['1', '2', '3']) {
+        const pending = p.auditOutputAccessibility('<main><h1>x</h1><p>y</p></main>', {
+          owner: { runId: 'f1-distinct', operation: 'auto-fix', chunkId, passNumber: 1 },
+        });
+        await pending;
+      }
+      const state = p.geminiThrottleInfo();
+      expect(state.transientStreak).toBeGreaterThanOrEqual(3);
+      expect(state.storming).toBe(true);
+    } finally {
+      vi.restoreAllMocks();
+    }
   }, 60000);
 
   it('a genuinely PERMANENT auth error still does not feed the breaker', async () => {

@@ -16,6 +16,7 @@ function extractEvidenceHelpers() {
       taggedVerdict: _alloTaggedPdfDeliveryVerdict,
       ocrVerdict: _alloOcrTextLayerVerdict,
       liveSignal: _alloLiveAbortSignalOrNull,
+      passComplete: _alloAutoFixPassHasCompleteEvidence,
     };`)();
 }
 
@@ -62,6 +63,15 @@ describe('remediation evidence predicates', () => {
     expect(evidence.usableAi(completeAi({ _partialAudit: true }))).toBe(false);
     expect(evidence.usableAi(completeAi({ _scoreDegraded: true }))).toBe(false);
     expect(evidence.usableAi(completeAi({ synthesized: true }))).toBe(false);
+  });
+
+  it('rejects auto-fix pass deltas when any fixer chunk shipped as original or either audit is partial', () => {
+    const meta = { totalChunks: 3, shippedOriginalChunks: 0 };
+    expect(evidence.passComplete(meta, completeAi(), completeAi())).toBe(true);
+    expect(evidence.passComplete({ ...meta, shippedOriginalChunks: 1 }, completeAi(), completeAi())).toBe(false);
+    expect(evidence.passComplete(meta, completeAi({ chunksAudited: 9 }), completeAi())).toBe(false);
+    expect(evidence.passComplete(meta, completeAi(), completeAi({ chunksAudited: 9 }))).toBe(false);
+    expect(evidence.passComplete(null, completeAi(), completeAi())).toBe(false);
   });
 
   it('does not turn missing or malformed axe evidence into a clean audit', () => {
@@ -143,7 +153,9 @@ describe('canonical remediation outcome', () => {
 
 describe('source-level anti-drift wiring', () => {
   it('requires fresh complete evidence for promotion and clean/target stops', () => {
-    expect(src).toContain('const _passEvidenceComplete = _reAiUsable && _reAxeUsable;');
+    expect(src).toContain('const _passCoverageComplete = _alloAutoFixPassHasCompleteEvidence(_fixPassEvidence, verification, reVerify);');
+    expect(src).toContain('const _passEvidenceComplete = _reAiUsable && _reAxeUsable && _passCoverageComplete;');
+    expect(src).toContain('const _comparisonEvidenceComplete = _passEvidenceComplete && _bestEvidenceComplete;');
     expect(src).toContain('const _passIsBest = _passEvidenceComplete');
     expect(src).toContain('else if (_passEvidenceComplete && newAxeViolations === 0');
     expect(src).toContain('if (_passEvidenceComplete && newAxeViolations === 0 && !_reReviewRequired && newAiScore >= targetScore)');
@@ -178,7 +190,7 @@ describe('source-level anti-drift wiring', () => {
     expect(src).toContain('var _REMEDIATION_DEFAULT_RETENTION_MS = 24 * 60 * 60 * 1000;');
     expect(src).toContain('window.__alloRemediationLongRetentionOptIn === true');
     expect(src).toContain('const _boundedRemediationCacheAwait');
-    expect(src).toContain('const _batchCheckpointBudgetMs = (deadlineTs)');
+    expect(src).toContain('const _BATCH_BOUNDARY_COMMIT_TIMEOUT_MS = 7000;');
     expect(src).toContain('const a = rec && (rec.audit || rec.result);');
   });
 

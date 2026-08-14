@@ -44,6 +44,9 @@ afterEach(() => {
 });
 
 function mountPanel(props = {}) {
+  const startMode = Object.prototype.hasOwnProperty.call(props, 'startMode') ? props.startMode : 'sample';
+  const renderProps = { ...props };
+  delete renderProps.startMode;
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = ReactDOMClient.createRoot(container);
@@ -51,10 +54,13 @@ function mountPanel(props = {}) {
     root.render(React.createElement(EducatorEvaluationPanel, {
       onClose: () => {},
       addToast: () => {},
-      ...props,
+      ...renderProps,
     }));
   });
   mounted.push({ root, container });
+  if (startMode && !renderProps.repository) {
+    clickButton(container, startMode === 'blank' ? 'Start with a blank workspace' : 'Explore simulated data');
+  }
   return container;
 }
 
@@ -88,19 +94,25 @@ function click(element) {
 
 function clickButton(container, label) {
   const button = Array.from(container.querySelectorAll('button'))
-    .find((candidate) => (candidate.textContent || '').trim() === label);
+    .find((candidate) => { const text = (candidate.textContent || '').replace(/\s+/g, ' ').trim(); return text === label || text.startsWith(label); });
   if (!button) throw new Error('No button labeled "' + label + '"');
   click(button);
   return button;
 }
 
 describe('EducatorEvaluationPanel', () => {
-  it('starts from the default sample workspace with both overview donuts and status counts', () => {
-    const container = mountPanel();
+  it('offers a first-run choice and loads simulated data when selected', () => {
+    const container = mountPanel({ startMode: null });
+
+    expect(container.querySelector('.ae-onboarding-overlay')).toBeTruthy();
+    expect(container.textContent).toContain('Choose how to start Educator Evaluation');
+    expect(container.textContent).toContain('Start with a blank workspace');
+    expect(container.textContent).toContain('Explore simulated data');
+    clickButton(container, 'Explore simulated data');
 
     expect(container.querySelector('[role="dialog"]')).toBeTruthy();
     expect(container.textContent).toContain('Educator Growth & Evaluation');
-    expect(container.textContent).toContain('Sample workspace');
+    expect(container.textContent).toContain('Simulated data');
     expect(container.textContent).toContain('Evaluation overview');
     expect(container.textContent).toContain('Teachers evaluated');
     expect(container.textContent).toContain('Weight in final evaluation');
@@ -116,6 +128,19 @@ describe('EducatorEvaluationPanel', () => {
     const stored = JSON.parse(localStorage.getItem('allo_educator_evaluation_workspace_v1'));
     expect(stored.config.sampleMode).toBe(true);
     expect(stored.teachers).toHaveLength(8);
+  });
+
+  it('can start with a blank local workspace instead of simulated records', () => {
+    const container = mountPanel({ startMode: null });
+    clickButton(container, 'Start with a blank workspace');
+
+    expect(container.textContent).toContain('Blank local workspace');
+    expect(container.textContent).not.toContain('Teacher 01');
+    expect(container.textContent).toContain('No educators yet');
+    const stored = JSON.parse(localStorage.getItem('allo_educator_evaluation_workspace_v1'));
+    expect(localStorage.getItem('allo_educator_evaluation_onboarding_v1')).toBe('blank');
+    expect(stored.config.sampleMode).toBe(false);
+    expect(stored.teachers).toHaveLength(0);
   });
 
   it('clicks through every evaluator tab without losing the tab-panel contract', () => {
@@ -214,7 +239,7 @@ describe('EducatorEvaluationPanel', () => {
     expect(container.textContent).toContain('Loading your district evaluation workspace');
     expect(container.textContent).toContain('Records remain hidden until identity and assignments are verified.');
     expect(container.textContent).not.toContain(sample.teachers[0].name);
-    expect(container.textContent).not.toContain('Sample workspace');
+    expect(container.textContent).not.toContain('Simulated data');
     expect(container.querySelector('#ae-panel')).toBeNull();
 
     finishBootstrap({

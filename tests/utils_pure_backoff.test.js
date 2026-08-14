@@ -125,6 +125,21 @@ describe('fetchWithExponentialBackoff — per-request timeout (anti-hang)', () =
     expect(calls).toBe(1);
   });
 
+  it('reports the HTTP status of a failed inner attempt without changing fail-fast behavior', async () => {
+    const events = [];
+    const s = stubFetch({ ok: false, status: 401, statusText: 'Unauthorized' });
+    const fetchWithExponentialBackoff = build(s.fn, () => {});
+    let err;
+    try {
+      await fetchWithExponentialBackoff('https://api/x', {}, 5, 120000, {
+        onInnerAttempt: (info) => events.push(['attempt', info.attempt]),
+        onInnerResponse: (info) => events.push(['response', info.status]),
+      });
+    } catch (e) { err = e; }
+    expect(err).toBeTruthy();
+    expect(events).toEqual([['attempt', 1], ['response', 401]]);
+  });
+
   it('anti-drift: the timeout param + AbortController plumbing are present in source', () => {
     expect(SRC).toContain('perRequestTimeoutMs = 120000');
     expect(SRC).toContain('new AbortController()');

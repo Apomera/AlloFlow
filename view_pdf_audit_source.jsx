@@ -3125,8 +3125,10 @@ function PdfDiagnosticsLog(props) {
   if (!R) return null; // invariant across renders (window.React never toggles) → hook order stays stable
   const t = (props && props.t) || ((k) => k);
   const addToast = (props && props.addToast) || function () {};
+  const docPipeline = (props && props.docPipeline) || null;
   const [open, setOpen] = R.useState(false);
   const [warnOnly, setWarnOnly] = R.useState(true);
+  const [bundleBusy, setBundleBusy] = R.useState(false);
   const [, setTick] = R.useState(0);
   const scrollRef = R.useRef(null);
   const stickRef = R.useRef(true); // true = follow the live tail; flips false when the user scrolls up so new lines don't yank them back to the end
@@ -3146,6 +3148,92 @@ function PdfDiagnosticsLog(props) {
     if (open && stickRef.current && scrollRef.current) { try { scrollRef.current.scrollTop = scrollRef.current.scrollHeight; } catch (_) {} }
   }, [rows.length, open]);
   const _time = (e) => { try { return new Date(e.t).toLocaleTimeString(); } catch (_) { return ''; } };
+  const _formatRows = (items) => (items || []).map((e) => '[' + _time(e) + '] ' + (e.level === 'warn' ? 'WARN ' : 'debug ') + String(e.msg || '')).join('\n');
+  const _copyText = async (text) => {
+    let ok = false;
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        ok = true;
+      }
+    } catch (_) { ok = false; }
+    if (!ok) {
+      try {
+        if (typeof document !== 'undefined' && document.execCommand) {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+      } catch (_) { ok = false; }
+    }
+    return ok;
+  };
+  const _digest8 = (value) => {
+    let hash = 2166136261;
+    const text = String(value || '');
+    for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+    return ('00000000' + (hash >>> 0).toString(16)).slice(-8);
+  };
+  const _diagnosticBundle = async () => {
+    if (bundleBusy) return;
+    if (!docPipeline || typeof docPipeline.getDiagnosticSnapshot !== 'function') {
+      addToast('Diagnostic bundle is unavailable until the pipeline is ready.', 'error');
+      return;
+    }
+    if (typeof window === 'undefined' || !window.JSZip) {
+      addToast(t('toasts.zip_library_loading') || 'Compression library loading - try again in a moment.', 'info');
+      return;
+    }
+    setBundleBusy(true);
+    try {
+      const snapshot = docPipeline.getDiagnosticSnapshot();
+      const bundleJson = JSON.stringify(snapshot, null, 2);
+      const logText = _formatRows(all);
+      const summary = snapshot && snapshot.throttle && snapshot.throttle.summary;
+      const readme = [
+        '# AlloFlow diagnostic bundle',
+        '',
+        'Start here: open bundle.json for the structured run, throttle, call-ledger, warning, and heartbeat evidence.',
+        'log.txt is the copyable in-app diagnostic tail. README.md explains the bundle layout.',
+        '',
+        'This bundle contains counts, timings, classifications, statuses, model identifiers, and environment metadata.',
+        'It does not contain prompts, responses, or document text.',
+        'Throttle rollup captured on demand: ' + (summary ? 'yes' : 'no') + '.',
+      ].join('\n');
+      const zip = new window.JSZip();
+      zip.file('bundle.json', bundleJson);
+      zip.file('log.txt', logText);
+      zip.file('README.md', readme);
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const stamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, '').replace('T', '-');
+      const fileName = 'alloflow-diag-' + _digest8(bundleJson) + '-' + stamp + '.zip';
+      let downloaded = false;
+      try {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 0);
+        downloaded = true;
+      } catch (_) { downloaded = false; }
+      const copied = await _copyText(bundleJson);
+      if (!downloaded && !copied) throw new Error('The bundle could not be downloaded or copied.');
+      addToast('Diagnostic bundle ' + (downloaded ? 'downloaded' : 'ready in clipboard') + (copied ? '; bundle.json copied.' : '.'), downloaded ? 'success' : 'info');
+    } catch (e) {
+      addToast('Diagnostic bundle failed: ' + (e && e.message ? e.message : 'unknown error'), 'error');
+    } finally {
+      setBundleBusy(false);
+    }
+  };
   const _copy = async () => {
     const text = rows.map((e) => '[' + _time(e) + '] ' + (e.level === 'warn' ? 'WARN ' : 'debug ') + e.msg).join('\n');
     // Try the async Clipboard API, but FALL BACK to textarea+execCommand on REJECTION too — not
@@ -3203,6 +3291,7 @@ function PdfDiagnosticsLog(props) {
       <div className="flex items-center gap-2 px-3 py-2 border-t border-slate-700">
         <button type="button" onClick={_copy} className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-medium">{t('pdf_audit.diag.copy') || 'Copy'}</button>
         <button type="button" onClick={_clear} className="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs">{t('pdf_audit.diag.clear') || 'Clear'}</button>
+        <button type="button" onClick={_diagnosticBundle} disabled={bundleBusy} className="px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 text-xs" title="Download a privacy-safe developer diagnostic bundle">{bundleBusy ? 'Building...' : 'Diagnostic bundle'}</button>
         <button type="button" onClick={() => setOpen(false)} className="ml-auto px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs" aria-label={t('pdf_audit.diag.close_aria') || 'Close diagnostics log'}>{t('pdf_audit.diag.close') || 'Close'}</button>
       </div>
     </div>
@@ -6791,7 +6880,7 @@ function PdfAuditView(props) {
         >
           {/* Floating diagnostics log — fixed bottom-right, above the modal; lets the teacher see +
               copy the pipeline's warnLog/debugLog output from inside Canvas (no browser console). */}
-          <PdfDiagnosticsLog t={t} addToast={addToast} />
+          <PdfDiagnosticsLog t={t} addToast={addToast} docPipeline={_docPipeline} />
           <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2 border-indigo-200">
             {/* Persistent close button — sticky so it stays visible when the modal content scrolls.
                 Disabled while remediation is mid-flight so users don't kill a running pipeline by accident. */}

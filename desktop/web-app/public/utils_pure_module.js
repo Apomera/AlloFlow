@@ -373,7 +373,7 @@ const storageDB = {
     }
   }
 };
-const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, perRequestTimeoutMs = 120000) => {
+const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, perRequestTimeoutMs = 120000, telemetry = null) => {
   // Per-request timeout (2026-06-16). The retry cap below only fires when a request FAILS.
   // A request the server accepts but never answers (no response, no error) would otherwise
   // hang this await FOREVER — which silently wedged whole remediation sections ("stuck
@@ -385,7 +385,11 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
   // and is NOT retried (a caller abort is final; our own timeout is transient).
   const callerSignal = options.signal || null;
   const _safeUrl = String(url).split('?')[0]; // redact ?key=… from error messages (own-key/self-hosted users land in error reports)
+  const _notify = (name, info) => {
+    try { if (telemetry && typeof telemetry[name] === 'function') telemetry[name](info); } catch (_) {}
+  };
   for (let i = 0; i < maxRetries; i++) {
+    _notify('onInnerAttempt', { attempt: i + 1, maxRetries, url: _safeUrl });
     const _timeoutCtrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     let _timedOut = false;
     let _timer = null;
@@ -399,6 +403,7 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
     }
     try {
       const response = await fetch(url, _timeoutCtrl ? { ...options, signal: _timeoutCtrl.signal } : options);
+      _notify('onInnerResponse', { attempt: i + 1, maxRetries, status: response.status, ok: response.ok, url: _safeUrl });
       if (response.ok) {
         return response;
       }
@@ -420,12 +425,17 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
         throw error;
       }
       if (response.status === 429 || response.status === 503) {
+        if (i < maxRetries - 1) _notify('onInnerRetry', { attempt: i + 1, nextAttempt: i + 2, status: response.status });
         warnLog(`⚠️ Transient API error ${response.status}, retrying (${i+1}/${maxRetries})...`);
         if (i === maxRetries - 1) {
           throw new Error(`HTTP ${response.status} — Failed to fetch ${_safeUrl} after ${maxRetries} retries.`);
         }
       }
     } catch (error) {
+      _notify('onInnerError', {
+        attempt: i + 1,
+        errorClass: _timedOut ? 'timeout' : ((error && error.name === 'AbortError') ? 'network' : 'network'),
+      });
       // Caller-initiated abort (e.g. the user pressed Stop): propagate immediately and NEVER
       // retry — re-issuing a request the caller explicitly cancelled is wrong (and would burn
       // another quota slice). Surfaced as a named AbortError so callGemini stops cleanly.
@@ -438,6 +448,7 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
       // Our own per-request timeout: the request hung. Treat as transient (a retry may settle);
       // on the final attempt, surface an honest timeout error instead of hanging forever.
       if (_timedOut || (error && error.name === 'AbortError')) {
+        if (i < maxRetries - 1) _notify('onInnerRetry', { attempt: i + 1, nextAttempt: i + 2, status: null });
         warnLog(`⚠️ Request timed out after ~${Math.round(perRequestTimeoutMs/1000)}s, retrying (${i+1}/${maxRetries})...`);
         if (i === maxRetries - 1) {
           throw new Error(`Timed out after ${maxRetries} attempt(s) (~${Math.round(perRequestTimeoutMs/1000)}s each) — ${_safeUrl}`);

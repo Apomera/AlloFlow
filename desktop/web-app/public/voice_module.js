@@ -596,6 +596,16 @@
     return transformersModulePromise;
   }
 
+  function installDurableWhisperCache(transformers) {
+    try {
+      var AC = window.AlloModules && window.AlloModules.AlloCommands;
+      var cache = AC && AC.modelCache;
+      if (cache && typeof cache.installTransformersCache === 'function' && transformers && transformers.env) {
+        cache.installTransformersCache(transformers.env);
+      }
+    } catch (_) {}
+  }
+
   function loadWhisperModel(tier) {
     tier = tier || 'tiny';
     if (whisperPipeline && whisperLoadedTier === tier) {
@@ -609,6 +619,7 @@
     whisperPipeline = null;
     whisperLoadedTier = tier;
     whisperLoadingPromise = loadTransformersModule().then(function (transformers) {
+      installDurableWhisperCache(transformers);
       var modelId = 'Xenova/whisper-' + tier + '.en';
       return transformers.pipeline('automatic-speech-recognition', modelId, {
         quantized: true,

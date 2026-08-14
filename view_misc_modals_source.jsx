@@ -1727,7 +1727,24 @@ function AIBackendModalBody(props) {
       window.__alloOpenStorageRecoveryManager();
       return;
     }
-    // Fallback only: an older host without the bridge still reaches something.
+    // No bridge means the HOST is older than this panel, which is a legitimate
+    // state: modules load live from the CDN on every boot, while the host ships
+    // inside the app build (or a Canvas copy) and only changes when that is
+    // reloaded or re-published. So a deploy can fix the module half hours before
+    // the host half arrives.
+    //
+    // Falling through to the development probe here is the ORIGINAL bug wearing
+    // a version-skew hat: the teacher still gets a diagnostic harness under a
+    // button labelled "Manage device storage", now with no hint as to why. Say
+    // what is actually true instead. __alloAddToast has been on the host since
+    // 2026-05-27, so any host old enough to lack the bridge still has the toast.
+    const _skewNotice = t('canvas_settings.device_storage_needs_reload')
+      || 'Reload AlloFlow to open the Storage and recovery manager — this app build is older than this settings panel.';
+    if (typeof window.__alloAddToast === 'function') {
+      window.__alloAddToast(_skewNotice, 'info');
+      return;
+    }
+    // Last resort on a host predating even the toast.
     if (typeof window.__alloOpenDeviceStorageProbe === 'function') window.__alloOpenDeviceStorageProbe();
   };
   return (

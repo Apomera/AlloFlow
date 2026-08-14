@@ -69,6 +69,18 @@ describe('Canvas transient 401 retry', () => {
     expect(out).toContain('hello');
   }, 30000);
 
+  it('exposes an unladdered single-attempt entry for the document pipeline', async () => {
+    const fetchImpl = vi.fn().mockRejectedValue(throwStatus(401, 'UNAUTHENTICATED'));
+
+    const api = makeApi({ isCanvas: true, apiKey: '', fetchImpl });
+    expect(typeof api.callGeminiSingleAttempt).toBe('function');
+    await expect(api.callGeminiSingleAttempt('say hello')).rejects.toBeTruthy();
+
+    // The document pipeline owns its outer breaker/retry; this entry makes one
+    // Gemini request and does not add the Canvas auth ladder on top of it.
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  }, 30000);
+
   it('gives up after a bounded number of attempts', async () => {
     const fetchImpl = vi.fn().mockRejectedValue(throwStatus(401, 'UNAUTHENTICATED'));
 

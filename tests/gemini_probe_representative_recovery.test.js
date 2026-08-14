@@ -23,6 +23,14 @@ describe('recovery probe is REPRESENTATIVE (tests the throttled volume dimension
     // Content-free: framed as ignorable filler, never document text.
     expect(dp).toContain('FILLER (ignore)');
   });
+  it('requests route-sized generation and gives it a matching timeout', () => {
+    expect(dp).toContain('var _geminiProbePrompt = function (promptChars, responseChars)');
+    expect(dp).toContain('var _targetOutputChars = Math.max(8000, Math.min(24000');
+    expect(dp).toContain('approximately ');
+    expect(dp).toContain('Math.min(180000, Number(o.timeoutMs) || 180000)');
+    expect(dp).toContain('timeoutMs: Math.min(180000, Math.max(1, maxWaitMs - (_now() - t0)))');
+    expect(dp).toContain('responseChars: _geminiLastFailureProfile && _geminiLastFailureProfile.responseChars');
+  });
   it('the old always-succeeds 4-byte probe is gone', () => {
     // Only the explanatory comment may mention the retired string; no live call may issue it.
     expect(dp).not.toContain("await callGemini('Reply with exactly: OK')");

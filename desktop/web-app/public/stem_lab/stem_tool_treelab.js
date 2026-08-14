@@ -2711,6 +2711,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           }, extra || {})
         }, children);
       }
+      // Grow assembles helper-returned panels into one sibling array. React cannot
+      // see the key that belongs to a helper's root element, so assign the stable
+      // panel identity at the point where the siblings are assembled.
+      function pushKeyed(list, node, key) {
+        if (node == null) return;
+        if (Array.isArray(node)) {
+          node.forEach(function (child, i) { pushKeyed(list, child, key + '-' + i); });
+          return;
+        }
+        if (ctx.React && typeof ctx.React.isValidElement === 'function' &&
+            ctx.React.isValidElement(node) && node.key == null) {
+          node = ctx.React.cloneElement(node, { key: key });
+        }
+        list.push(node);
+      }
       function heading(txt, sub) {
         return h('div', { key: 'hd', style: { marginBottom: 13 } }, [
           h('div', { key: 'h', style: { fontWeight: 800, fontSize: 16, color: T.text, letterSpacing: '-0.01em' } }, txt),
@@ -3277,10 +3292,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var kids = [];
         var scene = viewerPanel();
 
-        kids.push(experimentPanel());
-        kids.push(playbackPanel());
+        pushKeyed(kids, experimentPanel(), 'grow-experiment');
+        pushKeyed(kids, playbackPanel(), 'grow-playback');
 
-        kids.push(card([
+        pushKeyed(kids, card([
           heading(__alloT('stem.treelab.this_year', 'This year’s carbon budget'),
             atLeast(band, 'g68')
               ? __alloT('stem.treelab.budget_sub_g68', 'Gross photosynthesis minus maintenance respiration is what is left to grow with. Everything below is spent out of that surplus.')
@@ -3319,9 +3334,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             __alloT('stem.treelab.negative_year', 'The tree is spending more than it makes and is living off reserves. A few years of this is survivable. Many are not.')) : null,
           modelNote(__alloT('stem.treelab.model_note',
             'Qualitative teaching model, not a forest growth model or a measurement. The shapes are real (saturating light response, a smallest-factor gate, respiration that scales with living tissue) and the magnitudes are the right order for a temperate tree, but no figure here should be quoted as data.'))
-        ]));
+        ]), 'grow-budget');
 
-        kids.push(card([
+        pushKeyed(kids, card([
           heading(__alloT('stem.treelab.conditions', 'Conditions'),
             __alloT('stem.treelab.conditions_sub', 'Change one thing at a time and watch which factor takes over as the limit.')),
           slider('light', __alloT('stem.treelab.light', 'Light reaching the leaves'), envCfg.light, 0, 1, 0.05,
@@ -3349,9 +3364,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               aperture < 0.9
                 ? __alloT('stem.treelab.stomata_closing', 'Closing to save water. Less ' + H2O + ' out, but also less ' + CO2 + ' in.')
                 : __alloT('stem.treelab.stomata_open_note', 'Wide open. Carbon is coming in and water is going out through the same pores.'))) : null
-        ]));
+        ]), 'grow-conditions');
 
-        kids.push(card([
+        pushKeyed(kids, card([
           heading(__alloT('stem.treelab.spend_it', 'Where does the surplus go?'),
             __alloT('stem.treelab.spend_it_sub', 'The tree cannot do all of these at once. More wood means fewer seeds this year.')),
           allocSlider('leaf', __alloT('stem.treelab.leaves', 'Leaves'), '#22c55e'),
@@ -3366,10 +3381,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             btn('rst', __alloT('stem.treelab.new_seedling', 'New seedling'), function () { resetTree(); }, { tone: 'ghost' })
           ]),
           !tree.alive ? postMortem() : null
-        ]));
+        ]), 'grow-spend');
 
-        kids.push(trialComparisonPanel());
-        if (tree.rings.length > 0) kids.push(ringPanel());
+        pushKeyed(kids, trialComparisonPanel(), 'grow-trial-comparison');
+        if (tree.rings.length > 0) pushKeyed(kids, ringPanel(), 'grow-rings');
         return h('div', { key: 'workbench', className: 'allo-tree-workbench' }, [
           h('div', { key: 'scene', className: 'allo-tree-workbench-scene' },
             h('div', { key: 'sticky', className: 'allo-tree-workbench-sticky' }, scene)),

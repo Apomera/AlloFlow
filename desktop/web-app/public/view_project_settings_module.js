@@ -27,7 +27,106 @@
   var Lock = _lazyIcon('Lock');
   var CircleHelp = _lazyIcon('CircleHelp');
 
-  function ProjectSettingsView(props) {
+  function EvaluationPortalQr(props) {
+  var React = window.React;
+  var url = String(props && props.url || '').trim();
+  var _state = React.useState({
+    status: 'loading',
+    svg: '',
+    error: ''
+  });
+  var state = _state[0];
+  var setState = _state[1];
+  React.useEffect(function () {
+    if (!url) return undefined;
+    var cancelled = false;
+    var timer = null;
+    var attempts = 0;
+    var build = function () {
+      if (cancelled) return;
+      var makeQr = window.__alloMakeQrSvg;
+      if (typeof makeQr !== 'function') {
+        if (attempts++ < 20) {
+          timer = setTimeout(build, 250);
+        } else if (!cancelled) {
+          setState({
+            status: 'error',
+            svg: '',
+            error: 'The QR generator is not available in this build.'
+          });
+        }
+        return;
+      }
+      Promise.resolve(makeQr(url, 'Educator Evaluation district portal')).then(function (svg) {
+        if (!cancelled) setState({
+          status: 'ready',
+          svg: String(svg || ''),
+          error: ''
+        });
+      }).catch(function (error) {
+        if (!cancelled) setState({
+          status: 'error',
+          svg: '',
+          error: String(error && error.message || 'The QR code could not be generated.')
+        });
+      });
+    };
+    setState({
+      status: 'loading',
+      svg: '',
+      error: ''
+    });
+    build();
+    return function () {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [url]);
+  if (!url) return null;
+  var copyPortalLink = function () {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url);
+        return;
+      }
+      var input = document.createElement('textarea');
+      input.value = url;
+      input.setAttribute('readonly', '');
+      input.style.position = 'fixed';
+      input.style.opacity = '0';
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      input.remove();
+    } catch (_) {}
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 grid gap-4 rounded-2xl border border-violet-200 bg-violet-50/60 p-4 sm:grid-cols-[auto,1fr] sm:items-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex min-h-44 min-w-44 items-center justify-center rounded-xl border-2 border-violet-200 bg-white p-3",
+    "aria-label": "Educator Evaluation district portal QR code"
+  }, state.status === 'ready' && state.svg ? /*#__PURE__*/React.createElement("div", {
+    className: "h-40 w-40 [&_svg]:h-full [&_svg]:w-full",
+    dangerouslySetInnerHTML: {
+      __html: state.svg
+    }
+  }) : /*#__PURE__*/React.createElement("span", {
+    className: "px-3 text-center text-xs font-bold text-violet-800"
+  }, state.status === 'error' ? 'QR unavailable' : 'Preparing QR code?')), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs font-black uppercase tracking-wider text-violet-700"
+  }, "Portal QR code"), /*#__PURE__*/React.createElement("h5", {
+    className: "mt-1 text-sm font-black text-slate-900"
+  }, "Open the district evaluation portal on another device"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-xs leading-relaxed text-slate-600"
+  }, "Scanning opens the same authenticated district portal. Google sign-in and server-side assignments still control access; the QR code does not grant permission by itself."), state.error && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-xs font-bold text-rose-700"
+  }, state.error), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: copyPortalLink,
+    className: "mt-3 min-h-10 rounded-xl border border-violet-300 bg-white px-3 py-2 text-xs font-black text-violet-800 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
+  }, "Copy portal link")));
+}
+function ProjectSettingsView(props) {
   var t = props.t;
   var studentProjectSettings = props.studentProjectSettings || {};
   var setStudentProjectSettings = props.setStudentProjectSettings;
@@ -256,7 +355,7 @@
     type: "button",
     onClick: onOpenPrincipalEvaluation,
     className: "shrink-0 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-black text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-  }, isEvaluationPortalConnected ? 'Open district portal' : 'Open local preview')), typeof onSaveEvaluationPortalUrl === 'function' && /*#__PURE__*/React.createElement("form", {
+  }, isEvaluationPortalConnected ? 'Open district portal' : 'Open local preview')), typeof onSaveEvaluationPortalUrl === 'function' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("form", {
     className: "mt-4 border-t border-indigo-100 pt-4",
     onSubmit: function (event) {
       event.preventDefault();
@@ -292,7 +391,9 @@
   }, "Disconnect")), /*#__PURE__*/React.createElement("p", {
     id: "principal-evaluation-portal-help",
     className: "mt-2 text-xs leading-relaxed text-slate-500"
-  }, isEvaluationPortalConnected ? 'This device will open the exact district /exec deployment in a separate tab. Google sign-in and server assignments control access; emailed links do not.' : 'Paste the district-owned HTTPS Apps Script deployment URL ending in /exec. AlloFlow stores only this launcher address on this device.'))), /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
+  }, isEvaluationPortalConnected ? 'This device will open the exact district /exec deployment in a separate tab. Google sign-in and server assignments control access; emailed links do not.' : 'Paste the district-owned HTTPS Apps Script deployment URL ending in /exec. AlloFlow stores only this launcher address on this device.')), /*#__PURE__*/React.createElement(EvaluationPortalQr, {
+    url: isEvaluationPortalConnected ? evaluationPortalUrl : ''
+  }))), /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
     className: "text-xs font-black uppercase tracking-wider text-slate-600"
   }, tx('project_settings.starting_point', 'Starting point')), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 grid gap-2 sm:grid-cols-3",

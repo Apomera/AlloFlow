@@ -35,6 +35,69 @@ function LaunchPadView(props) {
   });
   var voiceSetup = _voiceSetup[0];
   var setVoiceSetup = _voiceSetup[1];
+  function getModelCache() {
+    try {
+      var AC = window.AlloModules && window.AlloModules.AlloCommands;
+      return AC && AC.modelCache || null;
+    } catch (_) {
+      return null;
+    }
+  }
+  React.useEffect(function() {
+    var cancelled = false;
+    var retryTimer = null;
+    var attempts = 0;
+    function applyCachedStatus(whisper, kokoro) {
+      if (cancelled) return;
+      setVoiceSetup(function(previous) {
+        var next = Object.assign({}, previous);
+        var whisperReady = !!whisper || previous.whisper.phase === 'ready';
+        var kokoroReady = !!kokoro || previous.kokoro.phase === 'ready';
+        if (previous.whisper.phase !== 'loading') {
+          next.whisper = Object.assign({}, previous.whisper, {
+            phase: whisperReady ? 'ready' : 'idle',
+            progress: whisperReady ? 100 : null
+          });
+        }
+        if (previous.kokoro.phase !== 'loading') {
+          next.kokoro = Object.assign({}, previous.kokoro, {
+            phase: kokoroReady ? 'ready' : 'idle',
+            progress: kokoroReady ? 100 : null
+          });
+        }
+        if (whisperReady || kokoroReady) {
+          next.message = 'Previously downloaded offline voice tools are ready.';
+        } else if (next.message === 'Previously downloaded offline voice tools are ready.') {
+          next.message = '';
+        }
+        return next;
+      });
+    }
+    function refreshCachedStatus() {
+      var mc = getModelCache();
+      if (!mc) {
+        if (attempts++ < 20) retryTimer = setTimeout(refreshCachedStatus, 250);
+        return;
+      }
+      var whisperCheck = typeof mc.hasWhisper === 'function'
+        ? Promise.resolve(mc.hasWhisper()).catch(function() { return false; })
+        : Promise.resolve(false);
+      var kokoroCheck = typeof mc.hasKokoro === 'function'
+        ? Promise.resolve(mc.hasKokoro()).catch(function() { return false; })
+        : Promise.resolve(false);
+      Promise.all([whisperCheck, kokoroCheck]).then(function(result) {
+        applyCachedStatus(result[0], result[1]);
+      });
+    }
+    function onModuleRegistryChanged() { refreshCachedStatus(); }
+    window.addEventListener('alloflow:module-registry-changed', onModuleRegistryChanged);
+    refreshCachedStatus();
+    return function() {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      window.removeEventListener('alloflow:module-registry-changed', onModuleRegistryChanged);
+    };
+  }, []);
   function updateVoiceSetup(engine, patch, message) {
     setVoiceSetup(function(previous) {
       var next = Object.assign({}, previous);
