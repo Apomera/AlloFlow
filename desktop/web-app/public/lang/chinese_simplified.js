@@ -1686,7 +1686,9 @@
     "writing": "正在撰写内容...",
     "actions": {
       "analyzing_short": "正在分析...",
-      "generate_short": "生成"
+      "generate_short": "生成",
+      "books_short": "图书",
+      "books_hint": "打开绘本：任何一本书都可以成为你的原始文本"
     },
     "status_generating": "正在生成原文...",
     "success_long_form": "长文本成功生成！",
@@ -1720,7 +1722,16 @@
     },
     "drafting_story_outline": "正在规划对话结构...",
     "load_project_tooltip": "加载先前保存的 AlloFlow PDF 项目",
-    "load_project": "加载项目"
+    "load_project": "加载项目",
+    "quickstart_heading": "或选择一个起点",
+    "qs_book": "打开阅读书目",
+    "qs_book_sub": "图书、文章和一手资料",
+    "qs_write": "撰写或粘贴文本",
+    "qs_write_sub": "使用你自己的材料",
+    "qs_find": "在线查找资源",
+    "qs_find_sub": "粘贴链接或让 AI 搜索",
+    "qs_generate": "根据主题生成",
+    "qs_generate_sub": "AI 为你撰写"
   },
   "prompts": {
     "verified_correct": "**已核实的正确答案：**",
@@ -5446,7 +5457,7 @@
     "poettree_title": "PoetTree 诗树",
     "poettree_desc": "用形式支架、押韵和韵律分析、AI 反馈写诗",
     "throughline_desc": "将你的课程编排成一个空间化的单元：教学顺序、先修内容，一个可导出的文件",
-    "throughline_title": "Throughline"
+    "throughline_title": "Learning Web: Unit Path"
   },
   "review_game": {
     "title": "复习挑战",
@@ -31078,9 +31089,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

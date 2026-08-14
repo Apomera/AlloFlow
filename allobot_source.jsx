@@ -251,6 +251,35 @@ const useAlloMotionDisabled = (disableAnimations) => {
   }, []);
   return !!disableAnimations || !!prefersReducedMotion;
 };
+// The four controls ringing the bot are revealed by :hover, which a touch screen
+// does not have — so on a phone they were unreachable, while sticky tap-hover
+// still left them painted on top of the avatar. Resolving the pointer type in JS
+// rather than in CSS keeps the answer in one place: the same flag decides
+// visibility, hit-target size and how far out each control is pushed, none of
+// which can be expressed as a lone Tailwind hover variant.
+const useAlloCoarsePointer = () => {
+  const QUERY = '(hover: none), (pointer: coarse)';
+  const [coarse, setCoarse] = useState(() => {
+      try { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia(QUERY).matches); }
+      catch (_) { return false; }
+  });
+  useEffect(() => {
+      let mq = null;
+      try { mq = typeof window !== 'undefined' && window.matchMedia && window.matchMedia(QUERY); } catch (_) { mq = null; }
+      if (!mq) return;
+      const apply = () => setCoarse(!!mq.matches);
+      apply();
+      if (mq.addEventListener) {
+          mq.addEventListener('change', apply);
+          return () => mq.removeEventListener('change', apply);
+      }
+      if (mq.addListener) {
+          mq.addListener(apply);
+          return () => mq.removeListener(apply);
+      }
+  }, []);
+  return coarse;
+};
 // @section ALLOBOT — Embodied pedagogical tour agent
 // STEAM Lab: map the active tool -> its discipline -> a themed accessory.
 // Discipline is read from the tool's registered category (window.STEM_TOOL_REGISTRY,
@@ -292,8 +321,31 @@ const isAlloBotTtsOff = () => {
   } catch (_) { return false; }
 };
 
-const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null }, ref) => {
+const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 180000 }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
+  const coarsePointer = useAlloCoarsePointer();
+  // Touch build: always shown (there is no hover to reveal them with), pushed
+  // further out so four 36px targets ring a 64px avatar without overlapping
+  // each other, and never scaled down — scale-75 would drag a 36px target back
+  // under the 24px WCAG 2.2 minimum.
+  const satelliteBase = coarsePointer
+      ? 'inline-flex min-h-9 min-w-9 items-center justify-center rounded-full shadow-md z-50 border-2 duration-200 focus:outline-none'
+      : 'inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none';
+  const satellitePos = {
+      tl: coarsePointer ? 'absolute -top-2.5 -left-2.5' : 'absolute -top-2 -left-2',
+      tr: coarsePointer ? 'absolute -top-2.5 -right-2.5' : 'absolute -top-2 -right-2',
+      bl: coarsePointer ? 'absolute -bottom-2.5 -left-2.5' : 'absolute -bottom-1 -left-2',
+      br: coarsePointer ? 'absolute -bottom-2.5 -right-2.5' : 'absolute -bottom-1 -right-2',
+  };
+  // A tap on one of these must not also start a drag. The container's
+  // onTouchStart calls preventDefault() to own the gesture, and preventDefault
+  // on touchstart cancels the browser's synthesised click outright — so every
+  // tap on a satellite was swallowed before onClick could ever run. The
+  // existing pointerdown/mousedown guards did not help: stopping propagation of
+  // one event type says nothing about a different one. Stop touchstart here and
+  // the container never sees it, so the tap resolves into a normal click.
+  const stopTouch = (e) => e.stopPropagation();
+  const satelliteIconSize = coarsePointer ? 16 : 12;
   useEffect(() => { try { var _bot = containerRef.current; var _svg = _bot && _bot.querySelector("svg"); if (!_svg || typeof _svg.pauseAnimations !== "function") return; try { if (motionDisabled) { _svg.pauseAnimations(); _svg.setCurrentTime(0); } else { _svg.unpauseAnimations(); } } catch (e) {} } catch (e) {} }, [motionDisabled]);
   const { t } = useContext(LanguageContext);
   const [position, setPosition] = useState(() => {
@@ -416,6 +468,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const prevMoodRef = useRef('idle');
   const [isSquashed, setIsSquashed] = useState(false);
   const [isSleeping, setIsSleeping] = useState(false);
+  // speak() is a useCallback that must not be rebuilt every time the bot dozes
+  // off — rebuilding it re-runs the ambient-tip effect that depends on it. A ref
+  // lets the (stable) speak read the LIVE sleep state instead of a frozen one.
+  const isSleepingRef = useRef(false);
+  useEffect(() => { isSleepingRef.current = isSleeping; }, [isSleeping]);
   const [isPoofing, setIsPoofing] = useState(false);
   const [reactions, setReactions] = useState([]);
   const [bursts, setBursts] = useState([]);
@@ -549,6 +606,23 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           setIsTalking(false);
       }
   }, [soundEnabled]);
+  // Hiding the bot unmounts it outright — from the header toggle, from the "X",
+  // or from a view swap. An <audio> element that is merely dropped keeps playing
+  // to the end, so a bot dismissed mid-sentence would go on narrating with
+  // nothing on screen to stop it. Runs on unmount only.
+  useEffect(() => () => {
+      try { speechRequestAbortRef.current?.abort(); } catch (_) {}
+      if (currentAudioRef.current) {
+          try { currentAudioRef.current.pause(); } catch (_) {}
+          currentAudioRef.current = null;
+      }
+      if (lastAudioUrlRef.current) {
+          releaseAlloBotAudioUrl(lastAudioUrlRef.current);
+          lastAudioUrlRef.current = null;
+      }
+      if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
+      try { window.speechSynthesis?.cancel(); } catch (_) {}
+  }, []);
   useEffect(() => {
       try { safeSetItem('allo_bot_pos_v2', JSON.stringify(position)); } catch(e) { warnLog('localStorage write failed', e); }
   }, [position]);
@@ -715,6 +789,19 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   }, [motionDisabled]);
   const speak = useCallback(async (text, isSilent = false) => {
       const safeText = (text || "").toString();
+      // ── Asleep means SILENT ──────────────────────────────────────────────
+      // Leaving the app open used to let the bot talk to an empty room: the
+      // inactivity fallback below speaks a tip aloud after 5 minutes of no
+      // input, and any late-arriving host callback would fire whenever it
+      // resolved. Once the bot has dozed off, nothing gets a voice — and this
+      // deliberately does NOT wake it, unlike the code further down that used
+      // to clear isSleeping on every utterance. Real user activity wakes the
+      // bot (see the idle watcher), so anything still calling speak() while
+      // it sleeps is by definition unattended background chatter.
+      if (isSleepingRef.current) {
+          debugLog("AlloBot: asleep — suppressing speech:", safeText.slice(0, 60));
+          return;
+      }
       const now = Date.now();
       if (!isSilent && safeText === lastGlobalSpeech.text && (now - lastGlobalSpeech.time) < 2000) {
           warnLog("AlloBot: Suppressing duplicate speech:", safeText);
@@ -740,7 +827,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
       if (window.speechSynthesis) window.speechSynthesis.cancel();
       if (onSpeechStart) onSpeechStart();
-      setIsSleeping(false);
       if (!motionDisabled) {
           setWobbleState({ active: true, deg: 3 });
           setTimeout(() => setWobbleState({ active: false, deg: 0 }), 200);
@@ -912,29 +998,122 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     if (isTyping) { setIsTalking(true); }
     else if (!currentAudioRef.current) { setIsTalking(false); }
   }, []);
+  // Wake writes the ref BEFORE the state. speak() reads isSleepingRef, and the
+  // effect that syncs the ref does not run until after this render commits — so
+  // a caller that wakes and immediately speaks (summon does exactly that) would
+  // otherwise be silenced by its own stale "still asleep" reading.
+  const wake = useCallback(() => {
+      isSleepingRef.current = false;
+      setIsSleeping(false);
+  }, []);
   const summon = useCallback(() => {
       const now = Date.now();
       if (now - lastSummonTimeRef.current < 2000) return;
       lastSummonTimeRef.current = now;
-      setPosition({ x: 24, y: 20 });
-      setIsSleeping(false);
+      // Deliberately does NOT snap back to the default corner any more. Sleep
+      // used to be something you asked for, so springing the bot back to its
+      // home spot on wake was harmless; now that it dozes off on its own every
+      // few idle minutes, that snap would keep stealing the position a teacher
+      // dragged it to. Position is clamped on drag, so it is always reachable.
+      wake();
       if (!motionDisabled) { setIdleAnimation('wave-hello'); setTimeout(() => setIdleAnimation(null), 1500); }
       speak(t('bot.summon_msg'));
-  }, [speak, t, motionDisabled]);
+  }, [speak, t, motionDisabled, wake]);
+  // Refusing the NEXT request is not enough on its own: a 90s Kokoro clip that
+  // started before the idle timer fired keeps narrating to an empty room, and a
+  // bot dismissed mid-sentence keeps talking after it is gone. Both paths cut
+  // the audio that is already in the air.
+  const silenceSpeech = useCallback(() => {
+      setCustomMessage(null);
+      setIsTruncated(false);
+      setIsTalking(false);
+      try { speechRequestAbortRef.current?.abort(); } catch (_) {}
+      speechRequestAbortRef.current = null;
+      if (currentAudioRef.current) {
+          try { currentAudioRef.current.pause(); } catch (_) {}
+          currentAudioRef.current = null;
+      }
+      if (lastAudioUrlRef.current) {
+          releaseAlloBotAudioUrl(lastAudioUrlRef.current);
+          lastAudioUrlRef.current = null;
+      }
+      if (speechTimeoutRef.current) { clearTimeout(speechTimeoutRef.current); speechTimeoutRef.current = null; }
+      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
+  }, []);
+  const fallAsleep = useCallback(() => {
+      if (isSleepingRef.current) return;
+      isSleepingRef.current = true;
+      setIsSleeping(true);
+      silenceSpeech();
+  }, [silenceSpeech]);
+  // The corner "X" now retires the bot outright rather than parking a greyed-out
+  // sleeping copy on screen: "close" that leaves the thing visible reads as a
+  // broken close. Sleep is reached by going idle, not by asking for it. Without
+  // an onHide handler (older host, or a harness rendering AlloBot standalone)
+  // the button keeps its previous minimise behaviour.
   const handleSleep = (e) => {
       e.stopPropagation();
       setCustomMessage(null);
+      if (onHide) {
+          // Silence only — deliberately NOT fallAsleep(). Flipping isSleeping
+          // here would swap in the sleep cap and the greyed-out styling for the
+          // 400ms of the puff, so a bot being dismissed would visibly doze off
+          // first. It is leaving, not napping.
+          silenceSpeech();
+          if (motionDisabled) { onHide(); return; }
+          setIsPoofing(true);
+          setTimeout(() => { setIsPoofing(false); onHide(); }, 400);
+          return;
+      }
       if (motionDisabled) {
           setIsPoofing(false);
-          setIsSleeping(true);
+          fallAsleep();
           return;
       }
       setIsPoofing(true);
       setTimeout(() => {
-          setIsSleeping(true);
+          fallAsleep();
           setIsPoofing(false);
       }, 400);
   };
+  // ── Idle auto-sleep ────────────────────────────────────────────────────────
+  // Applies to every role — a student who wanders off and a teacher who leaves
+  // a projected board open are the same case. Once asleep the bot is silent
+  // (see the guard at the top of speak), so an unattended tab stops narrating
+  // to the room. Any real input wakes it again, quietly: waking is not an event
+  // worth announcing, and the greeting summon() plays is reserved for someone
+  // who deliberately tapped a sleeping bot.
+  //
+  // The "busy" flags live in a ref so the watcher can be installed once instead
+  // of being torn down and rebuilt on every mood/talking flip — a re-created
+  // interval would reset its own countdown and the bot would never reach the
+  // threshold on a chatty screen.
+  const idleBusyRef = useRef(false);
+  idleBusyRef.current = !!(isTalking || isDragging || isListening || isSystemAudioActive || effectiveMood === 'thinking' || isPoofing);
+  useEffect(() => {
+      if (!idleSleepMs || idleSleepMs <= 0) return;
+      let lastInput = Date.now();
+      const onInput = () => {
+          lastInput = Date.now();
+          // Read through the ref: this listener is registered once, so a state
+          // copy captured here would be frozen at "awake" forever.
+          if (isSleepingRef.current) wake();
+      };
+      const events = ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart', 'scroll'];
+      events.forEach(evt => window.addEventListener(evt, onInput, { passive: true }));
+      const timer = setInterval(() => {
+          if (isSleepingRef.current) return;
+          // Talking, thinking or piping system audio all count as "in use" even
+          // with no input — a long generation must not put the bot under mid-
+          // sentence and then swallow the answer it was about to read out.
+          if (idleBusyRef.current) { lastInput = Date.now(); return; }
+          if (Date.now() - lastInput >= idleSleepMs) fallAsleep();
+      }, 15000);
+      return () => {
+          clearInterval(timer);
+          events.forEach(evt => window.removeEventListener(evt, onInput));
+      };
+  }, [idleSleepMs, wake, fallAsleep]);
   React.useImperativeHandle(ref, () => ({
       moveTo,
       speak,
@@ -1954,12 +2133,13 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                              e.preventDefault();
                              handleSleep(e);
                         }}
+                        onTouchStart={stopTouch}
                         onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                        className="absolute -top-2 -right-2 inline-flex min-h-8 min-w-8 items-center justify-center bg-slate-200 hover:bg-red-100 text-slate-600 hover:text-red-500 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 border-white focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-400"
-                        title={t('bot.sleep_title')}
-                        aria-label={t('bot.sleep_aria')}
+                        className={`${satellitePos.tr} ${satelliteBase} bg-slate-200 hover:bg-red-100 text-slate-600 hover:text-red-500 border-white focus:ring-2 focus:ring-red-400`}
+                        title={onHide ? t('toolbar.hide_bot') : t('bot.sleep_title')}
+                        aria-label={onHide ? t('toolbar.hide_bot') : t('bot.sleep_aria')}
                     >
-                        <X size={12} strokeWidth={3} />
+                        <X size={satelliteIconSize} strokeWidth={3} />
                     </button>
                     <button data-help-key="bot_settings_btn"
                         type="button"
@@ -1968,12 +2148,13 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             e.stopPropagation();
                             if (onVoiceSettingsClick) onVoiceSettingsClick();
                         }}
+                        onTouchStart={stopTouch}
                         onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                        className="absolute -top-2 -left-2 inline-flex min-h-8 min-w-8 items-center justify-center bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 border-indigo-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        className={`${satellitePos.tl} ${satelliteBase} bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 border-indigo-100 focus:ring-2 focus:ring-indigo-400`}
                         title={t('bot.chat_title')}
                         aria-label={t('bot.chat_aria')}
                     >
-                        <Settings size={12} strokeWidth={3} />
+                        <Settings size={satelliteIconSize} strokeWidth={3} />
                     </button>
                     {onToggleMute && (
                         <button data-help-key="bot_mute_btn"
@@ -1983,12 +2164,13 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 e.stopPropagation();
                                 onToggleMute();
                             }}
+                            onTouchStart={stopTouch}
                             onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                            className={`absolute -bottom-1 -right-2 inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${!soundEnabled ? 'bg-slate-100 text-slate-600 border-slate-200' : 'bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 border-indigo-100'}`}
+                            className={`${satellitePos.br} ${satelliteBase} focus:ring-2 focus:ring-indigo-400 ${!soundEnabled ? 'bg-slate-100 text-slate-600 border-slate-200' : 'bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 border-indigo-100'}`}
                             title={soundEnabled ? t('bot.mute_on_title') : t('bot.mute_off_title')}
                             aria-label={soundEnabled ? t('bot.mute_on_aria') : t('bot.mute_off_aria')}
                         >
-                            {soundEnabled ? <Volume2 size={12} strokeWidth={3} /> : <VolumeX size={12} strokeWidth={3} />}
+                            {soundEnabled ? <Volume2 size={satelliteIconSize} strokeWidth={3} /> : <VolumeX size={satelliteIconSize} strokeWidth={3} />}
                         </button>
                     )}
                     {onMicClick && (
@@ -1999,12 +2181,13 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 e.stopPropagation();
                                 onMicClick();
                             }}
+                            onTouchStart={stopTouch}
                             onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                            className={`absolute -bottom-1 -left-2 inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-700 text-white border-red-400 animate-pulse motion-reduce:animate-none' : 'bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-500 border-slate-100'}`}
+                            className={`${satellitePos.bl} ${satelliteBase} focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-700 text-white border-red-400 animate-pulse motion-reduce:animate-none' : 'bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-500 border-slate-100'}`}
                             title={isListening ? t('bot.mic_stop_title') : t('bot.mic_start_title')}
                             aria-label={isListening ? t('bot.mic_stop_aria') : t('bot.mic_start_aria')}
                         >
-                            {isListening ? <Mic size={12} strokeWidth={3} /> : <MicOff size={12} strokeWidth={3} />}
+                            {isListening ? <Mic size={satelliteIconSize} strokeWidth={3} /> : <MicOff size={satelliteIconSize} strokeWidth={3} />}
                         </button>
                     )}
                   </>

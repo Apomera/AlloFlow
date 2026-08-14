@@ -2507,7 +2507,9 @@
     "writing": "Escrevendo Conteúdo...",
     "actions": {
       "analyzing_short": "Analisando...",
-      "generate_short": "Gerar"
+      "generate_short": "Gerar",
+      "books_short": "Livros",
+      "books_hint": "Abra livros ilustrados: qualquer livro pode tornar-se o seu texto-fonte"
     },
     "status_generating": "Gerando texto-fonte...",
     "success_long_form": "Texto longo gerado com sucesso!",
@@ -2541,7 +2543,16 @@
     },
     "drafting_story_outline": "Planejando a estrutura do diálogo...",
     "load_project_tooltip": "Carregar um projeto AlloFlow PDF guardado anteriormente",
-    "load_project": "Carregar Projeto"
+    "load_project": "Carregar Projeto",
+    "quickstart_heading": "Ou escolha um ponto de partida",
+    "qs_book": "Abrir o catálogo de leitura",
+    "qs_book_sub": "Livros, artigos e fontes primárias",
+    "qs_write": "Escreva ou cole o texto",
+    "qs_write_sub": "Use o seu próprio material",
+    "qs_find": "Encontrar um recurso online",
+    "qs_find_sub": "Cole uma ligação ou deixe a IA pesquisar",
+    "qs_generate": "Gerar a partir de um tema",
+    "qs_generate_sub": "A IA escreve por si"
   },
   "prompts": {
     "verified_correct": "**Resposta Correta Verificada:**",

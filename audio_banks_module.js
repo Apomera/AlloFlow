@@ -341,7 +341,16 @@
     PHONEME_AUDIO_BANK['zh'] = getAudio('phonemes', 'zh');
     PHONEME_AUDIO_BANK['sh'] = getAudio('phonemes', 'sh');
     PHONEME_AUDIO_BANK['ch'] = getAudio('phonemes', 'ch');
+    PHONEME_AUDIO_BANK['schwa'] = getAudio('phonemes', 'schwa');
     if (!PHONEME_AUDIO_BANK['ch'] && PHONEME_AUDIO_BANK['sh']) PHONEME_AUDIO_BANK['ch'] = PHONEME_AUDIO_BANK['sh'];
+    // Schwa fallback chain. The 'schwa' clip has not been generated yet (see
+    // Phoneme app.txt ENGLISH_PHONEMES), and an English phoneme with no bank
+    // entry is SILENTLY SKIPPED by handleAudio — no toast, no TTS fallback — so
+    // mapping ə → 'schwa' without this would turn every reduced vowel mute.
+    // Falling back to short u preserves exactly the behaviour ə had before
+    // (handleAudio's phoneme maps sent ə → 'u'), and the moment a real schwa
+    // clip lands in audio_bank.json this alias stops firing on its own.
+    if (!PHONEME_AUDIO_BANK['schwa'] && PHONEME_AUDIO_BANK['u']) PHONEME_AUDIO_BANK['schwa'] = PHONEME_AUDIO_BANK['u'];
     if (PHONEME_AUDIO_BANK['or'] && !PHONEME_AUDIO_BANK['orr']) PHONEME_AUDIO_BANK['orr'] = PHONEME_AUDIO_BANK['or'];
     if (PHONEME_AUDIO_BANK['ar'] && !PHONEME_AUDIO_BANK['ahrr']) PHONEME_AUDIO_BANK['ahrr'] = PHONEME_AUDIO_BANK['ar'];
     if (PHONEME_AUDIO_BANK['er'] && !PHONEME_AUDIO_BANK['err']) PHONEME_AUDIO_BANK['err'] = PHONEME_AUDIO_BANK['er'];

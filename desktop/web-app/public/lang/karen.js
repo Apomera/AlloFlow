@@ -2309,7 +2309,9 @@
     "writing": "ကွဲးတၢ် Content...",
     "actions": {
       "analyzing_short": "ဆၢကသၢၣ်ဝဲ...",
-      "generate_short": "တ့ထီၣ်"
+      "generate_short": "တ့ထီၣ်",
+      "books_short": "လံာ်",
+      "books_hint": "အိးထီၣ်လံာ်ဂီၤ - လံာ်မနုၤဂ့ၤမနုၤဂ့ၤ ကဲထီၣ်နတၢ်ဂ့ၢ်ခီၣ်ထံးသ့"
     },
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text ဘှီထီၣ် successfully!",
@@ -2343,7 +2345,16 @@
     },
     "drafting_story_outline": "Planning dialogue structure...",
     "load_project_tooltip": "Load previously ပာ်ဖျါဝံၤ AlloFlow PDF project",
-    "load_project": "Load Project"
+    "load_project": "Load Project",
+    "quickstart_heading": "မ့တမ့ၢ် ဃုထၢတၢ်စးထီၣ်အလီၢ်",
+    "qs_book": "အိးထီၣ်လံာ်ဖးအစရီ",
+    "qs_book_sub": "လံာ်, တၢ်ကွဲးဖျါ ဒီး တၢ်ဂ့ၢ်အခီၣ်ထံး",
+    "qs_write": "ကွဲး မ့တမ့ၢ် ဘျးစဲလံာ်မဲာ်ဖျၢၣ်",
+    "qs_write_sub": "သူနတၢ်ဂ့ၢ်တၢ်ကျိၤ",
+    "qs_find": "ဃုတၢ်မၤစၢၤလၢအ့ထၢၣ်နဲးအပူၤ",
+    "qs_find_sub": "ဘျးစဲလ့ၣ်ခ် မ့တမ့ၢ် ပျဲ AI ဃုန့ၢ်",
+    "qs_generate": "မၤကဲထီၣ်လၢတၢ်ဂ့ၢ်ခိၣ်တီအပူၤ",
+    "qs_generate_sub": "AI ကကွဲးန့ၢ်နၤ"
   },
   "wizard": {
     "title": "Quick စးထီၣ်",
@@ -14293,7 +14304,7 @@
     "litlab_desc": "Bring stories ဆူ life ဒီး character voices & literary analysis",
     "poettree_title": "PoetTree",
     "poettree_desc": "ကွဲးတၢ် poems ဒီး form scaffolds, rhyme & meter analysis, AI feedback",
-    "throughline_title": "Throughline",
+    "throughline_title": "Learning Web: Unit Path",
     "throughline_desc": "နအ့ၣ်သိၣ်လိတဖၣ်ကို တၢ်စံးဆီတဲာ်အဖီခိၣ် စီၤလီၤ—တၢ်သိၣ်လိအကျိၤ၊ အဆိကတီၢ်တဖၣ်၊ ဒီး ဖဲလ်တခါလၢ export လုပ်လို့ရမယ်။"
   },
   "sel_hub": {
@@ -15440,9 +15451,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

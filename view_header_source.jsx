@@ -15,6 +15,34 @@
  */
 const _headerUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function(){};
 
+// ── Popover escape hatch ──────────────────────────────────────────────────────
+// The Text and Voice settings panels are position:fixed with z-[10001], but they
+// were rendered inside #tour-header-settings (relative z-[60]), which is itself
+// inside <header> (relative z-50). Each of those is a stacking context, so the
+// panel's z-index was only ever compared against its siblings INSIDE the z-60
+// box — never against the rest of the page. The sibling #tour-header-utils pill
+// (bot toggle / help / cloud sync) sits at z-[100] in the same parent context
+// and therefore painted OVER both panels, along with their click-outside
+// backdrops.
+//
+// On a wide screen the pill shares a row with everything else and never reaches
+// the panel's `top-28`, so the bug stayed invisible. On a phone the pill is
+// `w-full` and wraps onto its own row directly beneath the header — landing
+// squarely on the panel and swallowing every tap aimed at the controls.
+//
+// Portalling to <body> puts the panel in the root stacking context, where
+// z-[10001] means what it reads. Falls back to rendering in place if ReactDOM
+// is not on window (SSR/test harness), which is no worse than the old behaviour.
+const _headerPortal = (node) => {
+    try {
+        if (typeof window !== 'undefined' && window.ReactDOM && typeof window.ReactDOM.createPortal === 'function'
+            && typeof document !== 'undefined' && document.body) {
+            return window.ReactDOM.createPortal(node, document.body);
+        }
+    } catch (_) {}
+    return node;
+};
+
 function HeaderBar(props) {
   const noop = () => null;
   const AlertCircle = window.AlertCircle || noop;
@@ -511,7 +539,7 @@ function HeaderBar(props) {
                                 <span className="text-xs font-bold hidden xl:inline">{t('immersive.label_text')}</span>
                                 {showTextSettings ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
                             </button>
-                            {showTextSettings && (
+                            {showTextSettings && _headerPortal(
                                 <>
                                     <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowTextSettingsToFalse}></div>
                                     <div ref={_textSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-text-settings-title" className={`fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
@@ -655,7 +683,7 @@ function HeaderBar(props) {
                                 <span className="text-xs font-bold hidden xl:inline">{t('immersive.label_voice')}</span>
                                 {showVoiceSettings ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
                             </button>
-                            {showVoiceSettings && (
+                            {showVoiceSettings && _headerPortal(
                                 <>
                                     <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowVoiceSettingsToFalse}></div>
                                     <div ref={_voiceSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-voice-settings-title" className={`fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
@@ -1040,6 +1068,151 @@ function HeaderBar(props) {
                                 <UiLanguageSelector />
                             </div>
                         </div>
+                        {/* Everything other than the language picker stacks into one
+                            column beside it. The language block is two controls tall,
+                            which left a dead band across the top of this box while the
+                            utility cluster sat on a row of its own below — so the box
+                            was a row taller than it needed to be. */}
+                        <div className="flex-1 min-w-0 w-full sm:w-auto flex flex-col items-stretch gap-1.5">
+                        {isTeacherMode && (
+                        <div
+                            data-header-utility-cluster="teacher"
+                            className={`w-full sm:w-auto sm:self-end flex flex-wrap items-center gap-1.5 rounded-xl border p-1 ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'border-white/15 bg-slate-950/20 shadow-sm'}`}
+                        >
+                            <button type="button"
+                                onClick={handleSetIsTranslateModalOpenToTrue}
+                                className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30"
+                                title={t('header.translate_tooltip')}
+                                data-help-key="header_translate"
+                            >
+                                <Languages size={14} /> <span className="hidden lg:inline">{t('header.translate_button')}</span>
+                            </button>
+                            <div className="relative shrink-0">
+                            <button type="button"
+                                aria-label={t('header.documents_menu_aria') || 'Documents menu'}
+                                aria-haspopup="menu"
+                                aria-expanded={showExportMenu}
+                                onClick={handleToggleShowExportMenu}
+                                className={`bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border ${showExportMenu ? 'border-white/50 bg-white/20' : 'border-white/10 hover:border-white/30'}`}
+                                data-help-key="header_export"
+                                title={t('header.export_tooltip')}
+                            >
+                                <FileText size={14} /> <span className="hidden lg:inline">{t('header.nav_documents') || 'Documents'}</span> {showExportMenu ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
+                            </button>
+                            {showExportMenu && (
+                                <div role="menu" aria-label={t('header.documents_menu_aria') || 'Documents menu'} onKeyDown={(e) => {
+                                    const items = e.currentTarget.querySelectorAll('[role="menuitem"]:not([disabled])');
+                                    const idx = Array.from(items).indexOf(document.activeElement);
+                                    if (e.key === 'ArrowDown') { e.preventDefault(); items[(idx + 1) % items.length]?.focus(); }
+                                    else if (e.key === 'ArrowUp') { e.preventDefault(); items[(idx - 1 + items.length) % items.length]?.focus(); }
+                                    else if (e.key === 'Escape') { setShowExportMenu(false); document.querySelector('[data-help-key="header_export"]')?.focus(); }
+                                  }} ref={(el) => { if (el) { const first = el.querySelector('[role="menuitem"]'); if (first) first.focus(); } }} className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl p-2 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 flex flex-col gap-1">
+                                    <div className="text-xs font-black text-slate-800 px-2 py-1 flex items-center gap-1.5">{"\ud83d\udcc4"} {t('export_menu.section_documents') || 'Documents'}</div>
+                                    <button type="button" role="menuitem" onClick={() => openExportPreview('print')} className="w-full px-3 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mb-1">{"\ud83d\udee0\ufe0f"} {t('export_menu.document_builder') || 'Document Builder'}</button>
+                                    {customExportCSS && <div className="text-[11px] text-green-600 font-medium px-2 mb-1">✓ {t('export_menu.custom_style_active') || 'Custom style active'}</div>}
+                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcc4"} {t('export_menu.section_print') || 'Print & PDF'}</div>
+                                    <button type="button" role="menuitem"
+                                        aria-label={t('header.open_doc_builder_pdf_aria') || 'Open Document Builder for PDF'}
+                                        onClick={() => openExportPreview('print')}
+                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-green-50 text-green-700 text-xs font-bold transition-colors"
+                                        data-help-key="export_pdf"
+                                    >
+                                        <FileDown size={14} /> {t('export_menu.pdf_slash_print', { print: t('export_menu.print') }) || `PDF / ${t('export_menu.print')}`}
+                                    </button>
+                                    <button type="button" role="menuitem"
+                                        onClick={() => openExportPreview('worksheet')}
+                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors"
+                                        data-help-key="export_worksheet"
+                                    >
+                                        <FileText size={14} /> {t('export_menu.worksheet')}
+                                    </button>
+                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcbb"} {t('export_menu.section_digital') || 'Digital Formats'}</div>
+                                    <button type="button" role="menuitem"
+                                        onClick={() => openExportPreview('html')}
+                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-indigo-50 text-indigo-700 text-xs font-bold transition-colors"
+                                        data-help-key="export_html"
+                                    >
+                                        <Code size={14} /> {t('export_menu.html')}
+                                    </button>
+                                    <button type="button" role="menuitem" aria-label={t('common.export_as_slides')}
+                                        onClick={() => openExportPreview('slides')}
+                                        disabled={!pptxLoaded} title={t('header.export_slides_tooltip') || 'Opens Document Builder in Slides mode'}
+                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-orange-50 text-orange-700 text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        data-help-key="export_slides"
+                                    >
+                                        {!pptxLoaded ? <RefreshCw size={14} className="animate-spin"/> : <MonitorPlay size={14} />}
+                                        {t('export_menu.slides')}
+                                    </button>
+                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{t('export_menu.section_student_qr') || 'Student QR'}</div>
+                                    <button type="button" role="menuitem"
+                                        onClick={() => { if (typeof createHomeworkAssignmentLink === 'function') createHomeworkAssignmentLink(); setShowExportMenu(false); }}
+                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50 text-cyan-700 text-xs font-bold transition-colors"
+                                        data-help-key="homework_qr"
+                                    >
+                                        <Share2 size={14} /> {t('export_menu.homework_qr') || 'Homework QR'}
+                                    </button>
+                                    <div className="px-3 pb-2">
+                                      <label className="block text-[11px] font-bold text-slate-600" htmlFor="homework-qr-expiry">{t('export_menu.homework_link_length') || 'Homework link length'}</label>
+                                      <select id="homework-qr-expiry" value={homeworkExpiryDays || 14} onChange={event => setHomeworkExpiryDays(Number(event.target.value) || 14)} className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                                        <option value={1}>{t('export_menu.expiry_1_day') || '1 day'}</option>
+                                        <option value={7}>{t('export_menu.expiry_1_week') || '1 week'}</option>
+                                        <option value={14}>{t('export_menu.expiry_2_weeks') || '2 weeks'}</option>
+                                        <option value={30}>{t('export_menu.expiry_30_days') || '30 days'}</option>
+                                        <option value={90}>{t('export_menu.expiry_90_days') || '90 days (quarter)'}</option>
+                                        <option value={180}>{t('export_menu.expiry_180_days') || '180 days (semester)'}</option>
+                                        <option value={365}>{t('export_menu.expiry_365_days') || '365 days (school year)'}</option>
+                                      </select>
+                                      {/* Activity setup moved to the Assignment Control Center.
+                                          A multi-field form inside role="menu" is both cramped and
+                                          keyboard-hostile: the menu's arrow handler steals focus out
+                                          of a textarea. */}
+                                      <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} className="mt-2 flex w-full items-center gap-2 rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-left text-[11px] font-bold text-sky-900 hover:bg-sky-100">
+                                        {t('export_menu.setup_activity') || 'Set up a poll, sign-up sheet or class activity'}
+                                      </button>
+                                      <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800">
+                                        <History size={14}/> {t('export_menu.shared_links') || 'Polls, sign-ups & shared links'}{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
+                                      </button>
+                                    </div>
+                                    <p className="px-3 pb-2 text-[11px] leading-snug text-slate-500">{studentAiPolicyForShare === 'student-byok' ? (t('export_menu.share_policy_byok') || 'Teacher-prepared resources open with optional personal AI. Students supply and test their own provider.') : (t('export_menu.share_policy_ai_off') || 'Teacher-prepared resources open for students with AI generation off.')}</p>
+                                    {/* Section label shares the buttons' gate \u2014 an excluded mode
+                                        must not see an empty "LMS Integration" heading (independent
+                                        mode did, before parent exclusions were added). */}
+                                    {!isIndependentMode && !isParentMode && (
+                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83c\udfeb"} {t('export_menu.section_lms') || 'LMS Integration'}</div>
+                                    )}
+                                    {activeView === 'quiz' && !isIndependentMode && !isParentMode && (
+                                        <button type="button" role="menuitem"
+                                            onClick={() => { handleExportQTI(); setShowExportMenu(false); }}
+                                            className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-teal-50 text-teal-700 text-xs font-bold transition-colors"
+                                            data-help-key="export_qti"
+                                        >
+                                            <FolderDown size={14} /> {t('export_menu.qti')}
+                                        </button>
+                                    )}
+                                    {!isIndependentMode && !isParentMode && (
+                                    <button type="button" role="menuitem"
+                                        onClick={() => { handleExportIMS(); setShowExportMenu(false); }}
+                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-yellow-50 text-yellow-700 text-xs font-bold transition-colors"
+                                        data-help-key="export_ims"
+                                    >
+                                        <FolderDown size={14} /> {t('export_menu.ims')}
+                                    </button>
+                                    )}
+                                </div>
+                            )}
+                            {showExportMenu && <div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleSetShowExportMenuToFalse}></div>}
+                        </div>
+                            <button type="button"
+                                onClick={() => setShowClassAnalytics(true)}
+                                className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40"
+                                title={t('common.assessment_center') || 'Assessment Center'}
+                                data-help-key="header_analytics"
+                            >
+                                <ClipboardList size={14} /> <span className="hidden lg:inline">{t('common.assessment_center') || 'Assessment Center'}</span>
+                            </button>
+                        </div>
+                            )}
+                        <div className="flex flex-wrap items-center gap-2">
                         {/* AI Backend / Diagnostics — visible to teachers in BOTH Canvas
                             and deploy. The modal itself swaps content based on _isCanvasEnv:
                             Canvas shows only Canvas-viable fields (CSE/Wolfram keys + Model
@@ -1204,144 +1377,6 @@ function HeaderBar(props) {
                                 </div>
                             )}
                         </div>
-                        {isTeacherMode && (
-                        <div
-                            data-header-utility-cluster="teacher"
-                            className={`w-full xl:w-auto xl:ml-auto flex flex-wrap items-center gap-1.5 rounded-xl border p-1 ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'border-white/15 bg-slate-950/20 shadow-sm'}`}
-                        >
-                            <button type="button"
-                                onClick={handleSetIsTranslateModalOpenToTrue}
-                                className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30"
-                                title={t('header.translate_tooltip')}
-                                data-help-key="header_translate"
-                            >
-                                <Languages size={14} /> <span className="hidden lg:inline">{t('header.translate_button')}</span>
-                            </button>
-                            <div className="relative shrink-0">
-                            <button type="button"
-                                aria-label={t('header.documents_menu_aria') || 'Documents menu'}
-                                aria-haspopup="menu"
-                                aria-expanded={showExportMenu}
-                                onClick={handleToggleShowExportMenu}
-                                className={`bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border ${showExportMenu ? 'border-white/50 bg-white/20' : 'border-white/10 hover:border-white/30'}`}
-                                data-help-key="header_export"
-                                title={t('header.export_tooltip')}
-                            >
-                                <FileText size={14} /> <span className="hidden lg:inline">{t('header.nav_documents') || 'Documents'}</span> {showExportMenu ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
-                            </button>
-                            {showExportMenu && (
-                                <div role="menu" aria-label={t('header.documents_menu_aria') || 'Documents menu'} onKeyDown={(e) => {
-                                    const items = e.currentTarget.querySelectorAll('[role="menuitem"]:not([disabled])');
-                                    const idx = Array.from(items).indexOf(document.activeElement);
-                                    if (e.key === 'ArrowDown') { e.preventDefault(); items[(idx + 1) % items.length]?.focus(); }
-                                    else if (e.key === 'ArrowUp') { e.preventDefault(); items[(idx - 1 + items.length) % items.length]?.focus(); }
-                                    else if (e.key === 'Escape') { setShowExportMenu(false); document.querySelector('[data-help-key="header_export"]')?.focus(); }
-                                  }} ref={(el) => { if (el) { const first = el.querySelector('[role="menuitem"]'); if (first) first.focus(); } }} className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl p-2 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 flex flex-col gap-1">
-                                    <div className="text-xs font-black text-slate-800 px-2 py-1 flex items-center gap-1.5">{"\ud83d\udcc4"} Documents</div>
-                                    <button type="button" role="menuitem" onClick={() => openExportPreview('print')} className="w-full px-3 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mb-1">{"\ud83d\udee0\ufe0f"} Document Builder</button>
-                                    {customExportCSS && <div className="text-[11px] text-green-600 font-medium px-2 mb-1">✓ Custom style active</div>}
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcc4"} Print & PDF</div>
-                                    <button type="button" role="menuitem"
-                                        aria-label={t('header.open_doc_builder_pdf_aria') || 'Open Document Builder for PDF'}
-                                        onClick={() => openExportPreview('print')}
-                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-green-50 text-green-700 text-xs font-bold transition-colors"
-                                        data-help-key="export_pdf"
-                                    >
-                                        <FileDown size={14} /> PDF / {t('export_menu.print')}
-                                    </button>
-                                    <button type="button" role="menuitem"
-                                        onClick={() => openExportPreview('worksheet')}
-                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors"
-                                        data-help-key="export_worksheet"
-                                    >
-                                        <FileText size={14} /> {t('export_menu.worksheet')}
-                                    </button>
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcbb"} Digital Formats</div>
-                                    <button type="button" role="menuitem"
-                                        onClick={() => openExportPreview('html')}
-                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-indigo-50 text-indigo-700 text-xs font-bold transition-colors"
-                                        data-help-key="export_html"
-                                    >
-                                        <Code size={14} /> {t('export_menu.html')}
-                                    </button>
-                                    <button type="button" role="menuitem" aria-label={t('common.export_as_slides')}
-                                        onClick={() => openExportPreview('slides')}
-                                        disabled={!pptxLoaded} title={t('header.export_slides_tooltip') || 'Opens Document Builder in Slides mode'}
-                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-orange-50 text-orange-700 text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                        data-help-key="export_slides"
-                                    >
-                                        {!pptxLoaded ? <RefreshCw size={14} className="animate-spin"/> : <MonitorPlay size={14} />}
-                                        {t('export_menu.slides')}
-                                    </button>
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">Student QR</div>
-                                    <button type="button" role="menuitem"
-                                        onClick={() => { if (typeof createHomeworkAssignmentLink === 'function') createHomeworkAssignmentLink(); setShowExportMenu(false); }}
-                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50 text-cyan-700 text-xs font-bold transition-colors"
-                                        data-help-key="homework_qr"
-                                    >
-                                        <Share2 size={14} /> Homework QR
-                                    </button>
-                                    <div className="px-3 pb-2">
-                                      <label className="block text-[11px] font-bold text-slate-600" htmlFor="homework-qr-expiry">Homework link length</label>
-                                      <select id="homework-qr-expiry" value={homeworkExpiryDays || 14} onChange={event => setHomeworkExpiryDays(Number(event.target.value) || 14)} className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                                        <option value={1}>1 day</option>
-                                        <option value={7}>1 week</option>
-                                        <option value={14}>2 weeks</option>
-                                        <option value={30}>30 days</option>
-                                        <option value={90}>90 days (quarter)</option>
-                                        <option value={180}>180 days (semester)</option>
-                                        <option value={365}>365 days (school year)</option>
-                                      </select>
-                                      {/* Activity setup moved to the Assignment Control Center.
-                                          A multi-field form inside role="menu" is both cramped and
-                                          keyboard-hostile: the menu's arrow handler steals focus out
-                                          of a textarea. */}
-                                      <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} className="mt-2 flex w-full items-center gap-2 rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-left text-[11px] font-bold text-sky-900 hover:bg-sky-100">
-                                        Set up a poll, sign-up sheet or class activity
-                                      </button>
-                                      <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800">
-                                        <History size={14}/> Polls, sign-ups & shared links{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
-                                      </button>
-                                    </div>
-                                    <p className="px-3 pb-2 text-[11px] leading-snug text-slate-500">{studentAiPolicyForShare === 'student-byok' ? 'Teacher-prepared resources open with optional personal AI. Students supply and test their own provider.' : 'Teacher-prepared resources open for students with AI generation off.'}</p>
-                                    {/* Section label shares the buttons' gate \u2014 an excluded mode
-                                        must not see an empty "LMS Integration" heading (independent
-                                        mode did, before parent exclusions were added). */}
-                                    {!isIndependentMode && !isParentMode && (
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83c\udfeb"} LMS Integration</div>
-                                    )}
-                                    {activeView === 'quiz' && !isIndependentMode && !isParentMode && (
-                                        <button type="button" role="menuitem"
-                                            onClick={() => { handleExportQTI(); setShowExportMenu(false); }}
-                                            className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-teal-50 text-teal-700 text-xs font-bold transition-colors"
-                                            data-help-key="export_qti"
-                                        >
-                                            <FolderDown size={14} /> {t('export_menu.qti')}
-                                        </button>
-                                    )}
-                                    {!isIndependentMode && !isParentMode && (
-                                    <button type="button" role="menuitem"
-                                        onClick={() => { handleExportIMS(); setShowExportMenu(false); }}
-                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-yellow-50 text-yellow-700 text-xs font-bold transition-colors"
-                                        data-help-key="export_ims"
-                                    >
-                                        <FolderDown size={14} /> {t('export_menu.ims')}
-                                    </button>
-                                    )}
-                                </div>
-                            )}
-                            {showExportMenu && <div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleSetShowExportMenuToFalse}></div>}
-                        </div>
-                            <button type="button"
-                                onClick={() => setShowClassAnalytics(true)}
-                                className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40"
-                                title={t('common.assessment_center') || 'Assessment Center'}
-                                data-help-key="header_analytics"
-                            >
-                                <ClipboardList size={14} /> <span className="hidden lg:inline">{t('common.assessment_center') || 'Assessment Center'}</span>
-                            </button>
-                        </div>
-                            )}
                         {!isTeacherMode && (
                             <button type="button"
                                 onClick={handleSetShowSubmitModalToTrue}
@@ -1352,6 +1387,8 @@ function HeaderBar(props) {
                                 <Send size={14} /> <span className="hidden lg:inline">{t('header.submit_work')}</span>
                             </button>
                         )}
+                        </div>
+                        </div>
                     </div>
                 </div>
             </div>

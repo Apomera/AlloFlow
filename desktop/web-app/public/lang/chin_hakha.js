@@ -2323,7 +2323,9 @@
     "writing": "Tialnak Content...",
     "actions": {
       "analyzing_short": "A Zoh hngalh lio...",
-      "generate_short": "Ser"
+      "generate_short": "Ser",
+      "books_short": "Cauk",
+      "books_hint": "Hmanthlak cauk ong: cauk zeidah nangmah ca hrampi a si khawh"
     },
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text tuah successfully!",
@@ -2357,7 +2359,16 @@
     },
     "drafting_story_outline": "Planning dialogue structure...",
     "load_project_tooltip": "Load previously khoh cang AlloFlow PDF project",
-    "load_project": "Load Project"
+    "load_project": "Load Project",
+    "quickstart_heading": "Asiloah thawknak hmun kha thim",
+    "qs_book": "Relnak cauk tlangpi kha ong",
+    "qs_book_sub": "Cauk, capar le a hrampi thawknak",
+    "qs_write": "Ca ṭial asiloah ca hlan",
+    "qs_write_sub": "Nangmah ca kha hman",
+    "qs_find": "Internet ah hmuahnak zoh",
+    "qs_find_sub": "Link hlan asiloah AI in kawl seh",
+    "qs_generate": "Kong pakhat in ser",
+    "qs_generate_sub": "AI nih nangmah caah a ṭial lai"
   },
   "wizard": {
     "title": "Quick Thawk",
@@ -21898,7 +21909,7 @@
     "litlab_desc": "Bring stories ah life he character voices & literary analysis",
     "poettree_title": "PoetTree",
     "poettree_desc": "Tial poems he form scaffolds, rhyme & meter analysis, AI feedback",
-    "throughline_title": "Throughline",
+    "throughline_title": "Learning Web: Unit Path",
     "throughline_desc": "Na cawnnak pawl kha ruang khat ah ser: cawnnak zawn, hlan dingmi, le file pakhat in export khawh."
   },
   "sel_hub": {
@@ -23044,9 +23055,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

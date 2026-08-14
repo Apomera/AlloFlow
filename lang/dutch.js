@@ -2357,7 +2357,9 @@
     "writing": "Inhoud schrijven...",
     "actions": {
       "analyzing_short": "Analyseren...",
-      "generate_short": "Genereren"
+      "generate_short": "Genereren",
+      "books_short": "Boeken",
+      "books_hint": "Open prentenboeken: elk boek kan je brontekst worden"
     },
     "status_generating": "Brontekst genereren...",
     "success_long_form": "Lange tekst succesvol gegenereerd!",
@@ -2391,7 +2393,16 @@
     },
     "drafting_story_outline": "Dialoogstructuur plannen...",
     "load_project_tooltip": "Een eerder opgeslagen AlloFlow PDF-project laden",
-    "load_project": "Project laden"
+    "load_project": "Project laden",
+    "quickstart_heading": "Of kies een startpunt",
+    "qs_book": "Leescatalogus openen",
+    "qs_book_sub": "Boeken, artikelen en primaire bronnen",
+    "qs_write": "Tekst schrijven of plakken",
+    "qs_write_sub": "Gebruik je eigen materiaal",
+    "qs_find": "Online een bron zoeken",
+    "qs_find_sub": "Plak een link of laat AI zoeken",
+    "qs_generate": "Genereren vanuit een onderwerp",
+    "qs_generate_sub": "AI schrijft het voor je"
   },
   "wizard": {
     "title": "Snelstart",

@@ -2323,7 +2323,9 @@
     "writing": "コンテンツを作成中...",
     "actions": {
       "analyzing_short": "分析中...",
-      "generate_short": "生成"
+      "generate_short": "生成",
+      "books_short": "本",
+      "books_hint": "絵本を開く：どの本でもソース資料にできます"
     },
     "status_generating": "ソーステキストを生成中...",
     "success_long_form": "長文テキストの生成に成功しました！",
@@ -2357,7 +2359,16 @@
     },
     "drafting_story_outline": "対話構造を計画中...",
     "load_project_tooltip": "以前に保存したAlloFlow PDFプロジェクトを読み込む",
-    "load_project": "プロジェクトを読み込み"
+    "load_project": "プロジェクトを読み込み",
+    "quickstart_heading": "または出発点を選んでください",
+    "qs_book": "読書カタログを開く",
+    "qs_book_sub": "本、記事、一次資料",
+    "qs_write": "テキストを書く・貼り付ける",
+    "qs_write_sub": "自分の教材を使う",
+    "qs_find": "オンラインで資料を探す",
+    "qs_find_sub": "リンクを貼るか、AI に検索させる",
+    "qs_generate": "トピックから生成する",
+    "qs_generate_sub": "AI が代わりに書きます"
   },
   "language_selector": {
     "search_placeholder": "言語を入力…",
@@ -8182,7 +8193,7 @@
     "poettree_title": "PoetTree",
     "poettree_desc": "形式スキャフォールド、韻律分析、AIフィードバックで詩を書く",
     "throughline_desc": "レッスンを空間的なユニットにまとめましょう：指導の順序、前提条件、書き出し可能な1つのファイル",
-    "throughline_title": "Throughline"
+    "throughline_title": "Learning Web: Unit Path"
   },
   "socratic": {
     "title": "ソクラテス式チューター",
@@ -31097,9 +31108,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

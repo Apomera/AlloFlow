@@ -2346,7 +2346,9 @@
     "writing": "Kokoma mateya...",
     "actions": {
       "analyzing_short": "Kotala...",
-      "generate_short": "Sala"
+      "generate_short": "Sala",
+      "books_short": "Mikanda",
+      "books_hint": "Fungola mikanda ya bililingi: mokanda nyonso ekoki kokoma makomi na yo ya ebandeli"
     },
     "status_generating": "Generating esika ya kobimisa makomi...",
     "success_long_form": "molayi-form makomi esalemi successfully!",
@@ -2380,7 +2382,16 @@
     },
     "drafting_story_outline": "Kobongisa boyokani ya lisolo...",
     "load_project_tooltip": "Tiyá previously ebombami AlloFlow PDF project",
-    "load_project": "Tiyá Project"
+    "load_project": "Tiyá Project",
+    "quickstart_heading": "To pona esika ya kobanda",
+    "qs_book": "Fungola lisɛlɛ ya botángi",
+    "qs_book_sub": "Mikanda, masolo mpe bautu ya liboso",
+    "qs_write": "Koma to kotisa makomi",
+    "qs_write_sub": "Salela biloko na yo moko",
+    "qs_find": "Luka esika ya koyekola na internet",
+    "qs_find_sub": "Kotisa ekangiseli to tika AI aluka",
+    "qs_generate": "Sala uta na ntina",
+    "qs_generate_sub": "AI akokomela yo"
   },
   "wizard": {
     "title": "noki Bandá",

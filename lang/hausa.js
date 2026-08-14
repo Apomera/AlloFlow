@@ -2345,7 +2345,9 @@
     "writing": "Writing abun ciki...",
     "actions": {
       "analyzing_short": "Ana bincike...",
-      "generate_short": "Samar da"
+      "generate_short": "Samar da",
+      "books_short": "Littattafai",
+      "books_hint": "Buɗe littattafan hoto: kowane littafi na iya zama tushen rubutunka"
     },
     "status_generating": "Generating tushe rubutu...",
     "success_long_form": "dogon-form rubutu samar successfully!",
@@ -2379,7 +2381,16 @@
     },
     "drafting_story_outline": "Ana shirin tsarin tattaunawa...",
     "load_project_tooltip": "Ɗora previously ajiye AlloFlow PDF project",
-    "load_project": "Ɗora Project"
+    "load_project": "Ɗora Project",
+    "quickstart_heading": "Ko zaɓi wurin farawa",
+    "qs_book": "Buɗe jerin karatu",
+    "qs_book_sub": "Littattafai, labarai da tushen asali",
+    "qs_write": "Rubuta ko liƙa rubutu",
+    "qs_write_sub": "Yi amfani da kayanka",
+    "qs_find": "Nemo albarkatu a yanar gizo",
+    "qs_find_sub": "Liƙa hanyar haɗi ko bari AI ya bincika",
+    "qs_generate": "Ƙirƙira daga wani batu",
+    "qs_generate_sub": "AI zai rubuta maka"
   },
   "wizard": {
     "title": "da sauri Fara",

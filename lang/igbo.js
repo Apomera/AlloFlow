@@ -2347,7 +2347,9 @@
     "writing": "Writing ọdịnaya...",
     "actions": {
       "analyzing_short": "Na-enyocha...",
-      "generate_short": "Mepụta"
+      "generate_short": "Mepụta",
+      "books_short": "Akwụkwọ",
+      "books_hint": "Mepee akwụkwọ foto: akwụkwọ ọ bụla nwere ike ịbụ ederede isi gị"
     },
     "status_generating": "Generating ebe sitere ederede...",
     "success_long_form": "ogologo-form ederede mepụtara successfully!",
@@ -2381,7 +2383,16 @@
     },
     "drafting_story_outline": "Na-eme atụmatụ usoro mkparịta ụka...",
     "load_project_tooltip": "Bulite otu previously echekwala AlloFlow PDF project",
-    "load_project": "Bulite Project"
+    "load_project": "Bulite Project",
+    "quickstart_heading": "Ma ọ bụ họrọ ebe mmalite",
+    "qs_book": "Mepee ndepụta ọgụgụ",
+    "qs_book_sub": "Akwụkwọ, edemede na isi mmalite",
+    "qs_write": "Dee ma ọ bụ mado ederede",
+    "qs_write_sub": "Jiri ihe onwe gị",
+    "qs_find": "Chọta akụrụngwa n'ịntanetị",
+    "qs_find_sub": "Mado njikọ ma ọ bụ hapụ AI ka ọ chọọ",
+    "qs_generate": "Mepụta site n'isiokwu",
+    "qs_generate_sub": "AI ga-edere gị ya"
   },
   "wizard": {
     "title": "ngwa ngwa Bido",

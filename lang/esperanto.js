@@ -2352,7 +2352,9 @@
     "writing": "Verkado de enhavo...",
     "actions": {
       "analyzing_short": "Analizado...",
-      "generate_short": "Generi"
+      "generate_short": "Generi",
+      "books_short": "Libroj",
+      "books_hint": "Malfermu bildlibrojn: ĉiu libro povas fariĝi via fonta teksto"
     },
     "status_generating": "Generado de fontoteksto...",
     "success_long_form": "Longforma teksto sukcese generita!",
@@ -2386,7 +2388,16 @@
     },
     "drafting_story_outline": "Planado de dialoga strukturo...",
     "load_project_tooltip": "Ŝargi antaŭe konservitan AlloFlow PDF-projekton",
-    "load_project": "Ŝargi Projekton"
+    "load_project": "Ŝargi Projekton",
+    "quickstart_heading": "Aŭ elektu deirpunkton",
+    "qs_book": "Malfermi la legokatalogon",
+    "qs_book_sub": "Libroj, artikoloj kaj primaraj fontoj",
+    "qs_write": "Skribu aŭ algluu tekston",
+    "qs_write_sub": "Uzu vian propran materialon",
+    "qs_find": "Trovi rimedon interrete",
+    "qs_find_sub": "Algluu ligilon aŭ lasu AI serĉi",
+    "qs_generate": "Generi el temo",
+    "qs_generate_sub": "AI verkas ĝin por vi"
   },
   "wizard": {
     "title": "Rapida Komenco",

@@ -2354,7 +2354,9 @@
     "writing": "Đang viết nội dung...",
     "actions": {
       "analyzing_short": "Đang phân tích...",
-      "generate_short": "Tạo"
+      "generate_short": "Tạo",
+      "books_short": "Sách",
+      "books_hint": "Mở sách tranh: bất kỳ cuốn sách nào cũng có thể thành văn bản nguồn của bạn"
     },
     "status_generating": "Đang tạo văn bản nguồn...",
     "success_long_form": "Đã tạo thành công văn bản dài!",
@@ -2388,7 +2390,16 @@
     },
     "drafting_story_outline": "Đang lên kế hoạch cấu trúc đối thoại...",
     "load_project_tooltip": "Tải một dự án AlloFlow PDF đã lưu trước đây",
-    "load_project": "Tải dự án"
+    "load_project": "Tải dự án",
+    "quickstart_heading": "Hoặc chọn một điểm khởi đầu",
+    "qs_book": "Mở danh mục đọc",
+    "qs_book_sub": "Sách, bài viết và tư liệu gốc",
+    "qs_write": "Viết hoặc dán văn bản",
+    "qs_write_sub": "Dùng tài liệu của riêng bạn",
+    "qs_find": "Tìm tài nguyên trực tuyến",
+    "qs_find_sub": "Dán liên kết hoặc để AI tìm kiếm",
+    "qs_generate": "Tạo từ một chủ đề",
+    "qs_generate_sub": "AI viết giúp bạn"
   },
   "wizard": {
     "title": "Bắt đầu nhanh",

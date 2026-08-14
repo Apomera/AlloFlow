@@ -2350,7 +2350,9 @@
     "writing": "ការសរសេរ មាតិកា...",
     "actions": {
       "analyzing_short": "កំពុងវិភាគ...",
-      "generate_short": "បង្កើត"
+      "generate_short": "បង្កើត",
+      "books_short": "សៀវភៅ",
+      "books_hint": "បើកសៀវភៅរូបភាព៖ សៀវភៅណាមួយក៏អាចក្លាយជាអត្ថបទប្រភពរបស់អ្នក"
     },
     "status_generating": "Generating ប្រភព អត្ថបទ...",
     "success_long_form": "អត្ថបទបែបវែងបានបង្កើតដោយជោគជ័យ!",
@@ -2384,7 +2386,16 @@
     },
     "drafting_story_outline": "Planning dialogue រចនាសម្ព័ន្ធ...",
     "load_project_tooltip": "ផ្ទុក previously បានរក្សាទុក AlloFlow PDF project",
-    "load_project": "ផ្ទុក Project"
+    "load_project": "ផ្ទុក Project",
+    "quickstart_heading": "ឬជ្រើសរើសចំណុចចាប់ផ្តើម",
+    "qs_book": "បើកបញ្ជីអានសៀវភៅ",
+    "qs_book_sub": "សៀវភៅ អត្ថបទ និងឯកសារដើម",
+    "qs_write": "សរសេរ ឬបិទភ្ជាប់អត្ថបទ",
+    "qs_write_sub": "ប្រើសម្ភារៈរបស់អ្នកផ្ទាល់",
+    "qs_find": "ស្វែងរកធនធានលើអ៊ីនធឺណិត",
+    "qs_find_sub": "បិទភ្ជាប់តំណ ឬឲ្យ AI ស្វែងរក",
+    "qs_generate": "បង្កើតពីប្រធានបទ",
+    "qs_generate_sub": "AI សរសេរជូនអ្នក"
   },
   "wizard": {
     "title": "លឿន ចាប់ផ្តើម",
@@ -27871,7 +27882,7 @@
     "poettree_title": "PoetTree",
     "poettree_desc": "សរសេរ poems ជាមួយ form scaffolds, rhyme & meter ការវិភាគ, AI មតិកែលម្អ",
     "throughline_desc": "រៀបចំមេរៀនរបស់អ្នកជាឯកតាលំហ៖ លំដាប់បង្រៀន លក្ខខណ្ឌជាមុន ឯកសារនាំចេញតែមួយ",
-    "throughline_title": "Throughline"
+    "throughline_title": "Learning Web: Unit Path"
   },
   "sel_hub": {
     "loading": "កំពុងផ្ទុក SEL Hub...",
@@ -29213,9 +29224,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

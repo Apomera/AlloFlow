@@ -2142,7 +2142,7 @@
                     (readerPrefs.font === f.id ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
                   onClick: function () { setReaderPrefs({ font: f.id }); },
                   'aria-pressed': readerPrefs.font === f.id,
-                }, f.label);
+                }, tr('readinglib_font_' + f.id, f.label));
               }))
             ),
             // text size
@@ -2959,9 +2959,9 @@
             },
               e('span', { className: collectionBadgeClass(collection, available) },
                 available ? count + ' ' + tr('readinglib_books', 'books') : tr('readinglib_collection_prepared', 'Prepared shelf')),
-              e('div', { className: 'text-lg font-extrabold text-slate-900' }, collection.label),
-              e('div', { className: 'text-sm font-semibold text-slate-700' }, collection.sourceLine),
-              e('p', { className: 'text-sm text-slate-600 leading-snug flex-1' }, collection.summary),
+              e('div', { className: 'text-lg font-extrabold text-slate-900' }, tr('readinglib_collection_' + collection.id + '_label', collection.label)),
+              e('div', { className: 'text-sm font-semibold text-slate-700' }, tr('readinglib_collection_' + collection.id + '_sources', collection.sourceLine)),
+              e('p', { className: 'text-sm text-slate-600 leading-snug flex-1' }, tr('readinglib_collection_' + collection.id + '_summary', collection.summary)),
               e('div', { className: 'text-[11px] font-semibold text-slate-500' },
                 available ? langCount + ' ' + tr('readinglib_languages', 'languages') : tr('readinglib_collection_next', 'Ready for a licensed-source import'))
             );
@@ -3901,8 +3901,8 @@
         e('div', { className: 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3' },
           e('div', { className: 'min-w-0' },
             e('div', { className: 'text-[11px] uppercase tracking-wide font-bold text-slate-400' }, tr('readinglib_collection_label', 'Collection')),
-            e('div', { className: 'text-lg font-extrabold text-slate-900 truncate' }, selectedCollection.label),
-            e('div', { className: 'text-sm text-slate-500 truncate' }, selectedCollection.sourceLine)
+            e('div', { className: 'text-lg font-extrabold text-slate-900 truncate' }, tr('readinglib_collection_' + selectedCollection.id + '_label', selectedCollection.label)),
+            e('div', { className: 'text-sm text-slate-500 truncate' }, tr('readinglib_collection_' + selectedCollection.id + '_sources', selectedCollection.sourceLine))
           ),
           e('button', {
             className: 'self-start sm:self-center px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold',
@@ -3945,7 +3945,7 @@
             'aria-label': tr('readinglib_filter_topic', 'Topic'),
           },
             e('option', { value: '' }, tr('readinglib_all_topics', 'All topics')),
-            topicOptions.map(function (option) { return e('option', { key: option.id, value: option.id }, option.label + ' (' + option.count + ')'); })
+            topicOptions.map(function (option) { return e('option', { key: option.id, value: option.id }, tr('readinglib_topicfacet_' + option.id, option.label) + ' (' + option.count + ')'); })
           ) : null,
           lengthOptions.length ? e('select', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
@@ -3954,7 +3954,7 @@
             'aria-label': tr('readinglib_filter_length', 'Reading length'),
           },
             e('option', { value: '' }, tr('readinglib_any_length', 'Any reading length')),
-            lengthOptions.map(function (option) { return e('option', { key: option.id, value: option.id }, option.label + ' (' + option.count + ')'); })
+            lengthOptions.map(function (option) { return e('option', { key: option.id, value: option.id }, tr('readinglib_length_' + option.id, option.label) + ' (' + option.count + ')'); })
           ) : null,
           licenseOptions.length ? e('select', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
@@ -3963,7 +3963,7 @@
             'aria-label': tr('readinglib_filter_license', 'Reuse rights'),
           },
             e('option', { value: '' }, tr('readinglib_any_license', 'Any reuse rights')),
-            licenseOptions.map(function (option) { return e('option', { key: option.id, value: option.id }, option.label + ' (' + option.count + ')'); })
+            licenseOptions.map(function (option) { return e('option', { key: option.id, value: option.id }, tr('readinglib_license_' + option.id, option.label) + ' (' + option.count + ')'); })
           ) : null,
           e('select', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
@@ -4140,8 +4140,8 @@
               e('div', { className: 'text-[11px] uppercase tracking-wide font-bold text-emerald-600' },
                 '📥 ' + tr('readinglib_my_imports', 'My imports') + ' · ' + tr('readinglib_my_imports_note', 'on this device')),
               props.isTeacherMode ? e('div', { className: 'flex gap-1.5' },
-                e('button', { className: 'px-2 py-0.5 rounded-lg text-[11px] font-semibold text-emerald-800 border border-emerald-200 hover:bg-emerald-50', onClick: exportImports, title: tr('readinglib_export_hint', 'Save your imported books to a file (to move to another device)') },
-                  '⤓ ' + tr('readinglib_export', 'Back up')),
+                e('button', { className: 'px-2 py-0.5 rounded-lg text-[11px] font-semibold text-emerald-800 border border-emerald-200 hover:bg-emerald-50', onClick: exportImports, title: tr('readinglib_backup_imports_hint', 'Save your imported books to a file (to move to another device)') },
+                  '⤓ ' + tr('readinglib_backup_imports', 'Back up')),
                 e('button', { className: 'px-2 py-0.5 rounded-lg text-[11px] font-semibold text-emerald-800 border border-emerald-200 hover:bg-emerald-50', onClick: function () { if (restoreInputRef.current) restoreInputRef.current.click(); }, title: tr('readinglib_restore_hint', 'Restore imported books from a backup file') },
                   '⤒ ' + tr('readinglib_restore', 'Restore')),
                 e('input', { ref: restoreInputRef, type: 'file', accept: 'application/json,.json', className: 'hidden', 'aria-hidden': true,

@@ -2353,7 +2353,9 @@
     "writing": "İçerik Yazılıyor...",
     "actions": {
       "analyzing_short": "Analiz ediliyor...",
-      "generate_short": "Üret"
+      "generate_short": "Üret",
+      "books_short": "Kitaplar",
+      "books_hint": "Resimli kitapları açın: her kitap kaynak metniniz olabilir"
     },
     "status_generating": "Kaynak metin üretiliyor...",
     "success_long_form": "Uzun biçimli metin başarıyla üretildi!",
@@ -2387,7 +2389,16 @@
     },
     "drafting_story_outline": "Diyalog yapısı planlanıyor...",
     "load_project_tooltip": "Daha önce kaydedilmiş bir AlloFlow PDF projesini yükle",
-    "load_project": "Projeyi Yükle"
+    "load_project": "Projeyi Yükle",
+    "quickstart_heading": "Ya da bir başlangıç noktası seçin",
+    "qs_book": "Okuma kataloğunu aç",
+    "qs_book_sub": "Kitaplar, makaleler ve birincil kaynaklar",
+    "qs_write": "Metin yazın veya yapıştırın",
+    "qs_write_sub": "Kendi materyalinizi kullanın",
+    "qs_find": "Çevrimiçi kaynak bulun",
+    "qs_find_sub": "Bir bağlantı yapıştırın ya da YZ arasın",
+    "qs_generate": "Bir konudan oluştur",
+    "qs_generate_sub": "YZ sizin için yazsın"
   },
   "wizard": {
     "title": "Hızlı Başlangıç",

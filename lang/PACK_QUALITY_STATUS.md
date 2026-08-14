@@ -1648,3 +1648,54 @@ now divergent on these 4 keys.
 
 The `_dev/word_sounds_clinical_label_inventory.md` doc has the full mapping
 table if a translator wants to verify intended meanings.
+
+## 2026-08-13 — landing page hand-translated into all 63 packs
+
+The four "starting point" cards on the landing page were English in every
+language. Not because the call sites lacked `t()` — they had it, with an inline
+English fallback — but because the eleven `input.*` keys were never in
+`ui_strings.js`. The runtime pack builder derives its work list from that file,
+so the keys were never handed to any translator and never showed a dotted key to
+give themselves away. Registered first, then hand-translated.
+
+**Applied:** 693 values (63 packs × 11 keys), via
+`dev-tools/i18n/apply_landing_translations.cjs`. Zero were left equal to the
+English source. Pinned by `tests/landing_pack_coverage.test.js`, which fails if
+any pack loses a key or falls back to the English string.
+
+Keys: `input.quickstart_heading`, `input.qs_book{,_sub}`, `input.qs_write{,_sub}`,
+`input.qs_find{,_sub}`, `input.qs_generate{,_sub}`, `input.actions.books_short`,
+`input.actions.books_hint`.
+
+Each pack uses the AI abbreviation it already used elsewhere (KI, IA, ИИ, ШІ, SI,
+YZ, ΤΝ, 人工知能/AI, …) rather than a uniform "AI", so the new strings read as
+part of the existing pack instead of a fresh import.
+
+### Confidence tiers — what still wants a native reader
+
+These were written by an LLM in one pass, not by native speakers. Quality is not
+uniform and the tiers below are the honest split. **Tier C should be treated as
+a draft**, on the same footing as the machine-assisted values elsewhere in this
+log.
+
+- **Tier A — high confidence, spot-check only** (43): spanish_castilian,
+  spanish_latin_america, french, french_canadian, german, italian,
+  portuguese_brazil, portuguese_portugal, portuguese_angola, dutch, polish,
+  romanian, russian, ukrainian, greek, turkish, arabic, hebrew, farsi, dari,
+  urdu, hindi, bengali, gujarati, marathi, punjabi, tamil, telugu, kannada,
+  malayalam, nepali, chinese_simplified, chinese_traditional, japanese, korean,
+  vietnamese, thai, indonesian, tagalog, swahili, haitian_creole, esperanto,
+  latin.
+- **Tier B — plausible, wants a native pass** (14): pashto, khmer, lao, burmese,
+  amharic, tigrinya, somali, hausa, yoruba, igbo, hmong, kinyarwanda, kirundi,
+  lingala.
+- **Tier C — draft, native review required before it should be trusted** (6):
+  karen, chin_hakha, chin_falam, maay_maay, acholi, marshallese. These are the
+  same packs that already carry the most English passthrough elsewhere, and the
+  landing strings here should be read as a starting point for a translator, not
+  a finished result.
+
+Two wording notes for whoever reviews: `input.quickstart_heading` renders
+uppercase with wide letter-spacing, so a long rendering will wrap awkwardly; and
+`input.actions.books_hint` uses a colon in most packs where the English uses an
+em dash, because the dash convention does not carry across scripts.

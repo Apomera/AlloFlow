@@ -231,8 +231,8 @@ function FabStack(props) {
                 <Wrench size={20} />
               </span>
               <div className="min-w-0 flex-1">
-                <h2 id="alloflow-student-tools-title" className="text-sm font-black tracking-tight text-slate-900">Student tools</h2>
-                <p className="mt-0.5 text-xs font-medium text-slate-500">Read, focus, and practice your way</p>
+                <h2 id="alloflow-student-tools-title" className="text-sm font-black tracking-tight text-slate-900">{t('student_tools.title') || 'Student tools'}</h2>
+                <p className="mt-0.5 text-xs font-medium text-slate-500">{t('student_tools.subtitle') || 'Read, focus, and practice your way'}</p>
               </div>
               <button
                 type="button"
@@ -456,7 +456,7 @@ function FabStack(props) {
           data-help-key="fab_toggle"
         >
           <Wrench size={20} aria-hidden="true" />
-          <span className="text-sm font-black tracking-tight">Student tools</span>
+          <span className="text-sm font-black tracking-tight">{t('student_tools.title') || 'Student tools'}</span>
           {dictationIsActive && (
             <span className="flex items-center gap-1 rounded-full bg-white/20 px-2 py-1 text-[10px] font-black uppercase tracking-wide">
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none" aria-hidden="true"></span>

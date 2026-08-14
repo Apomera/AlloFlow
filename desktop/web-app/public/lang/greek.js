@@ -2348,7 +2348,9 @@
     "writing": "Γραφή περιεχόμενο...",
     "actions": {
       "analyzing_short": "Ανάλυση...",
-      "generate_short": "Δημιουργία"
+      "generate_short": "Δημιουργία",
+      "books_short": "Βιβλία",
+      "books_hint": "Ανοίξτε εικονογραφημένα βιβλία: κάθε βιβλίο μπορεί να γίνει το κείμενο-πηγή σας"
     },
     "status_generating": "Generating πηγή κείμενο...",
     "success_long_form": "Το εκτενές κείμενο δημιουργήθηκε με επιτυχία!",
@@ -2382,7 +2384,16 @@
     },
     "drafting_story_outline": "Planning dialogue δομή...",
     "load_project_tooltip": "Φόρτωση previously αποθηκευμένο AlloFlow PDF project",
-    "load_project": "Φόρτωση Project"
+    "load_project": "Φόρτωση Project",
+    "quickstart_heading": "Ή διαλέξτε ένα σημείο εκκίνησης",
+    "qs_book": "Άνοιγμα καταλόγου ανάγνωσης",
+    "qs_book_sub": "Βιβλία, άρθρα και πρωτογενείς πηγές",
+    "qs_write": "Γράψτε ή επικολλήστε κείμενο",
+    "qs_write_sub": "Χρησιμοποιήστε το δικό σας υλικό",
+    "qs_find": "Βρείτε μια πηγή στο διαδίκτυο",
+    "qs_find_sub": "Επικολλήστε έναν σύνδεσμο ή αφήστε την ΤΝ να ψάξει",
+    "qs_generate": "Δημιουργία από ένα θέμα",
+    "qs_generate_sub": "Η ΤΝ το γράφει για εσάς"
   },
   "wizard": {
     "title": "γρήγορο Έναρξη",
@@ -30027,7 +30038,7 @@
     "poettree_title": "PoetTree",
     "poettree_desc": "Γράψτε poems με form scaffolds, rhyme & meter ανάλυση, AI σχόλια",
     "throughline_desc": "Οργανώστε τα μαθήματά σας σε μια χωρική ενότητα: σειρά διδασκαλίας, προαπαιτούμενα, ένα εξαγώγιμο αρχείο",
-    "throughline_title": "Throughline"
+    "throughline_title": "Learning Web: Unit Path"
   },
   "sel_hub": {
     "loading": "Φόρτωση SEL Hub...",
@@ -31369,9 +31380,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

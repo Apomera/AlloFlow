@@ -309,6 +309,36 @@ const useAlloMotionDisabled = (disableAnimations) => {
   }, []);
   return !!disableAnimations || !!prefersReducedMotion;
 };
+const useAlloCoarsePointer = () => {
+  const QUERY = "(hover: none), (pointer: coarse)";
+  const [coarse, setCoarse] = useState(() => {
+    try {
+      return !!(typeof window !== "undefined" && window.matchMedia && window.matchMedia(QUERY).matches);
+    } catch (_) {
+      return false;
+    }
+  });
+  useEffect(() => {
+    let mq = null;
+    try {
+      mq = typeof window !== "undefined" && window.matchMedia && window.matchMedia(QUERY);
+    } catch (_) {
+      mq = null;
+    }
+    if (!mq) return;
+    const apply = () => setCoarse(!!mq.matches);
+    apply();
+    if (mq.addEventListener) {
+      mq.addEventListener("change", apply);
+      return () => mq.removeEventListener("change", apply);
+    }
+    if (mq.addListener) {
+      mq.addListener(apply);
+      return () => mq.removeListener(apply);
+    }
+  }, []);
+  return coarse;
+};
 const STEM_DISCIPLINE_ACCESSORY = { math: "math-tools", engineering: "gear", creative: "artist", strategy: "game-pad", applied: "hard-hat", science: "microscope" };
 const STEM_DISCIPLINE_OVERRIDE = { cellularLab: "science", geoSandbox: "science", lumen: "science", dataPlot: "math", dataStudio: "math", alloBotSage: "engineering", worldBuilder: "creative", echoTrainer: "science" };
 function alloStemDiscipline(toolId) {
@@ -354,8 +384,18 @@ const isAlloBotTtsOff = () => {
     return false;
   }
 };
-const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = "light", colorOverlay = "none", onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null }, ref) => {
+const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = "light", colorOverlay = "none", onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 18e4 }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
+  const coarsePointer = useAlloCoarsePointer();
+  const satelliteBase = coarsePointer ? "inline-flex min-h-9 min-w-9 items-center justify-center rounded-full shadow-md z-50 border-2 duration-200 focus:outline-none" : "inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none";
+  const satellitePos = {
+    tl: coarsePointer ? "absolute -top-2.5 -left-2.5" : "absolute -top-2 -left-2",
+    tr: coarsePointer ? "absolute -top-2.5 -right-2.5" : "absolute -top-2 -right-2",
+    bl: coarsePointer ? "absolute -bottom-2.5 -left-2.5" : "absolute -bottom-1 -left-2",
+    br: coarsePointer ? "absolute -bottom-2.5 -right-2.5" : "absolute -bottom-1 -right-2"
+  };
+  const stopTouch = (e) => e.stopPropagation();
+  const satelliteIconSize = coarsePointer ? 16 : 12;
   useEffect(() => {
     try {
       var _bot = containerRef.current;
@@ -486,6 +526,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const prevMoodRef = useRef("idle");
   const [isSquashed, setIsSquashed] = useState(false);
   const [isSleeping, setIsSleeping] = useState(false);
+  const isSleepingRef = useRef(false);
+  useEffect(() => {
+    isSleepingRef.current = isSleeping;
+  }, [isSleeping]);
   const [isPoofing, setIsPoofing] = useState(false);
   const [reactions, setReactions] = useState([]);
   const [bursts, setBursts] = useState([]);
@@ -645,6 +689,28 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       setIsTalking(false);
     }
   }, [soundEnabled]);
+  useEffect(() => () => {
+    try {
+      speechRequestAbortRef.current?.abort();
+    } catch (_) {
+    }
+    if (currentAudioRef.current) {
+      try {
+        currentAudioRef.current.pause();
+      } catch (_) {
+      }
+      currentAudioRef.current = null;
+    }
+    if (lastAudioUrlRef.current) {
+      releaseAlloBotAudioUrl(lastAudioUrlRef.current);
+      lastAudioUrlRef.current = null;
+    }
+    if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
+    try {
+      window.speechSynthesis?.cancel();
+    } catch (_) {
+    }
+  }, []);
   useEffect(() => {
     try {
       safeSetItem("allo_bot_pos_v2", JSON.stringify(position));
@@ -817,6 +883,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   }, [motionDisabled]);
   const speak = useCallback(async (text, isSilent = false) => {
     const safeText = (text || "").toString();
+    if (isSleepingRef.current) {
+      debugLog("AlloBot: asleep \u2014 suppressing speech:", safeText.slice(0, 60));
+      return;
+    }
     const now = Date.now();
     if (!isSilent && safeText === lastGlobalSpeech.text && now - lastGlobalSpeech.time < 2e3) {
       warnLog("AlloBot: Suppressing duplicate speech:", safeText);
@@ -845,7 +915,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     if (onSpeechStart) onSpeechStart();
-    setIsSleeping(false);
     if (!motionDisabled) {
       setWobbleState({ active: true, deg: 3 });
       setTimeout(() => setWobbleState({ active: false, deg: 0 }), 200);
@@ -1020,32 +1089,107 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       setIsTalking(false);
     }
   }, []);
+  const wake = useCallback(() => {
+    isSleepingRef.current = false;
+    setIsSleeping(false);
+  }, []);
   const summon = useCallback(() => {
     const now = Date.now();
     if (now - lastSummonTimeRef.current < 2e3) return;
     lastSummonTimeRef.current = now;
-    setPosition({ x: 24, y: 20 });
-    setIsSleeping(false);
+    wake();
     if (!motionDisabled) {
       setIdleAnimation("wave-hello");
       setTimeout(() => setIdleAnimation(null), 1500);
     }
     speak(t("bot.summon_msg"));
-  }, [speak, t, motionDisabled]);
+  }, [speak, t, motionDisabled, wake]);
+  const silenceSpeech = useCallback(() => {
+    setCustomMessage(null);
+    setIsTruncated(false);
+    setIsTalking(false);
+    try {
+      speechRequestAbortRef.current?.abort();
+    } catch (_) {
+    }
+    speechRequestAbortRef.current = null;
+    if (currentAudioRef.current) {
+      try {
+        currentAudioRef.current.pause();
+      } catch (_) {
+      }
+      currentAudioRef.current = null;
+    }
+    if (lastAudioUrlRef.current) {
+      releaseAlloBotAudioUrl(lastAudioUrlRef.current);
+      lastAudioUrlRef.current = null;
+    }
+    if (speechTimeoutRef.current) {
+      clearTimeout(speechTimeoutRef.current);
+      speechTimeoutRef.current = null;
+    }
+    try {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    } catch (_) {
+    }
+  }, []);
+  const fallAsleep = useCallback(() => {
+    if (isSleepingRef.current) return;
+    isSleepingRef.current = true;
+    setIsSleeping(true);
+    silenceSpeech();
+  }, [silenceSpeech]);
   const handleSleep = (e) => {
     e.stopPropagation();
     setCustomMessage(null);
+    if (onHide) {
+      silenceSpeech();
+      if (motionDisabled) {
+        onHide();
+        return;
+      }
+      setIsPoofing(true);
+      setTimeout(() => {
+        setIsPoofing(false);
+        onHide();
+      }, 400);
+      return;
+    }
     if (motionDisabled) {
       setIsPoofing(false);
-      setIsSleeping(true);
+      fallAsleep();
       return;
     }
     setIsPoofing(true);
     setTimeout(() => {
-      setIsSleeping(true);
+      fallAsleep();
       setIsPoofing(false);
     }, 400);
   };
+  const idleBusyRef = useRef(false);
+  idleBusyRef.current = !!(isTalking || isDragging || isListening || isSystemAudioActive || effectiveMood === "thinking" || isPoofing);
+  useEffect(() => {
+    if (!idleSleepMs || idleSleepMs <= 0) return;
+    let lastInput = Date.now();
+    const onInput = () => {
+      lastInput = Date.now();
+      if (isSleepingRef.current) wake();
+    };
+    const events = ["pointerdown", "pointermove", "keydown", "wheel", "touchstart", "scroll"];
+    events.forEach((evt) => window.addEventListener(evt, onInput, { passive: true }));
+    const timer = setInterval(() => {
+      if (isSleepingRef.current) return;
+      if (idleBusyRef.current) {
+        lastInput = Date.now();
+        return;
+      }
+      if (Date.now() - lastInput >= idleSleepMs) fallAsleep();
+    }, 15e3);
+    return () => {
+      clearInterval(timer);
+      events.forEach((evt) => window.removeEventListener(evt, onInput));
+    };
+  }, [idleSleepMs, wake, fallAsleep]);
   React.useImperativeHandle(ref, () => ({
     moveTo,
     speak,
@@ -2015,13 +2159,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
               e.preventDefault();
               handleSleep(e);
             },
+            onTouchStart: stopTouch,
             onPointerDown: (e) => e.stopPropagation(),
             onMouseDown: (e) => e.stopPropagation(),
-            className: "absolute -top-2 -right-2 inline-flex min-h-8 min-w-8 items-center justify-center bg-slate-200 hover:bg-red-100 text-slate-600 hover:text-red-500 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 border-white focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-400",
-            title: t("bot.sleep_title"),
-            "aria-label": t("bot.sleep_aria")
+            className: `${satellitePos.tr} ${satelliteBase} bg-slate-200 hover:bg-red-100 text-slate-600 hover:text-red-500 border-white focus:ring-2 focus:ring-red-400`,
+            title: onHide ? t("toolbar.hide_bot") : t("bot.sleep_title"),
+            "aria-label": onHide ? t("toolbar.hide_bot") : t("bot.sleep_aria")
           },
-          /* @__PURE__ */ React.createElement(X, { size: 12, strokeWidth: 3 })
+          /* @__PURE__ */ React.createElement(X, { size: satelliteIconSize, strokeWidth: 3 })
         ), /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -2032,13 +2177,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
               e.stopPropagation();
               if (onVoiceSettingsClick) onVoiceSettingsClick();
             },
+            onTouchStart: stopTouch,
             onPointerDown: (e) => e.stopPropagation(),
             onMouseDown: (e) => e.stopPropagation(),
-            className: "absolute -top-2 -left-2 inline-flex min-h-8 min-w-8 items-center justify-center bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 border-indigo-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400",
+            className: `${satellitePos.tl} ${satelliteBase} bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 border-indigo-100 focus:ring-2 focus:ring-indigo-400`,
             title: t("bot.chat_title"),
             "aria-label": t("bot.chat_aria")
           },
-          /* @__PURE__ */ React.createElement(Settings, { size: 12, strokeWidth: 3 })
+          /* @__PURE__ */ React.createElement(Settings, { size: satelliteIconSize, strokeWidth: 3 })
         ), onToggleMute && /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -2049,13 +2195,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
               e.stopPropagation();
               onToggleMute();
             },
+            onTouchStart: stopTouch,
             onPointerDown: (e) => e.stopPropagation(),
             onMouseDown: (e) => e.stopPropagation(),
-            className: `absolute -bottom-1 -right-2 inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${!soundEnabled ? "bg-slate-100 text-slate-600 border-slate-200" : "bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 border-indigo-100"}`,
+            className: `${satellitePos.br} ${satelliteBase} focus:ring-2 focus:ring-indigo-400 ${!soundEnabled ? "bg-slate-100 text-slate-600 border-slate-200" : "bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 border-indigo-100"}`,
             title: soundEnabled ? t("bot.mute_on_title") : t("bot.mute_off_title"),
             "aria-label": soundEnabled ? t("bot.mute_on_aria") : t("bot.mute_off_aria")
           },
-          soundEnabled ? /* @__PURE__ */ React.createElement(Volume2, { size: 12, strokeWidth: 3 }) : /* @__PURE__ */ React.createElement(VolumeX, { size: 12, strokeWidth: 3 })
+          soundEnabled ? /* @__PURE__ */ React.createElement(Volume2, { size: satelliteIconSize, strokeWidth: 3 }) : /* @__PURE__ */ React.createElement(VolumeX, { size: satelliteIconSize, strokeWidth: 3 })
         ), onMicClick && /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -2066,13 +2213,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
               e.stopPropagation();
               onMicClick();
             },
+            onTouchStart: stopTouch,
             onPointerDown: (e) => e.stopPropagation(),
             onMouseDown: (e) => e.stopPropagation(),
-            className: `absolute -bottom-1 -left-2 inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${isListening ? "bg-red-700 text-white border-red-400 animate-pulse motion-reduce:animate-none" : "bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-500 border-slate-100"}`,
+            className: `${satellitePos.bl} ${satelliteBase} focus:ring-2 focus:ring-indigo-400 ${isListening ? "bg-red-700 text-white border-red-400 animate-pulse motion-reduce:animate-none" : "bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-500 border-slate-100"}`,
             title: isListening ? t("bot.mic_stop_title") : t("bot.mic_start_title"),
             "aria-label": isListening ? t("bot.mic_stop_aria") : t("bot.mic_start_aria")
           },
-          isListening ? /* @__PURE__ */ React.createElement(Mic, { size: 12, strokeWidth: 3 }) : /* @__PURE__ */ React.createElement(MicOff, { size: 12, strokeWidth: 3 })
+          isListening ? /* @__PURE__ */ React.createElement(Mic, { size: satelliteIconSize, strokeWidth: 3 }) : /* @__PURE__ */ React.createElement(MicOff, { size: satelliteIconSize, strokeWidth: 3 })
         )),
         isSleeping && /* @__PURE__ */ React.createElement(
           "div",

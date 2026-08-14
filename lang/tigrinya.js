@@ -2343,7 +2343,9 @@
     "writing": "ምጽሓፍ ትሕዝቶ...",
     "actions": {
       "analyzing_short": "ይምርመር ኣሎ...",
-      "generate_short": "ፍጠር"
+      "generate_short": "ፍጠር",
+      "books_short": "መጻሕፍቲ",
+      "books_hint": "ስእላዊ መጻሕፍቲ ክፈት፦ ዝኾነ መጽሓፍ ናይ ምንጪ ጽሑፍካ ክኸውን ይኽእል"
     },
     "status_generating": "Generating ምንጪ ጽሑፍ...",
     "success_long_form": "ነዊሕ-ቅርጺ ጽሑፍ ብዕውት ተፈጢሩ!",
@@ -2377,7 +2379,16 @@
     },
     "drafting_story_outline": "Planning dialogue ቅርጺ...",
     "load_project_tooltip": "ጽዓን ሓደ previously ተቐሚጡ AlloFlow PDF project",
-    "load_project": "ጽዓን Project"
+    "load_project": "ጽዓን Project",
+    "quickstart_heading": "ወይ መበገሲ ነጥቢ ምረጽ",
+    "qs_book": "ናይ ንባብ ዝርዝር ክፈት",
+    "qs_book_sub": "መጻሕፍቲ፣ ጽሑፋትን ቀንዲ ምንጭታትን",
+    "qs_write": "ጽሑፍ ጽሓፍ ወይ ለጥፍ",
+    "qs_write_sub": "ናትካ ንዋት ተጠቐም",
+    "qs_find": "ኣብ ኢንተርነት ጸጋ ድለ",
+    "qs_find_sub": "መላግቦ ለጥፍ ወይ AI ክደሊ ሕደጎ",
+    "qs_generate": "ካብ ኣርእስቲ ፍጠር",
+    "qs_generate_sub": "AI ንዓኻ ይጽሕፈልካ"
   },
   "wizard": {
     "title": "ቅልጡፍ ጀምር",

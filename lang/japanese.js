@@ -2323,7 +2323,9 @@
     "writing": "コンテンツを作成中...",
     "actions": {
       "analyzing_short": "分析中...",
-      "generate_short": "生成"
+      "generate_short": "生成",
+      "books_short": "本",
+      "books_hint": "絵本を開く：どの本でもソース資料にできます"
     },
     "status_generating": "ソーステキストを生成中...",
     "success_long_form": "長文テキストの生成に成功しました！",
@@ -2357,7 +2359,16 @@
     },
     "drafting_story_outline": "対話構造を計画中...",
     "load_project_tooltip": "以前に保存したAlloFlow PDFプロジェクトを読み込む",
-    "load_project": "プロジェクトを読み込み"
+    "load_project": "プロジェクトを読み込み",
+    "quickstart_heading": "または出発点を選んでください",
+    "qs_book": "読書カタログを開く",
+    "qs_book_sub": "本、記事、一次資料",
+    "qs_write": "テキストを書く・貼り付ける",
+    "qs_write_sub": "自分の教材を使う",
+    "qs_find": "オンラインで資料を探す",
+    "qs_find_sub": "リンクを貼るか、AI に検索させる",
+    "qs_generate": "トピックから生成する",
+    "qs_generate_sub": "AI が代わりに書きます"
   },
   "language_selector": {
     "search_placeholder": "言語を入力…",

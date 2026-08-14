@@ -2321,7 +2321,9 @@
     "writing": "Coyo Content...",
     "actions": {
       "analyzing_short": "Tye ka Niang...",
-      "generate_short": "Cwec"
+      "generate_short": "Cwec",
+      "books_short": "Buk",
+      "books_hint": "Yab buk ma tye ki cal: buk mo keken twero doko coc mamegi me acakki"
     },
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text yene successfully!",
@@ -2355,7 +2357,16 @@
     },
     "drafting_story_outline": "Planning dialogue structure...",
     "load_project_tooltip": "Load previously gigwokki AlloFlow PDF project",
-    "load_project": "Load Project"
+    "load_project": "Load Project",
+    "quickstart_heading": "Onyo yer kama me acakki",
+    "qs_book": "Yab lit me kwan",
+    "qs_book_sub": "Buk, coc ki ginacoya me acakki",
+    "qs_write": "Coo onyo mwon coc",
+    "qs_write_sub": "Ti ki jami mamegi",
+    "qs_find": "Yeny jami i intanet",
+    "qs_find_sub": "Mwon link onyo wek AI oyeny",
+    "qs_generate": "Cwe ki i lok",
+    "qs_generate_sub": "AI coyo pi in"
   },
   "wizard": {
     "title": "Quick Cak",

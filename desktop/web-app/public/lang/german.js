@@ -2355,7 +2355,9 @@
     "writing": "Schreiben Inhalt...",
     "actions": {
       "analyzing_short": "Analysiere...",
-      "generate_short": "Generieren"
+      "generate_short": "Generieren",
+      "books_short": "Bücher",
+      "books_hint": "Bilderbücher öffnen: Jedes Buch kann Ihr Quelltext werden"
     },
     "status_generating": "Wird generiert QuellText...",
     "success_long_form": "Long-form Text generiert Erfolgfully!",
@@ -2389,7 +2391,16 @@
     },
     "drafting_story_outline": "Planning dialogue Struktur...",
     "load_project_tooltip": "Laden ein vorherigely speichernd AlloFlow PDF project",
-    "load_project": "Laden Project"
+    "load_project": "Laden Project",
+    "quickstart_heading": "Oder wählen Sie einen Startpunkt",
+    "qs_book": "Lesekatalog öffnen",
+    "qs_book_sub": "Bücher, Artikel und Primärquellen",
+    "qs_write": "Text schreiben oder einfügen",
+    "qs_write_sub": "Eigenes Material verwenden",
+    "qs_find": "Online eine Ressource finden",
+    "qs_find_sub": "Link einfügen oder die KI suchen lassen",
+    "qs_generate": "Aus einem Thema generieren",
+    "qs_generate_sub": "Die KI schreibt es für Sie"
   },
   "wizard": {
     "title": "Schnell Starten",
@@ -29947,7 +29958,7 @@
     "poettree_title": "PoetTree",
     "poettree_desc": "Schreiben poems mit form scaffalts, rhyme & meter Analyse, AI feedzurück",
     "throughline_desc": "Ordnen Sie Ihre Lektionen zu einer räumlichen Einheit an: Unterrichtsablauf, Voraussetzungen, eine exportierbare Datei",
-    "throughline_title": "Throughline"
+    "throughline_title": "Learning Web: Unit Path"
   },
   "sel_hub": {
     "loading": "Ladening SEL Hub...",
@@ -31081,9 +31092,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

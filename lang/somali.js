@@ -1683,7 +1683,9 @@
     "writing": "Nuxurka waa la qorayaa...",
     "actions": {
       "analyzing_short": "Falanqayn...",
-      "generate_short": "Samee"
+      "generate_short": "Samee",
+      "books_short": "Buugaag",
+      "books_hint": "Fur buugaagta sawirada leh: buug kastaa wuxuu noqon karaa qoraalkaaga isha ah"
     },
     "status_generating": "Waxaa la samaynayaa qoraal isha...",
     "success_long_form": "Qoraalka dheer waxaa lagu samaynayaa si guul leh!",
@@ -1717,7 +1719,16 @@
     },
     "drafting_story_outline": "Waxaa la qorshaynayaa qaab-dhismeedka wadahadalka...",
     "load_project_tooltip": "Soo dejii mashruuc PDF AlloFlow oo hore loo kaydiyay",
-    "load_project": "Soo Dejii Mashruuca"
+    "load_project": "Soo Dejii Mashruuca",
+    "quickstart_heading": "Ama dooro meel laga bilaabo",
+    "qs_book": "Fur liiska akhriska",
+    "qs_book_sub": "Buugaag, maqaallo iyo ilo asal ah",
+    "qs_write": "Qor ama ku dheji qoraal",
+    "qs_write_sub": "Isticmaal agabkaaga",
+    "qs_find": "Raadi ilo online ah",
+    "qs_find_sub": "Ku dheji link ama u ogolow AI inuu raadiyo",
+    "qs_generate": "Ka samee mawduuc",
+    "qs_generate_sub": "AI ayaa kuu qori doona"
   },
   "prompts": {
     "verified_correct": "**Jawaabta Saxda ah ee la Xaqiijiyay:**",

@@ -163,6 +163,23 @@ WalkthroughDraft {
 
 For the transient/local version, keep this structure in memory and clear it on close. Do not reuse Class Mailbox, anonymous share links, or browser localStorage for real evaluation content.
 
+### The draft and the record are different artifacts
+
+These have opposite retention rules, and conflating them is the most likely design mistake here.
+
+**The approved feedback is a record.** It should end up wherever the school already files walkthrough feedback, and making that land in one step is a legitimate convenience goal. Filing it is not the risk.
+
+**The working draft is not a record and must not become one.** It contains rejected suggestions, confidence indicators, insufficient-evidence results, and warnings about unsupported generalizations. Persisted, those artifacts are discoverable, and under Article 16 an observation becomes grievable once it supports an adverse action. A retained draft showing that the tool flagged a claim as unsupported, next to a filed observation asserting it anyway, is a document that exists only to be used against the evaluator. Nothing about the workflow requires keeping it.
+
+So the rule is not "store nothing." It is:
+
+- The approved output may be filed, exported, or copied wherever the school directs.
+- Rejected suggestions, confidence values, and warnings never leave the session.
+- No second copy of the same observation is written to a different location than the school's existing one. Duplicate records of one observation, in two places with two retention paths, are worse than one record.
+- Nothing persists automatically. Filing is an explicit act the user takes, once, at the end.
+
+Phase one satisfies this by copying into the school's existing form and keeping nothing. A later phase may write the approved output directly, which is a real convenience worth building once a district has approved the workflow. Do not build it before that approval exists, because it requires broad Drive scopes and it is not what makes the tool valuable.
+
 ## AI contract
 
 The model should return typed JSON, not free-form prose. Validate it before rendering. Require:
@@ -191,6 +208,24 @@ The example form has these output areas:
 
 Make the mapping configurable because schools may rename fields. The initial integration is copy/paste text only. This is deliberately lower risk and immediately compatible with the existing Form-to-PDF process.
 
+## Surface choice: this may be the one tool that is not Canvas-first
+
+AlloFlow's usual primary surface is a Gemini Canvas artifact, and the district's existing Google Workspace agreement is a genuine advantage for provider approval: authorizing Gemini under an agreement the district already signed is a far easier ask than introducing a new AI vendor.
+
+Google's protections here are real and should be stated accurately. For Workspace for Education, Gemini chats are not reviewed by humans and are not used to train models outside the domain without permission, the Gemini app is covered by the Workspace for Education terms, and the data-protection practices are independently audited. Those commitments are genuine and they resolve the question of whether the AI provider will misuse the content.
+
+They do not resolve the question this tool actually faces, which is retention inside the district's own tenant.
+
+Gemini conversation history is an administrator-configurable retention setting. Conversations may be kept for three, eighteen, or thirty-six months, or indefinitely, and the default is eighteen months. Administrators control whether users may even delete their own conversations. Gemini activity is recorded in Admin console audit events. Most decisively, where an organization uses Google Vault for Gemini, **Vault retention rules are always honored even when users start temporary chats or delete conversations**, and the interface tells users their activity may remain visible to administrators or Vault users.
+
+So a "not used for training" guarantee and a "clears on close" promise are different claims. The first is true. The second cannot be delivered inside a Gemini conversation in a Vault-enabled tenant, because the conversation is retained by the customer, discoverable by the customer, and outside this tool's control. That is precisely the exposure the draft rules exist to prevent, and enterprise-grade protection does not reduce it. If anything it confirms the data is definitively the district's record.
+
+Verify before committing the surface: whether Vault covers Gemini in this tenant, what the Gemini conversation retention period is set to, and whether users may delete their own conversations. If Vault covers Gemini, or retention is anything other than off, raw walkthrough notes must not be typed into a Canvas artifact, and the copilot belongs on the Desktop or local path even though that diverges from how the rest of AlloFlow is distributed.
+
+Note also that "supports compliance with FERPA" is not the same as satisfying the obligations that apply here. FERPA governs student education records. Observation notes about a named teacher are personnel records, governed by the collective bargaining agreement, state personnel and public-records law, and district retention policy. A perfect FERPA posture leaves all of those untouched.
+
+Note also that Canvas does nothing to satisfy Article 16. Those obligations concern process, that the educator has an opportunity to review material before it is filed, and accuracy exposure once an observation supports an adverse action. Neither depends on where the software runs.
+
 ## Where it should live
 
 - Add a **Walkthrough Copilot** entry near Educator Evaluation in AlloFlow's Leadership Hub and teacher/admin Settings launcher.
@@ -199,6 +234,45 @@ Make the mapping configurable because schools may rename fields. The initial int
 - Keep the authenticated Educator Evaluation portal as the later path for two-way comments, acknowledgments, approvals, audit history, longitudinal results, and cohort aggregates.
 
 ## Current repository context
+
+**Built (step 1 of the implementation order below):**
+
+- `walkthrough_copilot_module.js`: headless note-analysis core. Framework validation, draft creation with frozen notes, suggestion validation against exact source-note offsets, evidence/interpretation separation, decision transitions, export gating, form mapping, the draft/record boundary, and reference comparison for practice mode. No React, no provider, no storage, no wiring.
+- `walkthrough_copilot_fixtures.js`: the Portland Framework structure (four domains, twenty-two components, labels only, no rubric descriptor language), a deliberately three-domain framework to prove nothing assumes four, and deterministic synthetic notes and suggestions including the malformed ones the validators must reject.
+- `walkthrough_copilot_scenarios.js`: five practice scenarios, each teaching one habit and carrying the trap that habit exists to prevent. Every scenario ships its own candidate suggestions, so practice runs with no provider, no network call, and no district approval.
+- `tests/walkthrough_copilot_core.test.js` and `tests/walkthrough_copilot_scenarios.test.js`: 56 tests. Every integrity rule is proven against a defect that should fail it, not merely exercised on the happy path.
+
+- `walkthrough-copilot.html` and `walkthrough_copilot_standalone.js`: the four-stage surface, standalone and build-free, following the `educator-evaluation.html` precedent. Open the file directly from the repository folder; there is no bundler, no framework, and no network call. It loads the same core the tests exercise, so the interface never re-implements a rule, it asks the core and renders the answer.
+- `tests/walkthrough_copilot_standalone.test.js`: 12 jsdom tests that drive the surface by clicking real buttons.
+
+Not yet done: the provider seam, and mounting the shared surface inside AlloFlow's Leadership Hub. There is no CDN build or desktop mirror yet; add both when this moves from standalone into the app.
+
+**Why standalone first.** It is demonstrable today with nothing to approve, it needs no build step, no pin stamp, and no three-copy mirror, and it sidesteps the Canvas retention question entirely. That combination is what makes it usable in a meeting this week.
+
+**Why the UI has its own smoke test.** `node --check` accepts a stray identifier that parses as a valid expression statement and only throws when its branch runs. One such typo was live in the clipboard fallback and no static check caught it. The jsdom suite drives all four stages, so a runtime error in any path fails the build.
+
+Two defects the suite caught that review had not:
+
+- Emptying the disclosure updated the warning message but left "Continue to copy" enabled. The core still refused, so nothing unsafe could ship, but the control was advertising an action it would not perform. Any affordance whose availability depends on `exportReadiness` must be refreshed wherever readiness is recomputed, not only where it is first rendered.
+- Readiness is recomputed on every keystroke in the disclosure field, so it updates in place rather than re-rendering; a full re-render would steal focus from the field being typed in.
+
+### Practice mode
+
+Practice mode is the demonstration surface and the professional-learning surface at once. A learner reads synthetic notes, reviews candidate suggestions, accepts, edits, or rejects each one, and then compares their reading against the scenario's reference reading.
+
+`compareToReference` deliberately produces no score, no percentage, and no pass mark. It returns agreements, divergences, and discussion prompts, and a test asserts the output contains none of the words score, percent, passed, failed, grade, rating, or correct. Results are marked `selfReported`, `isCalibration: false`, and `learner-device-unverified`, matching the trust lanes in `docs/PD_MICROCREDENTIAL_FOUNDATION.md`.
+
+This framing is not decoration. Observation calibration is a real and contested area, and a tool that implied it measured inter-rater reliability would be making a claim it cannot support. The reference reading is one author's defensible reading, and the product says so in the interface, not only in this document.
+
+The five scenarios and the habits they teach:
+
+| Scenario | Habit | Trap it sets |
+|---|---|---|
+| A five-minute drop-in | Saying what the notes do not establish | Completing every domain from a five-minute visit |
+| One voice, twenty-four students | Keeping the claim the size of its evidence | One articulate student becomes "students" |
+| Notes that already decided | Separating what was seen from what it meant | Shorthand judgments copied forward as observations |
+| Clear directions, confused room | Holding a contradiction open | Keeping the half that fits the story |
+| What the clipboard does not tell you | Noticing an artifact that tempts a conclusion | Crediting planning and records never actually seen |
 
 Relevant existing work:
 
@@ -238,7 +312,7 @@ Do not use `apps_script/session_mailbox/` for evaluation records. Its anonymous 
 
 ## Recommended implementation order
 
-1. Add pure note-analysis schemas, validators, and deterministic synthetic fixtures. Include the framework config so no domain shape is hardcoded from the start.
+1. **Done.** Pure note-analysis schemas, validators, and deterministic synthetic fixtures, with the framework supplied by config so no domain shape is hardcoded. Run with `npx vitest run tests/walkthrough_copilot_core.test.js --maxWorkers=1`.
 2. Build the four-stage local UI with a fake provider and immutable-note tests. Build the mode gate and the disclosure in this step, not later: retrofitting a boundary after the workflow feels finished is how it ends up optional.
 3. Add the existing configured AI-provider seam only after the provider/privacy warning and human-approval gate are enforced.
 4. Add configurable Google Form field mapping and clipboard output.

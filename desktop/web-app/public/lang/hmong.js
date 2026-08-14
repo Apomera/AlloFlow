@@ -2346,7 +2346,9 @@
     "writing": "Sau ntawv cov ntsiab...",
     "actions": {
       "analyzing_short": "Tab tom tshuaj xyuas...",
-      "generate_short": "Tsim"
+      "generate_short": "Tsim",
+      "books_short": "Phau ntawv",
+      "books_hint": "Qhib cov phau ntawv duab: txhua phau ntawv tuaj yeem ua koj cov ntawv qub"
     },
     "status_generating": "Generating qhov chaw cov ntawv...",
     "success_long_form": "ntev-form cov ntawv tau tsim successfully!",
@@ -2380,7 +2382,16 @@
     },
     "drafting_story_outline": "Tab tom npaj qauv kev sib tham...",
     "load_project_tooltip": "Nqa los previously tau khaws AlloFlow PDF project",
-    "load_project": "Nqa los Project"
+    "load_project": "Nqa los Project",
+    "quickstart_heading": "Los yog xaiv ib qhov chaw pib",
+    "qs_book": "Qhib cov ntawv nyeem",
+    "qs_book_sub": "Phau ntawv, kab xov xwm thiab cov ntaub ntawv thawj",
+    "qs_write": "Sau lossis muab ntawv txuas",
+    "qs_write_sub": "Siv koj tus kheej cov ntaub ntawv",
+    "qs_find": "Nrhiav ib qho chaw hauv internet",
+    "qs_find_sub": "Muab ib txoj kab txuas lossis cia AI nrhiav",
+    "qs_generate": "Tsim los ntawm ib lub ncauj lus",
+    "qs_generate_sub": "AI yuav sau rau koj"
   },
   "wizard": {
     "title": "ceev Pib",
@@ -29022,7 +29033,7 @@
     "poettree_title": "PoetTree",
     "poettree_desc": "Sau poems nrog form scaffolds, rhyme & meter analysis, AI kev tawm tswv yim",
     "throughline_desc": "Teeb koj cov zaj kawm ua ib chav kawm raws qhov chaw: kev cob qhia, cov yam ua ntej, ib daim ntaub ntawv xa tau",
-    "throughline_title": "Throughline"
+    "throughline_title": "Learning Web: Unit Path"
   },
   "sel_hub": {
     "loading": "Tab tom thauj SEL Hub...",
@@ -30364,9 +30375,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

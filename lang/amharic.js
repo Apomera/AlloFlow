@@ -2349,7 +2349,9 @@
     "writing": "መጻፍ ይዘት...",
     "actions": {
       "analyzing_short": "በመተንተን ላይ...",
-      "generate_short": "አመንጭ"
+      "generate_short": "አመንጭ",
+      "books_short": "መጻሕፍት",
+      "books_hint": "የስዕል መጻሕፍትን ይክፈቱ፦ ማንኛውም መጽሐፍ የምንጭ ጽሑፍዎ ሊሆን ይችላል"
     },
     "status_generating": "Generating ምንጭ ጽሑፍ...",
     "success_long_form": "ረዥም-ቅርጽ ጽሑፍ በተሳካ ሁኔታ ተፈጥሯል!",
@@ -2383,7 +2385,16 @@
     },
     "drafting_story_outline": "Planning dialogue መዋቅር...",
     "load_project_tooltip": "ጫን አንድ previously ተቀምጧል AlloFlow PDF project",
-    "load_project": "ጫን Project"
+    "load_project": "ጫን Project",
+    "quickstart_heading": "ወይም መነሻ ነጥብ ይምረጡ",
+    "qs_book": "የንባብ ዝርዝርን ይክፈቱ",
+    "qs_book_sub": "መጻሕፍት፣ ጽሑፎችና ዋና ምንጮች",
+    "qs_write": "ጽሑፍ ይጻፉ ወይም ይለጥፉ",
+    "qs_write_sub": "የራስዎን ቁሳቁስ ይጠቀሙ",
+    "qs_find": "በመስመር ላይ ግብዓት ያግኙ",
+    "qs_find_sub": "አገናኝ ይለጥፉ ወይም AI እንዲፈልግ ይፍቀዱ",
+    "qs_generate": "ከርዕስ ያመንጩ",
+    "qs_generate_sub": "AI ለእርስዎ ይጽፍልዎታል"
   },
   "wizard": {
     "title": "ፈጣን ጀምር",

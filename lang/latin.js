@@ -2344,7 +2344,9 @@
     "writing": "Scrīptiō contentum...",
     "actions": {
       "analyzing_short": "Analysis fit...",
-      "generate_short": "Generā"
+      "generate_short": "Generā",
+      "books_short": "Libri",
+      "books_hint": "Libros pictos aperi: quilibet liber fons textus tui fieri potest"
     },
     "status_generating": "Generating fōns textus...",
     "success_long_form": "longus-form textus generātum successfully!",
@@ -2378,7 +2380,16 @@
     },
     "drafting_story_outline": "Structura dialogi disponitur...",
     "load_project_tooltip": "Onerā previously servātum AlloFlow PDF project",
-    "load_project": "Onerā Project"
+    "load_project": "Onerā Project",
+    "quickstart_heading": "Vel initium elige",
+    "qs_book": "Catalogum lectionis aperi",
+    "qs_book_sub": "Libri, commentationes et fontes primarii",
+    "qs_write": "Textum scribe vel insere",
+    "qs_write_sub": "Materia tua utere",
+    "qs_find": "Fontem in interrete inveni",
+    "qs_find_sub": "Nexum insere vel IA quaerere sine",
+    "qs_generate": "Ex themate genera",
+    "qs_generate_sub": "IA pro te scribit"
   },
   "wizard": {
     "title": "celer Incipe",

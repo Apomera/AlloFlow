@@ -2347,7 +2347,9 @@
     "writing": "Menulis konten...",
     "actions": {
       "analyzing_short": "Menganalisis...",
-      "generate_short": "Hasilkan"
+      "generate_short": "Hasilkan",
+      "books_short": "Buku",
+      "books_hint": "Buka buku bergambar: buku apa pun bisa menjadi teks sumber Anda"
     },
     "status_generating": "Generating sumber teks...",
     "success_long_form": "panjang-form teks dihasilkan successfully!",
@@ -2381,7 +2383,16 @@
     },
     "drafting_story_outline": "Planning dialogue struktur...",
     "load_project_tooltip": "Muat sebuah previously tersimpan AlloFlow PDF project",
-    "load_project": "Muat Project"
+    "load_project": "Muat Project",
+    "quickstart_heading": "Atau pilih titik awal",
+    "qs_book": "Buka katalog bacaan",
+    "qs_book_sub": "Buku, artikel, dan sumber primer",
+    "qs_write": "Tulis atau tempel teks",
+    "qs_write_sub": "Gunakan materi Anda sendiri",
+    "qs_find": "Cari sumber daring",
+    "qs_find_sub": "Tempel tautan atau biarkan AI mencari",
+    "qs_generate": "Buat dari sebuah topik",
+    "qs_generate_sub": "AI menuliskannya untuk Anda"
   },
   "wizard": {
     "title": "cepat Mulai",
@@ -29574,7 +29585,7 @@
     "poettree_title": "PoetTree",
     "poettree_desc": "Tulis poems dengan form scaffolds, rhyme & meter analisis, AI umpan balik",
     "throughline_desc": "Susun pelajaran Anda menjadi satu unit spasial: urutan pengajaran, prasyarat, satu berkas yang dapat diekspor",
-    "throughline_title": "Throughline"
+    "throughline_title": "Learning Web: Unit Path"
   },
   "sel_hub": {
     "loading": "Memuat SEL Hub...",
@@ -30916,9 +30927,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

@@ -80,6 +80,12 @@ function AdminHubPanel(props) {
       accent: 'from-cyan-50 to-sky-50 border-cyan-600', titleCls: 'text-cyan-800', descCls: 'text-cyan-700',
     },
     {
+      id: 'walkthroughCopilot', icon: '📝',
+      title: tt('adminhub.walkthrough_copilot_title', 'Walkthrough Copilot'),
+      desc: tt('adminhub.walkthrough_copilot_desc', 'Turn shorthand walkthrough notes into evidence-based coaching feedback you write and approve — every claim cited back to your own notes, with practice scenarios for building the habit. Formative coaching only; never rates anyone.'),
+      accent: 'from-teal-50 to-emerald-50 border-teal-600', titleCls: 'text-teal-800', descCls: 'text-teal-700',
+    },
+    {
       id: 'dispro', icon: '⚖️',
       title: tt('adminhub.dispro_title', 'Disproportionality Analyzer'),
       desc: tt('adminhub.dispro_desc', 'Risk indexes, risk ratios, and composition from aggregate discipline or identification counts — stability cautions, alternate ratios for small groups, multi-year trends.'),

@@ -11447,6 +11447,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080306'); }; })();
+    window.__alloLazyWalkthroughCopilot = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WalkthroughCopilot', 'https://alloflow-cdn.pages.dev/walkthrough_copilot_cdn_module.js?v=wc081301'); }; })();
     // Disproportionality Analyzer (Aug 3 2026) — admin equity metrics,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyDisproAnalyzer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DisproAnalyzer', 'https://alloflow-cdn.pages.dev/dispro_analyzer_module.js?v=da080303'); }; })();
@@ -13578,6 +13579,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isSubmissionInboxOpen, setIsSubmissionInboxOpen] = useState(false);
   const [isSeatingChartOpen, setIsSeatingChartOpen] = useState(false);
   const [isUdlWalkthroughOpen, setIsUdlWalkthroughOpen] = useState(false);
+  const [isWalkthroughCopilotOpen, setIsWalkthroughCopilotOpen] = useState(false);
   const [isDisproAnalyzerOpen, setIsDisproAnalyzerOpen] = useState(false);
   const [isAdminHubOpen, setIsAdminHubOpen] = useState(false);
   const [isEducatorEvaluationOpen, setIsEducatorEvaluationOpen] = useState(false);
@@ -17335,6 +17337,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleToggleFocusMode = React.useCallback(() => setFocusMode(prev => !prev), []);
   const handleToggleDisableAnimations = React.useCallback(() => setDisableAnimations(prev => !prev), []);
   const handleToggleIsBotVisible = React.useCallback(() => setIsBotVisible(prev => !prev), []);
+  // Dismissing AlloBot from its own corner "X" unmounts it, which drops keyboard
+  // focus to <body>. Hand focus to the header toggle instead: it is both the
+  // control that undoes this and the only route back, so a keyboard or screen
+  // reader user lands on the way out rather than at the top of the document.
+  const handleHideBot = React.useCallback(() => {
+      setIsBotVisible(false);
+      try {
+          const back = document.querySelector('[data-help-key="header_bot_toggle"]');
+          if (back && typeof back.focus === 'function') back.focus();
+      } catch (_) {}
+  }, []);
   const handleToggleIsHelpMode = React.useCallback(() => { setIsHelpMode(prev => !prev); dismissHelpOnboarding(); }, []);
   const handleToggleIsJoinPopoverOpen = React.useCallback(() => setIsJoinPopoverOpen(prev => !prev), []);
   const handleToggleShowExportMenu = React.useCallback(() => setShowExportMenu(prev => !prev), []);
@@ -51520,6 +51533,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             setIsAdminHubOpen(false);
             if (toolId === 'evaluation') { handleOpenPrincipalEvaluationFromSettings(); }
             else if (toolId === 'walkthrough') { if (typeof window.__alloLazyUdlWalkthrough === 'function') { try { window.__alloLazyUdlWalkthrough(); } catch (_) {} } setIsUdlWalkthroughOpen(true); }
+            else if (toolId === 'walkthroughCopilot') { if (typeof window.__alloLazyWalkthroughCopilot === 'function') { try { window.__alloLazyWalkthroughCopilot(); } catch (_) {} } setIsWalkthroughCopilotOpen(true); }
             else if (toolId === 'dispro') { if (typeof window.__alloLazyDisproAnalyzer === 'function') { try { window.__alloLazyDisproAnalyzer(); } catch (_) {} } setIsDisproAnalyzerOpen(true); }
             else if (toolId === 'meetings') { if (typeof window.__alloLazyMeetingDocs === 'function') { try { window.__alloLazyMeetingDocs(); } catch (_) {} } setIsMeetingDocsOpen(true); }
             else if (toolId === 'timelines') { if (typeof window.__alloLazySpedTimelines === 'function') { try { window.__alloLazySpedTimelines(); } catch (_) {} } setIsSpedTimelinesOpen(true); }
@@ -51589,6 +51603,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         {(DisproAnalyzerPanel) => React.createElement(DisproAnalyzerPanel, {
           isOpen: true,
           onClose: () => setIsDisproAnalyzerOpen(false),
+          t,
+          addToast,
+        })}
+      </CDNModuleGate>
+      <CDNModuleGate moduleKey="WalkthroughCopilot.WalkthroughCopilotPanel" isOpen={isWalkthroughCopilotOpen} onClose={() => setIsWalkthroughCopilotOpen(false)} icon="📝" displayName="Walkthrough Copilot" t={t}>
+        {(WalkthroughCopilotPanel) => React.createElement(WalkthroughCopilotPanel, {
+          isOpen: true,
+          onClose: () => setIsWalkthroughCopilotOpen(false),
           t,
           addToast,
         })}
@@ -52314,6 +52336,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             onVoiceSettingsClick={handleVoiceSettingsClick}
             onMicClick={handleBotMicClick}
             onToggleMute={handleToggleMute}
+            onHide={handleHideBot}
             isListening={isDictationMode}
             // In a live session the student's AlloBot is the TEACHER's voice, not
             // its own. Unprompted idle tips while a class is running read as

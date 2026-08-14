@@ -2325,7 +2325,9 @@
     "writing": "Writing Content...",
     "actions": {
       "analyzing_short": "Ej etale...",
-      "generate_short": "Kōṃṃan"
+      "generate_short": "Kōṃṃan",
+      "books_short": "Bok ko",
+      "books_hint": "Kōpeḷḷọk bok in pija ko: jabdewōt bok emaroñ erom naan eo aṃ"
     },
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text kōṃṃan successfully!",
@@ -2359,7 +2361,16 @@
     },
     "drafting_story_outline": "Planning dialogue structure...",
     "load_project_tooltip": "Load a previously saved AlloFlow PDF project",
-    "load_project": "Load Project"
+    "load_project": "Load Project",
+    "quickstart_heading": "Ak kālet juon jinoin",
+    "qs_book": "Kōpeḷḷọk lista in riit",
+    "qs_book_sub": "Bok ko, jeje ko im unin jinoin",
+    "qs_write": "Jeje ak likūt naan",
+    "qs_write_sub": "Kōjerbal men ko aṃ make",
+    "qs_find": "Pukot juon jikin jeḷā ilo intanet",
+    "qs_find_sub": "Likūt juon link ak kōtḷọk AI bwe en pukot",
+    "qs_generate": "Kōṃṃan jān juon tōpik",
+    "qs_generate_sub": "AI enaaj jeje ñan eok"
   },
   "wizard": {
     "title": "Quick Jino",

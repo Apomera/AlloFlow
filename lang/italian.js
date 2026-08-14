@@ -2349,7 +2349,9 @@
     "writing": "Scrittura contenuto...",
     "actions": {
       "analyzing_short": "Analisi in corso...",
-      "generate_short": "Genera"
+      "generate_short": "Genera",
+      "books_short": "Libri",
+      "books_hint": "Apri i libri illustrati: qualsiasi libro può diventare il tuo testo di partenza"
     },
     "status_generating": "Generating origine testo...",
     "success_long_form": "lungo-form testo generato successfully!",
@@ -2383,7 +2385,16 @@
     },
     "drafting_story_outline": "Planning dialogue struttura...",
     "load_project_tooltip": "Carica un previously salvato AlloFlow PDF project",
-    "load_project": "Carica Project"
+    "load_project": "Carica Project",
+    "quickstart_heading": "Oppure scegli un punto di partenza",
+    "qs_book": "Apri il catalogo di lettura",
+    "qs_book_sub": "Libri, articoli e fonti primarie",
+    "qs_write": "Scrivi o incolla il testo",
+    "qs_write_sub": "Usa il tuo materiale",
+    "qs_find": "Trova una risorsa online",
+    "qs_find_sub": "Incolla un link o lascia cercare l'IA",
+    "qs_generate": "Genera da un argomento",
+    "qs_generate_sub": "L'IA lo scrive per te"
   },
   "wizard": {
     "title": "rapido Inizia",

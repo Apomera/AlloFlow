@@ -449,7 +449,10 @@ const WordSoundsReviewPanel = ({
     const PHONEME_BANK = {
         'Consonants': ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'w', 'y', 'z'],
         'Digraphs': ['sh', 'zh', 'ch', 'th', 'wh', 'ph', 'ck', 'ng', 'q'],
-        'Vowels (Short)': ['a', 'e', 'i', 'o', 'u', 'oo_short'],
+        // 'schwa' sits with the short vowels because that is where a teacher
+        // looks for it, though pedagogically it is its own thing: the reduced
+        // vowel of any unstressed syllable, spellable with any vowel letter.
+        'Vowels (Short)': ['a', 'e', 'i', 'o', 'u', 'oo_short', 'schwa'],
         'Vowels (Long)': ['ee', 'oo', 'ue', 'aw', 'ai', 'ea', 'oa'],
         'Diphthongs': ['ay', 'ie', 'ow', 'oy'],
         'R-Controlled': ['ar', 'er', 'ir', 'or', 'ur', 'air', 'ear']
@@ -508,12 +511,21 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
     const ipa = GRAPHEME_TO_IPA[grapheme] || grapheme;
     return { ipa, grapheme: defaultGrapheme || grapheme };
 };
+// A word's phonemes are a MIXED array: plain grapheme strings from the bank
+// and from older packs, {ipa, grapheme} objects from the phoneme check and
+// the eSpeak path. Every read for display, tooltips, or PHONEME_GUIDE lookups
+// goes through here. Rendering the raw object crashed the whole panel
+// ("Objects are not valid as a React child (found: object with keys
+// {ipa, grapheme})") the first time Check wrote a real array into
+// word.phonemes, so this is the single seam that keeps the chip text a string.
+const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.ipa)) || '');
     // Resolve a phoneme-bank key (a grapheme like "sh"/"ee"/"ar") to its IPA +
     // the graphemes that spell that sound + a key word, from the shared
     // GRAPHOPHONEME_ANCHORS table (exposed by word_sounds as window.__alloAnchor),
     // falling back to the local grapheme→IPA map. The graphemes list is what the
     // per-chip "spellings" reveal shows — the letters this sound corresponds with.
     const _bankIpaFallback = {
+        schwa: 'ə',
         oo_short: 'ʊ', zh: 'ʒ', q: 'kw', ie: 'aɪ', ea: 'i', oy: 'ɔɪ',
         air: 'ɛr', ear: 'ɪr', ay: 'eɪ', ar: 'ɑr', aw: 'ɔ', ow: 'aʊ', ue: 'u'
     };
@@ -527,7 +539,10 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
         };
         return { ipa: _bankIpaFallback[key] || normalizePhoneme(key).ipa || key, graphemes: [key], keyWord: '' };
     };
-    const _bankDisplayGrapheme = (key) => (key === 'oo_short' ? 'ŏŏ' : key);
+    // Descriptive keys have no letter to show, so they get their conventional
+    // written form. Schwa's is the IPA symbol itself — it is the one sound with
+    // no spelling of its own, which is the whole teaching point.
+    const _bankDisplayGrapheme = (key) => (key === 'oo_short' ? 'ŏŏ' : key === 'schwa' ? 'ə' : key);
     const addPhoneme = (wordIdx, phoneme) => {
         const word = preloadedWords[wordIdx];
         const newPhonemes = [...(word.phonemes || []), phoneme];
@@ -1077,7 +1092,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                 debugLog('Phoneme sequence cancelled');
                                                                 break;
                                                             }
-                                                            await onPlayAudio(phoneme);
+                                                            await onPlayAudio(phonemeLabel(phoneme));
                                                             await new Promise(r => setTimeout(r, 900));
                                                         }
                                                     }
@@ -1202,7 +1217,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     <div
                                                         key={i}
                                                         className={`group relative cursor-grab active:cursor-grabbing ${dragOverIndex === i ? 'ring-2 ring-pink-400' : ''}`}
-                                                        role="group" aria-label={`${typeof p === 'string' ? p : 'Phoneme'}, position ${i + 1} of ${(word.phonemes || []).length}`}
+                                                        role="group" aria-label={`${phonemeLabel(p) || 'Phoneme'}, position ${i + 1} of ${(word.phonemes || []).length}`}
                                                         draggable
                                                         onDragStart={(e) => handleDragStart(e, p, 'word', idx, i)}
                                                         data-keyboard-alternative="Use the Move earlier and Move later buttons"
@@ -1210,11 +1225,11 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         onDrop={(e) => { e.stopPropagation(); handleDrop(e, idx, i); }}
                                                         onDragEnd={handleDragEnd}
                                                     >
-                                                        <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200" title={typeof p === "string" && typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) — ${PHONEME_GUIDE[p].examples}` : (typeof p === "string" ? p : "")}>
+                                                        <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200" title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[phonemeLabel(p)] ? `${PHONEME_GUIDE[phonemeLabel(p)].label} (${PHONEME_GUIDE[phonemeLabel(p)].ipa}) — ${PHONEME_GUIDE[phonemeLabel(p)].examples}` : phonemeLabel(p)}>
                                                             <span className="text-slate-600 text-xs mr-1">⠿</span>
-                                                            {p}
-                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i - 1)} disabled={i === 0} aria-label={`Move ${typeof p === 'string' ? p : 'phoneme'} earlier`} className="w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40" title="Move earlier">◀</button>
-                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i + 1)} disabled={i === (word.phonemes || []).length - 1} aria-label={`Move ${typeof p === 'string' ? p : 'phoneme'} later`} className="w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40" title="Move later">▶</button>
+                                                            {phonemeLabel(p)}
+                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i - 1)} disabled={i === 0} aria-label={`Move ${phonemeLabel(p) || 'phoneme'} earlier`} className="w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40" title="Move earlier">◀</button>
+                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i + 1)} disabled={i === (word.phonemes || []).length - 1} aria-label={`Move ${phonemeLabel(p) || 'phoneme'} later`} className="w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40" title="Move later">▶</button>
                                                             <button type="button"
                                                                 aria-label={t('common.remove')}
                                                                 onClick={() => removePhoneme(idx, i)}
@@ -1633,7 +1648,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     return (
                                                         <div key={soundIdx} className="flex items-center gap-1 bg-gradient-to-r from-violet-50 to-pink-50 border-2 border-violet-200 rounded-lg px-2 py-1">
                                                             <span className="text-xs font-bold text-slate-600">{ordinalLabel}:</span>
-                                                            <span className="font-bold text-violet-700 text-lg">{phoneme}</span>
+                                                            <span className="font-bold text-violet-700 text-lg">{phonemeLabel(phoneme)}</span>
                                                         </div>
                                                     );
                                                 })}

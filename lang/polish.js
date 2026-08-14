@@ -2348,7 +2348,9 @@
     "writing": "Pisanie treści...",
     "actions": {
       "analyzing_short": "Analiza...",
-      "generate_short": "Utwórz"
+      "generate_short": "Utwórz",
+      "books_short": "Książki",
+      "books_hint": "Otwórz książki obrazkowe: każda książka może stać się Twoim tekstem źródłowym"
     },
     "status_generating": "Tworzenie źródłowego tekstu...",
     "success_long_form": "Pomyślnie wygenerowano długi tekst!",
@@ -2382,7 +2384,16 @@
     },
     "drafting_story_outline": "Planowanie struktury dialogu...",
     "load_project_tooltip": "Załaduj wcześniej zapisany projekt PDF AlloFlow",
-    "load_project": "Załaduj projekt"
+    "load_project": "Załaduj projekt",
+    "quickstart_heading": "Albo wybierz punkt wyjścia",
+    "qs_book": "Otwórz katalog czytelniczy",
+    "qs_book_sub": "Książki, artykuły i źródła pierwotne",
+    "qs_write": "Napisz lub wklej tekst",
+    "qs_write_sub": "Użyj własnego materiału",
+    "qs_find": "Znajdź zasób online",
+    "qs_find_sub": "Wklej link lub pozwól SI wyszukać",
+    "qs_generate": "Wygeneruj na podstawie tematu",
+    "qs_generate_sub": "SI napisze to za Ciebie"
   },
   "wizard": {
     "title": "Szybki start",

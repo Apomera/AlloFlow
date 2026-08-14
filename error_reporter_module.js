@@ -306,12 +306,24 @@
   var badge = null;
   var panel = null;
 
+  // Translator. The badge is built with raw DOM, so its accessible name never
+  // passed through React and stayed English in every language.
+  function _errT(key, fallback) {
+    try {
+      if (typeof window.__alloT === 'function') {
+        var r = window.__alloT(key);
+        if (r && typeof r === 'string' && r !== key) return r;
+      }
+    } catch (_) {}
+    return fallback || key;
+  }
+
   function ensureBadge() {
     if (badge) return;
     badge = document.createElement('button');
     badge.id = 'allo-err-badge';
     badge.type = 'button';
-    badge.setAttribute('aria-label', 'View captured errors and report a bug');
+    badge.setAttribute('aria-label', _errT('error_reporter_badge_aria', 'View captured errors and report a bug'));
     badge.style.cssText = [
       // Bottom-LEFT diagnostics cluster (2026-06-19): the reading-tools FAB stack (ruler/line-focus/
       // dictation) owns bottom-RIGHT, and the pipeline diagnostics-log button was also bottom-right —

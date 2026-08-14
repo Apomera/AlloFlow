@@ -2345,7 +2345,9 @@
     "writing": "Writing akoonu...",
     "actions": {
       "analyzing_short": "Ń ṣàyẹ̀wò...",
-      "generate_short": "Ṣẹda"
+      "generate_short": "Ṣẹda",
+      "books_short": "Àwọn ìwé",
+      "books_hint": "Ṣí àwọn ìwé àwòrán: ìwé èyíkéyìí lè di ọ̀rọ̀ orísun rẹ"
     },
     "status_generating": "Generating orisun ọrọ...",
     "success_long_form": "gigun-form ọrọ ti ṣẹda successfully!",
@@ -2379,7 +2381,16 @@
     },
     "drafting_story_outline": "Ń ṣètò ìṣètò ìjíròrò...",
     "load_project_tooltip": "Ko previously ti pamọ AlloFlow PDF project",
-    "load_project": "Ko Project"
+    "load_project": "Ko Project",
+    "quickstart_heading": "Tàbí yan ibi ìbẹ̀rẹ̀",
+    "qs_book": "Ṣí àkójọ ìwé kíkà",
+    "qs_book_sub": "Àwọn ìwé, àpilẹ̀kọ àti orísun àkọ́kọ́",
+    "qs_write": "Kọ tàbí lẹ ọ̀rọ̀ mọ́",
+    "qs_write_sub": "Lo ohun èlò tìrẹ",
+    "qs_find": "Wá orísun lórí Íńtánẹ́ẹ̀tì",
+    "qs_find_sub": "Lẹ ọ̀nà ìjápọ̀ mọ́ tàbí jẹ́ kí AI wá a",
+    "qs_generate": "Ṣẹ̀dá láti orí kókó",
+    "qs_generate_sub": "AI yóò kọ ọ́ fún ọ"
   },
   "wizard": {
     "title": "yara Bẹrẹ",

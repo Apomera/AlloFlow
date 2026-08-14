@@ -1686,7 +1686,9 @@
     "writing": "جارٍ كتابة المحتوى...",
     "actions": {
       "analyzing_short": "جارٍ التحليل...",
-      "generate_short": "إنشاء"
+      "generate_short": "إنشاء",
+      "books_short": "كتب",
+      "books_hint": "افتح الكتب المصورة: أي كتاب يمكن أن يصبح نصك المصدر"
     },
     "status_generating": "جارٍ إنشاء نص المصدر...",
     "success_long_form": "تم إنشاء النص الطويل بنجاح!",
@@ -1720,7 +1722,16 @@
     },
     "drafting_story_outline": "جارٍ تخطيط بنية الحوار...",
     "load_project_tooltip": "تحميل مشروع AlloFlow PDF محفوظ سابقًا",
-    "load_project": "تحميل المشروع"
+    "load_project": "تحميل المشروع",
+    "quickstart_heading": "أو اختر نقطة انطلاق",
+    "qs_book": "فتح كتالوج القراءة",
+    "qs_book_sub": "كتب ومقالات ومصادر أولية",
+    "qs_write": "اكتب نصًا أو الصقه",
+    "qs_write_sub": "استخدم موادك الخاصة",
+    "qs_find": "ابحث عن مورد على الإنترنت",
+    "qs_find_sub": "الصق رابطًا أو دع الذكاء الاصطناعي يبحث",
+    "qs_generate": "أنشئ من موضوع",
+    "qs_generate_sub": "الذكاء الاصطناعي يكتبه نيابة عنك"
   },
   "prompts": {
     "verified_correct": "**الإجابة الصحيحة الموثَّقة:**",

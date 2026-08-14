@@ -2344,7 +2344,9 @@
     "writing": "Kwandika ibirimwo...",
     "actions": {
       "analyzing_short": "Birasesengurwa...",
-      "generate_short": "Kora"
+      "generate_short": "Kora",
+      "books_short": "Ibitabu",
+      "books_hint": "Ugurura ibitabu bifise amashusho: igitabu ico ari co cose gishobora kuba icandikano cawe c'inkomoko"
     },
     "status_generating": "Generating imvo inyandiko...",
     "success_long_form": "birebire-form inyandiko vyakozwe successfully!",
@@ -2378,7 +2380,16 @@
     },
     "drafting_story_outline": "Hategurwa imiterere y'ikiganiro...",
     "load_project_tooltip": "Pakira previously vyabitswe AlloFlow PDF project",
-    "load_project": "Pakira Project"
+    "load_project": "Pakira Project",
+    "quickstart_heading": "Canke hitamwo aho utangurira",
+    "qs_book": "Ugurura urutonde rw'ibisomwa",
+    "qs_book_sub": "Ibitabu, ingingo n'inkomoko z'intango",
+    "qs_write": "Andika canke umanike icandikano",
+    "qs_write_sub": "Koresha ibikoresho vyawe",
+    "qs_find": "Rondera umutungo kuri internet",
+    "qs_find_sub": "Manika umurongo canke ureke AI irondere",
+    "qs_generate": "Kora uhereye ku ngingo",
+    "qs_generate_sub": "AI irakwandikira"
   },
   "wizard": {
     "title": "vyihuta Tangura",

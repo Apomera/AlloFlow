@@ -2351,7 +2351,9 @@
     "writing": "쓰기 콘텐츠...",
     "actions": {
       "analyzing_short": "분석 중입니다...",
-      "generate_short": "생성"
+      "generate_short": "생성",
+      "books_short": "도서",
+      "books_hint": "그림책 열기: 어떤 책이든 소스 자료가 될 수 있습니다"
     },
     "status_generating": "Generating 소스 텍스트...",
     "success_long_form": "장문 텍스트가 성공적으로 생성되었습니다!",
@@ -2385,7 +2387,16 @@
     },
     "drafting_story_outline": "Planning dialogue 구조...",
     "load_project_tooltip": "불러오기 previously 저장됨 AlloFlow PDF project",
-    "load_project": "불러오기 Project"
+    "load_project": "불러오기 Project",
+    "quickstart_heading": "또는 시작점을 선택하세요",
+    "qs_book": "읽기 목록 열기",
+    "qs_book_sub": "도서, 기사 및 1차 자료",
+    "qs_write": "텍스트 작성 또는 붙여넣기",
+    "qs_write_sub": "직접 준비한 자료 사용",
+    "qs_find": "온라인에서 자료 찾기",
+    "qs_find_sub": "링크를 붙여넣거나 AI에게 검색을 맡기세요",
+    "qs_generate": "주제로부터 생성",
+    "qs_generate_sub": "AI가 대신 써 드립니다"
   },
   "wizard": {
     "title": "빠른 시작",
@@ -29912,7 +29923,7 @@
     "poettree_title": "PoetTree",
     "poettree_desc": "쓰기 poems 함께 form scaffolds, rhyme & meter 분석, AI 피드백",
     "throughline_desc": "수업을 공간형 단원으로 배치하세요: 교수 순서, 선수 학습, 하나의 내보낼 수 있는 파일",
-    "throughline_title": "Throughline"
+    "throughline_title": "Learning Web: Unit Path"
   },
   "sel_hub": {
     "loading": "SEL 허브를 불러오는 중입니다...",
@@ -31045,9 +31056,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

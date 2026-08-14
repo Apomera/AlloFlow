@@ -2347,7 +2347,9 @@
     "writing": "Writing conținut...",
     "actions": {
       "analyzing_short": "Se analizează...",
-      "generate_short": "Generează"
+      "generate_short": "Generează",
+      "books_short": "Cărți",
+      "books_hint": "Deschide cărți ilustrate: orice carte poate deveni textul tău sursă"
     },
     "status_generating": "Generating sursă text...",
     "success_long_form": "lung-form text generat successfully!",
@@ -2381,7 +2383,16 @@
     },
     "drafting_story_outline": "Se planifică structura dialogului...",
     "load_project_tooltip": "Încarcă un previously salvat AlloFlow PDF project",
-    "load_project": "Încarcă Project"
+    "load_project": "Încarcă Project",
+    "quickstart_heading": "Sau alege un punct de plecare",
+    "qs_book": "Deschide catalogul de lectură",
+    "qs_book_sub": "Cărți, articole și surse primare",
+    "qs_write": "Scrie sau lipește text",
+    "qs_write_sub": "Folosește propriul material",
+    "qs_find": "Găsește o resursă online",
+    "qs_find_sub": "Lipește un link sau lasă IA să caute",
+    "qs_generate": "Generează pornind de la o temă",
+    "qs_generate_sub": "IA scrie pentru tine"
   },
   "wizard": {
     "title": "rapid Începe",

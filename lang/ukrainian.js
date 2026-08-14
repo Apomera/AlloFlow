@@ -2348,7 +2348,9 @@
     "writing": "Письмо вміст...",
     "actions": {
       "analyzing_short": "Аналіз...",
-      "generate_short": "Створити"
+      "generate_short": "Створити",
+      "books_short": "Книжки",
+      "books_hint": "Відкрийте книжки з малюнками: будь-яка книжка може стати вашим вихідним текстом"
     },
     "status_generating": "Generating джерело текст...",
     "success_long_form": "Довгий текст успішно згенеровано!",
@@ -2382,7 +2384,16 @@
     },
     "drafting_story_outline": "Planning dialogue структура...",
     "load_project_tooltip": "Завантажити previously збережено AlloFlow PDF project",
-    "load_project": "Завантажити Project"
+    "load_project": "Завантажити Project",
+    "quickstart_heading": "Або оберіть відправну точку",
+    "qs_book": "Відкрити каталог для читання",
+    "qs_book_sub": "Книжки, статті та першоджерела",
+    "qs_write": "Написати або вставити текст",
+    "qs_write_sub": "Використайте власний матеріал",
+    "qs_find": "Знайти ресурс в інтернеті",
+    "qs_find_sub": "Вставте посилання або доручіть пошук ШІ",
+    "qs_generate": "Створити за темою",
+    "qs_generate_sub": "ШІ напише за вас"
   },
   "wizard": {
     "title": "швидкий Почати",

@@ -1701,7 +1701,9 @@
     "writing": "Escribiendo el contenido...",
     "actions": {
       "analyzing_short": "Analizando...",
-      "generate_short": "Generar"
+      "generate_short": "Generar",
+      "books_short": "Libros",
+      "books_hint": "Abre libros ilustrados: cualquier libro puede ser tu texto fuente"
     },
     "status_generating": "Generando el texto fuente...",
     "success_long_form": "¡Texto extenso generado con éxito!",
@@ -1735,7 +1737,16 @@
     },
     "drafting_story_outline": "Planificando la estructura del diálogo...",
     "load_project_tooltip": "Cargar un proyecto PDF de AlloFlow guardado previamente",
-    "load_project": "Cargar Proyecto"
+    "load_project": "Cargar Proyecto",
+    "quickstart_heading": "O escoge un punto de partida",
+    "qs_book": "Abrir el catálogo de lectura",
+    "qs_book_sub": "Libros, artículos y fuentes primarias",
+    "qs_write": "Escribe o pega texto",
+    "qs_write_sub": "Usa tu propio material",
+    "qs_find": "Buscar un recurso en línea",
+    "qs_find_sub": "Pega un enlace o deja que la IA busque",
+    "qs_generate": "Generar a partir de un tema",
+    "qs_generate_sub": "La IA lo escribe por ti"
   },
   "prompts": {
     "verified_correct": "**Respuesta Correcta Verificada:**",
@@ -11494,7 +11505,8 @@
     "download_diagnostics": "Descargar informe de diagnóstico del plan",
     "copy_diagnostics": "Copiar diagnósticos depurados del plan",
     "failure_log_help": "Los detalles técnicos permanecen en el registro de errores del dispositivo; los diagnósticos copiados y descargados están depurados.",
-    "open_error_log": "Abrir registro de errores",     "error_log_loading": "El registro de errores todavía se está cargando. Inténtalo de nuevo en un momento.",
+    "open_error_log": "Abrir registro de errores",
+    "error_log_loading": "El registro de errores todavía se está cargando. Inténtalo de nuevo en un momento.",
     "saved_run_warning": "Advertencia de ejecución guardada",
     "run_stopped": "Detenido. {done} de {total} recursos se terminaron antes de la parada — los demás muestran Reconstruir para que los generes uno a uno o reinicies el plan.",
     "save_template": "Guardar como plantilla",

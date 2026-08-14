@@ -1695,7 +1695,9 @@
     "writing": "در حال لیکل محتاوى...",
     "actions": {
       "analyzing_short": "در حال تحلیل...",
-      "generate_short": "جوړونه"
+      "generate_short": "جوړونه",
+      "books_short": "کتابونه",
+      "books_hint": "انځوریز کتابونه پرانیځئ: هر کتاب کولی شي ستاسو سرچینه متن شي"
     },
     "status_generating": "در حال جوړونه متن منبع...",
     "success_long_form": "هاو شو جوړونه متن طاویل ببریا!",
@@ -1729,7 +1731,16 @@
     },
     "drafting_story_outline": "د ډیالوګ جوړښت پلان کیږي...",
     "load_project_tooltip": "نهوڈ کړئ مشراوع AlloFlow PDF محفاوظ سابقًا",
-    "load_project": "نهوڈ کړئ مشراوع"
+    "load_project": "نهوڈ کړئ مشراوع",
+    "quickstart_heading": "یا د پیل یوه نقطه وټاکئ",
+    "qs_book": "د لوستلو کتلاګ پرانیستل",
+    "qs_book_sub": "کتابونه، مقالې او لومړني سرچینې",
+    "qs_write": "متن ولیکئ یا یې پیست کړئ",
+    "qs_write_sub": "خپل مواد وکاروئ",
+    "qs_find": "په انټرنیټ کې سرچینه ومومئ",
+    "qs_find_sub": "لینک پیست کړئ یا پرېږدئ هوش مصنوعي یې ولټوي",
+    "qs_generate": "له موضوع څخه جوړول",
+    "qs_generate_sub": "هوش مصنوعي یې ستاسو لپاره لیکي"
   },
   "prompts": {
     "verified_correct": "**تایید شوی سم ځواب:**",

@@ -1135,7 +1135,9 @@
     "writing": "Rédaction du contenu...",
     "actions": {
       "analyzing_short": "Analyse en cours...",
-      "generate_short": "Générer"
+      "generate_short": "Générer",
+      "books_short": "Livres",
+      "books_hint": "Ouvrez des albums illustrés : n'importe quel livre peut devenir votre texte source"
     },
     "status_generating": "Génération du texte source...",
     "success_long_form": "Texte long généré avec succès !",
@@ -1169,7 +1171,16 @@
     },
     "drafting_story_outline": "Planification de la structure du dialogue...",
     "load_project_tooltip": "Charger un projet PDF AlloFlow précédemment enregistré",
-    "load_project": "Charger un projet"
+    "load_project": "Charger un projet",
+    "quickstart_heading": "Ou choisissez un point de départ",
+    "qs_book": "Ouvrir le catalogue de lecture",
+    "qs_book_sub": "Livres, articles et sources primaires",
+    "qs_write": "Écrire ou coller du texte",
+    "qs_write_sub": "Utilisez votre propre matériel",
+    "qs_find": "Trouver une ressource en ligne",
+    "qs_find_sub": "Collez un lien ou laissez l'IA chercher",
+    "qs_generate": "Générer à partir d'un sujet",
+    "qs_generate_sub": "L'IA l'écrit pour vous"
   },
   "tour": {
     "input_panel_title": "Panneau d'entrée",
@@ -9238,7 +9249,7 @@
     "copy_diagnostics": "Copier les diagnostics expurgés du plan",
     "open_error_log": "Ouvrir le journal des erreurs",
     "failure_log_help": "Les détails techniques restent dans le journal d’erreurs de l’appareil; les diagnostics copiés et téléchargés sont expurgés.",
-    "open_error_log": "Ouvrir le journal des erreurs",     "error_log_loading": "Le journal des erreurs est encore en cours de chargement. Réessayez dans un instant.",
+    "error_log_loading": "Le journal des erreurs est encore en cours de chargement. Réessayez dans un instant.",
     "saved_run_warning": "Avertissement sur l’exécution enregistrée",
     "run_stopped": "Arrêté. {done} ressources sur {total} étaient terminées avant l'arrêt — les autres affichent Relancer pour les générer une à une ou redémarrer le plan.",
     "save_template": "Enregistrer comme modèle",

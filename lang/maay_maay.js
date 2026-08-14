@@ -2325,7 +2325,9 @@
     "writing": "Writing Content...",
     "actions": {
       "analyzing_short": "Wo falanqaynayo...",
-      "generate_short": "Sameey"
+      "generate_short": "Sameey",
+      "books_short": "Buugag",
+      "books_hint": "Fur buugagta sawirka leh: buug kasta wuxuu noqon karaa qoraalkaaga asalka ah"
     },
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text soo saaray successfully!",
@@ -2359,7 +2361,16 @@
     },
     "drafting_story_outline": "Planning dialogue structure...",
     "load_project_tooltip": "Load a previously saved AlloFlow PDF project",
-    "load_project": "Load Project"
+    "load_project": "Load Project",
+    "quickstart_heading": "Ama dooro goobta laga bilaabo",
+    "qs_book": "Fur liiska akhriska",
+    "qs_book_sub": "Buugag, maqaalo iyo ilo asal ah",
+    "qs_write": "Qor ama ku dheji qoraal",
+    "qs_write_sub": "Isticmaal agabkaaga",
+    "qs_find": "Raadi ilo internet ah",
+    "qs_find_sub": "Ku dheji link ama AI ha raadiyo",
+    "qs_generate": "Ka abuur mawduuc",
+    "qs_generate_sub": "AI ayaa kuu qori doona"
   },
   "wizard": {
     "title": "Quick Bilow",

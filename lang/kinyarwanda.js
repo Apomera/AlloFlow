@@ -2347,7 +2347,9 @@
     "writing": "Kwandika Ibikubiyemo...",
     "actions": {
       "analyzing_short": "Birasesengurwa...",
-      "generate_short": "Tunganya"
+      "generate_short": "Tunganya",
+      "books_short": "Ibitabo",
+      "books_hint": "Fungura ibitabo bifite amashusho: igitabo icyo ari cyo cyose gishobora kuba inyandiko yawe y'inkomoko"
     },
     "status_generating": "Itunganywa ry'umwandiko w'inkomoko...",
     "success_long_form": "Umwandiko murekuru watunganijwe neza!",
@@ -2381,7 +2383,16 @@
     },
     "drafting_story_outline": "Bitegurwa imiterere y'ikiganiro...",
     "load_project_tooltip": "Pakira PDF y'umushinga wa AlloFlow yabitswe",
-    "load_project": "Pakira Umushinga"
+    "load_project": "Pakira Umushinga",
+    "quickstart_heading": "Cyangwa hitamo aho gutangirira",
+    "qs_book": "Fungura urutonde rw'ibisomwa",
+    "qs_book_sub": "Ibitabo, ingingo n'inkomoko z'ibanze",
+    "qs_write": "Andika cyangwa umanike inyandiko",
+    "qs_write_sub": "Koresha ibikoresho byawe",
+    "qs_find": "Shakisha umutungo kuri interineti",
+    "qs_find_sub": "Manika umurongo cyangwa ureke AI ishakishe",
+    "qs_generate": "Kora uhereye ku ngingo",
+    "qs_generate_sub": "AI irakwandikira"
   },
   "wizard": {
     "title": "Itangizwa Vuba",

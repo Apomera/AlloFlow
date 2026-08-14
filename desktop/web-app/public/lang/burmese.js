@@ -2344,7 +2344,9 @@
     "writing": "ရေးသားခြင်း အကြောင်းအရာ...",
     "actions": {
       "analyzing_short": "ခွဲခြမ်းစိတ်ဖြာနေသည်...",
-      "generate_short": "ထုတ်လုပ်ပါ"
+      "generate_short": "ထုတ်လုပ်ပါ",
+      "books_short": "စာအုပ်များ",
+      "books_hint": "ပုံပြစာအုပ်များဖွင့်ပါ - မည်သည့်စာအုပ်မဆို သင်၏မူရင်းစာသားဖြစ်နိုင်သည်"
     },
     "status_generating": "Generating အရင်းအမြစ် စာသား...",
     "success_long_form": "ရှည်လျားသော စာသား အောင်မြင်စွာ ဖန်တီးပြီးပါပြီ!",
@@ -2378,7 +2380,16 @@
     },
     "drafting_story_outline": "Planning dialogue ဖွဲ့စည်းပုံ...",
     "load_project_tooltip": "တင်ပါ previously သိမ်းပြီး AlloFlow PDF project",
-    "load_project": "တင်ပါ Project"
+    "load_project": "တင်ပါ Project",
+    "quickstart_heading": "သို့မဟုတ် စတင်မည့်နေရာကို ရွေးပါ",
+    "qs_book": "စာဖတ်စာရင်းကို ဖွင့်ပါ",
+    "qs_book_sub": "စာအုပ်များ၊ ဆောင်းပါးများနှင့် မူရင်းအရင်းအမြစ်များ",
+    "qs_write": "စာသားရေးပါ သို့မဟုတ် ကူးထည့်ပါ",
+    "qs_write_sub": "သင့်ကိုယ်ပိုင်အကြောင်းအရာကို သုံးပါ",
+    "qs_find": "အွန်လိုင်းတွင် အရင်းအမြစ်ရှာပါ",
+    "qs_find_sub": "လင့်ခ်ကူးထည့်ပါ သို့မဟုတ် AI ကို ရှာခိုင်းပါ",
+    "qs_generate": "အကြောင်းအရာမှ ထုတ်လုပ်ပါ",
+    "qs_generate_sub": "AI က သင့်အတွက် ရေးပေးသည်"
   },
   "wizard": {
     "title": "မြန် စတင်ပါ",
@@ -27701,7 +27712,7 @@
     "poettree_title": "PoetTree",
     "poettree_desc": "ရေးပါ poems ဖြင့် form scaffolds, rhyme & meter ခွဲခြမ်းစိတ်ဖြာမှု, AI တုံ့ပြန်ချက်",
     "throughline_desc": "သင်၏ သင်ခန်းစာများကို နေရာအလိုက် ယူနစ်တစ်ခုအဖြစ် စီစဉ်ပါ— သင်ကြားမှု အစီအစဉ်၊ ကြိုတင်လိုအပ်ချက်များ၊ ထုတ်ယူနိုင်သော ဖိုင်တစ်ခုတည်း",
-    "throughline_title": "Throughline"
+    "throughline_title": "Learning Web: Unit Path"
   },
   "sel_hub": {
     "loading": "SEL Hub ကို တင်နေသည်...",
@@ -29043,9 +29054,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

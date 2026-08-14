@@ -3284,7 +3284,9 @@
     "writing": "ກຳລັງຂຽນເນື້ອຫາ...",
     "actions": {
       "analyzing_short": "ວິເຄາະ...",
-      "generate_short": "ສ້າງ"
+      "generate_short": "ສ້າງ",
+      "books_short": "ປຶ້ມ",
+      "books_hint": "ເປີດປຶ້ມຮູບພາບ: ປຶ້ມໃດກໍສາມາດເປັນເນື້ອຫາຕົ້ນສະບັບຂອງທ່ານໄດ້"
     },
     "status_generating": "ກຳລັງສ້າງເນື້ອຫາຕົ້ນສະບັບ...",
     "success_long_form": "ສ້າງຂໍ້ຄວາມຂະໜາດຍາວສຳເລັດ!",
@@ -3318,7 +3320,16 @@
     },
     "drafting_story_outline": "ກຳລັງວາງໂຄງສ້າງບົດສົນທະນາ...",
     "load_project_tooltip": "ໂຫລດໂປຣເຈັກ AlloFlow PDF ທີ່ບັນທຶກໄວ້ກ່ອນໜ້າ",
-    "load_project": "ໂຫລດໂປຣເຈັກ"
+    "load_project": "ໂຫລດໂປຣເຈັກ",
+    "quickstart_heading": "ຫຼື ເລືອກຈຸດເລີ່ມຕົ້ນ",
+    "qs_book": "ເປີດລາຍການອ່ານ",
+    "qs_book_sub": "ປຶ້ມ, ບົດຄວາມ ແລະ ແຫຼ່ງຕົ້ນສະບັບ",
+    "qs_write": "ຂຽນ ຫຼື ວາງຂໍ້ຄວາມ",
+    "qs_write_sub": "ໃຊ້ເນື້ອຫາຂອງທ່ານເອງ",
+    "qs_find": "ຄົ້ນຫາແຫຼ່ງຂໍ້ມູນອອນລາຍ",
+    "qs_find_sub": "ວາງລິ້ງ ຫຼື ໃຫ້ AI ຄົ້ນຫາ",
+    "qs_generate": "ສ້າງຈາກຫົວຂໍ້",
+    "qs_generate_sub": "AI ຂຽນໃຫ້ທ່ານ"
   },
   "analysis": {
     "title": "ວິເຄາະເນື້ອຫາຕົ້ນສະບັບ",

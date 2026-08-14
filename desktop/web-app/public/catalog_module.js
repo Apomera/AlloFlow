@@ -35,6 +35,19 @@
     return;
   }
   var e = React.createElement;
+
+  // Translator. Mirrors reading_library_module.js: reads the host's window.__alloT,
+  // treats a key echoed back unchanged as a miss, and falls back to English.
+  // Never a bare t() — an unresolved free t() takes the whole module down.
+  function tr(key, fallback) {
+    try {
+      if (typeof window.__alloT === 'function') {
+        var r = window.__alloT(key);
+        if (r && typeof r === 'string' && r !== key) return r;
+      }
+    } catch (_) {}
+    return fallback || key;
+  }
   var useState = React.useState;
   var useEffect = React.useEffect;
   var useMemo = React.useMemo;
@@ -107,12 +120,12 @@
   }
 
   function validateLessonJson(text) {
-    if (!text || !text.trim()) return { ok: false, error: 'Paste or upload a lesson JSON first.' };
+    if (!text || !text.trim()) return { ok: false, error: tr('catalog_paste_or_upload_a_lesson_json_first', 'Paste or upload a lesson JSON first.') };
     try {
       var obj = JSON.parse(text);
-      if (typeof obj !== 'object' || obj === null) return { ok: false, error: 'Top-level value must be a JSON object.' };
+      if (typeof obj !== 'object' || obj === null) return { ok: false, error: tr('catalog_top_level_value_must_be_a_json_object', 'Top-level value must be a JSON object.') };
       if (!obj.payload && !obj.history && !obj.lesson_content && !obj.tool && !obj.world && !obj.adventure && !obj.title) {
-        return { ok: false, error: 'JSON does not look like an AlloFlow lesson. Expected at least one of: history, payload, lesson_content, tool, world, adventure.' };
+        return { ok: false, error: tr('catalog_json_does_not_look_like_an_alloflow_lesson_e', 'JSON does not look like an AlloFlow lesson. Expected at least one of: history, payload, lesson_content, tool, world, adventure.') };
       }
       return { ok: true, parsed: obj };
     } catch (err) {
@@ -299,7 +312,7 @@
           e('input', {
             id: 'cat-filter-search',
             type: 'text',
-            placeholder: 'photosynthesis, peer-teaching...',
+            placeholder: tr('catalog_photosynthesis_peer_teaching_2', 'photosynthesis, peer-teaching...'),
             className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white',
             value: filters.search,
             onChange: function (ev) { setFilters(Object.assign({}, filters, { search: ev.target.value })); },
@@ -406,7 +419,7 @@
         .then(function (res) {
           if (res.body && res.body.ok) {
             setStatus({ stage: 'success', message: 'Submitted. Reference: ' + (res.body.slug || res.body.filename || '?') });
-            addToast && addToast('Submission received. A maintainer will review it.', 'success');
+            addToast && addToast(tr('catalog_submission_received_a_maintainer_will_review', 'Submission received. A maintainer will review it.'), 'success');
           } else {
             setStatus({ stage: 'error', message: (res.body && res.body.error) || ('Submission failed (HTTP ' + res.status + ')') });
           }
@@ -485,17 +498,17 @@
         e('div', null,
           e('label', { className: labelClass, htmlFor: 'cat-tags' }, 'Tags ',
             e('span', { className: 'font-normal text-slate-500' }, '(comma-separated)')),
-          e('input', { id: 'cat-tags', type: 'text', placeholder: 'photosynthesis, peer-teaching', className: inputClass, value: meta.tags, onChange: function (ev) { setMeta(Object.assign({}, meta, { tags: ev.target.value })); } })
+          e('input', { id: 'cat-tags', type: 'text', placeholder: tr('catalog_photosynthesis_peer_teaching', 'photosynthesis, peer-teaching'), className: inputClass, value: meta.tags, onChange: function (ev) { setMeta(Object.assign({}, meta, { tags: ev.target.value })); } })
         ),
         e('div', null,
           e('label', { className: labelClass, htmlFor: 'cat-credit' }, 'Credit ',
             e('span', { className: 'font-normal text-slate-500' }, '(optional)')),
-          e('input', { id: 'cat-credit', type: 'text', maxLength: 80, placeholder: 'e.g., "Anya G., 7th grade" or leave blank for anonymous', className: inputClass, value: meta.credit, onChange: function (ev) { setMeta(Object.assign({}, meta, { credit: ev.target.value })); } })
+          e('input', { id: 'cat-credit', type: 'text', maxLength: 80, placeholder: tr('catalog_e_g_anya_g_7th_grade_or_leave_blank_for_anon', 'e.g., "Anya G., 7th grade" or leave blank for anonymous'), className: inputClass, value: meta.credit, onChange: function (ev) { setMeta(Object.assign({}, meta, { credit: ev.target.value })); } })
         ),
         e('div', null,
           e('label', { className: labelClass, htmlFor: 'cat-license' }, 'License'),
           e('select', { id: 'cat-license', className: inputClass, value: meta.license, onChange: function (ev) { setMeta(Object.assign({}, meta, { license: ev.target.value })); } },
-            ALLOWED_LICENSES.map(function (lic) { return e('option', { key: lic.value, value: lic.value }, lic.label); })
+            ALLOWED_LICENSES.map(function (lic) { return e('option', { key: lic.value, value: lic.value }, tr('catalog_license_' + lic.value, lic.label)); })
           )
         )
       ),
@@ -503,10 +516,10 @@
       e('div', { className: 'border border-slate-200 rounded-lg p-3 bg-amber-50' },
         e('div', { className: 'text-xs font-semibold text-slate-700 mb-2' }, 'Please confirm before submitting'),
         [
-          { key: 'author_or_authorized', label: 'I am the author of this lesson, or have permission to share it.' },
-          { key: 'no_pii',                label: 'I have reviewed the lesson and confirmed it does NOT contain PII (full names of minors, addresses, school names, IEP details, etc.).' },
-          { key: 'license_agreed',        label: 'I agree to release this lesson under the chosen license.' },
-          { key: 'age_eligible',          label: 'I am 13 years or older, OR an adult is submitting on my behalf.' },
+          { key: 'author_or_authorized', label: tr('catalog_i_am_the_author_of_this_lesson_or_have_permi', 'I am the author of this lesson, or have permission to share it.') },
+          { key: 'no_pii',                label: tr('catalog_i_have_reviewed_the_lesson_and_confirmed_it', 'I have reviewed the lesson and confirmed it does NOT contain PII (full names of minors, addresses, school names, IEP details, etc.).') },
+          { key: 'license_agreed',        label: tr('catalog_i_agree_to_release_this_lesson_under_the_cho', 'I agree to release this lesson under the chosen license.') },
+          { key: 'age_eligible',          label: tr('catalog_i_am_13_years_or_older_or_an_adult_is_submit', 'I am 13 years or older, OR an adult is submitting on my behalf.') },
         ].map(function (a) {
           return e('label', { key: a.key, className: 'flex items-start gap-2 text-xs text-slate-700 mb-1.5 cursor-pointer' },
             e('input', {
@@ -629,7 +642,7 @@
     function attempt(prompt) {
       return Promise.resolve(callAI(prompt, true)).then(function (out) {
         var parsed = stampAi(extractFirstJsonObject(out));
-        var v = parsed ? Core.validatePdModule(parsed) : { ok: false, error: 'The AI did not return valid JSON.' };
+        var v = parsed ? Core.validatePdModule(parsed) : { ok: false, error: tr('catalog_the_ai_did_not_return_valid_json', 'The AI did not return valid JSON.') };
         return { v: v, parsed: parsed, out: out };
       });
     }
@@ -707,26 +720,26 @@
     var expectedModuleId = pdManifestModuleId(entry);
     var expectedVersion = String((entry && entry.version) || '').trim();
     var expectedLanguage = String((entry && entry.language) || '').trim();
-    if (!expected) return { ok: false, error: 'This approved catalog entry is missing its required content digest.' };
-    if (!expectedModuleId) return { ok: false, error: 'This approved catalog entry is missing its required module identity.' };
-    if (!expectedVersion) return { ok: false, error: 'This approved catalog entry is missing its required module version.' };
-    if (!expectedLanguage) return { ok: false, error: 'This approved catalog entry is missing its required language binding.' };
+    if (!expected) return { ok: false, error: tr('catalog_this_approved_catalog_entry_is_missing_its_r_4', 'This approved catalog entry is missing its required content digest.') };
+    if (!expectedModuleId) return { ok: false, error: tr('catalog_this_approved_catalog_entry_is_missing_its_r_3', 'This approved catalog entry is missing its required module identity.') };
+    if (!expectedVersion) return { ok: false, error: tr('catalog_this_approved_catalog_entry_is_missing_its_r_2', 'This approved catalog entry is missing its required module version.') };
+    if (!expectedLanguage) return { ok: false, error: tr('catalog_this_approved_catalog_entry_is_missing_its_r', 'This approved catalog entry is missing its required language binding.') };
     if (!Core || typeof Core.moduleContentDigest !== 'function') {
-      return { ok: false, error: 'This catalog entry is content-bound, but this PD engine cannot verify its digest.' };
+      return { ok: false, error: tr('catalog_this_catalog_entry_is_content_bound_but_this', 'This catalog entry is content-bound, but this PD engine cannot verify its digest.') };
     }
     try {
       var metadata = (mod && mod.metadata) || {};
       var actualModuleId = String(metadata.id || '').trim();
       var actualVersion = String(metadata.version || '').trim();
       var actualLanguage = String(metadata.language || metadata.lang || '').trim();
-      if (actualModuleId !== expectedModuleId) return { ok: false, error: 'This module identity does not match the approved catalog.' };
-      if (actualVersion !== expectedVersion) return { ok: false, error: 'This module version does not match the approved catalog.' };
-      if (actualLanguage !== expectedLanguage) return { ok: false, error: 'This module language does not match the approved catalog.' };
+      if (actualModuleId !== expectedModuleId) return { ok: false, error: tr('catalog_this_module_identity_does_not_match_the_appr', 'This module identity does not match the approved catalog.') };
+      if (actualVersion !== expectedVersion) return { ok: false, error: tr('catalog_this_module_version_does_not_match_the_appro', 'This module version does not match the approved catalog.') };
+      if (actualLanguage !== expectedLanguage) return { ok: false, error: tr('catalog_this_module_language_does_not_match_the_appr', 'This module language does not match the approved catalog.') };
       var actual = Core.moduleContentDigest(mod);
-      if (actual !== expected) return { ok: false, error: 'This module does not match the content digest in the approved catalog.' };
+      if (actual !== expected) return { ok: false, error: tr('catalog_this_module_does_not_match_the_content_diges', 'This module does not match the content digest in the approved catalog.') };
       return { ok: true, verified: true, digest: actual };
     } catch (_e) {
-      return { ok: false, error: 'This module content digest could not be verified.' };
+      return { ok: false, error: tr('catalog_this_module_content_digest_could_not_be_veri', 'This module content digest could not be verified.') };
     }
   }
   function removePdProgressKey(key) {
@@ -862,11 +875,11 @@
   }
   function importPdHistory(parsed) {
     var serialized;
-    try { serialized = JSON.stringify(parsed); } catch (_e) { return { ok: false, error: 'That file is not valid JSON history data.' }; }
-    if (!serialized || serialized.length > PD_HISTORY_MAX_IMPORT_BYTES) return { ok: false, error: 'That PD history file is too large.' };
+    try { serialized = JSON.stringify(parsed); } catch (_e) { return { ok: false, error: tr('catalog_that_file_is_not_valid_json_history_data', 'That file is not valid JSON history data.') }; }
+    if (!serialized || serialized.length > PD_HISTORY_MAX_IMPORT_BYTES) return { ok: false, error: tr('catalog_that_pd_history_file_is_too_large', 'That PD history file is too large.') };
     var incoming = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.entries) ? parsed.entries : null);
-    if (!incoming) return { ok: false, error: 'That file is not a PD history export.' };
-    if (incoming.length > PD_HISTORY_MAX_ENTRIES) return { ok: false, error: 'That PD history file has too many entries.' };
+    if (!incoming) return { ok: false, error: tr('catalog_that_file_is_not_a_pd_history_export', 'That file is not a PD history export.') };
+    if (incoming.length > PD_HISTORY_MAX_ENTRIES) return { ok: false, error: tr('catalog_that_pd_history_file_has_too_many_entries', 'That PD history file has too many entries.') };
     var byId = {};
     loadPdHistory().forEach(function (h) { if (h && h.moduleId) byId[h.moduleId] = h; });
     incoming.forEach(function (h) {
@@ -878,7 +891,7 @@
     var merged = Object.keys(byId).map(function (k) { return byId[k]; })
       .sort(function (a, b) { return b.completedAt.localeCompare(a.completedAt); })
       .slice(0, PD_HISTORY_MAX_ENTRIES);
-    try { localStorage.setItem(PD_HISTORY_KEY, JSON.stringify(merged)); } catch (_e) { return { ok: false, error: 'Could not save imported history.' }; }
+    try { localStorage.setItem(PD_HISTORY_KEY, JSON.stringify(merged)); } catch (_e) { return { ok: false, error: tr('catalog_could_not_save_imported_history', 'Could not save imported history.') }; }
     return { ok: true, count: merged.length };
   }
 
@@ -928,8 +941,8 @@
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a'); a.href = url; a.download = filename + '.html';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-      addToast && addToast('Pop-up blocked — downloaded the certificate as an HTML file you can open and print.', 'info');
-    } catch (_e3) { addToast && addToast('Could not open the certificate.', 'error'); }
+      addToast && addToast(tr('catalog_pop_up_blocked_downloaded_the_certificate_as', 'Pop-up blocked — downloaded the certificate as an HTML file you can open and print.'), 'info');
+    } catch (_e3) { addToast && addToast(tr('catalog_could_not_open_the_certificate', 'Could not open the certificate.'), 'error'); }
   }
   function printPdCertificate(mod, results, learner, addToast) {
     var Core = window.AlloModules && window.AlloModules.PdCore;
@@ -1000,9 +1013,9 @@
   // institutional assurance reaches the browser. → {valid, method, accessibilityCurrent}.
   function verifyPdCredential(credential) {
     var noAssurance = { reviewed: false, institutional: false };
-    if (!credential || !credential.payload || !credential.signature) return Promise.resolve({ valid: false, assurance: noAssurance, error: 'Not a PD credential.' });
+    if (!credential || !credential.payload || !credential.signature) return Promise.resolve({ valid: false, assurance: noAssurance, error: tr('catalog_not_a_pd_credential', 'Not a PD credential.') });
     var profile = credential.payload.credential_profile;
-    if (profile !== 'reviewed-evidence' && profile !== 'self-paced-non-institutional') return Promise.resolve({ valid: false, assurance: noAssurance, error: 'Unsupported credential profile.' });
+    if (profile !== 'reviewed-evidence' && profile !== 'self-paced-non-institutional') return Promise.resolve({ valid: false, assurance: noAssurance, error: tr('catalog_unsupported_credential_profile', 'Unsupported credential profile.') });
     var expectedAssurance = profile === 'reviewed-evidence'
       ? { reviewed: true, institutional: true } : noAssurance;
     return fetch(PD_VERIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential: credential }) })
@@ -1012,20 +1025,20 @@
           return { valid: false, assurance: noAssurance, error: (res.body && res.body.error) || ('verification unavailable (HTTP ' + res.status + ')') };
         }
         var returnedProfile = res.body.credential_profile;
-        if (returnedProfile !== profile) return { valid: false, assurance: noAssurance, error: 'Credential profile mismatch in verification response.' };
+        if (returnedProfile !== profile) return { valid: false, assurance: noAssurance, error: tr('catalog_credential_profile_mismatch_in_verification', 'Credential profile mismatch in verification response.') };
         var returnedAssurance = res.body.assurance;
         if (!returnedAssurance || typeof returnedAssurance.reviewed !== 'boolean' || typeof returnedAssurance.institutional !== 'boolean') {
-          return { valid: false, assurance: noAssurance, error: 'Credential assurance is missing from verification response.' };
+          return { valid: false, assurance: noAssurance, error: tr('catalog_credential_assurance_is_missing_from_verific', 'Credential assurance is missing from verification response.') };
         }
         if (res.body.valid !== true) {
-          if (returnedAssurance.reviewed !== false || returnedAssurance.institutional !== false) return { valid: false, assurance: noAssurance, error: 'Invalid credentials cannot carry assurance.' };
+          if (returnedAssurance.reviewed !== false || returnedAssurance.institutional !== false) return { valid: false, assurance: noAssurance, error: tr('catalog_invalid_credentials_cannot_carry_assurance', 'Invalid credentials cannot carry assurance.') };
           return { valid: false, method: 'server', credentialProfile: profile, assurance: noAssurance, error: res.body.error || res.body.reason || '' };
         }
         if (returnedAssurance.reviewed !== expectedAssurance.reviewed || returnedAssurance.institutional !== expectedAssurance.institutional) {
-          return { valid: false, assurance: noAssurance, error: 'Credential assurance mismatch in verification response.' };
+          return { valid: false, assurance: noAssurance, error: tr('catalog_credential_assurance_mismatch_in_verificatio', 'Credential assurance mismatch in verification response.') };
         }
         if (profile === 'reviewed-evidence' && typeof res.body.accessibility_current !== 'boolean') {
-          return { valid: false, assurance: noAssurance, error: 'Accessibility verification state is missing from verification response.' };
+          return { valid: false, assurance: noAssurance, error: tr('catalog_accessibility_verification_state_is_missing', 'Accessibility verification state is missing from verification response.') };
         }
         return {
           valid: true, method: 'server', credentialProfile: profile, assurance: expectedAssurance,
@@ -1162,7 +1175,7 @@
         onPaste: props.onPaste,
         'aria-describedby': props.pasteNoticeId || undefined,
         className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white',
-        placeholder: 'Type your response…',
+        placeholder: tr('catalog_type_your_response', 'Type your response…'),
       })
     );
   }
@@ -1266,7 +1279,7 @@
 
     return e('section', {
       className: 'mt-2 pt-2 border-t border-sky-200 flex flex-col gap-2',
-      'aria-label': 'Qualitative evidence notes'
+      'aria-label': tr('catalog_qualitative_evidence_notes', 'Qualitative evidence notes')
     },
       e('h4', { className: 'text-sm font-semibold text-slate-800' }, 'Qualitative evidence notes'),
       notes('Strengths', strengths),
@@ -1344,7 +1357,7 @@
         onPaste: props.onPaste,
         'aria-describedby': props.pasteNoticeId || undefined,
         className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white',
-        placeholder: 'Write how you would respond…',
+        placeholder: tr('catalog_write_how_you_would_respond', 'Write how you would respond…'),
       }),
       e('div', { className: 'text-xs text-slate-600' }, 'Your response is sent to an AI service for formative feedback. Don’t include student names or other personal information.'),
       e('button', {
@@ -1479,14 +1492,14 @@
         ev.complete && e('div', { className: 'w-full max-w-sm' },
           e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1', htmlFor: 'pd-learner-name' }, 'Name for your record / certificate ',
             e('span', { className: 'font-normal text-slate-500' }, '(optional)')),
-          e('input', { id: 'pd-learner-name', type: 'text', maxLength: 80, value: learnerName, onChange: function (ev2) { setLearnerName(ev2.target.value); }, className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white', placeholder: 'e.g., your name' })
+          e('input', { id: 'pd-learner-name', type: 'text', maxLength: 80, value: learnerName, onChange: function (ev2) { setLearnerName(ev2.target.value); }, className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white', placeholder: tr('catalog_e_g_your_name', 'e.g., your name') })
         ),
         e('div', { className: 'flex gap-2 flex-wrap' },
           ev.complete && e('button', {
             onClick: function () {
               var rec = Core.buildCompletionRecord(mod, resultsById(), { name: learnerName.trim() || null }, new Date().toISOString());
               downloadJsonFile(rec, pdModuleId(mod) + '-completion');
-              addToast && addToast('Completion record downloaded.', 'success');
+              addToast && addToast(tr('catalog_completion_record_downloaded', 'Completion record downloaded.'), 'success');
             },
             className: 'px-4 py-2 text-sm font-bold bg-emerald-700 text-white rounded-md hover:bg-emerald-800',
           }, 'Download completion record (JSON)'),
@@ -1498,8 +1511,8 @@
             onClick: function () {
               var rec = Core.buildCompletionRecord(mod, resultsById(), { name: learnerName.trim() || null }, new Date().toISOString());
               requestPdCredential(rec).then(function (res) {
-                if (res.ok) { downloadJsonFile(res.credential, pdModuleId(mod) + '-credential'); addToast && addToast('Issuer-signed attestation downloaded.', 'success'); }
-                else if (res.disabled) { addToast && addToast('Issuer signing isn’t enabled on this instance — your self-paced record still works.', 'info'); }
+                if (res.ok) { downloadJsonFile(res.credential, pdModuleId(mod) + '-credential'); addToast && addToast(tr('catalog_issuer_signed_attestation_downloaded', 'Issuer-signed attestation downloaded.'), 'success'); }
+                else if (res.disabled) { addToast && addToast(tr('catalog_issuer_signing_isn_t_enabled_on_this_instanc', 'Issuer signing isn’t enabled on this instance — your self-paced record still works.'), 'info'); }
                 else { addToast && addToast('Could not sign an attestation: ' + res.error, 'error'); }
               });
             },
@@ -1554,7 +1567,7 @@
             disabled: !reviewConsent || !reviewNotice,
             onClick: function () {
               if (!Core || typeof Core.buildReviewCandidatePackage !== 'function' || !reviewNotice) {
-                addToast && addToast('The review-candidate export is unavailable in this PD engine.', 'error');
+                addToast && addToast(tr('catalog_the_review_candidate_export_is_unavailable_i', 'The review-candidate export is unavailable in this PD engine.'), 'error');
                 return;
               }
               var preparedAt = new Date().toISOString();
@@ -1569,7 +1582,7 @@
               }
               setReviewPreview(built.package);
               setReviewPreviewConfirmed(false);
-              addToast && addToast('Local evidence summary ready. Review it before downloading.', 'info');
+              addToast && addToast(tr('catalog_local_evidence_summary_ready_review_it_befor', 'Local evidence summary ready. Review it before downloading.'), 'info');
             },
             className: 'self-start px-4 py-2 text-sm font-semibold bg-violet-700 text-white rounded-md hover:bg-violet-800 disabled:opacity-40 disabled:cursor-not-allowed'
           }, 'Preview review-candidate package'),
@@ -1599,7 +1612,7 @@
               type: 'button', disabled: !reviewPreviewConfirmed,
               onClick: function () {
                 downloadJsonFile(reviewPreview, pdModuleId(mod) + '-review-candidate');
-                addToast && addToast('Local review-candidate evidence package downloaded.', 'success');
+                addToast && addToast(tr('catalog_local_review_candidate_evidence_package_down', 'Local review-candidate evidence package downloaded.'), 'success');
               },
               className: 'self-start px-4 py-2 text-sm font-semibold border border-violet-700 text-violet-800 rounded-md hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed'
             }, 'Confirm and download review-candidate package (JSON)')
@@ -1645,7 +1658,7 @@
         next[act.id] = Object.assign({}, prev[act.id] || {}, result.patch);
         return next;
       });
-      if (blocked && addToast) addToast('Pasting is restricted for this response. Use the listed accessible alternative or accommodation contact.', 'info');
+      if (blocked && addToast) addToast(tr('catalog_pasting_is_restricted_for_this_response_use', 'Pasting is restricted for this response. Use the listed accessible alternative or accommodation contact.'), 'info');
     }
 
 
@@ -1659,12 +1672,12 @@
           ),
           e('div', { className: 'flex items-center gap-3' },
             resumed && e('button', { onClick: function () { startOver(); }, className: 'text-xs font-semibold text-slate-500 hover:text-slate-800 underline decoration-dotted' }, 'Start over'),
-            e('button', { onClick: props.onExit, className: 'text-sm font-semibold text-slate-600 hover:text-slate-900', 'aria-label': 'Exit module' }, 'Exit')
+            e('button', { onClick: props.onExit, className: 'text-sm font-semibold text-slate-600 hover:text-slate-900', 'aria-label': tr('catalog_exit_module', 'Exit module') }, 'Exit')
           )
         ),
         e('div', {
           className: 'h-1.5 w-full bg-slate-200 rounded-full overflow-hidden',
-          role: 'progressbar', 'aria-valuenow': completedCount, 'aria-valuemin': 0, 'aria-valuemax': steps.length, 'aria-label': 'Module progress',
+          role: 'progressbar', 'aria-valuenow': completedCount, 'aria-valuemin': 0, 'aria-valuemax': steps.length, 'aria-label': tr('catalog_module_progress', 'Module progress'),
         }, e('div', { className: 'h-full bg-indigo-600 rounded-full transition-all motion-reduce:transition-none', style: { width: pct + '%' } }))
       ),
       resumed && e('div', { className: 'text-xs text-slate-500 -mt-1' }, 'Resumed where you left off.'),
@@ -1732,14 +1745,14 @@
 
     var validation = useMemo(function () {
       var Core = window.AlloModules && window.AlloModules.PdCore;
-      if (!Core) return { ok: false, error: 'PD engine still loading…' };
+      if (!Core) return { ok: false, error: tr('catalog_pd_engine_still_loading', 'PD engine still loading…') };
       return Core.validatePdModule(jsonText);
     }, [jsonText, coreReady]);
     var accessibilityReadiness = useMemo(function () {
       var Core = window.AlloModules && window.AlloModules.PdCore;
       if (!validation.ok) return null;
       if (!Core || typeof Core.auditAccessibilityReadiness !== 'function') {
-        return { status: 'review-required', issues: [{ code: 'audit-unavailable', message: 'Accessibility preflight is unavailable.' }] };
+        return { status: 'review-required', issues: [{ code: 'audit-unavailable', message: tr('catalog_accessibility_preflight_is_unavailable', 'Accessibility preflight is unavailable.') }] };
       }
       return Core.auditAccessibilityReadiness(validation.module);
     }, [validation, coreReady]);
@@ -1771,7 +1784,7 @@
         .then(function (res) {
           if (res.body && res.body.ok) {
             setStatus({ stage: 'success', message: 'Submitted privately for review. Reference: ' + (res.body.slug || res.body.id || '?') });
-            addToast && addToast('PD module submitted for review.', 'success');
+            addToast && addToast(tr('catalog_pd_module_submitted_for_review', 'PD module submitted for review.'), 'success');
           } else {
             setStatus({ stage: 'error', message: (res.body && res.body.error) || ('Submission failed (HTTP ' + res.status + ')') });
           }
@@ -1845,15 +1858,15 @@
       e('div', null,
         e('label', { className: labelClass, htmlFor: 'pd-credit' }, 'Credit ',
           e('span', { className: 'font-normal text-slate-500' }, '(optional, shown on the card)')),
-        e('input', { id: 'pd-credit', type: 'text', maxLength: 80, placeholder: 'e.g., "Maine RiSE Center" or leave blank', className: inputClass, value: credit, onChange: function (ev) { setCredit(ev.target.value); } })
+        e('input', { id: 'pd-credit', type: 'text', maxLength: 80, placeholder: tr('catalog_e_g_maine_rise_center_or_leave_blank', 'e.g., "Maine RiSE Center" or leave blank'), className: inputClass, value: credit, onChange: function (ev) { setCredit(ev.target.value); } })
       ),
       e('div', { className: 'border border-slate-200 rounded-lg p-3 bg-amber-50' },
         e('div', { className: 'text-xs font-semibold text-slate-700 mb-2' }, 'Please confirm before submitting'),
         [
-          { key: 'author_or_authorized', label: 'I am the author of this module, or have permission to share it.' },
-          { key: 'no_pii',                label: 'I have reviewed it and confirmed it does NOT contain PII (student names, addresses, school names, IEP details, etc.).' },
-          { key: 'license_agreed',        label: 'I agree to release this module under an open license (e.g., CC-BY-SA-4.0).' },
-          { key: 'age_eligible',          label: 'I am 13 years or older, OR an adult is submitting on my behalf.' },
+          { key: 'author_or_authorized', label: tr('catalog_i_am_the_author_of_this_module_or_have_permi', 'I am the author of this module, or have permission to share it.') },
+          { key: 'no_pii',                label: tr('catalog_i_have_reviewed_it_and_confirmed_it_does_not', 'I have reviewed it and confirmed it does NOT contain PII (student names, addresses, school names, IEP details, etc.).') },
+          { key: 'license_agreed',        label: tr('catalog_i_agree_to_release_this_module_under_an_open', 'I agree to release this module under an open license (e.g., CC-BY-SA-4.0).') },
+          { key: 'age_eligible',          label: tr('catalog_i_am_13_years_or_older_or_an_adult_is_submit', 'I am 13 years or older, OR an adult is submitting on my behalf.') },
         ].map(function (a) {
           return e('label', { key: a.key, className: 'flex items-start gap-2 text-xs text-slate-700 mb-1.5 cursor-pointer' },
             e('input', {
@@ -1904,7 +1917,7 @@
         .then(function (res) {
           if (res.ok) {
             setResult(res.module); setStatus('done');
-            if (res.repaired) addToast && addToast('Draft generated (auto-corrected one schema issue).', 'info');
+            if (res.repaired) addToast && addToast(tr('catalog_draft_generated_auto_corrected_one_schema_is', 'Draft generated (auto-corrected one schema issue).'), 'info');
           } else { setError(res.error || 'Could not generate a module.'); setStatus('error'); }
         })
         .catch(function (err) { setError(err.message); setStatus('error'); });
@@ -1926,7 +1939,7 @@
       // Inputs
       e('div', null,
         e('label', { className: labelClass, htmlFor: 'pdg-topic' }, 'Topic *'),
-        e('input', { id: 'pdg-topic', type: 'text', maxLength: 160, className: inputClass, placeholder: 'e.g., Trauma-informed classroom routines', value: topic, onChange: function (ev) { setTopic(ev.target.value); } })
+        e('input', { id: 'pdg-topic', type: 'text', maxLength: 160, className: inputClass, placeholder: tr('catalog_e_g_trauma_informed_classroom_routines', 'e.g., Trauma-informed classroom routines'), value: topic, onChange: function (ev) { setTopic(ev.target.value); } })
       ),
       e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
         e('div', null,
@@ -1947,7 +1960,7 @@
       e('div', null,
         e('label', { className: labelClass, htmlFor: 'pdg-notes' }, 'Learning objectives or notes ',
           e('span', { className: 'font-normal text-slate-500' }, '(optional)')),
-        e('textarea', { id: 'pdg-notes', rows: 3, className: inputClass, placeholder: 'Anything the module must cover, a framework to ground it in, the grade band, etc.', value: notes, onChange: function (ev) { setNotes(ev.target.value); } })
+        e('textarea', { id: 'pdg-notes', rows: 3, className: inputClass, placeholder: tr('catalog_anything_the_module_must_cover_a_framework_t', 'Anything the module must cover, a framework to ground it in, the grade band, etc.'), value: notes, onChange: function (ev) { setNotes(ev.target.value); } })
       ),
       e('label', { className: 'flex items-center gap-2 text-xs text-slate-700 cursor-pointer' },
         e('input', { type: 'checkbox', checked: includeReflection, onChange: function (ev) { setIncludeReflection(ev.target.checked); } }),
@@ -2022,7 +2035,7 @@
             var binding = verifyPdManifestEntryDigest(Core, entry, v.module);
             if (!binding.ok) { addToast && addToast(binding.error, 'error'); return; }
             var readiness = typeof Core.auditAccessibilityReadiness === 'function' ? Core.auditAccessibilityReadiness(v.module) : null;
-            if (!readiness || readiness.status !== 'ready-for-render-audit') { addToast && addToast('This module needs accessibility-authoring fixes before it can run.', 'error'); return; }
+            if (!readiness || readiness.status !== 'ready-for-render-audit') { addToast && addToast(tr('catalog_this_module_needs_accessibility_authoring_fi', 'This module needs accessibility-authoring fixes before it can run.'), 'error'); return; }
             setRun({ entry: entry, module: v.module });
           });
       }).catch(function (err) { addToast && addToast('Could not start module: ' + err.message, 'error'); });
@@ -2078,7 +2091,7 @@
           e('button', { onClick: function () { setView('browse'); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
           e('div', { className: 'flex items-center gap-3 flex-wrap' },
             hist.length > 0 && e('button', {
-              onClick: function () { exportPdHistory(); addToast && addToast('Exported your PD history.', 'success'); },
+              onClick: function () { exportPdHistory(); addToast && addToast(tr('catalog_exported_your_pd_history', 'Exported your PD history.'), 'success'); },
               className: 'text-xs font-semibold text-indigo-700 hover:underline',
             }, 'Export'),
             e('button', { type: 'button', onClick: function () { if (importRef.current) importRef.current.click(); }, className: 'text-xs font-semibold text-indigo-700 hover:underline' }, 'Import'),
@@ -2087,11 +2100,11 @@
               onChange: function (ev) {
                 var f = ev.target.files && ev.target.files[0]; if (!f) return;
                 if (typeof f.size === 'number' && f.size > PD_HISTORY_MAX_IMPORT_BYTES) {
-                  addToast && addToast('That PD history file is too large.', 'error'); ev.target.value = ''; return;
+                  addToast && addToast(tr('catalog_that_pd_history_file_is_too_large', 'That PD history file is too large.'), 'error'); ev.target.value = ''; return;
                 }
                 var reader = new FileReader();
                 reader.onload = function () {
-                  var res; try { res = importPdHistory(JSON.parse(String(reader.result || ''))); } catch (e) { res = { ok: false, error: 'Could not read that file.' }; }
+                  var res; try { res = importPdHistory(JSON.parse(String(reader.result || ''))); } catch (e) { res = { ok: false, error: tr('catalog_could_not_read_that_file', 'Could not read that file.') }; }
                   if (res.ok) { setHistTick(function (n) { return n + 1; }); addToast && addToast('Imported — ' + res.count + ' module' + (res.count !== 1 ? 's' : '') + ' in your history.', 'success'); }
                   else { addToast && addToast(res.error || 'Import failed.', 'error'); }
                 };
@@ -2106,7 +2119,7 @@
                 var f = ev.target.files && ev.target.files[0]; if (!f) return;
                 var reader = new FileReader();
                 reader.onload = function () {
-                  var cred; try { var p = JSON.parse(String(reader.result || '')); cred = (p && p.credential) ? p.credential : p; } catch (e) { addToast && addToast('Could not read that file.', 'error'); return; }
+                  var cred; try { var p = JSON.parse(String(reader.result || '')); cred = (p && p.credential) ? p.credential : p; } catch (e) { addToast && addToast(tr('catalog_could_not_read_that_file', 'Could not read that file.'), 'error'); return; }
                   verifyPdCredential(cred).then(function (res) {
                     if (res.valid) {
                       var s = (cred.payload && cred.payload.credentialSubject) || {};
@@ -2124,7 +2137,7 @@
               },
             }),
             hist.length > 0 && e('button', {
-              onClick: function () { try { localStorage.removeItem(PD_HISTORY_KEY); } catch (_e) { /* no-op */ } setHistTick(function (n) { return n + 1; }); addToast && addToast('Cleared your local PD history.', 'info'); },
+              onClick: function () { try { localStorage.removeItem(PD_HISTORY_KEY); } catch (_e) { /* no-op */ } setHistTick(function (n) { return n + 1; }); addToast && addToast(tr('catalog_cleared_your_local_pd_history', 'Cleared your local PD history.'), 'info'); },
               className: 'text-xs text-slate-500 hover:text-red-700 underline decoration-dotted',
             }, 'Clear history'),
             e('button', {
@@ -2141,7 +2154,7 @@
         e('h3', { className: 'font-bold text-base text-slate-800' }, 'My learning'),
         e('p', { className: 'text-xs text-slate-500' }, 'Your completion history is stored only on this device. Every entry, including an imported entry, is self-reported and unverified; it is personal progress, not institutional evidence. Use Export to keep a copy and Import to restore it.'),
         e('p', { className: 'text-xs text-slate-500' }, 'In-progress responses are retained in this browser for at most 30 days; stale or module-mismatched drafts are purged, and completed response data is not retained.'),
-        hist.length > 0 && e('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': 'Learning summary' },
+        hist.length > 0 && e('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': tr('catalog_learning_summary', 'Learning summary') },
           [
             { label: hist.length + ' module' + (hist.length !== 1 ? 's' : '') + ' completed' },
             histMinutes > 0 && { label: '~' + histMinutes + ' min of learning' },
@@ -2247,7 +2260,7 @@
       ),
       state.status === 'ok' && (state.paths || []).length > 0 && e('div', { className: 'flex flex-col gap-2' },
         e('h3', { className: 'text-sm font-bold text-slate-700' }, 'Learning paths'),
-        e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3', role: 'list', 'aria-label': 'Learning paths' },
+        e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3', role: 'list', 'aria-label': tr('catalog_learning_paths', 'Learning paths') },
           (state.paths || []).map(function (pth) {
             var pr = pdPathProgress(pth, slugCompleted);
             return e('div', { key: pth.slug, role: 'listitem', className: 'bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-200 rounded-lg p-4 flex flex-col gap-2' },
@@ -2267,7 +2280,7 @@
       state.status === 'ok' && state.entries.length > 0 && e('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200' },
         e('div', { className: 'sm:col-span-2' },
           e('label', { className: 'block text-xs font-semibold text-slate-600 mb-1', htmlFor: 'pd-search' }, 'Search'),
-          e('input', { id: 'pd-search', type: 'text', placeholder: 'title, topic, summary…', className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white', value: filters.search, onChange: function (ev) { setFilters(Object.assign({}, filters, { search: ev.target.value })); } })
+          e('input', { id: 'pd-search', type: 'text', placeholder: tr('catalog_title_topic_summary', 'title, topic, summary…'), className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white', value: filters.search, onChange: function (ev) { setFilters(Object.assign({}, filters, { search: ev.target.value })); } })
         ),
         e('div', null,
           e('label', { className: 'block text-xs font-semibold text-slate-600 mb-1', htmlFor: 'pd-topic' }, 'Topic'),
@@ -2363,7 +2376,7 @@
       onClick: function (ev) { if (ev.target === ev.currentTarget) props.onClose(); },
     },
       e('div', {
-        className: contentClass, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Community Catalog',
+        className: contentClass, role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('catalog_community_catalog', 'Community Catalog'),
         tabIndex: -1, ref: dialogRef,
         onKeyDown: function (ev) {
           if (ev.key === 'Escape') { ev.stopPropagation(); props.onClose(); return; }
@@ -2394,7 +2407,7 @@
             )
           ),
           e('div', { className: 'flex items-center gap-2' },
-            e('div', { role: 'tablist', 'aria-label': 'Catalog sections', className: 'flex items-center gap-2' },
+            e('div', { role: 'tablist', 'aria-label': tr('catalog_catalog_sections', 'Catalog sections'), className: 'flex items-center gap-2' },
               e('button', { role: 'tab', id: 'pd-tab-browse', 'aria-selected': tab === 'browse', className: tabBtn(tab === 'browse'), onClick: function () { setTab('browse'); } }, 'Browse'),
               e('button', { role: 'tab', id: 'pd-tab-submit', 'aria-selected': tab === 'submit', className: tabBtn(tab === 'submit'), onClick: function () { setTab('submit'); } }, 'Submit'),
               e('button', { role: 'tab', id: 'pd-tab-pd', 'aria-selected': tab === 'pd', className: tabBtn(tab === 'pd'), onClick: function () { setTab('pd'); } }, 'Professional Development')
@@ -2402,7 +2415,7 @@
             e('button', {
               className: 'ml-3 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900',
               onClick: props.onClose,
-              'aria-label': 'Close Community Catalog',
+              'aria-label': tr('catalog_close_community_catalog', 'Close Community Catalog'),
             }, 'Close')
           )
         ),

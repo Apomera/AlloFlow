@@ -416,7 +416,10 @@ const WordSoundsReviewPanel = ({
   const PHONEME_BANK = {
     "Consonants": ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "y", "z"],
     "Digraphs": ["sh", "zh", "ch", "th", "wh", "ph", "ck", "ng", "q"],
-    "Vowels (Short)": ["a", "e", "i", "o", "u", "oo_short"],
+    // 'schwa' sits with the short vowels because that is where a teacher
+    // looks for it, though pedagogically it is its own thing: the reduced
+    // vowel of any unstressed syllable, spellable with any vowel letter.
+    "Vowels (Short)": ["a", "e", "i", "o", "u", "oo_short", "schwa"],
     "Vowels (Long)": ["ee", "oo", "ue", "aw", "ai", "ea", "oa"],
     "Diphthongs": ["ay", "ie", "ow", "oy"],
     "R-Controlled": ["ar", "er", "ir", "or", "ur", "air", "ear"]
@@ -528,7 +531,9 @@ const WordSoundsReviewPanel = ({
     const ipa = GRAPHEME_TO_IPA[grapheme] || grapheme;
     return { ipa, grapheme: defaultGrapheme || grapheme };
   };
+  const phonemeLabel = (p) => typeof p === "string" ? p : p && (p.grapheme || p.ipa) || "";
   const _bankIpaFallback = {
+    schwa: "\u0259",
     oo_short: "\u028A",
     zh: "\u0292",
     q: "kw",
@@ -553,7 +558,7 @@ const WordSoundsReviewPanel = ({
     };
     return { ipa: _bankIpaFallback[key] || normalizePhoneme(key).ipa || key, graphemes: [key], keyWord: "" };
   };
-  const _bankDisplayGrapheme = (key) => key === "oo_short" ? "\u014F\u014F" : key;
+  const _bankDisplayGrapheme = (key) => key === "oo_short" ? "\u014F\u014F" : key === "schwa" ? "\u0259" : key;
   const addPhoneme = (wordIdx, phoneme) => {
     const word = preloadedWords[wordIdx];
     const newPhonemes = [...word.phonemes || [], phoneme];
@@ -970,7 +975,7 @@ const WordSoundsReviewPanel = ({
                 debugLog("Phoneme sequence cancelled");
                 break;
               }
-              await onPlayAudio(phoneme);
+              await onPlayAudio(phonemeLabel(phoneme));
               await new Promise((r) => setTimeout(r, 900));
             }
           }
@@ -1082,7 +1087,7 @@ const WordSoundsReviewPanel = ({
           key: i,
           className: `group relative cursor-grab active:cursor-grabbing ${dragOverIndex === i ? "ring-2 ring-pink-400" : ""}`,
           role: "group",
-          "aria-label": `${typeof p === "string" ? p : "Phoneme"}, position ${i + 1} of ${(word.phonemes || []).length}`,
+          "aria-label": `${phonemeLabel(p) || "Phoneme"}, position ${i + 1} of ${(word.phonemes || []).length}`,
           draggable: true,
           onDragStart: (e) => handleDragStart(e, p, "word", idx, i),
           "data-keyboard-alternative": "Use the Move earlier and Move later buttons",
@@ -1093,7 +1098,7 @@ const WordSoundsReviewPanel = ({
           },
           onDragEnd: handleDragEnd
         },
-        /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200", title: typeof p === "string" && typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) \u2014 ${PHONEME_GUIDE[p].examples}` : typeof p === "string" ? p : "" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs mr-1" }, "\u283F"), p, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handlePhonemeReorder(idx, i, i - 1), disabled: i === 0, "aria-label": `Move ${typeof p === "string" ? p : "phoneme"} earlier`, className: "w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40", title: "Move earlier" }, "\u25C0"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handlePhonemeReorder(idx, i, i + 1), disabled: i === (word.phonemes || []).length - 1, "aria-label": `Move ${typeof p === "string" ? p : "phoneme"} later`, className: "w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40", title: "Move later" }, "\u25B6"), /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200", title: typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[phonemeLabel(p)] ? `${PHONEME_GUIDE[phonemeLabel(p)].label} (${PHONEME_GUIDE[phonemeLabel(p)].ipa}) \u2014 ${PHONEME_GUIDE[phonemeLabel(p)].examples}` : phonemeLabel(p) }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs mr-1" }, "\u283F"), phonemeLabel(p), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handlePhonemeReorder(idx, i, i - 1), disabled: i === 0, "aria-label": `Move ${phonemeLabel(p) || "phoneme"} earlier`, className: "w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40", title: "Move earlier" }, "\u25C0"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handlePhonemeReorder(idx, i, i + 1), disabled: i === (word.phonemes || []).length - 1, "aria-label": `Move ${phonemeLabel(p) || "phoneme"} later`, className: "w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40", title: "Move later" }, "\u25B6"), /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
@@ -1497,7 +1502,7 @@ const WordSoundsReviewPanel = ({
     })().map((phoneme, soundIdx) => {
       const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
       const ordinalLabel = ordinals[soundIdx] || `${soundIdx + 1}th`;
-      return /* @__PURE__ */ React.createElement("div", { key: soundIdx, className: "flex items-center gap-1 bg-gradient-to-r from-violet-50 to-pink-50 border-2 border-violet-200 rounded-lg px-2 py-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, ordinalLabel, ":"), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-violet-700 text-lg" }, phoneme));
+      return /* @__PURE__ */ React.createElement("div", { key: soundIdx, className: "flex items-center gap-1 bg-gradient-to-r from-violet-50 to-pink-50 border-2 border-violet-200 rounded-lg px-2 py-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, ordinalLabel, ":"), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-violet-700 text-lg" }, phonemeLabel(phoneme)));
     }), (!word.phonemes || word.phonemes.length === 0) && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-sm italic" }, t("word_sounds.no_phonemes")))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2 block flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12 }), " ", t("word_sounds.word_image_label") || "Word Image"), /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-shrink-0" }, word.image ? /* @__PURE__ */ React.createElement(
       "img",
       {

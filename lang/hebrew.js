@@ -1703,7 +1703,9 @@
     "writing": "כותב תוכן...",
     "actions": {
       "analyzing_short": "מנתח...",
-      "generate_short": "ייצר"
+      "generate_short": "ייצר",
+      "books_short": "ספרים",
+      "books_hint": "פתחו ספרי תמונות: כל ספר יכול להפוך לטקסט המקור שלכם"
     },
     "status_generating": "מייצר טקסט מקור...",
     "success_long_form": "טקסט ארוך-טווח נוצר בהצלחה!",
@@ -1737,7 +1739,16 @@
     },
     "drafting_story_outline": "מתכנן מבנה דיאלוג...",
     "load_project_tooltip": "טען פרויקט AlloFlow PDF ששמור מראש",
-    "load_project": "טען פרויקט"
+    "load_project": "טען פרויקט",
+    "quickstart_heading": "או בחרו נקודת פתיחה",
+    "qs_book": "פתיחת קטלוג הקריאה",
+    "qs_book_sub": "ספרים, מאמרים ומקורות ראשוניים",
+    "qs_write": "כתבו או הדביקו טקסט",
+    "qs_write_sub": "השתמשו בחומר שלכם",
+    "qs_find": "מצאו משאב באינטרנט",
+    "qs_find_sub": "הדביקו קישור או תנו לבינה המלאכותית לחפש",
+    "qs_generate": "יצירה מתוך נושא",
+    "qs_generate_sub": "הבינה המלאכותית כותבת עבורכם"
   },
   "prompts": {
     "verified_correct": "**תשובה נכונה מאומתת:**",

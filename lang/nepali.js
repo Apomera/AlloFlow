@@ -2348,7 +2348,9 @@
     "writing": "लेखन सामग्री...",
     "actions": {
       "analyzing_short": "विश्लेषण गर्दै...",
-      "generate_short": "उत्पन्न गर्नुहोस्"
+      "generate_short": "उत्पन्न गर्नुहोस्",
+      "books_short": "पुस्तकहरू",
+      "books_hint": "चित्रपुस्तक खोल्नुहोस्: कुनै पनि पुस्तक तपाईंको स्रोत पाठ बन्न सक्छ"
     },
     "status_generating": "Generating स्रोत पाठ...",
     "success_long_form": "लामो-रूप पाठ सफलतापूर्वक उत्पन्न भयो!",
@@ -2382,7 +2384,16 @@
     },
     "drafting_story_outline": "Planning dialogue संरचना...",
     "load_project_tooltip": "लोड गर्नुहोस् एक previously सुरक्षित भयो AlloFlow PDF project",
-    "load_project": "लोड गर्नुहोस् Project"
+    "load_project": "लोड गर्नुहोस् Project",
+    "quickstart_heading": "वा सुरुवातको बिन्दु छान्नुहोस्",
+    "qs_book": "पठन सूची खोल्नुहोस्",
+    "qs_book_sub": "पुस्तक, लेख र मूल स्रोत",
+    "qs_write": "पाठ लेख्नुहोस् वा टाँस्नुहोस्",
+    "qs_write_sub": "आफ्नै सामग्री प्रयोग गर्नुहोस्",
+    "qs_find": "अनलाइन स्रोत खोज्नुहोस्",
+    "qs_find_sub": "लिङ्क टाँस्नुहोस् वा एआईलाई खोज्न दिनुहोस्",
+    "qs_generate": "कुनै विषयबाट सिर्जना गर्नुहोस्",
+    "qs_generate_sub": "एआईले तपाईंका लागि लेख्छ"
   },
   "wizard": {
     "title": "छिटो सुरु गर्नुहोस्",

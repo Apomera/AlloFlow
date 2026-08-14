@@ -2507,7 +2507,9 @@
     "writing": "K ap Ekri Kontni...",
     "actions": {
       "analyzing_short": "K ap analize...",
-      "generate_short": "Jenere"
+      "generate_short": "Jenere",
+      "books_short": "Liv",
+      "books_hint": "Louvri liv ak imaj: nenpòt liv ka vin tèks sous ou"
     },
     "status_generating": "K ap jenere tèks sous...",
     "success_long_form": "Tèks long fòme jenere ak siksè!",
@@ -2541,7 +2543,16 @@
     },
     "drafting_story_outline": "K ap planifye estrikti dyalòg...",
     "load_project_tooltip": "Chaje yon pwojè PDF AlloFlow ki te sove anvan",
-    "load_project": "Chaje Pwojè"
+    "load_project": "Chaje Pwojè",
+    "quickstart_heading": "Oswa chwazi yon pwen depa",
+    "qs_book": "Louvri katalòg lekti a",
+    "qs_book_sub": "Liv, atik ak sous orijinal",
+    "qs_write": "Ekri oswa kole tèks",
+    "qs_write_sub": "Sèvi ak pwòp materyèl ou",
+    "qs_find": "Chèche yon resous sou entènèt",
+    "qs_find_sub": "Kole yon lyen oswa kite IA a chèche",
+    "qs_generate": "Jenere apati yon sijè",
+    "qs_generate_sub": "IA a ekri l pou ou"
   },
   "chat_guide": {
     "header": "Gid ak Asistan IA",

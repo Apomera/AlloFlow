@@ -2347,7 +2347,9 @@
     "writing": "Menulis konten...",
     "actions": {
       "analyzing_short": "Menganalisis...",
-      "generate_short": "Hasilkan"
+      "generate_short": "Hasilkan",
+      "books_short": "Buku",
+      "books_hint": "Buka buku bergambar: buku apa pun bisa menjadi teks sumber Anda"
     },
     "status_generating": "Generating sumber teks...",
     "success_long_form": "panjang-form teks dihasilkan successfully!",
@@ -2381,7 +2383,16 @@
     },
     "drafting_story_outline": "Planning dialogue struktur...",
     "load_project_tooltip": "Muat sebuah previously tersimpan AlloFlow PDF project",
-    "load_project": "Muat Project"
+    "load_project": "Muat Project",
+    "quickstart_heading": "Atau pilih titik awal",
+    "qs_book": "Buka katalog bacaan",
+    "qs_book_sub": "Buku, artikel, dan sumber primer",
+    "qs_write": "Tulis atau tempel teks",
+    "qs_write_sub": "Gunakan materi Anda sendiri",
+    "qs_find": "Cari sumber daring",
+    "qs_find_sub": "Tempel tautan atau biarkan AI mencari",
+    "qs_generate": "Buat dari sebuah topik",
+    "qs_generate_sub": "AI menuliskannya untuk Anda"
   },
   "wizard": {
     "title": "cepat Mulai",

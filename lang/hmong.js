@@ -2346,7 +2346,9 @@
     "writing": "Sau ntawv cov ntsiab...",
     "actions": {
       "analyzing_short": "Tab tom tshuaj xyuas...",
-      "generate_short": "Tsim"
+      "generate_short": "Tsim",
+      "books_short": "Phau ntawv",
+      "books_hint": "Qhib cov phau ntawv duab: txhua phau ntawv tuaj yeem ua koj cov ntawv qub"
     },
     "status_generating": "Generating qhov chaw cov ntawv...",
     "success_long_form": "ntev-form cov ntawv tau tsim successfully!",
@@ -2380,7 +2382,16 @@
     },
     "drafting_story_outline": "Tab tom npaj qauv kev sib tham...",
     "load_project_tooltip": "Nqa los previously tau khaws AlloFlow PDF project",
-    "load_project": "Nqa los Project"
+    "load_project": "Nqa los Project",
+    "quickstart_heading": "Los yog xaiv ib qhov chaw pib",
+    "qs_book": "Qhib cov ntawv nyeem",
+    "qs_book_sub": "Phau ntawv, kab xov xwm thiab cov ntaub ntawv thawj",
+    "qs_write": "Sau lossis muab ntawv txuas",
+    "qs_write_sub": "Siv koj tus kheej cov ntaub ntawv",
+    "qs_find": "Nrhiav ib qho chaw hauv internet",
+    "qs_find_sub": "Muab ib txoj kab txuas lossis cia AI nrhiav",
+    "qs_generate": "Tsim los ntawm ib lub ncauj lus",
+    "qs_generate_sub": "AI yuav sau rau koj"
   },
   "wizard": {
     "title": "ceev Pib",

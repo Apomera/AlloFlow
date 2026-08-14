@@ -2323,7 +2323,9 @@
     "writing": "Tialnak Content...",
     "actions": {
       "analyzing_short": "A Zoh hngalh lio...",
-      "generate_short": "Ser"
+      "generate_short": "Ser",
+      "books_short": "Cauk",
+      "books_hint": "Hmanthlak cauk ong: cauk zeidah nangmah ca hrampi a si khawh"
     },
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text tuah successfully!",
@@ -2357,7 +2359,16 @@
     },
     "drafting_story_outline": "Planning dialogue structure...",
     "load_project_tooltip": "Load previously khoh cang AlloFlow PDF project",
-    "load_project": "Load Project"
+    "load_project": "Load Project",
+    "quickstart_heading": "Asiloah thawknak hmun kha thim",
+    "qs_book": "Relnak cauk tlangpi kha ong",
+    "qs_book_sub": "Cauk, capar le a hrampi thawknak",
+    "qs_write": "Ca ṭial asiloah ca hlan",
+    "qs_write_sub": "Nangmah ca kha hman",
+    "qs_find": "Internet ah hmuahnak zoh",
+    "qs_find_sub": "Link hlan asiloah AI in kawl seh",
+    "qs_generate": "Kong pakhat in ser",
+    "qs_generate_sub": "AI nih nangmah caah a ṭial lai"
   },
   "wizard": {
     "title": "Quick Thawk",

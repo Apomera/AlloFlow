@@ -1026,6 +1026,23 @@ exports[`layer 1 — linguistic anchor data (window.__alloAnchor) > grapho-phone
       5,
     ],
   },
+  "schwa": {
+    "graphemes": [
+      "a",
+      "e",
+      "i",
+      "o",
+      "u",
+    ],
+    "ipa": "ə",
+    "keyWord": "about",
+    "note": "The unstressed vowel. Any vowel letter can spell it: About, tickEt, pencIl, lemOn, circUs.",
+    "sample": "We talked about the trip.",
+    "sampleHighlight": [
+      11,
+      16,
+    ],
+  },
   "sh": {
     "graphemes": [
       "sh",

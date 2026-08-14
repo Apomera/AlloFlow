@@ -2350,7 +2350,9 @@
     "writing": "ការសរសេរ មាតិកា...",
     "actions": {
       "analyzing_short": "កំពុងវិភាគ...",
-      "generate_short": "បង្កើត"
+      "generate_short": "បង្កើត",
+      "books_short": "សៀវភៅ",
+      "books_hint": "បើកសៀវភៅរូបភាព៖ សៀវភៅណាមួយក៏អាចក្លាយជាអត្ថបទប្រភពរបស់អ្នក"
     },
     "status_generating": "Generating ប្រភព អត្ថបទ...",
     "success_long_form": "អត្ថបទបែបវែងបានបង្កើតដោយជោគជ័យ!",
@@ -2384,7 +2386,16 @@
     },
     "drafting_story_outline": "Planning dialogue រចនាសម្ព័ន្ធ...",
     "load_project_tooltip": "ផ្ទុក previously បានរក្សាទុក AlloFlow PDF project",
-    "load_project": "ផ្ទុក Project"
+    "load_project": "ផ្ទុក Project",
+    "quickstart_heading": "ឬជ្រើសរើសចំណុចចាប់ផ្តើម",
+    "qs_book": "បើកបញ្ជីអានសៀវភៅ",
+    "qs_book_sub": "សៀវភៅ អត្ថបទ និងឯកសារដើម",
+    "qs_write": "សរសេរ ឬបិទភ្ជាប់អត្ថបទ",
+    "qs_write_sub": "ប្រើសម្ភារៈរបស់អ្នកផ្ទាល់",
+    "qs_find": "ស្វែងរកធនធានលើអ៊ីនធឺណិត",
+    "qs_find_sub": "បិទភ្ជាប់តំណ ឬឲ្យ AI ស្វែងរក",
+    "qs_generate": "បង្កើតពីប្រធានបទ",
+    "qs_generate_sub": "AI សរសេរជូនអ្នក"
   },
   "wizard": {
     "title": "លឿន ចាប់ផ្តើម",

@@ -32,6 +32,26 @@ describe('Header popover semantics and dismissal', () => {
     expect(source).not.toContain('<div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === \'Escape\') e.currentTarget.click(); }} className="fixed inset-0');
   });
 
+  it('escapes the header stacking context so the settings panels stay on top', () => {
+    // Both panels are position:fixed at z-[10001], but they live inside
+    // #tour-header-settings (relative z-[60]) inside <header> (relative z-50).
+    // Nested stacking contexts meant that z-index was only ever compared with
+    // siblings INSIDE the z-60 box — so #tour-header-utils at z-[100] painted
+    // over them. On a phone that pill is w-full and wraps to its own row right
+    // on top of the panel's `top-28`, eating every tap aimed at the controls.
+    expect(source).toContain('{showTextSettings && _headerPortal(');
+    expect(source).toContain('{showVoiceSettings && _headerPortal(');
+    expect(source).toContain('window.ReactDOM.createPortal(node, document.body)');
+    // The trap is real and still present, so the portal is load-bearing: if
+    // either of these z-index values changes, revisit the escape above.
+    expect(source).toContain('id="tour-header-utils" className={`relative z-[100]');
+    expect(source).toContain('id="tour-header-settings" className={`relative z-[60]');
+    // The click-outside backdrop has to travel with its panel, or it lands
+    // behind the pill and the panel can no longer be dismissed by tapping away.
+    const voice = source.slice(source.indexOf('{showVoiceSettings && _headerPortal('));
+    expect(voice.slice(0, 400)).toContain('className="fixed inset-0 z-[10000]"');
+  });
+
   it('keeps generated Header modules synchronized', () => {
     expect(readFileSync('desktop/web-app/public/view_header_module.js', 'utf8'))
       .toBe(readFileSync('view_header_module.js', 'utf8'));

@@ -1686,7 +1686,9 @@
     "writing": "جارٍ كتابة المحتوى...",
     "actions": {
       "analyzing_short": "جارٍ التحليل...",
-      "generate_short": "إنشاء"
+      "generate_short": "إنشاء",
+      "books_short": "كتب",
+      "books_hint": "افتح الكتب المصورة: أي كتاب يمكن أن يصبح نصك المصدر"
     },
     "status_generating": "جارٍ إنشاء نص المصدر...",
     "success_long_form": "تم إنشاء النص الطويل بنجاح!",
@@ -1720,7 +1722,16 @@
     },
     "drafting_story_outline": "جارٍ تخطيط بنية الحوار...",
     "load_project_tooltip": "تحميل مشروع AlloFlow PDF محفوظ سابقًا",
-    "load_project": "تحميل المشروع"
+    "load_project": "تحميل المشروع",
+    "quickstart_heading": "أو اختر نقطة انطلاق",
+    "qs_book": "فتح كتالوج القراءة",
+    "qs_book_sub": "كتب ومقالات ومصادر أولية",
+    "qs_write": "اكتب نصًا أو الصقه",
+    "qs_write_sub": "استخدم موادك الخاصة",
+    "qs_find": "ابحث عن مورد على الإنترنت",
+    "qs_find_sub": "الصق رابطًا أو دع الذكاء الاصطناعي يبحث",
+    "qs_generate": "أنشئ من موضوع",
+    "qs_generate_sub": "الذكاء الاصطناعي يكتبه نيابة عنك"
   },
   "prompts": {
     "verified_correct": "**الإجابة الصحيحة الموثَّقة:**",
@@ -28268,7 +28279,7 @@
     "poettree_title": "PoetTree",
     "poettree_desc": "اكتب القصائد بسقالات الشكل وتحليل القافية والوزن وملاحظات الذكاء الاصطناعي",
     "throughline_desc": "رتّب دروسك في وحدة مكانية: تسلسل تدريسي، ومتطلبات مسبقة، وملف واحد قابل للتصدير",
-    "throughline_title": "Throughline"
+    "throughline_title": "Learning Web: Unit Path"
   },
   "sel_hub": {
     "loading": "جارٍ تحميل SEL Hub...",
@@ -30834,9 +30845,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

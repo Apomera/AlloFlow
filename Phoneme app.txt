@@ -14,6 +14,13 @@ const ENGLISH_PHONEMES = [
       { symbol: 'o', ipa: 'ɒ', example: 'hot', label: '/ɒ/', filename: 'o', desc: 'short o' },
       { symbol: 'u', ipa: 'ʌ', example: 'cup', label: '/ʌ/', filename: 'u', desc: 'short u' },
       { symbol: 'oo', ipa: 'ʊ', example: 'book', label: '/ʊ/', filename: 'oo_short', desc: 'short oo' },
+      // Schwa: the unstressed vowel of every multisyllabic word (about,
+      // sensation, pencil). It has no unique spelling — any vowel letter can
+      // represent it — so the key is descriptive, following the oo_short
+      // precedent. eSpeak already emits ə (see phonics_g2p_loader normalizeToken,
+      // "outside the taught set, which is a known limit on reduced multisyllabic
+      // words"); this entry is what closes that limit.
+      { symbol: 'schwa', ipa: 'ə', example: 'about', label: '/ə/', filename: 'schwa', desc: 'schwa, the unstressed vowel' },
     ]
   },
   {
@@ -37,7 +44,11 @@ const ENGLISH_PHONEMES = [
     items: [
       { symbol: 'ay', ipa: 'eɪ', example: 'day', label: '/eɪ/', filename: 'ay', desc: 'ay' },
       { symbol: 'ie', ipa: 'aɪ', example: 'tie', label: '/aɪ/', filename: 'ie', desc: 'ie' },
-      { symbol: 'oe', ipa: 'oʊ', example: 'go', label: '/oʊ/', filename: 'oe', desc: 'oe' },
+      // filename is the RUNTIME bank key, not the spelling. /oʊ/ is keyed 'oa'
+      // in audio_bank.json and in 19 places in the app code; 'oe' is one of its
+      // spellings (see GRAPHOPHONEME_ANCHORS oa.graphemes). Generating to 'oe'
+      // produced a clip the runtime never looked up.
+      { symbol: 'oe', ipa: 'oʊ', example: 'go', label: '/oʊ/', filename: 'oa', desc: 'oa / oe' },
       { symbol: 'ow', ipa: 'aʊ', example: 'now', label: '/aʊ/', filename: 'ow', desc: 'ow' },
       { symbol: 'oy', ipa: 'ɔɪ', example: 'boy', label: '/ɔɪ/', filename: 'oy', desc: 'oy' },
     ]
@@ -73,7 +84,9 @@ const ENGLISH_PHONEMES = [
       { symbol: 'zh', ipa: 'ʒ', example: 'vision', label: '/ʒ/', filename: 'zh', desc: 'zh' },
       { symbol: 'ch', ipa: 'tʃ', example: 'chip', label: '/tʃ/', filename: 'ch', desc: 'ch' },
       { symbol: 'th', ipa: 'θ', example: 'thin', label: '/θ/', filename: 'th', desc: 'unvoiced th' },
-      { symbol: 'th', ipa: 'ð', example: 'this', label: '/ð/', filename: 'th_voiced', desc: 'voiced th' },
+      // Runtime key for voiced th is 'dh' (audio_bank.json + handleAudio's
+      // phoneme maps). 'th_voiced' had zero runtime references.
+      { symbol: 'th', ipa: 'ð', example: 'this', label: '/ð/', filename: 'dh', desc: 'voiced th' },
       { symbol: 'wh', ipa: 'w', example: 'when', label: '/w/', filename: 'wh', desc: 'wh' },
       { symbol: 'ph', ipa: 'f', example: 'phone', label: '/f/', filename: 'ph', desc: 'ph' },
       { symbol: 'ck', ipa: 'k', example: 'back', label: '/k/', filename: 'ck', desc: 'ck' },

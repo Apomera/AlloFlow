@@ -5,9 +5,35 @@ const source = readFileSync('allobot_source.jsx', 'utf8');
 
 describe('AlloBot target, speech, and SMIL accessibility', () => {
   it('keeps every scaled orbit control at least 24 CSS pixels', () => {
-    expect(source.match(/min-h-8 min-w-8/g)).toHaveLength(4);
+    // The four orbit controls used to repeat their sizing inline; they now share
+    // one `satelliteBase` string with a mouse and a touch branch. Both branches
+    // still have to clear 24px AFTER scaling, so assert each one — a size class
+    // counted on its own says nothing once a scale- class can sit beside it.
+    const [, mouse] = source.match(/\n\s*:\s*('inline-flex min-h-8[^']*')/) || [];
+    const [, touch] = source.match(/\n\s*\?\s*('inline-flex min-h-9[^']*')/) || [];
+    expect(mouse, 'mouse-pointer satellite class').toBeTruthy();
+    expect(touch, 'coarse-pointer satellite class').toBeTruthy();
+    // 32px * scale-75 == 24px exactly.
+    expect(mouse).toContain('min-h-8 min-w-8');
+    expect(mouse).toContain('scale-75');
+    // 36px unscaled — a scale- class here would drop it back under the floor.
+    expect(touch).toContain('min-h-9 min-w-9');
+    expect(touch).not.toMatch(/\bscale-(?!100\b)\d+/);
+    // Touch has no hover to reveal them with, so they must not start invisible.
+    expect(touch).not.toContain('opacity-0');
+    // All four controls must draw from that shared definition.
+    expect(source.match(/\$\{satelliteBase\}/g)).toHaveLength(4);
     expect(source).toContain('inline-flex min-h-6 items-center');
     expect(source).toContain('motion-reduce:transition-none');
+  });
+
+  it('lets a touch reach the orbit controls instead of starting a drag', () => {
+    // The container owns the drag gesture and calls preventDefault() on
+    // touchstart, which cancels the synthesised click outright. Stopping
+    // pointerdown/mousedown does nothing for a different event type, so every
+    // satellite needs its own touchstart guard or taps are swallowed.
+    expect(source.match(/onTouchStart=\{stopTouch\}/g)).toHaveLength(4);
+    expect(source).toContain('const stopTouch = (e) => e.stopPropagation();');
   });
 
   it('stops every SVG SMIL animation when motion is disabled', () => {

@@ -2347,7 +2347,9 @@
     "writing": "Pagsulat nilalaman...",
     "actions": {
       "analyzing_short": "Sinusuri...",
-      "generate_short": "Bumuo"
+      "generate_short": "Bumuo",
+      "books_short": "Mga aklat",
+      "books_hint": "Buksan ang mga aklat na may larawan: anumang aklat ay puwedeng maging pinagmulang teksto mo"
     },
     "status_generating": "Generating pinagkunan teksto...",
     "success_long_form": "mahaba-form teksto nabuo successfully!",
@@ -2381,7 +2383,16 @@
     },
     "drafting_story_outline": "Planning dialogue istraktura...",
     "load_project_tooltip": "I-load isang previously na-i-save AlloFlow PDF project",
-    "load_project": "I-load Project"
+    "load_project": "I-load Project",
+    "quickstart_heading": "O pumili ng panimulang punto",
+    "qs_book": "Buksan ang katalogo ng pagbasa",
+    "qs_book_sub": "Mga aklat, artikulo at pangunahing sanggunian",
+    "qs_write": "Sumulat o mag-paste ng teksto",
+    "qs_write_sub": "Gamitin ang sarili mong materyal",
+    "qs_find": "Maghanap ng sanggunian online",
+    "qs_find_sub": "Mag-paste ng link o hayaang maghanap ang AI",
+    "qs_generate": "Bumuo mula sa isang paksa",
+    "qs_generate_sub": "Isusulat ito ng AI para sa iyo"
   },
   "wizard": {
     "title": "mabilis Simulan",

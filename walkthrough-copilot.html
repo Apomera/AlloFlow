@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0e4f4d" />
+  <title>AlloFlow Walkthrough Copilot</title>
+  <style>
+    :root {
+      --paper: #ffffff;
+      --ground: #f2f6f5;
+      --ink: #1d2a2e;
+      --muted: #566468;
+      --rule: #d3e0de;
+      --accent: #0e6e6b;
+      --accent-ink: #ffffff;
+      --frozen: #f7f4ec;
+      --frozen-rule: #ddd2b8;
+      --warn: #8a5a12;
+      --warn-bg: #fdf3e2;
+      --stop: #8c2f2a;
+      --stop-bg: #fbeceb;
+      --go: #1c6b3f;
+      --go-bg: #e9f4ed;
+      --demo: #5b3fa8;
+      --demo-bg: #f0ebfb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --paper: #161f21; --ground: #10171a; --ink: #e5ecec; --muted: #9aabad;
+        --rule: #2a3a3c; --accent: #5cb5b0; --accent-ink: #0b1618;
+        --frozen: #1d2119; --frozen-rule: #4a442f;
+        --warn: #e8bb72; --warn-bg: #2b2317; --stop: #f0a09a; --stop-bg: #2d1a19;
+        --go: #8ed6ab; --go-bg: #16261d; --demo: #c4b0f0; --demo-bg: #221a33;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: var(--ground);
+      color: var(--ink);
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    .wrap { max-width: 78rem; margin: 0 auto; padding: 1.25rem 1.25rem 4rem; }
+    h1 { font-size: 1.3rem; margin: 0; letter-spacing: -0.01em; }
+    h2 { font-size: 1.05rem; margin: 0 0 .6rem; }
+    h3 { font-size: .9rem; margin: 0 0 .35rem; }
+    p { margin: 0 0 .7rem; }
+    .lede { color: var(--muted); margin: .2rem 0 0; font-size: .92rem; }
+
+    .banner {
+      display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center;
+      background: var(--demo-bg); color: var(--demo);
+      border: 1px solid currentColor; border-radius: 6px;
+      padding: .55rem .85rem; margin: 0 0 1rem; font-size: .87rem; font-weight: 600;
+    }
+    .banner .sep { opacity: .55; font-weight: 400; }
+
+    .stages { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 1.1rem; padding: 0; list-style: none; }
+    .stages li { flex: 1 1 9rem; }
+    .stages button {
+      width: 100%; text-align: left; background: var(--paper); color: var(--muted);
+      border: 1px solid var(--rule); border-radius: 6px; padding: .5rem .7rem;
+      font: inherit; font-size: .84rem; cursor: pointer;
+    }
+    .stages button[aria-current="step"] { border-color: var(--accent); color: var(--ink); box-shadow: inset 3px 0 0 var(--accent); }
+    .stages button[disabled] { opacity: .5; cursor: not-allowed; }
+    .stages .n { display: block; font-size: .7rem; letter-spacing: .09em; text-transform: uppercase; opacity: .75; }
+
+    .cols { display: grid; grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); gap: 1.1rem; align-items: start; }
+    @media (max-width: 62rem) { .cols { grid-template-columns: 1fr; } }
+
+    .card { background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 1rem; margin: 0 0 1rem; }
+    .frozen { background: var(--frozen); border-color: var(--frozen-rule); }
+    .frozen pre {
+      white-space: pre-wrap; word-wrap: break-word; margin: 0;
+      font: .84rem/1.55 ui-monospace, "Cascadia Code", Consolas, monospace;
+    }
+    .frozen .lock { font-size: .75rem; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin: 0 0 .5rem; }
+
+    textarea {
+      width: 100%; min-height: 12rem; padding: .7rem; border: 1px solid var(--rule);
+      border-radius: 6px; background: var(--paper); color: var(--ink);
+      font: .9rem/1.55 ui-monospace, Consolas, monospace; resize: vertical;
+    }
+    input[type="text"] {
+      width: 100%; padding: .45rem .6rem; border: 1px solid var(--rule);
+      border-radius: 5px; background: var(--paper); color: var(--ink); font: inherit; font-size: .88rem;
+    }
+    label { display: block; font-size: .8rem; font-weight: 600; margin: 0 0 .25rem; }
+    .field { margin: 0 0 .7rem; }
+
+    button.act {
+      font: inherit; font-size: .87rem; font-weight: 600; cursor: pointer;
+      border-radius: 6px; padding: .48rem .85rem; border: 1px solid var(--rule);
+      background: var(--paper); color: var(--ink);
+    }
+    button.act.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+    button.act.go[aria-pressed="true"] { background: var(--go-bg); border-color: var(--go); color: var(--go); }
+    button.act.warnish[aria-pressed="true"] { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
+    button.act.stop[aria-pressed="true"] { background: var(--stop-bg); border-color: var(--stop); color: var(--stop); }
+    button.act[disabled] { opacity: .5; cursor: not-allowed; }
+    .row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+    .sugg { border: 1px solid var(--rule); border-radius: 7px; padding: .85rem; margin: 0 0 .75rem; background: var(--paper); }
+    .sugg[data-decision="rejected"] { opacity: .62; }
+    .sugg[data-decision="accepted"] { border-left: 4px solid var(--go); }
+    .sugg[data-decision="edited"] { border-left: 4px solid var(--warn); }
+    .sugg .comp { font-size: .76rem; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); font-weight: 700; margin: 0 0 .3rem; }
+    .sugg .lab { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; margin: .6rem 0 .15rem; }
+    .sugg blockquote {
+      margin: .3rem 0; padding: .35rem .6rem; border-left: 3px solid var(--frozen-rule);
+      background: var(--frozen); font-size: .83rem; font-style: italic;
+    }
+    .flag { display: block; font-size: .82rem; padding: .45rem .6rem; border-radius: 5px; margin: .35rem 0 0; background: var(--warn-bg); color: var(--warn); }
+    .flag.stop { background: var(--stop-bg); color: var(--stop); }
+    .flag.go { background: var(--go-bg); color: var(--go); }
+    .pill { display: inline-block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+      padding: .12rem .45rem; border-radius: 999px; background: var(--ground); color: var(--muted); margin-left: .4rem; }
+
+    .out { border: 1px solid var(--rule); border-radius: 7px; padding: .8rem; margin: 0 0 .7rem; background: var(--paper); }
+    .out pre { white-space: pre-wrap; word-wrap: break-word; margin: .4rem 0 0; font: .83rem/1.5 ui-monospace, Consolas, monospace; }
+    .out.empty { border-style: dashed; }
+    .head { display: flex; justify-content: space-between; align-items: center; gap: .6rem; }
+
+    .scenario { text-align: left; width: 100%; display: block; margin: 0 0 .5rem; }
+    .scenario .t { font-weight: 700; display: block; }
+    .scenario .s { font-size: .82rem; color: var(--muted); display: block; }
+
+    .intro { border-left: 4px solid var(--accent); }
+    .intro .steps { margin: .2rem 0 .9rem; padding-left: 1.2rem; }
+    .intro .steps li { margin: 0 0 .3rem; font-size: .9rem; }
+    .intro ul { margin: .2rem 0 .8rem; padding-left: 1.2rem; }
+    .intro ul li { margin: 0 0 .3rem; font-size: .9rem; }
+    .progress { font-size: .84rem; font-weight: 700; color: var(--accent); margin: 0 0 .5rem; }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .note { font-size: .84rem; color: var(--muted); }
+    footer { margin: 2rem 0 0; padding-top: .9rem; border-top: 1px solid var(--rule); font-size: .8rem; color: var(--muted); }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Walkthrough Copilot</h1>
+      <p class="lede">Turn shorthand walkthrough notes into evidence-based coaching feedback you write and approve.</p>
+    </header>
+    <div id="app"></div>
+    <p id="live" class="sr" role="status" aria-live="polite"></p>
+    <footer id="foot"></footer>
+  </div>
+
+  <script src="./walkthrough_copilot_module.js"></script>
+  <script src="./walkthrough_copilot_fixtures.js"></script>
+  <script src="./walkthrough_copilot_scenarios.js"></script>
+  <script src="./walkthrough_copilot_standalone.js"></script>
+</body>
+</html>

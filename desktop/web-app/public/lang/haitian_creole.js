@@ -2507,7 +2507,9 @@
     "writing": "K ap Ekri Kontni...",
     "actions": {
       "analyzing_short": "K ap analize...",
-      "generate_short": "Jenere"
+      "generate_short": "Jenere",
+      "books_short": "Liv",
+      "books_hint": "Louvri liv ak imaj: nenpòt liv ka vin tèks sous ou"
     },
     "status_generating": "K ap jenere tèks sous...",
     "success_long_form": "Tèks long fòme jenere ak siksè!",
@@ -2541,7 +2543,16 @@
     },
     "drafting_story_outline": "K ap planifye estrikti dyalòg...",
     "load_project_tooltip": "Chaje yon pwojè PDF AlloFlow ki te sove anvan",
-    "load_project": "Chaje Pwojè"
+    "load_project": "Chaje Pwojè",
+    "quickstart_heading": "Oswa chwazi yon pwen depa",
+    "qs_book": "Louvri katalòg lekti a",
+    "qs_book_sub": "Liv, atik ak sous orijinal",
+    "qs_write": "Ekri oswa kole tèks",
+    "qs_write_sub": "Sèvi ak pwòp materyèl ou",
+    "qs_find": "Chèche yon resous sou entènèt",
+    "qs_find_sub": "Kole yon lyen oswa kite IA a chèche",
+    "qs_generate": "Jenere apati yon sijè",
+    "qs_generate_sub": "IA a ekri l pou ou"
   },
   "chat_guide": {
     "header": "Gid ak Asistan IA",
@@ -29780,7 +29791,7 @@
     "poettree_title": "PoetTree",
     "poettree_desc": "Ekri powèm ak echafodaj fòm, analiz rim ak metè, komantè IA",
     "throughline_desc": "Ranje leson ou yo nan yon inite espasyal: sekans ansèyman, kondisyon prealab, yon sèl fichye ou ka ekspòte",
-    "throughline_title": "Throughline"
+    "throughline_title": "Learning Web: Unit Path"
   },
   "sel_hub": {
     "loading": "K ap chaje SEL Hub...",
@@ -31254,9 +31265,9 @@
     "open_live_session_center": "Open Live Session Center",
     "open_live_session_center_done": "Live Session Center opened.",
     "open_live_session_center_hint": "Polls, groups, Pictionary, and session controls",
-    "open_mind_map": "Open Throughline",
-    "open_mind_map_done": "Throughline opened.",
-    "open_mind_map_hint": "Map concepts, lessons, and unit connections",
+    "open_mind_map": "Open Learning Web: Unit Path",
+    "open_mind_map_done": "Learning Web: Unit Path opened.",
+    "open_mind_map_hint": "Map lessons and explore linked standards, evidence, and unit connections",
     "open_pictionary_host": "Start Concept Pictionary",
     "open_pictionary_host_done": "Concept Pictionary opened. Choose a concept and start the round from there.",
     "open_pictionary_host_hint": "Open the teacher host for Concept Pictionary",

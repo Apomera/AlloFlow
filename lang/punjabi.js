@@ -2348,7 +2348,9 @@
     "writing": "ਲਿਖਾਈ ਸਮੱਗਰੀ...",
     "actions": {
       "analyzing_short": "ਵਿਸ਼ਲੇਸ਼ਣ ਹੋ ਰਿਹਾ ਹੈ...",
-      "generate_short": "ਤਿਆਰ ਕਰੋ"
+      "generate_short": "ਤਿਆਰ ਕਰੋ",
+      "books_short": "ਕਿਤਾਬਾਂ",
+      "books_hint": "ਤਸਵੀਰੀ ਕਿਤਾਬਾਂ ਖੋਲ੍ਹੋ: ਕੋਈ ਵੀ ਕਿਤਾਬ ਤੁਹਾਡਾ ਸਰੋਤ ਪਾਠ ਬਣ ਸਕਦੀ ਹੈ"
     },
     "status_generating": "Generating ਸਰੋਤ ਟੈਕਸਟ...",
     "success_long_form": "ਲੰਮੇ ਰੂਪ ਦਾ ਟੈਕਸਟ ਸਫਲਤਾਪੂਰਵਕ ਪੈਦਾ ਕੀਤਾ ਗਿਆ!",
@@ -2382,7 +2384,16 @@
     },
     "drafting_story_outline": "Planning dialogue ਢਾਂਚਾ...",
     "load_project_tooltip": "ਲੋਡ ਕਰੋ ਇੱਕ previously ਸੰਭਾਲਿਆ ਗਿਆ AlloFlow PDF project",
-    "load_project": "ਲੋਡ ਕਰੋ Project"
+    "load_project": "ਲੋਡ ਕਰੋ Project",
+    "quickstart_heading": "ਜਾਂ ਕੋਈ ਸ਼ੁਰੂਆਤੀ ਬਿੰਦੂ ਚੁਣੋ",
+    "qs_book": "ਪੜ੍ਹਨ ਦੀ ਸੂਚੀ ਖੋਲ੍ਹੋ",
+    "qs_book_sub": "ਕਿਤਾਬਾਂ, ਲੇਖ ਅਤੇ ਮੂਲ ਸਰੋਤ",
+    "qs_write": "ਲਿਖਤ ਲਿਖੋ ਜਾਂ ਚਿਪਕਾਓ",
+    "qs_write_sub": "ਆਪਣੀ ਸਮੱਗਰੀ ਵਰਤੋ",
+    "qs_find": "ਆਨਲਾਈਨ ਸਰੋਤ ਲੱਭੋ",
+    "qs_find_sub": "ਲਿੰਕ ਚਿਪਕਾਓ ਜਾਂ ਏਆਈ ਨੂੰ ਖੋਜਣ ਦਿਓ",
+    "qs_generate": "ਕਿਸੇ ਵਿਸ਼ੇ ਤੋਂ ਬਣਾਓ",
+    "qs_generate_sub": "ਏਆਈ ਤੁਹਾਡੇ ਲਈ ਲਿਖਦਾ ਹੈ"
   },
   "wizard": {
     "title": "ਤੇਜ਼ ਸ਼ੁਰੂ ਕਰੋ",

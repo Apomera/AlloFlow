@@ -2348,7 +2348,9 @@
     "writing": "Kuandika maudhui...",
     "actions": {
       "analyzing_short": "Inachanganua...",
-      "generate_short": "Tengeneza"
+      "generate_short": "Tengeneza",
+      "books_short": "Vitabu",
+      "books_hint": "Fungua vitabu vya picha: kitabu chochote kinaweza kuwa maandishi yako ya chanzo"
     },
     "status_generating": "Generating chanzo maandishi...",
     "success_long_form": "ndefu-form maandishi imetengenezwa successfully!",
@@ -2382,7 +2384,16 @@
     },
     "drafting_story_outline": "Planning dialogue muundo...",
     "load_project_tooltip": "Pakia previously imehifadhiwa AlloFlow PDF project",
-    "load_project": "Pakia Project"
+    "load_project": "Pakia Project",
+    "quickstart_heading": "Au chagua mahali pa kuanzia",
+    "qs_book": "Fungua orodha ya usomaji",
+    "qs_book_sub": "Vitabu, makala na vyanzo asilia",
+    "qs_write": "Andika au bandika maandishi",
+    "qs_write_sub": "Tumia nyenzo zako mwenyewe",
+    "qs_find": "Tafuta nyenzo mtandaoni",
+    "qs_find_sub": "Bandika kiungo au acha AI itafute",
+    "qs_generate": "Tengeneza kutoka mada",
+    "qs_generate_sub": "AI itakuandikia"
   },
   "wizard": {
     "title": "haraka Anza",

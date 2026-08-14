@@ -2348,7 +2348,9 @@
     "writing": "Γραφή περιεχόμενο...",
     "actions": {
       "analyzing_short": "Ανάλυση...",
-      "generate_short": "Δημιουργία"
+      "generate_short": "Δημιουργία",
+      "books_short": "Βιβλία",
+      "books_hint": "Ανοίξτε εικονογραφημένα βιβλία: κάθε βιβλίο μπορεί να γίνει το κείμενο-πηγή σας"
     },
     "status_generating": "Generating πηγή κείμενο...",
     "success_long_form": "Το εκτενές κείμενο δημιουργήθηκε με επιτυχία!",
@@ -2382,7 +2384,16 @@
     },
     "drafting_story_outline": "Planning dialogue δομή...",
     "load_project_tooltip": "Φόρτωση previously αποθηκευμένο AlloFlow PDF project",
-    "load_project": "Φόρτωση Project"
+    "load_project": "Φόρτωση Project",
+    "quickstart_heading": "Ή διαλέξτε ένα σημείο εκκίνησης",
+    "qs_book": "Άνοιγμα καταλόγου ανάγνωσης",
+    "qs_book_sub": "Βιβλία, άρθρα και πρωτογενείς πηγές",
+    "qs_write": "Γράψτε ή επικολλήστε κείμενο",
+    "qs_write_sub": "Χρησιμοποιήστε το δικό σας υλικό",
+    "qs_find": "Βρείτε μια πηγή στο διαδίκτυο",
+    "qs_find_sub": "Επικολλήστε έναν σύνδεσμο ή αφήστε την ΤΝ να ψάξει",
+    "qs_generate": "Δημιουργία από ένα θέμα",
+    "qs_generate_sub": "Η ΤΝ το γράφει για εσάς"
   },
   "wizard": {
     "title": "γρήγορο Έναρξη",

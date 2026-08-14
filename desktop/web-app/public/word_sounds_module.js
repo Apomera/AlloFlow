@@ -223,6 +223,12 @@
       x:  { graphemes: ["x"],  keyWord: "fox",      ipa: "ks", sample: "The fox runs quickly.",      sampleHighlight: [6, 7] },
       y:  { graphemes: ["y"],  keyWord: "yarn",     ipa: "j",  sample: "The yarn is soft.",          sampleHighlight: [4, 5] },
       z:  { graphemes: ["z", "zz"], keyWord: "zebra", ipa: "z", sample: "The zebra has stripes.",    sampleHighlight: [4, 5] },
+      // Schwa. Listed with every vowel letter deliberately: the reason schwa is
+      // hard is that it has no spelling of its own, so the per-chip "spellings"
+      // reveal IS the lesson. Only appears in unstressed syllables, which is
+      // why it does not surface until multisyllabic work.
+      schwa: { graphemes: ["a", "e", "i", "o", "u"], keyWord: "about", ipa: "ə", sample: "We talked about the trip.", sampleHighlight: [11, 16],
+            note: "The unstressed vowel. Any vowel letter can spell it: About, tickEt, pencIl, lemOn, circUs." },
       // ── Digraphs and trigraphs ──
       sh: { graphemes: ["sh", "ti", "ci", "ssi"], keyWord: "ship", ipa: "ʃ", sample: "The ship sails on the sea.",   sampleHighlight: [4, 6],
             note: "Multi-grapheme phoneme. Common in -tion (action) and -cian (musician) endings." },
@@ -4869,7 +4875,11 @@
             ui: "oo",
             "long u": "oo",
             "short u": "u",
-            "\u0259": "u",
+            // Schwa is its own bank key now, not a relabelled short u. The
+            // audio bank aliases 'schwa' to 'u' until the real clip is
+            // generated, so this stays audible either way.
+            "\u0259": "schwa",
+            schwa: "schwa",
           };
           if (specialMap[normalizedKey])
             normalizedKey = specialMap[normalizedKey];
@@ -4939,6 +4949,10 @@
               "ear",
               "oo_long",
               "oo_short",
+              // Multi-letter descriptive key: without this it fails the
+              // length-1 test and gets sent to word TTS, which would read the
+              // literal string "schwa" to the child.
+              "schwa",
               "igh",
               "tch",
               "dge",
@@ -5005,7 +5019,7 @@
               ge: "j",
               gi: "j",
               gy: "j",
-              "\u0259": "u",
+              "\u0259": "schwa",
               "\u0254\u026a": "oy",
               aʊ: "ow",
               "\u0259\u028a": "oa",
@@ -5051,7 +5065,14 @@
             if (callTTS && selectedVoice) {
               try {
                 debugLog(`Non-English phoneme "${text}" - using Gemini TTS`);
-                const url = await callTTS(text, selectedVoice);
+                // Pass the SESSION language explicitly. callTTS falls back to
+                // getLeveledTextLanguage() then the UI language when the caller
+                // omits it, so Word Sounds was inheriting whatever language some
+                // other tool was last set to and voicing these with the wrong
+                // phonology (English words read with Spanish vowels).
+                const url = await callTTS(text, selectedVoice, 1, {
+                  language: wordSoundsLanguage || "English",
+                });
                 if (url) {
                   return loadAndPlay(url);
                 }
@@ -5082,7 +5103,10 @@
               }
             }
             try {
-              const ttsPromise = callTTS(text, selectedVoice);
+              // Session language, not the ambient Leveled Text / UI language.
+              const ttsPromise = callTTS(text, selectedVoice, 1, {
+                language: wordSoundsLanguage || "English",
+              });
               ttsInflight.current.set(text, ttsPromise);
               const url = await ttsPromise;
               ttsInflight.current.delete(text);
@@ -5096,7 +5120,9 @@
               // Retry once after a delay instead of falling back to browser TTS
               try {
                 await new Promise((r) => setTimeout(r, 1500));
-                const retryUrl = await callTTS(text, selectedVoice);
+                const retryUrl = await callTTS(text, selectedVoice, 1, {
+                  language: wordSoundsLanguage || "English",
+                });
                 if (retryUrl) {
                   saveAudioToStorage(text, retryUrl);
                   return loadAndPlay(retryUrl);
@@ -5396,7 +5422,16 @@
                           const url =
                             portableTtsSrcFor(instruction) ||
                             (typeof callTTS === "function"
-                              ? await callTTS(instruction, selectedVoice)
+                              // This instruction string is hardcoded English
+                              // above, so it is voiced as English regardless of
+                              // the session language. Stated explicitly so it
+                              // stops inheriting the ambient Leveled Text /
+                              // UI language, which read it with the wrong
+                              // phonology. (Translating the instruction itself
+                              // for non-English sessions is a separate gap.)
+                              ? await callTTS(instruction, selectedVoice, 1, {
+                                language: "English",
+                              })
                               : null);
                           if (url) {
                             const audio = new Audio(url);
@@ -7374,6 +7409,14 @@
       );
       const generateSoundChips = React.useCallback((phonemes) => {
         if (!Array.isArray(phonemes)) return [];
+        // Phonemes are a MIXED array: grapheme strings from older packs and the
+        // review bank, {ipa, grapheme} objects from the phoneme check and the
+        // eSpeak path. Chips are text and are keyed by string for grading and
+        // audio lookup, so flatten on the way in. Without this the raw `.trim()`
+        // below threw "rawP.trim is not a function" on any checked word.
+        phonemes = phonemes.map((p) =>
+          typeof p === "string" ? p : (p && (p.grapheme || p.ipa)) || "",
+        );
         const getPastelColor = (idx, total) => {
           const hue = (idx * (360 / total)) % 360;
           return `hsl(${hue}, 85%, 92%)`;
@@ -10369,6 +10412,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       ]);
       const generateUniqueSoundChips = React.useCallback((phonemes) => {
         if (!phonemes) return [];
+        // Same mixed-shape flatten as generateSoundChips: {ipa, grapheme}
+        // objects from the phoneme check would otherwise hit `.trim()` below.
+        if (Array.isArray(phonemes)) {
+          phonemes = phonemes.map((p) =>
+            typeof p === "string" ? p : (p && (p.grapheme || p.ipa)) || "",
+          );
+        }
         const chips = (Array.isArray(phonemes) ? phonemes : []).map((p, i) => ({
           id: `correct-${i}-${Date.now()}`,
           phoneme: (p || "").trim(),

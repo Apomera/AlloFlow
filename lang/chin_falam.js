@@ -3252,7 +3252,9 @@
     "writing": "Content Tial lio...",
     "actions": {
       "analyzing_short": "Analyze lio...",
-      "generate_short": "Chuah"
+      "generate_short": "Chuah",
+      "books_short": "Cauk",
+      "books_hint": "Hmanthlak cauk ong: cauk zeidah namah ca hrampi a si khawh"
     },
     "status_generating": "Source text chuah lio...",
     "success_long_form": "Long-form text chuah a tlin!",
@@ -3286,7 +3288,16 @@
     },
     "drafting_story_outline": "Dialogue structure plan lio...",
     "load_project_tooltip": "Hmasa save mi AlloFlow PDF project load",
-    "load_project": "Project Load"
+    "load_project": "Project Load",
+    "quickstart_heading": "Asiloah thawk hmun kha thim",
+    "qs_book": "Relnak cauk tlangpi ong",
+    "qs_book_sub": "Cauk, capar le hrampi thawknak",
+    "qs_write": "Ca ṭial asiloah hlan",
+    "qs_write_sub": "Namah ca hman",
+    "qs_find": "Internet ah hmuahnak zoh",
+    "qs_find_sub": "Link hlan asiloah AI in kawl hna seh",
+    "qs_generate": "Kong khat in ser",
+    "qs_generate_sub": "AI nih namah caah a ṭial lai"
   },
   "analysis": {
     "title": "Source Material Analyze",

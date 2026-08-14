@@ -2355,7 +2355,9 @@
     "writing": "Schreiben Inhalt...",
     "actions": {
       "analyzing_short": "Analysiere...",
-      "generate_short": "Generieren"
+      "generate_short": "Generieren",
+      "books_short": "Bücher",
+      "books_hint": "Bilderbücher öffnen: Jedes Buch kann Ihr Quelltext werden"
     },
     "status_generating": "Wird generiert QuellText...",
     "success_long_form": "Long-form Text generiert Erfolgfully!",
@@ -2389,7 +2391,16 @@
     },
     "drafting_story_outline": "Planning dialogue Struktur...",
     "load_project_tooltip": "Laden ein vorherigely speichernd AlloFlow PDF project",
-    "load_project": "Laden Project"
+    "load_project": "Laden Project",
+    "quickstart_heading": "Oder wählen Sie einen Startpunkt",
+    "qs_book": "Lesekatalog öffnen",
+    "qs_book_sub": "Bücher, Artikel und Primärquellen",
+    "qs_write": "Text schreiben oder einfügen",
+    "qs_write_sub": "Eigenes Material verwenden",
+    "qs_find": "Online eine Ressource finden",
+    "qs_find_sub": "Link einfügen oder die KI suchen lassen",
+    "qs_generate": "Aus einem Thema generieren",
+    "qs_generate_sub": "Die KI schreibt es für Sie"
   },
   "wizard": {
     "title": "Schnell Starten",

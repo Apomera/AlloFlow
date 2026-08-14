@@ -2348,7 +2348,9 @@
     "writing": "लेखन सामग्री...",
     "actions": {
       "analyzing_short": "विश्लेषण हो रहा है...",
-      "generate_short": "उत्पन्न करें"
+      "generate_short": "उत्पन्न करें",
+      "books_short": "किताबें",
+      "books_hint": "चित्र-पुस्तकें खोलें: कोई भी किताब आपकी स्रोत सामग्री बन सकती है"
     },
     "status_generating": "Generating स्रोत पाठ...",
     "success_long_form": "लंबा-रूप टेक्स्ट सफलतापूर्वक उत्पन्न किया गया!",
@@ -2382,7 +2384,16 @@
     },
     "drafting_story_outline": "Planning dialogue संरचना...",
     "load_project_tooltip": "लोड करें एक previously सहेजा गया AlloFlow PDF project",
-    "load_project": "लोड करें Project"
+    "load_project": "लोड करें Project",
+    "quickstart_heading": "या कोई शुरुआती बिंदु चुनें",
+    "qs_book": "पठन सूची खोलें",
+    "qs_book_sub": "किताबें, लेख और मूल स्रोत",
+    "qs_write": "टेक्स्ट लिखें या चिपकाएँ",
+    "qs_write_sub": "अपनी खुद की सामग्री इस्तेमाल करें",
+    "qs_find": "ऑनलाइन संसाधन खोजें",
+    "qs_find_sub": "लिंक चिपकाएँ या एआई को खोजने दें",
+    "qs_generate": "किसी विषय से बनाएँ",
+    "qs_generate_sub": "एआई आपके लिए लिखता है"
   },
   "wizard": {
     "title": "तेज़ शुरू करें",

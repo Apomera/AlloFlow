@@ -1684,7 +1684,9 @@
     "writing": "正在撰寫內容...",
     "actions": {
       "analyzing_short": "正在分析...",
-      "generate_short": "生成"
+      "generate_short": "生成",
+      "books_short": "書籍",
+      "books_hint": "開啟繪本：任何一本書都可以成為你的原始文本"
     },
     "status_generating": "正在生成原文...",
     "success_long_form": "長文本成功生成！",
@@ -1718,7 +1720,16 @@
     },
     "drafting_story_outline": "正在規劃對話結構...",
     "load_project_tooltip": "載入先前儲存的 AlloFlow PDF 項目",
-    "load_project": "載入項目"
+    "load_project": "載入項目",
+    "quickstart_heading": "或選擇一個起點",
+    "qs_book": "開啟閱讀書目",
+    "qs_book_sub": "書籍、文章與第一手資料",
+    "qs_write": "撰寫或貼上文字",
+    "qs_write_sub": "使用你自己的材料",
+    "qs_find": "線上尋找資源",
+    "qs_find_sub": "貼上連結或讓 AI 搜尋",
+    "qs_generate": "根據主題生成",
+    "qs_generate_sub": "AI 為你撰寫"
   },
   "prompts": {
     "verified_correct": "**已核實的正確答案：**",
