@@ -43,7 +43,18 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
   const canPortal = typeof ReactDOM !== 'undefined' && ReactDOM.createPortal && typeof document !== 'undefined';
   return (
     <span
-      onClick={(e) => e.stopPropagation()}
+      // This used to be `e.stopPropagation()` — nothing else. The tooltip is
+      // driven by hover/focus, so the handler existed ONLY to swallow the
+      // click, and in Adapted Text the swallowed ancestor is the sentence's
+      // read-aloud span: tapping any glossary term did nothing at all, no
+      // request, no console error, while tapping a plain word two characters
+      // away read the sentence. That is the "sometimes it works" report
+      // (2026-08-14), and it scales with the glossary — a passage with no
+      // terms never showed it. Same span is used by FAQ, Adventure and
+      // Persona, all of which read from the sentence ancestor too.
+      // Show on click as well so a touch tap gets the definition even where
+      // focus does not follow the tap, then let the click through.
+      onClick={show}
       onMouseEnter={show}
       onMouseLeave={hide}
       onFocus={show}

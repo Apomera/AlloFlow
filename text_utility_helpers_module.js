@@ -38,7 +38,7 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
   return /* @__PURE__ */ React.createElement(
     "span",
     {
-      onClick: (e) => e.stopPropagation(),
+      onClick: show,
       onMouseEnter: show,
       onMouseLeave: hide,
       onFocus: show,

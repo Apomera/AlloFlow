@@ -1716,7 +1716,18 @@ function AIBackendModalBody(props) {
   };
   const guidedTestVisible = advancedOpen
     || guidedView === 'gemini' || guidedView === 'private' || guidedView.startsWith('connect-detail:');
+  // "Manage device storage" must open the Storage and recovery manager - the real
+  // surface showing durable usage, retention policy and recoverable work. It used
+  // to call __alloOpenDeviceStorageProbe unconditionally, which is the DEVELOPMENT
+  // probe (Run probe / Open review page / View app data) built to test whether
+  // Canvas storage survives a reload. That is a diagnostic harness, not a manager,
+  // so the button never reached the screen its label promises.
   const openDeviceStorageManager = () => {
+    if (typeof window.__alloOpenStorageRecoveryManager === 'function') {
+      window.__alloOpenStorageRecoveryManager();
+      return;
+    }
+    // Fallback only: an older host without the bridge still reaches something.
     if (typeof window.__alloOpenDeviceStorageProbe === 'function') window.__alloOpenDeviceStorageProbe();
   };
   return (

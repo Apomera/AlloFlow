@@ -374,6 +374,26 @@ function HeaderBar(props) {
             {headerCollapsed && (
               <div className="ml-auto min-w-0 flex items-center justify-end gap-1.5 sm:gap-2">
                 <nav aria-label={t('common.content_tabs') || 'Primary navigation'} className="allo-premium-compact-nav flex min-w-0 items-center gap-1 overflow-x-auto overscroll-x-contain">
+                  {/* Jump to the generated lesson plan. The expanded header has carried
+                      this button for a while, but collapsing the header hid it — which is
+                      backwards: the header gets collapsed precisely while WORKING through a
+                      lesson, so the shortcut disappeared exactly when it was most wanted.
+                      Shown only once a plan exists, and it keeps its label at narrower
+                      widths than the other compact-nav items because "Lesson Plan" is the
+                      destination a teacher, parent, or independent learner is most likely
+                      hunting for. */}
+                  {latestLessonPlan && (
+                    <button type="button"
+                      onClick={() => handleRestoreView(latestLessonPlan)}
+                      data-help-key="header_jump_lesson_collapsed"
+                      className={`shrink-0 inline-flex items-center justify-center gap-2 rounded-xl px-3 transition-colors ${generatedContent?.id === latestLessonPlan.id ? 'bg-cyan-100 text-cyan-800 shadow-lg ring-2 ring-cyan-500' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}
+                      title={t('header.jump_to_lesson')}
+                      aria-label={t('header.jump_to_lesson')}
+                    >
+                      <ClipboardList size={18} aria-hidden="true" />
+                      <span className="hidden lg:inline text-xs font-bold">{t('header.nav_lesson_plan') || 'Lesson Plan'}</span>
+                    </button>
+                  )}
                   <button type="button"
                     onClick={handleSetActiveViewToDashboard}
                     data-help-key="header_dashboard"
@@ -1059,7 +1079,7 @@ function HeaderBar(props) {
                     </div>
                 </div>
                 <div className="w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0">
-                    <div id="tour-header-actions" className={`w-full flex flex-wrap items-center justify-start gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
+                    <div id="tour-header-actions" className={`w-full sm:w-auto sm:ml-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                         <div className="w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10">
                             <span className="text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight">
                                 {t('header.app_language')}
@@ -1073,11 +1093,11 @@ function HeaderBar(props) {
                             which left a dead band across the top of this box while the
                             utility cluster sat on a row of its own below — so the box
                             was a row taller than it needed to be. */}
-                        <div className="flex-1 min-w-0 w-full sm:w-auto flex flex-col items-stretch gap-1.5">
+                        <div className="flex-1 min-w-0 w-full sm:w-auto sm:flex-none flex flex-col items-stretch sm:items-end gap-1.5">
                         {isTeacherMode && (
                         <div
                             data-header-utility-cluster="teacher"
-                            className={`w-full sm:w-auto sm:self-end flex flex-wrap items-center gap-1.5 rounded-xl border p-1 ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'border-white/15 bg-slate-950/20 shadow-sm'}`}
+                            className={`w-full sm:w-auto flex flex-wrap items-center justify-end gap-1.5 rounded-xl border p-1 ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'border-white/15 bg-slate-950/20 shadow-sm'}`}
                         >
                             <button type="button"
                                 onClick={handleSetIsTranslateModalOpenToTrue}
@@ -1212,7 +1232,7 @@ function HeaderBar(props) {
                             </button>
                         </div>
                             )}
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center justify-end gap-2">
                         {/* AI Backend / Diagnostics — visible to teachers in BOTH Canvas
                             and deploy. The modal itself swaps content based on _isCanvasEnv:
                             Canvas shows only Canvas-viable fields (CSE/Wolfram keys + Model

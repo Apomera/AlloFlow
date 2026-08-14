@@ -368,7 +368,19 @@ function HeaderBar(props) {
       className: "inline-flex items-center gap-1 rounded-xl border border-white/25 bg-white/10 px-2.5 py-0.5 text-[11px] font-bold text-white/90 hover:bg-white/20"
     },
     headerCollapsed ? t("common.more_information") || "More" : t("common.collapse") || "Less"
-  ))), headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "ml-auto min-w-0 flex items-center justify-end gap-1.5 sm:gap-2" }, /* @__PURE__ */ React.createElement("nav", { "aria-label": t("common.content_tabs") || "Primary navigation", className: "allo-premium-compact-nav flex min-w-0 items-center gap-1 overflow-x-auto overscroll-x-contain" }, /* @__PURE__ */ React.createElement(
+  ))), headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "ml-auto min-w-0 flex items-center justify-end gap-1.5 sm:gap-2" }, /* @__PURE__ */ React.createElement("nav", { "aria-label": t("common.content_tabs") || "Primary navigation", className: "allo-premium-compact-nav flex min-w-0 items-center gap-1 overflow-x-auto overscroll-x-contain" }, latestLessonPlan && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => handleRestoreView(latestLessonPlan),
+      "data-help-key": "header_jump_lesson_collapsed",
+      className: `shrink-0 inline-flex items-center justify-center gap-2 rounded-xl px-3 transition-colors ${generatedContent?.id === latestLessonPlan.id ? "bg-cyan-100 text-cyan-800 shadow-lg ring-2 ring-cyan-500" : "text-white/85 hover:bg-white/10 hover:text-white"}`,
+      title: t("header.jump_to_lesson"),
+      "aria-label": t("header.jump_to_lesson")
+    },
+    /* @__PURE__ */ React.createElement(ClipboardList, { size: 18, "aria-hidden": "true" }),
+    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline text-xs font-bold" }, t("header.nav_lesson_plan") || "Lesson Plan")
+  ), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -938,11 +950,11 @@ function HeaderBar(props) {
       "aria-label": t("toolbar.about_aria")
     },
     /* @__PURE__ */ React.createElement(Info, { size: 20 })
-  ))), /* @__PURE__ */ React.createElement("div", { className: "w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0" }, /* @__PURE__ */ React.createElement("div", { id: "tour-header-actions", className: `w-full flex flex-wrap items-center justify-start gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight" }, t("header.app_language")), /* @__PURE__ */ React.createElement("div", { className: "max-w-full scale-90 origin-left sm:origin-center", "data-help-key": "header_language" }, /* @__PURE__ */ React.createElement(UiLanguageSelector, null))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0 w-full sm:w-auto flex flex-col items-stretch gap-1.5" }, isTeacherMode && /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { className: "w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0" }, /* @__PURE__ */ React.createElement("div", { id: "tour-header-actions", className: `w-full sm:w-auto sm:ml-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight" }, t("header.app_language")), /* @__PURE__ */ React.createElement("div", { className: "max-w-full scale-90 origin-left sm:origin-center", "data-help-key": "header_language" }, /* @__PURE__ */ React.createElement(UiLanguageSelector, null))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0 w-full sm:w-auto sm:flex-none flex flex-col items-stretch sm:items-end gap-1.5" }, isTeacherMode && /* @__PURE__ */ React.createElement(
     "div",
     {
       "data-header-utility-cluster": "teacher",
-      className: `w-full sm:w-auto sm:self-end flex flex-wrap items-center gap-1.5 rounded-xl border p-1 ${theme === "contrast" ? "border-yellow-400 bg-black" : "border-white/15 bg-slate-950/20 shadow-sm"}`
+      className: `w-full sm:w-auto flex flex-wrap items-center justify-end gap-1.5 rounded-xl border p-1 ${theme === "contrast" ? "border-yellow-400 bg-black" : "border-white/15 bg-slate-950/20 shadow-sm"}`
     },
     /* @__PURE__ */ React.createElement(
       "button",
@@ -1108,7 +1120,7 @@ function HeaderBar(props) {
       " ",
       /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("common.assessment_center") || "Assessment Center")
     )
-  ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, isTeacherMode && /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-end gap-2" }, isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

@@ -133,6 +133,10 @@ const createTTS = (deps) => {
     // Gemini fetch proves the key works again, so clear the latch (and the
     // Canvas probe cooldown) the moment real bytes come back.
     const _noteGeminiSuccess = () => {
+        // Real bytes came back, so the earlier deadline was a blip, not a slow
+        // path. Clear the strike so the NEXT slow response gets its retry too
+        // instead of inheriting a strike from ten minutes ago.
+        ttsTimeoutStrikes = 0;
         if (state.timeoutRetryAt) {
             state.timeoutRetryAt = 0;
             _ttsTrace('calltts:timeout-recovered', null);
@@ -262,6 +266,31 @@ const createTTS = (deps) => {
     // current playback. Prefer local/browser audio briefly instead of waiting
     // through the same deadline two more times.
     const TTS_TIMEOUT_COOLDOWN_MS = 60000;
+    // A first hard deadline can be one slow response rather than a slow path,
+    // and arming the cooldown on it pushed a full minute of playback onto the
+    // browser voice. Retry once, THEN believe it.
+    let ttsTimeoutStrikes = 0;
+    // Which Gemini failures are worth a second attempt. The old inline list was
+    // 401/403/503/"Transient Error"/"empty result", which quietly excluded the
+    // two most common real-world flakes: fetchTTSBytes throws a bare
+    // `API Error: 500 …` for every 5xx that is not 503, and a dropped
+    // connection surfaces as the browser's own TypeError ("Failed to fetch" /
+    // "NetworkError" / "Load failed"). Neither was retried, so a single blip on
+    // a school network sent the whole passage to the browser voice.
+    // Deliberately NOT here: 429, missing/invalid key, and model refusals —
+    // those are answers, not flakes, and retrying them only adds latency.
+    const _isRetryableTtsError = (message) => {
+        const msg = String(message || '');
+        if (/\b(401|403|500|502|503|504|522|524)\b/.test(msg)) return true;
+        if (msg.includes('Transient Error')) return true;
+        if (msg.includes('empty result')) return true;
+        if (msg.includes('No audio data received')) return true;
+        return /failed to fetch|networkerror|network error|load failed|connection|socket hang up|econnreset|err_network/i.test(msg);
+    };
+    // Waking an already-downloaded Kokoro means decoding ~88MB into WASM. Long
+    // enough for a real cold start on a school laptop, short enough that a
+    // wedged init cannot hold the reader open.
+    const KOKORO_ENSURE_TIMEOUT_MS = 15000;
     // In-flight joins older than this are presumed wedged and REPLACED —
     // background joiners must not inherit a zombie either.
     const CALLTTS_JOIN_MAX_AGE_MS = 20000;
@@ -653,6 +682,75 @@ let piperLoadPromise = null;
         }
     };
 
+    // Kokoro is the ENGLISH fallback, and it was only ever used when the engine
+    // happened to be live already: every leg below tested `window._kokoroTTS`
+    // and, finding nothing, returned null so the caller spoke through the
+    // browser voice. A page refresh clears window._kokoroTTS while the ~88MB
+    // model stays in device storage, so a learner who downloaded Kokoro still
+    // got the robotic browser voice for the rest of the session.
+    //
+    // Loading an ALREADY-DOWNLOADED model is not a download, so it does not
+    // touch the off-desktop no-auto-download policy (QR students on phones must
+    // never pull 88MB unasked). hasKokoro() is the exact distinction: it reads
+    // the model cache and fetches nothing. Desktop keeps its existing licence
+    // to fetch, since that build ships expecting the local voice.
+    let kokoroLoadPromise = null;
+    const kokoroModelOnDevice = async () => {
+        try {
+            const mc = window.AlloModules && window.AlloModules.AlloCommands && window.AlloModules.AlloCommands.modelCache;
+            if (!mc || typeof mc.hasKokoro !== 'function') return false;
+            return !!(await mc.hasKokoro());
+        } catch (_) { return false; }
+    };
+    const ensureKokoroTts = async (timeoutMs) => {
+        try {
+            if (window._kokoroTTS && window._kokoroTTS.ready) return window._kokoroTTS;
+            if (typeof window.__loadKokoroTTS !== 'function') return null;
+            const onDevice = await kokoroModelOnDevice();
+            if (!onDevice && !window._isDesktopBundledApp) {
+                _ttsTrace('calltts:kokoro-not-on-device', null);
+                return null;
+            }
+            // Desktop may fetch the model, but a speaker waiting on a FIRST
+            // 88MB download would sit in silence for minutes. Only the wake of
+            // an on-device model is worth blocking a live utterance for; a
+            // genuine download stays fire-and-forget, exactly as before, and
+            // serves the sentences after it.
+            const blocking = onDevice;
+            if (!kokoroLoadPromise) {
+                window.__kokoroTTSDownloading = true;
+                kokoroLoadPromise = Promise.resolve(window.__loadKokoroTTS())
+                    .then(() => (window._kokoroTTS && window._kokoroTTS.ready ? window._kokoroTTS : null))
+                    .catch((error) => {
+                        console.warn('[TTS] Kokoro loader failed:', error?.message || error);
+                        return null;
+                    })
+                    .finally(() => { kokoroLoadPromise = null; window.__kokoroTTSDownloading = false; });
+            }
+            if (!blocking) {
+                _ttsTrace('calltts:kokoro-background-download', null);
+                return null;
+            }
+            // A cached model still has to decode into WASM, which is seconds,
+            // not milliseconds. Bound the wait so one wedged init cannot hold a
+            // waiting reader open — the load keeps running, so the NEXT sentence
+            // gets the real voice even when this one falls through.
+            const budget = Number.isFinite(timeoutMs) ? timeoutMs : KOKORO_ENSURE_TIMEOUT_MS;
+            const engine = await Promise.race([
+                kokoroLoadPromise,
+                new Promise((resolve) => setTimeout(() => resolve(undefined), budget)),
+            ]);
+            if (engine === undefined) {
+                _ttsTrace('calltts:kokoro-ensure-timeout', { budgetMs: budget });
+                return null;
+            }
+            return engine;
+        } catch (error) {
+            console.warn('[TTS] ensureKokoroTts failed:', error?.message || error);
+            return null;
+        }
+    };
+
     const callTTS = async (text, voiceName, speed = 1, maxRetriesOrOpts = 2, languageArg) => {
         if (isGlobalMuted()) {
             _ttsTrace('calltts:muted', { chars: String(text || '').length });
@@ -888,8 +986,20 @@ let piperLoadPromise = null;
                         }
                         const isDeadlineTimeout = msg.includes('timeout after');
                         if (isDeadlineTimeout) {
+                            // A SINGLE slow response used to arm a 60s cooldown
+                            // and break with zero retries, so one hiccup handed
+                            // a full minute of reading to the browser voice.
+                            // Spend one retry first; a second strike is evidence
+                            // the path really is slow and still arms the cooldown.
+                            ttsTimeoutStrikes += 1;
+                            if (ttsTimeoutStrikes < 2 && canvasAttempt < canvasMaxAttempts - 1) {
+                                _ttsTrace('calltts:canvas-timeout-retry', { strike: ttsTimeoutStrikes });
+                                console.warn('[Canvas TTS] Gemini timed out — retrying once before the cooldown:', msg);
+                                await waitForTtsDelay(600, _signal);
+                                continue;
+                            }
                             state.timeoutRetryAt = Date.now() + TTS_TIMEOUT_COOLDOWN_MS;
-                            _ttsTrace('calltts:canvas-timeout-fallback', { cooldownMs: TTS_TIMEOUT_COOLDOWN_MS });
+                            _ttsTrace('calltts:canvas-timeout-fallback', { cooldownMs: TTS_TIMEOUT_COOLDOWN_MS, strikes: ttsTimeoutStrikes });
                             console.warn('[Canvas TTS] Gemini timed out; using local fallback:', msg);
                             break;
                         }
@@ -903,9 +1013,7 @@ let piperLoadPromise = null;
                             console.warn('[Canvas TTS] Gemini refused this utterance; using local fallback');
                             break;
                         }
-                        const isTransient = msg.includes('401') || msg.includes('403') || msg.includes('503')
-                            || msg.includes('Transient Error')
-                            || msg.includes('empty result');
+                        const isTransient = _isRetryableTtsError(msg);
                         if (isTransient && canvasAttempt < canvasMaxAttempts - 1) {
                             const backoffMs = 800 * Math.pow(2, canvasAttempt);
                             console.warn(`[Canvas TTS] Transient error "${msg}" — retrying in ${backoffMs}ms (attempt ${canvasAttempt + 2}/${canvasMaxAttempts})`);
@@ -938,6 +1046,16 @@ let piperLoadPromise = null;
             }
             if (ttsLang === 'en') {
                 try {
+                    // Wake an already-downloaded engine rather than skipping
+                    // straight to the browser voice. Piper has had this lazy
+                    // ensure since it landed; Kokoro never did, so a refresh
+                    // (which clears window._kokoroTTS but not the cached model)
+                    // pinned English readers to the browser voice for the rest
+                    // of the session. ensureKokoroTts is a no-op unless the
+                    // model is genuinely on THIS device or we are the desktop
+                    // build, so it cannot start a surprise 88MB download for a
+                    // QR student on a phone.
+                    if (!window._kokoroTTS || !window._kokoroTTS.ready) await ensureKokoroTts();
                     if (window._kokoroTTS) {
                         // callTTS promises one COMPLETE playable URL. The streaming
                         // API returns only its first chunk and requires chainPlay,
@@ -1108,6 +1226,28 @@ let piperLoadPromise = null;
                 } catch (e) {
                     if (_isAbortError(e)) { throw e; }
                     console.warn('[TTS] Kokoro engine failed — deferring to provider/cloud voices:', e?.message);
+                    _kokoroDeferredToGemini = true;
+                }
+            } else if (await ensureKokoroTts()) {
+                // The engine was not live, but the model IS on this device (or
+                // we are desktop), so wake it and speak now. Previously this
+                // case only ever kicked a background load and returned, handing
+                // the CURRENT utterance to the cloud or the browser voice —
+                // which is what a learner actually hears.
+                try {
+                    const wokenUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, { signal: _signal });
+                    if (wokenUrl) {
+                        _routeNote('kokoro', 'engine woken from on-device model');
+                        return _emitResolvedProfile(
+                            wokenUrl,
+                            _resolutionProfile('local', 'kokoro-browser', null, _resolvedKokoroVoice(voiceName), 1)
+                        );
+                    }
+                    _routeNote('kokoro-empty', 'woken engine returned no audio');
+                    _kokoroDeferredToGemini = true;
+                } catch (e) {
+                    if (_isAbortError(e)) { throw e; }
+                    console.warn('[TTS] Woken Kokoro engine failed — deferring to provider/cloud voices:', e?.message);
                     _kokoroDeferredToGemini = true;
                 }
             } else if (window._isDesktopBundledApp) {
@@ -1340,8 +1480,10 @@ let piperLoadPromise = null;
                             console.warn('[callTTSDirect] Gemini timed out; using local fallback:', msg);
                             break;
                         }
-                        const isTransient = msg.includes('401') || msg.includes('403') || msg.includes('503')
-                            || msg.includes('model refused') || msg.includes('Transient Error') || msg.includes('empty result');
+                        // Bot lines keep their extra tolerance for a one-off
+                        // model refusal (a short greeting often succeeds on the
+                        // second ask, unlike a whole passage sentence).
+                        const isTransient = _isRetryableTtsError(msg) || msg.includes('model refused');
                         if (isTransient && botAttempt < botCanvasMaxAttempts - 1) {
                             const backoffMs = 800 * Math.pow(2, botAttempt);
                             console.warn(`[callTTSDirect] Transient Gemini error "${msg}" — retrying in ${backoffMs}ms (attempt ${botAttempt + 2}/${botCanvasMaxAttempts})`);
@@ -1360,6 +1502,9 @@ let piperLoadPromise = null;
             const cleanedText = cleanTextForLocalTTS(text);
             if (ttsLang === 'en') {
                 try {
+                    // Same lazy wake as callTTS: an on-device model should serve
+                    // bot lines too instead of losing them to the browser voice.
+                    if (!window._kokoroTTS || !window._kokoroTTS.ready) await ensureKokoroTts();
                     if (window._kokoroTTS) {
                         const url = await window._kokoroTTS.speakStreaming(cleanedText, voiceName, speed, { signal: _directSignal });
                         if (url) return url;

@@ -18746,6 +18746,24 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   useEffect(() => {
       canvasRecoveryStoreRef.current = canvasRecoveryStore;
   }, [canvasRecoveryStore]);
+  // Opener bridge for the Storage and recovery manager.
+  //
+  // 'manage' mode was only reachable from the vault unlock/recover flows, so the
+  // Settings > "Manage device storage" button in view_misc_modals had nothing real
+  // to call and fell through to __alloOpenDeviceStorageProbe - the development
+  // probe popup (Run probe / Open review page / View app data), which exists to
+  // test whether Canvas storage survives a reload and is not a storage manager.
+  // A teacher pressing a button labelled "Manage device storage" got a diagnostic
+  // harness instead of their saved work.
+  //
+  // The dialog already renders outside Canvas when the mode is 'manage' (see the
+  // isCanvas || mode === 'manage' guard on the panel), so exposing the setter is
+  // all that was missing.
+  useEffect(() => {
+      if (typeof window === 'undefined') return undefined;
+      window.__alloOpenStorageRecoveryManager = () => { setCanvasRecoveryDialogMode('manage'); };
+      return () => { try { delete window.__alloOpenStorageRecoveryManager; } catch (_) { window.__alloOpenStorageRecoveryManager = undefined; } };
+  }, []);
   useEffect(() => {
       if (typeof document === 'undefined') return;
       const isOpen = Boolean(canvasRecoveryDialogMode);
@@ -20448,7 +20466,21 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
             await storageDB.set('allo_offline_history', fullPayload);
             if (owner.sequence === sequence) setLastSaved(new Date());
         } catch (e) {
-            if (e.name === 'QuotaExceededError' || e.message?.toLowerCase().includes('quota') || e.message?.toLowerCase().includes('exceeded')) {
+            // Quota classification must be PRECISE. This used to also match any error
+            // whose message merely contained 'exceeded', which catches
+            // "Maximum call stack size exceeded" - the RangeError JSON.stringify throws
+            // on deeply nested or cyclic data - and reported it to the teacher as
+            // "Storage full". Behaviour Lens surfaced exactly that while the storage
+            // manager showed 296 MB of 10536 MB used, so the diagnosis was not just
+            // wrong, it pointed at the one thing that was fine. Match the real quota
+            // signals (name, legacy codes, or the word 'quota') and nothing else.
+            const _alloIsQuotaError = (err) => {
+                if (!err) return false;
+                if (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED') return true;
+                if (err.code === 22 || err.code === 1014) return true;
+                return String(err.message || '').toLowerCase().includes('quota');
+            };
+            if (_alloIsQuotaError(e)) {
                 if (owner.sequence !== sequence) return;
                 warnLog("Storage Quota Exceeded. Retrying with stripped assets...");
                 addToast(t('toasts.storage_full_text_only'), "warning");
@@ -20461,7 +20493,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                     if (owner.sequence === sequence) addToast(t('toasts.storage_full_critical'), "error");
                 }
             } else {
-                warnLog("IndexedDB Save Error:", e);
+                // NOT a quota problem. Say so plainly instead of leaving the teacher
+                // with a silent failure or, worse, a false 'storage full'.
+                warnLog("IndexedDB Save Error (not a quota condition):", e);
+                if (owner.sequence === sequence) addToast((t('toasts.autosave_failed') || 'Could not autosave history') + ': ' + String((e && e.message) || e).slice(0, 120), 'error');
             }
         }
     }).finally(() => {

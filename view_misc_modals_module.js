@@ -1451,6 +1451,10 @@ function AIBackendModalBody(props) {
   };
   const guidedTestVisible = advancedOpen || guidedView === "gemini" || guidedView === "private" || guidedView.startsWith("connect-detail:");
   const openDeviceStorageManager = () => {
+    if (typeof window.__alloOpenStorageRecoveryManager === "function") {
+      window.__alloOpenStorageRecoveryManager();
+      return;
+    }
     if (typeof window.__alloOpenDeviceStorageProbe === "function") window.__alloOpenDeviceStorageProbe();
   };
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300", onClick: () => setShowAIBackendModal(false) }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "ai_backend_modal_panel", "data-student-ai-setup": isStudentAiSetup ? "true" : "false", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: (e) => {
