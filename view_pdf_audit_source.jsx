@@ -3554,6 +3554,9 @@ function PdfAuditView(props) {
     const seconds = Math.max(0, Math.round((Number(ms) || 0) / 1000));
     return seconds < 60 ? seconds + 's' : Math.floor(seconds / 60) + 'm ' + (seconds % 60) + 's';
   };
+  const _liveChunkCompleteCount = liveChunkStream.filter(c => c.status === 'complete').length;
+  const _liveChunkPendingCount = liveChunkStream.filter(c => c.status === 'deferred' || c.incomplete === true).length;
+  const _livePassNumber = liveChunkStream.find(c => Number.isFinite(Number(c.passNumber)))?.passNumber || null;
   const _captureAsyncHtmlToken = () => {
     if (typeof capturePdfHtmlCommitToken === 'function') return capturePdfHtmlCommitToken();
     const current = pdfFixResultRef && pdfFixResultRef.current;
@@ -10278,15 +10281,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="flex items-center gap-2">
                               <span className="text-lg" aria-hidden="true">🔬</span>
                               <h4 className="text-sm font-bold text-indigo-800">{t('pdf_audit.live_chunk.heading_short') || 'Live Remediation'}</h4>
-                              <span className="text-xs text-slate-600 ml-auto">{liveChunkStream.filter(c => c.status === 'complete').length}/{liveChunkStream.length} sections</span>
+                              <span className="text-xs text-slate-600 ml-auto">{_livePassNumber ? `Pass ${_livePassNumber} - ` : ''}{_liveChunkCompleteCount}/{liveChunkStream.length} sections</span>
                             </div>
                             <div className="w-full bg-indigo-100 rounded-full h-1.5 overflow-hidden">
-                              <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500" style={{ width: liveChunkStream.length > 0 ? `${(liveChunkStream.filter(c => c.status === 'complete').length / liveChunkStream.length) * 100}%` : '0%' }}></div>
+                              <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500" style={{ width: liveChunkStream.length > 0 ? `${(_liveChunkCompleteCount / liveChunkStream.length) * 100}%` : '0%' }}></div>
                             </div>
                             {chunkSaveFlash && <div className="text-[11px] text-emerald-600 font-bold text-center animate-in fade-in duration-200">💾 Progress auto-saved</div>}
                             <div className="space-y-1.5 max-h-[250px] overflow-y-auto">
                               {liveChunkStream.map((chunk, ci) => {
                                 const isWorking = chunk.status === 'working';
+                          const isDeferred = chunk.status === 'deferred' || chunk.incomplete === true;
                                 const totalFixes = (chunk.deterministicFixCount || 0) + (chunk.surgicalFixCount || 0);
                                 const trace = liveChunkTrace[chunk.index];
                                 // (2026-06-20) A section whose audit didn't return a number (AI throttled) must
@@ -10321,9 +10325,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       </>}
                                       {chunk.wasRetried && <span className="text-amber-700 font-bold" title={t('pdf_audit.live_chunk.retried_title') || 'AI had to retry this section once after the first attempt failed integrity or token-preservation checks.'}>↻ retried</span>}
                                       {chunk.aiVerified && !chunk.usedOriginal && <span className="text-emerald-700" title={t('pdf_audit.live_chunk.content_verified_title') || "AI content-preservation check passed — the section's text content was preserved through the rewrite."}>✓ content verified</span>}
-                                      {chunk.usedOriginal && <span className="text-red-700 font-bold" title={t('pdf_audit.live_chunk.ai_skipped_long_title') || 'AI rewrite failed or was rejected for this section — only deterministic (rule-based) fixes were applied. The section is still more accessible than the original, just less so than successfully AI-fixed sections.'}>{t('pdf_audit.live_chunk.ai_skipped_rule_only') || 'AI skipped · rule-based only'}</span>}
+                                      {chunk.usedOriginal && !isDeferred && <span className="text-red-700 font-bold" title={t('pdf_audit.live_chunk.ai_skipped_long_title') || 'AI rewrite failed or was rejected for this section — only deterministic (rule-based) fixes were applied. The section is still more accessible than the original, just less so than successfully AI-fixed sections.'}>{t('pdf_audit.live_chunk.ai_skipped_rule_only') || 'AI skipped · rule-based only'}</span>}
                                     </>}
                                     {isWorking && <span className="ml-auto text-indigo-600 font-bold">{trace?.label || 'Fixing...'}</span>}
+                                    {isDeferred && <span className="text-amber-700 font-bold">AI deferred - retry verification</span>}
                                     {showAgentTrace && trace?.history?.length > 0 && (
                                       <div className="basis-full mt-1 flex flex-wrap gap-1" aria-label={'Agent trace for section ' + ((chunk.index || ci) + 1)}>
                                         {trace.history.map((item, ti) => <span key={ti} className={'px-1.5 py-0.5 rounded border ' + (item.phase === 'accepted' ? 'bg-emerald-100 border-emerald-200 text-emerald-800' : item.phase === 'fallback' ? 'bg-amber-100 border-amber-200 text-amber-800' : 'bg-white border-indigo-200 text-indigo-700')}>{item.label}</span>)}
@@ -11519,20 +11524,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             {showAgentTrace ? 'Hide trace' : 'Show agent trace'}
                           </button>
                           <div className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold" role="status" aria-live="polite" aria-atomic="true">
-                            {liveChunkStream.filter(c => c.status === 'complete').length}/{liveChunkStream.length} complete
+                            {_livePassNumber ? `Pass ${_livePassNumber} - ` : ''}{_liveChunkCompleteCount}/{liveChunkStream.length} complete{_liveChunkPendingCount ? ` - ${_liveChunkPendingCount} pending AI retry` : ''}
                           </div>
                         </div>
                       </div>
 
                       {/* Progress bar */}
-                      <div className="w-full bg-indigo-100 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-label={t('pdf_audit.live_chunk.progress_aria') || 'Live remediation progress'} aria-valuenow={liveChunkStream.filter(c => c.status === 'complete').length} aria-valuemin={0} aria-valuemax={liveChunkStream.length || 1}>
-                        <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500" style={{ width: liveChunkStream.length > 0 ? `${(liveChunkStream.filter(c => c.status === 'complete').length / liveChunkStream.length) * 100}%` : '0%' }}></div>
+                      <div className="w-full bg-indigo-100 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-label={t('pdf_audit.live_chunk.progress_aria') || 'Live remediation progress'} aria-valuenow={_liveChunkCompleteCount} aria-valuemin={0} aria-valuemax={liveChunkStream.length || 1}>
+                        <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500" style={{ width: liveChunkStream.length > 0 ? `${(_liveChunkCompleteCount / liveChunkStream.length) * 100}%` : '0%' }}></div>
                       </div>
 
                       {/* Chunk cards stream */}
                       <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
                         {liveChunkStream.map((chunk, ci) => {
                           const isWorking = chunk.status === 'working';
+                          const isDeferred = chunk.status === 'deferred' || chunk.incomplete === true;
                           const isRejected = !!liveChunkRejected[chunk.index];
                           const isExpanded = !!liveChunkExpanded[chunk.index];
                           const trace = liveChunkTrace[chunk.index];
@@ -11558,9 +11564,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     <span className="text-[11px] font-bold text-slate-700">Section {chunk.index + 1}</span>
                                     <span className="text-[11px] text-slate-600">{chunk.sizeKB || '?'}KB</span>
                                     {isWorking && <span className="text-[11px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold animate-pulse">{trace?.label || 'Fixing...'}</span>}
+                                    {isDeferred && <span className="text-amber-700 font-bold">AI deferred - retry verification</span>}
                                     {!isWorking && (chunk.deterministicFixCount > 0) && <span className="text-[11px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.rule_based_title') || 'Rule-based (deterministic) regex fixes applied — always safe, no AI involved'}>{chunk.deterministicFixCount} rule-based</span>}
                                     {!isWorking && (chunk.surgicalFixCount > 0) && <span className="text-[11px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.targeted_title') || 'AI-diagnosed targeted micro-fixes applied via deterministic tools (content-preserving)'}>{chunk.surgicalFixCount} targeted</span>}
-                                    {!isWorking && chunk.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.ai_skipped_short_title') || 'AI rewrite failed or was rejected for this section — only rule-based fixes were applied. Still more accessible than the original.'}>{t('pdf_audit.live_chunk.ai_skipped_short') || 'AI skipped'}</span>}
+                                    {!isWorking && chunk.usedOriginal && !isDeferred && <span className="text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.ai_skipped_short_title') || 'AI rewrite failed or was rejected for this section — only rule-based fixes were applied. Still more accessible than the original.'}>{t('pdf_audit.live_chunk.ai_skipped_short') || 'AI skipped'}</span>}
                                     {!isWorking && chunk.wasRetried && !chunk.usedOriginal && <span className="text-[11px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold">retried</span>}
                                     {_noChanges && <span className="text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold italic" title={t('pdf_audit.live_chunk.no_changes_card_title') || 'No changes were made to this section this run. The green badges below confirm its content is intact — not that it was edited.'}>{t('pdf_audit.live_chunk.no_changes_card') || 'no changes'}</span>}
                                     {!isWorking && chunk.aiVerified && <span className="text-[11px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.verified_title') || 'AI verified content preserved (not necessarily edited)'}>✓ verified</span>}
@@ -11697,7 +11704,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                       {!liveChunkSessionActive && liveChunkStream.length > 0 && (
                         <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-indigo-200">
-                          <span>✓ Review complete — {Object.keys(liveChunkRejected).length} section(s) rejected</span>
+                          <span>{_liveChunkPendingCount ? `AI verification pending - ${_liveChunkPendingCount} section(s) will be retried` : `Review complete - ${Object.keys(liveChunkRejected).length} section(s) rejected`}</span>
                           <button
                             onClick={() => { setLiveChunkStream([]); setLiveChunkRejected({}); setLiveChunkExpanded({}); }}
                             className="text-[11px] text-slate-600 hover:text-slate-700 font-bold underline"

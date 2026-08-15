@@ -24478,10 +24478,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // Resolve any card still on 'working': a chunk that was throttle-deferred / failed never gets an
       // alloflow:chunk-fixed event, so without this it dangles on "Fixing…" AFTER the run finished — the
       // event-driven Live Remediation Review decoupling from the pipeline's actual completion (the
-      // "Review complete" + "Fixing…" contradiction). Mark them terminal + honestly AI-skipped (the
+      // "Review complete" + "Fixing…" contradiction). Keep them visibly pending + honestly AI-deferred (the
       // section shipped as original because the AI rewrite was rate-limited), not falsely verified.
       setLiveChunkStream(prev => prev.map(c => c.status === 'working'
-        ? { ...c, status: 'complete', usedOriginal: true, aiVerified: false, integrityPassed: false, incomplete: true, score: (typeof c.score === 'number' ? c.score : 0) }
+        ? { ...c, status: 'deferred', usedOriginal: true, aiVerified: false, integrityPassed: false, incomplete: true }
         : c));
     };
     window.addEventListener('alloflow:chunk-session-start', onSessionStart);

@@ -3,6 +3,9 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const appSrc = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/App.jsx'), 'utf8');
+const antiSrc = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const viewSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 
 function extractEvidenceHelpers() {
   const start = src.indexOf('function _alloAiAuditHasFullCoverage');
@@ -194,7 +197,33 @@ describe('source-level anti-drift wiring', () => {
     expect(src).toContain('const a = rec && (rec.audit || rec.result);');
   });
 
-  it('pins Tesseract to an exact release on both mirrors', () => {
+
+  it('keeps throttle-deferred sections pending and separates pass telemetry from section telemetry', () => {
+    expect(src).toContain("new CustomEvent('alloflow:remediation-pass-start'");
+    expect(src).toContain("new CustomEvent('alloflow:remediation-pass-complete'");
+    expect(src).toContain('if (_stormActive && _rePartial)');
+    expect(src).not.toContain('if (_stormActive && _reAxeUsable && newAxeViolations === 0 && _rePartial)');
+    expect(appSrc).toContain("status: 'deferred'");
+    expect(antiSrc).toContain("status: 'deferred'");
+    expect(appSrc).not.toContain("status: 'complete', usedOriginal: true, aiVerified: false, integrityPassed: false, incomplete: true, score:");
+    expect(viewSrc).toContain("const _liveChunkCompleteCount = liveChunkStream.filter(c => c.status === 'complete').length;");
+    expect(viewSrc).toContain('AI verification pending');
+  });
+  it('bounds final AI tail work and defers post-mutation re-audit under throttle', () => {
+    expect(src).toContain('const _finalAiAuditHardStop = Math.min(');
+    expect(src).toContain('const _deferHardStop = _finalAiAuditHardStop;');
+    expect(src).toContain('const _deferPostMutationAi = _finalAuditThrottled');
+    expect(src).toContain("post-audit-reaudit-throttled");
+    expect(src).toContain("_finalAuditThrottleDeferred: !!_finalAuditThrottleDeferred");
+    expect(src).toContain('AI verification remains pending for a later retry');
+
+    const postMutationAnchor = src.indexOf('if (_htmlChangedAfterFinalAiAudit)');
+    const postMutationGuard = src.indexOf('if (_deferPostMutationAi)', postMutationAnchor);
+    const postMutationCall = src.indexOf('auditOutputAccessibility(accessibleHtml', postMutationAnchor);
+    expect(postMutationAnchor).toBeGreaterThan(-1);
+    expect(postMutationGuard).toBeGreaterThan(postMutationAnchor);
+    expect(postMutationCall).toBeGreaterThan(postMutationGuard);
+  });  it('pins Tesseract to an exact release on both mirrors', () => {
     expect(src).toContain('tesseract.js@5.1.1/dist/tesseract.min.js');
     expect(src).not.toMatch(/tesseract\.js@5\/dist/);
   });

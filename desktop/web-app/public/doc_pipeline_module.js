@@ -21941,6 +21941,8 @@ Return ONLY the complete fixed HTML.`, true));
                 detail: {
                   documentEpoch: _chunkDocumentEpoch, runId: _chunkRunId, runSequence: _chunkRunSequence,
                   totalChunks: bodyChunks.length,
+                  sessionKind: 'document-sections',
+                  passNumber: _sessMeta && _sessMeta.passNumber ? Number(_sessMeta.passNumber) : null,
                   chunkSizes: bodyChunks.map(c => c.length),
                   violationInstructions: violationInstructions.substring(0, 500),
                   timestamp: Date.now(),
@@ -22091,7 +22093,7 @@ Return ONLY the complete fixed HTML.`, true));
             try {
               if (_chunkInvocationIsCurrent() && typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('alloflow:chunk-start', {
-                  detail: { index: chi, total: bodyChunks.length, sizeKB: Math.round(originalChunk.length / 1000), timestamp: Date.now(), documentEpoch: _chunkDocumentEpoch, runId: _chunkRunId, runSequence: _chunkRunSequence }
+                  detail: { index: chi, total: bodyChunks.length, sessionKind: 'document-sections', passNumber: _sessMeta && _sessMeta.passNumber ? Number(_sessMeta.passNumber) : null, sizeKB: Math.round(originalChunk.length / 1000), timestamp: Date.now(), documentEpoch: _chunkDocumentEpoch, runId: _chunkRunId, runSequence: _chunkRunSequence }
                 }));
               }
             } catch(e) { /* non-blocking */ }
@@ -23301,7 +23303,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             break;
           }
           // Emit per-pass start event for live UI (setTimeout isolates listener errors from pipeline)
-          try { setTimeout(function() { var _fp = fixPass; window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: _fp, total: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now(), documentEpoch: _documentEpoch, runId: _controlRunId, runSequence: _controlRunSequence } })); }, 0); } catch(e) {}
+          try { setTimeout(function() { var _fp = fixPass; window.dispatchEvent(new CustomEvent('alloflow:remediation-pass-start', { detail: { passNumber: _fp + 1, totalPasses: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now(), documentEpoch: _documentEpoch, runId: _controlRunId, runSequence: _controlRunSequence } })); }, 0); } catch(e) {}
           const _passAxeUsable = _alloUsableAxeAudit(axeResults);
           const _passAiUsable = _alloUsableCompleteAiAudit(verification);
           const _passAxeCount = _passAxeUsable ? axeResults.totalViolations : null;
@@ -23555,7 +23557,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // here was an overclaim (honesty fix).
           var _stepIntegrityPassed = false;
           try { _stepIntegrityPassed = !!(verifyChunkIntegrity(snapshotHtml, accessibleHtml) || {}).passed; } catch (_e) { _stepIntegrityPassed = false; }
-          try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: _chunkHtmlPreview(snapshotHtml), fixedHtml: _chunkHtmlPreview(accessibleHtml), score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: _stepIntegrityPassed, aiVerified: false, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now(), documentEpoch: _documentEpoch, runId: _controlRunId, runSequence: _controlRunSequence }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
+          try { var _cfDetail = { passNumber: fixPass + 1, totalPasses: maxFixPasses, originalHtml: _chunkHtmlPreview(snapshotHtml), fixedHtml: _chunkHtmlPreview(accessibleHtml), score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: _stepIntegrityPassed, aiVerified: false, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now(), documentEpoch: _documentEpoch, runId: _controlRunId, runSequence: _controlRunSequence }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:remediation-pass-complete', { detail: _cfDetail })); }, 0); } catch(e) {}
 
           // If BOTH engines report 0 actionable issues, stop regardless of score.
           // reVerify is null only when BOTH AI audits failed this pass (reScores empty) —
@@ -23584,17 +23586,17 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           }
 
           // ── minimal-A (throttle resilience 2026-07-03): storm-aware early stop ──
-          // Under an ACTIVE Canvas rate-limit storm, grinding more passes only makes it worse. axe==0
+          // Under an ACTIVE Canvas rate-limit storm, grinding more semantic passes only makes it worse. A partial AI audit is enough to hand the missing sections to the bounded final-audit retry queue.
           // means the deterministic layer that GOVERNS the headline is already satisfied; _rePartial
           // means the AI re-audit is non-authoritative (the stop gates above already refuse to trust it);
           // and under a storm the next passes mostly FAIL (throttled) while DEEPENING the storm — the
-          // direct cause of the final audit losing a section AND of the ~70-min grind the user hit. Ship
-          // the axe-clean best now; the final audit + its deferred re-audit (fix B) complete the AI
+          // direct cause of the final audit losing a section AND of the ~70-min grind the user hit. Stop
+          // semantic passes now; the final audit + its deferred re-audit (fix B) complete the AI
           // coverage once the rate-limit eases. Exact no-op without a storm (_geminiCap ===
           // _geminiEffectiveMax and _geminiCooldownUntil 0), so the common path is unchanged.
           const _stormActive = _geminiThrottleInfo().recentlyThrottled; // L7 (2026-07-26): ONE definition of "a throttle happened recently" (was a hand-rolled cooldown||cap that stayed true for the rest of the run)
-          if (_stormActive && _reAxeUsable && newAxeViolations === 0 && _rePartial) {
-            warnLog(`[Auto-fix] Pass ${fixPass + 1}: Canvas rate-limit storm active + axe clean + AI audit partial — the deterministic layer already governs the headline and more passes would only deepen the storm; stopping early (AI coverage completes in the final audit once the rate-limit eases).`);
+          if (_stormActive && _rePartial) {
+            warnLog('[Auto-fix] Pass ' + (fixPass + 1) + ': AI audit is partial during a Canvas rate-limit storm; stopping semantic passes and handing ' + Math.max(0, Number(_reRequested || 0) - Number(_reAudited || 0)) + ' missing section(s) to the bounded final-audit retry queue.');
             break;
           }
 
@@ -27782,27 +27784,54 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _lastSuccessfulAiScore = _alloUsableCompleteAiAudit(verification)
         ? Math.round(verification.score)
         : (Number.isFinite(_lastFullCoverageAiScore) ? Math.round(_lastFullCoverageAiScore) : null);
+      // Shared tail budget for the authoritative AI audit, deferred coverage retries, and
+      // any post-mutation re-audit. The primary audit owns its transport cancellation, so
+      // it is not wrapped in a second Promise.race; later AI work consumes the remaining time.
+      const _finalAiAuditStartedAt = Date.now();
+      const _finalAiAuditHardStop = Math.min(
+        _finalAiAuditStartedAt + 600000,
+        _perFileDeadlineTs ? _perFileDeadlineTs - 30000 : Infinity
+      );
+      const _finalAiAuditBudgetLeft = () => Math.max(0, _finalAiAuditHardStop - Date.now());
+      const _finalAuditThrottleActive = () => {
+        const _info = _geminiThrottleInfo();
+        return !!(_info && (_info.recentlyThrottled || _info.storming));
+      };
+      let _finalAuditThrottleDeferred = false;
       try {
         // Full chunked audit for accurate final scoring
         _throwIfRunCancelled();
         const _finalAuditHtml = accessibleHtml;
-        const finalAudit = await auditOutputAccessibility(_finalAuditHtml, { signal: _runAbortSignal, trigger: 'primary-final-audit' });
+        let finalAudit = null;
+        if (_finalAiAuditBudgetLeft() > 0) {
+          finalAudit = await auditOutputAccessibility(_finalAuditHtml, { signal: _runAbortSignal, trigger: 'primary-final-audit' });
+        } else {
+          _finalAuditIncompleteReason = 'final-ai-budget-exhausted';
+          _finalAuditThrottled = _finalAuditThrottleActive();
+          warnLog('[PDF Fix] Primary final AI audit skipped — shared final-audit budget is exhausted; deterministic revalidation will remain authoritative.');
+        }
         _throwIfRunCancelled();
         if (finalAudit) {
           _finalAiAuditedHtml = _finalAuditHtml;
           verification = finalAudit;
           _finalAuditHadUsableScore = _alloUsableCompleteAiAudit(finalAudit);
-          if (!_finalAuditHadUsableScore) _finalAuditIncompleteReason = finalAudit._partialAudit ? 'partial-final-audit' : 'final-audit-no-score';
+          const _partialFinalAuditThrottled = !!finalAudit._partialAudit && _finalAuditThrottleActive();
+          _finalAuditThrottled = _partialFinalAuditThrottled;
+          if (!_finalAuditHadUsableScore) {
+            _finalAuditIncompleteReason = _partialFinalAuditThrottled
+              ? 'partial-final-audit-throttled'
+              : (finalAudit._partialAudit ? 'partial-final-audit' : 'final-audit-no-score');
+          }
           warnLog(`[PDF Fix] Final audit: score ${finalAudit.score}, ${(finalAudit.issues || []).length} remaining issues, ${(finalAudit.passes || []).length} passes` + (finalAudit._partialAudit ? ` — ⚠ PARTIAL (${finalAudit.chunksAudited}/${finalAudit.chunksRequested} sections audited under Canvas throttle; headline score covers audited content only — re-run for a full-coverage score)` : ''));
-        } else {
+        } else if (!_finalAuditIncompleteReason) {
           _finalAuditIncompleteReason = 'final-audit-empty';
-          _finalAuditThrottled = _geminiThrottleInfo().recentlyThrottled; // L7
+          _finalAuditThrottled = _finalAuditThrottleActive();
         }
       } catch(finalAuditErr) {
         if (_runGenStale() || (finalAuditErr && (finalAuditErr.name === 'AbortError' || finalAuditErr.isAbort))) _throwIfRunCancelled();
         warnLog('[PDF Fix] Final audit failed (using loop result):', finalAuditErr);
         _finalAuditIncompleteReason = 'final-audit-error';
-        _finalAuditThrottled = _geminiThrottleInfo().recentlyThrottled; // L7
+        _finalAuditThrottled = _finalAuditThrottleActive();
       }
       // ── B (throttle resilience 2026-07-03): cooldown-aware deferred final re-audit ──
       // The final audit can come back PARTIAL when a Canvas rate-limit storm is active — its 3-round
@@ -27825,14 +27854,17 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _reAuditNeeded = (verification && verification._partialAudit)
         || (_finalAuditThrottled && !_finalAuditHadUsableScore);
       if (_reAuditNeeded) {
-        const _throttleCaused = _finalAuditThrottled || _geminiThrottleInfo().recentlyThrottled; // L7
+        const _throttleCaused = _finalAuditThrottled || _finalAuditThrottleActive();
         if (_throttleCaused) {
           _finalAuditThrottled = true;
           // R5 (2026-07-03): in BATCH mode fixAndVerifyPdf races an 8-min per-file wall (_withTimeout). The
           // wait + re-audit is tail latency INSIDE that wall, so near the deadline it can push a FINISHED
           // remediation past 8 min → the batch discards it. Skip when <60s of the per-file budget remains,
           // and otherwise leave 30s of headroom for the re-audit + integrity + export.
-          const _budgetLeft = _perFileDeadlineTs ? (_perFileDeadlineTs - Date.now()) : Infinity;
+          const _budgetLeft = Math.min(
+            _perFileDeadlineTs ? (_perFileDeadlineTs - Date.now()) : Infinity,
+            _finalAiAuditBudgetLeft()
+          );
           if (_budgetLeft > 60000) {
             // ── Circle-back-until-the-AI-audit-COMPLETES (2026-07-07, maintainer) ── By design, a run whose
             // AI audit did not finish shows NO headline score — the score is only earned once the AI rubric
@@ -27845,10 +27877,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             // re-serves already-read sections for free, so each pass only re-calls the STILL-MISSING one(s).
             // The cap is a backstop against a true multi-hour outage, NOT the normal exit — the normal exit is
             // "AI coverage complete"; if the cap is hit still-partial, the by-design scoreless outcome stands.
-            const _deferHardStop = Math.min(
-              Date.now() + 600000,                                        // single-file safety cap (~10 min): generous so a decaying storm can be ridden out, but never an unbounded hang
-              _perFileDeadlineTs ? _perFileDeadlineTs - 30000 : Infinity  // batch: stay inside the per-file wall, leaving export/integrity headroom
-            );
+            // The deferred loop shares the same document-level final-audit budget as the
+            // primary audit; it cannot reset the clock and then be followed by another
+            // unbounded post-mutation AI call.
+            const _deferHardStop = _finalAiAuditHardStop;
             let _reRound = 0;
             // M6 (deep dive 2026-07-09): a superseded run (watchdog fired, teacher started a new doc →
             // gen bump) must stop SPENDING here, not just discard its result at the write — the old loop
@@ -27903,7 +27935,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
                 verification = _reFinalAudit;
                 _finalAiAuditedHtml = _reFinalAuditHtml;
                 _finalAuditHadUsableScore = _alloUsableCompleteAiAudit(_reFinalAudit);
-                if (_finalAuditHadUsableScore) _finalAuditIncompleteReason = null;
+                if (_finalAuditHadUsableScore) {
+                  _finalAuditIncompleteReason = null;
+                  _finalAuditThrottled = false;
+                } else if (_reFinalAudit._partialAudit && _finalAuditThrottleActive()) {
+                  _finalAuditThrottled = true;
+                  _finalAuditIncompleteReason = 'partial-final-audit-throttled';
+                }
               }
               // Stop-improving guard: a round that recovered NO new section while the gate is CALM is a
               // genuine content/parse failure, not a rate-limit — more rounds can't help. (An active storm
@@ -28715,35 +28753,61 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // Auto-restore (inline words + a `Content recovery` <section>/<h2>) and the deferred-image
       // recovery (`Extracted images` <section>/<h2>) both mutate accessibleHtml AFTER the score was
       // blended above, so the reported score + axeViolations described a document the user is NOT
-      // downloading and the injected landmarks/headings were never audited. Re-run ONLY the cheap
-      // deterministic engines (the AI half is unchanged — restored source words are not a11y
-      // regressions) and re-score with the same consensus min(ai, det). Gated so the common no-op
-      // path keeps identical behavior + cost. Fail-soft: on any error the pre-restore numbers stand.
+      // downloading and the injected landmarks/headings were never audited. Re-run the AI audit only if
+      // the shared final-audit budget remains and no throttle storm is active; otherwise skip that AI call,
+      // re-run the cheap deterministic engines, and leave AI verification explicitly pending. The
+      // deterministic re-score remains gated so the common no-op path keeps identical behavior + cost.
+      // Fail-soft: on any error the pre-restore numbers stand.
       const _imageRecoveryInjected = accessibleHtml.indexOf('data-image-recovery="true"') !== -1;
       const _htmlChangedAfterFinalAiAudit = typeof _finalAiAuditedHtml === 'string' && _finalAiAuditedHtml !== accessibleHtml;
       if (_autoRestore || _imageRecoveryInjected || _htmlChangedAfterFinalAiAudit) {
         try {
           if (_htmlChangedAfterFinalAiAudit) {
-            let _postMutationAudit = null;
-            try {
-              _postMutationAudit = await auditOutputAccessibility(accessibleHtml, { signal: _runAbortSignal, trigger: 'post-mutation-reaudit (html changed after final audit)' });
-              _throwIfRunCancelled();
-            } catch (_postAuditErr) {
-              if (_runGenStale() || (_postAuditErr && (_postAuditErr.name === 'AbortError' || _postAuditErr.isAbort))) _throwIfRunCancelled();
-              warnLog('[PDF Fix] Post-mutation AI re-audit failed:', _postAuditErr && _postAuditErr.message);
-            }
-            const _postAuditUsable = _alloUsableCompleteAiAudit(_postMutationAudit);
-            if (_postMutationAudit) verification = _postMutationAudit;
-            if (_postAuditUsable) {
-              _finalAiAuditedHtml = accessibleHtml;
-              _finalAuditHadUsableScore = true;
-              _finalAuditScoreMissing = false;
-              _finalAuditIncompleteReason = null;
-              _aiVerificationIncomplete = false;
-            } else {
+            const _postMutationThrottleActive = _finalAuditThrottleActive();
+            const _postMutationBudgetExhausted = _finalAiAuditBudgetLeft() <= 0;
+            const _deferPostMutationAi = _finalAuditThrottled
+              || _postMutationThrottleActive
+              || _postMutationBudgetExhausted;
+            if (_deferPostMutationAi) {
+              _finalAuditThrottleDeferred = _finalAuditThrottleDeferred
+                || _finalAuditThrottled
+                || _postMutationThrottleActive;
+              _finalAuditThrottled = _finalAuditThrottled || _postMutationThrottleActive;
               _finalAuditScoreMissing = true;
-              _finalAuditIncompleteReason = 'post-audit-html-changed';
+              _finalAuditIncompleteReason = _finalAuditThrottled
+                ? 'post-audit-reaudit-throttled'
+                : 'post-audit-ai-budget-exhausted';
               _aiVerificationIncomplete = true;
+              warnLog('[PDF Fix] Post-mutation AI re-audit deferred — shared final-audit throttle/budget guard is active; deterministic revalidation will run and AI verification remains pending for a later retry.');
+            } else {
+              let _postMutationAudit = null;
+              try {
+                _postMutationAudit = await auditOutputAccessibility(accessibleHtml, { signal: _runAbortSignal, trigger: 'post-mutation-reaudit (html changed after final audit)' });
+                _throwIfRunCancelled();
+              } catch (_postAuditErr) {
+                if (_runGenStale() || (_postAuditErr && (_postAuditErr.name === 'AbortError' || _postAuditErr.isAbort))) _throwIfRunCancelled();
+                warnLog('[PDF Fix] Post-mutation AI re-audit failed:', _postAuditErr && _postAuditErr.message);
+              }
+              const _postAuditUsable = _alloUsableCompleteAiAudit(_postMutationAudit);
+              if (_postMutationAudit) verification = _postMutationAudit;
+              if (_postAuditUsable) {
+                _finalAiAuditedHtml = accessibleHtml;
+                _finalAuditHadUsableScore = true;
+                _finalAuditScoreMissing = false;
+                _finalAuditIncompleteReason = null;
+                _finalAuditThrottled = false;
+                _finalAuditThrottleDeferred = false;
+                _aiVerificationIncomplete = false;
+              } else {
+                const _postAuditThrottleActive = _finalAuditThrottleActive();
+                _finalAuditScoreMissing = true;
+                _finalAuditThrottled = _finalAuditThrottled || _postAuditThrottleActive;
+                _finalAuditThrottleDeferred = _finalAuditThrottleDeferred || _postAuditThrottleActive;
+                _finalAuditIncompleteReason = _finalAuditThrottled
+                  ? 'post-audit-reaudit-throttled'
+                  : 'post-audit-html-changed';
+                _aiVerificationIncomplete = true;
+              }
             }
           }
           const _reScoreHtml = _stripChromeForAudit(_repairLeakedImagePlaceholders(accessibleHtml)); // apples-to-apples: exclude preview-only chrome
@@ -28961,6 +29025,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         _estimatedMinimumScore: Number.isFinite(_estimatedMinimumScore) ? _estimatedMinimumScore : null,
         _estimatedScoreBasis: _estimatedScoreBasis,
         _finalAuditRetryAvailable: !!(_aiVerificationIncomplete && accessibleHtml),
+        _finalAuditThrottleDeferred: !!_finalAuditThrottleDeferred,
+        _finalAuditIncompleteReason: _finalAuditIncompleteReason || null,
         _scoreSource: _finalAiEvidenceAvailable ? (_deterministicEvidenceAvailable ? 'min' : 'content-only') : (_deterministicEvidenceAvailable ? 'deterministic-only' : 'unavailable'), // headline = min(content, automated) — the governing layer (2026-06-21)
         autoFixPasses,
         needsExpertReview,
