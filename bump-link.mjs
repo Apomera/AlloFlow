@@ -38,7 +38,7 @@ const RELEASES_JSON = path.posix.join(REPO_ROOT, "releases.json");
 const LAUNCH_HTML = path.posix.join(REPO_ROOT, "launch.html");
 const INDEX_HTML = path.posix.join(REPO_ROOT, "index.html");
 
-const CANVAS_URL_RE = /^https:\/\/gemini\.google\.com\/share\/[a-f0-9]+$/;
+const CANVAS_URL_RE = /^https:\/\/(?:gemini\.google\.com\/share\/[a-f0-9]+|share\.gemini\.google\/[A-Za-z0-9]+)$/;
 const FALLBACK_RE = /const\s+FALLBACK_CANVAS_URL\s*=\s*"[^"]*"\s*;/g;
 const VERSION_LABEL_RE =
   /(<[^>]*\bdata-version-label\b[^>]*>)v?\d+\.\d+(<\/[^>]+>)/;
