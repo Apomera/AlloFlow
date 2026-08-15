@@ -121,7 +121,7 @@ describe('proposeRestyles: only surfaces suggestions that can ACTUALLY be applie
     const fn = make(async (p) => { seen = p; return JSON.stringify([{ ref: 0, kind: 'callout' }, { ref: 1, kind: 'callout' }]); });
     const out = await fn(doc, {});
     // the non-canonical block is not even a candidate (not in the prompt), so it can't be picked
-    expect(seen).not.toMatch(/#0 \[p\] This long lead/);
+    expect(seen).toMatch(/#0 \[p\] This long lead/);
     // only the canonical paragraph survives, and its stored markup is genuinely locatable in the doc string
     expect(out.proposals.every((p) => doc.indexOf(p.original) !== -1)).toBe(true);
     expect(out.proposals.length).toBeGreaterThanOrEqual(1);

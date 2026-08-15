@@ -72,6 +72,42 @@ function _applyHarperTextReplacement(doc, textNode, localStart, badLength, repla
   }
   return true;
 }
+function _builderSuggestionPreviewSrcDoc(fragment) {
+  return '<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;padding:0;background:#fff;color:#0f172a;font:14px/1.55 system-ui,sans-serif}body{padding:12px}blockquote{margin:0;padding:.65em .8em;border-left:4px solid #6366f1;background:#eef2ff}ul,ol{padding-left:1.35em}h1,h2,h3,h4,h5,h6{margin:.1em 0 .45em;color:#312e81}a{color:#3730a3;text-decoration:underline}</style></head><body>' + String(fragment || "") + "</body></html>";
+}
+function _builderFindUniqueSuggestionTarget(doc, original) {
+  if (!doc?.body || !original) return { ok: false, reason: "not-found" };
+  const matches = Array.from(doc.body.querySelectorAll("*")).filter((element) => {
+    try {
+      return element.outerHTML === original;
+    } catch (_) {
+      return false;
+    }
+  });
+  if (matches.length === 1) return { ok: true, element: matches[0] };
+  return { ok: false, reason: matches.length > 1 ? "ambiguous" : "not-found" };
+}
+function _builderReplaceSuggestionHtml(doc, original, replacementHtml) {
+  const located = _builderFindUniqueSuggestionTarget(doc, original);
+  if (!located.ok) return located;
+  const template = doc.createElement("template");
+  template.innerHTML = String(replacementHtml || "").trim();
+  const nodes = Array.from(template.content.childNodes).filter((node) => node.nodeType !== 3 || String(node.textContent || "").trim());
+  if (nodes.length !== 1 || nodes[0].nodeType !== 1) return { ok: false, reason: "invalid-replacement" };
+  const beforeHtml = located.element.outerHTML;
+  const replacement = nodes[0];
+  located.element.replaceWith(replacement);
+  return { ok: true, beforeHtml, afterHtml: replacement.outerHTML };
+}
+function _builderDispatchSuggestionInput(doc) {
+  try {
+    if (!doc?.body) return;
+    doc.body.setAttribute("data-allo-user-edited", "1");
+    const EventCtor = doc.defaultView?.InputEvent || doc.defaultView?.Event;
+    doc.body.dispatchEvent(new EventCtor("input", { bubbles: true, inputType: "insertReplacementText" }));
+  } catch (_) {
+  }
+}
 const _BUILDER_STYLE_GALLERY = Object.freeze([
   { id: "normal", label: "Normal", tag: "p", style: {} },
   { id: "title", label: "Title", tag: "h1", style: { fontSize: "2.25em", lineHeight: "1.1", marginBottom: "0.35em", letterSpacing: "-0.02em" } },
@@ -3514,6 +3550,7 @@ function ExportPreviewView(props) {
     pdfFixResult,
     pptxLoaded,
     processExpertCommand,
+    proposeRestyles,
     runAxeAudit,
     saveExportPreset,
     selectedFont,
@@ -3544,6 +3581,21 @@ function ExportPreviewView(props) {
   } = props;
   const isAdvancedReview = builderWorkspaceMode === "advanced-review" && exportPreviewSource === "remediation";
   const [writingCheck, setWritingCheck] = React.useState(null);
+  const [blockSuggestions, setBlockSuggestions] = React.useState(null);
+  const [blockSuggestionsBusy, setBlockSuggestionsBusy] = React.useState(false);
+  const [blockSuggestionError, setBlockSuggestionError] = React.useState("");
+  const [blockSuggestionDropped, setBlockSuggestionDropped] = React.useState(0);
+  const blockSuggestionRunRef = React.useRef(0);
+  const blockSuggestionAbortRef = React.useRef(null);
+  const blockSuggestionUndoRef = React.useRef([]);
+  const [blockSuggestionUndoCount, setBlockSuggestionUndoCount] = React.useState(0);
+  React.useEffect(() => () => {
+    blockSuggestionRunRef.current += 1;
+    try {
+      blockSuggestionAbortRef.current?.abort();
+    } catch (_) {
+    }
+  }, []);
   const [wordGoalProgress, setWordGoalProgress] = React.useState({ count: 0, goal: 0, percent: 0 });
   const [wordCount, setWordCount] = React.useState(0);
   const [wordGoal, setWordGoal] = React.useState(0);
@@ -4342,6 +4394,101 @@ ${pageCss}
     setActiveTrackedChangeId((current) => changes.some((change) => change.id === current) ? current : changes[0]?.id || "");
     return changes;
   }, [exportPreviewRef]);
+  const _getBuilderSuggestionHtml = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.documentElement || doc.body?.getAttribute("data-allo-preview-error") === "1") return "";
+    return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+  }, [exportPreviewRef]);
+  const _suggestBuilderBlocks = React.useCallback(async () => {
+    if (blockSuggestionsBusy) return;
+    if (typeof proposeRestyles !== "function") {
+      setBlockSuggestionError("Block suggestions are still loading. Try again in a moment.");
+      return;
+    }
+    const sourceHtml = _getBuilderSuggestionHtml();
+    if (!sourceHtml) {
+      setBlockSuggestionError("The live document preview is not ready yet. Wait for it to render, then try again.");
+      return;
+    }
+    try {
+      blockSuggestionAbortRef.current?.abort();
+    } catch (_) {
+    }
+    const runId = ++blockSuggestionRunRef.current;
+    const controller = typeof AbortController === "function" ? new AbortController() : { signal: null, abort: () => {
+    } };
+    blockSuggestionAbortRef.current = controller;
+    setBlockSuggestionsBusy(true);
+    setBlockSuggestionError("");
+    setBlockSuggestions(null);
+    setBlockSuggestionDropped(0);
+    try {
+      const result = await proposeRestyles(sourceHtml, { max: 10, signal: controller.signal });
+      if (runId !== blockSuggestionRunRef.current) return;
+      if (!result) {
+        setBlockSuggestionError("The AI could not return suggestions right now. No document content was changed; try again when the AI is available.");
+        setBlockSuggestions(null);
+        return;
+      }
+      const proposals = Array.isArray(result.proposals) ? result.proposals : [];
+      const dropped = Math.max(0, Number(result.suggested || 0) - proposals.length);
+      setBlockSuggestions(proposals);
+      setBlockSuggestionDropped(dropped);
+      if (!proposals.length) {
+        setBlockSuggestionError(dropped ? dropped + " AI suggestion" + (dropped === 1 ? "" : "s") + " was filtered out because it could not be applied safely." : "No structure changes suggested for this document.");
+      }
+    } catch (error) {
+      if (runId !== blockSuggestionRunRef.current || error?.name === "AbortError") return;
+      setBlockSuggestionError(String(error?.message || "The AI suggestion request failed. Try again."));
+      setBlockSuggestions(null);
+    } finally {
+      if (runId === blockSuggestionRunRef.current) {
+        setBlockSuggestionsBusy(false);
+        if (blockSuggestionAbortRef.current === controller) blockSuggestionAbortRef.current = null;
+      }
+    }
+  }, [blockSuggestionsBusy, proposeRestyles, _getBuilderSuggestionHtml]);
+  const _applyBuilderBlockSuggestion = React.useCallback((proposal) => {
+    if (!proposal?.original || !proposal?.html) return;
+    const doc = exportPreviewRef.current?.contentDocument;
+    const result = _builderReplaceSuggestionHtml(doc, proposal.original, proposal.html);
+    if (!result.ok) {
+      setBlockSuggestionError(result.reason === "ambiguous" ? "That block is no longer unique in the live document. Run suggestions again." : "That block changed since the suggestion was generated. Run suggestions again.");
+      setBlockSuggestions((current) => current ? current.filter((item) => item !== proposal) : current);
+      return;
+    }
+    blockSuggestionUndoRef.current = [...blockSuggestionUndoRef.current.slice(-9), {
+      beforeHtml: result.beforeHtml,
+      afterHtml: result.afterHtml,
+      label: proposal.kind + ": " + (proposal.preview || "block")
+    }];
+    setBlockSuggestionUndoCount(blockSuggestionUndoRef.current.length);
+    _builderDispatchSuggestionInput(doc);
+    refreshFormattingState();
+    refreshDocumentStats();
+    refreshTrackedChanges();
+    setBlockSuggestions((current) => current ? current.filter((item) => item !== proposal) : current);
+    setBlockSuggestionError("");
+    addToast?.("Applied " + proposal.kind + " suggestion. Use Undo if you want to restore the original block.", "success");
+  }, [exportPreviewRef, refreshFormattingState, refreshDocumentStats, refreshTrackedChanges, addToast]);
+  const _undoBuilderBlockSuggestion = React.useCallback(() => {
+    const entry = blockSuggestionUndoRef.current[blockSuggestionUndoRef.current.length - 1];
+    if (!entry) return;
+    const doc = exportPreviewRef.current?.contentDocument;
+    const result = _builderReplaceSuggestionHtml(doc, entry.afterHtml, entry.beforeHtml);
+    if (!result.ok) {
+      setBlockSuggestionError("The document changed after that suggestion, so the last Builder suggestion cannot be undone safely.");
+      return;
+    }
+    blockSuggestionUndoRef.current = blockSuggestionUndoRef.current.slice(0, -1);
+    setBlockSuggestionUndoCount(blockSuggestionUndoRef.current.length);
+    _builderDispatchSuggestionInput(doc);
+    refreshFormattingState();
+    refreshDocumentStats();
+    refreshTrackedChanges();
+    setBlockSuggestionError("");
+    addToast?.("Last AI block suggestion undone.", "info");
+  }, [exportPreviewRef, refreshFormattingState, refreshDocumentStats, refreshTrackedChanges, addToast]);
   const refreshActiveReviewComment = React.useCallback(() => {
     const doc = exportPreviewRef.current?.contentDocument;
     try {
@@ -7519,7 +7666,41 @@ ${pageCss}
       }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex shrink-0", role: "group", "aria-label": "Reorder source " + (index + 1) }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveCitationItemDraft(index, -1), disabled: !index, className: "h-8 w-7 rounded-l border border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30", "aria-label": "Move source " + (index + 1) + " earlier" }, "?"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveCitationItemDraft(index, 1), disabled: index === citationItemsDraft.length - 1, className: "h-8 w-7 border-y border-r border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30", "aria-label": "Move source " + (index + 1) + " later" }, "?"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeCitationItemDraft(index), disabled: citationItemsDraft.length === 1, className: "h-8 rounded-r border-y border-r border-slate-300 bg-white px-2 text-[9px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-30", "aria-label": "Remove source " + (index + 1) + " from citation" }, "Remove"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-1.5 sm:grid-cols-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Prefix", /* @__PURE__ */ React.createElement("input", { value: item.prefix, onChange: (event) => updateCitationItemDraft(index, { prefix: event.target.value.slice(0, 120) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "e.g., see" })), /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Page or locator", /* @__PURE__ */ React.createElement("input", { value: item.locator, onChange: (event) => updateCitationItemDraft(index, { locator: event.target.value.slice(0, 80) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "23 or chap. 2" })), /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Suffix", /* @__PURE__ */ React.createElement("input", { value: item.suffix, onChange: (event) => updateCitationItemDraft(index, { suffix: event.target.value.slice(0, 120) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "e.g., emphasis added" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.suppressAuthor, onChange: (event) => updateCitationItemDraft(index, { suppressAuthor: event.target.checked }), className: "accent-cyan-800" }), "Suppress author"), /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.suppressYear, onChange: (event) => updateCitationItemDraft(index, { suppressYear: event.target.checked }), className: "accent-cyan-800" }), "Suppress year")));
     }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCitationItemDraft, disabled: citationItemsDraft.length >= _BUILDER_CITATION_ITEM_LIMIT || citationItemsDraft.length >= (documentReferences.sources?.length || 0), className: "h-8 w-full rounded border border-dashed border-cyan-500 bg-cyan-50 px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, "+ Add another source"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[8px] font-black uppercase tracking-wide text-cyan-800" }, "Preview ? ", _BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle), /* @__PURE__ */ React.createElement("p", { className: "mt-1 break-words text-[11px] font-semibold text-slate-800", "aria-live": "polite" }, _builderFormatCitationCluster(citationItemsDraft, documentReferences.sources || [], citationStyle))), /* @__PURE__ */ React.createElement("p", { className: "min-h-4 text-[10px] font-bold text-red-700", role: "alert" }, citationEditorError)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2 border-t border-slate-200 bg-white px-3 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "h-9 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !citationItemsDraft.length, className: "h-9 rounded bg-cyan-800 px-4 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:opacity-40" }, "Update citation"))), /* @__PURE__ */ React.createElement("div", { className: `${isFocusMode ? "hidden" : "w-full lg:w-72"} shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("h2", { id: "document-builder-title", className: "text-sm font-black text-slate-800 flex items-center gap-2" }, isAdvancedReview ? "Review Studio" : "Document Builder"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
       if (typeof window.AlloToggleTheme === "function") window.AlloToggleTheme();
-    }, className: "p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm", "aria-label": t("a11y.toggle_theme") || "Toggle color theme", title: theme === "contrast" ? t("theme.high_contrast") || "High Contrast" : theme === "dark" ? t("theme.dark") || "Dark Mode" : t("theme.light") || "Light Mode" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, theme === "contrast" ? "\u{1F441}" : theme === "dark" ? "\u{1F319}" : "\u2600\uFE0F")), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowExportPreview(false), className: "p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors", "data-help-key": "doc_builder_close_btn", "aria-label": t("a11y.close_doc_builder") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))), exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1", role: "group", "aria-label": "Document Builder workspace" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBuilderWorkspaceMode?.("author"), "aria-pressed": !isAdvancedReview, className: `min-h-9 rounded-md px-2 text-[11px] font-bold ${!isAdvancedReview ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Standard"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBuilderWorkspaceMode?.("advanced-review"), "aria-pressed": isAdvancedReview, className: `min-h-9 rounded-md px-2 text-[11px] font-bold ${isAdvancedReview ? "bg-indigo-700 text-white shadow-sm" : "text-indigo-800 hover:bg-white"}` }, "Advanced Review")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-controls": "document-builder-preview", onClick: () => exportPreviewRef.current?.focus(), className: "sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white" }, "Skip to editable preview"), exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u267F ", t("export_preview.remediation_banner_title") || "Editing the remediated document."), " ", t("export_preview.remediation_banner_body") || "Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them."), /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Quick Start", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Presets"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => /* @__PURE__ */ React.createElement(
+    }, className: "p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm", "aria-label": t("a11y.toggle_theme") || "Toggle color theme", title: theme === "contrast" ? t("theme.high_contrast") || "High Contrast" : theme === "dark" ? t("theme.dark") || "Dark Mode" : t("theme.light") || "Light Mode" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, theme === "contrast" ? "\u{1F441}" : theme === "dark" ? "\u{1F319}" : "\u2600\uFE0F")), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowExportPreview(false), className: "p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors", "data-help-key": "doc_builder_close_btn", "aria-label": t("a11y.close_doc_builder") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))), exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1", role: "group", "aria-label": "Document Builder workspace" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBuilderWorkspaceMode?.("author"), "aria-pressed": !isAdvancedReview, className: `min-h-9 rounded-md px-2 text-[11px] font-bold ${!isAdvancedReview ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Standard"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBuilderWorkspaceMode?.("advanced-review"), "aria-pressed": isAdvancedReview, className: `min-h-9 rounded-md px-2 text-[11px] font-bold ${isAdvancedReview ? "bg-indigo-700 text-white shadow-sm" : "text-indigo-800 hover:bg-white"}` }, "Advanced Review")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-controls": "document-builder-preview", onClick: () => exportPreviewRef.current?.focus(), className: "sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white" }, "Skip to editable preview"), exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u267F ", t("export_preview.remediation_banner_title") || "Editing the remediated document."), " ", t("export_preview.remediation_banner_body") || "Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them."), /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Quick Start", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), typeof proposeRestyles === "function" && /* @__PURE__ */ React.createElement("details", { open: true, className: "rounded-lg border border-indigo-200 bg-indigo-50 overflow-hidden", "data-help-key": "doc_builder_block_suggestions" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer list-none px-2.5 py-2 text-[11px] font-black uppercase tracking-wide text-indigo-800 hover:bg-indigo-100" }, "AI block suggestions ", Array.isArray(blockSuggestions) && blockSuggestions.length > 0 ? "(" + blockSuggestions.length + ")" : ""), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 px-2.5 pb-2.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] leading-relaxed text-indigo-800" }, "Review the live document here. The AI only selects existing blocks; it never rewrites your text."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: _suggestBuilderBlocks,
+        disabled: blockSuggestionsBusy,
+        className: "rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-50"
+      },
+      blockSuggestionsBusy ? "Analyzing..." : "Suggest blocks"
+    ), blockSuggestionUndoCount > 0 && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: _undoBuilderBlockSuggestion,
+        className: "rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100"
+      },
+      "Undo last"
+    )), blockSuggestionError && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "rounded border border-amber-300 bg-amber-50 px-2 py-1.5 text-[10px] text-amber-900" }, blockSuggestionError), Array.isArray(blockSuggestions) && blockSuggestions.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, blockSuggestions.map((proposal, index) => /* @__PURE__ */ React.createElement("article", { key: (proposal.ref ?? index) + ":" + proposal.kind, className: "rounded-lg border border-indigo-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase text-indigo-800" }, proposal.kind === "heading" ? "Heading" : proposal.kind === "callout" ? "Callout" : "List", proposal.level ? " (H" + proposal.level + ")" : ""), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[10px] leading-relaxed text-slate-700" }, proposal.reason || "This structure may help readers scan the document.")), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => setBlockSuggestions((current) => current ? current.filter((item) => item !== proposal) : current),
+        className: "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold text-slate-500 hover:bg-slate-100",
+        "aria-label": "Dismiss this block suggestion"
+      },
+      "Dismiss"
+    )), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid gap-1.5 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "mb-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-500" }, "Before"), /* @__PURE__ */ React.createElement("iframe", { title: "Suggested block before", sandbox: "allow-same-origin", srcDoc: _builderSuggestionPreviewSrcDoc(proposal.original), className: "h-24 w-full rounded border border-slate-200 bg-white" })), /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "mb-0.5 text-[9px] font-bold uppercase tracking-wide text-indigo-700" }, "After"), /* @__PURE__ */ React.createElement("iframe", { title: "Suggested block after", sandbox: "allow-same-origin", srcDoc: _builderSuggestionPreviewSrcDoc(proposal.html), className: "h-24 w-full rounded border border-indigo-300 bg-white" }))), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => _applyBuilderBlockSuggestion(proposal),
+        className: "mt-1.5 w-full rounded bg-indigo-700 px-2 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800"
+      },
+      "Apply to live document"
+    )))), Array.isArray(blockSuggestions) && blockSuggestions.length === 0 && !blockSuggestionError && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600" }, "No structure changes suggested for this document."), blockSuggestionDropped > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[9px] italic text-slate-500" }, blockSuggestionDropped, " additional AI suggestion", blockSuggestionDropped === 1 ? "" : "s", " filtered out by the safety gate."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Presets"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key,

@@ -52140,7 +52140,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setPdfPageRange, setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
           setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, setPendingPdfBase64, setPendingPdfFile,
           setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, capturePdfDocumentIntakeEpoch, isPdfDocumentIntakeCurrent, startPipelineTour,
-          pdfRunHistory, setPdfRunHistory, _remediationMode
+          pdfRunHistory, setPdfRunHistory,
+          openRemediationBuilder: () => {
+            try { _builderOpenerElRef.current = document.activeElement; } catch (_) {}
+            _builderReviewSessionRef.current = null;
+            setExportPreviewSource('remediation');
+            setBuilderWorkspaceMode('author');
+            setShowExportPreview(true);
+          },
+          _remediationMode
       })}
       <ErrorBoundary fallbackMessage="File transcription encountered an error. Please try again.">
       <LargeFileTranscriptionModal
@@ -52675,7 +52683,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           customExportCSS, deleteExportPreset, diffLibReady, executeExportFromPreview, expertCommandInput,
           exportAuditLoading, exportAuditResult, exportConfig, exportPresets, exportPreviewMode,
           exportPreviewRef, exportStylePrompt, exportTheme, generateCustomExportStyle, getExportPreviewHTML,
-          getSkippedResources, handleExportH5P, handleExportIMS, handleExportQTI, history, isAgentRunning, isGeneratingStyle, pdfFixResult, pptxLoaded,
+          getSkippedResources, handleExportH5P, handleExportIMS, handleExportQTI, history, isAgentRunning, isGeneratingStyle, pdfFixResult, proposeRestyles: _docPipeline ? _docPipeline.proposeRestyles : null, pptxLoaded,
           processExpertCommand, runAxeAudit, saveExportPreset, selectedFont, setAgentActivityLog,
           setAgentLogFullView, setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,

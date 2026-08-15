@@ -3339,7 +3339,7 @@ function PdfAuditView(props) {
     setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
     setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, setPendingPdfBase64,
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, capturePdfDocumentIntakeEpoch, isPdfDocumentIntakeCurrent, startPipelineTour,
-    pdfRunHistory, setPdfRunHistory, _remediationMode
+    pdfRunHistory, setPdfRunHistory, openRemediationBuilder, _remediationMode
   } = props;
   const [remediationProgress, setRemediationProgress] = useState(null);
   const remediationProgressOwnerRef = useRef({ documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0, startedAt: 0 });
@@ -15045,6 +15045,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 {_restyleProposalsBusy ? ('⏳ ' + (t('pdf_audit.region.suggest_busy') || 'Analyzing…')) : ('✨ ' + (t('pdf_audit.region.suggest_btn') || 'Suggest callouts & lists'))}
                               </button>
                             </div>
+                            {typeof openRemediationBuilder === 'function' && (
+                              <button type="button" onClick={openRemediationBuilder} className="rounded-lg border border-indigo-300 bg-white px-2.5 py-1 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100">
+                                Review visually in Document Builder
+                              </button>
+                            )}
                             <p className="text-[10px] text-indigo-700 italic">{t('pdf_audit.region.suggest_note') || 'The AI only PICKS blocks — it never rewrites your text. Each suggestion is applied by the same safe transform and refused if it would change content. Block text is sent to the AI (as during remediation).'}</p>
                             {Array.isArray(_restyleProposals) && _restyleProposals.length > 0 && (
                               <ul className="space-y-1.5">

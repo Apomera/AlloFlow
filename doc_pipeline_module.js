@@ -4499,6 +4499,31 @@ function _restyleToHeading(blockHtml, opts) {
 // or an all-bold block) AND that the block sits BEFORE any existing heading; restyleBlock({h1}) then GATES it
 // (short, single-line, not a sentence, reading-order + fidelity preserved). Returns one proposal in the
 // standard shape (so it rides the existing review queue + apply path), or null. Pure + side-effect-free.
+// Resolve a candidate block back to the exact substring stored in the source HTML. Most accessibleHtml
+// is already canonical, but imported/model-authored HTML can use uppercase tags, single-quoted attributes,
+// or entity spellings that DOMParser normalizes. Keep the exact-splice safety contract while accepting a
+// uniquely identifiable raw block in those cases. Ambiguous matches still refuse rather than guess.
+function _locateUniqueStoredBlock(src, element, canonicalOuter) {
+  if (!src || !element || !canonicalOuter) return null;
+  var exactAt = src.indexOf(canonicalOuter);
+  if (exactAt !== -1 && src.indexOf(canonicalOuter, exactAt + canonicalOuter.length) === -1) return canonicalOuter;
+  var tag = String(element.tagName || '').toLowerCase();
+  if (!/^(p|blockquote|div)$/.test(tag)) return null;
+  var re;
+  try { re = new RegExp('<' + tag + '\\b[^>]*>[\\s\\S]*?<\\/' + tag + '>', 'gi'); } catch (_) { return null; }
+  var matches = [];
+  var m;
+  while ((m = re.exec(src))) {
+    var raw = m[0];
+    try {
+      var parsed = new DOMParser().parseFromString('<body>' + raw + '</body>', 'text/html');
+      var candidate = parsed && parsed.body && parsed.body.firstElementChild;
+      if (candidate && String(candidate.outerHTML || '') === String(canonicalOuter)) matches.push(raw);
+    } catch (_) {}
+    if (matches.length > 1) return null;
+  }
+  return matches.length === 1 ? matches[0] : null;
+}
 function _proposeTitleHeading(src, dom) {
   try {
     if (!src || !dom || !dom.body) return null;
@@ -6411,6 +6436,25 @@ var createDocPipeline = function(deps) {
   var _GEMINI_STORM_TRIP = 2;       // consecutive canvas-auth failures that trip the breaker
   var _GEMINI_TRANSIENT_TRIP = 3;   // (2026-06-20) consecutive EMPTY-BODY/timeout failures that trip the breaker — the Canvas proxy also throttles by returning empty 200s + timeouts (not just 401s), which the auth path above never detected; a bit higher than auth's trip since transient is noisier
   var _GEMINI_COOLDOWN_MS = 12000;  // pause before NEW calls start once storming
+  // ── Sustained-storm backoff (2026-08-15, from field log zmvw6g/e1) ─────────────────────────
+  // The 25s ceiling was chosen for a BRIEF blip, and for that it is right: a short throttle eases
+  // inside a cooldown or two, and a long serializing pause would only stretch the run. The
+  // 2026-08-14 20:21 run showed the OTHER regime. The account hit a hard Canvas quota wall four
+  // minutes in and stayed there for 56 minutes — authStreak climbed to 11, twenty-two auth_trips
+  // fired, and every single one backed off 25s and then fired straight back into the wall. Because
+  // the proxy HOLDS a request ~60s before 401ing it, each doomed call cost a full minute: the run
+  // spent ~8.5 minutes deliberately waiting and most of the other 50 grinding.
+  // A fixed ceiling cannot tell those two regimes apart. The STREAK can. Past
+  // _GEMINI_STORM_SUSTAINED consecutive failures the throttle is demonstrably not a blip, so the
+  // cooldown is allowed to grow to something proportionate to what the service is actually doing.
+  // Recovery stays responsive: any success clamps the pause back down (see _geminiNoteSuccess).
+  var _GEMINI_STORM_SUSTAINED = 6;                // consecutive failures past which a storm is sustained, not a blip
+  var _GEMINI_COOLDOWN_CAP_MS = 25000;            // ceiling while it may still be a blip (the 2026-07 decision, unchanged)
+  var _GEMINI_SUSTAINED_COOLDOWN_CAP_MS = 180000; // ceiling once it is demonstrably sustained
+  var _geminiStormCooldownMs = function (streak, trip) {
+    var _ceil = (streak >= _GEMINI_STORM_SUSTAINED) ? _GEMINI_SUSTAINED_COOLDOWN_CAP_MS : _GEMINI_COOLDOWN_CAP_MS;
+    return Math.min(_ceil, _GEMINI_COOLDOWN_MS * (streak - trip + 1));
+  };
   var _GEMINI_RECOVER_HITS = 3;     // F5 (2026-08-14): three clean successes restore full concurrency; four was one beyond the observed recovery streak
   var _GEMINI_PROBE_RECOVER = 2;    // (2026-07-24) consecutive REPRESENTATIVE probe successes wait-not-stop needs before it resumes a real round — one cheap probe success is not evidence a document-sized call will clear a volume throttle
   var _GEMINI_AUTH_RETRIES = 1;     // (2026-06-21) ONE quick jittered retry, then DEFER the call to the end-of-pass catch-up drain — was 3, which serialized 4 attempts/call through escalating cooldowns and burned 6-17 min PER CALL on a sustained rate-limit. A rate-limit eases over TIME, so revisiting later (catch-up) beats grinding inline now.
@@ -6856,7 +6900,7 @@ var createDocPipeline = function(deps) {
     if (_geminiAuthStreak >= _GEMINI_STORM_TRIP) {
       // Escalate the cooldown as the storm PERSISTS (12s → up to 90s): stop hammering a throttled
       // proxy so its quota window can recover. Each new call / retry waits the longer cooldown.
-      var _cd = Math.min(25000, _GEMINI_COOLDOWN_MS * (_geminiAuthStreak - _GEMINI_STORM_TRIP + 1)); // cap 25s (was 90s) — with time-decay recovery + catch-up drain, a long serializing cooldown only stretches the run
+      var _cd = _geminiStormCooldownMs(_geminiAuthStreak, _GEMINI_STORM_TRIP); // 25s ceiling for a blip; grows past _GEMINI_STORM_SUSTAINED (see the constants)
       if (_geminiCap !== _GEMINI_STORM_MIN || _cd > _GEMINI_COOLDOWN_MS) warnLog('[GeminiGate] Canvas-auth storm (' + _geminiAuthStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_cd / 1000) + 's cooldown');
       var _capBefore = _geminiCap;
       _geminiCap = _GEMINI_STORM_MIN;
@@ -6887,7 +6931,7 @@ var createDocPipeline = function(deps) {
     _geminiTransientStreak++;
     _pipeThrottleScoreProbe("fail", owner);
     if (_geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP) {
-      var _cd = Math.min(25000, _GEMINI_COOLDOWN_MS * (_geminiTransientStreak - _GEMINI_TRANSIENT_TRIP + 1)); // cap 25s (was 90s)
+      var _cd = _geminiStormCooldownMs(_geminiTransientStreak, _GEMINI_TRANSIENT_TRIP); // same two-regime ceiling as the auth breaker
       if (_geminiCap !== _GEMINI_STORM_MIN || _cd > _GEMINI_COOLDOWN_MS) warnLog('[GeminiGate] Empty-body/timeout storm (' + _geminiTransientStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_cd / 1000) + 's cooldown (likely a Canvas rate-limit surfacing as empty responses)');
       var _capBefore = _geminiCap;
       _geminiCap = _GEMINI_STORM_MIN;
@@ -6964,6 +7008,16 @@ var createDocPipeline = function(deps) {
     _geminiTransientStreak = 0;
     _geminiLastFailureProfile = null;
     if (_geminiCap < _geminiEffectiveMax) {
+      // (2026-08-15) A success is evidence the wall has eased, so it must also SHORTEN a
+      // sustained-storm cooldown. Without this the escalated pause (now up to 180s) would keep the
+      // pump shut for its full length after the service had already started answering, and only a
+      // FULL recovery (_GEMINI_RECOVER_HITS in a row) cleared it — which a run recovering one call
+      // at a time may never reach. Clamp rather than clear: the breaker is still tripped, so a
+      // short brake stays on. This is what keeps the longer ceiling above safe to raise.
+      if (_geminiCooldownUntil) {
+        var _nowOnSuccess = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
+        _geminiCooldownUntil = Math.min(_geminiCooldownUntil, _nowOnSuccess + _GEMINI_COOLDOWN_MS);
+      }
       _geminiOkStreak++;
       if (_geminiOkStreak >= _GEMINI_RECOVER_HITS) {
         _geminiCap = _geminiEffectiveMax; // restore to THIS run's ceiling (lower for heavy/scanned docs)
@@ -7670,7 +7724,22 @@ var createDocPipeline = function(deps) {
         if (_canvasAuthRetry) {
           var _throttleKind = _burstQuota ? 'Rate-limit (429/quota burst)' : 'Canvas throttle';
           _noteGeminiOutcome(null, err); // M15: same note, already made before the slot was released
-          if (n >= _GEMINI_AUTH_RETRIES) { warnLog('[Retry] ' + (label || 'API call') + ' — ' + _throttleKind + ' persisted through ' + _GEMINI_AUTH_RETRIES + ' retries; giving up this call'); throw err; }
+          // (2026-08-15) During a SUSTAINED storm the inline retry has no realistic chance and it is
+          // not free. The field log shows the Canvas proxy holds a request ~60s before 401ing it, so
+          // one retry turns a doomed call from ~60s into ~120s+, and at cap 1 every queued caller
+          // waits behind it — calls in that run took 220-427s to fail. _GEMINI_AUTH_RETRIES' own
+          // rationale already says a rate-limit eases over TIME and that revisiting via the catch-up
+          // drain beats grinding inline; this applies that rule to the case it was written for,
+          // instead of spending another minute retrying into a wall the breaker has already seen
+          // _GEMINI_STORM_SUSTAINED times. Nothing is skipped: the chunk still goes to catch-up.
+          var _stormSustained = _geminiAuthStreak >= _GEMINI_STORM_SUSTAINED;
+          if (n >= _GEMINI_AUTH_RETRIES || _stormSustained) {
+            warnLog('[Retry] ' + (label || 'API call') + ' — ' + _throttleKind
+              + ((_stormSustained && n < _GEMINI_AUTH_RETRIES)
+                  ? ' sustained (' + _geminiAuthStreak + ' in a row) — deferring to the catch-up drain instead of retrying inline'
+                  : ' persisted through ' + _GEMINI_AUTH_RETRIES + ' retries; giving up this call'));
+            throw err;
+          }
           // Jittered backoff (2026-06-21): ±30% randomization so a batch of calls that all 401 at once
           // don't retry in lockstep and re-storm the proxy on the same tick.
           var _backoff = Math.round(Math.min(20000, 2500 * Math.pow(2, n)) * (0.7 + Math.random() * 0.6));
@@ -34190,14 +34259,16 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       // non-canonical markup (uppercase tag, single-quoted attr, &nbsp; vs U+00A0) won't byte-match the
       // re-serialized outerHTML — surfacing it would produce a dead "block changed" suggestion. Skip those,
       // and skip duplicate-markup blocks (the splice can't disambiguate them). Honest graceful degradation.
+      // Prefer canonical serialization, but retain a uniquely identifiable raw substring when DOMParser
+      // normalized the source's spelling. Ambiguous matches still refuse rather than guess.
       var outer = el.outerHTML;
-      var at = src.indexOf(outer);
-      if (at === -1 || src.indexOf(outer, at + outer.length) !== -1) continue;
+      var storedOuter = _locateUniqueStoredBlock(src, el, outer);
+      if (!storedOuter) continue;
       // outline context for a possible heading pick: is this inside content that must NOT contribute to the
       // section outline, and what's the nearest preceding heading level (for no-skip levelling)?
       var bad = false, anc = el.parentElement;
       while (anc) { if (/^(NAV|HEADER|FOOTER|ASIDE|FIGURE|FIGCAPTION)$/.test(anc.tagName)) { bad = true; break; } anc = anc.parentElement; }
-      var c = { ref: i, tag: el.tagName.toLowerCase(), text: text.slice(0, 180), el: el, original: outer, badAncestor: bad, precedingLevel: precedingHeadingLevel(src, outer) };
+      var c = { ref: i, tag: el.tagName.toLowerCase(), text: text.slice(0, 180), el: el, original: storedOuter, badAncestor: bad, precedingLevel: precedingHeadingLevel(src, storedOuter) };
       candidates.push(c); byRef[i] = c;
       if (candidates.length >= 60) break;             // cap prompt size
     }
@@ -34213,7 +34284,14 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       + 'Return ONLY a JSON array: [{"ref":<number>,"kind":"heading"|"callout"|"list","level":<2-6, headings only>,"reason":"<short why>"}]. No prose, no markdown.\n\n'
       + 'BLOCKS:\n' + listing;
     var resp;
-    try { resp = await callGemini(prompt); } catch (_) { return _onlyTitle(); }
+    try {
+      // callGemini's positional contract carries AbortSignal in slot 6. Forward the operation signal so
+      // closing the Builder or starting a newer suggestion run actually cancels an in-flight/throttled call.
+      resp = await callGemini(prompt, false, false, null, null, opts && opts.signal ? opts.signal : null);
+    } catch (err) {
+      if (err && err.name === 'AbortError') throw err;
+      return _onlyTitle();
+    }
     var parsed = null;
     try { parsed = JSON.parse(stripFence(_restoreNeutralizedPromptFences(String(resp || '')))); } catch (_) { return _onlyTitle(); }
     if (!Array.isArray(parsed)) return _onlyTitle();

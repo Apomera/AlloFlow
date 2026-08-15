@@ -68,6 +68,42 @@ function _applyHarperTextReplacement(doc, textNode, localStart, badLength, repla
   return true;
 }
 // end _applyHarperTextReplacement
+function _builderSuggestionPreviewSrcDoc(fragment) {
+  return '<!doctype html><html><head><meta charset="utf-8"><style>'
+    + 'html,body{margin:0;padding:0;background:#fff;color:#0f172a;font:14px/1.55 system-ui,sans-serif}'
+    + 'body{padding:12px}blockquote{margin:0;padding:.65em .8em;border-left:4px solid #6366f1;background:#eef2ff}'
+    + 'ul,ol{padding-left:1.35em}h1,h2,h3,h4,h5,h6{margin:.1em 0 .45em;color:#312e81}'
+    + 'a{color:#3730a3;text-decoration:underline}'
+    + '</style></head><body>' + String(fragment || '') + '</body></html>';
+}
+function _builderFindUniqueSuggestionTarget(doc, original) {
+  if (!doc?.body || !original) return { ok: false, reason: 'not-found' };
+  const matches = Array.from(doc.body.querySelectorAll('*')).filter((element) => {
+    try { return element.outerHTML === original; } catch (_) { return false; }
+  });
+  if (matches.length === 1) return { ok: true, element: matches[0] };
+  return { ok: false, reason: matches.length > 1 ? 'ambiguous' : 'not-found' };
+}
+function _builderReplaceSuggestionHtml(doc, original, replacementHtml) {
+  const located = _builderFindUniqueSuggestionTarget(doc, original);
+  if (!located.ok) return located;
+  const template = doc.createElement('template');
+  template.innerHTML = String(replacementHtml || '').trim();
+  const nodes = Array.from(template.content.childNodes).filter((node) => node.nodeType !== 3 || String(node.textContent || '').trim());
+  if (nodes.length !== 1 || nodes[0].nodeType !== 1) return { ok: false, reason: 'invalid-replacement' };
+  const beforeHtml = located.element.outerHTML;
+  const replacement = nodes[0];
+  located.element.replaceWith(replacement);
+  return { ok: true, beforeHtml, afterHtml: replacement.outerHTML };
+}
+function _builderDispatchSuggestionInput(doc) {
+  try {
+    if (!doc?.body) return;
+    doc.body.setAttribute('data-allo-user-edited', '1');
+    const EventCtor = doc.defaultView?.InputEvent || doc.defaultView?.Event;
+    doc.body.dispatchEvent(new EventCtor('input', { bubbles: true, inputType: 'insertReplacementText' }));
+  } catch (_) {}
+}
 const _BUILDER_STYLE_GALLERY = Object.freeze([
   { id: 'normal', label: 'Normal', tag: 'p', style: {} },
   { id: 'title', label: 'Title', tag: 'h1', style: { fontSize: '2.25em', lineHeight: '1.1', marginBottom: '0.35em', letterSpacing: '-0.02em' } },
@@ -3528,7 +3564,7 @@ function ExportPreviewView(props) {
     getExportPreviewHTML, getSkippedResources, history, isAgentRunning, isGeneratingStyle,
     handleExportH5P, handleExportIMS, handleExportQTI,
     openInAlloStudio,
-    pdfFixResult, pptxLoaded, processExpertCommand, runAxeAudit,
+    pdfFixResult, pptxLoaded, processExpertCommand, proposeRestyles, runAxeAudit,
     saveExportPreset, selectedFont, setAgentActivityLog, setAgentLogFullView,
     setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
     setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt,
@@ -3549,6 +3585,18 @@ function ExportPreviewView(props) {
   // Writing-check panel state: null | {status:'loading'} | {status:'error',error}
   // | {status:'done', items:[{blockIndex,message,start,end,bad,snippet,suggestions}], capped}
   const [writingCheck, setWritingCheck] = React.useState(null);
+  const [blockSuggestions, setBlockSuggestions] = React.useState(null);
+  const [blockSuggestionsBusy, setBlockSuggestionsBusy] = React.useState(false);
+  const [blockSuggestionError, setBlockSuggestionError] = React.useState('');
+  const [blockSuggestionDropped, setBlockSuggestionDropped] = React.useState(0);
+  const blockSuggestionRunRef = React.useRef(0);
+  const blockSuggestionAbortRef = React.useRef(null);
+  const blockSuggestionUndoRef = React.useRef([]);
+  const [blockSuggestionUndoCount, setBlockSuggestionUndoCount] = React.useState(0);
+  React.useEffect(() => () => {
+    blockSuggestionRunRef.current += 1;
+    try { blockSuggestionAbortRef.current?.abort(); } catch (_) {}
+  }, []);
   const [wordGoalProgress, setWordGoalProgress] = React.useState({ count: 0, goal: 0, percent: 0 });
   const [wordCount, setWordCount] = React.useState(0);
   const [wordGoal, setWordGoal] = React.useState(0);
@@ -4308,6 +4356,101 @@ function ExportPreviewView(props) {
     return changes;
   }, [exportPreviewRef]);
 
+  const _getBuilderSuggestionHtml = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.documentElement || doc.body?.getAttribute('data-allo-preview-error') === '1') return '';
+    return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+  }, [exportPreviewRef]);
+  const _suggestBuilderBlocks = React.useCallback(async () => {
+    if (blockSuggestionsBusy) return;
+    if (typeof proposeRestyles !== 'function') {
+      setBlockSuggestionError('Block suggestions are still loading. Try again in a moment.');
+      return;
+    }
+    const sourceHtml = _getBuilderSuggestionHtml();
+    if (!sourceHtml) {
+      setBlockSuggestionError('The live document preview is not ready yet. Wait for it to render, then try again.');
+      return;
+    }
+    try { blockSuggestionAbortRef.current?.abort(); } catch (_) {}
+    const runId = ++blockSuggestionRunRef.current;
+    const controller = typeof AbortController === 'function' ? new AbortController() : { signal: null, abort: () => {} };
+    blockSuggestionAbortRef.current = controller;
+    setBlockSuggestionsBusy(true);
+    setBlockSuggestionError('');
+    setBlockSuggestions(null);
+    setBlockSuggestionDropped(0);
+    try {
+      const result = await proposeRestyles(sourceHtml, { max: 10, signal: controller.signal });
+      if (runId !== blockSuggestionRunRef.current) return;
+      if (!result) {
+        setBlockSuggestionError('The AI could not return suggestions right now. No document content was changed; try again when the AI is available.');
+        setBlockSuggestions(null);
+        return;
+      }
+      const proposals = Array.isArray(result.proposals) ? result.proposals : [];
+      const dropped = Math.max(0, Number(result.suggested || 0) - proposals.length);
+      setBlockSuggestions(proposals);
+      setBlockSuggestionDropped(dropped);
+      if (!proposals.length) {
+        setBlockSuggestionError(dropped
+          ? (dropped + ' AI suggestion' + (dropped === 1 ? '' : 's') + ' was filtered out because it could not be applied safely.')
+          : 'No structure changes suggested for this document.');
+      }
+    } catch (error) {
+      if (runId !== blockSuggestionRunRef.current || error?.name === 'AbortError') return;
+      setBlockSuggestionError(String(error?.message || 'The AI suggestion request failed. Try again.'));
+      setBlockSuggestions(null);
+    } finally {
+      if (runId === blockSuggestionRunRef.current) {
+        setBlockSuggestionsBusy(false);
+        if (blockSuggestionAbortRef.current === controller) blockSuggestionAbortRef.current = null;
+      }
+    }
+  }, [blockSuggestionsBusy, proposeRestyles, _getBuilderSuggestionHtml]);
+  const _applyBuilderBlockSuggestion = React.useCallback((proposal) => {
+    if (!proposal?.original || !proposal?.html) return;
+    const doc = exportPreviewRef.current?.contentDocument;
+    const result = _builderReplaceSuggestionHtml(doc, proposal.original, proposal.html);
+    if (!result.ok) {
+      setBlockSuggestionError(result.reason === 'ambiguous'
+        ? 'That block is no longer unique in the live document. Run suggestions again.'
+        : 'That block changed since the suggestion was generated. Run suggestions again.');
+      setBlockSuggestions((current) => current ? current.filter((item) => item !== proposal) : current);
+      return;
+    }
+    blockSuggestionUndoRef.current = [...blockSuggestionUndoRef.current.slice(-9), {
+      beforeHtml: result.beforeHtml,
+      afterHtml: result.afterHtml,
+      label: proposal.kind + ': ' + (proposal.preview || 'block'),
+    }];
+    setBlockSuggestionUndoCount(blockSuggestionUndoRef.current.length);
+    _builderDispatchSuggestionInput(doc);
+    refreshFormattingState();
+    refreshDocumentStats();
+    refreshTrackedChanges();
+    setBlockSuggestions((current) => current ? current.filter((item) => item !== proposal) : current);
+    setBlockSuggestionError('');
+    addToast?.('Applied ' + proposal.kind + ' suggestion. Use Undo if you want to restore the original block.', 'success');
+  }, [exportPreviewRef, refreshFormattingState, refreshDocumentStats, refreshTrackedChanges, addToast]);
+  const _undoBuilderBlockSuggestion = React.useCallback(() => {
+    const entry = blockSuggestionUndoRef.current[blockSuggestionUndoRef.current.length - 1];
+    if (!entry) return;
+    const doc = exportPreviewRef.current?.contentDocument;
+    const result = _builderReplaceSuggestionHtml(doc, entry.afterHtml, entry.beforeHtml);
+    if (!result.ok) {
+      setBlockSuggestionError('The document changed after that suggestion, so the last Builder suggestion cannot be undone safely.');
+      return;
+    }
+    blockSuggestionUndoRef.current = blockSuggestionUndoRef.current.slice(0, -1);
+    setBlockSuggestionUndoCount(blockSuggestionUndoRef.current.length);
+    _builderDispatchSuggestionInput(doc);
+    refreshFormattingState();
+    refreshDocumentStats();
+    refreshTrackedChanges();
+    setBlockSuggestionError('');
+    addToast?.('Last AI block suggestion undone.', 'info');
+  }, [exportPreviewRef, refreshFormattingState, refreshDocumentStats, refreshTrackedChanges, addToast]);
   const refreshActiveReviewComment = React.useCallback(() => {
     const doc = exportPreviewRef.current?.contentDocument;
     try {
@@ -7563,6 +7706,78 @@ function ExportPreviewView(props) {
 
                 {/* ── SECTION: Quick Start ── */}
                 <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Quick Start<span className="flex-1 h-px bg-indigo-100"></span></h3>
+
+                {typeof proposeRestyles === 'function' && (
+                  <details open className="rounded-lg border border-indigo-200 bg-indigo-50 overflow-hidden" data-help-key="doc_builder_block_suggestions">
+                    <summary className="cursor-pointer list-none px-2.5 py-2 text-[11px] font-black uppercase tracking-wide text-indigo-800 hover:bg-indigo-100">
+                      AI block suggestions {Array.isArray(blockSuggestions) && blockSuggestions.length > 0 ? '(' + blockSuggestions.length + ')' : ''}
+                    </summary>
+                    <div className="space-y-2 px-2.5 pb-2.5">
+                      <p className="text-[10px] leading-relaxed text-indigo-800">
+                        Review the live document here. The AI only selects existing blocks; it never rewrites your text.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <button type="button" onClick={_suggestBuilderBlocks} disabled={blockSuggestionsBusy}
+                          className="rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-50">
+                          {blockSuggestionsBusy ? 'Analyzing...' : 'Suggest blocks'}
+                        </button>
+                        {blockSuggestionUndoCount > 0 && (
+                          <button type="button" onClick={_undoBuilderBlockSuggestion}
+                            className="rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100">
+                            Undo last
+                          </button>
+                        )}
+                      </div>
+                      {blockSuggestionError && (
+                        <p role="status" aria-live="polite" className="rounded border border-amber-300 bg-amber-50 px-2 py-1.5 text-[10px] text-amber-900">
+                          {blockSuggestionError}
+                        </p>
+                      )}
+                      {Array.isArray(blockSuggestions) && blockSuggestions.length > 0 && (
+                        <div className="space-y-2">
+                          {blockSuggestions.map((proposal, index) => (
+                            <article key={(proposal.ref ?? index) + ':' + proposal.kind} className="rounded-lg border border-indigo-200 bg-white p-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                  <div className="text-[10px] font-black uppercase text-indigo-800">
+                                    {proposal.kind === 'heading' ? 'Heading' : proposal.kind === 'callout' ? 'Callout' : 'List'}{proposal.level ? ' (H' + proposal.level + ')' : ''}
+                                  </div>
+                                  <p className="mt-0.5 text-[10px] leading-relaxed text-slate-700">{proposal.reason || 'This structure may help readers scan the document.'}</p>
+                                </div>
+                                <button type="button" onClick={() => setBlockSuggestions((current) => current ? current.filter((item) => item !== proposal) : current)}
+                                  className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold text-slate-500 hover:bg-slate-100" aria-label="Dismiss this block suggestion">
+                                  Dismiss
+                                </button>
+                              </div>
+                              <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+                                <div className="min-w-0">
+                                  <div className="mb-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-500">Before</div>
+                                  <iframe title="Suggested block before" sandbox="allow-same-origin" srcDoc={_builderSuggestionPreviewSrcDoc(proposal.original)} className="h-24 w-full rounded border border-slate-200 bg-white" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="mb-0.5 text-[9px] font-bold uppercase tracking-wide text-indigo-700">After</div>
+                                  <iframe title="Suggested block after" sandbox="allow-same-origin" srcDoc={_builderSuggestionPreviewSrcDoc(proposal.html)} className="h-24 w-full rounded border border-indigo-300 bg-white" />
+                                </div>
+                              </div>
+                              <button type="button" onClick={() => _applyBuilderBlockSuggestion(proposal)}
+                                className="mt-1.5 w-full rounded bg-indigo-700 px-2 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800">
+                                Apply to live document
+                              </button>
+                            </article>
+                          ))}
+                        </div>
+                      )}
+                      {Array.isArray(blockSuggestions) && blockSuggestions.length === 0 && !blockSuggestionError && (
+                        <p className="text-[10px] text-slate-600">No structure changes suggested for this document.</p>
+                      )}
+                      {blockSuggestionDropped > 0 && (
+                        <p className="text-[9px] italic text-slate-500">
+                          {blockSuggestionDropped} additional AI suggestion{blockSuggestionDropped === 1 ? '' : 's'} filtered out by the safety gate.
+                        </p>
+                      )}
+                    </div>
+                  </details>
+                )}
 
                 {/* Presets */}
                 <div>
