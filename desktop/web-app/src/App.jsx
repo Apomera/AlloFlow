@@ -2454,6 +2454,20 @@ const warnLog = (...args) => { __alloPushLog('warn', args); console.warn(...args
 const _alloRequestStemPlugin = (id) => {
   try { if (id && typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded(String(id)); } catch (_) {}
 };
+// Cloudflare shell deep links (2026-08-15): keep the route contract tiny and
+// allow the static shell to reuse the same validated STEM launcher used by the
+// command palette and hub cards. Unknown tool names intentionally return null.
+const _alloReadShellDeepLinkTool = () => {
+  try {
+    const params = new URLSearchParams(window.location.search || '');
+    const pathname = String(window.location.pathname || '').replace(/\/+$/, '').toLowerCase();
+    const requested = params.get('tool') || params.get('stem_tool') || (pathname.endsWith('/water-cycle') ? 'waterCycle' : '');
+    const normalized = String(requested || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
+    return normalized === 'watercycle' ? 'waterCycle' : null;
+  } catch (_) {
+    return null;
+  }
+};
 // Uncaught errors and rejections never reached the ring buffer, so in Canvas — where
 // the console is unreachable — an exception that leaves click handlers unattached was
 // invisible. Record every one, and keep the FIRST separately: when an error is thrown
@@ -18483,6 +18497,24 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
   const [history, setHistory] = useState([]);
   const [canvasRecoveryDecisionMade, setCanvasRecoveryDecisionMade] = useState(() => !isCanvas);
+  const [shellDeepLinkTool] = useState(() => _alloReadShellDeepLinkTool());
+  const [shellDeepLinkApplied, setShellDeepLinkApplied] = useState(false);
+  useEffect(() => {
+      if (!shellDeepLinkTool || shellDeepLinkApplied || !isAppReady || !isHistoryLoaded || !canvasRecoveryDecisionMade) return;
+      // Route through the same app-owned launcher as every other STEM entry
+      // point. Waiting for recovery/history avoids opening over the Canvas
+      // recovery decision and avoids racing the initial workspace hydration.
+      setHasSelectedRole(true);
+      setHasSelectedMode(true);
+      setGuidedMode(false);
+      setShowWizard(false);
+      setShowStudentWelcome(false);
+      _alloRequestStemPlugin(shellDeepLinkTool);
+      setStemLabTool(shellDeepLinkTool);
+      setStemLabTab('explore');
+      setShowStemLab(true);
+      setShellDeepLinkApplied(true);
+  }, [shellDeepLinkTool, shellDeepLinkApplied, isAppReady, isHistoryLoaded, canvasRecoveryDecisionMade]);
   useEffect(() => {
       // Wait for authoritative history hydration before pruning. Otherwise the
       // initial empty history render would erase valid preparation saved for
@@ -52553,7 +52585,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           guidedMode, so a pathway picked before the recovery decision was silently
           undone by the restore that followed. Return users decide about saved work
           first, then choose a pathway. */}
-      {isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && window.AlloModules && window.AlloModules.LaunchPadView && React.createElement(window.AlloModules.LaunchPadView, {
+      {isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.LaunchPadView && React.createElement(window.AlloModules.LaunchPadView, {
           t, micBannerDismissed, _isCanvasEnv, micPermissionStatus, APP_CONFIG,
           requestMicPermission,
           enableVoiceAccess: enableGlobalVoiceAccess,
@@ -52563,7 +52595,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setShowLearningHub, setShowEducatorHub,
           setPendingRole, setIsGateOpen, setShowAIBackendModal
       })}
-      {isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && window.AlloModules && window.AlloModules.OnboardingCoach && React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {
+      {isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.OnboardingCoach && React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {
           t, setRunTour,
           // Tier 3 — pickMode dispatch. Mirrors the exact setter sequence each
           // LaunchPad mode card fires (the mode cards in view_launch_pad_source.jsx),
