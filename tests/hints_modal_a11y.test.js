@@ -36,7 +36,11 @@ describe('Hints modal accessibility', () => {
     expect(source).toContain('role="status" aria-live="polite" aria-atomic="true"');
     expect(source).not.toContain("aria-label={t('common.on_ideas')}");
     expect(source).not.toContain("aria-label={t('common.save')}");
-    expect(source.match(/type="button"/g)).toHaveLength(4);
+    // L9/D4 (2026-08-16): +3 explicit buttons for the replayable toast log (two
+    // section switches and Clear this list). The contract is that every button in
+    // this modal declares type, not that there are exactly four of them.
+    expect(source.match(/type="button"/g)).toHaveLength(7);
+    expect(source.match(/<button(?![^>]*type=)/gs)).toBeNull();
     expect(source.match(/min-h-11/g)?.length).toBeGreaterThanOrEqual(4);
     expect(source).toContain('min-w-11 min-h-11');
     expect(source.match(/focus-visible:ring-2/g)?.length).toBeGreaterThanOrEqual(4);
@@ -44,6 +48,19 @@ describe('Hints modal accessibility', () => {
     expect(source).toContain('animate-spin motion-reduce:animate-none');
     expect(source).toContain('duration-200 motion-reduce:animate-none');
     expect(source).not.toContain('relative focus:outline-none');
+  });
+
+  // L9/D4: toasts auto-dismiss on a reading-length timer, so the log is the only
+  // place a slower reader can get a notice back. These are the parts that make it
+  // reachable rather than merely stored.
+  it('replays the toast log beside the hint history', () => {
+    expect(source).toContain('const messages = Array.isArray(toastHistory) ? toastHistory : [];');
+    expect(source).toContain("aria-pressed={tab === 'messages'}");
+    expect(source).toContain("aria-label={t('hints.tab_messages') || 'Messages'}");
+    expect(source).toContain('messages.slice().reverse().map((entry)');
+    expect(source).toContain("t('hints.messages_empty')");
+    expect(source).toContain('onClick={onClearToastHistory}');
+    expect(source).toContain("typeof onClearToastHistory !== 'function'");
   });
 
   it('synchronizes the deployable module', () => {

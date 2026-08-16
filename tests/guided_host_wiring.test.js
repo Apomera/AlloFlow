@@ -138,7 +138,7 @@ describe('Guided Mode host wiring', () => {
     expect(banner).not.toContain('background: guidedEngaged ?');
   });
 
-  it('binds the highlight to the real target and forces the Create sidebar', () => {
+  it('binds the highlight to the real target and re-anchors it on return to Create', () => {
     expect(app).toContain("el.classList.add('allo-guided-target')");
     expect(app).toContain('new MutationObserver');
     expect(app).toContain('targetClassObserver.disconnect()');
@@ -148,9 +148,26 @@ describe('Guided Mode host wiring', () => {
     expect(app).toContain('clearTimeout(targetRetryTimer)');
     expect(app).toContain("el.classList.remove('allo-guided-target')");
     expect(app).not.toContain('setGuidedRect');
-    expect(app).toContain("if (guidedMode && activeSidebarTab !== 'create')");
-    expect(app).toContain("setActiveSidebarTab('create')");
+    // L9/N2 (2026-08-16): the tab is no longer FORCED to Create. Returning to Create
+    // bumps the epoch, which re-runs the binding effect.
+    expect(app).toContain("if (guidedMode && activeSidebarTab === 'create') setGuidedTargetEpoch(epoch => epoch + 1);");
     expect(app).toContain('[guidedMode, guidedStep, hasSelectedRole, guidedSelectedIds, guidedTargetEpoch]');
+  });
+
+  // L9/N2 (2026-08-16). Clicking History during Guided Mode set the tab and had it
+  // snapped straight back on the next render, so the navigation was swallowed with no
+  // message at all. These four assertions are the whole fix: no forced snap-back, no
+  // forced pane on narrow screens, no 200ms retry storm while the Create column is
+  // unmounted, and a visible way back to the step.
+  it('lets History open during Guided Mode instead of swallowing the click', () => {
+    expect(app).not.toContain("if (guidedMode && activeSidebarTab !== 'create') {");
+    expect(app).toContain("if (activeSidebarTab === 'history') { setWorkspacePane('history'); return; }");
+    expect(app).toContain("if (activeSidebarTab !== 'create') return;");
+    expect(app).toContain("t('guided.history_still_running')");
+    expect(app).toContain("t('guided.history_back_to_step')");
+    // Show-me-where has to bring the Create column back before it can focus anything.
+    expect(app).toContain("const needsTabSwitch = activeSidebarTab !== 'create';");
+    expect(app).toContain('if (needsTabSwitch) setActiveSidebarTab(');
   });
 
   it('sanitizes saved step IDs and persists skipped/session-created state', () => {

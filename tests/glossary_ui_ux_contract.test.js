@@ -26,8 +26,17 @@ describe('Glossary focused UI and UX contract', () => {
     expect(source).toContain("aria-pressed={glossaryFilter === 'academic'}");
     expect(source).toContain("aria-pressed={glossaryFilter === 'domain'}");
     expect(source).toContain('filteredGlossaryData.length === 0');
-    expect(source).toContain('No terms match this search or vocabulary filter.');
+    // The single catch-all "No terms match this search or vocabulary filter."
+    // was replaced (fleet L1/G6): it claimed a search even when none had been
+    // typed, which is how Aaron hit "no words match your search" with an empty
+    // search box. The empty state now names only the constraints actually in
+    // effect. `clearGlossaryFilters` survives as the both-active recovery;
+    // the single-constraint branches offer a targeted clear instead.
+    // tests/glossary_empty_state_and_print.test.js covers the branching.
+    expect(source).toContain('renderGlossaryEmptyState()');
     expect(source).toContain('onClick={clearGlossaryFilters}');
+    expect(source).toContain('empty_show_all');
+    expect(source).toContain('empty_clear_search');
     expect(source).not.toContain("aria-label={t('common.close')} data-help-key=\"glossary_filter_");
   });
 

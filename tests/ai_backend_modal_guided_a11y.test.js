@@ -95,7 +95,10 @@ describe('guided modal a11y', () => {
     expect(container.querySelector('#ai-backend-guided-storage-title')).toBeTruthy();
     expect(button.tagName).toBe('BUTTON');
     expect(button.getAttribute('type')).toBe('button');
-    expect(button.textContent.trim()).toBe('Manage local storage');
+    // L9/N5 (2026-08-16): relabelled. "Manage local storage" described a storage
+    // manager but the Canvas copy of this control opened the development probe; the
+    // label now names what opens, which is the saved resource pack history.
+    expect(button.textContent.trim()).toBe('Open saved work');
     expect(button.className).toContain('min-h-11');
   });
 

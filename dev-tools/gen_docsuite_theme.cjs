@@ -30,8 +30,38 @@
  *
  * Iframes (document previews / WYSIWYG surface) are separate documents —
  * page CSS cannot reach them, so student-facing document content keeps its
- * own theming. STEM Lab / SEL hex-remapped tools / games render OUTSIDE
- * these scopes and keep their own theme systems.
+ * own theming. STEM Lab / SEL hex-remapped tools render OUTSIDE these scopes
+ * and keep their own theme systems.
+ *
+ * ── v3, 2026-08-16: STATE VARIANTS ─────────────────────────────────────────
+ * Until now this generator emitted BASE selectors only: `.theme-dark
+ * .allo-docsuite .bg-slate-50`. Tailwind compiles `hover:bg-slate-50` to the
+ * separate class `.hover\:bg-slate-50` with a `:hover` selector, which that
+ * rule cannot match — so every hover / focus / active colour inside a scoped
+ * region kept its LIGHT value in dark mode while the resting text colour was
+ * swapped to a light one.
+ *
+ * The blind spot was invisible from inside: TOKEN_RE's leading `\b` matches
+ * after the colon, so scanning `hover:bg-slate-50` yielded the token
+ * `bg-slate-50` and the generator recorded the token as covered while emitting
+ * a selector that could never reach it. `grep -c hover` over the generated
+ * output was 1, and that one was unrelated.
+ *
+ * Measured in Chromium against the shipped stylesheet plus this generated
+ * layer, app theme dark (fleet 2026-08-16, lanes L1 + L2 independently):
+ *     glossary row hover                1.05:1
+ *     Matching definition card hover    1.42:1
+ *     Matching term card hover          1.62:1
+ *     crossword clue hover              1.85:1
+ * Resting states all measured 9-13:1, because the WCAG matrix in
+ * tests/docsuite_theme_contrast.test.js gated those and only those.
+ *
+ * buildVariantRules() below closes it by emitting a second layer keyed on the
+ * FULL token. Note the selector form: `[class~="hover:bg-slate-50"]:hover`,
+ * never `.hover\:bg-slate-50:hover`. This CSS is pasted inside a JSX template
+ * literal, where a backslash is an escape character and would be eaten before
+ * the browser ever saw it — the same reason slash tokens (`bg-white/80`)
+ * already use the attribute form.
  */
 'use strict';
 const fs = require('fs');
@@ -40,6 +70,12 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 
 const DOCSUITE_FILES = ['view_pdf_audit_source.jsx', 'view_export_preview_source.jsx'];
+// Non-`view_` files that nonetheless render inside <main class="allo-docsuite">
+// and therefore ARE remapped at runtime. games_source.jsx was missed by the
+// `view_*` filter below for its whole life: MemoryGame had 9 colour tokens with
+// no dark mapping (from-indigo-200, via-indigo-500, ring-yellow-400/40, ...),
+// BingoGame 2, StudentBingoGame 2. Found by L1 during the 2026-08-16 fleet.
+const APPSUITE_EXTRA = ['misc_components_source.jsx', 'games_source.jsx'];
 const SELSUITE_FILES = [
   'sel_hub/sel_tool_civicaction.js',
   'sel_hub/sel_tool_cultureexplorer.js',
@@ -53,7 +89,7 @@ const SELSUITE_FILES = [
 function appsuiteFiles(root) {
   return fs.readdirSync(root)
     .filter(f => f.startsWith('view_') && f.endsWith('_source.jsx') && !DOCSUITE_FILES.includes(f))
-    .concat(['misc_components_source.jsx'])
+    .concat(APPSUITE_EXTRA)
     .filter(f => fs.existsSync(path.join(root, f)))
     .sort();
 }
@@ -149,6 +185,95 @@ function allTokens(root) {
   }
   for (const tok of antiMainSliceTokens(root)) union.add(tok);
   return [...union].sort();
+}
+
+// ── State variants ──────────────────────────────────────────────────────────
+// Variant prefixes expressible as a pseudo-class on the element itself, or as
+// a `.group` / `.peer` relationship. `self` is appended to the selector;
+// `ancestor` and `sibling` are prepended.
+//
+// Deliberately NOT here, and why:
+//   dark:        the mechanism this whole layer exists to work around -- it is
+//                compiled with Tailwind's `media` strategy in this repo, so it
+//                tracks the OS, not the app theme. Mapping it would entrench it.
+//   sm/md/lg/xl: media queries, a different rule shape. 34 colour sites; they
+//                are reported by unsupportedVariants() rather than silently
+//                dropped.
+//   print:       intentionally light; printing on black is not the goal.
+//   placeholder/selection/marker/prose-*: pseudo-ELEMENTS, which need their own
+//                mapping decisions rather than the surface/text one used here.
+const VARIANT_SEL = {
+  hover:            { self: ':hover' },
+  focus:            { self: ':focus' },
+  'focus-visible':  { self: ':focus-visible' },
+  'focus-within':   { self: ':focus-within' },
+  active:           { self: ':active' },
+  disabled:         { self: ':disabled' },
+  checked:          { self: ':checked' },
+  'group-hover':    { ancestor: '.group:hover ' },
+  'group-focus':    { ancestor: '.group:focus ' },
+  'peer-hover':     { sibling: '.peer:hover ~ ' },
+  'peer-checked':   { sibling: '.peer:checked ~ ' },
+};
+
+// Full prefixed token, e.g. `hover:bg-slate-50`, `disabled:hover:text-slate-400`.
+// The bare-token part reuses TOKEN_RE's own vocabulary so the two can never
+// drift apart.
+const VARIANT_RE = new RegExp(
+  `\\b((?:[a-z-]+:)+)((?:bg|text|border|from|to|via|ring|divide)-(?:white|black|${FAMS_RE})(?:-\\d{2,3})?(?:\\/\\d{1,3})?)\\b`, 'g');
+
+function splitVariant(full) {
+  const i = full.lastIndexOf(':', full.length - 1);
+  const m = VARIANT_RE.exec(full);
+  VARIANT_RE.lastIndex = 0;
+  if (!m || m[0] !== full) return null;
+  return { variants: m[1].slice(0, -1).split(':'), token: m[2], i };
+}
+
+// Scan the same files for prefixed colour utilities. Returns two sets: the ones
+// this generator can express, and the ones it cannot (reported, never silent).
+function scanVariantTokens(root, files) {
+  const supported = new Set();
+  const unsupported = new Set();
+  for (const f of files) {
+    const p = path.join(root || ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const txt = fs.readFileSync(p, 'utf8');
+    let m;
+    VARIANT_RE.lastIndex = 0;
+    while ((m = VARIANT_RE.exec(txt))) {
+      const variants = m[1].slice(0, -1).split(':');
+      if (variants.every((v) => VARIANT_SEL[v])) supported.add(m[0]);
+      else if (!variants.includes('dark')) unsupported.add(m[0]);
+    }
+  }
+  return { supported: [...supported].sort(), unsupported: [...unsupported].sort() };
+}
+
+function allVariantTokens(root) {
+  const sup = new Set(), unsup = new Set();
+  const seen = new Set();
+  for (const scope of SCOPES) {
+    for (const f of scope.files(root || ROOT)) seen.add(f);
+  }
+  const r = scanVariantTokens(root, [...seen]);
+  r.supported.forEach((t) => sup.add(t));
+  r.unsupported.forEach((t) => unsup.add(t));
+  // ANTI's main-content slice, same region the base scan uses.
+  const anti = fs.readFileSync(path.join(root || ROOT, 'AlloFlowANTI.txt'), 'utf8');
+  const start = anti.indexOf('ref={mainContainerRef}');
+  const end = anti.indexOf('</main>', start);
+  if (start !== -1 && end !== -1) {
+    const slice = anti.slice(start, end);
+    let m;
+    VARIANT_RE.lastIndex = 0;
+    while ((m = VARIANT_RE.exec(slice))) {
+      const variants = m[1].slice(0, -1).split(':');
+      if (variants.every((v) => VARIANT_SEL[v])) sup.add(m[0]);
+      else if (!variants.includes('dark')) unsup.add(m[0]);
+    }
+  }
+  return { supported: [...sup].sort(), unsupported: [...unsup].sort() };
 }
 
 function parseToken(tok) {
@@ -261,6 +386,47 @@ function buildRules(tokens, mapFn, scopePrefix) {
   return out.join('\n');
 }
 
+// Selector for a prefixed token. ALWAYS the [class~=] form -- see the v3 note
+// in the header: this CSS is pasted inside a JSX template literal, so a
+// `.hover\:bg-x` selector would lose its backslash before reaching the browser.
+function selForVariant(full) {
+  const s = splitVariant(full);
+  if (!s) return null;
+  let before = '', after = '';
+  for (const v of s.variants) {
+    const d = VARIANT_SEL[v];
+    if (!d) return null;
+    if (d.self) after += d.self;
+    if (d.ancestor) before = d.ancestor + before;
+    if (d.sibling) before = d.sibling + before;
+  }
+  return { before, sel: `[class~="${full}"]`, after };
+}
+
+function buildVariantRules(fullTokens, mapFn, scopePrefix) {
+  const groups = new Map();
+  for (const full of fullTokens) {
+    const s = splitVariant(full);
+    if (!s) continue;
+    const r = mapFn(s.token);
+    if (!r) continue;
+    const parts = selForVariant(full);
+    if (!parts) continue;
+    // `divide` maps to a child selector; combining that with a state variant is
+    // ambiguous (does the state apply to the parent or the child?) and there is
+    // no real usage, so skip rather than guess.
+    if (r.child) continue;
+    const sel = `${scopePrefix} ${parts.before}${parts.sel}${parts.after}`;
+    if (!groups.has(r.decl)) groups.set(r.decl, []);
+    groups.get(r.decl).push(sel);
+  }
+  const out = [];
+  for (const [decl, sels] of [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+    out.push(`${sels.join(', ')} { ${decl}; }`);
+  }
+  return out.join('\n');
+}
+
 function formControlBlock(cls) {
   return `.theme-dark .${cls} { color-scheme: dark; }
 .theme-dark .${cls} input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -294,22 +460,39 @@ function generateCss(root) {
   // the mapping is identical for every scope, so per-scope duplication would
   // only triple the CSS for zero behavioral difference.
   const union = allTokens(r);
+  const variants = allVariantTokens(r);
   const parts = [`/* ── Scoped theme remaps (GENERATED — do not hand-edit) ──
  * Source of truth: dev-tools/gen_docsuite_theme.cjs (re-apply via
  * dev-tools/_apply_docsuite_theme.cjs when any scanned file gains new
  * color utilities). Contrast matrix + drift enforced by
  * tests/docsuite_theme_contrast.test.js.
  * Scope class .${SCOPE_CLASS} covers: ${SCOPES.map(s => s.name).join('; ')};
- * plus the main-content JSX region of ANTI. Union ${union.length} tokens. */`];
+ * plus the main-content JSX region of ANTI. Union ${union.length} tokens,
+ * plus ${variants.supported.length} state-variant tokens (hover/focus/active/
+ * group-hover/...) which the base selectors cannot reach.
+ * NOT remapped (${variants.unsupported.length}): responsive and pseudo-element
+ * variants — list them with: node dev-tools/gen_docsuite_theme.cjs --unsupported
+ * (No backticks in this header: the whole block is pasted INTO a JSX template
+ * literal, so one would end the literal and break the AppStyles module.) */`];
   parts.push(formControlBlock(SCOPE_CLASS));
   parts.push(buildRules(union, darkFor, `.theme-dark .${SCOPE_CLASS}`));
   parts.push(buildRules(union, contrastFor, `.theme-contrast .${SCOPE_CLASS}`));
+  parts.push(`/* ── state variants (v3) ── */`);
+  parts.push(buildVariantRules(variants.supported, darkFor, `.theme-dark .${SCOPE_CLASS}`));
+  parts.push(buildVariantRules(variants.supported, contrastFor, `.theme-contrast .${SCOPE_CLASS}`));
   return parts.join('\n');
 }
 
-module.exports = { FAM, DARK, CONTRAST, SCOPES, SCOPE_CLASS, scanTokens, allTokens, antiMainSliceTokens, parseToken, darkFor, contrastFor, generateCss };
+module.exports = { FAM, DARK, CONTRAST, SCOPES, SCOPE_CLASS, VARIANT_SEL, scanTokens, allTokens, antiMainSliceTokens, parseToken, darkFor, contrastFor, generateCss, allVariantTokens, splitVariant, selForVariant, buildVariantRules };
 
 if (require.main === module) {
+  if (process.argv.includes('--unsupported')) {
+    const v = allVariantTokens(ROOT);
+    console.log(`${v.supported.length} state-variant tokens remapped.`);
+    console.log(`${v.unsupported.length} NOT remapped (responsive / pseudo-element variants):`);
+    for (const t of v.unsupported) console.log('  ' + t);
+    process.exit(0);
+  }
   const css = generateCss(ROOT);
   if (process.argv.includes('--check')) {
     const styleSource = fs.readFileSync(path.join(ROOT, 'app_styles_source.jsx'), 'utf8');

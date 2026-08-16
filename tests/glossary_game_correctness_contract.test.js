@@ -40,7 +40,11 @@ describe('Glossary game correctness improvements', () => {
     const component = source.slice(source.indexOf('const WordScrambleGame ='), source.indexOf('const _MultiZoneColorMap'));
     expect(source).toContain('SCRAMBLE_MAX_SHUFFLE_ATTEMPTS');
     expect(source).not.toContain('return result === word ? scrambleWord(word) : result');
-    expect(component).toContain('canScrambleWord(item.term)');
+    // Eligibility moved off the raw term and onto its LETTERS (fleet L1/G4):
+    // an emoji is not a letter, so "🌊 a" must not qualify as a scrambleable
+    // word and an emoji must never reach a tile. tests/glossary_activity_scripts.test.js
+    // exercises that behaviour against the mounted component.
+    expect(component).toContain('canScrambleWord(parts.letters)');
     expect(component).toContain('const resetScrambleGame = () =>');
     expect(component).toContain('setHintLevel(0)');
     expect(component).toContain('No terms are available for Word Scramble.');

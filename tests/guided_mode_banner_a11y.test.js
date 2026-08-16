@@ -11,6 +11,42 @@ describe('Guided Mode banner accessibility', () => {
     expect(component).not.toMatch(/<button(?![^>]*\btype=)/);
   });
 
+  // L9/N1 (2026-08-16). Aaron: "if you were just looking at that as a novice, you
+  // might have no idea what should I actually click on". The instruction used to render
+  // ELEVENTH in the banner body, below a three-box journey grid, an estimate chip row
+  // and four collapsed disclosures. It leads now. This test pins the order, because the
+  // fix is entirely an ordering fix and a later edit could quietly undo it.
+  it('puts the one next action above every orientation panel', () => {
+    const body = component.slice(component.indexOf('{!isCollapsed && <div id="guided-banner-details">'));
+    const stepLabel = body.indexOf("{step.label || (t('guided.complete')");
+    const action = body.indexOf('{step.action && (');
+    const focusButton = body.indexOf("t('guided.focus_tool')");
+    const journeyGrid = body.indexOf('className="allo-guided-journey-context"');
+    const estimateChips = body.indexOf("aria-label={t('guided.estimate_label')");
+    const planNavigation = body.indexOf('className="allo-guided-focus-more allo-guided-collapsible"');
+    const resourceShelf = body.indexOf('className="allo-guided-resource-shelf allo-guided-collapsible"');
+
+    for (const [name, index] of Object.entries({ stepLabel, action, focusButton, journeyGrid, estimateChips, planNavigation, resourceShelf })) {
+      expect(index, `missing anchor: ${name}`).toBeGreaterThanOrEqual(0);
+    }
+    expect(stepLabel).toBeLessThan(action);
+    expect(action).toBeLessThan(focusButton);
+    expect(focusButton).toBeLessThan(planNavigation);
+    expect(focusButton).toBeLessThan(resourceShelf);
+    // Orientation detail is inside the Plan & navigation disclosure, not above the action.
+    expect(journeyGrid).toBeGreaterThan(planNavigation);
+    expect(estimateChips).toBeGreaterThan(planNavigation);
+    expect(action).toBeLessThan(journeyGrid);
+    expect(action).toBeLessThan(estimateChips);
+  });
+
+  // Only ONE thing may draw the eye at a time. The cue is the ring the host paints on
+  // the tool card itself; nothing inside the banner may compete with it.
+  it('adds no second attention animation inside the banner', () => {
+    const body = component.slice(component.indexOf('{!isCollapsed && <div id="guided-banner-details">'));
+    expect(body).not.toMatch(/animate-pulse|animate-bounce|animate-ping/);
+  });
+
   it('represents collapsible detail panels as disclosures rather than tabs', () => {
     expect(component).toContain('role="group" aria-label={t(\'guided.detail_tablist\')');
     expect(component).toContain('id="gd-detail-how" aria-expanded={infoTab === \'how\'} aria-controls="gd-panel-how"');

@@ -50,7 +50,11 @@ describe('AlloBot idle sleep', () => {
     const silence = source.slice(source.indexOf('const silenceSpeech = useCallback('), source.indexOf('const fallAsleep = useCallback('));
     expect(silence).toContain('speechRequestAbortRef.current?.abort()');
     expect(silence).toContain('currentAudioRef.current.pause()');
-    expect(silence).toContain('window.speechSynthesis.cancel()');
+    // Scoped, not global (L7/A3): cancelAlloBotBrowserSpeech() only calls
+    // speechSynthesis.cancel() when AlloBot itself owns the current utterance.
+    // The bare global call used to take Read This Page and the voice loop down
+    // with it, which is what made "hide the bot" read as "turn off TTS".
+    expect(silence).toContain('cancelAlloBotBrowserSpeech()');
     expect(silence).toContain('releaseAlloBotAudioUrl(lastAudioUrlRef.current)');
     const fall = source.slice(source.indexOf('const fallAsleep = useCallback('), source.indexOf('// The corner "X"'));
     expect(fall).toContain('isSleepingRef.current = true;');

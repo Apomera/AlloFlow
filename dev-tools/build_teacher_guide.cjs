@@ -699,7 +699,7 @@ function buildChapterPage(md, manifest, chapters, chapter, chapterIndex, chapter
     '        <p class="chapter-summary">' + escapeHtml(chapter.summary) + '</p>',
     chapterCues(chapter, 'chapter-cues', '        '),
     '        <p class="chapter-meta">Chapter ' + (chapterIndex + 1) + ' of ' + chapters.length
-      + ' ? Verified <time datetime="' + escapeHtml(manifest.lastVerified) + '">'
+      + ' ' + MIDDOT + ' Verified <time datetime="' + escapeHtml(manifest.lastVerified) + '">'
       + escapeHtml(manifest.lastVerified) + '</time></p>',
     sectionNavigation(chapter),
     searchPanel(chapters, false),
@@ -709,7 +709,7 @@ function buildChapterPage(md, manifest, chapters, chapter, chapterIndex, chapter
     '    </main>',
   ].join('\n');
   return htmlDocument({
-    title: chapter.title + ' ? ' + manifest.title,
+    title: chapter.title + ' ' + MIDDOT + ' ' + manifest.title,
     description: chapter.summary,
     chapters,
     activeSlug: chapter.slug,
@@ -966,7 +966,7 @@ function buildToolReferencePage(manifest, chapters, tools, css) {
     '        <p class="eyebrow">Generated public catalog</p>',
     '        <h1>AlloFlow tool reference</h1>',
     '        <p class="chapter-summary">Search the public tool catalog by classroom goal, subject, audience, access path, or tool name.</p>',
-    '        <p class="chapter-meta">' + tools.length + ' catalog entries ? Generated from the public catalog and verified <time datetime="' + escapeHtml(manifest.lastVerified) + '">' + escapeHtml(manifest.lastVerified) + '</time></p>',
+    '        <p class="chapter-meta">' + tools.length + ' catalog entries ' + MIDDOT + ' Generated from the public catalog and verified <time datetime="' + escapeHtml(manifest.lastVerified) + '">' + escapeHtml(manifest.lastVerified) + '</time></p>',
     '        <section class="tool-reference-controls" aria-labelledby="tool-reference-controls-title">',
     '          <h2 id="tool-reference-controls-title">Find a tool</h2>',
     '          <div class="tool-reference-controls__grid">',
@@ -995,7 +995,7 @@ function buildToolReferencePage(manifest, chapters, tools, css) {
     '    </main>',
   ].join('\n');
   return htmlDocument({
-    title: 'Tool reference ? ' + manifest.title,
+    title: 'Tool reference ' + MIDDOT + ' ' + manifest.title,
     description: 'Generated searchable reference for the public AlloFlow tool catalog.',
     chapters,
     manifest,
@@ -1116,7 +1116,7 @@ function buildConsolidatedManual(manifest, chapters, chapterBySource) {
   const globalAnchors = globalHeadingAnchors(chapters);
   const contents = chapters.map((chapter, index) => {
     const anchor = globalAnchors.get(path.normalize(chapter.sourcePath) + '#' + chapter.headings[0].id);
-    return (index + 1) + '. [' + chapter.title + '](#' + anchor + ') ? ' + chapter.summary;
+    return (index + 1) + '. [' + chapter.title + '](#' + anchor + ') ' + MIDDOT + ' ' + chapter.summary;
   }).join('\n');
   const bodies = chapters.map((chapter) => {
     const rewritten = rewriteConsolidatedLinks(chapter.markdown, chapter, chapterBySource, globalAnchors);

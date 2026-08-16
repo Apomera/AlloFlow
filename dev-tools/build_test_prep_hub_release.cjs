@@ -555,6 +555,7 @@ ${prelude}${compiled}
     choicesSpeechText: testPrepChoicesSpeechText,
     handsFreeHelpText: testPrepHandsFreeHelpText,
     handsFreeStatusText: testPrepHandsFreeStatusText,
+    handsFreeSynthesisTimeoutMs: testPrepHandsFreeSynthesisTimeoutMs,
     parseHandsFreeCommand: testPrepParseHandsFreeCommand,
     preAnswerClarificationPolicy: testPrepPreAnswerClarificationPolicy,
     filterPreAnswerClarificationResponse: testPrepFilterPreAnswerClarificationResponse,

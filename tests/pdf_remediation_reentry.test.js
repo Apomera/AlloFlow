@@ -44,7 +44,17 @@ describe('host: result survives close and is re-openable in-session', () => {
   it('the floating "Return to remediation" pill is gated on result-exists-but-modal-closed (and never mid-run)', () => {
     // includes the run-state terms (defense-in-depth: the pill is structurally incapable of
     // appearing while any run is in flight, so an overlooked close door can't surface a mid-run pill).
-    expect(host).toContain('{(pdfFixResult || lastPdfAuditResultRef.current) && !pdfAuditResult && !pdfAuditLoading && !pdfFixLoading && !pdfAutoContinueRunning && (');
+    // L9/D6 (2026-08-16): + !pdfReturnPillDismissed. The pill sat at bottom-4 right-4
+    // z-[1000], directly on top of the student-tools launcher (bottom-24 md:bottom-8
+    // right-6 z-[180]), so it covered a real control. It is dismissible now. Dismissal
+    // is only safe because the cached remediation is ALSO reachable from the Storage
+    // and recovery manager, and the flag resets whenever a newer result lands.
+    expect(host).toContain('{(pdfFixResult || lastPdfAuditResultRef.current) && !pdfAuditResult && !pdfAuditLoading && !pdfFixLoading && !pdfAutoContinueRunning && !pdfReturnPillDismissed && (');
+    expect(host).toContain('const [pdfReturnPillDismissed, setPdfReturnPillDismissed] = useState(false);');
+    expect(host).toContain('useEffect(() => { if (pdfFixResult) setPdfReturnPillDismissed(false); }, [pdfFixResult]);');
+    // The second door: dismissing must not be able to lose the work.
+    expect(host).toContain("t('storage.remediation_open')");
+    expect(host).toContain('aria-labelledby="storage-remediation-title"');
     // pill re-mounts via the stash, with a proven-renderable fallback shape (mirrors the
     // Load-Project pdfAuditResult shape) for the post-reload case where the ref is empty.
     expect(host).toContain('const _restore = lastPdfAuditResultRef.current || {');

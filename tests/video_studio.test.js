@@ -81,13 +81,26 @@ it('makes local captioning and filler scans cancelable and stale-safe', () => {
     expect(html).toContain('if (switchingTake && asrJob) cancelAsrJob();');
     expect(html).toContain('if (asrJob !== job || job.cancelled) return;');
   });
-  it('starts the editor in lesson-polish focus instead of every tool', () => {
+  // Was "starts in lesson-polish focus". Lesson polish still showed nine cards on
+  // arrival, which is the "too many things" complaint. The editor now lands on the
+  // four that make up the minimum path and every other mode is one selection away.
+  it('starts the editor on the basics instead of every tool', () => {
     const html = popup();
-    expect(html).toContain('id="editorFocusStatus" role="status" aria-live="polite" aria-atomic="true">Lesson polish tools are visible.');
-    expect(html).toContain('<option value="record" selected>Lesson polish</option>');
-    expect(html).toContain("var EDITOR_FOCUS_DEFAULT = 'record';");
+    expect(html).toContain('id="editorFocusStatus" role="status" aria-live="polite" aria-atomic="true">Showing the basics: takes, timeline, trim, and captions.');
+    expect(html).toContain('<option value="basics" selected>Just the basics</option>');
+    expect(html).toContain("var EDITOR_FOCUS_DEFAULT = 'basics';");
+    expect(html).toContain("basics: ['takes', 'timeline', 'trim', 'captions'],");
     expect(html).toContain('setEditorFocusMode(EDITOR_FOCUS_DEFAULT, false);');
     expect(html).not.toContain("setEditorFocusMode('all', false);");
+  });
+
+  it('keeps every richer focus mode reachable, and workflow templates still open them', () => {
+    const html = popup();
+    ['all', 'record', 'caption', 'narrate', 'describe', 'family'].forEach((mode) => {
+      expect(html).toContain('<option value="' + mode + '"');
+    });
+    // A chosen workflow template must not drop the user back to the minimal set.
+    expect(html).toContain("    return 'record';\n  }");
   });
   it('keeps transcript-based editing controls in the transcript workspace', () => {
     const html = popup();
@@ -3391,8 +3404,13 @@ describe('screen coach', () => {
     expect(pip).toContain('coachLastAdvice.target'); // annotations ride the mirror
     const teardown = coachHtml.slice(coachHtml.indexOf('function teardownStreams'), coachHtml.indexOf('function finalizeTake'));
     expect(teardown).toContain('stopCoachPip()');
-    // The coach panel is visible by default now — discoverability.
-    expect(coachHtml).toContain('<details id="coachPanel" open');
+    // Collapsed by default since 2026-08-16. The `open` attribute was added for
+    // discoverability when this panel was the only door to the coach. The
+    // standalone IT Coach owns that job now, so an expanded beta AI card no
+    // longer earns the top of the Record tab. The panel itself stays, because
+    // coaching DURING a recording exists only here.
+    expect(coachHtml).toContain('<details id="coachPanel" style=');
+    expect(coachHtml).not.toContain('<details id="coachPanel" open');
   });
 
   it('v2: open_screen_coach command exists, demo-blocked, routed to the same panel', () => {

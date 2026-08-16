@@ -83,7 +83,12 @@ describe('Create a resource catalog collapse contract', () => {
     expect(hiddenRegionIndex).toBeGreaterThan(buttonIndex);
     expect(catalogMarkup).toContain('aria-controls="tool-catalog-discovery-controls"');
     expect(catalogMarkup).toContain('inline-flex min-h-11 shrink-0');
-    expect(catalogMarkup).toContain("isExpanded ? 'Collapse' : (selectedLabel ? 'Change tool' : 'Browse tools')");
+    // L9/N4 (2026-08-16): the labels are localized now. The contract is that the
+    // disclosure keeps three distinct states (collapse / change / open), not that
+    // they are English literals.
+    expect(catalogMarkup).toContain("translate('sidebar.tool_finder_collapse') || 'Collapse'");
+    expect(catalogMarkup).toContain("translate('sidebar.tool_finder_change') || 'Change tool'");
+    expect(catalogMarkup).toContain("translate('sidebar.tool_finder_open') || 'Find a tool'");
     expect(catalogMarkup).toContain('focus-visible:ring-2 focus-visible:ring-indigo-500');
   });
 
@@ -95,7 +100,7 @@ describe('Create a resource catalog collapse contract', () => {
     expect(openBlock).toContain('setIsToolCatalogExpanded(true);');
     expect(openBlock).toContain("requestAnimationFrame(() => document.getElementById('tool-catalog-search')?.focus());");
     expect(catalogMarkup).toContain('onClick={isExpanded ? onCollapse : onOpen}');
-    expect(catalogMarkup).toContain("selectedLabel ? 'Change tool' : 'Browse tools'");
+    expect(catalogMarkup).toContain('selectedLabel ?');
     expect(catalogBridge).toContain('onOpen: openToolCatalog');
   });
 
@@ -109,16 +114,43 @@ describe('Create a resource catalog collapse contract', () => {
   it('keeps catalog chrome and filtering out of Guided Mode', () => {
     expect(catalogBridge).toMatch(/^\s*\{!guidedMode && \(\(\) => \{/);
     expect(catalogStateBlock).toContain('if (guidedMode || !id) return;');
-    expect(catalogStateBlock).toContain('if (guidedMode) return true;');
-    expect(catalogStateBlock).toContain("const hiddenToolCatalogSelector = (guidedMode || !hasToolCatalogControls) ? ''");
+    // L9/N3 (2026-08-16): the app tour is exempt from catalog filtering too, or it
+    // spotlights tool cards the default 'essentials' group has set to display:none.
+    expect(catalogStateBlock).toContain('if (guidedMode || runTour) return true;');
+    expect(catalogStateBlock).toContain("const hiddenToolCatalogSelector = (guidedMode || runTour || !hasToolCatalogControls) ? ''");
     expect(toggleToolBlock).toContain("if (isOpening && id !== 'source-input' && !guidedMode)");
   });
 
   it('fails open while the eager module is delayed and registers the extracted component', () => {
     expect(catalogBridge).toContain('data-testid="tool-catalog-controls-fallback"');
-    expect(catalogBridge).toContain('All creation tools remain available below.');
-    expect(catalogBridge).toContain('shownCount: TOOL_CATALOG_GROUPS.all.filter(isToolCatalogItemVisible).length');
+    expect(catalogBridge).toContain("t('sidebar.tool_finder_loading')");
+    expect(catalogBridge).toContain('const _catalogShown = TOOL_CATALOG_GROUPS.all.filter(isToolCatalogItemVisible).length;');
+    expect(catalogBridge).toContain('shownCount: _catalogShown');
     expect(sidebarBuilder).toContain("var ChevronUp = _lazyIcon('ChevronUp');");
     expect(sidebarBuilder).toContain('window.AlloModules.ToolCatalogControls =');
+  });
+
+  // L9/N4 (2026-08-16). Aaron's guardrail for making this panel dismissible: hiding it
+  // must never leave a filter quietly narrowing the tool list out of sight. These are
+  // the two halves of that guarantee, and they are the assertions worth keeping.
+  it('offers Hide only when no filter is narrowing the list', () => {
+    expect(catalogMarkup).toContain("const filterActive = !!String(query || '').trim() || (group && group !== 'all');");
+    // The single action button flips meaning: clear the filter first, hide second.
+    expect(catalogMarkup).toContain('onClick={filterActive ? clearFilter : onHide}');
+    expect(catalogMarkup).toContain("const clearFilter = () => { onQueryChange(''); onGroupChange('all'); };");
+  });
+
+  it('states the active filter both inside the panel and from outside it', () => {
+    expect(catalogMarkup).toContain("translate('sidebar.tool_finder_filtered')");
+    expect(catalogBridge).toContain('isToolCatalogHidden');
+    expect(catalogBridge).toContain("t('sidebar.tool_finder_hidden_filtered')");
+    expect(catalogStateBlock).toContain('const [isToolCatalogHidden, setIsToolCatalogHidden] = useState(false);');
+  });
+
+  // L9/N4: the panel used to be `sticky top-0 z-20`, riding the scroll and spending the
+  // top of a narrow column permanently. It is an ordinary block now.
+  it('does not stick to the top of the sidebar column', () => {
+    expect(catalogMarkup).not.toContain('sticky top-0');
+    expect(catalogBridge).not.toContain('sticky top-0');
   });
 });

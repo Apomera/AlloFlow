@@ -39,7 +39,10 @@ describe('Crossword dialog accessibility', () => {
     expect(component).toContain('selectCrosswordClue');
     expect(component).toContain("onClick={() => selectCrosswordClue(c, 'across')}");
     expect(component).toContain("onClick={() => selectCrosswordClue(c, 'down')}");
-    expect(component).toContain('</button>\n                               <SpeakButton');
+    // The speech control still sits immediately after the clue button; it is
+    // now wrapped in a `no-print` span so it does not appear on the printed
+    // worksheet (fleet L1/G7).
+    expect(component).toContain('</button>\n                               <span className="no-print"><SpeakButton');
     expect(component).not.toContain('role="button"');
     expect(component).not.toContain('onKeyDown={(event) =>');
     expect(component).toContain('crosswordGridRef.current?.focus()');

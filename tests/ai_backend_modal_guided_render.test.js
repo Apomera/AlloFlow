@@ -89,15 +89,34 @@ describe('guided default', () => {
     expect(container.querySelector('#ai-backend-test')).toBeNull();
   });
 
-  it('opens local storage directly from the default guided view', async () => {
-    let openCount = 0;
-    window.__alloOpenDeviceStorageProbe = () => { openCount += 1; };
+  // L9/N5 (2026-08-16). This test used to assert the button called
+  // __alloOpenDeviceStorageProbe — it pinned the bug. The probe is the DEVELOPMENT
+  // harness that confirms this browser can keep data; it never showed a teacher any
+  // saved work. The button must reach the Storage and recovery manager (the resource
+  // pack history) and must NOT fall back to the probe when that bridge is absent,
+  // because one label opening two different screens is the whole defect.
+  it('opens the saved-work manager, never the device-storage probe', async () => {
+    let managerOpens = 0;
+    let probeOpens = 0;
+    window.__alloOpenStorageRecoveryManager = () => { managerOpens += 1; };
+    window.__alloOpenDeviceStorageProbe = () => { probeOpens += 1; };
     await render();
     const storageButton = byHelpKey('ai_backend_guided_storage_btn');
-    expect(storageButton.textContent).toContain('Manage local storage');
-    expect(container.textContent).toContain('offline models such as Whisper and Kokoro');
+    expect(storageButton.textContent).toContain('Open saved work');
+    expect(container.textContent).toContain('resource packs');
+    expect(container.textContent).toContain('Whisper and Kokoro');
     await click(storageButton);
-    expect(openCount).toBe(1);
+    expect(managerOpens).toBe(1);
+    expect(probeOpens).toBe(0);
+
+    // Bridge missing (an app build older than this panel): still never the probe.
+    delete window.__alloOpenStorageRecoveryManager;
+    let toasts = 0;
+    window.__alloAddToast = () => { toasts += 1; };
+    await click(storageButton);
+    expect(toasts).toBe(1);
+    expect(probeOpens).toBe(0);
+    delete window.__alloAddToast;
   });
 
   it('Gemini card leads to the key step with the AI Studio link', async () => {

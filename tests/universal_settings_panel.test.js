@@ -35,6 +35,10 @@ describe('universal settings panel — measured honesty', () => {
         're-run `node dev-tools/check_local_llm_resource_matrix.cjs --capabilities` and update the constant'
       ).toEqual(measured);
     }
+    // allTypes drives the "Not used by: …" line (N6, 2026-08-16). Without this
+    // assertion it is the one list in the constant nothing checks, and a stale
+    // entry there would make the panel claim a setting skips a tool it reaches.
+    expect(baked.allTypes, 'allTypes drifted from docs/resource_setting_coverage.json').toEqual(local.map((r) => r.type));
   });
 
   it('renders an applicability chip for every universal control', () => {

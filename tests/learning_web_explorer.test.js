@@ -506,7 +506,14 @@ describe('Learning Web Explorer accessible view', () => {
     expect(dialog.style.overflowY).toBe('auto');
     expect(Number(dialog.style.zIndex)).toBeGreaterThan(1000000);
     expect(dialog.style.padding).toBeTruthy();
-    expect(dialog.style.background).toContain('var(--background');
+    // Was: expect(...).toContain('var(--background'). That assertion pinned the defect.
+    // Reading the surface colour from a CSS custom property meant the modal inherited
+    // whatever the embedding page defined, and in Gemini Canvas that resolved
+    // transparent: the overlay painted nothing and the explorer's contents appeared on
+    // top of the still-visible page. The surface must be opaque and self-defined.
+    // Full coverage in tests/learning_web_explorer_tokens.test.js.
+    expect(dialog.style.background).toBe('rgb(248, 250, 252)'); // #f8fafc, jsdom-normalised
+    expect(dialog.style.background).not.toContain('var(');
     expect(document.activeElement.getAttribute('aria-label')).toBe('Close Learning Web Explorer');
     const results = await axe.run(dialog, { rules: { 'color-contrast': { enabled: false }, region: { enabled: false } } });
     expect(results.violations).toEqual([]);

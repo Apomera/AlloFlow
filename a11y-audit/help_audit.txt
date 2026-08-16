@@ -2,12 +2,12 @@
   HELP MODE COVERAGE AUDIT
 ====================================================
 
-Files scanned: 1068
-Defined help keys (help_strings.js): 984
-Referenced help keys (data-help-key attrs): 924
-  - With definition: 924
+Files scanned: 1174
+Defined help keys (help_strings.js): 990
+Referenced help keys (data-help-key attrs): 929
+  - With definition: 929
   - MISSING definition: 0
-Dead entries (defined but never referenced): 60
+Dead entries (defined but never referenced): 61
 
 --- MISSING help strings (referenced, no definition) ---
 
@@ -31,6 +31,7 @@ Dead entries (defined but never referenced): 60
   dbq_custom_instructions
   educator_hub_bridge_card
   educator_hub_cinematic_studio_card
+  educator_hub_platform_check_card
   faq_custom_instructions
   fluency_mode_open_allosheet_btn
   glossary_custom_instructions
