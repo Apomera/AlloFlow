@@ -10455,6 +10455,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="w-full bg-indigo-100 rounded-full h-1.5 overflow-hidden">
                               <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500" style={{ width: liveChunkStream.length > 0 ? `${(_liveChunkCompleteCount / liveChunkStream.length) * 100}%` : '0%' }}></div>
                             </div>
+                            {/* (2026-08-16, Aaron's screenshot) A dead "0/0 sections" shell read as broken. Say
+                                what an empty stream means: either the first section hasn't streamed yet, or the
+                                epoch-ownership gate is dropping events (the run itself is unaffected either way). */}
+                            {liveChunkStream.length === 0 && (
+                              <p className="text-[11px] text-slate-500 italic">
+                                {t('pdf_audit.live_chunk.waiting') || 'Waiting for the first section… If this stays empty while the run progresses, the live view lost run ownership (see the 🔧 Log — the remediation itself is unaffected).'}
+                              </p>
+                            )}
                             {chunkSaveFlash && <div className="text-[11px] text-emerald-600 font-bold text-center animate-in fade-in duration-200">💾 Progress auto-saved</div>}
                             <div className="space-y-1.5 max-h-[250px] overflow-y-auto">
                               {liveChunkStream.map((chunk, ci) => {

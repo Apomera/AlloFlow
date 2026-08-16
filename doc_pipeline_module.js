@@ -7041,6 +7041,17 @@ var createDocPipeline = function(deps) {
   // being throttled. A storm signal must be EARNED by the current run, not inherited. (In-flight waiters
   // are not cleared — only the trip state; _geminiPump picks the restored cap up immediately.)
   var _resetGeminiBreaker = function() {
+    // (2026-08-16) Per-run telemetry epoch. _throttleRunStartedAt was declared and READ by the
+    // rollup but never ASSIGNED anywhere, so hiddenPctOfRun divided against 0-as-unset and the
+    // field summary printed "HIDDEN for 0%" beside 43 minutes of hiddenMs. The hidden/cooldown
+    // accumulators also spanned runs and idle time. All are per-run facts — stamp and reset them
+    // at the same run-entry boundary that resets the breaker (CB-1). If the tab is hidden RIGHT
+    // NOW, restart the hidden clock rather than losing the in-progress interval.
+    _throttleRunStartedAt = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
+    _throttleHiddenMs = 0;
+    _throttleHiddenDecisions = 0;
+    _throttleCooldownMsTotal = 0;
+    _throttleHiddenSince = _throttleTabHidden() ? _throttleRunStartedAt : 0;
     _geminiCap = _GEMINI_MAX_CONCURRENT;
     _geminiAuthStreak = 0;
     _geminiTransientStreak = 0;
@@ -7658,6 +7669,13 @@ var createDocPipeline = function(deps) {
           var _burst = _perm && _isBurstQuotaErr(err);
           if (_burst) { _perm = false; _canvasAuth = true; }
           if (_perm) return; // real auth/quota/config: permanent, and never fed the breaker
+          // R2 note (2026-08-16): per-attempt counting means one logical call can feed the
+          // transient breaker twice (attempt 0 + its retry). An attempt to gate this to the
+          // final attempt was made and REVERTED the same day: the outer catch documents the
+          // per-attempt rate as a DELIBERATE 2026-07-16 decision ("a 3-call wave could launch
+          // three retries before the breaker saw even one failure"), and its behavioral tests
+          // pin it. If the effective trip rate is too hot, recalibrate _GEMINI_TRANSIENT_TRIP
+          // from post-deploy field data instead of un-deciding the wave protection here.
           // Auth and burst-quota signals must always reach the shared breaker. Only generic
           // transient failures participate in the per-signature repeat-offender guard.
           var _repeatState = !_canvasAuth

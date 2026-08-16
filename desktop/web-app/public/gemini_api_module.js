@@ -553,7 +553,16 @@ const createGeminiAPI = (deps) => {
         let _modelUsed = GEMINI_MODELS.default;
         try {
           if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(GEMINI_MODELS.default);
-          response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.default), _fetchOpts, 5, 120000, _innerTelemetry);
+          // ── Nested budgets (2026-08-16) ────────────────────────────────────────────────────
+          // The stub-freeze fix (AlloFlowANTI late-binding) woke this inner retry layer up in
+          // Canvas for the first time — and its former defaults (5 × 120s) can never fit inside
+          // doc_pipeline's 180s outer timeout: a 429-storm call would be killed mid-inner-ladder
+          // and misfiled as a timeout, the exact R1 classification bug one layer down. Budgets
+          // now nest by arithmetic: text = 2 × 80s (+1s backoff ≈ 161s < 180s outer); vision =
+          // 2 × 50s (+1s ≈ 101s < 120s outer). Callers with no outer timeout (grammar, glossary,
+          // personas) are governed by the same numbers, which is fine — 2 attempts is still a
+          // retry, and no request should outlive 80s unobserved.
+          response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.default), _fetchOpts, 2, 80000, _innerTelemetry);
         } catch (primaryErr) {
           if (primaryErr?.name === 'AbortError') {
             // Respect caller's abort — don't fall back to the secondary model
@@ -571,7 +580,7 @@ const createGeminiAPI = (deps) => {
             console.warn(`[callGemini] Primary model (${GEMINI_MODELS.default}) ${cls.kind} — falling back to ${GEMINI_MODELS.fallback}`);
             try {
               if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(GEMINI_MODELS.fallback);
-              response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.fallback), _fetchOpts, 5, 120000, _innerTelemetry);
+              response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.fallback), _fetchOpts, 2, 80000, _innerTelemetry); // nested budget — see the note above
               _modelUsed = GEMINI_MODELS.fallback;
             } catch (fbErr) {
               // Both models failed — the original error is more informative
@@ -871,7 +880,7 @@ const createGeminiAPI = (deps) => {
           // Use the same backoff wrapper callGemini uses — this gives Vision
           // the same 429/5xx retry behavior + signal propagation.
           if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(primaryModel);
-          response = await fetchWithExponentialBackoff(_visionUrl(primaryModel), _fetchOpts, 5, 120000, _innerTelemetry);
+          response = await fetchWithExponentialBackoff(_visionUrl(primaryModel), _fetchOpts, 2, 50000, _innerTelemetry); // nested budget: 2 × 50s fits the 120s vision outer timeout — see callGemini's note
           _throwIfVisionAborted();
         } catch (primaryErr) {
           _throwIfVisionAborted();
@@ -882,7 +891,7 @@ const createGeminiAPI = (deps) => {
             console.warn(`[Vision] ${primaryModel} ${cls.kind} — falling back to ${fallbackModel}`);
             try {
               if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(fallbackModel);
-              response = await fetchWithExponentialBackoff(_visionUrl(fallbackModel), _fetchOpts, 5, 120000, _innerTelemetry);
+              response = await fetchWithExponentialBackoff(_visionUrl(fallbackModel), _fetchOpts, 2, 50000, _innerTelemetry); // nested budget — see callGemini's note
               _throwIfVisionAborted();
               modelUsed = fallbackModel;
             } catch (fbErr) {
