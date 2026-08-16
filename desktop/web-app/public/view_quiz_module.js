@@ -30,6 +30,24 @@ var t = function () {
   }
   return arguments.length > 1 ? arguments[1] : arguments[0];
 };
+// Single source of truth for "did the student pick the right option?", owned by
+// the host (AlloFlowANTI.txt, next to fisherYatesShuffle) and reached the same
+// way as window.__alloT above, because these call sites span module scope and
+// several components. The host normalizes case and whitespace; the click grader
+// already did, but every reveal and the voice check compared exactly, so a key
+// differing from its option only by case scored the student correct while no
+// option was shown as correct. Falls back to strict equality, the old behaviour,
+// rather than carrying a second copy of the normalizer.
+// NOTE: the authoring validators below deliberately keep using exact indexOf.
+// They exist to warn an author about the very drift this tolerates at runtime.
+var _quizAnswerMatches = function (option, key) {
+  if (typeof window !== 'undefined' && typeof window.quizAnswerMatches === 'function') {
+    try {
+      return window.quizAnswerMatches(option, key);
+    } catch (e) {}
+  }
+  return option != null && key != null && option === key;
+};
 var _lazyIcon = function (name) {
   return function (props) {
     var I = window.AlloIcons && window.AlloIcons[name];
@@ -3765,7 +3783,7 @@ function AnswerEvidenceCard(p) {
   var renderRules = p.modeStrategy && p.modeStrategy.render || {};
   function submit() {
     if (answerIdx === null || evidenceIdx === null) return null;
-    var answerCorrect = answers[answerIdx] === q.correctAnswer;
+    var answerCorrect = _quizAnswerMatches(answers[answerIdx], q.correctAnswer);
     var evidenceCorrect = evidence[evidenceIdx] === q.correctEvidence;
     var rawScore = (answerCorrect ? 1 : 0) + (evidenceCorrect ? 1 : 0);
     var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
@@ -5030,7 +5048,12 @@ function AssessmentCoreFields(p) {
     }
     if (type === 'answer-evidence' && field === 'answerOptions') {
       var oldAnswers = Array.isArray(q.answerOptions) ? q.answerOptions : [];
-      var answerIndex = oldAnswers.indexOf(q.correctAnswer);
+      // Matcher, not indexOf: if the key has already drifted from its option by
+      // case or spacing, an exact indexOf misses and the key is silently left
+      // stale. Finding it here is the one chance to repair it.
+      var answerIndex = oldAnswers.findIndex(function (answer) {
+        return _quizAnswerMatches(answer, q.correctAnswer);
+      });
       if (answerIndex >= 0 && values[answerIndex] !== undefined) update.correctAnswer = values[answerIndex];
     }
     if (type === 'answer-evidence' && field === 'evidenceOptions') {
@@ -6181,7 +6204,7 @@ function AssessmentPresentationItem(p) {
     }, (q.answerOptions || []).map(function (option, index) {
       return /*#__PURE__*/React.createElement("div", {
         key: index,
-        className: 'p-3 rounded-lg border-2 ' + (showAnswer && option === q.correctAnswer ? 'bg-green-50 border-green-500' : 'bg-slate-50 border-slate-200')
+        className: 'p-3 rounded-lg border-2 ' + (showAnswer && _quizAnswerMatches(option, q.correctAnswer) ? 'bg-green-50 border-green-500' : 'bg-slate-50 border-slate-200')
       }, renderText(option));
     }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
       className: "font-bold text-slate-700 mb-2"
@@ -6781,7 +6804,7 @@ function QuizView(props) {
         if (!dq || dq.encodesMisconception !== false) return;
         var optIdx = q.options.indexOf(dq.distractor);
         if (optIdx < 0) return;
-        if (q.options[optIdx] === q.correctAnswer) return;
+        if (_quizAnswerMatches(q.options[optIdx], q.correctAnswer)) return;
         tasks.push({
           qIdx: qIdx,
           optIdx: optIdx,
@@ -7174,7 +7197,7 @@ function QuizView(props) {
       if (!q || q.type && q.type !== 'mcq') return sum;
       if (!Array.isArray(q.distractorQuality)) return sum;
       return sum + q.distractorQuality.filter(function (dq) {
-        return dq && dq.encodesMisconception === false && Array.isArray(q.options) && q.options.indexOf(dq.distractor) >= 0 && q.options[q.options.indexOf(dq.distractor)] !== q.correctAnswer;
+        return dq && dq.encodesMisconception === false && Array.isArray(q.options) && q.options.indexOf(dq.distractor) >= 0 && !_quizAnswerMatches(q.options[q.options.indexOf(dq.distractor)], q.correctAnswer);
       }).length;
     }, 0);
     if (weakCount === 0) return null;
@@ -7547,7 +7570,7 @@ function QuizView(props) {
       });
     }
     if (!showQuizAnswers) handleToggleShowQuizAnswers();
-    var isCorrect = question.options[selectedOptionIdx] === question.correctAnswer;
+    var isCorrect = _quizAnswerMatches(question.options[selectedOptionIdx], question.correctAnswer);
     var checkMessage = isCorrect ? 'Option ' + String.fromCharCode(65 + selectedOptionIdx) + ' is correct for question ' + status.questionNumber + '.' : 'Option ' + String.fromCharCode(65 + selectedOptionIdx) + ' is not correct for question ' + status.questionNumber + '. Try another option.';
     quizVoiceLastFeedbackRef.current = checkMessage;
     return Object.assign({}, status, {
@@ -8826,7 +8849,7 @@ function QuizView(props) {
       className: "grid grid-cols-1 md:grid-cols-2 gap-4 ml-0 md:ml-14"
     }, q.options.map((opt, optIdx) => {
       const isSelected = pState.selectedOption === opt;
-      const isCorrectOption = opt === q.correctAnswer;
+      const isCorrectOption = _quizAnswerMatches(opt, q.correctAnswer);
       let btnClass = "bg-slate-50 border-2 border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50";
       let icon = /*#__PURE__*/React.createElement("div", {
         className: "w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-indigo-400 transition-colors motion-reduce:transition-none"
@@ -9002,7 +9025,7 @@ function QuizView(props) {
         selectMcqOption(i, optIdx, opt, q);
       }
     } : undefined,
-    className: `p-2 rounded-lg border text-sm relative group/option ${!isEditingQuiz ? 'cursor-pointer hover:bg-indigo-50/40 transition-colors motion-reduce:transition-none' : ''} ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : studentMcqAnswers[i] === optIdx ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 border-slate-100'}`
+    className: `p-2 rounded-lg border text-sm relative group/option ${!isEditingQuiz ? 'cursor-pointer hover:bg-indigo-50/40 transition-colors motion-reduce:transition-none' : ''} ${showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : studentMcqAnswers[i] === optIdx ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 border-slate-100'}`
   }, Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] && /*#__PURE__*/React.createElement("div", {
     className: "relative mb-2"
   }, /*#__PURE__*/React.createElement("img", {
@@ -9020,7 +9043,7 @@ function QuizView(props) {
     "aria-label": t('quiz.edit_option') || 'Edit answer option',
     value: opt,
     onChange: e => handleQuizChange(i, 'option', e.target.value, optIdx),
-    className: `w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5  resize-none transition-all motion-reduce:transition-none ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'text-green-800 font-medium' : 'text-slate-600'}`,
+    className: `w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5  resize-none transition-all motion-reduce:transition-none ${showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) ? 'text-green-800 font-medium' : 'text-slate-600'}`,
     rows: getRows(opt, 30)
   }), q.options_en && /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('quiz.edit_option_translation') || 'Edit option translation',
@@ -9030,14 +9053,14 @@ function QuizView(props) {
     rows: getRows(q.options_en[optIdx] || '', 30),
     placeholder: t('common.placeholder_option_trans')
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
-    className: `px-1 py-0.5 ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'text-green-800 font-medium' : 'text-slate-600'}`
+    className: `px-1 py-0.5 ${showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) ? 'text-green-800 font-medium' : 'text-slate-600'}`
   }, opt), q.options_en && q.options_en[optIdx] && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-1 px-1 italic"
-  }, q.options_en[optIdx])))), showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer && /*#__PURE__*/React.createElement("div", {
+  }, q.options_en[optIdx])))), showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) && /*#__PURE__*/React.createElement("div", {
     className: "absolute top-2 right-2 text-green-600"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
-  })), isEditingQuiz && opt !== q.correctAnswer && Array.isArray(q.distractorQuality) && function () {
+  })), isEditingQuiz && !_quizAnswerMatches(opt, q.correctAnswer) && Array.isArray(q.distractorQuality) && function () {
     var dq = q.distractorQuality.find(function (d) {
       return d && d.distractor === opt;
     });

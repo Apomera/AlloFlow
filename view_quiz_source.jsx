@@ -8,6 +8,22 @@ var t = function () {
   }
   return arguments.length > 1 ? arguments[1] : arguments[0];
 };
+// Single source of truth for "did the student pick the right option?", owned by
+// the host (AlloFlowANTI.txt, next to fisherYatesShuffle) and reached the same
+// way as window.__alloT above, because these call sites span module scope and
+// several components. The host normalizes case and whitespace; the click grader
+// already did, but every reveal and the voice check compared exactly, so a key
+// differing from its option only by case scored the student correct while no
+// option was shown as correct. Falls back to strict equality, the old behaviour,
+// rather than carrying a second copy of the normalizer.
+// NOTE: the authoring validators below deliberately keep using exact indexOf.
+// They exist to warn an author about the very drift this tolerates at runtime.
+var _quizAnswerMatches = function (option, key) {
+  if (typeof window !== 'undefined' && typeof window.quizAnswerMatches === 'function') {
+    try { return window.quizAnswerMatches(option, key); } catch (e) {}
+  }
+  return option != null && key != null && option === key;
+};
 var _lazyIcon = function (name) {
     return function (props) {
       var I = window.AlloIcons && window.AlloIcons[name];
@@ -2338,7 +2354,7 @@ var _lazyIcon = function (name) {
     var renderRules = p.modeStrategy && p.modeStrategy.render || {};
     function submit() {
       if (answerIdx === null || evidenceIdx === null) return null;
-      var answerCorrect = answers[answerIdx] === q.correctAnswer;
+      var answerCorrect = _quizAnswerMatches(answers[answerIdx], q.correctAnswer);
       var evidenceCorrect = evidence[evidenceIdx] === q.correctEvidence;
       var rawScore = (answerCorrect ? 1 : 0) + (evidenceCorrect ? 1 : 0);
       var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
@@ -3066,7 +3082,10 @@ var _lazyIcon = function (name) {
       }
       if (type === 'answer-evidence' && field === 'answerOptions') {
         var oldAnswers = Array.isArray(q.answerOptions) ? q.answerOptions : [];
-        var answerIndex = oldAnswers.indexOf(q.correctAnswer);
+        // Matcher, not indexOf: if the key has already drifted from its option by
+        // case or spacing, an exact indexOf misses and the key is silently left
+        // stale. Finding it here is the one chance to repair it.
+        var answerIndex = oldAnswers.findIndex(function (answer) { return _quizAnswerMatches(answer, q.correctAnswer); });
         if (answerIndex >= 0 && values[answerIndex] !== undefined) update.correctAnswer = values[answerIndex];
       }
       if (type === 'answer-evidence' && field === 'evidenceOptions') {
@@ -3486,7 +3505,7 @@ var _lazyIcon = function (name) {
       })}</div>;
       var wrongPair = pairs[q.wrongPairIndex] || {};
       answerGuide = <div><span className="font-bold">Fix the mismatch: </span>{wrongPair.left ? wrongPair.left + ' → ' : ''}{q.correctPartnerForWrong || 'Teacher review'}</div>;    } else if (type === 'answer-evidence') {
-      body = <div className="grid grid-cols-1 lg:grid-cols-2 gap-5"><div><h4 className="font-bold text-slate-700 mb-2">Part 1 - answer options</h4><div className="space-y-2">{(q.answerOptions || []).map(function (option, index) { return <div key={index} className={'p-3 rounded-lg border-2 ' + (showAnswer && option === q.correctAnswer ? 'bg-green-50 border-green-500' : 'bg-slate-50 border-slate-200')}>{renderText(option)}</div>; })}</div></div><div><h4 className="font-bold text-slate-700 mb-2">Part 2 - supporting evidence</h4><div className="space-y-2">{(q.evidenceOptions || []).map(function (option, index) { return <div key={index} className={'p-3 rounded-lg border-2 ' + (showAnswer && option === q.correctEvidence ? 'bg-green-50 border-green-500' : 'bg-slate-50 border-slate-200')}>{renderText(option)}</div>; })}</div></div></div>;
+      body = <div className="grid grid-cols-1 lg:grid-cols-2 gap-5"><div><h4 className="font-bold text-slate-700 mb-2">Part 1 - answer options</h4><div className="space-y-2">{(q.answerOptions || []).map(function (option, index) { return <div key={index} className={'p-3 rounded-lg border-2 ' + (showAnswer && _quizAnswerMatches(option, q.correctAnswer) ? 'bg-green-50 border-green-500' : 'bg-slate-50 border-slate-200')}>{renderText(option)}</div>; })}</div></div><div><h4 className="font-bold text-slate-700 mb-2">Part 2 - supporting evidence</h4><div className="space-y-2">{(q.evidenceOptions || []).map(function (option, index) { return <div key={index} className={'p-3 rounded-lg border-2 ' + (showAnswer && option === q.correctEvidence ? 'bg-green-50 border-green-500' : 'bg-slate-50 border-slate-200')}>{renderText(option)}</div>; })}</div></div></div>;
       answerGuide = <div><div><span className="font-bold">Answer: </span>{q.correctAnswer || 'Teacher review'}</div><div className="mt-1"><span className="font-bold">Evidence: </span>{q.correctEvidence || 'Teacher review'}</div></div>;
     } else if (type === 'numeric-response') {
       body = <div className="p-8 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-end gap-3 justify-center"><span className="text-3xl tracking-widest text-slate-400">____________</span>{q.unit && <span className="text-2xl font-bold text-slate-700">{q.unit}</span>}</div>;
@@ -3942,7 +3961,7 @@ var _lazyIcon = function (name) {
           if (!dq || dq.encodesMisconception !== false) return;
           var optIdx = q.options.indexOf(dq.distractor);
           if (optIdx < 0) return;
-          if (q.options[optIdx] === q.correctAnswer) return;
+          if (_quizAnswerMatches(q.options[optIdx], q.correctAnswer)) return;
           tasks.push({
             qIdx: qIdx,
             optIdx: optIdx,
@@ -4237,7 +4256,7 @@ var _lazyIcon = function (name) {
             if (!q || q.type && q.type !== 'mcq') return sum;
             if (!Array.isArray(q.distractorQuality)) return sum;
             return sum + q.distractorQuality.filter(function (dq) {
-              return dq && dq.encodesMisconception === false && Array.isArray(q.options) && q.options.indexOf(dq.distractor) >= 0 && q.options[q.options.indexOf(dq.distractor)] !== q.correctAnswer;
+              return dq && dq.encodesMisconception === false && Array.isArray(q.options) && q.options.indexOf(dq.distractor) >= 0 && !_quizAnswerMatches(q.options[q.options.indexOf(dq.distractor)], q.correctAnswer);
             }).length;
           }, 0);
           if (weakCount === 0) return null;
@@ -4478,7 +4497,7 @@ var _lazyIcon = function (name) {
         });
       }
       if (!showQuizAnswers) handleToggleShowQuizAnswers();
-      var isCorrect = question.options[selectedOptionIdx] === question.correctAnswer;
+      var isCorrect = _quizAnswerMatches(question.options[selectedOptionIdx], question.correctAnswer);
       var checkMessage = isCorrect
         ? 'Option ' + String.fromCharCode(65 + selectedOptionIdx) + ' is correct for question ' + status.questionNumber + '.'
         : 'Option ' + String.fromCharCode(65 + selectedOptionIdx) + ' is not correct for question ' + status.questionNumber + '. Try another option.';
@@ -5159,7 +5178,7 @@ var _lazyIcon = function (name) {
           const showExplanation = pState.showExplanation;
           return <div key={i} className="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-md hover:shadow-lg transition-all motion-reduce:transition-none"><div className="flex gap-4 mb-6"><div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold shrink-0 shadow-sm">{i + 1}</div><div className="flex-grow"><h3 className="text-2xl font-bold text-slate-800 leading-tight">{formatInlineText(q.question, false)}</h3>{q.question_en && <p className="text-lg text-slate-600 italic mt-2">{formatInlineText(q.question_en, false)}</p>}</div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-0 md:ml-14">{q.options.map((opt, optIdx) => {
                 const isSelected = pState.selectedOption === opt;
-                const isCorrectOption = opt === q.correctAnswer;
+                const isCorrectOption = _quizAnswerMatches(opt, q.correctAnswer);
                 let btnClass = "bg-slate-50 border-2 border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50";
                 let icon = <div className="w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-indigo-400 transition-colors motion-reduce:transition-none" />;
                 if (isSelected) {
@@ -5183,7 +5202,7 @@ var _lazyIcon = function (name) {
                 e.preventDefault();
                 selectMcqOption(i, optIdx, opt, q);
               }
-            } : undefined} className={`p-2 rounded-lg border text-sm relative group/option ${!isEditingQuiz ? 'cursor-pointer hover:bg-indigo-50/40 transition-colors motion-reduce:transition-none' : ''} ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : studentMcqAnswers[i] === optIdx ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 border-slate-100'}`}>{Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] && <div className="relative mb-2"><img src={q.optionImageUrls[optIdx]} alt={_quizAuthoredImageAlt(Array.isArray(q.optionImageAltTexts) ? q.optionImageAltTexts[optIdx] : '')} loading="lazy" className="w-full h-24 object-contain rounded bg-white border border-slate-200" />{renderImageRefineOverlay(i, 'option', optIdx, true)}</div>}<div className="flex items-start gap-2"><span className="mt-1.5 opacity-50">{String.fromCharCode(65 + optIdx)}.</span><div className="flex-grow">{isEditingQuiz ? <><textarea aria-label={t('quiz.edit_option') || 'Edit answer option'} value={opt} onChange={e => handleQuizChange(i, 'option', e.target.value, optIdx)} className={`w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5  resize-none transition-all motion-reduce:transition-none ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'text-green-800 font-medium' : 'text-slate-600'}`} rows={getRows(opt, 30)} />{q.options_en && <textarea aria-label={t('quiz.edit_option_translation') || 'Edit option translation'} value={q.options_en[optIdx] || ''} onChange={e => handleQuizChange(i, 'option', e.target.value, optIdx, true)} className="w-full text-xs text-slate-600 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5  resize-none transition-all motion-reduce:transition-none mt-1" rows={getRows(q.options_en[optIdx] || '', 30)} placeholder={t('common.placeholder_option_trans')} />}</> : <><p className={`px-1 py-0.5 ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'text-green-800 font-medium' : 'text-slate-600'}`}>{opt}</p>{q.options_en && q.options_en[optIdx] && <p className="text-xs text-slate-600 mt-1 px-1 italic">{q.options_en[optIdx]}</p>}</>}</div></div>{showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer && <div className="absolute top-2 right-2 text-green-600"><CheckCircle2 size={14} /></div>}{isEditingQuiz && opt !== q.correctAnswer && Array.isArray(q.distractorQuality) && function () {
+            } : undefined} className={`p-2 rounded-lg border text-sm relative group/option ${!isEditingQuiz ? 'cursor-pointer hover:bg-indigo-50/40 transition-colors motion-reduce:transition-none' : ''} ${showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : studentMcqAnswers[i] === optIdx ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 border-slate-100'}`}>{Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] && <div className="relative mb-2"><img src={q.optionImageUrls[optIdx]} alt={_quizAuthoredImageAlt(Array.isArray(q.optionImageAltTexts) ? q.optionImageAltTexts[optIdx] : '')} loading="lazy" className="w-full h-24 object-contain rounded bg-white border border-slate-200" />{renderImageRefineOverlay(i, 'option', optIdx, true)}</div>}<div className="flex items-start gap-2"><span className="mt-1.5 opacity-50">{String.fromCharCode(65 + optIdx)}.</span><div className="flex-grow">{isEditingQuiz ? <><textarea aria-label={t('quiz.edit_option') || 'Edit answer option'} value={opt} onChange={e => handleQuizChange(i, 'option', e.target.value, optIdx)} className={`w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5  resize-none transition-all motion-reduce:transition-none ${showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) ? 'text-green-800 font-medium' : 'text-slate-600'}`} rows={getRows(opt, 30)} />{q.options_en && <textarea aria-label={t('quiz.edit_option_translation') || 'Edit option translation'} value={q.options_en[optIdx] || ''} onChange={e => handleQuizChange(i, 'option', e.target.value, optIdx, true)} className="w-full text-xs text-slate-600 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5  resize-none transition-all motion-reduce:transition-none mt-1" rows={getRows(q.options_en[optIdx] || '', 30)} placeholder={t('common.placeholder_option_trans')} />}</> : <><p className={`px-1 py-0.5 ${showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) ? 'text-green-800 font-medium' : 'text-slate-600'}`}>{opt}</p>{q.options_en && q.options_en[optIdx] && <p className="text-xs text-slate-600 mt-1 px-1 italic">{q.options_en[optIdx]}</p>}</>}</div></div>{showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) && <div className="absolute top-2 right-2 text-green-600"><CheckCircle2 size={14} /></div>}{isEditingQuiz && !_quizAnswerMatches(opt, q.correctAnswer) && Array.isArray(q.distractorQuality) && function () {
                 var dq = q.distractorQuality.find(function (d) {
                   return d && d.distractor === opt;
                 });

@@ -291,7 +291,11 @@ describe('ordinary Quiz voice boundary', () => {
     const payloadSource = source.slice(payloadStart, payloadEnd);
     expect(payloadSource).not.toContain('correctAnswer');
     expect(source).toContain("if (action === 'check' || (action === 'submit-or-check' && !draftNamespace))");
-    expect(source).toContain("question.options[selectedOptionIdx] === question.correctAnswer");
+    // The verdict is still decided locally, against the option the student
+    // selected, without the key ever entering a voice payload. It now goes
+    // through the shared matcher so the spoken answer cannot contradict the
+    // click grader when the key differs from its option only by case.
+    expect(source).toContain("var isCorrect = _quizAnswerMatches(question.options[selectedOptionIdx], question.correctAnswer);");
   });
 
   it('routes supported non-MCQ input through semantic item controllers and fails honestly otherwise', () => {

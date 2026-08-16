@@ -2558,6 +2558,19 @@ const flashcardCorrectAnswer = (item, mode, lang) => {
   return item.def || FLASHCARD_NO_ANSWER;
 };
 window.flashcardCorrectAnswer = flashcardCorrectAnswer;
+// Single source of truth for "did the student pick the right quiz option?".
+// The click grader used to normalize (trim + lowercase) while every reveal and
+// the voice check compared exactly, so a key differing from its option only by
+// case or spacing scored the student CORRECT while no option was shown as
+// correct, and the voice check contradicted the click. Authoring validators
+// deliberately stay exact: they exist to warn an author about that very drift.
+const quizAnswerMatches = (option, key) => {
+  if (option == null || key == null) return false;
+  const norm = (v) => String(v).trim().toLowerCase().replace(/\s+/g, ' ');
+  const a = norm(option), b = norm(key);
+  return a !== '' && a === b;
+};
+window.quizAnswerMatches = quizAnswerMatches;
 const STYLE_POINTER_EVENTS_NONE = { pointerEvents: 'none' };
 const STYLE_IMAGE_PIXELATED = { imageRendering: 'pixelated' };
 const STYLE_TEXT_SHADOW_WHITE = { textShadow: '0 2px 4px rgba(255,255,255,1)' };
@@ -45351,7 +45364,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   const handlePresentationOptionClick = (qIndex, option) => {
       if (presentationState[qIndex]?.showAnswer && presentationState[qIndex]?.isCorrect) return;
       const question = generatedContent?.data.questions[qIndex];
-      const isCorrect = option.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase();
+      const isCorrect = quizAnswerMatches(option, question.correctAnswer);
       const currentAttempts = presentationState[qIndex]?.attempts || 0;
       if (isCorrect) {
           let xpEarned = 0;
