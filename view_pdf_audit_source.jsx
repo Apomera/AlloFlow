@@ -9651,10 +9651,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {pdfAuditResult.critical.map((issue, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs text-slate-700 bg-red-50 p-2 rounded-lg border border-red-100">
                           <span className="text-red-500 shrink-0 mt-0.5" aria-hidden="true">●</span>
-                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-red-500 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}
+                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-red-700 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1" title={`Occurs ${issue.count} times in the document`}>×{issue.count}</span>}
                             {issue.auditorAgreement != null && pdfAuditResult.auditorCount > 1 && (
                               <span
-                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-green-100 text-green-700' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-amber-100 text-amber-700' : 'bg-orange-100 text-orange-700'}`}
+                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-slate-700 text-white' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-300'}`}
                                 title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
                               >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                             )}
@@ -9672,15 +9672,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   )}
                   {(pdfAuditResult.serious || pdfAuditResult.major || []).length > 0 && (
                     <section aria-label={`${(pdfAuditResult.serious || pdfAuditResult.major).length} serious accessibility issues`}>
-                      <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2">Serious Issues ({(pdfAuditResult.serious || pdfAuditResult.major).length})</h4>
+                      {/* (2026-08-15, Aaron's field screenshot) Serious was amber, Moderate yellow —
+                          amber-50 and yellow-50 are near-identical creams, so two different severity
+                          tiers read as one. Orange gives a legible red→orange→yellow→blue ramp. */}
+                      <h4 className="text-xs font-bold text-orange-700 uppercase tracking-widest mb-2">Serious Issues ({(pdfAuditResult.serious || pdfAuditResult.major).length})</h4>
                       <ul className="list-none space-y-1.5">
                       {(pdfAuditResult.serious || pdfAuditResult.major).map((issue, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-slate-700 bg-amber-50 p-2 rounded-lg border border-amber-100">
-                          <span className="text-amber-500 shrink-0 mt-0.5" aria-hidden="true">●</span>
-                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-amber-500 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}
+                        <li key={i} className="flex items-start gap-2 text-xs text-slate-700 bg-orange-50 p-2 rounded-lg border border-orange-200">
+                          <span className="text-orange-500 shrink-0 mt-0.5" aria-hidden="true">●</span>
+                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-orange-700 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1" title={`Occurs ${issue.count} times in the document`}>×{issue.count}</span>}
                             {issue.auditorAgreement != null && pdfAuditResult.auditorCount > 1 && (
                               <span
-                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-green-100 text-green-700' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-amber-100 text-amber-700' : 'bg-orange-100 text-orange-700'}`}
+                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-slate-700 text-white' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-300'}`}
                                 title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
                               >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                             )}
@@ -9703,10 +9706,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {pdfAuditResult.moderate.map((issue, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs text-slate-700 bg-yellow-50 p-2 rounded-lg border border-yellow-100">
                           <span className="text-yellow-500 shrink-0 mt-0.5" aria-hidden="true">●</span>
-                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-yellow-600 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}
+                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-yellow-700 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1" title={`Occurs ${issue.count} times in the document`}>×{issue.count}</span>}
                             {issue.auditorAgreement != null && pdfAuditResult.auditorCount > 1 && (
                               <span
-                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-green-100 text-green-700' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-amber-100 text-amber-700' : 'bg-orange-100 text-orange-700'}`}
+                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-slate-700 text-white' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-300'}`}
                                 title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
                               >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                             )}
@@ -9731,7 +9734,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <span>{issue.issue}{issue.count > 1 && ` (×${issue.count})`}</span>
                           {issue.auditorAgreement != null && pdfAuditResult.auditorCount > 1 && (
                             <span
-                              className={`inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-green-100 text-green-700' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-amber-100 text-amber-700' : 'bg-orange-100 text-orange-700'}`}
+                              className={`inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-slate-700 text-white' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-300'}`}
                               title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
                             >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                           )}
