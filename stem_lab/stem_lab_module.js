@@ -1855,6 +1855,12 @@
         callImagen,
         callGeminiVision,
         callGeminiImageEdit,
+        // W7 (2026-08-16): the host nulls the AI functions above when no backend
+        // is configured (no key, not Canvas, no local model), and passes this
+        // callback so the header pill can open AI Backend Settings. Every AI
+        // feature in this module already self-disables through its `callGemini`
+        // guard; the pill is the one honest indicator that explains why.
+        onOpenAiSetup,
         theme: _themeProp,
         activeSessionCode,
         studentNickname,
@@ -4302,7 +4308,19 @@
           "aria-label": "Toggle canvas narration TTS",
           title: _narrationOn ? 'Canvas narration ON — click to disable' : 'Canvas narration OFF — click to enable spoken descriptions'
         }, _narrationOn ? '\uD83D\uDD0A' : '\uD83D\uDD07', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, _narrationOn ? 'TTS' : 'Mute')),
-        isTeacherMode && /*#__PURE__*/React.createElement("button", {
+        // ✨ AI-extras pill (W7): when no AI backend is reachable, the hints
+        // toggle below would be a dead control, so it is replaced by one quiet
+        // indicator. Neutral wording on purpose — the sims are fully functional
+        // without AI, and a deep-link visitor reading "AI DISABLED" would take
+        // it as breakage. Click opens AI Backend Settings (incl. the Canvas
+        // path) via the host callback.
+        !callGemini && /*#__PURE__*/React.createElement("button", {
+          onClick: function () { try { if (typeof onOpenAiSetup === 'function') onOpenAiSetup(); } catch (e) {} },
+          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
+          "aria-label": 'AI extras are off. No AI backend is set up. Click to see the ways to turn AI on.',
+          title: 'AI extras (hints, coaching) are off because no AI backend is set up. The lab itself works fully without them. Click to set one up, or use AlloFlow inside Gemini Canvas for free AI.'
+        }, '✨', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, 'AI extras: off')),
+        isTeacherMode && !!callGemini && /*#__PURE__*/React.createElement("button", {
           onClick: async () => {
             if (!_aiHintsOn) {
               // This previously read `... ? window.confirm(...) : true`, which
@@ -7585,6 +7603,10 @@
             // callGemini, or the guardrails are bypassed.
             getHint: getHint,
             aiHintsEnabled: !!_aiHintsOn,
+            // W7: true only when the host handed us a live AI backend. Tools can
+            // gate their own AI-extra buttons on this instead of rendering a
+            // control that silently no-ops (getHint/aiChat already fail safe).
+            aiAvailable: typeof callGemini === 'function',
             // Callback-style AI helper. cyberdefense's AI coach was written to a
             // callback API before the host standardized on promise-based callGemini.
             // Adapter keeps both surfaces working.

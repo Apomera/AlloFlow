@@ -207,6 +207,19 @@ function scanFile(rel) {
 // ── Target selection ─────────────────────────────────────────────────────────
 // Default: the surfaces a person meets first — app shell, landing/idle panel,
 // reading catalog, floating tool stack — not the whole repo.
+//
+// 2026-08-16: the Learning Web / knowledge-graph surfaces were added below. They
+// had never been in this set, so nothing was watching them while the feature was
+// built out, and they had drifted apart: the Explorer was hand-localized (55
+// translator calls, 0 findings) while mind_map and concept_graph_engine were not.
+// Several carry no user-facing strings at all and are listed anyway, on purpose —
+// a clean file in the set is a regression test, and costs one line of output.
+// All seven are plain-JS modules with NO _source.jsx pair, so the module IS the
+// source; do not "correct" these to source paths.
+//
+// NOTE FOR ANYONE COMPARING TOTALS: adding these moved the default-set total by
+// +31 (869 -> 900) on 2026-08-16 with no code change anywhere. A total from
+// before that date is not comparable to one after it.
 const DEFAULT_TARGETS = [
   'AlloFlowANTI.txt',
   'reading_library_module.js',
@@ -219,6 +232,14 @@ const DEFAULT_TARGETS = [
   'view_sidebar_tabs_nav_source.jsx',
   'view_renderers_source.jsx',
   'onboarding_coach_source.jsx',
+  // Learning Web / knowledge graph
+  'learning_web_explorer_module.js',
+  'learning_web_registry_module.js',
+  'standards_context_module.js',
+  'standards_provider_module.js',
+  'concept_graph_engine_module.js',
+  'concept_graph_3d_module.js',
+  'mind_map_module.js',
 ];
 
 function allShellTargets() {

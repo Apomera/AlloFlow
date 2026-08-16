@@ -1,9 +1,22 @@
 # AlloFlow Learning Web / Knowledge Graph Handoff
 
-**Date:** 2026-07-31  
-**Status:** Audit-to-ACG, visible Alignment Map, and shared standards-context layer implemented; local standards provider remains  
+**Date:** 2026-07-31 · **Status reviewed:** 2026-08-16  
+**Status:** Phases 0, 1 and 3 shipped. The local standards provider is live with a pinned Learning Commons v1.11.0 snapshot, and the audit consumes real progression edges. Phase 2 partial, Phase 4 in flight, Phase 5 not started.  
 **Purpose:** Preserve the discussion about Learning Commons, the Knowledge Graph, Throughline, the curriculum audit, and a graph-guided “Surprise Me” lesson workflow.
 **Implementation follow-up:** See [STANDARDS_CONTEXT_IMPLEMENTATION_HANDOFF.md](STANDARDS_CONTEXT_IMPLEMENTATION_HANDOFF.md) for the cross-path standards-context implementation and verification checklist.
+
+> **Naming, 2026-08-16.** “Throughline” has been **renamed to Learning Web** in the product. The
+> two live surfaces are **Learning Web: Unit Path** (the old Throughline sequence view) and
+> **Learning Web: Explore**. This document still says “Throughline” throughout; read it as
+> “Learning Web: Unit Path”. The rename was not fully propagated: all 63 language packs were
+> still shipping the retired name in `palette.ctx.mindMap` until it was corrected on 2026-08-16,
+> and `check_lang_staleness` had been flagging it as advisory-only the whole time.
+
+> **Name collision to resolve before Phase 5.** “Surprise Me” in this document means
+> graph-grounded lesson discovery. The command palette now separately ships
+> `cmd.surprise_me_contextually` (“Surprise me with a useful next step”), which picks a low-risk
+> next action from lesson context and is **not** graph-backed. Two different features currently
+> share the name. Rename one before Phase 5 lands.
 
 ## Executive summary
 
@@ -32,6 +45,76 @@ The existing Full Pack generation engine should be reused. “Surprise Me” sho
 The shared ConceptGraphEngine now exposes fromAlignmentAudit(...), which projects existing AlloFlow standards audit reports into acg/v1 without changing saved lesson data. It preserves standard status, text/activity/assessment evidence, gaps, recommendations, dataset metadata, and provenance. The adapter deliberately does not infer authoritative artifact links from free-text evidence.
 
 Throughline now uses the shared graph engine for its normal 2D semantic derivation while retaining its compatibility fallback. The next product-facing layer is a readable Alignment Map/evidence panel; the local Learning Commons snapshot/provider should follow that contract rather than introduce a separate graph shape.
+
+### Status review, 2026-08-16 (measured, not asserted)
+
+**Phase 0 and Phase 1: done.** `standards_provider_module.js` (46 KB) reads a bundled snapshot
+and explicitly does not fetch, call an API, or infer authority from a fuzzy match. Shipped data
+in `standards_snapshots/`:
+
+| Snapshot | Standards | Edges |
+|---|---:|---:|
+| `ccss-ela` | 1,464 | 1,463 |
+| `ccss-math` | 837 | 1,877 |
+| `ma-science-grade-5` | 44 | 43 |
+| **Total** | **2,345** | **3,383** |
+
+Edge types across all three: `hasChild` 2,342 · `buildsTowards` 757 · `relatesTo` 284.
+
+Provenance is complete and answers open question 1. Every snapshot records
+`provider: "Learning Commons Knowledge Graph"`, `datasetVersion: "v1.11.0"`, a `snapshotId`, a
+`contentDigest`, and a `sourceIntegrity` block carrying the upstream `nodes.jsonl` /
+`relationships.jsonl` byte counts, sha256, etag and `lastModified`, plus CC BY-4.0 and the
+1EdTech attribution chain. This satisfies "preserve dataset versions for audit reproducibility"
+in a way that can actually be re-verified against the CDN.
+
+**Phase 2: partial.** Structured standards context exists (`standards_context_module.js`), but
+this review did not verify the full Standards Finder drawer and "Use in Blueprint" flow.
+
+**Phase 3: done, and to the guardrails in this document.**
+`standards_provider_module.js:601-669` does directed progression lookups. The direction of
+`buildsTowards` was established **empirically** rather than assumed: the code comments record
+that across all 757 edges the relation never descends, so prerequisites are read as *incoming*
+`buildsTowards` and `relatesTo` is treated as undirected. `view_alignment_report_source.jsx:327`
+surfaces prerequisite gaps as "a source-provided buildsTowards edge ... planning context for
+educator judgment, not certification", and `:333` reports the unresolved count rather than
+hiding it. The rule "do not let a model invent authoritative prerequisite edges" is honored in
+both the code and the words on screen.
+
+**Phase 4: in flight.** `learning_web_explorer_module.js` (65 KB),
+`learning_web_registry_module.js` (83 KB), `mind_map_module.js` (190 KB) and
+`concept_graph_3d_module.js` are all live. Note none of these has a `_source.jsx` pair, so each
+module **is** the source.
+
+**Phase 5: not started.** See the naming collision noted at the top before it is.
+
+### Known gaps, 2026-08-16
+
+1. **Coverage is the binding constraint, and it is the science story that is thin.** CCSS ELA
+   and Math are substantial. Science is a single state at a single grade band (44 standards).
+   There is no NGSS. A teacher outside CCSS ELA/Math currently gets "not available" for most
+   lookups, which is the correct behavior but a small product.
+2. **The edge mix is thinnest where the pedagogical value is highest.** 69% of edges are
+   `hasChild`, which is only hierarchy. The payload is 757 `buildsTowards` and 284 `relatesTo`
+   across 2,345 standards. Before concluding the upstream data is sparse, check whether the
+   ingestion filter is dropping relationship rows that `relationships.jsonl` actually contains;
+   the snapshot ids are marked `structural-current`, which suggests a structural extract.
+3. **These modules were outside the i18n sweep entirely** until 2026-08-16, so nothing was
+   watching them while the feature was built. They had drifted apart accordingly:
+   `learning_web_explorer_module.js` was hand-localized (55 translator calls, 0 findings) while
+   `mind_map_module.js` (20 findings) and `concept_graph_engine_module.js` (11 findings, 0
+   translator calls) were not. All seven graph modules are now in `DEFAULT_TARGETS` in
+   `dev-tools/scan_shell_i18n.cjs`, including the clean ones, so the next drift is caught.
+   `learning_web_registry_module.js`, `standards_context_module.js` and
+   `standards_provider_module.js` report zero findings because they carry no user-facing strings
+   at all, which is the right shape for a data layer.
+4. **31 hardcoded strings remain in the graph surfaces.** In `concept_graph_engine_module.js`
+   these are axis and grouping labels shown to teachers (`causes → effect`, `reading order`,
+   `Cognitive depth (concrete/recall -> abstract/create, Bloom)`, `Text/Activity/Assessment
+   alignment`). In `mind_map_module.js` they include the alignment-graph search placeholder, its
+   `aria-label`s, and four `addToast` error strings. The aria-labels matter most: they are the
+   accessible names for the graph controls, and this document requires a readable non-visual
+   path whenever a graph visualization is shown.
 
 ## Key decisions and recommendations
 
@@ -489,15 +572,32 @@ getDatasetManifest()
 
 ## Open questions
 
-1. Which public Knowledge Graph release should be the initial pinned snapshot?
-2. How much science-specific progression/component data is present in that snapshot?
-3. Should local data ship in the main repository, a release asset, or Cloudflare R2?
+Answered by what shipped (2026-08-16 review):
+
+1. ~~Which public Knowledge Graph release should be the initial pinned snapshot?~~
+   **Answered: Learning Commons v1.11.0**, pinned by `datasetVersion` + `contentDigest` +
+   upstream sha256/etag in every snapshot.
+3. ~~Should local data ship in the main repository, a release asset, or Cloudflare R2?~~
+   **Answered: the main repository**, `standards_snapshots/`, as both `.json` and `.js` (about
+   6.6 MB total). Worth revisiting if coverage grows, since this is on the CDN 20,000-file and
+   size budget.
+5. ~~Which standard frameworks should be prioritized first?~~
+   **Answered by what shipped: CCSS ELA and CCSS Math first**, plus one Massachusetts science
+   grade-5 band. NGSS was not taken.
+
+Still open:
+
+2. How much science-specific progression/component data is present in that snapshot? **Still the
+   most important question**, and now sharper: the shipped science slice is 44 standards and 43
+   edges. Is that all v1.11.0 has for MA grade 5, or is the ingestion filter dropping edges?
 4. Should the graph engine store all nodes or only a filtered neighborhood around active Blueprints?
-5. Which standard frameworks should be prioritized first: NGSS, CCSS, TEKS, or a specific pilot state?
 6. Should “Surprise Me” generate one direction at a time or show a comparison card for three directions?
 7. Which OpenSciEd units can be linked or imported under the intended AlloFlow distribution model?
 8. What API rate limits and production terms apply to Learning Commons Platform accounts?
 9. Should AlloFlow submit a private-beta request for curriculum-aligned datasets after the local standards proof of concept?
+10. **New:** should the 757 `buildsTowards` edges be exposed anywhere other than the audit? They
+    are currently read only for prerequisite-gap detection, which is the safest use, but they
+    are also the only real progression signal in the dataset and Phase 4/5 both assume it.
 
 ## Risks and guardrails
 

@@ -1322,6 +1322,9 @@ function AIBackendModalBody(props) {
       if (options.preserveValidation !== true) delete next.validation;
       configStorage.setItem(configStorageKey, JSON.stringify(next));
       if (isStudentAiSetup) window.dispatchEvent(new CustomEvent('alloflow:student-ai-config-changed'));
+      // W7: capability-gated UI (STEM "AI extras" pill, disabled generate
+      // surfaces) re-derives on this. Same-tab only; other tabs get 'storage'.
+      try { window.dispatchEvent(new CustomEvent('alloflow:ai-config-changed')); } catch (_) {}
     }
     catch (_) {}
   };
@@ -1704,6 +1707,18 @@ function AIBackendModalBody(props) {
         {guidedStepHeading(t('ai_backend.guided_choose_kicker') || 'First-time setup · Choose your AI')}
         <p className="text-xs text-slate-600 leading-relaxed">{t('ai_backend.guided_intro') || "AlloFlow uses an AI engine to create lessons, read aloud, and answer questions. Pick how you'd like it to work — you can change this any time."}</p>
         {connected && <p className="text-[11px] font-bold text-green-800 bg-green-50 border border-green-100 rounded-xl p-2">✅ {(t('ai_backend.guided_connected_chip') || 'Connected —') + ' ' + (GUIDED_BACKEND_LABELS[currentBackend] || currentBackend)}</p>}
+        {/* Canvas-first card (W7, 2026-08-16): the zero-setup path. A visitor who
+            arrived keyless (deep link, shared shell) is one click from the full
+            free experience instead of a key hunt. The share URL is the same one
+            launch.html carries; keep the two in sync when it is restamped.
+            No quota numbers or plan pricing here on purpose — they rot into
+            false claims; "your plan's daily quota" plus Google's own page. */}
+        {!connected && guidedCard({ 'data-help-key': 'ai_backend_guided_card_canvas' },
+          () => { try { window.open('https://share.gemini.google/SdsF4DiVkTwu', '_blank', 'noopener'); } catch (e) {} },
+          '🚀', t('ai_backend.guided_card_canvas_title') || 'Use AlloFlow inside Gemini Canvas',
+          t('ai_backend.guided_card_canvas_badge') || 'No setup',
+          t('ai_backend.guided_card_canvas_body') || 'The easiest way to get AI: open AlloFlow inside Google Gemini. Free with a Google account, using your Gemini plan’s daily quota (personal, Education, or paid plans all work). Nothing to install and no key to manage.',
+          t('ai_backend.guided_card_canvas_req') || 'Opens gemini.google.com in a new tab · plan details at google.com/gemini')}
         {guidedCard({ 'data-help-key': 'ai_backend_guided_card_gemini' },
           () => { applyBackendChoice('gemini'); setGuidedReady(false); setGuidedView('gemini'); },
           '✨', t('ai_backend.guided_card_gemini_title') || 'Google Gemini',

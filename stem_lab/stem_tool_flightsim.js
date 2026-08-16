@@ -11990,10 +11990,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       };
 
       useEffect(function() {
-        var syncFullscreen = function() { setFullscreenActive(!!document.fullscreenElement); };
+        // The CSS fill-frame fallback is not a document fullscreen, so reading
+        // document.fullscreenElement alone left the button saying "Fullscreen" while
+        // the sim already filled the window. The shared helper marks its element with
+        // data-allo-fullscreen-active, watched here on the body because the flight
+        // container is mounted later than this effect runs.
+        var syncFullscreen = function() {
+          var el = document.getElementById('skyschool-flight-container');
+          setFullscreenActive(!!document.fullscreenElement || !!document.webkitFullscreenElement
+            || !!(el && el.getAttribute('data-allo-fullscreen-active')));
+        };
         document.addEventListener('fullscreenchange', syncFullscreen);
+        document.addEventListener('webkitfullscreenchange', syncFullscreen);
+        var fsObserver = null;
+        if (typeof MutationObserver !== 'undefined' && document.body) {
+          fsObserver = new MutationObserver(syncFullscreen);
+          fsObserver.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['data-allo-fullscreen-active'] });
+        }
         syncFullscreen();
-        return function() { document.removeEventListener('fullscreenchange', syncFullscreen); };
+        return function() {
+          document.removeEventListener('fullscreenchange', syncFullscreen);
+          document.removeEventListener('webkitfullscreenchange', syncFullscreen);
+          if (fsObserver) fsObserver.disconnect();
+        };
       }, []);
 
       // ── WCAG: Reduced motion detection ──
@@ -23537,11 +23556,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('button', { onClick: function() {
               var container = document.getElementById('skyschool-flight-container');
               if (!container) return;
+              // Inside a sandboxed embed (the Canvas surface) real fullscreen is refused
+              // by the host's permissions policy, not by the browser — so the toast this
+              // used to show, blaming the browser, sent the pilot looking in the wrong
+              // place and left no way to fill the screen. The shared host helper tries
+              // real fullscreen and falls back to a CSS fill-frame.
+              if (typeof window.__alloStemFS === 'function') { window.__alloStemFS(container); return; }
               try {
                 var fsResult;
                 if (document.fullscreenElement && typeof document.exitFullscreen === 'function') fsResult = document.exitFullscreen();
-                else if (typeof container.requestFullscreen === 'function') fsResult = container.requestFullscreen();
-                else { if (addToast) addToast('Fullscreen is not available in this browser.'); return; }
+                else {
+                  var enterFs = container.requestFullscreen || container.webkitRequestFullscreen;
+                  if (!enterFs) { if (addToast) addToast('Fullscreen could not be opened here.'); return; }
+                  fsResult = enterFs.call(container);
+                }
                 if (fsResult && typeof fsResult.catch === 'function') fsResult.catch(function() { if (addToast) addToast('Fullscreen could not be opened.'); });
               } catch (err) { if (addToast) addToast('Fullscreen could not be opened.'); }
             },

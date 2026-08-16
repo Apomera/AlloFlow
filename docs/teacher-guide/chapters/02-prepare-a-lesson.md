@@ -88,6 +88,10 @@ Interests can increase relevance, but they should not stereotype students or dis
 
 ## Choose formats by purpose
 
+### Finding the right tool
+
+The sidebar's **Find a tool** panel narrows the tool list by purpose (Recommended, Make accessible, Engage, Assess and deliver) or by search. It filters what you see; the tool cards below it are what actually create. While a filter is on, the panel says so in words ("A filter is on: showing 8 of 22 tools"), and you can only hide the panel when no filter is active, so tools can never go missing without an explanation on screen.
+
 ### Build a small lesson package
 
 A practical package usually has three to five parts:
@@ -208,6 +212,10 @@ Continue to **Preview/Package/Deliver** in Guided Mode or use the available prev
 - For a live lesson, join from a second device or browser profile, verify the code, and send one resource.
 - For a document, inspect the exported file with keyboard navigation, zoom, and read-aloud or a screen reader when available.
 - For print, use print preview and check page breaks, contrast, font size, and whether URLs or instructions still make sense on paper.
+
+Two export formats look alike and are not: **Print / Save as PDF** produces a finished copy to read, while **Worksheet** produces a blank copy to write on, with ruled answer lines, fill-in bubbles, and a Name and Date header. The export screen explains each format under its selector.
+
+If your lesson has both an adapted text and a glossary, the Worksheet format also offers a **fill-in-the-blank version**: glossary terms in the passage become numbered blanks with a word bank, and the teacher copy carries the answer key. It works in any lesson language.
 
 Test again after a meaningful revision. Previewing an earlier version does not verify the final package.
 

@@ -48,6 +48,8 @@ const moduleSrc = `/**
   var RefreshCw = _lazyIcon('RefreshCw');
   var FileText = _lazyIcon('FileText');
   var ImageIcon = _lazyIcon('ImageIcon');
+  var MessageSquare = _lazyIcon('MessageSquare');
+  var Users = _lazyIcon('Users');
 
   ` + result.code + `
 

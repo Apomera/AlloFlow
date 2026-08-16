@@ -5557,7 +5557,7 @@ const _alloDiagnosticReason = (value) => {
 };const _alloDiagnosticResourceTypes = new Set([
   'analysis', 'simplified', 'quiz', 'adventure', 'sentence-frames', 'brainstorm',
   'faq', 'outline', 'image', 'timeline', 'lesson-plan', 'glossary', 'persona',
-  'concept-sort', 'dbq', 'note-taking', 'anchor-chart',
+  'concept-sort', 'dbq', 'note-taking', 'anchor-chart', 'gemini-bridge',
 ]);
 const _alloDiagnosticResourceType = value => {
   const type = String(value || '').toLowerCase();
@@ -5660,7 +5660,7 @@ const ALLO_GENERATION_METRICS = (() => {
   const resourceTypes = new Set([
     'simplified', 'quiz', 'adventure', 'sentence-frames', 'brainstorm', 'faq',
     'outline', 'image', 'timeline', 'lesson-plan', 'glossary', 'persona',
-    'concept-sort', 'dbq', 'note-taking', 'anchor-chart',
+    'concept-sort', 'dbq', 'note-taking', 'anchor-chart', 'gemini-bridge',
   ]);
   const blank = () => ({
     v: 1,
@@ -11501,7 +11501,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     })();
     loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=3c094e07a');
     loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=3c094e07a');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=3c094e07a');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=7f722661');
     loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=3c094e07a');
     loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=3c094e07a');
     loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=3c094e07a');
@@ -11683,7 +11683,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=3c094e07a');
     loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=3c094e07a');
     loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=3c094e07a');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=3c094e07a');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=bf881380');
     loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=3c094e07a');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
@@ -11797,7 +11797,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=3c094e07a');
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=3c094e07a');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=3c094e07a');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=3c094e07a');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=78471c26');
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=2e1c0ff3');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=3c094e07a');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=3c094e07a');
@@ -11807,7 +11807,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=3c094e07a');
     loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=7c43afe4');
     loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=3c094e07a');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=3c094e07a');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=6c268f30');
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=3c094e07a');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=3c094e07a');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=3c094e07a');
@@ -25453,7 +25453,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     image: 'visual diagram illustration support',
     faq: 'questions answers misconceptions',
     'sentence-frames': 'writing scaffolds sentence starters',
-    brainstorm: 'activities ideas engagement',
+    brainstorm: 'activities ideas engagement discussion seminar fishbowl gallery jigsaw cooperative groups collaboration protocol talk stems simulation app canvas',
     persona: 'interview expert historical perspective',
     timeline: 'sequence chronology order',
     'concept-sort': 'sort classify categories',
@@ -48169,27 +48169,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             <div style={{display: isGuidedToolVisible('sentence-frames') ? undefined : 'none'}} id="tour-tool-scaffolds" data-help-key="tool_scaffolds" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
                 ${activeView === 'sentence-frames' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
               `}>
-                <div className="w-full bg-slate-50 border-b border-slate-100 flex items-center hover:bg-rose-50 transition-colors">
-                  <button
+                <button
                     data-help-key="tool_scaffolds"
-                    onClick={() => toggleTool('sentence-frames')}
-                    aria-expanded={expandedTools.includes('sentence-frames')}
-                    className="flex-1 p-3 flex justify-between items-center text-start"
-                  >
-                    <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
-                      <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
-                    </div>
-                    {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowStoryForge(true)}
-                    className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-rose-800 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/50 rounded-full transition-all hover:shadow-sm"
-                    aria-label={t('sidebar.open_storyforge_aria') || 'Open StoryForge'}
-                  >
-                    {'\uD83D\uDCD6'} <span className="group-hover:tracking-wide transition-all">{t('sidebar.storyforge_label') || 'StoryForge'}</span>
-                  </button>
-                </div>
+                    aria-expanded={expandedTools.includes('sentence-frames')} onClick={() => toggleTool('sentence-frames')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
+                    <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
+                  </div>
+                  {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
                 {/* ── SentenceFramesPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('sentence-frames') && window.AlloModules && window.AlloModules.SentenceFramesPanel && React.createElement(window.AlloModules.SentenceFramesPanel, {
           expandedTools, frameCustomInstructions, frameType, handleGenerate, hasSourceOrAnalysis,

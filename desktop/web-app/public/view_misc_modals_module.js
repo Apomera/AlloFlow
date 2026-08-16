@@ -1075,6 +1075,10 @@ function AIBackendModalBody(props) {
       if (options.preserveValidation !== true) delete next.validation;
       configStorage.setItem(configStorageKey, JSON.stringify(next));
       if (isStudentAiSetup) window.dispatchEvent(new CustomEvent("alloflow:student-ai-config-changed"));
+      try {
+        window.dispatchEvent(new CustomEvent("alloflow:ai-config-changed"));
+      } catch (_) {
+      }
     } catch (_) {
     }
   };
@@ -1414,7 +1418,20 @@ function AIBackendModalBody(props) {
     const currentBackend = cfg.backend || "gemini";
     const connected = Boolean(cfg.validation && cfg.validation.ok);
     const badgeFor = (backend) => currentBackend === backend && cfg.backend ? t("ai_backend.guided_current_badge") || "Current" : "";
-    return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, guidedStepHeading(t("ai_backend.guided_choose_kicker") || "First-time setup \xB7 Choose your AI"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, t("ai_backend.guided_intro") || "AlloFlow uses an AI engine to create lessons, read aloud, and answer questions. Pick how you'd like it to work \u2014 you can change this any time."), connected && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-green-800 bg-green-50 border border-green-100 rounded-xl p-2" }, "\u2705 ", (t("ai_backend.guided_connected_chip") || "Connected \u2014") + " " + (GUIDED_BACKEND_LABELS[currentBackend] || currentBackend)), guidedCard(
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, guidedStepHeading(t("ai_backend.guided_choose_kicker") || "First-time setup \xB7 Choose your AI"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, t("ai_backend.guided_intro") || "AlloFlow uses an AI engine to create lessons, read aloud, and answer questions. Pick how you'd like it to work \u2014 you can change this any time."), connected && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-green-800 bg-green-50 border border-green-100 rounded-xl p-2" }, "\u2705 ", (t("ai_backend.guided_connected_chip") || "Connected \u2014") + " " + (GUIDED_BACKEND_LABELS[currentBackend] || currentBackend)), !connected && guidedCard(
+      { "data-help-key": "ai_backend_guided_card_canvas" },
+      () => {
+        try {
+          window.open("https://share.gemini.google/SdsF4DiVkTwu", "_blank", "noopener");
+        } catch (e) {
+        }
+      },
+      "\u{1F680}",
+      t("ai_backend.guided_card_canvas_title") || "Use AlloFlow inside Gemini Canvas",
+      t("ai_backend.guided_card_canvas_badge") || "No setup",
+      t("ai_backend.guided_card_canvas_body") || "The easiest way to get AI: open AlloFlow inside Google Gemini. Free with a Google account, using your Gemini plan\u2019s daily quota (personal, Education, or paid plans all work). Nothing to install and no key to manage.",
+      t("ai_backend.guided_card_canvas_req") || "Opens gemini.google.com in a new tab \xB7 plan details at google.com/gemini"
+    ), guidedCard(
       { "data-help-key": "ai_backend_guided_card_gemini" },
       () => {
         applyBackendChoice("gemini");

@@ -508,7 +508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     { id: 'arctic_tern', name: 'Arctic Tern', emoji: '\uD83D\uDD4A\uFE0F', flyway: 'atlantic', distance: 44000, speed: 25, altitude: 1500, breedingRange: 'Arctic Circle', winterRange: 'Antarctic', funFact: 'Arctic Terns see two summers per year and more daylight than any other creature. Their migration is the longest of any animal.', formation: 'Loose flock' },
     { id: 'ruby_hummingbird', name: 'Ruby-throated Hummingbird', emoji: '\uD83D\uDC26', flyway: 'mississippi', distance: 3000, speed: 30, altitude: 500, breedingRange: 'Eastern North America', winterRange: 'Central America', funFact: 'This tiny bird weighing just 3g flies 500 miles non-stop across the Gulf of Mexico. It beats its wings 53 times per second.', formation: 'Solo' },
     { id: 'snow_goose', name: 'Snow Goose', emoji: '\uD83E\uDEBF', flyway: 'central', distance: 5000, speed: 50, altitude: 7500, breedingRange: 'Arctic tundra', winterRange: 'Southern US', funFact: 'Snow Geese have increased from 2 million to 15 million birds since the 1970s, actually damaging their Arctic breeding grounds.', formation: 'V-formation' },
-    { id: 'peregrine', name: 'Peregrine Falcon', emoji: '\uD83E\uDD85', flyway: 'pacific', distance: 15500, speed: 60, altitude: 3500, breedingRange: 'Arctic tundra', winterRange: 'South America', funFact: 'The Peregrine Falcon is the fastest animal on Earth, reaching over 240 mph (386 km/h) in a hunting stoop (dive).', formation: 'Solo' },
+    { id: 'peregrine', name: 'Peregrine Falcon', emoji: '\uD83E\uDD85', flyway: 'central', distance: 15500, speed: 60, altitude: 3500, breedingRange: 'Arctic tundra', winterRange: 'South America', funFact: 'The Peregrine Falcon is the fastest animal on Earth, reaching over 240 mph (386 km/h) in a hunting stoop (dive).', formation: 'Solo' },
     { id: 'sandhill_crane', name: 'Sandhill Crane', emoji: '\uD83E\uDDA9', flyway: 'central', distance: 6000, speed: 35, altitude: 6000, breedingRange: 'Northern US & Canada', winterRange: 'Southern US & Mexico', funFact: 'Sandhill Cranes are among the oldest living bird species, with fossils dating back 2.5 million years. They dance to bond with mates.', formation: 'V-formation' },
     { id: 'monarch', name: 'Monarch Butterfly', emoji: '\uD83E\uDD8B', flyway: 'central', distance: 3000, speed: 12, altitude: 1200, breedingRange: 'Eastern North America', winterRange: 'Central Mexico (oyamel fir forests)', funFact: 'No single Monarch makes the full round trip. It takes 4 generations to complete the cycle. Only the "super generation" migrates south.', formation: 'Swarm' },
     { id: 'bartailed_godwit', name: 'Bar-tailed Godwit', emoji: '\uD83D\uDC26', flyway: 'pacific', distance: 7000, speed: 55, altitude: 6000, breedingRange: 'Alaska', winterRange: 'New Zealand', funFact: 'In 2007, a female Bar-tailed Godwit flew 7,145 miles non-stop from Alaska to New Zealand in 9 days without eating, drinking, or sleeping.', formation: 'V-formation' }
@@ -680,53 +680,280 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   }
 
   // ── Flyway map geometry ───────────────────────────────────────────────────
-  // Authored in the same 620x400 design space the flyway paths and stopover
-  // markers already use, so the coastline can gain detail without moving any of
-  // the pedagogy that was pinned to the old outline. The projection is a
-  // deliberately squashed schematic, not a survey chart.
-  var MAP_COAST = [
-    // Arctic rim, west to east, with the Foxe Basin notch broken into it
-    [128, 34], [146, 24], [168, 17], [192, 13], [214, 19], [236, 12], [258, 9], [280, 16],
-    [300, 10], [316, 23], [328, 14], [342, 11], [354, 22], [366, 13], [386, 15], [406, 12],
-    [421, 23], [435, 18], [449, 31], [459, 45],
-    // Labrador, the Gulf of St Lawrence and Nova Scotia
-    [468, 59], [474, 74], [470, 88], [462, 98], [452, 105],
-    [459, 113], [452, 123], [445, 129], [453, 135], [457, 143], [448, 147],
-    // Maine, Cape Cod, then the mid-Atlantic bights
-    [443, 153], [450, 159], [443, 167], [449, 173], [441, 178], [439, 185],
-    [434, 191], [441, 195], [433, 201], [440, 207],
-    // Hatteras down to the Florida tip
-    [444, 215], [440, 223], [444, 231], [448, 241], [450, 253], [445, 263],
-    // Back up the Florida Gulf coast
-    [437, 255], [431, 241], [427, 227], [422, 217],
-    // Gulf of Mexico: panhandle, the delta lobe, then Texas
-    [408, 217], [392, 221], [377, 225], [363, 233], [357, 241], [351, 235],
-    [339, 241], [329, 251], [322, 263],
-    // Mexico's east coast and the Yucatan
-    [320, 277], [325, 289], [335, 297], [349, 299], [355, 293], [351, 307], [339, 309],
-    // Southward taper into Central America
-    [329, 313], [320, 321], [308, 333], [294, 345], [278, 355], [260, 363], [242, 371], [224, 378], [208, 385],
-    // Pacific coast, south to north: Baja gulf, the California bight, Cape
-    // Mendocino, then the fjord-cut British Columbia shore
-    [198, 377], [190, 363], [182, 349], [174, 335], [165, 319], [157, 303],
-    [150, 287], [144, 269], [139, 251], [134, 233], [131, 215], [126, 197],
-    [123, 179], [121, 161], [120, 143], [124, 125], [119, 109], [123, 93], [118, 75], [124, 57], [126, 44]
+  // Rewritten 2026-08-16 to be GEOGRAPHICALLY REAL rather than hand-drawn.
+  //
+  // What was wrong: every landmass, flyway, stopover and label used to be
+  // authored directly in the 620x400 design box by eye, while the map drew a
+  // graticule claiming 60N/45N/30N/15N at fixed rows. Those two things
+  // disagreed badly. Measured against the map's OWN parallels:
+  //
+  //     Gulf Coast stopover     drawn 37.7N   real 29.5N   +8.2 deg  (907 km)
+  //     Hudson Bay south shore  drawn 59.0N   real 51.0N   +8.0 deg  (888 km)
+  //     Mississippi Delta       drawn 35.3N   real 29.2N   +6.1 deg  (681 km)
+  //     Florida tip             drawn 29.5N   real 24.5N   +5.0 deg  (555 km)
+  //     Delaware Bay stopover   drawn 44.0N   real 39.1N   +4.9 deg  (544 km)
+  //
+  // Everything from the Great Lakes south sat several hundred kilometres too
+  // far north, so a student reading latitude off the gridlines was reading a
+  // wrong number. Alaska floated detached from the mainland, Baja floated
+  // detached from Mexico, and the Mississippi Flyway did not follow the
+  // Mississippi.
+  //
+  // Now: all geography is authored in REAL [lon, lat] degrees and projected
+  // once at load. Accuracy is a property of the data, not of the drawing, and
+  // it can be checked against an atlas instead of by eye.
+  //
+  // Projection: Lambert Conformal Conic, standard parallels 20N/60N, central
+  // meridian 100W. That is the projection USFWS flyway maps use, it keeps
+  // shapes true at the scale that matters here, and it makes the parallels
+  // curve the way they do on a real continental map.
+  var MIG_PROJ = (function() {
+    var D2R = Math.PI / 180;
+    var p1 = 20 * D2R, p2 = 60 * D2R, lam0 = -100 * D2R;
+    var tanp = function(p) { return Math.tan(Math.PI / 4 + p / 2); };
+    var n = Math.log(Math.cos(p1) / Math.cos(p2)) / Math.log(tanp(p2) / tanp(p1));
+    var F = Math.cos(p1) * Math.pow(tanp(p1), n) / n;
+    var rho = function(p) { return F / Math.pow(tanp(p), n); };
+    var rho0 = rho(15 * D2R);
+    // Raw conic coordinates. y is negated so that north is UP once this lands
+    // in canvas space, where y grows downward.
+    function raw(lon, lat) {
+      var th = n * (lon * D2R - lam0), r = rho(lat * D2R);
+      return [r * Math.sin(th), -(rho0 - r * Math.cos(th))];
+    }
+    // Fit is calibrated from the real data extent rather than guessed corner
+    // longitudes, so the continent fills the 620x400 box no matter how the
+    // source rings are edited later.
+    var k = 1, ox = 0, oy = 0;
+    function calibrate(ringSets, pad) {
+      var minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+      ringSets.forEach(function(ring) {
+        ring.forEach(function(p) {
+          var r = raw(p[0], p[1]);
+          if (r[0] < minX) minX = r[0];
+          if (r[0] > maxX) maxX = r[0];
+          if (r[1] < minY) minY = r[1];
+          if (r[1] > maxY) maxY = r[1];
+        });
+      });
+      var m = pad || 14;
+      k = Math.min((620 - m * 2) / (maxX - minX), (400 - m * 2) / (maxY - minY));
+      ox = (620 - (maxX - minX) * k) / 2 - minX * k;
+      oy = (400 - (maxY - minY) * k) / 2 - minY * k;
+    }
+    function pt(lon, lat) { var r = raw(lon, lat); return [r[0] * k + ox, r[1] * k + oy]; }
+    return {
+      pt: pt,
+      calibrate: calibrate,
+      ring: function(arr) { return arr.map(function(p) { return pt(p[0], p[1]); }); },
+      xy: function(lon, lat) { var p = pt(lon, lat); return { x: p[0], y: p[1] }; }
+    };
+  })();
+
+  // ── Source geography, in real [longitude, latitude] ───────────────────────
+  // Simplified coastline: roughly 1-2 degrees of detail, with the capes,
+  // peninsulas and embayments that carry the pedagogy pinned to their true
+  // positions (Point Barrow, the Mackenzie delta, Florida, the Mississippi
+  // delta, Yucatan, the Isthmus of Panama, Baja and the Gulf of California,
+  // Cape Mendocino, the Alaska Peninsula).
+  var GEO_MAINLAND = [
+    // Arctic coast of Alaska and Canada, west to east
+    [-166.5, 68.3], [-163.0, 70.3], [-159.0, 71.0], [-156.5, 71.4], [-151.0, 70.5],
+    [-148.0, 70.3], [-143.5, 70.1], [-141.0, 69.6], [-137.0, 69.0], [-134.5, 69.4],
+    [-130.5, 70.0], [-128.0, 70.2], [-124.0, 69.9], [-120.0, 69.4], [-115.5, 68.3],
+    [-111.0, 68.4], [-106.0, 68.0], [-101.0, 68.2], [-96.5, 68.4], [-92.0, 68.2],
+    [-88.5, 67.0], [-86.5, 65.5],
+    // Across northern Quebec to the Labrador Sea
+    [-82.0, 64.2], [-78.5, 62.6], [-74.0, 62.2], [-69.5, 61.0], [-65.5, 60.5],
+    [-64.0, 58.5], [-62.5, 56.5], [-60.0, 54.5], [-57.5, 53.0], [-56.0, 51.5],
+    // Gulf of St Lawrence, the Gaspe, Nova Scotia, the Bay of Fundy.
+    // Traced as one monotonic sweep: the earlier version doubled back on
+    // itself here and the coastline crossed itself into a spike.
+    [-58.5, 51.4], [-61.5, 50.2], [-64.0, 49.8], [-66.5, 49.2], [-64.5, 48.3],
+    [-62.0, 47.6], [-60.0, 46.4], [-61.0, 45.3], [-63.5, 44.6], [-65.7, 43.5],
+    [-66.4, 44.5], [-64.8, 45.4], [-66.0, 45.3], [-67.3, 45.1],
+    // New England to the mid-Atlantic
+    [-67.8, 44.8], [-69.0, 44.0], [-70.2, 43.6], [-70.6, 42.6], [-70.0, 42.0],
+    [-71.5, 41.3], [-72.9, 41.1], [-74.0, 40.5], [-74.4, 39.4], [-75.1, 39.1],
+    [-75.4, 38.3], [-76.0, 37.0], [-75.7, 36.0], [-75.5, 35.2], [-77.0, 34.2],
+    [-78.9, 33.7], [-80.9, 32.1], [-81.4, 30.3],
+    // Florida: down the Atlantic side, round the Keys, up the Gulf side
+    [-80.4, 28.5], [-80.1, 26.1], [-80.4, 25.2], [-81.1, 25.1], [-81.8, 26.0],
+    [-82.7, 27.8], [-83.7, 29.3], [-84.3, 30.1],
+    // Gulf of Mexico: panhandle, the delta lobe, Texas
+    [-86.0, 30.4], [-88.0, 30.3], [-89.2, 29.1], [-91.3, 29.3], [-93.8, 29.7],
+    [-95.3, 28.9], [-97.4, 27.8], [-97.1, 25.9],
+    // Mexico's Gulf coast and the Yucatan
+    [-97.7, 22.3], [-97.0, 20.5], [-96.1, 19.2], [-94.5, 18.2], [-91.5, 18.6],
+    [-90.5, 21.0], [-88.5, 21.6], [-87.0, 21.5], [-87.0, 19.5], [-87.8, 18.0],
+    // Central America, Caribbean side, to the Isthmus of Panama
+    [-88.3, 15.8], [-86.0, 16.0], [-83.5, 15.0], [-83.2, 12.5], [-83.0, 10.0],
+    [-82.5, 9.5], [-80.0, 9.4], [-77.5, 8.7],
+    // Back north up the Pacific side
+    [-78.0, 7.5], [-80.5, 8.2], [-81.5, 7.5], [-83.5, 9.0], [-85.7, 11.0],
+    [-87.0, 12.5], [-89.5, 13.5], [-91.5, 14.0], [-94.0, 15.5], [-95.5, 15.8],
+    [-97.5, 16.0], [-99.5, 16.6], [-101.5, 17.5], [-104.0, 19.1], [-105.7, 21.5],
+    [-105.5, 22.5], [-106.4, 23.2], [-108.9, 25.8], [-110.9, 27.9], [-112.5, 29.5],
+    [-113.8, 31.2], [-114.7, 31.8],
+    // Down the east side of Baja California, round the cape, back up the west
+    [-114.4, 30.5], [-113.5, 29.0], [-112.5, 28.0], [-111.5, 26.7], [-110.5, 24.8],
+    [-109.8, 24.2], [-109.4, 23.1], [-110.3, 23.4], [-111.5, 24.8], [-112.2, 26.0],
+    [-113.5, 27.0], [-114.5, 28.0], [-115.2, 29.2], [-116.0, 30.5], [-116.8, 31.7],
+    // US Pacific coast
+    [-117.2, 32.5], [-118.4, 33.7], [-119.6, 34.4], [-120.6, 34.5], [-121.9, 36.6],
+    [-122.5, 37.8], [-123.7, 39.0], [-124.4, 40.4], [-124.2, 43.3], [-124.0, 46.3],
+    [-124.7, 48.4],
+    // British Columbia and the Alaska panhandle
+    [-125.5, 50.0], [-127.5, 51.5], [-128.5, 53.5], [-130.5, 54.5], [-131.5, 55.2],
+    [-134.0, 57.0], [-136.5, 58.5], [-139.5, 59.6], [-142.5, 60.0], [-145.0, 60.4],
+    // Prince William Sound, Cook Inlet, the Alaska Peninsula
+    [-147.5, 60.6], [-149.5, 60.2], [-151.5, 59.2], [-153.5, 58.5], [-155.5, 57.5],
+    [-158.0, 56.5], [-160.5, 55.5], [-162.5, 55.0],
+    // Bristol Bay, the Yukon delta, Norton Sound, the Seward Peninsula.
+    // Also retraced as a single sweep north; the old run reversed twice and
+    // put a spike through the Alaska Peninsula.
+    [-160.0, 56.2], [-158.2, 57.5], [-159.5, 58.7], [-161.8, 58.6], [-163.5, 59.6],
+    [-165.0, 60.5], [-165.2, 61.5], [-164.0, 62.5], [-161.5, 63.5], [-163.5, 64.5],
+    [-166.0, 65.0], [-167.5, 65.7], [-165.5, 66.4], [-163.8, 67.4]
   ];
-  var MAP_ALASKA = [[54, 24], [76, 14], [100, 12], [118, 19], [127, 31], [120, 43], [104, 54], [84, 58], [66, 54], [52, 44], [46, 33]];
-  var MAP_ALEUTIANS = [[52, 62], [42, 68], [30, 72], [20, 74]];
-  var MAP_HUDSON = [[304, 40], [328, 34], [350, 40], [358, 56], [352, 74], [334, 86], [314, 82], [302, 66], [298, 52]];
-  var MAP_BAJA = [[133, 304], [142, 302], [150, 318], [158, 334], [164, 350], [158, 354], [148, 338], [139, 320]];
-  var MAP_NEWFOUNDLAND = [[468, 108], [482, 104], [491, 114], [483, 126], [470, 123]];
-  var MAP_VANCOUVER = [[104, 126], [112, 119], [117, 132], [107, 142]];
-  var MAP_CUBA = [[450, 273], [474, 278], [496, 287], [499, 294], [477, 288], [456, 282]];
-  var MAP_HISPANIOLA = [[513, 291], [532, 294], [539, 301], [519, 300], [509, 296]];
-  // Ridge lines migrating raptors ride for lift; drawn as relief hatching.
-  var MAP_RANGES = [
-    { pts: [[168, 60], [172, 96], [176, 132], [181, 168], [187, 204], [196, 238], [208, 272], [221, 304]], step: 7, hgt: 3 },
-    { pts: [[142, 112], [146, 150], [153, 188], [161, 224], [171, 256]], step: 7, hgt: 2.4 },
-    { pts: [[420, 132], [412, 158], [403, 182], [395, 204]], step: 7, hgt: 2.4 },
-    { pts: [[250, 320], [264, 336], [278, 350]], step: 6, hgt: 2.2 }
+  // Hudson Bay and James Bay, as one water body cut into the mainland.
+  var GEO_HUDSON = [
+    [-94.5, 58.8], [-92.5, 61.5], [-90.0, 63.2], [-87.0, 64.0], [-83.5, 63.5],
+    [-80.0, 62.5], [-78.0, 60.5], [-77.3, 57.5], [-78.5, 55.0], [-79.0, 52.5],
+    [-79.5, 51.2], [-81.5, 51.5], [-82.3, 53.0], [-84.5, 55.0], [-87.5, 56.0],
+    [-91.0, 57.2]
   ];
+  // The Great Lakes, west to east. Simplified rings, not ellipses: Michigan
+  // hangs south, Superior runs east-west, Erie and Ontario are the small pair.
+  var GEO_LAKES = [
+    [[-92.1, 46.7], [-90.5, 47.0], [-88.0, 46.9], [-86.0, 46.7], [-84.4, 46.5],
+     [-85.0, 46.9], [-87.0, 48.3], [-89.0, 48.1], [-90.8, 47.3]],
+    [[-87.9, 45.8], [-86.3, 45.5], [-85.0, 44.5], [-85.6, 43.0], [-86.2, 41.7],
+     [-87.3, 41.6], [-87.8, 43.0], [-88.0, 44.5]],
+    [[-84.7, 45.8], [-83.4, 45.3], [-82.4, 44.5], [-81.7, 43.4], [-82.0, 43.0],
+     [-83.0, 43.6], [-83.9, 44.0], [-84.0, 45.0], [-84.8, 46.0]],
+    [[-83.5, 41.7], [-82.0, 41.5], [-80.5, 42.2], [-78.9, 42.9], [-80.0, 42.6],
+     [-81.5, 42.3], [-83.2, 42.1]],
+    [[-79.8, 43.3], [-78.0, 43.4], [-76.5, 43.8], [-76.1, 44.2], [-77.5, 44.1],
+     [-79.3, 43.7]]
+  ];
+  var GEO_ISLANDS = [
+    // Newfoundland
+    [[-59.4, 47.6], [-58.0, 48.6], [-56.0, 50.5], [-55.5, 51.6], [-54.0, 49.7],
+     [-52.7, 47.7], [-53.5, 46.7], [-55.5, 46.9], [-57.5, 47.5]],
+    // Vancouver Island
+    [[-128.4, 50.8], [-126.0, 50.2], [-124.0, 49.0], [-123.3, 48.4], [-124.7, 48.6],
+     [-126.5, 49.6], [-127.8, 50.4]],
+    // Haida Gwaii
+    [[-133.0, 54.2], [-131.6, 53.3], [-131.0, 52.2], [-132.0, 52.9], [-132.7, 53.7]],
+    // Cuba
+    [[-84.9, 21.9], [-82.5, 23.0], [-80.5, 23.2], [-78.5, 22.4], [-75.6, 21.0],
+     [-74.1, 20.3], [-76.5, 19.9], [-79.0, 21.5], [-82.0, 22.3]],
+    // Hispaniola
+    [[-74.5, 18.4], [-72.5, 19.9], [-70.0, 19.9], [-68.3, 18.6], [-70.5, 18.2],
+     [-72.5, 18.2]],
+    // Prince Edward Island
+    [[-64.4, 46.4], [-63.0, 46.4], [-62.0, 46.4], [-63.3, 46.1], [-64.2, 46.2]]
+  ];
+  // The Aleutian chain, drawn as fading dots rather than a landmass.
+  var GEO_ALEUTIANS = [
+    [-164.5, 54.5], [-167.5, 53.5], [-170.5, 52.7], [-174.0, 52.1], [-177.5, 51.8],
+    [-181.0, 51.5], [-184.5, 51.9]
+  ];
+  // Ridge lines migrating raptors ride for lift, drawn as relief hatching:
+  // the Rockies, the Sierra Nevada / Cascades, the Appalachians, and the two
+  // Sierra Madre.
+  var GEO_RANGES = [
+    { pts: [[-146.0, 63.5], [-135.0, 60.0], [-125.0, 55.0], [-118.0, 50.0], [-113.0, 45.0],
+            [-110.5, 40.0], [-107.5, 35.5], [-106.0, 32.0]], step: 7, hgt: 3 },
+    { pts: [[-121.5, 48.5], [-121.0, 44.5], [-120.5, 40.5], [-118.5, 37.0], [-116.5, 34.0]], step: 7, hgt: 2.4 },
+    { pts: [[-68.5, 46.0], [-73.0, 43.5], [-77.5, 40.5], [-81.0, 36.5], [-84.5, 34.0]], step: 7, hgt: 2.4 },
+    { pts: [[-108.5, 29.0], [-105.5, 25.0], [-103.5, 21.5], [-100.0, 19.5], [-97.0, 18.5]], step: 6, hgt: 2.2 },
+    { pts: [[-100.0, 25.5], [-98.5, 22.5], [-97.5, 20.0]], step: 6, hgt: 2.0 }
+  ];
+  // Rivers birds pilot along. The Mississippi is the one the flyway is named
+  // for, so it is drawn from Lake Itasca to the delta, through the cities the
+  // flyway's stopovers sit near.
+  var GEO_RIVERS = [
+    [[-95.2, 47.2], [-93.1, 44.9], [-91.2, 43.5], [-90.6, 41.5], [-90.2, 38.6],
+     [-89.5, 36.5], [-90.1, 35.1], [-91.1, 32.5], [-91.2, 30.5], [-89.4, 29.2]],
+    [[-111.5, 45.9], [-104.0, 47.5], [-97.0, 42.8], [-95.9, 41.2], [-90.2, 38.6]],
+    [[-134.0, 68.9], [-125.0, 65.0], [-117.0, 61.0], [-112.0, 58.5]],
+    [[-106.5, 37.7], [-104.5, 33.5], [-103.0, 29.5], [-99.5, 27.5], [-97.1, 25.9]]
+  ];
+  // Place labels, positioned by real coordinates rather than by eye.
+  var GEO_PLACES = [
+    { text: 'CANADA', lon: -105, lat: 57, kind: 'land' },
+    { text: 'UNITED STATES', lon: -98, lat: 39, kind: 'land' },
+    { text: 'MEXICO', lon: -102, lat: 23, kind: 'land' },
+    { text: 'ALASKA', lon: -152, lat: 65, kind: 'land' },
+    { text: 'Gulf of Mexico', lon: -90, lat: 25, kind: 'water' },
+    { text: 'Hudson Bay', lon: -85.5, lat: 59.5, kind: 'water' },
+    { text: 'Atlantic Ocean', lon: -55, lat: 33, kind: 'water' },
+    { text: 'Pacific Ocean', lon: -140, lat: 38, kind: 'water' },
+    { text: 'Caribbean Sea', lon: -75, lat: 14.5, kind: 'water' }
+  ];
+
+  // ── Per-species routes, in real [lon, lat] ────────────────────────────────
+  // Each species used to borrow the two ENDS of its flyway corridor for its
+  // "Breeding" and "Wintering" markers. For the five species that winter
+  // inside North America that was roughly right. For the three that do not, it
+  // taught the opposite of the fact the card next to it states:
+  //
+  //   Arctic Tern       card says Arctic -> ANTARCTIC     map drew: Caribbean
+  //   Bar-tailed Godwit card says Alaska -> NEW ZEALAND   map drew: west Mexico
+  //   Peregrine Falcon  card says Arctic -> SOUTH AMERICA map drew: west Mexico
+  //
+  // The Arctic Tern's entire claim to fame is that it goes pole to pole, so a
+  // map that stops it at Cuba is worse than no map. Those three now run to the
+  // edge of the sheet and are labelled with where they carry on to, which is
+  // what a real flyway map does.
+  var SPECIES_ROUTES = {
+    canada_goose:     { path: [[-75, 58], [-76, 52], [-76, 46], [-75.5, 42], [-76.5, 38], [-79, 34]] },
+    arctic_tern:      { path: [[-75, 72], [-68, 64], [-62, 55], [-58, 45], [-52, 33], [-48, 20], [-45, 10]],
+                        offMap: 'Antarctic' },
+    ruby_hummingbird: { path: [[-84, 43], [-86, 38], [-88, 33], [-90, 29.5], [-90.5, 24], [-88, 18], [-85, 12]] },
+    snow_goose:       { path: [[-105, 70], [-102, 62], [-100, 54], [-99, 46], [-98, 39], [-96, 33], [-94, 30]] },
+    peregrine:        { path: [[-130, 69], [-118, 60], [-108, 50], [-100, 40], [-93, 31], [-86, 22], [-78, 14], [-72, 9]],
+                        offMap: 'South America' },
+    sandhill_crane:   { path: [[-115, 63], [-110, 56], [-105, 49], [-101, 44], [-98.5, 40.8], [-99, 35], [-100, 30], [-101, 27]] },
+    monarch:          { path: [[-83, 44], [-85, 40], [-88, 36], [-92, 32], [-96, 28], [-98, 24], [-100.3, 19.6]] },
+    bartailed_godwit: { path: [[-163, 62], [-166, 55], [-170, 45], [-173, 36], [-176, 28]],
+                        offMap: 'New Zealand' }
+  };
+
+  // ── Projected into the 620x400 design space the drawing code uses ─────────
+  // Calibrated on the mainland plus the outlying islands, so nothing that gets
+  // drawn can fall outside the box.
+  MIG_PROJ.calibrate([GEO_MAINLAND].concat(GEO_ISLANDS).concat([GEO_ALEUTIANS]), 14);
+  var MAP_COAST = MIG_PROJ.ring(GEO_MAINLAND);
+  var MAP_HUDSON = MIG_PROJ.ring(GEO_HUDSON);
+  var MAP_LAKES = GEO_LAKES.map(function(r) { return MIG_PROJ.ring(r); });
+  var MAP_ISLANDS = GEO_ISLANDS.map(function(r) { return MIG_PROJ.ring(r); });
+  var MAP_ALEUTIANS = MIG_PROJ.ring(GEO_ALEUTIANS);
+  var MAP_RIVERS = GEO_RIVERS.map(function(r) { return MIG_PROJ.ring(r); });
+  var MAP_RANGES = GEO_RANGES.map(function(r) {
+    return { pts: MIG_PROJ.ring(r.pts), step: r.step, hgt: r.hgt };
+  });
+  var MAP_PLACES = GEO_PLACES.map(function(p) {
+    var xy = MIG_PROJ.pt(p.lon, p.lat);
+    return { text: p.text, x: xy[0], y: xy[1], kind: p.kind };
+  });
+  // Species routes in design space, plus the point at which an off-map route
+  // leaves the sheet, so the "carries on to ..." marker can sit on the edge.
+  var MAP_SPECIES_ROUTES = (function() {
+    var out = {};
+    Object.keys(SPECIES_ROUTES).forEach(function(id) {
+      var sr = SPECIES_ROUTES[id];
+      var pts = sr.path.map(function(p) { return MIG_PROJ.xy(p[0], p[1]); });
+      var lastIn = pts.length - 1;
+      for (var i = 0; i < pts.length; i++) {
+        if (pts[i].x < 4 || pts[i].x > 616 || pts[i].y < 4 || pts[i].y > 396) { lastIn = Math.max(0, i - 1); break; }
+      }
+      out[id] = { pts: pts, offMap: sr.offMap || null, exitIdx: lastIn };
+    });
+    return out;
+  })();
 
   // Catmull-Rom through the given points, emitted as beziers so a 20-point
   // coastline reads as a coastline rather than a polygon.
@@ -3395,40 +3622,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           pacific: { stroke: '#ef4444', fill: 'rgba(239,68,68,0.15)' }
         };
 
-        // Simplified flyway paths (canvas coords in a ~620x400 space)
-        // These are approximate curved paths representing the four North American flyways
+        // ── The four North American flyways, in real [lon, lat] ──────────
+        // Traced from the corridors the flyways are actually defined by, then
+        // projected. They used to be four near-parallel arcs drawn by eye in
+        // design space, which put the Pacific Flyway out over the ocean and
+        // ran the Mississippi Flyway nowhere near the Mississippi.
+        //
+        // Pacific:     Alaska and the Yukon, down the coast ranges and the
+        //              Central Valley, into western Mexico.
+        // Central:     the Mackenzie, the Prairie provinces, the Great Plains
+        //              east of the Rockies, Texas, eastern Mexico.
+        // Mississippi: western Hudson Bay and the boreal forest, the Great
+        //              Lakes, then the Mississippi valley to the Gulf and on
+        //              to the Yucatan.
+        // Atlantic:    Ungava and Labrador, the Maritimes, the Atlantic
+        //              seaboard, Florida, and into the Caribbean.
+        var FLYWAY_LATLON = {
+          pacific: [[-152, 67], [-145, 62], [-136, 57], [-126, 51], [-122, 45],
+                    [-121, 39], [-118, 34], [-114, 30], [-109, 25], [-104, 20], [-96, 16]],
+          central: [[-140, 68], [-128, 63], [-116, 57], [-110, 50], [-105, 44],
+                    [-101, 38], [-99, 32], [-98, 27], [-98, 22], [-96, 18]],
+          mississippi: [[-95, 64], [-95, 58], [-95, 52], [-93, 47], [-91, 43],
+                        [-90, 39], [-90, 35], [-90, 31], [-89.5, 29], [-90, 25], [-89.8, 21.2]],
+          atlantic: [[-70, 66], [-68, 60], [-66, 54], [-66, 48], [-70, 43],
+                     [-74, 40], [-76, 36], [-79, 32], [-80.5, 28], [-80, 25], [-77, 22], [-73, 19]]
+        };
         var FLYWAY_PATHS = {
-          atlantic: [
-            { x: 420, y: 30 }, { x: 430, y: 80 }, { x: 435, y: 130 },
-            { x: 430, y: 170 }, { x: 420, y: 210 }, { x: 410, y: 250 },
-            { x: 400, y: 290 }, { x: 380, y: 330 }, { x: 350, y: 370 }
-          ],
-          mississippi: [
-            { x: 380, y: 30 }, { x: 360, y: 80 }, { x: 340, y: 130 },
-            { x: 330, y: 170 }, { x: 320, y: 210 }, { x: 310, y: 260 },
-            { x: 300, y: 310 }, { x: 280, y: 350 }, { x: 260, y: 380 }
-          ],
-          central: [
-            { x: 320, y: 30 }, { x: 300, y: 80 }, { x: 280, y: 130 },
-            { x: 270, y: 170 }, { x: 260, y: 210 }, { x: 250, y: 260 },
-            { x: 240, y: 310 }, { x: 230, y: 350 }, { x: 220, y: 380 }
-          ],
-          pacific: [
-            { x: 180, y: 30 }, { x: 170, y: 80 }, { x: 160, y: 130 },
-            { x: 155, y: 170 }, { x: 150, y: 210 }, { x: 148, y: 260 },
-            { x: 150, y: 310 }, { x: 155, y: 350 }, { x: 160, y: 380 }
-          ]
+          atlantic: FLYWAY_LATLON.atlantic.map(function(p) { return MIG_PROJ.xy(p[0], p[1]); }),
+          mississippi: FLYWAY_LATLON.mississippi.map(function(p) { return MIG_PROJ.xy(p[0], p[1]); }),
+          central: FLYWAY_LATLON.central.map(function(p) { return MIG_PROJ.xy(p[0], p[1]); }),
+          pacific: FLYWAY_LATLON.pacific.map(function(p) { return MIG_PROJ.xy(p[0], p[1]); })
         };
 
-        // Stopover markers
-        var STOPOVERS = [
-          { name: t('stem.migration.delaware_bay', 'Delaware Bay'), x: 437, y: 176, labelDy: -13, flyway: 'atlantic', fact: t('stem.migration.over_1_million_shorebirds_stop_here_to', 'Over 1 million shorebirds stop here to feast on horseshoe crab eggs') },
-          { name: t('stem.migration.gulf_coast', 'Gulf Coast'), x: 383, y: 214, flyway: 'atlantic', fact: t('stem.migration.critical_rest_stop_after_the_500_mile_', 'Critical rest stop after the 500-mile Gulf of Mexico crossing') },
-          { name: t('stem.migration.platte_river_ne', 'Platte River, NE'), x: 290, y: 170, flyway: 'central', fact: t('stem.migration.600_000_sandhill_cranes_gather_here_ea', '600,000 Sandhill Cranes gather here each spring \u2014 one of nature\'s greatest spectacles') },
-          { name: t('stem.migration.great_salt_lake', 'Great Salt Lake'), x: 200, y: 170, flyway: 'pacific', fact: t('stem.migration.5_million_migratory_birds_depend_on_th', '5 million migratory birds depend on this inland sea as a refueling station') },
-          { name: t('stem.migration.mississippi_delta', 'Mississippi Delta'), x: 349, y: 228, flyway: 'mississippi', fact: t('stem.migration.wetlands_here_support_40_of_north_amer', 'Wetlands here support 40% of North America\'s migratory waterfowl') },
-          { name: t('stem.migration.chesapeake_bay', 'Chesapeake Bay'), x: 432, y: 199, labelDy: 15, flyway: 'atlantic', fact: t('stem.migration.largest_estuary_in_the_us_critical_win', 'Largest estuary in the US \u2014 critical wintering habitat for ducks and geese') }
+        // ── Stopover sites, at their real coordinates ────────────────────
+        // Each site is authored as [lon, lat] and projected, so a pin sits on
+        // the place it names. They used to be design-space guesses: Delaware
+        // Bay was drawn at 44.0N against the map's own graticule when the real
+        // bay is at 39.1N, and the Gulf Coast pin was 8.2 degrees out.
+        //
+        // "Gulf Coast" was also filed under the Atlantic Flyway. The Gulf
+        // crossing it describes is the Mississippi and Central corridors'
+        // trans-Gulf route, so it is filed under Mississippi now.
+        var STOPOVER_SRC = [
+          { name: t('stem.migration.delaware_bay', 'Delaware Bay'), lon: -75.1, lat: 39.1, labelDy: -13, flyway: 'atlantic', fact: t('stem.migration.over_1_million_shorebirds_stop_here_to', 'Over 1 million shorebirds stop here to feast on horseshoe crab eggs') },
+          { name: t('stem.migration.gulf_coast', 'Gulf Coast'), lon: -94.4, lat: 29.6, labelDy: 15, flyway: 'mississippi', fact: t('stem.migration.critical_rest_stop_after_the_500_mile_', 'Critical rest stop after the 500-mile Gulf of Mexico crossing') },
+          { name: t('stem.migration.platte_river_ne', 'Platte River, NE'), lon: -98.5, lat: 40.8, flyway: 'central', fact: t('stem.migration.600_000_sandhill_cranes_gather_here_ea', '600,000 Sandhill Cranes gather here each spring \u2014 one of nature\'s greatest spectacles') },
+          { name: t('stem.migration.great_salt_lake', 'Great Salt Lake'), lon: -112.5, lat: 41.1, flyway: 'pacific', fact: t('stem.migration.5_million_migratory_birds_depend_on_th', '5 million migratory birds depend on this inland sea as a refueling station') },
+          { name: t('stem.migration.mississippi_delta', 'Mississippi Delta'), lon: -89.7, lat: 29.3, flyway: 'mississippi', fact: t('stem.migration.wetlands_here_support_40_of_north_amer', 'Wetlands here support 40% of North America\'s migratory waterfowl') },
+          { name: t('stem.migration.chesapeake_bay', 'Chesapeake Bay'), lon: -76.2, lat: 37.8, labelDy: 15, flyway: 'atlantic', fact: t('stem.migration.largest_estuary_in_the_us_critical_win', 'Largest estuary in the US \u2014 critical wintering habitat for ducks and geese') }
         ];
+        var STOPOVERS = STOPOVER_SRC.map(function(s) {
+          var p = MIG_PROJ.pt(s.lon, s.lat);
+          return { name: s.name, x: p[0], y: p[1], labelDy: s.labelDy, flyway: s.flyway, fact: s.fact, lon: s.lon, lat: s.lat };
+        });
 
         var _rtInitCanvas = function(canvas) {
           if (!canvas) return;
@@ -3490,25 +3736,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             // carries them — enough to read as a chart without adding clutter.
             c.strokeStyle = isDark ? 'rgba(186,230,253,0.10)' : 'rgba(3,105,161,0.10)';
             c.lineWidth = 0.7;
-            var PARALLELS = [[80, '60°N'], [170, '45°N'], [260, '30°N'], [350, '15°N']];
-            for (var gi = 0; gi < PARALLELS.length; gi++) {
+            // Graticule, drawn FROM the projection. On a conic the parallels
+            // are arcs and the meridians converge toward the pole, so they are
+            // sampled rather than drawn as straight rows. Both are labelled:
+            // the old map drew unlabelled vertical lines that corresponded to
+            // no longitude at all.
+            var GRAT_LAT = [20, 30, 40, 50, 60, 70];
+            var GRAT_LON = [-160, -140, -120, -100, -80, -60];
+            var LON_LO = -170, LON_HI = -50, LAT_LO = 7, LAT_HI = 74;
+            for (var gi = 0; gi < GRAT_LAT.length; gi++) {
               c.beginPath();
-              c.moveTo(-mapX, PARALLELS[gi][0] * scaleY);
-              c.lineTo(W - mapX, PARALLELS[gi][0] * scaleY);
+              for (var gl = LON_LO; gl <= LON_HI; gl += 4) {
+                var gp = MIG_PROJ.pt(gl, GRAT_LAT[gi]);
+                if (gl === LON_LO) c.moveTo(gp[0] * scaleX, gp[1] * scaleY);
+                else c.lineTo(gp[0] * scaleX, gp[1] * scaleY);
+              }
               c.stroke();
             }
-            for (var gx = 60; gx < 620; gx += 60) {
+            for (var gm = 0; gm < GRAT_LON.length; gm++) {
               c.beginPath();
-              c.moveTo(gx * scaleX, -mapY);
-              c.lineTo(gx * scaleX, H - mapY);
+              for (var gt = LAT_LO; gt <= LAT_HI; gt += 3) {
+                var gq = MIG_PROJ.pt(GRAT_LON[gm], gt);
+                if (gt === LAT_LO) c.moveTo(gq[0] * scaleX, gq[1] * scaleY);
+                else c.lineTo(gq[0] * scaleX, gq[1] * scaleY);
+              }
               c.stroke();
             }
             c.font = '7px system-ui';
-            c.textAlign = 'left';
             c.textBaseline = 'alphabetic';
             c.fillStyle = isDark ? 'rgba(186,230,253,0.42)' : 'rgba(3,105,161,0.42)';
-            for (var gj = 0; gj < PARALLELS.length; gj++) {
-              c.fillText(PARALLELS[gj][1], 4 - mapX, PARALLELS[gj][0] * scaleY - 3);
+            // Parallel labels sit ON their own arc at a fixed longitude out in
+            // the open Pacific, with a halo so they read over water or land.
+            // Labelling them at the canvas edge is geometrically correct and
+            // pedagogically wrong: the arcs sweep upward toward the centre, so
+            // at the far west every parallel sits far below the height it has
+            // over the continent, and "20 deg N" would appear at about the
+            // height of Oregon.
+            // 20-50N are labelled out in the open Pacific; 60N and 70N would
+            // land on Alaska there, so they are labelled on the Atlantic side.
+            function migrLabelLon(lat) { return lat >= 60 ? -52 : -152; }
+            function migrGratLabel(txt, px, py) {
+              c.lineWidth = 2.4;
+              c.strokeStyle = isDark ? 'rgba(2,20,40,0.75)' : 'rgba(255,255,255,0.80)';
+              c.strokeText(txt, px, py);
+              c.fillText(txt, px, py);
+            }
+            c.lineJoin = 'round';
+            c.textAlign = 'center';
+            for (var gj = 0; gj < GRAT_LAT.length; gj++) {
+              var lp = MIG_PROJ.pt(migrLabelLon(GRAT_LAT[gj]), GRAT_LAT[gj]);
+              migrGratLabel(GRAT_LAT[gj] + '°N', lp[0] * scaleX, lp[1] * scaleY - 3);
+            }
+            var edgeB = H - mapY - 4;
+            for (var gk = 0; gk < GRAT_LON.length; gk++) {
+              var mx = null;
+              for (var mw = LAT_HI; mw >= LAT_LO; mw -= 2) {
+                var mq = MIG_PROJ.pt(GRAT_LON[gk], mw);
+                if (mq[1] * scaleY <= edgeB) { mx = mq[0] * scaleX; break; }
+              }
+              if (mx !== null) migrGratLabel(Math.abs(GRAT_LON[gk]) + '°W', mx, edgeB);
             }
 
             // ── North America ──
@@ -3579,13 +3865,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.lineCap = 'butt';
             c.restore();
 
-            // Offshore land: Alaska, the islands and the Antillean arc.
-            migrDrawLand(c, MAP_ALASKA, scaleX, scaleY, landGrad, coastStroke, 1.1);
-            migrDrawLand(c, MAP_NEWFOUNDLAND, scaleX, scaleY, landGrad, coastStroke, 1);
-            migrDrawLand(c, MAP_VANCOUVER, scaleX, scaleY, landGrad, coastStroke, 1);
-            migrDrawLand(c, MAP_BAJA, scaleX, scaleY, landGrad, coastStroke, 1);
-            migrDrawLand(c, MAP_CUBA, scaleX, scaleY, landGrad, coastStroke, 1);
-            migrDrawLand(c, MAP_HISPANIOLA, scaleX, scaleY, landGrad, coastStroke, 1);
+            // Offshore land. Alaska and Baja are no longer here: they are part of
+            // the mainland ring now, which is what they are in reality.
+            for (var isl = 0; isl < MAP_ISLANDS.length; isl++) {
+              migrDrawLand(c, MAP_ISLANDS[isl], scaleX, scaleY, landGrad, coastStroke, 1);
+            }
             // Aleutian chain as a dotted arc
             c.fillStyle = isDark ? '#334155' : '#c7d2dc';
             for (var al = 0; al < MAP_ALEUTIANS.length; al++) {
@@ -3602,14 +3886,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.lineWidth = 0.9;
             c.stroke();
 
-            // Great Lakes
-            var LAKES = [
-              [336, 110, 18, 7.5, -0.2], [346, 134, 6, 14, 0.1], [364, 122, 9, 12, 0.2],
-              [379, 144, 14, 4, -0.1], [398, 136, 9.5, 3.2, -0.15]
-            ];
-            for (var lk = 0; lk < LAKES.length; lk++) {
-              c.beginPath();
-              c.ellipse(LAKES[lk][0] * scaleX, LAKES[lk][1] * scaleY, LAKES[lk][2] * scaleX, LAKES[lk][3] * scaleY, LAKES[lk][4], 0, Math.PI * 2);
+            // Great Lakes, as real outlines rather than five ellipses.
+            for (var lk = 0; lk < MAP_LAKES.length; lk++) {
+              migrSmoothPath(c, MAP_LAKES[lk], scaleX, scaleY, true, 0.12);
               c.fillStyle = isDark ? '#0c4a6e' : '#a5daf6';
               c.fill();
               c.strokeStyle = isDark ? 'rgba(100,116,139,0.6)' : 'rgba(124,139,161,0.6)';
@@ -3617,28 +3896,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               c.stroke();
             }
 
-            // The Mississippi — the north-south corridor the flyway is named for
-            c.beginPath();
-            migrSmoothPath(c, [[348, 158], [342, 182], [346, 206], [340, 228], [345, 247]], scaleX, scaleY, false, 0.16);
-            c.strokeStyle = isDark ? 'rgba(56,189,248,0.40)' : 'rgba(56,141,199,0.34)';
-            c.lineWidth = 1.1;
-            c.stroke();
+            // Rivers birds pilot along. The Mississippi is drawn first and
+            // heaviest: it is the corridor its flyway is named after, and the
+            // flyway line now actually follows it.
+            for (var rv = 0; rv < MAP_RIVERS.length; rv++) {
+              migrSmoothPath(c, MAP_RIVERS[rv], scaleX, scaleY, false, 0.16);
+              c.strokeStyle = isDark ? 'rgba(56,189,248,0.40)' : 'rgba(56,141,199,0.34)';
+              c.lineWidth = rv === 0 ? 1.3 : 0.85;
+              c.stroke();
+            }
 
             // ── Place names ──
+            // Positioned by real longitude/latitude, so a label cannot drift
+            // away from the thing it names when the coastline is edited.
             c.textAlign = 'center';
             c.textBaseline = 'alphabetic';
-            c.font = 'bold 8px system-ui';
-            c.fillStyle = isDark ? 'rgba(203,213,225,0.50)' : 'rgba(71,85,105,0.48)';
-            c.fillText('CANADA', 250 * scaleX, 120 * scaleY);
-            c.fillText('UNITED STATES', 290 * scaleX, 208 * scaleY);
-            c.fillText('MEXICO', 268 * scaleX, 322 * scaleY);
-            c.fillText('ALASKA', 88 * scaleX, 40 * scaleY);
-            c.font = 'italic 7.5px system-ui';
-            c.fillStyle = isDark ? 'rgba(125,211,252,0.55)' : 'rgba(3,105,161,0.50)';
-            c.fillText('Gulf of Mexico', 384 * scaleX, 262 * scaleY);
-            c.fillText('Hudson Bay', 328 * scaleX, 62 * scaleY);
-            c.fillText('Atlantic Ocean', 530 * scaleX, 180 * scaleY);
-            c.fillText('Pacific Ocean', 62 * scaleX, 200 * scaleY);
+            for (var pl = 0; pl < MAP_PLACES.length; pl++) {
+              var plc = MAP_PLACES[pl];
+              if (plc.kind === 'water') {
+                c.font = 'italic 7.5px system-ui';
+                c.fillStyle = isDark ? 'rgba(125,211,252,0.55)' : 'rgba(3,105,161,0.50)';
+              } else {
+                c.font = 'bold 8px system-ui';
+                c.fillStyle = isDark ? 'rgba(203,213,225,0.50)' : 'rgba(71,85,105,0.48)';
+              }
+              c.fillText(plc.text, plc.x * scaleX, plc.y * scaleY);
+            }
 
             // Arc-length sample along a flyway polyline. u in [0,1] returns the
             // point plus the local heading, so chevrons and the animated bird
@@ -3749,12 +4032,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             // haloes at the two ends of its corridor.
             if (selectedSpecies) {
               var spR = getSpeciesById(selectedSpecies);
-              var ptsR = FLYWAY_PATHS[spR.flyway];
+              var srR = MAP_SPECIES_ROUTES[spR.id];
+              // The species' OWN route, not the two ends of its flyway.
+              var ptsR = (srR && srR.pts.length > 1) ? srR.pts : FLYWAY_PATHS[spR.flyway];
               var colR = FLYWAY_COLORS[spR.flyway].stroke;
+              var offMapR = srR && srR.offMap;
+              // The species' own track. Without it the breeding halo, the bird
+              // and the off-map arrow are three marks with nothing joining
+              // them, and a route that leaves the sheet reads as a stray arrow
+              // in the ocean.
+              if (ptsR && ptsR.length > 1) {
+                c.save();
+                c.setLineDash([5, 4]);
+                c.lineWidth = 2.2;
+                c.lineCap = 'round';
+                c.strokeStyle = migrAlpha(colR, 0.55);
+                c.beginPath();
+                c.moveTo(ptsR[0].x * scaleX, ptsR[0].y * scaleY);
+                for (var rp = 1; rp < ptsR.length; rp++) {
+                  c.lineTo(ptsR[rp].x * scaleX, ptsR[rp].y * scaleY);
+                }
+                c.stroke();
+                c.restore();
+              }
               var ends = [
-                { u: 0.03, r: 42, dy: 22, label: t('stem.migration.breeding', 'Breeding'), tint: '#22c55e' },
-                { u: 0.97, r: 42, dy: -22, label: t('stem.migration.wintering', 'Wintering'), tint: '#f59e0b' }
+                { u: 0.03, r: 42, dy: 22, label: t('stem.migration.breeding', 'Breeding'), tint: '#22c55e' }
               ];
+              // Only claim a wintering ground on this sheet if the bird
+              // actually winters on it.
+              if (!offMapR) {
+                ends.push({ u: 0.97, r: 42, dy: -22, label: t('stem.migration.wintering', 'Wintering'), tint: '#f59e0b' });
+              }
               for (var en = 0; en < ends.length; en++) {
                 var ep = flywayPoint(ptsR, ends[en].u);
                 var rg = c.createRadialGradient(ep.x, ep.y, 2, ep.x, ep.y, ends[en].r);
@@ -3773,6 +4081,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 var perpY = -Math.cos(ep.ang) * 52;
                 migrChip(c, ep.x + perpX, ep.y + perpY + ends[en].dy * 0.25, ends[en].label,
                   isDark ? '#f8fafc' : '#0f172a', migrAlpha(ends[en].tint, 0.55), 'bold 8px system-ui');
+              }
+              // A route that leaves the sheet says so, on the edge, naming
+              // where it carries on to.
+              if (offMapR) {
+                var exitP = ptsR[Math.min(srR.exitIdx, ptsR.length - 1)];
+                var prevP = ptsR[Math.max(0, Math.min(srR.exitIdx, ptsR.length - 1) - 1)];
+                var exAng = Math.atan2((exitP.y - prevP.y) * scaleY, (exitP.x - prevP.x) * scaleX);
+                var ex = exitP.x * scaleX, ey = exitP.y * scaleY;
+                c.save();
+                c.translate(ex, ey);
+                c.rotate(exAng);
+                c.fillStyle = migrAlpha('#f59e0b', 0.92);
+                c.beginPath();
+                c.moveTo(10, 0); c.lineTo(-4, -5.5); c.lineTo(-4, 5.5);
+                c.closePath();
+                c.fill();
+                c.restore();
+                migrChip(c, ex + Math.cos(exAng) * 40, ey + Math.sin(exAng) * 40,
+                  (t('stem.migration.continues_to', 'continues to') + ' ' + offMapR),
+                  isDark ? '#f8fafc' : '#0f172a', migrAlpha('#f59e0b', 0.55), 'bold 8px system-ui');
               }
               void colR;
             }
@@ -3826,7 +4154,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             // ── The species itself, flying its route ──
             if (selectedSpecies) {
               var sp2 = getSpeciesById(selectedSpecies);
-              var pts2 = FLYWAY_PATHS[sp2.flyway];
+              var sr2 = MAP_SPECIES_ROUTES[sp2.id];
+              var pts2 = (sr2 && sr2.pts.length > 1) ? sr2.pts : FLYWAY_PATHS[sp2.flyway];
               if (pts2 && pts2.length > 1) {
                 var prog = (timeRef.current * 0.09) % 1;
                 var here = flywayPoint(pts2, prog);

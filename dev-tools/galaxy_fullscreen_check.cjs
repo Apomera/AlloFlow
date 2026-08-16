@@ -22,7 +22,7 @@ const path = require('path');
 const ROOT = process.cwd();
 const OUT = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : '.';
 const only = (process.argv.find((a) => a.startsWith('--mode=')) || '').split('=')[1];
-const MODES = only ? [only] : ['blocked', 'reject', 'throws'];
+const MODES = only ? [only] : ['native', 'blocked', 'reject', 'throws'];
 
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const react = read('desktop/web-app/node_modules/react/umd/react.production.min.js');
@@ -71,6 +71,8 @@ window.__mount = function (state) {
 };
 `;
 
+const NEWLINE = new RegExp('\r?\n');
+
 const VIEWPORT = { width: 1100, height: 820 };
 
 // The button carries no test hook, so find it the way a learner does — by its
@@ -82,6 +84,7 @@ async function runMode(chromium, mode) {
   const pg = await b.newPage({ viewport: VIEWPORT, deviceScaleFactor: 1 });
 
   await pg.addInitScript((m) => {
+    if (m === 'native') return; // leave the real API alone
     Object.defineProperty(document, 'fullscreenEnabled', { get: () => m !== 'blocked', configurable: true });
     if (m === 'blocked') {
       delete Element.prototype.requestFullscreen;
@@ -121,6 +124,7 @@ async function runMode(chromium, mode) {
       hasToggle: !!(cv && cv._galaxyToggleFullscreen),
       immersive: !!(cv && cv.getAttribute('data-galaxy-immersive')),
       pill: !!document.querySelector('[data-galaxy-exit-immersive]'),
+      nativeFs: !!document.fullscreenElement,
       bodyOverflow: document.body.style.overflow,
       rect: r ? { top: Math.round(r.top), left: Math.round(r.left), w: Math.round(r.width), h: Math.round(r.height) } : null,
       canvasBox: cv ? { w: Math.round(cv.getBoundingClientRect().width), h: Math.round(cv.getBoundingClientRect().height) } : null,
@@ -131,13 +135,29 @@ async function runMode(chromium, mode) {
   const before = await measure();
   const btn = await pg.$(FS_BUTTON);
   if (!btn) { console.log(mode.padEnd(8) + 'FAIL — fullscreen button not found'); await b.close(); return false; }
-  await btn.click();
-  await pg.waitForTimeout(900);
+  // The scene animates, so Playwright's stability check can hang for the full timeout —
+  // the same trap the screenshot in galaxy_no_webgl_check hits. A forced click skips
+  // actionability while still dispatching a trusted event, which native
+  // requestFullscreen needs. Retrying instead of forcing double-fires the toggle.
+  await btn.click({ force: true });
+  await pg.waitForTimeout(1500);
   const during = await measure();
 
-  await pg.screenshot({ path: path.join(OUT, 'galaxy-fullscreen-' + mode + '.png') });
+  // A screenshot of a live WebGL scene can wait forever for the page to go quiet, so
+  // it is best-effort: a missing image is not a failed check.
+  try {
+    await pg.screenshot({ path: path.join(OUT, 'galaxy-fullscreen-' + mode + '.png'), timeout: 8000, animations: 'disabled' });
+  } catch (shotError) {
+    console.log('          (screenshot skipped: ' + String(shotError.message).split(NEWLINE)[0] + ')');
+  }
 
-  await pg.keyboard.press('Escape');
+  // Escape is the interesting exit for the fallback, and it must not leak through to
+  // the shell's close-the-tool handler. Headless Chromium has no browser chrome to
+  // handle Escape for NATIVE fullscreen, so that mode leaves the same way it came.
+  // Exiting needs no user gesture, and a real click cannot be delivered to a headless
+  // fullscreen page — so drive the tool's own toggle instead of the button.
+  if (mode === 'native') await pg.evaluate(() => document.querySelector('[data-galaxy-canvas]')._galaxyToggleFullscreen());
+  else await pg.keyboard.press('Escape');
   await pg.waitForTimeout(700);
   const after = await measure();
 
@@ -151,13 +171,22 @@ async function runMode(chromium, mode) {
     && Math.abs(after.rect.h - before.rect.h) <= 2
     && after.bodyOverflow === before.bodyOverflow;
 
-  const pass = during.immersive && covers && grew && during.pill && restored;
-  console.log(mode.padEnd(8) + (pass ? 'PASS' : 'FAIL')
+  // Native fullscreen must NOT be shouldered aside by the fallback where it works:
+  // the browser takes the page over, so there is no pill and no immersive flag.
+  // Headless Chromium does not always honour exitFullscreen (there is no browser
+  // chrome to leave), so the native restore leg is only asserted when the browser
+  // actually left. The fallback modes always assert it — that is the interesting one.
+  const nativeStuck = mode === 'native' && after.nativeFs;
+  const pass = mode === 'native'
+    ? (during.nativeFs && !during.immersive && !during.pill && covers && grew && (nativeStuck || restored))
+    : (during.immersive && covers && grew && during.pill && restored);
+  console.log(mode.padEnd(8) + (pass ? 'PASS' : 'FAIL') + '  native=' + during.nativeFs
     + '  frame ' + JSON.stringify(before.rect) + ' -> ' + JSON.stringify(during.rect) + ' -> ' + JSON.stringify(after.rect)
     + '\n          canvas ' + JSON.stringify(before.canvasBox) + ' -> ' + JSON.stringify(during.canvasBox)
     + '  covers=' + covers + ' grew=' + grew + ' pill=' + during.pill
     + ' bodyLock=' + JSON.stringify(during.bodyOverflow) + ' restored=' + restored
     + '\n          status: ' + during.status.replace(/\s+/g, ' ').slice(0, 90));
+  if (nativeStuck) console.log('          (headless kept the page fullscreen after exitFullscreen; restore leg not exercised)');
   if (logs.length) console.log('          console errors: ' + logs.slice(0, 3).join(' | '));
   await b.close();
   return pass;
@@ -167,7 +196,12 @@ async function runMode(chromium, mode) {
   const { chromium } = require('playwright');
   let allPass = true;
   for (const mode of MODES) {
-    const ok = await runMode(chromium, mode);
+    let ok = false;
+    try {
+      ok = await runMode(chromium, mode);
+    } catch (modeError) {
+      console.log(mode.padEnd(8) + 'FAIL — ' + String(modeError.message).split(NEWLINE)[0]);
+    }
     allPass = allPass && ok;
   }
   console.log('\n' + (allPass ? 'galaxy fullscreen fallback: OK in every blocked mode' : 'galaxy fullscreen fallback: FAILURES above'));

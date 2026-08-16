@@ -1,6 +1,43 @@
 // ═══════════════════════════════════════════
 // stem_tool_solarsystem.js — Solar System Explorer (standalone CDN module)
 // Extracted from stem_tool_science.js and enhanced
+//
+// ── Rock/boulder deformation that does not shatter the mesh ──
+// THREE.DodecahedronGeometry, like every PolyhedronGeometry, is NON-INDEXED.
+// Measured against the pinned r128 build: detail=1 yields 432 stored positions
+// for only ~62 distinct corners, so each shared corner is stored about seven
+// times. The old code scaled every STORED vertex by its own Math.random(), which
+// sent those seven copies to seven different points and tore each triangle away
+// from its neighbours - the "shattered glass" boulders on the Mars rover surface.
+//
+// Displace by a smooth function of DIRECTION instead. Duplicated corners share a
+// direction, so they land on the same point and the hull stays closed, while the
+// low-frequency sine lobes still give an irregular, believably non-spherical
+// rock. `seed` varies per geometry (that randomness was never the bug); `squashY`
+// keeps the flattened, settled look the original was reaching for.
+function __alloRockDeform(geo, seed, squashY) {
+  var attr = geo.attributes.position;
+  var arr = attr.array;
+  var s = seed || 0;
+  var sy = (squashY == null) ? 0.72 : squashY;
+  for (var i = 0; i < arr.length; i += 3) {
+    var x = arr[i], y = arr[i + 1], z = arr[i + 2];
+    var len = Math.sqrt(x * x + y * y + z * z) || 1;
+    var nx = x / len, ny = y / len, nz = z / len;
+    var bump = 1
+      + 0.13 * Math.sin(nx * 3.3 + s)
+      + 0.11 * Math.sin(ny * 4.1 + s * 1.7 + 1.3)
+      + 0.08 * Math.sin(nz * 2.7 + s * 2.3 + 2.6)
+      + 0.05 * Math.sin((nx + ny + nz) * 5.9 + s * 3.1);
+    arr[i] = x * bump;
+    arr[i + 1] = y * bump * sy;
+    arr[i + 2] = z * bump;
+  }
+  attr.needsUpdate = true;
+  geo.computeVertexNormals();
+  geo.computeBoundingSphere();
+  return geo;
+}
 // ═══════════════════════════════════════════
 
 // ═══ Defensive StemLab guard ═══
@@ -1051,7 +1088,13 @@ const d = labToolData.solarSystem || {};
               }
               renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-              renderer.setSize(W, H);
+              // updateStyle=false. The canvas is laid out `w-full` with a fixed 520px
+              // height and W came from `canvas.clientWidth`, so letting Three write inline
+              // px here pins the canvas to its first measurement — after which the resize
+              // handler, which reads clientWidth off the same element, keeps reading that
+              // frozen value back. Measured before the fix: the orrery stayed 1040px wide
+              // while its container went 1184 -> 704.
+              renderer.setSize(W, H, false);
 
               // ── Colour management ──
               // The scene is lit with real lights and ~70 Standard/Physical materials, so
@@ -1855,7 +1898,14 @@ const d = labToolData.solarSystem || {};
               }
 
               function clearSolarLabels() {
-                if (labelContainer) labelContainer.innerHTML = '';
+                if (!labelContainer) return;
+                labelContainer.innerHTML = '';
+                // The animation loop keeps persistent label elements in
+                // _solarLabelCache. Wiping innerHTML without dropping the cache
+                // would leave it holding DETACHED nodes: the loop would go on
+                // happily writing transforms to elements no longer in the
+                // document and every label would silently vanish for good.
+                labelContainer._solarLabelCache = null;
               }
 
               function cleanupSolarCanvas() {
@@ -1912,11 +1962,20 @@ const d = labToolData.solarSystem || {};
 
                 const speed = parseFloat(canvas.dataset.speed || '1');
 
+                // Base radians-per-frame at the slider's 1.0x. Was 0.008, which put
+                // Mercury (orbital speed 4.15) through a full circuit in about three
+                // seconds - its label crossed the screen faster than it could be read.
+                // 0.005 makes an Earth year ~21 s and a Mercury year ~5 s; the slider
+                // still reaches 10x for anyone who wants the old pace. Both the
+                // orbital integrator and the "Earth days" readout must divide the same
+                // constant or the clock and the planets drift apart.
+                const SOLAR_BASE_RATE = 0.005;
+
                 const isPaused = canvas.dataset.paused === 'true';
 
                 if (!isPaused) {
 
-                  time += 0.008 * speed;
+                  time += SOLAR_BASE_RATE * speed;
 
                 }
 
@@ -1924,7 +1983,7 @@ const d = labToolData.solarSystem || {};
 
                 // Orbit planets
 
-                var timeScale = 0.008 * speed * (isPaused ? 0 : 1);
+                var timeScale = SOLAR_BASE_RATE * speed * (isPaused ? 0 : 1);
                 planetMeshes.forEach(function (mesh, i) {
                   if (mesh.userData.isComet) {
                     // Kepler's second law approx (faster near perihelion)
@@ -2095,35 +2154,100 @@ const d = labToolData.solarSystem || {};
 
                 if (labelContainer) {
 
-                  labelContainer.innerHTML = '';
+                  // Labels were torn down and rebuilt EVERY FRAME: innerHTML = ''
+                  // followed by a fresh createElement per planet, positioned with
+                  // fractional left/top. Three things fell out of that, and together
+                  // they are why the labels were unreadable:
+                  //   1. ~9 DOM nodes destroyed and recreated 60x a second, so the
+                  //      declared `transition:` never had an element old enough to run;
+                  //   2. fractional left/top re-rasterised the text on sub-pixel
+                  //      boundaries every frame, which reads as shimmer even standing still;
+                  //   3. nothing separated labels, so the inner planets - which bunch
+                  //      up near the Sun in screen space - stacked on top of each other.
+                  // Now: one persistent element per body, moved with a pixel-rounded
+                  // translate3d, eased toward the projected point, and decluttered.
+                  var labelCache = labelContainer._solarLabelCache;
+                  if (!labelCache) { labelCache = labelContainer._solarLabelCache = {}; }
+                  var liveLabels = [];
+                  var cachedName;
+                  for (cachedName in labelCache) { labelCache[cachedName].live = false; }
 
                   planetMeshes.forEach(function (mesh) {
 
-                    const pos = mesh.position.clone();
-
+                    var name = mesh.userData.name;
+                    var pos = mesh.position.clone();
                     pos.y += mesh.geometry.parameters.radius + 0.4;
-
                     pos.project(camera);
 
-                    if (pos.z < 1 && pos.z > -1) {
-
-                      const lx = (pos.x * 0.5 + 0.5) * W;
-
-                      const ly = (-pos.y * 0.5 + 0.5) * H;
-
-                      const isSelected = canvas.dataset.selected === mesh.userData.name;
-
-                      const label = document.createElement('div');
-
-                      label.style.cssText = 'position:absolute;left:' + lx + 'px;top:' + ly + 'px;transform:translate(-50%,-100%);font-size:10px;font-weight:800;letter-spacing:0.02em;pointer-events:none;color:' + (isSelected ? '#111827' : '#0f172a') + ';background:' + (isSelected ? 'rgba(254,240,138,0.96)' : 'rgba(248,250,252,0.92)') + ';border:1px solid ' + (isSelected ? 'rgba(251,191,36,0.95)' : 'rgba(148,163,184,0.55)') + ';border-radius:999px;padding:3px 7px;box-shadow:0 2px 8px rgba(2,6,23,0.45),0 0 0 1px rgba(255,255,255,0.12);white-space:nowrap;transition:background 0.2s,color 0.2s,border-color 0.2s;';
-
-                      label.textContent = mesh.userData.name;
-
-                      labelContainer.appendChild(label);
-
+                    // Depth alone is not "on screen". A body can sit well within the
+                    // near/far planes and still project far outside the frame - an
+                    // outer planet or a comet at aphelion does exactly that - and the
+                    // old check let those labels render anyway, so they piled up
+                    // against the edge of the stage attached to nothing visible.
+                    // Cull on all three axes, with a small margin so a label does not
+                    // pop the instant its planet touches the border.
+                    if (!(pos.z < 1 && pos.z > -1)) return;
+                    if (pos.x < -1.04 || pos.x > 1.04 || pos.y < -1.04 || pos.y > 1.04) {
+                      var offEntry = labelCache[name];
+                      if (offEntry) { offEntry.el.style.display = 'none'; offEntry.seeded = false; }
+                      return;
                     }
 
+                    var lx = (pos.x * 0.5 + 0.5) * W;
+                    var ly = (-pos.y * 0.5 + 0.5) * H;
+                    var entry = labelCache[name];
+
+                    if (!entry) {
+                      var el = document.createElement('div');
+                      el.textContent = name;
+                      labelContainer.appendChild(el);
+                      entry = labelCache[name] = { el: el, x: lx, y: ly, sel: null, seeded: true };
+                    }
+
+                    if (!entry.seeded) {
+                      // Reappearing from behind the Sun: snap, do not fly in.
+                      entry.x = lx; entry.y = ly; entry.seeded = true;
+                    } else {
+                      // Ease toward the projection. Fast enough to stay pinned to a
+                      // moving planet, slow enough that per-frame projection noise
+                      // stops reading as jitter.
+                      entry.x += (lx - entry.x) * 0.18;
+                      entry.y += (ly - entry.y) * 0.18;
+                    }
+
+                    entry.live = true;
+                    liveLabels.push(entry);
                   });
+
+                  // Vertical declutter, nearest the top of the screen keeps its place.
+                  liveLabels.sort(function (a, b) { return a.y - b.y; });
+                  for (var li = 1; li < liveLabels.length; li++) {
+                    var prevLabel = liveLabels[li - 1], curLabel = liveLabels[li];
+                    if (Math.abs(curLabel.x - prevLabel.x) < 64 && curLabel.y - prevLabel.y < 16) {
+                      curLabel.y = prevLabel.y + 16;
+                    }
+                  }
+
+                  for (var lj = 0; lj < liveLabels.length; lj++) {
+                    var live = liveLabels[lj];
+                    var isSelected = canvas.dataset.selected === live.el.textContent;
+                    if (live.sel !== isSelected) {
+                      live.sel = isSelected;
+                      // Rewritten only when selection changes, never per frame, and
+                      // deliberately free of `transform` so the per-frame write below
+                      // is the single owner of position.
+                      live.el.style.cssText = 'position:absolute;left:0;top:0;will-change:transform;font-size:10px;font-weight:800;letter-spacing:0.02em;pointer-events:none;color:' + (isSelected ? '#111827' : '#0f172a') + ';background:' + (isSelected ? 'rgba(254,240,138,0.96)' : 'rgba(248,250,252,0.92)') + ';border:1px solid ' + (isSelected ? 'rgba(251,191,36,0.95)' : 'rgba(148,163,184,0.55)') + ';border-radius:999px;padding:3px 7px;box-shadow:0 2px 8px rgba(2,6,23,0.45),0 0 0 1px rgba(255,255,255,0.12);white-space:nowrap;transition:background 0.2s,color 0.2s,border-color 0.2s;';
+                    }
+                    live.el.style.transform = 'translate(-50%,-100%) translate3d(' + Math.round(live.x) + 'px,' + Math.round(live.y) + 'px,0)';
+                    live.el.style.display = '';
+                  }
+
+                  for (cachedName in labelCache) {
+                    if (!labelCache[cachedName].live) {
+                      labelCache[cachedName].el.style.display = 'none';
+                      labelCache[cachedName].seeded = false;
+                    }
+                  }
 
                 }
 
@@ -2166,7 +2290,7 @@ const d = labToolData.solarSystem || {};
                   solarResizePending = false;
                   if (!solarAlive || !canvas.isConnected) return;
                   const w = canvas.clientWidth; const h = canvas.clientHeight;
-                  if (w && h) { camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); if (composer) { try { composer.setSize(w, h); } catch (e) {} } }
+                  if (w && h) { camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h, false); if (composer) { try { composer.setSize(w, h); } catch (e) {} } }
                 });
 
               });
@@ -10426,7 +10550,12 @@ const d = labToolData.solarSystem || {};
                           return;
                         }
 
-                        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setSize(W, H);
+                        // updateStyle=false, matching resizeDroneCanvas below. This init
+                        // call used to write inline px onto a canvas laid out at 100% x 100%,
+                        // and W/H were read from that same canvas — so it froze at its first
+                        // measurement and the resize handler, reading clientWidth back off it,
+                        // saw no change and returned early on every call.
+                        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setSize(W, H, false);
 
                         // Three r128 still exposes the pre-colorSpace API. Keep the drone
                         // scene on the same display transform as the orrery so metallic rover
@@ -10932,10 +11061,13 @@ const d = labToolData.solarSystem || {};
                               cMat = new THREE.MeshStandardMaterial({ color: cColor, roughness: 0.6, side: THREE.DoubleSide, transparent: true, opacity: 0.85, emissive: cColor, emissiveIntensity: 0.12 });
                             } else {
                               // Brain/mound coral
-                              cGeo = new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.8, 1);
-                              var bPos = cGeo.attributes.position.array;
-                              for (var bpv = 0; bpv < bPos.length; bpv += 3) { bPos[bpv + 1] *= 0.5 + Math.random() * 0.3; }
-                              cGeo.computeVertexNormals();
+                              // Same non-indexed hazard as the surface boulders: the old
+                              // per-vertex Y scale split every shared corner vertically.
+                              cGeo = __alloRockDeform(
+                                new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.8, 1),
+                                Math.random() * 100,
+                                0.62
+                              );
                               cMat = new THREE.MeshStandardMaterial({ color: cColor, roughness: 0.8, metalness: 0.05, flatShading: true, emissive: cColor, emissiveIntensity: 0.1 });
                             }
                             var coral = new THREE.Mesh(cGeo, cMat);
@@ -11331,15 +11463,13 @@ const d = labToolData.solarSystem || {};
                           for (var ri = 0; ri < 60; ri++) {
                             var rx = (Math.random() - 0.5) * 180, rz = (Math.random() - 0.5) * 180;
                             var rScale = 0.2 + Math.random() * 1.5;
-                            var rockGeo = new THREE.DodecahedronGeometry(rScale, 1);
-                            // Deform vertices for natural look
-                            var rPos = rockGeo.attributes.position.array;
-                            for (var rvi = 0; rvi < rPos.length; rvi += 3) {
-                              rPos[rvi] *= 0.7 + Math.random() * 0.6;
-                              rPos[rvi + 1] *= 0.5 + Math.random() * 0.5;
-                              rPos[rvi + 2] *= 0.7 + Math.random() * 0.6;
-                            }
-                            rockGeo.computeVertexNormals();
+                            // Deform for a natural look without tearing the hull apart
+                            // (see __alloRockDeform: this geometry is non-indexed).
+                            var rockGeo = __alloRockDeform(
+                              new THREE.DodecahedronGeometry(rScale, 1),
+                              Math.random() * 100,
+                              0.75
+                            );
                             var rock = new THREE.Mesh(rockGeo, rockMat);
                             var ry = _terrainHeightAt(rx, rz);
                             rock.position.set(rx, ry + rScale * 0.3, rz);
@@ -11789,6 +11919,18 @@ const d = labToolData.solarSystem || {};
                           sunDir.shadow.camera.near = 1;
                           sunDir.shadow.camera.far = 260;
                           sunDir.shadow.bias = -0.0012; // kill acne on the flat-shaded terrain
+                          // A constant depth bias alone cannot fix a 250-unit terrain of large
+                          // flat triangles: at grazing sun angles one texel spans metres of
+                          // slope, so the terminator stair-steps and the dark side breaks into
+                          // blocks (clearly visible on Pluto, whose sun is nearly on the
+                          // horizon). normalBias offsets the sample along the surface normal
+                          // instead of along depth, which is exactly the grazing-angle case, and
+                          // it is the knob that was missing rather than more negative bias --
+                          // pushing `bias` further just detaches contact shadows (peter-panning)
+                          // and would undo the contact shadows this block exists to provide.
+                          sunDir.shadow.normalBias = 0.6;
+                          sunDir.shadow.mapSize.width = 2048;
+                          sunDir.shadow.mapSize.height = 2048;
                           scene.add(sunDir.target);
                         }
 
@@ -12528,14 +12670,11 @@ const d = labToolData.solarSystem || {};
                           var rockColor2 = new THREE.Color(sel.terrainColor || '#886644');
                           for (var bi = 0; bi < 10; bi++) {
                             var bSize = 1.5 + Math.random() * 3;
-                            var bGeo = new THREE.DodecahedronGeometry(bSize, 1);
-                            var bPositions = bGeo.attributes.position.array;
-                            for (var bv = 0; bv < bPositions.length; bv += 3) {
-                              bPositions[bv] *= 0.6 + Math.random() * 0.8;
-                              bPositions[bv + 1] *= 0.4 + Math.random() * 0.6;
-                              bPositions[bv + 2] *= 0.6 + Math.random() * 0.8;
-                            }
-                            bGeo.computeVertexNormals();
+                            var bGeo = __alloRockDeform(
+                              new THREE.DodecahedronGeometry(bSize, 1),
+                              Math.random() * 100,
+                              0.70
+                            );
                             var bMat = new THREE.MeshStandardMaterial({
                               color: rockColor2.clone().offsetHSL(0, -0.05, -0.1),
                               roughness: 0.95, metalness: 0.05, flatShading: false

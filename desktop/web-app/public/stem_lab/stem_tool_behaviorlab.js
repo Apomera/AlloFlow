@@ -60,7 +60,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     var behaviorLabStyle = document.createElement('style');
     behaviorLabStyle.id = 'behaviorlab-workspace-css';
     behaviorLabStyle.textContent = [
-      '.behaviorlab-tool-shell{--bl-amber:#f59e0b;--bl-indigo:#6366f1;--bl-text:var(--allo-stem-text,#e2e8f0);--bl-muted:var(--allo-stem-text-soft,#94a3b8);--bl-panel:var(--allo-stem-panel,#1e293b);--bl-canvas:var(--allo-stem-canvas,#0f172a);--bl-border:var(--allo-stem-border,#334155);max-width:1080px!important;margin:0 auto;color:var(--bl-text);padding:8px 2px!important;}',
+      // ── Palette ────────────────────────────────────────────────────────────
+      // These were bound to var(--allo-stem-*), which follows the APP theme, while
+      // every panel background in this tool is a hardcoded dark navy. In the light
+      // theme that combination resolved to #0f172a text on rgba(30,41,59,.55) —
+      // roughly 1.2:1, i.e. invisible — and the two panels that DID follow the app
+      // (`--bl-canvas`) turned white underneath text that stayed slate-100.
+      // Per STEM_LAB_THEME_AUDIT the immersive dark lab surface is deliberate, so
+      // the fix is to make the tool internally consistent: pin the lab palette dark
+      // and give high contrast its own explicit override below, rather than let two
+      // halves of the same panel follow different themes.
+      '.behaviorlab-tool-shell{--bl-amber:#f59e0b;--bl-amber-text:#fcd34d;--bl-indigo:#6366f1;--bl-text:#e2e8f0;--bl-muted:#9fb0c4;--bl-panel:#1e293b;--bl-canvas:#0f172a;--bl-border:#334155;max-width:1080px!important;margin:0 auto;color:var(--bl-text);padding:8px 2px!important;}',
+      // High contrast is the one theme whose whole purpose is legibility, so it
+      // overrides the lab palette outright instead of relying on the app-wide
+      // attribute-selector sweep — that sweep matches inline-style SUBSTRINGS, and
+      // React serialises inline colours as rgb(), so it never fires in this tool.
+      '.theme-contrast .behaviorlab-tool-shell{--bl-amber:#ffff00;--bl-amber-text:#ffff00;--bl-indigo:#ffff00;--bl-text:#ffff00;--bl-muted:#ffff00;--bl-panel:#000;--bl-canvas:#000;--bl-border:#ffff00;}',
       '.behaviorlab-tool-shell *{box-sizing:border-box;}',
       '.behaviorlab-tool-shell button,.behaviorlab-tool-shell input,.behaviorlab-tool-shell select,.behaviorlab-tool-shell textarea{font:inherit;}',
       '.behaviorlab-tool-shell button:focus-visible,.behaviorlab-tool-shell input:focus-visible,.behaviorlab-tool-shell select:focus-visible,.behaviorlab-tool-shell textarea:focus-visible,.behaviorlab-tool-shell summary:focus-visible,.behaviorlab-tool-shell canvas:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}',
@@ -91,6 +106,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
       '.behaviorlab-chamber-header h3{margin:0;color:var(--bl-text);font-size:13px;font-weight:900;}',
       '.behaviorlab-chamber-status{border-radius:999px;padding:4px 8px;background:var(--bl-panel);color:#fbbf24;font-size:10px;font-weight:900;}',
       '.behaviorlab-chamber-canvas{width:100%!important;height:auto!important;min-height:260px;max-height:440px;}',
+      // 2D / 3D switch. Pill buttons, and the selected one is filled rather than
+      // merely tinted — an aria-pressed state that is only a 1.2:1 background
+      // difference is not a state anyone can see.
+      '.behaviorlab-viewswitch{display:inline-flex;gap:2px;padding:2px;border-radius:999px;background:rgba(2,6,23,.55);border:1px solid var(--bl-border);}',
+      '.behaviorlab-viewswitch-btn{border:0;border-radius:999px;padding:4px 10px;background:transparent;color:var(--bl-muted);font-size:10.5px;font-weight:800;cursor:pointer;line-height:1.2;}',
+      // indigo-300, not indigo-500: dark ink on #6366f1 is 4.19:1, just under AA.
+      '.behaviorlab-viewswitch-btn.is-on{background:#a5b4fc;color:#0b1220;}',
+      '.theme-contrast .behaviorlab-viewswitch-btn.is-on{background:#ffff00;color:#000;}',
+      '.behaviorlab-3d-btn{min-width:34px;min-height:32px;padding:5px 9px;border-radius:9px;border:1px solid var(--bl-border);background:rgba(15,23,42,.75);color:var(--bl-text);font-size:12px;font-weight:700;cursor:pointer;}',
+      '.behaviorlab-3d-btn[disabled]{opacity:.55;cursor:default;}',
+      '.behaviorlab-3d-part{min-height:32px;padding:5px 11px;border-radius:999px;border:1px solid var(--bl-border);background:rgba(15,23,42,.75);color:var(--bl-text);font-size:11px;font-weight:700;cursor:pointer;}',
+      '.behaviorlab-3d-part.is-on{background:var(--bl-amber);color:#0b1220;border-color:var(--bl-amber);}',
+      '.theme-contrast .behaviorlab-3d-part.is-on{background:#ffff00;color:#000;}',
       '@media (max-width:760px){.behaviorlab-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.behaviorlab-level-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.behaviorlab-sim-header{position:static;}}',
       '@media (max-width:520px){.behaviorlab-tool-shell{padding:2px 0!important;}.behaviorlab-command{padding:13px!important;border-radius:14px!important;}.behaviorlab-level-section{padding:10px;}.behaviorlab-level-heading{align-items:flex-start;}.behaviorlab-level-progress{display:none;}.behaviorlab-level-grid{grid-template-columns:1fr;}.behaviorlab-level-card{min-height:44px;}.behaviorlab-metric{padding:8px 9px;}.behaviorlab-metric-value{font-size:12px;}.behaviorlab-chamber-header{align-items:flex-start;}.behaviorlab-chamber-canvas{min-height:220px;}}',
       '@media (prefers-reduced-motion:reduce){.behaviorlab-level-card{transition:none!important;}.behaviorlab-tool-shell *{scroll-behavior:auto!important;}}',
@@ -99,6 +127,501 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     document.head.appendChild(behaviorLabStyle);
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 3D observation chamber
+  //
+  // The 2D canvas stays the accessible floor and the default view; this is a
+  // second RENDERING of the same simulation, never a second simulation. Every
+  // position below is derived from the existing world coordinates the tick loop
+  // already writes (blMouseX/blMouseY, BL_LEVER, BL_FOOD), so the two views can
+  // never disagree about where anything is.
+  //
+  // Built on window.StemLab.makeBayViewer (host, beside ensureThree), which owns
+  // attach/teardown, pause-when-unseen, context-loss recovery, drag + raycast
+  // picking, keyboard camera and the label chips.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // Simulation world → scene units. The sim roams x 35..365 and y 80..230; those
+  // bounds are set by the movement code (`Math.max(40, Math.min(360, ...))` and
+  // friends) and predate this view, so the mapping fits the box to them rather
+  // than the other way round.
+  function blWorldX(wx) { return (wx - 200) / 148; }   // → about -1.11 … 1.11
+  function blWorldZ(wy) { return (wy - 155) / 108; }   // → about -0.69 … 0.69
+
+  // Live prefers-reduced-motion. Held as a MediaQueryList rather than re-queried
+  // per frame, but READ per frame so a student who flips the OS setting mid-session
+  // is honoured without reloading the tool.
+  var _blMotionMQ = null;
+  function blReducedMotion() {
+    try {
+      if (_blMotionMQ === null) {
+        _blMotionMQ = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)')) || false;
+      }
+      return !!(_blMotionMQ && _blMotionMQ.matches);
+    } catch (e) { return false; }
+  }
+
+  var BL_CHAMBER_PARTS = [
+    { id: 'lever', label: 'Response lever' },
+    { id: 'hopper', label: 'Food magazine' },
+    { id: 'sdlight', label: 'Stimulus light' },
+    { id: 'speaker', label: 'Tone generator' },
+    { id: 'grid', label: 'Grid floor' },
+    { id: 'house', label: 'House light' },
+    { id: 'subject', label: 'Subject' }
+  ];
+
+  function buildChamberScene(THREE, api) {
+    var meshes = {};
+    var picks = [];
+    var C = api.contrast;
+
+    // Interior half-extents. Chosen so the mapped world bounds sit just inside
+    // the walls instead of clipping through them.
+    var HX = 1.25, HZ = 0.92, HY = 1.16;
+
+    // The shell's trim() is tuned for painted metal — a pale blue specular at
+    // shininess 30. That is right for the apparatus and wrong for fur, so the
+    // organic surfaces get their own weak, dark specular.
+    function metal(hex, shiny) {
+      return new THREE.MeshPhongMaterial({
+        color: C ? 0xffffff : hex,
+        shininess: C ? 0 : (shiny == null ? 55 : shiny),
+        // Restrained. The shell already lights this scene with a 0.92 key on a 0.44
+        // ambient; a hot specular on top turned every steel surface into white
+        // plastic and flattened the apparatus into one blown-out shape.
+        specular: C ? 0x000000 : 0x8c9bb0
+      });
+    }
+    function organic(hex, shiny) {
+      return new THREE.MeshPhongMaterial({
+        color: C ? 0xffffff : hex,
+        shininess: C ? 0 : (shiny == null ? 5 : shiny),
+        specular: C ? 0x000000 : 0x1a1620
+      });
+    }
+    // Acrylic. depthWrite off so the panel in front of the camera blends over the
+    // apparatus instead of z-fighting it out of existence, and DoubleSide so the
+    // far walls still read once the camera swings behind the box.
+    function acrylic() {
+      var m = new THREE.MeshPhongMaterial({
+        color: C ? 0x222222 : 0x8fb6d4,
+        shininess: C ? 0 : 120,
+        specular: C ? 0x000000 : 0xdfeaf7,
+        transparent: true,
+        // Four panes stack between the camera and the far wall, so per-pane alpha
+        // compounds; 0.13 each washed the interior out to mid-grey.
+        opacity: C ? 0.05 : 0.095,
+        side: THREE.DoubleSide
+      });
+      m.depthWrite = false;
+      return m;
+    }
+    // Emissive surfaces (lamp lenses) must survive the shell's per-frame emissive
+    // pass, which otherwise resets every registered mesh to black. Opting into
+    // _preserveBaseEmissive makes the shell ADD its selection glow on top of a
+    // base this scene owns and mutates in frame().
+    function lampMat(hex) {
+      var m = new THREE.MeshPhongMaterial({
+        color: C ? 0xffffff : hex, shininess: 60, specular: 0xffffff,
+        emissive: new THREE.Color(0x000000)
+      });
+      m.userData._preserveBaseEmissive = true;
+      m.userData._baseEmissive = { r: 0, g: 0, b: 0 };
+      return m;
+    }
+    function box(w, h, dp, mat, x, y, z, parent) {
+      var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, dp), mat);
+      m.position.set(x || 0, y || 0, z || 0);
+      (parent || api.scene).add(m);
+      return m;
+    }
+    function blob(sx, sy, sz, mat, x, y, z, parent) {
+      var m = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), mat);
+      m.scale.set(sx, sy, sz);
+      m.position.set(x || 0, y || 0, z || 0);
+      (parent || api.scene).add(m);
+      return m;
+    }
+    function rod(len, r, mat, x, y, z, axis, parent) {
+      var m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 12), mat);
+      if (axis === 'x') m.rotation.z = Math.PI / 2;
+      else if (axis === 'z') m.rotation.x = Math.PI / 2;
+      m.position.set(x || 0, y || 0, z || 0);
+      (parent || api.scene).add(m);
+      return m;
+    }
+    // picks must hold MESHES — the shell raycasts non-recursively, so pushing a
+    // Group builds fine and silently never picks.
+    function reg(id, group) {
+      group.traverse(function (o) {
+        if (o.isMesh) { o.userData.partId = id; picks.push(o); }
+      });
+      meshes[id] = group;
+      api.scene.add(group);
+      return group;
+    }
+
+    // ── Enclosure ────────────────────────────────────────────────────────────
+    // Deliberately NOT registered: the acrylic sits between the camera and every
+    // part worth clicking, and a pickable pane would swallow every pick.
+    var frameMat = metal(0x7d8a9d, 42);
+    var acrylicMat = acrylic();
+    var panels = [
+      [2 * HX, HY, 0, HY / 2, -HZ, 0],            // back
+      [2 * HX, HY, 0, HY / 2, HZ, 0],             // front
+      [2 * HZ, HY, -HX, HY / 2, 0, Math.PI / 2],  // left
+      [2 * HZ, HY, HX, HY / 2, 0, Math.PI / 2]    // right
+    ];
+    panels.forEach(function (p) {
+      var pane = new THREE.Mesh(new THREE.PlaneGeometry(p[0], p[1]), acrylicMat);
+      pane.position.set(p[2], p[3], p[4]);
+      pane.rotation.y = p[5];
+      api.scene.add(pane);
+    });
+    var lid = new THREE.Mesh(new THREE.PlaneGeometry(2 * HX, 2 * HZ), acrylicMat);
+    lid.rotation.x = Math.PI / 2;
+    lid.position.y = HY;
+    api.scene.add(lid);
+
+    // Corner posts and edge rails — the frame is what makes the box read as
+    // apparatus rather than an empty rectangle floating in fog.
+    [[-HX, -HZ], [HX, -HZ], [-HX, HZ], [HX, HZ]].forEach(function (c) {
+      rod(HY, 0.036, frameMat, c[0], HY / 2, c[1]);
+    });
+    [0, HY].forEach(function (y) {
+      rod(2 * HX, 0.028, frameMat, 0, y, -HZ, 'x');
+      rod(2 * HX, 0.028, frameMat, 0, y, HZ, 'x');
+      rod(2 * HZ, 0.028, frameMat, -HX, y, 0, 'z');
+      rod(2 * HZ, 0.028, frameMat, HX, y, 0, 'z');
+    });
+
+    // Waste pan under the grid, and the plinth the whole box stands on.
+    box(2 * HX + 0.10, 0.10, 2 * HZ + 0.10, metal(0x2d3a4d, 20), 0, -0.10, 0);
+    box(2 * HX + 0.34, 0.07, 2 * HZ + 0.34, metal(0x1b2532, 12), 0, -0.19, 0);
+
+    // ── Grid floor ───────────────────────────────────────────────────────────
+    // Stainless rods, not a plane. The bars ARE the signature of an operant
+    // chamber, and they give the shadows something to land between.
+    var gridGroup = new THREE.Group();
+    var rodMat = metal(0x8794a8, 34);
+    var GRID_N = 15;
+    for (var gi = 0; gi < GRID_N; gi++) {
+      var gz = -HZ + 0.10 + (gi / (GRID_N - 1)) * (2 * HZ - 0.20);
+      rod(2 * HX - 0.10, 0.017, rodMat, 0, 0.03, gz, 'x', gridGroup);
+    }
+    reg('grid', gridGroup);
+
+    // ── Response lever ───────────────────────────────────────────────────────
+    // Placed from BL_LEVER, the same constant the tick loop measures approach
+    // against, so the thing the mouse walks toward is the thing that is drawn.
+    var leverZ = blWorldZ(210);
+    var leverGroup = new THREE.Group();
+    box(0.10, 0.20, 0.16, metal(0x7d8a9c, 60), HX - 0.05, 0.34, leverZ, leverGroup);
+    var leverPivot = new THREE.Group();
+    leverPivot.position.set(HX - 0.10, 0.33, leverZ);
+    leverGroup.add(leverPivot);
+    var leverArm = box(0.30, 0.030, 0.050, metal(0xd7dfea, 150), -0.15, 0, 0, leverPivot);
+    var leverPad = box(0.10, 0.028, 0.11, metal(0xe6ecf4, 150), -0.28, 0, 0, leverPivot);
+    reg('lever', leverGroup);
+
+    // ── Food magazine ────────────────────────────────────────────────────────
+    var hopperZ = blWorldZ(238);
+    var hopperGroup = new THREE.Group();
+    box(0.09, 0.26, 0.30, metal(0x76839a, 55), -HX + 0.045, 0.20, hopperZ, hopperGroup);
+    // Recessed aperture: a dark inset is what makes it read as an opening
+    // rather than a bump on the wall.
+    box(0.05, 0.15, 0.20, metal(0x0d1420, 8), -HX + 0.085, 0.17, hopperZ, hopperGroup);
+    var trough = box(0.16, 0.035, 0.20, metal(0xb9c4d2, 110), -HX + 0.15, 0.10, hopperZ, hopperGroup);
+    // Delivery tube up the wall — the pellet's route is visible, which is what
+    // makes the drop legible as a mechanism rather than a pellet appearing.
+    var tubeMat = acrylic();
+    var tube = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.80, 16, 1, true), tubeMat);
+    tube.position.set(-HX + 0.10, 0.60, hopperZ);
+    hopperGroup.add(tube);
+    reg('hopper', hopperGroup);
+
+    var pelletMat = new THREE.MeshPhongMaterial({
+      color: C ? 0xffffff : 0xd8a851, shininess: 24, specular: 0x6b5a34,
+      emissive: new THREE.Color(0x000000)
+    });
+    // Outside `meshes` on purpose: the pellet's opacity and position are the
+    // reinforcement animation, and the shell owns both for registered parts.
+    var pellet = new THREE.Mesh(new THREE.SphereGeometry(0.042, 16, 12), pelletMat);
+    pellet.position.set(-HX + 0.10, 0.12, hopperZ);
+    pellet.visible = false;
+    api.scene.add(pellet);
+
+    // ── Stimulus light (SD / S-delta) ────────────────────────────────────────
+    var sdGroup = new THREE.Group();
+    box(0.08, 0.16, 0.16, metal(0x6f7b8d, 45), HX - 0.04, 0.80, leverZ, sdGroup);
+    var sdLensMat = lampMat(0x94a3b8);
+    var sdLens = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.035, 20), sdLensMat);
+    sdLens.rotation.z = Math.PI / 2;
+    sdLens.position.set(HX - 0.09, 0.80, leverZ);
+    sdGroup.add(sdLens);
+    reg('sdlight', sdGroup);
+    var sdLamp = new THREE.PointLight(0xffffff, 0, 1.9);
+    sdLamp.position.set(HX - 0.22, 0.80, leverZ);
+    api.scene.add(sdLamp);
+
+    // ── Tone generator ───────────────────────────────────────────────────────
+    var spGroup = new THREE.Group();
+    var grille = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.035, 24), metal(0x5f6b7d, 40));
+    grille.rotation.x = Math.PI / 2;
+    grille.position.set(0, 0.80, -HZ + 0.03);
+    spGroup.add(grille);
+    for (var si = 1; si <= 3; si++) {
+      var ring = new THREE.Mesh(new THREE.TorusGeometry(0.026 * si, 0.006, 6, 22), metal(0x99a6b8, 90));
+      ring.position.set(0, 0.80, -HZ + 0.052);
+      spGroup.add(ring);
+    }
+    reg('speaker', spGroup);
+
+    // Expanding wavefronts for the Pavlov tone. Outside `meshes`: their scale and
+    // opacity ARE the animation.
+    var toneRings = [];
+    for (var ti = 0; ti < 3; ti++) {
+      var tr = new THREE.Mesh(
+        new THREE.TorusGeometry(0.13, 0.010, 6, 32),
+        new THREE.MeshBasicMaterial({ color: C ? 0xffffff : 0x7dd3fc, transparent: true, opacity: 0 })
+      );
+      tr.position.set(0, 0.80, -HZ + 0.07);
+      tr.visible = false;
+      api.scene.add(tr);
+      toneRings.push(tr);
+    }
+
+    // ── House light ──────────────────────────────────────────────────────────
+    var houseGroup = new THREE.Group();
+    box(0.20, 0.05, 0.20, metal(0x6f7b8d, 45), 0, HY - 0.03, 0, houseGroup);
+    var houseLensMat = lampMat(0xfff3d4);
+    var houseLens = new THREE.Mesh(new THREE.SphereGeometry(0.075, 18, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), houseLensMat);
+    houseLens.position.set(0, HY - 0.06, 0);
+    houseGroup.add(houseLens);
+    reg('house', houseGroup);
+    var houseLamp = new THREE.PointLight(0xffe6b8, C ? 0 : 0.55, 3.4);
+    houseLamp.position.set(0, HY - 0.14, 0);
+    api.scene.add(houseLamp);
+
+    // ── Subject ──────────────────────────────────────────────────────────────
+    var furMat = organic(0xd7d3dd, 4);
+    var pinkMat = organic(0xefa8b4, 9);
+    var eyeMat = new THREE.MeshPhongMaterial({
+      color: C ? 0x000000 : 0x14121c, shininess: 180, specular: 0xffffff
+    });
+    var mouse = new THREE.Group();
+    // The shell owns per-mesh scale for everything in `meshes` — that is how
+    // selection and recede work — so the subject opts out and drives its own
+    // motion through position, rotation and INNER-child scale instead.
+    mouse.userData.noSelectionScale = true;
+    mouse.userData.labelAnchor = new THREE.Vector3(0, 0.24, 0);
+
+    var mouseBody = blob(0.105, 0.088, 0.155, furMat, 0, 0.088, 0, mouse);
+    var headPivot = new THREE.Group();
+    headPivot.position.set(0, 0.098, 0.125);
+    mouse.add(headPivot);
+    blob(0.072, 0.066, 0.080, furMat, 0, 0, 0.035, headPivot);
+    var snout = new THREE.Mesh(new THREE.ConeGeometry(0.040, 0.085, 14), furMat);
+    snout.rotation.x = Math.PI / 2;
+    snout.position.set(0, -0.012, 0.108);
+    headPivot.add(snout);
+    blob(0.016, 0.014, 0.014, pinkMat, 0, -0.014, 0.152, headPivot);   // nose
+    var earL = blob(0.050, 0.050, 0.012, pinkMat, -0.055, 0.055, -0.005, headPivot);
+    var earR = blob(0.050, 0.050, 0.012, pinkMat, 0.055, 0.055, -0.005, headPivot);
+    earL.rotation.set(0, -0.5, -0.25);
+    earR.rotation.set(0, 0.5, 0.25);
+    blob(0.013, 0.013, 0.013, eyeMat, -0.042, 0.012, 0.088, headPivot);
+    blob(0.013, 0.013, 0.013, eyeMat, 0.042, 0.012, 0.088, headPivot);
+    // Whiskers, six thin rods. Small, but they are most of why the head reads as
+    // a mouse and not a grey egg.
+    var whiskerMat = organic(0xf0eef4, 3);
+    for (var wsi = 0; wsi < 6; wsi++) {
+      var side = wsi < 3 ? -1 : 1;
+      var tier = (wsi % 3) - 1;
+      var wsk = rod(0.115, 0.0035, whiskerMat, side * 0.070, -0.004 + tier * 0.014, 0.128, 'x', headPivot);
+      wsk.rotation.z = side * (0.30 + tier * 0.22);
+      wsk.rotation.y = side * -0.55;
+    }
+
+    var feet = [];
+    [[-0.070, 0.105], [0.070, 0.105], [-0.075, -0.070], [0.075, -0.070]].forEach(function (f) {
+      feet.push(blob(0.030, 0.017, 0.045, pinkMat, f[0], 0.018, f[1], mouse));
+    });
+
+    // Tail as a chain: each segment hangs off the previous one, so a single
+    // travelling phase offset produces a real whip instead of a rigid arc.
+    var tailSegs = [];
+    var tailRoot = new THREE.Group();
+    tailRoot.position.set(0, 0.090, -0.150);
+    mouse.add(tailRoot);
+    var attach = tailRoot;
+    for (var tsi = 0; tsi < 7; tsi++) {
+      var seg = new THREE.Group();
+      seg.position.z = tsi === 0 ? 0 : -0.048;
+      var segMesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.011 - tsi * 0.0011, 0.010 - tsi * 0.0011, 0.050, 8), pinkMat);
+      segMesh.rotation.x = Math.PI / 2;
+      segMesh.position.z = -0.025;
+      seg.add(segMesh);
+      attach.add(seg);
+      tailSegs.push(seg);
+      attach = seg;
+    }
+    reg('subject', mouse);
+
+    if (api.wantShadow) {
+      [gridGroup, leverGroup, hopperGroup, sdGroup, spGroup, mouse].forEach(function (g) {
+        g.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      });
+    }
+
+    // Smoothed heading, kept across frames so the subject turns rather than snaps.
+    var heading = 0;
+    var lastX = 0, lastZ = 0, haveLast = false;
+
+    return {
+      meshes: meshes,
+      picks: picks,
+      anchor: gridGroup,
+      frame: function (now, sp, reduced) {
+        var st = sp && sp.st ? sp.st : null;
+        if (!st) return;
+        var t = now / 1000;
+
+        // ── Subject ──
+        var tx = blWorldX(st.mouseX == null ? 200 : st.mouseX);
+        var tz = blWorldZ(st.mouseY == null ? 155 : st.mouseY);
+        var act = st.mouseAction || 'explore';
+        var moving = act === 'explore' || act === 'approachLever' || act === 'turnLeft' ||
+          act === 'turnRight' || act === 'halfTurn' || act === 'touchWall';
+
+        if (haveLast) {
+          var vx = tx - lastX, vz = tz - lastZ;
+          if (vx * vx + vz * vz > 1e-6) {
+            var want = Math.atan2(vx, vz);
+            var diff = want - heading;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            heading += diff * (reduced ? 1 : 0.16);
+          }
+        }
+        lastX = tx; lastZ = tz; haveLast = true;
+
+        var bob = (reduced || !moving) ? 0 : Math.abs(Math.sin(t * 6.4)) * 0.014;
+        var rear = act === 'rearUp' ? 1 : 0;
+        mouse.position.set(tx, 0.045 + bob + rear * 0.075, tz);
+        mouse.rotation.y = act === 'spin' && !reduced ? (t * 3.4) : heading;
+        mouse.rotation.x = -rear * 0.62;
+
+        // Breathing lives on the body MESH, never on the registered group.
+        var breath = reduced ? 1 : 1 + Math.sin(t * 1.9) * 0.022;
+        mouseBody.scale.set(0.105 * breath, 0.088 * breath, 0.155);
+
+        // Head: nose-down for sniffing, tipped toward the lever while pressing,
+        // bobbing while grooming. Frozen means frozen.
+        var headPitch = 0;
+        if (!reduced) {
+          if (act === 'sniff') headPitch = 0.26 + Math.sin(t * 9) * 0.10;
+          else if (act === 'groom') headPitch = 0.30 + Math.sin(t * 7) * 0.16;
+          else if (act === 'pressLever') headPitch = 0.20;
+          else if (act === 'freeze') headPitch = 0;
+          else headPitch = Math.sin(t * 2.1) * 0.05;
+        }
+        headPivot.rotation.x = headPitch;
+        earL.rotation.z = -0.25 + (reduced ? 0 : Math.sin(t * 3.1) * 0.13);
+        earR.rotation.z = 0.25 + (reduced ? 0 : Math.sin(t * 2.6) * 0.11);
+
+        for (var fi = 0; fi < feet.length; fi++) {
+          var swing = (reduced || !moving) ? 0 : Math.sin(t * 6.4 + (fi % 2) * Math.PI) * 0.030;
+          feet[fi].position.z = (fi < 2 ? 0.105 : -0.070) + swing;
+        }
+
+        // Tail wag speeds up after reinforcement — the same "recent food" tell the
+        // 2D sprite uses, read from the same state.
+        var fed = st.foodVisible || (st.foodTime && (now - st.foodTime) < 2000);
+        var wagHz = fed ? 7.5 : (moving ? 3.6 : 2.1);
+        var wagAmp = fed ? 0.30 : 0.17;
+        for (var wsg = 0; wsg < tailSegs.length; wsg++) {
+          tailSegs[wsg].rotation.y = reduced ? 0.05 : Math.sin(t * wagHz - wsg * 0.55) * wagAmp;
+          tailSegs[wsg].rotation.x = wsg === 0 ? -0.30 : 0.055;
+        }
+
+        // ── Lever ──
+        var pressed = act === 'pressLever';
+        var wantRot = pressed ? -0.34 : 0;
+        leverPivot.rotation.z += (wantRot - leverPivot.rotation.z) * (reduced ? 1 : 0.35);
+
+        // ── Food magazine ──
+        // One timeline: 0–0.45s the pellet travels the tube, then it sits in the
+        // trough for as long as the 2D view shows it.
+        var age = st.foodTime ? (now - st.foodTime) / 1000 : 1e9;
+        if (st.foodVisible && age < 12) {
+          pellet.visible = true;
+          var drop = Math.min(1, age / 0.45);
+          pellet.position.set(-HX + 0.10, 0.95 - drop * 0.83, hopperZ);
+          if (drop >= 1) pellet.position.set(-HX + 0.13, 0.135, hopperZ);
+          pelletMat.emissive.setRGB(0.30, 0.20, 0.03);
+        } else {
+          pellet.visible = false;
+        }
+
+        // ── Stimulus light ──
+        // Only levels 5 and 6 run a discriminative stimulus; on every other level
+        // the lens sits dark rather than implying a contingency that is not there.
+        var sdOn = st.level === 5 || st.level === 6;
+        var lit = sdOn ? (st.lightColor === 'green' ? 1 : (st.lightColor === 'red' ? 2 : 0)) : 0;
+        var sdPulse = reduced ? 1 : 0.82 + 0.18 * Math.sin(t * 2.6);
+        var be = sdLensMat.userData._baseEmissive;
+        if (lit === 1) { be.r = 0.04; be.g = 0.62 * sdPulse; be.b = 0.22 * sdPulse; sdLamp.color.setHex(0x22c55e); sdLamp.intensity = C ? 0 : 0.9 * sdPulse; }
+        else if (lit === 2) { be.r = 0.70 * sdPulse; be.g = 0.06; be.b = 0.10; sdLamp.color.setHex(0xef4444); sdLamp.intensity = C ? 0 : 0.9 * sdPulse; }
+        else { be.r = 0; be.g = 0; be.b = 0; sdLamp.intensity = 0; }
+        sdLensMat.color.setHex(C ? 0xffffff : (lit === 1 ? 0x22c55e : lit === 2 ? 0xef4444 : 0x94a3b8));
+
+        // ── House light ──
+        // Dimmed through extinction: reinforcement has stopped, and the room says so.
+        var houseBase = st.extinctionPhase ? 0.16 : 0.34;
+        var hb = houseLensMat.userData._baseEmissive;
+        hb.r = houseBase; hb.g = houseBase * 0.92; hb.b = houseBase * 0.70;
+        houseLamp.intensity = C ? 0 : (st.extinctionPhase ? 0.26 : 0.55);
+
+        // ── Tone generator ──
+        // Rings only while the CS is actually sounding, so the visual and the
+        // bell state cannot drift apart.
+        for (var ri = 0; ri < toneRings.length; ri++) {
+          var r3 = toneRings[ri];
+          if (!st.bellRinging || reduced) {
+            r3.visible = !!st.bellRinging && reduced && ri === 0;
+            if (r3.visible) { r3.scale.setScalar(1.4); r3.material.opacity = 0.55; }
+            continue;
+          }
+          var ph = ((t * 1.5) + ri / toneRings.length) % 1;
+          r3.visible = true;
+          r3.scale.setScalar(0.6 + ph * 2.6);
+          r3.material.opacity = 0.62 * (1 - ph);
+        }
+      }
+    };
+  }
+
+  // A null viewer keeps the tool alive where the host shell is missing or WebGL
+  // is blocked; the view reads status() directly, because a null viewer never
+  // calls onStatus and a React-state-only check would spin on "loading" forever.
+  var BL_NULL_VIEWER = {
+    attach: function () {}, sync: function () {}, nudge: function () {},
+    zoom: function () {}, reset: function () {}, status: function () { return 'failed'; }
+  };
+  var BL_CHAMBER3D = (function () {
+    var mk = (typeof window !== 'undefined') && window.StemLab && window.StemLab.makeBayViewer;
+    if (!mk) return BL_NULL_VIEWER;
+    return mk({
+      parts: BL_CHAMBER_PARTS,
+      buildScene: buildChamberScene,
+      // Close enough that the apparatus reads at a glance. The shell clamps
+      // distance to 2.6-8.5, so there is room to pull back from here.
+      home: { yaw: 0.62, pitch: 0.50, dist: 3.55 }
+    });
+  })();
 
   window.StemLab.registerTool('behaviorLab', {
     icon: "🐭",
@@ -394,7 +917,13 @@ dataRef.current = d;
           };
 
           // === Famous Behaviorists ===
-          var FAMOUS_BEHAVIORISTS = [
+          // ★ NOT RENDERED. Defined here, never referenced — the live ABA timeline is
+          // ABA_MILESTONES. Kept under an explicit name because an earlier pass very
+          // nearly "fixed" the Lovaas wording in THIS copy, where no student can see
+          // it, and left the wording students actually read untouched. If you are
+          // here to change a claim, check that the array you are editing is one the
+          // render path reaches.
+          var FAMOUS_BEHAVIORISTS_UNRENDERED = [
             { name: __alloT('stem.behaviorlab.ivan_pavlov', 'Ivan Pavlov'), year: '1849-1936', contribution: 'Discovered classical conditioning through salivation experiments with dogs. Won the Nobel Prize in Physiology (1904).', icon: '\uD83D\uDC36', field: 'Classical Conditioning' },
             { name: __alloT('stem.behaviorlab.john_b_watson', 'John B. Watson'), year: '1878-1958', contribution: 'Founded behaviorism as a school of psychology. Argued psychology should study only observable behavior, not mental states. Controversial "Little Albert" experiment.', icon: '\uD83E\uDDEC', field: 'Behaviorism' },
             { name: __alloT('stem.behaviorlab.edward_thorndike', 'Edward Thorndike'), year: '1874-1949', contribution: 'Formulated the Law of Effect: behaviors followed by satisfying consequences are strengthened. Puzzle box experiments with cats.', icon: '\uD83D\uDC31', field: 'Law of Effect' },
@@ -407,14 +936,15 @@ dataRef.current = d;
 
           // === Four Functions of Behavior (FBA) ===
           var FOUR_FUNCTIONS = [
-            { name: __alloT('stem.behaviorlab.attention', 'Attention'), abbrev: 'ATT', icon: '\uD83D\uDC40', color: '#3b82f6', desc: __alloT('stem.behaviorlab.behavior_maintained_by_social_attentio', 'Behavior maintained by social attention from others. Example: A student calls out in class to get the teacher to look at them. The attention (even if negative) reinforces the calling out.'), example: 'Calling out, clowning around, tantrums when ignored', intervention: 'Planned ignoring of problem behavior + attention for appropriate behavior (DRA). Teach appropriate ways to get attention.' },
-            { name: 'Escape/Avoidance', abbrev: 'ESC', icon: '\uD83C\uDFC3', color: '#ef4444', desc: __alloT('stem.behaviorlab.behavior_maintained_by_removal_of_an_a', 'Behavior maintained by removal of an aversive stimulus. Example: A student has a meltdown when given math work, and the teacher removes the assignment. The meltdown is negatively reinforced.'), example: 'Work refusal, aggression to end demands, elopement', intervention: 'Escape extinction (don\'t remove demand). Break tasks into smaller steps. Provide breaks contingent on compliance (DRO/DRA).' },
+            { name: __alloT('stem.behaviorlab.attention', 'Attention'), abbrev: 'ATT', icon: '\uD83D\uDC40', color: '#60a5fa', desc: __alloT('stem.behaviorlab.behavior_maintained_by_social_attentio', 'Behavior maintained by social attention from others. Example: A student calls out in class to get the teacher to look at them. The attention (even if negative) reinforces the calling out.'), example: 'Calling out, clowning around, tantrums when ignored', intervention: 'Planned ignoring of problem behavior + attention for appropriate behavior (DRA). Teach appropriate ways to get attention.' },
+            { name: 'Escape/Avoidance', abbrev: 'ESC', icon: '\uD83C\uDFC3', color: '#f87171', desc: __alloT('stem.behaviorlab.behavior_maintained_by_removal_of_an_a', 'Behavior maintained by removal of an aversive stimulus. Example: A student has a meltdown when given math work, and the teacher removes the assignment. The meltdown is negatively reinforced.'), example: 'Work refusal, aggression to end demands, elopement', intervention: 'Escape extinction (don\'t remove demand). Break tasks into smaller steps. Provide breaks contingent on compliance (DRO/DRA).' },
             { name: __alloT('stem.behaviorlab.tangible', 'Tangible'), abbrev: 'TAN', icon: '\uD83C\uDFAE', color: '#f59e0b', desc: __alloT('stem.behaviorlab.behavior_maintained_by_access_to_a_pre', 'Behavior maintained by access to a preferred item or activity. Example: A child screams in the store until the parent buys them candy. The screaming is reinforced by getting the candy.'), example: 'Grabbing items, screaming for toys, negotiating for screen time', intervention: 'Don\'t provide the item contingent on problem behavior. Teach requesting (FCT). Provide access to preferred items for appropriate behavior.' },
-            { name: 'Sensory/Automatic', abbrev: 'AUT', icon: '\u2728', color: '#8b5cf6', desc: __alloT('stem.behaviorlab.behavior_maintained_by_the_sensory_sti', 'Behavior maintained by the sensory stimulation it produces, independent of social consequences. The behavior itself feels good. Example: Hand-flapping may produce proprioceptive input that is reinforcing.'), example: 'Hand flapping, rocking, humming, nail biting', intervention: 'Provide alternative sensory input (sensory diet). Modify the environment. Consider whether the behavior actually needs intervention (it may serve a regulatory function).' }
+            { name: 'Sensory/Automatic', abbrev: 'AUT', icon: '\u2728', color: '#a78bfa', desc: __alloT('stem.behaviorlab.behavior_maintained_by_the_sensory_sti', 'Behavior maintained by the sensory stimulation it produces, independent of social consequences. The behavior itself feels good. Example: Hand-flapping may produce proprioceptive input that is reinforcing.'), example: 'Hand flapping, rocking, humming, nail biting', intervention: 'Provide alternative sensory input (sensory diet). Modify the environment. Consider whether the behavior actually needs intervention (it may serve a regulatory function).' }
           ];
 
           // === Real-World ABA Applications ===
-          var ABA_APPLICATIONS = [
+          // ★ NOT RENDERED — see the note on FAMOUS_BEHAVIORISTS_UNRENDERED above.
+          var ABA_APPLICATIONS_UNRENDERED = [
             { name: __alloT('stem.behaviorlab.autism_services', 'Autism Services'), icon: '\u2764', desc: __alloT('stem.behaviorlab.evidence_based_intervention_for_indivi', 'Evidence-based intervention for individuals with autism. Teaches communication, social, self-care, and academic skills through systematic reinforcement and prompting strategies.'), setting: 'Clinics, homes, schools' },
             { name: __alloT('stem.behaviorlab.education_classroom_management', 'Education & Classroom Management'), icon: '\uD83C\uDFEB', desc: __alloT('stem.behaviorlab.token_economies_positive_behavior_supp', 'Token economies, positive behavior support (PBS), response to intervention (RTI), and group contingencies. Making learning reinforcing and reducing challenging behavior.'), setting: 'Schools (Pre-K through college)' },
             { name: __alloT('stem.behaviorlab.animal_training', 'Animal Training'), icon: '\uD83D\uDC3E', desc: __alloT('stem.behaviorlab.clicker_training_shaping_and_chaining_', 'Clicker training, shaping, and chaining are all ABA principles. Service dogs, marine mammals, and zoo animals are all trained using operant conditioning.'), setting: 'Zoos, aquariums, service dog organizations' },
@@ -471,7 +1001,7 @@ dataRef.current = d;
             {
               function: 'Attention',
               functionAbbrev: 'ATT',
-              icon: '👀', color: '#3b82f6',
+              icon: '👀', color: '#60a5fa',
               problemEx: 'Calling out, clowning, dramatic falls, "fake" injury reports',
               replacement: 'Recruit-attention skills: raise hand and wait, tap shoulder, use a "help" card, ask "can you check my work?", request a 1-on-1 conversation at scheduled times.',
               teaching: 'Plan a daily attention budget the student can spend on appropriate bids — 3 scheduled check-ins per day, no questions asked. Reinforces appropriate seeking and removes the artificial scarcity that drives the problem behavior.',
@@ -480,7 +1010,7 @@ dataRef.current = d;
             {
               function: 'Escape / Avoidance',
               functionAbbrev: 'ESC',
-              icon: '🚪', color: '#ef4444',
+              icon: '🚪', color: '#f87171',
               problemEx: 'Work refusal, ripping the worksheet, eloping from the classroom, aggression to end the demand',
               replacement: 'Break-request: a single break card the student can hand to the teacher (or tap on the desk, or use AAC) for a known-duration break in a known location. Plus a "need help" signal that pulls a teacher over instead of removing the demand.',
               teaching: 'Pre-teach when the student is calm. Practice handing the card. Honor it the first 50+ times no matter what — even if the student "abuses" it. Frequency naturally drops as the student trusts the system. Then layer in expectations (finish 3 problems, then break) once the trust is established.',
@@ -498,7 +1028,7 @@ dataRef.current = d;
             {
               function: 'Sensory / Automatic',
               functionAbbrev: 'AUT',
-              icon: '🪀', color: '#8b5cf6',
+              icon: '🪀', color: '#a78bfa',
               problemEx: 'Hand-flapping, vocal stimming, chewing on shirt collar, head-banging (when self-injurious)',
               replacement: 'MATCH THE SENSORY MODALITY. Oral input → gum, chewy necklace, crunchy snack. Proprioceptive → weighted lap pad, wall push-ups, heavy work. Tactile → fidget cube, putty. Vestibular → wobble cushion, spinning chair. Auditory → noise-canceling headphones or preferred music.',
               teaching: 'This is mostly accommodation, not extinction. Most stims serve real regulatory functions and do not need to be replaced — they need to be allowed and supported. The exception is genuinely dangerous self-injury, which needs a sensory-matched alternative AND mental-health consultation, not just a behavior plan.',
@@ -532,7 +1062,7 @@ dataRef.current = d;
             {
               tier: 3,
               name: __alloT('stem.behaviorlab.tier_3_intensive', 'Tier 3 — Intensive'),
-              icon: '🔴', color: '#ef4444',
+              icon: '🔴', color: '#f87171',
               who: 'Students whose behavior poses safety concerns, or who have not responded to Tier 1 + Tier 2, or who have specific intensive needs (autism, severe trauma, complex disability).',
               percent: '~5% of students need Tier 3 individualized supports.',
               examples: 'Full functional behavior assessment (FBA) by a trained BCBA or school psych. Individualized BIP with replacement behavior, environmental modifications, reinforcement plan, crisis plan. Wraparound team meetings (school + family + outside providers). 1-on-1 paraprofessional support when justified. Therapeutic services (counseling, OT, SLP integration). Sometimes specialized placement.',
@@ -552,7 +1082,7 @@ dataRef.current = d;
             },
             {
               name: __alloT('stem.behaviorlab.what_seclusion_is_and_is_not', 'What seclusion IS (and is NOT)'),
-              icon: '🚪', color: '#ef4444',
+              icon: '🚪', color: '#f87171',
               content: __alloT('stem.behaviorlab.seclusion_involuntary_confinement_of_a', 'Seclusion = involuntary confinement of a student alone in a room or area from which the student is physically prevented from leaving. The "physically prevented from leaving" part is what makes it seclusion legally.'),
               counter: 'NOT seclusion: time-out where the student can leave (a "calm corner" with the door open); a quiet space chosen by the student; a sensory room used for regulation. Voluntary use of a separate space is not seclusion.'
             },
@@ -570,7 +1100,7 @@ dataRef.current = d;
             },
             {
               name: __alloT('stem.behaviorlab.after_every_incident_the_debrief', 'After every incident — the debrief'),
-              icon: '📝', color: '#3b82f6',
+              icon: '📝', color: '#60a5fa',
               content: __alloT('stem.behaviorlab.within_24_48_hours_an_incident_report_', 'Within ~24-48 hours: an incident report (what happened, who, when, duration, less-restrictive alternatives tried first). A staff debrief about what could be done differently next time. Parent notification (Maine requires same-day or next-business-day). A team meeting to revise the BIP if the incident reveals a pattern. The student debrief — when the student is fully recovered — to hear their perspective.'),
               counter: 'Common gap: incidents get documented but the BIP never gets revised. Three or more incidents of the same antecedent in a quarter is a system signal that the BIP itself is failing — not a kid signal. Pattern-blindness is the most common documentation problem.'
             },
@@ -604,7 +1134,7 @@ dataRef.current = d;
               dontDo: 'Don\'t lecture. Don\'t reason with logic. Don\'t insist on eye contact. Don\'t escalate your own voice. The thinking brain is already losing access.'
             },
             {
-              phase: 4, name: __alloT('stem.behaviorlab.acceleration', 'Acceleration'), icon: '🌪️', color: '#ef4444',
+              phase: 4, name: __alloT('stem.behaviorlab.acceleration', 'Acceleration'), icon: '🌪️', color: '#f87171',
               signs: 'Provocative behavior aimed at getting a reaction: blame, intimidation, escalating language, threats, refusal to engage with anyone, scripted "I don\'t care" responses.',
               doThis: 'Stay quiet. Stay close enough to be safe, far enough to give space. Clear the audience if possible — peers in the room raise the stakes. State only what is absolutely necessary, in short sentences.',
               dontDo: 'Don\'t take the bait. Don\'t match the volume. Don\'t threaten consequences mid-cycle. Don\'t deliver speeches. Most adult mistakes happen here — Phase 4 is the moment teachers get pulled into being part of the escalation.'
@@ -616,7 +1146,7 @@ dataRef.current = d;
               dontDo: 'Don\'t teach. Don\'t reason. Don\'t process. Don\'t threaten. Don\'t give consequences mid-Peak. Recording the incident for documentation is appropriate; processing is not — yet.'
             },
             {
-              phase: 6, name: 'De-escalation', icon: '🌧️', color: '#3b82f6',
+              phase: 6, name: 'De-escalation', icon: '🌧️', color: '#60a5fa',
               signs: 'Exhausted, emotional, often quiet or tearful. Student may be embarrassed, dissociated, or sleepy. Sometimes apologizes; sometimes goes silent.',
               doThis: 'Stay present without demanding interaction. Offer water, a quiet space, a familiar object. Let the body finish processing. This phase is real and takes time — minutes to over an hour for some students.',
               dontDo: 'Don\'t debrief yet. Don\'t lecture about what happened. Don\'t require apology in this phase — it produces hollow performance, not actual repair.'
@@ -672,7 +1202,7 @@ dataRef.current = d;
             },
             {
               category: 'Mental health',
-              icon: '💭', color: 'var(--allo-stem-text-soft, #94a3b8)',
+              icon: '💭', color: 'var(--bl-muted)',
               examples: 'Anxiety flare · low mood episode · recent therapy session that opened something · trauma anniversary · sensory overload accumulating across days · burnout from masking',
               note: __alloT('stem.behaviorlab.trauma_anniversaries_and_seasonal_ment', 'Trauma anniversaries and seasonal mental-health patterns are real and predictable. Calendar awareness is a clinical tool.')
             }
@@ -691,7 +1221,7 @@ dataRef.current = d;
             {
               name: __alloT('stem.behaviorlab.ari_ne_eman', 'Ari Ne\'eman'),
               role: 'Co-founder, Autism Self Advocacy Network (ASAN); first openly autistic appointee to the National Council on Disability (Obama, 2010); now at Harvard School of Public Health.',
-              icon: '🎙️', color: '#3b82f6',
+              icon: '🎙️', color: '#60a5fa',
               quote: 'Nothing about us without us.',
               source: 'ASAN founding principle, 2006-present; widely echoed across disability-rights work'
             },
@@ -726,7 +1256,7 @@ dataRef.current = d;
             {
               name: __alloT('stem.behaviorlab.mel_baggs_1980_2020', 'Mel Baggs (1980–2020)'),
               role: 'Nonspeaking autistic activist, writer, and YouTuber. The 2007 video "In My Language" was the first widely-shared first-person account of nonspeaking autistic experience — viewed millions of times, taught in disability-studies courses since.',
-              icon: '✊', color: 'var(--allo-stem-text-soft, #94a3b8)',
+              icon: '✊', color: 'var(--bl-muted)',
               quote: 'My language is not about designing words or even visual symbols for people to interpret. It is about being in a constant conversation with every aspect of my environment.',
               source: 'In My Language (2007, YouTube); Ballastexistenz blog; CNN interview 2007'
             }
@@ -773,7 +1303,11 @@ dataRef.current = d;
             },
             {
               name: __alloT('stem.behaviorlab.what_aba_cannot_do_alone', 'What ABA cannot do alone'),
-              icon: '🧩', color: 'var(--allo-stem-text-soft, #94a3b8)',
+              // A literal hex, not var(): this card's colour is concatenated with an
+              // alpha suffix (`b.color + '22'`) for the icon disc, and
+              // "var(--x, #94a3b8)22" is not a colour — that disc silently lost its
+              // background while the other five cards kept theirs.
+              icon: '🧩', color: '#94a3b8',
               desc: __alloT('stem.behaviorlab.operant_conditioning_is_one_tool_it_do', 'Operant conditioning is one tool. It does not replace mental-health treatment for trauma or anxiety. It does not address the sensory environment a building creates. It does not substitute for autistic community and identity. Good practice integrates ABA with OT (sensory), SLP (communication), mental health (regulation), and — crucially — autistic adult mentorship that the child can grow into.'),
               source: 'Autism Self Advocacy Network "Real Communities" framework; OT/SLP integrative-care literature'
             }
@@ -790,22 +1324,135 @@ dataRef.current = d;
           ];
 
           // === Wave 2: SCHEDULE_TYPES for comparison canvas ===
+          //
+          // The response parameters are part of the science, not styling. `runRate`
+          // is the per-tick probability of a response while the subject is running,
+          // `pausePost`/`pauseVar` the post-reinforcement pause that DEFINES fixed
+          // ratio, and `interval`/`ratio` the reinforcement requirement. They live
+          // here so `blScheduleRecord` has one model to read and there is one place
+          // to argue with if a value looks wrong.
           var SCHEDULE_TYPES = [
-            { id: 'FR', name: __alloT('stem.behaviorlab.fixed_ratio', 'Fixed Ratio'), abbrev: 'FR-5', color: '#f59e0b', desc: __alloT('stem.behaviorlab.reinforce_every_nth_response_creates_p', 'Reinforce every Nth response. Creates post-reinforcement pause then rapid responding.'), example: 'Piecework pay: get paid per 5 items assembled', pattern: 'high-pause', ratio: 5 },
-            { id: 'VR', name: __alloT('stem.behaviorlab.variable_ratio', 'Variable Ratio'), abbrev: 'VR-5', color: '#ef4444', desc: __alloT('stem.behaviorlab.reinforce_after_variable_number_of_res', 'Reinforce after variable number of responses (avg N). Produces high, steady rate. Most resistant to extinction.'), example: 'Slot machines: win after random number of pulls', pattern: 'high-steady', ratio: 5 },
-            { id: 'FI', name: __alloT('stem.behaviorlab.fixed_interval', 'Fixed Interval'), abbrev: 'FI-10', color: '#3b82f6', desc: __alloT('stem.behaviorlab.reinforce_first_response_after_fixed_t', 'Reinforce first response after fixed time interval. Creates scallop pattern — slow after reinforcement, fast near end.'), example: 'Checking mail: arrives at same time daily', pattern: 'scallop', interval: 10 },
-            { id: 'VI', name: __alloT('stem.behaviorlab.variable_interval', 'Variable Interval'), abbrev: 'VI-10', color: '#10b981', desc: __alloT('stem.behaviorlab.reinforce_first_response_after_variabl', 'Reinforce first response after variable time interval (avg N). Produces slow, steady rate.'), example: 'Fishing: fish bite at unpredictable times', pattern: 'low-steady', interval: 10 }
+            { id: 'FR', name: __alloT('stem.behaviorlab.fixed_ratio', 'Fixed Ratio'), abbrev: 'FR-5', color: '#f59e0b', desc: __alloT('stem.behaviorlab.reinforce_every_nth_response_creates_p', 'Reinforce every Nth response. Creates post-reinforcement pause then rapid responding.'), example: 'Piecework pay: get paid per 5 items assembled', pattern: 'high-pause', ratio: 5, runRate: 0.92, pausePost: 6, pauseVar: 5 },
+            { id: 'VR', name: __alloT('stem.behaviorlab.variable_ratio', 'Variable Ratio'), abbrev: 'VR-5', color: '#f87171', desc: __alloT('stem.behaviorlab.reinforce_after_variable_number_of_res', 'Reinforce after variable number of responses (avg N). Produces high, steady rate. Most resistant to extinction.'), example: 'Slot machines: win after random number of pulls', pattern: 'high-steady', ratio: 5, runRate: 0.46 },
+            { id: 'FI', name: __alloT('stem.behaviorlab.fixed_interval', 'Fixed Interval'), abbrev: 'FI-30', color: '#60a5fa', desc: __alloT('stem.behaviorlab.reinforce_first_response_after_fixed_t', 'Reinforce first response after fixed time interval. Creates scallop pattern — slow after reinforcement, fast near end.'), example: 'Checking mail: arrives at same time daily', pattern: 'scallop', interval: 30 },
+            { id: 'VI', name: __alloT('stem.behaviorlab.variable_interval', 'Variable Interval'), abbrev: 'VI-10', color: '#10b981', desc: __alloT('stem.behaviorlab.reinforce_first_response_after_variabl', 'Reinforce first response after variable time interval (avg N). Produces slow, steady rate.'), example: 'Fishing: fish bite at unpredictable times', pattern: 'low-steady', interval: 10, runRate: 0.30 }
           ];
+
+          // ── Cumulative-record generator ──────────────────────────────────────
+          //
+          // ONE model, read by the Schedule Sleuth puzzle AND the Schedule
+          // Comparison animation. They used to carry separate hand-written copies
+          // and BOTH were wrong in ways that broke the lesson they exist to teach:
+          //
+          //   • FR deadlocked. The pause fired whenever `cumResp % ratio === 0`,
+          //     but a paused tick does not advance cumResp, so the modulo never
+          //     changed — every FR curve rose to exactly 5 responses and then went
+          //     flat for the remaining 195 ticks. The answer feedback told the
+          //     student to "look for the staircase shape", and the staircase was
+          //     not on screen; what WAS on screen looked like extinction.
+          //   • VR and VI ran off the top of the chart. The y axis was pinned at 60
+          //     responses while VR generated ~160 and VI ~95, so 120 of 200 VR
+          //     points and 66 VI points were drawn above the viewBox. The student
+          //     saw a line leave the frame and never come back.
+          //   • FI never showed a scallop. Its interval was short enough (10 ticks)
+          //     and its rate flat enough that 200 ticks of it read as a straight
+          //     line — the one feature the correct answer rewards was invisible.
+          //
+          // Every schedule now stays inside BL_SCHED_R by construction (clamped),
+          // and the shape properties are pinned by tests/behaviorlab_schedules.test.js
+          // rather than by eyeballing a screenshot.
+          var BL_SCHED_T = 200;    // ticks on the x axis
+          var BL_SCHED_R = 120;    // responses the y axis can show
+
+          function blScheduleRecord(sch, seed, tMax) {
+            var T = tMax || BL_SCHED_T;
+            var s = ((seed | 0) * 31 + 13) % 2147483647;
+            if (s <= 0) s += 2147483646;
+            function rnd() { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }
+
+            // A VARIABLE schedule draws a fresh requirement after every reinforcer;
+            // a FIXED one uses the same number every time. That difference is the
+            // whole distinction, so it is modelled rather than faked with a
+            // different response rate.
+            function nextRatio() {
+              return sch.pattern === 'high-steady'
+                ? Math.max(1, Math.round(sch.ratio * (0.4 + rnd() * 1.2)))
+                : sch.ratio;
+            }
+            function nextInterval() {
+              return sch.pattern === 'low-steady'
+                ? Math.max(2, Math.round(sch.interval * (0.35 + rnd() * 1.3)))
+                : sch.interval;
+            }
+
+            var cum = 0, pause = 0, sinceReinf = 0, respSince = 0;
+            var resp = [], reinf = [];
+            var ratioReq = sch.ratio ? nextRatio() : 0;
+            var intervalReq = sch.interval ? nextInterval() : 0;
+
+            for (var t = 0; t < T; t++) {
+              var rate;
+              if (pause > 0) { pause--; rate = 0; }
+              else if (sch.pattern === 'scallop') {
+                // Fixed interval: responding is near zero just after a reinforcer
+                // and accelerates as the interval runs out. The concavity IS the
+                // scallop, so it is generated, not asserted in the caption.
+                var frac = Math.min(1.2, sinceReinf / intervalReq);
+                rate = 0.012 + 1.15 * frac * frac * frac;
+              } else {
+                rate = sch.runRate;
+              }
+              if (rnd() < rate && cum < BL_SCHED_R) {
+                cum++;
+                respSince++;
+                var earned = sch.ratio ? (respSince >= ratioReq) : (sinceReinf >= intervalReq);
+                if (earned) {
+                  reinf.push(t);
+                  respSince = 0;
+                  sinceReinf = -1;                 // the ++ below lands it on 0
+                  ratioReq = sch.ratio ? nextRatio() : 0;
+                  intervalReq = sch.interval ? nextInterval() : 0;
+                  // Present for FIXED ratio, deliberately absent for variable —
+                  // "no post-reinforcement pause" is why VR is the high-steady one.
+                  if (sch.pausePost) pause = sch.pausePost + Math.floor(rnd() * sch.pauseVar);
+                }
+              }
+              sinceReinf++;
+              resp.push(cum);
+            }
+            return { resp: resp, reinf: reinf, total: cum };
+          }
+
+          // Responses per time block — the same shape a sighted student reads off
+          // the curve, in a form a screen reader can read. Deliberately NOT a
+          // description of the pattern: naming the shape would hand over the answer
+          // the puzzle is asking for, which a curve does not do.
+          function blScheduleBlocks(rec, nBlocks) {
+            var n = nBlocks || 10;
+            var size = Math.max(1, Math.floor(rec.resp.length / n));
+            var out = [];
+            for (var b = 0; b < n; b++) {
+              var start = b * size;
+              var end = Math.min(rec.resp.length - 1, (b + 1) * size - 1);
+              var before = start === 0 ? 0 : rec.resp[start - 1];
+              out.push({ from: start, to: end, count: rec.resp[end] - before });
+            }
+            return out;
+          }
 
           // === Wave 2: REINFORCEMENT_MATRIX (2x2 operant conditioning) ===
           var REINFORCE_MATRIX = [
             { id: 'srPlus', row: 0, col: 0, name: __alloT('stem.behaviorlab.positive_reinforcement', 'Positive Reinforcement'), abbrev: 'SR+', action: 'ADD', effect: 'INCREASE', color: '#22c55e', icon: '\u2795\u2B06',
               desc: __alloT('stem.behaviorlab.adding_a_stimulus_to_increase_behavior', 'Adding a stimulus to increase behavior'), formal: 'The contingent presentation of a stimulus that increases the future probability of a behavior.',
               examples: ['Teacher gives sticker after completed work', 'Dog gets treat for sitting', 'Employee receives bonus for sales target', 'Child gets praise for sharing'] },
-            { id: 'srMinus', row: 0, col: 1, name: __alloT('stem.behaviorlab.negative_reinforcement', 'Negative Reinforcement'), abbrev: 'SR-', action: 'REMOVE', effect: 'INCREASE', color: '#3b82f6', icon: '\u2796\u2B06',
+            // blue-400 / red-400 rather than -500: `color` is the quadrant's TEXT
+            // colour as well as its border and tint, and at -500 the SR- and SP+
+            // abbreviations sat at 4.13:1 and 4.04:1 on the cell fill \u2014 under the
+            // 4.5 AA floor. The lighter step keeps the quadrant hues distinct.
+            { id: 'srMinus', row: 0, col: 1, name: __alloT('stem.behaviorlab.negative_reinforcement', 'Negative Reinforcement'), abbrev: 'SR-', action: 'REMOVE', effect: 'INCREASE', color: '#60a5fa', icon: '\u2796\u2B06',
               desc: __alloT('stem.behaviorlab.removing_an_aversive_stimulus_to_incre', 'Removing an aversive stimulus to increase behavior'), formal: 'The contingent removal of an aversive stimulus that increases the future probability of a behavior.',
               examples: ['Seatbelt beeping stops when buckled', 'Headache goes away after taking medicine', 'Nagging stops when chores are done', 'Sunglasses remove glare'] },
-            { id: 'spPlus', row: 1, col: 0, name: __alloT('stem.behaviorlab.positive_punishment', 'Positive Punishment'), abbrev: 'SP+', action: 'ADD', effect: 'DECREASE', color: '#ef4444', icon: '\u2795\u2B07',
+            { id: 'spPlus', row: 1, col: 0, name: __alloT('stem.behaviorlab.positive_punishment', 'Positive Punishment'), abbrev: 'SP+', action: 'ADD', effect: 'DECREASE', color: '#f87171', icon: '\u2795\u2B07',
               desc: __alloT('stem.behaviorlab.adding_an_aversive_stimulus_to_decreas', 'Adding an aversive stimulus to decrease behavior'), formal: 'The contingent presentation of an aversive stimulus that decreases the future probability of a behavior.',
               examples: ['Touching hot stove causes burn', 'Speeding ticket after driving too fast', 'Extra push-ups for being late', 'Verbal reprimand for misbehavior'] },
             { id: 'spMinus', row: 1, col: 1, name: __alloT('stem.behaviorlab.negative_punishment', 'Negative Punishment'), abbrev: 'SP-', action: 'REMOVE', effect: 'DECREASE', color: '#f59e0b', icon: '\u2796\u2B07',
@@ -927,10 +1574,10 @@ dataRef.current = d;
           var QUICK_REF_CARDS = [
             { title: __alloT('stem.behaviorlab.the_7_dimensions_of_aba', 'The 7 Dimensions of ABA'), content: __alloT('stem.behaviorlab.applied_behavioral_analytic_technologi', 'Applied \u2022 Behavioral \u2022 Analytic \u2022 Technological \u2022 Conceptually Systematic \u2022 Effective \u2022 Generality'), icon: '7\uFE0F\u20E3', color: '#f59e0b' },
             { title: __alloT('stem.behaviorlab.reinforcement_rule', 'Reinforcement Rule'), content: __alloT('stem.behaviorlab.if_a_consequence_increases_behavior_re', 'If a consequence INCREASES behavior = Reinforcement. + means ADD stimulus. - means REMOVE stimulus.'), icon: '\u2B06\uFE0F', color: '#22c55e' },
-            { title: __alloT('stem.behaviorlab.punishment_rule', 'Punishment Rule'), content: __alloT('stem.behaviorlab.if_a_consequence_decreases_behavior_pu', 'If a consequence DECREASES behavior = Punishment. + means ADD stimulus. - means REMOVE stimulus.'), icon: '\u2B07\uFE0F', color: '#ef4444' },
-            { title: __alloT('stem.behaviorlab.three_term_contingency', 'Three-Term Contingency'), content: __alloT('stem.behaviorlab.a_antecedent_b_behavior_c_consequence_', 'A (Antecedent) \u2192 B (Behavior) \u2192 C (Consequence). Also called the "ABC" of behavior analysis.'), icon: '\uD83D\uDD17', color: '#8b5cf6' },
+            { title: __alloT('stem.behaviorlab.punishment_rule', 'Punishment Rule'), content: __alloT('stem.behaviorlab.if_a_consequence_decreases_behavior_pu', 'If a consequence DECREASES behavior = Punishment. + means ADD stimulus. - means REMOVE stimulus.'), icon: '\u2B07\uFE0F', color: '#f87171' },
+            { title: __alloT('stem.behaviorlab.three_term_contingency', 'Three-Term Contingency'), content: __alloT('stem.behaviorlab.a_antecedent_b_behavior_c_consequence_', 'A (Antecedent) \u2192 B (Behavior) \u2192 C (Consequence). Also called the "ABC" of behavior analysis.'), icon: '\uD83D\uDD17', color: '#a78bfa' },
             { title: __alloT('stem.behaviorlab.extinction', 'Extinction'), content: __alloT('stem.behaviorlab.withholding_reinforcement_for_a_previo', 'Withholding reinforcement for a previously reinforced behavior. Expect an initial extinction BURST (temporary increase) before decrease.'), icon: '\uD83D\uDCC9', color: '#6366f1' },
-            { title: __alloT('stem.behaviorlab.schedules_of_reinforcement', 'Schedules of Reinforcement'), content: __alloT('stem.behaviorlab.fr_fixed_ratio_vr_variable_ratio_fi_fi', 'FR (Fixed Ratio) \u2022 VR (Variable Ratio) \u2022 FI (Fixed Interval) \u2022 VI (Variable Interval). Ratio = responses. Interval = time.'), icon: '\uD83D\uDCC5', color: '#3b82f6' },
+            { title: __alloT('stem.behaviorlab.schedules_of_reinforcement', 'Schedules of Reinforcement'), content: __alloT('stem.behaviorlab.fr_fixed_ratio_vr_variable_ratio_fi_fi', 'FR (Fixed Ratio) \u2022 VR (Variable Ratio) \u2022 FI (Fixed Interval) \u2022 VI (Variable Interval). Ratio = responses. Interval = time.'), icon: '\uD83D\uDCC5', color: '#60a5fa' },
             { title: __alloT('stem.behaviorlab.motivating_operations', 'Motivating Operations'), content: __alloT('stem.behaviorlab.eo_establishing_operation_increases_va', 'EO (Establishing Operation) = increases value of reinforcer. AO (Abolishing Operation) = decreases value of reinforcer.'), icon: '\uD83D\uDCA1', color: '#10b981' },
             { title: __alloT('stem.behaviorlab.ethics_first', 'Ethics First'), content: __alloT('stem.behaviorlab.least_restrictive_data_driven_informed', 'Least restrictive \u2022 Data-driven \u2022 Informed consent \u2022 Social validity \u2022 Competence \u2022 Client benefit above all.'), icon: '\u2764\uFE0F', color: '#ec4899' }
           ];
@@ -990,6 +1637,25 @@ dataRef.current = d;
           var blSpeed = d.blSpeed || 1;
 
           var blShowHints = d.blShowHints === undefined ? true : d.blShowHints;
+
+          // ── 3D chamber view state ──
+          // The diagram stays the default: it is the surface that has been taught
+          // against, it needs no GPU, and it is the one a screen reader and a
+          // filtered school network can both reach.
+          var bl3dOn = d.blChamberView === '3d';
+          // Labels default OFF. Seven chips on a bay this letterboxed stack into a
+          // column down the middle and stop being a map at all; the focused part
+          // still labels itself, and "Show labels" turns the rest on deliberately.
+          var bl3dLabels = !!d.bl3dLabels;
+          var bl3dSel = d.bl3dSel || null;
+          // Read status() directly rather than trusting React state alone: the null
+          // viewer (no host shell, no WebGL) never calls onStatus, so a state-only
+          // check would sit on "loading" forever.
+          var bl3dStatus = (BL_CHAMBER3D.status() === 'failed') ? 'failed' : (d.bl3dStatus || 'idle');
+          var blIsContrast = !!ctx.isContrast;
+          // House default-OFF AI gate. Both halves matter: no switch, no traffic;
+          // no callGemini, no button that pretends there could be.
+          var blAiOn = !!(ctx.aiHintsEnabled && typeof callGemini === 'function');
 
           var blFoodTime = d.blFoodTime || 0;
 
@@ -1131,6 +1797,26 @@ dataRef.current = d;
           _as.recentActions = blRecentActions;
           _as.speed = d.blSpeed || 1;
 
+          // ── Feed the 3D chamber ──────────────────────────────────────────────
+          // sync() only swaps a plain props object — no DOM, no GPU — so calling it
+          // from the render body is safe, and it runs before the ref callback that
+          // attaches the viewer.
+          //
+          // sceneProps carries the LIVE animation-state object, not a snapshot. The
+          // 3D frame loop runs at 60fps against a tool that re-renders on ticks; a
+          // per-frame React round trip to move a mouse would be absurd, and a
+          // snapshot would freeze the scene between ticks the way the 2D loop used
+          // to freeze before dataRef.
+          BL_CHAMBER3D.sync({
+            selected: bl3dSel,
+            showAllLabels: bl3dLabels,
+            dark: true,                 // the lab surface is pinned dark, see the CSS block
+            contrast: blIsContrast,
+            sceneProps: { st: _as },
+            onPick: function (id) { upd('bl3dSel', id); },
+            onStatus: function (s) { upd('bl3dStatus', s); }
+          });
+
           // ── rAF loop: smooth interpolation + drawing at 60fps ──
           React.useEffect(function() {
             var cv = _blCvRef.current;
@@ -1154,23 +1840,39 @@ dataRef.current = d;
               var d = dataRef.current;
               var st = _blAnimState.current;
 
-              // Distance-adaptive lerp
+              // Distance-adaptive lerp. Under prefers-reduced-motion the subject
+              // TELEPORTS to each new position instead of gliding: the tick-by-tick
+              // information — where it went and what it did — is fully preserved,
+              // and only the travel between ticks is removed. The CSS media query
+              // this tool injects reaches animations and transitions; it cannot
+              // reach a canvas rAF loop, which is where nearly all of the motion in
+              // this tool actually lives.
+              var reduceMotion = blReducedMotion();
+              st.reduced = reduceMotion;      // drawChamber and the 3D scene both read it
               var dx = st.targetX - st.mouseX;
               var dy = st.targetY - st.mouseY;
               var dist = Math.sqrt(dx * dx + dy * dy);
-              var rate = dist > 100 ? 0.06 : dist > 50 ? 0.10 : 0.14;
+              var rate = reduceMotion ? 1 : (dist > 100 ? 0.06 : dist > 50 ? 0.10 : 0.14);
               st.mouseX += dx * rate;
               st.mouseY += dy * rate;
               // Snap when close
               if (Math.abs(dx) < 0.5) st.mouseX = st.targetX;
               if (Math.abs(dy) < 0.5) st.mouseY = st.targetY;
 
-              // Trail (last 60 frames ~ 1 second at 60fps)
-              st.trail.push({ x: st.mouseX, y: st.mouseY, t: Date.now() });
-              if (st.trail.length > 90) st.trail.shift();
+              // Trail (last 60 frames ~ 1 second at 60fps). Suppressed under reduced
+              // motion — with no travel between ticks there is no path to trace, and
+              // a trail of identical stacked dots is just visual noise.
+              if (!reduceMotion) {
+                st.trail.push({ x: st.mouseX, y: st.mouseY, t: Date.now() });
+                if (st.trail.length > 90) st.trail.shift();
+              } else if (st.trail.length) {
+                st.trail.length = 0;
+              }
 
-              // Draw chamber
-              drawChamber(cv2, st);
+              // Draw chamber. The interpolation above still runs while the 3D view is
+              // open — that scene reads st.mouseX/st.mouseY — but there is no point
+              // rasterising a canvas nobody can see.
+              if (d.blChamberView !== '3d') drawChamber(cv2, st);
               _blAnimId.current = requestAnimationFrame(blFrame);
             }
             if (_blAnimId.current) cancelAnimationFrame(_blAnimId.current);
@@ -1252,7 +1954,13 @@ dataRef.current = d;
 
             pressLever: '⚡ Pressing Lever!', turnLeft: '↩️ Turning Left', turnRight: '↪️ Turning Right',
 
-            rearUp: '🐭 Rearing Up', freeze: '🧊 Frozen', spin: '🌀 Spinning!', touchWall: '🧱 Touching Wall'
+            rearUp: '🐭 Rearing Up', freeze: '🧊 Frozen', spin: '🌀 Spinning!', touchWall: '🧱 Touching Wall',
+
+            // Both are real emitted actions (they are in defaultWeights and the
+            // shaping path reinforces approachLever directly), but neither had a
+            // label or a colour — so the behaviour strip showed a raw identifier,
+            // and the chip fell through to the slate fallback.
+            approachLever: '🎯 Approaching Lever', halfTurn: '↕️ Half Turn'
 
           };
 
@@ -1264,15 +1972,76 @@ dataRef.current = d;
 
             pressLever: '#f59e0b', turnLeft: '#f472b6', turnRight: '#f472b6',
 
-            rearUp: '#fb923c', freeze: '#94a3b8', spin: '#c084fc', touchWall: '#94a3b8'
+            rearUp: '#fb923c', freeze: '#94a3b8', spin: '#c084fc', touchWall: '#94a3b8',
 
+            // Amber-adjacent: approaching the lever is the shaping step BEFORE the
+            // press, so it reads as a paler cousin of pressLever rather than a
+            // fourth unrelated hue.
+            approachLever: '#fcd34d', halfTurn: '#f9a8d4'
+
+          };
+
+          // ── Where the apparatus IS, in simulation-world coordinates ───────────
+          //
+          // There used to be three answers to "where is the lever", and the lesson
+          // rode on all three: the tick loop shaped approach against (340, 210), the
+          // proximity meter under the chamber measured (350, 225), and the chamber
+          // drew the lever at (canvasWidth - 66) — which, on a canvas roughly 1000px
+          // wide against a 400-unit world, put the drawn lever about 550px to the
+          // right of the one the mouse was walking toward. A student watching Level 1
+          // saw the mouse get reinforced for approaching empty floor.
+          //
+          // One constant, read by the tick loop, the meter, the 2D chamber and the 3D
+          // chamber. The world is 400 x 280; drawChamber scales x into the canvas.
+          var BL_WORLD_W = 400;
+          var BL_LEVER = { x: 340, y: 210 };
+          var BL_FOOD = { x: 55, y: 244 };
+          // Full-scale distance for the proximity readouts. 330 is the widest gap the
+          // chamber allows (corner to lever), so the meter actually uses its range
+          // instead of pinning near the top the way a 300 cap did.
+          var BL_PROX_RANGE = 330;
+
+          // ── 3D part labels and teaching text ─────────────────────────────────
+          // makeBayViewer captures cfg.parts once at module load, so the floating
+          // chips in the scene are English (same limitation as every other bay-viewer
+          // consumer). These localized strings drive the buttons and the description
+          // strip under the viewer, which is where the actual explanation lives.
+          var BL_PART_TEXT = {
+            lever: {
+              label: __alloT('stem.behaviorlab.part_lever', 'Response lever'),
+              desc: __alloT('stem.behaviorlab.part_lever_desc', 'The operandum — the one thing in the box the subject can operate. A press is the operant response the schedule is defined over; everything else the mouse does is measured, not reinforced.')
+            },
+            hopper: {
+              label: __alloT('stem.behaviorlab.part_hopper', 'Food magazine'),
+              desc: __alloT('stem.behaviorlab.part_hopper_desc', 'Delivers one pellet at a time into the trough. The delivery is the reinforcer only if it actually raises the future rate of the behaviour it followed — a consequence is not a reinforcer by intention.')
+            },
+            sdlight: {
+              label: __alloT('stem.behaviorlab.part_sdlight', 'Stimulus light'),
+              desc: __alloT('stem.behaviorlab.part_sdlight_desc', 'The discriminative stimulus. Green (SD) signals that responding is reinforced; red (S-delta) signals that it is not. It does not cause the press — it sets the occasion for it.')
+            },
+            speaker: {
+              label: __alloT('stem.behaviorlab.part_speaker', 'Tone generator'),
+              desc: __alloT('stem.behaviorlab.part_speaker_desc', 'Sounds the conditioned stimulus in the Pavlov level. Classical conditioning pairs the tone with food regardless of what the subject does — that independence from behaviour is exactly what separates it from operant conditioning.')
+            },
+            grid: {
+              label: __alloT('stem.behaviorlab.part_grid', 'Grid floor'),
+              desc: __alloT('stem.behaviorlab.part_grid_desc', 'Stainless bars. In this simulation the floor is only a floor: it delivers nothing. Historically, grid floors were also used to deliver shock, which is a large part of why the chamber carries the reputation it does.')
+            },
+            house: {
+              label: __alloT('stem.behaviorlab.part_house', 'House light'),
+              desc: __alloT('stem.behaviorlab.part_house_desc', 'General illumination for the chamber. It dims here while extinction is running, so the change in conditions is visible rather than only tabulated.')
+            },
+            subject: {
+              label: __alloT('stem.behaviorlab.part_subject', 'Subject'),
+              desc: __alloT('stem.behaviorlab.part_subject_desc', 'A simulated mouse. Its behaviour is drawn from a probability distribution that reinforcement reshapes — you are watching a model of operant learning, not a recording of a real animal.')
+            }
           };
 
 
 
           // ── Level accent colors ──
 
-          var LEVEL_COLORS = { 1: '#f59e0b', 2: '#8b5cf6', 3: '#ef4444', 4: '#3b82f6', 5: '#22c55e', 6: '#ec4899', 7: '#a855f7', 8: '#06b6d4', 9: '#e11d48' };
+          var LEVEL_COLORS = { 1: '#f59e0b', 2: '#a78bfa', 3: '#f87171', 4: '#60a5fa', 5: '#22c55e', 6: '#ec4899', 7: '#a855f7', 8: '#06b6d4', 9: '#e11d48' };
 
           var lvlAccent = LEVEL_COLORS[blLevel] || '#f59e0b';
 
@@ -1618,7 +2387,7 @@ dataRef.current = d;
 
             // Compute proximity delta: how much closer is mouse to lever vs 3 ticks ago?
 
-            var LEVER_X = 340, LEVER_Y = 210;
+            var LEVER_X = BL_LEVER.x, LEVER_Y = BL_LEVER.y;
 
             if (newPosHist.length >= 3) {
 
@@ -1950,6 +2719,22 @@ dataRef.current = d;
 
 
 
+            // Announce the TARGET behaviour, and only that.
+            //
+            // The chamber is a canvas, so a screen-reader user had no way to know the
+            // moment they were being asked to act on: reinforcement was announced
+            // AFTER they delivered it, which is the one event they already knew about.
+            // Announcing every tick's action instead would be unusable — a tick lands
+            // every 2 to 5 seconds all session. The target behaviour is rare by
+            // construction (that is why it needs shaping), so it is the one worth
+            // interrupting for, and the prompt names the key that acts on it.
+            var blTargetBehavior = currentLevel.target || 'pressLever';
+            if (announceToSR && action === blTargetBehavior && blPhase === 'running'
+                && blLevel !== 8 && blLevel !== 9) {
+              announceToSR((ACTION_LABELS[action] || action)
+                + '. ' + __alloT('stem.behaviorlab.press_space_to_reinforce', 'Press Space to reinforce.'));
+            }
+
             // Batch update state
 
             upd('blTick', newTick);
@@ -2010,8 +2795,18 @@ dataRef.current = d;
             var W = targetW;
             var H = targetH;
 
+            // World → screen. The simulation reasons in a fixed 400 x 280 space, but
+            // the canvas is as wide as the panel it sits in (~1000px in the tool's
+            // 1080px shell). Everything the mouse can interact with is therefore
+            // placed through SX; the canvas-relative positions this used to draw at
+            // were the reason the mouse never reached its own lever. Y needs no
+            // scale — the canvas height IS the world height.
+            var SX = W / BL_WORLD_W;
+            function wx(x) { return x * SX; }
+
             // Read from animation state if provided (rAF path), else fall back to closure vars
             var blMouseX = _st ? _st.mouseX : (d.blMouseX || 200);
+            var blMouseSX;   // screen x for blMouseX — assigned just below
             var blMouseY = _st ? _st.mouseY : (d.blMouseY || 150);
             var blMouseAction = _st ? _st.mouseAction : (d.blMouseAction || 'explore');
             var blMouseDir = _st ? _st.mouseDir : (d.blMouseDir || 1);
@@ -2034,6 +2829,19 @@ dataRef.current = d;
             var blDroTimer = _st ? _st.droTimer : (d.blDroTimer || 0);
             var blDroInterval = _st ? _st.droInterval : (d.blDroInterval || 6);
             var blProxDelta = _st ? _st.proxDelta : (d.blProxDelta || 0);
+            blMouseSX = wx(blMouseX);
+
+            // Almost all of this tool's motion is drawn, not animated by CSS, so the
+            // prefers-reduced-motion stylesheet it injects never reached any of it:
+            // the breathing, the walk cycle, the tail wag, the ear twitch, the glow
+            // pulses, the drifting dust and the spin all ran regardless. `oscT` is
+            // the clock every oscillator reads, frozen at 0 when the preference is
+            // set — which lands each of them on a neutral phase (breath scale 1, no
+            // wag, no bounce) rather than on some arbitrary frame. Elapsed-time reads
+            // like `Date.now() - blFoodTime` deliberately keep the real clock: those
+            // are timing, not motion, and freezing them would stop the pellet from
+            // ever clearing.
+            var oscT = (_st && _st.reduced) ? 0 : Date.now();
 
 
 
@@ -2110,30 +2918,36 @@ dataRef.current = d;
             // ─ Light indicator (top-left, enlarged + pulsing glow) ─
 
             if (blLevel === 5 || blLevel === 6) {
-              var lightCol = blLightColor === 'green' ? '#22c55e' : (blLightColor === 'red' ? '#ef4444' : '#94a3b8');
-              var glowPulse = 0.3 + Math.sin(Date.now() / 400) * 0.15;
+              var lightCol = blLightColor === 'green' ? '#22c55e' : (blLightColor === 'red' ? '#f87171' : '#94a3b8');
+              var glowPulse = 0.3 + Math.sin(oscT / 400) * 0.15;
               // Pulsing outer glow ring
               ctx.save();
-              ctx.beginPath(); ctx.arc(50, 35, 22, 0, Math.PI * 2);
+              ctx.beginPath(); ctx.arc(wx(BL_LEVER.x), 35, 22, 0, Math.PI * 2);
               ctx.fillStyle = (blLightColor === 'green' ? 'rgba(34,197,94,' : 'rgba(239,68,68,') + glowPulse.toFixed(2) + ')';
               ctx.fill();
               ctx.restore();
               // Main light circle
-              ctx.beginPath(); ctx.arc(50, 35, 16, 0, Math.PI * 2);
+              // Directly above the lever, matching the 3D chamber - and clear of the food
+              // chute, which the old fixed x=50 sat on top of.
+              ctx.beginPath(); ctx.arc(wx(BL_LEVER.x), 35, 16, 0, Math.PI * 2);
               ctx.fillStyle = lightCol; ctx.fill();
               ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-              // Label
-              ctx.fillStyle = '#fff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
-              ctx.fillText(blLightColor === 'green' ? 'SD' : 'S\u0394', 50, 39);
+              // Label. Black on the lit lens, not white: the green and red lenses are
+              // both mid-tone, and white on them ran under 3:1.
+              ctx.fillStyle = '#0b1220'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+              ctx.fillText(blLightColor === 'green' ? 'SD' : 'S\u0394', wx(BL_LEVER.x), 39);
             }
 
 
 
             // ─ Lever (right side) with depression animation ─
 
-            var leverX = W - 70;
+            // The sprite is drawn from its top-left, and the tick loop measures
+            // approach to its centre — so back the draw origin out of BL_LEVER
+            // rather than letting the two drift.
+            var leverX = wx(BL_LEVER.x) - 4;
 
-            var leverY = H - 55;
+            var leverY = BL_LEVER.y - 15;
 
             var leverPressed = blMouseAction === 'pressLever';
 
@@ -2205,9 +3019,9 @@ dataRef.current = d;
 
             // ─ Food tray (bottom-left) ─
 
-            var trayX = 55;
+            var trayX = wx(BL_FOOD.x);
 
-            var trayY = H - 40;
+            var trayY = BL_FOOD.y - 4;
 
             ctx.fillStyle = '#475569';
 
@@ -2243,7 +3057,7 @@ dataRef.current = d;
 
               ctx.arc(trayX, trayY + 4, 20, 0, Math.PI * 2);
 
-              ctx.fillStyle = 'rgba(251,191,36,' + (0.12 + Math.sin(Date.now() / 200) * 0.08) + ')';
+              ctx.fillStyle = 'rgba(251,191,36,' + (0.12 + Math.sin(oscT / 200) * 0.08) + ')';
 
               ctx.fill();
 
@@ -2251,7 +3065,7 @@ dataRef.current = d;
 
               ctx.arc(trayX, trayY + 4, 30, 0, Math.PI * 2);
 
-              ctx.fillStyle = 'rgba(245,158,11,' + (0.04 + Math.sin(Date.now() / 400) * 0.03) + ')';
+              ctx.fillStyle = 'rgba(245,158,11,' + (0.04 + Math.sin(oscT / 400) * 0.03) + ')';
 
               ctx.fill();
 
@@ -2379,9 +3193,9 @@ dataRef.current = d;
 
               var dmSeed = dm * 137.5;
 
-              var dmX = 30 + ((dmSeed + Date.now() * 0.008) % (W - 60));
+              var dmX = 30 + ((dmSeed + oscT * 0.008) % (W - 60));
 
-              var dmY = 60 + Math.sin(Date.now() / 2000 + dm) * 30 + (dm * 30);
+              var dmY = 60 + Math.sin(oscT / 2000 + dm) * 30 + (dm * 30);
 
               if (dmY < H - 30) {
 
@@ -2389,7 +3203,7 @@ dataRef.current = d;
 
                 ctx.arc(dmX, dmY, 0.8, 0, Math.PI * 2);
 
-                ctx.fillStyle = 'rgba(148, 163, 184, ' + (0.15 + Math.sin(Date.now() / 1500 + dm * 2) * 0.1) + ')';
+                ctx.fillStyle = 'rgba(148, 163, 184, ' + (0.15 + Math.sin(oscT / 1500 + dm * 2) * 0.1) + ')';
 
                 ctx.fill();
 
@@ -2400,30 +3214,36 @@ dataRef.current = d;
 
 
             // ── Phase 2: Proximity-to-lever visualization ──
-            var LEVER_CX = leverX + 4, LEVER_CY = leverY + 15;
-            var distToLever = Math.sqrt(Math.pow(blMouseX - LEVER_CX, 2) + Math.pow(blMouseY - LEVER_CY, 2));
-            var prox01 = Math.max(0, Math.min(1, 1 - distToLever / 300));
+            // Distance is measured in WORLD units, drawn in screen units. The same
+            // number the shaping rule uses is the number on screen.
+            var LEVER_CX = wx(BL_LEVER.x), LEVER_CY = BL_LEVER.y;
+            var distToLever = Math.sqrt(Math.pow(blMouseX - BL_LEVER.x, 2) + Math.pow(blMouseY - BL_LEVER.y, 2));
+            var prox01 = Math.max(0, Math.min(1, 1 - distToLever / BL_PROX_RANGE));
 
             // Dashed line from mouse to lever (Levels 1,2,6 — where approach matters)
             if (blLevel === 1 || blLevel === 2 || blLevel === 6) {
               ctx.save();
               ctx.setLineDash([4, 6]);
-              var pR = Math.round(255 * (1 - prox01)), pG = Math.round(200 * prox01);
-              ctx.strokeStyle = 'rgba(' + pR + ',' + pG + ',60,0.35)';
+              // Both channels lifted off the floor: at prox01 = 0 this was
+              // rgb(255,0,60) and at 1 it was rgb(0,200,60), but the mid-range
+              // muddied out, and the alpha put the whole cue under 2:1 on the
+              // chamber wall. Brighter, and never fully drops a channel.
+              var pR = Math.round(90 + 165 * (1 - prox01)), pG = Math.round(90 + 145 * prox01);
+              ctx.strokeStyle = 'rgba(' + pR + ',' + pG + ',80,0.75)';
               ctx.lineWidth = 1.5;
-              ctx.beginPath(); ctx.moveTo(blMouseX, blMouseY); ctx.lineTo(LEVER_CX, LEVER_CY); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(blMouseSX, blMouseY); ctx.lineTo(LEVER_CX, LEVER_CY); ctx.stroke();
               ctx.setLineDash([]);
               // Distance label
-              var midPX = (blMouseX + LEVER_CX) / 2, midPY = (blMouseY + LEVER_CY) / 2;
-              ctx.fillStyle = 'rgba(' + pR + ',' + pG + ',60,0.6)';
+              var midPX = (blMouseSX + LEVER_CX) / 2, midPY = (blMouseY + LEVER_CY) / 2;
+              ctx.fillStyle = 'rgba(' + pR + ',' + pG + ',80,1)';
               ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
-              ctx.fillText(Math.round(distToLever) + 'px', midPX, midPY - 5);
+              ctx.fillText(Math.round(distToLever) + ' u', midPX, midPY - 5);
               ctx.restore();
             }
 
             // Proximity delta HUD (top-left)
             if (blProxDelta !== 0 && (blLevel === 1 || blLevel === 2 || blLevel === 6)) {
-              var pdCol = blProxDelta > 0 ? '#22c55e' : '#ef4444';
+              var pdCol = blProxDelta > 0 ? '#22c55e' : '#f87171';
               var pdArr = blProxDelta > 0 ? '\u2191' : '\u2193';
               ctx.fillStyle = pdCol; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'left';
               ctx.fillText(pdArr + ' ' + Math.abs(blProxDelta).toFixed(1) + 'px', 25, 35);
@@ -2439,8 +3259,11 @@ dataRef.current = d;
                 var trAge = (trNow - trp.t) / 2000;
                 if (trAge > 1) continue;
                 var trAlpha = 0.25 * (1 - trAge);
-                ctx.beginPath(); ctx.arc(trp.x, trp.y, 1.5 + (1 - trAge), 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(99,102,241,' + trAlpha.toFixed(2) + ')'; ctx.fill();
+                ctx.beginPath(); ctx.arc(wx(trp.x), trp.y, 1.5 + (1 - trAge), 0, Math.PI * 2);
+                // Indigo at 0.25 alpha over the chamber floor was a barely-there
+                // smudge; the trail is the record of where the subject has been, so
+                // it is drawn to be seen.
+                ctx.fillStyle = 'rgba(148,163,255,' + (trAlpha * 2.2).toFixed(2) + ')'; ctx.fill();
               }
             }
 
@@ -2450,11 +3273,11 @@ dataRef.current = d;
               if (burstTick < 12) {
                 // Pulsing red border
                 ctx.save();
-                ctx.strokeStyle = 'rgba(239,68,68,' + (0.3 + Math.sin(Date.now() / 200) * 0.25).toFixed(2) + ')';
+                ctx.strokeStyle = 'rgba(239,68,68,' + (0.3 + Math.sin(oscT / 200) * 0.25).toFixed(2) + ')';
                 ctx.lineWidth = 4;
                 ctx.strokeRect(18, 48, W - 36, H - 65);
                 // Label
-                ctx.fillStyle = '#ef4444'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillStyle = '#f87171'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
                 ctx.fillText('EXTINCTION BURST', W / 2, 68);
                 ctx.font = '9px sans-serif'; ctx.fillStyle = '#f87171';
                 ctx.fillText('Response rate spiking! (' + burstTick + '/12 ticks)', W / 2, 82);
@@ -2464,19 +3287,21 @@ dataRef.current = d;
 
             // ── Phase 3D: SD/S-delta chamber tint (Level 5) ──
             if (blLevel === 5) {
-              var sdAlpha = 0.06 + Math.sin(Date.now() / 600) * 0.02;
+              var sdAlpha = 0.06 + Math.sin(oscT / 600) * 0.02;
               ctx.fillStyle = blLightColor === 'green' ? 'rgba(34,197,94,' + sdAlpha.toFixed(3) + ')' : 'rgba(239,68,68,' + sdAlpha.toFixed(3) + ')';
               ctx.fillRect(0, 0, W, H);
               // Reminder text
               ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
-              ctx.fillStyle = blLightColor === 'green' ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)';
+              // Was 0.5 alpha over the chamber floor - about 2.4:1 for the one line that
+              // tells the student what the light means.
+              ctx.fillStyle = blLightColor === 'green' ? '#4ade80' : '#fca5a5';
               ctx.fillText(blLightColor === 'green' ? '\u2705 GREEN = Reinforce!' : '\u274C RED = Do NOT reinforce!', W / 2, H - 10);
             }
 
             // ── Phase 3E: Chain overlay (Level 7) ──
             if (blLevel === 7) {
               var chainLabels = ['1\uFE0F\u20E3 Sniff', '2\uFE0F\u20E3 Rear Up', '3\uFE0F\u20E3 Press'];
-              var chainPositions = [{ x: 120, y: 150 }, { x: 220, y: 110 }, { x: LEVER_CX, y: LEVER_CY }];
+              var chainPositions = [{ x: wx(120), y: 150 }, { x: wx(220), y: 110 }, { x: LEVER_CX, y: LEVER_CY }];
               for (var ci = 0; ci < 3; ci++) {
                 var cp = chainPositions[ci];
                 var isDone = ci < blChainStep;
@@ -2504,12 +3329,14 @@ dataRef.current = d;
             ctx.save();
             ctx.globalAlpha = 0.15;
             ctx.fillStyle = '#000';
-            ctx.beginPath(); ctx.ellipse(blMouseX, blMouseY + 13, 18, 6, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(blMouseSX, blMouseY + 13, 18, 6, 0, 0, Math.PI * 2); ctx.fill();
             ctx.restore();
 
             // ─ Mouse sprite ─
+            // Drawn at the SCREEN position of its world coordinate. The sprite itself
+            // is not scaled — a stretched mouse is worse than a small one.
 
-            var mx = blMouseX;
+            var mx = blMouseSX;
 
             var my = blMouseY;
 
@@ -2523,7 +3350,7 @@ dataRef.current = d;
 
             var actionGlow = null;
 
-            var walkCycle = Math.sin(Date.now() / 120) * 3;
+            var walkCycle = Math.sin(oscT / 120) * 3;
 
             var isMoving = blMouseAction === 'explore' || blMouseAction === 'turnLeft' || blMouseAction === 'turnRight' || blMouseAction === 'halfTurn' || blMouseAction === 'approachLever' || blMouseAction === 'touchWall';
 
@@ -2537,11 +3364,11 @@ dataRef.current = d;
 
               case 'rearUp': actionBounce = -12; break;
 
-              case 'groom': actionBounce = Math.sin(Date.now() / 200) * 2; break;
+              case 'groom': actionBounce = Math.sin(oscT / 200) * 2; break;
 
               case 'freeze': actionGlow = '#94a3b8'; break;
 
-              case 'sniff': actionBounce = Math.sin(Date.now() / 150) * 1.5; break;
+              case 'sniff': actionBounce = Math.sin(oscT / 150) * 1.5; break;
 
               case 'explore': actionBounce = Math.abs(walkCycle) * 0.3; break;
 
@@ -2553,7 +3380,7 @@ dataRef.current = d;
 
             // Breathing animation
 
-            var breathScale = 1 + Math.sin(Date.now() / 800) * 0.02;
+            var breathScale = 1 + Math.sin(oscT / 800) * 0.02;
 
 
 
@@ -2567,7 +3394,7 @@ dataRef.current = d;
 
               var _spinDelay = (d.blSpeed || 1) === 3 ? 1200 : (d.blSpeed || 1) === 2 ? 2200 : 3200;
 
-              var spinProgress = ((Date.now() % _spinDelay) / _spinDelay);
+              var spinProgress = ((oscT % _spinDelay) / _spinDelay);
 
               ctx.rotate(spinProgress * Math.PI * 2);
 
@@ -2603,7 +3430,7 @@ dataRef.current = d;
 
             var bodyGrad = ctx.createRadialGradient(0, actionBounce - 4, 2, 0, actionBounce, 20);
 
-            var breathTint = Math.sin(Date.now() / 800) * 8;
+            var breathTint = Math.sin(oscT / 800) * 8;
 
             var bR = Math.min(255, Math.round(212 + breathTint));
 
@@ -2681,13 +3508,13 @@ dataRef.current = d;
 
             // Ears (with subtle random twitch)
 
-            var earTwitch1 = Math.sin(Date.now() / 700 + blEarTwitchSeed) * 0.15;
+            var earTwitch1 = Math.sin(oscT / 700 + blEarTwitchSeed) * 0.15;
 
-            var earTwitch2 = Math.sin(Date.now() / 1100 + blEarTwitchSeed * 2.3) * 0.12;
+            var earTwitch2 = Math.sin(oscT / 1100 + blEarTwitchSeed * 2.3) * 0.12;
 
-            var earScale1 = 1 + Math.sin(Date.now() / 900 + blEarTwitchSeed) * 0.08;
+            var earScale1 = 1 + Math.sin(oscT / 900 + blEarTwitchSeed) * 0.08;
 
-            var earScale2 = 1 + Math.sin(Date.now() / 1300 + blEarTwitchSeed * 1.7) * 0.06;
+            var earScale2 = 1 + Math.sin(oscT / 1300 + blEarTwitchSeed * 1.7) * 0.06;
 
             ctx.beginPath();
 
@@ -2747,7 +3574,7 @@ dataRef.current = d;
 
             var tailBaseFreq = 180 / tailSpeedMult;
 
-            var tailWag = Math.sin(Date.now() / tailBaseFreq) * 6;
+            var tailWag = Math.sin(oscT / tailBaseFreq) * 6;
 
             var isHappy = blMoodEmoji === '😊';
 
@@ -2755,7 +3582,7 @@ dataRef.current = d;
 
             if (isHappy || recentFood) {
 
-              tailWag = Math.sin(Date.now() / (60 / tailSpeedMult)) * 14;
+              tailWag = Math.sin(oscT / (60 / tailSpeedMult)) * 14;
 
             }
 
@@ -2875,7 +3702,10 @@ dataRef.current = d;
 
             ctx.textAlign = 'center';
 
-            ctx.fillText(actionLabel, mx, 48);
+            // Rides above the subject rather than sitting on a fixed y=48 band. That
+            // band is where the stimulus lamp lives now, and the two collided every
+            // time the mouse worked near the lever — which is most of the lesson.
+            ctx.fillText(actionLabel, mx, Math.max(22, my - 46));
 
 
 
@@ -3094,7 +3924,7 @@ dataRef.current = d;
 
               // Burst label
 
-              ctx.fillStyle = '#ef4444';
+              ctx.fillStyle = '#f87171';
 
               ctx.font = 'bold 8px sans-serif';
 
@@ -3261,9 +4091,9 @@ dataRef.current = d;
                   'aria-label': __alloT('stem.behaviorlab.back_to_stem_lab', 'Back to STEAM Lab'),
                   style: {
                     background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid var(--allo-stem-border, #334155)',
+                    border: '1px solid var(--bl-border)',
                     borderRadius: 8, padding: '6px 10px',
-                    cursor: 'pointer', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14, flexShrink: 0
+                    cursor: 'pointer', color: 'var(--bl-text)', fontSize: 14, flexShrink: 0
                   }
                 }, '\u2190'),
                 // Circular accent hero badge \u2014 56px hero size matches
@@ -3287,13 +4117,13 @@ dataRef.current = d;
                       padding: '2px 8px', borderRadius: '999rem',
                       background: 'rgba(251,191,36,0.12)',
                       border: '1px solid rgba(251,191,36,0.40)',
-                      color: 'var(--allo-stem-text, #fcd34d)', fontSize: 10, fontWeight: 700,
+                      color: 'var(--bl-amber-text)', fontSize: 10, fontWeight: 700,
                       fontFamily: 'ui-monospace, Menlo, monospace'
                     } }, 'Level ' + blLevel + ' / ' + LEVELS.length)
                   ),
                   React.createElement("div", { style: { height: 3, width: 48, borderRadius: '999rem', marginBottom: 6, background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' } }),
-                  React.createElement("div", { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600, lineHeight: 1.5 } },
-                    currentLevel.title + ' \u2014 ', React.createElement("span", { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, currentLevel.concept)
+                  React.createElement("div", { style: { fontSize: 12, color: 'var(--bl-text)', fontWeight: 600, lineHeight: 1.5 } },
+                    currentLevel.title + ' \u2014 ', React.createElement("span", { style: { color: 'var(--bl-muted)', fontStyle: 'italic' } }, currentLevel.concept)
                   )
                 )
               ),
@@ -3392,6 +4222,21 @@ dataRef.current = d;
 
                 React.createElement("p", { className: "text-sm text-slate-100 leading-relaxed" }, currentLevel.intro),
 
+                // \u2500\u2500 Scope \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+                // The tool had no statement of what it does and does not qualify
+                // anyone to do, while offering an FBA trainer, a BIP builder and a
+                // crisis-adjacent scenario bank, and telling a perfect scorer they
+                // were "ready for real FBA case work". Its audience includes
+                // trainees and general-education staff, and a confident untrained
+                // user running an FBA drives real BIP, restraint and IEP decisions.
+                // Stated once, on the way in, rather than buried in a panel nobody
+                // opens. \u2605 AARON TO RED-PEN THE WORDING \u2014 no AI-authored clinical
+                // framing should ship to a pilot unreviewed.
+                React.createElement("p", {
+                  className: "text-[11px] leading-relaxed",
+                  style: { color: 'var(--bl-muted)', borderLeft: '3px solid var(--bl-amber)', paddingLeft: 10, margin: '2px 0 0' }
+                }, __alloT('stem.behaviorlab.scope_note', 'This lab teaches the concepts of behaviour analysis. It does not qualify anyone to run a functional behaviour assessment or write a behaviour plan \u2014 that is supervised professional work, and the function of a real behaviour is a hypothesis you test with data, not a label you read off a description.')),
+
                 React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-600/40" },
 
                   React.createElement("p", { className: "text-xs text-amber-200 font-bold mb-1" }, __alloT('stem.behaviorlab.key_term', "\uD83D\uDCD6 Key Term:")),
@@ -3407,8 +4252,12 @@ dataRef.current = d;
 
 
                 // ── AI Tutor: classroom example at my reading level ──
-
-                (function () {
+                // Gated on the house AI switch. This panel is teacher-initiated, but
+                // "a teacher has to click it" is not the guarantee "the school turned
+                // AI off" is meant to give: with the switch off there was still a live
+                // button here sending prompts, which is the one thing the switch
+                // exists to prevent. Zero traffic and no affordance when it is off.
+                blAiOn && (function () {
 
                   var aiLevel = d.aiLevel || 'grade5';
 
@@ -3798,7 +4647,7 @@ dataRef.current = d;
 
               React.createElement("span", {
 
-                style: { position: 'absolute', right: 6, top: -1, fontSize: 8, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: '12px' }
+                style: { position: 'absolute', right: 6, top: -1, fontSize: 8, fontWeight: 700, color: 'var(--bl-text)', lineHeight: '12px' }
 
               }, blLevelScore + '/' + currentLevel.goal)
 
@@ -4064,18 +4913,121 @@ dataRef.current = d;
 
               React.createElement("div", { className: "behaviorlab-chamber-header" },
                 React.createElement("h3", null, __alloT('stem.behaviorlab.observation_chamber', 'Observation chamber')),
-                React.createElement("span", { className: "behaviorlab-chamber-status", role: "status" }, (blPaused ? 'Paused' : 'Live') + ' - ' + (blMouseAction || 'exploring'))
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                  React.createElement("div", { className: "behaviorlab-viewswitch", role: 'group', 'aria-label': __alloT('stem.behaviorlab.chamber_view', 'Chamber view') },
+                    [['2d', '▦', __alloT('stem.behaviorlab.view_2d', 'Diagram')],
+                     ['3d', '⬡', __alloT('stem.behaviorlab.view_3d', '3D')]].map(function (v) {
+                      var on = bl3dOn === (v[0] === '3d');
+                      return React.createElement('button', {
+                        key: v[0], type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                        className: 'behaviorlab-viewswitch-btn' + (on ? ' is-on' : ''),
+                        onClick: function () {
+                          upd('blChamberView', v[0]);
+                          if (announceToSR) announceToSR(v[0] === '3d'
+                            ? 'Three-D chamber view. Drag or use arrow keys to look around.'
+                            : 'Diagram chamber view.');
+                        }
+                      }, React.createElement('span', { 'aria-hidden': 'true' }, v[1] + ' '), v[2]);
+                    })
+                  ),
+                  React.createElement("span", { className: "behaviorlab-chamber-status", role: "status" },
+                    (blPaused ? 'Paused' : 'Live') + ' — ' + (ACTION_LABELS[blMouseAction] || blMouseAction || 'exploring'))
+                )
               ),
 
-              React.createElement("canvas", {
+              // ── 3D chamber ───────────────────────────────────────────────────
+              // Mounted only in 3D mode so no WebGL context is held while the
+              // diagram is on screen. The 2D canvas below stays in the DOM either
+              // way — the Space-to-reinforce shortcut gates on its presence, and
+              // its rAF loop owns the position interpolation this scene reads.
+              bl3dOn && React.createElement("div", { style: { padding: '10px 12px 12px' } },
+                React.createElement("div", {
+                  ref: BL_CHAMBER3D.attach, tabIndex: 0, role: 'group',
+                  'data-behaviorlab-3d': 'true',
+                  'aria-label': __alloT('stem.behaviorlab.chamber_3d_label', 'Operant chamber, 3D. Interactive: drag or use arrow keys to rotate, plus and minus to zoom, zero to reset. Every part is also a button below, and the diagram view carries the same information.'),
+                  onKeyDown: function (e) {
+                    var k = e.key, handled = true;
+                    if (k === 'ArrowLeft') BL_CHAMBER3D.nudge(-0.17, 0);
+                    else if (k === 'ArrowRight') BL_CHAMBER3D.nudge(0.17, 0);
+                    else if (k === 'ArrowUp') BL_CHAMBER3D.nudge(0, 0.11);
+                    else if (k === 'ArrowDown') BL_CHAMBER3D.nudge(0, -0.11);
+                    else if (k === '+' || k === '=') BL_CHAMBER3D.zoom(-0.4);
+                    else if (k === '-' || k === '_') BL_CHAMBER3D.zoom(0.4);
+                    else if (k === '0') BL_CHAMBER3D.reset();
+                    else handled = false;
+                    if (handled) { e.preventDefault(); e.stopPropagation(); }
+                  },
+                  style: { position: 'relative', width: '100%', height: 420, borderRadius: 12, overflow: 'hidden', background: '#0b1220', border: '1px solid var(--bl-border)' }
+                },
+                  bl3dStatus !== 'ready' && React.createElement('div', {
+                    style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 20, fontSize: 12, color: 'var(--bl-text)', lineHeight: 1.6 }
+                  }, bl3dStatus === 'failed'
+                    ? __alloT('stem.behaviorlab.chamber_3d_failed', '3D is unavailable on this device or network. Switch back to Diagram — it carries the whole simulation.')
+                    : __alloT('stem.behaviorlab.chamber_3d_loading', 'Loading the 3D chamber…'))
+                ),
+                React.createElement('div', { style: { display: 'flex', gap: 5, marginTop: 8, flexWrap: 'wrap' } },
+                  [[__alloT('stem.behaviorlab.rotate_left', 'Rotate view left'), '⟲', function () { BL_CHAMBER3D.nudge(-0.30, 0); }],
+                   [__alloT('stem.behaviorlab.rotate_right', 'Rotate view right'), '⟳', function () { BL_CHAMBER3D.nudge(0.30, 0); }],
+                   [__alloT('stem.behaviorlab.tilt_up', 'Tilt view up'), '▲', function () { BL_CHAMBER3D.nudge(0, 0.16); }],
+                   [__alloT('stem.behaviorlab.tilt_down', 'Tilt view down'), '▼', function () { BL_CHAMBER3D.nudge(0, -0.16); }],
+                   [__alloT('stem.behaviorlab.zoom_in', 'Zoom in'), '＋', function () { BL_CHAMBER3D.zoom(-0.5); }],
+                   [__alloT('stem.behaviorlab.zoom_out', 'Zoom out'), '－', function () { BL_CHAMBER3D.zoom(0.5); }],
+                   [__alloT('stem.behaviorlab.reset_view', 'Reset the view'), '⌂', function () { BL_CHAMBER3D.reset(); }]].map(function (c) {
+                    return React.createElement('button', {
+                      key: c[0], type: 'button', 'aria-label': c[0], title: c[0],
+                      disabled: bl3dStatus !== 'ready', onClick: c[2],
+                      className: 'behaviorlab-3d-btn'
+                    }, React.createElement('span', { 'aria-hidden': 'true' }, c[1]));
+                  }),
+                  React.createElement('button', {
+                    type: 'button', className: 'behaviorlab-3d-btn',
+                    'aria-pressed': bl3dLabels ? 'true' : 'false',
+                    disabled: bl3dStatus !== 'ready',
+                    onClick: function () { upd('bl3dLabels', !bl3dLabels); },
+                    style: { width: 'auto', padding: '5px 10px' }
+                  }, bl3dLabels
+                    ? __alloT('stem.behaviorlab.hide_part_labels', 'Hide labels')
+                    : __alloT('stem.behaviorlab.show_part_labels', 'Show labels'))
+                ),
+                // Keyboard and screen-reader parity with clicking a part in the
+                // scene: picking is a mouse gesture, so every part is a button too.
+                React.createElement('div', { style: { display: 'flex', gap: 5, marginTop: 8, flexWrap: 'wrap' }, role: 'group', 'aria-label': __alloT('stem.behaviorlab.chamber_parts', 'Chamber parts') },
+                  BL_CHAMBER_PARTS.map(function (p) {
+                    var on = bl3dSel === p.id;
+                    return React.createElement('button', {
+                      key: p.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                      className: 'behaviorlab-3d-part' + (on ? ' is-on' : ''),
+                      onClick: function () { upd('bl3dSel', on ? null : p.id); }
+                    }, BL_PART_TEXT[p.id] ? BL_PART_TEXT[p.id].label : p.label);
+                  })
+                ),
+                bl3dSel && BL_PART_TEXT[bl3dSel] && React.createElement('div', {
+                  role: 'status',
+                  style: { marginTop: 8, padding: '9px 11px', borderRadius: 10, background: 'rgba(30,41,59,0.6)', border: '1px solid var(--bl-border)', fontSize: 11.5, lineHeight: 1.6, color: 'var(--bl-text)' }
+                },
+                  React.createElement('strong', { style: { color: 'var(--bl-amber-text)' } }, BL_PART_TEXT[bl3dSel].label + ' — '),
+                  BL_PART_TEXT[bl3dSel].desc
+                ),
+                React.createElement('div', { style: { marginTop: 7, fontSize: 10.5, color: 'var(--bl-muted)', lineHeight: 1.5 } },
+                  __alloT('stem.behaviorlab.chamber_3d_hint', 'A teaching model of a standard operant chamber, not a specific commercial apparatus. It renders the same simulation as the diagram — same positions, same tick.'))
+              ),
 
-                id: "bl-chamber-canvas", ref: _blCvRef, className: "behaviorlab-chamber-canvas", "data-behaviorlab-canvas": "true", tabIndex: 0,
-                role: "img",
-                'aria-label': 'Behavior lab chamber showing a mouse. Current action: ' + (d.blAction || 'exploring') + '. Tick: ' + (d.blTick || 0),
+              // The canvas is never unmounted: `bl-chamber-canvas` is what the
+              // Space-to-reinforce handler checks to decide the lab is on screen.
+              React.createElement("div", { style: { display: bl3dOn ? 'none' : 'block' } },
+                React.createElement("canvas", {
 
-                width: 720, height: 360, style: { width: '100%', height: 'auto', display: 'block', cursor: 'crosshair' }
+                  id: "bl-chamber-canvas", ref: _blCvRef, className: "behaviorlab-chamber-canvas", "data-behaviorlab-canvas": "true", tabIndex: 0,
+                  role: "img",
+                  // Read blMouseAction, not blAction — nothing ever writes blAction, so
+                  // this label was frozen at "exploring" for every screen-reader user
+                  // for the whole run.
+                  'aria-label': 'Behavior lab chamber showing a mouse. Current action: ' + (ACTION_LABELS[d.blMouseAction] || d.blMouseAction || 'exploring') + '. Tick: ' + (d.blTick || 0),
 
-              })
+                  width: 720, height: 360, style: { width: '100%', height: 'auto', display: 'block', cursor: 'crosshair' }
+
+                })
+              )
 
             ),
 
@@ -4085,15 +5037,17 @@ dataRef.current = d;
             },
               React.createElement("div", {
                 style: {
-                  width: Math.max(5, Math.round((1 - Math.min(Math.sqrt(Math.pow((blMouseX || 200) - 350, 2) + Math.pow((blMouseY || 180) - 225, 2)) / 300, 1)) * 100)) + '%',
+                  // Was (350, 225) / 300 — a third answer to "where is the lever",
+                  // disagreeing with both the shaping rule and the drawn chamber.
+                  width: Math.max(5, Math.round((1 - Math.min(Math.sqrt(Math.pow((blMouseX || 200) - BL_LEVER.x, 2) + Math.pow((blMouseY || 180) - BL_LEVER.y, 2)) / BL_PROX_RANGE, 1)) * 100)) + '%',
                   height: '100%', borderRadius: 6,
-                  background: 'linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #22c55e 100%)',
+                  background: 'linear-gradient(90deg, #f87171 0%, #f59e0b 50%, #22c55e 100%)',
                   transition: 'width 0.3s ease',
                   boxShadow: '0 0 8px rgba(34,197,94,0.3)'
                 }
               }),
               React.createElement("span", {
-                style: { position: 'absolute', right: 8, top: -1, fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: '12px' }
+                style: { position: 'absolute', right: 8, top: -1, fontSize: 9, color: 'var(--bl-muted)', lineHeight: '12px' }
               }, __alloT('stem.behaviorlab.lever_proximity', '\uD83D\uDC2D \u2192 Lever proximity'))
             ),
 
@@ -4115,6 +5069,9 @@ dataRef.current = d;
 
                     key: ai,
 
+                    // aria-label is prohibited on a bare div, so the whole strip was
+                    // unnamed for a screen reader despite carrying labels.
+                    role: 'img',
                     title: ACTION_LABELS[act] || act,
                     'aria-label': (ACTION_LABELS[act] || act) + (act === (currentLevel.target || 'pressLever') ? ' (target behavior)' : ''),
 
@@ -4123,17 +5080,31 @@ dataRef.current = d;
                       width: isLast ? 'auto' : 14, height: isLast ? 'auto' : 14, borderRadius: isLast ? '8px' : '50%',
                       padding: isLast ? '2px 8px' : 0,
                       display: isLast ? 'flex' : 'block', alignItems: 'center', gap: '3px',
-                      fontSize: isLast ? '10px' : 0, fontWeight: 700, color: '#fff',
+                      // Every ACTION_COLORS value is a 400-level tint, so white text on
+                      // the labelled chip ran 2.0–2.2:1. Dark ink clears 6.7:1 on the
+                      // weakest of them (pink) and 11:1 on the strongest.
+                      //
+                      // High contrast is handled by inverting the FILL rather than the
+                      // ink: that theme forces text to yellow through a rule this chip
+                      // cannot outrank from an inline style, so yellow-on-amber (1.99:1)
+                      // was the only reachable outcome while the fill stayed coloured.
+                      // Black fill keeps it at ~19:1 and the action colour moves to the
+                      // border, so the colour coding survives.
+                      fontSize: isLast ? '10px' : 0, fontWeight: 700, color: isLast ? '#0b1220' : '#fff',
 
-                      backgroundColor: ACTION_COLORS[act] || '#475569',
+                      backgroundColor: (blIsContrast && isLast) ? '#000000' : (ACTION_COLORS[act] || '#94a3b8'),
 
-                      opacity: 0.5 + (ai / blRecentActions.length) * 0.5,
+                      // The fade is a recency cue, but it must not dim the one chip
+                      // that carries readable text.
+                      opacity: isLast ? 1 : 0.5 + (ai / blRecentActions.length) * 0.5,
 
                       transition: 'all 0.3s ease',
 
                       cursor: 'pointer',
 
-                      border: act === (currentLevel.target || 'pressLever') ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.1)'
+                      border: (blIsContrast && isLast)
+                        ? '2px solid ' + (ACTION_COLORS[act] || '#94a3b8')
+                        : (act === (currentLevel.target || 'pressLever') ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.1)')
 
                     }
 
@@ -4353,7 +5324,7 @@ dataRef.current = d;
 
                 React.createElement("span", {
 
-                  style: { position: 'absolute', left: '50%', top: 1, transform: 'translateX(-50%)', fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' }
+                  style: { position: 'absolute', left: '50%', top: 1, transform: 'translateX(-50%)', fontSize: 11, fontWeight: 700, color: 'var(--bl-text)' }
 
                 }, blDroTimer + ' / ' + blDroInterval + ' ticks')
 
@@ -4423,7 +5394,7 @@ dataRef.current = d;
 
                 React.createElement("div", { className: "flex justify-between mb-1" },
 
-                  React.createElement("span", { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, __alloT('stem.behaviorlab.association_strength', 'Association Strength')),
+                  React.createElement("span", { style: { fontSize: 11, color: 'var(--bl-muted)', fontWeight: 600 } }, __alloT('stem.behaviorlab.association_strength', 'Association Strength')),
 
                   React.createElement("span", { style: { fontSize: 11, color: blAssocStrength > 60 ? '#fda4af' : '#94a3b8', fontWeight: 700 } }, blAssocStrength + '%')
 
@@ -4938,7 +5909,10 @@ dataRef.current = d;
                   var earned = blCompletedLevels.indexOf(l.id) >= 0;
                   var isCurrent = blLevel === l.id;
                   return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: l.id,
-                    className: "text-center cursor-pointer transition-all " + (isCurrent ? 'scale-110' : '') + (earned ? '' : ' opacity-50 grayscale'),
+                    // opacity-50 dropped the locked badges' label to 4.33:1 against
+                    // the panel. Greyscale plus the 🔒 glyph already say "locked"
+                    // without leaning on the alpha, so the dimming is gentler now.
+                    className: "text-center cursor-pointer transition-all " + (isCurrent ? 'scale-110' : '') + (earned ? '' : ' opacity-80 grayscale'),
                     "aria-label": badge.name + ': ' + badge.desc + (earned ? ' — Earned' : ' — Locked'),
                     title: badge.name + ': ' + badge.desc + (earned ? ' (EARNED!)' : ' (locked)'),
                     onClick: function() { if (earned || isCurrent) { upd('blLevel', l.id); upd('blPhase', 'intro'); upd('blLevelScore', 0); upd('blTick', 0); } }
@@ -5020,14 +5994,14 @@ dataRef.current = d;
                 }, '🏫'),
                 React.createElement("div", null,
                   React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', lineHeight: 1.2 } }, __alloT('stem.behaviorlab.continue_in_school_behavior_toolkit', "Continue in: School Behavior Toolkit")),
-                  React.createElement("div", { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3, fontStyle: 'italic' } }, __alloT('stem.behaviorlab.applied_k_12_practice_what_school_psyc', "Applied K-12 practice — what school psychs and educators DO with the science"))
+                  React.createElement("div", { style: { fontSize: 10, color: 'var(--bl-muted)', marginTop: 3, fontStyle: 'italic' } }, __alloT('stem.behaviorlab.applied_k_12_practice_what_school_psyc', "Applied K-12 practice — what school psychs and educators DO with the science"))
                 )
               ),
-              React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 10 } },
+              React.createElement("div", { style: { fontSize: 11, color: 'var(--bl-text)', lineHeight: 1.6, marginBottom: 10 } },
                 __alloT('stem.behaviorlab.if_you_have_just_learned_operant_condi', "If you have just learned operant conditioning here in BehaviorLab, the next step is the K-12 practice that uses it. "),
                 React.createElement("b", null, __alloT('stem.behaviorlab.we_deliberately_built_that_content_as_', "We deliberately built that content as a separate tool, not here.")),
                 __alloT('stem.behaviorlab.the_skinner_box_visual_frame_should_no', " The Skinner-box visual frame should not be adjacent to \"how to handle a kid in crisis\" content — different tonal space, different ethical weight. The Toolkit covers PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (slow triggers most BIPs miss), Geoff Colvin's seven-phase Acting-Out Cycle for crisis de-escalation, and Restraint & Seclusion ethics anchored in Maine Chapter 33.")),
-              React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic' } },
+              React.createElement("div", { style: { fontSize: 11, color: 'var(--bl-muted)', lineHeight: 1.55, fontStyle: 'italic' } },
                 __alloT('stem.behaviorlab.open_stem_lab_behavioral_science', "Open STEAM Lab → Behavioral Science → "),
                 React.createElement("b", { style: { color: '#5eead4' } }, __alloT('stem.behaviorlab.school_behavior_toolkit', '"🏫 School Behavior Toolkit."')))
             ),
@@ -5074,8 +6048,8 @@ dataRef.current = d;
                         }, b.icon),
                         React.createElement("div", { style: { fontSize: 12, fontWeight: 800, color: b.color } }, b.name)
                       ),
-                      React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 6 } }, b.desc),
-                      React.createElement("div", { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic', letterSpacing: '0.02em' } },
+                      React.createElement("div", { style: { fontSize: 11, color: 'var(--bl-text)', lineHeight: 1.55, marginBottom: 6 } }, b.desc),
+                      React.createElement("div", { style: { fontSize: 9, color: 'var(--bl-muted)', fontStyle: 'italic', letterSpacing: '0.02em' } },
                         '📚 ', b.source)
                     );
                   })
@@ -5085,7 +6059,7 @@ dataRef.current = d;
                     marginTop: 10, padding: 10, borderRadius: 8,
                     background: 'rgba(96,165,250,0.06)',
                     border: '1px solid rgba(96,165,250,0.18)',
-                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
+                    color: 'var(--bl-text)', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
                   }
                 },
                   __alloT('stem.behaviorlab.identity_first_language_follows_commun', "💡 Identity-first language follows community-consensus norms (Kenny et al. 2016; Bury et al. 2020; Taboas et al. 2023). The Behavior Lab teaches the science of behavior; this panel teaches the ethics of applying it to humans who can tell us what they want."))
@@ -5122,14 +6096,14 @@ dataRef.current = d;
                 }, '🎙️'),
                 React.createElement("div", null,
                   React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#f9a8d4', lineHeight: 1.2 } }, __alloT('stem.behaviorlab.continue_in_disability_voices_sel_hub', "Continue in: Disability Voices (SEL Hub)")),
-                  React.createElement("div", { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3, fontStyle: 'italic' } }, __alloT('stem.behaviorlab.named_autistic_and_disabled_advocates_', "Named autistic and disabled advocates, not behavioral subjects"))
+                  React.createElement("div", { style: { fontSize: 10, color: 'var(--bl-muted)', marginTop: 3, fontStyle: 'italic' } }, __alloT('stem.behaviorlab.named_autistic_and_disabled_advocates_', "Named autistic and disabled advocates, not behavioral subjects"))
                 )
               ),
-              React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 10 } },
+              React.createElement("div", { style: { fontSize: 11, color: 'var(--bl-text)', lineHeight: 1.6, marginBottom: 10 } },
                 __alloT('stem.behaviorlab.if_you_have_just_read_the_critical_fra', "If you have just read the critical-frame panels above, the next step is to hear from the people whose work shaped — and critiqued — applied behavior analysis. "),
                 React.createElement("b", null, __alloT('stem.behaviorlab.we_deliberately_built_that_content_in_', "We deliberately built that content in the SEL Hub, not here.")),
                 __alloT('stem.behaviorlab.putting_named_real_autistic_adults_ins', " Putting named real autistic adults inside a tool whose central image is a Skinner box would be exactly what the disability community has documented as harmful. The tool you want includes Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Lydia X. Z. Brown, and Patty Berne — with documented quotes, context, and a curated reading list.")),
-              React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic' } },
+              React.createElement("div", { style: { fontSize: 11, color: 'var(--bl-muted)', lineHeight: 1.55, fontStyle: 'italic' } },
                 __alloT('stem.behaviorlab.open_sel_hub_identity_care', "Open SEL Hub → Identity & Care → "),
                 React.createElement("b", { style: { color: '#f9a8d4' } }, __alloT('stem.behaviorlab.disability_voices', '"🎤 Disability Voices."')))
             ),
@@ -5171,10 +6145,15 @@ dataRef.current = d;
                     ctx.fillStyle = '#94a3b8';
                     ctx.fillText('Cumulative Responses', 5, 12);
                     ctx.fillText('Time \u2192', w - 45, 195);
-                    // Simulate schedule data
+                    // Simulate schedule data.
+                    // This used to be a second, independently-written copy of the
+                    // generator — with the same FR deadlock and the same y-axis
+                    // overflow as the Sleuth puzzle. Now both read blScheduleRecord,
+                    // so the curve a student compares here and the curve they are
+                    // quizzed on there are produced by one model.
                     var schedTypes = SCHEDULE_TYPES;
-                    var maxT = 200;
-                    var maxR = 60;
+                    var maxT = BL_SCHED_T;
+                    var maxR = BL_SCHED_R;
                     var pw = w - 20;
                     var ph = 170;
                     var ox = 15;
@@ -5183,50 +6162,28 @@ dataRef.current = d;
                     var tick = blSchedTick || 0;
                     var animLen = Math.min(tick, maxT);
                     schedTypes.forEach(function(sch, si) {
+                      var rec = blScheduleRecord(sch, si * 7 + 3);
+                      var cx = function(t) { return ox + (t / maxT) * pw; };
+                      var cy = function(c) { return oy + ph - (Math.min(c, maxR) / maxR) * ph; };
                       ctx.beginPath();
                       ctx.strokeStyle = sch.color;
                       ctx.lineWidth = 2;
-                      var cumResp = 0;
-                      var nextReinf = 0;
-                      var seed = si * 7 + 3;
-                      function pseudoRand() { seed = (seed * 16807 + 11) % 2147483647; return (seed % 1000) / 1000; }
-                      if (sch.pattern === 'high-pause') {
-                        nextReinf = sch.ratio;
-                        for (var t = 0; t < animLen; t++) {
-                          var localT = cumResp % sch.ratio;
-                          if (localT < 1 && cumResp > 0) { /* pause */ }
-                          else { if (pseudoRand() > 0.25) cumResp++; }
-                          if (cumResp >= nextReinf) { nextReinf += sch.ratio; }
-                          var px = ox + (t / maxT) * pw;
-                          var py = oy + ph - (cumResp / maxR) * ph;
-                          if (t === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-                        }
-                      } else if (sch.pattern === 'high-steady') {
-                        for (var t2 = 0; t2 < animLen; t2++) {
-                          if (pseudoRand() > 0.2) cumResp++;
-                          var px2 = ox + (t2 / maxT) * pw;
-                          var py2 = oy + ph - (cumResp / maxR) * ph;
-                          if (t2 === 0) ctx.moveTo(px2, py2); else ctx.lineTo(px2, py2);
-                        }
-                      } else if (sch.pattern === 'scallop') {
-                        var lastR = 0;
-                        for (var t3 = 0; t3 < animLen; t3++) {
-                          var inInterval = (t3 - lastR) / sch.interval;
-                          var prob = inInterval * inInterval * 0.7;
-                          if (pseudoRand() < prob) { cumResp++; if ((t3 - lastR) >= sch.interval) lastR = t3; }
-                          var px3 = ox + (t3 / maxT) * pw;
-                          var py3 = oy + ph - (cumResp / maxR) * ph;
-                          if (t3 === 0) ctx.moveTo(px3, py3); else ctx.lineTo(px3, py3);
-                        }
-                      } else if (sch.pattern === 'low-steady') {
-                        for (var t4 = 0; t4 < animLen; t4++) {
-                          if (pseudoRand() > 0.55) cumResp++;
-                          var px4 = ox + (t4 / maxT) * pw;
-                          var py4 = oy + ph - (cumResp / maxR) * ph;
-                          if (t4 === 0) ctx.moveTo(px4, py4); else ctx.lineTo(px4, py4);
-                        }
+                      for (var t = 0; t < animLen; t++) {
+                        if (t === 0) ctx.moveTo(cx(t), cy(rec.resp[t]));
+                        else ctx.lineTo(cx(t), cy(rec.resp[t]));
                       }
                       ctx.stroke();
+                      // Reinforcement marks, same convention as the Sleuth chart.
+                      ctx.strokeStyle = sch.color;
+                      ctx.lineWidth = 1;
+                      for (var ri = 0; ri < rec.reinf.length; ri++) {
+                        var rt = rec.reinf[ri];
+                        if (rt >= animLen) break;
+                        ctx.beginPath();
+                        ctx.moveTo(cx(rt), cy(rec.resp[rt]) + 1);
+                        ctx.lineTo(cx(rt), cy(rec.resp[rt]) + 6);
+                        ctx.stroke();
+                      }
                     });
                     // Legend
                     schedTypes.forEach(function(sch, si) {
@@ -5316,47 +6273,21 @@ dataRef.current = d;
                   );
                 }
                 var sch = SCHEDULE_TYPES[sleuthIdx];
-                // Generate cumulative-response curve points deterministically from seed.
-                var WIDTH = 320, HEIGHT = 110, MARGIN_X = 20, MARGIN_Y = 8;
-                var T_MAX = 200, R_MAX = 60;
-                var rngSeed = sleuthSeed * 31 + 13;
-                function prng() { rngSeed = (rngSeed * 16807 + 11) % 2147483647; return (rngSeed % 1000) / 1000; }
-                var points = [];
-                var cumResp = 0;
-                if (sch.pattern === 'high-pause') {
-                  for (var t = 0; t < T_MAX; t++) {
-                    var localT = cumResp % sch.ratio;
-                    if (!(localT < 1 && cumResp > 0)) {
-                      if (prng() > 0.25) cumResp++;
-                    }
-                    points.push(cumResp);
-                  }
-                } else if (sch.pattern === 'high-steady') {
-                  for (var t2 = 0; t2 < T_MAX; t2++) {
-                    if (prng() > 0.2) cumResp++;
-                    points.push(cumResp);
-                  }
-                } else if (sch.pattern === 'scallop') {
-                  var lastR = 0;
-                  for (var t3 = 0; t3 < T_MAX; t3++) {
-                    var inInt = (t3 - lastR) / sch.interval;
-                    var prob = inInt * inInt * 0.7;
-                    if (prng() < prob) {
-                      cumResp++;
-                      if ((t3 - lastR) >= sch.interval) lastR = t3;
-                    }
-                    points.push(cumResp);
-                  }
-                } else { // low-steady
-                  for (var t4 = 0; t4 < T_MAX; t4++) {
-                    if (prng() > 0.55) cumResp++;
-                    points.push(cumResp);
-                  }
-                }
+                // One generator, shared with the Schedule Comparison animation.
+                var sleuthRec = blScheduleRecord(sch, sleuthSeed);
+                var sleuthBlocks = blScheduleBlocks(sleuthRec, 10);
+                // Wider and taller than the old 320x110, and stretched to the panel
+                // rather than letterboxed in the middle of it: at 200 ticks across
+                // 320px an FI scallop was three pixels wide and could not be read,
+                // which made the puzzle unanswerable for the reason the puzzle
+                // exists. Strokes opt out of the stretch via non-scaling-stroke.
+                var WIDTH = 640, HEIGHT = 200, MARGIN_X = 26, MARGIN_Y = 12;
+                var T_MAX = BL_SCHED_T, R_MAX = BL_SCHED_R;
+                function sx(i) { return MARGIN_X + (i / (T_MAX - 1)) * (WIDTH - 2 * MARGIN_X); }
+                function sy(c) { return HEIGHT - MARGIN_Y - (Math.min(c, R_MAX) / R_MAX) * (HEIGHT - 2 * MARGIN_Y); }
+                var points = sleuthRec.resp;
                 var pointsScaled = points.map(function(c, i) {
-                  var px = MARGIN_X + (i / T_MAX) * (WIDTH - 2 * MARGIN_X);
-                  var py = HEIGHT - MARGIN_Y - (c / R_MAX) * (HEIGHT - 2 * MARGIN_Y);
-                  return px.toFixed(1) + ',' + py.toFixed(1);
+                  return sx(i).toFixed(1) + ',' + sy(c).toFixed(1);
                 }).join(' ');
                 // Choices: when answered, color the picked + correct buttons. Otherwise neutral.
                 function pick(idx) {
@@ -5394,13 +6325,18 @@ dataRef.current = d;
                     React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold px-3 py-2 select-none text-cyan-300 select-none" }, __alloT('stem.behaviorlab.how_to_read_this_curve_click_to_toggle', '📜 How to read this curve (click to toggle)')),
                     React.createElement("div", { className: "px-3 pb-3 space-y-2 text-[11px] text-slate-300" },
                       React.createElement("p", { className: "leading-relaxed" },
-                        React.createElement("strong", null, __alloT('stem.behaviorlab.cumulative_response_curve', "Cumulative-response curve")), __alloT('stem.behaviorlab.each_reinforced_response_adds_one_to_t', ': each reinforced response adds one to the y-axis. Flat segments = no responding. Steep segments = rapid responding. Bumps where the curve briefly flattens = post-reinforcement pauses.')
+                        // "each REINFORCED response" was wrong, and wrong in a way that
+                        // breaks the reading skill this panel teaches: EVERY response
+                        // steps the line up, which is precisely why a flat stretch means
+                        // the subject stopped responding rather than stopped being paid.
+                        // Reinforcers are the tick marks, not the steps.
+                        React.createElement("strong", null, __alloT('stem.behaviorlab.cumulative_response_curve', "Cumulative-response curve")), __alloT('stem.behaviorlab.every_response_adds_one_to_the_y_axis', ': every response — reinforced or not — adds one to the y-axis, so the line can only rise. Flat segments = no responding. Steep segments = rapid responding. The tick marks under the line show where a reinforcer was delivered.')
                       ),
                       React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-1.5" },
                         [
                           { abbrev: 'FR', name: __alloT('stem.behaviorlab.fixed_ratio_2', 'Fixed Ratio'),     pattern: 'High rate with predictable pause after each reinforcer.', color: '#f59e0b' },
-                          { abbrev: 'VR', name: __alloT('stem.behaviorlab.variable_ratio_2', 'Variable Ratio'),  pattern: 'High and steady. No pauses. Resistant to extinction.',    color: '#ef4444' },
-                          { abbrev: 'FI', name: __alloT('stem.behaviorlab.fixed_interval_2', 'Fixed Interval'),  pattern: 'Scallop shape: slow after reinforcer, fast near the end.', color: '#3b82f6' },
+                          { abbrev: 'VR', name: __alloT('stem.behaviorlab.variable_ratio_2', 'Variable Ratio'),  pattern: 'High and steady. No pauses. Resistant to extinction.',    color: '#f87171' },
+                          { abbrev: 'FI', name: __alloT('stem.behaviorlab.fixed_interval_2', 'Fixed Interval'),  pattern: 'Scallop shape: slow after reinforcer, fast near the end.', color: '#60a5fa' },
                           { abbrev: 'VI', name: __alloT('stem.behaviorlab.variable_interval_2', 'Variable Interval'), pattern: 'Low and steady. Predictable but slow.',                color: '#10b981' }
                         ].map(function(s, i) {
                           return React.createElement('div', { key: i, style: { background: 'rgba(30,41,59,0.6)', border: '1px solid ' + s.color + '55', borderRadius: 6, padding: '6px 8px' } },
@@ -5415,26 +6351,90 @@ dataRef.current = d;
                     )
                   ),
                   // SVG curve (the puzzle)
-                  React.createElement("div", { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 8, border: '1px solid rgba(100,116,139,0.3)' } },
+                  React.createElement("div", { style: { background: 'var(--bl-canvas)', borderRadius: 10, padding: 8, border: '1px solid rgba(100,116,139,0.3)' } },
                     React.createElement("svg", {
                       viewBox: '0 0 ' + WIDTH + ' ' + HEIGHT,
                       width: '100%', height: HEIGHT,
+                      // Stretch to the panel instead of letterboxing a 640-wide
+                      // drawing in the middle of a 1000-wide card.
+                      preserveAspectRatio: 'none',
                       role: 'img',
-                      'aria-label': sleuthAnswered ? 'Cumulative-response curve for ' + sch.name : 'Unlabeled cumulative-response curve. Identify the schedule from its shape.',
+                      'aria-label': sleuthAnswered ? 'Cumulative-response curve for ' + sch.name : 'Unlabeled cumulative-response curve. Identify the schedule from its shape. The same record is given as numbers below.',
                       style: { display: 'block' }
                     },
                       // Grid
-                      [25, 50, 75].map(function(g) { return React.createElement('line', { key: 'gy' + g, x1: MARGIN_X, x2: WIDTH - MARGIN_X, y1: g, y2: g, stroke: 'rgba(100,116,139,0.18)', strokeWidth: 0.5 }); }),
-                      [80, 160, 240].map(function(g) { return React.createElement('line', { key: 'gx' + g, x1: g, x2: g, y1: MARGIN_Y, y2: HEIGHT - MARGIN_Y, stroke: 'rgba(100,116,139,0.18)', strokeWidth: 0.5 }); }),
+                      [0.25, 0.5, 0.75].map(function(g) {
+                        var gy = MARGIN_Y + g * (HEIGHT - 2 * MARGIN_Y);
+                        return React.createElement('line', { key: 'gy' + g, x1: MARGIN_X, x2: WIDTH - MARGIN_X, y1: gy, y2: gy, stroke: 'rgba(100,116,139,0.22)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' });
+                      }),
+                      [0.25, 0.5, 0.75].map(function(g) {
+                        var gx = MARGIN_X + g * (WIDTH - 2 * MARGIN_X);
+                        return React.createElement('line', { key: 'gx' + g, x1: gx, x2: gx, y1: MARGIN_Y, y2: HEIGHT - MARGIN_Y, stroke: 'rgba(100,116,139,0.22)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' });
+                      }),
                       // Axes labels
-                      React.createElement('text', { x: MARGIN_X, y: 12, fontSize: 8, fill: '#94a3b8', fontFamily: 'monospace' }, __alloT('stem.behaviorlab.cumulative_responses', 'Cumulative responses')),
-                      React.createElement('text', { x: WIDTH - 36, y: HEIGHT - 1, fontSize: 8, fill: '#94a3b8', fontFamily: 'monospace' }, __alloT('stem.behaviorlab.time', 'Time \u2192')),
+                      React.createElement('text', { x: MARGIN_X, y: 10, fontSize: 9, fill: '#94a3b8', fontFamily: 'monospace' }, __alloT('stem.behaviorlab.cumulative_responses', 'Cumulative responses')),
+                      React.createElement('text', { x: WIDTH - 46, y: HEIGHT - 2, fontSize: 9, fill: '#94a3b8', fontFamily: 'monospace' }, __alloT('stem.behaviorlab.time', 'Time \u2192')),
                       // The curve \u2014 color reveals only after answered
                       React.createElement('polyline', {
                         points: pointsScaled, fill: 'none',
-                        stroke: sleuthAnswered ? sch.color: 'var(--allo-stem-text, #cbd5e1)',
-                        strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round'
+                        stroke: sleuthAnswered ? sch.color: 'var(--bl-text)',
+                        strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round',
+                        vectorEffect: 'non-scaling-stroke'
+                      }),
+                      // Reinforcement marks. A real cumulative recorder deflects the
+                      // pen at each reinforcer, and it is the single most useful cue
+                      // on the chart: the pause you are asked to spot is the one that
+                      // follows a mark. Showing WHEN reinforcement happened does not
+                      // give away WHICH schedule produced it.
+                      sleuthRec.reinf.map(function(t, i) {
+                        return React.createElement('line', {
+                          key: 'r' + i,
+                          x1: sx(t), x2: sx(t),
+                          y1: sy(points[t]) - 1, y2: sy(points[t]) + 7,
+                          stroke: sleuthAnswered ? sch.color : '#94a3b8',
+                          strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke'
+                        });
                       })
+                    ),
+                    React.createElement('div', { style: { marginTop: 4, fontSize: 9.5, color: 'var(--bl-muted)', textAlign: 'right' } },
+                      __alloT('stem.behaviorlab.tick_marks_are_reinforcers', 'Tick marks below the line = reinforcer delivered'))
+                  ),
+                  // \u2500\u2500 The same record, as numbers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+                  // A curve is a picture, and this activity was unattemptable with a
+                  // screen reader: "cumulative-response curve" was the whole of the
+                  // alt text. This table carries exactly the information a sighted
+                  // student reads off the shape \u2014 responses per block of time, and
+                  // where the reinforcers fell \u2014 and deliberately no more. Naming the
+                  // pattern would answer the question the puzzle is asking.
+                  React.createElement("details", {
+                    style: { background: 'rgba(15,23,42,0.5)', borderRadius: 10, border: '1px solid rgba(100,116,139,0.3)', marginTop: 8 }
+                  },
+                    React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold px-3 py-2 select-none text-cyan-300" },
+                      __alloT('stem.behaviorlab.show_the_record_as_numbers', '\ud83d\udd22 The same record, as numbers')),
+                    React.createElement("div", { className: "px-3 pb-3", style: { overflowX: 'auto' } },
+                      React.createElement("table", { style: { width: '100%', borderCollapse: 'collapse', fontSize: 10.5, color: 'var(--bl-text)' } },
+                        React.createElement("caption", { style: { captionSide: 'top', textAlign: 'left', fontSize: 10, color: 'var(--bl-muted)', paddingBottom: 6 } },
+                          __alloT('stem.behaviorlab.responses_in_each_block', 'Responses made in each block of 20 time units, and the running total at the end of the block.')),
+                        React.createElement("thead", null,
+                          React.createElement("tr", null,
+                            React.createElement("th", { scope: 'col', style: { textAlign: 'left', padding: '3px 6px', borderBottom: '1px solid var(--bl-border)' } }, __alloT('stem.behaviorlab.time_block', 'Time block')),
+                            React.createElement("th", { scope: 'col', style: { textAlign: 'right', padding: '3px 6px', borderBottom: '1px solid var(--bl-border)' } }, __alloT('stem.behaviorlab.responses_in_block', 'Responses')),
+                            React.createElement("th", { scope: 'col', style: { textAlign: 'right', padding: '3px 6px', borderBottom: '1px solid var(--bl-border)' } }, __alloT('stem.behaviorlab.running_total', 'Running total')),
+                            React.createElement("th", { scope: 'col', style: { textAlign: 'right', padding: '3px 6px', borderBottom: '1px solid var(--bl-border)' } }, __alloT('stem.behaviorlab.reinforcers_in_block', 'Reinforcers'))
+                          )
+                        ),
+                        React.createElement("tbody", null,
+                          sleuthBlocks.map(function(b, bi) {
+                            var marks = sleuthRec.reinf.filter(function(t) { return t >= b.from && t <= b.to; }).length;
+                            return React.createElement("tr", { key: bi },
+                              React.createElement("th", { scope: 'row', style: { textAlign: 'left', padding: '3px 6px', fontWeight: 600 } }, b.from + '\u2013' + b.to),
+                              React.createElement("td", { style: { textAlign: 'right', padding: '3px 6px', fontVariantNumeric: 'tabular-nums' } }, b.count),
+                              React.createElement("td", { style: { textAlign: 'right', padding: '3px 6px', fontVariantNumeric: 'tabular-nums' } }, points[b.to]),
+                              React.createElement("td", { style: { textAlign: 'right', padding: '3px 6px', fontVariantNumeric: 'tabular-nums' } }, marks)
+                            );
+                          })
+                        )
+                      )
                     )
                   ),
                   // Picker buttons
@@ -5445,7 +6445,7 @@ dataRef.current = d;
                       var bg, border, color;
                       if (sleuthAnswered) {
                         if (isCorrect) { bg = '#064e3b'; border = '#22c55e'; color = '#bbf7d0'; }
-                        else if (isPicked) { bg = '#7f1d1d'; border = '#ef4444'; color = '#fecaca'; }
+                        else if (isPicked) { bg = '#7f1d1d'; border = '#f87171'; color = '#fecaca'; }
                         else { bg = 'rgba(30,41,59,0.5)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
                       } else {
                         bg = 'rgba(30,41,59,0.7)'; border = opt.color + '60'; color = '#e2e8f0';
@@ -5534,10 +6534,10 @@ dataRef.current = d;
                     why: 'Behavior precedes the aversive demand and is specific to it. She is not avoiding gym in general — just the run. The selective onset + selective relief is the giveaway. Reinforcer = removal of the running demand.' }
                 ];
                 var FN_OPTIONS = [
-                  { id: 'Attention', label: __alloT('stem.behaviorlab.attention_2', 'Attention'),         color: '#3b82f6', icon: '👀' },
-                  { id: 'Escape',    label: __alloT('stem.behaviorlab.escape_avoidance', 'Escape / Avoidance'), color: '#ef4444', icon: '🏃' },
+                  { id: 'Attention', label: __alloT('stem.behaviorlab.attention_2', 'Attention'),         color: '#60a5fa', icon: '👀' },
+                  { id: 'Escape',    label: __alloT('stem.behaviorlab.escape_avoidance', 'Escape / Avoidance'), color: '#f87171', icon: '🏃' },
                   { id: 'Tangible',  label: __alloT('stem.behaviorlab.tangible_2', 'Tangible'),          color: '#f59e0b', icon: '🎮' },
-                  { id: 'Sensory',   label: __alloT('stem.behaviorlab.sensory_automatic', 'Sensory / Automatic'), color: '#8b5cf6', icon: '✨' }
+                  { id: 'Sensory',   label: __alloT('stem.behaviorlab.sensory_automatic', 'Sensory / Automatic'), color: '#a78bfa', icon: '✨' }
                 ];
                 var fnIdx = d.blFnIdx == null ? -1 : d.blFnIdx;
                 var fnSeed = d.blFnSeed || 1;
@@ -5586,10 +6586,10 @@ dataRef.current = d;
                     // without this scaffolding.
                     React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-1.5 mb-3" },
                       [
-                        { id: 'Attention', icon: '👀', color: '#3b82f6', name: __alloT('stem.behaviorlab.attention_3', 'Attention'), def: 'Behavior produces interaction (positive OR corrective) from someone.' },
-                        { id: 'Escape',    icon: '🏃', color: '#ef4444', name: __alloT('stem.behaviorlab.escape', 'Escape'),    def: 'Behavior postpones, reduces, or removes a demand the kid wants to avoid.' },
+                        { id: 'Attention', icon: '👀', color: '#60a5fa', name: __alloT('stem.behaviorlab.attention_3', 'Attention'), def: 'Behavior produces interaction (positive OR corrective) from someone.' },
+                        { id: 'Escape',    icon: '🏃', color: '#f87171', name: __alloT('stem.behaviorlab.escape', 'Escape'),    def: 'Behavior postpones, reduces, or removes a demand the kid wants to avoid.' },
                         { id: 'Tangible',  icon: '🎮', color: '#f59e0b', name: __alloT('stem.behaviorlab.tangible_3', 'Tangible'),  def: 'Behavior produces access to a specific item or activity.' },
-                        { id: 'Sensory',   icon: '✨', color: '#8b5cf6', name: __alloT('stem.behaviorlab.sensory', 'Sensory'),   def: 'Behavior produces stimulation that is itself the reinforcer. No social or material payoff needed.' }
+                        { id: 'Sensory',   icon: '✨', color: '#a78bfa', name: __alloT('stem.behaviorlab.sensory', 'Sensory'),   def: 'Behavior produces stimulation that is itself the reinforcer. No social or material payoff needed.' }
                       ].map(function(f, i) {
                         return React.createElement('div', { key: i, style: { background: 'rgba(30,41,59,0.6)', border: '1px solid ' + f.color + '55', borderRadius: 6, padding: '6px 8px' } },
                           React.createElement('div', { style: { color: f.color, fontWeight: 800, fontSize: 11 } }, f.icon + ' ' + f.name),
@@ -5620,7 +6620,7 @@ dataRef.current = d;
                     React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.best_2', "Best "), React.createElement("strong", { className: "text-emerald-400" }, fnBest)),
                     fnRounds > 0 && React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.accuracy_2', "Accuracy "), React.createElement("strong", { className: "text-cyan-400" }, pct + '%'))
                   ),
-                  React.createElement("div", { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 } },
+                  React.createElement("div", { style: { background: 'var(--bl-canvas)', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 } },
                     React.createElement("div", { className: "text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-1" }, 'Vignette ' + fnShown.length + ' of ' + FN_VIGNETTES.length),
                     React.createElement("p", { className: "text-[12px] text-slate-100 leading-relaxed", style: { margin: 0 } }, v.scenario)
                   ),
@@ -5631,7 +6631,7 @@ dataRef.current = d;
                       var bg, border, color;
                       if (fnAnswered) {
                         if (isRight) { bg = '#064e3b'; border = '#22c55e'; color = '#bbf7d0'; }
-                        else if (picked) { bg = '#7f1d1d'; border = '#ef4444'; color = '#fecaca'; }
+                        else if (picked) { bg = '#7f1d1d'; border = '#f87171'; color = '#fecaca'; }
                         else { bg = 'rgba(30,41,59,0.5)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
                       } else {
                         bg = opt.color + '20'; border = opt.color + '60'; color = '#e2e8f0';
@@ -5667,7 +6667,14 @@ dataRef.current = d;
                           React.createElement("div", { className: "text-[12px] font-bold text-blue-300 mb-1" }, __alloT('stem.behaviorlab.all_12_vignettes_complete', '🏆 All 12 vignettes complete')),
                           React.createElement("div", { className: "text-[11px] text-slate-100 leading-relaxed" },
                             'Final: ', React.createElement('strong', null, fnScore + ' / ' + FN_VIGNETTES.length + ' (' + Math.round((fnScore / FN_VIGNETTES.length) * 100) + '%)'),
-                            fnScore === FN_VIGNETTES.length ? ' — every function correctly identified. Ready for real FBA case work.' :
+                            // "Ready for real FBA case work" was the strongest claim in
+                            // the tool and the one with an actual harm path: a confident,
+                            // untrained user running an FBA drives BIPs, restraint
+                            // decisions and IEP goals. Twelve vignettes with the function
+                            // knowable from the text is a concept check, not a
+                            // demonstration of competence on a real case, where the
+                            // function is a hypothesis you test with ABC data.
+                            fnScore === FN_VIGNETTES.length ? __alloT('stem.behaviorlab.fn_all_correct', ' — every function correctly identified. That is the concept; on a real case the function is a hypothesis you confirm with ABC data and supervision, not a label you read off a paragraph.') :
                             fnScore >= 10 ? ' — strong FBA reasoning. The most-confused pair is usually attention vs escape (when adult intervention happens to coincide with demand removal — both can co-occur).' :
                             fnScore >= 7 ? ' — solid baseline. Re-read the rationales on misses; look specifically for what the behavior consistently produces vs prevents.' :
                             ' — these distinctions take many examples. Re-read the FOUR_FUNCTIONS reference card above + the rationales on each miss, then retake.'
@@ -5992,7 +6999,10 @@ dataRef.current = d;
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(239,68,68,0.2)' }, glass)
             },
-              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, "\uD83C\uDFAF Clinical Scenarios (" + (blScenarioIdx + 1) + "/" + SCENARIO_CHALLENGES.length + ")"),
+              // "Clinical Scenarios" reads as case practice. They are written
+              // scenarios with one defensible answer each \u2014 practice at applying the
+              // concepts, which is a different and smaller claim.
+              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, "\uD83C\uDFAF " + __alloT('stem.behaviorlab.practice_scenarios', 'Practice Scenarios') + " (" + (blScenarioIdx + 1) + "/" + SCENARIO_CHALLENGES.length + ")"),
               // Streak indicator
               blStreak > 0 && React.createElement("div", { className: "text-center mb-2" },
                 React.createElement("span", { className: "inline-block px-3 py-0.5 rounded-full text-[11px] font-bold " + (blStreak >= 5 ? 'bg-amber-700 text-white animate-pulse motion-reduce:animate-none' : blStreak >= 3 ? 'bg-emerald-700 text-emerald-100' : 'bg-slate-700 text-slate-100') },

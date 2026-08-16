@@ -552,7 +552,13 @@ function HeaderBar(props) {
                     <Layout size={18} aria-hidden="true" />
                     <span className="hidden 2xl:inline text-xs font-bold">{t('dashboard.title')}</span>
                   </button>
-                  {isTeacherMode && setShowLearningHub && (
+                  {/* NOT gated on isTeacherMode. The Learning Hub IS the learner
+                      surface, and the LaunchPad "Learning Tools" card drops the user
+                      into it with isTeacherMode false — so a teacher-only gate here
+                      meant a learner who closed the hub had no visible way back to
+                      it, only the command palette. Matches the palette's own
+                      open_learning_hub, which is already roles: 'all'. */}
+                  {setShowLearningHub && (
                     <button type="button"
                       onClick={() => setShowLearningHub(true)}
                       data-help-key="header_learning_hub"
@@ -1459,7 +1465,8 @@ function HeaderBar(props) {
                           <span className="hidden lg:inline">{t('header.nav_tools') || 'Tools'}</span>
                         </button>
                         )}
-                        {isTeacherMode && setShowLearningHub && (
+                        {/* All roles — see the note on the expanded-header twin. */}
+                        {setShowLearningHub && (
                         <button type="button"
                           onClick={() => setShowLearningHub(true)}
                           data-help-key="header_learning_hub"

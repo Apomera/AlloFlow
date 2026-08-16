@@ -14,13 +14,15 @@ This consolidated Markdown edition is generated for repository browsing, review,
 2. [Prepare a purposeful, differentiated lesson](#prepare-a-purposeful-differentiated-lesson) · Turn source material into a purposeful, differentiated lesson package.
 3. [Universal Settings: set it once, not per tool](#universal-settings-set-it-once-not-per-tool) · Set grade level, language, translations, and other shared defaults once for the whole lesson.
 4. [Run a live lesson safely and calmly](#run-a-live-lesson-safely-and-calmly) · Prepare, run, differentiate, and close a live lesson safely.
-5. [Accessibility and UDL: verify the learner experience](#accessibility-and-udl-verify-the-learner-experience) · Check the real learner experience and remove barriers before sharing.
-6. [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) · Interpret classroom evidence carefully and plan useful follow-up.
-7. [Classroom workflows](#classroom-workflows) · Use practical recipes for common middle-school teaching needs.
-8. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
-9. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
-10. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
-11. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
+5. [Adventure Mode: a story your lesson can carry](#adventure-mode-a-story-your-lesson-can-carry) · When students see Adventure Mode, lesson-scoped resume, and the assignment switch.
+6. [Accessibility and UDL: verify the learner experience](#accessibility-and-udl-verify-the-learner-experience) · Check the real learner experience and remove barriers before sharing.
+7. [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) · Interpret classroom evidence carefully and plan useful follow-up.
+8. [Classroom workflows](#classroom-workflows) · Use practical recipes for common middle-school teaching needs.
+9. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
+10. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
+11. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
+12. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
+13. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
 
 ---
 
@@ -278,6 +280,10 @@ Interests can increase relevance, but they should not stereotype students or dis
 
 ### Choose formats by purpose
 
+#### Finding the right tool
+
+The sidebar's **Find a tool** panel narrows the tool list by purpose (Recommended, Make accessible, Engage, Assess and deliver) or by search. It filters what you see; the tool cards below it are what actually create. While a filter is on, the panel says so in words ("A filter is on: showing 8 of 22 tools"), and you can only hide the panel when no filter is active, so tools can never go missing without an explanation on screen.
+
 #### Build a small lesson package
 
 A practical package usually has three to five parts:
@@ -398,6 +404,10 @@ Continue to **Preview/Package/Deliver** in Guided Mode or use the available prev
 - For a live lesson, join from a second device or browser profile, verify the code, and send one resource.
 - For a document, inspect the exported file with keyboard navigation, zoom, and read-aloud or a screen reader when available.
 - For print, use print preview and check page breaks, contrast, font size, and whether URLs or instructions still make sense on paper.
+
+Two export formats look alike and are not: **Print / Save as PDF** produces a finished copy to read, while **Worksheet** produces a blank copy to write on, with ruled answer lines, fill-in bubbles, and a Name and Date header. The export screen explains each format under its selector.
+
+If your lesson has both an adapted text and a glossary, the Worksheet format also offers a **fill-in-the-blank version**: glossary terms in the passage become numbered blanks with a word bank, and the teacher copy carries the answer key. It works in any lesson language.
 
 Test again after a meaningful revision. Previewing an earlier version does not verify the final package.
 
@@ -818,6 +828,41 @@ Before ending:
 - No session code, roster, or student response remains projected.
 
 For a detailed learner-experience check before the next session, see [Accessibility and UDL](#accessibility-and-udl-verify-the-learner-experience). For privacy boundaries, see [Privacy and responsible AI](#privacy-and-responsible-ai).
+
+---
+
+## Adventure Mode: a story your lesson can carry
+
+Adventure Mode turns a lesson into a short interactive story. Students make choices, answer questions drawn from your source material, and earn XP as they go. It is optional, and as of the August 2026 update it only appears when you want it to.
+
+If you have not built a lesson yet, start with [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson).
+
+### When students see it
+
+Two things must both be true before the Adventure panel appears for students:
+
+| Condition | Where you control it |
+| --- | --- |
+| **You left Adventure on for this assignment.** | Project Settings has an "Include Adventure in this assignment" switch. Turn it off and the panel disappears from the student view entirely. |
+| **There is a lesson to build a story from.** | Adventure needs source material or an analysis to work with. An empty workspace does not advertise it. |
+
+The switch defaults to on, so lessons you shared before this update behave exactly as they did.
+
+### Resume is tied to the lesson now
+
+A student's saved adventure belongs to the lesson it was made from. If they open a different lesson, they are not offered "Resume Adventure" from last week's story, and choosing an old save from a different lesson politely refuses rather than pulling them out of today's work. This closes a real classroom problem: students quietly resuming a past adventure instead of attending to the current lesson.
+
+One honest note: adventures saved before this update carry no lesson tag, so the very first resume after the update may still offer an older story. Every save made from now on is tagged.
+
+### Language
+
+Adventure has its own language control with three settings: the lesson language only, the lesson language with a translation, or a multilingual mix. When a translation is included, the second language now follows your Universal Settings translation choice instead of always being English. See [Universal Settings](#universal-settings-set-it-once-not-per-tool) for how that control works.
+
+### Practical guidance
+
+- **Graded work:** turn the assignment switch off. Adventure is practice and engagement, not assessment.
+- **XP worries:** XP earned in an adventure spends in the same place as all other XP. Removing the adventure does not take away anything a student already earned.
+- **Teachers in family mode** see the Adventure panel pre-expanded in the sidebar rather than the student presentation.
 
 ---
 
@@ -1921,6 +1966,14 @@ If a content filter or network rule is suspected, report the approved site URL, 
 
 ### AI generation is unavailable, slow, or wrong
 
+#### If you see "AI extras: off" in the STEAM Lab header
+
+That small sparkle pill means no AI backend is set up on this device: no API key, no local model, and you are not inside Gemini Canvas. Nothing is broken. Every sim and activity works fully without AI; only the extras (AI hints, coaching) are off. Click the pill to see the three ways to turn AI on. The easiest is opening AlloFlow inside Gemini Canvas, which is free with a Google account and uses your Gemini plan's daily quota; the setup screen has a button that takes you straight there.
+
+#### If a message disappeared before you finished reading it
+
+Notices appear at the top center of the screen and fade after a few seconds. Nothing is lost: click the lightbulb in the header and open the **Messages** list to reread every recent notice, newest first.
+
 #### If generation does not start
 
 1. Check AI Backend Settings on the Launch Pad or the backend/status area in your deployment.
@@ -2100,6 +2153,30 @@ Move fully to the fallback and contact the appropriate school support when:
 - continued retries risk losing work.
 
 After class, reproduce the issue with fictional content and one controlled variable at a time. For routes and terminology that can help you describe the problem, see [Specialist and product reference](#specialist-and-product-reference).
+
+---
+
+## Math Fluency: timed practice and CBM probes
+
+AlloFlow includes a math fluency instrument: short, timed practice in the curriculum-based measurement (CBM) style, plus a Fluency Maze game. It records attempts and gives you a score history, which makes it closer to an assessment tool than to the exploratory STEAM Lab sims.
+
+### Where it lives
+
+Math Fluency is a mode inside the Math tool. Open the **Math** card in the sidebar, then change the **Mode** selector to **Fluency Probes** or **Fluency Maze**.
+
+The faster door, added August 2026: press **Ctrl+K** and type any of these — "math fluency", "fluency probe", "timed math", "math minute", "CBM probe", or "math maze". The command palette takes you straight there. Because opening a timed probe changes what is on screen, the assistant confirms before it acts.
+
+### Who sees it
+
+The panel lives in the teacher sidebar, so students do not browse to it on their own. You administer a probe, or you deliver it as part of an assignment. Teachers, independent learners, and family mode can all reach it; the student view cannot.
+
+### Practical guidance
+
+- **Probes are timed.** Have the student ready before you start one; a probe started by accident still runs its clock.
+- **The maze opens from a launch card** rather than starting instantly, so saying "math maze" to the assistant never drops a student into a live game unannounced.
+- **Score history stays on the device**, consistent with AlloFlow's no-account posture. Export or record scores through your normal documentation routine if your team tracks CBM benchmarks centrally.
+
+For the assessment side of the house, including probe administration from Assessment Center, see [Specialist and product reference](#specialist-and-product-reference).
 
 ---
 

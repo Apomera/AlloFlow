@@ -373,7 +373,9 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('boatState.speed *= Math.exp(-0.9 * dt);');
     expect(source).toContain('boatState.pos.z += dz;');
     expect(source).toContain('if (d < 7) {');
-    expect(source).toContain('boat.position.z - Math.cos(boatState.heading) * 9');
+    // The chase-camera offset used to be pinned here as a source string. It is
+    // now exercised as real geometry in the "camera rigs" block below, which
+    // survives the rig being rewritten and still catches a flipped sign.
     expect(source).not.toContain('boatState.pos.z -= dz;');
     expect(source).toContain('unsafeSpeedSeconds >= 3');
     expect(source).toContain('weatherFuelFactor');
@@ -499,5 +501,198 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).not.toContain('Violation penalty: $');
     expect(source).not.toContain('resumeSim');
     expect(source).not.toContain('hud.fuel || 100');
+  });
+});
+
+// The four camera rigs are pure geometry (getCoreCameraRig), so they can be
+// checked here for real instead of by pinning source strings. Two of these
+// invariants were live defects: the helm rig sat AHEAD of the boat origin,
+// inside the console, and the overhead rig looked exactly along -Y, which
+// makes lookAt degenerate because the view direction is parallel to `up`.
+describe('Fisher Lab camera rigs', () => {
+  const forward = (heading) => ({ x: Math.sin(heading), z: Math.cos(heading) });
+  // heading π is north (see headingToCompass); check a heading off the axes too,
+  // so a rig that only works when sin or cos is zero cannot pass.
+  const HEADINGS = [0, Math.PI, Math.PI / 2, 2.3];
+  const BOAT = { x: 12, y: 0.04, z: -7, speed: 3 };
+  const at = (view, heading) => window.__FisherLabCore.getCoreCameraRig(view, Object.assign({}, BOAT, { heading }));
+
+  it('exposes every view the V key cycles', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    // Both the key handler and the React toolbar read this one list.
+    expect(source).toContain('var views = CAMERA_VIEW_IDS;');
+    for (const id of ['chase', 'firstperson', 'topdown', 'chartup']) {
+      expect(source).toContain("id: '" + id + "'");
+      expect(at(id, Math.PI).id).toBe(id);
+    }
+  });
+
+  it('places the chase camera astern of the boat and aims it ahead of the bow', () => {
+    for (const heading of HEADINGS) {
+      const f = forward(heading);
+      const rig = at('chase', heading);
+      // Behind: the eye offset from the boat opposes the forward vector.
+      const dot = (rig.eye[0] - BOAT.x) * f.x + (rig.eye[2] - BOAT.z) * f.z;
+      expect(dot).toBeLessThan(-8);
+      // Aim point leads the boat rather than sitting on the hull.
+      const aim = (rig.target[0] - BOAT.x) * f.x + (rig.target[2] - BOAT.z) * f.z;
+      expect(aim).toBeGreaterThan(3);
+      expect(rig.eye[1]).toBeGreaterThan(BOAT.y + 2);
+    }
+  });
+
+  it('dollies the chase camera back as speed rises', () => {
+    const slow = window.__FisherLabCore.getCoreCameraRig('chase', { heading: Math.PI, speed: 0 });
+    const fast = window.__FisherLabCore.getCoreCameraRig('chase', { heading: Math.PI, speed: 8 });
+    expect(Math.hypot(fast.eye[0], fast.eye[2])).toBeGreaterThan(Math.hypot(slow.eye[0], slow.eye[2]));
+    expect(fast.eye[1]).toBeGreaterThan(slow.eye[1]);
+  });
+
+  it('keeps the helm eye behind the console and looking over the bow', () => {
+    for (const heading of HEADINGS) {
+      const f = forward(heading);
+      const rig = at('firstperson', heading);
+      // ★ Behind, not ahead. The old rig was +0.4 forward of the origin, which
+      // is inside the console: the bow cone filled the lower half of the frame
+      // and the 8 cm nav-light spheres rendered as beach balls.
+      const dot = (rig.eye[0] - BOAT.x) * f.x + (rig.eye[2] - BOAT.z) * f.z;
+      expect(dot).toBeLessThan(0);
+      expect(Math.abs(dot)).toBeLessThan(2); // still on the boat, not a chase cam
+      // Above the windshield rail (y 1.25 + half its 0.35 height), riding the bob.
+      expect(rig.eye[1]).toBeGreaterThan(1.45);
+      // Looking forward and slightly down.
+      const aim = (rig.target[0] - rig.eye[0]) * f.x + (rig.target[2] - rig.eye[2]) * f.z;
+      expect(aim).toBeGreaterThan(20);
+      expect(rig.target[1]).toBeLessThan(rig.eye[1]);
+      expect(rig.follow).toBe(false); // the helm must not lag the hull
+    }
+  });
+
+  it('never aims an overhead rig exactly along its own up vector', () => {
+    // lookAt is degenerate when the view direction is parallel to `up`, and the
+    // flat, depth-cue-free plan it produced is what made "top-down" read as a
+    // broken render rather than a camera angle.
+    for (const view of ['topdown', 'chartup']) {
+      for (const heading of HEADINGS) {
+        const rig = at(view, heading);
+        const dir = [rig.target[0] - rig.eye[0], rig.target[1] - rig.eye[1], rig.target[2] - rig.eye[2]];
+        const len = Math.hypot(dir[0], dir[1], dir[2]);
+        const cos = (dir[0] * rig.up[0] + dir[1] * rig.up[1] + dir[2] * rig.up[2]) / len;
+        expect(Math.abs(Math.abs(cos) - 1)).toBeGreaterThan(0.02);
+        expect(rig.eye[1]).toBeGreaterThan(20); // genuinely overhead
+      }
+    }
+  });
+
+  it('orients the chart view north-up and the drone view heading-up', () => {
+    // Chart view: up is +Z (north) so it matches the paper chart, and the eye
+    // does not swing with heading.
+    const chartN = at('chartup', Math.PI);
+    const chartE = at('chartup', Math.PI / 2);
+    expect(chartN.up).toEqual([0, 0, 1]);
+    expect(chartN.eye[0]).toBeCloseTo(chartE.eye[0], 6);
+    expect(chartN.eye[2]).toBeCloseTo(chartE.eye[2], 6);
+    // Drone view: heading-up, so the eye DOES swing round behind the boat.
+    const droneN = at('topdown', Math.PI);
+    const droneE = at('topdown', Math.PI / 2);
+    expect(droneN.up).toEqual([0, 1, 0]);
+    expect(Math.hypot(droneN.eye[0] - droneE.eye[0], droneN.eye[2] - droneE.eye[2])).toBeGreaterThan(10);
+  });
+
+  it('narrows the lens for the overhead rigs and widens it at the helm', () => {
+    expect(at('firstperson', Math.PI).fov).toBeGreaterThan(at('chase', Math.PI).fov);
+    expect(at('topdown', Math.PI).fov).toBeLessThan(at('chase', Math.PI).fov);
+    expect(at('chartup', Math.PI).fov).toBeLessThan(at('topdown', Math.PI).fov);
+  });
+
+  it('falls back to chase for an unknown view id', () => {
+    expect(at('nonsense', Math.PI).id).toBe('chase');
+  });
+});
+
+// The buoy glyphs are parsed out of the BUOYAGE data so the drawing cannot
+// drift from the caption beside it. That parse is the risky part: a wrong band
+// order or a missed topmark silently draws a DIFFERENT navigational mark, which
+// is worse than drawing nothing. Every case below is a real IALA-B mark.
+describe('Fisher Lab buoy glyphs', () => {
+  const glyph = (m) => window.__FisherLabCore.getCoreBuoyGlyph(m);
+
+  it('draws lateral marks with the shape that pairs with their colour', () => {
+    // The tab's own closing note: red is ALWAYS conical, green ALWAYS
+    // cylindrical, so a colourblind boater can navigate by shape alone. If the
+    // glyph does not honour that, the note is describing a picture that lies.
+    const nun = glyph({ type: 'nun', color: 'red', shape: 'conical' });
+    expect(nun).toMatchObject({ body: 'nun', bands: ['red'], striped: false });
+    const can = glyph({ type: 'can', color: 'green', shape: 'cylindrical' });
+    expect(can).toMatchObject({ body: 'can', bands: ['green'], striped: false });
+  });
+
+  it('orders junction bands top-down as the caption reads them', () => {
+    // "red over green" must put red on TOP. Reversed, this is the mark for the
+    // opposite preferred channel.
+    expect(glyph({ color: 'red over green', shape: 'nun' })).toMatchObject({ body: 'nun', bands: ['red', 'green'] });
+    expect(glyph({ color: 'green over red', shape: 'can' })).toMatchObject({ body: 'can', bands: ['green', 'red'] });
+  });
+
+  it('reads cardinal bands and topmark cone directions', () => {
+    // Cone direction is the entire difference between an east and a west
+    // cardinal, and they tell you to pass on opposite sides.
+    expect(glyph({ color: 'black-over-yellow', topmark: '▲▲' })).toMatchObject({ bands: ['black', 'yellow'], topmark: ['up', 'up'] });
+    expect(glyph({ color: 'black-yellow-black', topmark: '▲▼' })).toMatchObject({ bands: ['black', 'yellow', 'black'], topmark: ['up', 'down'] });
+    expect(glyph({ color: 'yellow-over-black', topmark: '▼▼' })).toMatchObject({ bands: ['yellow', 'black'], topmark: ['down', 'down'] });
+    expect(glyph({ color: 'yellow-black-yellow', topmark: '▼▲' })).toMatchObject({ bands: ['yellow', 'black', 'yellow'], topmark: ['down', 'up'] });
+  });
+
+  it('never confuses an east cardinal with a west cardinal', () => {
+    const east = glyph({ color: 'black-yellow-black', topmark: '▲▼' });
+    const west = glyph({ color: 'yellow-black-yellow', topmark: '▼▲' });
+    expect(east.topmark).not.toEqual(west.topmark);
+    expect(east.bands).not.toEqual(west.bands);
+  });
+
+  it('draws safe water as vertical stripes, not horizontal bands', () => {
+    const sw = glyph({ color: 'red and white vertical stripes', shape: 'spherical or pillar' });
+    expect(sw.striped).toBe(true);
+    expect(sw.bands).toEqual(['red', 'white']);
+    expect(sw.body).toBe('sphere');
+    // "and" is not a colour and must not become a band.
+    expect(sw.bands).not.toContain('and');
+  });
+
+  it('sets a horizontal band INTO the body colour rather than halving the mark', () => {
+    // "black with red horizontal band" is black-red-black. Drawn as two bands
+    // it reads as some other mark; this one means isolated danger.
+    const iso = glyph({ color: 'black with red horizontal band', topmark: '●●' });
+    expect(iso.bands).toEqual(['black', 'red', 'black']);
+    expect(iso.topmark).toEqual(['sphere', 'sphere']);
+    expect(iso.striped).toBe(false);
+  });
+
+  it('degrades safely on data it does not recognise', () => {
+    // A new mark added to BUOYAGE with unfamiliar wording must draw a plain
+    // hull, never a mark that means something specific and wrong.
+    expect(glyph({ color: 'chartreuse', shape: 'blob' })).toMatchObject({ body: 'pillar', bands: ['white'], topmark: [] });
+    expect(glyph({})).toMatchObject({ body: 'pillar', bands: ['white'], topmark: [] });
+    expect(glyph(null).bands).toEqual(['white']);
+  });
+
+  it('stays in step with the marks the buoyage tab actually renders', () => {
+    // A glyph is only trustworthy if it is derived from the shipped data, so
+    // walk the real table rather than fixtures.
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(source).toContain('flBuoySvg(h, b, keyPrefix + i)');
+    expect(source).toContain('flChannelSvg(h)');
+    const known = ['red', 'green', 'black', 'yellow', 'white'];
+    for (const m of [{ color: 'red', shape: 'conical' }, { color: 'green', shape: 'cylindrical' },
+      { color: 'red over green', shape: 'nun' }, { color: 'green over red', shape: 'can' },
+      { color: 'black-over-yellow', topmark: '▲▲' }, { color: 'black-yellow-black', topmark: '▲▼' },
+      { color: 'yellow-over-black', topmark: '▼▼' }, { color: 'yellow-black-yellow', topmark: '▼▲' },
+      { color: 'red and white vertical stripes', shape: 'spherical or pillar' },
+      { color: 'black with red horizontal band', topmark: '●●' }]) {
+      const g = glyph(m);
+      expect(g.bands.length).toBeGreaterThan(0);
+      g.bands.forEach((b) => expect(known).toContain(b));
+      expect(['nun', 'can', 'pillar', 'sphere']).toContain(g.body);
+    }
   });
 });

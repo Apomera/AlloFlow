@@ -2,35 +2,50 @@
   HELP-ANCHOR COVERAGE AUDIT
 ===========================================================
 
-Components scanned (Panel/Modal/Card/View/Overlay in *_source.jsx): 115
-  Help-mode BLIND (zero data-help-key, has interactive controls):   29
-  THIN coverage (<1 help key per ~6 interactive elements):          2
-  Well-covered:                                                     65
+Components scanned (Panel/Modal/Card/View/Overlay in *_source.jsx): 145
+  Help-mode BLIND (zero data-help-key, has interactive controls):   48
+  THIN coverage (<1 help key per ~6 interactive elements):          8
+  Well-covered:                                                     60
 
 --- BLIND components (HIGHEST priority — entire feature is help-mode-invisible) ---
    sorted by interactive-element count (biggest impact first)
 
+   37 interactive   717 lines   SeatingChartPanel                        (seating_chart_source.jsx)
+   28 interactive  1624 lines   LiveLessonRunPanel                       (view_live_lesson_run_source.jsx)
+   24 interactive  1049 lines   PictionaryHostView                       (concept_pictionary_source.jsx)
+   19 interactive   713 lines   InfoModal                                (view_info_modal_source.jsx)
+   14 interactive   321 lines   SessionModal                             (view_session_modal_source.jsx)
+   11 interactive    55 lines   EvidenceGraphView                        (research_hub_source.jsx)
+   11 interactive   708 lines   LaunchPadView                            (view_launch_pad_source.jsx)
    10 interactive   182 lines   CandidateCard                            (research_lane_engineering_source.jsx)
-   10 interactive    96 lines   LearningHubModal                         (view_learning_hub_modal_source.jsx)
-    8 interactive   179 lines   FreeformItemCard                         (view_quiz_source.jsx)
-    7 interactive   461 lines   InfoModal                                (view_info_modal_source.jsx)
-    7 interactive   188 lines   OutlineView                              (view_outline_source.jsx)
-    7 interactive   245 lines   RelationMismatchCard                     (view_quiz_source.jsx)
-    6 interactive   470 lines   FramingProbeModal                        (research_lane_humanities_source.jsx)
-    6 interactive   110 lines   SessionModal                             (view_session_modal_source.jsx)
-    5 interactive   126 lines   GoldenThreadPanel                        (persona_ui_source.jsx)
+    9 interactive   477 lines   EducatorEvaluationPanel                  (educator_evaluation_source.jsx)
+    9 interactive    73 lines   MethodReadinessPanel                     (research_lane_humanities_source.jsx)
+    9 interactive   238 lines   OutlineView                              (view_outline_source.jsx)
+    8 interactive    35 lines   AssessmentDeliveryPanel                  (view_quiz_source.jsx)
+    8 interactive   245 lines   MultiSelectCard                          (view_quiz_source.jsx)
+    8 interactive   330 lines   AnswerEvidenceCard                       (view_quiz_source.jsx)
+    8 interactive   236 lines   FreeformItemCard                         (view_quiz_source.jsx)
+    7 interactive    60 lines   HumanitiesSourceContextPanel             (research_lane_humanities_source.jsx)
+    7 interactive   304 lines   RelationMismatchCard                     (view_quiz_source.jsx)
+    6 interactive   474 lines   FramingProbeModal                        (research_lane_humanities_source.jsx)
+    6 interactive    86 lines   UdlWalkFeedbackCard                      (udl_walkthrough_source.jsx)
+    6 interactive   212 lines   VisualSupportsModal                      (view_visual_supports_modal_source.jsx)
+    5 interactive   137 lines   GoldenThreadPanel                        (persona_ui_source.jsx)
     5 interactive   150 lines   PositionalityCard                        (research_lane_humanities_source.jsx)
-    5 interactive   263 lines   LaunchPadView                            (view_launch_pad_source.jsx)
-    5 interactive    76 lines   StudentJoinPanel                         (view_student_join_panel_source.jsx)
-    4 interactive   107 lines   MissionReportCard                        (adventure_source.jsx)
-    4 interactive   257 lines   TourOverlay                              (view_misc_panels_source.jsx)
-    4 interactive   111 lines   VisualSupportsModal                      (view_visual_supports_modal_source.jsx)
-    2 interactive    40 lines   RecordingOverlay                         (annotation_suite_source.jsx)
-    2 interactive    76 lines   ClozeInteractionPanel                    (view_cloze_interaction_panel_source.jsx)
-    2 interactive    40 lines   KokoroOfferModal                         (view_kokoro_offer_modal_source.jsx)
-    2 interactive   227 lines   SpotlightTourView                        (view_spotlight_tour_source.jsx)
-    2 interactive    36 lines   WordSoundsPreviewView                    (view_word_sounds_preview_source.jsx)
-    1 interactive    55 lines   DiceOverlay                              (adventure_source.jsx)
+    5 interactive    52 lines   UdlWalkLookForCard                       (udl_walkthrough_source.jsx)
+    5 interactive   102 lines   StudentJoinPanel                         (view_student_join_panel_source.jsx)
+    4 interactive   133 lines   MissionReportCard                        (adventure_source.jsx)
+    3 interactive   115 lines   ClozeInteractionPanel                    (view_cloze_interaction_panel_source.jsx)
+    3 interactive   313 lines   VideoRefPlayerOverlay                    (view_video_ref_player_source.jsx)
+    3 interactive    46 lines   VisualSupportScheduleCard                (view_visual_supports_modal_source.jsx)
+    2 interactive    42 lines   RecordingOverlay                         (annotation_suite_source.jsx)
+    2 interactive    61 lines   SketchVotePanel                          (concept_pictionary_source.jsx)
+    2 interactive    85 lines   KokoroOfferModal                         (view_kokoro_offer_modal_source.jsx)
+    2 interactive    33 lines   AssessmentQualityPanel                   (view_quiz_source.jsx)
+    2 interactive   242 lines   SpotlightTourView                        (view_spotlight_tour_source.jsx)
+    2 interactive   177 lines   VideoLibraryOverlay                      (view_video_library_source.jsx)
+    2 interactive    69 lines   WordSoundsPreviewView                    (view_word_sounds_preview_source.jsx)
+    1 interactive    70 lines   DiceOverlay                              (adventure_source.jsx)
     1 interactive    75 lines   HighlightOverlay                         (annotation_suite_source.jsx)
     1 interactive   122 lines   DrawingOverlay                           (annotation_suite_source.jsx)
     1 interactive    60 lines   PlaceholderLaneView                      (research_hub_source.jsx)
@@ -38,9 +53,19 @@ Components scanned (Panel/Modal/Card/View/Overlay in *_source.jsx): 115
     1 interactive    16 lines   TextareaCard                             (research_lane_engineering_source.jsx)
     1 interactive    16 lines   TextareaCard                             (research_lane_humanities_source.jsx)
     1 interactive    22 lines   TextareaCard                             (research_lane_scientific_source.jsx)
-    1 interactive    45 lines   GlobalLevelUpModal                       (view_global_level_up_source.jsx)
+    1 interactive   131 lines   GlobalLevelUpModal                       (view_global_level_up_source.jsx)
+    1 interactive    61 lines   AtlasHubCard                             (view_info_modal_source.jsx)
+    1 interactive     6 lines   AssessmentSubmittedPanel                 (view_quiz_source.jsx)
+    1 interactive    30 lines   LessonPlanPanel                          (view_sidebar_panels_source.jsx)
+    1 interactive    24 lines   VisualSupportBoardCard                   (view_visual_supports_modal_source.jsx)
 
 --- THIN coverage (has some help anchors but ratio is low) ---
 
-  1/32 help/interactive  RosterKeyPanel                           (teacher_source.jsx)
-  1/21 help/interactive  TimelineView                             (view_timeline_source.jsx)
+  7/131 help/interactive  AssessmentItemAnalysisPanel              (view_quiz_source.jsx)
+  1/49 help/interactive  RosterKeyPanel                           (teacher_source.jsx)
+  2/47 help/interactive  LearningHubModal                         (view_learning_hub_modal_source.jsx)
+  2/33 help/interactive  UdlWalkthroughPanel                      (udl_walkthrough_source.jsx)
+  2/32 help/interactive  MeetingDocsPanel                         (meeting_docs_source.jsx)
+  1/23 help/interactive  TimelineView                             (view_timeline_source.jsx)
+  2/22 help/interactive  DisproAnalyzerPanel                      (dispro_analyzer_source.jsx)
+  2/18 help/interactive  MtssTriagePanel                          (mtss_triage_source.jsx)

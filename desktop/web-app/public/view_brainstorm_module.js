@@ -29,8 +29,206 @@
   var RefreshCw = _lazyIcon('RefreshCw');
   var FileText = _lazyIcon('FileText');
   var ImageIcon = _lazyIcon('ImageIcon');
+  var MessageSquare = _lazyIcon('MessageSquare');
+  var Users = _lazyIcon('Users');
 
-  function BrainstormView(props) {
+  // ── Activity-kind bodies (2026-08-16 Activities redesign) ──────────────────
+// Brainstorm data items may carry an optional `kind`: absent/'idea' renders the
+// classic idea card; 'discussion' and 'jigsaw' render the structured bodies
+// below. Bodies are VIEW-ONLY in v1 (no inline editing — regenerate instead);
+// the shared ladder (guide/worksheet/rubric) still applies to every kind.
+// Shapes are pure data (docs/ACTIVITIES_RESOURCE_DESIGN_2026-08-16.md §D4).
+
+function DiscussionKitBody(props) {
+  var t = props.t;
+  var item = props.item;
+  var isTeacherMode = props.isTeacherMode;
+  var renderFormattedText = props.renderFormattedText;
+  var protocolLabel = t('brainstorm.protocol_' + String(item.protocol || '').replace(/-/g, '_')) || {
+    'socratic-seminar': 'Socratic Seminar',
+    'think-pair-share': 'Think-Pair-Share',
+    'fishbowl': 'Fishbowl',
+    'gallery-walk': 'Gallery Walk'
+  }[item.protocol] || item.protocol || 'Discussion';
+  var stemCats = ['agree', 'disagree', 'clarify', 'build'];
+  var stemLabels = {
+    agree: t('brainstorm.stems_agree') || 'Agreeing',
+    disagree: t('brainstorm.stems_disagree') || 'Disagreeing respectfully',
+    clarify: t('brainstorm.stems_clarify') || 'Asking for clarity',
+    build: t('brainstorm.stems_build') || 'Building on ideas'
+  };
+  var depthLabels = {
+    literal: t('brainstorm.depth_literal') || 'Right there in the text',
+    inferential: t('brainstorm.depth_inferential') || 'Between the lines',
+    evaluative: t('brainstorm.depth_evaluative') || 'Your judgment'
+  };
+  var stems = item.talkStems && typeof item.talkStems === 'object' ? item.talkStems : {};
+  var hasStems = stemCats.some(function (c) {
+    return Array.isArray(stems[c]) && stems[c].length;
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    "data-help-key": "brainstorm_discussion_card"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "font-bold text-lg text-indigo-900 mb-1 flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(MessageSquare, {
+    size: 18,
+    className: "text-cyan-700 shrink-0"
+  }), " ", item.title), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2 mb-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[11px] font-bold uppercase tracking-wider bg-cyan-50 text-cyan-900 border border-cyan-200 rounded-full px-2.5 py-0.5"
+  }, protocolLabel), item.grouping ? /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-slate-600"
+  }, item.grouping) : null), item.openingQuestion ? /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-semibold text-slate-800 bg-cyan-50/60 border border-cyan-100 rounded-lg p-3 mb-4"
+  }, item.openingQuestion) : null, (Array.isArray(item.questionSets) ? item.questionSets : []).map(function (set, setIdx) {
+    var qs = set && Array.isArray(set.questions) ? set.questions : [];
+    if (!qs.length) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      key: setIdx,
+      className: "mb-3"
+    }, /*#__PURE__*/React.createElement("h5", {
+      className: "text-xs font-bold uppercase tracking-wider text-slate-600 mb-1"
+    }, depthLabels[set.depth] || set.depth || ''), /*#__PURE__*/React.createElement("ol", {
+      className: "list-decimal ml-5 text-sm text-slate-700 space-y-1"
+    }, qs.map(function (q, qIdx) {
+      return /*#__PURE__*/React.createElement("li", {
+        key: qIdx
+      }, q);
+    })));
+  }), hasStems ? /*#__PURE__*/React.createElement("div", {
+    className: "mb-4"
+  }, /*#__PURE__*/React.createElement("h5", {
+    className: "text-xs font-bold uppercase tracking-wider text-slate-600 mb-2"
+  }, t('brainstorm.talk_stems') || 'Talk stems'), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
+  }, stemCats.map(function (cat) {
+    var list = Array.isArray(stems[cat]) ? stems[cat] : [];
+    if (!list.length) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      key: cat,
+      className: "bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+    }, /*#__PURE__*/React.createElement("strong", {
+      className: "block text-[11px] uppercase tracking-wider text-slate-600 mb-1"
+    }, stemLabels[cat]), /*#__PURE__*/React.createElement("ul", {
+      className: "text-xs text-slate-700 space-y-1"
+    }, list.map(function (s, sIdx) {
+      return /*#__PURE__*/React.createElement("li", {
+        key: sIdx
+      }, "“", s, "”");
+    })));
+  }))) : null, isTeacherMode && item.facilitationNotes ? /*#__PURE__*/React.createElement("div", {
+    className: "bg-slate-50 rounded-lg p-4 text-sm text-slate-700 border border-slate-300 mb-3"
+  }, /*#__PURE__*/React.createElement("h5", {
+    className: "font-bold text-slate-800 mb-2 flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(ListChecks, {
+    size: 16
+  }), " ", t('brainstorm.facilitation_notes') || 'Facilitation notes (teacher)'), /*#__PURE__*/React.createElement("div", {
+    className: "prose prose-sm max-w-none"
+  }, renderFormattedText(item.facilitationNotes))) : null, isTeacherMode && Array.isArray(item.lookFors) && item.lookFors.length ? /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-slate-600 mb-3"
+  }, /*#__PURE__*/React.createElement("strong", {
+    className: "block uppercase tracking-wider text-[11px] mb-1"
+  }, t('brainstorm.look_fors') || 'Participation look-fors'), /*#__PURE__*/React.createElement("ul", {
+    className: "list-disc ml-4 space-y-0.5"
+  }, item.lookFors.map(function (l, lIdx) {
+    return /*#__PURE__*/React.createElement("li", {
+      key: lIdx
+    }, l);
+  }))) : null);
+}
+function JigsawBody(props) {
+  var t = props.t;
+  var item = props.item;
+  var isTeacherMode = props.isTeacherMode;
+  var renderFormattedText = props.renderFormattedText;
+  var chunks = Array.isArray(item.chunks) ? item.chunks : [];
+  var checks = Array.isArray(item.accountabilityCheck) ? item.accountabilityCheck : [];
+  return /*#__PURE__*/React.createElement("div", {
+    "data-help-key": "brainstorm_jigsaw_card"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "font-bold text-lg text-indigo-900 mb-1 flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Users, {
+    size: 18,
+    className: "text-emerald-700 shrink-0"
+  }), " ", item.title), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2 mb-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-full px-2.5 py-0.5"
+  }, (t('brainstorm.jigsaw_group_size') || 'Home groups of {n}').replace('{n}', String(item.groupSize || chunks.length || 4)))), chunks.map(function (chunk, cIdx) {
+    var tb = chunk && chunk.teachBack && typeof chunk.teachBack === 'object' ? chunk.teachBack : {};
+    var keyPoints = Array.isArray(tb.keyPoints) ? tb.keyPoints : [];
+    var checkQs = Array.isArray(tb.checkQuestions) ? tb.checkQuestions : [];
+    return /*#__PURE__*/React.createElement("details", {
+      key: cIdx,
+      className: "mb-2 rounded-lg border border-emerald-200 bg-white group"
+    }, /*#__PURE__*/React.createElement("summary", {
+      className: "cursor-pointer list-none px-3 py-2 text-sm font-bold text-emerald-900 flex items-center justify-between hover:bg-emerald-50 rounded-lg"
+    }, /*#__PURE__*/React.createElement("span", null, chunk.label || (t('brainstorm.expert_group') || 'Expert group') + ' ' + (cIdx + 1)), /*#__PURE__*/React.createElement("span", {
+      className: "text-emerald-700/70 group-open:rotate-180 transition-transform motion-reduce:transition-none",
+      "aria-hidden": "true"
+    }, "▾")), /*#__PURE__*/React.createElement("div", {
+      className: "px-3 pb-3 pt-1 text-sm text-slate-700"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "prose prose-sm max-w-none mb-2"
+    }, renderFormattedText(chunk.expertPacket || '')), keyPoints.length ? /*#__PURE__*/React.createElement("div", {
+      className: "bg-emerald-50/60 border border-emerald-100 rounded-lg p-2.5 mb-2"
+    }, /*#__PURE__*/React.createElement("strong", {
+      className: "block text-[11px] uppercase tracking-wider text-emerald-900 mb-1"
+    }, t('brainstorm.teach_back_points') || 'When you teach your group, cover:'), /*#__PURE__*/React.createElement("ul", {
+      className: "list-disc ml-4 text-xs space-y-0.5"
+    }, keyPoints.map(function (p, pIdx) {
+      return /*#__PURE__*/React.createElement("li", {
+        key: pIdx
+      }, p);
+    }))) : null, checkQs.length ? /*#__PURE__*/React.createElement("div", {
+      className: "text-xs text-slate-600"
+    }, /*#__PURE__*/React.createElement("strong", {
+      className: "block uppercase tracking-wider text-[11px] mb-1"
+    }, t('brainstorm.teach_back_questions') || 'Check your group understood:'), /*#__PURE__*/React.createElement("ol", {
+      className: "list-decimal ml-4 space-y-0.5"
+    }, checkQs.map(function (q, qIdx) {
+      return /*#__PURE__*/React.createElement("li", {
+        key: qIdx
+      }, q);
+    }))) : null));
+  }), item.homeGroupTask ? /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 mb-2"
+  }, /*#__PURE__*/React.createElement("h5", {
+    className: "text-xs font-bold uppercase tracking-wider text-slate-600 mb-1"
+  }, t('brainstorm.home_group_task') || 'Home-group task'), /*#__PURE__*/React.createElement("div", {
+    className: "prose prose-sm max-w-none text-sm text-slate-700"
+  }, renderFormattedText(item.homeGroupTask))) : null, item.synthesisOrganizer ? /*#__PURE__*/React.createElement("div", {
+    className: "mb-2"
+  }, /*#__PURE__*/React.createElement("h5", {
+    className: "text-xs font-bold uppercase tracking-wider text-slate-600 mb-1"
+  }, t('brainstorm.synthesis_organizer') || 'Putting it together'), /*#__PURE__*/React.createElement("div", {
+    className: "prose prose-sm max-w-none text-sm text-slate-700"
+  }, renderFormattedText(item.synthesisOrganizer))) : null, checks.length ? /*#__PURE__*/React.createElement("div", {
+    className: "mb-3"
+  }, /*#__PURE__*/React.createElement("h5", {
+    className: "text-xs font-bold uppercase tracking-wider text-slate-600 mb-1"
+  }, t('brainstorm.accountability_check') || 'Show what you learned (everyone answers)'), /*#__PURE__*/React.createElement("ol", {
+    className: "list-decimal ml-5 text-sm text-slate-700 space-y-1"
+  }, checks.map(function (c, aIdx) {
+    return /*#__PURE__*/React.createElement("li", {
+      key: aIdx
+    }, c && c.q);
+  })), isTeacherMode ? /*#__PURE__*/React.createElement("details", {
+    className: "mt-2"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer list-none inline-flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200"
+  }, /*#__PURE__*/React.createElement(ListChecks, {
+    size: 14
+  }), " ", t('brainstorm.answer_key') || 'Answer key (teacher only)'), /*#__PURE__*/React.createElement("ol", {
+    className: "list-decimal ml-5 text-xs text-slate-600 mt-2 space-y-1"
+  }, checks.map(function (c, aIdx) {
+    return /*#__PURE__*/React.createElement("li", {
+      key: aIdx
+    }, c && c.answer);
+  }))) : null) : null);
+}
+function BrainstormView(props) {
   var t = props.t;
   var generatedContent = props.generatedContent;
   var isTeacherMode = props.isTeacherMode;
@@ -70,7 +268,17 @@
     key: idx,
     className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow",
     "data-help-key": "brainstorm_card"
-  }, isEditingBrainstorm ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, idea.kind === 'discussion' ? /*#__PURE__*/React.createElement(DiscussionKitBody, {
+    item: idea,
+    t: t,
+    isTeacherMode: isTeacherMode,
+    renderFormattedText: renderFormattedText
+  }) : idea.kind === 'jigsaw' ? /*#__PURE__*/React.createElement(JigsawBody, {
+    item: idea,
+    t: t,
+    isTeacherMode: isTeacherMode,
+    renderFormattedText: renderFormattedText
+  }) : isEditingBrainstorm ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement(Lightbulb, {
     size: 18,

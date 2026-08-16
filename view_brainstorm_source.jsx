@@ -1,4 +1,176 @@
 
+// ── Activity-kind bodies (2026-08-16 Activities redesign) ──────────────────
+// Brainstorm data items may carry an optional `kind`: absent/'idea' renders the
+// classic idea card; 'discussion' and 'jigsaw' render the structured bodies
+// below. Bodies are VIEW-ONLY in v1 (no inline editing — regenerate instead);
+// the shared ladder (guide/worksheet/rubric) still applies to every kind.
+// Shapes are pure data (docs/ACTIVITIES_RESOURCE_DESIGN_2026-08-16.md §D4).
+
+function DiscussionKitBody(props) {
+  var t = props.t;
+  var item = props.item;
+  var isTeacherMode = props.isTeacherMode;
+  var renderFormattedText = props.renderFormattedText;
+  var protocolLabel = t('brainstorm.protocol_' + String(item.protocol || '').replace(/-/g, '_'))
+    || ({ 'socratic-seminar': 'Socratic Seminar', 'think-pair-share': 'Think-Pair-Share', 'fishbowl': 'Fishbowl', 'gallery-walk': 'Gallery Walk' }[item.protocol] || item.protocol || 'Discussion');
+  var stemCats = ['agree', 'disagree', 'clarify', 'build'];
+  var stemLabels = {
+    agree: t('brainstorm.stems_agree') || 'Agreeing',
+    disagree: t('brainstorm.stems_disagree') || 'Disagreeing respectfully',
+    clarify: t('brainstorm.stems_clarify') || 'Asking for clarity',
+    build: t('brainstorm.stems_build') || 'Building on ideas',
+  };
+  var depthLabels = {
+    literal: t('brainstorm.depth_literal') || 'Right there in the text',
+    inferential: t('brainstorm.depth_inferential') || 'Between the lines',
+    evaluative: t('brainstorm.depth_evaluative') || 'Your judgment',
+  };
+  var stems = item.talkStems && typeof item.talkStems === 'object' ? item.talkStems : {};
+  var hasStems = stemCats.some(function (c) { return Array.isArray(stems[c]) && stems[c].length; });
+  return (
+    <div data-help-key="brainstorm_discussion_card">
+      <h4 className="font-bold text-lg text-indigo-900 mb-1 flex items-center gap-2">
+        <MessageSquare size={18} className="text-cyan-700 shrink-0"/> {item.title}
+      </h4>
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <span className="text-[11px] font-bold uppercase tracking-wider bg-cyan-50 text-cyan-900 border border-cyan-200 rounded-full px-2.5 py-0.5">{protocolLabel}</span>
+        {item.grouping ? <span className="text-xs text-slate-600">{item.grouping}</span> : null}
+      </div>
+      {item.openingQuestion ? (
+        <p className="text-sm font-semibold text-slate-800 bg-cyan-50/60 border border-cyan-100 rounded-lg p-3 mb-4">{item.openingQuestion}</p>
+      ) : null}
+      {(Array.isArray(item.questionSets) ? item.questionSets : []).map(function (set, setIdx) {
+        var qs = set && Array.isArray(set.questions) ? set.questions : [];
+        if (!qs.length) return null;
+        return (
+          <div key={setIdx} className="mb-3">
+            <h5 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">{depthLabels[set.depth] || set.depth || ''}</h5>
+            <ol className="list-decimal ml-5 text-sm text-slate-700 space-y-1">
+              {qs.map(function (q, qIdx) { return <li key={qIdx}>{q}</li>; })}
+            </ol>
+          </div>
+        );
+      })}
+      {hasStems ? (
+        <div className="mb-4">
+          <h5 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">{t('brainstorm.talk_stems') || 'Talk stems'}</h5>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {stemCats.map(function (cat) {
+              var list = Array.isArray(stems[cat]) ? stems[cat] : [];
+              if (!list.length) return null;
+              return (
+                <div key={cat} className="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
+                  <strong className="block text-[11px] uppercase tracking-wider text-slate-600 mb-1">{stemLabels[cat]}</strong>
+                  <ul className="text-xs text-slate-700 space-y-1">
+                    {list.map(function (s, sIdx) { return <li key={sIdx}>&ldquo;{s}&rdquo;</li>; })}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+      {isTeacherMode && item.facilitationNotes ? (
+        <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700 border border-slate-300 mb-3">
+          <h5 className="font-bold text-slate-800 mb-2 flex items-center gap-2"><ListChecks size={16}/> {t('brainstorm.facilitation_notes') || 'Facilitation notes (teacher)'}</h5>
+          <div className="prose prose-sm max-w-none">{renderFormattedText(item.facilitationNotes)}</div>
+        </div>
+      ) : null}
+      {isTeacherMode && Array.isArray(item.lookFors) && item.lookFors.length ? (
+        <div className="text-xs text-slate-600 mb-3">
+          <strong className="block uppercase tracking-wider text-[11px] mb-1">{t('brainstorm.look_fors') || 'Participation look-fors'}</strong>
+          <ul className="list-disc ml-4 space-y-0.5">
+            {item.lookFors.map(function (l, lIdx) { return <li key={lIdx}>{l}</li>; })}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function JigsawBody(props) {
+  var t = props.t;
+  var item = props.item;
+  var isTeacherMode = props.isTeacherMode;
+  var renderFormattedText = props.renderFormattedText;
+  var chunks = Array.isArray(item.chunks) ? item.chunks : [];
+  var checks = Array.isArray(item.accountabilityCheck) ? item.accountabilityCheck : [];
+  return (
+    <div data-help-key="brainstorm_jigsaw_card">
+      <h4 className="font-bold text-lg text-indigo-900 mb-1 flex items-center gap-2">
+        <Users size={18} className="text-emerald-700 shrink-0"/> {item.title}
+      </h4>
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <span className="text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-full px-2.5 py-0.5">
+          {(t('brainstorm.jigsaw_group_size') || 'Home groups of {n}').replace('{n}', String(item.groupSize || chunks.length || 4))}
+        </span>
+      </div>
+      {chunks.map(function (chunk, cIdx) {
+        var tb = chunk && chunk.teachBack && typeof chunk.teachBack === 'object' ? chunk.teachBack : {};
+        var keyPoints = Array.isArray(tb.keyPoints) ? tb.keyPoints : [];
+        var checkQs = Array.isArray(tb.checkQuestions) ? tb.checkQuestions : [];
+        return (
+          <details key={cIdx} className="mb-2 rounded-lg border border-emerald-200 bg-white group">
+            <summary className="cursor-pointer list-none px-3 py-2 text-sm font-bold text-emerald-900 flex items-center justify-between hover:bg-emerald-50 rounded-lg">
+              <span>{chunk.label || ((t('brainstorm.expert_group') || 'Expert group') + ' ' + (cIdx + 1))}</span>
+              <span className="text-emerald-700/70 group-open:rotate-180 transition-transform motion-reduce:transition-none" aria-hidden="true">&#9662;</span>
+            </summary>
+            <div className="px-3 pb-3 pt-1 text-sm text-slate-700">
+              <div className="prose prose-sm max-w-none mb-2">{renderFormattedText(chunk.expertPacket || '')}</div>
+              {keyPoints.length ? (
+                <div className="bg-emerald-50/60 border border-emerald-100 rounded-lg p-2.5 mb-2">
+                  <strong className="block text-[11px] uppercase tracking-wider text-emerald-900 mb-1">{t('brainstorm.teach_back_points') || 'When you teach your group, cover:'}</strong>
+                  <ul className="list-disc ml-4 text-xs space-y-0.5">
+                    {keyPoints.map(function (p, pIdx) { return <li key={pIdx}>{p}</li>; })}
+                  </ul>
+                </div>
+              ) : null}
+              {checkQs.length ? (
+                <div className="text-xs text-slate-600">
+                  <strong className="block uppercase tracking-wider text-[11px] mb-1">{t('brainstorm.teach_back_questions') || 'Check your group understood:'}</strong>
+                  <ol className="list-decimal ml-4 space-y-0.5">
+                    {checkQs.map(function (q, qIdx) { return <li key={qIdx}>{q}</li>; })}
+                  </ol>
+                </div>
+              ) : null}
+            </div>
+          </details>
+        );
+      })}
+      {item.homeGroupTask ? (
+        <div className="mt-3 mb-2">
+          <h5 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">{t('brainstorm.home_group_task') || 'Home-group task'}</h5>
+          <div className="prose prose-sm max-w-none text-sm text-slate-700">{renderFormattedText(item.homeGroupTask)}</div>
+        </div>
+      ) : null}
+      {item.synthesisOrganizer ? (
+        <div className="mb-2">
+          <h5 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">{t('brainstorm.synthesis_organizer') || 'Putting it together'}</h5>
+          <div className="prose prose-sm max-w-none text-sm text-slate-700">{renderFormattedText(item.synthesisOrganizer)}</div>
+        </div>
+      ) : null}
+      {checks.length ? (
+        <div className="mb-3">
+          <h5 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">{t('brainstorm.accountability_check') || 'Show what you learned (everyone answers)'}</h5>
+          <ol className="list-decimal ml-5 text-sm text-slate-700 space-y-1">
+            {checks.map(function (c, aIdx) { return <li key={aIdx}>{c && c.q}</li>; })}
+          </ol>
+          {isTeacherMode ? (
+            <details className="mt-2">
+              <summary className="cursor-pointer list-none inline-flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200">
+                <ListChecks size={14}/> {t('brainstorm.answer_key') || 'Answer key (teacher only)'}
+              </summary>
+              <ol className="list-decimal ml-5 text-xs text-slate-600 mt-2 space-y-1">
+                {checks.map(function (c, aIdx) { return <li key={aIdx}>{c && c.answer}</li>; })}
+              </ol>
+            </details>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function BrainstormView(props) {
   var t = props.t;
   var generatedContent = props.generatedContent;
@@ -34,7 +206,11 @@ function BrainstormView(props) {
                     <div className="grid grid-cols-1 gap-6">
                          {(Array.isArray(generatedContent?.data) ? generatedContent?.data : []).map((idea, idx) => (
                              <div key={idx} className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow" data-help-key="brainstorm_card">
-                                 {isEditingBrainstorm ? (
+                                 {idea.kind === 'discussion' ? (
+                                     <DiscussionKitBody item={idea} t={t} isTeacherMode={isTeacherMode} renderFormattedText={renderFormattedText} />
+                                 ) : idea.kind === 'jigsaw' ? (
+                                     <JigsawBody item={idea} t={t} isTeacherMode={isTeacherMode} renderFormattedText={renderFormattedText} />
+                                 ) : isEditingBrainstorm ? (
                                      <>
                                         <div className="flex items-center gap-2 mb-2">
                                             <Lightbulb size={18} className="text-yellow-500 fill-current shrink-0"/>

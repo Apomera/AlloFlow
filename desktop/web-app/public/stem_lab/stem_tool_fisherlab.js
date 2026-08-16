@@ -69,9 +69,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       '.fl-pulse { animation: fl-pulse 1.6s ease-in-out infinite; }',
       '.fl-sim-canvas:focus-visible { outline: 4px solid #fbbf24; outline-offset: -4px; }',
       '.fl-sim-stage { position: relative; overflow: hidden; border-radius: 0 0 8px 8px; background: #06131f; }',
-      '.fl-sim-touch { position: absolute; z-index: 20; left: 50%; bottom: 116px; transform: translateX(-50%); display: flex; gap: 6px; padding: 6px; border-radius: 8px; background: rgba(2,6,23,0.78); border: 1px solid rgba(125,211,252,0.28); }',
-      '.fl-nav-cue { position: absolute; z-index: 18; top: 58px; left: 50%; transform: translateX(-50%); width: min(280px, 32%); min-width: 190px; pointer-events: none; }',
-      '@media (max-width: 760px) { .fl-sim-stage { display: grid; overflow: visible; } .fl-sim-stage .fl-sim-canvas { height: 330px !important; } .fl-sim-instruments, .fl-sim-mission, .fl-sim-log, .fl-sim-touch, .fl-nav-cue { position: static !important; width: auto !important; min-width: 0 !important; max-width: none !important; margin: 8px 8px 0 !important; transform: none !important; } .fl-sim-touch { justify-self: stretch; justify-content: center; flex-wrap: wrap; } }'
+      // Height lives here rather than inline so the fullscreen and theater rules
+      // below can take it over. The old fixed 460px left the scene squeezed under
+      // four floating panels on every screen size.
+      '.fl-sim-canvas { display: block; width: 100%; height: clamp(380px, 62vh, 720px); background: #9bc4d8; }',
+      // Bottom-LEFT, not centred. Centred, the control pad sat squarely on top
+      // of the boat in every follow view — the one thing the student is meant
+      // to be watching.
+      '.fl-sim-touch { position: absolute; z-index: 20; left: 10px; bottom: 118px; display: flex; gap: 6px; padding: 6px; border-radius: 8px; background: rgba(2,6,23,0.78); border: 1px solid rgba(125,211,252,0.28); }',
+      // --fl-bar-h is measured from the real control bar. It was a hard-coded
+      // 58px, and the bar wraps to two rows as soon as the stage is narrow or
+      // expanded — which put every floating panel underneath the buttons.
+      '.fl-nav-cue { position: absolute; z-index: 18; top: calc(var(--fl-bar-h, 48px) + 10px); left: 50%; transform: translateX(-50%); width: min(280px, 32%); min-width: 190px; pointer-events: none; }',
+      // Current camera rig, drawn on the scene itself. Switching views was already
+      // wired up, but with no on-canvas confirmation and two rigs that framed the
+      // hull badly it read as a control that did nothing.
+      '.fl-view-badge { position: absolute; z-index: 19; right: 10px; bottom: 118px; padding: 4px 9px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; color: #e0f2fe; background: rgba(3,18,31,0.82); border: 1px solid rgba(125,211,252,0.4); pointer-events: none; }',
+      '@media (max-width: 760px) { .fl-sim-stage { display: grid; overflow: visible; } .fl-sim-stage .fl-sim-canvas { height: 330px !important; } .fl-sim-instruments, .fl-sim-mission, .fl-sim-log, .fl-sim-touch, .fl-nav-cue { position: static !important; width: auto !important; min-width: 0 !important; max-width: none !important; margin: 8px 8px 0 !important; transform: none !important; } .fl-sim-touch { justify-self: stretch; justify-content: center; flex-wrap: wrap; } }',
+      // ── Expanded stage. LAST in the sheet on purpose: the phone media query
+      // above also uses !important, and an expanded stage on a small screen has
+      // to beat it. Two paths, because the Fullscreen API is refused outright in
+      // a cross-origin iframe without allow="fullscreen" — which is exactly how
+      // the Canvas host embeds this tool. `.fl-theater` is the in-page fallback,
+      // laid out identically, so the control is never dead.
+      '.fl-sim-stage:fullscreen { display: flex !important; flex-direction: column; overflow: hidden !important; border-radius: 0; background: #04101b; }',
+      '.fl-sim-stage.fl-theater { display: flex !important; flex-direction: column; overflow: hidden !important; border-radius: 0; background: #04101b; position: fixed !important; inset: 0; z-index: 2147483000; }',
+      '.fl-sim-stage:fullscreen .fl-sim-canvas, .fl-sim-stage.fl-theater .fl-sim-canvas { flex: 1 1 auto; height: auto !important; min-height: 0; }',
+      '.fl-sim-stage:fullscreen .fl-sim-bar, .fl-sim-stage.fl-theater .fl-sim-bar { flex: 0 0 auto; border-radius: 0; }',
+      // The phone rule un-floats the HUD panels into document flow; inside an
+      // expanded stage there is room to float them again, and stacking them
+      // would push the scene off the bottom of the screen.
+      '.fl-sim-stage:fullscreen .fl-sim-instruments, .fl-sim-stage.fl-theater .fl-sim-instruments { position: absolute !important; top: calc(var(--fl-bar-h, 48px) + 10px) !important; left: 10px; width: 158px !important; margin: 0 !important; }',
+      '.fl-sim-stage:fullscreen .fl-sim-mission, .fl-sim-stage.fl-theater .fl-sim-mission { position: absolute !important; top: calc(var(--fl-bar-h, 48px) + 10px) !important; right: 10px; max-width: 260px !important; margin: 0 !important; }',
+      '.fl-sim-stage:fullscreen .fl-sim-log, .fl-sim-stage.fl-theater .fl-sim-log { position: absolute !important; bottom: 10px; left: 10px; right: 10px; margin: 0 !important; }',
+      '.fl-sim-stage:fullscreen .fl-sim-touch, .fl-sim-stage.fl-theater .fl-sim-touch { position: absolute !important; left: 10px !important; bottom: 124px; transform: none !important; margin: 0 !important; }',
+      '.fl-sim-stage:fullscreen .fl-nav-cue, .fl-sim-stage.fl-theater .fl-nav-cue { position: absolute !important; top: calc(var(--fl-bar-h, 48px) + 10px) !important; left: 50% !important; transform: translateX(-50%) !important; margin: 0 !important; width: min(320px, 30%) !important; }'
     ].join('\n');
     document.head.appendChild(s);
   })();
@@ -1027,7 +1059,309 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     if (score >= 145 && accuracy >= 80 && fuel >= 20) return { id: 'silver', label: 'Silver Skipper', stars: 2, color: '#dbeafe' };
     return { id: 'bronze', label: 'Bronze Deckhand', stars: 1, color: '#fdba74' };
   }
+  // ═══════════════════════════════════════════════════════════════════
+  // BUOY GLYPHS
+  // A student reading "nun (conical, red)" has no idea what a nun looks
+  // like, and the buoyage tab's own closing note — shape and colour always
+  // pair, so a colourblind boater can navigate by shape alone — was being
+  // made in prose with no shape to look at.
+  //
+  // The glyph spec is PARSED OUT OF THE BUOYAGE DATA rather than hand-drawn
+  // per mark, so the picture cannot drift from the words beside it: rename a
+  // band or a topmark in the data and the drawing follows. Colour words are
+  // matched against a fixed vocabulary, so an unrecognised word degrades to
+  // "no band" instead of silently painting the wrong mark.
+  // ═══════════════════════════════════════════════════════════════════
+  var BUOY_INK = {
+    red: '#d6402f', green: '#1f9d55',
+    // ★ Chart-black rendered as dark slate ON PURPOSE. A true black band on
+    // this near-black card sits at about 1.03:1 — the top half of every north
+    // and east cardinal simply vanished, leaving an outline around nothing.
+    // #4a5570 clears 3:1 against the card while still reading unmistakably as
+    // the dark half of a black-over-yellow mark.
+    black: '#4a5570',
+    yellow: '#f2c022', white: '#eef2f7'
+  };
+  function getCoreBuoyGlyph(mark) {
+    mark = mark || {};
+    var words = String(mark.color || '').toLowerCase().split(/[\s-]+/);
+    var bands = [];
+    for (var i = 0; i < words.length; i++) {
+      if (Object.prototype.hasOwnProperty.call(BUOY_INK, words[i])) bands.push(words[i]);
+    }
+    if (!bands.length) bands = ['white'];
+    // "red and white VERTICAL stripes" is a safe-water mark and reads
+    // completely differently from a banded mark — it must not be drawn as
+    // red-over-white horizontal bands.
+    var striped = words.indexOf('vertical') >= 0 || words.indexOf('stripes') >= 0;
+    // "black with a red horizontal BAND" is three bands, not two: the band is
+    // set into the body colour. Drawn as black-over-red it would be a different
+    // mark entirely, and this one means "isolated danger, give it wide berth".
+    if (!striped && words.indexOf('band') >= 0 && bands.length === 2) bands = [bands[0], bands[1], bands[0]];
+
+    var shape = String(mark.shape || '').toLowerCase();
+    var body = 'pillar';
+    if (/con|nun/.test(shape)) body = 'nun';
+    else if (/cylind|can/.test(shape)) body = 'can';
+    else if (/spher/.test(shape)) body = 'sphere';
+
+    // Topmarks come in as the same glyph string the caption shows.
+    var top = [];
+    var tm = String(mark.topmark || '');
+    for (var t = 0; t < tm.length; t++) {
+      if (tm[t] === '▲') top.push('up');
+      else if (tm[t] === '▼') top.push('down');
+      else if (tm[t] === '●') top.push('sphere');
+    }
+    return { body: body, bands: bands, striped: striped, topmark: top };
+  }
+
+  // ─── Camera rig geometry, kept pure so all four views can be verified without
+  // a WebGL context — tick() feeds the result straight into the three.js camera.
+  // Forward is (sin heading, cos heading); heading π is north, matching
+  // headingToCompass. `follow` rigs are eased toward `eye`, fixed rigs snap.
+  function getCoreCameraRig(view, b) {
+    b = b || {};
+    var x = b.x || 0, y = b.y || 0, z = b.z || 0;
+    var heading = b.heading || 0;
+    var fx = Math.sin(heading), fz = Math.cos(heading);
+    var speedFrac = Math.min(1, Math.abs(b.speed || 0) / 8);
+    if (view === 'firstperson') {
+      // Skipper's eye at the wheel: behind the console (local z +0.3) and above
+      // the windshield rail, never inside the hull.
+      var eyeY = 1.62 + y;
+      var ex = x - fx * 0.55, ez = z - fz * 0.55;
+      return { id: 'firstperson', follow: false, ease: 1, up: [0, 1, 0], fov: 64,
+        eye: [ex, eyeY, ez], target: [ex + fx * 40, eyeY - 3.2, ez + fz * 40] };
+    }
+    if (view === 'topdown') {
+      // Tilted, heading-up drone. Held off the vertical on purpose: an exactly
+      // downward view direction is parallel to `up` and makes lookAt degenerate.
+      return { id: 'topdown', follow: true, ease: 0.11, up: [0, 1, 0], fov: 50,
+        eye: [x - fx * 17, 34, z - fz * 17], target: [x + fx * 7, 0, z + fz * 7] };
+    }
+    if (view === 'chartup') {
+      // North-up plan view. up = +Z is what orients it like the paper chart.
+      return { id: 'chartup', follow: true, ease: 0.12, up: [0, 0, 1], fov: 44,
+        eye: [x, 70, z], target: [x, 0, z] };
+    }
+    // Chase: astern of the boat, dollying back and lifting with speed.
+    var back = 9.5 + speedFrac * 3.5;
+    return { id: 'chase', follow: true, ease: 0.09, up: [0, 1, 0], fov: 58,
+      eye: [x - fx * back, 4.3 + speedFrac * 0.9, z - fz * back],
+      target: [x + fx * 4.5, 1.4, z + fz * 4.5] };
+  }
+
+  // ─── Buoy glyph → SVG. `h` is passed in because the renderer lives inside
+  // _renderFisherLab; keeping the drawing out here keeps that function from
+  // growing another 200 lines and lets the geometry above be tested on its own.
+  var BUOY_EDGE = 'rgba(226,232,240,0.62)';   // every mark gets an outline: a
+  // black cardinal on a near-black card is otherwise a silhouette of nothing.
+  function flBuoySvg(h, mark, uid) {
+    var g = getCoreBuoyGlyph(mark);
+    var clipId = 'fl-buoy-' + uid;
+    var kids = [];
+    // Body silhouette, drawn once as a clip path so the colour bands below can
+    // be plain rects no matter which hull shape this mark uses.
+    var silhouette;
+    if (g.body === 'nun') silhouette = h('path', { d: 'M18 52 L42 52 L42 86 L18 86 Z M15 53 L45 53 L30 17 Z' });
+    else if (g.body === 'can') silhouette = h('path', { d: 'M17 32 L43 32 L43 86 L17 86 Z' });
+    else if (g.body === 'sphere') silhouette = h('circle', { cx: 30, cy: 64, r: 21 });
+    else silhouette = h('path', { d: 'M22 38 L38 38 L38 86 L22 86 Z' });
+
+    var top = g.body === 'nun' ? 17 : g.body === 'can' ? 32 : g.body === 'sphere' ? 43 : 38;
+    var bottom = 86;
+    kids.push(h('clipPath', { key: 'clip', id: clipId }, silhouette));
+
+    if (g.striped) {
+      // Vertical stripes — safe-water marks are read by their stripes, and
+      // banding them horizontally would draw a different mark entirely.
+      var sw = 60 / (g.bands.length * 2);
+      for (var s = 0; s < g.bands.length * 2; s++) {
+        kids.push(h('rect', { key: 'st' + s, x: s * sw, y: 0, width: sw + 0.5, height: 100,
+          fill: BUOY_INK[g.bands[s % g.bands.length]], clipPath: 'url(#' + clipId + ')' }));
+      }
+    } else {
+      var bh = (bottom - top) / g.bands.length;
+      for (var b = 0; b < g.bands.length; b++) {
+        kids.push(h('rect', { key: 'bd' + b, x: 0, y: top + b * bh, width: 60, height: bh + 0.5,
+          fill: BUOY_INK[g.bands[b]], clipPath: 'url(#' + clipId + ')' }));
+      }
+    }
+    // Outline: same silhouette again, unfilled, on top of the bands.
+    if (g.body === 'nun') {
+      kids.push(h('path', { key: 'o1', d: 'M18 52 L42 52 L42 86 L18 86 Z', fill: 'none', stroke: BUOY_EDGE, strokeWidth: 1.4 }));
+      kids.push(h('path', { key: 'o2', d: 'M15 53 L45 53 L30 17 Z', fill: 'none', stroke: BUOY_EDGE, strokeWidth: 1.4 }));
+    } else if (g.body === 'can') {
+      kids.push(h('rect', { key: 'o1', x: 17, y: 32, width: 26, height: 54, fill: 'none', stroke: BUOY_EDGE, strokeWidth: 1.4 }));
+    } else if (g.body === 'sphere') {
+      kids.push(h('circle', { key: 'o1', cx: 30, cy: 64, r: 21, fill: 'none', stroke: BUOY_EDGE, strokeWidth: 1.4 }));
+    } else {
+      kids.push(h('rect', { key: 'o1', x: 22, y: 38, width: 16, height: 48, fill: 'none', stroke: BUOY_EDGE, strokeWidth: 1.4 }));
+    }
+
+    if (g.topmark.length) {
+      kids.push(h('line', { key: 'mast', x1: 30, y1: top, x2: 30, y2: 30, stroke: BUOY_EDGE, strokeWidth: 1.6 }));
+      // Slot 0 is the upper topmark, slot 1 the lower. A cone drawn base-down
+      // vs base-up is the whole difference between an east and a west cardinal,
+      // so the direction comes from the parsed glyph, never from the index.
+      var slots = [[3, 15], [16, 28]];
+      for (var k = 0; k < g.topmark.length && k < 2; k++) {
+        var sl = slots[k], dir = g.topmark[k];
+        if (dir === 'sphere') {
+          kids.push(h('circle', { key: 'tm' + k, cx: 30, cy: (sl[0] + sl[1]) / 2, r: 5.6, fill: BUOY_INK.black, stroke: BUOY_EDGE, strokeWidth: 1.2 }));
+        } else {
+          var pts = dir === 'up'
+            ? '23,' + sl[1] + ' 37,' + sl[1] + ' 30,' + sl[0]
+            : '23,' + sl[0] + ' 37,' + sl[0] + ' 30,' + sl[1];
+          kids.push(h('polygon', { key: 'tm' + k, points: pts, fill: BUOY_INK.black, stroke: BUOY_EDGE, strokeWidth: 1.2 }));
+        }
+      }
+    }
+    // Waterline, so the mark reads as floating rather than as a floating icon.
+    kids.push(h('path', { key: 'wl', d: 'M4 86 q7 -3.5 14 0 t14 0 t14 0 t14 0', fill: 'none', stroke: 'rgba(125,211,252,0.55)', strokeWidth: 2, strokeLinecap: 'round' }));
+
+    return h('svg', {
+      width: 60, height: 100, viewBox: '0 0 60 100',
+      // Described by the caption next to it; announcing the drawing again would
+      // make every mark read twice on a screen reader.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { flex: '0 0 auto', display: 'block' }
+    }, kids);
+  }
+
+  // ─── "Red right returning", drawn. The mnemonic is the single most
+  // consequential thing on the buoyage tab and it was a sentence.
+  function flChannelSvg(h) {
+    var kids = [];
+    var GREEN = BUOY_INK.green, RED = BUOY_INK.red;
+    // Banded layout: a caption lane across the top and bottom that no buoy ever
+    // enters, so a family label can never land on a mark or on its number.
+    kids.push(h('rect', { key: 'sea', x: 0, y: 0, width: 640, height: 250, fill: 'rgba(12,42,66,0.55)' }));
+    // Dredged channel, narrowing toward the harbour.
+    kids.push(h('path', { key: 'ch', d: 'M0 84 L560 104 L560 152 L0 172 Z', fill: 'rgba(56,189,248,0.13)', stroke: 'rgba(125,211,252,0.3)', strokeWidth: 1 }));
+    kids.push(h('rect', { key: 'land', x: 560, y: 0, width: 80, height: 250, fill: 'rgba(46,84,54,0.85)' }));
+    kids.push(h('text', { key: 'lt', x: 600, y: 128, textAnchor: 'middle', fontSize: 12, fontWeight: 700, fill: '#cbd5e1' }, 'HARBOR'));
+    kids.push(h('text', { key: 'sl', x: 16, y: 128, fontSize: 12, fontWeight: 700, fill: '#94a3b8' }, 'SEA'));
+
+    // Green cans to PORT when inbound — the top of a north-up chart for a
+    // vessel steaming east — and red nuns to starboard along the bottom.
+    // Numbers sit on the channel side of each mark, inside the buoy lane.
+    [[150, 1], [290, 3], [430, 5]].forEach(function(p, i) {
+      var x = p[0], y = 78 - i * 3;
+      kids.push(h('rect', { key: 'gc' + i, x: x - 8, y: y - 22, width: 16, height: 22, fill: GREEN, stroke: BUOY_EDGE, strokeWidth: 1.2 }));
+      kids.push(h('text', { key: 'gn' + i, x: x + 16, y: y - 5, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: '#86efac' }, String(p[1])));
+    });
+    [[150, 2], [290, 4], [430, 6]].forEach(function(p, i) {
+      var x = p[0], y = 178 + i * 3;
+      kids.push(h('polygon', { key: 'rn' + i, points: (x - 10) + ',' + (y + 22) + ' ' + (x + 10) + ',' + (y + 22) + ' ' + x + ',' + y, fill: RED, stroke: BUOY_EDGE, strokeWidth: 1.2 }));
+      kids.push(h('text', { key: 'rnn' + i, x: x + 17, y: y + 19, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: '#fca5a5' }, String(p[1])));
+    });
+
+    // Inbound vessel, mid-channel, steaming east. Her port light is on the
+    // north side — the same side the green cans are on, which is the whole
+    // point of the figure.
+    kids.push(h('polygon', { key: 'boat', points: '176,117 204,117 224,128 204,139 176,139', fill: '#f1f5f9', stroke: '#0f172a', strokeWidth: 1.2 }));
+    kids.push(h('circle', { key: 'pl', cx: 202, cy: 120, r: 3.2, fill: RED }));
+    kids.push(h('circle', { key: 'sl2', cx: 202, cy: 136, r: 3.2, fill: GREEN }));
+    kids.push(h('path', { key: 'arr', d: 'M244 128 L314 128', stroke: '#fbbf24', strokeWidth: 2.5, markerEnd: 'url(#fl-arrow)' }));
+    kids.push(h('defs', { key: 'defs' },
+      h('marker', { id: 'fl-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' },
+        h('path', { d: 'M0 0 L10 5 L0 10 z', fill: '#fbbf24' }))));
+    kids.push(h('text', { key: 'in', x: 279, y: 118, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#fbbf24' }, 'INBOUND from sea'));
+    kids.push(h('text', { key: 'gl', x: 16, y: 22, fontSize: 11, fontWeight: 800, fill: '#86efac' }, 'GREEN CANS — odd numbers — kept to PORT'));
+    kids.push(h('text', { key: 'rl', x: 16, y: 240, fontSize: 11, fontWeight: 800, fill: '#fca5a5' }, 'RED NUNS — even numbers — kept to STARBOARD'));
+    kids.push(h('text', { key: 'rev', x: 548, y: 22, textAnchor: 'end', fontSize: 10, fontStyle: 'italic', fill: '#cbd5e1' }, 'Outbound: the whole picture reverses'));
+    return h('svg', {
+      viewBox: '0 0 640 250', role: 'img',
+      'aria-label': 'Channel plan for red right returning. A vessel inbound from the sea toward the harbor keeps the red conical nun buoys, numbered even, on her starboard side, and the green cylindrical can buoys, numbered odd, on her port side. Outbound, the sides reverse.',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
+    }, kids);
+  }
+
+  // ─── COLREGS encounter geometry. Rules 13, 14 and 15 are geometric rules
+  // and were being taught as three sentences of prose.
+  var COLREGS_FIGURES = [
+    { rule: 'Rule 14', kind: 'headon', title: 'Head-on', caption: 'Both alter to STARBOARD. You pass port-to-port — each of you sees the other\'s red light.',
+      alt: 'Two power vessels meeting head-on. Each alters course to starboard, so they pass port side to port side.' },
+    { rule: 'Rule 15', kind: 'crossing', title: 'Crossing', caption: 'The other vessel is on YOUR starboard side, so you give way — alter starboard and pass astern of her.',
+      alt: 'Two power vessels crossing. The other vessel approaches from the observer\'s starboard side, so the observer is the give-way vessel and alters course to starboard to pass astern.' },
+    { rule: 'Rule 13', kind: 'overtaking', title: 'Overtaking', caption: 'Coming up from astern, you keep clear — whatever the other rules would say.',
+      alt: 'One power vessel overtaking another from astern. The overtaking vessel swings wide to keep clear of the vessel being overtaken.' }
+  ];
+  var GIVE_WAY_INK = '#fbbf24', STAND_ON_INK = '#4ade80';
+  function flColregsSvg(h, kind, alt) {
+    // A hull pointing along `rot` degrees (0 = up the page), with its side
+    // lights, so the "you see her red light" half of each rule is visible.
+    function vessel(key, x, y, rot, ink) {
+      return h('g', { key: key, transform: 'translate(' + x + ',' + y + ') rotate(' + rot + ')' },
+        h('polygon', { points: '0,-15 8,-2 8,13 -8,13 -8,-2', fill: '#e8eef5', stroke: ink, strokeWidth: 2 }),
+        h('circle', { cx: -7, cy: -1, r: 2.7, fill: BUOY_INK.red }),
+        h('circle', { cx: 7, cy: -1, r: 2.7, fill: BUOY_INK.green }));
+    }
+    function track(key, d, ink, dashed) {
+      return h('path', { key: key, d: d, fill: 'none', stroke: ink, strokeWidth: 2.2,
+        strokeDasharray: dashed ? '6 5' : null, markerEnd: 'url(#fl-cr-' + (ink === GIVE_WAY_INK ? 'g' : 's') + ')' });
+    }
+    function tag(key, x, y, text, ink, anchor) {
+      return h('text', { key: key, x: x, y: y, textAnchor: anchor || 'middle', fontSize: 10.5, fontWeight: 800, fill: ink }, text);
+    }
+    var kids = [h('defs', { key: 'd' },
+      h('marker', { id: 'fl-cr-g', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 4.5, markerHeight: 4.5, orient: 'auto-start-reverse' },
+        h('path', { d: 'M0 0 L10 5 L0 10 z', fill: GIVE_WAY_INK })),
+      h('marker', { id: 'fl-cr-s', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 4.5, markerHeight: 4.5, orient: 'auto-start-reverse' },
+        h('path', { d: 'M0 0 L10 5 L0 10 z', fill: STAND_ON_INK }))),
+      h('rect', { key: 'bg', x: 0, y: 0, width: 300, height: 210, fill: 'rgba(9,28,45,0.5)', rx: 8 })];
+
+    if (kind === 'headon') {
+      // Both are give-way here — Rule 14 names no stand-on vessel, a
+      // distinction students routinely miss, so both tracks use the same ink.
+      //
+      // ★ The two must start on the SAME abscissa and diverge. Each turns to
+      // her own starboard, which on the page is up-and-right for the northbound
+      // vessel and down-and-LEFT for the southbound one — so their tracks
+      // separate and never intersect. Drawn from offset starts the lines cross,
+      // and the figure then illustrates a collision instead of a safe pass.
+      kids.push(vessel('a', 128, 170, 20, GIVE_WAY_INK));
+      kids.push(vessel('b', 128, 46, 200, GIVE_WAY_INK));
+      kids.push(track('ta', 'M128 152 C 134 124, 152 106, 174 82', GIVE_WAY_INK, true));
+      kids.push(track('tb', 'M128 64 C 122 92, 104 110, 82 134', GIVE_WAY_INK, true));
+      kids.push(tag('la', 128, 200, 'YOU · give way', GIVE_WAY_INK));
+      kids.push(tag('lb', 128, 20, 'HER · give way', GIVE_WAY_INK));
+      // No in-figure "port-to-port" label: the caption already says it, and in
+      // the corridor between the two diverging tracks there is nowhere to put
+      // it that does not sit on one of them.
+      kids.push(tag('ld', 226, 176, 'no stand-on vessel', '#94a3b8'));
+    } else if (kind === 'crossing') {
+      kids.push(vessel('a', 86, 172, 0, GIVE_WAY_INK));
+      kids.push(vessel('b', 250, 60, 270, STAND_ON_INK));
+      // The give-way vessel swings starboard and crosses BEHIND her — the
+      // action the rule actually requires, not merely "slow down". Her stern is
+      // to the east, so the track must clear y=60 to the RIGHT of her.
+      kids.push(track('ta', 'M86 154 C 96 116, 180 112, 254 74', GIVE_WAY_INK, true));
+      kids.push(track('tb', 'M232 60 L 122 60', STAND_ON_INK, false));
+      kids.push(tag('la', 86, 200, 'YOU · give way', GIVE_WAY_INK));
+      kids.push(tag('lb', 250, 30, 'HER · stand on', STAND_ON_INK));
+      kids.push(tag('lc', 190, 140, 'pass astern of her', '#e2e8f0'));
+      kids.push(tag('ld', 190, 172, 'she is on your STARBOARD bow', '#94a3b8'));
+    } else {
+      kids.push(vessel('a', 138, 62, 0, STAND_ON_INK));
+      kids.push(vessel('b', 138, 178, 0, GIVE_WAY_INK));
+      kids.push(track('tb', 'M138 160 C 142 134, 198 128, 210 66', GIVE_WAY_INK, true));
+      kids.push(track('ta', 'M138 44 L 138 20', STAND_ON_INK, false));
+      kids.push(tag('la', 138, 106, 'HER · stand on', STAND_ON_INK));
+      kids.push(tag('lb', 138, 202, 'YOU · overtaking, keep clear', GIVE_WAY_INK));
+      kids.push(tag('lc', 248, 100, 'swing wide', '#e2e8f0'));
+    }
+    return h('svg', {
+      viewBox: '0 0 300 210', role: 'img', 'aria-label': alt,
+      style: { width: '100%', height: 'auto', display: 'block' }
+    }, kids);
+  }
+
   window.__FisherLabCore = {
+    getCoreBuoyGlyph: getCoreBuoyGlyph,
+    getCoreCameraRig: getCoreCameraRig,
     getCoreSimProfile: getCoreSimProfile,
     getCoreVoyageMode: getCoreVoyageMode,
     evaluateCoreBuoyPass: evaluateCoreBuoyPass,
@@ -8263,6 +8597,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   // ───────────────────────────────────────────────────────────
   // STATE
   // ───────────────────────────────────────────────────────────
+  // Camera rigs, in the order the V key cycles them. One list shared by the
+  // simulator's key handler and the React toolbar, so the two can never drift
+  // out of step the way a duplicated array would.
+  var CAMERA_VIEWS = [
+    { id: 'chase', label: '📹 Chase', short: 'Chase', hint: 'Follow camera astern — best overall situational view' },
+    { id: 'firstperson', label: '👁️ Helm', short: 'Helm', hint: 'Skipper\'s eye at the wheel, looking over the bow' },
+    { id: 'topdown', label: '🚁 Drone', short: 'Drone', hint: 'Tilted overhead, heading-up — shows your track and nearby traffic' },
+    { id: 'chartup', label: '🗺️ Chart N↑', short: 'Chart N↑', hint: 'North-up plan view, oriented like the paper chart' }
+  ];
+  var CAMERA_VIEW_IDS = CAMERA_VIEWS.map(function(v) { return v.id; });
+
   var FL_KEY = 'fisherLab.state.v1';
   function loadState() {
     try {
@@ -8369,9 +8714,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var fill = new THREE.HemisphereLight(0xb0d6ee, 0x4a6878, 0.5);
     scene.add(fill);
 
-    // Water plane
-    var waterGeo = new THREE.PlaneGeometry(1400, 1400, 80, 80);
-    var waterMat = new THREE.MeshPhongMaterial({ color: waterColorHex, transparent: true, opacity: 0.95, shininess: 50, specular: 0x3a5a78 }); // sun-glint on the wave-animated water
+    // Water plane. The segment count drives the shading as much as the
+    // silhouette: at 80 segments the cells were 17.5 units across — wider than
+    // the shortest wave riding on them — so from the overhead views the sea
+    // broke into hard-edged polygons. The per-frame cost of a finer mesh is
+    // held flat by the octave lookup tables in updateWaterSurface below, so
+    // this buys smoothness rather than spending frame budget on it.
+    var lowPowerWater = reducedMotion || (typeof navigator !== 'undefined' && !!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+    var WATER_SEG = lowPowerWater ? 88 : 128;
+    var waterGeo = new THREE.PlaneGeometry(1400, 1400, WATER_SEG, WATER_SEG);
+    // Shininess 50 against a bright specular put a blown-out white smear across
+    // the middle of every daylight frame — worst from above, where it swallowed
+    // the boat's own wake. A broader, dimmer highlight reads as sun on water.
+    var waterMat = new THREE.MeshPhongMaterial({ color: waterColorHex, transparent: true, opacity: 0.95, shininess: 16, specular: 0x27455f }); // sun-glint on the wave-animated water
+    // ★ The surface must not write depth. Every effect that belongs ON the sea —
+    // the sun-glitter path, the wake foam, the bow spray — is drawn after the
+    // water in the transparent queue, and while the water wrote depth each of
+    // them was being CARVED by whichever wave crests happened to rise in front
+    // of it. That is what produced the hard-edged angular blotches across the
+    // water in the overhead views: not faceted geometry, but the glitter plane
+    // being depth-clipped along the wave field. Sorting is unaffected — the
+    // opaque pass (boat, buoys, land) still runs first and still occludes.
+    waterMat.depthWrite = false;
     var water = new THREE.Mesh(waterGeo, waterMat);
     water.rotation.x = -Math.PI / 2;
     water.position.y = 0;
@@ -8380,9 +8744,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // Wave displacement (vertex animation in update; skip if reduced motion)
     var waterPositions = waterGeo.attributes.position;
     var waterPosArr = waterPositions.array;
+    var waterNormals = waterGeo.attributes.normal;
+    var waterNormArr = waterNormals.array;
     var initialZ = new Float32Array(waterPosArr.length / 3);
     for (var iw = 0; iw < waterPosArr.length / 3; iw++) {
       initialZ[iw] = waterPosArr[iw * 3 + 2];
+    }
+
+    // ─── Wave field: three sine octaves, evaluated from 1-D tables.
+    // Two octaves run along the grid axes and the third along a diagonal, and
+    // on a regular PlaneGeometry grid that makes every argument a function of a
+    // single index: px depends only on ix, py only on iy, and (px + py) only on
+    // (ix - iy). So the trig is O(segments) per frame instead of O(vertices),
+    // which is what makes a 128-segment mesh affordable at all.
+    var WSEG1 = WATER_SEG + 1;
+    var waterStep = 1400 / WATER_SEG;
+    var W_K1 = 0.08, W_W1 = 1.1;   // along +x
+    var W_K2 = 0.12, W_W2 = 0.9;   // along +y (world -z)
+    // Was 0.22 — a 28-unit wavelength that the grid could not sample without
+    // aliasing even after the retessellation. 0.16 gives ~3.5 samples per crest.
+    var W_K3 = 0.16, W_W3 = 2.1;   // diagonal
+    var waveTabAv = new Float32Array(WSEG1), waveTabAd = new Float32Array(WSEG1);
+    var waveTabBv = new Float32Array(WSEG1), waveTabBd = new Float32Array(WSEG1);
+    var waveTabCv = new Float32Array(2 * WATER_SEG + 1), waveTabCd = new Float32Array(2 * WATER_SEG + 1);
+
+    function updateWaterSurface(t, chop) {
+      var a1 = 0.15 * chop, a2 = 0.12 * chop, a3 = 0.06 * chop;
+      var i, px, py, u, arg;
+      for (i = 0; i < WSEG1; i++) {
+        px = -700 + i * waterStep;
+        arg = px * W_K1 + t * W_W1;
+        waveTabAv[i] = Math.sin(arg) * a1;
+        waveTabAd[i] = Math.cos(arg) * a1 * W_K1;
+        py = 700 - i * waterStep;
+        arg = py * W_K2 + t * W_W2;
+        waveTabBv[i] = Math.cos(arg) * a2;
+        waveTabBd[i] = -Math.sin(arg) * a2 * W_K2;
+      }
+      for (i = 0; i <= 2 * WATER_SEG; i++) {
+        u = (i - WATER_SEG) * waterStep;   // px + py
+        arg = u * W_K3 + t * W_W3;
+        waveTabCv[i] = Math.sin(arg) * a3;
+        waveTabCd[i] = Math.cos(arg) * a3 * W_K3;
+      }
+      var p = waterPosArr, n = waterNormArr;
+      for (var iy = 0; iy < WSEG1; iy++) {
+        var bv = waveTabBv[iy], bd = waveTabBd[iy];
+        var row = iy * WSEG1;
+        for (var ix = 0; ix < WSEG1; ix++) {
+          var c = ix - iy + WATER_SEG;
+          var cv = waveTabCv[c], cd = waveTabCd[c];
+          var vi = row + ix;
+          var o = vi * 3;
+          p[o + 2] = initialZ[vi] + waveTabAv[ix] + bv + cv;
+          // Analytic surface normal from the same derivatives. Without this the
+          // vertices moved but every normal stayed (0,0,1), so the sun lit a
+          // dead-flat sheet and Phong interpolated one specular value across a
+          // whole cell — which is exactly what the faceting was.
+          var nx = -(waveTabAd[ix] + cd);
+          var ny = -(bd + cd);
+          var inv = 1 / Math.sqrt(nx * nx + ny * ny + 1);
+          n[o] = nx * inv; n[o + 1] = ny * inv; n[o + 2] = inv;
+        }
+      }
+      waterPositions.needsUpdate = true;
+      waterNormals.needsUpdate = true;
     }
 
     // ─── Procedural Vegetation Generator
@@ -8704,8 +9130,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               var rs = lowPower ? 0.5 : 1;
               var cc = new T.EffectComposer(renderer);
               cc.addPass(new T.RenderPass(scene, camera));
-              // Threshold high (0.86): only the sun/moon disc + nav lights + sun-glint bloom; whitewater foam stays crisp.
-              cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round((canvas.clientWidth || W) * rs)), Math.max(1, Math.round((canvas.clientHeight || H) * rs))), lowPower ? 0.5 : 0.72, 0.42, 0.86));
+              // Threshold 0.93: only genuinely emissive things — the sun/moon disc,
+              // the nav lights, the sun-glint core. It was 0.86, which a lit white
+              // hull can reach on its own, so the pass kept finding the boat
+              // instead of the lights. Whitewater foam stays crisp either way.
+              cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round((canvas.clientWidth || W) * rs)), Math.max(1, Math.round((canvas.clientHeight || H) * rs))), lowPower ? 0.45 : 0.64, 0.42, 0.93));
               renderer._alloComposer = cc;
             } catch (e) { try { renderer._alloComposer = null; } catch (_) {} }
           });
@@ -8738,6 +9167,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         glitter.rotation.x = -Math.PI / 2;
         glitter.rotation.z = -Math.atan2(sun.position.x, sun.position.z);
         glitter.position.set(0, 0.06, 0); glitter.renderOrder = 1;
+        // The texture is a radial gradient, so its hottest point is the plane's
+        // centre — and the plane tracks the boat. Left centred, the brightest
+        // part of the sun path sat permanently on the hull and, at sunset, the
+        // bloom pass turned the whole skiff into a white blob. Push the core out
+        // along the sun bearing so the path trails away toward the horizon,
+        // which is where a real sun glitter track is.
+        var glSunLen = Math.max(1e-6, Math.hypot(sun.position.x, sun.position.z));
+        var glOffX = (sun.position.x / glSunLen) * 46;
+        var glOffZ = (sun.position.z / glSunLen) * 46;
 
         // ── 5. Boat wake foam (visualizes speed = the physics you're driving) ──
         var wake = [], wcur = 0, WAKE_N = lowPower ? 0 : 26;
@@ -8851,7 +9289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             C_.disc += (T_.disc - C_.disc) * k; C_.glow += (T_.glow - C_.glow) * k;
             C_.glitter += (T_.glitter - C_.glitter) * k; C_.rain += (T_.rain - C_.rain) * k; C_.stars += (T_.stars - C_.stars) * k;
             discMat.opacity = C_.disc; glowMat.opacity = C_.glow;
-            if (glitter) { glitter.position.x = boat.position.x; glitter.position.z = boat.position.z; glMat.opacity = C_.glitter * (0.82 + 0.18 * Math.sin(elapsed * 2.3)); }
+            if (glitter) { glitter.position.x = boat.position.x + glOffX; glitter.position.z = boat.position.z + glOffZ; glMat.opacity = C_.glitter * (0.82 + 0.18 * Math.sin(elapsed * 2.3)); }
             if (stars) { stars.visible = C_.stars > 0.01; starMat.opacity = C_.stars * (0.72 + 0.28 * Math.sin(elapsed * 1.3)); }
             if (rain) {
               rain.visible = C_.rain > 0.01; rain.material.opacity = C_.rain;
@@ -9558,6 +9996,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       sun.intensity = sunInt;
       waterMat.color.setHex(waterColor);
 
+      // ★ The hemisphere fill was pinned at a bright, cool, daytime 0.5 and never
+      // read the clock — every other light here did. On a near-white hull that
+      // alone kept the skiff at daylight brightness after dark: bright enough to
+      // clear the bloom threshold, which is why the boat rendered as a
+      // featureless white blob at sunset, at night, and in fog. Dimming and
+      // recolouring the bounce fixes the blowout and, incidentally, is the
+      // difference between "night" and "day with a dark backdrop".
+      var fillSky, fillGround, fillInt;
+      if (tod === 'night') { fillSky = 0x1b2a44; fillGround = 0x0a1420; fillInt = 0.16; }
+      else if (tod === 'sunset') { fillSky = 0x8f5a38; fillGround = 0x2c1d18; fillInt = 0.28; }
+      else { fillSky = 0xb0d6ee; fillGround = 0x4a6878; fillInt = 0.5; }
+      if (weather === 'foggy') { fillInt *= 0.8; fillSky = 0x9fb0bd; fillGround = 0x5c6873; }
+      else if (weather === 'rainy') { fillInt *= 0.6; fillSky = 0x5b6b7d; fillGround = 0x1d2836; }
+      fill.color.setHex(fillSky);
+      fill.groundColor.setHex(fillGround);
+      fill.intensity = fillInt;
+
       // Navigation lights & beam active when dark/reduced visibility
       var dark = (tod === 'sunset' || tod === 'night' || weather === 'foggy' || weather === 'rainy');
       // Bloom rides the same flag — see the render call in tick(). In broad daylight
@@ -9598,7 +10053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         if (radarShortcutCalls[e.key]) reportRadarCall(radarShortcutCalls[e.key]);
       }
       if (e.key === 'v' || e.key === 'V') {
-        var views = ['chase', 'firstperson', 'topdown'];
+        var views = CAMERA_VIEW_IDS;
         var idx = views.indexOf(boatState.cameraView || 'chase');
         var nextIdx = (idx + 1) % views.length;
         var nextView = views[nextIdx];
@@ -9616,6 +10071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     window.addEventListener('keyup', onKeyUp);
 
     var cameraTarget = new THREE.Vector3();
+    var camRigEye = new THREE.Vector3();   // scratch for the eased follow rigs
     var hudCb = (opts && opts.onHudUpdate) || function() {};
     var statusCb = (opts && opts.onStatus) || function() {};
     var lastHud = {};
@@ -10205,51 +10661,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }
       }
 
-      // Wave animation — 3 octaves; amplitude scales with weather-driven sea state
-      // (calm on clear days, choppy in rain) so the water visibly reads the weather sim.
+      // Wave animation — 3 octaves plus matching surface normals; amplitude
+      // scales with weather-driven sea state (calm on clear days, choppy in
+      // rain) so the water visibly reads the weather sim.
       if (!reducedMotion) {
-        var chop = 1 + (AF.seaChop || 0.15) * 1.7;
-        var amp1 = 0.15 * chop, amp2 = 0.12 * chop, amp3 = 0.05 * chop;
-        for (var iv = 0; iv < waterPosArr.length / 3; iv++) {
-          var px = waterPosArr[iv * 3];
-          var pz = waterPosArr[iv * 3 + 1];
-          waterPosArr[iv * 3 + 2] = initialZ[iv]
-            + Math.sin(px * 0.08 + elapsed * 1.1) * amp1
-            + Math.cos(pz * 0.12 + elapsed * 0.9) * amp2
-            + Math.sin((px + pz) * 0.22 + elapsed * 2.1) * amp3;
-        }
-        waterPositions.needsUpdate = true;
+        updateWaterSurface(elapsed, 1 + (AF.seaChop || 0.15) * 1.7);
       }
 
       // Update Audio Synth modulation
       updateAudioSynth();
 
-      // Camera views update
+      // ─── Camera rigs. The geometry lives in getCoreCameraRig so all four
+      // views are verifiable without a GL context; this only applies it.
       var cameraView = boatState.cameraView || 'chase';
-      if (cameraView === 'chase') {
-        var desiredCam = new THREE.Vector3(
-          boat.position.x - Math.sin(boatState.heading) * 9,
-          4,
-          boat.position.z - Math.cos(boatState.heading) * 9
-        );
-        camera.position.lerp(desiredCam, reducedMotion ? 0.25 : 0.08);
-        cameraTarget.set(boat.position.x, 1.5, boat.position.z);
-        camera.lookAt(cameraTarget);
-      } else if (cameraView === 'firstperson') {
-        var forwardX = Math.sin(boatState.heading);
-        var forwardZ = -Math.cos(boatState.heading);
-        var camPos = boat.position.clone();
-        camPos.x += forwardX * 0.4;
-        camPos.z -= forwardZ * 0.4;
-        camPos.y = 1.35;
-        camera.position.copy(camPos);
-        cameraTarget.set(camPos.x + forwardX * 20.0, 1.35, camPos.z - forwardZ * 20.0);
-        camera.lookAt(cameraTarget);
-      } else if (cameraView === 'topdown') {
-        var desiredCam = new THREE.Vector3(boat.position.x, 26, boat.position.z);
-        camera.position.lerp(desiredCam, 0.1);
-        cameraTarget.set(boat.position.x, 0, boat.position.z);
-        camera.lookAt(cameraTarget);
+      var rig = getCoreCameraRig(cameraView, {
+        x: boat.position.x, y: boat.position.y, z: boat.position.z,
+        heading: boatState.heading, speed: boatState.speed
+      });
+      camera.up.set(rig.up[0], rig.up[1], rig.up[2]);
+      if (rig.follow) {
+        camRigEye.set(rig.eye[0], rig.eye[1], rig.eye[2]);
+        camera.position.lerp(camRigEye, reducedMotion ? 0.3 : rig.ease);
+      } else {
+        camera.position.set(rig.eye[0], rig.eye[1], rig.eye[2]);
+      }
+      cameraTarget.set(rig.target[0], rig.target[1], rig.target[2]);
+      camera.lookAt(cameraTarget);
+      // Per-view field of view, eased rather than snapped. A single 65° lens
+      // across all four rigs was too wide for the overhead ones: straight
+      // channel edges bowed and the boat shrank to a speck in the middle.
+      if (Math.abs(camera.fov - rig.fov) > 0.05) {
+        camera.fov += (rig.fov - camera.fov) * (reducedMotion ? 1 : 0.18);
+        camera.updateProjectionMatrix();
       }
 
       var objective = getCoreObjective(boatState, missionProfile, encounterProfile);
@@ -10405,6 +10848,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }
       },
       getBoatState: function() { return boatState; },
+      // Entering or leaving the expanded stage changes the canvas box without a
+      // window resize in every browser, so the host calls this directly rather
+      // than trusting the resize event to arrive.
+      resize: function() { onResize(); },
       setTimeOfDay: function(tod) {
         boatState.timeOfDay = tod;
         updateEnvironment(tod, boatState.weather);
@@ -10561,7 +11008,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var aqCondIQ = aqCondHook[0], setAqCondIQ = aqCondHook[1];
     var canvasRef = useRef(null);
     var harborRef = useRef(null);
+    var stageRef = useRef(null);
+    var simBarRef = useRef(null);
     var decisionFocusRef = useRef(null);
+    var expandHook = useState(false);
+    var stageExpanded = expandHook[0], setStageExpanded = expandHook[1];
 
     var soundHook = useState(false);
     var soundOn = soundHook[0], setSoundOn = soundHook[1];
@@ -10701,6 +11152,99 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         harborRef.current.setCameraView(cameraView);
       }
     }, [cameraView]);
+
+    // The control bar wraps to two or three rows depending on stage width, and
+    // every floating HUD panel is positioned below it. Publish its real height
+    // as --fl-bar-h rather than assuming one row.
+    useEffect(function() {
+      var bar = simBarRef.current, stage = stageRef.current;
+      if (!bar || !stage || typeof ResizeObserver === 'undefined') return;
+      function push() {
+        // setSize(w, h, false) means three never touches the canvas CSS box, so
+        // writing a custom property here cannot feed back into a resize loop.
+        stage.style.setProperty('--fl-bar-h', Math.round(bar.getBoundingClientRect().height) + 'px');
+      }
+      push();
+      var ro = new ResizeObserver(push);
+      ro.observe(bar);
+      return function() { try { ro.disconnect(); } catch (_) {} };
+    }, [sim.active, stageExpanded]);
+
+    // ─── Expanded stage (real fullscreen, with an in-page fallback).
+    function simIsNativelyFullscreen() {
+      var el = document.fullscreenElement || document.webkitFullscreenElement || null;
+      return !!(el && stageRef.current && el === stageRef.current);
+    }
+
+    function nudgeSimResize() {
+      // three.js reads the canvas box only when asked. Without this the scene
+      // stays letterboxed at whatever size it had before the stage changed.
+      setTimeout(function() {
+        if (harborRef.current && harborRef.current.resize) harborRef.current.resize();
+      }, 80);
+    }
+
+    useEffect(function() {
+      function onFsChange() {
+        var on = simIsNativelyFullscreen();
+        setStageExpanded(on);
+        nudgeSimResize();
+        if (on && canvasRef.current && canvasRef.current.focus) {
+          setTimeout(function() { canvasRef.current && canvasRef.current.focus(); }, 90);
+        }
+      }
+      document.addEventListener('fullscreenchange', onFsChange);
+      document.addEventListener('webkitfullscreenchange', onFsChange);
+      return function() {
+        document.removeEventListener('fullscreenchange', onFsChange);
+        document.removeEventListener('webkitfullscreenchange', onFsChange);
+      };
+    }, []);
+
+    // Leaving the sim while expanded would otherwise strand a fixed-position
+    // overlay over the rest of the tool.
+    useEffect(function() {
+      if (!sim.active && stageExpanded) {
+        setStageExpanded(false);
+        if (simIsNativelyFullscreen()) {
+          try {
+            var exitFn = document.exitFullscreen || document.webkitExitFullscreen;
+            var p = exitFn && exitFn.call(document);
+            if (p && p.catch) p.catch(function() {});
+          } catch (_) {}
+        }
+      }
+    }, [sim.active]);
+
+    function toggleStageExpanded() {
+      var el = stageRef.current;
+      if (!el) return;
+      function useTheaterFallback(next) {
+        // The Fullscreen API is refused outright inside a cross-origin iframe
+        // without allow="fullscreen", which is how the Canvas host embeds this
+        // tool. Falling back to the fixed-position stage keeps the control
+        // working there instead of failing silently.
+        setStageExpanded(next);
+        nudgeSimResize();
+        flAnnounce(next ? 'Simulator expanded to fill the window.' : 'Simulator returned to its normal size.');
+      }
+      if (simIsNativelyFullscreen()) {
+        try {
+          var exitFn = document.exitFullscreen || document.webkitExitFullscreen;
+          var ep = exitFn && exitFn.call(document);
+          if (ep && ep.catch) ep.catch(function() { useTheaterFallback(false); });
+        } catch (_) { useTheaterFallback(false); }
+        return;
+      }
+      if (stageExpanded) { useTheaterFallback(false); return; }
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (!req) { useTheaterFallback(true); return; }
+      try {
+        var rp = req.call(el);
+        if (rp && rp.catch) rp.catch(function() { useTheaterFallback(true); });
+      } catch (_) { useTheaterFallback(true); }
+      flAnnounce('Simulator expanded to full screen. Press the same button to return.');
+    }
 
     useEffect(function() {
       if (harborRef.current && harborRef.current.setWeather) {
@@ -11793,26 +12337,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('button', { className: 'fl-btn', onClick: startSim,
               style: { padding: '12px 24px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
               '▶ Cast off — ' + modeProfile.label + ' voyage')) : null,
-          sim.active ? h('div', { className: 'fl-sim-stage' },
+          sim.active ? h('div', { ref: stageRef, className: 'fl-sim-stage' + (stageExpanded ? ' fl-theater' : '') },
             // Sound, View and Weather Controls bar
-            h('div', { style: { display: 'flex', gap: 10, padding: 10, background: 'rgba(15,23,42,0.85)', borderRadius: '8px 8px 0 0', border: '1px solid rgba(56,189,248,0.22)', borderBottom: 'none', flexWrap: 'wrap', alignItems: 'center' } },
+            h('div', { ref: simBarRef, className: 'fl-sim-bar', style: { display: 'flex', gap: 10, padding: 10, background: 'rgba(15,23,42,0.85)', borderRadius: '8px 8px 0 0', border: '1px solid rgba(56,189,248,0.22)', borderBottom: 'none', flexWrap: 'wrap', alignItems: 'center' } },
               h('span', { className: 'fl-pill', style: { background: 'rgba(251,191,36,0.16)', color: '#fde68a' } }, modeProfile.label + ' · ' + modeProfile.scoreMultiplier + 'x'),
               h('button', {
                 className: 'fl-btn',
                 onClick: function() { setSoundOn(!soundOn); },
                 style: { padding: '6px 12px', background: soundOn ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: soundOn ? '#04141f' : '#cbd5e1', border: '1px solid ' + (soundOn ? '#38bdf8' : 'rgba(100,116,139,0.3)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, soundOn ? '🔊 Sound: ON (M)' : '🔇 Sound: OFF (M)'),
-              h('div', { role: 'group', 'aria-label': 'Camera view', style: { display: 'flex', gap: 4 } },
-                ['chase', 'firstperson', 'topdown'].map(function(view) {
-                  var isSel = cameraView === view;
-                  var labels = { chase: '📹 Chase', firstperson: '👁️ First-Person', topdown: '🛰️ Top-Down' };
+              h('div', { role: 'group', 'aria-label': 'Camera view (V cycles)', style: { display: 'flex', gap: 4 } },
+                CAMERA_VIEWS.map(function(view) {
+                  var isSel = cameraView === view.id;
                   return h('button', {
-                    key: view,
+                    key: view.id,
                     className: 'fl-btn',
                     'aria-pressed': isSel,
-                    onClick: function() { setCameraViewState(view); },
+                    title: view.hint,
+                    onClick: function() {
+                      setCameraViewState(view.id);
+                      flAnnounce('Camera view: ' + view.short + '. ' + view.hint + '.');
+                    },
                     style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                  }, labels[view]);
+                  }, view.label);
                 })
               ),
               h('div', { role: 'group', 'aria-label': 'Time of day', style: { display: 'flex', gap: 4 } },
@@ -11844,18 +12391,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 })
               ),
               h('button', { className: 'fl-btn', 'aria-pressed': !!hud.paused, onClick: function() { if (harborRef.current && harborRef.current.setPaused) harborRef.current.setPaused(!hud.paused); }, style: { padding: '6px 10px', background: hud.paused ? '#fbbf24' : 'rgba(15,23,42,0.5)', color: hud.paused ? '#04141f' : '#cbd5e1', border: '1px solid rgba(251,191,36,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, hud.paused ? '▶ Resume (P)' : '⏸ Pause (P)'),
-              h('button', { className: 'fl-btn', onClick: stopSim, style: { padding: '6px 10px', background: 'rgba(127,29,29,0.78)', color: '#fee2e2', border: '1px solid rgba(248,113,113,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Exit'),
+              h('button', {
+                className: 'fl-btn',
+                'aria-pressed': !!stageExpanded,
+                title: stageExpanded ? 'Return the simulator to its normal size' : 'Give the simulator the whole window',
+                onClick: toggleStageExpanded,
+                style: { padding: '6px 10px', background: stageExpanded ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: stageExpanded ? '#04141f' : '#cbd5e1', border: '1px solid ' + (stageExpanded ? '#38bdf8' : 'rgba(100,116,139,0.3)'), borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+              }, stageExpanded ? '⤡ Exit full screen' : '⛶ Full screen'),
+              h('button', { className: 'fl-btn', onClick: stopSim, style: { padding: '6px 10px', background: 'rgba(127,29,29,0.78)', color: '#fee2e2', border: '1px solid rgba(248,113,113,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }, title: 'Shut down the 3D simulator and return to the briefing' }, '✕ Leave sim'),
               hud.closestTrapId && !hud.closestTrapHauled ? h('button', {
                 className: 'fl-btn',
                 onClick: function() { if (harborRef.current && harborRef.current.haulTrap) harborRef.current.haulTrap(); },
                 style: { marginLeft: 'auto', padding: '6px 12px', background: '#fbbf24', color: '#04141f', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }
               }, '🦞 Haul Trap (H)') : null
             ),
-            h('canvas', { ref: canvasRef, className: 'fl-sim-canvas', role: 'application', tabIndex: 0, style: { width: '100%', height: 460, display: 'block', background: '#9bc4d8' },
+            // Height and background now live in .fl-sim-canvas so the expanded
+            // stage can hand the scene the whole window; an inline height would
+            // beat every rule that tries to.
+            h('canvas', { ref: canvasRef, className: 'fl-sim-canvas', role: 'application', tabIndex: 0,
               'aria-label': 'Interactive 3D harbor. Focus this scene to steer with WASD or arrow keys. Press B for the fog horn, use 1 through 3 for a radar evidence call when prompted, F at the fishing grounds, H near a trap, and P to pause.',
               'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space B F H P V M 1 2 3 Escape',
               onClick: function(e) { if (e.currentTarget && e.currentTarget.focus) e.currentTarget.focus(); },
               onFocus: function() { flAnnounce('Harbor controls active. Steer with WASD or arrows. Press P to pause.'); } }),
+
+            // Names the rig on the scene itself. Without it, switching views
+            // from the toolbar gave no confirmation on the canvas at all.
+            h('div', { className: 'fl-view-badge', 'aria-hidden': 'true' },
+              (function() {
+                for (var cv = 0; cv < CAMERA_VIEWS.length; cv++) {
+                  if (CAMERA_VIEWS[cv].id === cameraView) return CAMERA_VIEWS[cv].label + ' · V';
+                }
+                return '📹 Chase · V';
+              })()),
 
             h('div', { className: 'fl-nav-cue', 'aria-label': 'Next voyage objective and relative bearing', style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(3,18,31,0.88)', border: '1px solid rgba(125,211,252,0.45)', boxShadow: '0 8px 24px rgba(0,0,0,0.38)', color: '#e0f2fe', textAlign: 'center' } },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 } },
@@ -11917,11 +12484,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             ),
             
             // HUD Instruments and Compass Dial overlay
-            h('div', { className: 'fl-sim-instruments', style: { position: 'absolute', top: 58, left: 10, background: 'rgba(8,18,32,0.85)', padding: '12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', zIndex: 10, border: '1px solid rgba(56,189,248,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', width: 140 } },
+            h('div', { className: 'fl-sim-instruments', style: { position: 'absolute', top: 'calc(var(--fl-bar-h, 48px) + 10px)', left: 10, background: 'rgba(8,18,32,0.85)', padding: '12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', zIndex: 10, border: '1px solid rgba(56,189,248,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', width: 140 } },
               h('div', { style: { textAlign: 'center', marginBottom: 8, fontSize: 10, color: '#38bdf8', fontWeight: 'bold' } }, 'INSTRUMENTS'),
               // Rotating Compass
               h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8, position: 'relative' } },
-                h('svg', { width: 70, height: 70, viewBox: '0 0 100 100', role: 'img', 'aria-label': 'Compass heading ' + headingToCompass(hud.heading), style: { transform: 'rotate(' + (-(hud.heading || 0) * 180 / Math.PI) + 'deg)', transition: 'transform 0.1s ease-out' } },
+                // The card must rotate by the COMPASS bearing, not by the raw sim
+                // heading. headingToCompass maps them with compass = 180 - deg
+                // (heading π is north here), so -heading left the card a half turn
+                // out: pointing due north put the N label at the BOTTOM of the
+                // rose, under a fixed index pointer at the top.
+                h('svg', { width: 70, height: 70, viewBox: '0 0 100 100', role: 'img', 'aria-label': 'Compass heading ' + headingToCompass(hud.heading), style: { transform: 'rotate(' + ((hud.heading || 0) * 180 / Math.PI - 180) + 'deg)', transition: 'transform 0.1s ease-out' } },
                   h('circle', { cx: 50, cy: 50, r: 45, fill: '#0b1329', stroke: '#38bdf8', strokeWidth: 2 }),
                   h('text', { x: 50, y: 22, textAnchor: 'middle', fontSize: 16, fill: '#ef4444', fontWeight: 'bold' }, 'N'),
                   h('text', { x: 78, y: 55, textAnchor: 'middle', fontSize: 14, fill: '#cbd5e1' }, 'E'),
@@ -11962,7 +12534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             ),
 
             // Mission progress
-            h('div', { className: 'fl-sim-mission', style: { position: 'absolute', top: 58, right: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', maxWidth: 220, zIndex: 10 } },
+            h('div', { className: 'fl-sim-mission', style: { position: 'absolute', top: 'calc(var(--fl-bar-h, 48px) + 10px)', right: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', maxWidth: 220, zIndex: 10 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, fontWeight: 800, color: '#bae6fd', marginBottom: 5 } }, h('span', null, mission.title), h('span', { style: { color: '#fde68a' } }, (hud.stewardshipScore || 0) + ' pts')),
               h('div', { style: { height: 5, borderRadius: 4, overflow: 'hidden', background: 'rgba(148,163,184,0.22)', marginBottom: 6 } }, h('div', { style: { width: missionProgressPct + '%', height: '100%', background: 'linear-gradient(90deg,#22c55e,#38bdf8)', transition: 'width 0.25s ease' } })),
               h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Outbound green mark to starboard' : '○ Keep green can to starboard outbound'),
@@ -12680,7 +13252,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           ) : null
         ),
         h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, 'Controls (keyboard parity required for WCAG)'),
+          // Was "Controls (keyboard parity required for WCAG)" — an internal
+          // note to ourselves about why the key bindings exist, sitting in the
+          // student-facing header where it explained nothing.
+          h('div', { style: headerStyle }, 'Keyboard controls'),
+          h('p', { style: { margin: '0 0 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+            'Click the harbor scene once to give it focus, then steer with the keys below. Every key here also has an on-screen button, so the sim can be run entirely by keyboard, entirely by mouse, or by touch.'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8, fontSize: 11 } },
             [
               { k: 'W / ↑', d: 'Throttle forward', c: '#86efac' },
@@ -12692,7 +13269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               { k: 'H', d: 'Haul lobster trap (near buoy)', c: '#fbbf24' },
               { k: 'B', d: 'Sound prolonged fog-horn blast', c: '#fde68a' },
               { k: '1 / 2 / 3', d: 'Make prompted radar evidence call', c: '#7dd3fc' },
-              { k: 'V', d: 'Cycle camera view', c: '#38bdf8' },
+              { k: 'V', d: 'Cycle camera: Chase → Helm → Drone → Chart N↑', c: '#38bdf8' },
               { k: 'M', d: 'Toggle sound mute', c: '#86efac' },
               { k: 'P / Esc', d: 'Pause or resume', c: '#fde68a' }
             ].map(function(c, i) {
@@ -12773,31 +13350,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     // ─── BUOYAGE tab
+    // One row shape for all three mark families: the glyph beside the caption
+    // it describes, so shape and colour are learned together — which is the
+    // point the closing note on this tab has always made in words.
+    function flBuoyRow(heading, marks, keyPrefix, fields) {
+      return [
+        h('h4', { key: keyPrefix + '-h', style: { fontSize: 12, color: '#bae6fd', marginTop: 14, marginBottom: 6 } }, heading),
+        marks.map(function(b, i) {
+          var f = fields(b);
+          return h('div', { key: keyPrefix + i, style: { display: 'flex', gap: 12, alignItems: 'center', padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, marginBottom: 6, borderLeft: '3px solid ' + f[3] } },
+            flBuoySvg(h, b, keyPrefix + i),
+            h('div', { style: { minWidth: 0 } },
+              h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, f[0]),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, lineHeight: 1.45 } }, f[1]),
+              f[2] ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3 } }, f[2]) : null));
+        })
+      ];
+    }
+
     function buoyageTab() {
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🟢 IALA Region B Buoyage'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 10 } },
             'North America uses IALA Region B. The mnemonic everyone learns: ', h('b', { style: { color: '#fbbf24' } }, '"Red Right Returning"'), ' — when heading INTO harbor from the sea, keep red marks on your starboard (right) side. Reverse when leaving.'),
-          h('h4', { style: { fontSize: 12, color: '#bae6fd', marginTop: 12, marginBottom: 6 } }, 'Lateral marks (channel)'),
-          BUOYAGE.lateral.map(function(b, i) {
-            return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, marginBottom: 6, borderLeft: '3px solid ' + (b.color.indexOf('red') === 0 ? '#c8302a' : (b.color.indexOf('green') === 0 ? '#2a7c44' : '#94a3b8')) } },
-              h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, b.type + ' (' + b.shape + ', ' + b.color + ')'),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, b.meaning),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Numbering: ' + b.numbering + ' · Light: ' + b.light));
+          // The mnemonic, drawn. It is the most consequential thing on this tab
+          // and it was a sentence.
+          h('div', { style: { margin: '10px 0 4px' } }, flChannelSvg(h)),
+          h('p', { style: { margin: '0 0 4px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center' } },
+            'North-up. A vessel steaming in from seaward keeps red to starboard — here, along the bottom of the channel.'),
+          flBuoyRow('Lateral marks (channel)', BUOYAGE.lateral, 'lat', function(b) {
+            return [b.type + ' (' + b.shape + ', ' + b.color + ')', b.meaning, 'Numbering: ' + b.numbering + ' · Light: ' + b.light,
+              b.color.indexOf('red') === 0 ? '#c8302a' : (b.color.indexOf('green') === 0 ? '#2a7c44' : '#94a3b8')];
           }),
-          h('h4', { style: { fontSize: 12, color: '#bae6fd', marginTop: 12, marginBottom: 6 } }, 'Cardinal marks (passable side)'),
-          BUOYAGE.cardinal.map(function(b, i) {
-            return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, marginBottom: 6 } },
-              h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, b.type.toUpperCase() + ' cardinal — ' + b.color),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, b.meaning),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Topmark: ' + b.topmark + ' · Light: ' + b.light));
+          flBuoyRow('Cardinal marks (passable side)', BUOYAGE.cardinal, 'car', function(b) {
+            return [b.type.toUpperCase() + ' cardinal — ' + b.color, b.meaning, 'Topmark: ' + b.topmark + ' · Light: ' + b.light, '#fbbf24'];
           }),
-          h('h4', { style: { fontSize: 12, color: '#bae6fd', marginTop: 12, marginBottom: 6 } }, 'Special marks'),
-          BUOYAGE.special.map(function(b, i) {
-            return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, marginBottom: 6 } },
-              h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, b.type + ' (' + b.shape + ', ' + b.color + ')'),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, b.meaning));
+          flBuoyRow('Special marks', BUOYAGE.special, 'sp', function(b) {
+            return [b.type + (b.shape ? ' (' + b.shape + ', ' + b.color + ')' : ' (' + b.color + ')'), b.meaning, b.light ? 'Light: ' + b.light : null, '#94a3b8'];
           }),
           h('p', { style: { marginTop: 12, fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } },
             'Accessibility note: shape + color always pair. Red is always conical (nun). Green is always cylindrical (can). A colorblind boater can still navigate by shape alone — that\'s why the convention exists.')));
@@ -12810,6 +13400,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: headerStyle }, '⚓ COLREGS — Rules of the Road (plain-language)'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 10 } },
             'Full text: ', h('span', { style: { color: '#bae6fd' } }, 'USCG COLREGS (33 CFR 83)'), '. The rules below are plain-language summaries for instruction only. For licensing exams, study the actual rules.'),
+          // Rules 13, 14 and 15 are geometric rules. They were three sentences.
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, margin: '4px 0 14px' } },
+            COLREGS_FIGURES.map(function(fig) {
+              return h('figure', { key: fig.kind, style: { margin: 0, padding: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, border: '1px solid rgba(56,189,248,0.2)' } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 } },
+                  h('strong', { style: { fontSize: 12, color: '#e2e8f0' } }, fig.title),
+                  h('span', { className: 'fl-pill' }, fig.rule)),
+                flColregsSvg(h, fig.kind, fig.alt),
+                h('figcaption', { style: { marginTop: 6, fontSize: 10.5, lineHeight: 1.45, color: 'var(--allo-stem-text, #cbd5e1)' } }, fig.caption));
+            })),
+          h('p', { style: { margin: '0 0 12px', fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+            'Every vessel in these figures is also labelled in words — amber reads "give way", green reads "stand on" — so the diagrams work without relying on colour.'),
           COLREGS.map(function(r, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#bae6fd', marginBottom: 4 } }, r.rule + ' · ' + r.title),

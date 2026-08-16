@@ -916,12 +916,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // attach MUST keep a stable identity: an inline ref gets a new one every render,
     // which makes React call ref(null)+ref(node) each pass and re-initialise the
     // canvas endlessly. These wrappers are created once, here.
+    var lastNode = null;
+    // Re-point the home distance at whatever the scene last built, for the box it is
+    // actually being drawn into. `apply` snaps the live camera as well; without it the
+    // new framing only takes effect the next time the student presses Reset view.
+    //
+    // Deliberately NOT applied on every scene rebuild: the clock rebuilds the scene as
+    // the tree grows, and snapping the camera back would throw away an orbit the
+    // student had just set up. Home is always current, so Reset view always frames.
+    function frame(apply) {
+      var v = resolve();
+      if (!v) return CFG.home.dist;
+      // Measure the CANVAS, not the div we were handed. The shell builds its camera
+      // aspect from the renderer's own size, and in full screen the container is a
+      // flex child whose measured box is not what ends up being drawn into: reading
+      // the div gave 0.69 for a stage that was actually rendering at 1.88, so every
+      // tree was framed for a portrait phone and the crown still ran off the top.
+      var aspect = 1.6;
+      var cv = lastNode && lastNode.querySelector ? lastNode.querySelector('canvas') : null;
+      var mw = cv ? cv.clientWidth : (lastNode ? lastNode.clientWidth : 0);
+      var mh = cv ? cv.clientHeight : (lastNode ? lastNode.clientHeight : 0);
+      if (mw > 0 && mh > 0) aspect = mw / mh;
+      // A tall narrow box has no room to spare; a wide full-screen stage does.
+      var fill = aspect >= 1.9 ? 0.66 : (aspect >= 1.5 ? 0.72 : 0.78);
+      CFG.home.dist = fitDistance(LAST_EXTENT, aspect, fill);
+      // Pitch is the difference between a portrait of a tree and a photograph of a
+      // lawn. The camera tilts DOWN toward its target, so the higher the pitch the
+      // more ground fills the frame: at 0.20 on a wide stage the bottom third was
+      // featureless grass. A wide stage has room to sit nearer eye level, which drops
+      // the horizon, gives the sky something to do and lets the tree read as tall.
+      CFG.home.pitch = aspect >= 1.7 ? 0.13 : 0.20;
+      // Framing is judged by eye and tuned by number; this is what the eye is looking
+      // at. Also what the framing test reads, so it never has to scrape pixels.
+      try {
+        window.__alloTreeLabCam = {
+          extent: LAST_EXTENT, aspect: aspect, fill: fill, dist: CFG.home.dist,
+          applied: !!apply
+        };
+      } catch (e) {}
+      if (apply) { try { v.reset(); } catch (e) {} }
+      return CFG.home.dist;
+    }
+    // ── Re-frame when the BOX changes, not only when the tree does. ──
+    //
+    // The shell resizes off `window.resize` and has no ResizeObserver of its own, and
+    // framing depends on the canvas aspect, so a CSS-only size change left the camera
+    // framed for the box it used to be in. That is not hypothetical: mounting straight
+    // into full screen (which is what a student who left in full screen gets back)
+    // framed a 1400x733 stage using the 520px column's aspect of 0.61.
+    //
+    // Only a MATERIAL change re-frames. Entering or leaving full screen and rotating a
+    // tablet clear that bar; nudging a window edge does not, so an orbit the student
+    // set up is not thrown away by a few stray pixels.
+    var lastAspect = 0;
+    var ro = null;
+    function watchBox(node) {
+      if (!node || typeof ResizeObserver === 'undefined') return;
+      if (ro) { try { ro.disconnect(); } catch (e) {} }
+      try {
+        ro = new ResizeObserver(function () {
+          var cv = node.querySelector ? node.querySelector('canvas') : null;
+          var w = cv ? cv.clientWidth : node.clientWidth;
+          var hgt = cv ? cv.clientHeight : node.clientHeight;
+          if (!(w > 0 && hgt > 0)) return;
+          var a = w / hgt;
+          if (lastAspect && Math.abs(a - lastAspect) / lastAspect < 0.1) return;
+          lastAspect = a;
+          frame(true);
+        });
+        ro.observe(node);
+      } catch (e) { ro = null; }
+    }
     return {
-      attach: function (node) { var v = resolve(); if (v) v.attach(node); },
+      attach: function (node) {
+        if (node) { lastNode = node; watchBox(node); }
+        else {
+          if (ro) { try { ro.disconnect(); } catch (e) {} ro = null; }
+          // The tool is going away. Full screen hides the hub's toolbar via a body
+          // class, and leaving that behind would strand the student in a STEAM Lab
+          // with no way back to the tool list, in every tool they opened next.
+          setImmersiveBodyClass(false);
+        }
+        var v = resolve(); if (v) v.attach(node);
+      },
       sync: function (p) { lastProps = p; var v = resolve(); if (v) v.sync(p); },
       nudge: function (a, b) { var v = resolve(); if (v) v.nudge(a, b); },
       zoom: function (delta) { var v = resolve(); if (v) v.zoom(delta); },
-      reset: function () { var v = resolve(); if (v) v.reset(); },
+      // Reset re-frames first, so "Reset view" is always a good view of THIS tree
+      // rather than a good view of whatever tree was on screen when the tool loaded.
+      reset: function () { frame(true); },
+      frame: frame,
+      node: function () { return lastNode; },
       status: function () { var v = resolve(); return v ? v.status() : 'idle'; }
     };
   })();
@@ -1447,6 +1532,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   var VIS_CENTER_Y = 0.30;      // must match the shell's lookAt target
   var ROOT_FRAC = 0.16;         // share of the budget spent below ground
 
+  // ── Camera framing ────────────────────────────────────────────────────────
+  //
+  // The shell's camera is a 42-degree VERTICAL perspective looking at a fixed point,
+  // with one home distance for the whole life of the tool. That is fine for an engine
+  // bay. It is wrong for a subject that spans a 0.4 m seedling to a 90 m redwood, and
+  // it was wrong in BOTH directions: the seedling was a dot in an empty field and the
+  // mature oak's crown was cropped off the top and both sides.
+  //
+  // buildTreeScene measures what it actually built into LAST_EXTENT; fitDistance turns
+  // that into the distance which frames it. Kept as a pure function so the arithmetic
+  // is testable without a GPU.
+  var SHELL_FOV_DEG = 42;
+  var LAST_EXTENT = null;
+  // The very first scene deserves a snap to a good view. Every later rebuild only
+  // updates where Reset view goes, so growing a tree never steals the camera.
+  var FRAMED_ONCE = false;
+
+  // ★ The camera may only ever back AWAY from this baseline, never come closer.
+  //
+  // This is the whole trick, and getting it wrong is instructive: a camera that simply
+  // fits each tree makes every tree the same size on screen, so a 0.4 m seedling and a
+  // 20 m oak are indistinguishable and the tool's entire subject — growth — disappears.
+  // That is the same defect the log compression in visH was written to avoid, arriving
+  // from the opposite direction.
+  //
+  // Allowing only outward movement gives both properties at once: nothing is ever
+  // cropped, because a big tree pushes the camera back, and small trees stay small,
+  // because a seedling cannot pull it in.
+  var BASE_DIST = 4.0;
+
+  // halfV / radius are world units; aspect is width/height of the canvas.
+  // `fill` is how much of the frame the subject should occupy (0-1), which is the one
+  // knob worth tuning by eye: full screen can afford a tighter crop than a 420px box
+  // because there is simply more room for the tree to breathe into.
+  function fitDistance(extent, aspect, fill) {
+    var e = extent && isFinite(extent.halfV) ? extent : { halfV: 1.3, radius: 0.8 };
+    var a = isFinite(aspect) && aspect > 0.2 ? aspect : 1.6;
+    var f = clamp(isFinite(fill) ? fill : 0.78, 0.35, 0.98);
+    var tanHalf = Math.tan(SHELL_FOV_DEG * Math.PI / 360);
+    // Vertical is the honest constraint; horizontal only bites on a wide crown in a
+    // narrow box, which is exactly the portrait-phone case.
+    var dv = (Math.max(0.08, e.halfV) / f) / tanHalf;
+    var dh = (Math.max(0.02, e.radius || 0) / f) / (tanHalf * a);
+    // The shell clamps its own zoom to 2.6-8.5 and reset() writes home straight in, so
+    // staying inside that range keeps a student's first zoom from jumping.
+    return clamp(Math.max(dv, dh, BASE_DIST), BASE_DIST, 8.5);
+  }
+
   function buildTreeScene(THREE, api) {
     var props = api.sceneProps || {};
     var sp = props.species || {};
@@ -1510,7 +1643,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // cannot re-frame (fixed lookAt and a fixed home distance taken at module load),
     // so compress the 0.4 m - 90 m range LOGARITHMICALLY instead: everything fits,
     // and a seedling still reads as roughly a quarter the height of a mature tree.
-    var visH = 0.45 + (VIS_H - 0.45) * clamp(
+    // The floor was 0.45, which left a 0.4 m seedling a speck in an empty field once
+    // the stage went full screen. 0.58 lifts it to something worth looking at while
+    // keeping the growth cue intact: against the fixed baseline camera distance a
+    // seedling still reads at roughly a third of a mature tree's on-screen height.
+    // Raising it much past this makes a seedling look like a shrub-sized adult.
+    var visH = 0.58 + (VIS_H - 0.58) * clamp(
       Math.log(1 + heightM / 0.5) / Math.log(1 + 180), 0, 1);
     var rootDepth = visH * ROOT_FRAC;
     var H = visH - rootDepth;             // above-ground height, world units
@@ -1760,6 +1898,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // The cards are one InstancedMesh, so a three-hundred-card canopy is one draw call.
     var crownGroup = new THREE.Group();
     var crownTopY = crownBaseY + crownR * (needle ? 0 : 1.5);
+    // The crown's real HORIZONTAL reach, grown the same way crownTopY is. crownR is
+    // only the nominal cluster radius: the branch system hangs masses well outside it,
+    // so a mature oak's silhouette is several times crownR across and framing the
+    // camera off crownR alone still cropped both sides of the canopy.
+    var crownMaxR = crownR * 0.6;
     var foliage = [];          // inner masses, for per-mass wind
     var cardSpec = [];         // {p, sc, q, phase, hue}
 
@@ -1777,6 +1920,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       registerPick(m, 'crown');
       foliage.push({ m: m, base: p.clone(), phase: (i % 9) * 0.71, h: clamp(p.y / Math.max(0.001, H), 0, 1) });
       if (p.y + massR > crownTopY) crownTopY = p.y + massR;
+      var massRad = Math.sqrt(p.x * p.x + p.z * p.z) + massR;
+      if (massRad > crownMaxR) crownMaxR = massRad;
       return m;
     }
     // Scatter leaf cards over the shell of a mass. Facing OUTWARD from the cluster
@@ -1811,6 +1956,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           up: clamp(dir.y * 0.85 + 0.15, -1, 1)
         });
         if (p.y + r * 0.5 > crownTopY) crownTopY = p.y + r * 0.5;
+        var cardRad = Math.sqrt(p.x * p.x + p.z * p.z) + r * 0.5;
+        if (cardRad > crownMaxR) crownMaxR = cardRad;
       }
     }
 
@@ -1892,6 +2039,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }
       }
       crownTopY = coneTop;
+      // A conifer's widest tier is the bottom one, at full crownR, and the needle
+      // spray sits outside the cone mass it clothes.
+      if (crownR * 1.1 > crownMaxR) crownMaxR = crownR * 1.1;
     } else if (!bare) {
       var ci = 0;
       for (var k = 0; k < branchTips.length; k++) {
@@ -1969,6 +2119,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var rootMat = mat('#3f2d1e', { shininess: 0 });
     rootMat.depthTest = false;
     var rootSpread = (crownR * 0.85 + trunkR * 3) * (0.80 + visual.rootVigor * 0.25);
+    // Furthest a clonal stem can land (the loop below uses 1.15 + (i % 3) * 0.3),
+    // plus its own crown. Framing has to include the whole stand, not just the
+    // parent, or an aspen's suckers sit outside the picture.
+    var cloneReachR = clones > 0 ? rootSpread * 1.75 + crownR * 0.5 : 0;
     var structuralEnds = [];
     for (var ri = 0; ri < 5; ri++) {
       var ra = ri * 2.39996 + 0.18;
@@ -2384,6 +2538,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     group.position.y = VIS_CENTER_Y - (minY + maxY) / 2;
     api.scene.add(group);
 
+    // ── Report the tree's real extent so the camera can FRAME it. ──
+    //
+    // The shell takes one home distance at module load and keeps it for every tree,
+    // which is wrong at both ends of a subject that spans 0.4 m to 90 m: a seedling
+    // was a speck in an empty field, and a mature oak's crown ran off the top and
+    // both sides of the frame. Neither is visible in a static check; both are
+    // obvious the moment you look at it.
+    //
+    // The log compression in visH stays exactly as it was — that is what makes
+    // growth read as growth — and the CAMERA adapts instead. Measured here rather
+    // than predicted from visH, because crownTopY is grown by the crown builder
+    // (masses, cones and cards each push it up) and is not knowable in advance.
+    LAST_EXTENT = {
+      halfV: Math.max(0.12, (maxY - minY) / 2),
+      // crownMaxR is MEASURED from where the masses and cards actually landed, not
+      // predicted from crownR: the branch system carries them several times crownR
+      // out, which is why framing off crownR still cropped both sides of the canopy.
+      radius: Math.max(crownMaxR, trunkR * 3, cloneReachR),
+      visH: visH, heightM: heightM
+    };
+    // Out of band: this runs inside the shell's build, and reset() re-points the very
+    // camera it is still setting up. A zero timeout lets the build finish first.
+    if (typeof setTimeout === 'function') {
+      setTimeout(function () {
+        try { TREE3D.frame(!FRAMED_ONCE); FRAMED_ONCE = true; } catch (e) {}
+      }, 0);
+    }
+
     // Scene-owned motion. The shell owns the RAF, the visibility pause and the
     // reduced-motion preference; this only nudges nodes it already built, and
     // returns immediately when motion is reduced.
@@ -2505,6 +2687,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     }
     return { beat: beat, ensure: ensure, stop: stop, running: function () { return !!id; } };
   })();
+
+  // ── The immersive body class ──────────────────────────────────────────────
+  //
+  // Full screen hides the hub's own toolbar, which lives in a file this tool must not
+  // edit. A class on <body> is the whole coupling, and the risk it carries is obvious:
+  // leave it behind and the STEAM Lab hub has no toolbar and no way back to the tool
+  // list, across every OTHER tool the student opens next.
+  //
+  // renderTool() inlines this tool's render into the host's fiber, so there is no
+  // unmount hook to hang cleanup on — the same constraint that makes the playback clock
+  // a module-scope heartbeat rather than an effect.
+  //
+  // ★ A render heartbeat is the WRONG signal here, and it was the first thing I tried.
+  // The clock can use one because a running clock re-renders constantly. A full-screen
+  // scene is static: a student can watch it for minutes without a single re-render, so
+  // the stamps stop, the watchdog concludes the tool is gone and puts the hub's toolbar
+  // back over the top of a live full-screen view.
+  //
+  // The canvas ref IS a real unmount signal — React calls it with null when the tool
+  // goes away, and TREE3D.attach already receives it — so cleanup hangs off that.
+  var IMMERSIVE_CLASS = 'allo-treelab-immersive';
+  function setImmersiveBodyClass(on) {
+    if (typeof document === 'undefined' || !document.body) return;
+    try {
+      if (on) document.body.classList.add(IMMERSIVE_CLASS);
+      else document.body.classList.remove(IMMERSIVE_CLASS);
+    } catch (e) {}
+  }
 
   // Playback speeds in simulated years per real second. The slowest is deliberately
   // sub-year so the seasons actually cycle on screen; above that they would only
@@ -2645,6 +2855,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-workbench{display:grid;grid-template-columns:minmax(360px,540px) minmax(420px,1fr);gap:16px;align-items:start;}',
         '.allo-tree-workbench>*{min-width:0;}',
         '.allo-tree-workbench-sticky{position:sticky;top:12px;}',
+        // ── Full screen actually being full screen. ──
+        //
+        // The stage is `position:fixed; z-index:<high>`, which ought to be enough and
+        // was not, for two reasons that are invisible in the markup:
+        //   1. `position:sticky` ALWAYS creates a stacking context, whatever its
+        //      z-index. The stage lives inside .allo-tree-workbench-sticky, so its
+        //      z-index could only ever compete with its siblings in there — the tool's
+        //      own hero header painted straight over the top of it.
+        //   2. .allo-tree-lab sets `isolation:isolate`, a second stacking context, so
+        //      even winning inside the tool could not lift the stage above the STEAM
+        //      Lab hub's own toolbar (z-index 100) outside it.
+        // Both are switched off for the duration, and the page furniture the stage is
+        // replacing is hidden rather than left to be painted over.
+        '.allo-tree-lab.is-full{isolation:auto;}',
+        '.allo-tree-lab.is-full .allo-tree-workbench-sticky{position:static;}',
+        // !important is load-bearing, not defensive: the hero and the tab strip both
+        // carry an inline `display:flex`, and an inline style beats a stylesheet rule
+        // of any specificity. Without it the rule matches, computes, and loses.
+        '.allo-tree-lab.is-full .allo-tree-hero,.allo-tree-lab.is-full .allo-tree-tabs{display:none!important;}',
+        // The hub chrome belongs to stem_lab_module.js, which this tool must not edit
+        // (three host copies, and a reachability gate that byte-matches two of them).
+        // Hiding it from here is scoped to the one class, and to the moment the class
+        // is on the body — it is removed on exit and on unmount.
+        'body.allo-treelab-immersive .stem-active-toolbar{display:none!important;}',
+        'body.allo-treelab-immersive .stem-lab-topbar,body.allo-treelab-immersive .stem-lab-tablist{display:none!important;}',
         '.allo-tree-card{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;}',
 
         '.allo-tree-button,.allo-tree-tab{transition:transform .14s ease,box-shadow .14s ease,background .14s ease,border-color .14s ease;}',
@@ -2977,6 +3212,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // stamps the heartbeat that stops the clock if the tool is unmounted.
       CLOCK.beat(tick);
       CLOCK.ensure(playing);
+      // Stamps the immersive heartbeat AND re-asserts the class, which matters on the
+      // path nobody thinks about: viewerFull is persisted state, so a student who left
+      // in full screen comes back in full screen without setFull ever being called.
+      setImmersiveBodyClass(!!d.viewerFull);
 
       function togglePlay() {
         if (experimentActive) {
@@ -3091,6 +3330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // every time the student toggles.
       function setFull(next) {
         upd('viewerFull', next);
+        setImmersiveBodyClass(next);
         // The shell resizes off the window `resize` event and has no ResizeObserver on
         // its node, so a purely CSS size change is invisible to it and the canvas keeps
         // its old aspect until something else happens to fire one. Twice, because the
@@ -3098,10 +3338,99 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         if (typeof window !== 'undefined' && window.dispatchEvent) {
           setTimeout(function () { try { window.dispatchEvent(new Event('resize')); } catch (e) {} }, 60);
           setTimeout(function () { try { window.dispatchEvent(new Event('resize')); } catch (e) {} }, 280);
+          // Re-frame AFTER the renderer has taken the new size: the stage goes from a
+          // 420px box to the whole viewport, and the aspect that framing depends on
+          // changes with it. Entering full screen on a mature oak with the small-box
+          // distance is exactly the crop this replaced.
+          setTimeout(function () { try { TREE3D.frame(true); } catch (e) {} }, 320);
         }
         srSay(next
           ? __alloT('stem.treelab.full_on', 'Full screen view. Press Escape to leave.')
           : __alloT('stem.treelab.full_off', 'Left full screen view.'));
+      }
+
+      // A read-out chip for the full-screen HUD. Painted on its own solid surface
+      // rather than straight onto the sky: the scene behind it runs from near-white
+      // cloud to near-black winter, so text alone has no contrast it can rely on.
+      // Same T tokens as every other control, so high contrast and dark mode come for
+      // free instead of being a hardcoded strip nobody re-checks.
+      function hudChip(key, label, strong, accentHex) {
+        return h('span', {
+          key: 'hud-' + key,
+          style: {
+            display: 'inline-flex', alignItems: 'center',
+            padding: strong ? '5px 11px' : '4px 9px',
+            borderRadius: 999,
+            background: T.card,
+            border: '1px solid ' + (accentHex || T.border),
+            color: accentHex || T.text,
+            fontSize: strong ? 13 : 11.5,
+            fontWeight: strong ? 800 : 700,
+            lineHeight: 1.25,
+            whiteSpace: 'nowrap'
+          }
+        }, label);
+      }
+
+      // ── What the student CONTROLS, opposite what the tree IS. ──
+      //
+      // Full screen had the whole causal loop cut in half: you could watch a tree, and
+      // trigger a drought, but the three conditions the tool is actually about were on
+      // the page behind the stage. So the one lesson — change a condition, watch which
+      // factor becomes the limit, watch the tree answer — could not be run in the view
+      // where the tree is actually legible.
+      //
+      // Laid out as the mirror of the HUD: left is what the tree IS, right is what you
+      // can change. The limiting factor appears on BOTH, because it is the hinge
+      // between them.
+      //
+      // The slider keys are prefixed. `slider()` builds its DOM id from the key, the
+      // page's own Conditions card stays mounted behind the stage, and two elements
+      // sharing an id break every label/htmlFor association on the screen.
+      function fullConditionsPanel() {
+        var lim = live.limiting || {};
+        var limLabel = experimentFactorLabel(lim.id);
+        return h('div', {
+          key: 'conds',
+          role: 'group',
+          'aria-label': __alloT('stem.treelab.conditions', 'Conditions'),
+          'data-tree-fullconds': 'true',
+          style: {
+            position: 'absolute', top: 12, right: 14, zIndex: 3,
+            width: 250, maxWidth: 'calc(100% - 28px)',
+            maxHeight: 'calc(100% - 24px)', overflowY: 'auto',
+            padding: '10px 12px 6px', borderRadius: 12,
+            background: T.card, border: '1px solid ' + T.border
+          }
+        }, [
+          h('div', {
+            key: 'hd',
+            style: { fontSize: 12, fontWeight: 800, color: T.text, marginBottom: 8 }
+          }, __alloT('stem.treelab.conditions', 'Conditions')),
+          slider('fs-light', __alloT('stem.treelab.light', 'Light'), envCfg.light, 0, 1, 0.05,
+            function (v) { upd('light', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked),
+          slider('fs-water', __alloT('stem.treelab.soil_water', 'Soil water'), envCfg.soilWater, 0, 1, 0.05,
+            function (v) { upd('soilWater', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked),
+          atLeast(band, 'g68')
+            ? slider('fs-co2', CO2, envCfg.co2ppm, 180, 900, 10,
+              function (v) { upd('co2ppm', v); }, function (v) { return v + ' ppm'; }, experimentLocked)
+            : null,
+          // The reason, not just the verdict. Under drought the CO2 term genuinely IS
+          // the smallest number, and reporting that alone sends a student off to add
+          // CO2 — which this tool exists to teach is useless while the stomata are
+          // shut. Same attribution the Chemistry view uses; not re-derived here.
+          h('div', {
+            key: 'why',
+            style: {
+              marginTop: 4, paddingTop: 8, borderTop: '1px dashed ' + T.border,
+              fontSize: 11.5, lineHeight: 1.5, color: T.text
+            }
+          }, lim.viaStomata
+            ? __alloT('stem.treelab.full_why_stomata',
+              'Water is the limit. ' + CO2 + ' is running lower, but only because water stress has closed the stomata that let it in.')
+            : __alloT('stem.treelab.full_why_' + (lim.id || 'none'),
+              limLabel + ' is the limit right now. Raise it and the rate moves; raise anything else and it will not.'))
+        ]);
       }
 
       function viewerPanel() {
@@ -3168,8 +3497,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                   background: isDark ? '#020617' : '#e2e8f0', border: '1px solid ' + T.border
                 }
             }),
+            // ── Full-screen read-out, over the scene rather than beside it. ──
+            //
+            // Going full screen used to hide the very numbers the picture is a picture
+            // OF: age, height, and what is currently limiting growth all live in the
+            // page header, which full screen covers. A student watching a tree grow
+            // could not see the age it was growing to. It sits over the sky, which is
+            // the one part of the frame that never carries the subject.
+            full ? h('div', {
+              key: 'hud',
+              // The page's own header carries the same figures and stays mounted behind
+              // the stage, so "the age chip" is ambiguous without a handle.
+              'data-tree-fullhud': 'true',
+              style: {
+                position: 'absolute', top: 12, left: 14, zIndex: 3,
+                display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6,
+                pointerEvents: 'none', maxWidth: 'calc(100% - 28px)'
+              }
+            }, [
+              hudChip('sp', sp.emoji + ' ' + __alloT('stem.treelab.species_' + sp.id, sp.name), true),
+              hudChip('age', __alloT('stem.treelab.age', 'age') + ' ' + tree.age + ' yr'),
+              hudChip('ht', round(tree.heightM, 1) + ' m'),
+              hudChip('dbh', round(tree.dbhCm, 1) + ' cm'),
+              // Named with its CAUSE where they differ. "Limiting now: CO2" is true
+              // during a drought and still the wrong thing to tell a student, because
+              // the stomata are shut and adding CO2 changes nothing.
+              tree.alive
+                ? hudChip('lim', __alloT('stem.treelab.limiting_now_short', 'Limiting now: ') + viewerLimit +
+                  (live.limiting && live.limiting.viaStomata
+                    ? ' ' + __alloT('stem.treelab.via_stomata_short', '(stomata closed)') : ''),
+                  false, T.accent)
+                : hudChip('dead', __alloT('stem.treelab.dead_chip', 'This tree has died'), false, T.bad),
+              inDrought ? hudChip('dry', '☀️ ' + __alloT('stem.treelab.drought_chip', 'Drought'), false, T.warn) : null,
+              playing ? hudChip('run', '▶ ' + speed.label, false, tone('#22c55e')) : null
+            ]) : null,
+            full ? fullConditionsPanel() : null,
             h('div', {
               key: 'ctl',
+              // The page's own playback controls stay mounted behind the stage, so
+              // "the Play button" is ambiguous without this. Named so a test can say
+              // which one it means rather than relying on document order.
+              'data-tree-fullbar': full ? 'true' : undefined,
+              role: full ? 'toolbar' : undefined,
+              'aria-label': full ? __alloT('stem.treelab.full_toolbar', 'Full screen tree controls') : undefined,
               style: full
                 ? {
                   flex: '0 0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center',
@@ -3190,6 +3560,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 { small: true, pressed: full, ariaLabel: full
                   ? __alloT('stem.treelab.exit_full', 'Exit full screen')
                   : __alloT('stem.treelab.go_full', 'Full screen') }),
+              // ── Running the simulation, from inside full screen. ──
+              //
+              // Full screen used to be look-only: orbit, zoom and pick. Every control
+              // that CHANGES anything — the clock that grows the tree, the drought that
+              // is the tool's central causal chain — was on the page behind it, so
+              // watching a tree grow at full size meant leaving full size to press
+              // play. These are the two that alter the simulation; the sliders stay on
+              // the page, where their numbers are.
+              full ? h('span', {
+                key: 'runsep', 'aria-hidden': 'true',
+                style: { display: 'inline-block', width: 1, height: 22, background: T.border, margin: '0 8px 6px' }
+              }) : null,
+              full ? btn('fplay', (playing ? '⏸ ' : '▶ ') + (playing
+                ? __alloT('stem.treelab.pause', 'Pause')
+                : __alloT('stem.treelab.play', 'Play')), togglePlay,
+                { small: true, pressed: playing, disabled: !tree.alive || experimentActive }) : null,
+              full ? SPEEDS.map(function (option) {
+                return btn('fsp-' + option.id, option.label, function () {
+                  updMulti({ speed: option.id });
+                  srSay('Speed set to ' + option.label + '. ' + option.hint);
+                }, { small: true, pressed: speed.id === option.id, disabled: experimentActive });
+              }) : null,
+              full ? btn('fdry', inDrought
+                ? '💧 ' + __alloT('stem.treelab.end_drought', 'End drought')
+                : '☀️ ' + __alloT('stem.treelab.start_drought', 'Drought'),
+                function () { if (inDrought) endDrought(); else sendDrought(5); },
+                { small: true, pressed: inDrought, disabled: !tree.alive || experimentActive }) : null,
+              full ? h('span', {
+                key: 'viewsep', 'aria-hidden': 'true',
+                style: { display: 'inline-block', width: 1, height: 22, background: T.border, margin: '0 8px 6px' }
+              }) : null,
               btn('l', '◀', function () { TREE3D.nudge(-0.25, 0); }, { small: true, ariaLabel: __alloT('stem.treelab.rotate_left', 'Rotate view left') }),
               btn('r', '▶', function () { TREE3D.nudge(0.25, 0); }, { small: true, ariaLabel: __alloT('stem.treelab.rotate_right', 'Rotate view right') }),
               btn('u', '▲', function () { TREE3D.nudge(0, -0.12); }, { small: true, ariaLabel: __alloT('stem.treelab.tilt_up', 'Tilt view up') }),
@@ -3221,8 +3622,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               // Full screen is exactly where flipping between seasons pays off, so the
               // control comes with it rather than being left behind on the page below.
               // Emoji only for width; the accessible name carries the season.
+              // Emoji-only was a width saving that cost the meaning: four unlabelled
+              // icons at the end of a long bar are unreadable, and a student cannot
+              // guess that a green sprout means spring rather than "grow". The name is
+              // back, and the accessible name still carries it for the icon-blind case.
               full ? SEASONS.map(function (s3) {
-                return btn('fsea-' + s3.id, s3.emoji, function () {
+                return btn('fsea-' + s3.id, s3.emoji + ' ' + __alloT('stem.treelab.season_' + s3.id, s3.label), function () {
                   upd('season', s3.id);
                   srSay(s3.label + '. ' + seasonNote(s3.id));
                 }, {
@@ -3231,9 +3636,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                   ariaLabel: __alloT('stem.treelab.season_' + s3.id, s3.label)
                 });
               }) : null,
+              // Pushed to the far right rather than trailing the buttons: as the bar
+              // grew it kept being the thing that wrapped onto a line of its own, which
+              // reads as a stray caption under the controls rather than a hint about
+              // them. marginLeft:auto keeps it on the row and hard right.
               full ? h('span', {
                 key: 'hint',
-                style: { fontSize: 11, color: T.dim, marginLeft: 8, marginBottom: 6 }
+                style: {
+                  fontSize: 11, color: T.dim, marginLeft: 'auto', marginBottom: 6,
+                  paddingLeft: 12, whiteSpace: 'nowrap'
+                }
               }, __alloT('stem.treelab.full_hint', 'Drag to orbit · Escape to leave')) : null
             ])
           ]),
@@ -5044,7 +5456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       }
 
       return h('div', {
-        className: 'allo-tree-lab',
+        className: 'allo-tree-lab' + (d.viewerFull ? ' is-full' : ''),
         style: {
           '--tree-glow': isContrast ? 'transparent' : (isDark ? 'rgba(52,211,153,.11)' : 'rgba(16,185,129,.14)'),
           '--sun-glow': isContrast ? 'transparent' : (isDark ? 'rgba(251,191,36,.07)' : 'rgba(250,204,21,.13)'),
@@ -5190,6 +5602,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     seasonForPhase: seasonForPhase, speedById: speedById, SPEEDS: SPEEDS, CLOCK: CLOCK,
     resolveSpread: resolveSpread, lcg: lcg, speciesById: speciesById,
     deriveTreeVisualState: deriveTreeVisualState, buildTreeScene: buildTreeScene, TREE_FORM: TREE_FORM,
+    // Camera framing is pure arithmetic, so it can be tested without a GPU. BASE_DIST
+    // goes with it because the property that matters is relative to it: the camera may
+    // only ever move OUT from the baseline, which is what keeps a seedling small.
+    fitDistance: fitDistance, BASE_DIST: BASE_DIST,
     strategyById: strategyById, resolveBand: resolveBand, atLeast: atLeast,
     SPECIES: SPECIES, STRATEGIES: STRATEGIES, QUIZ: QUIZ, BANDS: BANDS
   };

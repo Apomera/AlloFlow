@@ -2673,8 +2673,32 @@ function BrainstormPanel(props) {
     setBridgeStepCount,
     t
   } = props;
+  const [activityMode, setActivityMode] = React.useState("ideas");
+  const [discussionProtocol, setDiscussionProtocol] = React.useState("think-pair-share");
+  const [jigsawGroupSize, setJigsawGroupSize] = React.useState(4);
   if (!expandedTools || !expandedTools.includes("brainstorm")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement(
+  const ACTIVITY_MODES = ["ideas", "discussion", "jigsaw", "simulation"];
+  const modeLabel = (id) => t("brainstorm.mode_" + id) || { ideas: "Idea Starters", discussion: "Discussion Kit", jigsaw: "Jigsaw", simulation: "Simulation" }[id];
+  const modeDesc = (id) => t("brainstorm.mode_" + id + "_desc") || {
+    ideas: "Quick engagement and activity ideas from your source.",
+    discussion: "A runnable class discussion: ramped questions, talk stems, and a protocol.",
+    jigsaw: "Cooperative groups: expert packets, teach-back cards, and a wrap-up check.",
+    simulation: "Step-by-step prompts that build an interactive app in Gemini Canvas."
+  }[id];
+  const PROTOCOLS = ["think-pair-share", "socratic-seminar", "fishbowl", "gallery-walk"];
+  const protocolLabel = (id) => t("brainstorm.protocol_" + id.replace(/-/g, "_")) || { "think-pair-share": "Think-Pair-Share", "socratic-seminar": "Socratic Seminar", "fishbowl": "Fishbowl", "gallery-walk": "Gallery Walk" }[id];
+  const generateLabel = activityMode === "discussion" ? t("brainstorm.generate_discussion") || "Generate Discussion Kit" : activityMode === "jigsaw" ? t("brainstorm.generate_jigsaw") || "Generate Jigsaw Activity" : t("brainstorm.generate");
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-3", "data-help-key": "brainstorm_mode_picker", role: "group", "aria-label": t("brainstorm.mode_picker_label") || "Activity type" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1.5" }, ACTIVITY_MODES.map((id) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      key: id,
+      type: "button",
+      "aria-pressed": activityMode === id,
+      onClick: () => setActivityMode(id),
+      className: `min-h-9 px-2 py-1.5 rounded-lg border text-xs font-bold transition-colors motion-reduce:transition-none ${activityMode === id ? "bg-violet-600 border-violet-600 text-white shadow-sm" : "bg-white border-slate-300 text-slate-700 hover:bg-violet-50"}`
+    },
+    modeLabel(id)
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic mt-1.5 leading-tight" }, modeDesc(activityMode))), activityMode !== "simulation" && /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
       premium: true,
@@ -2687,19 +2711,37 @@ function BrainstormPanel(props) {
       onChange: setBrainstormCustomInstructions,
       placeholderKey: "brainstorm.placeholder_input"
     }
-  )), /* @__PURE__ */ React.createElement(
+  ), activityMode === "discussion" && /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "brainstorm_discussion_config" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, t("brainstorm.protocol_label") || "Discussion protocol"), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": t("brainstorm.protocol_label") || "Discussion protocol",
+      value: discussionProtocol,
+      onChange: (e) => setDiscussionProtocol(e.target.value),
+      className: "w-full text-xs border border-slate-400 rounded p-1.5 focus:ring-2 focus:ring-violet-500 text-slate-800 bg-white"
+    },
+    PROTOCOLS.map((id) => /* @__PURE__ */ React.createElement("option", { key: id, value: id }, protocolLabel(id)))
+  )), activityMode === "jigsaw" && /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "brainstorm_jigsaw_config" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, t("brainstorm.jigsaw_groups_label") || "Expert groups (= home-group size)"), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": t("brainstorm.jigsaw_groups_label") || "Expert groups",
+      value: jigsawGroupSize,
+      onChange: (e) => setJigsawGroupSize(parseInt(e.target.value, 10)),
+      className: "w-full text-xs border border-slate-400 rounded p-1.5 focus:ring-2 focus:ring-violet-500 text-slate-800 bg-white"
+    },
+    [2, 3, 4, 5, 6].map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n))
+  ))), activityMode !== "simulation" && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       "aria-label": t("common.generate"),
-      onClick: () => handleGenerate("brainstorm"),
+      onClick: () => handleGenerate("brainstorm", null, false, null, { activityMode, activityConfig: { protocol: discussionProtocol, groupSize: jigsawGroupSize } }),
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
-    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-700 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2 font-semibold" }, t("brainstorm.generate"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
+    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-700 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2 font-semibold" }, generateLabel, " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-700 group-hover:text-violet-600" })
-  ), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 my-2" }, /* @__PURE__ */ React.createElement("div", { className: "h-px bg-slate-200 flex-grow" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-700 uppercase tracking-wider" }, t("brainstorm.divider_or")), /* @__PURE__ */ React.createElement("div", { className: "h-px bg-slate-200 flex-grow" })), /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50 p-3 rounded-lg border border-violet-100 mb-3 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-violet-900 mb-1 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Terminal, { size: 12 }), " ", t("brainstorm.simulation_type")), /* @__PURE__ */ React.createElement(
+  ), activityMode === "simulation" && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50 p-3 rounded-lg border border-violet-100 mb-3 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-violet-900 mb-1 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Terminal, { size: 12 }), " ", t("brainstorm.simulation_type")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),

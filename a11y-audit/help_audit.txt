@@ -3,13 +3,16 @@
 ====================================================
 
 Files scanned: 1174
-Defined help keys (help_strings.js): 990
-Referenced help keys (data-help-key attrs): 929
-  - With definition: 929
-  - MISSING definition: 0
+Defined help keys (help_strings.js): 995
+Referenced help keys (data-help-key attrs): 935
+  - With definition: 934
+  - MISSING definition: 1
 Dead entries (defined but never referenced): 61
 
 --- MISSING help strings (referenced, no definition) ---
+  ai_backend_guided_card_canvas  [3x in 3 file(s)]
+     - desktop/web-app/public/view_misc_modals_module.js
+     - view_misc_modals_module.js
 
 --- DEAD entries (defined but never used) ---
   adventure_custom_instructions
@@ -75,3 +78,4 @@ Dead entries (defined but never referenced): 61
   wizard_url_source
 
 --- Top sections of MISSING keys (by snake_case prefix) ---
+     1  ai

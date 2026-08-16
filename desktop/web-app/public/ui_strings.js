@@ -69283,6 +69283,10 @@
   },
   "ai_backend": {
     "title": "AI Backend Settings",
+    "guided_card_canvas_title": "Use AlloFlow inside Gemini Canvas",
+    "guided_card_canvas_badge": "No setup",
+    "guided_card_canvas_body": "The easiest way to get AI: open AlloFlow inside Google Gemini. Free with a Google account, using your Gemini plan's daily quota (personal, Education, or paid plans all work). Nothing to install and no key to manage.",
+    "guided_card_canvas_req": "Opens gemini.google.com in a new tab. Plan details at google.com/gemini",
     "provider_label": "Provider",
     "provider_aria": "AI Backend Provider",
     "server_url_label": "Server URL",

@@ -591,7 +591,8 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "e4096941430fb9e1f99420e608434f33f8d8fa1d98a8526d96af5d600c53e1a8",
-      "learningLibrarySha256": "607971bddea562748afac7e95ee3be639af828f2a8e15d424a8265626de71177"
+      "learningLibrarySha256": "607971bddea562748afac7e95ee3be639af828f2a8e15d424a8265626de71177",
+      "learningLibraryContentSha256": "22c9a8bce36f19c605f7c7e171e97dc2607e90f3d2c9e1754577fd6c9d9d3325"
     },
     {
       "stem": "plt_k6_5622",
@@ -599,7 +600,8 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "b7bbe263218d2d0c537c57033807537948067803c0f712a50b466743a754fd2a",
-      "learningLibrarySha256": "3c48daa7a98fc5f43b3c1eed8207ec7811a7bc825bede03b1613cf7c42bb8903"
+      "learningLibrarySha256": "3c48daa7a98fc5f43b3c1eed8207ec7811a7bc825bede03b1613cf7c42bb8903",
+      "learningLibraryContentSha256": "7f1ee51a6e1a6ac8bc04848ad083c1655e9b829e724d7fc3bfe7301a30665882"
     },
     {
       "stem": "praxis_core_5752",
@@ -607,7 +609,8 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "3fbc133d48a1113a622a21cbee1285098a285b39c73c674fbce79cb13ba4f960",
-      "learningLibrarySha256": "3fe6cdbf980e06483b14194c8154433b43e68525138676772591ca76bf4c2a46"
+      "learningLibrarySha256": "3fe6cdbf980e06483b14194c8154433b43e68525138676772591ca76bf4c2a46",
+      "learningLibraryContentSha256": "f5cc38cd9b3be0e0a814856bf7da9e13151a668a7fe819a1a8d091293875b115"
     },
     {
       "stem": "reading_specialist_5302",
@@ -615,7 +618,8 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "86f2f7405effae7db189ad13fc564db7c134b13160c1e38c5988c7a0479f73f4",
-      "learningLibrarySha256": "aeaed38a8404e7c9d45544a81b0a2e9a0552e91e740af4dbfcd45926917276db"
+      "learningLibrarySha256": "aeaed38a8404e7c9d45544a81b0a2e9a0552e91e740af4dbfcd45926917276db",
+      "learningLibraryContentSha256": "157621f23f43181a69476b9f5e912a9b83aa0a16b68ae388427e5f7b731b4739"
     },
     {
       "stem": "school_counselor_5422",
@@ -623,7 +627,8 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "fefb7925bb3239e3094a2be919f0ba1c62eb51f06baa0381babd1742f534dba0",
-      "learningLibrarySha256": "32bf459fa5310ec0c04dd83b841c9f244b7f5928446d5f47213c4f5b7a424e1d"
+      "learningLibrarySha256": "32bf459fa5310ec0c04dd83b841c9f244b7f5928446d5f47213c4f5b7a424e1d",
+      "learningLibraryContentSha256": "7e6de528de799217638129dea0beadbb27587791c9bddb9485da053f2faafe08"
     },
     {
       "stem": "school_librarian_5312",
@@ -631,7 +636,8 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "dee9ed75623dbffb3279d5fe08d5f5d1d27f39353b867c50f872921a4ba05c98",
-      "learningLibrarySha256": "2f1bc2468745af406ed214056be7c63aaa862c495a484ba00b29be42e99f564c"
+      "learningLibrarySha256": "2f1bc2468745af406ed214056be7c63aaa862c495a484ba00b29be42e99f564c",
+      "learningLibraryContentSha256": "b206a1117e0d00a36d6161a54b2ac3eb66459556c8ac40223ea9a3c581ff37b2"
     },
     {
       "stem": "school_psychologist_5403",
@@ -639,7 +645,8 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "14bbc0fd643fc81b7def3ebe9351ce432c1da66ec7131db85e68ed8c9ae497a4",
-      "learningLibrarySha256": "ef57f67e06d49bc3b7f201ec92d28940d76f20c4adb8373697e96d4ad1490f8e"
+      "learningLibrarySha256": "ef57f67e06d49bc3b7f201ec92d28940d76f20c4adb8373697e96d4ad1490f8e",
+      "learningLibraryContentSha256": "6052a67688cc64a2f222f08d2c25b80101cefe5f16c6ec5e14da3dec989e9b5d"
     }
   ]
 }

@@ -163,10 +163,15 @@ test.describe('Solar System — real WebGL', () => {
       const speed = el ? Number.parseFloat(String(el.textContent)) : 0;
       return speed > 0.05 ? String(el!.textContent) : false;
     }, null, { timeout: 8000 }).catch(() => null);
+    // 10s was under the real cost of this leg and made the test fail whenever it ran
+    // after the other cases in this file (SwiftShader slows down as earlier GL contexts
+    // pile up in the process — see the harness header). Measured 2026-08-16 on an
+    // otherwise idle run: 8.0s. That left a 2s margin, which the fifth test in a file
+    // does not have. 25s keeps a real 3x slowdown failing while ending the flake.
     const departed = await page.waitForFunction(() => {
       const el = document.querySelector('canvas[data-drone-vehicle-mode="surface-rover"]') as HTMLElement | null;
       return el?.dataset.roverMissionStep === 'outbound';
-    }, null, { timeout: 10000 }).catch(() => null);
+    }, null, { timeout: 25000 }).catch(() => null);
     await page.keyboard.down('KeyA');
     await page.waitForFunction(() => {
       const el = document.querySelector('canvas[data-drone-vehicle-mode="surface-rover"]') as HTMLElement | null;

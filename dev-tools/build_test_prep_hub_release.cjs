@@ -326,34 +326,49 @@ execFileSync(process.execPath,[buildTestPrepPackManifestPath],{cwd:root,stdio:'i
 
 const originalSource = fs.readFileSync(sourcePath, 'utf8');
 if (originalSource.includes('EPPP_PART_ONE_SCAFFOLD') || originalSource.includes('EPPP_NATIVE_ITEMS')) throw new Error('Test Prep Hub source must not embed the lazy EPPP Part 1 bank.');
-if (!originalSource.includes(eppp2027PreviewRegistration)) throw new Error('Test Prep Hub source must register the Integrated EPPP 2027 preview pack.');
-if (!originalSource.includes(paraProRegistration)) throw new Error('Test Prep Hub source must register the ParaPro pack.');
+// 2026-08-16: the hub refactored most static `registerTestPrepPack(<CONST>);`
+// calls into manifest-driven lazy loading (testPrepRegisterManifestPack over
+// test_prep/pack_manifest.json, which build_test_prep_pack_manifest just
+// regenerated above). A pack is available if EITHER form exists. The old
+// literal-string assertions predate that refactor and were never reached in
+// any build since, because the reviewer aborted first — clearing the reviewer
+// exposed them. Static registration is still accepted so the few packs that
+// kept it (e.g. the 2027 preview) pass unchanged.
+const _manifestForRegCheck = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'pack_manifest.json'), 'utf8'));
+const _manifestPackIds = new Set((_manifestForRegCheck.entries || []).map((entry) => entry.id));
+const assertPackAvailable = (registration, manifestId, label) => {
+  if (originalSource.includes(registration)) return;
+  if (_manifestPackIds.has(manifestId)) return;
+  throw new Error('Test Prep Hub must register the ' + label + ' pack: no static registration in source and no pack_manifest.json entry "' + manifestId + '".');
+};
+assertPackAvailable(eppp2027PreviewRegistration, 'eppp-integrated-2027-preview', 'Integrated EPPP 2027 preview');
+assertPackAvailable(paraProRegistration, 'parapro-1755-practice-1', 'ParaPro');
 const source = originalSource;
 const eppp2027PreviewPack = JSON.parse(fs.readFileSync(eppp2027PreviewPackPath, 'utf8'));
 if (!eppp2027PreviewPack || eppp2027PreviewPack.id !== 'eppp-integrated-2027-preview' || eppp2027PreviewPack.status !== 'preview' || eppp2027PreviewPack.items?.length !== 20) throw new Error('Integrated EPPP 2027 preview pack is invalid.');
 const referenceCatalog = JSON.parse(fs.readFileSync(referenceCatalogPath, 'utf8'));
-if (!source.includes(specialEducation5355Registration)) throw new Error('Test Prep Hub source must register the Praxis Special Education 5355 pack.');
-if (!source.includes(schoolCounselor5422Registration)) throw new Error('Test Prep Hub source must register the Praxis School Counselor 5422 pack.');
-if (!source.includes(schoolPsychologist5403Registration)) throw new Error('Test Prep Hub source must register the Praxis School Psychologist 5403 pack.');
-if (!source.includes(speechLanguagePathology5331Registration)) throw new Error('Test Prep Hub source must register the Praxis Speech-Language Pathology 5331 pack.');
+assertPackAvailable(specialEducation5355Registration, 'praxis-special-education-5355', 'Praxis Special Education 5355');
+assertPackAvailable(schoolCounselor5422Registration, 'praxis-school-counselor-5422', 'Praxis School Counselor 5422');
+assertPackAvailable(schoolPsychologist5403Registration, 'praxis-school-psychologist-5403', 'Praxis School Psychologist 5403');
+assertPackAvailable(speechLanguagePathology5331Registration, 'praxis-speech-language-pathology-5331', 'Praxis Speech-Language Pathology 5331');
 const paraProPack = JSON.parse(fs.readFileSync(paraProSourcePath, 'utf8'));
-if (!source.includes(audiology5343Registration)) throw new Error('Test Prep Hub source must register the Praxis Audiology 5343 pack.');
-if (!source.includes(readingSpecialist5302Registration)) throw new Error('Test Prep Hub source must register the Praxis Reading Specialist 5302 pack.');
-if (!source.includes(educationalLeadership5412Registration)) throw new Error('Test Prep Hub source must register the Praxis Educational Leadership 5412 pack.');
-if (!source.includes(pltK65622Registration)) throw new Error('Test Prep Hub source must register the Praxis PLT K?6 5622 pack.');
-if (!source.includes(praxisCore5752Registration)) throw new Error('Test Prep Hub source must register the Praxis Core 5752 pack.');
-if (!source.includes(esol5362Registration)) throw new Error('Test Prep Hub source must register the Praxis ESOL 5362 pack.');
-if (!source.includes(teachingReading5205Registration)) throw new Error('Test Prep Hub source must register the Teaching Reading 5205 pack.');
-if (!source.includes(earlyChildhood5025Registration)) throw new Error('Test Prep Hub source must register the Early Childhood 5025 pack.');
-if(!source.includes(pltEarlyChildhood5621Registration))throw Error('Hub must register PLT Early Childhood 5621');
-if(!source.includes(specialEducationEarlyChildhood5692Registration))throw Error('Hub must register Special Education EC/EI 5692');
-if(!source.includes(specialEducationSevereProfound5547Registration))throw Error('Hub must register Special Education Severe to Profound 5547');
-if(!source.includes(specialEducationLearningDisabilities5383Registration))throw Error('Hub must register Learning Disabilities 5383');
-if(!source.includes(specialEducationBehaviorEmotional5372Registration))throw Error('Hub must register EBD 5372');
-if(!source.includes(specialEducationIntellectualDisabilities5322Registration))throw Error('Hub must register Intellectual Disabilities 5322');
-if(!source.includes(plt595623Registration))throw Error('Hub must register PLT Grades 5–9 5623');
-if(!source.includes(plt7125624Registration))throw Error('Hub must register PLT Grades 7–12 5624');
-if(!source.includes(schoolLibrarian5312Registration))throw Error('Hub must register School Librarian 5312');
+assertPackAvailable(audiology5343Registration, 'praxis-audiology-5343', 'Praxis Audiology 5343');
+assertPackAvailable(readingSpecialist5302Registration, 'praxis-reading-specialist-5302', 'Praxis Reading Specialist 5302');
+assertPackAvailable(educationalLeadership5412Registration, 'praxis-educational-leadership-5412', 'Praxis Educational Leadership 5412');
+assertPackAvailable(pltK65622Registration, 'praxis-plt-k6-5622', 'Praxis PLT K-6 5622');
+assertPackAvailable(praxisCore5752Registration, 'praxis-core-5752', 'Praxis Core 5752');
+assertPackAvailable(esol5362Registration, 'praxis-esol-5362', 'Praxis ESOL 5362');
+assertPackAvailable(teachingReading5205Registration, 'praxis-teaching-reading-5205', 'Teaching Reading 5205');
+assertPackAvailable(earlyChildhood5025Registration, 'praxis-early-childhood-5025', 'Early Childhood 5025');
+assertPackAvailable(pltEarlyChildhood5621Registration, 'praxis-plt-early-childhood-5621', 'PLT Early Childhood 5621');
+assertPackAvailable(specialEducationEarlyChildhood5692Registration, 'praxis-special-education-early-childhood-5692', 'Special Education EC/EI 5692');
+assertPackAvailable(specialEducationSevereProfound5547Registration, 'praxis-special-education-severe-profound-5547', 'Special Education Severe to Profound 5547');
+assertPackAvailable(specialEducationLearningDisabilities5383Registration, 'praxis-special-education-learning-disabilities-5383', 'Learning Disabilities 5383');
+assertPackAvailable(specialEducationBehaviorEmotional5372Registration, 'praxis-special-education-behavior-emotional-5372', 'EBD 5372');
+assertPackAvailable(specialEducationIntellectualDisabilities5322Registration, 'praxis-special-education-intellectual-disabilities-5322', 'Intellectual Disabilities 5322');
+assertPackAvailable(plt595623Registration, 'praxis-plt-grades-5-9-5623', 'PLT Grades 5-9 5623');
+assertPackAvailable(plt7125624Registration, 'praxis-plt-grades-7-12-5624', 'PLT Grades 7-12 5624');
+assertPackAvailable(schoolLibrarian5312Registration, 'praxis-school-librarian-5312', 'School Librarian 5312');
 const specialEducation5355Pack = JSON.parse(fs.readFileSync(specialEducation5355SourcePath, 'utf8'));
 const schoolCounselor5422Pack = JSON.parse(fs.readFileSync(schoolCounselor5422SourcePath, 'utf8'));
 const schoolPsychologist5403Pack = JSON.parse(fs.readFileSync(schoolPsychologist5403SourcePath, 'utf8'));
@@ -557,6 +572,13 @@ ${prelude}${compiled}
     handsFreeStatusText: testPrepHandsFreeStatusText,
     handsFreeSynthesisTimeoutMs: testPrepHandsFreeSynthesisTimeoutMs,
     parseHandsFreeCommand: testPrepParseHandsFreeCommand,
+    // Export parity with _build_test_prep_hub_module.js. These two were emitted
+    // by the legacy builder only, so rebuilding through THIS builder - the
+    // sanctioned path - silently removed them from the module's public surface
+    // and took tests/test_prep_voice_practice_scope.test.js (12 assertions) down
+    // with them. A module's API should not depend on which builder last ran.
+    parsePracticeVoiceCommand: testPrepParsePracticeVoiceCommand,
+    practiceVoiceHelpText: testPrepPracticeVoiceHelpText,
     preAnswerClarificationPolicy: testPrepPreAnswerClarificationPolicy,
     filterPreAnswerClarificationResponse: testPrepFilterPreAnswerClarificationResponse,
     buildClarificationPrompt: testPrepBuildClarificationPrompt,

@@ -996,10 +996,15 @@ above AA and there is no conflict, but 9.45 is what you would measure if you che
 
 ### Apply status at the end of this run
 
-`node dev-tools/gen_docsuite_theme.cjs --check` -> **current**, re-checked at 14:03 with W1, W3
-and W5 still writing. If a later lane adds a new colour utility to a scanned file, the block
-goes stale and the six-command sequence under Task 1 is what clears it. It is safe to run once
-the tree is quiet, and `--check` is the cheap way to know whether it is needed.
+`node dev-tools/gen_docsuite_theme.cjs --check` was **current** at 14:03. Re-checked later the
+same session it reports **STALE** again, which is the behaviour I predicted above: a lane added
+a colour utility to a scanned `view_*` file after my check. Nothing to do about that from this
+lane, and it is not a defect. When the tree is quiet, the six-command sequence under Task 1
+clears it; `--check` is the cheap way to know whether it is needed.
+
+**It is not caused by anything of mine.** `dev-tools/gen_docsuite_theme.cjs` does not scan
+`stem_lab/` (grep for `stem_lab` in it returns nothing), and `stem_lab/` is the only place I
+edited after that check.
 
 ---
 

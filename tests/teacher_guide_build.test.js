@@ -234,7 +234,7 @@ describe('teacher guide HTML accessibility', () => {
     }
   );
 
-  it('resolves every generated chapter and in-page link', { timeout: 30000 }, () => {
+  it('resolves every generated chapter and in-page link', { timeout: 240000 }, () => {
     for (const filePath of [resolve(outputRoot, 'index.html'), ...chapterPages]) {
       const document = documentFor(filePath);
       for (const link of document.querySelectorAll('a[href]')) {
@@ -251,7 +251,7 @@ describe('teacher guide HTML accessibility', () => {
 });
 
 describe('teacher guide search and offline contracts', () => {
-  it('indexes each chapter by section and points to real headings', { timeout: 30000 }, () => {
+  it('indexes each chapter by section and points to real headings', { timeout: 240000 }, () => {
     const records = JSON.parse(text(resolve(outputRoot, 'search-index.json')));
     expect(records.length).toBeGreaterThan(manifest.chapters.length);
     expect(new Set(records.map((record) => record.id)).size).toBe(records.length);

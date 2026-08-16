@@ -860,6 +860,18 @@ const d = labToolData.artStudio || {};
 
             if (!el) return;
 
+            // A sandboxed embed (the Canvas surface) refuses real fullscreen outright,
+            // and the rejection below only reached console.warn — so the button was
+            // dead with no explanation. The shared host helper tries real fullscreen
+            // first and falls back to a CSS fill-frame that Escape leaves.
+            if (typeof window !== 'undefined' && typeof window.__alloStemFS === 'function') {
+
+              window.__alloStemFS(el);
+
+              return;
+
+            }
+
             if (!document.fullscreenElement) {
 
               if (el.requestFullscreen) {

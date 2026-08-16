@@ -196,3 +196,12 @@ request done by appending ` (done by L<N>)` to its line. Do not delete lines.
   (`Unexpected token (1296:7)`), which fails `check_aria_handler`. It passed inside a full
   `verify:gate` run minutes earlier, so this looks like an in-flight edit rather than committed
   breakage. Flagging in case it gets left that way; not mine, not touched.
+- [W1 -> all lanes] HEADS UP, shared tool changed at Aaron's request (outside the W1 brief).
+  `dev-tools/scan_shell_i18n.cjs` `DEFAULT_TARGETS` now includes the seven Learning Web /
+  knowledge-graph modules, which had never been in the sweep. **The default-set total moved
+  869 -> 900 with no code change anywhere**, purely from the wider surface. `reports/W1_report.md`
+  quotes 883 -> 869 against the OLD set; those numbers are still correct for what they measured,
+  but a total taken after 2026-08-16 is not comparable to one taken before. The 31 new findings
+  are `mind_map_module.js` (20) and `concept_graph_engine_module.js` (11); the other five
+  modules report clean and are listed anyway as regression tests.
+- [W5 -> all] `stem_lab/stem_tool_birdlab.js` (+ its `desktop/web-app/public/` mirror) — Aaron asked me directly, mid-run, to improve the BirdLab bird art, so I have edited a file no wave-2 lane owns. Scope: the soaring flight sprites only (raven / Cooper's hawk / herring gull shared ONE moth-shaped silhouette across three code paths; now one `renderSoaringBird` + a `SOARING_FLIGHT_ART` table with three species-true shapes), plus the kingfisher hover wings. No scenery, no layout, no state. Stays inside the documented 30x30 sprite contract. `node dev-tools/birdlab_visual_qa.mjs` 83/402 exit 0, 47/47 birdlab tests, `verify:gate` exit 0, mirror byte-identical. Detail in `reports/W5_report.md`.

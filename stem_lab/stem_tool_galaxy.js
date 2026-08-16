@@ -1748,7 +1748,15 @@ if (!window._galaxyHasLoadedOnce) {
               return;
             }
 
-            renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, pixelRatioCap));
+            // The third argument matters. Left at its default, setSize writes
+            // width/height in PIXELS onto the canvas's inline style, overriding the
+            // width:100%/height:100% the element is laid out with — and since the size
+            // it writes was measured FROM that element, the canvas pins itself to its
+            // first measurement and can never change size again. The ResizeObserver
+            // below watches the canvas, so it never fired either: the galaxy did not
+            // follow a window resize, and it did not grow in fullscreen. Passing false
+            // keeps the drawing buffer under our control and the CSS box under CSS.
+            renderer.setSize(W, H, false); renderer.setPixelRatio(Math.min(window.devicePixelRatio, pixelRatioCap));
             if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
             if (THREE.ACESFilmicToneMapping) {
               renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -5086,24 +5094,206 @@ if (!window._galaxyHasLoadedOnce) {
               setCanvasStatus(tourActive ? 'Grand Tour · Galactic overview' : 'Cinematic tour stopped');
             };
             canvasEl._galaxySetHudHidden = function (hidden) { hudHidden = hidden === true; if (!hudHidden) { orientationEl = null; lastOrientationLabel = ''; requestAnimationFrame(function () { if (canvasEl.isConnected) updateCamera(); }); } };
-            canvasEl._galaxyToggleFullscreen = function () {
+            // ── Fullscreen ────────────────────────────────────────────────────
+            // The old implementation was native-only: it returned silently when
+            // requestFullscreen was missing and merely undid its own styling when the
+            // promise rejected. Both happen on surfaces this tool actually ships to —
+            // a sandboxed iframe without allow="fullscreen" (the Canvas embed),
+            // older WebKit (prefixed API), and any page where the request is denied —
+            // so the button read as dead with no message. Now: try native (both
+            // spellings), and on any failure fall back to a CSS-immersive view that
+            // covers the viewport. Same pattern as the Particle Lab 3-D fix.
+            var galaxyFsSaved = null;
+            var galaxyCssFullscreen = false;
+            var galaxyFsExitPill = null;
+
+            function galaxyFsElement() {
+              return document.fullscreenElement || document.webkitFullscreenElement || null;
+            }
+
+            function galaxyFsEnterStyles(immersive) {
               var canvasFrame = canvasEl.parentElement;
               var frame = canvasFrame && canvasFrame.parentElement ? canvasFrame.parentElement : canvasFrame;
-              if (document.fullscreenElement) { if (document.exitFullscreen) document.exitFullscreen(); return; }
-              if (!frame || !frame.requestFullscreen) return;
-              var previousHeight = frame.style.height;
-              var previousOverflow = frame.style.overflow;
-              var previousPadding = frame.style.padding;
-              var previousBackground = frame.style.background;
-              var previousCanvasHeight = canvasFrame ? canvasFrame.style.height : '';
+              if (!frame) return null;
+              var saved = {
+                frame: frame, canvasFrame: canvasFrame,
+                height: frame.style.height, overflow: frame.style.overflow,
+                padding: frame.style.padding, background: frame.style.background,
+                position: frame.style.position, top: frame.style.top, left: frame.style.left,
+                width: frame.style.width, margin: frame.style.margin,
+                borderRadius: frame.style.borderRadius, zIndex: frame.style.zIndex,
+                canvasHeight: canvasFrame ? canvasFrame.style.height : '',
+                bodyOverflow: document.body ? document.body.style.overflow : ''
+              };
               frame.style.height = '100vh';
-              frame.style.overflow = 'auto'; frame.style.padding = '12px'; frame.style.background = '#020617';
+              // Assigning a unit the browser does not know is ignored, so 100vh stays
+              // as the floor and mobile URL bars stop clipping the scene where dvh works.
+              frame.style.height = '100dvh';
+              frame.style.overflow = 'auto';
+              frame.style.padding = '12px';
+              frame.style.background = '#020617';
               if (canvasFrame) canvasFrame.style.height = 'calc(100vh - 24px)';
-              var restoreFullscreenHeight = function () { if (!document.fullscreenElement) { frame.style.height = previousHeight; frame.style.overflow = previousOverflow; frame.style.padding = previousPadding; frame.style.background = previousBackground; if (canvasFrame) canvasFrame.style.height = previousCanvasHeight; document.removeEventListener('fullscreenchange', restoreFullscreenHeight); canvasEl._galaxyFullscreenRestore = null; } };
-              canvasEl._galaxyFullscreenRestore = restoreFullscreenHeight;
-              document.addEventListener('fullscreenchange', restoreFullscreenHeight);
-              var fullscreenRequest = frame.requestFullscreen();
-              if (fullscreenRequest && fullscreenRequest.catch) fullscreenRequest.catch(function () { frame.style.height = previousHeight; frame.style.overflow = previousOverflow; frame.style.padding = previousPadding; frame.style.background = previousBackground; if (canvasFrame) canvasFrame.style.height = previousCanvasHeight; document.removeEventListener('fullscreenchange', restoreFullscreenHeight); });
+              if (immersive) {
+                // Inline styles rather than new Tailwind classes: an arbitrary utility
+                // used nowhere else is not in the compiled bundle and would do nothing.
+                frame.style.position = 'fixed';
+                frame.style.top = '0';
+                frame.style.left = '0';
+                frame.style.width = '100vw';
+                frame.style.margin = '0';
+                frame.style.borderRadius = '0';
+                frame.style.zIndex = '99990';
+                if (document.body) document.body.style.overflow = 'hidden';
+              }
+              return saved;
+            }
+
+            function galaxyFsRestoreStyles() {
+              var saved = galaxyFsSaved;
+              galaxyFsSaved = null;
+              if (!saved) return;
+              var frame = saved.frame, canvasFrame = saved.canvasFrame;
+              frame.style.height = saved.height;
+              frame.style.overflow = saved.overflow;
+              frame.style.padding = saved.padding;
+              frame.style.background = saved.background;
+              frame.style.position = saved.position;
+              frame.style.top = saved.top;
+              frame.style.left = saved.left;
+              frame.style.width = saved.width;
+              frame.style.margin = saved.margin;
+              frame.style.borderRadius = saved.borderRadius;
+              frame.style.zIndex = saved.zIndex;
+              if (canvasFrame) canvasFrame.style.height = saved.canvasHeight;
+              if (document.body) document.body.style.overflow = saved.bodyOverflow;
+            }
+
+            function galaxyFsOnChange() {
+              if (galaxyFsElement()) return;
+              document.removeEventListener('fullscreenchange', galaxyFsOnChange);
+              document.removeEventListener('webkitfullscreenchange', galaxyFsOnChange);
+              galaxyFsRestoreStyles();
+              setCanvasStatus('Fullscreen closed');
+            }
+
+            function galaxyFsOnKey(event) {
+              if (event.key !== 'Escape' || !galaxyCssFullscreen) return;
+              // The tool shell also closes on Escape. In the immersive view Escape has
+              // to mean "leave the immersive view" first, exactly as it does natively.
+              event.preventDefault();
+              event.stopPropagation();
+              galaxyFsExitCss();
+            }
+
+            // Native fullscreen paints its own exit affordance; the CSS fallback has
+            // none, and the sr-only status line is invisible to a sighted learner.
+            function galaxyFsShowExitPill() {
+              if (galaxyFsExitPill || !document.body) return;
+              var pill = document.createElement('button');
+              pill.type = 'button';
+              pill.setAttribute('data-galaxy-exit-immersive', 'true');
+              pill.textContent = 'Exit fullscreen (Esc)';
+              // Bottom centre: the top-right corner belongs to the observe-mode panel,
+              // the right edge to the camera toolbar and the bottom-left to the status
+              // pill, all of which this would otherwise cover.
+              pill.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:99991;min-height:40px;padding:8px 14px;border-radius:9999px;border:1px solid rgba(255,255,255,0.25);background:rgba(2,6,23,0.85);color:#a5f3fc;font:700 12px/1.2 system-ui,sans-serif;cursor:pointer;backdrop-filter:blur(6px);box-shadow:0 6px 20px rgba(0,0,0,0.45)';
+              pill.addEventListener('click', function () { galaxyFsExitCss(); });
+              document.body.appendChild(pill);
+              galaxyFsExitPill = pill;
+            }
+
+            function galaxyFsHideExitPill() {
+              if (!galaxyFsExitPill) return;
+              if (galaxyFsExitPill.parentNode) galaxyFsExitPill.parentNode.removeChild(galaxyFsExitPill);
+              galaxyFsExitPill = null;
+            }
+
+            // position:fixed resolves against the nearest ancestor carrying a
+            // transform, filter, perspective or contain — not against the viewport.
+            // Any such ancestor anywhere above the tool would leave the immersive view
+            // offset or clipped, so measure where the frame actually landed and correct
+            // it instead of trusting inset:0.
+            function galaxyFsFitViewport() {
+              if (!galaxyCssFullscreen || !galaxyFsSaved) return;
+              var frame = galaxyFsSaved.frame;
+              frame.style.top = '0';
+              frame.style.left = '0';
+              frame.style.width = '100vw';
+              var rect = frame.getBoundingClientRect();
+              if (Math.abs(rect.top) > 1) frame.style.top = (-rect.top) + 'px';
+              if (Math.abs(rect.left) > 1) frame.style.left = (-rect.left) + 'px';
+              var vw = window.innerWidth || rect.width;
+              var vh = window.innerHeight || rect.height;
+              if (Math.abs(rect.width - vw) > 1) frame.style.width = vw + 'px';
+              frame.style.height = vh + 'px';
+              if (galaxyFsSaved.canvasFrame) galaxyFsSaved.canvasFrame.style.height = Math.max(200, vh - 24) + 'px';
+            }
+
+            function galaxyFsEnterCss() {
+              if (galaxyCssFullscreen) return;
+              galaxyFsSaved = galaxyFsEnterStyles(true);
+              if (!galaxyFsSaved) return;
+              galaxyCssFullscreen = true;
+              canvasEl.setAttribute('data-galaxy-immersive', 'true');
+              document.addEventListener('keydown', galaxyFsOnKey, true);
+              window.addEventListener('resize', galaxyFsFitViewport);
+              galaxyFsFitViewport();
+              galaxyFsShowExitPill();
+              setCanvasStatus('Immersive view on. Press Escape to leave it.');
+            }
+
+            function galaxyFsExitCss() {
+              if (!galaxyCssFullscreen) return;
+              galaxyCssFullscreen = false;
+              document.removeEventListener('keydown', galaxyFsOnKey, true);
+              window.removeEventListener('resize', galaxyFsFitViewport);
+              galaxyFsHideExitPill();
+              canvasEl.removeAttribute('data-galaxy-immersive');
+              galaxyFsRestoreStyles();
+              setCanvasStatus('Immersive view off');
+              if (canvasEl.isConnected && canvasEl.focus) canvasEl.focus();
+            }
+
+            canvasEl._galaxyToggleFullscreen = function () {
+              if (galaxyCssFullscreen) { galaxyFsExitCss(); return; }
+              if (galaxyFsElement()) {
+                var exit = document.exitFullscreen || document.webkitExitFullscreen;
+                if (exit) exit.call(document);
+                return;
+              }
+              var canvasFrame = canvasEl.parentElement;
+              var frame = canvasFrame && canvasFrame.parentElement ? canvasFrame.parentElement : canvasFrame;
+              var request = frame && (frame.requestFullscreen || frame.webkitRequestFullscreen);
+              // fullscreenEnabled is false inside an iframe that was not granted the
+              // permission, which is where the promise would reject a beat later.
+              if (!request || document.fullscreenEnabled === false) { galaxyFsEnterCss(); return; }
+              galaxyFsSaved = galaxyFsEnterStyles(false);
+              if (!galaxyFsSaved) return;
+              document.addEventListener('fullscreenchange', galaxyFsOnChange);
+              document.addEventListener('webkitfullscreenchange', galaxyFsOnChange);
+              canvasEl._galaxyFullscreenRestore = galaxyFsOnChange;
+              var failed = function () {
+                document.removeEventListener('fullscreenchange', galaxyFsOnChange);
+                document.removeEventListener('webkitfullscreenchange', galaxyFsOnChange);
+                canvasEl._galaxyFullscreenRestore = null;
+                galaxyFsRestoreStyles();
+                galaxyFsEnterCss();
+              };
+              var result;
+              // Safari's prefixed version returns undefined and can throw outright.
+              try { result = request.call(frame); } catch (err) { failed(); return; }
+              if (result && result.catch) result.catch(failed);
+            };
+
+            canvasEl._galaxyFullscreenTeardown = function () {
+              document.removeEventListener('fullscreenchange', galaxyFsOnChange);
+              document.removeEventListener('webkitfullscreenchange', galaxyFsOnChange);
+              document.removeEventListener('keydown', galaxyFsOnKey, true);
+              window.removeEventListener('resize', galaxyFsFitViewport);
+              canvasEl._galaxyFullscreenRestore = null;
+              galaxyCssFullscreen = false;
+              galaxyFsHideExitPill();
+              galaxyFsRestoreStyles();
             };
 
             var animId, startT = Date.now();
@@ -5696,7 +5886,7 @@ if (!window._galaxyHasLoadedOnce) {
               W = canvasEl.offsetWidth; H = canvasEl.offsetHeight;
               var nextPixelRatio = Math.min(window.devicePixelRatio || 1, pixelRatioCap);
               if (Math.abs(renderer.getPixelRatio() - nextPixelRatio) > 0.01) renderer.setPixelRatio(nextPixelRatio);
-              camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H);
+              camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H, false);
               if (composer) { if (composer.setPixelRatio) composer.setPixelRatio(nextPixelRatio); if (composer.setSize) composer.setSize(W, H); }
               if (starShaderMat && starShaderMat.uniforms.uPR) starShaderMat.uniforms.uPR.value = renderer.getPixelRatio();
               canvasEl.setAttribute('data-render-resolution', Math.round(W * nextPixelRatio) + 'x' + Math.round(H * nextPixelRatio));
@@ -5731,7 +5921,11 @@ if (!window._galaxyHasLoadedOnce) {
 
               ro.disconnect();
               if (galaxyViewObserver) { galaxyViewObserver.disconnect(); galaxyViewObserver = null; }
-              if (canvasEl._galaxyFullscreenRestore) { document.removeEventListener('fullscreenchange', canvasEl._galaxyFullscreenRestore); canvasEl._galaxyFullscreenRestore = null; }
+              // Drops the native listeners, the immersive-view key handler and the
+              // exit pill, and puts the frame's inline styles back — leaving the tool
+              // while the immersive view is open used to strand a fixed, full-viewport
+              // container and a locked body scroll behind it.
+              if (canvasEl._galaxyFullscreenTeardown) { canvasEl._galaxyFullscreenTeardown(); canvasEl._galaxyFullscreenTeardown = null; }
 
               if (composer) {
                 composer.passes.forEach(function (p) { if (p.dispose) p.dispose(); });

@@ -297,5 +297,16 @@
   "stem_lab/stem_tool_weathersystems.js": [],
   "stem_lab/stem_tool_weldlab.js": [],
   "stem_lab/stem_tool_worldbuilder.js": [],
-  "stem_lab/stem_tool_zoomgallery.js": []
+  "stem_lab/stem_tool_zoomgallery.js": [],
+  "view_brainstorm_source.jsx": [
+    "CheckCircle2",
+    "FileText",
+    "ImageIcon",
+    "Lightbulb",
+    "ListChecks",
+    "MessageSquare",
+    "Pencil",
+    "RefreshCw",
+    "Users"
+  ]
 }

@@ -2441,29 +2441,58 @@ function testPrepSpeechExcerpt(value, maxCharacters) {
   return (clipped || text.slice(0, limit - 3).trim()) + '...';
 }
 
-function testPrepFeedbackSpeechText(item, selectedChoice, promptMode) {
+// `detail` controls how much of the written explanation is spoken:
+//   'full'  - the default. Nothing is excerpted. A hands-free learner cannot
+//             glance at the screen to recover a clipped sentence, so the old
+//             behaviour (320 characters for the selected option, 240 for each
+//             other option, then a literal "..." mid-sentence) dropped exactly
+//             the reasoning the explanation existed to deliver.
+//   'brief' - the previous excerpting, kept for anyone who wants a fast pass.
+//   'none'  - verdict and supported answer only, then how to hear the rest.
+// Only the OTHER options stay bounded in 'full', and only at a much higher cap,
+// because that tail is genuinely optional and the count is announced honestly.
+function testPrepFeedbackSpeechText(item, selectedChoice, promptMode, detail) {
   if (!item || selectedChoice == null) return '';
+  const mode = detail === 'brief' || detail === 'none' ? detail : 'full';
   const selectedIndex = Number(selectedChoice);
   const supportedIndex = Number(item.answerIndex);
   const correct = selectedIndex === supportedIndex;
   const selectedLabel = String.fromCharCode(65 + selectedIndex);
   const supportedLabel = String.fromCharCode(65 + supportedIndex);
-  const parts = [
-    (correct ? 'Correct. ' : 'Review this one. You selected ' + selectedLabel + '. The supported answer is ' + supportedLabel + '. ') + String(item.rationale || '').trim(),
-  ];
+  const verdict = correct
+    ? 'Correct. '
+    : 'Review this one. You selected ' + selectedLabel + '. The supported answer is ' + supportedLabel + '. ';
+  if (mode === 'none') {
+    return (verdict + 'Say explain to hear why, or next question to move on.').replace(/\s+([.?!])/g, '$1');
+  }
+  const brief = mode === 'brief';
+  const parts = [verdict + String(item.rationale || '').trim()];
   const choices = Array.isArray(item.choices) ? item.choices : [];
   const choiceRationales = Array.isArray(item.choiceRationales) && item.choiceRationales.length === choices.length
     ? item.choiceRationales : [];
   if (choiceRationales.length && selectedIndex >= 0 && selectedIndex < choiceRationales.length) {
-    const selectedFeedback = testPrepSpeechExcerpt(choiceRationales[selectedIndex], 320);
+    const selectedRaw = String(choiceRationales[selectedIndex] || '').replace(/\s+/g, ' ').trim();
+    const selectedFeedback = brief ? testPrepSpeechExcerpt(selectedRaw, 320) : selectedRaw;
     if (selectedFeedback) parts.push('Feedback for your selected option ' + selectedLabel + '. ' + selectedFeedback);
+    // The note COUNT bound is deliberately unchanged. Released items carry
+    // exactly four choices (the QA reviewer fails anything else), so at most two
+    // "other" notes ever exist and this cap cannot fire in production - raising
+    // it would only alter synthetic fixtures while pretending to fix something.
+    // What actually cut explanations short was the per-note character excerpt,
+    // which is what 'full' removes. The character budget rises with it so a
+    // now-complete note is not immediately dropped by the old 900-char ceiling.
+    const noteLimit = 4;
+    const characterLimit = brief ? 900 : 4000;
     const otherNotes = [];
     let noteCharacters = 0;
     let omittedNotes = 0;
     choiceRationales.forEach((rationale, index) => {
       if (index === supportedIndex || index === selectedIndex) return;
-      const note = 'Option ' + String.fromCharCode(65 + index) + '. ' + testPrepSpeechExcerpt(rationale, 240);
-      if (otherNotes.length >= 4 || noteCharacters + note.length > 900) {
+      const body = brief
+        ? testPrepSpeechExcerpt(rationale, 240)
+        : String(rationale || '').replace(/\s+/g, ' ').trim();
+      const note = 'Option ' + String.fromCharCode(65 + index) + '. ' + body;
+      if (otherNotes.length >= noteLimit || noteCharacters + note.length > characterLimit) {
         omittedNotes += 1;
         return;
       }
@@ -2489,6 +2518,7 @@ function testPrepChoicesSpeechText(item, requestedChoiceIndex) {
 
 function testPrepHandsFreeHelpText(practiceMode, checked) {
   const commands = ['A or 1 to choose an answer', 'check answer', 'next question', 'repeat question', 'read choices', 'read option B', 'status', 'save for review', 'slower', 'faster'];
+  if (practiceMode !== 'simulation') commands.push('explain', 'skip explanations', 'listen to explanations');
   if (practiceMode === 'simulation') commands.push('add ten minutes');
   else commands.push('ask followed by a clarification question');
   if (checked && practiceMode !== 'simulation') commands.push('mark sure, mark unsure, or mark guessed');
@@ -2749,6 +2779,20 @@ function testPrepParseHandsFreeCommand(value, options) {
   if (/^(?:add|give me)(?: another)? (?:ten|10) minutes?$/.test(text)) return { type: 'add-time', transcript: original };
   if (/^(?:status|progress|where am i|what question(?: am i on)?|what did i select|what is selected|selected answer|time remaining|how much time(?: is left)?|what is my status)$/.test(text)) return { type: 'status', transcript: original };
   if (/^(?:help|commands|what can i say)$/.test(text)) return { type: 'help', transcript: original };
+  // These MUST stay above the clarify catch-all below, which matches a bare
+  // "explain" and "why" and would otherwise send them to the AI clarification
+  // round-trip instead of replaying the item's own written explanation. A
+  // learner saying "explain" wants this question's rationale, not a new answer
+  // generated about it.
+  if (/^(?:explain|explain (?:that|this|it|the answer)|tell me why|why(?: is)? that|what(?:'s| is) the (?:explanation|reasoning))$/.test(text)) {
+    return { type: 'explain', transcript: original };
+  }
+  if (/^(?:listen(?: to explanations)?|(?:turn on|enable|start)(?: the)? explanations|explanations on|read(?: me)? (?:the )?explanations|always explain)$/.test(text)) {
+    return { type: 'explanations', explanations: 'on', transcript: original };
+  }
+  if (/^(?:(?:skip|stop|mute|turn off|disable)(?: the)? explanations|explanations off|no explanations|don'?t explain|do not explain|(?:skip|stop) explaining)$/.test(text)) {
+    return { type: 'explanations', explanations: 'off', transcript: original };
+  }
   if (/^(?:ask|clarify|follow up|explain|define|tell me|what does|what is|who is|can you|could you|why|how)\b/.test(text)) return { type: 'clarify', query: original.replace(/^(?:ask|clarify|follow up)\s+/i, '').trim() || original, transcript: original };
   return { type: 'unknown', transcript: original };
 }
@@ -2775,6 +2819,11 @@ function testPrepParsePracticeVoiceCommand(value, options) {
     'repeat-choices': 'practice_read_choices',
     'repeat-choice': 'practice_read_option',
     'repeat-feedback': 'practice_repeat_feedback',
+    // Bare "explain" now parses as its own type, so map it onto the same
+    // narration or app Voice Access would answer it with "unknown command".
+    // "explain photosynthesis" still reaches clarify - the explain pattern is
+    // anchored to the whole utterance.
+    explain: 'practice_repeat_feedback',
     status: 'practice_status',
     help: 'practice_help',
   };
@@ -3681,6 +3730,11 @@ function TestPrepHub(props) {
   const testPrepPracticeVoiceRef = React.useRef(null);
   const handsFreeRateRef = React.useRef(1);
   const handsFreePromptModeRef = React.useRef(handsFreePromptMode);
+  // Whether checking an answer automatically reads the explanation aloud.
+  // A ref rather than state: the command handler runs inside the speech
+  // pipeline and must see the value set moments earlier, without waiting for a
+  // re-render. Defaults on, so nobody loses explanations by upgrading.
+  const handsFreeExplanationsRef = React.useRef(true);
   const handsFreePendingChoiceRef = React.useRef(null);
   const voiceSetChoicePromptUntilRef = React.useRef(0);
   const handsFreeAudioCacheRef = React.useRef(new Map());
@@ -5705,8 +5759,21 @@ function TestPrepHub(props) {
     if (command.type === 'repeat-question') { await readQuestion(); return; }
     if (command.type === 'repeat-choices') { await speakTestPrepText(testPrepChoicesSpeechText(currentItem)); return; }
     if (command.type === 'repeat-choice') { await speakTestPrepText(testPrepChoicesSpeechText(currentItem, command.choiceIndex)); return; }
-    if (command.type === 'repeat-feedback') {
-      await speakTestPrepText(checked ? testPrepFeedbackSpeechText(currentItem, selectedChoice, handsFreePromptModeRef.current) : 'Check your answer before asking to repeat the explanation.');
+    if (command.type === 'repeat-feedback' || command.type === 'explain') {
+      // "explain" is the on-demand counterpart to the auto-read: it always
+      // speaks the full explanation, even when auto-reading is switched off,
+      // because asking for it IS the opt-in.
+      await speakTestPrepText(checked
+        ? testPrepFeedbackSpeechText(currentItem, selectedChoice, handsFreePromptModeRef.current, 'full')
+        : 'Check your answer before asking to repeat the explanation.');
+      return;
+    }
+    if (command.type === 'explanations') {
+      const wantExplanations = command.explanations !== 'off';
+      handsFreeExplanationsRef.current = wantExplanations;
+      await speakTestPrepText(wantExplanations
+        ? 'Explanations on. I will read the full explanation after each answer you check.'
+        : 'Explanations off. After you check an answer I will say whether it was right and give the supported answer. Say explain any time to hear the full reasoning.');
       return;
     }
     if (command.type === 'status') {
@@ -5768,7 +5835,12 @@ function TestPrepHub(props) {
       if (practiceMode === 'simulation') { advanceSimulation(); return; }
       if (checked) { await speakTestPrepText('Your answer is already checked. Say next question.'); return; }
       checkAnswer();
-      await speakTestPrepText(testPrepFeedbackSpeechText(currentItem, selectedChoice, handsFreePromptModeRef.current));
+      await speakTestPrepText(testPrepFeedbackSpeechText(
+        currentItem,
+        selectedChoice,
+        handsFreePromptModeRef.current,
+        handsFreeExplanationsRef.current ? 'full' : 'none',
+      ));
       return;
     }
     if (command.type === 'next') {

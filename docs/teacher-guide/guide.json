@@ -1,137 +1,153 @@
 {
-    "schemaVersion":  1,
-    "title":  "AlloFlow Teacher Guide",
-    "description":  "Practical, classroom-centered guidance for planning, teaching, accessibility, live lessons, and responsible use.",
-    "paths":  [
-                  {
-                      "title":  "I am planning my first lesson",
-                      "description":  "Start with a focused, student-ready resource and a teacher review gate.",
-                      "chapterSlugs":  [
-                                           "start-here",
-                                           "prepare-a-lesson",
-                                           "universal-settings"
-                                       ]
-                  },
-                  {
-                      "title":  "I am running a live class",
-                      "description":  "Prepare the room, route supports, recover calmly, and review evidence.",
-                      "chapterSlugs":  [
-                                           "live-sessions",
-                                           "review-and-next-steps"
-                                       ]
-                  },
-                  {
-                      "title":  "I need a routine for a specific classroom need",
-                      "description":  "Start from a worked recipe and adapt it to your students and source.",
-                      "chapterSlugs":  [
-                                           "classroom-workflows",
-                                           "prepare-a-lesson"
-                                       ]
-                  },
-                  {
-                      "title":  "I support accessibility",
-                      "description":  "Check learner experience, response options, and specialist workflows.",
-                      "chapterSlugs":  [
-                                           "accessibility-and-udl",
-                                           "specialist-reference"
-                                       ]
-                  },
-                  {
-                      "title":  "I am leading a school rollout",
-                      "description":  "Set shared guardrails, coach teachers, and measure useful implementation signals.",
-                      "chapterSlugs":  [
-                                           "school-rollout-and-coaching",
-                                           "privacy-and-responsible-ai"
-                                       ]
-                  },
-                  {
-                      "title":  "Something is not working",
-                      "description":  "Protect instructional time with a recovery sequence and a stable fallback.",
-                      "chapterSlugs":  [
-                                           "troubleshooting",
-                                           "start-here"
-                                       ]
-                  }
-              ],
-    "version":  "2026.08",
-    "lastVerified":  "2026-08-13",
-    "chapters":  [
-                     {
-                         "source":  "chapters/01-start-here.md",
-                         "slug":  "start-here",
-                         "summary":  "Choose an entry route and prepare a first student-ready resource.",
-                         "audience":  "First-time teacher",
-                         "time":  "About 15 minutes"
-                     },
-                     {
-                         "source":  "chapters/02-prepare-a-lesson.md",
-                         "slug":  "prepare-a-lesson",
-                         "summary":  "Turn source material into a purposeful, differentiated lesson package.",
-                         "audience":  "Lesson planning",
-                         "time":  "15-30 minutes"
-                     },
-                     {
-                         "source":  "chapters/11-universal-settings.md",
-                         "slug":  "universal-settings",
-                         "summary":  "Set grade level, language, translations, and other shared defaults once for the whole lesson.",
-                         "audience":  "Every teacher",
-                         "time":  "2-minute preflight"
-                     },
-                     {
-                         "source":  "chapters/03-live-sessions.md",
-                         "slug":  "live-sessions",
-                         "summary":  "Prepare, run, differentiate, and close a live lesson safely.",
-                         "audience":  "Live lesson team",
-                         "time":  "Before, during, and after class"
-                     },
-                     {
-                         "source":  "chapters/04-accessibility-and-udl.md",
-                         "slug":  "accessibility-and-udl",
-                         "summary":  "Check the real learner experience and remove barriers before sharing.",
-                         "audience":  "Every teacher",
-                         "time":  "10-minute review pass"
-                     },
-                     {
-                         "source":  "chapters/05-review-and-next-steps.md",
-                         "slug":  "review-and-next-steps",
-                         "summary":  "Interpret classroom evidence carefully and plan useful follow-up.",
-                         "audience":  "Teacher or coach",
-                         "time":  "5-10 minutes after class"
-                     },
-                     {
-                         "source":  "chapters/06-classroom-workflows.md",
-                         "slug":  "classroom-workflows",
-                         "summary":  "Use practical recipes for common middle-school teaching needs.",
-                         "audience":  "Middle-school teacher",
-                         "time":  "5-20 minutes per recipe"
-                     },
-                     {
-                         "source":  "chapters/07-privacy-and-responsible-ai.md",
-                         "slug":  "privacy-and-responsible-ai",
-                         "summary":  "Use student data and generated materials with appropriate judgment.",
-                         "audience":  "Anyone sharing or generating",
-                         "time":  "60-second preflight"
-                     },
-                     {
-                         "source":  "chapters/08-troubleshooting.md",
-                         "slug":  "troubleshooting",
-                         "summary":  "Recover work and diagnose common classroom problems.",
-                         "audience":  "Teacher or support lead",
-                         "time":  "First 90 seconds"
-                     },
-                     {
-                         "source":  "chapters/09-specialist-reference.md",
-                         "slug":  "specialist-reference",
-                         "summary":  "Find specialist surfaces, keyboard help, and product terminology.",
-                         "audience":  "Specialists and tool finders",
-                         "time":  "As needed"
-                     },
-                     {
-                         "source":  "chapters/10-school-rollout-and-coaching.md",
-                         "slug":  "school-rollout-and-coaching",
-                         "summary":  "Introduce AlloFlow as an instructional routine with shared guardrails and coaching.",
-                         "audience":  "School leader or coach",
-                         "time":  "30-day rollout"
-                     }
-                 ]
+    "schemaVersion": 1,
+    "title": "AlloFlow Teacher Guide",
+    "description": "Practical, classroom-centered guidance for planning, teaching, accessibility, live lessons, and responsible use.",
+    "paths": [
+        {
+            "title": "I am planning my first lesson",
+            "description": "Start with a focused, student-ready resource and a teacher review gate.",
+            "chapterSlugs": [
+                "start-here",
+                "prepare-a-lesson",
+                "universal-settings"
+            ]
+        },
+        {
+            "title": "I am running a live class",
+            "description": "Prepare the room, route supports, recover calmly, and review evidence.",
+            "chapterSlugs": [
+                "live-sessions",
+                "review-and-next-steps",
+                "adventure-mode"
+            ]
+        },
+        {
+            "title": "I need a routine for a specific classroom need",
+            "description": "Start from a worked recipe and adapt it to your students and source.",
+            "chapterSlugs": [
+                "classroom-workflows",
+                "prepare-a-lesson"
+            ]
+        },
+        {
+            "title": "I support accessibility",
+            "description": "Check learner experience, response options, and specialist workflows.",
+            "chapterSlugs": [
+                "accessibility-and-udl",
+                "specialist-reference",
+                "math-fluency"
+            ]
+        },
+        {
+            "title": "I am leading a school rollout",
+            "description": "Set shared guardrails, coach teachers, and measure useful implementation signals.",
+            "chapterSlugs": [
+                "school-rollout-and-coaching",
+                "privacy-and-responsible-ai"
+            ]
+        },
+        {
+            "title": "Something is not working",
+            "description": "Protect instructional time with a recovery sequence and a stable fallback.",
+            "chapterSlugs": [
+                "troubleshooting",
+                "start-here"
+            ]
+        }
+    ],
+    "version": "2026.08",
+    "lastVerified": "2026-08-13",
+    "chapters": [
+        {
+            "source": "chapters/01-start-here.md",
+            "slug": "start-here",
+            "summary": "Choose an entry route and prepare a first student-ready resource.",
+            "audience": "First-time teacher",
+            "time": "About 15 minutes"
+        },
+        {
+            "source": "chapters/02-prepare-a-lesson.md",
+            "slug": "prepare-a-lesson",
+            "summary": "Turn source material into a purposeful, differentiated lesson package.",
+            "audience": "Lesson planning",
+            "time": "15-30 minutes"
+        },
+        {
+            "source": "chapters/11-universal-settings.md",
+            "slug": "universal-settings",
+            "summary": "Set grade level, language, translations, and other shared defaults once for the whole lesson.",
+            "audience": "Every teacher",
+            "time": "2-minute preflight"
+        },
+        {
+            "source": "chapters/03-live-sessions.md",
+            "slug": "live-sessions",
+            "summary": "Prepare, run, differentiate, and close a live lesson safely.",
+            "audience": "Live lesson team",
+            "time": "Before, during, and after class"
+        },
+        {
+            "source": "chapters/12-adventure-mode.md",
+            "slug": "adventure-mode",
+            "summary": "When students see Adventure Mode, lesson-scoped resume, and the assignment switch.",
+            "audience": "Classroom teachers",
+            "time": "5 minutes"
+        },
+        {
+            "source": "chapters/04-accessibility-and-udl.md",
+            "slug": "accessibility-and-udl",
+            "summary": "Check the real learner experience and remove barriers before sharing.",
+            "audience": "Every teacher",
+            "time": "10-minute review pass"
+        },
+        {
+            "source": "chapters/05-review-and-next-steps.md",
+            "slug": "review-and-next-steps",
+            "summary": "Interpret classroom evidence carefully and plan useful follow-up.",
+            "audience": "Teacher or coach",
+            "time": "5-10 minutes after class"
+        },
+        {
+            "source": "chapters/06-classroom-workflows.md",
+            "slug": "classroom-workflows",
+            "summary": "Use practical recipes for common middle-school teaching needs.",
+            "audience": "Middle-school teacher",
+            "time": "5-20 minutes per recipe"
+        },
+        {
+            "source": "chapters/07-privacy-and-responsible-ai.md",
+            "slug": "privacy-and-responsible-ai",
+            "summary": "Use student data and generated materials with appropriate judgment.",
+            "audience": "Anyone sharing or generating",
+            "time": "60-second preflight"
+        },
+        {
+            "source": "chapters/08-troubleshooting.md",
+            "slug": "troubleshooting",
+            "summary": "Recover work and diagnose common classroom problems.",
+            "audience": "Teacher or support lead",
+            "time": "First 90 seconds"
+        },
+        {
+            "source": "chapters/13-math-fluency.md",
+            "slug": "math-fluency",
+            "summary": "Where timed math practice and CBM probes live, and the fastest way to open them.",
+            "audience": "Teachers and specialists",
+            "time": "5 minutes"
+        },
+        {
+            "source": "chapters/09-specialist-reference.md",
+            "slug": "specialist-reference",
+            "summary": "Find specialist surfaces, keyboard help, and product terminology.",
+            "audience": "Specialists and tool finders",
+            "time": "As needed"
+        },
+        {
+            "source": "chapters/10-school-rollout-and-coaching.md",
+            "slug": "school-rollout-and-coaching",
+            "summary": "Introduce AlloFlow as an instructional routine with shared guardrails and coaching.",
+            "audience": "School leader or coach",
+            "time": "30-day rollout"
+        }
+    ]
 }

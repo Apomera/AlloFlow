@@ -660,7 +660,11 @@
       return h('div', { key: label, style: { background: dark ? 'rgba(15,23,42,0.82)' : '#ffffff', border: '1px solid ' + (accent || C.border), borderRadius: '11px', padding: '7px 10px', minWidth: '78px', textAlign: 'center', boxShadow: '0 8px 20px rgba(15,23,42,0.06)' } }, h('div', { style: { fontSize: '9px', color: C.sub, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' } }, label), h('div', { style: { fontSize: '17px', color: C.text, fontWeight: 900, marginTop: '2px' } }, value));
     }
     function sanitizeRule(value) { var seen = {}, out = ''; String(value || '').replace(/[^0-8]/g, '').split('').forEach(function (n) { if (!seen[n]) { seen[n] = true; out += n; } }); return out.split('').sort().join(''); }
-    function toggleFullscreenLife() { var node = stageRef.current; if (!node || typeof document === 'undefined') return; if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); else if (node.requestFullscreen) node.requestFullscreen(); }
+    // Real fullscreen is refused inside a sandboxed embed (the Canvas surface), where
+    // this bare requestFullscreen() rejected with nothing listening — the button did
+    // nothing and said nothing. The shared host helper tries real fullscreen and falls
+    // back to a CSS fill-frame with Escape to leave, so it always does something.
+    function toggleFullscreenLife() { var node = stageRef.current; if (!node || typeof document === 'undefined') return; if (typeof window !== 'undefined' && typeof window.__alloStemFS === 'function') { window.__alloStemFS(node); return; } if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); else { var enter = node.requestFullscreen || node.webkitRequestFullscreen; if (enter) { try { var p = enter.call(node); if (p && p.catch) p.catch(function () {}); } catch (e) {} } } }
     function exportLifePng() {
       var svg = gridSvgRef.current; if (!svg || typeof XMLSerializer === 'undefined') return;
       var raw = new XMLSerializer().serializeToString(svg), blob = new Blob([raw], { type: 'image/svg+xml;charset=utf-8' }), url = URL.createObjectURL(blob), image = new Image();

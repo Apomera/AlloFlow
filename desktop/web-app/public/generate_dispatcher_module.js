@@ -1483,6 +1483,76 @@ function normalizeStandardsDimension(rawReports, configuredStandards, options) {
 }
 
 
+// ── Activities redesign (2026-08-16) — structured-activity normalizers ──────
+// Pure. The brainstorm branch's discussion/jigsaw modes parse model JSON
+// through these; both are exported on GenDispatcher for direct testing.
+// Shapes are documented in docs/ACTIVITIES_RESOURCE_DESIGN_2026-08-16.md §D4
+// and must stay pure data (scan_fn_in_tool_state.cjs).
+const DISCUSSION_PROTOCOLS = ['think-pair-share', 'socratic-seminar', 'fishbowl', 'gallery-walk'];
+const normalizeDiscussionKit = (raw, fallbackProtocol) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const str = v => String(v == null ? '' : v).trim();
+    const strList = v => (Array.isArray(v) ? v.map(str).filter(Boolean) : []);
+    const rawSets = Array.isArray(raw.questionSets) ? raw.questionSets : [];
+    const questionSets = ['literal', 'inferential', 'evaluative'].map(depth => {
+        const found = rawSets.find(s => s && String(s.depth || '').toLowerCase() === depth);
+        return { depth, questions: strList(found && found.questions).slice(0, 6) };
+    }).filter(s => s.questions.length);
+    const stemsRaw = raw.talkStems && typeof raw.talkStems === 'object' && !Array.isArray(raw.talkStems) ? raw.talkStems : {};
+    const talkStems = {};
+    ['agree', 'disagree', 'clarify', 'build'].forEach(cat => {
+        const list = strList(stemsRaw[cat]).slice(0, 4);
+        if (list.length) talkStems[cat] = list;
+    });
+    const rawProtocol = String(raw.protocol || '').toLowerCase();
+    const protocol = DISCUSSION_PROTOCOLS.includes(rawProtocol) ? rawProtocol
+        : (DISCUSSION_PROTOCOLS.includes(fallbackProtocol) ? fallbackProtocol : 'think-pair-share');
+    const item = {
+        kind: 'discussion',
+        title: str(raw.title),
+        protocol,
+        grouping: str(raw.grouping),
+        openingQuestion: str(raw.openingQuestion),
+        questionSets,
+        talkStems,
+        facilitationNotes: str(raw.facilitationNotes),
+        lookFors: strList(raw.lookFors).slice(0, 8),
+        rubric: null,
+    };
+    if (!item.title || !questionSets.length) return null;
+    return item;
+};
+const normalizeJigsawActivity = (raw, requestedGroupSize) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const str = v => String(v == null ? '' : v).trim();
+    const strList = v => (Array.isArray(v) ? v.map(str).filter(Boolean) : []);
+    const chunks = (Array.isArray(raw.chunks) ? raw.chunks : []).map((c, i) => ({
+        label: str(c && c.label) || ('Expert ' + (i + 1)),
+        expertPacket: str(c && c.expertPacket),
+        teachBack: {
+            keyPoints: strList(c && c.teachBack && c.teachBack.keyPoints).slice(0, 6),
+            checkQuestions: strList(c && c.teachBack && c.teachBack.checkQuestions).slice(0, 4),
+        },
+    })).filter(c => c.expertPacket).slice(0, 6);
+    const size = Number(requestedGroupSize);
+    const item = {
+        kind: 'jigsaw',
+        title: str(raw.title),
+        groupSize: Number.isFinite(size) && size >= 2 && size <= 6 ? Math.floor(size) : (chunks.length || 4),
+        chunks,
+        homeGroupTask: str(raw.homeGroupTask),
+        synthesisOrganizer: str(raw.synthesisOrganizer),
+        // Question + answer stored ONCE here; the renderer's student list and the
+        // teacher answer key both derive from these fields (one derivation).
+        accountabilityCheck: (Array.isArray(raw.accountabilityCheck) ? raw.accountabilityCheck : [])
+            .map(c => ({ q: str(c && c.q), answer: str(c && (c.answer != null ? c.answer : c.a)) }))
+            .filter(c => c.q).slice(0, 8),
+        rubric: null,
+    };
+    if (!item.title || item.chunks.length < 2) return null;
+    return item;
+};
+
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
   const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, translationMode, resolveTranslationPolicy, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
   try { if (window._DEBUG_GEN_DISPATCHER) console.log("[GenDispatcher] handleGenerate fired:", type); } catch(_) {}
@@ -4029,6 +4099,85 @@ ${_itemsBlock}`;
         }
         }
       } else if (type === 'brainstorm') {
+         // Activities redesign (2026-08-16): the sidebar panel passes the chosen
+         // activity mode + options via configOverride. Guided mode, blueprints,
+         // and AlloBot don't pass one, so they keep generating idea starters.
+         const activityMode = configOverride && typeof configOverride.activityMode === 'string' ? configOverride.activityMode : 'ideas';
+         const activityConfig = configOverride && configOverride.activityConfig && typeof configOverride.activityConfig === 'object' ? configOverride.activityConfig : {};
+         if (activityMode === 'discussion') {
+             const protocol = DISCUSSION_PROTOCOLS.includes(String(activityConfig.protocol || '').toLowerCase()) ? String(activityConfig.protocol).toLowerCase() : 'think-pair-share';
+             const stepLabel = t('status_steps.building_discussion') || 'Building discussion kit...';
+             setGenerationStep(stepLabel);
+             if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, stepLabel);
+             const discussionContext = usesLocalTextBackend ? localExcerpt(textToProcess, 5500) : textToProcess;
+             const prompt = `
+                You are an expert discussion facilitator and UDL specialist.
+                Design ONE runnable class discussion kit for ${effectiveGrade} students from the source text, using the "${protocol}" protocol.
+                ${studentInterests.length > 0 ? `Student interests: ${studentInterests.join(', ')}.` : ''}
+                ${standardsPromptString ? `Target standards: ${standardsPromptString}.` : ''}
+                ${dokDirective}
+                ${effCustomInstructions ? `Custom focus: ${effCustomInstructions}.` : ''}
+                ${languageDirective}
+                Requirements:
+                - Every question must be answerable from the source text; ramp literal -> inferential -> evaluative.
+                - Talk stems must be short enough for a student to hold in mind while speaking.
+                - "grouping": ONE sentence on room/group setup for ${protocol}.
+                - "facilitationNotes": markdown for the TEACHER only (timing, pitfalls, how to restart a stalled discussion).
+                - "lookFors": observable participation indicators, never grades or scores.
+                Return ONLY valid JSON:
+                { "title": "...", "protocol": "${protocol}", "grouping": "...", "openingQuestion": "...",
+                  "questionSets": [ { "depth": "literal", "questions": ["..."] }, { "depth": "inferential", "questions": ["..."] }, { "depth": "evaluative", "questions": ["..."] } ],
+                  "talkStems": { "agree": ["..."], "disagree": ["..."], "clarify": ["..."], "build": ["..."] },
+                  "facilitationNotes": "...", "lookFors": ["..."] }
+                Source text:
+                """
+                ${discussionContext}
+                """
+             `;
+             const result = await callGemini(prompt, true);
+             const kit = normalizeDiscussionKit(parseJsonLenient(result, null), protocol);
+             if (!kit) throw new Error("Failed to parse Discussion Kit JSON. The AI response was not valid.");
+             content = [kit];
+             metaInfo = `${t('meta.discussion_kit') || 'Discussion Kit'}${usesLocalTextBackend ? ' - Local' : ''}`;
+             if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, stepLabel);
+         } else if (activityMode === 'jigsaw') {
+             const groupSizeNum = Number(activityConfig.groupSize);
+             const groupSize = Number.isFinite(groupSizeNum) && groupSizeNum >= 2 && groupSizeNum <= 6 ? Math.floor(groupSizeNum) : 4;
+             const stepLabel = t('status_steps.building_jigsaw') || 'Building jigsaw activity...';
+             setGenerationStep(stepLabel);
+             if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, stepLabel);
+             const jigsawContext = usesLocalTextBackend ? localExcerpt(textToProcess, 5500) : textToProcess;
+             const prompt = `
+                You are an expert in cooperative learning (Aronson jigsaw) and UDL.
+                Split the source text into ${groupSize} genuinely INTERDEPENDENT expert chunks for ${effectiveGrade} students — each chunk must hold knowledge the others need, so every group member matters.
+                ${studentInterests.length > 0 ? `Student interests: ${studentInterests.join(', ')}.` : ''}
+                ${standardsPromptString ? `Target standards: ${standardsPromptString}.` : ''}
+                ${dokDirective}
+                ${effCustomInstructions ? `Custom focus: ${effCustomInstructions}.` : ''}
+                ${languageDirective}
+                Requirements:
+                - "expertPacket": markdown a student expert reads to master ONLY their chunk (rewritten for ${effectiveGrade}, not copied).
+                - "teachBack": what that expert covers when teaching their home group, plus questions to check their group understood.
+                - "homeGroupTask": the group task that NEEDS all ${groupSize} chunks.
+                - "synthesisOrganizer": a markdown organizer (table or headings) students complete together spanning every chunk.
+                - "accountabilityCheck": ${Math.min(groupSize + 2, 8)} short free-response questions spanning ALL chunks (with answers), so each member is individually accountable.
+                Return ONLY valid JSON:
+                { "title": "...",
+                  "chunks": [ { "label": "...", "expertPacket": "...", "teachBack": { "keyPoints": ["..."], "checkQuestions": ["..."] } } ],
+                  "homeGroupTask": "...", "synthesisOrganizer": "...",
+                  "accountabilityCheck": [ { "q": "...", "answer": "..." } ] }
+                Source text:
+                """
+                ${jigsawContext}
+                """
+             `;
+             const result = await callGemini(prompt, true);
+             const activity = normalizeJigsawActivity(parseJsonLenient(result, null), groupSize);
+             if (!activity) throw new Error("Failed to parse Jigsaw JSON. The AI response was not valid.");
+             content = [activity];
+             metaInfo = `${t('meta.jigsaw_activity') || 'Jigsaw Activity'}${usesLocalTextBackend ? ' - Local' : ''}`;
+             if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, stepLabel);
+         } else {
          setGenerationStep(t('status_steps.brainstorming') || "Brainstorming ideas...");
          if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.brainstorming_start') || "Ooh, let me think of some fun activities!", 'thinking');
          const audienceDesc = isIndependentMode ? "a single independent learner (self-study)" : `${effectiveGrade} students`;
@@ -4112,6 +4261,7 @@ ${_itemsBlock}`;
          } catch (parseErr) {
              warnLog("Brainstorm Parse Error:", parseErr);
              throw new Error("Failed to parse Brainstorm JSON. The AI response was not valid.");
+         }
          }
          }
       } else if (type === 'sentence-frames') {
@@ -6112,7 +6262,10 @@ window.AlloModules.GenDispatcher = {
   validateAdaptationCitationConservation,
   protectAdaptationCitations,
   restoreProtectedAdaptationCitations,
-  composeAdaptedLeveledText
+  composeAdaptedLeveledText,
+  // Activities redesign (2026-08-16): pure structured-activity normalizers.
+  normalizeDiscussionKit,
+  normalizeJigsawActivity
 };
 
 window.AlloModules.GenDispatcherModule = true;

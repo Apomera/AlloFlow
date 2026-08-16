@@ -48169,27 +48169,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             <div style={{display: isGuidedToolVisible('sentence-frames') ? undefined : 'none'}} id="tour-tool-scaffolds" data-help-key="tool_scaffolds" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
                 ${activeView === 'sentence-frames' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
               `}>
-                <div className="w-full bg-slate-50 border-b border-slate-100 flex items-center hover:bg-rose-50 transition-colors">
-                  <button
+                <button
                     data-help-key="tool_scaffolds"
-                    onClick={() => toggleTool('sentence-frames')}
-                    aria-expanded={expandedTools.includes('sentence-frames')}
-                    className="flex-1 p-3 flex justify-between items-center text-start"
-                  >
-                    <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
-                      <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
-                    </div>
-                    {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowStoryForge(true)}
-                    className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-rose-800 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/50 rounded-full transition-all hover:shadow-sm"
-                    aria-label={t('sidebar.open_storyforge_aria') || 'Open StoryForge'}
-                  >
-                    {'\uD83D\uDCD6'} <span className="group-hover:tracking-wide transition-all">{t('sidebar.storyforge_label') || 'StoryForge'}</span>
-                  </button>
-                </div>
+                    aria-expanded={expandedTools.includes('sentence-frames')} onClick={() => toggleTool('sentence-frames')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
+                    <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
+                  </div>
+                  {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
                 {/* ── SentenceFramesPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('sentence-frames') && window.AlloModules && window.AlloModules.SentenceFramesPanel && React.createElement(window.AlloModules.SentenceFramesPanel, {
           expandedTools, frameCustomInstructions, frameType, handleGenerate, hasSourceOrAnalysis,

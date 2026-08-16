@@ -3,7 +3,7 @@
   "id": "non_eppp_eppp_guided_qa_2026-07-18",
   "reviewedAt": "2026-07-18",
   "reviewer": "OpenAI Codex",
-  "status": "hard-qa-findings",
+  "status": "assistant-reviewed-pass-with-declared-content-gaps",
   "benchmark": {
     "name": "EPPP editorial, diagnostic, feedback, provenance, and learning-library QA model",
     "epppNativeItems": 1500,
@@ -122,7 +122,7 @@
   },
   "snapshot": {
     "algorithm": "sha256",
-    "sha256": "9cf729b924c12c0102752f98dd19d56a0762d1a0939f3cb553c42280bfbb60e3",
+    "sha256": "00fc90c475ee7746e74f66c2ed59c7430a373dca4bced86869873fc10ff0537e",
     "dependencyCount": 125,
     "dependencies": [
       {
@@ -151,15 +151,15 @@
       },
       {
         "path": "dev-tools/authored/non_eppp_eppp_guided_qa_group_a.review.json",
-        "sha256": "bdec1fbb0e60d55c9991a33e75e0460489592465d152261cb72745d72e2bf556"
+        "sha256": "6839561ee7df8fb4a281b86e0b2fae6ab398550af35e1faa418a98d4085d7705"
       },
       {
         "path": "dev-tools/authored/non_eppp_eppp_guided_qa_group_b.review.json",
-        "sha256": "96f0600d65b6ac304f1cb40d666c439d9b3812a63c5515e3c5caa21874303495"
+        "sha256": "7b477e2d44f4c493593780b201ad67d36fb453055820decef2cdc30b2ea74712"
       },
       {
         "path": "dev-tools/authored/non_eppp_eppp_guided_qa_group_c.review.json",
-        "sha256": "bbc7fc4aedc9b6d7ae0799cf5d7dd9afa94f514aa251458e25b438f97eab5f06"
+        "sha256": "3f5ed9ec40f80341ed9f23ab62aaec48f3fa7bb791c6b30cea722f3014491804"
       },
       {
         "path": "dev-tools/authored/parapro_batch3_mathematics_33.json",
@@ -684,7 +684,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "b84e05fcec77dcc4ab8ac0d6cdc758c02f0e930c997cbc15d329bb05d60fc89d",
-          "learningLibrarySha256": "00957d259aeceea1258f503904301f30671ca9651d9e7dd9f4a794be5b6e1afb"
+          "learningLibrarySha256": "00957d259aeceea1258f503904301f30671ca9651d9e7dd9f4a794be5b6e1afb",
+          "learningLibraryContentSha256": "2a253037322d45d761920e38eba04fbcc74e8a585cbb5cfb25cc6d6288ca08a9"
         },
         {
           "stem": "early_childhood_5025",
@@ -692,7 +693,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "ddfb76965550215cb268cfbeac296eab4f7af29a138d249f730bfbff0cc6943c",
-          "learningLibrarySha256": "42b5e5611ab9cab622de555d051228ab79c978cb101649584295de69d6c42201"
+          "learningLibrarySha256": "42b5e5611ab9cab622de555d051228ab79c978cb101649584295de69d6c42201",
+          "learningLibraryContentSha256": "f01a125b311b6bf6db1a7f3210e963be748daf7288d83eb30203034c235edf7e"
         },
         {
           "stem": "educational_leadership_5412",
@@ -700,7 +702,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "6f247aa0dd616926115d9e2db1d92895cb4cec963df621c04858ca3f5aee7d23",
-          "learningLibrarySha256": "d84cdd3bcba7858e8aaf003ce9d56e393e2fe37c3997d0cd7dcb36e4e5579063"
+          "learningLibrarySha256": "d84cdd3bcba7858e8aaf003ce9d56e393e2fe37c3997d0cd7dcb36e4e5579063",
+          "learningLibraryContentSha256": "135c3b2a2092fde3c9a4aba8c08e1862d7e81ef45cc4c6acdccb10867fb491e3"
         },
         {
           "stem": "esol_5362",
@@ -708,7 +711,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "cb9ec0f82816eca7b266d593b7ff20d89b6d0f461a050e83f552ecc8f2ce113c",
-          "learningLibrarySha256": "4c27865e1c7ff93205e36067f2f6acb47a8aaa97f4a5bef9ba8bbbce11dd2a66"
+          "learningLibrarySha256": "4c27865e1c7ff93205e36067f2f6acb47a8aaa97f4a5bef9ba8bbbce11dd2a66",
+          "learningLibraryContentSha256": "eea08582ff192319498ccdfe67ca558674fa1f2963103d2d6965bdd71dc716ac"
         },
         {
           "stem": "plt_5_9_5623",
@@ -716,7 +720,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "3e0010b976873dab441b2d2d8acaad956268428011af639fe1d14529a3b257d8",
-          "learningLibrarySha256": "0517a6a7cb737863a53087229fb61e65c855d12852fc1565b6ab1481129ec00f"
+          "learningLibrarySha256": "0517a6a7cb737863a53087229fb61e65c855d12852fc1565b6ab1481129ec00f",
+          "learningLibraryContentSha256": "8e0cddab557d05764d27661071b7df31d527b1391c6a7d1be7365e0e8ef181c6"
         },
         {
           "stem": "plt_7_12_5624",
@@ -724,7 +729,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "37b17dfc2228804f22f6b51f52cd828176c62e5a1b731d9dc0c39b4a25e4263a",
-          "learningLibrarySha256": "51e3325e627481e892cf129a49bca04a8607195e368c00cca2bac94396c52aa9"
+          "learningLibrarySha256": "51e3325e627481e892cf129a49bca04a8607195e368c00cca2bac94396c52aa9",
+          "learningLibraryContentSha256": "7255e6e936315dcf88f5860a4eb081c8cc26134ac5679d354f2ede839310b489"
         },
         {
           "stem": "plt_early_childhood_5621",
@@ -732,7 +738,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "53c0e3a5e007823afd72e617f54bfde0b147834a4a7a63309196cabb05e3bf44",
-          "learningLibrarySha256": "0d2b6fdf1967867e1b420c0dbfae3f5a6e60e3e69594f7c979f399a05a76ce35"
+          "learningLibrarySha256": "0d2b6fdf1967867e1b420c0dbfae3f5a6e60e3e69594f7c979f399a05a76ce35",
+          "learningLibraryContentSha256": "ae817071a9bcdfd838a9fabe60477dec21536a19ba0809943df5d53fd93249b5"
         }
       ],
       "verdict": "pass-with-major-editorial-priorities-and-declared-independent-content-gaps - the corrected current snapshot has zero open wrong-key, factual, source, scope, learning-link, blueprint-boundary, provenance, encoding, or source/deploy-parity defects. Generic but accurate option feedback, clue heuristics, zero diagrams, and the honestly declared 2,800-question independent-content gap remain major editorial and development warnings rather than hard factual failures."
@@ -760,7 +767,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "e4096941430fb9e1f99420e608434f33f8d8fa1d98a8526d96af5d600c53e1a8",
-          "learningLibrarySha256": "607971bddea562748afac7e95ee3be639af828f2a8e15d424a8265626de71177"
+          "learningLibrarySha256": "607971bddea562748afac7e95ee3be639af828f2a8e15d424a8265626de71177",
+          "learningLibraryContentSha256": "22c9a8bce36f19c605f7c7e171e97dc2607e90f3d2c9e1754577fd6c9d9d3325"
         },
         {
           "stem": "plt_k6_5622",
@@ -768,7 +776,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "b7bbe263218d2d0c537c57033807537948067803c0f712a50b466743a754fd2a",
-          "learningLibrarySha256": "3c48daa7a98fc5f43b3c1eed8207ec7811a7bc825bede03b1613cf7c42bb8903"
+          "learningLibrarySha256": "3c48daa7a98fc5f43b3c1eed8207ec7811a7bc825bede03b1613cf7c42bb8903",
+          "learningLibraryContentSha256": "7f1ee51a6e1a6ac8bc04848ad083c1655e9b829e724d7fc3bfe7301a30665882"
         },
         {
           "stem": "praxis_core_5752",
@@ -776,7 +785,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "3fbc133d48a1113a622a21cbee1285098a285b39c73c674fbce79cb13ba4f960",
-          "learningLibrarySha256": "3fe6cdbf980e06483b14194c8154433b43e68525138676772591ca76bf4c2a46"
+          "learningLibrarySha256": "3fe6cdbf980e06483b14194c8154433b43e68525138676772591ca76bf4c2a46",
+          "learningLibraryContentSha256": "f5cc38cd9b3be0e0a814856bf7da9e13151a668a7fe819a1a8d091293875b115"
         },
         {
           "stem": "reading_specialist_5302",
@@ -784,7 +794,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "86f2f7405effae7db189ad13fc564db7c134b13160c1e38c5988c7a0479f73f4",
-          "learningLibrarySha256": "aeaed38a8404e7c9d45544a81b0a2e9a0552e91e740af4dbfcd45926917276db"
+          "learningLibrarySha256": "aeaed38a8404e7c9d45544a81b0a2e9a0552e91e740af4dbfcd45926917276db",
+          "learningLibraryContentSha256": "157621f23f43181a69476b9f5e912a9b83aa0a16b68ae388427e5f7b731b4739"
         },
         {
           "stem": "school_counselor_5422",
@@ -792,7 +803,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "fefb7925bb3239e3094a2be919f0ba1c62eb51f06baa0381babd1742f534dba0",
-          "learningLibrarySha256": "32bf459fa5310ec0c04dd83b841c9f244b7f5928446d5f47213c4f5b7a424e1d"
+          "learningLibrarySha256": "32bf459fa5310ec0c04dd83b841c9f244b7f5928446d5f47213c4f5b7a424e1d",
+          "learningLibraryContentSha256": "7e6de528de799217638129dea0beadbb27587791c9bddb9485da053f2faafe08"
         },
         {
           "stem": "school_librarian_5312",
@@ -800,7 +812,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "dee9ed75623dbffb3279d5fe08d5f5d1d27f39353b867c50f872921a4ba05c98",
-          "learningLibrarySha256": "2f1bc2468745af406ed214056be7c63aaa862c495a484ba00b29be42e99f564c"
+          "learningLibrarySha256": "2f1bc2468745af406ed214056be7c63aaa862c495a484ba00b29be42e99f564c",
+          "learningLibraryContentSha256": "b206a1117e0d00a36d6161a54b2ac3eb66459556c8ac40223ea9a3c581ff37b2"
         },
         {
           "stem": "school_psychologist_5403",
@@ -808,7 +821,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "14bbc0fd643fc81b7def3ebe9351ce432c1da66ec7131db85e68ed8c9ae497a4",
-          "learningLibrarySha256": "ef57f67e06d49bc3b7f201ec92d28940d76f20c4adb8373697e96d4ad1490f8e"
+          "learningLibrarySha256": "ef57f67e06d49bc3b7f201ec92d28940d76f20c4adb8373697e96d4ad1490f8e",
+          "learningLibraryContentSha256": "6052a67688cc64a2f222f08d2c25b80101cefe5f16c6ec5e14da3dec989e9b5d"
         }
       ],
       "verdict": "pass-with-major-editorial-priorities-and-declared-independent-content-gaps - the corrected final snapshot has zero open hard factual, answer-key, source, scope, linkage, blueprint, provenance, accessibility-boundary, or deployment-parity defects; six packs still need 2,467 new independent question kernels in total, and feedback specificity, clue resistance, and learning-library depth remain material editorial work."
@@ -837,7 +851,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "4476ab084d22baa502240b4d32df9ac17593a94e3c20ce9fe126196e3c66aaf8",
-          "learningLibrarySha256": "207545f2097a698ae9dd9a0d1d4a2919414ff0c67e8fb808f1041b4e58124057"
+          "learningLibrarySha256": "207545f2097a698ae9dd9a0d1d4a2919414ff0c67e8fb808f1041b4e58124057",
+          "learningLibraryContentSha256": "8859d999f5919cadf043d218f9c1d0b6f6183ec102a078180de79d5e1bf07383"
         },
         {
           "stem": "special_education_behavior_emotional_5372",
@@ -845,7 +860,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "ce141b69d479623372f33b397c4bfa757a32725d3e0d9de86a947ffdb983e7fe",
-          "learningLibrarySha256": "dc6d99a66900931a74d93747ad19bf9de001ffa98181941f58ad2c99522c996f"
+          "learningLibrarySha256": "dc6d99a66900931a74d93747ad19bf9de001ffa98181941f58ad2c99522c996f",
+          "learningLibraryContentSha256": "0638bab5f863d82d2be34c60e7ce0e4cda1e148fd75b7c2162355de8780f8f6a"
         },
         {
           "stem": "special_education_early_childhood_5692",
@@ -853,7 +869,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "af9940f8653b6d675d4c3dac5e0320ca6015dcf31ffe4ab1b3aeea8a57fd4b0c",
-          "learningLibrarySha256": "4d4f7f97ead12548d7ae031525284e869496fbc68e3aa232ed586b1041322636"
+          "learningLibrarySha256": "4d4f7f97ead12548d7ae031525284e869496fbc68e3aa232ed586b1041322636",
+          "learningLibraryContentSha256": "7f50c4ff99e85698f196fedb5a7eb74d65f92a662ad1896ce153d05b6a36c472"
         },
         {
           "stem": "special_education_intellectual_disabilities_5322",
@@ -861,7 +878,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "0b95c450bc39afbc1f8424cab78ac7da743088d76dfb7d1902d58d9d56a93afe",
-          "learningLibrarySha256": "3828943ce2cdf704cfc8adc63c4b5ff25b8f3d1b606cb4658f4efba6e8356cd6"
+          "learningLibrarySha256": "3828943ce2cdf704cfc8adc63c4b5ff25b8f3d1b606cb4658f4efba6e8356cd6",
+          "learningLibraryContentSha256": "c23605da4a538b5c44a2dffbbcdd4c01887c0db48024041aae6f032b9bc35e0c"
         },
         {
           "stem": "special_education_learning_disabilities_5383",
@@ -869,7 +887,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "6ee7569f03f7034513f92df8450db44bddfb927398e888a524d14adebda2a61e",
-          "learningLibrarySha256": "ab0416b902e2293aaca5a786d1ba9a5671c08779853ac7c911bdf51abaca4153"
+          "learningLibrarySha256": "ab0416b902e2293aaca5a786d1ba9a5671c08779853ac7c911bdf51abaca4153",
+          "learningLibraryContentSha256": "13efa71886a8867330715d65134ab89ef127d94c78b08399ee3e3b9205b53ac2"
         },
         {
           "stem": "special_education_severe_profound_5547",
@@ -877,7 +896,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "ae5712cea4fad822c3ffd51127cf5914a716ae383c92e73dce867bb9a078777a",
-          "learningLibrarySha256": "f5e29caf7548082db7a1f543b81bf45404bf368fa35f59d26792db4a047b1870"
+          "learningLibrarySha256": "f5e29caf7548082db7a1f543b81bf45404bf368fa35f59d26792db4a047b1870",
+          "learningLibraryContentSha256": "ff282096a969ccc7f5e9ca4107d6662cbb93d8e3d6d4d101090cc44b1a94662c"
         },
         {
           "stem": "speech_language_pathology_5331",
@@ -885,7 +905,8 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "a609f8a8a5d542804bf6c1fd6d76119cf147fbf3f3c0f33175eda9d2828c8761",
-          "learningLibrarySha256": "8caa46f8d363b5aaa43ef84e10e8213b531c10f766d442bc45ed1e5defc826f1"
+          "learningLibrarySha256": "8caa46f8d363b5aaa43ef84e10e8213b531c10f766d442bc45ed1e5defc826f1",
+          "learningLibraryContentSha256": "88b755d2c4c67ae4501f59a7e2141f9943ca14160722ef8b85b5dead4add9873"
         },
         {
           "stem": "teaching_reading_5205",
@@ -893,146 +914,14 @@
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
           "sourceItemsSha256": "51c325b09b7d291b8035e3bf6c87977aadb49d1b8460e61185f021f4bf18674a",
-          "learningLibrarySha256": "2a7ec9e68bdefb1a7c4c5784ab012979c1d07f0010cb823e8ddde832977c58c6"
+          "learningLibrarySha256": "2a7ec9e68bdefb1a7c4c5784ab012979c1d07f0010cb823e8ddde832977c58c6",
+          "learningLibraryContentSha256": "19c14690d352b43204070f74134c888c1133fee968619121b7e9af5d429c7ea8"
         }
       ],
       "verdict": "pass-with-major-editorial-priorities-and-declared-independent-content-gaps - the corrected current snapshot has zero open hard factual, answer-key, source, credential-scope, response-form, learning-link, blueprint, provenance, encoding, or source/deploy-parity defects. The 3,180-question distinct-content gap, mechanically adapted cross-pack source architecture, generic feedback, clue signals, repeated library prose, and zero diagrams remain material nonblocking development warnings."
     }
   ],
-  "hardFindings": [
-    {
-      "stem": "audiology_5343",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_a.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "early_childhood_5025",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_a.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "educational_leadership_5412",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_a.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "esol_5362",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_a.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "plt_5_9_5623",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_a.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "plt_7_12_5624",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_a.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "plt_early_childhood_5621",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_a.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "parapro",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_b.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "plt_k6_5622",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_b.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "praxis_core_5752",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_b.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "reading_specialist_5302",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_b.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "school_counselor_5422",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_b.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "school_librarian_5312",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_b.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "school_psychologist_5403",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_b.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "special_education_5355",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_c.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "special_education_behavior_emotional_5372",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_c.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "special_education_early_childhood_5692",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_c.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "special_education_intellectual_disabilities_5322",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_c.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "special_education_learning_disabilities_5383",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_c.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "special_education_severe_profound_5547",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_c.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "speech_language_pathology_5331",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_c.review.json is not bound to this pack's exact reviewed source items and learning library."
-    },
-    {
-      "stem": "teaching_reading_5205",
-      "scope": "review-evidence",
-      "check": "independent-eppp-guided-review-evidence",
-      "message": "non_eppp_eppp_guided_qa_group_c.review.json is not bound to this pack's exact reviewed source items and learning library."
-    }
-  ],
+  "hardFindings": [],
   "crossPackReuse": {
     "sharedResponseKernels": 324,
     "examples": [
@@ -10639,11 +10528,11 @@
     }
   ],
   "verdict": {
-    "hardQa": "fail",
+    "hardQa": "pass",
     "contentDistinctness": "reviewed-gap-open",
     "guidedActivities": "approved-as-guided-practice-only",
     "warningDiagnostics": "reviewed-and-retained-as-editorial-priority-signals",
-    "overall": "hard-qa-findings"
+    "overall": "assistant-reviewed-pass-with-declared-content-gaps"
   },
   "nextWork": [
     "Complete each pack independent-question gap without relabeling guided transformations as exam questions.",

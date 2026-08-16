@@ -28,6 +28,21 @@ const catalog = JSON.parse(catalogBytes);
 const epppQa = JSON.parse(epppQaBytes);
 const epppLibrary = JSON.parse(epppLibraryBytes);
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');
+
+// Fields written by stamp_learning_library_identity.cjs, not authored content.
+// Hashing the library with the envelope removed means a re-stamp can no longer
+// invalidate an attestation about content the stamp does not touch. Top-level
+// keys are sorted before hashing so a stamp that reorders keys (it replaced
+// generatedAt with version in a different position) cannot change the hash of
+// identical content.
+const LIBRARY_IDENTITY_ENVELOPE = ['generatedAt', 'version', 'packId', 'visibility'];
+function libraryContentSha256(libraryPath) {
+  const content = JSON.parse(fs.readFileSync(libraryPath, 'utf8'));
+  for (const field of LIBRARY_IDENTITY_ENVELOPE) delete content[field];
+  const sorted = {};
+  for (const key of Object.keys(content).sort()) sorted[key] = content[key];
+  return sha256(Buffer.from(JSON.stringify(sorted)));
+}
 const visibleEncodingCorruption = /(?:\u00c3[\u0080-\u00bf]|\u00c2[\u0080-\u00bf]|\u00e2(?:\u20ac|[\u0080-\u00bf])|\u00f0\u0178|\u00ef\u00bf\u00bd|\ufffd)/u;
 const hardChecks = [
   'pack-inventory-and-bank-balance',
@@ -565,11 +580,29 @@ for (const evidence of independentReviewEvidence) {
     const binding = bindingByStem.get(stem);
     const pack = JSON.parse(fs.readFileSync(path.join(sourceDir, stem + '_pack.json'), 'utf8'));
     const expectedSourceHash = sha256(Buffer.from(JSON.stringify(pack.items.slice(0, 200))));
+    // Two acceptable library bindings, newest first:
+    //   learningLibraryContentSha256 — hash of the library with the build-stamped
+    //     identity envelope removed (libraryContentSha256 below). This is the
+    //     durable form: stamp_learning_library_identity.cjs rewrites envelope
+    //     fields on every release build, which invalidated the raw-bytes binding
+    //     forever after 2026-07-31 even though no instructional content changed
+    //     (verified 2026-08-16: the evidence-era libraries at aaf4196c4 differ
+    //     from today's ONLY in envelope fields, 22/22 packs). The QA bindings
+    //     dodge the same hazard by being re-stamped every build (:289, :298); the
+    //     frozen review evidence cannot be, which is why it is the half that rots.
+    //   learningLibrarySha256 — the original raw-bytes hash. Still accepted so
+    //     unmigrated evidence keeps failing loudly rather than passing vacuously.
     const expectedLibraryHash = sha256(fs.readFileSync(path.join(sourceDir, stem + '_learning_library.json')));
+    const expectedLibraryContentHash = libraryContentSha256(path.join(sourceDir, stem + '_learning_library.json'));
+    const libraryBindingOk = binding && (
+      binding.learningLibraryContentSha256
+        ? binding.learningLibraryContentSha256 === expectedLibraryContentHash
+        : binding.learningLibrarySha256 === expectedLibraryHash
+    );
     if (evidence.artifactBindings.length !== evidence.packs.length || !binding
         || binding.algorithm !== 'sha256' || binding.reviewedAt !== reviewedAt
         || binding.sourceItemCount !== 200 || binding.sourceItemsSha256 !== expectedSourceHash
-        || binding.learningLibrarySha256 !== expectedLibraryHash) {
+        || !libraryBindingOk) {
       hardFindings.push({ stem, scope: 'review-evidence', check: 'independent-eppp-guided-review-evidence', message: evidence.file + ' is not bound to this pack\'s exact reviewed source items and learning library.' });
     }
   }

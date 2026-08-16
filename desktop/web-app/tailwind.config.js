@@ -36,5 +36,11 @@ module.exports = {
     theme: {
         extend: {},
     },
-    plugins: [],
+    // tailwindcss-animate (2026-08-16): the codebase carries 255 animate-in /
+    // fade-in / slide-in-from-* / zoom-in-* call sites that were written for this
+    // plugin but it was never installed, so none of them ever played (W2's
+    // repo-wide finding). Entry animations only — zero animate-out sites exist.
+    // The global prefers-reduced-motion guard in app_styles_source.jsx:322 and
+    // the app's own disableAnimations setting cover everything this enables.
+    plugins: [require('tailwindcss-animate')],
 }

@@ -465,7 +465,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(Layout, { size: 18, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "hidden 2xl:inline text-xs font-bold" }, t("dashboard.title"))
-  ), isTeacherMode && setShowLearningHub && /* @__PURE__ */ React.createElement(
+  ), setShowLearningHub && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1240,7 +1240,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F393}"),
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_tools") || "Tools")
-  ), isTeacherMode && setShowLearningHub && /* @__PURE__ */ React.createElement(
+  ), setShowLearningHub && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

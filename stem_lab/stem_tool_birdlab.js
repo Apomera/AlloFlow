@@ -1600,6 +1600,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // Phase 2 ships marsh, backyard, coast, mountain)
   // Each habitat has 4-5 SVG layers + 4-7 birds at various z-layers
   // ─────────────────────────────────────────────────────
+  // ── Deciduous canopy ────────────────────────────────────────────────────
+  // Every broadleaf tree in these scenes was a single <ellipse>: a green
+  // balloon on a stick, with at most one lighter ellipse laid over it. A real
+  // canopy has a lumpy edge and clumps of leaves at different light levels,
+  // and the lumpy EDGE is what does most of the work — a smooth outline reads
+  // as a balloon at any size.
+  //
+  // Deterministic by construction (fixed lobe count and phase, no randomness),
+  // so the visual-QA screenshots stay stable run to run.
+  function birdlabLeafBlob(cx, cy, rx, ry, lobes, phase, squash) {
+    var count = Math.max(6, lobes * 2);
+    var points = [];
+    for (var i = 0; i < count; i++) {
+      var angle = (i / count) * Math.PI * 2 + phase;
+      var wobble = (i % 2 === 0) ? 1 : (squash || 0.84);
+      points.push([cx + Math.cos(angle) * rx * wobble, cy + Math.sin(angle) * ry * wobble]);
+    }
+    var mid = function(a, b) { return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; };
+    var fmt = function(p) { return p[0].toFixed(1) + ' ' + p[1].toFixed(1); };
+    var start = mid(points[count - 1], points[0]);
+    var d = 'M' + fmt(start);
+    for (var j = 0; j < count; j++) {
+      d += ' Q' + fmt(points[j]) + ' ' + fmt(mid(points[j], points[(j + 1) % count]));
+    }
+    return d + ' Z';
+  }
+  // base blob + a sunlit clump up-left + a shaded clump down-right. The inner
+  // clumps carry MORE lobes and a gentler wobble than the outline: few lobes
+  // plus a deep wobble turns a quadratic blob into visible flat facets, and
+  // the canopy goes from balloon to low-poly rock, which is no better.
+  function birdlabCanopy(h, cx, cy, rx, ry, base, lit, shade, opacity, lobes, phase) {
+    var alpha = opacity == null ? 1 : opacity;
+    return h('g', { 'aria-hidden': 'true' },
+      h('path', { d: birdlabLeafBlob(cx, cy, rx, ry, lobes || 7, phase || 0, 0.87), fill: base, opacity: alpha }),
+      h('path', { d: birdlabLeafBlob(cx - rx * 0.28, cy - ry * 0.26, rx * 0.6, ry * 0.52, 7, (phase || 0) + 0.9, 0.91), fill: lit, opacity: alpha * 0.5 }),
+      h('path', { d: birdlabLeafBlob(cx + rx * 0.3, cy + ry * 0.28, rx * 0.52, ry * 0.46, 7, (phase || 0) + 2.1, 0.92), fill: shade, opacity: alpha * 0.38 })
+    );
+  }
+
+  // A fir read as a plain triangle everywhere in the mountain scene. Real
+  // conifers step: each whorl of branches juts out past the one above it, and
+  // that stepped edge is what separates a spruce from a green cone. Pure
+  // geometry from the same four numbers the triangle used, so the treeline
+  // stays deterministic for the screenshot harness.
+  function birdlabFirPath(cx, baseY, width, height) {
+    var w = width / 2;
+    var pt = function(fx, fy) { return (cx + w * fx).toFixed(1) + ' ' + (baseY - height * fy).toFixed(1); };
+    return 'M' + pt(0, 1)
+      + ' L' + pt(-0.32, 0.72) + ' L' + pt(-0.20, 0.70)
+      + ' L' + pt(-0.56, 0.46) + ' L' + pt(-0.40, 0.44)
+      + ' L' + pt(-0.80, 0.22) + ' L' + pt(-0.60, 0.20)
+      + ' L' + pt(-1, 0) + ' L' + pt(1, 0)
+      + ' L' + pt(0.60, 0.20) + ' L' + pt(0.80, 0.22)
+      + ' L' + pt(0.40, 0.44) + ' L' + pt(0.56, 0.46)
+      + ' L' + pt(0.20, 0.70) + ' L' + pt(0.32, 0.72)
+      + ' Z';
+  }
+
   var HABITATS = {
     forest: {
       id: 'forest',
@@ -1640,13 +1698,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         return h('g', null,
           // Back trees
           h('rect', { x: 100, y: 250, width: 12, height: 200, fill: '#5a4a3a' }),
-          h('ellipse', { cx: 106, cy: 250, rx: 50, ry: 80, fill: '#5a8a5a' }),
+          birdlabCanopy(h, 106, 250, 50, 80, '#5a8a5a', '#74a46e', '#3f6d44', 1, 7, 0.2),
           h('rect', { x: 350, y: 240, width: 10, height: 220, fill: '#4a3a2a' }),
-          h('ellipse', { cx: 355, cy: 240, rx: 60, ry: 90, fill: '#6a9a6a' }),
+          birdlabCanopy(h, 355, 240, 60, 90, '#6a9a6a', '#83b47c', '#4b7a4f', 1, 8, 1.1),
           h('rect', { x: 600, y: 250, width: 11, height: 200, fill: '#5a4a3a' }),
-          h('ellipse', { cx: 606, cy: 250, rx: 55, ry: 85, fill: '#5a8a5a' }),
+          birdlabCanopy(h, 606, 250, 55, 85, '#5a8a5a', '#74a46e', '#3f6d44', 1, 7, 2.3),
           h('rect', { x: 820, y: 245, width: 10, height: 215, fill: '#4a3a2a' }),
-          h('ellipse', { cx: 825, cy: 245, rx: 50, ry: 80, fill: '#6a9a6a' })
+          birdlabCanopy(h, 825, 245, 50, 80, '#6a9a6a', '#83b47c', '#4b7a4f', 1, 8, 0.7)
         );
       }
       // Layer 2: mid-flight zone background (no static elements — birds at this level)
@@ -1655,7 +1713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         return h('g', null,
           // Mid-front tree on the right side, partly framing the nuthatch
           h('rect', { x: 740, y: 150, width: 40, height: 350, fill: '#4a3525' }),
-          h('ellipse', { cx: 760, cy: 160, rx: 80, ry: 110, fill: '#3a7a3a', opacity: 0.85 }),
+          birdlabCanopy(h, 760, 160, 80, 110, '#3a7a3a', '#4f9349', '#2b5d31', 0.85, 9, 1.7),
           // Mid-front branch stretching across (occludes some birds). Drawn as
           // a tapered filled path rather than a uniform 4px stroke, and the tip
           // ends inside a leaf cluster instead of stopping blunt in open sky —
@@ -1672,7 +1730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         return h('g', null,
           // Big foreground tree on left
           h('rect', { x: 30, y: 100, width: 50, height: 400, fill: '#3a2a1a' }),
-          h('ellipse', { cx: 55, cy: 110, rx: 90, ry: 130, fill: '#2a6a2a' }),
+          birdlabCanopy(h, 55, 110, 90, 130, '#2a6a2a', '#3d833a', '#1e4f22', 1, 9, 2.6),
           // Forest floor / leaf litter
           h('path', { d: 'M 0 440 L 900 430 L 900 500 L 0 500 Z', fill: '#8a7050' }),
           // Some leaf-litter detail
@@ -1725,13 +1783,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           return h('g', null,
             h('path', { d: 'M 0 384 Q 150 375 320 383 Q 470 390 620 379 Q 770 371 900 384 L 900 500 L 0 500 Z', fill: '#5a7a8a' }),
             h('path', { d: 'M 0 384 Q 150 375 320 383 Q 470 390 620 379 Q 770 371 900 384', fill: 'none', stroke: '#cfe4dd', strokeWidth: 2, opacity: 0.42 }),
-            // Lily pads
-            h('ellipse', { cx: 450, cy: 410, rx: 28, ry: 8, fill: '#4a7a4a', opacity: 0.9 }),
-            h('ellipse', { cx: 600, cy: 430, rx: 22, ry: 6, fill: '#5a8a5a', opacity: 0.9 }),
-            h('ellipse', { cx: 320, cy: 440, rx: 25, ry: 7, fill: '#3a6a3a', opacity: 0.9 }),
-            h('ellipse', { cx: 750, cy: 410, rx: 30, ry: 9, fill: '#4a7a4a', opacity: 0.9 }),
-            // Water reflections
-            h('path', { d: 'M 100 420 L 200 420 M 400 460 L 500 460 M 700 450 L 800 450', stroke: '#fff', strokeWidth: 0.8, opacity: 0.5 })
+            // Lily pads. Each carries the notch that makes a lily pad read as
+            // a lily pad rather than as a green ellipse, and a paler rim so it
+            // sits ON the water instead of in it.
+            h('g', null,
+              h('path', { d: 'M 450 402 A 28 8 0 1 1 449 402 L 450 410 Z', fill: '#4a7a4a', opacity: 0.92 }),
+              h('path', { d: 'M 600 424 A 22 6 0 1 1 599 424 L 600 430 Z', fill: '#5a8a5a', opacity: 0.92 }),
+              h('path', { d: 'M 320 433 A 25 7 0 1 1 319 433 L 320 440 Z', fill: '#3a6a3a', opacity: 0.92 }),
+              h('path', { d: 'M 750 401 A 30 9 0 1 1 749 401 L 750 410 Z', fill: '#4a7a4a', opacity: 0.92 }),
+              h('g', { fill: 'none', stroke: '#a9cf9c', strokeWidth: 0.9, opacity: 0.4 },
+                h('path', { d: 'M 422 410 A 28 8 0 0 0 478 410 M 578 430 A 22 6 0 0 0 622 430'
+                  + ' M 295 440 A 25 7 0 0 0 345 440 M 720 410 A 30 9 0 0 0 780 410' })
+              )
+            ),
+            // Ripples. These were three dead-straight horizontal white rules
+            // (M 100 420 L 200 420 and friends) at full white, which is why the
+            // water read as scratched. Curved, uneven, dimmer, and broken.
+            h('path', {
+              d: 'M 96 421 Q 130 416 164 421 Q 190 425 214 421 M 268 447 Q 300 442 332 447'
+                + ' M 398 461 Q 438 455 478 461 Q 508 465 534 461 M 604 436 Q 636 431 668 436'
+                + ' M 700 452 Q 742 446 784 452 Q 812 456 838 452',
+              fill: 'none', stroke: '#eaf6f2', strokeWidth: 1.1, opacity: 0.34, strokeLinecap: 'round'
+            })
           );
         }
         if (z === 3) {
@@ -1848,7 +1921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('rect', { x: 0, y: 360, width: 900, height: 6, fill: '#8a7a6a' }),
             // Tree behind right side
             h('rect', { x: 720, y: 200, width: 15, height: 200, fill: '#5a4030' }),
-            h('ellipse', { cx: 728, cy: 200, rx: 80, ry: 90, fill: '#5a8a5a' }),
+            birdlabCanopy(h, 728, 200, 80, 90, '#5a8a5a', '#74a46e', '#3f6d44', 1, 8, 1.4),
             // Lawn green
             h('path', { d: 'M 0 366 L 900 366 L 900 500 L 0 500 Z', fill: '#7aa05a' })
           );
@@ -1856,9 +1929,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         if (z === 3) {
           // Shrub on left + bird feeder pole
           return h('g', null,
-            // Shrub
-            h('ellipse', { cx: 160, cy: 320, rx: 75, ry: 45, fill: '#4a7a4a' }),
-            h('ellipse', { cx: 130, cy: 305, rx: 30, ry: 22, fill: '#5a8a5a' }),
+            // Shrub — same lobed treatment as the trees, so a bird landing in
+            // it is landing in foliage rather than on a green pill.
+            birdlabCanopy(h, 160, 320, 75, 45, '#4a7a4a', '#639a5c', '#365c39', 1, 9, 0.5),
             // Bird feeder: pitched roof, glass hopper with visible seed, and a
             // tray with a perch lip. A bare rectangle on a stick read as a
             // mailbox, which is a poor cue for the one object in the scene the
@@ -1874,12 +1947,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         if (z === 4) {
           // Deck rail + foreground tomato cage
           return h('g', null,
-            // Deck rail right side
+            // Deck rail right side. This was a top rail with four thin posts
+            // hanging off it at 70-unit spacing and nothing else — a table
+            // standing on the lawn. A railing needs a bottom rail to close it,
+            // balusters close enough together to read as infill, corner posts,
+            // and some decking under it, or the eye has nothing to resolve.
+            h('rect', { x: 578, y: 414, width: 244, height: 9, fill: '#95784f' }),
+            h('rect', { x: 578, y: 423, width: 244, height: 13, fill: '#7d6440', opacity: 0.9 }),
             h('rect', { x: 580, y: 360, width: 240, height: 6, fill: '#a88860' }),
-            h('rect', { x: 590, y: 366, width: 4, height: 50, fill: '#a88860' }),
-            h('rect', { x: 660, y: 366, width: 4, height: 50, fill: '#a88860' }),
-            h('rect', { x: 730, y: 366, width: 4, height: 50, fill: '#a88860' }),
-            h('rect', { x: 800, y: 366, width: 4, height: 50, fill: '#a88860' }),
+            h('rect', { x: 582, y: 404, width: 236, height: 5, fill: '#a08055' }),
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(function(balusterIndex) {
+              return h('rect', {
+                key: 'deck-baluster-' + balusterIndex,
+                x: 592 + balusterIndex * 20, y: 366, width: 3.5, height: 38, fill: '#a88860', opacity: 0.92
+              });
+            }),
+            h('rect', { x: 578, y: 356, width: 7, height: 60, fill: '#8f7248' }),
+            h('rect', { x: 815, y: 356, width: 7, height: 60, fill: '#8f7248' }),
             // Tomato plant in pot bottom-left
             h('rect', { x: 50, y: 440, width: 50, height: 30, fill: '#a8704a' }),
             h('ellipse', { cx: 75, cy: 415, rx: 30, ry: 28, fill: '#3a6a3a' }),
@@ -1912,22 +1996,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       ],
       renderLayer: function(h, z) {
         if (z === 0) {
-          // Distant horizon line
           return h('g', null,
-            h('rect', { x: 0, y: 240, width: 900, height: 4, fill: '#7a9aa8' }),
-            // Distant island
-            h('ellipse', { cx: 600, cy: 240, rx: 90, ry: 18, fill: '#5a6a7a' })
+            // Horizon: a fine line over a soft haze band. The old version was a
+            // 4-unit solid bar across all 900 units, which reads as a ruled
+            // line drawn on the picture rather than as distance.
+            h('rect', { x: 0, y: 234, width: 900, height: 10, fill: '#8fa9b6', opacity: 0.32 }),
+            h('rect', { x: 0, y: 242, width: 900, height: 1.6, fill: '#6d8b9a', opacity: 0.72 }),
+            // Distant island: a low headland with a wooded crown. It was a
+            // plain ellipse, which floated on the horizon like a grey saucer.
+            h('path', { d: 'M 512 243 Q 530 233 554 228 Q 580 221 606 224 Q 640 217 668 227 Q 690 233 700 243 Z', fill: '#5f7183', opacity: 0.92 }),
+            h('path', { d: 'M 556 229 Q 570 220 584 225 Q 598 217 612 223 Q 628 216 642 224 Q 620 227 596 228 Q 574 230 556 229 Z', fill: '#4d5f70', opacity: 0.7 }),
+            // A second, fainter island further along gives the horizon depth.
+            h('path', { d: 'M 168 243 Q 188 236 212 234 Q 238 231 256 243 Z', fill: '#6d7f90', opacity: 0.5 })
           );
         }
         if (z === 1) {
           // Open ocean (water)
           return h('g', null,
             h('path', { d: 'M 0 244 L 900 244 L 900 460 L 0 460 Z', fill: '#3a6a8a' }),
-            // Wave crests
-            h('path', { d: 'M 0 320 Q 80 315 160 320 Q 240 325 320 320 Q 400 315 480 320 Q 560 325 640 320 Q 720 315 800 320 Q 880 325 900 320',
-              stroke: '#a8c0d0', strokeWidth: 1.5, fill: 'none' }),
-            h('path', { d: 'M 0 380 Q 80 376 160 380 Q 240 384 320 380 Q 400 376 480 380 Q 560 384 640 380 Q 720 376 800 380 Q 880 384 900 380',
-              stroke: '#a8c0d0', strokeWidth: 1.5, fill: 'none' })
+            // Depth in bands rather than a gradient: no new <defs>, so nothing
+            // here can become a dangling url(#…) paint, which is the failure
+            // this tool's visual QA exists to catch.
+            h('rect', { x: 0, y: 244, width: 900, height: 44, fill: '#6d97b0', opacity: 0.5 }),
+            h('rect', { x: 0, y: 288, width: 900, height: 52, fill: '#57849f', opacity: 0.3 }),
+            h('rect', { x: 0, y: 398, width: 900, height: 62, fill: '#2f5c7c', opacity: 0.38 }),
+            // Swell. The old crests were two full-width sine waves on a fixed
+            // 80-unit period at 5 units of amplitude, one above the other, so
+            // they read as two ruled lines scratched across the sea. Real
+            // crests are broken and unequal, and they get shorter, finer and
+            // denser toward the horizon.
+            h('g', { fill: 'none', stroke: '#a8c0d0', strokeLinecap: 'round' },
+              h('path', {
+                d: 'M 42 268 Q 66 265 96 269 M 150 276 Q 172 273 198 277 M 262 264 Q 286 261 312 265'
+                  + ' M 372 274 Q 398 271 426 275 M 486 266 Q 508 263 534 267 M 596 278 Q 622 275 650 279'
+                  + ' M 706 268 Q 728 265 754 269 M 806 276 Q 830 273 858 277',
+                strokeWidth: 0.9, opacity: 0.34
+              }),
+              h('path', {
+                d: 'M 18 312 Q 60 306 108 313 M 168 330 Q 214 324 262 331 M 322 308 Q 366 302 412 309'
+                  + ' M 470 336 Q 518 330 566 337 M 620 314 Q 664 308 710 315 M 762 332 Q 806 326 852 333',
+                strokeWidth: 1.3, opacity: 0.42
+              }),
+              h('path', {
+                d: 'M -10 384 Q 60 374 140 386 Q 210 396 286 384 M 320 408 Q 396 397 476 409 Q 548 419 626 407'
+                  + ' M 660 380 Q 736 370 816 382 Q 872 390 910 384 M 40 432 Q 130 421 226 433 Q 310 443 396 431'
+                  + ' M 470 440 Q 560 429 656 441 Q 742 451 828 439',
+                strokeWidth: 1.9, opacity: 0.48
+              })
+            )
           );
         }
         if (z === 3) {
@@ -1936,9 +2052,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           // drawn at z=4; ending it at y=420 left the snag standing in open
           // water well offshore, as if a pine were growing out of the swell.
           return h('g', null,
-            h('rect', { x: 800, y: 100, width: 8, height: 348, fill: '#7a6a5a' }),
-            // Bare branches
-            h('path', { d: 'M 800 150 L 770 130 M 808 180 L 840 160 M 800 220 L 760 215', stroke: '#7a6a5a', strokeWidth: 3, fill: 'none' })
+            // A dead pine tapers: it was a uniform 8-wide rect, which read as a
+            // pole. Wider at the waterline, narrow at the broken top, with one
+            // pale weathered face so it is not a flat silhouette.
+            h('path', { d: 'M 799 98 L 806 98 L 811 448 L 794 448 Z', fill: '#7a6a5a' }),
+            h('path', { d: 'M 803 100 L 806 98 L 811 448 L 805 448 Z', fill: '#8a7a68', opacity: 0.55 }),
+            // Bare branches: tapered, slightly drooping, with a couple of
+            // snapped stubs. Three equal straight strokes read as a TV aerial.
+            h('g', { fill: 'none', stroke: '#7a6a5a', strokeLinecap: 'round' },
+              h('path', { d: 'M 800 152 Q 786 143 767 129', strokeWidth: 3.4 }),
+              h('path', { d: 'M 805 186 Q 823 176 844 161', strokeWidth: 3 }),
+              h('path', { d: 'M 800 224 Q 783 221 760 215', strokeWidth: 2.6 })
+            ),
+            h('g', { fill: 'none', stroke: '#6f6053', strokeLinecap: 'round' },
+              h('path', { d: 'M 804 266 Q 819 264 837 257', strokeWidth: 2.1 }),
+              h('path', { d: 'M 799 314 L 787 307 M 807 350 L 820 344', strokeWidth: 1.9 })
+            )
           );
         }
         if (z === 4) {
@@ -2015,7 +2144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               var tone = i % 3 === 0 ? '#33532f' : (i % 3 === 1 ? '#3a5a3a' : '#456546');
               return h('path', {
                 key: 'c' + i,
-                d: 'M ' + baseX + ' 292 L ' + (baseX + treeWidth / 2) + ' ' + (292 - treeHeight) + ' L ' + (baseX + treeWidth) + ' 292 Z',
+                d: birdlabFirPath(baseX + treeWidth / 2, 292, treeWidth, treeHeight),
                 fill: tone
               });
             })
@@ -2029,13 +2158,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             // but it stops below the crown and a tuft is painted back over its
             // top cap. Running it to the apex drew a brown spike straight
             // through the canopy, which is what the wide mountain scene showed.
-            h('path', { d: 'M 690 460 L 720 200 L 750 460 Z', fill: '#2a4a2a' }),
-            h('path', { d: 'M 700 380 L 720 280 L 740 380 Z', fill: '#3a5a3a' }),
+            h('path', { d: birdlabFirPath(720, 460, 60, 260), fill: '#2a4a2a' }),
+            h('path', { d: birdlabFirPath(720, 380, 40, 100), fill: '#3a5a3a' }),
             h('path', { d: 'M720 462 L720 250', fill: 'none', stroke: '#5a402f', strokeWidth: 10, strokeLinecap: 'round', 'data-birdlab-trunk-anchor': 'mountain-pileated' }),
-            h('path', { d: 'M 700 268 L 720 200 L 740 268 Z', fill: '#2a4a2a' }),
+            h('path', { d: birdlabFirPath(720, 268, 40, 68), fill: '#2a4a2a' }),
             // Tall conifer middle-left
-            h('path', { d: 'M 380 480 L 420 240 L 460 480 Z', fill: '#2a4a2a' }),
-            h('path', { d: 'M 390 400 L 420 320 L 450 400 Z', fill: '#3a5a3a' })
+            h('path', { d: birdlabFirPath(420, 480, 80, 240), fill: '#2a4a2a' }),
+            h('path', { d: birdlabFirPath(420, 400, 60, 80), fill: '#3a5a3a' })
           );
         }
         if (z === 4) {
@@ -2477,8 +2606,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     if (zone === 'surface' && (habitatKey === 'marsh' || habitatKey === 'coast')) {
       var coast = habitatKey === 'coast';
       return h('g', { key: 'ambient-' + habitatKey + '-surface', 'aria-hidden': 'true', 'data-birdlab-ambient': 'water-surface', style: { pointerEvents: 'none' } },
-        h('path', { className: 'birdlab-ambient-motion birdlab-water-shimmer', d: coast ? 'M25 346 Q120 336 220 347 T420 346 T620 344 T870 348' : 'M30 412 Q140 402 250 413 T470 412 T690 410 T870 414', fill: 'none', stroke: '#dbeafe', strokeWidth: coast ? 2.2 : 1.7, opacity: 0.48, style: { animationDelay: '-2s' } }),
-        h('path', { className: 'birdlab-ambient-motion birdlab-water-shimmer', d: coast ? 'M80 407 Q190 397 300 408 T520 407 T760 405' : 'M110 456 Q230 446 350 457 T590 456 T820 454', fill: 'none', stroke: '#eff6ff', strokeWidth: coast ? 1.8 : 1.3, opacity: 0.38, style: { animationDelay: '-5s' } }),
+        // Shimmer in broken segments. These were single strokes running the
+        // full width on a regular T-chain, and stacked with the swell and the
+        // foam line they turned the water into a set of parallel rules. Light
+        // on water catches in patches, so the highlight is patchy too.
+        h('path', { className: 'birdlab-ambient-motion birdlab-water-shimmer', d: coast
+          ? 'M42 346 Q88 339 136 347 M214 344 Q262 337 308 345 M402 348 Q450 341 496 349 M584 343 Q634 336 682 344 M766 347 Q812 340 858 348'
+          : 'M46 412 Q96 405 146 413 M232 410 Q284 403 332 411 M418 414 Q470 407 518 415 M604 409 Q656 402 704 410 M786 413 Q830 406 872 414',
+          fill: 'none', stroke: '#dbeafe', strokeWidth: coast ? 2.2 : 1.7, opacity: 0.42, strokeLinecap: 'round', style: { animationDelay: '-2s' } }),
+        h('path', { className: 'birdlab-ambient-motion birdlab-water-shimmer', d: coast
+          ? 'M96 407 Q142 400 188 408 M282 405 Q330 398 376 406 M470 409 Q518 402 564 410 M656 404 Q702 397 748 405'
+          : 'M126 456 Q174 449 220 457 M310 454 Q360 447 406 455 M498 458 Q546 451 592 459 M682 453 Q728 446 774 454',
+          fill: 'none', stroke: '#eff6ff', strokeWidth: coast ? 1.8 : 1.3, opacity: 0.32, strokeLinecap: 'round', style: { animationDelay: '-5s' } }),
         habitatKey === 'marsh' && h('g', { className: 'birdlab-ambient-motion birdlab-reed-sway', style: { animationDelay: '-3s' } },
           h('path', { d: 'M520 470 Q515 390 526 310 M536 475 Q542 392 538 326 M552 474 Q548 401 559 342', fill: 'none', stroke: '#556b32', strokeWidth: 2.2, strokeLinecap: 'round' }),
           h('ellipse', { cx: 526, cy: 308, rx: 3.2, ry: 8, fill: '#4b2e1d' }),
@@ -2512,6 +2651,142 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // retain the detailed canonical species art. Every pose stays inside the
   // centered 30x30 contract and therefore inside the shared 60-unit hotspot.
   var SCENE_FLIGHT_SPECIES = { coopershawk: true, herringGull: true, raven: true, kingfisher: true };
+
+  // ── Overhead soaring silhouettes ────────────────────────────────────────
+  // One renderer for every soaring bird, because there used to be two: a
+  // `raven-soar` branch, a `coopershawk-soar` branch, and a separate generic
+  // fallback that (by fallthrough, with no branch of its own) drew the herring
+  // gull. All three produced a double-lobed wing on each side — four wings —
+  // with the bill drawn as a spike above the head and a forked tail below. At
+  // scene scale the hawk and raven read as moths and the gull as a dragonfly.
+  //
+  // It was also a teaching defect, not only an ugly one. The Target Search
+  // silhouette clue tells the learner to "compare body proportions, bill
+  // shape, tail length", and the Silhouette Quiz is built entirely on shape,
+  // while these three shared one outline and differed only in palette. Shape
+  // overhead IS the ID skill for a distant flying bird, so they now differ in
+  // exactly the features the clue names:
+  //   raven        long fingered wings, WEDGE tail, heavy bill
+  //   Cooper's     short rounded wings, LONG BANDED tail, small head out front
+  //   herring gull long pointed wings, BLACK TIPS, short square tail
+  //
+  // Every entry stays inside the centered 30x30 contract, so the shared
+  // 60-unit hotspot and every scale/anchor calculation are unchanged. Head is
+  // up (-y), tail down. Only the LEFT wing is authored; the right is mirrored.
+  var SOARING_FLIGHT_ART = {
+    // The span-to-length ratios below are deliberate and are themselves the
+    // field mark: long-winged gull ~1.5, raven ~1.35, and the short-winged
+    // long-tailed accipiter ~1.0, which is the "flying cross" a Cooper's hawk
+    // actually shows overhead. Wings therefore run nearly the full 30 units on
+    // gull and raven and stop well short on the hawk.
+    // `bodyPath` is ONE continuous outline from shoulders through the tail
+    // tip. It replaced an ellipse plus a separately stroked tail shape, and
+    // that separate stroke was the real reason these read as insects: an
+    // outlined oval with an outlined bar hanging off it is a thorax and an
+    // abdomen no matter how the bar is coloured. A tail that differs in tone
+    // is painted as an UNSTROKED overlay (`tailShade`) inside that one
+    // outline, so the bird stays a single animal.
+    raven: {
+      wingFill: '#1b2331', bodyFill: '#141b28', edge: '#4a5a70', headFill: '#141b28',
+      billFill: '#05080d',
+      // The fingered tip is cut with straight L segments that keep real chord
+      // all the way out. A tip that tapers to a mathematical point disappears
+      // at scene scale and takes the outer third of the wingspan with it.
+      leftWing: 'M12.8 11.6 C9.4 10.4 6.0 9.6 3.0 9.4 L1.0 10.2 L2.4 11.0 L0.9 11.8'
+        + ' L2.6 12.4 L1.4 13.2 C5.0 14.4 9.0 16.4 13.4 17.6 Z',
+      bodyPath: 'M13.2 10.2 C11.9 12.0 11.8 14.5 12.3 17.3 C12.5 18.4 12.6 19.1 12.7 19.5'
+        + ' L15 26.9 L17.3 19.5 C17.4 19.1 17.5 18.4 17.7 17.3 C18.2 14.5 18.1 12.0 16.8 10.2 Z',
+      billPath: 'M13.6 7.6 L15 5.6 L16.4 7.6 Z',
+      headR: 2.2, headCy: 8.6
+    },
+    coopershawk: {
+      // Solid slate wings, not pale ones: a washed-out wing with barring on it
+      // reads as an insect's membrane at this size. Dark tail with PALE bands,
+      // not the other way round, which is both how the bird is marked and the
+      // only version that does not look like a wasp's abdomen.
+      wingFill: '#8c96a3', bodyFill: '#e9e2d4', edge: '#3f4854', headFill: '#79828f',
+      billFill: '#3f4854', tailShadeFill: '#7b8592',
+      // Broad, ROUNDED, and nearly full span. A Cooper's hawk's wingspan is
+      // about 1.9x its body length; the "flying cross" people describe is the
+      // long TAIL, not short wings. Drawing it short-winged was what made it
+      // read as a wasp in the first place.
+      // Held nearly HORIZONTAL. A wing that sweeps down and back from a narrow
+      // shoulder is an insect wing; a soaring accipiter holds them straight out
+      // to the sides, so the leading edge stays close to level.
+      leftWing: 'M12.6 11.4 C9.0 10.4 5.0 10.6 2.2 11.6 C1.2 12.0 1.3 12.9 2.4 13.4'
+        + ' C5.0 14.6 8.6 15.5 13.0 16.2 Z',
+      bodyPath: 'M13.4 10.2 C12.0 12.0 11.9 14.6 12.4 17.6 C12.6 18.6 12.7 19.4 12.8 20.2'
+        + ' L12.9 25.6 Q15 27.4 17.1 25.6 L17.2 20.2 C17.3 19.4 17.4 18.6 17.6 17.6'
+        + ' C18.1 14.6 18.0 12.0 16.6 10.2 Z',
+      tailShade: 'M12.82 19.6 L12.9 25.6 Q15 27.4 17.1 25.6 L17.18 19.6 Z',
+      billPath: 'M14.3 7.8 L15 6.2 L15.7 7.8 Z',
+      headR: 1.9, headCy: 8.8
+    },
+    herringGull: {
+      wingFill: '#e8edf2', bodyFill: '#fbfdfe', edge: '#41505f', headFill: '#fbfdfe',
+      billFill: '#eab308',
+      leftWing: 'M13.0 12.4 C9.0 10.8 4.6 9.6 0.8 9.0 C1.8 11.2 4.4 13.4 8.4 15.2'
+        + ' C10.0 15.9 11.8 16.6 13.4 17.1 Z',
+      bodyPath: 'M13.3 10.3 C12.1 12.1 12.0 14.5 12.5 17.3 C12.6 18.3 12.7 18.9 12.6 19.5'
+        + ' L12.2 23.6 L17.8 23.6 L17.4 19.5 C17.3 18.9 17.4 18.3 17.5 17.3'
+        + ' C18.0 14.5 17.9 12.1 16.7 10.3 Z',
+      billPath: 'M13.9 7.6 L15 5.6 L16.1 7.6 Z',
+      headR: 2.1, headCy: 8.6
+    }
+  };
+  // Mirror the authored left wing through x = 15 rather than hand-writing the
+  // right one, so the two halves cannot drift apart when the art is retouched.
+  // Safe because every wing path above uses only absolute M / L / C / Z, all of
+  // which take coordinate PAIRS: the numbers alternate x, y, so flipping the
+  // even-indexed ones reflects the shape. Keep it that way — an H, V, S or A
+  // command would break this assumption silently.
+  function mirrorFlightWing(d) {
+    var index = 0;
+    return String(d).replace(/-?\d+(?:\.\d+)?/g, function(token) {
+      var isX = (index % 2) === 0;
+      index += 1;
+      return isX ? String(Number((30 - Number(token)).toFixed(2))) : token;
+    });
+  }
+  function renderSoaringBird(h, speciesKey, fieldPose) {
+    var art = SOARING_FLIGHT_ART[speciesKey] || SOARING_FLIGHT_ART.coopershawk;
+    return h('g', { 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose, 'data-birdlab-flight-pose': speciesKey },
+      // Wings FIRST, body over them. The other way round the wings cover the
+      // outer third of the body on each side and what is left reads as a thin
+      // strip between two paddles. Drawn this way the wings emerge from behind
+      // a complete body outline, which is both how a bird looks and what makes
+      // the shoulder joint disappear.
+      h('path', { d: art.leftWing, fill: art.wingFill, stroke: art.edge, strokeWidth: 0.7, strokeLinejoin: 'round' }),
+      h('path', { d: mirrorFlightWing(art.leftWing), fill: art.wingFill, stroke: art.edge, strokeWidth: 0.7, strokeLinejoin: 'round' }),
+      // Body + tail as ONE stroked silhouette.
+      h('path', { d: art.bodyPath, fill: art.bodyFill, stroke: art.edge, strokeWidth: 0.6, strokeLinejoin: 'round' }),
+      // Tail tone, if the species has one, unstroked and inside that outline.
+      art.tailShade && h('path', { d: art.tailShade, fill: art.tailShadeFill }),
+      h('circle', { cx: 15, cy: art.headCy, r: art.headR, fill: art.headFill, stroke: art.edge, strokeWidth: 0.55 }),
+      h('path', { d: art.billPath, fill: art.billFill }),
+      speciesKey === 'herringGull' && h('g', null,
+        // Black outer primaries. This is THE gull mark and it has to survive
+        // being 20px wide, so it is a solid wedge over the outer wing rather
+        // than a thin outline.
+        h('path', { d: 'M0.8 9.0 C3.4 9.5 5.8 10.2 7.8 11.0 C7.1 12.3 6.2 13.2 5.1 14.0 C3.3 12.5 1.7 10.8 0.8 9.0 Z', fill: '#111827', opacity: 0.95 }),
+        h('path', { d: 'M29.2 9.0 C26.6 9.5 24.2 10.2 22.2 11.0 C22.9 12.3 23.8 13.2 24.9 14.0 C26.7 12.5 28.3 10.8 29.2 9.0 Z', fill: '#111827', opacity: 0.95 }),
+        h('circle', { cx: 3.0, cy: 10.4, r: 0.55, fill: '#f8fafc' }),
+        h('circle', { cx: 27.0, cy: 10.4, r: 0.55, fill: '#f8fafc' })
+      ),
+      // The banded tail is the whole point of this silhouette, so it is the
+      // ONLY marking kept. Underwing and breast barring were both dropped: at
+      // scene scale three sets of parallel bars turned the bird into a wasp,
+      // stripes on a thorax and a banded abdomen. One marking, read clearly.
+      speciesKey === 'coopershawk' && h('g', { fill: 'none', stroke: '#e6e9ec', strokeWidth: 1.0, opacity: 0.92 },
+        h('path', { d: 'M12.95 20.8 L17.05 20.8 M12.95 23.2 L17.05 23.2 M13.15 25.6 L16.85 25.6' })
+      ),
+      speciesKey === 'raven' && h('path', {
+        d: 'M8.4 13.6 Q11.6 14.8 13.4 16.2 M21.6 13.6 Q18.4 14.8 16.6 16.2',
+        fill: 'none', stroke: '#42536b', strokeWidth: 0.55, opacity: 0.8
+      })
+    );
+  }
+
   function renderSceneBirdArt(h, bird, species, motionName, habitatKey, behaviorState) {
     var fieldPose = behaviorState && behaviorState.pose ? behaviorState.pose : sceneBirdFieldPose(bird, habitatKey, motionName);
     if (habitatKey === 'coast' && bird && bird.species === 'eider' && fieldPose === 'species-default') {
@@ -2695,25 +2970,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       ),
       h('path', { d: 'M11 24 L10 28 M17 24 L18 28 M8 28 H13 M16 28 H21', fill: 'none', stroke: '#fbbf24', strokeWidth: 1.15, strokeLinecap: 'round' })
     );
-    if (fieldPose === 'raven-soar') return h('g', { 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose, 'data-birdlab-flight-pose': 'raven' },
-      h('path', { d: 'M15 14 C11 12 8 9 5 5 L1 3 L4 9 L0 8 L5 13 L1 13 L9 18 L13 18 Z', fill: '#111827', stroke: '#64748b', strokeWidth: .9, strokeLinejoin: 'round' }),
-      h('path', { d: 'M15 14 C19 12 22 9 25 5 L29 3 L26 9 L30 8 L25 13 L29 13 L21 18 L17 18 Z', fill: '#111827', stroke: '#64748b', strokeWidth: .9, strokeLinejoin: 'round' }),
-      h('path', { d: 'M12 20 L15 30 L18 20 Z', fill: '#020617', stroke: '#64748b', strokeWidth: .8 }),
-      h('ellipse', { cx: 15, cy: 16, rx: 4.2, ry: 7, fill: '#0f172a', stroke: '#64748b', strokeWidth: .7 }),
-      h('circle', { cx: 15, cy: 9, r: 3.2, fill: '#111827' }),
-      h('path', { d: 'M13.7 6.5 L15 1.5 L16.3 6.5 Z', fill: '#020617' })
-    );
-    if (fieldPose === 'coopershawk-soar') return h('g', { 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose, 'data-birdlab-flight-pose': 'coopershawk' },
-      h('path', { d: 'M14 13 C10 9 5 7 1 6 C3 12 7 16 12 18 Z', fill: '#7b8794', stroke: '#334155', strokeWidth: .85 }),
-      h('path', { d: 'M16 13 C20 9 25 7 29 6 C27 12 23 16 18 18 Z', fill: '#7b8794', stroke: '#334155', strokeWidth: .85 }),
-      h('path', { d: 'M11.5 19 L11 30 Q15 32 19 30 L18.5 19 Z', fill: '#8b735f', stroke: '#334155', strokeWidth: .75 }),
-      h('path', { d: 'M11.3 22 H18.7 M11.2 25 H18.8 M11.1 28 H18.9', fill: 'none', stroke: '#334155', strokeWidth: 1.15 }),
-      h('path', { d: 'M12 29 Q15 30 18 29', fill: 'none', stroke: '#f8fafc', strokeWidth: 1 }),
-      h('ellipse', { cx: 15, cy: 15, rx: 4.2, ry: 7, fill: '#d9d4c8', stroke: '#334155', strokeWidth: .7 }),
-      h('path', { d: 'M12.5 14 H17.5 M12.5 17 H17.5', fill: 'none', stroke: '#9a6b52', strokeWidth: .8 }),
-      h('circle', { cx: 15, cy: 8.5, r: 3.2, fill: '#6b7280' }),
-      h('path', { d: 'M13.7 6.2 L15 1.8 L16.3 6.2 Z', fill: '#475569' })
-    );
+    // All three soaring silhouettes come from one renderer. They used to be two
+    // hand-drawn branches plus a fallthrough, which is how they ended up
+    // sharing a shape that matched none of them. See SOARING_FLIGHT_ART.
+    if (fieldPose === 'raven-soar') return renderSoaringBird(h, 'raven', fieldPose);
+    if (fieldPose === 'coopershawk-soar') return renderSoaringBird(h, 'coopershawk', fieldPose);
+    if (fieldPose === 'herring-gull-flight') return renderSoaringBird(h, 'herringGull', fieldPose);
     if (fieldPose === 'kingfisher-dive') return h('g', { 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose, 'data-birdlab-flight-pose': 'kingfisher-dive' },
       h('path', { d: 'M10 10 L4 3 L12 7 Z', fill: '#64748b', stroke: '#334155', strokeWidth: .7 }),
       h('path', { d: 'M20 10 L26 3 L18 7 Z', fill: '#64748b', stroke: '#334155', strokeWidth: .7 }),
@@ -2725,8 +2987,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     );
     if (fieldPose === 'kingfisher-hover') {
       return h('g', { 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose, 'data-birdlab-flight-pose': 'kingfisher-hover' },
-        h('path', { d: 'M13 15 C8 12 5 5 3 1 C9 4 13 7 15 12 Z', fill: '#64748b', stroke: '#334155', strokeWidth: 0.7, strokeLinejoin: 'round' }),
-        h('path', { d: 'M17 15 C22 12 25 5 27 1 C21 4 17 7 15 12 Z', fill: '#64748b', stroke: '#334155', strokeWidth: 0.7, strokeLinejoin: 'round' }),
+        // Beating wings, not antennae. These were slivers a couple of tenths
+        // wide running from the shoulder to y=1, well above the head, which at
+        // scene scale read as a moth's feelers. Broader chord, and they stop
+        // above the crest instead of at the top of the box.
+        h('path', { d: 'M13.2 14.6 C9.0 12.2 6.0 8.4 4.6 4.2 C8.0 5.8 11.2 8.8 14.2 12.4 Z', fill: '#64748b', stroke: '#334155', strokeWidth: 0.7, strokeLinejoin: 'round' }),
+        h('path', { d: 'M16.8 14.6 C21.0 12.2 24.0 8.4 25.4 4.2 C22.0 5.8 18.8 8.8 15.8 12.4 Z', fill: '#64748b', stroke: '#334155', strokeWidth: 0.7, strokeLinejoin: 'round' }),
         h('ellipse', { cx: 15, cy: 17, rx: 4.4, ry: 7.8, fill: '#dbeafe', stroke: '#334155', strokeWidth: 0.7 }),
         h('path', { d: 'M11 17 Q15 13 19 17 L18 22 Q15 25 12 22 Z', fill: '#3f647d', opacity: 0.9 }),
         h('g', { className: 'birdlab-behavior-motion birdlab-anatomy-motion--pinned-safe' + (behaviorState && (behaviorState.state === 'aim' || behaviorState.state === 'pre-dive') ? ' birdlab-kingfisher-aim' : ' birdlab-kingfisher-balance') },
@@ -2740,28 +3006,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     if (!bird || !species || !SCENE_FLIGHT_SPECIES[bird.species] || (motionName !== 'soar' && motionName !== 'glide')) {
       return h('g', { 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose }, species.svg(h));
     }
-    var palette = bird.species === 'herringGull'
-      ? { wing: '#d6dde5', body: '#f8fafc', edge: '#334155', head: '#f8fafc', bill: '#eab308', tail: '#e2e8f0' }
-      : bird.species === 'raven'
-        ? { wing: '#111827', body: '#0f172a', edge: '#020617', head: '#111827', bill: '#020617', tail: '#111827' }
-        : { wing: '#64748b', body: '#8b6f57', edge: '#334155', head: '#6b7280', bill: '#475569', tail: '#7c6655' };
-    return h('g', { 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose, 'data-birdlab-flight-pose': bird.species },
-      h('path', { d: 'M15 14 C10 11 8 5 1 2 C2 9 5 14 11 18 C7 18 3 20 1 23 C7 23 12 21 16 18 Z', fill: palette.wing, stroke: palette.edge, strokeWidth: 0.7, strokeLinejoin: 'round' }),
-      h('path', { d: 'M15 14 C20 11 22 5 29 2 C28 9 25 14 19 18 C23 18 27 20 29 23 C23 23 18 21 14 18 Z', fill: palette.wing, stroke: palette.edge, strokeWidth: 0.7, strokeLinejoin: 'round' }),
-      h('path', { d: 'M12.5 22 L9 30 L15 27 L21 30 L17.5 22 Z', fill: palette.tail, stroke: palette.edge, strokeWidth: 0.6, strokeLinejoin: 'round' }),
-      h('ellipse', { cx: 15, cy: 16.5, rx: 3.8, ry: 8.2, fill: palette.body, stroke: palette.edge, strokeWidth: 0.65 }),
-      h('circle', { cx: 15, cy: 8.6, r: 3.2, fill: palette.head, stroke: palette.edge, strokeWidth: 0.6 }),
-      h('path', { d: 'M15 5.8 L17.8 7.7 L15 8.1 Z', fill: palette.bill }),
-      bird.species === 'herringGull' && h('g', null,
-        h('path', { d: 'M1 2 L5.2 5.2 L3.7 9.2 C2.4 6.4 1.6 4 1 2 Z', fill: '#1f2937', opacity: 0.92 }),
-        h('path', { d: 'M29 2 L24.8 5.2 L26.3 9.2 C27.6 6.4 28.4 4 29 2 Z', fill: '#1f2937', opacity: 0.92 })
-      ),
-      bird.species === 'coopershawk' && h('g', { fill: 'none', stroke: '#f1f5f9', strokeWidth: 0.7, opacity: 0.62 },
-        h('path', { d: 'M5 10 L11 14 M25 10 L19 14 M11 24 L19 24' }),
-        h('path', { d: 'M10 27 L20 27' })
-      ),
-      bird.species === 'raven' && h('path', { d: 'M8 14 Q15 11 22 14', fill: 'none', stroke: '#475569', strokeWidth: 0.7, opacity: 0.7 })
-    );
+    return renderSoaringBird(h, bird.species, fieldPose);
   }
 
   // A sparse final scenery pass makes feet disappear into grass, reeds, rock,
@@ -2797,7 +3042,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     );
     if (habitatKey === 'coast') return h('g', common,
       h('path', { d: 'M182 318 Q230 309 286 316 Q270 323 197 324 Z', fill: '#55616a', opacity: 0.92 }),
-      h('path', { d: 'M0 420 Q95 410 190 420 T380 418 T570 421 T760 418 T920 421', fill: 'none', stroke: '#eef6f7', strokeWidth: 3.2, opacity: 0.48 })
+      // Foam. This was ONE 3.2-wide stroke running the whole 900 units on a
+      // regular T-chain, and it was the brightest, straightest thing in the
+      // scene. Foam belongs where water meets rock, so it is heaviest against
+      // the ledge and breaks up into scattered patches out in open water.
+      h('path', { d: 'M0 421 Q64 412 128 421 Q196 430 268 420 Q292 417 306 421', fill: 'none', stroke: '#eef6f7', strokeWidth: 3.0, opacity: 0.5, strokeLinecap: 'round' }),
+      h('path', {
+        d: 'M352 418 Q392 412 434 419 M498 423 Q540 417 578 423 M646 416 Q690 411 730 417 M792 422 Q834 417 872 422',
+        fill: 'none', stroke: '#eef6f7', strokeWidth: 1.7, opacity: 0.3, strokeLinecap: 'round'
+      })
     );
     if (habitatKey === 'mountain') return h('g', common,
       h('path', { d: 'M0 472 Q120 459 245 474 T500 470 T750 474 T920 468 L920 500 L0 500 Z', fill: '#59654d', opacity: 0.64 }),

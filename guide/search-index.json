@@ -184,6 +184,14 @@
     "text": ""
   },
   {
+    "id": "prepare-a-lesson:finding-the-right-tool",
+    "title": "Finding the right tool",
+    "chapter": "Prepare a purposeful, differentiated lesson",
+    "level": 3,
+    "url": "prepare-a-lesson.html#finding-the-right-tool",
+    "text": "The sidebar's Find a tool panel narrows the tool list by purpose (Recommended, Make accessible, Engage, Assess and deliver) or by search. It filters what you see; the tool cards below it are what actually create. While a filter is on, the panel says so in words (\"A filter is on: showing 8 of 22 tools\"), and you can only hide the panel when no filter is active, so tools can never go missing without an explanation on screen."
+  },
+  {
     "id": "prepare-a-lesson:build-a-small-lesson-package",
     "title": "Build a small lesson package",
     "chapter": "Prepare a purposeful, differentiated lesson",
@@ -277,7 +285,7 @@
     "chapter": "Prepare a purposeful, differentiated lesson",
     "level": 3,
     "url": "prepare-a-lesson.html#test-the-real-delivery-format",
-    "text": "Continue to Preview/Package/Deliver in Guided Mode or use the available preview and export controls in the full workspace. For a homework QR or link, choose Test latest student link and complete the first steps as a student. For a live lesson, join from a second device or browser profile, verify the code, and send one resource. For a document, inspect the exported file with keyboard navigation, zoom, and read-aloud or a screen reader when available. For print, use print preview and check page breaks, contrast, font size, and whether URLs or instructions still make sense on paper. Test again after a meaningful revision. Previewing an earlier version does not verify the final package."
+    "text": "Continue to Preview/Package/Deliver in Guided Mode or use the available preview and export controls in the full workspace. For a homework QR or link, choose Test latest student link and complete the first steps as a student. For a live lesson, join from a second device or browser profile, verify the code, and send one resource. For a document, inspect the exported file with keyboard navigation, zoom, and read-aloud or a screen reader when available. For print, use print preview and check page breaks, contrast, font size, and whether URLs or instructions still make sense on paper. Two export formats look alike and are not: Print / Save as PDF produces a finished copy to read, while Worksheet produces a blank copy to write on, with ruled answer lines, fill-in bubbles, and a Name and Date header. The export screen explains each format under its selector. If your lesson has both an adapted text and a glossary, the Worksheet format also offers a fill-in-the-blank version: glossary terms in the passage become numbered blanks with a word bank, and the teacher copy carries the answer key. It works in any lesson language. Test again after a meaningful revision. Previewing an earlier version does not verify the final package."
   },
   {
     "id": "prepare-a-lesson:save-name-and-hand-off",
@@ -646,6 +654,46 @@
     "level": 2,
     "url": "live-sessions.html#live-lesson-checklist",
     "text": "Before students join: The student route, first resource, and one activity were rehearsed. Resource names and audience assignments are clear. The join method and codename routine follow school policy. The projected view contains no private teacher or roster information. A no-network fallback is ready. While teaching: Students know the goal, pacing mode, and next action. Delivery status is used for troubleshooting, not judging effort. Targeted supports are routed privately. Signals are acknowledged and cleared. Activities have a purpose, time boundary, and accessible alternative. Before ending: Student work is saved or submitted. Missing evidence is separated from wrong answers. The session is ended through the interface. The project and appropriate follow-up notes are saved. No session code, roster, or student response remains projected. For a detailed learner-experience check before the next session, see Accessibility and UDL. For privacy boundaries, see Privacy and responsible AI."
+  },
+  {
+    "id": "adventure-mode:adventure-mode-a-story-your-lesson-can-carry",
+    "title": "Adventure Mode: a story your lesson can carry",
+    "chapter": "Adventure Mode: a story your lesson can carry",
+    "level": 1,
+    "url": "adventure-mode.html#adventure-mode-a-story-your-lesson-can-carry",
+    "text": "When students see Adventure Mode, lesson-scoped resume, and the assignment switch. Adventure Mode turns a lesson into a short interactive story. Students make choices, answer questions drawn from your source material, and earn XP as they go. It is optional, and as of the August 2026 update it only appears when you want it to. If you have not built a lesson yet, start with Prepare a lesson."
+  },
+  {
+    "id": "adventure-mode:when-students-see-it",
+    "title": "When students see it",
+    "chapter": "Adventure Mode: a story your lesson can carry",
+    "level": 2,
+    "url": "adventure-mode.html#when-students-see-it",
+    "text": "Two things must both be true before the Adventure panel appears for students: Condition Where you control it You left Adventure on for this assignment. Project Settings has an \"Include Adventure in this assignment\" switch. Turn it off and the panel disappears from the student view entirely. There is a lesson to build a story from. Adventure needs source material or an analysis to work with. An empty workspace does not advertise it. The switch defaults to on, so lessons you shared before this update behave exactly as they did."
+  },
+  {
+    "id": "adventure-mode:resume-is-tied-to-the-lesson-now",
+    "title": "Resume is tied to the lesson now",
+    "chapter": "Adventure Mode: a story your lesson can carry",
+    "level": 2,
+    "url": "adventure-mode.html#resume-is-tied-to-the-lesson-now",
+    "text": "A student's saved adventure belongs to the lesson it was made from. If they open a different lesson, they are not offered \"Resume Adventure\" from last week's story, and choosing an old save from a different lesson politely refuses rather than pulling them out of today's work. This closes a real classroom problem: students quietly resuming a past adventure instead of attending to the current lesson. One honest note: adventures saved before this update carry no lesson tag, so the very first resume after the update may still offer an older story. Every save made from now on is tagged."
+  },
+  {
+    "id": "adventure-mode:language",
+    "title": "Language",
+    "chapter": "Adventure Mode: a story your lesson can carry",
+    "level": 2,
+    "url": "adventure-mode.html#language",
+    "text": "Adventure has its own language control with three settings: the lesson language only, the lesson language with a translation, or a multilingual mix. When a translation is included, the second language now follows your Universal Settings translation choice instead of always being English. See Universal Settings for how that control works."
+  },
+  {
+    "id": "adventure-mode:practical-guidance",
+    "title": "Practical guidance",
+    "chapter": "Adventure Mode: a story your lesson can carry",
+    "level": 2,
+    "url": "adventure-mode.html#practical-guidance",
+    "text": "Graded work: turn the assignment switch off. Adventure is practice and engagement, not assessment. XP worries: XP earned in an adventure spends in the same place as all other XP. Removing the adventure does not take away anything a student already earned. Teachers in family mode see the Adventure panel pre-expanded in the sidebar rather than the student presentation."
   },
   {
     "id": "accessibility-and-udl:accessibility-and-udl-verify-the-learner-experience",
@@ -1712,6 +1760,22 @@
     "text": ""
   },
   {
+    "id": "troubleshooting:if-you-see-ai-extras-off-in-the-steam-lab-header",
+    "title": "If you see \"AI extras: off\" in the STEAM Lab header",
+    "chapter": "Troubleshooting",
+    "level": 3,
+    "url": "troubleshooting.html#if-you-see-ai-extras-off-in-the-steam-lab-header",
+    "text": "That small sparkle pill means no AI backend is set up on this device: no API key, no local model, and you are not inside Gemini Canvas. Nothing is broken. Every sim and activity works fully without AI; only the extras (AI hints, coaching) are off. Click the pill to see the three ways to turn AI on. The easiest is opening AlloFlow inside Gemini Canvas, which is free with a Google account and uses your Gemini plan's daily quota; the setup screen has a button that takes you straight there."
+  },
+  {
+    "id": "troubleshooting:if-a-message-disappeared-before-you-finished-reading-it",
+    "title": "If a message disappeared before you finished reading it",
+    "chapter": "Troubleshooting",
+    "level": 3,
+    "url": "troubleshooting.html#if-a-message-disappeared-before-you-finished-reading-it",
+    "text": "Notices appear at the top center of the screen and fade after a few seconds. Nothing is lost: click the lightbulb in the header and open the Messages list to reread every recent notice, newest first."
+  },
+  {
     "id": "troubleshooting:if-generation-does-not-start",
     "title": "If generation does not start",
     "chapter": "Troubleshooting",
@@ -1838,6 +1902,38 @@
     "level": 2,
     "url": "troubleshooting.html#know-when-to-stop-troubleshooting",
     "text": "Move fully to the fallback and contact the appropriate school support when: multiple students are blocked from the learning target; a privacy, security, or safety concern is possible; the workaround would bypass district controls; a student needs an access method you cannot provide safely; the local runtime, backend, LMS, or district-hosted service repeatedly fails; or continued retries risk losing work. After class, reproduce the issue with fictional content and one controlled variable at a time. For routes and terminology that can help you describe the problem, see Specialist and product reference."
+  },
+  {
+    "id": "math-fluency:math-fluency-timed-practice-and-cbm-probes",
+    "title": "Math Fluency: timed practice and CBM probes",
+    "chapter": "Math Fluency: timed practice and CBM probes",
+    "level": 1,
+    "url": "math-fluency.html#math-fluency-timed-practice-and-cbm-probes",
+    "text": "Where timed math practice and CBM probes live, and the fastest way to open them. AlloFlow includes a math fluency instrument: short, timed practice in the curriculum-based measurement (CBM) style, plus a Fluency Maze game. It records attempts and gives you a score history, which makes it closer to an assessment tool than to the exploratory STEAM Lab sims."
+  },
+  {
+    "id": "math-fluency:where-it-lives",
+    "title": "Where it lives",
+    "chapter": "Math Fluency: timed practice and CBM probes",
+    "level": 2,
+    "url": "math-fluency.html#where-it-lives",
+    "text": "Math Fluency is a mode inside the Math tool. Open the Math card in the sidebar, then change the Mode selector to Fluency Probes or Fluency Maze. The faster door, added August 2026: press Ctrl+K and type any of these — \"math fluency\", \"fluency probe\", \"timed math\", \"math minute\", \"CBM probe\", or \"math maze\". The command palette takes you straight there. Because opening a timed probe changes what is on screen, the assistant confirms before it acts."
+  },
+  {
+    "id": "math-fluency:who-sees-it",
+    "title": "Who sees it",
+    "chapter": "Math Fluency: timed practice and CBM probes",
+    "level": 2,
+    "url": "math-fluency.html#who-sees-it",
+    "text": "The panel lives in the teacher sidebar, so students do not browse to it on their own. You administer a probe, or you deliver it as part of an assignment. Teachers, independent learners, and family mode can all reach it; the student view cannot."
+  },
+  {
+    "id": "math-fluency:practical-guidance",
+    "title": "Practical guidance",
+    "chapter": "Math Fluency: timed practice and CBM probes",
+    "level": 2,
+    "url": "math-fluency.html#practical-guidance",
+    "text": "Probes are timed. Have the student ready before you start one; a probe started by accident still runs its clock. The maze opens from a launch card rather than starting instantly, so saying \"math maze\" to the assistant never drops a student into a live game unannounced. Score history stays on the device, consistent with AlloFlow's no-account posture. Export or record scores through your normal documentation routine if your team tracks CBM benchmarks centrally. For the assessment side of the house, including probe administration from Assessment Center, see Specialist and product reference."
   },
   {
     "id": "specialist-reference:specialist-and-product-reference",

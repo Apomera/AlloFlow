@@ -699,3 +699,157 @@ nothing is not evidence of absence in this harness**, because the shell's cwd is
 between calls. This repo's memory already carries that lesson in a different form
 (`feedback_verify_reachability_before_fixing`: a negative grep is not absence). Use an explicit
 `cd`, or the Grep tool, for any claim that something does not exist.
+---
+
+## Addendum — BirdLab flight sprites (requested directly, outside the W5 lane scope)
+
+Aaron asked for this mid-run: "improve Bird Lab visuals and birds". It is not a W5 issue ID
+and touches no W5-owned file, but it is in this shared tree, so it is recorded here. Files
+changed: `stem_lab/stem_tool_birdlab.js` and its byte-identical
+`desktop/web-app/public/stem_lab/stem_tool_birdlab.js` mirror. Nothing else.
+
+### Found
+
+Captured all 83 visual-QA scenarios, then built a zoom harness (bounding box of every
+`[data-birdlab-species]` at `deviceScaleFactor: 4`) because a scene shot renders a bird at
+about 20px and you cannot judge a sprite at that size. The perched and ground poses are good
+(the cardinal, mallard, heron and eagle all read clearly). **The flight sprites were the
+outlier, and they were the worst artwork in the tool.**
+
+Raven, Cooper's hawk and herring gull all soared as **one shape with three palettes**: a
+double-lobed wing on each side, so four wings; the bill drawn as an upward spike above the
+head; a forked tail below. Zoomed, the hawk and raven read as moths and the gull as a
+dragonfly. These are also the most conspicuous birds in the tool, because they are alone in a
+large empty sky.
+
+**It was a teaching defect as well as an ugly one.** `targetSearchSilhouetteClue`
+(`:12552`) tells the learner "compare body proportions, **bill shape, tail length**, and
+posture before relying on color", `TARGET_SEARCH_CLUE_ORDER` makes silhouette the second clue
+revealed, and there is an entire **Silhouette Quiz** sub-tool (`:10043`) whose own description
+is "the skill experienced birders use for distant flying birds". The artwork gave all three
+species the same body proportions, the same bill and the same tail.
+
+Three species, three different code paths, which is how they drifted into one shape:
+
+- `raven-soar` and `coopershawk-soar` had dedicated branches.
+- `herring-gull-flight` is returned by `sceneBirdFieldPose` but had **no branch at all** — it
+  rendered by falling through to the generic fallback.
+
+### Changed
+
+One renderer replaces all of it: `SOARING_FLIGHT_ART` (a table) plus `renderSoaringBird()`,
+called from all three pose branches and from the fallback. The three silhouettes now differ in
+exactly the features the clue names:
+
+| | wings | tail | other |
+|---|---|---|---|
+| raven | long, fingered tips | **wedge** | heavy bill |
+| Cooper's hawk | broad, rounded, near-full span | **long, dark, pale-banded** | small head out front |
+| herring gull | long, pointed | short, square | **black tips with white mirrors** |
+
+Only the left wing is authored; the right is mirrored through x = 15 by flipping the
+even-indexed numbers in the path, so the halves cannot drift apart. That is valid only because
+every path uses absolute M/L/C/Z coordinate pairs, which is stated in a comment at the site.
+The kingfisher's hover wings (a separate pose) were also widened; they were slivers running to
+y=1, above the head, which read as feelers.
+
+Everything stays inside the documented centered 30x30 contract, so the shared 60-unit hotspot
+and every scale and anchor calculation are untouched.
+
+Four things I got wrong first and fixed by looking, all worth knowing:
+
+- **Draw order.** Body-first let the wings cover the outer third of the body on each side and
+  what remained read as a thin strip between two paddles. Wings first, body over them.
+- **A separately stroked tail is an abdomen.** An outlined oval with an outlined bar hanging
+  off it reads as thorax-and-abdomen whatever colour the bar is. Body and tail are now one
+  stroked silhouette, with a differing tail tone painted as an unstroked overlay inside it.
+- **Pale tail with dark bands is a wasp.** Inverted to a dark tail with pale bands, which is
+  also how the bird is actually marked.
+- **I "corrected" the accipiter to short wings and made it worse.** Its wingspan is about 1.9x
+  its body length; the "flying cross" birders describe is the long tail, not short wings.
+
+### Verified
+
+- `node dev-tools/birdlab_visual_qa.mjs` → **83 core states passed, 402 exhaustive states
+  validated, exit 0**, including `assertPaintReferencesResolve`.
+- `npx vitest run` on `bird_lab_accessibility`, `birdlab_visual_qa`, `birdlab_progression`,
+  `birdlab_ispy_tracking` → **47/47**.
+- `npm run verify:gate` → **exit 0**.
+- `cmp` confirms the `desktop/web-app/public/` mirror is byte-identical (the mirror gate in
+  `tests/bird_lab_accessibility.test.js` requires it).
+- **Looked at every claim.** Zoomed sprite shots at 4x across ten iterations, plus full-scene
+  shots at 1120px to confirm the silhouettes still read at the size a learner actually sees.
+- Bounds-checked every new path against the 30x30 contract by hand.
+
+### For Aaron
+
+- The gull is the best of the three and the hawk is still the weakest; it reads as a bird now
+  rather than an insect, but it is the one I would revisit first.
+- **I did not touch the scenery**, and there is real work there. From the same screenshots:
+  the coast and marsh wave lines are ruler-straight full-width white strokes that read as
+  scratches; the distant island is a flat grey ellipse; the coast snag is a plain rectangle
+  with three stick branches; forest canopies are flat ellipses with a single lighter ellipse
+  on top. None of it is broken, so I left it rather than half-finish a second pass.
+- `test-results/birdlab-visual-qa` was wiped by a concurrent session while I was capturing
+  into it (83 scenarios came back as 32 files, then the directory vanished between two
+  commands). The harness hardcodes that path. Worth an output-dir flag; I worked around it by
+  importing the harness and passing my own directory.
+### Second pass — the scenery (same request, continued)
+
+The list I left at the end of the first pass, worked through. Still only
+`stem_lab/stem_tool_birdlab.js` and its mirror.
+
+**Coast.** The horizon was a 4-unit solid bar across all 900 units, which reads as a ruled
+line rather than as distance: now a fine line over a soft haze band. The distant island was a
+plain `<ellipse>` floating on it like a grey saucer: now a low headland with a wooded crown,
+plus a second fainter island to give the horizon depth. The two "wave crests" were full-width
+sine waves on a fixed 80-unit period at 5 units of amplitude, stacked one above the other:
+now broken, unequal swell in three distance bands that get shorter, finer and denser toward
+the horizon, over three translucent depth bands. The snag was a uniform 8-wide `<rect>` with
+three equal straight branch strokes, i.e. a pole with a TV aerial: now tapered, wider at the
+waterline, with drooping branches and two snapped stubs. The foam was one 3.2-wide stroke
+running the entire width and was the brightest, straightest thing in the picture: now heaviest
+against the ledge where water actually meets rock, breaking into scattered patches offshore.
+
+**Marsh.** The "water reflections" were three dead-straight horizontal white rules
+(`M 100 420 L 200 420` and two more) at full white. That is why the water read as scratched.
+Now curved, uneven, dimmer and broken. Lily pads were plain green ellipses: they now carry the
+notch that makes a lily pad read as one, plus a paler rim so they sit on the water.
+
+**Ambient shimmer (coast + marsh).** Two more full-width single strokes on a regular T-chain.
+Stacked with the swell and the foam they made a set of parallel rules across the water. Broken
+into segments; light on water catches in patches.
+
+**Forest and backyard canopies.** Every broadleaf tree was one `<ellipse>` — a green balloon
+on a stick. New `birdlabCanopy()` / `birdlabLeafBlob()` helpers build a lumpy outline with a
+sunlit clump up-left and a shaded clump down-right. Applied to all five forest trees, the
+backyard tree and the backyard shrub. Deterministic by construction (fixed lobe count and
+phase, no randomness) so the QA screenshots stay stable. First attempt looked low-poly: few
+lobes plus a deep wobble turns a quadratic blob into visible flat facets, so the inner clumps
+now carry more lobes and a gentler wobble than the outline.
+
+**Backyard deck rail.** A top rail with four thin posts hanging off it at 70-unit spacing and
+nothing else, which rendered as a table standing on the lawn. Now a real railing: bottom rail,
+twelve balusters, corner posts, and decking under it. Found by probing the DOM for elements in
+the band rather than guessing from the picture.
+
+**Mountain conifers.** Every fir was a plain triangle. New `birdlabFirPath()` builds the
+stepped whorl edge that separates a spruce from a green cone, from the same four numbers the
+triangle used. Applied to the twelve-tree mid-distance band and both tall conifers; the
+pileated's `data-birdlab-trunk-anchor` trunk and its draw order are untouched.
+
+### Verified (second pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **47/47**; `node dev-tools/check_keyless_map.cjs` clean (the new baluster loop is
+keyed); `npm run verify:gate` **exit 0**; mirror byte-identical. Every habitat re-rendered and
+looked at after each change — forest, marsh, coast, backyard and mountain.
+
+### Still open, for Aaron
+
+- The **kingfisher hover** sprite is better (its wings were slivers running above the head)
+  but is the weakest bird left, along with the Cooper's hawk.
+- The **coast granite ledge** is still a flat mauve polygon with a single thin crack line; it
+  wants the faceting the mountain boulder already got.
+- The **eider** on the water reads as a grey lozenge.
+- The forest's **distant treeline** is still a regular row of identical `Q` arches.

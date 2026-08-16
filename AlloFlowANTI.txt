@@ -1979,6 +1979,36 @@ function _alloEffectiveGeminiApiKey() {
 function _usesLocalTextBackend(config) {
     return Boolean(!_isCanvasEnv && config && config.backend && config.backend !== 'gemini');
 }
+// ── AI capability resolver (W7, 2026-08-16) ──────────────────────────────────
+// ONE answer to "can this install talk to an AI?", per capability, reading the
+// SAME stored config the backends actually use (_readAlloAiUserConfig /
+// _alloEffectiveGeminiApiKey / _isCanvasEnv) — never a parallel copy of the
+// truth, which is the gate-reads-a-different-source lockout class this repo has
+// already shipped once. Consumers gate UI with it (disable-with-doorway on
+// teacher surfaces, hide in STEM tools); it must NEVER gate the runtime call
+// path itself — a call that would have worked must still work, so unknown
+// state fails to 'none' for DISPLAY only.
+//   text:   generation via Canvas, a Gemini key, or a local text backend.
+//   images: Imagen needs Canvas or a key (callImagen's own rule; the local
+//           SD-Turbo path is opportunistic and not counted as availability).
+//   tts:    'full' when a cloud leg exists, else 'local' — Kokoro and the
+//           device voice still speak on a keyless install, so TTS is never 'none'.
+//   reason: which leg made text true, for honest UI copy.
+function resolveAiCapability() {
+    try {
+        if (_isCanvasEnv) return { text: true, images: true, tts: 'full', reason: 'canvas' };
+        const config = _readAlloAiUserConfig();
+        const key = _alloEffectiveGeminiApiKey();
+        if (key) return { text: true, images: true, tts: 'full', reason: 'api-key' };
+        if (_usesLocalTextBackend(config)) return { text: true, images: false, tts: 'local', reason: 'local-backend' };
+        return { text: false, images: false, tts: 'local', reason: 'none' };
+    } catch (_) {
+        return { text: false, images: false, tts: 'local', reason: 'none' };
+    }
+}
+if (typeof window !== 'undefined') window.__alloResolveAiCapability = resolveAiCapability;
+// Fired by every writer of alloflow_ai_config so capability-gated UI re-derives.
+const ALLO_AI_CONFIG_CHANGED_EVENT = 'alloflow:ai-config-changed';
 function _installLocalTextBridge(aiInstance, aiConfig) {
     if (!_usesLocalTextBackend(aiConfig) || !aiInstance || typeof aiInstance.generateText !== 'function') return false;
     const backend = aiConfig.backend;
@@ -5628,7 +5658,7 @@ const _alloDiagnosticReason = (value) => {
 };const _alloDiagnosticResourceTypes = new Set([
   'analysis', 'simplified', 'quiz', 'adventure', 'sentence-frames', 'brainstorm',
   'faq', 'outline', 'image', 'timeline', 'lesson-plan', 'glossary', 'persona',
-  'concept-sort', 'dbq', 'note-taking', 'anchor-chart',
+  'concept-sort', 'dbq', 'note-taking', 'anchor-chart', 'gemini-bridge',
 ]);
 const _alloDiagnosticResourceType = value => {
   const type = String(value || '').toLowerCase();
@@ -5731,7 +5761,7 @@ const ALLO_GENERATION_METRICS = (() => {
   const resourceTypes = new Set([
     'simplified', 'quiz', 'adventure', 'sentence-frames', 'brainstorm', 'faq',
     'outline', 'image', 'timeline', 'lesson-plan', 'glossary', 'persona',
-    'concept-sort', 'dbq', 'note-taking', 'anchor-chart',
+    'concept-sort', 'dbq', 'note-taking', 'anchor-chart', 'gemini-bridge',
   ]);
   const blank = () => ({
     v: 1,
@@ -11591,7 +11621,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     })();
     loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=3c094e07a');
     loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=3c094e07a');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=3c094e07a');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=7f722661');
     loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=3c094e07a');
     loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=3c094e07a');
     loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=3c094e07a');
@@ -11773,7 +11803,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=3c094e07a');
     loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=3c094e07a');
     loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=3c094e07a');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=3c094e07a');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=bf881380');
     loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=3c094e07a');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
@@ -11887,7 +11917,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=3c094e07a');
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=3c094e07a');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=3c094e07a');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=3c094e07a');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=78471c26');
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=2e1c0ff3');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=3c094e07a');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=3c094e07a');
@@ -11897,7 +11927,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=3c094e07a');
     loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=7c43afe4');
     loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=3c094e07a');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=3c094e07a');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=6c268f30');
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=3c094e07a');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=3c094e07a');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=3c094e07a');
@@ -12692,6 +12722,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     }
   }, []);
   const [kokoroLoadState, setKokoroLoadState] = useState(null);
+  // W7: live AI capability. Re-derived whenever any writer of alloflow_ai_config
+  // announces a change (same-tab via the custom event, other tabs via 'storage').
+  const [aiCapability, setAiCapability] = useState(() => resolveAiCapability());
+  useEffect(() => {
+      const refresh = () => { try { setAiCapability(resolveAiCapability()); } catch (_) {} };
+      window.addEventListener(ALLO_AI_CONFIG_CHANGED_EVENT, refresh);
+      window.addEventListener('storage', refresh);
+      return () => { window.removeEventListener(ALLO_AI_CONFIG_CHANGED_EVENT, refresh); window.removeEventListener('storage', refresh); };
+  }, []);
   const [showKokoroOfferModal, _setShowKokoroOfferModalRaw] = useState(false);
   const [showSdTurboOfferModal, setShowSdTurboOfferModal] = useState(false);
   const setShowKokoroOfferModal = React.useCallback((v) => { if (v && window.__alloLazyKokoroOfferModal) { try { window.__alloLazyKokoroOfferModal(); } catch(_) {} } _setShowKokoroOfferModalRaw(v); }, []);
@@ -25551,7 +25590,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     image: 'visual diagram illustration support',
     faq: 'questions answers misconceptions',
     'sentence-frames': 'writing scaffolds sentence starters',
-    brainstorm: 'activities ideas engagement',
+    brainstorm: 'activities ideas engagement discussion seminar fishbowl gallery jigsaw cooperative groups collaboration protocol talk stems simulation app canvas',
     persona: 'interview expert historical perspective',
     timeline: 'sequence chronology order',
     'concept-sort': 'sort classify categories',
@@ -53441,7 +53480,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   fracChallenge, fracFeedback, fracAnswer, handleGenerateMath,
                   labToolData, setLabToolData, gradeLevel, sourceTopic,
                   inputText, storageDB, ai, sourceProvenance,
-                  callGemini, callTTS, callImagen, callGeminiVision, callGeminiImageEdit,
+                  // W7: with no AI backend the STEM module gets nulls instead of
+                  // functions that would fail — its getHint/aiChat layer already
+                  // self-disables on a missing callGemini, and the header shows
+                  // the "AI extras: off" pill with onOpenAiSetup as its doorway.
+                  callGemini: aiCapability.text ? callGemini : null,
+                  callGeminiVision: aiCapability.text ? callGeminiVision : null,
+                  callGeminiImageEdit: aiCapability.images ? callGeminiImageEdit : null,
+                  onOpenAiSetup: () => { try { setShowAIBackendModal(true); } catch (_) {} },
+                  callTTS, callImagen,
                   activeStation, setActiveStation,
                   theme,
                   activeSessionCode, studentNickname, isTeacherMode

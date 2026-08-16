@@ -474,12 +474,25 @@ function generateCss(root) {
  * variants — list them with: node dev-tools/gen_docsuite_theme.cjs --unsupported
  * (No backticks in this header: the whole block is pasted INTO a JSX template
  * literal, so one would end the literal and break the AppStyles module.) */`];
-  parts.push(formControlBlock(SCOPE_CLASS));
-  parts.push(buildRules(union, darkFor, `.theme-dark .${SCOPE_CLASS}`));
-  parts.push(buildRules(union, contrastFor, `.theme-contrast .${SCOPE_CLASS}`));
-  parts.push(`/* ── state variants (v3) ── */`);
-  parts.push(buildVariantRules(variants.supported, darkFor, `.theme-dark .${SCOPE_CLASS}`));
-  parts.push(buildVariantRules(variants.supported, contrastFor, `.theme-contrast .${SCOPE_CLASS}`));
+  // v4 (2026-08-16): the ENTIRE remap is emitted inside @media screen. Reason:
+  // these rules are !important, and !important beats a plain declaration
+  // regardless of media, so every `print:` colour variant in the repo (e.g. the
+  // crossword's print:bg-white) was unreachable whenever the teacher printed
+  // from dark or contrast mode — W2 photographed a near-black worksheet. Screen-
+  // scoping makes print fall back to the base Tailwind utilities, so paper is
+  // always light. On-screen output is byte-identical (measured: dark 13.35,
+  // contrast 19.56, unchanged). Aaron approved contrast printing black-on-white
+  // too: yellow-on-black is a screen accommodation and empties cartridges.
+  const themed = [];
+  themed.push(formControlBlock(SCOPE_CLASS));
+  themed.push(buildRules(union, darkFor, `.theme-dark .${SCOPE_CLASS}`));
+  themed.push(buildRules(union, contrastFor, `.theme-contrast .${SCOPE_CLASS}`));
+  themed.push(`/* ── state variants (v3) ── */`);
+  themed.push(buildVariantRules(variants.supported, darkFor, `.theme-dark .${SCOPE_CLASS}`));
+  themed.push(buildVariantRules(variants.supported, contrastFor, `.theme-contrast .${SCOPE_CLASS}`));
+  parts.push('@media screen {');
+  parts.push(themed.join('\n'));
+  parts.push('}');
   return parts.join('\n');
 }
 

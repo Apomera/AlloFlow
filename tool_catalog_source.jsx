@@ -79,7 +79,8 @@ const TOOL_CATALOG = [
   },
   {
     id: 'brainstorm',
-    description: 'Open-ended idea generation around a topic.',
+    description: 'Activity designer: quick idea starters, class discussion kits (Socratic seminar, think-pair-share, fishbowl, gallery walk), jigsaw cooperative activities, or interactive Canvas simulations.',
+    whenToUse: 'Use discussion/jigsaw modes for student-to-student interaction; idea starters for open-ended engagement hooks.',
     inAutofill: true,
     sidebarKey: 'sidebar.tool_brainstorm',
   },
@@ -156,8 +157,11 @@ const TOOL_CATALOG = [
   {
     id: 'gemini-bridge',
     description: 'Interactive simulation/app generator (React web app, Python data viz, p5.js physics sim, or AI chatbot).',
+    // Reached via the Activities (brainstorm) tile's Simulation mode since the
+    // 2026-08-16 Activities redesign — recommend `brainstorm` instead; this id
+    // stays valid so existing blueprints and saved packs keep working.
     whenToUse: 'Use when the lesson would benefit from a hands-on interactive artifact. Skip for text-heavy content with no clear simulation angle.',
-    inAutofill: true,
+    inAutofill: false,
     sidebarKey: 'sidebar.tool_bridge',
   },
   {

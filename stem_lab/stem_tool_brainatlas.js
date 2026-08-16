@@ -3188,37 +3188,77 @@ var d = labToolData.brainAtlas || {};
 
                 brainAtlasDrawCanvasHeading('Cranial nerves and Circle of Willis', 'Inferior view: nerve exits in violet, arterial ring and posterior circulation in red.', { accent: '#dc2626' });
 
+                // ── Top-band layout, measured rather than guessed ──
+                // brainAtlasDrawCanvasHeading sizes its panel in ABSOLUTE pixels and
+                // clamps it (14 + clamp(76..96)), while the decoder banner, the clue
+                // chips and the anatomy were all positioned as fractions of H. Those
+                // two systems only line up at one canvas height; everywhere else the
+                // banner rode up over the heading subtitle, the chips sat inside the
+                // banner, the CN I pill was painted over by the banner, and the
+                // AComm/ACA pill collided with the chip row. Each band is now derived
+                // from the bottom of the band above it, and the anatomy is mapped into
+                // whatever vertical space is genuinely left over.
+                var cwHeadBottom = 14 + Math.max(76, Math.min(96, H * 0.13));
+                var cwBannerY = cwHeadBottom + Math.max(8, H * 0.012);
+                var cwBannerH = Math.max(30, Math.min(46, H * 0.052));
+                var cwChipY = cwBannerY + cwBannerH + Math.max(6, H * 0.010);
+                var cwChipH = Math.max(34, Math.min(54, H * 0.056));
+                var cwArtTop = cwChipY + cwChipH + Math.max(10, H * 0.020);
+                var cwArtBottom = H - Math.max(10, H * 0.015);
+                // The anatomy fractions below were authored against this design band;
+                // keep them readable and remap instead of rewriting 40 magic numbers.
+                var cwSrcTop = 0.0995, cwSrcBottom = 0.9355;
+                var cwScale = (cwArtBottom - cwArtTop) / ((cwSrcBottom - cwSrcTop) * H);
+                function cwY(f) { return cwArtTop + (f - cwSrcTop) * H * cwScale; }
+                function cwH(f) { return f * H * cwScale; }
+
                 ctx.save();
                 ctx.fillStyle = 'rgba(255,255,255,0.82)';
                 ctx.strokeStyle = 'rgba(100,116,139,0.35)';
                 ctx.lineWidth = 1.5;
                 ctx.beginPath();
-                ctx.ellipse(W * 0.36, H * 0.40, W * 0.22, H * 0.26, -0.12, 0, Math.PI * 2);
-                ctx.ellipse(W * 0.64, H * 0.40, W * 0.22, H * 0.26, 0.12, 0, Math.PI * 2);
+                ctx.ellipse(W * 0.36, cwY(0.40), W * 0.22, cwH(0.26), -0.12, 0, Math.PI * 2);
+                ctx.ellipse(W * 0.64, cwY(0.40), W * 0.22, cwH(0.26), 0.12, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.stroke();
                 ctx.fillStyle = 'rgba(226,232,240,0.80)';
                 ctx.beginPath();
-                ctx.roundRect(W * 0.45, H * 0.43, W * 0.10, H * 0.33, 24);
+                ctx.roundRect(W * 0.45, cwY(0.43), W * 0.10, cwH(0.33), 24);
                 ctx.fill();
                 ctx.strokeStyle = 'rgba(71,85,105,0.35)';
                 ctx.stroke();
                 ctx.fillStyle = 'rgba(219,234,254,0.68)';
                 ctx.beginPath();
-                ctx.ellipse(W * 0.50, H * 0.76, W * 0.20, H * 0.12, 0, 0, Math.PI * 2);
+                ctx.ellipse(W * 0.50, cwY(0.76), W * 0.20, cwH(0.12), 0, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.strokeStyle = 'rgba(14,165,233,0.45)';
                 ctx.stroke();
                 for (var fol = 0; fol < 6; fol++) {
                   ctx.beginPath();
-                  ctx.ellipse(W * (0.39 + fol * 0.044), H * 0.76, W * 0.018, H * 0.09, 0.15, 0, Math.PI * 2);
+                  ctx.ellipse(W * (0.39 + fol * 0.044), cwY(0.76), W * 0.018, cwH(0.09), 0.15, 0, Math.PI * 2);
                   ctx.strokeStyle = 'rgba(14,165,233,0.22)';
                   ctx.stroke();
                 }
-                ctx.fillStyle = '#64748b';
+                // textAlign was inherited here, so these two sat left-anchored and
+                // 'ventral brainstem' ran straight through the basilar trunk. Centre
+                // them, move the brainstem caption off the artery, and halo both so
+                // they stay legible where a vessel does cross.
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'alphabetic';
                 ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillText('ventral brainstem', W * 0.50, H * 0.58);
-                ctx.fillText('cerebellum', W * 0.50, H * 0.86);
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = 'rgba(255,255,255,0.88)';
+                ctx.lineJoin = 'round';
+                // (0.50, 0.50) is the clear gap inside the brainstem block: below the
+                // CoW node, above the ring's lower junction at ~0.55, and well above
+                // the basilar trunk which only starts at 0.58. 'cerebellum' stays
+                // inside its own ellipse (0.64-0.88) and clear of the basilar pill,
+                // whose top edge is 0.8745.
+                ctx.strokeText('ventral brainstem', W * 0.50, cwY(0.50));
+                ctx.strokeText('cerebellum', W * 0.50, cwY(0.845));
+                ctx.fillStyle = '#64748b';
+                ctx.fillText('ventral brainstem', W * 0.50, cwY(0.50));
+                ctx.fillText('cerebellum', W * 0.50, cwY(0.845));
                 ctx.restore();
 
                 function cwActive(id) { return !!(sel && sel.id === id); }
@@ -3290,7 +3330,7 @@ var d = labToolData.brainAtlas || {};
                   var subtitleWidth = ctx.measureText(sub).width;
                   var measured = Math.max(labelWidth, subtitleWidth) + 28;
                   var pw = Math.max(wide ? W * 0.19 : W * 0.13, Math.min(W * 0.25, measured));
-                  var ph = H * 0.061;
+                  var ph = cwH(0.061);
                   ctx.fillStyle = active ? color : 'rgba(255,255,255,0.94)';
                   ctx.strokeStyle = color;
                   ctx.lineWidth = active ? 2.5 : 1.2;
@@ -3321,51 +3361,51 @@ var d = labToolData.brainAtlas || {};
                   ctx.restore();
                 }
 
-                cwPath([[W * 0.43, H * 0.27], [W * 0.50, H * 0.235], [W * 0.57, H * 0.27]], arteryColor, 5, 0.00);
-                cwPath([[W * 0.43, H * 0.27], [W * 0.36, H * 0.35, W * 0.39, H * 0.43], [W * 0.43, H * 0.52]], arteryColor, 5, 0.16);
-                cwPath([[W * 0.57, H * 0.27], [W * 0.64, H * 0.35, W * 0.61, H * 0.43], [W * 0.57, H * 0.52]], arteryColor, 5, 0.32);
-                cwPath([[W * 0.43, H * 0.52], [W * 0.50, H * 0.58], [W * 0.57, H * 0.52]], arteryColor, 5, 0.48);
-                cwPath([[W * 0.50, H * 0.58], [W * 0.50, H * 0.71]], arteryColor, 5, 0.64);
-                cwPath([[W * 0.45, H * 0.81], [W * 0.50, H * 0.71], [W * 0.55, H * 0.81]], arterySoft, 4, 0.80);
-                cwPath([[W * 0.39, H * 0.43], [W * 0.25, H * 0.39]], arterySoft, 3.5, 0.22);
-                cwPath([[W * 0.61, H * 0.43], [W * 0.75, H * 0.39]], arterySoft, 3.5, 0.38);
-                cwPath([[W * 0.43, H * 0.27], [W * 0.39, H * 0.18]], arterySoft, 3.5, 0.54);
-                cwPath([[W * 0.57, H * 0.27], [W * 0.61, H * 0.18]], arterySoft, 3.5, 0.70);
+                cwPath([[W * 0.43, cwY(0.27)], [W * 0.50, cwY(0.235)], [W * 0.57, cwY(0.27)]], arteryColor, 5, 0.00);
+                cwPath([[W * 0.43, cwY(0.27)], [W * 0.36, cwY(0.35), W * 0.39, cwY(0.43)], [W * 0.43, cwY(0.52)]], arteryColor, 5, 0.16);
+                cwPath([[W * 0.57, cwY(0.27)], [W * 0.64, cwY(0.35), W * 0.61, cwY(0.43)], [W * 0.57, cwY(0.52)]], arteryColor, 5, 0.32);
+                cwPath([[W * 0.43, cwY(0.52)], [W * 0.50, cwY(0.58)], [W * 0.57, cwY(0.52)]], arteryColor, 5, 0.48);
+                cwPath([[W * 0.50, cwY(0.58)], [W * 0.50, cwY(0.71)]], arteryColor, 5, 0.64);
+                cwPath([[W * 0.45, cwY(0.81)], [W * 0.50, cwY(0.71)], [W * 0.55, cwY(0.81)]], arterySoft, 4, 0.80);
+                cwPath([[W * 0.39, cwY(0.43)], [W * 0.25, cwY(0.39)]], arterySoft, 3.5, 0.22);
+                cwPath([[W * 0.61, cwY(0.43)], [W * 0.75, cwY(0.39)]], arterySoft, 3.5, 0.38);
+                cwPath([[W * 0.43, cwY(0.27)], [W * 0.39, cwY(0.18)]], arterySoft, 3.5, 0.54);
+                cwPath([[W * 0.57, cwY(0.27)], [W * 0.61, cwY(0.18)]], arterySoft, 3.5, 0.70);
 
-                nerveLine('olfactory_cn_i_cw', W * 0.43, H * 0.22, W * 0.25, H * 0.12, nerveSoft, 0.02);
-                nerveLine('optic_chiasm_cn_ii_cw', W * 0.40, H * 0.29, W * 0.50, H * 0.31, '#f59e0b', 0.12);
-                nerveLine('optic_chiasm_cn_ii_cw', W * 0.60, H * 0.29, W * 0.50, H * 0.31, '#f59e0b', 0.22);
-                nerveLine('oculomotor_cn_iii_cw', W * 0.46, H * 0.43, W * 0.29, H * 0.40, nerveColor, 0.30);
-                nerveLine('trigeminal_cn_v_cw', W * 0.42, H * 0.54, W * 0.20, H * 0.55, nerveColor, 0.42);
-                nerveLine('abducens_cn_vi_cw', W * 0.49, H * 0.58, W * 0.32, H * 0.64, nerveColor, 0.52);
-                nerveLine('facial_vestibular_cn_vii_viii_cw', W * 0.57, H * 0.61, W * 0.80, H * 0.61, nerveColor, 0.62);
-                nerveLine('lower_cranial_ix_x_xi_cw', W * 0.56, H * 0.69, W * 0.82, H * 0.72, nerveColor, 0.72);
-                nerveLine('hypoglossal_cn_xii_cw', W * 0.46, H * 0.70, W * 0.22, H * 0.74, nerveColor, 0.82);
+                nerveLine('olfactory_cn_i_cw', W * 0.43, cwY(0.22), W * 0.25, cwY(0.12), nerveSoft, 0.02);
+                nerveLine('optic_chiasm_cn_ii_cw', W * 0.40, cwY(0.29), W * 0.50, cwY(0.31), '#f59e0b', 0.12);
+                nerveLine('optic_chiasm_cn_ii_cw', W * 0.60, cwY(0.29), W * 0.50, cwY(0.31), '#f59e0b', 0.22);
+                nerveLine('oculomotor_cn_iii_cw', W * 0.46, cwY(0.43), W * 0.29, cwY(0.40), nerveColor, 0.30);
+                nerveLine('trigeminal_cn_v_cw', W * 0.42, cwY(0.54), W * 0.20, cwY(0.55), nerveColor, 0.42);
+                nerveLine('abducens_cn_vi_cw', W * 0.49, cwY(0.58), W * 0.32, cwY(0.64), nerveColor, 0.52);
+                nerveLine('facial_vestibular_cn_vii_viii_cw', W * 0.57, cwY(0.61), W * 0.80, cwY(0.61), nerveColor, 0.62);
+                nerveLine('lower_cranial_ix_x_xi_cw', W * 0.56, cwY(0.69), W * 0.82, cwY(0.72), nerveColor, 0.72);
+                nerveLine('hypoglossal_cn_xii_cw', W * 0.46, cwY(0.70), W * 0.22, cwY(0.74), nerveColor, 0.82);
 
-                cwNode('circle_willis_cw', W * 0.50, H * 0.41, Math.min(W, H) * 0.038, vesselDark, 'CoW');
-                cwNode('acomm_aca_cw', W * 0.50, H * 0.245, Math.min(W, H) * 0.025, arteryColor, 'A');
-                cwNode('pcomm_ica_cw', W * 0.61, H * 0.43, Math.min(W, H) * 0.025, arteryColor, 'P');
-                cwNode('basilar_vertebral_cw', W * 0.50, H * 0.71, Math.min(W, H) * 0.025, arteryColor, 'B');
+                cwNode('circle_willis_cw', W * 0.50, cwY(0.41), Math.min(W, H) * 0.038, vesselDark, 'CoW');
+                cwNode('acomm_aca_cw', W * 0.50, cwY(0.245), Math.min(W, H) * 0.025, arteryColor, 'A');
+                cwNode('pcomm_ica_cw', W * 0.61, cwY(0.43), Math.min(W, H) * 0.025, arteryColor, 'P');
+                cwNode('basilar_vertebral_cw', W * 0.50, cwY(0.71), Math.min(W, H) * 0.025, arteryColor, 'B');
 
-                cwPill('olfactory_cn_i_cw', 'CN I', 'olfaction', W * 0.25, H * 0.13, nerveColor, false);
-                cwPill('optic_chiasm_cn_ii_cw', 'CN II / chiasm', 'field crossing', W * 0.50, H * 0.335, '#f59e0b', true);
-                cwPill('oculomotor_cn_iii_cw', 'CN III', 'pupil + eye', W * 0.25, H * 0.40, nerveColor, false);
-                cwPill('trigeminal_cn_v_cw', 'CN V', 'face + chew', W * 0.20, H * 0.55, nerveColor, false);
-                cwPill('abducens_cn_vi_cw', 'CN VI', 'abducts eye', W * 0.29, H * 0.65, nerveColor, false);
-                cwPill('hypoglossal_cn_xii_cw', 'CN XII', 'tongue', W * 0.22, H * 0.75, nerveColor, false);
-                cwPill('facial_vestibular_cn_vii_viii_cw', 'CN VII/VIII', 'face, hearing, balance', W * 0.80, H * 0.61, nerveColor, true);
-                cwPill('lower_cranial_ix_x_xi_cw', 'CN IX-XI', 'swallow + voice', W * 0.82, H * 0.72, nerveColor, true);
-                cwPill('acomm_aca_cw', 'AComm / ACA', 'common aneurysm', W * 0.50, H * 0.205, arteryColor, true);
-                cwPill('pcomm_ica_cw', 'PComm / ICA', 'CN III neighbor', W * 0.76, H * 0.43, arteryColor, true);
-                cwPill('basilar_vertebral_cw', 'Basilar / vertebral', 'brainstem supply', W * 0.50, H * 0.905, arteryColor, true);
+                cwPill('olfactory_cn_i_cw', 'CN I', 'olfaction', W * 0.25, cwY(0.13), nerveColor, false);
+                cwPill('optic_chiasm_cn_ii_cw', 'CN II / chiasm', 'field crossing', W * 0.50, cwY(0.335), '#f59e0b', true);
+                cwPill('oculomotor_cn_iii_cw', 'CN III', 'pupil + eye', W * 0.25, cwY(0.40), nerveColor, false);
+                cwPill('trigeminal_cn_v_cw', 'CN V', 'face + chew', W * 0.20, cwY(0.55), nerveColor, false);
+                cwPill('abducens_cn_vi_cw', 'CN VI', 'abducts eye', W * 0.29, cwY(0.65), nerveColor, false);
+                cwPill('hypoglossal_cn_xii_cw', 'CN XII', 'tongue', W * 0.22, cwY(0.75), nerveColor, false);
+                cwPill('facial_vestibular_cn_vii_viii_cw', 'CN VII/VIII', 'face, hearing, balance', W * 0.80, cwY(0.61), nerveColor, true);
+                cwPill('lower_cranial_ix_x_xi_cw', 'CN IX-XI', 'swallow + voice', W * 0.82, cwY(0.72), nerveColor, true);
+                cwPill('acomm_aca_cw', 'AComm / ACA', 'common aneurysm', W * 0.50, cwY(0.205), arteryColor, true);
+                cwPill('pcomm_ica_cw', 'PComm / ICA', 'CN III neighbor', W * 0.76, cwY(0.43), arteryColor, true);
+                cwPill('basilar_vertebral_cw', 'Basilar / vertebral', 'brainstem supply', W * 0.50, cwY(0.905), arteryColor, true);
 
                 function cwClueChip(x, y, w, title, sub, color) {
-                  brainAtlasDrawDecoderChip(x, y, w, H * 0.045, title, sub, color);
+                  brainAtlasDrawDecoderChip(x, y, w, cwChipH, title, sub, color);
                 }
 
                 ctx.save();
                 var clueActive = cwActive('bedside_clue_decoder_cw');
-                var clueX = W * 0.10, clueY = H * 0.105, clueW = W * 0.80, clueH = H * 0.090;
+                var clueX = W * 0.10, clueY = cwBannerY, clueW = W * 0.80, clueH = cwBannerH;
                 ctx.fillStyle = clueActive ? 'rgba(220,38,38,0.16)' : 'rgba(15,23,42,0.86)';
                 ctx.strokeStyle = clueActive ? '#dc2626' : 'rgba(15,23,42,0.20)';
                 ctx.lineWidth = clueActive ? 2 : 1;
@@ -3373,7 +3413,7 @@ var d = labToolData.brainAtlas || {};
                 brainAtlasDrawDecoderBannerText(clueX, clueY, clueW, clueH, 'BEDSIDE CLUE DECODER', 'dangerous pattern -> likely anatomy', arteryColor);
                 ctx.restore();
 
-                var clueChipY = H * 0.160;
+                var clueChipY = cwChipY;
                 var clueChipW = W * 0.180;
                 cwClueChip(W * 0.120, clueChipY, clueChipW, 'Pupil + CN III', 'PComm aneurysm', arteryColor);
                 cwClueChip(W * 0.320, clueChipY, clueChipW, 'Bitemporal fields', 'chiasm / pituitary', '#f59e0b');
