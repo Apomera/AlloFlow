@@ -54,6 +54,8 @@ const GATES = [
     'an INLINE ref re-runs its setup on every re-render, and these tools push state while animating — molecule re-ran a 120k-attempt Monte Carlo and stacked a new rAF loop each time. Baselined at 1 (beehive); a NEW one fails'],
   ['scan_canvas_stale_reads.cjs', 60_000,
     'the cost of the guard in the line above WORKING: a `cv._fooInit`-guarded ref body runs once, so frame() and any listener made inside it keep the FIRST render closure forever. Migration shipped three DEAD controls that way — clicking the wind field placed nothing, the Lines/Dots toggle never reached the canvas, and picking a species never animated the route — plus a leader-rotation counter stuck at 1. Screenshot tests all pass, because mounting WITH the state set renders correctly. Baselined at 2 (artstudio, geo); a NEW one fails'],
+  ['scan_write_only_state.cjs', 60_000,
+    "a `const [x, setX] = useState()` whose getter is never read renders nothing, and when the setter IS still called the caller is usually a dead feature path that still runs side effects. mathFluencyActive appeared exactly ONCE in the repo while its caller kept starting a 120s timer that wrote a fabricated 0-attempt CBM probe result into a student's history. Baselined at 46; a NEW one fails"],
 ];
 
 // Timeouts are deliberately generous. These scripts each re-read and re-parse
