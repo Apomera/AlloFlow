@@ -224,11 +224,11 @@
                         <a href="#downloads">Choose a Skill package</a>
                     </article>
                     <article class="path-card">
-                        <span class="status-chip status-review">Release verification</span>
+                        <span class="status-chip status-ready">Versioned release</span>
                         <h3>Local MCP connector</h3>
                         <p>A 29-tool local connector for Claude Desktop with PDF, Office, extraction, redaction,
                             validation, and alternate-format workflows. Offline document tools keep document data local. Some setup and export helpers fetch public dependencies without intentionally sending document content; credential checking sends only the key. Gemini-dependent operations may send the full selected document or derived content using the key you configure.</p>
-                        <a href="#mcp-status">See install and release status</a>
+                        <a href="#mcp-status">Download and install</a>
                     </article>
                     <article class="path-card">
                         <span class="status-chip status-future">Institution pilot code</span>
@@ -314,19 +314,32 @@
                             href="https://github.com/Apomera/AlloFlow/releases/download/portable-v0.2.9/alloflow-pdf-remediation-claude-code-plugin-v0.2.9.zip">Download
                             Claude Code ZIP</a>
                     </article>
+                    <article class="download-card">
+                        <span class="status-chip status-ready">Claude Desktop connector</span>
+                        <h3>MCPB extension (local-first)</h3>
+                        <p>The 29-tool local connector for Claude Desktop: PDF, Office, extraction, redaction,
+                            validation, and alternate-format workflows. Offline document tools keep processing on your
+                            machine; Gemini-dependent operations run only under a key you configure.</p>
+                        <code class="checksum">SHA-256 published in SHA256SUMS.txt on the release · provenance: gh attestation verify</code>
+                        <a class="promo-button"
+                            href="https://github.com/Apomera/AlloFlow/releases/download/mcpb-v0.3.0/alloflow-remediation.mcpb">Download
+                            MCPB v0.3.0</a>
+                    </article>
                 </div>
                 <p style="margin-top:18px"><a href="https://github.com/Apomera/AlloFlow/releases/tag/portable-v0.2.9"
                         target="_blank" rel="noopener noreferrer">View release notes and manifest on GitHub</a></p>
 
                 <aside id="mcp-status" class="release-note">
-                    <h3>Why there is not an MCPB download button yet</h3>
-                    <p>The connector source and packaging workflow are present, but the current local build does not
-                        have a verified public release and its adjacent checksum is stale. The next release must be
-                        rebuilt, pass parity and artifact validation, receive a fresh checksum and SBOM, and be
-                        published as a versioned, checksum-listed release. Once that gate passes, installation will be: download the
-                        <code>.mcpb</code>, open Claude Desktop Settings → Extensions, install it, call
-                        <code>remediation_capabilities</code>, and run the one-time browser setup only if requested.
-                        Publishing a mismatched binary would contradict the pipeline's evidence requirements.</p>
+                    <h3>Install the Claude Desktop connector</h3>
+                    <p>The MCPB release is built and published by the repository's CI: it must pass parity and
+                        artifact validation, and it ships with a checksum list (<code>SHA256SUMS.txt</code>), an SBOM,
+                        and GitHub build provenance (<code>gh attestation verify alloflow-remediation.mcpb -R
+                        Apomera/AlloFlow</code>). Install: download the <code>.mcpb</code> above, open Claude Desktop
+                        Settings → Extensions, install it, ask Claude to run <code>remediation_capabilities</code>,
+                        and run the one-time browser setup only if requested. The Gemini key is optional — the
+                        deterministic tools (PDF/UA validation, extraction, redaction, contrast repair, exports) work
+                        without it. <a href="https://github.com/Apomera/AlloFlow/releases/tag/mcpb-v0.3.0"
+                        target="_blank" rel="noopener noreferrer">Release notes, checksums, and privacy boundary</a>.</p>
                 </aside>
             </div>
         </section>
