@@ -23705,6 +23705,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // load, Hub/LMS intake, and startup restoration). Async work may only publish
   // while its captured generation is still current.
   const pdfDocumentSelectionEpochRef = useRef(0);
+  // (2026-08-16, the "modal doesn't appear until re-upload" bug) The ref is the authoritative
+  // guard value — but a REF MUTATION never re-renders. The view's pdfDocumentEpoch prop was
+  // wired as a render-time snapshot of .current, so after intake bumped the ref the modal kept
+  // rendering with the PREVIOUS epoch until some unrelated state change re-rendered the host:
+  // the ownership gate then dropped every progress event ("[EpochGate] the run reports
+  // documentEpoch 1 but this modal owns 0"), the audit publish was refused, and no modal
+  // appeared — while a re-upload "fixed" it by forcing the re-render. This state MIRRORS the
+  // ref (set at the single increment site) purely so epoch changes become render-visible; every
+  // guard keeps reading the ref.
+  const [pdfDocumentEpochLive, setPdfDocumentEpochLive] = useState(0);
   const pdfReattachPendingRef = useRef(null);
   const pdfProjectLoadEpochRef = useRef(0);
   const isPdfDocumentIntakeCurrent = React.useCallback(
@@ -24316,6 +24326,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
 
   const invalidatePdfDocumentOperations = () => {
     const documentIntakeEpoch = ++pdfDocumentSelectionEpochRef.current;
+    setPdfDocumentEpochLive(documentIntakeEpoch); // render-visible mirror — see the note at the ref declaration
     invalidatePdfAuditRun();
     try { pdfAutoContinueAbortRef.current = true; } catch (_) {}
     try { if (pdfAutoContinueAbortCtrlRef.current) pdfAutoContinueAbortCtrlRef.current.abort(); } catch (_) {}
@@ -32117,7 +32128,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     studentNickname, isTeacherMode, generatedContent,
     currentUiLanguage, isIndependentMode, isParentMode,
     pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
-    pdfDocumentEpoch: pdfDocumentSelectionEpochRef.current,
+    pdfDocumentEpoch: pdfDocumentEpochLive,
     pdfAutoSaveProject,
     pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore, pdfOcrLanguage,
     pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
@@ -47695,7 +47706,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           _applyTextSurgery, _lastDiffFingerprintRef, addToast, applyingRemarkup, callGemini,
           capturePdfHtmlCommitToken, commitPdfFixResultIfCurrent,
           diffChunks, diffGranularity, diffLibLoading, diffLibReady, diffSelection,
-          diffViewOpen, isPdfHtmlCommitTokenCurrent, pdfDocumentEpoch: pdfDocumentSelectionEpochRef.current,
+          diffViewOpen, isPdfHtmlCommitTokenCurrent, pdfDocumentEpoch: pdfDocumentEpochLive,
           pdfFixResult, theme, setApplyingRemarkup, setDiffChunks, setDiffGranularity,
           setDiffSelection, setDiffViewOpen, setPdfFixResult, setRangeRejected, t, toggleDiffChunk,
           warnLog
@@ -52832,7 +52843,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           pdfAutoContinue, pdfAutoContinueAbortCtrlRef, pdfAutoContinueAbortRef, pdfAutoContinueRunning, pdfAutoFixPasses,
           pdfAutoSaveProject, pdfBatchCurrentIndex, pdfBatchMode, pdfBatchProcessing, pdfBatchQueue,
           pdfBatchStep, pdfBatchSummary, pdfFixLoading, pdfFixMode, pdfFixModeRef,
-          pdfFixResult, pdfFixResultRef, pdfFixStep, pdfMultiSession, pdfPageRange, pdfDocumentEpoch: pdfDocumentSelectionEpochRef.current,
+          pdfFixResult, pdfFixResultRef, pdfFixStep, pdfMultiSession, pdfPageRange, pdfDocumentEpoch: pdfDocumentEpochLive,
           capturePdfHtmlCommitToken, commitPdfFixResultIfCurrent,
           pdfPolishPasses, pdfPreviewA11yInspect, pdfPreviewFontSize, pdfPreviewOpen, pdfPreviewRef,
           pdfPreviewTheme, pdfTargetScore, pdfWebMode, pendingPdfBase64, pendingPdfFile,
