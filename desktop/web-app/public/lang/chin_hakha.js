@@ -2228,10 +2228,10 @@
     "ai_guide_sub": "Pedagogy, Navigation & Auto-Setup",
     "ai_guide_welcome": "Halo! Kei cu nangmah AI Guide ka si. UDL strategies he ka in bawmh khawh, nangmah caah app ka hruai khawh, asilole nangmah cawnnak settings auto-setup ka tuah khawh. Hal hmanh!",
     "tool_analysis": "Analyze Source Material",
-    "tool_glossary": "Glossary & holh Selection",
+    "tool_glossary": "Glossary",
     "tool_simplified": "Text Adaptation",
     "tool_outline": "Visual Organizer",
-    "tool_visual": "Visual Support",
+    "tool_visual": "Cawnnak hmanthlak",
     "tool_faq": "FAQ Generator",
     "tool_scaffolds": "Tialnak Scaffolds",
     "tool_scaffolds_parent": "Tialnak bawmh",
@@ -2958,7 +2958,7 @@
     "choose_destination_aria": "Thim destination"
   },
   "glossary": {
-    "title": "Glossary & holh Selection",
+    "title": "Glossary",
     "tier2": "Tier 2 (Acad.)",
     "tier2_tooltip": "Sang-utility academic biafang used across disciplines (e.g., 'analyze', 'verify').",
     "tier3": "Tier 3 (Domain)",
@@ -3900,7 +3900,12 @@
     "gauge_simple": "Simple",
     "word_bank_language": "Word bank holh",
     "word_bank_english": "English",
-    "word_bank_both": "Pahnih"
+    "word_bank_both": "Pahnih",
+    "measured_level_label": "Relnak a sangnak teh mi",
+    "measured_on_target": "{grade} caah a tlak",
+    "measured_above": "{grade} nakin a sang deuh",
+    "measured_below": "{grade} nakin a niam deuh",
+    "measured_note": "Flesch-Kincaid, hi ca ah teh mi a si. Fiang deuh in hngalh awkah Check Level hmang."
   },
   "quiz": {
     "title": "Cinah",
@@ -4088,7 +4093,7 @@
       "sidebar_simplified_desc": "Access differentiated versions i nangmah text at various reading levels. Generate simplified content, side-by-side bilingual versions, le modified texts.",
       "sidebar_outline_title": "Visual Organizers",
       "sidebar_outline_desc": "Create structured visual representations i content including ruahnak maps, flow charts, Venn diagrams, le cause-le-effect organizers.",
-      "sidebar_visuals_title": "Visual Supports",
+      "sidebar_visuals_title": "Cawnnak hmanthlak",
       "sidebar_visuals_desc": "AI-tuah limceu le visual aids ah support a hngalh. Create custom visuals asilole enhanced limceu sets caah content.",
       "sidebar_faq_title": "FAQ Generator",
       "sidebar_faq_desc": "Generate frequently asked biahalnak mah sianginn caa might have kong content. A ngan caah anticipating confusion le preparing explanations.",
@@ -4229,7 +4234,7 @@
     "memory_palace": "Memory Palace (method of loci)"
   },
   "visuals": {
-    "title": "Visual Support",
+    "title": "Cawnnak hmanthlak",
     "worksheet_mode": "sianginn caa Worksheet Mode",
     "enhanced": "Enhanced Visuals",
     "text_reduced": "Text-Reduced Mode",
@@ -5846,7 +5851,9 @@
     "title_poettree_config": "🌳 PoetTree Rian",
     "title_poettree_submission": "🌳 Hla Thlahnak",
     "title_litlab_config": "🎭 LitLab Rian",
-    "title_litlab_submission": "🎭 Langhternak Thlahnak"
+    "title_litlab_submission": "🎭 Langhternak Thlahnak",
+    "translation_block": "Lehnak",
+    "translation_into": "Lehnak ({language})"
   },
   "persona": {
     "title": "Interview Mode",
@@ -6264,7 +6271,7 @@
   },
   "tools": {
     "source": "Source Material",
-    "glossary": "Glossary & holh Selection",
+    "glossary": "Glossary",
     "simplified": "Text Adaptation & Engagement",
     "outline": "Visual Organizer",
     "quiz": "Cinah",
@@ -6853,7 +6860,6 @@
     "source_settings_instructions": "Guide AI content chan he lakhmi instructions. Examples: Make it engaging caah reluctant readers, Focus cung water cycle, Include diverse character names, Avoid references ah violence, le Hman simple vocabulary caah ELL sianginn caa. Instructions shape: tone, content focus, vocabulary level, le perspective. Be lakhmi caah best results. Multiple instructions can be combined. Instructions si processed along he nangmah kong le settings. Caah sensitive topics, include content guidance. Instructions do si lo guarantee lakhmi outcomes sihmanhsehlaw strongly influence chan. Tip: Include grade level le any content restrictions ah nangmah instructions caah most appropriate output.",
     "source_verify_checkbox": "Enable AI fact-checking via Google Kawl grounding. When ON: AI cross-references tuah content against web sources, flagging asilole correcting potential inaccuracies. Adds 5-10 tikcu ah chan caan sihmanhsehlaw significantly improves reliability caah factual content. Especially important caah: history (dates, events), science (processes, data), biography, le current events. Caah fiction, creative tialnak, asilole hypothetical scenarios, hi can be disabled ah allow tampin creative freedom. Sources consulted si listed ah chan log caah sayama review. Highly recommended caah any content mah will be presented as factual ah sianginn caa.",
     "source_generate_button": "Create AI-written content cung nangmah specified kong. Hnen ah begin chan using nangmah: kong description, tinhmi length, grade level, le custom instructions. Chan takes 10-20 tikcu. Output si reviewed by safety filters before langhter. Tuah content can be: edited (sayama can modify any part), analyzed (run in a dang chan tools), le khoh cang (tel ah history caah reuse). Hman when: nang need content cung lakhmi kong, want controlled complexity, asilole need ah fill curriculum gaps. Tuah content includes: appropriate vocabulary, logical organization, le grade-level syntax. Verify factual a hman before sianginn hman.",
-    "generator_actions": "Hub caah dihlak content chan tools. Available generators include: Quiz (assessment he leihnak keys), Glossary (visual vocabulary), Simplified Text (leveled reading), FAQ (Q le pairs), Analysis (content examination), cawnnak Taipuelaknak (instructional design), Timeline (chronological activity), Scaffolds (tialnak supports), Ruahnak Sort (categorization lentecel), A relnak (problem chan), Adventure (interactive tuanbia), le Brainstorm (activity ideas). pakhat fate generator transforms nangmah source content into different formats. Hnen any generator ah ka its configuration panel. Multiple generators can be used cung a kanglawng source. Tuah content a langh ah workspace le khoh ah history. Tip: Thawk he Analysis ah understand nangmah content, then generate targeted resources.",
     "tool_visual": "Access visual generator tool. Creates AI-tuah limceu including: vocabulary visuals, ruahnak illustrations, scene depictions, diagrams, le infographics. Visual types: a kongkau limceu (caah learning), worksheets (caah activities), le diagrams (caah relationships). Visuals support: ELL sianginn caa (visual vocabulary), visual sianginn ca, le engagement. pakhat fate chan creates unique limceu. Settings control style, quality, le content. Tuah visuals can be: downloaded, embedded ah thil, le added ah glossaries. Uses AI limceu chan credits. Tip: Generate visuals caah abstract ruahnak mah si difficult ah explain he biafang alone.",
     "tool_udl": "Cawn kong UDL framework integration. Universal Design caah Learning has three principles: Multiple Means i Representation ( what i learning—present information ah different ways), Multiple Means i Action le Expression ( how i learning—let sianginn caa demonstrate understanding differently), le Multiple Means i Engagement ( why i learning—motivate le sustain interest). hi tool supports dihlak three in: varied content formats, multiple interaction modes, le gamified engagement. Clicking ka detailed information kong how pakhat fate tool feature aligns he UDL research. A ngan caah: professional development, IEP justification, le understanding pedagogical foundation. Tip: A kongkau UDL principles when advocating caah tool adoption.",
     "tour-analysis-settings": "Remhmi parameters caah readability analysis, including tinhmi reading level le lakhmi metrics ah track.",
@@ -6878,7 +6884,6 @@
     "adventure_system_state": "Tel resource management mechanics ah adventures. sianginn caa track: Health (consequence i risky thimnak), Gold/Resources (economic decision-making), Reputation (social capital from thimnak), le custom resources nang define. Actions affect resources visibly—spend gold ah buy thil, lose health from poor decisions, gain reputation from helping others. Creates meaningful consequences mah teach: cause-le-effect reasoning, planning ahead, resource management, le opportunity cost. Visual dashboard langhter current resource levels. When resources deplete, lentecel adaptively responds (e.g., low health = limited options). A relnak skills integrate naturally in resource calculations.",
     "glossary_tier2_count": "Set how many Tier 2 (academic) vocabulary biafang ah include. Tier 2 biafang: a langh across subjects, si used ah academic contexts, le si essential caah text a hngalh. Examples: analyze, tehna, significant, contrast. These biafang have highest instructional value—most sianginn caa benefit from explicit teaching. Recommended count depends cung: text length (1 biafang per 100-150 biafang i source), available instruction caan, le sianginn caa need. Balance he Tier 3 count caah tlangpi vocabulary set. Focus instruction here caah maximum impact cung reading a hngalh across dihlak subjects.",
     "glossary_tier3_count": "Set how many Tier 3 (domain-lakhmi) vocabulary biafang ah include. Tier 3 biafang: si lakhmi ah subject area, si usually defined ah context, le may si lo transfer across subjects. Examples: photosynthesis, denominator, alliteration, legislative. These biafang si essential caah understanding lakhmi content sihmanhsehlaw have limited hman outside domain. Instruction typically occurs during content teaching. Caah deep dive into kong, include tampin Tier 3. Caah broader reading skills, prioritize Tier 2. Tier 3 biafang often a langh ah bold asilole italics ah textbooks, signaling their importance within discipline.",
-    "glossary_definition_level": "Control how definitions si written. Options: A kanglawng as Source (maintains a sual complexity—ṭha caah advanced sianginn caa), Cung Grade (matches tinhmi grade level vocabulary), Simplified (uses cunglei biafang, shorter biacheo), le Kindergarten (very basic holh, concrete examples). Match definition complexity ah sianginn caa reading level, si lo content level. 10th-grader studying advanced biology might need Simplified definitions caah unfamiliar terms. Consider nangmah sianginn caa weakest readers when selecting. Definitions can be individually edited after chan if tlawmpal need adjustment. Pro tip: Hman Simplified initially, then discuss tampin technical definitions ah sianginn.",
     "glossary_custom_instructions": "Provide lakhmi guidance caah vocabulary selection le definition style. Examples: Focus cung biafang from chapters 3-5, Include only biafang related ah water cycle, Avoid homonyms he simpler meanings, Tel etymology caah Latin/Greek roots, Include Spanish cognates caah ELL sianginn caa, le Hman sianginn caa-friendly examples from pop culture. Custom instructions shape: which biafang si selected, how definitions si written, le what additional information a langh. Clear instructions produce better-targeted glossaries. nang can request lakhmi formats like: Include biacheo using pakhat fate biafang asilole Tel visual memory hooks. AI follows instructions when making vocabulary selections.",
     "glossary_language_input": "Specify holh caah vocabulary lehhnak. Lut holh: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, asilole any holh. nang can tel multiple holh separated by commas. pakhat fate term will langhter: English definition, tinhmi holh lehhnak(s), le phonetic pronunciation guide khoika applicable. Hman caah: ELL support, heritage holh connections, world holh vocabulary, le multilingual classrooms. lehhnak a langh cung every vocabulary card caah instant a kongkau. Audio pronunciation available ah supported holh. Research langhter connecting thar vocabulary ah inn holh improves retention. Max 4 holh prevents visual clutter while supporting diverse classrooms.",
     "glossary_auto_remove": "Automatically filter out very simple asilole cunglei biafang.",
@@ -7012,7 +7017,6 @@
     "fab_dictation": "Convert speech ah text caah hands-free input. Hnen ah activate microphone, chim clearly, le zoh biafang a langh. A rian a tuah ah: text inputs, tialnak scaffolds, chat, le any editable field. Supports: multiple holh, punctuation commands (say period, comma, thar line), le editing commands (hlonh mah). Dictation requires microphone permission ah browser. Quality depends cung: microphone quality, background noise, le speech clarity. Real-caan transcription langhter as nang chim. Thlen transcribed text normally. A ngan caah: sianginn caa he motor challenges, reluctant writers, le idea chan. Tip: Chim ah tlangpi biacheo caah better a hman.",
     "fab_focus": "Creates movable spotlight mah dims everything except circular area around nangmah cursor. hi dramatically reduces visual clutter le helps maintain attention cung current reading area. Especially beneficial caah sianginn caa he ADHD, sensory processing differences, asilole anyone overwhelmed by busy screens. spotlight follows nangmah mouse/touch automatically. Remhmi spotlight size le dim intensity ah Settings → Lutnak ngeih.",
     "fab_line_focus": "Single-line reading isolation tool caah focused reading. When activated: one text line si highlighted while others si dimmed, creating visual focus. Navigate he: arrow keys (up/down), hnen anywhere cung text, asilole touch/swipe cung mobile. Benefits: reduces visual crowding, supports a zulh difficulties, helps maintain place, le reduces regression. Intensity (how much surrounding text si visible) si adjustable ah Settings → Lutnak ngeih. A rian a tuah cung: dihlak reading content, including tuah text, source thil, le chat. Particularly helpful caah: dyslexia, ADHD, visual processing differences, le anyone overwhelmed by text-heavy screens. Tip: Combine he larger font caah maximum reading ease.",
-    "fab_ruler": "Adds semi-transparent horizontal bar mah follows nangmah cursor ah bawmh track nangmah reading ah line by line. Particularly helpful caah users he dyslexia, ADHD, asilole visual a zulh difficulties. Drag ruler up/down ah reposition, hman arrow keys caah fine control, asilole hnen anywhere ah jump. ruler color can be customized ah Settings. A rian a tuah across dihlak reading views including Simplified Text, FAQ, le Glossary definitions.",
     "fab_timer": "Opens interactive focus timer based cung Pomodoro Technique. Thim from preset durations (5/15/25/45 minutes) asilole customize nangmah own. Features include: visual countdown he progress ring, optional break reminders, XP rewards caah completed sessions (longer = tampin XP), le session logging caah sayama review. Label nangmah task (e.g., 'Rel Chapter 3') ah track what nang accomplished. Minimizes ah header bar so nang can work while it runs.",
     "scaffolds_edit_toggle": "Toggle karlak sayama editing le sianginn caa view mode. When ON (Thlen Mode): hnen any scaffold ah modify text, tel thar biapenh, hlonh thil, le reorder content. When OFF: scaffolds langhter as sianginn caa hmu them (rel-only). Edits khoh automatically. sianginn caa always hmu rel-only regardless i nangmah toggle (they cannot access thlen mode). Hman editing ah: customize AI-tuah scaffolds, tel sianginn-lakhmi examples, lak inappropriate biapenh, le differentiate caah lakhmi sianginn caa. Preview sianginn caa view before sharing. A sual scaffolds can be restored from history. Tip: Review le thlen scaffolds before sianginn ah ensure they match nangmah teaching style le sianginn caa needs.",
     "scaffolds_goal_panel": "Langhter learning objectives caah sianginn caa a kongkau. Goals a langh prominently during activity. Effective goals si: sianginn caa-friendly (I can statements), lakhmi le measurable, le aligned ah activity. Examples: I can theih khawh three causes i Civil War asilole I can hman tehna ah support my claim. Goals increase: metacognition, mah le mah-assessment, le purpose clarity. sianginn caa can a kongkau goals while working. sayama sets goals before sianginn caa access. Multiple goals can be displayed. Goals can include success criteria: I know I have succeeded when my paragraph has kong biacheo. Research langhter visible learning targets improve achievement.",
@@ -7107,7 +7111,6 @@
     "immersive_line_focus": "Enable single-line reading guide. When active: current reading line si fully visible, surrounding lines si dimmed, le focus follows as nang navigate. Benefits: reduces visual overwhelm, improves a zulh, le helps attention stay cung current text. Navigate he: arrow keys, hnen anywhere, asilole auto-advance (he TTS). Dimming intensity si adjustable ah settings. Perfect caah: dyslexia support, attention difficulties, le a zulh challenges. Combines well he text-ah-speech caah multi-modal reading support. Line focus a rian a tuah cung dihlak text content. Research langhter line isolation improves a hngalh caah rian readers. Tip: Combine he larger font caah maximum reading ease.",
     "immersive_syllables": "Visual syllable segmentation caah decoding support. When enabled: biafang langhter he syllable breaks (hy-phen-at-ed), helping readers attack multisyllabic biafang. Benefits: tuah phonemic awareness, supports decoding strategies, develops morphological understanding, le aids pronunciation. Especially helpful caah: rian decoders, ELL sianginn caa, dyslexia support, le vocabulary biafang he complex syllable a kah. Syllabification follows standard phonetic rules. A rian a tuah cung: dihlak reading content including adapted text, glossary terms, le source thil. Combine he audio ah hear syllables pronounced. Toggle off when si lo needed ah reduce visual complexity. Tip: Hman caah challenging vocabulary, then disable caah fluent reading practice.",
     "immersive_wide_text": "Expand text ah hman tampin horizontal screen space. When active: line length increases, less scrolling si needed, le tampin text si visible at once. ṭha caah: fluent readers, wide displays, le when scanning caah information. Default narrow width si better caah: rian readers, mobile devices, le focused reading. Optimal line length varies by reader le device. Research langhter 50-75 characters per line si ideal caah most readers. Wide text trades readability caah efficiency. Combine he line focus if a zulh becomes difficult. Setting si remembered per device. Tip: Hman wide text caah research le scanning, narrow text caah khar reading.",
-    "sidebar_tab_create": "Ka content chan panel he dihlak AI-powered tools. Available generators: Quiz (assessments he leihnak keys), Glossary (visual vocabulary), Outline (graphic organizers), Analysis (content examination), cawnnak Taipuelaknak (structured instruction), Timeline (chronological activities), Simplified Text (leveled reading), le tampin. pakhat fate tool ka configuration panel caah customization before chan. Source content must be loaded caah most tools ah analyze. Tuah content a langh ah main workspace le si khoh cang ah history. Hman Create tab as nangmah primary content chan hub. Tip: Thawk he Analysis ah understand content, then generate targeted resources.",
     "sidebar_tab_history": "Access dihlak nangmah khoh cang content le session history. History includes: auto- khoh cang sessions from recent work, manually khoh cang projects le portfolios, tuah resources organized by creation date, le sianginn caa submissions (sayama view). Actions: load any thil ah zulh working, hlonh thil ah free storage, export caah backup, le kawl by keyword. History sorts by recency by default. Filter by type (quiz, glossary, adventure, etc.) ah find lakhmi resources. Cloud-synced history si i ngeih khawh from any device. Storage limits vary by account—hlonh hlun thil if approaching limit. nangmah history si nangmah personal teaching resource library.",
     "socratic_toggle": "Enable Socratic dialogue mode caah deeper learning. When ON: AI never gives direct leihnak—instead asks probing biahalnak mah guide sianginn caa toward discovery. Benefits: develops critical thinking, encourages mah le mah-correction, tuah problem-solving skills, le creates memorable learning moments. AI uses techniques like: clarifying biahalnak (What do nang mean by...?), challenging assumptions (sihmanhsehlaw what if...?), le tehna requests (How do nang know mah?). Best caah: discussion preparation, ruahnak exploration, le helping sianginn caa who want quick leihnak ah think tampin deeply. May frustrate sianginn caa seeking efficiency—explain purpose.",
     "socratic_input": "Lut nangmah biahalnak asilole statement caah Socratic exploration. AI will respond he biahalnak rather than leihnak. ṭha starting points: Why do nang think [X] happened? What makes [Y] important? asilole I believe [Z] because... AI probes nangmah reasoning: asking caah tehna, exploring implications, testing logic, le surfacing assumptions. hi develops argumentation le critical thinking skills. Be prepared ah: justify nangmah thinking, consider alternatives, le refine nangmah ah. Socratic dialogues can be frustrating initially sihmanhsehlaw tuah lasting understanding. nangmah responses le reasoning si tracked caah reflection.",
@@ -23248,7 +23251,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Atu media kha chim",
+    "describe_current_media_done": "Media {index} / {count} ka rel lio.",
+    "describe_current_media_hint": "Hmun na chuahtak lo in atu asiloah a hnulei media chimnak kha rel",
+    "describe_current_media_none": "Atu hmun ah media a um lo.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore hung",
+    "open_learning_web_explorer_done": "Learning Web: Explore a hung cang.",
+    "open_learning_web_explorer_hint": "Standard, ruahnak, cawnnak, langhtertu le bia pehtlaihnak vialte kha map pakhat chungah zoh",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Media chimnak vialte rel",
+    "read_media_descriptions_count": "Media chimnak {count} ka rel lio.",
+    "read_media_descriptions_hint": "Atu hmun ah ṭialmi hmanthlak, video, asiloah aw chimnak vialte kha rel",
+    "read_media_descriptions_none": "Atu hmun ah media a um lo.",
+    "suggest_contextual_next_steps": "A hnulei tuahding pathum chim",
+    "suggest_contextual_next_steps_hint": "A chungtel he aa tlakmi thimding pathum a langhter, pakhat a thim lo i a tuah hlei lo",
+    "suggest_contextual_next_steps_working": "Atu cawnnak chungtel ka rel i thimding pathum ka timhtuah lio...",
+    "surprise_me_contextually": "A ṭhami a hnulei tuahding pakhat in ka lung sunh",
+    "surprise_me_contextually_hint": "Atu cawnnak chungtel in a ṭhami, a hlaunak a tlawmmi tuahding pakhat a thim",
+    "surprise_me_contextually_working": "Atu cawnnak chungtel ka rel i a ṭhami a hnulei tuahding ka thim lio...",
+    "use_contextual_suggestion": "Chimmi a hnulei tuahding hman",
+    "use_contextual_suggestion_hint": "A hnu bik chimnak ah thimding 1, 2, asiloah 3 kha a tuah",
+    "use_contextual_suggestion_working": "Thimmi a hnulei tuahding ka thawk lio..."
   },
   "palette": {
     "aria": "AlloFlow command palette",
@@ -23271,10 +23300,11 @@
       "videoStudio": "Hika — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Tuahnak zafa kha a theh a si. Ctrl+K nih a thleng.",
     "group": {
@@ -23564,6 +23594,12 @@
     "diff_types_hint": "Hmanrua dangdang tuah ding cu:",
     "diff_cost": "Run khat ah generation {n} vel.",
     "summary_standards": "standards",
-    "summary_interests": "interests"
+    "summary_interests": "interests",
+    "translations": "Lehnak",
+    "translations_auto": "Amah te in ({language})",
+    "translations_auto_plain": "Amah te in",
+    "translations_none": "A um lo",
+    "translations_on_hint": "{output} in a ummi hna cu {target} in zong an um ve lai.",
+    "translations_off_hint": "A hna cu {output} lawng in an um lai, holh dang um a si lo."
   }
 }

@@ -2230,10 +2230,10 @@
     "ai_guide_sub": "Pedagogy, Navigation & Auto-Setup",
     "ai_guide_welcome": "Iọkwe! Ña am AI Guide. I maroñ jipañ ippaṃ kōn UDL strategies, tōl eok ilo app eo, ak make-kōṃṃan settings ko an katak eo am. Bar kajjitōk wōt!",
     "tool_analysis": "Analyze Source Material",
-    "tool_glossary": "Glossary & kajin Selection",
+    "tool_glossary": "Glossary",
     "tool_simplified": "Text Adaptation",
     "tool_outline": "Visual Organizer",
-    "tool_visual": "Visual Support",
+    "tool_visual": "Pija in katak",
     "tool_faq": "Kōṃṃan FAQ",
     "tool_scaffolds": "Writing Scaffolds",
     "tool_scaffolds_parent": "Writing jipañ",
@@ -2960,7 +2960,7 @@
     "choose_destination_aria": "Kālōt a destination"
   },
   "glossary": {
-    "title": "Glossary & kajin Selection",
+    "title": "Glossary",
     "tier2": "Tier 2 (Acad.)",
     "tier2_tooltip": "High-utility academic naan used across disciplines (e.g., 'analyze', 'verify').",
     "tier3": "Tier 3 (Domain)",
@@ -3902,7 +3902,12 @@
     "gauge_simple": "Simple",
     "word_bank_language": "Kajin an bank eo an naan",
     "word_bank_english": "Kajin Belle",
-    "word_bank_both": "Ro arōj"
+    "word_bank_both": "Ro arōj",
+    "measured_level_label": "Joñan riit eo eṃōj joñe",
+    "measured_on_target": "Ekkar ñan {grade}",
+    "measured_above": "Elōñḷọk jān joñan {grade}",
+    "measured_below": "Ettā jān joñan {grade}",
+    "measured_note": "Flesch-Kincaid, eṃōj joñe ioon jeje in. Kōjerbal Check Level ñan juon etale eḷapḷọk."
   },
   "quiz": {
     "title": "Etale",
@@ -4090,7 +4095,7 @@
       "sidebar_simplified_desc": "Access differentiated versions in eo am text at various reading levels. Generate simplified content, side-by-side bilingual versions, im modified texts.",
       "sidebar_outline_title": "Visual Organizers",
       "sidebar_outline_desc": "Create structured visual representations in content including concept maps, flow charts, Venn diagrams, im cause-im-effect organizers.",
-      "sidebar_visuals_title": "Visual Supports",
+      "sidebar_visuals_title": "Pija in katak",
       "sidebar_visuals_desc": "AI-kōṃṃan pija im visual aids ñan support comprehension. Create custom visuals ak enhanced pija sets ñan eo content.",
       "sidebar_faq_title": "Kōṃṃan FAQ",
       "sidebar_faq_desc": "Generate frequently asked kajjitōk eṇ rūkkatak might have about eo content. Eḷap ñan anticipating confusion im preparing explanations.",
@@ -4231,7 +4236,7 @@
     "memory_palace": "Jikin kōnono im̧ōj (jerbal in jikin)"
   },
   "visuals": {
-    "title": "Visual Support",
+    "title": "Pija in katak",
     "worksheet_mode": "rūkkatak Worksheet Mode",
     "enhanced": "Enhanced Visuals",
     "text_reduced": "Text-Reduced Mode",
@@ -5856,7 +5861,9 @@
     "title_poettree_config": "🌳 Jerbal in PoetTree",
     "title_poettree_submission": "🌳 Jilkinḷọk Al",
     "title_litlab_config": "🎭 Jerbal in LitLab",
-    "title_litlab_submission": "🎭 Jilkinḷọk Kōṃṃan"
+    "title_litlab_submission": "🎭 Jilkinḷọk Kōṃṃan",
+    "translation_block": "Ukok",
+    "translation_into": "Ukok ({language})"
   },
   "persona": {
     "title": "Interview Mode",
@@ -6271,7 +6278,7 @@
   },
   "tools": {
     "source": "Source Material",
-    "glossary": "Glossary & kajin Selection",
+    "glossary": "Glossary",
     "simplified": "Text Adaptation & Engagement",
     "outline": "Visual Organizer",
     "quiz": "Etale",
@@ -6860,7 +6867,6 @@
     "source_settings_instructions": "Guide AI content epepen ippan specific instructions. Examples: Make it engaging ñan reluctant readers, Focus ioon eo water cycle, Include diverse character āt, Avoid references ñan violence, im Kōjerbal simple vocabulary ñan ELL rūkkatak. Instructions shape: tone, content focus, vocabulary level, im perspective. Be specific ñan best results. Multiple instructions maroñ be combined. Instructions rej processed along ippan eo am topic im settings. Ñan sensitive topics, include content guidance. Instructions do jab guarantee specific outcomes but strongly influence epepen. Tip: Include grade level im any content restrictions ilo eo am instructions ñan most appropriate output.",
     "source_verify_checkbox": "Enable AI fact-checking via Google Pukot grounding. ñe ON: AI cross-references kōṃṃan content against web sources, flagging ak correcting potential inaccuracies. Adds 5-10 sekōn ñan epepen iien but significantly improves reliability ñan factual content. Especially important ñan: history (dates, events), science (processes, data), biography, im current events. Ñan fiction, creative writing, ak hypothetical scenarios, in maroñ be disabled ñan allow eḷap ḷọk creative freedom. Sources consulted rej listed ilo eo epepen log ñan rūkaki review. Highly recommended ñan any content eṇ will be presented as factual ñan rūkkatak.",
     "source_generate_button": "Create AI-written content ioon eo am specified topic. Klik ñan begin epepen using eo am: topic description, target length, grade level, im custom instructions. Epepen takes 10-20 sekōn. Output ej reviewed by safety filters ṃokta display. Kōṃṃan content maroñ be: edited (rūkaki maroñ modify any part), analyzed (run through bar juon epepen tools), im saved (kobaik ñan history ñan reuse). Kōjerbal ñe: kwe need content ioon a specific topic, want controlled complexity, ak need ñan fill curriculum gaps. Kōṃṃan content includes: appropriate vocabulary, logical organization, im grade-level syntax. Verify factual accuracy ṃokta kilaaj kōjerbal.",
-    "generator_actions": "Hub ñan aolep content epepen tools. Available generators include: Quiz (assessment ippan uwaak keys), Glossary (visual vocabulary), Simplified Text (leveled reading), FAQ (Q im A pairs), Analysis (content examination), katak Plan (instructional design), Timeline (chronological activity), Scaffolds (writing supports), Concept Sort (categorization ikkure), Math (problem epepen), Adventure (interactive bwebwenato), im Brainstorm (activity ideas). kajjojo generator transforms eo am source content into different formats. Klik any generator ñan kapeḷḷọk its configuration panel. Multiple generators maroñ be used ioon eo same source. Kōṃṃan content walok ilo eo workspace im saves ñan history. Tip: Jino ippan Analysis ñan understand eo am content, then generate targeted resources.",
     "tool_visual": "Access eo visual generator tool. Creates AI-kōṃṃan pija including: vocabulary visuals, concept illustrations, scene depictions, diagrams, im infographics. Visual types: reference pija (ñan learning), worksheets (ñan activities), im diagrams (ñan relationships). Visuals support: ELL rūkkatak (visual vocabulary), visual rūkkatak, im engagement. kajjojo epepen creates unique pija. Settings control style, quality, im content. Kōṃṃan visuals maroñ be: downloaded, embedded ilo materials, im added ñan glossaries. Uses AI pija epepen credits. Tip: Generate visuals ñan abstract concepts eṇ rej difficult ñan explain ippan naan alone.",
     "tool_udl": "Katak about UDL framework integration. Universal Design ñan Learning has three principles: Multiple Means in Representation (eo ta in learning—present information ilo different ways), Multiple Means in Action im Expression (eo how in learning—let rūkkatak demonstrate understanding differently), im Multiple Means in Engagement (eo why in learning—motivate im sustain interest). in tool supports aolep three through: varied content formats, multiple interaction modes, im gamified engagement. Clicking opens detailed information about how kajjojo tool feature aligns ippan UDL research. Eḷap ñan: professional development, IEP justification, im understanding pedagogical foundation. Tip: Reference UDL principles ñe advocating ñan tool adoption.",
     "tour-analysis-settings": "Adjust parameters ñan readability analysis, including target reading level im specific metrics ñan track.",
@@ -6885,7 +6891,6 @@
     "adventure_system_state": "Kobaik resource management mechanics ñan adventures. rūkkatak track: Health (consequence in risky kālōt), Gold/Resources (economic decision-making), Reputation (social capital from kālōt), im custom resources kwe define. Actions affect resources visibly—spend gold ñan buy items, lose health from poor decisions, gain reputation from helping others. Creates meaningful consequences eṇ teach: cause-im-effect reasoning, planning ahead, resource management, im opportunity cost. Visual dashboard shows current resource levels. ñe resources deplete, ikkure adaptively responds (e.g., low health = limited options). Math skills integrate naturally through resource calculations.",
     "glossary_tier2_count": "Set how many Tier 2 (academic) vocabulary naan ñan include. Tier 2 naan: walok across subjects, rej used ilo academic contexts, im rej essential ñan text comprehension. Examples: analyze, kein kemool, significant, contrast. These naan have eo highest instructional value—most rūkkatak benefit from explicit teaching. Recommended count depends ioon: text length (1 naan per 100-150 naan in source), available instruction iien, im rūkkatak need. Balance ippan Tier 3 count ñan a kadedeḷọk vocabulary set. Focus instruction here ñan maximum impact ioon reading comprehension across aolep subjects.",
     "glossary_tier3_count": "Set how many Tier 3 (domain-specific) vocabulary naan ñan include. Tier 3 naan: rej specific ñan a subject area, rej usually defined ilo context, im may jab transfer across subjects. Examples: photosynthesis, denominator, alliteration, legislative. These naan rej essential ñan understanding specific content but have limited kōjerbal outside eo domain. Instruction typically occurs during content teaching. Ñan deep dive into a topic, include eḷap ḷọk Tier 3. Ñan broader reading skills, prioritize Tier 2. Tier 3 naan often walok ilo bold ak italics ilo textbooks, signaling their importance within eo discipline.",
-    "glossary_definition_level": "Control how definitions rej written. Options: Same as Source (maintains jinoin complexity—eṃṃan ñan advanced rūkkatak), Ioon Grade (matches target grade level vocabulary), Simplified (uses common naan, shorter sentences), im Kindergarten (very basic kajin, concrete examples). Match definition complexity ñan rūkkatak reading level, jab content level. A 10th-grader studying advanced biology might need Simplified definitions ñan unfamiliar terms. Consider eo am rūkkatak weakest readers ñe selecting. Definitions maroñ be individually edited ālikin epepen if some need adjustment. Pro tip: Kōjerbal Simplified initially, then discuss eo eḷap ḷọk technical definitions ilo kilaaj.",
     "glossary_custom_instructions": "Provide specific guidance ñan vocabulary selection im definition style. Examples: Focus ioon naan from chapters 3-5, Include only naan related ñan eo water cycle, Avoid homonyms ippan simpler meanings, Kobaik etymology ñan Latin/Greek roots, Include Spanish cognates ñan ELL rūkkatak, im Kōjerbal rūkkatak-friendly examples from pop culture. Custom instructions shape: which naan rej selected, how definitions rej written, im ta additional information walok. Clear instructions produce better-targeted glossaries. kwe maroñ request specific formats like: Include a sentence using kajjojo naan ak Kobaik visual memory hooks. AI follows instructions ñe making vocabulary selections.",
     "glossary_language_input": "Specify kajin ñan vocabulary translation. Deḷọñ kajin: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, ak any kajin. kwe maroñ kobaik multiple kajin separated by commas. kajjojo term will kwaḷọk: English definition, target kajin translation(s), im phonetic pronunciation guide ia applicable. Kōjerbal ñan: ELL support, heritage kajin connections, world kajin vocabulary, im multilingual classrooms. Translations walok ioon every vocabulary card ñan instant reference. Audio pronunciation available ilo supported kajin. Research shows connecting ekāāl vocabulary ñan eṃ kajin improves retention. Max 4 kajin prevents visual clutter while supporting diverse classrooms.",
     "glossary_auto_remove": "Automatically filter out very simple ak common naan.",
@@ -7019,7 +7024,6 @@
     "fab_dictation": "Convert speech ñan text ñan hands-free input. Klik ñan activate microphone, kōnono clearly, im watch naan walok. Ej jerbal ilo: text inputs, writing scaffolds, chat, im any editable field. Supports: multiple kajin, punctuation commands (say period, comma, ekāāl line), im editing commands (jolok eṇ). Dictation requires microphone permission ilo browser. Quality depends ioon: microphone quality, background noise, im speech clarity. Real-iien transcription shows as kwe kōnono. Ukot transcribed text normally. Eḷap ñan: rūkkatak ippan motor challenges, reluctant writers, im idea epepen. Tip: Kōnono ilo kadedeḷọk sentences ñan better accuracy.",
     "fab_focus": "Creates a movable spotlight eṇ dims everything except a circular area around eo am cursor. in dramatically reduces visual clutter im helps maintain attention ioon eo current reading area. Especially beneficial ñan rūkkatak ippan ADHD, sensory processing differences, ak anyone overwhelmed by busy screens. Eo spotlight follows eo am mouse/touch automatically. Adjust spotlight size im dim intensity ilo Settings → Accessibility.",
     "fab_line_focus": "Single-line reading isolation tool ñan focused reading. ñe activated: one text line ej highlighted while others rej dimmed, creating visual focus. Navigate ippan: arrow keys (up/down), klik anywhere ioon text, ak touch/swipe ioon mobile. Benefits: reduces visual crowding, supports jaake difficulties, helps maintain place, im reduces regression. Intensity (how much surrounding text ej visible) ej adjustable ilo Settings → Accessibility. Ej jerbal ioon: aolep reading content, including kōṃṃan text, source materials, im chat. Particularly helpful ñan: dyslexia, ADHD, visual processing differences, im anyone overwhelmed by text-heavy screens. Tip: Combine ippan larger font ñan maximum reading ease.",
-    "fab_ruler": "Adds a semi-transparent horizontal bar eṇ follows eo am cursor ñan jipañ track eo am reading jokwe line by line. Particularly helpful ñan users ippan dyslexia, ADHD, ak visual jaake difficulties. Drag eo ruler up/down ñan reposition, kōjerbal arrow keys ñan fine control, ak klik anywhere ñan jump. Eo ruler color maroñ be customized ilo Settings. Ej jerbal across aolep reading views including Simplified Text, FAQ, im Glossary definitions.",
     "fab_timer": "Opens an interactive focus timer based ioon eo Pomodoro Technique. Kālōt from preset durations (5/15/25/45 minutes) ak customize eo am own. Features include: visual countdown ippan progress ring, optional break reminders, XP rewards ñan completed sessions (longer = eḷap ḷọk XP), im session logging ñan rūkaki review. Label eo am task (e.g., 'Riit Chapter 3') ñan track ta kwe accomplished. Minimizes ñan eo header bar so kwe maroñ work while it runs.",
     "scaffolds_edit_toggle": "Toggle between rūkaki editing im rūkkatak view mode. ñe ON (Ukot Mode): klik any scaffold ñan modify text, kobaik ekāāl naan in jiroñ, jolok items, im reorder content. ñe OFF: scaffolds display as rūkkatak lo them (riit-only). Edits kōjparok automatically. rūkkatak always lo riit-only regardless in eo am toggle (they cannot access ukot mode). Kōjerbal editing ñan: customize AI-kōṃṃan scaffolds, kobaik kilaaj-specific examples, joḷọk inappropriate naan in jiroñ, im differentiate ñan specific rūkkatak. Preview rūkkatak view ṃokta sharing. Jinoin scaffolds maroñ be restored from history. Tip: Review im ukot scaffolds ṃokta kilaaj ñan ensure they match eo am teaching style im rūkkatak needs.",
     "scaffolds_goal_panel": "Display learning objectives ñan rūkkatak reference. Goals walok prominently during activity. Effective goals rej: rūkkatak-friendly (I maroñ statements), specific im measurable, im aligned ñan activity. Examples: I maroñ kile three causes in eo Civil War ak I maroñ kōjerbal kein kemool ñan support my claim. Goals increase: metacognition, make-assessment, im purpose clarity. rūkkatak maroñ reference goals while working. rūkaki sets goals ṃokta rūkkatak access. Multiple goals maroñ be displayed. Goals maroñ include success criteria: I know I have succeeded ñe my paragraph has a topic sentence. Research shows visible learning targets improve achievement.",
@@ -7114,7 +7118,6 @@
     "immersive_line_focus": "Enable single-line reading guide. ñe active: current reading line ej fully visible, surrounding lines rej dimmed, im focus follows as kwe navigate. Benefits: reduces visual overwhelm, improves jaake, im helps attention stay ioon current text. Navigate ippan: arrow keys, klik anywhere, ak auto-advance (ippan TTS). Dimming intensity ej adjustable ilo settings. Perfect ñan: dyslexia support, attention difficulties, im jaake challenges. Combines well ippan text-ñan-speech ñan multi-modal reading support. Line focus ej jerbal ioon aolep text content. Research shows line isolation improves comprehension ñan struggling readers. Tip: Combine ippan larger font ñan maximum reading ease.",
     "immersive_syllables": "Visual syllable segmentation ñan decoding support. ñe enabled: naan display ippan syllable breaks (hy-phen-at-ed), helping readers attack multisyllabic naan. Benefits: ej kalōk phonemic awareness, supports decoding strategies, develops morphological understanding, im aids pronunciation. Especially helpful ñan: struggling decoders, ELL rūkkatak, dyslexia support, im vocabulary naan ippan complex syllable patterns. Syllabification follows standard phonetic rules. Ej jerbal ioon: aolep reading content including adapted text, glossary terms, im source materials. Combine ippan audio ñan hear syllables pronounced. Toggle off ñe jab needed ñan reduce visual complexity. Tip: Kōjerbal ñan challenging vocabulary, then disable ñan fluent reading practice.",
     "immersive_wide_text": "Expand text ñan kōjerbal eḷap ḷọk horizontal screen space. ñe active: line length increases, less scrolling ej needed, im eḷap ḷọk text ej visible at once. eṃṃan ñan: fluent readers, wide displays, im ñe scanning ñan information. Default narrow width ej better ñan: struggling readers, mobile devices, im focused reading. Optimal line length varies by reader im device. Research shows 50-75 characters per line ej ideal ñan most readers. Wide text trades readability ñan efficiency. Combine ippan line focus if jaake becomes difficult. Setting ej remembered per device. Tip: Kōjerbal wide text ñan research im scanning, narrow text ñan kiili reading.",
-    "sidebar_tab_create": "Kapeḷḷọk eo content epepen panel ippan aolep AI-powered tools. Available generators: Quiz (assessments ippan uwaak keys), Glossary (visual vocabulary), Outline (graphic organizers), Analysis (content examination), katak Plan (structured instruction), Timeline (chronological activities), Simplified Text (leveled reading), im eḷap ḷọk. kajjojo tool opens a configuration panel ñan customization ṃokta epepen. Source content must be loaded ñan most tools ñan analyze. Kōṃṃan content walok ilo eo main workspace im ej saved ñan history. Kōjerbal eo Create tab as eo am primary content epepen hub. Tip: Jino ippan Analysis ñan understand content, then generate targeted resources.",
     "sidebar_tab_history": "Access aolep eo am saved content im session history. History includes: auto-saved sessions from recent work, manually saved projects im portfolios, kōṃṃan resources organized by creation date, im rūkkatak submissions (rūkaki view). Actions: load any men ñan wōnṃaanḷọk working, jolok items ñan free storage, export ñan backup, im pukot by keyword. History sorts by recency by default. Filter by type (quiz, glossary, adventure, etc.) ñan find specific resources. Cloud-synced history ej accessible from any device. Storage limits vary by account—jolok eṃōkaj items if approaching limit. eo am history ej eo am personal teaching resource library.",
     "socratic_toggle": "Enable Socratic dialogue mode ñan deeper learning. ñe ON: AI never gives direct uwaak—instead asks probing kajjitōk eṇ guide rūkkatak toward discovery. Benefits: develops critical thinking, encourages make-correction, ej kalōk problem-solving skills, im creates memorable learning moments. Eo AI uses techniques like: clarifying kajjitōk (ta do kwe mean by...?), challenging assumptions (But ta if...?), im kein kemool requests (How do kwe know eṇ?). Best ñan: discussion preparation, concept exploration, im helping rūkkatak who want quick uwaak ñan think eḷap ḷọk deeply. May frustrate rūkkatak seeking efficiency—explain eo purpose.",
     "socratic_input": "Deḷọñ eo am kajjitōk ak statement ñan Socratic exploration. Eo AI will respond ippan kajjitōk rather than uwaak. eṃṃan starting points: Why do kwe think [X] happened? ta makes [Y] important? ak I believe [Z] because... Eo AI probes eo am reasoning: asking ñan kein kemool, exploring implications, testing logic, im surfacing assumptions. in develops argumentation im critical thinking skills. Be prepared ñan: justify eo am thinking, consider alternatives, im refine eo am jokwe. Socratic dialogues maroñ be frustrating initially but kalōk lasting understanding. eo am responses im reasoning rej tracked ñan reflection.",
@@ -23334,7 +23337,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Kwaḷọk kōn media in kiiō",
+    "describe_current_media_done": "Ej riiti media {index} iaan {count}.",
+    "describe_current_media_hint": "Riiti kōmeḷeḷe in media in kiiō ak eo tokālik ilo an jab diwōjḷọk jān jikin eo",
+    "describe_current_media_none": "Ejjeḷọk media ilo jikin eo kiiō.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Kepeḷḷọk Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore epeḷḷọk.",
+    "open_learning_web_explorer_hint": "Kappok joñak ko, ḷōmṇak ko, katak ko, men in kaṃool ko, im kōkeitaak in naan ko ilo juon wōt map",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Riiti aolep kōmeḷeḷe in media",
+    "read_media_descriptions_count": "Ej riiti {count} kōmeḷeḷe in media.",
+    "read_media_descriptions_hint": "Riiti aolep kōmeḷeḷe eṃōj jeje kōn pija, video, ak ainikien ilo jikin eo kiiō",
+    "read_media_descriptions_none": "Ejjeḷọk media ilo jikin eo kiiō.",
+    "suggest_contextual_next_steps": "Kwaḷọk 3 buñten neen tokālik",
+    "suggest_contextual_next_steps_hint": "Ej kwaḷọk jilu men in kālet ekkar ñan wāween eo, im ejjab kālet ak jino juon",
+    "suggest_contextual_next_steps_working": "Ej riiti wāween katak in kiiō im kōpooji jilu men in kālet...",
+    "surprise_me_contextually": "Letok juon buñten neen tokālik eo eṃṃan",
+    "surprise_me_contextually_hint": "Ej kālet juon wōt jerbal tokālik ejiṃwe im edik uwōta jān wāween katak in kiiō",
+    "surprise_me_contextually_working": "Ej riiti wāween katak in kiiō im kālet juon buñten neen tokālik eṃṃan...",
+    "use_contextual_suggestion": "Kōjerbal juon buñten neen tokālik eṃōj kwaḷọke",
+    "use_contextual_suggestion_hint": "Ej jino kālet 1, 2, ak 3 jān naan in kakapilōklōk ko rej āliktata",
+    "use_contextual_suggestion_working": "Ej jino buñten neen tokālik eo eṃōj kālete..."
   },
   "palette": {
     "aria": "AlloFlow command palette",
@@ -23357,10 +23386,11 @@
       "videoStudio": "Ijin — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Aolep jerbal rej kwaḷọk. Ctrl+K ej ukōt.",
     "group": {
@@ -23651,6 +23681,12 @@
     "diff_types_hint": "Generate a differentiated set for:",
     "diff_cost": "About {n} generations per run.",
     "summary_standards": "standards",
-    "summary_interests": "interests"
+    "summary_interests": "interests",
+    "translations": "Ukok ko",
+    "translations_auto": "Make iaan ({language})",
+    "translations_auto_plain": "Make iaan",
+    "translations_none": "Ejjeḷọk",
+    "translations_on_hint": "Men ko ilo {output} renaaj bar wor juon version ilo {target}.",
+    "translations_off_hint": "Men ko renaaj ilo {output} wōt, im ejjeḷọk kajin kein karuo."
   }
 }

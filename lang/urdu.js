@@ -634,7 +634,7 @@
     "ai_guide_sub": "علم تدریس اورالتنقل اورسیٹنگ تلقائی",
     "ai_guide_welcome": "خوش آمدید! میں آپ کا AI رہنما ہوں۔ میں UDL کی حکمت عملیوں میں مدد، آپ کی جانب سے ایپ میں رہنمائی، یا آپ کے سبق کی ترتیبات خودکار طور پر متعین کر سکتا ہوں۔ بس پوچھیے!",
     "tool_analysis": "ماخذی مواد کا تجزیہ کریں",
-    "tool_glossary": "لغت اورانتخاب زبان",
+    "tool_glossary": "لغت",
     "tool_simplified": "تکییف متن",
     "tool_outline": "سےظِّم بصری",
     "tool_visual": "دعم بصری",
@@ -952,7 +952,7 @@
   },
   "tools": {
     "source": "ماخذی مواد",
-    "glossary": "لغت اورانتخاب زبان",
+    "glossary": "لغت",
     "simplified": "تکییف متن اورالشیئر کریں",
     "outline": "سےظِّم بصری",
     "quiz": "جائزہ",
@@ -2759,7 +2759,9 @@
     "title_poettree_config": "🌳 PoetTree اسائنمنٹ",
     "title_poettree_submission": "🌳 نظم جمع کرانا",
     "title_litlab_config": "🎭 LitLab اسائنمنٹ",
-    "title_litlab_submission": "🎭 پرفارمنس جمع کرانا"
+    "title_litlab_submission": "🎭 پرفارمنس جمع کرانا",
+    "translation_block": "ترجمہ",
+    "translation_into": "ترجمہ ({language})"
   },
   "fullpack": {
     "button_label": "مکمل وسائل پیک تیار کریں",
@@ -3050,7 +3052,12 @@
     "gauge_simple": "سادہ",
     "word_bank_english": "انگریزی",
     "word_bank_language": "الفاظ کے بینک کی زبان",
-    "word_bank_both": "دونوں"
+    "word_bank_both": "دونوں",
+    "measured_level_label": "ماپی گئی پڑھنے کی سطح",
+    "measured_on_target": "{grade} کے لیے مناسب",
+    "measured_above": "{grade} سطح سے اوپر",
+    "measured_below": "{grade} سطح سے نیچے",
+    "measured_note": "Flesch-Kincaid، اسی متن پر ماپا گیا۔ مکمل جانچ کے لیے فحص سطح استعمال کریں۔"
   },
   "outline": {
     "title": "سےظِّم بصری",
@@ -3260,7 +3267,7 @@
     "panel_refined": "پینل بہتر ہو گیا!"
   },
   "glossary": {
-    "title": "لغت اورانتخاب زبان",
+    "title": "لغت",
     "tier2": "درجہ 2 (علمی)",
     "tier2_tooltip": "اعلیٰ افادیت کے علمی الفاظ جو مختلف مضامین میں استعمال ہوتے ہیں (مثلاً: 'تجزیہ کریں'، 'تصدیق کریں')۔",
     "tier3": "درجہ 3 (مخصوص میدان)",
@@ -8261,7 +8268,6 @@
     "source_settings_instructions": "مخصوص ہدایات کے ساتھ AI مواد کی تخلیق کی رہنمائی کریں۔ مثالیں: 'ہچکچانے والے قارئین کے لیے دلچسپ بنائیں'، 'پانی کے دور پر توجہ مرکوز کریں'، 'ELL طلبا کے لیے سادہ الفاظ استعمال کریں'۔ بہترین نتائج کے لیے مخصوص ہوں۔",
     "source_verify_checkbox": "Google Search کی بنیاد پر AI سے حقائق کی جانچ فعال کریں۔ فعال ہو تو AI تیار کردہ مواد کا موازنہ ویب وسائل سے کرتا ہے، ممکنہ غلطیوں کی نشاندہی یا اصلاح کرتا ہے۔ تخلیق میں 5-10 سیکنڈ اضافہ ہوتا ہے۔ تاریخی اور سائنسی مواد کے لیے سختی سے تجویز کردہ۔",
     "source_generate_button": "آپ کے متعین موضوع پر AI سے تحریری مواد تیار کریں۔ موضوع کے خلاصے، مطلوبہ لمبائی، جماعت کی سطح اور حسب ضرورت ہدایات کا استعمال کرتے ہوئے تیاری شروع کرنے کے لیے کلک کریں۔ تیاری میں 10-20 سیکنڈ لگتے ہیں۔",
-    "generator_actions": "تمام مواد کی تخلیق کے اوزاروں کا مرکز۔ Quiz، Glossary، آسان متن، FAQ، تجزیہ، Lesson Plan، Timeline، Scaffolds، Concept Sort، Math، Adventure اور Brainstorm کے تیار کنندہ شامل ہیں۔ ہر تیار کنندہ آپ کے ماخذ مواد کو مختلف فارمیٹس میں تبدیل کرتا ہے۔",
     "tool_visual": "Visualize کے اوزار تک رسائی۔ AI سے تیار کردہ تصاویر بناتا ہے بشمول لفظ کے بصری، تصور کے ڈرائنگ، منظر کی تصاویر، چارٹس اور تشریحی گرافکس۔ ELL طلبا اور بصری متعلمین کی حمایت کرتا ہے۔",
     "tool_udl": "UDL فریم ورک کے انضمام کے بارے میں جانیں۔ شامل تعلیم کے لیے تین اصول: نمائندگی کے متعدد ذرائع، عمل اور اظہار کے متعدد ذرائع، اور مشغولیت کے متعدد ذرائع۔ یہ اوزار تینوں کی حمایت کرتا ہے۔",
     "tour-analysis-settings": "پڑھائی کے تجزیہ کے پیمانے، بشمول مطلوبہ پڑھائی کی سطح اور تتبع کرنے کے لیے مخصوص میٹرکس کو ایڈجسٹ کریں۔",
@@ -8286,7 +8292,6 @@
     "adventure_system_state": "Adventure Mode میں وسائل کے انتظام کے میکانکس شامل کرتا ہے۔ طلبا صحت، سونے/وسائل، سکوں اور آپ کے متعین کردہ حسب ضرورت وسائل کا تتبع کرتے ہیں۔ اقدامات وسائل پر بصری طور پر اثر ڈالتے ہیں۔ سبب و اثر کا استدلال سکھاتا ہے۔",
     "glossary_tier2_count": "ٹائر 2 (علمی) ذخیرہ الفاظ کے لفظوں کی تعداد متعین کریں۔ ٹائر 2 الفاظ مضامین میں ظاہر ہوتے ہیں، علمی سیاق میں استعمال ہوتے ہیں اور متن کی فہم کے لیے اہم ہیں۔ مثالیں: تجزیہ کریں، ثبوت، تباین۔ تعلیمی قدر بہت زیادہ ہے۔",
     "glossary_tier3_count": "ٹائر 3 (مخصوص) ذخیرہ الفاظ کے لفظوں کی تعداد متعین کریں۔ ٹائر 3 الفاظ مضمون کے لیے مخصوص ہیں، سیاق میں تعریف کیے جاتے ہیں۔ مثالیں: ضیائی تالیف، خانہ، تشبیہ۔ مخصوص مواد کی فہم کے لیے اہم۔",
-    "glossary_definition_level": "تعریفات کیسے لکھی جاتی ہیں اس کو کنٹرول کریں۔ اختیارات: ماخذ کی طرح (اصل پیچیدگی)، گریڈ پر (مطلوبہ سطح سے ملاتا ہے)، آسان (عام الفاظ، چھوٹے جملے) اور Kindergarten (سادہ زبان)۔ تعریف کی پیچیدگی کو طلبا کی پڑھائی کی سطح سے ملائیں۔",
     "glossary_custom_instructions": "ذخیرہ الفاظ کے انتخاب اور تعریف کے انداز کے لیے مخصوص رہنمائی فراہم کریں۔ مثالیں: 'باب 3-5 سے الفاظ پر توجہ دیں'، 'صرف پانی کے دور سے متعلق الفاظ شامل کریں'، 'Latin/Greek جڑیں شامل کریں'۔ واضح ہدایات زیادہ ہدفی نتائج دیتی ہیں۔",
     "glossary_language_input": "ذخیرہ الفاظ کے ترجمے کے لیے زبانیں متعین کریں۔ زبانیں درج کریں جیسے: Spanish، Mandarin، عربی، French، Vietnamese یا کوئی بھی زبان۔ کوما سے جدا متعدد زبانیں شامل کر سکتے ہیں۔ ELL کی مدد اور ورثے کی زبان کے روابط کے لیے استعمال کریں۔",
     "glossary_auto_remove": "خود بخود بہت سادہ یا عام الفاظ کو فلٹر کریں۔",
@@ -8420,7 +8425,6 @@
     "fab_dictation": "بولنے سے متن میں تبدیلی۔ مائیکروفون پر کلک کر کے صاف بولیں اور الفاظ خود لکھے جائیں گے۔",
     "fab_focus": "ایک حرکت پذیر اسپاٹ لائٹ بناتا ہے جو کرسر کے گرد دائرے کے علاوہ سب کچھ مدھم کر دیتا ہے۔ بصری شور کم کرتا ہے اور ADHD کے طلبا کے لیے توجہ بڑھاتا ہے۔",
     "fab_line_focus": "ایک سطر متن پر فوکس کرنے کا ٹول۔ فعال ہونے پر صرف موجودہ سطر نمایاں ہوتی ہے اور باقی سطریں مدھم رہتی ہیں۔ تیر کی کنجیوں سے تنقل کریں۔",
-    "fab_ruler": "ایک نیم شفاف افقی پٹی شامل کرتا ہے جو کرسر کا پیچھا کرتی ہے تاکہ آپ کو سطر بہ سطر پڑھنے میں مدد ملے۔ ڈسلیکسیا اور ADHD کے صارفین کے لیے مفید۔",
     "fab_timer": "Pomodoro تکنیک پر مبنی توجہ کا ٹائمر۔ پہلے سے طے شدہ دورانیہ (5/15/25/45 منٹ) چنیں یا اپنا متعین کریں۔",
     "scaffolds_edit_toggle": "استاد کے ترمیمی منظر اور طالب علم کے منظر کے درمیان تبدیلی۔ ترمیم میں سہاروں کا متن بدل سکتے ہیں۔",
     "scaffolds_goal_panel": "طلبہ کو سیکھنے کے مقاصد دکھائیں۔ سرگرمی کے دوران مقاصد نمایاں رہتے ہیں۔",
@@ -8515,7 +8519,6 @@
     "immersive_line_focus": "ایک سطر کی قرات کا رہنما فعال کریں۔ موجودہ سطر مکمل نظر آتی ہے، اطراف کی سطریں مدھم۔ Dyslexia کی معاونت کے لیے بہترین۔",
     "immersive_syllables": "ڈی کوڈنگ میں مدد کے لیے الفاظ کو بصری طور پر syllable میں تقسیم کرتا ہے (مثلاً hy-phen-at-ed)۔ کثیر syllable الفاظ کے قارئین کے لیے مفید ہے۔",
     "immersive_wide_text": "متن کو افقی طور پر زیادہ جگہ دیں۔ فعال ہو تو سطر کی طوالت بڑھ جاتی ہے۔ روانی والے قارئین اور وسیع اسکرین کے لیے موزوں۔",
-    "sidebar_tab_create": "نیا تدریسی مواد بنانے کے لیے AlloFlow کے تخلیقی آلات کھولیں (Quiz، Anchor Chart، Lesson Plan وغیرہ)۔",
     "sidebar_tab_history": "محفوظ شدہ سیشن، تخلیق کردہ وسائل اور پچھلے کام تک رسائی حاصل کریں۔",
     "socratic_toggle": "سقراطی طرزِ گفتگو فعال کریں۔ AI براہِ راست جواب دینے کے بجائے سوچنے پر اُبھارنے والے سوالات پوچھتا ہے۔",
     "socratic_input": "اپنا سوال یا خیال درج کریں؛ AI سوالات کے ذریعے آپ کی سوچ کو گہرا کرے گا۔",
@@ -30922,7 +30925,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "موجودہ میڈیا کی وضاحت کریں",
+    "describe_current_media_done": "{count} میں سے {index} میڈیا پڑھا جا رہا ہے۔",
+    "describe_current_media_hint": "وسیلہ چھوڑے بغیر موجودہ یا اگلے میڈیا کی وضاحت پڑھیں",
+    "describe_current_media_none": "موجودہ وسیلے میں کوئی میڈیا نہیں ہے۔",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore کھولیں",
+    "open_learning_web_explorer_done": "Learning Web: Explore کھل گیا۔",
+    "open_learning_web_explorer_hint": "ایک ہی نقشے میں معیارات، تصورات، اسباق، شواہد اور الفاظ کے تعلقات دیکھیں",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "تمام میڈیا وضاحتیں پڑھیں",
+    "read_media_descriptions_count": "{count} میڈیا وضاحتیں پڑھی جا رہی ہیں۔",
+    "read_media_descriptions_hint": "موجودہ وسیلے میں لکھی گئی ہر تصویر، ویڈیو یا آڈیو وضاحت پڑھیں",
+    "read_media_descriptions_none": "موجودہ وسیلے میں کوئی میڈیا نہیں ہے۔",
+    "suggest_contextual_next_steps": "اگلے 3 قدم تجویز کریں",
+    "suggest_contextual_next_steps_hint": "سیاق کے مطابق تین اختیارات دیتا ہے، کوئی منتخب یا چلاتا نہیں",
+    "suggest_contextual_next_steps_working": "موجودہ سبق کا سیاق پڑھ کر تین اختیارات تیار کیے جا رہے ہیں...",
+    "surprise_me_contextually": "کوئی مفید اگلا قدم بتائیں",
+    "surprise_me_contextually_hint": "موجودہ سبق کے سیاق سے ایک مناسب اور کم خطرے والا اگلا کام منتخب کرتا ہے",
+    "surprise_me_contextually_working": "موجودہ سبق کا سیاق پڑھ کر ایک مفید اگلا قدم منتخب کیا جا رہا ہے...",
+    "use_contextual_suggestion": "تجویز کردہ اگلا قدم استعمال کریں",
+    "use_contextual_suggestion_hint": "حالیہ تجاویز میں سے اختیار 1، 2 یا 3 چلاتا ہے",
+    "use_contextual_suggestion_working": "منتخب اگلا قدم شروع کیا جا رہا ہے..."
   },
   "palette": {
     "aria": "AlloFlow کمانڈ پیلیٹ",
@@ -30945,10 +30974,11 @@
       "videoStudio": "یہاں — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "ہر عمل کا اعلان کیا جاتا ہے۔ Ctrl+K ٹوگل کرتا ہے۔",
     "group": {
@@ -31257,6 +31287,12 @@
     "diff_types_hint": "ان کے لیے مختلف سطحوں کا مجموعہ بنائیں:",
     "diff_cost": "ہر رَن میں تقریباً {n} تخلیقات۔",
     "summary_standards": "معیارات",
-    "summary_interests": "دلچسپیاں"
+    "summary_interests": "دلچسپیاں",
+    "translations": "تراجم",
+    "translations_auto": "خودکار ({language})",
+    "translations_auto_plain": "خودکار",
+    "translations_none": "کوئی نہیں",
+    "translations_on_hint": "{output} میں بننے والے وسائل کے ساتھ {target} نسخہ بھی ملے گا۔",
+    "translations_off_hint": "وسائل صرف {output} میں ہوں گے، دوسری زبان کے بغیر۔"
   }
 }

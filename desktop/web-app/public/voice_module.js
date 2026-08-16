@@ -320,8 +320,14 @@
   //   preferredMimeType: 'audio/webm;codecs=opus' (default).
   //     Falls back through 'audio/webm', 'audio/mp4', then browser default.
   //   onTick(elapsedMs): fires every ~100ms while recording.
-  //   onLevel(level0to1): fires per audio level update (deferred —
-  //     needs Web Audio analyser; stubbed for now to keep this commit small).
+  //   onLevel(level0to1): NOT implemented here, and deliberately so. The input
+  //     meter is one shared, reference-counted analyser in
+  //     AlloCommands.micLevelMonitor, which publishes an `alloflow:mic-level`
+  //     window event; per-recorder analysers would mean several of them for one
+  //     physical microphone. Dictation wires it below via acquireMicMeter(),
+  //     handing over THIS recorder's stream so no second capture happens.
+  //     Callers wanting a meter should subscribe to the monitor, or use
+  //     onStream() and build their own analyser on the stream they are given.
   //   onError(err): fires on recording error (mic denied, etc.).
   //   onStream(stream): fires once getUserMedia resolves, before the
   //     MediaRecorder is constructed. Callers who need raw stream access
@@ -982,7 +988,36 @@
       return payload;
     }
 
+    // ── A4 input meter (L7 -> L6 request, wired in wave 2) ──
+    // AlloCommands.micLevelMonitor is reference counted and publishes one RMS
+    // level for every surface that wants a meter. Two rules here:
+    //   - a RECORDED engine already owns a stream, so hand it in: no second
+    //     getUserMedia, no second browser recording indicator.
+    //   - the browser speech service does NOT expose its stream, and acquiring
+    //     with null would open a capture of our own alongside the one the
+    //     recogniser is already running. So there we only piggyback on a
+    //     monitor that is ALREADY live (AlloBot's, typically), which costs
+    //     nothing. Better a meter that is sometimes absent than a second
+    //     microphone light while the user dictates.
+    var micMeterRelease = null;
+    function acquireMicMeter(stream) {
+      if (micMeterRelease) return;
+      try {
+        var AC = window.AlloModules && window.AlloModules.AlloCommands;
+        var monitor = (AC && AC.micLevelMonitor) || window.__alloMicLevelMonitor || null;
+        if (!monitor || typeof monitor.acquire !== 'function') return;
+        if (!stream && !(typeof monitor.isActive === 'function' && monitor.isActive())) return;
+        micMeterRelease = monitor.acquire(stream ? { stream: stream } : null);
+      } catch (e) { micMeterRelease = null; }
+    }
+    function releaseMicMeter() {
+      if (!micMeterRelease) return;
+      try { micMeterRelease(); } catch (e) { /* teardown is best effort */ }
+      micMeterRelease = null;
+    }
+
     function releaseActive() {
+      releaseMicMeter();
       if (activeDictationController === controller) activeDictationController = null;
       if (voiceSessionLease) {
         voiceSessionLease.release(state === 'error' ? 'error' : 'completed');
@@ -1053,8 +1088,9 @@
       setState('starting', { message: 'Starting microphone...' });
       session = recordAudioBlob({
         maxDurationMs: typeof opts.maxDurationMs === 'number' ? opts.maxDurationMs : 60000,
-        onStream: function () {
+        onStream: function (stream) {
           if (generation === myGeneration && activeDictationController === controller) {
+            acquireMicMeter(stream);
             setState('listening', { message: meta.engineLabel + ' is listening. Stop when you are finished.' });
           }
         }
@@ -1062,6 +1098,10 @@
       if (!session.supported) return fail(new Error('Audio recording is not supported.'), 'Audio recording is not supported in this browser.');
       session.result.then(function (audio) {
         if (generation !== myGeneration || activeDictationController !== controller) return;
+        // The microphone is closed by now. Drop the meter here rather than
+        // waiting for releaseActive(), or the bars keep twitching at 0 through
+        // the whole transcription step and read as "still listening".
+        releaseMicMeter();
         setState('transcribing', { message: 'Transcribing with ' + meta.engineLabel + '...' });
         return transcribeAudio(audio.base64, {
           engine: requestedEngine,
@@ -1131,6 +1171,8 @@
         }
       });
       if (!session.supported || !session.start()) return fail(new Error('Speech recognition unavailable'), meta.engineLabel + ' is unavailable.');
+      // No stream to hand over here: only piggyback on an already-live monitor.
+      acquireMicMeter(null);
       setState('listening', { message: meta.engineLabel + ' is listening.' });
       return true;
     }

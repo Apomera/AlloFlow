@@ -17,6 +17,46 @@ const getAssistedKnowledgeContext = (state) => {
   return `\n--- GUIDING HAND KNOWLEDGE (ASSISTED, NOT DEMONSTRATED MASTERY) ---\n${learned.map((entry, index) => `${index + 1}. ${entry}`).join('\n')}\nUse this knowledge when it is relevant in later scenes, but never treat it as evidence that the student independently demonstrated the concept.\n`;
 };
 
+// ── Adventure gloss language (fleet W3, 2026-08-16; L4 inventory row 23) ──
+// Adventure makes TWO language decisions, and they belong to different controls.
+// Keeping them apart is the whole point of this helper.
+//
+//   WHETHER to gloss  -> `adventureLanguageMode`, Adventure's own tri-state.
+//       It carries a "multilingual mix" state no other surface has, and its
+//       "<Lang> + English" versus bare "<Lang>" pair is how a teacher asks for
+//       a second block or for immersion with none. That control stays
+//       authoritative where the two conflict, per L4's design note.
+//   INTO WHAT  -> the universal translation setting, through the shared
+//       `resolveTranslationPolicy`. Before this, all five prompt builders in
+//       this file hardcoded "English", so a teacher running AlloFlow in Spanish
+//       got a Spanish adventure glossed into English.
+//
+// The resolver is the single source of truth for the target on purpose: the
+// settings panel and every generator must not carry two copies of "is this on
+// and into what". This helper never re-derives that, it only asks.
+//
+// English is the fallback in every case where the universal setting yields no
+// target, so the behaviour with translations off, or with no resolver present
+// on an older host, is exactly what it has always been.
+const adventureGlossLanguage = (deps) => {
+  const { adventureLanguageMode, currentUiLanguage, translationMode, resolveTranslationPolicy } = deps || {};
+  const ui = String(currentUiLanguage || '').trim();
+  const mode = String(adventureLanguageMode || 'English');
+  // '' for the multilingual mix: there is no single content language to reason about.
+  const contentLanguage = mode === 'All + English' ? '' : mode.replace(' + English', '').trim();
+  if (typeof resolveTranslationPolicy !== 'function' || !ui) return 'English';
+  try {
+    const policy = resolveTranslationPolicy(translationMode, contentLanguage, ui);
+    if (policy && policy.enabled && policy.target) return policy.target;
+    // The resolver declines to name a target when the content spans several
+    // languages. Adventure still wants one block, and the resolver's answer
+    // everywhere it does answer is the UI language, so use that. Translations
+    // switched off entirely still means English, the historical default.
+    if (!contentLanguage && String(translationMode) !== 'off') return ui;
+  } catch (_) { /* fall through to the historical default */ }
+  return 'English';
+};
+
 let activeAdventureEstablishingShot = null;
 const cancelAdventureEstablishingShot = () => {
   const request = activeAdventureEstablishingShot;
@@ -50,7 +90,7 @@ const scheduleAdventureEstablishingShot = ({ prompt, callImagen, setAdventureSta
 };
 
 const executeStartAdventure = async (contextOverride = null, deps) => {
-  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureArtStyle, adventureCustomArtStyle, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, callImagen, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureArtStyle, adventureCustomArtStyle, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, callImagen, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] executeStartAdventure fired"); } catch(_) {}
     const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
     const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
@@ -149,15 +189,16 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
       const effectiveInstructions = contextOverride
           ? `${contextOverride}\n\n${adventureCustomInstructions}`
           : adventureCustomInstructions;
+      const glossLanguage = adventureGlossLanguage(deps);
       let langInstruction = "Language: English.";
       if (adventureLanguageMode !== 'English') {
           if (adventureLanguageMode === 'All + English') {
-               langInstruction = `Language: Multilingual mix of ${selectedLanguages.join(', ')}. CRITICAL: Provide English translations for ALL narrative text and choices.`;
+               langInstruction = `Language: Multilingual mix of ${selectedLanguages.join(', ')}. CRITICAL: Provide ${glossLanguage} translations for ALL narrative text and choices.`;
           } else if (adventureLanguageMode.endsWith(' + English')) {
                const targetLang = adventureLanguageMode.replace(' + English', '');
-               langInstruction = `Language: ${targetLang}. CRITICAL: Provide English translations for ALL narrative text and choices immediately following the target language text.`;
+               langInstruction = `Language: ${targetLang}. CRITICAL: Provide ${glossLanguage} translations for ALL narrative text and choices immediately following the target language text.`;
           } else {
-               langInstruction = `Language: ${adventureLanguageMode}. Do NOT provide English translations.`;
+               langInstruction = `Language: ${adventureLanguageMode}. Do NOT provide translations in any other language.`;
           }
           langInstruction += ` STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.`;
       }
@@ -497,7 +538,7 @@ Opening scene: ${sceneText.substring(0, 1200)}
 };
 
 const handleStartAdventure = (deps) => {
-  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleStartAdventure fired"); } catch(_) {}
       if (alloBotRef.current) {
           alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
@@ -522,7 +563,7 @@ const handleStartAdventure = (deps) => {
 };
 
 const handleResumeAdventure = async (deps) => {
-  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, adventureImageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, adventureImageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleResumeAdventure fired"); } catch(_) {}
       setIsResumingAdventure(true);
       try {
@@ -603,7 +644,7 @@ const handleResumeAdventure = async (deps) => {
 };
 
 const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
-  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleAdventureTextSubmit fired"); } catch(_) {}
     const currentInput = overrideInput || adventureTextInput;
     if (!currentInput.trim() || adventureState.isLoading) return;
@@ -655,15 +696,16 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
           const isLastTurn = !adventureState.enableAutoClimax && adventureState.turnCount >= maxTurns;
           const turnsSinceLastDrop = adventureState.turnCount - (adventureState.lastKeyItemTurn || 0);
           const currentInventoryNames = adventureState.inventory.map(i => i.name).join(', ');
+          const glossLanguage = adventureGlossLanguage(deps);
           let langInstruction = "Language: English.";
           if (adventureLanguageMode !== 'English') {
               if (adventureLanguageMode === 'All + English') {
-                  langInstruction = `Language: Multilingual mix of ${selectedLanguages.join(', ')}. CRITICAL: Provide English translations for ALL narrative text and choices.`;
+                  langInstruction = `Language: Multilingual mix of ${selectedLanguages.join(', ')}. CRITICAL: Provide ${glossLanguage} translations for ALL narrative text and choices.`;
               } else if (adventureLanguageMode.endsWith(' + English')) {
                   const targetLang = adventureLanguageMode.replace(' + English', '');
-                  langInstruction = `Language: ${targetLang}. CRITICAL: Provide English translations for ALL narrative text and choices.`;
+                  langInstruction = `Language: ${targetLang}. CRITICAL: Provide ${glossLanguage} translations for ALL narrative text and choices.`;
               } else {
-                  langInstruction = `Language: ${adventureLanguageMode}. Do NOT provide English translations.`;
+                  langInstruction = `Language: ${adventureLanguageMode}. Do NOT provide translations in any other language.`;
               }
               langInstruction += ` STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.`;
           }
@@ -989,7 +1031,7 @@ Do NOT force all characters into every scene — let the narrative decide natura
 };
 
 const handleAdventureChoice = async (choice, deps) => {
-  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleAdventureChoice fired"); } catch(_) {}
     const normalizedChoice = typeof choice === 'object' && choice?.action ? choice.action : choice;
     if (adventureState.isLoading) return;
@@ -1055,15 +1097,16 @@ const handleAdventureChoice = async (choice, deps) => {
           ? analysisItem.data.originalText
           : inputText;
       const currentInventoryNames = adventureState.inventory.map(i => i.name).join(', ');
+      const glossLanguage = adventureGlossLanguage(deps);
       let langInstruction = "Language: English.";
       if (adventureLanguageMode !== 'English') {
           if (adventureLanguageMode === 'All + English') {
-              langInstruction = `Language: Multilingual mix of ${selectedLanguages.join(', ')}. CRITICAL: Provide English translations for ALL narrative text and choices.`;
+              langInstruction = `Language: Multilingual mix of ${selectedLanguages.join(', ')}. CRITICAL: Provide ${glossLanguage} translations for ALL narrative text and choices.`;
           } else if (adventureLanguageMode.endsWith(' + English')) {
               const targetLang = adventureLanguageMode.replace(' + English', '');
-              langInstruction = `Language: ${targetLang}. CRITICAL: Provide English translations for ALL narrative text and choices.`;
+              langInstruction = `Language: ${targetLang}. CRITICAL: Provide ${glossLanguage} translations for ALL narrative text and choices.`;
           } else {
-              langInstruction = `Language: ${adventureLanguageMode}. Do NOT provide English translations.`;
+              langInstruction = `Language: ${adventureLanguageMode}. Do NOT provide translations in any other language.`;
           }
           langInstruction += ` STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.`;
       }
@@ -1383,7 +1426,8 @@ const handleGuidingHand = async (item, deps) => {
     adventureState, adventureInputMode, adventureLanguageMode, adventureFreeResponseEnabled,
     adventureConsistentCharacters, adventureCustomInstructions, isAdventureStoryMode,
     isSocialStoryMode, socialStoryFocus, sourceTopic, inputText, gradeLevel,
-    currentUiLanguage, selectedLanguages, lastTurnSnapshot, setAdventureState, callGemini,
+    currentUiLanguage, translationMode, resolveTranslationPolicy,
+    selectedLanguages, lastTurnSnapshot, setAdventureState, callGemini,
     resilientJsonParse, addToast, t, warnLog, generateAdventureImage,
     playAdventureEventSound, alloBotRef, ADVENTURE_GUARDRAIL, NARRATIVE_GUARDRAILS
   } = deps;
@@ -1425,15 +1469,16 @@ const handleGuidingHand = async (item, deps) => {
     const optionsInstruction = adventureFreeResponseEnabled
       ? 'Return scene.options as an empty array. End with a specific new unresolved problem that invites the learner to type the next response.'
       : 'Return exactly 4 concise, distinct options for the NEW problem after the intervention. Do not ask the learner to redo the obstacle that was just resolved.';
+    const glossLanguage = adventureGlossLanguage(deps);
     let languageInstruction = 'Write all learner-facing text in English.';
     if (adventureLanguageMode && adventureLanguageMode !== 'English') {
       if (adventureLanguageMode === 'All + English') {
-        languageInstruction = `Use a multilingual mix of ${(selectedLanguages || []).join(', ') || 'the selected languages'} and provide English translations for all narrative text and choices.`;
+        languageInstruction = `Use a multilingual mix of ${(selectedLanguages || []).join(', ') || 'the selected languages'} and provide ${glossLanguage} translations for all narrative text and choices.`;
       } else if (adventureLanguageMode.endsWith(' + English')) {
         const targetLanguage = adventureLanguageMode.replace(' + English', '');
-        languageInstruction = `Write in ${targetLanguage} and provide English translations for all narrative text and choices.`;
+        languageInstruction = `Write in ${targetLanguage} and provide ${glossLanguage} translations for all narrative text and choices.`;
       } else {
-        languageInstruction = `Write all learner-facing text in ${adventureLanguageMode} without English translations.`;
+        languageInstruction = `Write all learner-facing text in ${adventureLanguageMode}, with no translation into any other language.`;
       }
     }
 
@@ -1576,6 +1621,9 @@ const handleAdventureHint = async (deps) => {
     adventureInputMode,
     adventureLanguageMode,
     selectedLanguages,
+    currentUiLanguage,
+    translationMode,
+    resolveTranslationPolicy,
     adventureCustomInstructions,
     isSocialStoryMode,
     socialStoryFocus,
@@ -1598,13 +1646,14 @@ const handleAdventureHint = async (deps) => {
       : mode === 'social'
         ? 'NOTICE a social cue, perspective, feeling, or need; CONNECT it to a communication principle; TRY a respectful planning move without scripting the response.'
         : 'NOTICE a relevant story or subject-matter detail; CONNECT it to the obstacle; TRY a reasoning move without choosing the action.';
+  const glossLanguage = adventureGlossLanguage(deps);
   const languageMode = String(adventureLanguageMode || 'English');
   const languageGuidance = languageMode === 'English'
     ? 'Write in English.'
     : languageMode === 'All + English'
-      ? `Write in ${Array.isArray(selectedLanguages) && selectedLanguages.length ? selectedLanguages.join(', ') : 'the selected languages'}, with a concise English translation in each field.`
+      ? `Write in ${Array.isArray(selectedLanguages) && selectedLanguages.length ? selectedLanguages.join(', ') : 'the selected languages'}, with a concise ${glossLanguage} translation in each field.`
       : languageMode.includes('+ English')
-        ? `Write bilingually in ${languageMode.replace('+ English', '').trim()} and English.`
+        ? `Write bilingually in ${languageMode.replace('+ English', '').trim()} and ${glossLanguage}.`
         : `Write in ${languageMode}.`;
 
   // Lock only during generation. A failed or vague response does not consume

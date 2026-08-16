@@ -2252,7 +2252,7 @@
     "ai_guide_sub": "Pedagogy, Navigation & Awtomatiko-Setup",
     "ai_guide_welcome": "Kumusta! Ako ang iyong AI Guide. Makakatulong ako sa mga estratehiya ng UDL, mag-navigate sa app para sa iyo, o awtomatikong i-setup ang mga setting ng iyong aralin. Magtanong ka lang!",
     "tool_analysis": "Suriin pinagkunang materyal",
-    "tool_glossary": "glosaryo & wika Selection",
+    "tool_glossary": "Glosaryo",
     "tool_simplified": "teksto Adaptation",
     "tool_outline": "biswal Organizer",
     "tool_visual": "biswal suporta",
@@ -2982,7 +2982,7 @@
     "choose_destination_aria": "Pumili isang destination"
   },
   "glossary": {
-    "title": "glosaryo & wika Selection",
+    "title": "Glosaryo",
     "tier2": "Tier 2 (Akad.)",
     "tier2_tooltip": "Mataas-utility akademiko mga salita ginamit sa kabila disciplines (e.g., 'suriin', 'verify').",
     "tier3": "Tier 3 (Domain)",
@@ -3924,7 +3924,12 @@
     "gauge_simple": "simple",
     "word_bank_english": "Ingles",
     "word_bank_language": "Wika ng bangko ng salita",
-    "word_bank_both": "Pareho"
+    "word_bank_both": "Pareho",
+    "measured_level_label": "Nasukat na antas ng pagbasa",
+    "measured_on_target": "Bagay para sa {grade}",
+    "measured_above": "Mas mataas sa antas na {grade}",
+    "measured_below": "Mas mababa sa antas na {grade}",
+    "measured_note": "Flesch-Kincaid, sinukat sa tekstong ito. Gamitin ang Suriin antas para sa mas buong pagsusuri."
   },
   "quiz": {
     "title": "Suriin",
@@ -5870,7 +5875,9 @@
     "title_poettree_config": "🌳 PoetTree Assignment",
     "title_poettree_submission": "🌳 Pagsusumite ng Tula",
     "title_litlab_config": "🎭 LitLab Assignment",
-    "title_litlab_submission": "🎭 Pagsusumite ng Pagtatanghal"
+    "title_litlab_submission": "🎭 Pagsusumite ng Pagtatanghal",
+    "translation_block": "Pagsasalin",
+    "translation_into": "Pagsasalin ({language})"
   },
   "persona": {
     "title": "Interview mode",
@@ -6289,7 +6296,7 @@
   },
   "tools": {
     "source": "pinagkunang materyal",
-    "glossary": "glosaryo & wika Selection",
+    "glossary": "Glosaryo",
     "simplified": "teksto Adaptation & Engagement",
     "outline": "biswal Organizer",
     "quiz": "Suriin",
@@ -6878,7 +6885,6 @@
     "source_settings_instructions": "Mga karagdagang tagubilin para gabayan ang AI sa tono, paksa, bokabularyo, at pananaw ng nilalaman.",
     "source_verify_checkbox": "Buksan ang AI fact-checking sa pamamagitan ng Google Search para sa mas tumpak na nilalaman.",
     "source_generate_button": "Lumikha ng AI-written na teksto base sa iyong paksa, haba, antas, at tagubilin.",
-    "generator_actions": "Sentro para sa lahat ng generator tulad ng Quiz, Glossary, Adventure Mode, Concept Sort, at iba pa.",
     "tool_visual": "Bumuo ng AI-generated na larawan, diagram, at biswal na sanggunian para sa nilalaman.",
     "tool_udl": "Matuto kung paano sumusuporta ang AlloFlow sa UDL framework at mga prinsipyo nito.",
     "tour-analysis-settings": "Isaayos parameters para sa readability pagsusuri, kabilang ang target pagbabasa antas at tiyak metrics sa track.",
@@ -6903,7 +6909,6 @@
     "adventure_system_state": "Magdagdag ng resource management tulad ng health, ginto, at reputation sa Adventure Mode.",
     "glossary_tier2_count": "Itakda kung ilang akademikong salita (Tier 2) ang isasama sa Glossary.",
     "glossary_tier3_count": "Itakda paano many Tier 3 (domain-tiyak) bokabularyo mga salita sa isama. Tier 3 mga salita: ay tiyak sa isang subject lugar, ay usually defined sa konteksto, at maaaring hindi transfer sa kabila subjects. halimbawa: photosynthesis, denominador, alliteration, legislative. These mga salita ay essential para sa understanding tiyak nilalaman ngunit maaaring limited gamitin outside ang domain. tagubilin typically occurs habang nilalaman teaching. Para sa deep dive sa loob isang paksa, isama higit pa Tier 3. Para sa broader pagbabasa kasanayan, prioritize Tier 2. Tier 3 mga salita often lumitaw sa bold o italics sa textbooks, signaling kanilang importance within ang discipline.",
-    "glossary_definition_level": "Kontrolin ang antas ng pagkakasulat ng mga depinisyon: katulad ng pinagmulan, in-grade, o pinasimple.",
     "glossary_custom_instructions": "Mga tagubilin para sa pagpili ng salita at istilo ng depinisyon sa Glossary.",
     "glossary_language_input": "Tukuyin ang wikang gagamitin sa pagsasalin ng bokabularyo (puwedeng maraming wika).",
     "glossary_auto_remove": "awtomatikong i-filter out very simple o karaniwan mga salita.",
@@ -7037,7 +7042,6 @@
     "fab_dictation": "I-convert ang boses patungong teksto para sa hands-free na input sa anumang field.",
     "fab_focus": "Lumikha ng movable spotlight na nagdidim sa paligid maliban sa lugar na pinopokusan.",
     "fab_line_focus": "Single-line na pagbasa kung saan iisang linya ang naka-highlight habang madilim ang iba.",
-    "fab_ruler": "Magdagdag ng semi-transparent na horizontal bar upang masundan ang iyong posisyon sa pagbasa.",
     "fab_timer": "Buksan ang interactive na focus timer batay sa Pomodoro Technique.",
     "scaffolds_edit_toggle": "I-toggle sa pagitan ng pag-edit ng guro at view ng mag-aaral para sa scaffolds.",
     "scaffolds_goal_panel": "Ipakita ang layunin ng pagkatuto sa mag-aaral habang nasa aktibidad.",
@@ -7132,7 +7136,6 @@
     "immersive_line_focus": "Paganahin ang gabay sa pagbabasa ng isang linya. Tahimik ang mga linyang nakapaligid upang mapanatili ang focus.",
     "immersive_syllables": "Biswal na paghahati ng mga salita sa pantig para sa suporta sa decoding (hal. ha-li-ma-ba-wa).",
     "immersive_wide_text": "Palawakin ang teksto upang gamitin ang mas malawak na espasyo ng screen. Mas mababang scrolling.",
-    "sidebar_tab_create": "Buksan ang panel ng paggawa ng nilalaman: Quiz, Glossary, Outline, Lesson Plan, Timeline, at higit pa.",
     "sidebar_tab_history": "Buksan ang lahat ng iyong na-save na nilalaman at kasaysayan ng session. Hanapin, i-load, o i-export.",
     "socratic_toggle": "Paganahin ang Socratic dialogue mode kung saan ang AI ay nagtatanong sa halip na magbigay ng sagot.",
     "socratic_input": "Ipasok ang iyong tanong o pahayag para sa pagtuklas sa Socratic. Sasagot ang AI ng mga tanong.",
@@ -30748,7 +30751,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Ilarawan ang kasalukuyang media",
+    "describe_current_media_done": "Binabasa ang media {index} ng {count}.",
+    "describe_current_media_hint": "Basahin ang paglalarawan ng kasalukuyan o susunod na media nang hindi umaalis sa resource",
+    "describe_current_media_none": "Walang media sa kasalukuyang resource.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Buksan ang Learning Web: Explore",
+    "open_learning_web_explorer_done": "Nabuksan ang Learning Web: Explore.",
+    "open_learning_web_explorer_hint": "Tuklasin ang mga pamantayan, konsepto, aralin, ebidensya, at ugnayan ng mga salita sa iisang mapa",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Basahin lahat ng paglalarawan ng media",
+    "read_media_descriptions_count": "Binabasa ang {count} na paglalarawan ng media.",
+    "read_media_descriptions_hint": "Basahin ang bawat nakasulat na paglalarawan ng larawan, video, o audio sa kasalukuyang resource",
+    "read_media_descriptions_none": "Walang media sa kasalukuyang resource.",
+    "suggest_contextual_next_steps": "Magmungkahi ng 3 susunod na hakbang",
+    "suggest_contextual_next_steps_hint": "Nag-aalok ng tatlong pagpipiliang bagay sa konteksto, nang hindi pumipili o nagpapatakbo ng isa",
+    "suggest_contextual_next_steps_working": "Binabasa ang konteksto ng kasalukuyang aralin at naghahanda ng tatlong pagpipilian...",
+    "surprise_me_contextually": "Bigyan mo ako ng kapaki-pakinabang na susunod na hakbang",
+    "surprise_me_contextually_hint": "Pumipili ng isang makatuwiran at mababang panganib na susunod na hakbang mula sa konteksto ng kasalukuyang aralin",
+    "surprise_me_contextually_working": "Binabasa ang konteksto ng kasalukuyang aralin at pumipili ng kapaki-pakinabang na susunod na hakbang...",
+    "use_contextual_suggestion": "Gamitin ang iminungkahing susunod na hakbang",
+    "use_contextual_suggestion_hint": "Pinapatakbo ang opsyon 1, 2, o 3 mula sa pinakabagong mga mungkahi",
+    "use_contextual_suggestion_working": "Sinisimulan ang napiling susunod na hakbang..."
   },
   "palette": {
     "aria": "AlloFlow command palette",
@@ -30771,10 +30800,11 @@
       "videoStudio": "Dito — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Bawat aksyon ay ipinapahayag. Nagto-toggle ang Ctrl+K.",
     "group": {
@@ -31084,6 +31114,12 @@
     "diff_types_hint": "Gumawa ng magkakaibang set para sa:",
     "diff_cost": "Humigit-kumulang {n} generation bawat run.",
     "summary_standards": "mga pamantayan",
-    "summary_interests": "mga interes"
+    "summary_interests": "mga interes",
+    "translations": "Mga pagsasalin",
+    "translations_auto": "Awtomatiko ({language})",
+    "translations_auto_plain": "Awtomatiko",
+    "translations_none": "Wala",
+    "translations_on_hint": "Ang mga resource sa {output} ay magkakaroon din ng bersyon sa {target}.",
+    "translations_off_hint": "Ang mga resource ay nasa {output} lamang, walang pangalawang wika."
   }
 }

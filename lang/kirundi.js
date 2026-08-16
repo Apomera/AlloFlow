@@ -2249,7 +2249,7 @@
     "ai_guide_sub": "Pedagogie, Igendero & Ugutunganya kwiyobora",
     "ai_guide_welcome": "Bwakeye! Ndi umuyobozi wawe wa AI. Nshobora gufasha mu nzira za UDL, kuyobora porogaramu, canke gushiraho amabwiriza y'isomo ryawe mu buryo bwikora. Baza gusa!",
     "tool_analysis": "Sesengura imvo Material",
-    "tool_glossary": "inkoranya & ururimi Selection",
+    "tool_glossary": "Inkoranya",
     "tool_simplified": "inyandiko Adaptation",
     "tool_outline": "ibibonwa Organizer",
     "tool_visual": "ibibonwa imfashanyo",
@@ -2979,7 +2979,7 @@
     "choose_destination_aria": "Hitamwo aho ujya"
   },
   "glossary": {
-    "title": "inkoranya & ururimi Selection",
+    "title": "Inkoranya",
     "tier2": "Urwego 2 (Acad.)",
     "tier2_tooltip": "Rirerire-utility academic ijambo vyakoreshejwe across disciplines (e.g., 'sesengura', 'verify').",
     "tier3": "Urwego 3 (Akarere)",
@@ -3921,7 +3921,12 @@
     "gauge_simple": "vyoroshe",
     "word_bank_english": "Icongereza",
     "word_bank_language": "Ururimi rw'ububiko bw'amajambo",
-    "word_bank_both": "Vyompi"
+    "word_bank_both": "Vyompi",
+    "measured_level_label": "Urugero rwo gusoma rwapimwe",
+    "measured_on_target": "Ruhuye na {grade}",
+    "measured_above": "Hejuru y’urugero rwa {grade}",
+    "measured_below": "Hasi y’urugero rwa {grade}",
+    "measured_note": "Flesch-Kincaid, vyapimwe kuri iyi nyandiko. Koresha Check urwego kugira usuzume neza."
   },
   "quiz": {
     "title": "Suzuma",
@@ -5867,7 +5872,9 @@
     "title_poettree_config": "🌳 Umurimo wa PoetTree",
     "title_poettree_submission": "🌳 Gutanga Igisigo",
     "title_litlab_config": "🎭 Umurimo wa LitLab",
-    "title_litlab_submission": "🎭 Gutanga Imikino"
+    "title_litlab_submission": "🎭 Gutanga Imikino",
+    "translation_block": "Ubuhinduzi",
+    "translation_into": "Ubuhinduzi ({language})"
   },
   "persona": {
     "title": "Interview Uburyo",
@@ -6285,7 +6292,7 @@
   },
   "tools": {
     "source": "imvo Material",
-    "glossary": "inkoranya & ururimi Selection",
+    "glossary": "Inkoranya",
     "simplified": "inyandiko Adaptation & Engagement",
     "outline": "ibibonwa Organizer",
     "quiz": "Suzuma",
@@ -6874,7 +6881,6 @@
     "source_settings_instructions": "Yobora gukora ibikubiyemo vya AI hamwe n'amabwiriza yihariye. Ingero: Bigire bikurura ku basomyi batinya, Yibanze kuri water cycle, Shyiramo amazina y'abakinnyi atandukanye, Irinda inyandiko z'ihohoterwa, na Koresha imvugo yoroshye ku banyeshuri ba ELL. Amabwiriza ahindura: ijwi, icyibanze cy'ibikubiyemo, urwego rw'imvugo, n'inzira. Ba yihariye ku bisubizo vyiza. Amabwiriza nyinshi ashobora guhuzwa. Amabwiriza atunganywa hamwe n'ingingo n'igenamiterere. Ku ngingo z'ingenzi, shyiramo ubuyobozi bw'ibikubiyemo. Amabwiriza ntibitanga ibisubizo bizima ariko bigira ingaruka cyane ku gukora. Inama: Shyiramo urwego rw'ishure n'imipaka iyo ari yo yose y'ibikubiyemo mu mabwiriza yawe ku output ikwiye cyane.",
     "source_verify_checkbox": "Bishyireho AI fact-checking binyuze muri Google Search grounding. Iyo ON: AI ikora cross-reference ku bikubiyemo byakozwe na inkomoko za web, ishyira flag canke igakosora ibitari ukuri. Yongeraho amasegonda 5-10 ku gihe cyo gukora ariko ivugurura cyane kwizera ku bikubiyemo vya factual. Ngombwa cyane ku: amateka (itariki, ivyabaye), siyansi (inzira, amakuru), biography, n'ivyabaye vuba. Ku fiction, kwandika kw'ubuhanzi, canke scenarios za hypothetical, ibi bishobora guhagarikwa ku kwemera ubwigenge bw'ubuhanzi. Inkomoko zashakishijwe zerekanwa muri generation log ku gusuzuma kw'umwigisha. Bishimangirwa cyane ku bikubiyemo bizoherezwa nk'ukuri ku banyeshuri.",
     "source_generate_button": "Kora ibikubiyemo byanditse na AI ku ngingo wagenwe. Kanda kugira utangire gukora ukoresheje: insobanuro by'ingingo, uburebure bwa intumbero, urwego rw'ishure, n'amabwiriza yihariye. Gukora bifata amasegonda 10-20. Output isuzumwa na filters z'umutekano mbere yo kwerekana. Ibikubiyemo byakozwe bishobora: guhindurwa (umwigisha ashobora guhindura igice cyose), gusesengurwa (kunyura mu bindi bikoresho vyo gukora), no kubikwa (kongera kuri history ku gukongera gukoresha). Bikoreshwe iyo: ukeneye ibikubiyemo ku ngingo yihariye, ushaka ubukomatanye bugenzurwa, canke ukeneye kuzuza ibyaburaga by'amabwiriza. Ibikubiyemo byakozwe birimo: imvugo ikwiye, gutunganywa kwa logique, na syntax y'urwego rw'ishure. Suzuma ukuri kw'amakuru mbere yo gukoresha mu ishure.",
-    "generator_actions": "Aho washyizwe ibikoresho vyose vyo gukora: Quiz, Glossary, Lesson Plan, n'ibindi.",
     "tool_visual": "Gera ku visual generator tool. Bikora amashusho yakozwe na AI harimo: visuals z'imvugo, illustrations z'ibitekerezo, igaragaza ry'ahantu, igishushanyo, na infographics. Ubwoko bwa visual: reference ishushos (ku kwiga), worksheets (ku bikorwa), na diagrams (ku isano). Visuals zishyigikira: abanyeshure ba ELL (visual vocabulary), biga bareba, n'ifatanya. Buri gukora gukora amashusho yihariye. Igenamiterere rigenzura style, ubwiza, n'ibikubiyemo. Visuals zakozwe zishobora: kumanurwa, kwinjizwa mu bikoresho, no kongerwa ku glossaries. Ikoresha AI ishusho generation credits. Inama: Kora visuals ku bitekerezo vya abstract bigoye gusigura n'amagambo gusa.",
     "tool_udl": "Iga ku UDL framework: amahame atatu yo gutanga, gukora, no gushishikara.",
     "tour-analysis-settings": "Hindura parameter z'isesengura ry'urwego rw'isomero, harimo urwego rugamijwe n'ibipimo vyihariye.",
@@ -6899,7 +6905,6 @@
     "adventure_system_state": "Yongeraho imikoreshereze yo kugenzura umutungo ku ngendo. Abanyeshure bakurikirana: Ubuzima (ingaruka z'amahitamo y'akaga), Zahabu/Umutungo (gufata icemezo cy'ubukungu), Izina (umutungo wo kubana uvuye mu mahitamo), n'umutungo wihariye usobanura. Ibikorwa bigira ingaruka ku mutungo ku buryo bugaragara — koresha zahabu kugira ugure ibintu, tahura ubuzima ku byemezo bibi, kongera izina ku gufasha abandi. Bikora ingaruka zifite insobanuro byigisha: imitekereze y'impamvu n'igisubizo, gutegura mbere, kugenzura umutungo, n'igiciro cy'amahirwe. Dashboard yo kureba yerekana urwego rwa none rw'umutungo. Iyo umutungo ushize, imikino isubiza ukurikije (urugero: ubuzima buke = amahitamo make). Ubuhanga bw'imibare bwinjira mu buryo bw'umutekano binyuze mu mibare y'umutungo.",
     "glossary_tier2_count": "Shiraho umubare wa Tier 2 (academic) amagambo y'imvugo yo gushyiramo. Tier 2 words: agaragara hagati y'ingingo, akoreshwa mu mimerere y'ibyigwa, kandi ari ay'ingenzi ku gusobanukirwa inyandiko. Ingero: analyze, evidence, significant, contrast. Aya magambo afise agaciro k'amabwiriza ko hejuru — abanyeshure benshi babonera ku kwigisha kwagaragaye. Umubare wasabwe uterwa: uburebure bw'inyandiko (ijambo 1 ku magambo 100-150 y'inkomoko), igihe cy'amabwiriza giboneka, n'ivyo umunyeshure akeneye. Ringaniza na Tier 3 count ku rwego rwuzuye rw'imvugo. Yibanze amabwiriza hano ku ngaruka nini ku gusobanukirwa gusoma hagati y'ingingo zose.",
     "glossary_tier3_count": "Shiraho umubare wa Tier 3 (domain-specific) amagambo y'imvugo yo gushyiramo. Tier 3 words: ari ayihariye ku gace, kenshi asobanura mu context, kandi ashobora kudahererekana hagati y'ingingo. Ingero: photosynthesis, denominator, alliteration, legislative. Aya magambo ari ay'ingenzi ku gusobanukirwa ibikubiyemo vyihariye ariko afise umumaro muke hanze y'agace. Amabwiriza kenshi abaho mu gihe cyo kwigisha ibikubiyemo. Ku gusobanukirwa cyane y'ingingo, shyiramo Tier 3 nyinshi. Ku buhanga bwagutse bwo gusoma, shira imbere Tier 2. Tier 3 words kenshi agaragara muri bold canke italics mu bitabo, byerekana ay'ingenzi muri agace.",
-    "glossary_definition_level": "Genzura uburyo insobanuro byandikwa. Amahitamo: Bimwe na Source (bigumana ubukomatanye bw'umwimerere — vyiza ku banyeshuri bo hejuru), On Grade (bihuza n'imvugo y'urwego rw'ishure yagenwe), Simplified (yifashisha amagambo asanzwe, interuro ngufi), na Kindergarten (ururimi rw'ibanze cyane, ingero ziboneka). Huza ubukomatanye bw'insobanuro n'urwego rwo gusoma rw'umunyeshure, atari urwego rw'ibikubiyemo. Umunyeshure w'urwego rwa 10 wiga biology yihanitse ashobora gukenera insobanuro vya Simplified ku magambo atamenyereye. Iyumvira abasomyi bawe bafite ibibazo cyane mu guhitamo. Insobanuro bishobora guhindurwa ku giti cyabyo nyuma yo gukora niba bimwe bikenera gukosorwa. Inama y'ubuhanga: Koresha Simplified bwa mbere, hanyuma uvuge insobanuro vya technical mu ishure.",
     "glossary_custom_instructions": "Tanga ubuyobozi bwihariye ku gutoranya imvugo n'imiterere y'insobanuro. Ingero: Yibanze ku magambo yo mu bice 3-5, Shyiramo gusa amagambo ahuje na water cycle, Irinde homonyms zifite insobanuro bworoshye, Ongeraho etymology ya Latin/Greek roots, Shyiramo Spanish cognates ku banyeshuri ba ELL, na Koresha ingero zihuje n'umunyeshure ziva muri pop culture. Amabwiriza yihariye ahindura: amagambo atoranywe, uko insobanuro byandikwa, n'amakuru y'inyongera agaragara. Amabwiriza asobanutse atanga glossaries zifite intumbero nziza. Urashobora gusaba imiterere yihariye nka: Shyiramo interuro ikoresha buri jambo canke Ongeraho visual memory hooks. AI ikurikira amabwiriza igihe ikora ihitamo ry'imvugo.",
     "glossary_language_input": "Sigura indimi ku buhinduzi bw'imvugo. Andika indimi: Icyesipanyole, Mandarin, Icyarabu, Igifaransa, Igivietnam, Tagalog, canke ururimi urwo arirwo rwose. Urashobora kongera indimi nyinshi zitandukanyijwe na koma. Buri imvugo yerekana: insobanuro mu Cyongereza, ubuhinduzi mu rurimi rwa intumbero, n'inyobora ya pronunciation niba bikwiye. Bikoreshwe ku: inkunga ya ELL, isano y'ururimi kavukire, imvugo y'ibyigwa y'indimi mpuzamahanga, n'amashuri y'indimi nyinshi. Ubuhinduzi bugaragara ku buri card y'imvugo ku ndorerwamo yihuse. Audio yo kuvuga iraboneka mu ndimi zashyigikiwe. Ubushakashatsi bwerekana ko guhuza imvugo nshya n'indimi z'urugo bikomeza kubika. Indimi 4 max zibuza urusaku rw'amaso mu gushyigikira amashuri atandukanye.",
     "glossary_auto_remove": "Yungurura ubwiriza amagambo yoroshe cyane canke asanzwe.",
@@ -7033,7 +7038,6 @@
     "fab_dictation": "Hindura amajwi yawe abe inyandiko. Kanda umupanda wa microphone, uvuge, hanyuma usome inyandiko.",
     "fab_focus": "Bikora spotlight ishobora kwimuka ihakanira vyose keretse umwanya w'igisima ukikije cursor yawe. Ibi bigabanya cyane urusaku rw'amaso kandi bifasha kugumana ifatanya ku gace ka none ko gusoma. Bifasha cyane ku banyeshuri bafite ADHD, sensory processing differences, canke uwo wese washwe n'ecrans nyinshi. Spotlight ikurikira mouse yawe/touch byikora. Hindura ingano ya spotlight n'ubukana bwo guhakanira muri Igenamiterere → Accessibility.",
     "fab_line_focus": "Igikoresho cyo gutandukanya umurongo umwe wo gusoma kwibanda. Iyo bikoreshwa: umurongo umwe w'inyandiko ushyizwe mu mabara mu gihe abandi bahakaniwe, bigakora kwibanda kw'amaso. Tembera na: imambari (hejuru/hasi), kanda ahantu hose ku nyandiko, canke touch/swipe ku mobile. Inyungu: bigabanya urusaku rw'amaso, bishyigikira ibibazo vyo gukurikirana, bifasha kugumana ahantu, no kugabanya regression. Ubukana (uko inyandiko ikikije igaragara) bushobora kugengwa muri Igenamiterere → Accessibility. Ikora ku: ibikubiyemo vyose vyo gusoma, harimo inyandiko yakozwe, inkomoko, na chat. Bifasha cyane ku: dyslexia, ADHD, ibibazo vya visual processing, n'uwo wese washwe n'ecrans zifite inyandiko nyinshi. Inama: Vanga na font nini ku gusoma byihuta cyane.",
-    "fab_ruler": "Yongeraho semi-transparent horizontal bar ikurikira cursor yawe kugira ifashe gukurikirana ahantu ho gusoma umurongo ku umurongo. Bifasha cyane ku bakoresha bafite dyslexia, ADHD, canke visual gukurikirana difficulties. Kurura ruler hejuru/hasi kugira wimukire, koresha imambari ku gucunga gato, canke kanda ahantu hose kugira usimbure. Ibara rya ruler rishobora kugengwa muri Igenamiterere. Ikora ku igaragara ryose ryo gusoma harimo Simplified Text, FAQ, na Glossary definitions.",
     "fab_timer": "Fungura Pomodoro timer yo kwibanda. Hitamwo iminota 5/15/25/45.",
     "scaffolds_edit_toggle": "Hindura hagati ya Edit mode (hindura scaffolds) na Student view (uburyo abanyeshure babibona).",
     "scaffolds_goal_panel": "Erekana intumbero zo kwiga ku ndorerwamo y'umunyeshure. Intumbero zigaragara neza mu gihe cy'igikorwa. Intumbero nziza ni: za umwigishwa-friendly (interuro za I can), zihariye kandi zipimwa, kandi zihuje n'igikorwa. Ingero: Nshobora kumenya impamvu eshatu z'Intambara ya Civil canke Nshobora gukoresha ibimenyetso ku gushyigikira claim yanjye. Intumbero zongera: metacognition, self-isuzuma, n'isobanura ry'intumbero. Abanyeshure bashobora kureba intumbero mu gihe bakora. Umwigisha ashyiraho intumbero mbere y'uburenganzira bw'umunyeshure. Intumbero nyinshi zishobora kugaragazwa. Intumbero zishobora kuba zirimo success criteria: Nzi ko ntsinze iyo paragraph yanjye ifise topic sentence. Ubushakashatsi bwerekana ko intumbero zigaragara zo kwiga zivugurura imikorere.",
@@ -7128,7 +7132,6 @@
     "immersive_line_focus": "Bishyireho line guide isobanura umurongo umwe wo gusoma maze ihakaniwe iyindi.",
     "immersive_syllables": "Kugabanya kw'amasilabe yo kureba ku nkunga yo gusigura. Iyo bikoreshwa: amagambo agaragara hamwe na syllable breaks (hy-phen-at-ed), bigafasha abasomyi gukubita amagambo ya multisyllabic. Inyungu: byubaka ubumenyi bwa phonemic, bishyigikira ingamba zo gusigura, biteza imbere gusobanukirwa kwa morphology, kandi bifasha pronunciation. Bifasha cyane ku: basobanura bafite ibibazo, banyeshuri ba ELL, inkunga ya dyslexia, n'imvugo ifise imiterere igoye y'amasilabe. Syllabification ikurikira amategeko asanzwe ya phonetic. Ikora ku: ibikubiyemo vyose vyo gusoma harimo inyandiko yorohejwe, imvugo ya glossary, n'inkomoko. Vanga na ijwi kugira wumve amasilabe avugwa. Hagarika iyo bitakenewe ku kugabanya ubukomatanye bw'amaso. Inama: Koresha ku mvugo igoye, hanyuma uhagarike ku kwitoza gusoma fluency.",
     "immersive_wide_text": "Agura inyandiko ku gukoresha umwanya wagutse wa ecran. Iyo ikora: uburebure bw'umurongo bwiyongera, scrolling nke ikenewe, kandi inyandiko nyinshi igaragara icyarimwe. Vyiza ku: basomyi b'ubuhanga, igaragaza riringaniye, n'iyo ushaka kugenza amakuru. Ubugari busanzwe bw'imipaka ni bwiza ku: basomyi bafite ibibazo, ibikoresho vya mobile, no gusoma kwibanda. Uburebure bukwiye bw'umurongo butandukanye ku musomyi n'igikoresho. Ubushakashatsi bwerekana ko 50-75 inyuguti ku murongo ari nziza ku basomyi benshi. Inyandiko yagutse igaba readability ku mikorere myiza. Vanga na line focus niba gukurikirana bigoye. Igenamiterere ribikwa ku gikoresho. Inama: Koresha inyandiko yagutse ku bushakashatsi no kugenza, inyandiko mipaka ku gusoma neza.",
-    "sidebar_tab_create": "Fungura paneli yo gukora ibikubiyemo yifise ibikoresho vyose vya AI.",
     "sidebar_tab_history": "Gera ku bikubiyemo vyose wabitse n'amateka y'imbonezamubano. History irimo: imbonezamubano zibika byikora ziva mu kazi ka vuba, imishinga na portfolios zabitswe mu ntoki, umutungo wakozwe utondetswe ku itariki yo gukora, n'ivyo umunyeshure yoherezwa (igaragara ry'umwigisha). Ibikorwa: pakurura ikintu ico ari cyo cyose ku kubandanya gukora, siba ibintu ku kuvanaho ububiko, ohereza ku backup, no shaka na keyword. History itondeka ku vuba busanzwe. Filter ku bwoko (quiz, glossary, urugendo, n'ibindi) kugira ubone umutungo wihariye. Cloud-synced history iraboneka kuva ku gikoresho ico ari cyo cyose. Imipaka y'ububiko itandukanye ku konti — siba ibintu bishaje niba wegereye limit. Mateka yawe ni library yawe bwite y'umutungo w'imyigishire.",
     "socratic_toggle": "Bishyireho Socratic dialogue uburyo ku kwiga kwimbitse. Iyo ON: AI ntitanga ibisubizo direct — aho ivyo, ibaza ibibazo bigaragaza biyobora abanyeshure ku kubona. Inyungu: biteza imbere imitekereze ihanitse, bishishikariza self-correction, byubaka ubuhanga bwo gukemura ibibazo, kandi bikora akanya k'umunyeshure yibukwa. AI ikoresha uburyo bunka: ibibazo bisobanura (Ushaka kuvuga iki na...?), guhangana n'assumptions (Ariko se niba...?), n'ivyo gusaba ibimenyetso (Wabimenye gute?). Vyiza ku: gutegura ibiganiro, gushakisha igitekerezo, no gufasha abanyeshure bashaka ibisubizo vyihuse gutekereza neza. Bishobora kunyanga abanyeshure bashaka mikorere — sigura intumbero.",
     "socratic_input": "Andika ikibazo yawe canke interuro ku Socratic exploration. AI izasubiza ifise ibibazo aho ibisubizo. Ahantu ho gutangira: Kuki utekereza ko [X] cyabaye? Iki gituma [Y] ari ay'ingenzi? canke Nemera ko [Z] kuko... AI igaragaza imitekereze yawe: isaba ibimenyetso, ishakisha implications, ipima logic, igaragaza assumptions. Ibi biteza imbere argumentation n'imitekereze ihanitse. Witegure: kwemeza imitekereze yawe, gutekereza alternatives, no kuvugurura ahantu uri. Socratic dialogues ishobora kunyanga mu ntangiriro ariko zubaka gusobanukirwa kuramba. Ibisubizo n'imitekereze yawe bikurikiranwa ku igitekerezo.",
@@ -30713,7 +30716,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Sigura media iriho",
+    "describe_current_media_done": "Gusoma media ya {index} kuri {count}.",
+    "describe_current_media_hint": "Soma insiguro ya media iriho canke ikurikira utavuye ku isoko",
+    "describe_current_media_none": "Nta media iri mu isoko ririho.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Ugurura Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore yuguruwe.",
+    "open_learning_web_explorer_hint": "Rondera amahame, ivyiyumviro, amasomo, ivyemezo n’isano y’amajambo ku ikarata imwe",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Soma insiguro za media zose",
+    "read_media_descriptions_count": "Gusoma insiguro za media {count}.",
+    "read_media_descriptions_hint": "Soma insiguro yose yanditse y’ifoto, videwo canke ijwi mu isoko ririho",
+    "read_media_descriptions_none": "Nta media iri mu isoko ririho.",
+    "suggest_contextual_next_steps": "Tanga intambwe 3 zikurikira",
+    "suggest_contextual_next_steps_hint": "Itanga amahitamwo atatu ahuye n’aho ugeze, ntihitemwo canke ngo ikoreshe rimwe",
+    "suggest_contextual_next_steps_working": "Gusoma aho isomo rigeze no gutegura amahitamwo atatu...",
+    "surprise_me_contextually": "Mpa intambwe ikurikira ifise akamaro",
+    "surprise_me_contextually_hint": "Ihitamwo igikorwa kimwe gikurikira gifise ishingiro kandi kitagira ingaruka, gishingiye ku isomo ririho",
+    "surprise_me_contextually_working": "Gusoma aho isomo rigeze no guhitamwo intambwe ikurikira ifise akamaro...",
+    "use_contextual_suggestion": "Koresha intambwe ikurikira yatanzwe",
+    "use_contextual_suggestion_hint": "Ikoresha ihitamwo rya 1, 2, canke 3 mu vyatanzwe vuba",
+    "use_contextual_suggestion_working": "Gutangura intambwe ikurikira yatowe..."
   },
   "palette": {
     "aria": "Urutonde rw'amategeko rwa AlloFlow",
@@ -30736,10 +30765,11 @@
       "videoStudio": "Hano — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Igikorwa cose kiramenyeshwa. Ctrl+K iyihindura.",
     "group": {
@@ -31044,6 +31074,12 @@
     "diff_types_hint": "Kora umugwi utandukanye w’ibi:",
     "diff_cost": "Hafi y’ibikorwa {n} kuri buri gikorwa.",
     "summary_standards": "ibipimo",
-    "summary_interests": "inyungu"
+    "summary_interests": "inyungu",
+    "translations": "Ubuhinduzi",
+    "translations_auto": "Bikorwa vyonyene ({language})",
+    "translations_auto_plain": "Bikorwa vyonyene",
+    "translations_none": "Nta na kimwe",
+    "translations_on_hint": "Ibikoresho vyo mu {output} bizoherekezwa na verisiyo ya {target}.",
+    "translations_off_hint": "Ibikoresho bizoba mu {output} gusa, nta rurimi rwa kabiri."
   }
 }

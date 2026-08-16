@@ -1,6 +1,6 @@
 # Praxis Core Combined (5752) QA report
 
-Generated: 2026-08-16T14:42:31.169Z
+Generated: 2026-08-16T17:38:26.094Z
 
 ## Result
 

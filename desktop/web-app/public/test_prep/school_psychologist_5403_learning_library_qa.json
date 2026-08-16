@@ -1,5 +1,6 @@
 {
-  "packId": "praxis-school-psychologist-5403", "version": "1.0.0",
+  "packId": "praxis-school-psychologist-5403",
+  "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-school-psychologist-5403-learning-library",
   "standard": {
@@ -143,5 +144,14 @@
       "references": 7,
       "status": "source-reviewed-editorial-pass"
     }
-  ]
+  ],
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "14bbc0fd643fc81b7def3ebe9351ce432c1da66ec7131db85e68ed8c9ae497a4",
+    "learningLibrarySha256": "4c045733e64a1e9184c2290a0aae7a1021c35405777b9d3c9dd8180c90177316",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
+  }
 }

@@ -59,12 +59,43 @@ describe('G6 the empty state can only mention a search when one exists', () => {
   });
 });
 
-describe('G6 the sticky state that produces it is documented at its source', () => {
-  it('GLOSS_RESET still has no call site, which is why the filter survives', () => {
-    // If this ever gains a call site the phantom empty state gets rarer and
-    // this comment in view_glossary_source.jsx should be revisited.
-    const resets = anti.split('GLOSS_RESET').length - 1;
-    expect(resets, 'GLOSS_RESET now has a call site; revisit the G6 notes').toBe(1);
+describe('G6 the sticky state that produced it is now reset at the source', () => {
+  // Wave 2 (W5) took L1's recommended root fix. This guard is the same guard,
+  // turned the other way up: it used to assert GLOSS_RESET had NO call site and
+  // to point at the G6 notes when that changed. It now asserts the call site
+  // exists and does the two things it has to do.
+  it('GLOSS_RESET is dispatched when the active resource changes', () => {
+    expect(anti).toContain("glossaryDispatch({ type: 'GLOSS_RESET' })");
+    const effect = region(anti, 'const prevGlossaryResourceIdRef', 'const toFocusText');
+    expect(effect).toContain('generatedContent?.id');
+    // Keyed on the id through a ref, not on the object: generatedContent is
+    // re-created on every edit to the SAME resource, and resetting there would
+    // clear the teacher's filter mid-session.
+    expect(effect).toContain('prevGlossaryResourceIdRef.current === currentId');
+  });
+
+  it('the search term is cleared alongside it', () => {
+    const effect = region(anti, 'const prevGlossaryResourceIdRef', 'const toFocusText');
+    expect(effect).toContain("setGlossarySearchTerm('')");
+  });
+
+  it('GLOSS_RESET preserves the teacher GENERATION settings', () => {
+    // Resetting to GLOSS_INITIAL_STATE wholesale would wipe the tier counts,
+    // definition level, image size/style and etymology settings on every
+    // content change, which is a worse bug than the stale filter it fixes.
+    const reducer = region(anti, 'function glossaryReducer', 'const CS_INITIAL_STATE');
+    expect(reducer).not.toContain("if (action.type === 'GLOSS_RESET') return { ...GLOSS_INITIAL_STATE };");
+    expect(reducer).toContain('glossaryFilter: GLOSS_INITIAL_STATE.glossaryFilter');
+    ['glossaryTier2Count', 'glossaryTier3Count', 'glossaryDefinitionLevel', 'glossaryImageSize', 'glossaryImageStyle', 'includeEtymology', 'etymologyScope'].forEach(setting => {
+      expect(reducer, setting + ' must not be reset on a content change').not.toContain(setting + ':');
+    });
+  });
+
+  it('clears the index-keyed maps, whose indices point at the OLD term list', () => {
+    const reducer = region(anti, 'function glossaryReducer', 'const CS_INITIAL_STATE');
+    ['isGeneratingTermImage', 'glossaryRefinementInputs', 'isGeneratingEtymology'].forEach(mapField => {
+      expect(reducer).toContain(mapField + ': {}');
+    });
   });
 
   it('opening a flashcard in the glossary still writes a search term', () => {

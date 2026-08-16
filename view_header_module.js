@@ -77,7 +77,8 @@ function HeaderBar(props) {
   const noop = () => null;
   const AlertCircle = window.AlertCircle || noop;
   const X = window.X || noop;
-  const History = window.History || noop;
+  const icon = (name) => window.AlloIcons && window.AlloIcons[name] || window[name] || noop;
+  const History = icon("History");
   const ArrowRight = window.ArrowRight || noop;
   const BookOpen = window.BookOpen || noop;
   const CheckCircle2 = window.CheckCircle2 || noop;

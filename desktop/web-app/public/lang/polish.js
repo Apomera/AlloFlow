@@ -2253,7 +2253,7 @@
     "ai_guide_sub": "Pedagogika, nawigacja i automatyczne ustawianie",
     "ai_guide_welcome": "Cześć! Jestem twoim Przewodnikiem AI. Mogę pomóc ze strategiami UDL, nawigować aplikacją dla ciebie lub automatycznie skonfigurować twoje ustawienia lekcji. Po prostu zapytaj!",
     "tool_analysis": "Analiza materiał źródłowy",
-    "tool_glossary": "Słowniczek i wybór języka",
+    "tool_glossary": "Słowniczek",
     "tool_simplified": "Adaptacja tekstu",
     "tool_outline": "Wizualny organizator",
     "tool_visual": "Wizualna wsparcie",
@@ -2983,7 +2983,7 @@
     "choose_destination_aria": "Wybierz przypisanie"
   },
   "glossary": {
-    "title": "Słowniczek i wybór języka",
+    "title": "Słowniczek",
     "tier2": "Poziom 2 (akad.)",
     "tier2_tooltip": "Słowa akademickie o wysokim zastosowaniu używane w różnych dyscyplinach (np. \"analizować\", \"weryfikować\").",
     "tier3": "Poziom 3 (dziedz.)",
@@ -3925,7 +3925,12 @@
     "gauge_simple": "Prosty",
     "word_bank_english": "Angielski",
     "word_bank_both": "Oba",
-    "word_bank_language": "Język banku słów"
+    "word_bank_language": "Język banku słów",
+    "measured_level_label": "Zmierzony poziom czytania",
+    "measured_on_target": "Zgodny z poziomem {grade}",
+    "measured_above": "Powyżej poziomu {grade}",
+    "measured_below": "Poniżej poziomu {grade}",
+    "measured_note": "Flesch-Kincaid, zmierzony na tym tekście. Użyj Sprawdź poziom, aby sprawdzić dokładniej."
   },
   "quiz": {
     "title": "Oceń",
@@ -5871,7 +5876,9 @@
     "title_poettree_config": "🌳 Zadanie PoetTree",
     "title_poettree_submission": "🌳 Przesłanie wiersza",
     "title_litlab_config": "🎭 Zadanie LitLab",
-    "title_litlab_submission": "🎭 Przesłanie występu"
+    "title_litlab_submission": "🎭 Przesłanie występu",
+    "translation_block": "Tłumaczenie",
+    "translation_into": "Tłumaczenie ({language})"
   },
   "persona": {
     "title": "Tryb wywiad",
@@ -6290,7 +6297,7 @@
   },
   "tools": {
     "source": "Materiał źródłowy",
-    "glossary": "Słowniczek i wybór języka",
+    "glossary": "Słowniczek",
     "simplified": "Adaptacja tekstu i zaangażowanie",
     "outline": "Wizualny organizator",
     "quiz": "Oceń",
@@ -6879,7 +6886,6 @@
     "source_settings_instructions": "Dodatkowe instrukcje dla AI dot. generowania tekstu źródłowego.",
     "source_verify_checkbox": "Przełącznik tekstu źródłowego.",
     "source_generate_button": "Wygeneruj nowy tekst źródłowy z określonych parametrów.",
-    "generator_actions": "Element interfejsu: akcji.",
     "tool_visual": "Dostęp do narzędzia generatora wizualnego. Tworzy obrazy generowane przez AI, w tym: wizualizacje słownictwa, ilustracje pojęć, obrazy scen, diagramy i infografiki. Typy wizualizacji: obrazy referencyjne (do nauki), arkusze pracy (do zajęć) i diagramy (do relacji).",
     "tool_udl": "Narzędzie UDL - generator zasobów zgodnych z Universal Design for Learning.",
     "tour-analysis-settings": "Element interfejsu: tour-analysis-settings.",
@@ -6904,7 +6910,6 @@
     "adventure_system_state": "Pokazuje aktualny stan systemu przygody (postacie, lokalizacja, ekwipunek).",
     "glossary_tier2_count": "Liczba terminów Tier 2 (akademickich) do wyodrębnienia.",
     "glossary_tier3_count": "Liczba terminów Tier 3 (domenowych/specjalistycznych) do wyodrębnienia.",
-    "glossary_definition_level": "Poziom złożoności definicji (od przedszkola do studiów).",
     "glossary_custom_instructions": "Dodaj własne wytyczne dla generowania słownika.",
     "glossary_language_input": "Pole wprowadzania dla słownika.",
     "glossary_auto_remove": "Usuń słownika.",
@@ -7038,7 +7043,6 @@
     "fab_dictation": "Włącz dyktowanie głosowe do pól tekstowych.",
     "fab_focus": "Włącz tryb skupienia, aby zredukować rozpraszacze ekranu.",
     "fab_line_focus": "Włącz fokus liniowy, aby podświetlać jedną linię tekstu naraz.",
-    "fab_ruler": "Element interfejsu: fab.",
     "fab_timer": "Element interfejsu: fab.",
     "scaffolds_edit_toggle": "Przełącznik wsparcia.",
     "scaffolds_goal_panel": "Panel wsparcia.",
@@ -7133,7 +7137,6 @@
     "immersive_line_focus": "Fokus na linii - podświetla aktualnie czytaną linię tekstu.",
     "immersive_syllables": "Podział na sylaby - oddziela słowa na sylaby kropkami.",
     "immersive_wide_text": "Szerszy tekst - większy odstęp między literami.",
-    "sidebar_tab_create": "Element interfejsu: sidebar.",
     "sidebar_tab_history": "Otwórz zakładkę historii w panelu bocznym.",
     "socratic_toggle": "Przełącznik trybu Sokratejskiego - pytania prowadzące zamiast odpowiedzi.",
     "socratic_input": "Wpisz swoją odpowiedź w rozmowie Sokratejskiej.",
@@ -31371,7 +31374,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Opisz bieżące multimedia",
+    "describe_current_media_done": "Odczytywanie multimediów {index} z {count}.",
+    "describe_current_media_hint": "Przeczytaj opis bieżących lub następnych multimediów bez opuszczania zasobu",
+    "describe_current_media_none": "W bieżącym zasobie nie ma multimediów.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Otwórz Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore otwarty.",
+    "open_learning_web_explorer_hint": "Poznaj standardy, pojęcia, lekcje, dowody i powiązania słów na jednej mapie",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Przeczytaj wszystkie opisy multimediów",
+    "read_media_descriptions_count": "Odczytywanie {count} opisów multimediów.",
+    "read_media_descriptions_hint": "Przeczytaj każdy zapisany opis obrazu, wideo lub dźwięku w bieżącym zasobie",
+    "read_media_descriptions_none": "W bieżącym zasobie nie ma multimediów.",
+    "suggest_contextual_next_steps": "Zaproponuj 3 następne kroki",
+    "suggest_contextual_next_steps_hint": "Podaje trzy opcje dopasowane do kontekstu, bez wybierania ani uruchamiania żadnej",
+    "suggest_contextual_next_steps_working": "Odczytywanie kontekstu bieżącej lekcji i przygotowywanie trzech opcji...",
+    "surprise_me_contextually": "Zaskocz mnie przydatnym następnym krokiem",
+    "surprise_me_contextually_hint": "Wybiera jedno rozsądne działanie o niskim ryzyku z kontekstu bieżącej lekcji",
+    "surprise_me_contextually_working": "Odczytywanie kontekstu bieżącej lekcji i wybieranie przydatnego następnego kroku...",
+    "use_contextual_suggestion": "Użyj proponowanego następnego kroku",
+    "use_contextual_suggestion_hint": "Uruchamia opcję 1, 2 lub 3 z ostatnich propozycji",
+    "use_contextual_suggestion_working": "Uruchamianie wybranego następnego kroku..."
   },
   "palette": {
     "aria": "Paleta poleceń AlloFlow",
@@ -31394,10 +31423,11 @@
       "videoStudio": "Tutaj — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Każda akcja jest ogłaszana. Ctrl+K przełącza.",
     "group": {
@@ -31723,6 +31753,12 @@
     "diff_types_hint": "Utwórz zróżnicowany zestaw dla:",
     "diff_cost": "Około {n} generacji na uruchomienie.",
     "summary_standards": "standardy",
-    "summary_interests": "zainteresowania"
+    "summary_interests": "zainteresowania",
+    "translations": "Tłumaczenia",
+    "translations_auto": "Automatycznie ({language})",
+    "translations_auto_plain": "Automatycznie",
+    "translations_none": "Brak",
+    "translations_on_hint": "Materiały w języku {output} będą też miały wersję w języku {target}.",
+    "translations_off_hint": "Materiały będą tylko w języku {output}, bez drugiego języka."
   }
 }

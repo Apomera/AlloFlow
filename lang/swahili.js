@@ -2253,7 +2253,7 @@
     "ai_guide_sub": "Pedagogy, Navigation & Otomatiki-Setup",
     "ai_guide_welcome": "Habari! Mimi ni Mwongozo wako wa AI. Naweza kukusaidia na mikakati ya UDL, kukuelekeza ndani ya programu, au kuweka mipangilio ya somo lako kiotomatiki. Uliza tu!",
     "tool_analysis": "Chambua nyenzo ya chanzo",
-    "tool_glossary": "kamusi & lugha Selection",
+    "tool_glossary": "Kamusi",
     "tool_simplified": "maandishi Adaptation",
     "tool_outline": "kuona Organizer",
     "tool_visual": "kuona msaada",
@@ -2983,7 +2983,7 @@
     "choose_destination_aria": "Chagua destination"
   },
   "glossary": {
-    "title": "kamusi & lugha Selection",
+    "title": "Kamusi",
     "tier2": "Daraja 2 (Kielimu)",
     "tier2_tooltip": "Juu-utility kitaaluma maneno imetumika kuvuka disciplines (e.g., 'chambua', 'verify').",
     "tier3": "Daraja 3 (Eneo)",
@@ -3925,7 +3925,12 @@
     "gauge_simple": "rahisi",
     "word_bank_english": "Kiingereza",
     "word_bank_language": "Lugha ya benki ya maneno",
-    "word_bank_both": "Zote mbili"
+    "word_bank_both": "Zote mbili",
+    "measured_level_label": "Kiwango cha kusoma kilichopimwa",
+    "measured_on_target": "Inafaa kwa {grade}",
+    "measured_above": "Juu ya kiwango cha {grade}",
+    "measured_below": "Chini ya kiwango cha {grade}",
+    "measured_note": "Flesch-Kincaid, kilichopimwa kwenye maandishi haya. Tumia Angalia kiwango kwa ukaguzi kamili zaidi."
   },
   "quiz": {
     "title": "Tathmini",
@@ -5871,7 +5876,9 @@
     "title_poettree_config": "🌳 Kazi ya PoetTree",
     "title_poettree_submission": "🌳 Uwasilishaji wa Shairi",
     "title_litlab_config": "🎭 Kazi ya LitLab",
-    "title_litlab_submission": "🎭 Uwasilishaji wa Maonyesho"
+    "title_litlab_submission": "🎭 Uwasilishaji wa Maonyesho",
+    "translation_block": "Tafsiri",
+    "translation_into": "Tafsiri ({language})"
   },
   "persona": {
     "title": "Interview hali",
@@ -6290,7 +6297,7 @@
   },
   "tools": {
     "source": "nyenzo ya chanzo",
-    "glossary": "kamusi & lugha Selection",
+    "glossary": "Kamusi",
     "simplified": "maandishi Adaptation & Engagement",
     "outline": "kuona Organizer",
     "quiz": "Tathmini",
@@ -6879,7 +6886,6 @@
     "source_settings_instructions": "Guide AI maudhui kizazi na maalum maagizo. mfano: Tengeneza it ya kuvutia kwa reluctant wasomaji, Lengo juu ya water cycle, Jumuisha tofauti mhusika names, Avoid references kwa violence, na Tumia rahisi msamiati kwa ELL mwanafunzi. maagizo umbo: mwoneko, maudhui lengo, msamiati kiwango, na perspective. Be maalum kwa bora matokeo. Nyingi maagizo inaweza be combined. maagizo ni processed along na yako mada na mipangilio. Kwa sensitive topics, jumuisha maudhui guidance. maagizo do sio guarantee maalum outcomes lakini strongly influence kizazi. kidokezo: Jumuisha kiwango cha darasa na yoyote maudhui restrictions katika yako maagizo kwa zaidi inayofaa matokeo.",
     "source_verify_checkbox": "Washa ukaguzi wa ukweli wa AI kupitia Google Search. Huongeza uaminifu kwa maudhui ya kihistoria na ya kisayansi.",
     "source_generate_button": "Unda AI-written maudhui juu ya yako specified mada. Bofya kwa begin kizazi kutumia yako: mada description, lengo urefu, kiwango cha darasa, na ya kibinafsi maagizo. Kizazi takes 10-20 sekunde. matokeo ni reviewed by safety filters kabla onyesho. Imezalishwa maudhui inaweza be: edited (mwalimu inaweza rekebisha yoyote part), analyzed (endesha kupitia nyingine kizazi zana), na imehifadhiwa (ongeza kwa historia kwa reuse). Tumia wakati: wewe haja maudhui juu ya maalum mada, taka controlled utata, au haja kwa fill curriculum gaps. Imezalishwa maudhui inajumuisha: inayofaa msamiati, logical organization, na darasa-kiwango syntax. Verify factual usahihi kabla darasa tumia.",
-    "generator_actions": "Hub kwa yote maudhui kizazi zana. inapatikana generators jumuisha: jaribio (tathmini na majibu keys), kamusi (kuona msamiati), Simplified maandishi (kiwangoed kusoma), FAQ (Q na pairs), Uchambuzi (maudhui examination), somo Mpango (instructional design), Timeline (chronological shughuli), Scaffolds (kuandika msaada), Dhana Panga (categorization mchezo), Hesabu (problem kizazi), Safari (mwingiliano hadithi), na Brainstorm (shughuli ideas). kila generator inabadilisha yako chanzo maudhui ndani tofauti muundo. Bofya yoyote generator kwa fungua its configuration paneli. Nyingi generators inaweza be imetumika juu ya sawa chanzo. Imezalishwa maudhui inaonekana katika workspace na inahifadhi kwa historia. kidokezo: Anza na Uchambuzi kwa elewa yako maudhui, kisha tengeneza targeted rasilimali.",
     "tool_visual": "Fikia kuona generator zana. Creates AI-imetengenezwa picha pamoja na: msamiati kuona, dhana mchoro, mandhari depictions, mchoro, na infographics. kuona types: rejea picha (kwa kujifunza), worksheets (kwa shughuli), na mchoro (kwa relationships). kuona msaada: ELL mwanafunzi (kuona msamiati), kuona wanafunzi, na engagement. kila kizazi inaunda unique picha. mipangilio udhibiti mtindo, ubora, na maudhui. Imezalishwa kuona inaweza be: downloaded, embedded katika vifaa, na added kwa glossaries. Uses AI picha kizazi credits. kidokezo: Tengeneza kuona kwa abstract dhana hiyo ni difficult kwa explain na maneno alone.",
     "tool_udl": "Jifunze kuhusu UDL framework integration. Universal Design kwa Kujifunza has three principles: Nyingi Means ya Representation ( nini ya kujifunza—present taarifa katika tofauti ways), Nyingi Means ya Action na usemi ( jinsi ya kujifunza—let mwanafunzi demonstrate understanding differently), na Nyingi Means ya Engagement ( why ya kujifunza—motivate na sustain interest). Hii zana msaada yote three kupitia: varied maudhui muundo, nyingi interaction hali, na gamified engagement. Bofyaing inafungua ya kina taarifa kuhusu jinsi kila zana vipengele aligns na UDL research. Kubwa kwa: professional development, IEP justification, na understanding pedagogical foundation. kidokezo: Rejea UDL principles wakati advocating kwa zana adchaguo.",
     "tour-analysis-settings": "Rekebisha parameters kwa readability uchambuzi, pamoja na lengo kusoma kiwango na maalum metrics kwa track.",
@@ -6904,7 +6910,6 @@
     "adventure_system_state": "Ongeza rasilimali management mechanics kwa adventures. mwanafunzi track: Health (consequence ya risky machaguo), dhahabu/rasilimali (economic decision-making), Reputation (kijamii capital kutoka machaguo), na ya kibinafsi rasilimali wewe define. Actions affect rasilimali visibly—spend dhahabu kwa buy kipengele, lose health kutoka poor decisions, gain reputation kutoka msaadaing others. Creates meaningful consequences hiyo teach: cause-na-effect reasoning, planning ahead, rasilimali management, na opportunity cost. kuona dashibodi inaonyesha sasa rasilimali kiwango. wakati rasilimali deplete, mchezo adaptively responds (e.g., low health = limited chaguzi). Hesabu ujuzi integrate naturally kupitia rasilimali calculations.",
     "glossary_tier2_count": "Weka jinsi many Tier 2 (kitaaluma) msamiati maneno kwa jumuisha. Tier 2 maneno: kuonekana kuvuka subjects, ni imetumika katika kitaaluma contexts, na ni essential kwa maandishi uelewa. mfano: chambua, ushahidi, significant, contrast. These maneno ina highest instructional thamani—zaidi mwanafunzi benefit kutoka explicit teaching. Recommended hesabu depends juu ya: maandishi urefu (1 maneno kwa 100-150 maneno ya chanzo), inapatikana maagizo wakati, na mwanafunzi haja. Balance na Tier 3 hesabu kwa kamilisha msamiati weka. Lengo maagizo here kwa maximum impact juu ya kusoma uelewa kuvuka yote subjects.",
     "glossary_tier3_count": "Weka jinsi many Tier 3 (domain-maalum) msamiati maneno kwa jumuisha. Tier 3 maneno: ni maalum kwa subject eneo, ni usually defined katika muktadha, na inaweza sio transfer kuvuka subjects. mfano: photosynthesis, kigawe, alliteration, legislative. These maneno ni essential kwa understanding maalum maudhui lakini ina limited tumia outside domain. maagizo typically occurs wakati maudhui teaching. Kwa deep dive ndani mada, jumuisha zaidi Tier 3. Kwa broader kusoma ujuzi, prioritize Tier 2. Tier 3 maneno often kuonekana katika bold au italics katika textbooks, signaling wao importance within discipline.",
-    "glossary_definition_level": "Dhibiti jinsi maana zinavyoandikwa: sawa na chanzo, kiwango cha darasa, rahisi, au cha chekechea.",
     "glossary_custom_instructions": "Toa maalum guidance kwa msamiati selection na fasili mtindo. mfano: Lengo juu ya maneno kutoka sura 3-5, Jumuisha tu maneno related kwa water cycle, Avoid homonyms na simpler meanings, Ongeza etymology kwa Latin/Greek roots, Jumuisha Spanish cognates kwa ELL mwanafunzi, na Tumia mwanafunzi-rafiki mfano kutoka pop culture. Custom maagizo umbo: which maneno ni imechaguliwa, jinsi fasili ni written, na nini additional taarifa inaonekana. Clear maagizo zalisha bora zaidi-targeted glossaries. wewe inaweza request maalum muundo like: Jumuisha sentensi kutumia kila maneno au Ongeza kuona memory hooks. AI follows maagizo wakati making msamiati selections.",
     "glossary_language_input": "Bainisha lugha kwa msamiati tafsiri. Ingiza lugha: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, au yoyote lugha. wewe inaweza ongeza nyingi lugha separated by commas. kila istilahi ita onyesha: English fasili, lengo lugha tafsiri(s), na phonetic pronunciation guide wapi applicable. Tumia kwa: ELL msaada, heritage lugha connections, world lugha msamiati, na multilingual darasarooms. tafsiri kuonekana juu ya every msamiati kadi kwa instant rejea. sauti pronunciation inapatikana katika supported lugha. Research inaonyesha connecting mpya msamiati kwa home lugha improves retention. Max 4 lugha prevents kuona clutter wakati supporting tofauti darasarooms.",
     "glossary_auto_remove": "kiotomatiki chuja out very rahisi au kawaida maneno.",
@@ -7038,7 +7043,6 @@
     "fab_dictation": "Convert speech kwa maandishi kwa hands-bure ingizo. Bofya kwa activate microphone, sema clearly, na angalia maneno kuonekana. Inafanya kazi katika: maandishi ingizo, kuandika scaffolds, mazungumzo, na yoyote editable field. msaada: nyingi lugha, punctuation commands (say period, comma, mpya mstari), na editing commands (futa hiyo). Dictation requires microphone permission katika browser. Ubora depends juu ya: microphone ubora, background noise, na speech clarity. Real-wakati transcription inaonyesha as wewe sema. Hariri transcribed maandishi normally. Kubwa kwa: mwanafunzi na motor changamoto, reluctant writers, na idea kizazi. kidokezo: Sema katika kamilisha sentensi kwa bora zaidi usahihi.",
     "fab_focus": "Creates movable spotlight hiyo dims everything except circular eneo around yako cursor. Hii dramatically reduces kuona clutter na inasaidia maintain attention juu ya sasa kusoma eneo. Especially beneficial kwa mwanafunzi na ADHD, sensory processing tofauti, au anyone overwhelmed by busy screens. spotlight follows yako mouse/touch kiotomatiki. Rekebisha spotlight size na dim intensity katika mipangilio → Ufikivu.",
     "fab_line_focus": "Single-mstari kusoma isolation zana kwa focused kusoma. wakati activated: one maandishi mstari ni highlighted wakati others ni dimmed, kuunda kuona lengo. Navigate na: arrow keys (up/down), bofya anywhere juu ya maandishi, au touch/swipe juu ya mobile. Benefits: reduces kuona crowding, msaada kufuatilia difficulties, inasaidia maintain place, na reduces regression. Intensity (jinsi much surrounding maandishi ni inaonekana) ni adjustable katika mipangilio → Ufikivu. Inafanya kazi juu ya: yote kusoma maudhui, pamoja na imetengenezwa maandishi, chanzo vifaa, na mazungumzo. Particularly msaadaful kwa: dyslexia, ADHD, kuona processing tofauti, na anyone overwhelmed by maandishi-heavy screens. kidokezo: Combine na larger font kwa maximum kusoma ease.",
-    "fab_ruler": "Adds semi-transparent horizontal baa hiyo follows yako cursor kwa msaada track yako kusoma nafasi mstari by mstari. Particularly msaadaful kwa users na dyslexia, ADHD, au kuona kufuatilia difficulties. Buruta ruler up/down kwa reposition, tumia arrow keys kwa fine udhibiti, au bofya anywhere kwa jump. ruler rangi inaweza be customized katika mipangilio. Inafanya kazi kuvuka yote kusoma views pamoja na Simplified maandishi, FAQ, na kamusi fasili.",
     "fab_timer": "Opens mwingiliano lengo timer kulingana juu ya Pomodoro Technique. Chagua kutoka preset durations (5/15/25/45 minutes) au badilisha yako own. vipengele jumuisha: kuona countdown na maendeleo ring, hiari break reminders, XP tuzo kwa completed kipindi (ndefu zaidi = zaidi XP), na kipindi logging kwa mwalimu kagua. Label yako task (e.g., 'Soma sura 3') kwa track nini wewe accomplished. Minimizes kwa header baa so wewe inaweza kazi wakati it runs.",
     "scaffolds_edit_toggle": "Geuza kati ya hali ya kuhariri ya mwalimu na mwonekano wa mwanafunzi kwa scaffolds.",
     "scaffolds_goal_panel": "Onyesho kujifunza objectives kwa mwanafunzi rejea. lengo kuonekana prominently wakati shughuli. Effective lengo ni: mwanafunzi-rafiki (I inaweza statements), maalum na measurable, na aligned kwa shughuli. mfano: I inaweza tambua three causes ya Civil War au I inaweza tumia ushahidi kwa msaada my claim. lengo increase: metacognition, mwenyewe-tathmini, na purpose clarity. mwanafunzi inaweza rejea lengo wakati working. mwalimu sets lengo kabla mwanafunzi fikia. Nyingi lengo inaweza be displayed. lengo inaweza jumuisha mafanikio criteria: I know I ina succeeded wakati my aya has mada sentensi. Research inaonyesha inaonekana kujifunza targets improve mafanikio.",
@@ -7133,7 +7137,6 @@
     "immersive_line_focus": "Wezesha single-mstari kusoma guide. wakati inafanya kazi: sasa kusoma mstari ni fully inaonekana, surrounding mstari ni dimmed, na lengo follows as wewe navigate. Benefits: reduces kuona overwhelm, improves kufuatilia, na inasaidia attention stay juu ya sasa maandishi. Navigate na: arrow keys, bofya anywhere, au otomatiki-advance (na TTS). Dimming intensity ni adjustable katika mipangilio. Kamili kwa: dyslexia msaada, attention difficulties, na kufuatilia changamoto. Combines well na maandishi-kwa-speech kwa multi-modal kusoma msaada. mstari lengo inafanya kazi juu ya yote maandishi maudhui. Research inaonyesha mstari isolation improves uelewa kwa kushindwa wasomaji. kidokezo: Combine na larger font kwa maximum kusoma ease.",
     "immersive_syllables": "kuona syllable segmentation kwa decoding msaada. wakati enabled: maneno onyesho na syllable breaks (hy-phen-at-ed), msaadaing wasomaji attack multisyllabic maneno. Benefits: inajenga phonemic awareness, msaada decoding mikakati, develops morphological understanding, na aids pronunciation. Especially msaadaful kwa: kushindwa decoders, ELL mwanafunzi, dyslexia msaada, na msamiati maneno na tata syllable mifumo. Syllabification follows kiwango phonetic rules. Inafanya kazi juu ya: yote kusoma maudhui pamoja na adapted maandishi, kamusi istilahi, na chanzo vifaa. Combine na sauti kwa hear syllables pronounced. Geuza off wakati sio needed kwa reduce kuona utata. kidokezo: Tumia kwa challenging msamiati, kisha zima kwa fluent kusoma fanya mazoezi.",
     "immersive_wide_text": "Expand maandishi kwa tumia zaidi horizontal skrini space. wakati inafanya kazi: mstari urefu increases, kidogo scrolling ni needed, na zaidi maandishi ni inaonekana at once. nzuri kwa: fluent wasomaji, wide displays, na wakati scanning kwa taarifa. chaguo-msingi narrow upana ni bora zaidi kwa: kushindwa wasomaji, mobile devices, na focused kusoma. Optimal mstari urefu varies by reader na device. Research inaonyesha 50-75 mhusika kwa mstari ni ideal kwa zaidi wasomaji. Wide maandishi trades readability kwa efficiency. Combine na mstari lengo kama kufuatilia becomes difficult. mpangilio ni remembered kwa device. kidokezo: Tumia wide maandishi kwa research na scanning, narrow maandishi kwa funga kusoma.",
-    "sidebar_tab_create": "Fungua paneli ya kutengeneza maudhui yenye zana zote za AI: Quiz, Glossary, Outline, na nyingine.",
     "sidebar_tab_history": "Fikia maudhui yote yaliyohifadhiwa na historia ya vipindi. Inajumuisha rasilimali zote zilizozalishwa.",
     "socratic_toggle": "Wezesha Socratic dialogue hali kwa deeper kujifunza. wakati ON: AI never gives direct majibu—instead asks probing maswali hiyo guide mwanafunzi toward discovery. Benefits: develops critical thinking, encourages mwenyewe-correction, inajenga problem-solving ujuzi, na inaunda memorable kujifunza moments. AI inatumia techniques like: clarifying maswali (nini do wewe mean by...?), challenging assumptions (lakini nini kama...?), na ushahidi requests (jinsi do wewe know hiyo?). Bora kwa: discussion preparation, dhana exploration, na msaadaing mwanafunzi who taka haraka majibu kwa think zaidi deeply. Inaweza frustrate mwanafunzi seeking efficiency—explain purpose.",
     "socratic_input": "Andika swali au taarifa kwa uchunguzi wa Kisokrasi. AI itajibu kwa maswali zaidi badala ya majibu.",
@@ -31256,7 +31259,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Eleza midia ya sasa",
+    "describe_current_media_done": "Inasoma midia {index} kati ya {count}.",
+    "describe_current_media_hint": "Soma maelezo ya midia ya sasa au inayofuata bila kuondoka kwenye rasilimali",
+    "describe_current_media_none": "Hakuna midia katika rasilimali ya sasa.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Fungua Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore imefunguliwa.",
+    "open_learning_web_explorer_hint": "Chunguza viwango, dhana, masomo, ushahidi na uhusiano wa maneno katika ramani moja",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Soma maelezo yote ya midia",
+    "read_media_descriptions_count": "Inasoma maelezo {count} ya midia.",
+    "read_media_descriptions_hint": "Soma kila maelezo yaliyoandikwa ya picha, video au sauti katika rasilimali ya sasa",
+    "read_media_descriptions_none": "Hakuna midia katika rasilimali ya sasa.",
+    "suggest_contextual_next_steps": "Pendekeza hatua 3 zinazofuata",
+    "suggest_contextual_next_steps_hint": "Hutoa chaguo tatu zinazolingana na muktadha, bila kuchagua au kuendesha lolote",
+    "suggest_contextual_next_steps_working": "Inasoma muktadha wa somo la sasa na kuandaa chaguo tatu...",
+    "surprise_me_contextually": "Nipe hatua inayofuata yenye manufaa",
+    "surprise_me_contextually_hint": "Huchagua hatua moja inayofuata yenye mantiki na hatari ndogo kutoka muktadha wa somo la sasa",
+    "surprise_me_contextually_working": "Inasoma muktadha wa somo la sasa na kuchagua hatua inayofuata yenye manufaa...",
+    "use_contextual_suggestion": "Tumia hatua inayofuata iliyopendekezwa",
+    "use_contextual_suggestion_hint": "Huendesha chaguo 1, 2, au 3 kutoka mapendekezo ya hivi karibuni",
+    "use_contextual_suggestion_working": "Inaanza hatua inayofuata iliyochaguliwa..."
   },
   "palette": {
     "aria": "Paleti ya amri ya AlloFlow",
@@ -31279,10 +31308,11 @@
       "videoStudio": "Hapa — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Kila tendo hutangazwa. Ctrl+K hugeuza.",
     "group": {
@@ -31600,6 +31630,12 @@
     "diff_types_hint": "Tengeneza seti yenye viwango tofauti kwa:",
     "diff_cost": "Takriban uzalishaji {n} kwa kila uendeshaji.",
     "summary_standards": "viwango",
-    "summary_interests": "mapendeleo"
+    "summary_interests": "mapendeleo",
+    "translations": "Tafsiri",
+    "translations_auto": "Kiotomatiki ({language})",
+    "translations_auto_plain": "Kiotomatiki",
+    "translations_none": "Hakuna",
+    "translations_on_hint": "Rasilimali za {output} zitakuwa pia na toleo la {target}.",
+    "translations_off_hint": "Rasilimali zitakuwa kwa {output} pekee, bila lugha ya pili."
   }
 }

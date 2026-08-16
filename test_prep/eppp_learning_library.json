@@ -273386,10 +273386,10 @@
       "reviewArtifact": "eppp_learning_review_overrides.json",
       "sourceDetails": [
         {
-          "title": "Berry, J. W. (1997). Immigration, acculturation, and adaptation. Applied Psychology, 46(1), 5–34",
-          "organization": "doi.org",
+          "title": "Immigration, Acculturation, and Adaptation",
+          "organization": "Applied Psychology",
           "url": "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x",
-          "credibility": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept."
+          "credibility": "This peer-reviewed foundational article in Applied Psychology is the primary source for Berry’s bidimensional framework. It supports both classification of an integration strategy and the separate evaluation of psychological or sociocultural adaptation."
         }
       ],
       "contentDisposition": "retain-after-rewrite",

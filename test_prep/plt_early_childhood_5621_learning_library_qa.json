@@ -1,6 +1,6 @@
 {
+  "version": "1.0.0",
   "schemaVersion": 1,
-  "generatedAt": "2026-08-13T08:44:53.652Z",
   "libraryId": "praxis-plt-early-childhood-5621-learning-library",
   "packId": "praxis-plt-early-childhood-5621",
   "standard": {
@@ -25,7 +25,7 @@
       "expectedCode": "5621",
       "expectedPackId": "praxis-plt-early-childhood-5621",
       "sourceItemsReviewed": 200,
-      "allItemsReviewed": 200,
+      "allItemsReviewed": 500,
       "packIdentityMisses": 0,
       "sourceItemIdentityMisses": 0,
       "foreignCodeOccurrences": 0,
@@ -49,5 +49,14 @@
     },
     "findings": [],
     "status": "pass"
+  },
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "53c0e3a5e007823afd72e617f54bfde0b147834a4a7a63309196cabb05e3bf44",
+    "learningLibrarySha256": "b86523780637ce6ae14214beca6e3a99645a6685c4aa48692835369361901fd4",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

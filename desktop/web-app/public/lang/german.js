@@ -2260,7 +2260,7 @@
     "ai_guide_sub": "Pedagogy, Navigation & Auto-Festlegenup",
     "ai_guide_welcome": "Hallo! Ich bin Ihr KI-Assistent. Ich kann Ihnen bei UDL-Strategien helfen, für Sie durch die App navigieren oder Ihre Unterrichtseinstellungen automatisch einrichten. Fragen Sie einfach!",
     "tool_analysis": "Analyze Quellmaterial",
-    "tool_glossary": "Glossar & Sprache Auswählenion",
+    "tool_glossary": "Glossar",
     "tool_simplified": "Textanpassung",
     "tool_outline": "Visueller Organizer",
     "tool_visual": "Visuell Unterstützung",
@@ -2990,7 +2990,7 @@
     "choose_destination_aria": "Wählen ein destination"
   },
   "glossary": {
-    "title": "Glossar & Sprache Auswählenion",
+    "title": "Glossar",
     "tier2": "Stufe 2 (Acad.)",
     "tier2_tooltip": "Hoch-utility academic Worts verwendend über disciplines (z. B., 'analysieren', 'verify').",
     "tier3": "Stufe 3 (Domain)",
@@ -3932,7 +3932,12 @@
     "gauge_simple": "Einfach",
     "word_bank_english": "Englisch",
     "word_bank_both": "Beide",
-    "word_bank_language": "Sprache der Wortbank"
+    "word_bank_language": "Sprache der Wortbank",
+    "measured_level_label": "Gemessenes Leseniveau",
+    "measured_on_target": "Passend für {grade}",
+    "measured_above": "Über dem Niveau von {grade}",
+    "measured_below": "Unter dem Niveau von {grade}",
+    "measured_note": "Flesch-Kincaid, an diesem Text gemessen. Für eine genauere Prüfung Prüfen Stufe verwenden."
   },
   "quiz": {
     "title": "Beurteilen",
@@ -5878,7 +5883,9 @@
     "title_poettree_config": "🌳 PoetTree-Aufgabe",
     "title_poettree_submission": "🌳 Gedicht-Einreichung",
     "title_litlab_config": "🎭 LitLab-Aufgabe",
-    "title_litlab_submission": "🎭 Aufführungs-Einreichung"
+    "title_litlab_submission": "🎭 Aufführungs-Einreichung",
+    "translation_block": "Übersetzung",
+    "translation_into": "Übersetzung ({language})"
   },
   "persona": {
     "title": "IchnterAnsicht Modus",
@@ -6297,7 +6304,7 @@
   },
   "tools": {
     "source": "Quellmaterial",
-    "glossary": "Glossar & Sprache Auswählenion",
+    "glossary": "Glossar",
     "simplified": "Textanpassung & Engagement",
     "outline": "Visueller Organizer",
     "quiz": "Beurteilen",
@@ -6886,7 +6893,6 @@
     "source_settings_instructions": "Steuert die KI-Inhaltsgenerierung durch konkrete Vorgaben zu Ton, Schwerpunkt, Wortschatzniveau und Blickwinkel.",
     "source_verify_checkbox": "Aktiviert die KI-Faktenprüfung über Google Suche. Verlängert die Generierung um wenige Sekunden, erhöht aber deutlich die Zuverlässigkeit bei Sachinhalten.",
     "source_generate_button": "Erstellt einen KI-geschriebenen Text zu Ihrem Thema gemäß Vorgaben zu Länge, Klassenstufe und individuellen Anweisungen.",
-    "generator_actions": "Zentrale Anlaufstelle für alle Generierungswerkzeuge: Quiz, Glossar, vereinfachter Text, FAQ, Analyse, Stundenplanung, Zeitleiste und mehr.",
     "tool_visual": "Access die visuell generator Werkzeug. Erstellens AI-generiert Bilds including: Vokabular visuals, Konzept illustrations, scene depictions, diagrams, und infographics. Visuell Typs: Referenz Bilds (für Lernen), worksheets (für Aktivitäten), und diagrams (für relationships). Visuals Unterstützung: ELL Schülers (visuell Vokabular), visuell Lernende, und Engagement. jeder Generierung erstellens unique Bilds. Einstellungen Steuerung Stil, Qualität, und Inhalt. Generiert visuals kann be: downladened, embedded in Materialien, und hinzufügened zu glossaries. Verwendens AI Bild Generierung crbearbeitens. Tipp: Generieren visuals für abstract Konzepte das sind schwierig zu explain mit Worts alone.",
     "tool_udl": "Erläutert die Integration des UDL-Rahmens. Zeigt, wie jede Werkzeugfunktion die drei UDL-Prinzipien Repräsentation, Aktion und Engagement unterstützt.",
     "tour-analysis-settings": "Anpassen parameters für lesenability Analyse, including target Leseniveau und spezifisch metrics zu track.",
@@ -6911,7 +6917,6 @@
     "adventure_system_state": "Ergänzt Ressourcenmanagement im Adventure Mode: Gesundheit, Gold, Reputation oder eigene Ressourcen, die durch Entscheidungen beeinflusst werden.",
     "glossary_tier2_count": "Legt die Anzahl der Tier-2-Vokabeln fest: hochwertige akademische Wörter, die fächerübergreifend für das Textverständnis wesentlich sind.",
     "glossary_tier3_count": "Legt die Anzahl der Tier-3-Vokabeln fest: fachspezifische Begriffe, die zum Verständnis bestimmter Inhalte erforderlich sind.",
-    "glossary_definition_level": "Steuert, wie die Definitionen formuliert werden: wie im Original, auf Klassenstufe, vereinfacht oder im Kindergartenniveau.",
     "glossary_custom_instructions": "Bereitstellen spezifisch guidance für Vokabular auswählenion und Definition Stil. Examples: Fokus auf Worts von chapters 3-5, einschließen nur Worts related zu die water cycle, Avoid homonyms mit einfachr meanings, Hinzufügen etymology für Latin/Greek roots, einschließen Spanish cognates für ELL Schülers, und Verwenden Schüler-friendly examples von pop culture. Benutzerdefiniert instructions shape: which Worts sind auswählened, how Definitionen sind written, und was hinzufügenitional Informationen erscheint. Leeren instructions produce better-targeted glossaries. Du kann request spezifisch formats like: einschließen ein gesendetence verwendend jeder Wort oder Hinzufügen visuell memory hooks. AI folniedrigs instructions wenn making Vokabular auswählenions.",
     "glossary_language_input": "Gibt Sprachen für die Vokabelübersetzung an. Mehrere Sprachen durch Komma getrennt, maximal vier, um Übersichtlichkeit zu wahren.",
     "glossary_auto_remove": "Automatically filter out sehr einfach oder gemeinsam Worts.",
@@ -7045,7 +7050,6 @@
     "fab_dictation": "Wandelt Sprache in Text um fuer freihaendige Eingabe. Klicken Sie zur Aktivierung des Mikrofons, sprechen Sie klar und sehen Sie zu, wie Worte erscheinen.",
     "fab_focus": "Erstellens ein movable spothell das dims everything except ein circular area around dein cursor. dies dramatically reduces visuell clutter und Hilfes maintain attention auf die aktuell lesening area. Especially beneficial für Schülers mit ADHD, sensory processing differences, oder anyone overwhelmed by busy screens. Die spothell folniedrigs dein verschiebenrwirnden/touch automatically. Anpassen spothell Größe und dim intensity in Einstellungen → Barrierefreiheit.",
     "fab_line_focus": "Hebt eine einzelne Zeile beim Lesen hervor, waehrend andere abgedunkelt werden. Hilft besonders bei Legasthenie, ADHS und visuellen Verarbeitungsschwierigkeiten.",
-    "fab_ruler": "Fuegt einen halbtransparenten waagerechten Balken hinzu, der dem Cursor folgt und beim zeilenweisen Lesen hilft. Besonders nuetzlich bei Verfolgungsschwierigkeiten.",
     "fab_timer": "Oeffnet einen Fokus-Timer nach der Pomodoro-Methode. Waehlen Sie zwischen voreingestellten Dauern oder passen Sie die Zeit individuell an.",
     "scaffolds_edit_toggle": "Wechselt zwischen Lehrer-Bearbeitungsmodus und Schueler-Ansicht. Im Bearbeitungsmodus koennen Sie Texte aendern, Prompts hinzufuegen oder loeschen.",
     "scaffolds_goal_panel": "Zeigt Lernziele zur Schueler-Orientierung an. Effektive Ziele sind schuelerfreundlich, konkret und messbar, etwa als Ich-kann-Aussagen formuliert.",
@@ -7140,7 +7144,6 @@
     "immersive_line_focus": "Aktiviert die einzeilige Lesehilfe. Die aktuelle Zeile bleibt voll sichtbar, umgebende Zeilen werden abgedunkelt. Ideal bei Legasthenie und Aufmerksamkeitsproblemen.",
     "immersive_syllables": "Visuell syllable segmentation für decoding Unterstützung. wenn aktivierend: Worts disabspielen mit syllable breaks (hy-phen-at-ed), Hilfeing leseners attack multisyllabic Worts. Benefits: baut phonemic awareness, unterstützt decoding strategies, develops morphological understanding, und aids pronunciation. Especially Hilfeful für: Schwierigkeiten deCoders, ELL Schülers, dyslexia Unterstützung, und Vokabular Worts mit komplex syllable Muster. Syllabification folniedrigs Standard-phonetic rules. Funktioniert auf: alle lesening Inhalt including adapted Text, Glossar Begriffs, und Quellmaterials. Combine mit Audio zu hear syllables proneinunced. Umschalten off wenn nicht brauchened zu reduce visuell komplexity. Tipp: Verwenden für challenging Vokabular, dann deaktivieren für fluent lesening practice.",
     "immersive_wide_text": "Expund Text zu verwenden mehr horizontal Bildschirm space. wenn aktiv: line length increases, wirniger scrolling ist brauchened, und mehr Text ist visible at once. Gut für: fluent leseners, wide disabspielens, und wenn skannning für Informationen. Standard-narrow width ist better für: Schwierigkeiten leseners, mobile devices, und focverwendend lesening. Optimal line length varies by lesener und device. Resuchen anzeigens 50-75 Charakters pro line ist ideal für am meisten leseners. Wide Text trades lesenability für efficiency. Combine mit line Fokus wenn Verfolgung becomes schwierig. Einstellung ist remembered pro device. Tipp: Verwenden wide Text für resuchen und skannning, narrow Text für schließen lesening.",
-    "sidebar_tab_create": "Oeffnet das Inhalts-Generierungs-Bedienfeld mit allen KI-Werkzeugen: Quiz, Glossary, Outline, Analyse, Lesson Plan, Timeline, Simplified Text und weitere.",
     "sidebar_tab_history": "Zugriff auf alle gespeicherten Inhalte und den Sitzungsverlauf. Enthaelt automatisch gespeicherte Sitzungen, manuell gespeicherte Projekte und generierte Ressourcen.",
     "socratic_toggle": "Aktiviert den sokratischen Dialogmodus. Die KI gibt keine direkten Antworten, sondern stellt forschende Fragen, die Schueler zur Entdeckung fuehren.",
     "socratic_input": "Geben Sie Ihre Frage oder Aussage fuer die sokratische Erkundung ein. Die KI antwortet mit Fragen statt mit Antworten, um Belege, Annahmen und Logik zu untersuchen.",
@@ -31285,7 +31288,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Aktuelles Medium beschreiben",
+    "describe_current_media_done": "Medium {index} von {count} wird vorgelesen.",
+    "describe_current_media_hint": "Die aktuelle oder nächste Medienbeschreibung lesen, ohne die Ressource zu verlassen",
+    "describe_current_media_none": "In der aktuellen Ressource gibt es keine Medien.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore öffnen",
+    "open_learning_web_explorer_done": "Learning Web: Explore geöffnet.",
+    "open_learning_web_explorer_hint": "Standards, Begriffe, Lektionen, Belege und Wortverbindungen in einer Karte erkunden",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Alle Medienbeschreibungen vorlesen",
+    "read_media_descriptions_count": "{count} Medienbeschreibungen werden vorgelesen.",
+    "read_media_descriptions_hint": "Jede geschriebene Bild-, Video- oder Audiobeschreibung in der aktuellen Ressource vorlesen",
+    "read_media_descriptions_none": "In der aktuellen Ressource gibt es keine Medien.",
+    "suggest_contextual_next_steps": "3 nächste Schritte vorschlagen",
+    "suggest_contextual_next_steps_hint": "Bietet drei zum Kontext passende Optionen an, ohne eine auszuwählen oder auszuführen",
+    "suggest_contextual_next_steps_working": "Der aktuelle Unterrichtskontext wird gelesen und drei Optionen werden vorbereitet...",
+    "surprise_me_contextually": "Überrasche mich mit einem nützlichen nächsten Schritt",
+    "surprise_me_contextually_hint": "Wählt eine sinnvolle, risikoarme nächste Aktion aus dem aktuellen Unterrichtskontext",
+    "surprise_me_contextually_working": "Der aktuelle Unterrichtskontext wird gelesen und ein nützlicher nächster Schritt wird gewählt...",
+    "use_contextual_suggestion": "Einen vorgeschlagenen nächsten Schritt verwenden",
+    "use_contextual_suggestion_hint": "Führt Option 1, 2 oder 3 aus den letzten Vorschlägen aus",
+    "use_contextual_suggestion_working": "Der gewählte nächste Schritt wird gestartet..."
   },
   "palette": {
     "aria": "AlloFlow-Befehlspalette",
@@ -31308,10 +31337,11 @@
       "videoStudio": "Hier — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Jede Aktion wird angesagt. Ctrl+K schaltet um.",
     "group": {
@@ -31630,6 +31660,12 @@
     "diff_types_hint": "Erstelle ein differenziertes Set für:",
     "diff_cost": "Etwa {n} Generierungen pro Durchlauf.",
     "summary_standards": "Standards",
-    "summary_interests": "Interessen"
+    "summary_interests": "Interessen",
+    "translations": "Übersetzungen",
+    "translations_auto": "Automatisch ({language})",
+    "translations_auto_plain": "Automatisch",
+    "translations_none": "Keine",
+    "translations_on_hint": "Materialien auf {output} erhalten zusätzlich eine Fassung auf {target}.",
+    "translations_off_hint": "Materialien erscheinen nur auf {output}, ohne zweite Sprache."
   }
 }

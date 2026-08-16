@@ -629,10 +629,10 @@
     "ai_guide_sub": "Pedagogy, Navigation & Auto-Setup",
     "ai_guide_welcome": "Aw lawi! Kei cu na AI Guide ka si. UDL lam hruainak he, app chungah lam ka hruaih khawh, asilo na cawnnak setting kha amah te in ka serh khawh. Na hal lawng law!",
     "tool_analysis": "Source Material Analyze",
-    "tool_glossary": "Glossary & Holh Selection",
+    "tool_glossary": "Glossary",
     "tool_simplified": "Text Adaptation",
     "tool_outline": "Visual Organizer",
-    "tool_visual": "Visual Support",
+    "tool_visual": "Cawnnak hmanthlak",
     "tool_faq": "FAQ Generator",
     "tool_scaffolds": "Writing Scaffolds",
     "tool_scaffolds_parent": "Writing Bawmnak",
@@ -823,7 +823,7 @@
   },
   "tools": {
     "source": "Source Material",
-    "glossary": "Glossary & Holh Selection",
+    "glossary": "Glossary",
     "simplified": "Text Adaptation & Engagement",
     "outline": "Visual Organizer",
     "quiz": "Cinah",
@@ -1665,7 +1665,6 @@
     "source_settings_instructions": "Guide AI content generation with specific instructions. Examples: Make it engaging for reluctant readers, Focus on the water cycle, Include diverse character names, Avoid references to violence, and Use simple vocabulary for ELL students. Instructions shape: tone, content focus, vocabulary level, and perspective. Be specific for best results. Multiple instructions can be combined. Instructions are processed along with your topic and settings. For sensitive topics, include content guidance. Instructions do not guarantee specific outcomes but strongly influence generation. Tip: Include grade level and any content restrictions in your instructions for most appropriate output.",
     "source_verify_checkbox": "Enable AI fact-checking via Google Search grounding. When ON: AI cross-references generated content against web sources, flagging or correcting potential inaccuracies. Adds 5-10 seconds to generation time but significantly improves reliability for factual content. Especially important for: history (dates, events), science (processes, data), biography, and current events. For fiction, creative writing, or hypothetical scenarios, this can be disabled to allow more creative freedom. Sources consulted are listed in the generation log for teacher review. Highly recommended for any content that will be presented as factual to students.",
     "source_generate_button": "Create AI-written content on your specified topic. Click to begin generation using your: topic description, target length, grade level, and custom instructions. Generation takes 10-20 seconds. Output is reviewed by safety filters before display. Generated content can be: edited (teacher can modify any part), analyzed (run through other generation tools), and saved (add to history for reuse). Use when: you need content on a specific topic, want controlled complexity, or need to fill curriculum gaps. Generated content includes: appropriate vocabulary, logical organization, and grade-level syntax. Verify factual accuracy before classroom use.",
-    "generator_actions": "Hub for all content generation tools. Available generators include: Quiz (assessment with answer keys), Glossary (visual vocabulary), Simplified Text (leveled reading), FAQ (Q and A pairs), Analysis (content examination), Lesson Plan (instructional design), Timeline (chronological activity), Scaffolds (writing supports), Concept Sort (categorization game), Math (problem generation), Adventure (interactive story), and Brainstorm (activity ideas). Each generator transforms your source content into different formats. Click any generator to open its configuration panel. Multiple generators can be used on the same source. Generated content appears in the workspace and saves to history. Tip: Start with Analysis to understand your content, then generate targeted resources.",
     "tool_visual": "Access the visual generator tool. Creates AI-generated images including: vocabulary visuals, concept illustrations, scene depictions, diagrams, and infographics. Visual types: reference images (for learning), worksheets (for activities), and diagrams (for relationships). Visuals support: ELL students (visual vocabulary), visual learners, and engagement. Each generation creates unique images. Settings control style, quality, and content. Generated visuals can be: downloaded, embedded in materials, and added to glossaries. Uses AI image generation credits. Tip: Generate visuals for abstract concepts that are difficult to explain with words alone.",
     "tool_udl": "Learn about UDL framework integration. Universal Design for Learning has three principles: Multiple Means of Representation (the what of learning,present information in different ways), Multiple Means of Action and Expression (the how of learning,let students demonstrate understanding differently), and Multiple Means of Engagement (the why of learning,motivate and sustain interest). This tool supports all three through: varied content formats, multiple interaction modes, and gamified engagement. Clicking opens detailed information about how each tool feature aligns with UDL research. Great for: professional development, IEP justification, and understanding pedagogical foundation. Tip: Reference UDL principles when advocating for tool adoption.",
     "tour-analysis-settings": "Adjust parameters for readability analysis, including target reading level and specific metrics to track.",
@@ -1690,7 +1689,6 @@
     "adventure_system_state": "Add resource management mechanics to adventures. Students track: Health (consequence of risky choices), Gold/Resources (economic decision-making), Reputation (social capital from choices), and custom resources you define. Actions affect resources visibly,spend gold to buy items, lose health from poor decisions, gain reputation from helping others. Creates meaningful consequences that teach: cause-and-effect reasoning, planning ahead, resource management, and opportunity cost. Visual dashboard shows current resource levels. When resources deplete, game adaptively responds (e.g., low health = limited options). Math skills integrate naturally through resource calculations.",
     "glossary_tier2_count": "Set how many Tier 2 (academic) vocabulary words to include. Tier 2 words: appear across subjects, are used in academic contexts, and are essential for text comprehension. Examples: analyze, evidence, significant, contrast. These words have the highest instructional value,most students benefit from explicit teaching. Recommended count depends on: text length (1 word per 100-150 words of source), available instruction time, and student need. Balance with Tier 3 count for a complete vocabulary set. Focus instruction here for maximum impact on reading comprehension across all subjects.",
     "glossary_tier3_count": "Set how many Tier 3 (domain-specific) vocabulary words to include. Tier 3 words: are specific to a subject area, are usually defined in context, and may not transfer across subjects. Examples: photosynthesis, denominator, alliteration, legislative. These words are essential for understanding specific content but have limited use outside the domain. Instruction typically occurs during content teaching. For deep dive into a topic, include more Tier 3. For broader reading skills, prioritize Tier 2. Tier 3 words often appear in bold or italics in textbooks, signaling their importance within the discipline.",
-    "glossary_definition_level": "Control how definitions are written. Options: Same as Source (maintains original complexity,good for advanced students), On Grade (matches target grade level vocabulary), Simplified (uses common words, shorter sentences), and Kindergarten (very basic language, concrete examples). Match definition complexity to student reading level, not content level. A 10th-grader studying advanced biology might need Simplified definitions for unfamiliar terms. Consider your students weakest readers when selecting. Definitions can be individually edited after generation if some need adjustment. Pro tip: Use Simplified initially, then discuss the more technical definitions in class.",
     "glossary_custom_instructions": "Provide specific guidance for vocabulary selection and definition style. Examples: Focus on words from chapters 3-5, Include only words related to the water cycle, Avoid homonyms with simpler meanings, Add etymology for Latin/Greek roots, Include Spanish cognates for ELL students, and Use student-friendly examples from pop culture. Custom instructions shape: which words are selected, how definitions are written, and what additional information appears. Clear instructions produce better-targeted glossaries. You can request specific formats like: Include a sentence using each word or Add visual memory hooks. AI follows instructions when making vocabulary selections.",
     "glossary_language_input": "Specify languages for vocabulary translation. Enter languages: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, or any language. You can add multiple languages separated by commas. Each term will show: English definition, target language translation(s), and phonetic pronunciation guide where applicable. Use for: ELL support, heritage language connections, world language vocabulary, and multilingual classrooms. Translations appear on every vocabulary card for instant reference. Audio pronunciation available in supported languages. Research shows connecting new vocabulary to home languages improves retention. Max 4 languages prevents visual clutter while supporting diverse classrooms.",
     "glossary_auto_remove": "Automatically filter out very simple or common words.",
@@ -1824,7 +1822,6 @@
     "fab_dictation": "Convert speech to text for hands-free input. Click to activate microphone, speak clearly, and watch words appear. Works in: text inputs, writing scaffolds, chat, and any editable field. Supports: multiple languages, punctuation commands (say period, comma, new line), and editing commands (delete that). Dictation requires microphone permission in browser. Quality depends on: microphone quality, background noise, and speech clarity. Real-time transcription shows as you speak. Edit transcribed text normally. Great for: students with motor challenges, reluctant writers, and idea generation. Tip: Speak in complete sentences for better accuracy.",
     "fab_focus": "Creates a movable spotlight that dims everything except a circular area around your cursor. This dramatically reduces visual clutter and helps maintain attention on the current reading area. Especially beneficial for students with ADHD, sensory processing differences, or anyone overwhelmed by busy screens. The spotlight follows your mouse/touch automatically. Adjust spotlight size and dim intensity in Settings → Accessibility.",
     "fab_line_focus": "Single-line reading isolation tool for focused reading. When activated: one text line is highlighted while others are dimmed, creating visual focus. Navigate with: arrow keys (up/down), click anywhere on text, or touch/swipe on mobile. Benefits: reduces visual crowding, supports tracking difficulties, helps maintain place, and reduces regression. Intensity (how much surrounding text is visible) is adjustable in Settings → Accessibility. Works on: all reading content, including generated text, source materials, and chat. Particularly helpful for: dyslexia, ADHD, visual processing differences, and anyone overwhelmed by text-heavy screens. Tip: Combine with larger font for maximum reading ease.",
-    "fab_ruler": "Adds a semi-transparent horizontal bar that follows your cursor to help track your reading position line by line. Particularly helpful for users with dyslexia, ADHD, or visual tracking difficulties. Drag the ruler up/down to reposition, use arrow keys for fine control, or click anywhere to jump. The ruler color can be customized in Settings. Works across all reading views including Simplified Text, FAQ, and Glossary definitions.",
     "fab_timer": "Opens an interactive focus timer based on the Pomodoro Technique. Choose from preset durations (5/15/25/45 minutes) or customize your own. Features include: visual countdown with progress ring, optional break reminders, XP rewards for completed sessions (longer = more XP), and session logging for teacher review. Label your task (e.g., 'Read Chapter 3') to track what you accomplished. Minimizes to the header bar so you can work while it runs.",
     "scaffolds_edit_toggle": "Toggle between teacher editing and student view mode. When ON (Edit Mode): click any scaffold to modify text, add new prompts, delete items, and reorder content. When OFF: scaffolds display as students see them (read-only). Edits save automatically. Students always see read-only regardless of your toggle (they cannot access edit mode). Use editing to: customize AI-generated scaffolds, add class-specific examples, remove inappropriate prompts, and differentiate for specific students. Preview student view before sharing. Original scaffolds can be restored from history. Tip: Review and edit scaffolds before class to ensure they match your teaching style and student needs.",
     "scaffolds_goal_panel": "Display learning objectives for student reference. Goals appear prominently during activity. Effective goals are: student-friendly (I can statements), specific and measurable, and aligned to activity. Examples: I can identify three causes of the Civil War or I can use evidence to support my claim. Goals increase: metacognition, self-assessment, and purpose clarity. Students can reference goals while working. Teacher sets goals before student access. Multiple goals can be displayed. Goals can include success criteria: I know I have succeeded when my paragraph has a topic sentence. Research shows visible learning targets improve achievement.",
@@ -1919,7 +1916,6 @@
     "immersive_line_focus": "Enable single-line reading guide. When active: current reading line is fully visible, surrounding lines are dimmed, and focus follows as you navigate. Benefits: reduces visual overwhelm, improves tracking, and helps attention stay on current text. Navigate with: arrow keys, click anywhere, or auto-advance (with TTS). Dimming intensity is adjustable in settings. Perfect for: dyslexia support, attention difficulties, and tracking challenges. Combines well with text-to-speech for multi-modal reading support. Line focus works on all text content. Research shows line isolation improves comprehension for struggling readers. Tip: Combine with larger font for maximum reading ease.",
     "immersive_syllables": "Visual syllable segmentation for decoding support. When enabled: words display with syllable breaks (hy-phen-at-ed), helping readers attack multisyllabic words. Benefits: builds phonemic awareness, supports decoding strategies, develops morphological understanding, and aids pronunciation. Especially helpful for: struggling decoders, ELL students, dyslexia support, and vocabulary words with complex syllable patterns. Syllabification follows standard phonetic rules. Works on: all reading content including adapted text, glossary terms, and source materials. Combine with audio to hear syllables pronounced. Toggle off when not needed to reduce visual complexity. Tip: Use for challenging vocabulary, then disable for fluent reading practice.",
     "immersive_wide_text": "Expand text to use more horizontal screen space. When active: line length increases, less scrolling is needed, and more text is visible at once. Good for: fluent readers, wide displays, and when scanning for information. Default narrow width is better for: struggling readers, mobile devices, and focused reading. Optimal line length varies by reader and device. Research shows 50-75 characters per line is ideal for most readers. Wide text trades readability for efficiency. Combine with line focus if tracking becomes difficult. Setting is remembered per device. Tip: Use wide text for research and scanning, narrow text for close reading.",
-    "sidebar_tab_create": "Open the content generation panel with all AI-powered tools. Available generators: Quiz (assessments with answer keys), Glossary (visual vocabulary), Outline (graphic organizers), Analysis (content examination), Lesson Plan (structured instruction), Timeline (chronological activities), Simplified Text (leveled reading), and more. Each tool opens a configuration panel for customization before generation. Source content must be loaded for most tools to analyze. Generated content appears in the main workspace and is saved to history. Use the Create tab as your primary content generation hub. Tip: Start with Analysis to understand content, then generate targeted resources.",
     "sidebar_tab_history": "Access all your saved content and session history. History includes: auto-saved sessions from recent work, manually saved projects and portfolios, generated resources organized by creation date, and student submissions (teacher view). Actions: load any item to continue working, delete items to free storage, export for backup, and search by keyword. History sorts by recency by default. Filter by type (quiz, glossary, adventure, etc.) to find specific resources. Cloud-synced history is accessible from any device. Storage limits vary by account,delete old items if approaching limit. Your history is your personal teaching resource library.",
     "socratic_toggle": "Enable Socratic dialogue mode for deeper learning. When ON: AI never gives direct answers,instead asks probing questions that guide students toward discovery. Benefits: develops critical thinking, encourages self-correction, builds problem-solving skills, and creates memorable learning moments. The AI uses techniques like: clarifying questions (What do you mean by...?), challenging assumptions (But what if...?), and evidence requests (How do you know that?). Best for: discussion preparation, concept exploration, and helping students who want quick answers to think more deeply. May frustrate students seeking efficiency,explain the purpose.",
     "socratic_input": "Enter your question or statement for Socratic exploration. The AI will respond with questions rather than answers. Good starting points: Why do you think [X] happened? What makes [Y] important? or I believe [Z] because... The AI probes your reasoning: asking for evidence, exploring implications, testing logic, and surfacing assumptions. This develops argumentation and critical thinking skills. Be prepared to: justify your thinking, consider alternatives, and refine your position. Socratic dialogues can be frustrating initially but build lasting understanding. Your responses and reasoning are tracked for reflection.",
@@ -3643,7 +3639,9 @@
     "title_poettree_config": "🌳 PoetTree Rian",
     "title_poettree_submission": "🌳 Hla Thlahnak",
     "title_litlab_config": "🎭 LitLab Rian",
-    "title_litlab_submission": "🎭 Langhternak Thlahnak"
+    "title_litlab_submission": "🎭 Langhternak Thlahnak",
+    "translation_block": "Lehnak",
+    "translation_into": "Lehnak ({language})"
   },
   "fullpack": {
     "button_label": "Full Resource Pack Chuah",
@@ -3780,7 +3778,12 @@
     "gauge_simple": "Simple",
     "word_bank_both": "Pahnih hnih",
     "word_bank_language": "Word bank tawng",
-    "word_bank_english": "English"
+    "word_bank_english": "English",
+    "measured_level_label": "Relnak a sang teh mi",
+    "measured_on_target": "{grade} caah a tlak",
+    "measured_above": "{grade} nakin a sang deuh",
+    "measured_below": "{grade} nakin a niam deuh",
+    "measured_note": "Flesch-Kincaid, hi ca ah tehmi a si. Fiangte in hngalh duh ahcun Level Check hmang."
   },
   "bridge": {
     "prompt_header": "Gemini Canvas Prompt",
@@ -3867,7 +3870,7 @@
     "share_resource_pack": "Hmanrua pack share rawh"
   },
   "visuals": {
-    "title": "Visual Support",
+    "title": "Cawnnak hmanthlak",
     "worksheet_mode": "Sianginn Worksheet Mode",
     "enhanced": "Enhanced Visual hna",
     "text_reduced": "Text-Reduced Mode",
@@ -4021,7 +4024,7 @@
     "tools_disclosure_hint": "Hmu / ruat"
   },
   "glossary": {
-    "title": "Glossary & Holh Selection",
+    "title": "Glossary",
     "tier2": "Tier 2 (Acad.)",
     "tier2_tooltip": "Discipline tampi chungah hman mi academic biafang (e.g., 'analyze', 'verify').",
     "tier3": "Tier 3 (Domain)",
@@ -5652,7 +5655,7 @@
       "sidebar_simplified_desc": "Access differentiated versions of your text at various reading levels. Generate simplified content, side-by-side bilingual versions, and modified texts.",
       "sidebar_outline_title": "Visual Organizers",
       "sidebar_outline_desc": "Create structured visual representations of content including concept maps, flow charts, Venn diagrams, and cause-and-effect organizers.",
-      "sidebar_visuals_title": "Visual Supports",
+      "sidebar_visuals_title": "Cawnnak hmanthlak",
       "sidebar_visuals_desc": "AI-generated images and visual aids to support comprehension. Create custom visuals or enhanced image sets for the content.",
       "sidebar_faq_title": "FAQ Generator",
       "sidebar_faq_desc": "Generate frequently asked questions that students might have about the content. Great for anticipating confusion and preparing explanations.",
@@ -23093,7 +23096,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Atu media hi chim",
+    "describe_current_media_done": "Media {index} / {count} ka rel.",
+    "describe_current_media_hint": "Hmun na chuahsan lo in atu asiloah a dang media chimnak rel",
+    "describe_current_media_none": "Atu hmun ah media a um lo.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore hung",
+    "open_learning_web_explorer_done": "Learning Web: Explore a hungmi a si.",
+    "open_learning_web_explorer_hint": "Standard, ruahnak, cawnnak, lantertu le bia pehtlaihnak kha map pakhat ah zoh",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Media chimnak vialte rel",
+    "read_media_descriptions_count": "Media chimnak {count} ka rel.",
+    "read_media_descriptions_hint": "Atu hmun ah a ummi hmanthlak, video, asiloah aw chimnak vialte rel",
+    "read_media_descriptions_none": "Atu hmun ah media a um lo.",
+    "suggest_contextual_next_steps": "A hnu tuahding pathum chim",
+    "suggest_contextual_next_steps_hint": "A chungtel he a tlukmi thimding pathum a lantersak, pakhat a thim lo asiloah a tuah lo",
+    "suggest_contextual_next_steps_working": "Atu cawnnak a chungtel ka rel i thimding pathum ka timhtuah...",
+    "surprise_me_contextually": "A ṭhami a hnu tuahding pakhat in ka thinlung sunh",
+    "surprise_me_contextually_hint": "Atu cawnnak a chungtel in a ṭhami, a hlau lomi tuahding pakhat a thim",
+    "surprise_me_contextually_working": "Atu cawnnak a chungtel ka rel i a ṭhami a hnu tuahding ka thim...",
+    "use_contextual_suggestion": "Chimmi a hnu tuahding hman",
+    "use_contextual_suggestion_hint": "A hnu bik chimnak ah thimding 1, 2, asiloah 3 a tuah",
+    "use_contextual_suggestion_working": "Thimmi a hnu tuahding ka thawk..."
   },
   "palette": {
     "aria": "AlloFlow command palette",
@@ -23116,10 +23145,11 @@
       "videoStudio": "Hika — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Tuahnak vialte chimh a si. Ctrl+K nih a thlen.",
     "group": {
@@ -23400,6 +23430,12 @@
     "diff_types_hint": "Hmanrua dangdang siam ding hi:",
     "diff_cost": "Run pakhat ah generation {n} vel.",
     "summary_standards": "standards",
-    "summary_interests": "interests"
+    "summary_interests": "interests",
+    "translations": "Lehnak",
+    "translations_auto": "Amah te in ({language})",
+    "translations_auto_plain": "Amah te in",
+    "translations_none": "A um lo",
+    "translations_on_hint": "{output} in a ummi hna cu {target} in zong an um ve lai.",
+    "translations_off_hint": "A hna cu {output} lawng in an um lai, holh dang a um lo."
   }
 }

@@ -1,6 +1,7 @@
 {
+  "packId": "praxis-speech-language-pathology-5331",
+  "version": "1.0.0",
   "schemaVersion": 1,
-  "generatedAt": "2026-08-13T08:44:03.519Z",
   "libraryId": "praxis-speech-language-pathology-5331-learning-library",
   "standard": {
     "label": "AlloFlow Praxis Speech-Language Pathology 5331 learning-library source and editorial review v1",
@@ -143,5 +144,14 @@
       "references": 5,
       "status": "source-reviewed-editorial-pass"
     }
-  ]
+  ],
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "a609f8a8a5d542804bf6c1fd6d76119cf147fbf3f3c0f33175eda9d2828c8761",
+    "learningLibrarySha256": "62066a27accebcb2e198031c811122ef60cb463808f553c97f3c44fdfb7d8478",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
+  }
 }

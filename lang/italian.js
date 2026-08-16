@@ -2254,7 +2254,7 @@
     "ai_guide_sub": "Pedagogy, Navigation & Auto-Configurazione",
     "ai_guide_welcome": "Ciao! Sono la tua Guida IA. Posso aiutarti con strategie UDL, navigare l'app per te o configurare automaticamente le impostazioni della lezione. Basta chiedere!",
     "tool_analysis": "Analizza materiale di origine",
-    "tool_glossary": "glossario & lingue Selection",
+    "tool_glossary": "Glossario",
     "tool_simplified": "testo Adaptation",
     "tool_outline": "visivo Organizer",
     "tool_visual": "visivo supporto",
@@ -2984,7 +2984,7 @@
     "choose_destination_aria": "Scegli un destination"
   },
   "glossary": {
-    "title": "glossario & lingue Selection",
+    "title": "Glossario",
     "tier2": "Livello 2 (Acad.)",
     "tier2_tooltip": "Alto-utility accademico parole usato attraverso disciplines (es., 'analizza', 'verify').",
     "tier3": "Livello 3 (Domain)",
@@ -3926,7 +3926,12 @@
     "gauge_simple": "semplice",
     "word_bank_english": "Inglese",
     "word_bank_both": "Entrambi",
-    "word_bank_language": "Lingua della banca delle parole"
+    "word_bank_language": "Lingua della banca delle parole",
+    "measured_level_label": "Livello di lettura misurato",
+    "measured_on_target": "In linea con {grade}",
+    "measured_above": "Sopra il livello {grade}",
+    "measured_below": "Sotto il livello {grade}",
+    "measured_note": "Flesch-Kincaid, misurato su questo testo. Usa Controllo livelli per un controllo più completo."
   },
   "quiz": {
     "title": "Valutare",
@@ -5872,7 +5877,9 @@
     "title_poettree_config": "🌳 Compito PoetTree",
     "title_poettree_submission": "🌳 Invio della poesia",
     "title_litlab_config": "🎭 Compito LitLab",
-    "title_litlab_submission": "🎭 Invio della performance"
+    "title_litlab_submission": "🎭 Invio della performance",
+    "translation_block": "Traduzione",
+    "translation_into": "Traduzione ({language})"
   },
   "persona": {
     "title": "Intervisualizza modalità",
@@ -6291,7 +6298,7 @@
   },
   "tools": {
     "source": "materiale di origine",
-    "glossary": "glossario & lingue Selection",
+    "glossary": "Glossario",
     "simplified": "testo Adaptation & Coinvolgimento",
     "outline": "visivo Organizer",
     "quiz": "Valutare",
@@ -6880,7 +6887,6 @@
     "source_settings_instructions": "Guida la generazione AI con istruzioni specifiche su tono, focus, vocabolario e prospettiva.",
     "source_verify_checkbox": "Attiva il fact-checking AI tramite Google Search per ridurre potenziali imprecisioni. Aggiunge 5-10 secondi alla generazione.",
     "source_generate_button": "Crea AI-written contenuto su tuo specified argomento. Clicca un begin generazione utilizzando tuo: argomento description, obiettivo lunghezza, livello scolastico, e personalizzato istruzioni. Generazione takes 10-20 secondi. output è reviewed by safety filters prima visualizzazione. Generato contenuto può be: edited (insegnanti può modifica qualsiasi part), analyzed (esegui attraverso altro generazione strumento), e salvato (aggiungi un storia per reuse). Usa quando: tu bisogno contenuto su un specifico argomento, volere controlled complessità, o bisogno un fill curriculum gaps. Generato contenuto includi: appropriato vocabolario, logical organization, e classe-livelli syntax. Verify factual precisione prima classe usa.",
-    "generator_actions": "Hub di tutti gli strumenti di generazione: Quiz, Glossary, Simplified Text, FAQ, Lesson Plan, Timeline, Scaffolds e altri.",
     "tool_visual": "Accesso il visivo generator strumento. Creates AI-generato immagini incluso: vocabolario visivo, concetto illustrazioni, scene depictions, diagrammi, e infographics. visivo types: riferimento immagini (per apprendimento), worksheets (per attività), e diagrammi (per relationships). visivo supporto: ELL studenti (visivo vocabolario), visivo studenti, e coinvolgimento. ogni generazione crea unique immagini. impostazioni controllo stili, qualità, e contenuto. Generato visivo può be: downloaded, embedded in materiali, e added un glossaries. Uses AI immagini generazione credits. consigli: Genera visivo per abstract concetti quello sono difficult un explain con parole alone.",
     "tool_udl": "Informazioni sull'integrazione del framework UDL e su come le funzionalita dello strumento si allineano ai tre principi UDL.",
     "tour-analysis-settings": "Regolare parameters per readability analisi, incluso obiettivo lettura livelli e specifico metrics un track.",
@@ -6905,7 +6911,6 @@
     "adventure_system_state": "Aggiungi risorse management mechanics un adventures. studenti track: Health (consequence di risky scelte), oro/risorse (economic decisione-making), Reputation (social capital da scelte), e personalizzato risorse tu define. Actions affect risorse visibly—spend oro un buy elementi, lose health da poor decisionei, gain reputation da helping others. Creates meaningful consequences quello teach: cause-e-effect reasoning, planning ahead, risorse management, e opportunity cost. visivo cruscotto mostra attuale risorse livelli. quando risorse deplete, giochi adaptively responds (es., low health = limited opzioni). Matematica competenze integrate naturally attraverso risorse calculations.",
     "glossary_tier2_count": "Imposta come many Livello 2 (accademico) vocabolario parole un includi. Livello 2 parole: apparire attraverso subjects, sono usato in accademico contexts, e sono essential per testo comprensione. esempi: analizza, prova, significant, contrast. These parole ha il highest instructional valori—più studenti benefit da explicit teaching. Recommended conta depends su: testo lunghezza (1 parole per 100-150 parole di origine), disponibile istruzioni tempo, e studenti bisogno. Balance con Livello 3 conta per un completa vocabolario imposta. Focus istruzioni here per maximum impact su lettura comprensione attraverso tutti subjects.",
     "glossary_tier3_count": "Imposta quante parole di Livello 3 (vocabolario tecnico specifico della disciplina) includere nel glossario.",
-    "glossary_definition_level": "Controlla la complessita delle definizioni: uguale all'origine, al livello di classe, semplificato o livello scuola materna.",
     "glossary_custom_instructions": "Fornire specifico guidance per vocabolario selection e definizioni stili. esempi: Focus su parole da capitoli 3-5, Includi solo parole related un il water cycle, Avoid homonyms con simpler meanings, Aggiungi etymology per Latin/Greek roots, Includi Spanish cognates per ELL studenti, e Usa studenti-amichevole esempi da pop culture. Custom istruzioni forme: which parole sono selezionato, come definizioni sono written, e cosa additional informazioni appare. Clear istruzioni produce migliore-targeted glossaries. tu può request specifico formato like: Includi un frasi utilizzando ogni parole o Aggiungi visivo memory hooks. AI follows istruzioni quando making vocabolario selections.",
     "glossary_language_input": "Specifica lingue per vocabolario traduzioni. Inserisci lingue: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, o qualsiasi lingue. tu può aggiungi multiplo lingue separated by commas. ogni termini sarà mostra: English definizioni, obiettivo lingue traduzioni(s), e phonetic pronunciation guide dove applicable. Usa per: ELL supporto, heritage lingue connections, world lingue vocabolario, e multilingual aulas. traduzioni apparire su every vocabolario scheda per instant riferimento. audio pronunciation disponibile in supportato lingue. Recerca mostra connecting nuovo vocabolario un home lingue improves retention. Max 4 lingue prevents visivo clutter mentre di supporto diversi aulas.",
     "glossary_auto_remove": "automaticamente filtra out very semplice o comune parole.",
@@ -7039,7 +7044,6 @@
     "fab_dictation": "Converte il parlato in testo per un input senza mani. Funziona nei campi modificabili e richiede l'autorizzazione del microfono.",
     "fab_focus": "Creates un movable spotlight quello dims everything except un circular area around tuo cursor. Questo dramatically reduces visivo clutter e aiuta maintain attention su il attuale lettura area. Especially beneficial per studenti con ADHD, sensory processing differenza, o anyone overwhelmed by busy screens. Il spotlight follows tuo mouse/touch automaticamente. Regolare spotlight size e dim intensity in impostazioni → Accessibilità.",
     "fab_line_focus": "Single-linee lettura isolation strumento per focusato lettura. quando activated: one testo linee è highlighted mentre others sono dimmed, creazione visivo focus. Navigare con: arrow keys (up/down), clicca anywhere su testo, o touch/swipe su mobile. Benefits: reduces visivo crowding, supporto monitoraggio difficulties, aiuta maintain place, e reduces regression. Intensity (come much surrounding testo è visibile) è adjustable in impostazioni → Accessibilità. Funziona su: tutti lettura contenuto, incluso generato testo, origine materiali, e chat. Particularly helpful per: dyslexia, ADHD, visivo processing differenza, e anyone overwhelmed by testo-heavy screens. consigli: Combine con larger font per maximum lettura ease.",
-    "fab_ruler": "Aggiunge una barra orizzontale semitrasparente che segue il cursore per facilitare il tracciamento riga per riga.",
     "fab_timer": "Opens un interattivo focus timer basato su il Pomodoro Technique. Scegli da preset durations (5/15/25/45 minutes) o personalizza tuo own. funzionalità includi: visivo countdown con progresso ring, opzionale break reminders, XP ricompense per completed sessioni (più lungo = altro XP), e sessioni logging per insegnanti recensione. Label tuo task (es., 'Leggi capitoli 3') un track cosa tu accomplished. Minimizes un il header barre so tu può lavoro mentre it runs.",
     "scaffolds_edit_toggle": "Alterna tra modalita di modifica del docente e vista studente. In modifica e possibile rivedere, aggiungere o rimuovere suggerimenti.",
     "scaffolds_goal_panel": "Visualizzazione apprendimento objectives per studenti riferimento. obiettivi apparire prominently durante attività. Effective obiettivi sono: studenti-amichevole (I può statements), specifico e measurable, e aligned un attività. esempi: I può identificare three causes di il Civil War o I può usa prova un supporto my claim. obiettivi increase: metacognition, sé-valutazione, e purpose clarity. studenti può riferimento obiettivi mentre working. insegnanti sets obiettivi prima studenti accesso. Multipla obiettivi può be displayed. obiettivi può includi successo criteria: I know I ha succeeded quando my paragrafi has un argomento frasi. Recerca mostra visibile apprendimento targets improve conquiste.",
@@ -7134,7 +7138,6 @@
     "immersive_line_focus": "Attiva una guida di lettura a riga singola: la riga corrente resta nitida mentre le altre vengono attenuate.",
     "immersive_syllables": "visivo syllable segmentation per decoding supporto. quando enabled: parole visualizzazione con syllable breaks (hy-phen-at-ed), helping lettori attack multisyllabic parole. Benefits: costruisce phonemic awareness, supporto decoding strategie, develops morphological understanding, e aids pronunciation. Especially helpful per: in difficoltà decodicers, ELL studenti, dyslexia supporto, e vocabolario parole con complesso syllable modelli. Syllabification follows standard phonetic rules. Funziona su: tutti lettura contenuto incluso adapted testo, glossario termini, e origine materiali. Combine con audio un hear syllables pronounced. Attiva/Disattiva off quando non needed un reduce visivo complessità. consigli: Usa per challenging vocabolario, poi disabilita per fluent lettura esercitati.",
     "immersive_wide_text": "Espande il testo per utilizzare piu spazio orizzontale dello schermo. Adatto a lettori fluenti e schermi larghi.",
-    "sidebar_tab_create": "Apre il pannello di generazione dei contenuti con tutti gli strumenti AI: Quiz, glossario, Outline, Analisi, piano di lezione e altri.",
     "sidebar_tab_history": "Accede a tutti i contenuti salvati e allo storico delle sessioni. Carichi, elimini, esporti o cerchi per parola chiave.",
     "socratic_toggle": "Abilita Socratic dialogue modalità per deeper apprendimento. quando ON: AI never gives direct risposte—instead asks probing domande quello guide studenti toward discovery. Benefits: develops critical thinking, encourages sé-correction, costruisce problem-solving competenze, e crea memorable apprendimento moments. Il AI usa techniques like: clarifying domande (cosa do tu mean by...?), challenging assumptions (ma cosa se...?), e prova requests (come do tu know quello?). Migliore per: discussion preparation, concetto exploration, e helping studenti who volere rapido risposte un think altro deeply. Può frustrate studenti seeking efficiency—explain il purpose.",
     "socratic_input": "Inserisca la domanda o l'affermazione per l'esplorazione socratica. L'AI rispondera con altre domande per stimolare il ragionamento critico.",
@@ -31134,7 +31137,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Descrivi il contenuto multimediale attuale",
+    "describe_current_media_done": "Lettura del contenuto {index} di {count}.",
+    "describe_current_media_hint": "Leggi la descrizione del contenuto multimediale attuale o successivo senza uscire dalla risorsa",
+    "describe_current_media_none": "Non ci sono contenuti multimediali nella risorsa attuale.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Apri Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore aperto.",
+    "open_learning_web_explorer_hint": "Esplora standard, concetti, lezioni, prove e collegamenti tra parole in una sola mappa",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Leggi tutte le descrizioni multimediali",
+    "read_media_descriptions_count": "Lettura di {count} descrizioni multimediali.",
+    "read_media_descriptions_hint": "Leggi ogni descrizione scritta di immagine, video o audio nella risorsa attuale",
+    "read_media_descriptions_none": "Non ci sono contenuti multimediali nella risorsa attuale.",
+    "suggest_contextual_next_steps": "Suggerisci 3 passi successivi",
+    "suggest_contextual_next_steps_hint": "Propone tre opzioni adatte al contesto, senza sceglierne o avviarne una",
+    "suggest_contextual_next_steps_working": "Lettura del contesto della lezione attuale e preparazione di tre opzioni...",
+    "surprise_me_contextually": "Sorprendimi con un passo successivo utile",
+    "surprise_me_contextually_hint": "Sceglie una sola azione successiva sensata e a basso rischio dal contesto della lezione attuale",
+    "surprise_me_contextually_working": "Lettura del contesto della lezione attuale e scelta di un passo successivo utile...",
+    "use_contextual_suggestion": "Usa un passo successivo suggerito",
+    "use_contextual_suggestion_hint": "Avvia l’opzione 1, 2 o 3 degli ultimi suggerimenti",
+    "use_contextual_suggestion_working": "Avvio del passo successivo scelto..."
   },
   "palette": {
     "aria": "Tavolozza dei comandi di AlloFlow",
@@ -31157,10 +31186,11 @@
       "videoStudio": "Qui — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Ogni azione viene annunciata. Ctrl+K per aprire/chiudere.",
     "group": {
@@ -31477,6 +31507,12 @@
     "diff_types_hint": "Genera un set differenziato per:",
     "diff_cost": "Circa {n} generazioni per esecuzione.",
     "summary_standards": "standard",
-    "summary_interests": "interessi"
+    "summary_interests": "interessi",
+    "translations": "Traduzioni",
+    "translations_auto": "Automatico ({language})",
+    "translations_auto_plain": "Automatico",
+    "translations_none": "Nessuna",
+    "translations_on_hint": "Le risorse in {output} avranno anche una versione in {target}.",
+    "translations_off_hint": "Le risorse saranno solo in {output}, senza una seconda lingua."
   }
 }

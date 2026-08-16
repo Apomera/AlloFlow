@@ -607,7 +607,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "auto" }, translationAutoTarget ? (t("universal.translations_auto") || "Automatic ({language})").replace("{language}", translationAutoTarget) : t("universal.translations_auto_plain") || "Automatic"),
     /* @__PURE__ */ React.createElement("option", { value: "off" }, t("universal.translations_none") || "None"),
     translationChoices.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang, value: lang }, lang))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 leading-snug mt-1" }, translationPolicy.enabled ? (t("universal.translations_on_hint") || "Resources in {output} will also include a {target} version.").replace("{output}", leveledTextLanguage).replace("{target}", translationPolicy.target) : (t("universal.translations_off_hint") || "Resources will be in {output} only, with no second-language version.").replace("{output}", leveledTextLanguage)))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." })), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 leading-snug mt-1" }, translationPolicy.enabled ? (t("universal.translations_on_hint") || "Resources in {output} will also include a version in {target}.").replace("{output}", leveledTextLanguage).replace("{target}", translationPolicy.target) : (t("universal.translations_off_hint") || "Resources will be in {output} only, with no second-language version.").replace("{output}", leveledTextLanguage)))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." })), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -2136,6 +2136,8 @@ function GlossaryPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "4th Grade" }, t("grades.g4")),
     /* @__PURE__ */ React.createElement("option", { value: "5th Grade" }, t("grades.g5")),
     /* @__PURE__ */ React.createElement("option", { value: "6th Grade" }, t("grades.g6")),
+    /* @__PURE__ */ React.createElement("option", { value: "7th Grade" }, t("grades.g7")),
+    /* @__PURE__ */ React.createElement("option", { value: "8th Grade" }, t("grades.g8")),
     /* @__PURE__ */ React.createElement("option", { value: "9th Grade" }, t("grades.g9")),
     /* @__PURE__ */ React.createElement("option", { value: "10th Grade" }, t("grades.g10")),
     /* @__PURE__ */ React.createElement("option", { value: "11th Grade" }, t("grades.g11")),

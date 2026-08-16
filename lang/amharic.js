@@ -2254,7 +2254,7 @@
     "ai_guide_sub": "ትምህርት፣ ዳሰሳ እና ራስ-ሰር ማዋቀር",
     "ai_guide_welcome": "ሰላም! እኔ የእርስዎ AI መመሪያ ነኝ። በUDL ስልቶች ልረዳዎት፣ መተግበሪያውን ስለ እርስዎ ላስሄድ፣ ወይም የትምህርት ቅንብሮችዎን በራስ-ሰር ላዘጋጅ እችላለሁ። ይጠይቁ!",
     "tool_analysis": "ተንትን የምንጭ ቁሳቁስ",
-    "tool_glossary": "መዝገበ ቃላት & ቋንቋ Selection",
+    "tool_glossary": "መዝገበ ቃላት",
     "tool_simplified": "ጽሑፍ Adaptation",
     "tool_outline": "እይታ Organizer",
     "tool_visual": "እይታ ድጋፍ",
@@ -2984,7 +2984,7 @@
     "choose_destination_aria": "ምረጥ አንድ destination"
   },
   "glossary": {
-    "title": "መዝገበ ቃላት & ቋንቋ Selection",
+    "title": "መዝገበ ቃላት",
     "tier2": "ደረጃ 2 (አካዳሚክ)",
     "tier2_tooltip": "በሁሉም ዲሲፕሊኖች ጥቅም ላይ የሚውሉ ከፍተኛ ጥቅም ያላቸው የአካዳሚክ ቃላት (ለምሳሌ 'analyze'፣ 'verify')።",
     "tier3": "ደረጃ 3 (ዘርፍ)",
@@ -3926,7 +3926,12 @@
     "gauge_simple": "ቀላል",
     "word_bank_english": "እንግሊዝኛ",
     "word_bank_both": "ሁለቱም",
-    "word_bank_language": "የቃላት ማሰባሰቢያ ቋንቋ"
+    "word_bank_language": "የቃላት ማሰባሰቢያ ቋንቋ",
+    "measured_level_label": "የተለካ የንባብ ደረጃ",
+    "measured_on_target": "ለ{grade} ተስማሚ",
+    "measured_above": "ከ{grade} ደረጃ በላይ",
+    "measured_below": "ከ{grade} ደረጃ በታች",
+    "measured_note": "Flesch-Kincaid፣ በዚህ ጽሑፍ ላይ የተለካ። ለተሟላ ግምገማ ማረጋገጥ ደረጃ ይጠቀሙ።"
   },
   "quiz": {
     "title": "ግምገማ",
@@ -5872,7 +5877,9 @@
     "title_poettree_config": "🌳 የPoetTree ምድብ",
     "title_poettree_submission": "🌳 የግጥም ማስረከቢያ",
     "title_litlab_config": "🎭 የLitLab ምድብ",
-    "title_litlab_submission": "🎭 የአቀራረብ ማስረከቢያ"
+    "title_litlab_submission": "🎭 የአቀራረብ ማስረከቢያ",
+    "translation_block": "ትርጉም",
+    "translation_into": "ትርጉም ({language})"
   },
   "persona": {
     "title": "Interview ሁነታ",
@@ -6289,7 +6296,7 @@
   },
   "tools": {
     "source": "የምንጭ ቁሳቁስ",
-    "glossary": "መዝገበ ቃላት & ቋንቋ Selection",
+    "glossary": "መዝገበ ቃላት",
     "simplified": "ጽሑፍ Adaptation & ተሳትፎ",
     "outline": "እይታ Organizer",
     "quiz": "ግምገማ",
@@ -6878,7 +6885,6 @@
     "source_settings_instructions": "Guide AI ይዘት ትውልድ ከ የተወሰነ መመሪያ. ምሳሌ: ስራ it የሚስብ ለ reluctant አንባቢዎች, ትኩረት ላይ water cycle, አካትት የተለያዩ ገጸ ባህሪ names, Avoid references ወደ violence, እና ተጠቀም ቀላል ቃላት ለ ELL ተማሪ. መመሪያ ቅርጽ: ቃና, ይዘት ትኩረት, ቃላት ደረጃ, እና perspective. Be የተወሰነ ለ ምርጥ ውጤት. ብዙ መመሪያ ይችላል be combined. መመሪያ ናቸው processed along ከ የእርስዎ ርዕስ እና ቅንብሮች. ለ sensitive topics, አካትት ይዘት guidance. መመሪያ do አይደለም guarantee የተወሰነ outcomes ግን strongly influence ትውልድ. ምክር: አካትት የክፍል ደረጃ እና ማንኛውም ይዘት restrictions ውስጥ የእርስዎ መመሪያ ለ አብዛኛው ተገቢ ውጤት.",
     "source_verify_checkbox": "አንቃ AI fact-checking via Google ፈልግ grounding. ሲ ON: AI cross-references ተመንጭቷል ይዘት against web sources, flagging ወይም correcting potential inaccuracies. Adds 5-10 ሰከንዶች ወደ ትውልድ ጊዜ ግን significantly improves reliability ለ factual ይዘት. Especially important ለ: ታሪክ (dates, ክስተቶች), science (processes, ውሂብ), biography, እና የአሁኑ ክስተቶች. ለ fiction, creative መጻፍ, ወይም hypothetical scenarios, ይህ ይችላል be disabled ወደ allow ተጨማሪ creative freedom. Sources consulted ናቸው listed ውስጥ ትውልድ log ለ መምህር ግምገማ. Highly recommended ለ ማንኛውም ይዘት ያ ይሆናል be presented as factual ወደ ተማሪ.",
     "source_generate_button": "ፍጠር AI-written ይዘት ላይ የእርስዎ specified ርዕስ. ጠቅ ያድርጉ ወደ begin ትውልድ በመጠቀም የእርስዎ: ርዕስ description, ግብ ርዝመት, የክፍል ደረጃ, እና ብጁ መመሪያ. ትውልድ takes 10-20 ሰከንዶች. ውጤት ነው reviewed by safety filters በፊት ማሳያ. የመነጨ ይዘት ይችላል be: edited (መምህር ይችላል አስተካክል ማንኛውም part), analyzed (አሂድ በኩል ሌላ ትውልድ መሳሪያዎች), እና ተቀምጧል (ጨምር ወደ ታሪክ ለ reuse). ተጠቀም ሲ: እርስዎ ያስፈልጋል ይዘት ላይ አንድ የተወሰነ ርዕስ, ይፈልጋል controlled ውስብስብነት, ወይም ያስፈልጋል ወደ fill curriculum gaps. የመነጨ ይዘት ያካትታል: ተገቢ ቃላት, logical organization, እና ክፍል-ደረጃ syntax. Verify factual ትክክለኛነት በፊት ክፍል ተጠቀም.",
-    "generator_actions": "Hub ለ ሁሉም ይዘት ትውልድ መሳሪያዎች. ይገኛል generators አካትት: ጥያቄ (ግምገማ ከ መልስ keys), መዝገበ ቃላት (እይታ ቃላት), Simplified ጽሑፍ (ደረጃ ማንበብ), FAQ (Q እና አንድ pairs), ትንተና (ይዘት examination), ትምህርት ዕቅድ (instructional design), Timeline (chronological ተግባር), Scaffolds (መጻፍ ድጋፍ), ጽንሰ-ሐሳብ ደርድር (categorization ጨዋታ), ሂሳብ (problem ትውልድ), ጀብዱ (መስተጋብራዊ ታሪክ), እና Brainstorm (ተግባር ideas). እያንዳንዱ generator ይለውጣል የእርስዎ ምንጭ ይዘት ወደ ውስጥ የተለየ ቅርጸት. ጠቅ ያድርጉ ማንኛውም generator ወደ ክፈት its configuration ፓነል. ብዙ generators ይችላል be ጥቅም ላይ ውሏል ላይ ተመሳሳይ ምንጭ. የመነጨ ይዘት ይታያል ውስጥ workspace እና ያስቀምጣል ወደ ታሪክ. ምክር: ጀምር ከ ትንተና ወደ ተረዳ የእርስዎ ይዘት, ከዚያ አመንጭ targeted ሀብቶች.",
     "tool_visual": "መዳረሻ እይታ generator መሳሪያዎች. Creates AI-generated ምስል ጨምሮ: ቃላት እይታ, ጽንሰ-ሐሳብ ስዕል, ትዕይንት depictions, ሥዕላዊ መግለጫ, እና infographics. እይታ types: ማጣቀሻ ምስል (ለ መማር), worksheets (ለ ተግባራት), እና ሥዕላዊ መግለጫ (ለ relationships). እይታ ድጋፍ: ELL ተማሪ (እይታ ቃላት), እይታ ተማሪዎች, እና ተሳትፎ. እያንዳንዱ ትውልድ ይፈጥራል unique ምስል. ቅንብሮች ቁጥጥር ዘይቤ, ጥራት, እና ይዘት. የመነጨ እይታ ይችላል be: downloaded, embedded ውስጥ ቁሳቁሶች, እና added ወደ glossaries. Uses AI ምስል ትውልድ credits. ምክር: አመንጭ እይታ ለ abstract ጽንሰ-ሐሳቦች ያ ናቸው difficult ወደ explain ከ ቃላት alone.",
     "tool_udl": "ስለ UDL ማዕቀፍ ይማሩ። Universal Design for Learning ሶስት መርሆዎች አሉት፡ ብዙ የውክልና፣ ድርጊትና ተሳትፎ መንገዶች።",
     "tour-analysis-settings": "ማስተካከል parameters ለ readability ትንተና, ጨምሮ ግብ ማንበብ ደረጃ እና የተወሰነ metrics ወደ track.",
@@ -6903,7 +6909,6 @@
     "adventure_system_state": "ለAdventure Mode የሀብት አስተዳደር መካኒኮችን ይጨምራል። ተማሪዎች Health፣ Gold/Resources፣ Reputation እና ብጁ ሀብቶችን ይከታተላሉ።",
     "glossary_tier2_count": "አዘጋጅ እንዴት many Tier 2 (አካዳሚክ) ቃላት ቃላት ወደ አካትት. Tier 2 ቃላት: መታየት ሁሉንም subjects, ናቸው ጥቅም ላይ ውሏል ውስጥ አካዳሚክ contexts, እና ናቸው essential ለ ጽሑፍ መረዳት. ምሳሌ: ተንትን, ማስረጃ, significant, contrast. These ቃላት አለው highest instructional ዋጋ—አብዛኛው ተማሪ benefit ከ explicit teaching. Recommended ቁጠር depends ላይ: ጽሑፍ ርዝመት (1 ቃላት per 100-150 ቃላት የ ምንጭ), ይገኛል መመሪያ ጊዜ, እና ተማሪ ያስፈልጋል. Balance ከ Tier 3 ቁጠር ለ አንድ አጠናቅቅ ቃላት አዘጋጅ. ትኩረት መመሪያ here ለ maximum impact ላይ ማንበብ መረዳት ሁሉንም ሁሉም subjects.",
     "glossary_tier3_count": "ስንት Tier 3 (ለርዕሰ-ጉዳይ የተወሰኑ) ቃላት እንደሚካተት ይዘጋጁ። ለምሳሌ፡ photosynthesis፣ denominator፣ alliteration።",
-    "glossary_definition_level": "ቁጥጥር እንዴት ትርጓሜ ናቸው written. አማራጮች: ተመሳሳይ as ምንጭ (maintains ኦሪጅናል ውስብስብነት—ጥሩ ለ የላቀ ተማሪ), ላይ ክፍል (matches ግብ የክፍል ደረጃ ቃላት), Simplified (ይጠቀማል የተለመደ ቃላት, ይበልጥ አጭር ዓረፍተ ነገር), እና Kindergarten (very መሰረታዊ ቋንቋ, concrete ምሳሌ). መዛመድ ትርጓሜ ውስብስብነት ወደ ተማሪ ማንበብ ደረጃ, አይደለም ይዘት ደረጃ. አንድ 10th-grader studying የላቀ biology might ያስፈልጋል Simplified ትርጓሜ ለ unfamiliar ቃል. ማሰብ የእርስዎ ተማሪ weakest አንባቢዎች ሲ selecting. ትርጓሜ ይችላል be individually edited በኋላ ትውልድ ከሆነ አንዳንድ ያስፈልጋል adjustment. Pro ምክር: ተጠቀም Simplified initially, ከዚያ discuss ተጨማሪ technical ትርጓሜ ውስጥ ክፍል.",
     "glossary_custom_instructions": "ለቃላት ምርጫና ለትርጉም ቅጥ ልዩ መመሪያ ያቅርቡ። ለምሳሌ፡ ከምዕራፍ 3-5 ቃላት ላይ ያተኩሩ ወይም የስፓኒሽ ኮግኔቶችን ይጨምሩ።",
     "glossary_language_input": "ለቃላት ትርጉም ቋንቋ ይግለጹ። Spanish፣ Mandarin፣ Arabic፣ French ወይም ሌላ ቋንቋ ያስገቡ። ብዙ ቋንቋዎችን በኮማ መከፋፈል ይችላሉ።",
     "glossary_auto_remove": "ራስ ሰር አጣራ out very ቀላል ወይም የተለመደ ቃላት.",
@@ -7037,7 +7042,6 @@
     "fab_dictation": "ለእጅ-ነጻ ግቤት ንግግርን ወደ ጽሑፍ ይቀይሩ። ጠቅ ያድርጉ ይናገሩ — ቃላት ይታያሉ። በማንኛውም የጽሑፍ መስክ ይሰራል።",
     "fab_focus": "Creates አንድ movable spotlight ያ dims everything except አንድ circular ስፋት around የእርስዎ cursor. ይህ dramatically reduces እይታ clutter እና እርዳታ maintain attention ላይ የአሁኑ ማንበብ ስፋት. Especially beneficial ለ ተማሪ ከ ADHD, sensory processing ልዩነት, ወይም anyone overwhelmed by busy screens. spotlight follows የእርስዎ mouse/touch ራስ ሰር. ማስተካከል spotlight size እና dim intensity ውስጥ ቅንብሮች → ተደራሽነት.",
     "fab_line_focus": "ለትኩረት ንባብ የነጠላ-መስመር ማግለል መሳሪያ። አንድ የጽሑፍ መስመር ይደምቃል፣ ሌሎች ይደብዘዛሉ። በቀስት ቁልፎች ወይም በመንካት ያንቀሳቅሱ።",
-    "fab_ruler": "Adds አንድ semi-transparent horizontal አሞሌ ያ follows የእርስዎ cursor ወደ እርዳታ track የእርስዎ ማንበብ አቀማመጥ መስመር by መስመር. Particularly እርዳታ ለ users ከ dyslexia, ADHD, ወይም እይታ ክትትል difficulties. ጎትት ruler up/down ወደ reposition, ተጠቀም arrow keys ለ fine ቁጥጥር, ወይም ጠቅ ያድርጉ anywhere ወደ jump. ruler ቀለም ይችላል be customized ውስጥ ቅንብሮች. ይሰራል ሁሉንም ሁሉም ማንበብ views ጨምሮ Simplified ጽሑፍ, FAQ, እና መዝገበ ቃላት ትርጓሜ.",
     "fab_timer": "Opens አንድ መስተጋብራዊ ትኩረት timer መሠረት ያደረገ ላይ Pomodoro Technique. ምረጥ ከ preset durations (5/15/25/45 minutes) ወይም አበጅ የእርስዎ own. ባህሪያት አካትት: እይታ countdown ከ እድገት ring, አማራጭ break reminders, XP ሽልማት ለ completed ክፍለ ጊዜ (ይበልጥ ረጅም = ተጨማሪ XP), እና ክፍለ ጊዜ logging ለ መምህር ግምገማ. Label የእርስዎ task (e.g., 'አንብብ ምዕራፍ 3') ወደ track ምን እርስዎ accomplished. Minimizes ወደ header አሞሌ so እርስዎ ይችላል ስራ ሲ it runs.",
     "scaffolds_edit_toggle": "ቀይር መካከል መምህር editing እና ተማሪ እይታ ሁነታ. ሲ ON (አስተካክል ሁነታ): ጠቅ ያድርጉ ማንኛውም scaffold ወደ አስተካክል ጽሑፍ, ጨምር አዲስ ጥቆማዎች, አጥፋ እቃ, እና reorder ይዘት. ሲ OFF: scaffolds ማሳያ as ተማሪ እይ them (አንብብ-ብቻ). Edits አስቀምጥ ራስ ሰር. ተማሪ always እይ አንብብ-ብቻ regardless የ የእርስዎ ቀይር (እነሱ cannot መዳረሻ አስተካክል ሁነታ). ተጠቀም editing ወደ: አበጅ AI-generated scaffolds, ጨምር ክፍል-የተወሰነ ምሳሌ, አስወግድ inappropriate ጥቆማዎች, እና differentiate ለ የተወሰነ ተማሪ. Preview ተማሪ እይታ በፊት sharing. ኦሪጅናል scaffolds ይችላል be restored ከ ታሪክ. ምክር: ግምገማ እና አስተካክል scaffolds በፊት ክፍል ወደ ensure እነሱ መዛመድ የእርስዎ teaching ዘይቤ እና ተማሪ needs.",
     "scaffolds_goal_panel": "ማሳያ መማር objectives ለ ተማሪ ማጣቀሻ. ግብ መታየት prominently በሚደረግበት ጊዜ ተግባር. Effective ግብ ናቸው: ተማሪ-ወዳጃዊ (I ይችላል statements), የተወሰነ እና measurable, እና aligned ወደ ተግባር. ምሳሌ: I ይችላል መለየት three causes የ Civil War ወይም I ይችላል ተጠቀም ማስረጃ ወደ ድጋፍ my claim. ግብ increase: metacognition, እራስ-ግምገማ, እና purpose clarity. ተማሪ ይችላል ማጣቀሻ ግብ ሲ working. መምህር sets ግብ በፊት ተማሪ መዳረሻ. ብዙ ግብ ይችላል be displayed. ግብ ይችላል አካትት ስኬት criteria: I know I አለው succeeded ሲ my አንቀጽ has አንድ ርዕስ ዓረፍተ ነገር. Research ያሳያል ይታያል መማር targets improve ስኬት.",
@@ -7132,7 +7136,6 @@
     "immersive_line_focus": "የነጠላ-መስመር የንባብ መመሪያ ያንቁ። የአሁኑ መስመር ሙሉ በሙሉ ይታያል፣ ሌሎች ይደብዘዛሉ። የእይታ ጭንቀትን ይቀንሳል፣ ክትትልን ያሻሽላል።",
     "immersive_syllables": "እይታ syllable segmentation ለ decoding ድጋፍ. ሲ enabled: ቃላት ማሳያ ከ syllable breaks (hy-phen-at-ed), እርዳታ አንባቢዎች attack multisyllabic ቃላት. Benefits: ይገነባል phonemic awareness, ድጋፍ decoding ስልቶች, develops morphological understanding, እና aids pronunciation. Especially እርዳታ ለ: መታገል decoders, ELL ተማሪ, dyslexia ድጋፍ, እና ቃላት ቃላት ከ ውስብስብ syllable ቅጦች. Syllabification follows መስፈርት phonetic rules. ይሰራል ላይ: ሁሉም ማንበብ ይዘት ጨምሮ adapted ጽሑፍ, መዝገበ ቃላት ቃል, እና ምንጭ ቁሳቁሶች. Combine ከ ድምጽ ወደ hear syllables pronounced. ቀይር off ሲ አይደለም needed ወደ reduce እይታ ውስብስብነት. ምክር: ተጠቀም ለ challenging ቃላት, ከዚያ አሰናክል ለ fluent ማንበብ ተለማመድ.",
     "immersive_wide_text": "Expand ጽሑፍ ወደ ተጠቀም ተጨማሪ horizontal ስክሪን space. ሲ ንቁ: መስመር ርዝመት increases, ያነሰ scrolling ነው needed, እና ተጨማሪ ጽሑፍ ነው ይታያል at once. ጥሩ ለ: fluent አንባቢዎች, wide displays, እና ሲ scanning ለ መረጃ. ነባሪ narrow ስፋት ነው የተሻለ ለ: መታገል አንባቢዎች, mobile devices, እና focused ማንበብ. Optimal መስመር ርዝመት varies by reader እና device. Research ያሳያል 50-75 ገጸ ባህሪ per መስመር ነው ideal ለ አብዛኛው አንባቢዎች. Wide ጽሑፍ trades readability ለ efficiency. Combine ከ መስመር ትኩረት ከሆነ ክትትል becomes difficult. ቅንብር ነው remembered per device. ምክር: ተጠቀም wide ጽሑፍ ለ research እና scanning, narrow ጽሑፍ ለ ዝጋ ማንበብ.",
-    "sidebar_tab_create": "ክፈት ይዘት ትውልድ ፓነል ከ ሁሉም AI-powered መሳሪያዎች. ይገኛል generators: ጥያቄ (ግምገማ ከ መልስ keys), መዝገበ ቃላት (እይታ ቃላት), Outline (graphic organizers), ትንተና (ይዘት examination), ትምህርት ዕቅድ (structured መመሪያ), Timeline (chronological ተግባራት), Simplified ጽሑፍ (ደረጃ ማንበብ), እና ተጨማሪ. እያንዳንዱ መሳሪያዎች ይከፍታል አንድ configuration ፓነል ለ customization በፊት ትውልድ. ምንጭ ይዘት must be loaded ለ አብዛኛው መሳሪያዎች ወደ ተንትን. የመነጨ ይዘት ይታያል ውስጥ main workspace እና ነው ተቀምጧል ወደ ታሪክ. ተጠቀም ፍጠር tab as የእርስዎ primary ይዘት ትውልድ hub. ምክር: ጀምር ከ ትንተና ወደ ተረዳ ይዘት, ከዚያ አመንጭ targeted ሀብቶች.",
     "sidebar_tab_history": "የተቀመጠ ይዘትና የክፍለ ጊዜ ታሪክዎን ይድረሱ። የራስ-ሰር ክፍለ ጊዜዎች፣ የተቀመጡ ፕሮጀክቶች፣ የተመረቱ ሀብቶችንና የተማሪ ማስረከቢያዎችን ያካትታል።",
     "socratic_toggle": "ለጥልቅ ትምህርት የSocratic ውይይት ሁነታ ያንቁ። ሲነቃ AI በምትኩ ለግኝት የሚመሩ ጥያቄዎችን ይጠይቃል። ሂሳዊ አስተሳሰብን ይገነባል።",
     "socratic_input": "አስገባ የእርስዎ ጥያቄ ወይም statement ለ Socratic exploration. AI ይሆናል respond ከ ጥያቄ rather than መልስ. ጥሩ starting ነጥብ: Why do እርስዎ think [X] happened? ምን makes [Y] important? ወይም I believe [Z] because... AI probes የእርስዎ reasoning: asking ለ ማስረጃ, exploring implications, testing logic, እና surfacing assumptions. ይህ develops argumentation እና critical thinking ክህሎት. Be prepared ወደ: justify የእርስዎ thinking, ማሰብ alternatives, እና refine የእርስዎ አቀማመጥ. Socratic dialogues ይችላል be frustrating initially ግን መገንባት lasting understanding. የእርስዎ responses እና reasoning ናቸው tracked ለ reflection.",
@@ -29118,7 +29121,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "የአሁኑን ሚዲያ ግለጽ",
+    "describe_current_media_done": "ሚዲያ {index} ከ{count} እያነበበ ነው።",
+    "describe_current_media_hint": "ከግብዓቱ ሳትወጣ የአሁኑን ወይም የሚቀጥለውን የሚዲያ መግለጫ አንብብ",
+    "describe_current_media_none": "በአሁኑ ግብዓት ውስጥ ምንም ሚዲያ የለም።",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore ክፈት",
+    "open_learning_web_explorer_done": "Learning Web: Explore ተከፍቷል።",
+    "open_learning_web_explorer_hint": "መስፈርቶችን፣ ሐሳቦችን፣ ትምህርቶችን፣ ማስረጃዎችንና የቃላት ግንኙነቶችን በአንድ ካርታ ውስጥ ያስሱ",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "ሁሉንም የሚዲያ መግለጫዎች አንብብ",
+    "read_media_descriptions_count": "{count} የሚዲያ መግለጫዎችን እያነበበ ነው።",
+    "read_media_descriptions_hint": "በአሁኑ ግብዓት ውስጥ የተጻፈውን እያንዳንዱን የምስል፣ የቪዲዮ ወይም የድምጽ መግለጫ አንብብ",
+    "read_media_descriptions_none": "በአሁኑ ግብዓት ውስጥ ምንም ሚዲያ የለም።",
+    "suggest_contextual_next_steps": "3 ቀጣይ እርምጃዎችን ጠቁም",
+    "suggest_contextual_next_steps_hint": "ሦስት ከሁኔታው ጋር የሚስማሙ አማራጮችን ያቀርባል፤ አንዱን አይመርጥም ወይም አያስኬድም",
+    "suggest_contextual_next_steps_working": "የአሁኑን የትምህርት ሁኔታ እያነበበ ሦስት አማራጮችን እያዘጋጀ ነው...",
+    "surprise_me_contextually": "ጠቃሚ የሆነ ቀጣይ እርምጃ አስገርመኝ",
+    "surprise_me_contextually_hint": "ከአሁኑ የትምህርት ሁኔታ አንድ ተስማሚና አነስተኛ አደጋ ያለው ቀጣይ እርምጃ ይመርጣል",
+    "surprise_me_contextually_working": "የአሁኑን የትምህርት ሁኔታ እያነበበ ጠቃሚ ቀጣይ እርምጃ እየመረጠ ነው...",
+    "use_contextual_suggestion": "የተጠቆመ ቀጣይ እርምጃ ተጠቀም",
+    "use_contextual_suggestion_hint": "ከቅርብ ጊዜው ጥቆማዎች አማራጭ 1፣ 2 ወይም 3 ያስኬዳል",
+    "use_contextual_suggestion_working": "የተመረጠውን ቀጣይ እርምጃ እየጀመረ ነው..."
   },
   "palette": {
     "aria": "የAlloFlow ትዕዛዝ ፓሌት",
@@ -29141,10 +29170,11 @@
       "videoStudio": "እዚህ — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "እያንዳንዱ ድርጊት ይነገራል። Ctrl+K ይቀያይራል።",
     "group": {
@@ -29459,6 +29489,12 @@
     "diff_types_hint": "የተለያየ ስብስብ ይፍጠሩ ለ:",
     "diff_cost": "በአንድ ሩጫ ወደ {n} ማመንጨቶች ገደማ።",
     "summary_standards": "መመዘኛዎች",
-    "summary_interests": "ፍላጎቶች"
+    "summary_interests": "ፍላጎቶች",
+    "translations": "ትርጉሞች",
+    "translations_auto": "በራስ-ሰር ({language})",
+    "translations_auto_plain": "በራስ-ሰር",
+    "translations_none": "ምንም",
+    "translations_on_hint": "በ{output} ያሉ ግብዓቶች የ{target} ቅጂም ይኖራቸዋል።",
+    "translations_off_hint": "ግብዓቶች በ{output} ብቻ ይሆናሉ፤ ሁለተኛ ቋንቋ አይኖርም።"
   }
 }

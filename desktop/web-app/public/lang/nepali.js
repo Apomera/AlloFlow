@@ -2253,7 +2253,7 @@
     "ai_guide_sub": "शिक्षाशास्त्र, नेभिगेसन र स्वतः सेटअप",
     "ai_guide_welcome": "नमस्ते! म तपाईंको AI Guide हुँ। म UDL रणनीतिहरूमा सहयोग गर्न, तपाईंका लागि एपमा नेभिगेट गर्न, वा तपाईंको पाठ सेटिङहरू स्वतः सेटअप गर्न सक्छु। सोध्नुहोस्!",
     "tool_analysis": "विश्लेषण गर्नुहोस् स्रोत सामग्री",
-    "tool_glossary": "शब्दावली & भाषा Selection",
+    "tool_glossary": "शब्दावली",
     "tool_simplified": "पाठ Adaptation",
     "tool_outline": "दृश्य Organizer",
     "tool_visual": "दृश्य सहयोग",
@@ -2983,7 +2983,7 @@
     "choose_destination_aria": "छान्नुहोस् एक destination"
   },
   "glossary": {
-    "title": "शब्दावली & भाषा Selection",
+    "title": "शब्दावली",
     "tier2": "Tier 2 (शैक्षिक)",
     "tier2_tooltip": "विषयहरूमा प्रयोग हुने उच्च-उपयोगिता शैक्षिक शब्दहरू (जस्तै, 'विश्लेषण गर्नुहोस्', 'प्रमाणित गर्नुहोस्')।",
     "tier3": "Tier 3 (क्षेत्र)",
@@ -3925,7 +3925,12 @@
     "gauge_simple": "सरल",
     "word_bank_both": "दुवै",
     "word_bank_language": "शब्द बैंकको भाषा",
-    "word_bank_english": "अंग्रेजी"
+    "word_bank_english": "अंग्रेजी",
+    "measured_level_label": "नापिएको पठन स्तर",
+    "measured_on_target": "{grade} का लागि ठीक",
+    "measured_above": "{grade} स्तरभन्दा माथि",
+    "measured_below": "{grade} स्तरभन्दा तल",
+    "measured_note": "Flesch-Kincaid, यही पाठमा नापिएको। पूरा जाँचका लागि जाँच स्तर प्रयोग गर्नुहोस्।"
   },
   "quiz": {
     "title": "मूल्याङ्कन",
@@ -5871,7 +5876,9 @@
     "title_poettree_config": "🌳 PoetTree असाइनमेन्ट",
     "title_poettree_submission": "🌳 कविता पेस",
     "title_litlab_config": "🎭 LitLab असाइनमेन्ट",
-    "title_litlab_submission": "🎭 प्रस्तुति पेस"
+    "title_litlab_submission": "🎭 प्रस्तुति पेस",
+    "translation_block": "अनुवाद",
+    "translation_into": "अनुवाद ({language})"
   },
   "persona": {
     "title": "Interview मोड",
@@ -6289,7 +6296,7 @@
   },
   "tools": {
     "source": "स्रोत सामग्री",
-    "glossary": "शब्दावली & भाषा Selection",
+    "glossary": "शब्दावली",
     "simplified": "पाठ Adaptation & संलग्नता",
     "outline": "दृश्य Organizer",
     "quiz": "मूल्याङ्कन",
@@ -6878,7 +6885,6 @@
     "source_settings_instructions": "Guide AI सामग्री पुस्ता सँग विशिष्ट निर्देशन. उदाहरण: बनाउनुहोस् it आकर्षक का लागि reluctant पाठकहरू, फोकस मा water cycle, समावेश गर्नुहोस् विविध पात्र names, Avoid references मा violence, र प्रयोग गर्नुहोस् सरल शब्दकोश का लागि ELL विद्यार्थी. निर्देशन आकार: स्वर, सामग्री फोकस, शब्दकोश स्तर, र perspective. Be विशिष्ट का लागि उत्तम नतिजा. धेरै निर्देशन सक्छ be combined. निर्देशन छन् processed along सँग तपाईंको विषय र सेटिङहरू. का लागि sensitive topics, समावेश गर्नुहोस् सामग्री guidance. निर्देशन do छैन guarantee विशिष्ट outcomes तर strongly influence पुस्ता. सुझाव: समावेश गर्नुहोस् कक्षा स्तर र कुनै पनि सामग्री restrictions मा तपाईंको निर्देशन का लागि सबैभन्दा उपयुक्त आउटपुट.",
     "source_verify_checkbox": "सक्षम गर्नुहोस् AI fact-checking via Google खोज्नुहोस् grounding. जब ON: AI cross-references उत्पन्न भयो सामग्री against web sources, flagging वा correcting potential inaccuracies. Adds 5-10 सेकेन्ड मा पुस्ता समय तर significantly improves reliability का लागि factual सामग्री. Especially important का लागि: इतिहास (dates, घटनाहरू), science (processes, डेटा), biography, र हालको घटनाहरू. का लागि fiction, creative लेखन, वा hypothetical scenarios, यो सक्छ be disabled मा allow थप creative freedom. Sources consulted छन् listed मा पुस्ता log का लागि शिक्षक समीक्षा. Highly recommended का लागि कुनै पनि सामग्री त्यो गर्नेछ be presented as factual मा विद्यार्थी.",
     "source_generate_button": "सिर्जना गर्नुहोस् AI-written सामग्री मा तपाईंको specified विषय. क्लिक गर्नुहोस् मा begin पुस्ता प्रयोग गर्दै तपाईंको: विषय description, लक्ष्य लम्बाइ, कक्षा स्तर, र अनुकूल निर्देशन. पुस्ता takes 10-20 सेकेन्ड. आउटपुट हो reviewed by safety filters पहिले प्रदर्शन. उत्पादित सामग्री सक्छ be: edited (शिक्षक सक्छ परिमार्जन गर्नुहोस् कुनै पनि part), analyzed (चलाउनुहोस् मार्फत अन्य पुस्ता उपकरणहरू), र सुरक्षित भयो (थप्नुहोस् मा इतिहास का लागि reuse). प्रयोग गर्नुहोस् जब: तपाईं चाहिन्छ सामग्री मा एक विशिष्ट विषय, चाहन्छन् controlled जटिलता, वा चाहिन्छ मा fill curriculum gaps. उत्पादित सामग्री समावेश गर्छ: उपयुक्त शब्दकोश, logical organization, र कक्षा-स्तर syntax. Verify factual शुद्धता पहिले कक्षा प्रयोग गर्नुहोस्.",
-    "generator_actions": "Hub का लागि सबै सामग्री पुस्ता उपकरणहरू. उपलब्ध generators समावेश गर्नुहोस्: क्विज (मूल्याङ्कन सँग उत्तर keys), शब्दावली (दृश्य शब्दकोश), Simplified पाठ (स्तर पढाइ), FAQ (Q र एक pairs), विश्लेषण (सामग्री examination), पाठ योजना (instructional design), Timeline (chronological गतिविधि), Scaffolds (लेखन सहयोग), अवधारणा क्रमबद्ध गर्नुहोस् (categorization खेल), गणित (problem पुस्ता), साहसिक (अन्तरक्रियात्मक कथा), र Brainstorm (गतिविधि ideas). प्रत्येक generator रूपान्तर गर्छ तपाईंको स्रोत सामग्री भित्र फरक ढाँचा. क्लिक गर्नुहोस् कुनै पनि generator मा खोल्नुहोस् its configuration प्यानल. धेरै generators सक्छ be प्रयोग गरिएको मा उस्तै स्रोत. उत्पादित सामग्री देखिन्छ मा workspace र सुरक्षित गर्छ मा इतिहास. सुझाव: सुरु गर्नुहोस् सँग विश्लेषण मा बुझ्नुहोस् तपाईंको सामग्री, त्यसपछि उत्पन्न गर्नुहोस् targeted स्रोतहरू.",
     "tool_visual": "पहुँच दृश्य generator उपकरणहरू. Creates AI-generated भयो तस्वीर समावेश गरी: शब्दकोश दृश्य, अवधारणा चित्रण, दृश्य depictions, आरेख, र infographics. दृश्य types: सन्दर्भ तस्वीर (का लागि सिकाइ), worksheets (का लागि गतिविधिहरू), र आरेख (का लागि relationships). दृश्य सहयोग: ELL विद्यार्थी (दृश्य शब्दकोश), दृश्य सिकाहरूले, र संलग्नता. प्रत्येक पुस्ता सिर्जना गर्छ unique तस्वीर. सेटिङहरू नियन्त्रण शैली, गुणस्तर, र सामग्री. उत्पादित दृश्य सक्छ be: downloaded, embedded मा सामग्रीहरू, र added मा glossaries. Uses AI तस्वीर पुस्ता credits. सुझाव: उत्पन्न गर्नुहोस् दृश्य का लागि abstract अवधारणाहरू त्यो छन् difficult मा explain सँग शब्दहरू alone.",
     "tool_udl": "UDL framework एकीकरण बारे जान्नुहोस्। Universal Design for Learning का तीन सिद्धान्त: प्रतिनिधित्वका विभिन्न माध्यम, कार्य/अभिव्यक्तिका माध्यम, र संलग्नताका माध्यम।",
     "tour-analysis-settings": "समायोजन parameters का लागि readability विश्लेषण, समावेश गरी लक्ष्य पढाइ स्तर र विशिष्ट metrics मा track.",
@@ -6903,7 +6909,6 @@
     "adventure_system_state": "Adventure Mode मा स्रोत व्यवस्थापन mechanics थप्नुहोस्। विद्यार्थीहरूले स्वास्थ्य, सुन/स्रोत, प्रतिष्ठा र थप ट्र्याक गर्छन्।",
     "glossary_tier2_count": "सेट गर्नुहोस् कसरी many Tier 2 (शैक्षिक) शब्दकोश शब्दहरू मा समावेश गर्नुहोस्. Tier 2 शब्दहरू: देखा पर्नु पारि subjects, छन् प्रयोग गरिएको मा शैक्षिक contexts, र छन् essential का लागि पाठ समझ. उदाहरण: विश्लेषण गर्नुहोस्, प्रमाण, significant, contrast. These शब्दहरू छ highest instructional मान—सबैभन्दा विद्यार्थी benefit बाट explicit teaching. Recommended गन्नुहोस् depends मा: पाठ लम्बाइ (1 शब्दहरू per 100-150 शब्दहरू को स्रोत), उपलब्ध निर्देशन समय, र विद्यार्थी चाहिन्छ. Balance सँग Tier 3 गन्नुहोस् का लागि एक पूरा गर्नुहोस् शब्दकोश सेट गर्नुहोस्. फोकस निर्देशन here का लागि maximum impact मा पढाइ समझ पारि सबै subjects.",
     "glossary_tier3_count": "कति Tier 3 (विषय-विशिष्ट) शब्दावली शब्दहरू समावेश गर्ने सेट गर्नुहोस्। Tier 3 शब्दहरू एउटा विषय क्षेत्रमा सीमित हुन्छन्।",
-    "glossary_definition_level": "नियन्त्रण कसरी परिभाषा छन् written. विकल्पहरू: उस्तै as स्रोत (maintains मूल जटिलता—राम्रो का लागि उन्नत विद्यार्थी), मा कक्षा (matches लक्ष्य कक्षा स्तर शब्दकोश), Simplified (प्रयोग गर्छ साझा शब्दहरू, छोटो वाक्य), र Kindergarten (very आधारभूत भाषा, concrete उदाहरण). मेल परिभाषा जटिलता मा विद्यार्थी पढाइ स्तर, छैन सामग्री स्तर. एक 10th-grader studying उन्नत biology might चाहिन्छ Simplified परिभाषा का लागि unfamiliar शब्द. विचार तपाईंको विद्यार्थी weakest पाठकहरू जब selecting. परिभाषा सक्छ be individually edited पछि पुस्ता यदि केही चाहिन्छ adjustment. Pro सुझाव: प्रयोग गर्नुहोस् Simplified initially, त्यसपछि discuss थप technical परिभाषा मा कक्षा.",
     "glossary_custom_instructions": "शब्दावली छनोट र परिभाषा शैलीका लागि विशिष्ट मार्गदर्शन प्रदान गर्नुहोस्। उदाहरण: निश्चित अध्यायबाट शब्द, water cycle सम्बन्धित शब्द।",
     "glossary_language_input": "उल्लेख गर्नुहोस् भाषा का लागि शब्दकोश अनुवाद. प्रविष्ट गर्नुहोस् भाषा: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, वा कुनै पनि भाषा. तपाईं सक्छ थप्नुहोस् धेरै भाषा separated by commas. प्रत्येक शब्द गर्नेछ देखाउनुहोस्: English परिभाषा, लक्ष्य भाषा अनुवाद(s), र phonetic pronunciation guide कहाँ applicable. प्रयोग गर्नुहोस् का लागि: ELL सहयोग, heritage भाषा connections, world भाषा शब्दकोश, र multilingual classrooms. अनुवाद देखा पर्नु मा every शब्दकोश कार्ड का लागि instant सन्दर्भ. अडियो pronunciation उपलब्ध मा supported भाषा. Research देखाउँछ connecting नयाँ शब्दकोश मा home भाषा improves retention. Max 4 भाषा prevents दृश्य clutter जबकि supporting विविध classrooms.",
     "glossary_auto_remove": "स्वचालित रूपमा फिल्टर out very सरल वा साझा शब्दहरू.",
@@ -7037,7 +7042,6 @@
     "fab_dictation": "Hands-free इनपुटका लागि speech लाई पाठमा रूपान्तरण गर्नुहोस्। माइक्रोफोन सक्रिय गर्न क्लिक गर्नुहोस्, स्पष्ट बोल्नुहोस्।",
     "fab_focus": "Creates एक movable spotlight त्यो dims everything except एक circular क्षेत्रफल around तपाईंको cursor. यो dramatically reduces दृश्य clutter र मद्दत maintain attention मा हालको पढाइ क्षेत्रफल. Especially beneficial का लागि विद्यार्थी सँग ADHD, sensory processing भिन्नता, वा anyone overwhelmed by busy screens. spotlight follows तपाईंको mouse/touch स्वचालित रूपमा. समायोजन spotlight size र dim intensity मा सेटिङहरू → पहुँचयोग्यता.",
     "fab_line_focus": "Focused पठनका लागि एकल-रेखा पठन isolation उपकरण। सक्रिय हुँदा: एक पाठ रेखा highlighted, अरू dim। arrow keys ले navigate गर्नुहोस्।",
-    "fab_ruler": "Adds एक semi-transparent horizontal पट्टी त्यो follows तपाईंको cursor मा मद्दत track तपाईंको पढाइ स्थिति रेखा by रेखा. Particularly helpful का लागि users सँग dyslexia, ADHD, वा दृश्य ट्र्याकिङ difficulties. तान्नुहोस् ruler up/down मा reposition, प्रयोग गर्नुहोस् arrow keys का लागि fine नियन्त्रण, वा क्लिक गर्नुहोस् anywhere मा jump. ruler रङ सक्छ be customized मा सेटिङहरू. काम गर्छ पारि सबै पढाइ views समावेश गरी Simplified पाठ, FAQ, र शब्दावली परिभाषा.",
     "fab_timer": "Opens एक अन्तरक्रियात्मक फोकस timer आधारित मा Pomodoro Technique. छान्नुहोस् बाट preset durations (5/15/25/45 minutes) वा अनुकूलन गर्नुहोस् तपाईंको own. सुविधाहरू समावेश गर्नुहोस्: दृश्य countdown सँग प्रगति ring, वैकल्पिक break reminders, XP पुरस्कार का लागि completed सत्र (लामो = थप XP), र सत्र logging का लागि शिक्षक समीक्षा. Label तपाईंको task (e.g., 'पढ्नुहोस् अध्याय 3') मा track के तपाईं accomplished. Minimizes मा header पट्टी so तपाईं सक्छ काम जबकि it runs.",
     "scaffolds_edit_toggle": "टगल गर्नुहोस् बीच शिक्षक editing र विद्यार्थी हेर्नुहोस् मोड. जब ON (सम्पादन गर्नुहोस् मोड): क्लिक गर्नुहोस् कुनै पनि scaffold मा परिमार्जन गर्नुहोस् पाठ, थप्नुहोस् नयाँ सूचनाहरू, मेटाउनुहोस् वस्तु, र reorder सामग्री. जब OFF: scaffolds प्रदर्शन as विद्यार्थी हेर्नुहोस् them (पढ्नुहोस्-मात्र). Edits सुरक्षित गर्नुहोस् स्वचालित रूपमा. विद्यार्थी always हेर्नुहोस् पढ्नुहोस्-मात्र regardless को तपाईंको टगल गर्नुहोस् (उनीहरू cannot पहुँच सम्पादन गर्नुहोस् मोड). प्रयोग गर्नुहोस् editing मा: अनुकूलन गर्नुहोस् AI-generated भयो scaffolds, थप्नुहोस् कक्षा-विशिष्ट उदाहरण, हटाउनुहोस् inappropriate सूचनाहरू, र differentiate का लागि विशिष्ट विद्यार्थी. Preview विद्यार्थी हेर्नुहोस् पहिले sharing. मूल scaffolds सक्छ be restored बाट इतिहास. सुझाव: समीक्षा र सम्पादन गर्नुहोस् scaffolds पहिले कक्षा मा ensure उनीहरू मेल तपाईंको teaching शैली र विद्यार्थी needs.",
     "scaffolds_goal_panel": "प्रदर्शन सिकाइ objectives का लागि विद्यार्थी सन्दर्भ. लक्ष्य देखा पर्नु prominently दौडान गतिविधि. Effective लक्ष्य छन्: विद्यार्थी-मैत्रीपूर्ण (I सक्छ statements), विशिष्ट र measurable, र aligned मा गतिविधि. उदाहरण: I सक्छ पहिचान three causes को Civil War वा I सक्छ प्रयोग गर्नुहोस् प्रमाण मा सहयोग my claim. लक्ष्य increase: metacognition, स्व-मूल्याङ्कन, र purpose clarity. विद्यार्थी सक्छ सन्दर्भ लक्ष्य जबकि working. शिक्षक sets लक्ष्य पहिले विद्यार्थी पहुँच. धेरै लक्ष्य सक्छ be displayed. लक्ष्य सक्छ समावेश गर्नुहोस् सफलता criteria: I know I छ succeeded जब my अनुच्छेद has एक विषय वाक्य. Research देखाउँछ देखिने सिकाइ targets improve उपलब्धि.",
@@ -7132,7 +7136,6 @@
     "immersive_line_focus": "एकल-रेखा पठन गाइड सक्षम गर्नुहोस्। सक्रिय हुँदा: हालको पठन रेखा पूर्ण देखिने, छेउछाउका रेखा dim। navigation गर्दा focus पछ्याउँछ।",
     "immersive_syllables": "दृश्य syllable segmentation का लागि decoding सहयोग. जब enabled: शब्दहरू प्रदर्शन सँग syllable breaks (hy-phen-at-ed), मद्दत पाठकहरू attack multisyllabic शब्दहरू. Benefits: निर्माण गर्छ phonemic awareness, सहयोग decoding रणनीतिहरू, develops morphological understanding, र aids pronunciation. Especially helpful का लागि: संघर्ष decoders, ELL विद्यार्थी, dyslexia सहयोग, र शब्दकोश शब्दहरू सँग जटिल syllable ढाँचाहरू. Syllabification follows मानक phonetic rules. काम गर्छ मा: सबै पढाइ सामग्री समावेश गरी adapted पाठ, शब्दावली शब्द, र स्रोत सामग्रीहरू. Combine सँग अडियो मा hear syllables pronounced. टगल गर्नुहोस् off जब छैन needed मा reduce दृश्य जटिलता. सुझाव: प्रयोग गर्नुहोस् का लागि challenging शब्दकोश, त्यसपछि असक्षम गर्नुहोस् का लागि fluent पढाइ अभ्यास गर्नुहोस्.",
     "immersive_wide_text": "Expand पाठ मा प्रयोग गर्नुहोस् थप horizontal स्क्रिन space. जब सक्रिय: रेखा लम्बाइ increases, कम scrolling हो needed, र थप पाठ हो देखिने at once. राम्रो का लागि: fluent पाठकहरू, wide displays, र जब scanning का लागि जानकारी. पूर्वनिर्धारित narrow चौडाइ हो राम्रो का लागि: संघर्ष पाठकहरू, mobile devices, र focused पढाइ. Optimal रेखा लम्बाइ varies by reader र device. Research देखाउँछ 50-75 पात्र per रेखा हो ideal का लागि सबैभन्दा पाठकहरू. Wide पाठ trades readability का लागि efficiency. Combine सँग रेखा फोकस यदि ट्र्याकिङ becomes difficult. सेटिङ हो remembered per device. सुझाव: प्रयोग गर्नुहोस् wide पाठ का लागि research र scanning, narrow पाठ का लागि बन्द गर्नुहोस् पढाइ.",
-    "sidebar_tab_create": "खोल्नुहोस् सामग्री पुस्ता प्यानल सँग सबै AI-powered उपकरणहरू. उपलब्ध generators: क्विज (मूल्याङ्कन सँग उत्तर keys), शब्दावली (दृश्य शब्दकोश), Outline (graphic organizers), विश्लेषण (सामग्री examination), पाठ योजना (structured निर्देशन), Timeline (chronological गतिविधिहरू), Simplified पाठ (स्तर पढाइ), र थप. प्रत्येक उपकरणहरू खोल्छ एक configuration प्यानल का लागि customization पहिले पुस्ता. स्रोत सामग्री must be loaded का लागि सबैभन्दा उपकरणहरू मा विश्लेषण गर्नुहोस्. उत्पादित सामग्री देखिन्छ मा main workspace र हो सुरक्षित भयो मा इतिहास. प्रयोग गर्नुहोस् सिर्जना गर्नुहोस् tab as तपाईंको primary सामग्री पुस्ता hub. सुझाव: सुरु गर्नुहोस् सँग विश्लेषण मा बुझ्नुहोस् सामग्री, त्यसपछि उत्पन्न गर्नुहोस् targeted स्रोतहरू.",
     "sidebar_tab_history": "तपाईंको सबै सुरक्षित सामग्री र सत्र इतिहास पहुँच गर्नुहोस्। auto-saved सत्र, manually saved परियोजना, र उत्पन्न स्रोतहरू।",
     "socratic_toggle": "Deeper सिकाइका लागि Socratic dialogue मोड सक्षम गर्नुहोस्। ON: AI ले सीधा उत्तर दिँदैन—बरु खोज तर्फ डोर्‍याउने प्रश्न सोध्छ।",
     "socratic_input": "प्रविष्ट गर्नुहोस् तपाईंको प्रश्न वा statement का लागि Socratic exploration. AI गर्नेछ respond सँग प्रश्न rather than उत्तर. राम्रो starting बिन्दु: Why do तपाईं think [X] happened? के makes [Y] important? वा I believe [Z] because... AI probes तपाईंको reasoning: asking का लागि प्रमाण, exploring implications, testing logic, र surfacing assumptions. यो develops argumentation र critical thinking सीप. Be prepared मा: justify तपाईंको thinking, विचार alternatives, र refine तपाईंको स्थिति. Socratic dialogues सक्छ be frustrating initially तर निर्माण lasting understanding. तपाईंको responses र reasoning छन् tracked का लागि reflection.",
@@ -31095,7 +31098,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "हालको मिडियाको वर्णन गर्नुहोस्",
+    "describe_current_media_done": "{count} मध्ये {index} मिडिया पढ्दै।",
+    "describe_current_media_hint": "स्रोत नछोडी हालको वा अर्को मिडियाको वर्णन पढ्नुहोस्",
+    "describe_current_media_none": "हालको स्रोतमा कुनै मिडिया छैन।",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore खोल्नुहोस्",
+    "open_learning_web_explorer_done": "Learning Web: Explore खोलियो।",
+    "open_learning_web_explorer_hint": "एउटै नक्सामा मापदण्ड, अवधारणा, पाठ, प्रमाण र शब्द सम्बन्ध खोज्नुहोस्",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "सबै मिडिया वर्णन पढ्नुहोस्",
+    "read_media_descriptions_count": "{count} मिडिया वर्णन पढ्दै।",
+    "read_media_descriptions_hint": "हालको स्रोतमा लेखिएका हरेक तस्बिर, भिडियो वा अडियो वर्णन पढ्नुहोस्",
+    "read_media_descriptions_none": "हालको स्रोतमा कुनै मिडिया छैन।",
+    "suggest_contextual_next_steps": "अर्को 3 कदम सुझाउनुहोस्",
+    "suggest_contextual_next_steps_hint": "सन्दर्भ अनुसार तीन विकल्प दिन्छ, कुनै छान्दैन वा चलाउँदैन",
+    "suggest_contextual_next_steps_working": "हालको पाठको सन्दर्भ पढेर तीन विकल्प तयार गर्दै...",
+    "surprise_me_contextually": "उपयोगी अर्को कदम मलाई दिनुहोस्",
+    "surprise_me_contextually_hint": "हालको पाठको सन्दर्भबाट एउटा उपयुक्त र कम जोखिमको अर्को काम छान्छ",
+    "surprise_me_contextually_working": "हालको पाठको सन्दर्भ पढेर उपयोगी अर्को कदम छान्दै...",
+    "use_contextual_suggestion": "सुझाइएको अर्को कदम प्रयोग गर्नुहोस्",
+    "use_contextual_suggestion_hint": "भर्खरका सुझावबाट विकल्प 1, 2 वा 3 चलाउँछ",
+    "use_contextual_suggestion_working": "छानिएको अर्को कदम सुरु गर्दै..."
   },
   "palette": {
     "aria": "AlloFlow कमाण्ड प्यालेट",
@@ -31118,10 +31147,11 @@
       "videoStudio": "यहाँ — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "हरेक कार्य घोषणा गरिन्छ। Ctrl+K ले टगल गर्छ।",
     "group": {
@@ -31442,6 +31472,12 @@
     "diff_types_hint": "यीका लागि फरक स्तरको सेट बनाउनुहोस्:",
     "diff_cost": "प्रति रन करिब {n} सिर्जना।",
     "summary_standards": "मापदण्डहरू",
-    "summary_interests": "रुचिहरू"
+    "summary_interests": "रुचिहरू",
+    "translations": "अनुवादहरू",
+    "translations_auto": "स्वतः ({language})",
+    "translations_auto_plain": "स्वतः",
+    "translations_none": "कुनै पनि होइन",
+    "translations_on_hint": "{output} का सामग्रीसँगै {target} संस्करण पनि आउनेछ।",
+    "translations_off_hint": "सामग्री {output} मा मात्र हुनेछ, दोस्रो भाषा हुनेछैन।"
   }
 }

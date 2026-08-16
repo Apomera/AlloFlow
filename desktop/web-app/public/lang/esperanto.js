@@ -2257,7 +2257,7 @@
     "ai_guide_sub": "Pedagogio, navigado kaj aŭtomata agordo",
     "ai_guide_welcome": "Saluton! Mi estas via AI-gvidanto. Mi povas helpi pri UDL-strategioj, navigi la aplikaĵon por vi, aŭ aŭtomate agordi viajn lecion-agordojn. Nur demandu!",
     "tool_analysis": "Analizi fontmaterialon",
-    "tool_glossary": "Glosaro kaj lingvoelekto",
+    "tool_glossary": "Glosaro",
     "tool_simplified": "Tekstadaptado",
     "tool_outline": "Vida Organizilo",
     "tool_visual": "Vida subteno",
@@ -3144,7 +3144,7 @@
     "choose_destination_aria": "Elekti celon"
   },
   "glossary": {
-    "title": "Glosaro kaj lingvoelekto",
+    "title": "Glosaro",
     "tier2": "Nivelo 2 (akad.)",
     "tier2_tooltip": "Alt-utilaj akademiaj vortoj uzataj tra fakoj (ekz., 'analizi', 'kontroli').",
     "tier3": "Nivelo 3 (fako)",
@@ -4086,7 +4086,12 @@
     "gauge_simple": "Simpla",
     "word_bank_both": "Ambaŭ",
     "word_bank_language": "Lingvo de la vortbanko",
-    "word_bank_english": "Angla"
+    "word_bank_english": "Angla",
+    "measured_level_label": "Mezurita lega nivelo",
+    "measured_on_target": "Ĝusta por {grade}",
+    "measured_above": "Super la nivelo de {grade}",
+    "measured_below": "Sub la nivelo de {grade}",
+    "measured_note": "Flesch-Kincaid, mezurita sur ĉi tiu teksto. Uzu Kontroli nivelon por pli plena kontrolo."
   },
   "quiz": {
     "title": "Taksi",
@@ -6045,7 +6050,9 @@
     "title_poettree_config": "🌳 PoetTree-Tasko",
     "title_poettree_submission": "🌳 Poema Sendaĵo",
     "title_litlab_config": "🎭 LitLab-Tasko",
-    "title_litlab_submission": "🎭 Prezenta Sendaĵo"
+    "title_litlab_submission": "🎭 Prezenta Sendaĵo",
+    "translation_block": "Traduko",
+    "translation_into": "Traduko ({language})"
   },
   "persona": {
     "title": "Intervjua Reĝimo",
@@ -6464,7 +6471,7 @@
   },
   "tools": {
     "source": "Fontmaterialo",
-    "glossary": "Glosaro kaj Lingva Elekto",
+    "glossary": "Glosaro",
     "simplified": "Teksta Adapto kaj Engaĝiĝo",
     "outline": "Vida Organizilo",
     "quiz": "Taksi",
@@ -7110,7 +7117,6 @@
     "source_settings_instructions": "Gvidu AI-enhavgeneradon per specifaj instrukcioj. Ekzemploj: Faru ĝin alloga por malvolontaj legantoj, Fokusu sur la akvociklo, Inkluzivu diversajn rolulnomojn, Evitu referencojn al perforto kaj Uzu simplan vortprovizon por ELL-lernantoj. Instrukcioj formas: tonon, enhavan fokuson, vortprovizan nivelon kaj perspektivon. Estu specifa por plej bonaj rezultoj. Pluraj instrukcioj povas esti kombinitaj. Instrukcioj estas prilaboritaj kune kun via temo kaj agordoj. Por delikataj temoj, inkluzivu enhavan gvidon. Instrukcioj ne garantias specifajn rezultojn sed forte influas la generadon. Konsileto: Inkluzivu kategorian nivelon kaj iujn ajn enhavajn limigojn en viaj instrukcioj por plej taŭga eligo.",
     "source_verify_checkbox": "Ebligu AI-faktokontrolon per Google Search-bazigo. Kiam ŝaltita: AI krucreferencas generitan enhavon kontraŭ retaj fontoj, markante aŭ korektante eblajn malekzaktecojn. Aldonas 5-10 sekundojn al la generadtempo sed signife plibonigas fidindecon por faktbazita enhavo. Precipe grava por: historio (datoj, eventoj), scienco (procezoj, datumoj), biografio kaj aktualaj eventoj. Por fikcio, krea verkado aŭ hipotezaj scenaroj, ĉi tio povas esti malŝaltita por permesi pli da krea libereco. La konsultitaj fontoj estas listigitaj en la genera protokolo por instruista revizio. Tre rekomendita por iu ajn enhavo kiu estos prezentita kiel fakta al lernantoj.",
     "source_generate_button": "Kreu AI-verkitan enhavon pri via specifita temo. Klaku por komenci generadon uzante viajn: tempriskribon, celan longecon, kategorian nivelon kaj proprajn instrukciojn. Generado daŭras 10-20 sekundojn. La eligo estas reviziita de sekurecaj filtriloj antaŭ montrado. Generita enhavo povas esti: redaktita (instruisto povas modifi ajnan parton), analizita (trairigita tra aliaj generaj iloj) kaj konservita (aldonita al historio por reuzo). Uzu kiam: vi bezonas enhavon pri specifa temo, deziras regatan kompleksecon aŭ bezonas plenigi kurikulajn breĉojn. Generita enhavo inkluzivas: taŭgan vortprovizon, logikan organizadon kaj kategorienivelan sintakson. Kontrolu faktan ekzaktecon antaŭ klasĉambra uzo.",
-    "generator_actions": "Centro por ĉiuj enhavgeneraj iloj. Disponeblaj generiloj inkluzivas: Kvizon (taksado kun respondŝlosiloj), Glosaron (vida vortprovizo), Simpligitan Tekston (nivelita legado), FAQ (Demando kaj Respondo paroj), Analizon (enhava ekzamenado), Lecionplanon (instrua dezajno), Templinion (kronologia agado), Skafaldojn (verksubtenoj), Konceptan Ordigon (kategoriiga ludo), Matematikon (problemgenerado), Aventuron (interaga rakonto) kaj Cerboŝtormon (agadideoj). Ĉiu generilo transformas vian fontan enhavon en malsamajn formatojn. Klaku ajnan generilon por malfermi ĝian agordpanelon. Pluraj generiloj povas esti uzitaj sur la sama fonto. Generita enhavo aperas en la laborspaco kaj konserviĝas al historio. Konsileto: Komencu per Analizo por kompreni vian enhavon, poste generu celitajn rimedojn.",
     "tool_visual": "Aliru la vidan generilon. Kreas AI-generitajn bildojn inkluzive de: vortprovizaj vidaĵoj, konceptaj ilustraĵoj, scenpriskriboj, diagramoj kaj infografikaĵoj. Vidaj tipoj: referencaj bildoj (por lernado), laborfolioj (por agadoj) kaj diagramoj (por rilatoj). Vidaĵoj subtenas: ELL-lernantojn (vida vortprovizo), vidajn lernantojn kaj engaĝiĝon. Ĉiu generado kreas unikajn bildojn. Agordoj regas stilon, kvaliton kaj enhavon. Generitaj vidaĵoj povas esti: elŝutitaj, enmetitaj en materialojn kaj aldonitaj al glosaroj. Uzas AI-bildgenerajn kreditojn. Konsileto: Generu vidaĵojn por abstraktaj konceptoj kiuj estas malfacile klarigeblaj nur per vortoj.",
     "tool_udl": "Lernu pri integriĝo de la UDL-kadro. Universala Dezajno por Lernado havas tri principojn: Multoblaj Rimedoj de Reprezentado (la kio de lernado — prezenti informojn diversmaniere), Multoblaj Rimedoj de Ago kaj Esprimo (la kiel de lernado — lasi lernantojn pruvi komprenon malsame) kaj Multoblaj Rimedoj de Engaĝiĝo (la kial de lernado — motivi kaj subteni intereson). Ĉi tiu ilo subtenas ĉiujn tri per: variigitaj enhavformatoj, multoblaj interagaj reĝimoj kaj ludigita engaĝiĝo. Klakado malfermas detalajn informojn pri kiel ĉiu ila trajto kongruas kun UDL-esplorado. Bonega por: profesia disvolviĝo, IEP-pravigo kaj kompreno de pedagogia fundamento. Konsileto: Referencu UDL-principojn dum advokatado por ila adopto.",
     "tour-analysis-settings": "Agordpanelo por enhavanaliza generado. Opcioj inkluzivas: Analizan profundon (rapida superrigardo kontraŭ ampleksa ekzamenado), Fokusajn zonojn (vortprovizo, temoj, strukturo, antaŭjuĝo), Eligan formaton (listo, rakonta, kompara) kaj Celan spektantaron (instruista referenco kontraŭ lernanto-fronta). Agordu antaŭ generado por akiri la analiztipon kiun vi bezonas. Rapida analizo daŭras malpli da tempo sed provizas malpli da detaloj. Ampleksa analizo estas plena sed daŭras pli longe. Fokusaj zonoj povas esti kombinitaj aŭ prioritatigitaj. Eliga formato efikas kiel rezultoj estas prezentitaj. Konservu preferatajn agordojn kiel defaŭltojn. Konsileto: Komencu per rapida analizo por superrigardi enhavon, poste rulu ampleksan sur specifaj zonoj.",
@@ -7135,7 +7141,6 @@
     "adventure_system_state": "Aldonu rimedadministrajn mekanikojn al aventuroj. Lernantoj spuras: Sanon (konsekvenco de riskaj elektoj), Oron/Rimedojn (ekonomia decidado), Reputacion (socia kapitalo el elektoj) kaj proprajn rimedojn kiujn vi difinas. Agoj efikas rimedojn videble — elspezu oron por aĉeti aĵojn, perdu sanon pro malbonaj decidoj, gajnu reputacion pro helpado al aliaj. Kreas signifajn konsekvencojn kiuj instruas: kaŭz-kaj-efikan rezonadon, antaŭplanadon, rimedadministradon kaj oportunan koston. Vida panelo montras nunajn rimednivelojn. Kiam rimedoj malpleniĝas, la ludo adapte respondas (ekz., malalta sano = limigitaj opcioj). Matematikaj kapabloj integriĝas nature per rimedaj kalkuloj.",
     "glossary_tier2_count": "Agordu kiom da Nivelo 2 (akademiaj) vortprovizaj vortoj inkluzivi. Nivelo 2 vortoj: aperas tra fakoj, estas uzitaj en akademiaj kuntekstoj kaj estas esencaj por teksta kompreno. Ekzemploj: analizi, pruvo, signifa, kontrasto. Ĉi tiuj vortoj havas la plej altan instruan valoron — plej multaj lernantoj profitas de eksplicita instruado. Rekomendita nombro dependas de: teksta longeco (1 vorto po 100-150 vortoj de fonto), disponebla instrutempo kaj lernanta bezono. Ekvilibrigu kun Nivelo 3 nombro por kompleta vortproviza aro. Fokusu instruadon ĉi tie por maksimuma efiko sur legkompreno tra ĉiuj fakoj.",
     "glossary_tier3_count": "Agordu kiom da Nivelo 3 (fakspecifaj) vortprovizaj vortoj inkluzivi. Nivelo 3 vortoj: estas specifaj al faka areo, estas kutime difinitaj en kunteksto kaj eble ne transiras tra fakoj. Ekzemploj: fotosintezo, denominatoro, aliteracio, leĝdona. Ĉi tiuj vortoj estas esencaj por kompreni specifan enhavon sed havas limigitan uzon ekster la fako. Instruado tipe okazas dum enhava instruado. Por profundenira esploro de temo, inkluzivu pli da Nivelo 3. Por pli larĝaj legaj kapabloj, prioritatu Nivelon 2. Nivelo 3 vortoj ofte aperas grasaj aŭ kursivaj en lernolibroj, signalante sian gravecon ene de la disciplino.",
-    "glossary_definition_level": "Regu kiel difinoj estas verkitaj. Opcioj: Sama kiel Fonto (konservas originan kompleksecon — bona por progresintaj lernantoj), Laŭ Kategorio (kongruas al cela kategoria nivelo), Simpligita (uzas oftajn vortojn, pli mallongajn frazojn) kaj Infanĝardeno (tre baza lingvo, konkretaj ekzemploj). Kongruigu difinan kompleksecon al lernanta legnivelo, ne enhava nivelo. 10-akategoriano studanta progresintan biologion eble bezonas Simpligitajn difinojn por nekonataj terminoj. Konsideru viajn plej malfortajn legantojn dum elektado. Difinoj povas esti individue redaktitaj post generado se iuj bezonas alĝustigon. Profia konsileto: Uzu Simpligitan komence, poste diskutu la pli teknikajn difinojn en la klaso.",
     "glossary_custom_instructions": "Provizu specifan gvidon por vortproviza elekto kaj difina stilo. Ekzemploj: Fokusu sur vortoj el ĉapitroj 3-5, Inkluzivu nur vortojn rilatajn al la akvociklo, Evitu homonimojn kun pli simplaj signifoj, Aldonu etimologion por latinaj/grekaj radikoj, Inkluzivu hispanajn parencvortojn por ELL-lernantoj kaj Uzu lernant-amikajn ekzemplojn el popola kulturo. Proprajn instrukciojn formas: kiuj vortoj estas elektitaj, kiel difinoj estas verkitaj kaj kiaj pliaj informoj aperas. Klaraj instrukcioj produktas pli bone celitajn glosarojn. Vi povas peti specifajn formatojn kiel: Inkluzivu frazon uzantan ĉiun vorton aŭ Aldonu vidajn memorhokojn. AI sekvas instrukciojn dum farado de vortprovizaj elektoj.",
     "glossary_language_input": "Specifu lingvojn por vortproviza tradukado. Enigu lingvojn: Hispana, Mandarena, Araba, Franca, Vjetnama, Tagaloga aŭ ajnan lingvon. Vi povas aldoni plurajn lingvojn apartigitajn per komoj. Ĉiu termino montros: anglan difinon, celan lingvan tradukon(j)n kaj fonetikan prononcgvidilon kie aplikeblas. Uzu por: ELL-subteno, heredlingvaj konektoj, mondlingva vortprovizo kaj plurlingvaj klasĉambroj. Tradukoj aperas sur ĉiu vortprovizkarto por tuja referenco. Aŭda prononco disponebla en subtenataj lingvoj. Esplorado montras ke konektado de nova vortprovizo al hejmaj lingvoj plibonigas retenon. Maksimume 4 lingvoj malhelpas vidan malordon dum subtenas diversajn klasĉambrojn.",
     "glossary_auto_remove": "Aŭtomate filtri tre simplajn aŭ oftajn vortojn.",
@@ -7269,7 +7274,6 @@
     "fab_dictation": "Konvertu parolon al teksto por sen-mana enmeto. Klaku por aktivigi la mikrofonon, parolu klare, kaj rigardu vortojn aperi. Funkcias en: tekst-enmetoj, skrib-skafaldoj, babilo, kaj iu ajn redaktebla kampo. Subtenas: plurajn lingvojn, interpunkci-komandojn (diru punkto, komo, nova linio), kaj redakt-komandojn (forigu tion). Diktado postulas mikrofonan permeson en la retumilo. La kvalito dependas de: mikrofona kvalito, fona bruo, kaj parol-klareco. Real-tempa transskribo montriĝas dum vi parolas. Redaktu transskribitan tekston normale. Bonega por: lernantoj kun motoraj defioj, malvolontaj skribistoj, kaj ide-generado. Konsileto: Parolu en kompletaj frazoj por pli bona precizeco.",
     "fab_focus": "Kreas moveblan spotlumon kiu malheligas ĉion krom cirkla areo ĉirkaŭ via kursoro. Ĉi tio draste reduktas vidan malordon kaj helpas konservi atenton sur la nuna leg-areo. Speciale utila por lernantoj kun ADHD, sensaj prilaboraj diferencoj, aŭ iu ajn superŝutita de okupataj ekranoj. La spotlumo sekvas vian muson/tuŝon aŭtomate. Alĝustigu spotlum-grandon kaj malhelig-intensecon en Agordoj → Alirebleco.",
     "fab_line_focus": "Unu-linia lego-izola ilo por fokusita legado. Kiam aktivigita: unu tekst-linio estas reliefigita dum aliaj estas malheligitaj, kreante vidan fokuson. Navigu per: sagoklavoj (supren/malsupren), klaku ie ajn sur teksto, aŭ tuŝu/svingu sur poŝtelefono. Avantaĝoj: reduktas vidan amasiĝon, subtenas spurajn malfacilaĵojn, helpas konservi lokon, kaj reduktas regreson. La intenseco (kiom da ĉirkaŭa teksto estas videbla) estas alĝustigebla en Agordoj → Alirebleco. Funkcias sur: ĉiu leg-enhavo, inkluzive de generita teksto, font-materialoj, kaj babilo. Aparte utila por: disleksio, ADHD, vidaj prilaboraj diferencoj, kaj iu ajn superŝutita de tekst-pezaj ekranoj. Konsileto: Kombinu kun pli granda tiparo por maksimuma lego-facileco.",
-    "fab_ruler": "Aldonas duon-travideblan horizontalan strion kiu sekvas vian kursoron por helpi spuri vian leg-pozicion linio post linio. Aparte utila por uzantoj kun disleksio, ADHD, aŭ vidaj spuraj malfacilaĵoj. Trenu la mezurilon supren/malsupren por repoziciigi, uzu sagoklavojn por fajna rego, aŭ klaku ie ajn por salti. La mezurila koloro povas esti personigita en Agordoj. Funkcias trans ĉiuj leg-vidoj inkluzive de Simpligita Teksto, FAQ, kaj Glosar-difinoj.",
     "fab_timer": "Malfermas interagan fokus-tempo-mezurilon bazitan sur la Pomodoro-Tekniko. Elektu el antaŭagorditaj daŭroj (5/15/25/45 minutoj) aŭ personigu vian propran. Trajtoj inkluzivas: vidan retronombradon kun progres-ringo, laŭvolajn paŭz-memorigojn, XP-rekompencojn por kompletigitaj seancoj (pli longa = pli da XP), kaj seancan protokoladon por instruista revizio. Etikedu vian taskon (ekz., 'Legu Ĉapitron 3') por spuri kion vi atingis. Minimumiĝas al la kapa strio por ke vi povu labori dum ĝi ruliĝas.",
     "scaffolds_edit_toggle": "Baskuligu inter instruista redaktado kaj lernanta vid-reĝimo. Kiam ŜALTITA (Redakt-Reĝimo): klaku iun ajn skafaldon por modifi tekston, aldoni novajn instigojn, forigi erojn, kaj reordigi enhavon. Kiam MALŜALTITA: skafaldoj montriĝas kiel lernantoj vidas ilin (nur-lege). Redaktoj konserviĝas aŭtomate. Lernantoj ĉiam vidas nur-lege sendepende de via baskulilo (ili ne povas aliri redakt-reĝimon). Uzu redaktadon por: personigi AI-generitajn skafaldojn, aldoni klas-specifajn ekzemplojn, forigi netaŭgajn instigojn, kaj diferencigi por specifaj lernantoj. Antaŭrigardu la lernantan vidon antaŭ kunhavigo. Originalaj skafaldoj povas esti restarigitaj el la historio. Konsileto: Reviziu kaj redaktu skafaldojn antaŭ klaso por certigi ke ili kongruas kun via instrua stilo kaj lernant-bezonoj.",
     "scaffolds_goal_panel": "Montru lernajn celojn por lernanta referenco. Celoj aperas elstare dum agado. Efikaj celoj estas: lernant-amikaj (Mi-povas-asertoj), specifaj kaj mezureblaj, kaj akorditaj al la agado. Ekzemploj: Mi povas identigi tri kaŭzojn de la Enlanda Milito aŭ Mi povas uzi pruvon por subteni mian aserton. Celoj pliigas: metakognicion, memtakson, kaj cel-klarecon. Lernantoj povas referenci celojn dum laborado. La instruisto agordas celojn antaŭ lernanta aliro. Pluraj celoj povas esti montritaj. Celoj povas inkluzivi sukces-kriteriojn: Mi scias ke mi sukcesis kiam mia alineo havas tem-frazon. Esplorado montras ke videblaj lernaj celoj plibonigas atingon.",
@@ -7364,7 +7368,6 @@
     "immersive_line_focus": "Ebligu unu-linian leggvidilon. Kiam aktiva: la aktuala legolinio estas plene videbla, ĉirkaŭaj linioj estas malheligitaj, kaj la fokuso sekvas dum vi navigas. Avantaĝoj: reduktas vizualan superŝarĝon, plibonigas spuradon, kaj helpas la atenton resti sur la aktuala teksto. Navigu per: sagklavoj, klako ie ajn, aŭ aŭto-antaŭenigo (kun TTS). La malheliga intenseco estas alĝustigebla en agordoj. Perfekta por: disleksia subteno, atentaj malfacilaĵoj, kaj spuraj defioj. Kombinas bone kun teksto-al-parolado por multmodala legsubteno. Linifokuso funkcias sur ĉiu teksta enhavo. Esploro montras ke linia izolado plibonigas komprenon por luktantaj legantoj. Konsilo: Kombinu kun pli granda tiparo por maksimuma legfacileco.",
     "immersive_syllables": "Vizuala silaba segmentado por dekoda subteno. Kiam ebligita: vortoj montriĝas kun silabaj rompoj (di-vi-zi-i-taj), helpante legantojn ataki plursilabajn vortojn. Avantaĝoj: konstruas fonemiknan konscion, subtenas dekodajn strategiojn, evoluigas morfologian komprenon, kaj helpas elparolon. Aparte helpa por: luktantaj dekodantoj, ELL-lernantoj, disleksia subteno, kaj vortprovizaj vortoj kun kompleksaj silabaj ŝablonoj. Silabigo sekvas normajn fonetikajn regulojn. Funkcias sur: ĉiu lega enhavo inkluzive de adaptita teksto, glosaraj terminoj, kaj fontmaterialoj. Kombinu kun aŭdio por aŭdi silabojn elparolitaj. Malŝaltu kiam ne bezonata por redukti vizualan komplekson. Konsilo: Uzu por defiaj vortprovizoj, poste malebligu por flua leg-praktiko.",
     "immersive_wide_text": "Ekspansiu tekston por uzi pli da horizontala ekranspaco. Kiam aktiva: la linilongo pligrandiĝas, malpli da rulumado bezonatas, kaj pli da teksto estas videbla samtempe. Bona por: fluaj legantoj, larĝaj ekranoj, kaj kiam skanante por informoj. La defaŭlta mallarĝa larĝo estas pli bona por: luktantaj legantoj, porteblaj aparatoj, kaj fokusa legado. Optimuma linilongo varias laŭ leganto kaj aparato. Esploro montras ke 50-75 signoj po linio estas ideala por plej multaj legantoj. Larĝa teksto interŝanĝas legeblecon por efikeco. Kombinu kun linifokuso se spurado fariĝas malfacila. La agordo estas memorita po aparato. Konsilo: Uzu larĝan tekston por esplorado kaj skanado, mallarĝan tekston por proksima legado.",
-    "sidebar_tab_create": "Malfermu la enhavgeneradan panelon kun ĉiuj AI-funkciigitaj iloj. Disponeblaj generiloj: Kvizo (taksadoj kun respondŝlosiloj), Glosaro (vizuala vortprovizo), Skizo (grafikaj organizoj), Analizo (enhava ekzameno), Lecionplano (strukturita instruado), Templinio (kronologiaj aktivecoj), Simpligita Teksto (nivelita legado), kaj pliaj. Ĉiu ilo malfermas agordpanelon por personigo antaŭ generado. Fonta enhavo devas esti ŝargita por ke plej multaj iloj analizu. Generita enhavo aperas en la ĉefa laborspaco kaj estas konservita al la historio. Uzu la Krei-langeton kiel vian ĉefan enhavgeneradan centron. Konsilo: Komencu per Analizo por kompreni enhavon, poste generu celitajn rimedojn.",
     "sidebar_tab_history": "Aliru la tutan vian konservitan enhavon kaj seancan historion. La historio inkluzivas: aŭto-konservitajn seancojn de lastatempa laboro, mane konservitajn projektojn kaj portfoliojn, generitajn rimedojn organizitajn laŭ kreaĵa dato, kaj lernantajn sendaĵojn (instruista vido). Agoj: ŝargu ajnan eron por daŭrigi laboron, forigu erojn por liberigi konservadon, eksportu por sekurkopio, kaj serĉu laŭ ŝlosilvorto. La historio ordigas laŭ lastatempeco defaŭlte. Filtru laŭ tipo (kvizo, glosaro, aventuro, ktp.) por trovi specifajn rimedojn. Nub-sinkronigita historio estas alirebla de ajna aparato. Konservaj limoj varias laŭ konto—forigu malnovajn erojn se proksimiĝante al la limo. Via historio estas via persona instrurimeda biblioteko.",
     "socratic_toggle": "Ebligu sokratan dialogan reĝimon por pli profunda lernado. Kiam ŜALTITA: la AI neniam donas rektajn respondojn—anstataŭe demandas esplorajn demandojn kiuj gvidas lernantojn al malkovro. Avantaĝoj: evoluigas kritikan pensadon, kuraĝigas memkorektadon, konstruas problemsolvajn kapablojn, kaj kreas memorindajn lernmomentojn. La AI uzas teknikojn kiel: klarigajn demandojn (Kion vi celas per...?), defiantajn supozojn (Sed kio se...?), kaj evidentpetojn (Kiel vi scias tion?). Plej bona por: diskutpreparado, koncepta esplorado, kaj helpado de lernantoj kiuj volas rapidajn respondojn pensi pli profunde. Povas frustri lernantojn serĉantajn efikecon—klarigu la celon.",
     "socratic_input": "Enigu vian demandon aŭ aserton por sokrata esplorado. La AI respondos per demandoj anstataŭ respondoj. Bonaj komencpunktoj: Kial vi pensas ke [X] okazis? Kio igas [Y] grava? aŭ Mi kredas [Z] ĉar... La AI esploras vian rezonadon: petante evidenton, esplorante implicojn, testante logikon, kaj surfacigante supozojn. Ĉi tio evoluigas argumentadajn kaj kritik-pensajn kapablojn. Estu preta: pravigi vian pensadon, konsideri alternativojn, kaj rafini vian pozicion. Sokrataj dialogoj povas esti frustraj komence sed konstruas daŭran komprenon. Viaj respondoj kaj rezonado estas spuritaj por pripenso.",
@@ -31217,7 +31220,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Priskribu la nunan aŭdvidaĵon",
+    "describe_current_media_done": "Legante aŭdvidaĵon {index} el {count}.",
+    "describe_current_media_hint": "Legu la nunan aŭ sekvan aŭdvidaĵan priskribon sen forlasi la rimedon",
+    "describe_current_media_none": "Neniu aŭdvidaĵo estas en la nuna rimedo.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Malfermi Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore malfermita.",
+    "open_learning_web_explorer_hint": "Esploru normojn, konceptojn, lecionojn, pruvojn kaj vortajn ligojn en unu mapo",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Legi ĉiujn aŭdvidaĵajn priskribojn",
+    "read_media_descriptions_count": "Legante {count} aŭdvidaĵajn priskribojn.",
+    "read_media_descriptions_hint": "Legu ĉiun verkitan priskribon de bildo, video aŭ sono en la nuna rimedo",
+    "read_media_descriptions_none": "Neniu aŭdvidaĵo estas en la nuna rimedo.",
+    "suggest_contextual_next_steps": "Proponi 3 sekvajn paŝojn",
+    "suggest_contextual_next_steps_hint": "Proponas tri kuntekst-konformajn elektojn sen elekti aŭ plenumi iun",
+    "suggest_contextual_next_steps_working": "Legante la nunan lecionan kuntekston kaj preparante tri elektojn...",
+    "surprise_me_contextually": "Surprizu min per utila sekva paŝo",
+    "surprise_me_contextually_hint": "Elektas unu saĝan, malaltriskan sekvan agon el la nuna leciona kunteksto",
+    "surprise_me_contextually_working": "Legante la nunan lecionan kuntekston kaj elektante utilan sekvan paŝon...",
+    "use_contextual_suggestion": "Uzi proponitan sekvan paŝon",
+    "use_contextual_suggestion_hint": "Plenumas elekton 1, 2 aŭ 3 el la lastaj proponoj",
+    "use_contextual_suggestion_working": "Komencante la elektitan sekvan paŝon..."
   },
   "palette": {
     "aria": "AlloFlow komandopaletro",
@@ -31240,10 +31269,11 @@
       "videoStudio": "Ĉi tie — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Ĉiu ago estas anoncata. Ctrl+K baskuligas.",
     "group": {
@@ -31531,6 +31561,12 @@
     "diff_types_hint": "Generu diferencigitan aron por:",
     "diff_cost": "Ĉirkaŭ {n} generoj por rulo.",
     "summary_standards": "normoj",
-    "summary_interests": "interesoj"
+    "summary_interests": "interesoj",
+    "translations": "Tradukoj",
+    "translations_auto": "Aŭtomate ({language})",
+    "translations_auto_plain": "Aŭtomate",
+    "translations_none": "Neniu",
+    "translations_on_hint": "Rimedoj en {output} ankaŭ havos version en {target}.",
+    "translations_off_hint": "Rimedoj estos nur en {output}, sen dua lingvo."
   }
 }

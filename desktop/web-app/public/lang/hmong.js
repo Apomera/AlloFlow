@@ -2251,7 +2251,7 @@
     "ai_guide_sub": "Kev Qhia, Kev Taw Qhia & Teem Rau Auto",
     "ai_guide_welcome": "Nyob zoo! Kuv yog koj tus AI Pab Qhia. Kuv tuaj yeem pab nrog cov tswv yim UDL, coj koj mus ncig hauv lub app, los yog teeb tsa koj cov ntsiab kawm. Cia li nug!",
     "tool_analysis": "Tshuaj xyuas qhov chaw Material",
-    "tool_glossary": "phau ntawv qhia lus & hom lus Selection",
+    "tool_glossary": "Phau ntawv qhia lus",
     "tool_simplified": "cov ntawv Adaptation",
     "tool_outline": "kev pom Organizer",
     "tool_visual": "kev pom kev txhawb",
@@ -2981,7 +2981,7 @@
     "choose_destination_aria": "Xaiv destination"
   },
   "glossary": {
-    "title": "phau ntawv qhia lus & hom lus Selection",
+    "title": "Phau ntawv qhia lus",
     "tier2": "Theem 2 (Acad.)",
     "tier2_tooltip": "Siab-utility academic lo lus tau siv across disciplines (e.g., 'tshuaj xyuas', 'verify').",
     "tier3": "Theem 3 (Domain)",
@@ -3923,7 +3923,12 @@
     "gauge_simple": "yooj yim",
     "word_bank_language": "Lus ntawm lub txhab lo lus",
     "word_bank_english": "Lus Askiv",
-    "word_bank_both": "Ob qho"
+    "word_bank_both": "Ob qho",
+    "measured_level_label": "Theem nyeem uas ntsuas tau",
+    "measured_on_target": "Haum rau {grade}",
+    "measured_above": "Siab dua theem {grade}",
+    "measured_below": "Qis dua theem {grade}",
+    "measured_note": "Flesch-Kincaid, ntsuas ntawm cov ntawv no. Siv Check theem yog xav kuaj kom tseeb dua."
   },
   "quiz": {
     "title": "Ntsuas",
@@ -5870,7 +5875,9 @@
     "title_poettree_config": "🌳 PoetTree Hauj Lwm",
     "title_poettree_submission": "🌳 Xa Paj Huam",
     "title_litlab_config": "🎭 LitLab Hauj Lwm",
-    "title_litlab_submission": "🎭 Xa Kev Ua Yeeb Yam"
+    "title_litlab_submission": "🎭 Xa Kev Ua Yeeb Yam",
+    "translation_block": "Kev txhais lus",
+    "translation_into": "Kev txhais lus ({language})"
   },
   "persona": {
     "title": "Interview hom",
@@ -6289,7 +6296,7 @@
   },
   "tools": {
     "source": "qhov chaw Material",
-    "glossary": "phau ntawv qhia lus & hom lus Selection",
+    "glossary": "Phau ntawv qhia lus",
     "simplified": "cov ntawv Adaptation & Engagement",
     "outline": "kev pom Organizer",
     "quiz": "Ntsuas",
@@ -6878,7 +6885,6 @@
     "source_settings_instructions": "Guide AI cov ntsiab tiam nrog tshwj xeeb cov lus qhia. piv txwv: Ua it txaus siab rau reluctant readers, Focus rau saum water cycle, Suav nrog diverse tus cwj pwm names, Avoid references mus violence, thiab Siv yooj yim cov lus rau ELL tub ntxhais kawm. cov lus qhia duab: suab, cov ntsiab focus, cov lus theem, thiab perspective. Be tshwj xeeb rau best cov txiaj ntsig. Ntau cov lus qhia tuaj yeem be combined. cov lus qhia yog processed along nrog koj cov ncauj lus thiab kev teeb tsa. Rau sensitive topics, suav nrog cov ntsiab guidance. cov lus qhia do tsis guarantee tshwj xeeb outcomes tab sis strongly influence tiam. cov lus qhia: Suav nrog theem qib kawm thiab any cov ntsiab restrictions hauv koj cov lus qhia rau most appropriate kev tawm.",
     "source_verify_checkbox": "Qhib AI fact-checking via Google Nrhiav grounding. thaum ON: AI cross-references tau tsim cov ntsiab against web sources, flagging los yog correcting potential inaccuracies. Adds 5-10 vib nas mus tiam time tab sis significantly improves reliability rau factual cov ntsiab. Especially important rau: history (dates, events), science (processes, cov ncauj lus), biography, thiab current events. Rau fiction, creative sau ntawv, los yog hypothetical scenarios, qhov no tuaj yeem be disabled mus allow ntau creative freedom. Sources consulted yog listed hauv tiam log rau xib fwb kev tshuaj xyuas. Highly recommended rau any cov ntsiab qhov ntawd yuav be presented as factual mus tub ntxhais kawm.",
     "source_generate_button": "Tsim AI-written cov ntsiab rau saum koj specified cov ncauj lus. Nyem mus begin tiam siv koj: cov ncauj lus description, lub hom phiaj ntev, theem qib kawm, thiab kev nyiam cov lus qhia. Tiam takes 10-20 vib nas. kev tawm yog kev tshuaj xyuased by safety filters before tso tawm. Tsim tau cov ntsiab tuaj yeem be: edited (xib fwb tuaj yeem hloov any part), analyzed (khiav dhau los ntawm lwm tiam cov cuab yeej), thiab tau khaws (ntxiv mus history rau reuse). Siv thaum: koj need cov ntsiab rau saum tshwj xeeb cov ncauj lus, want controlled kev nyuaj, los yog need mus fill curriculum gaps. Tsim tau cov ntsiab muaj: appropriate cov lus, logical organization, thiab qib-theem syntax. Verify factual qhov tseeb before chav kawm siv.",
-    "generator_actions": "Hub rau tag nrho cov ntsiab tiam cov cuab yeej. muaj generators suav nrog: kev sim (kev ntsuam xyuas nrog lo lus teb keys), phau ntawv qhia lus (kev pom cov lus), Simplified cov ntawv (theemed reading), FAQ (Q thiab pairs), Analysis (cov ntsiab examination), zaj lus qhia Kev npaj (instructional design), Timeline (chronological activity), Scaffolds (sau ntawv kev txhawb), Lub tswv yim Muab cais (categorization kev ua si), Lej (problem tiam), Kev mus ncig (mus sib tham dab neeg), thiab Brainstorm (activity ideas). txhua generator hloov koj qhov chaw cov ntsiab rau different hom. Nyem any generator mus qhib its configuration phab ntsa. Ntau generators tuaj yeem be tau siv rau saum tib yam qhov chaw. Tsim tau cov ntsiab tshwm hauv workspace thiab khaws mus history. cov lus qhia: Pib nrog Analysis mus nkag siab koj cov ntsiab, then tsim targeted kev pab cuam.",
     "tool_visual": "Kev nkag kev pom generator cov cuab yeej. Creates AI-tau tsim duab suav nrog: cov lus kev pom, lub tswv yim illustrations, qhov chaw depictions, duab piav qhia, thiab infographics. kev pom types: qhov xa mus duab (rau kev kawm), worksheets (rau activities), thiab duab piav qhia (rau relationships). kev pom kev txhawb: ELL tub ntxhais kawm (kev pom cov lus), kev pom cov tub ntxhais kawm, thiab engagement. txhua tiam tsim unique duab. kev teeb tsa control hom, quality, thiab cov ntsiab. Tsim tau kev pom tuaj yeem be: downloaded, embedded hauv cov khoom siv, thiab added mus glossaries. Uses AI duab tiam credits. cov lus qhia: Tsim kev pom rau abstract lub tswv yim qhov ntawd yog difficult mus explain nrog lo lus alone.",
     "tool_udl": "Kawm txog UDL framework integration. Universal Design rau Learning has three principles: Ntau Means ntawm Representation ( dab tsi ntawm kev kawm—present cov ncauj lus hauv different ways), Ntau Means ntawm Action thiab Expression ( yuav ua li cas ntawm kev kawm—let tub ntxhais kawm demonstrate understanding differently), thiab Ntau Means ntawm Engagement ( why ntawm kev kawm—motivate thiab sustain interest). Qhov no cov cuab yeej kev txhawb tag nrho three dhau los ntawm: varied cov ntsiab hom, ntau interaction hom, thiab ua si tag lawm engagement. Clicking qhib meej cov ncauj lus txog yuav ua li cas txhua cov cuab yeej cov yam ntxwv aligns nrog UDL research. Zoo rau: professional development, IEP justification, thiab understanding pedagogical foundation. cov lus qhia: Qhov xa mus UDL principles thaum advocating rau cov cuab yeej adkev xaiv.",
     "tour-analysis-settings": "Kho parameters rau readability analysis, suav nrog lub hom phiaj reading theem thiab tshwj xeeb metrics mus track.",
@@ -6903,7 +6909,6 @@
     "adventure_system_state": "Ntxiv kev pab cuam management mechanics mus kev mus ncigs. tub ntxhais kawm track: Health (consequence ntawm kev pheej hmooy kev xaiv), kub/kev pab cuam (economic decision-making), Reputation (kev sib raug zoo capital los ntawm kev xaiv), thiab kev nyiam kev pab cuam koj define. Actions affect kev pab cuam visibly—spend kub mus buy yam, lose health los ntawm poor decisions, gain reputation los ntawm kev pabing others. Creates meaningful consequences qhov ntawd teach: cause-thiab-effect reasoning, planning ahead, kev pab cuam management, thiab opportunity cost. kev pom dashboard qhia current kev pab cuam theem. thaum kev pab cuam deplete, kev ua si adaptively responds (e.g., low health = limited kev xaiv). Lej kev txawj integrate naturally dhau los ntawm kev pab cuam calculations.",
     "glossary_tier2_count": "Teeb yuav ua li cas many Tier 2 (academic) cov lus lo lus mus suav nrog. Tier 2 lo lus: tshwm sim across subjects, yog tau siv hauv academic contexts, thiab yog essential rau cov ntawv kev nkag siab. piv txwv: tshuaj xyuas, pov thawj, significant, contrast. These lo lus muaj highest instructional tus nqi—most tub ntxhais kawm benefit los ntawm explicit teaching. Recommended suav depends rau saum: cov ntawv ntev (1 lo lus per 100-150 lo lus ntawm qhov chaw), muaj cov lus qhia time, thiab tub ntxhais kawm need. Balance nrog Tier 3 suav rau ua kom tiav cov lus teeb. Focus cov lus qhia here rau maximum impact rau saum reading kev nkag siab across tag nrho subjects.",
     "glossary_tier3_count": "Teeb yuav ua li cas many Tier 3 (domain-tshwj xeeb) cov lus lo lus mus suav nrog. Tier 3 lo lus: yog tshwj xeeb mus subject thaj av, yog usually defined hauv context, thiab may tsis transfer across subjects. piv txwv: photosynthesis, denominator, alliteration, legislative. These lo lus yog essential rau understanding tshwj xeeb cov ntsiab tab sis muaj limited siv outside domain. cov lus qhia typically occurs during cov ntsiab teaching. Rau tob dive rau cov ncauj lus, suav nrog ntau Tier 3. Rau broader reading kev txawj, prioritize Tier 2. Tier 3 lo lus often tshwm sim hauv bold los yog italics hauv textbooks, signaling their importance within discipline.",
-    "glossary_definition_level": "Control yuav ua li cas lub ntsiab yog written. kev xaiv: Tib yam as qhov chaw (maintains thawj kev nyuaj—zoo rau qib siab tub ntxhais kawm), Rau saum qib (matches lub hom phiaj theem qib kawm cov lus), Simplified (siv feem ntau lo lus, shorter kab lus), thiab Kindergarten (very qhov yooj yim hom lus, concrete piv txwv). Match lub ntsiab kev nyuaj mus tub ntxhais kawm reading theem, tsis cov ntsiab theem. 10th-grader studying qib siab biology might need Simplified lub ntsiab rau unfamiliar lo lus. Consider koj tub ntxhais kawm weakest readers thaum selecting. lub ntsiab tuaj yeem be individually edited after tiam yog tias qee need adjustment. Pro cov lus qhia: Siv Simplified initially, then discuss ntau technical lub ntsiab hauv chav kawm.",
     "glossary_custom_instructions": "Provide tshwj xeeb guidance rau cov lus selection thiab lub ntsiab hom. piv txwv: Focus rau saum lo lus los ntawm tshooj 3-5, Suav nrog only lo lus related mus water cycle, Avoid homonyms nrog simpler meanings, Ntxiv etymology rau Latin/Greek roots, Suav nrog Spanish cognates rau ELL tub ntxhais kawm, thiab Siv tub ntxhais kawm-friendly piv txwv los ntawm pop culture. Custom cov lus qhia duab: which lo lus yog tau xaiv, yuav ua li cas lub ntsiab yog written, thiab dab tsi additional cov ncauj lus tshwm. Clear cov lus qhia tsim zoo dua-targeted glossaries. koj tuaj yeem request tshwj xeeb hom like: Suav nrog kab lus siv txhua lo lus los yog Ntxiv kev pom memory hooks. AI follows cov lus qhia thaum making cov lus selections.",
     "glossary_language_input": "Hais kom meej hom lus rau cov lus kev txhais lus. Sau hom lus: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, los yog any hom lus. koj tuaj yeem ntxiv ntau hom lus separated by commas. txhua lo lus yuav qhia: English lub ntsiab, lub hom phiaj hom lus kev txhais lus(s), thiab phonetic pronunciation guide qhov twg applicable. Siv rau: ELL kev txhawb, heritage hom lus connections, world hom lus cov lus, thiab multilingual hoob kawmrooms. kev txhais lus tshwm sim rau saum every cov lus daim npav rau instant qhov xa mus. suab pronunciation muaj hauv supported hom lus. Research qhia connecting tshiab cov lus mus home hom lus improves retention. Max 4 hom lus prevents kev pom clutter while supporting diverse hoob kawmrooms.",
     "glossary_auto_remove": "Automatically lim out very yooj yim los yog feem ntau lo lus.",
@@ -7037,7 +7042,6 @@
     "fab_dictation": "Convert speech mus cov ntawv rau hands-free kev nkag. Nyem mus activate microphone, hais clearly, thiab saib lo lus tshwm sim. Ua hauj lwm hauv: cov ntawv kev nkag, sau ntawv scaffolds, kev sib tham, thiab any editable field. kev txhawb: ntau hom lus, punctuation commands (say period, comma, tshiab kab), thiab editing commands (lwv qhov ntawd). Dictation requires microphone permission hauv browser. Quality depends rau saum: microphone quality, background noise, thiab speech clarity. Lub sij hawm tiag transcription qhia as koj hais. Kho transcribed cov ntawv normally. Zoo rau: tub ntxhais kawm nrog motor kev sib tw, reluctant writers, thiab idea tiam. cov lus qhia: Hais hauv ua kom tiav kab lus rau zoo dua qhov tseeb.",
     "fab_focus": "Creates movable spotlight qhov ntawd dims everything except circular thaj av around koj cursor. Qhov no dramatically reduces kev pom clutter thiab kev pabs maintain attention rau saum current reading thaj av. Especially beneficial rau tub ntxhais kawm nrog ADHD, sensory processing differences, los yog anyone overwhelmed by busy screens. spotlight follows koj mouse/touch automatically. Kho spotlight size thiab dim intensity hauv kev teeb tsa → Kev nkag mus tau.",
     "fab_line_focus": "Single-kab reading isolation cov cuab yeej rau focused reading. thaum activated: one cov ntawv kab yog highlighted while others yog dimmed, tab tom tsim kev pom focus. Navigate nrog: arrow keys (up/down), nyem anywhere rau saum cov ntawv, los yog touch/swipe rau saum mobile. Benefits: reduces kev pom crowding, kev txhawb kev tshawb difficulties, kev pabs maintain place, thiab reduces regression. Intensity (yuav ua li cas much surrounding cov ntawv yog pom tau) yog adjustable hauv kev teeb tsa → Kev nkag mus tau. Ua hauj lwm rau saum: tag nrho reading cov ntsiab, suav nrog tau tsim cov ntawv, qhov chaw cov khoom siv, thiab kev sib tham. Particularly kev pabful rau: dyslexia, ADHD, kev pom processing differences, thiab anyone overwhelmed by cov ntawv-heavy screens. cov lus qhia: Combine nrog larger font rau maximum reading ease.",
-    "fab_ruler": "Adds semi-transparent horizontal bar qhov ntawd follows koj cursor mus kev pab track koj reading qhov chaw kab by kab. Particularly kev pabful rau users nrog dyslexia, ADHD, los yog kev pom kev tshawb difficulties. Rub ruler up/down mus reposition, siv arrow keys rau fine control, los yog nyem anywhere mus jump. ruler xim tuaj yeem be customized hauv kev teeb tsa. Ua hauj lwm across tag nrho reading views suav nrog Simplified cov ntawv, FAQ, thiab phau ntawv qhia lus lub ntsiab.",
     "fab_timer": "Opens mus sib tham focus timer raws rau saum Pomodoro Technique. Xaiv los ntawm preset durations (5/15/25/45 minutes) los yog hloov raws siab nyiam koj own. cov yam ntxwv suav nrog: kev pom countdown nrog kev nce qib ring, tsis yog yuav tsum break reminders, XP nqi zog rau completed kev sib ntsib (longer = ntau XP), thiab kev sib ntsib logging rau xib fwb kev tshuaj xyuas. Label koj task (e.g., 'Nyeem tshooj 3') mus track dab tsi koj accomplished. Minimizes mus header bar so koj tuaj yeem work while it runs.",
     "scaffolds_edit_toggle": "Hloov nyob nruab nrab xib fwb editing thiab tub ntxhais kawm saib hom. thaum ON (Kho hom): nyem any scaffold mus hloov cov ntawv, ntxiv tshiab cov lus qhia, lwv yam, thiab reorder cov ntsiab. thaum OFF: scaffolds tso tawm as tub ntxhais kawm pom them (nyeem-only). Edits khaws automatically. tub ntxhais kawm always pom nyeem-only regardless ntawm koj hloov (they cannot kev nkag kho hom). Siv editing mus: hloov raws siab nyiam AI-tau tsim scaffolds, ntxiv chav kawm-tshwj xeeb piv txwv, tshem inappropriate cov lus qhia, thiab differentiate rau tshwj xeeb tub ntxhais kawm. Pkev tshuaj xyuas tub ntxhais kawm saib before sharing. Thawj scaffolds tuaj yeem be restored los ntawm history. cov lus qhia: Review thiab kho scaffolds before chav kawm mus ensure they match koj teaching hom thiab tub ntxhais kawm needs.",
     "scaffolds_goal_panel": "Tso tawm kev kawm objectives rau tub ntxhais kawm qhov xa mus. lub hom phiaj tshwm sim prominently during activity. Effective lub hom phiaj yog: tub ntxhais kawm-friendly (I tuaj yeem statements), tshwj xeeb thiab measurable, thiab aligned mus activity. piv txwv: I tuaj yeem txheeb xyuas three causes ntawm Civil War los yog I tuaj yeem siv pov thawj mus kev txhawb my claim. lub hom phiaj increase: metacognition, tus kheej-kev ntsuam xyuas, thiab purpose clarity. tub ntxhais kawm tuaj yeem qhov xa mus lub hom phiaj while working. xib fwb sets lub hom phiaj before tub ntxhais kawm kev nkag. Ntau lub hom phiaj tuaj yeem be displayed. lub hom phiaj tuaj yeem suav nrog kev kov yeej criteria: I know I muaj succeeded thaum my nqe lus has cov ncauj lus kab lus. Research qhia pom tau kev kawm targets improve achievement.",
@@ -7132,7 +7136,6 @@
     "immersive_line_focus": "Qhib single-kab reading guide. thaum qhib: current reading kab yog fully pom tau, surrounding kab yog dimmed, thiab focus follows as koj navigate. Benefits: reduces kev pom overwhelm, improves kev tshawb, thiab kev pabs attention stay rau saum current cov ntawv. Navigate nrog: arrow keys, nyem anywhere, los yog auto-advance (nrog TTS). Dimming intensity yog adjustable hauv kev teeb tsa. Perfect rau: dyslexia kev txhawb, attention difficulties, thiab kev tshawb kev sib tw. Combines well nrog cov ntawv-mus-speech rau multi-modal reading kev txhawb. kab focus ua hauj lwm rau saum tag nrho cov ntawv cov ntsiab. Research qhia kab isolation improves kev nkag siab rau sib tw readers. cov lus qhia: Combine nrog larger font rau maximum reading ease.",
     "immersive_syllables": "kev pom syllable segmentation rau decoding kev txhawb. thaum enabled: lo lus tso tawm nrog syllable breaks (hy-phen-at-ed), kev pabing readers attack multisyllabic lo lus. Benefits: tsim phonemic awareness, kev txhawb decoding tswv yim, develops morphological understanding, thiab aids pronunciation. Especially kev pabful rau: sib tw decoders, ELL tub ntxhais kawm, dyslexia kev txhawb, thiab cov lus lo lus nrog nyuaj syllable cov qauv. Syllabification follows tus qauv phonetic rules. Ua hauj lwm rau saum: tag nrho reading cov ntsiab suav nrog adapted cov ntawv, phau ntawv qhia lus lo lus, thiab qhov chaw cov khoom siv. Combine nrog suab mus hear syllables pronounced. Hloov off thaum tsis needed mus reduce kev pom kev nyuaj. cov lus qhia: Siv rau challenging cov lus, then kaw rau fluent reading xyaum.",
     "immersive_wide_text": "Expand cov ntawv mus siv ntau horizontal screen space. thaum qhib: kab ntev increases, tsawg scrolling yog needed, thiab ntau cov ntawv yog pom tau at once. zoo rau: fluent readers, wide displays, thiab thaum scanning rau cov ncauj lus. default narrow dav yog zoo dua rau: sib tw readers, mobile devices, thiab focused reading. Optimal kab ntev varies by reader thiab device. Research qhia 50-75 tus cwj pwm per kab yog ideal rau most readers. Wide cov ntawv trades readability rau efficiency. Combine nrog kab focus yog tias kev tshawb becomes difficult. kev teeb tsa yog remembered per device. cov lus qhia: Siv wide cov ntawv rau research thiab scanning, narrow cov ntawv rau kaw reading.",
-    "sidebar_tab_create": "Qhib cov ntsiab tiam phab ntsa nrog tag nrho AI-powered cov cuab yeej. muaj generators: kev sim (kev ntsuam xyuas nrog lo lus teb keys), phau ntawv qhia lus (kev pom cov lus), Outline (graphic organizers), Analysis (cov ntsiab examination), zaj lus qhia Kev npaj (structured cov lus qhia), Timeline (chronological activities), Simplified cov ntawv (theemed reading), thiab ntau. txhua cov cuab yeej qhib configuration phab ntsa rau customization before tiam. qhov chaw cov ntsiab must be loaded rau most cov cuab yeej mus tshuaj xyuas. Tsim tau cov ntsiab tshwm hauv main workspace thiab yog tau khaws mus history. Siv Tsim tab as koj primary cov ntsiab tiam hub. cov lus qhia: Pib nrog Analysis mus nkag siab cov ntsiab, then tsim targeted kev pab cuam.",
     "sidebar_tab_history": "Kev nkag tag nrho koj tau khaws cov ntsiab thiab kev sib ntsib history. History muaj: auto-tau khaws kev sib ntsib los ntawm recent work, manually tau khaws projects thiab portfolios, tau tsim kev pab cuam organized by creation date, thiab tub ntxhais kawm submissions (xib fwb saib). Actions: nqa los any yam mus mus ntxiv working, lwv yam mus free storage, xa tawm rau backup, thiab nrhiav by keyword. History sorts by recency by default. Lim by type (kev sim, phau ntawv qhia lus, kev mus ncig, etc.) mus find tshwj xeeb kev pab cuam. Cloud-synced history yog pom tau los ntawm any device. Storage limits vary by account—lwv qub yam yog tias approaching limit. koj history yog koj personal teaching kev pab cuam library.",
     "socratic_toggle": "Qhib Socratic dialogue hom rau deeper kev kawm. thaum ON: AI never gives direct lo lus teb—instead asks probing lo lus nug qhov ntawd guide tub ntxhais kawm toward discovery. Benefits: develops critical thinking, encourages tus kheej-correction, tsim problem-solving kev txawj, thiab tsim memorable kev kawm moments. AI siv techniques like: clarifying lo lus nug (dab tsi do koj mean by...?), challenging assumptions (tab sis dab tsi yog tias...?), thiab pov thawj requests (yuav ua li cas do koj know qhov ntawd?). Best rau: discussion preparation, lub tswv yim exploration, thiab kev pabing tub ntxhais kawm who want ceev lo lus teb mus think ntau deeply. May frustrate tub ntxhais kawm seeking efficiency—explain purpose.",
     "socratic_input": "Sau koj lo lus nug los yog statement rau Socratic exploration. AI yuav respond nrog lo lus nug rather than lo lus teb. zoo starting lub tshoj: Why do koj think [X] happened? dab tsi makes [Y] important? los yog I believe [Z] because... AI probes koj reasoning: asking rau pov thawj, exploring implications, testing logic, thiab surfacing assumptions. Qhov no develops argumentation thiab critical thinking kev txawj. Be prepared mus: justify koj thinking, consider alternatives, thiab refine koj qhov chaw. Socratic dialogues tuaj yeem be frustrating initially tab sis tsim lasting understanding. koj responses thiab reasoning yog tracked rau kev xav.",
@@ -30568,7 +30571,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Piav qhia txog media tam sim no",
+    "describe_current_media_done": "Tab tom nyeem media {index} ntawm {count}.",
+    "describe_current_media_hint": "Nyeem cov lus piav qhia media tam sim no lossis tom ntej yam tsis tawm ntawm qhov chaw",
+    "describe_current_media_none": "Tsis muaj media hauv qhov chaw tam sim no.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Qhib Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore tau qhib lawm.",
+    "open_learning_web_explorer_hint": "Tshawb nrhiav cov qauv, tswvyim, zaj kawm, pov thawj, thiab kev txuas lus hauv ib daim ntawv qhia",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Nyeem txhua cov lus piav qhia media",
+    "read_media_descriptions_count": "Tab tom nyeem {count} cov lus piav qhia media.",
+    "read_media_descriptions_hint": "Nyeem txhua cov lus piav qhia duab, video, lossis suab hauv qhov chaw tam sim no",
+    "read_media_descriptions_none": "Tsis muaj media hauv qhov chaw tam sim no.",
+    "suggest_contextual_next_steps": "Qhia 3 kauj ruam tom ntej",
+    "suggest_contextual_next_steps_hint": "Muab peb txoj kev xaiv haum rau qhov xwm txheej, tsis xaiv lossis khiav ib qho",
+    "suggest_contextual_next_steps_working": "Tab tom nyeem cov xwm txheej ntawm zaj kawm thiab npaj peb txoj kev xaiv...",
+    "surprise_me_contextually": "Muab ib kauj ruam tom ntej uas pab tau rau kuv",
+    "surprise_me_contextually_hint": "Xaiv ib qho kev ua tom ntej uas tsim nyog thiab tsis muaj kev pheej hmoo ntawm zaj kawm tam sim no",
+    "surprise_me_contextually_working": "Tab tom nyeem cov xwm txheej ntawm zaj kawm thiab xaiv ib kauj ruam tom ntej uas pab tau...",
+    "use_contextual_suggestion": "Siv kauj ruam tom ntej uas tau qhia",
+    "use_contextual_suggestion_hint": "Khiav kev xaiv 1, 2, lossis 3 los ntawm cov lus qhia tshiab tshaj",
+    "use_contextual_suggestion_working": "Tab tom pib kauj ruam tom ntej uas tau xaiv..."
   },
   "palette": {
     "aria": "AlloFlow lub khob qhia haujlwm",
@@ -30591,10 +30620,11 @@
       "videoStudio": "Ntawm no — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Txhua qhov haujlwm raug tshaj tawm. Ctrl+K hloov.",
     "group": {
@@ -30899,6 +30929,12 @@
     "diff_types_hint": "Tsim ib pawg sib txawv rau:",
     "diff_cost": "Kwv yees li {n} qhov tsim tawm hauv ib zaug khiav.",
     "summary_standards": "cov qauv",
-    "summary_interests": "yam nyiam"
+    "summary_interests": "yam nyiam",
+    "translations": "Kev txhais lus",
+    "translations_auto": "Cia li ua ({language})",
+    "translations_auto_plain": "Cia li ua",
+    "translations_none": "Tsis muaj",
+    "translations_on_hint": "Cov khoom hauv {output} kuj yuav muaj ib daim ua {target}.",
+    "translations_off_hint": "Cov khoom yuav yog {output} xwb, tsis muaj hom lus thib ob."
   }
 }

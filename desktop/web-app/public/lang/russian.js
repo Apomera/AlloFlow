@@ -2255,7 +2255,7 @@
     "ai_guide_sub": "Педагогика, навигация и автонастройка",
     "ai_guide_welcome": "Привет! Я ваш ИИ-наставник. Могу помочь со стратегиями UDL, навигацией по приложению или автонастройкой параметров урока. Просто спросите!",
     "tool_analysis": "Анализировать исходный материал",
-    "tool_glossary": "Глоссарий и выбор языка",
+    "tool_glossary": "Глоссарий",
     "tool_simplified": "Адаптация текста",
     "tool_outline": "Визуальный организатор",
     "tool_visual": "Визуальная поддержка",
@@ -2985,7 +2985,7 @@
     "choose_destination_aria": "Выберите назначение"
   },
   "glossary": {
-    "title": "Глоссарий и выбор языка",
+    "title": "Глоссарий",
     "tier2": "Уровень 2 (Акад.)",
     "tier2_tooltip": "Высокоуниверсальные академические слова, используемые в разных дисциплинах (например, «анализировать», «верифицировать»).",
     "tier3": "Уровень 3 (Домен)",
@@ -3927,7 +3927,12 @@
     "gauge_simple": "Простой",
     "word_bank_english": "Английский",
     "word_bank_both": "Оба",
-    "word_bank_language": "Язык банка слов"
+    "word_bank_language": "Язык банка слов",
+    "measured_level_label": "Измеренный уровень чтения",
+    "measured_on_target": "Соответствует {grade}",
+    "measured_above": "Выше уровня {grade}",
+    "measured_below": "Ниже уровня {grade}",
+    "measured_note": "Flesch-Kincaid, измерено на этом тексте. Для более полной проверки используйте Проверить уровень."
   },
   "quiz": {
     "title": "Оценить",
@@ -5873,7 +5878,9 @@
     "title_poettree_config": "🌳 Задание PoetTree",
     "title_poettree_submission": "🌳 Отправка стихотворения",
     "title_litlab_config": "🎭 Задание LitLab",
-    "title_litlab_submission": "🎭 Отправка выступления"
+    "title_litlab_submission": "🎭 Отправка выступления",
+    "translation_block": "Перевод",
+    "translation_into": "Перевод ({language})"
   },
   "persona": {
     "title": "Режим интервью",
@@ -6291,7 +6298,7 @@
   },
   "tools": {
     "source": "Исходный материал",
-    "glossary": "Глоссарий и выбор языка",
+    "glossary": "Глоссарий",
     "simplified": "Адаптация текста и вовлечение",
     "outline": "Визуальный организатор",
     "quiz": "Оценить",
@@ -6880,7 +6887,6 @@
     "source_settings_instructions": "Дополнительные указания ИИ по генерации текста.",
     "source_verify_checkbox": "Переключатель исходного текста.",
     "source_generate_button": "Сгенерировать новый исходный текст из заданных параметров.",
-    "generator_actions": "Элемент интерфейса: действий.",
     "tool_visual": "Доступ к инструменту генератора визуальных материалов. Создаёт изображения с помощью ИИ, включая: визуализацию лексики, иллюстрации концепций, изображения сцен, диаграммы и инфографику. Типы визуалов: справочные изображения (для обучения), рабочие листы (для занятий) и диаграммы (для отношений).",
     "tool_udl": "Инструмент UDL - генератор ресурсов по принципам Universal Design.",
     "tour-analysis-settings": "Элемент интерфейса: tour-analysis-settings.",
@@ -6905,7 +6911,6 @@
     "adventure_system_state": "Показывает текущее состояние приключения (персонажи, локация, инвентарь).",
     "glossary_tier2_count": "Количество терминов Tier 2 (академических) для извлечения.",
     "glossary_tier3_count": "Количество терминов Tier 3 (специальных) для извлечения.",
-    "glossary_definition_level": "Уровень сложности определений (от детсада до колледжа).",
     "glossary_custom_instructions": "Добавьте свои указания для генерации словаря.",
     "glossary_language_input": "Поле ввода для словаря.",
     "glossary_auto_remove": "Удалить словаря.",
@@ -7039,7 +7044,6 @@
     "fab_dictation": "Включить голосовую диктовку для текстовых полей.",
     "fab_focus": "Включить режим фокуса, чтобы уменьшить отвлекающие элементы экрана.",
     "fab_line_focus": "Включить линейный фокус, чтобы выделять одну строку текста за раз.",
-    "fab_ruler": "Элемент интерфейса: fab.",
     "fab_timer": "Элемент интерфейса: fab.",
     "scaffolds_edit_toggle": "Переключатель опор.",
     "scaffolds_goal_panel": "Панель опор.",
@@ -7134,7 +7138,6 @@
     "immersive_line_focus": "Фокус строки - подсвечивает текущую читаемую строку.",
     "immersive_syllables": "Разделение на слоги - разделяет слова точками.",
     "immersive_wide_text": "Широкий текст - больший интервал между буквами.",
-    "sidebar_tab_create": "Элемент интерфейса: sidebar.",
     "sidebar_tab_history": "Открыть вкладку истории на боковой панели.",
     "socratic_toggle": "Переключатель Сократического режима - наводящие вопросы вместо ответов.",
     "socratic_input": "Введите свой ответ в Сократическом диалоге.",
@@ -31419,7 +31422,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Описать текущий медиафайл",
+    "describe_current_media_done": "Читается медиафайл {index} из {count}.",
+    "describe_current_media_hint": "Прочитать описание текущего или следующего медиафайла, не покидая ресурс",
+    "describe_current_media_none": "В текущем ресурсе нет медиафайлов.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Открыть Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore открыт.",
+    "open_learning_web_explorer_hint": "Изучите стандарты, понятия, уроки, доказательства и связи между словами на одной карте",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Прочитать все описания медиафайлов",
+    "read_media_descriptions_count": "Читается {count} описаний медиафайлов.",
+    "read_media_descriptions_hint": "Прочитать каждое написанное описание изображения, видео или звука в текущем ресурсе",
+    "read_media_descriptions_none": "В текущем ресурсе нет медиафайлов.",
+    "suggest_contextual_next_steps": "Предложить 3 следующих шага",
+    "suggest_contextual_next_steps_hint": "Показывает три подходящих по контексту варианта, не выбирая и не запуская ни один",
+    "suggest_contextual_next_steps_working": "Читается контекст текущего урока, готовятся три варианта...",
+    "surprise_me_contextually": "Подскажи полезный следующий шаг",
+    "surprise_me_contextually_hint": "Выбирает одно разумное действие с низким риском из контекста текущего урока",
+    "surprise_me_contextually_working": "Читается контекст текущего урока, выбирается полезный следующий шаг...",
+    "use_contextual_suggestion": "Использовать предложенный следующий шаг",
+    "use_contextual_suggestion_hint": "Запускает вариант 1, 2 или 3 из последних предложений",
+    "use_contextual_suggestion_working": "Запускается выбранный следующий шаг..."
   },
   "palette": {
     "aria": "Командная палитра AlloFlow",
@@ -31442,10 +31471,11 @@
       "videoStudio": "Здесь — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "О каждом действии сообщается. Ctrl+K переключает.",
     "group": {
@@ -31765,6 +31795,12 @@
     "diff_types_hint": "Создать дифференцированный набор для:",
     "diff_cost": "Около {n} генераций за запуск.",
     "summary_standards": "стандарты",
-    "summary_interests": "интересы"
+    "summary_interests": "интересы",
+    "translations": "Переводы",
+    "translations_auto": "Автоматически ({language})",
+    "translations_auto_plain": "Автоматически",
+    "translations_none": "Нет",
+    "translations_on_hint": "Материалы на языке {output} получат также версию на языке {target}.",
+    "translations_off_hint": "Материалы будут только на языке {output}, без второго языка."
   }
 }

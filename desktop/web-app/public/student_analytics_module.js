@@ -1276,6 +1276,14 @@ try {
     setFluencyStatus,
     setFluencyResult,
     isIndependentMode = false,
+    // Family mode (fleet W3, 2026-08-16). Parent mode runs with isTeacherMode
+    // true, so this panel used to hand a parent the full school presentation.
+    // MODE_AUDIT_2026-08-03.md F1 deliberately keeps Assessment Center reachable
+    // for a home-schooling parent, so the answer is not to hide the panel but to
+    // scope it: Administer and progress are family-appropriate, importing a class
+    // roster and running an embedded research study are not.
+    // Defaults false, so an older host that passes nothing behaves exactly as before.
+    isParentMode = false,
     globalPoints = 0,
     globalLevel = 1,
     history = [],
@@ -5855,7 +5863,7 @@ try {
       id: 'research',
       label: '📊 Research',
       desc: 'Insights & growth'
-    }].map(tab => /*#__PURE__*/React.createElement("button", {
+    }].filter(tab => !isParentMode || tab.id === 'assessments').map(tab => /*#__PURE__*/React.createElement("button", {
       key: tab.id,
       onClick: () => {
         setAssessmentCenterTab(tab.id);
@@ -9460,7 +9468,9 @@ try {
       className: "text-center py-8 text-slate-600"
     }, t('class_analytics.no_transcript'),
     // ── Student Data Tab ──
-    !isIndependentMode && assessmentCenterTab === 'students' && React.createElement("div", {
+    // W3: the tab itself is filtered out in family mode; this second test means a
+    // stale or restored assessmentCenterTab cannot render roster import anyway.
+    !isIndependentMode && !isParentMode && assessmentCenterTab === 'students' && React.createElement("div", {
       className: "flex-1 overflow-y-auto p-4 animate-in fade-in duration-200"
     },
       // Import toolbar
@@ -9632,7 +9642,9 @@ try {
         )
       )
     ),
-    !isIndependentMode && assessmentCenterTab === 'research' && /*#__PURE__*/React.createElement("div", {
+    // W3: same reasoning as the students tab. An embedded research study suite
+    // (IRB consent, Likert instruments) must not open in family mode.
+    !isIndependentMode && !isParentMode && assessmentCenterTab === 'research' && /*#__PURE__*/React.createElement("div", {
       className: "flex-1 overflow-y-auto p-4 animate-in fade-in duration-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "space-y-6"

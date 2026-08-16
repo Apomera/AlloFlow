@@ -2214,10 +2214,10 @@
     "ai_guide_sub": "Pedagogy, Navigation & Auto-Setup",
     "ai_guide_welcome": "Hi! I'm နၤအ AI Guide. I can တၢ်မၤစၢၤ ဒီး UDL strategies, navigate app လ၁် နၤ, မ့တမ့် auto-setup နၤအ တၢ်မၤလိ settings. Just ask!",
     "tool_analysis": "Analyze Source Material",
-    "tool_glossary": "Glossary & ကျိၥ် Selection",
+    "tool_glossary": "Glossary",
     "tool_simplified": "Text Adaptation",
     "tool_outline": "Visual Organizer",
-    "tool_visual": "Visual Support",
+    "tool_visual": "တၢ်မၤလိအဂီၤ",
     "tool_faq": "FAQ Generator",
     "tool_scaffolds": "ကွဲးတၢ် Scaffolds",
     "tool_scaffolds_parent": "ကွဲးတၢ် တၢ်မၤစၢၤ",
@@ -2944,7 +2944,7 @@
     "choose_destination_aria": "ဃုထၢ destination"
   },
   "glossary": {
-    "title": "Glossary & ကျိၥ် Selection",
+    "title": "Glossary",
     "tier2": "Tier 2 (Acad.)",
     "tier2_tooltip": "ထီ-utility academic တၢ်ကတိၤ used across disciplines (e.g., 'analyze', 'verify').",
     "tier3": "Tier 3 (Domain)",
@@ -3886,7 +3886,12 @@
     "gauge_simple": "Simple",
     "word_bank_english": "အဲကလံးကျိာ်",
     "word_bank_both": "ခံကပၤလၢၤ",
-    "word_bank_language": "တၢ်ကတိၤ bank ကျိာ်"
+    "word_bank_language": "တၢ်ကတိၤ bank ကျိာ်",
+    "measured_level_label": "တၢ်ဖးအတီၤလၢတၢ်ထိၣ်ဝဲ",
+    "measured_on_target": "ဘၣ်လိၥ်ဒီး {grade}",
+    "measured_above": "ထီၣ်န့ၢ် {grade} အတီၤ",
+    "measured_below": "စှၤန့ၢ် {grade} အတီၤ",
+    "measured_note": "Flesch-Kincaid, ထိၣ်ဝဲလၢလံၥ်တၢ်ကွဲးအံၤအပူၤ. သူ Check Level လၢကသ့ၣ်ညါအါထီၣ်အဂီၢ်."
   },
   "quiz": {
     "title": "စံၣ်ညီၣ်",
@@ -4074,7 +4079,7 @@
       "sidebar_simplified_desc": "Access differentiated versions အ နၤအ text at various reading levels. Generate simplified content, side-by-side bilingual versions, ဒီး modified texts.",
       "sidebar_outline_title": "Visual Organizers",
       "sidebar_outline_desc": "Create structured visual representations အ content including တၢ်ဆိကမိၣ် maps, flow charts, Venn diagrams, ဒီး cause-ဒီး-effect organizers.",
-      "sidebar_visuals_title": "Visual Supports",
+      "sidebar_visuals_title": "တၢ်မၤလိအဂီၤ",
       "sidebar_visuals_desc": "AI-ဘှီထီၣ် တၢ်ဂီၤ ဒီး visual aids ဆူ support နၢ်ပၢၢ်. Create custom visuals မ့တမ့် enhanced တၢ်ဂီၤ sets လ၁် content.",
       "sidebar_faq_title": "FAQ Generator",
       "sidebar_faq_desc": "Generate frequently asked တၢ်သံကွၢ် န့ၣ် ဖိသၣ်ကၠိ might have ဘၣ်ဃး content. ဒိၣ် လ၁် anticipating confusion ဒီး preparing explanations.",
@@ -4215,7 +4220,7 @@
     "memory_palace": "Memory Palace (method of loci)"
   },
   "visuals": {
-    "title": "Visual Support",
+    "title": "တၢ်မၤလိအဂီၤ",
     "worksheet_mode": "ဖိသၣ်ကၠိ Worksheet Mode",
     "enhanced": "Enhanced Visuals",
     "text_reduced": "Text-Reduced Mode",
@@ -5832,7 +5837,9 @@
     "title_poettree_config": "🌳 PoetTree တၢ်မၤ",
     "title_poettree_submission": "🌳 တၢ်ဆှၢထီၣ်ထါ",
     "title_litlab_config": "🎭 LitLab တၢ်မၤ",
-    "title_litlab_submission": "🎭 တၢ်ဆှၢထီၣ်တၢ်ဒုးနဲၣ်"
+    "title_litlab_submission": "🎭 တၢ်ဆှၢထီၣ်တၢ်ဒုးနဲၣ်",
+    "translation_block": "တၢ်ကျိးထံ",
+    "translation_into": "တၢ်ကျိးထံ ({language})"
   },
   "persona": {
     "title": "Interview Mode",
@@ -6250,7 +6257,7 @@
   },
   "tools": {
     "source": "Source Material",
-    "glossary": "Glossary & ကျိၥ် Selection",
+    "glossary": "Glossary",
     "simplified": "Text Adaptation & Engagement",
     "outline": "Visual Organizer",
     "quiz": "စံၣ်ညီၣ်",
@@ -6839,7 +6846,6 @@
     "source_settings_instructions": "Guide AI content ဆၢကတၢၢ် ဒီး အလီၤလီၤ instructions. Examples: Make it engaging လ၁် reluctant readers, Focus လ၁်ဖီခိၣ် water cycle, Include diverse character names, Avoid references ဆူ violence, ဒီး Use simple vocabulary လ၁် ELL ဖိသၣ်ကၠိ. Instructions shape: tone, content focus, vocabulary level, ဒီး perspective. Be အလီၤလီၤ လ၁် best results. Multiple instructions can be combined. Instructions မ့ၢ် processed along ဒီး နၤအ တၢ်ဂ့ၢ် ဒီး settings. လ၁် sensitive topics, include content guidance. Instructions do တ guarantee အလီၤလီၤ outcomes ဘၣ်ဆၣ် strongly influence ဆၢကတၢၢ်. Tip: Include grade level ဒီး any content restrictions လ၁် နၤအ instructions လ၁် most appropriate output.",
     "source_verify_checkbox": "Enable AI fact-checking via Google ဃုကွၢ် grounding. When ON: AI cross-references ဘှီထီၣ် content against web sources, flagging မ့တမ့် correcting potential inaccuracies. Adds 5-10 စးကီး ဆူ ဆၢကတၢၢ် တၢ်ဆၢကတီၢ် ဘၣ်ဆၣ် significantly improves reliability လ၁် factual content. Especially important လ၁်: history (dates, events), science (processes, data), biography, ဒီး current events. လ၁် fiction, creative ကွဲးတၢ်, မ့တမ့် hypothetical scenarios, အံၤ can be disabled ဆူ allow more creative freedom. Sources consulted မ့ၢ် listed လ၁် ဆၢကတၢၢ် log လ၁် သရၣ် review. Highly recommended လ၁် any content န့ၣ် will be presented as factual ဆူ ဖိသၣ်ကၠိ.",
     "source_generate_button": "Create AI-written content လ၁်ဖီခိၣ် နၤအ specified တၢ်ဂ့ၢ်. ဆဲးကၠုၥ် ဆူ begin ဆၢကတၢၢ် using နၤအ: တၢ်ဂ့ၢ် description, တၢ်ပညိၣ် length, grade level, ဒီး custom instructions. ဆၢကတၢၢ် takes 10-20 စးကီး. Output မ့ၢ် reviewed by safety filters before ဒုးနဲၣ်. ဘှီထီၣ် content can be: edited (သရၣ် can modify any part), analyzed (run ခီဖျိ အဂုၤအဂၤ ဆၢကတၢၢ် tools), ဒီး ပာ်ဖျါဝံၤ (ထၢနုၥ် ဆူ history လ၁် reuse). Use when: နၤ need content လ၁်ဖီခိၣ် အလီၤလီၤ တၢ်ဂ့ၢ်, want controlled complexity, မ့တမ့် need ဆူ fill curriculum gaps. ဘှီထီၣ် content includes: appropriate vocabulary, logical organization, ဒီး grade-level syntax. Verify factual မ့ၢ်တၢ် before ကၠိ use.",
-    "generator_actions": "Hub လ၁် all content ဆၢကတၢၢ် tools. Available generators include: Quiz (assessment ဒီး တၢ်စံးဆၢ keys), Glossary (visual vocabulary), Simplified Text (leveled reading), FAQ (Q ဒီး pairs), Analysis (content examination), တၢ်မၤလိ တၢ်ကူၣ် (instructional design), Timeline (chronological activity), Scaffolds (ကွဲးတၢ် supports), တၢ်ဆိကမိၣ် Sort (categorization တၢ်ဂဲၤလိၥ်), နီၢ်ဂံၢ် (problem ဆၢကတၢၢ်), Adventure (interactive တၢ်ဂ့ၢ်), ဒီး Brainstorm (activity ideas). Each generator transforms နၤအ source content into different formats. ဆဲးကၠုၥ် any generator ဆူ အိးထီၣ် its configuration panel. Multiple generators can be used လ၁်ဖီခိၣ် အရွ၁် source. ဘှီထီၣ် content ဖျါထီၣ် လ၁် workspace ဒီး ပာ်ဖျါ ဆူ history. Tip: စးထီၣ် ဒီး Analysis ဆူ understand နၤအ content, then generate targeted resources.",
     "tool_visual": "Access visual generator tool. Creates AI-ဘှီထီၣ် တၢ်ဂီၤ including: vocabulary visuals, တၢ်ဆိကမိၣ် illustrations, scene depictions, diagrams, ဒီး infographics. Visual types: ပူၤနီၣ် တၢ်ဂီၤ (လ၁် learning), worksheets (လ၁် activities), ဒီး diagrams (လ၁် relationships). Visuals support: ELL ဖိသၣ်ကၠိ (visual vocabulary), visual ဖိသၣ်ကၠိ, ဒီး engagement. Each ဆၢကတၢၢ် creates unique တၢ်ဂီၤ. Settings control style, quality, ဒီး content. ဘှီထီၣ် visuals can be: downloaded, embedded လ၁် တၢ်ပီးတၢ်လီ, ဒီး added ဆူ glossaries. Uses AI တၢ်ဂီၤ ဆၢကတၢၢ် credits. Tip: Generate visuals လ၁် abstract concepts န့ၣ် မ့ၢ် difficult ဆူ explain ဒီး တၢ်ကတိၤ alone.",
     "tool_udl": "မၤလိ ဘၣ်ဃး UDL framework integration. Universal Design လ၁် Learning has three principles: Multiple Means အ Representation ( what အ learning—present information လ၁် different ways), Multiple Means အ Action ဒီး Expression ( how အ learning—let ဖိသၣ်ကၠိ demonstrate understanding differently), ဒီး Multiple Means အ Engagement ( why အ learning—motivate ဒီး sustain interest). အံၤ tool supports all three ခီဖျိ: varied content formats, multiple interaction modes, ဒီး gamified engagement. Clicking အိးထီၣ် detailed information ဘၣ်ဃး how each tool feature aligns ဒီး UDL research. ဒိၣ် လ၁်: professional development, IEP justification, ဒီး understanding pedagogical foundation. Tip: ပူၤနီၣ် UDL principles when advocating လ၁် tool adoption.",
     "tour-analysis-settings": "Adjust parameters လ၁် readability analysis, including တၢ်ပညိၣ် reading level ဒီး အလီၤလီၤ metrics ဆူ track.",
@@ -6864,7 +6870,6 @@
     "adventure_system_state": "ထၢနုၥ် resource management mechanics ဆူ adventures. ဖိသၣ်ကၠိ track: Health (consequence အ risky ဃုထၢ), Gold/Resources (economic decision-making), Reputation (social capital from ဃုထၢ), ဒီး custom resources နၤ define. Actions affect resources visibly—spend gold ဆူ buy အပှ, lose health from poor decisions, gain reputation from helping others. Creates meaningful consequences န့ၣ် teach: cause-ဒီး-effect reasoning, planning ahead, resource management, ဒီး opportunity cost. Visual dashboard ဒုးနဲၣ် current resource levels. When resources deplete, တၢ်ဂဲၤလိၥ် adaptively responds (e.g., low health = limited options). နီၢ်ဂံၢ် skills integrate naturally ခီဖျိ resource calculations.",
     "glossary_tier2_count": "Set how many Tier 2 (academic) vocabulary တၢ်ကတိၤ ဆူ include. Tier 2 တၢ်ကတိၤ: ထီၣ်ဖျါ across subjects, မ့ၢ် used လ၁် academic contexts, ဒီး မ့ၢ် essential လ၁် text နၢ်ပၢၢ်. Examples: analyze, အုၣ်အသး, significant, contrast. These တၢ်ကတိၤ have highest instructional value—most ဖိသၣ်ကၠိ benefit from explicit teaching. Recommended count depends လ၁်ဖီခိၣ်: text length (1 တၢ်ကတိၤ per 100-150 တၢ်ကတိၤ အ source), available instruction တၢ်ဆၢကတီၢ်, ဒီး ဖိသၣ်ကၠိ need. Balance ဒီး Tier 3 count လ၁် ဝံၤ vocabulary set. Focus instruction here လ၁် maximum impact လ၁်ဖီခိၣ် reading နၢ်ပၢၢ် across all subjects.",
     "glossary_tier3_count": "Set how many Tier 3 (domain-အလီၤလီၤ) vocabulary တၢ်ကတိၤ ဆူ include. Tier 3 တၢ်ကတိၤ: မ့ၢ် အလီၤလီၤ ဆူ subject area, မ့ၢ် usually defined လ၁် context, ဒီး may တ transfer across subjects. Examples: photosynthesis, denominator, alliteration, legislative. These တၢ်ကတိၤ မ့ၢ် essential လ၁် understanding အလီၤလီၤ content ဘၣ်ဆၣ် have limited use outside domain. Instruction typically occurs during content teaching. လ၁် deep dive into တၢ်ဂ့ၢ်, include more Tier 3. လ၁် broader reading skills, prioritize Tier 2. Tier 3 တၢ်ကတိၤ often ထီၣ်ဖျါ လ၁် bold မ့တမ့် italics လ၁် textbooks, signaling their importance within discipline.",
-    "glossary_definition_level": "Control how definitions မ့ၢ် written. Options: အရွ၁် as Source (maintains အသနၢၣ် complexity—good လ၁် advanced ဖိသၣ်ကၠိ), လ၁်ဖီခိၣ် Grade (matches တၢ်ပညိၣ် grade level vocabulary), Simplified (uses ဘှၢ တၢ်ကတိၤ, shorter တၢ်ကတိၤထူ), ဒီး Kindergarten (very basic ကျိၥ်, concrete examples). Match definition complexity ဆူ ဖိသၣ်ကၠိ reading level, တ content level. 10th-grader studying advanced biology might need Simplified definitions လ၁် unfamiliar terms. Consider နၤအ ဖိသၣ်ကၠိ weakest readers when selecting. Definitions can be individually edited after ဆၢကတၢၢ် if တနီၤ need adjustment. Pro tip: Use Simplified initially, then discuss more technical definitions လ၁် ကၠိ.",
     "glossary_custom_instructions": "Provide အလီၤလီၤ guidance လ၁် vocabulary selection ဒီး definition style. Examples: Focus လ၁်ဖီခိၣ် တၢ်ကတိၤ from chapters 3-5, Include only တၢ်ကတိၤ related ဆူ water cycle, Avoid homonyms ဒီး simpler meanings, ထၢနုၥ် etymology လ၁် Latin/Greek roots, Include Spanish cognates လ၁် ELL ဖိသၣ်ကၠိ, ဒီး Use ဖိသၣ်ကၠိ-friendly examples from pop culture. Custom instructions shape: which တၢ်ကတိၤ မ့ၢ် selected, how definitions မ့ၢ် written, ဒီး what additional information ဖျါထီၣ်. Clear instructions produce better-targeted glossaries. နၤ can request အလီၤလီၤ formats like: Include တၢ်ကတိၤထူ using each တၢ်ကတိၤ မ့တမ့် ထၢနုၥ် visual memory hooks. AI follows instructions when making vocabulary selections.",
     "glossary_language_input": "Specify ကျိၥ် လ၁် vocabulary တၢ်ကွဲးကျိၥ်ထံ. နုၥ်လီၤ ကျိၥ်: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, မ့တမ့် any ကျိၥ်. နၤ can ထၢနုၥ် multiple ကျိၥ် separated by commas. Each term will ဒုးနဲၣ်: English definition, တၢ်ပညိၣ် ကျိၥ် တၢ်ကွဲးကျိၥ်ထံ(s), ဒီး phonetic pronunciation guide where applicable. Use လ၁်: ELL support, heritage ကျိၥ် connections, world ကျိၥ် vocabulary, ဒီး multilingual classrooms. တၢ်ကွဲးကျိၥ်ထံ ထီၣ်ဖျါ လ၁်ဖီခိၣ် every vocabulary card လ၁် instant ပူၤနီၣ်. Audio pronunciation available လ၁် supported ကျိၥ်. Research ဒုးနဲၣ် connecting အသီ vocabulary ဆူ home ကျိၥ် improves retention. Max 4 ကျိၥ် prevents visual clutter while supporting diverse classrooms.",
     "glossary_auto_remove": "Automatically filter out very simple မ့တမ့် ဘှၢ တၢ်ကတိၤ.",
@@ -6998,7 +7003,6 @@
     "fab_dictation": "Convert speech ဆူ text လ၁် hands-free input. ဆဲးကၠုၥ် ဆူ activate microphone, ကတိၤတၢ် clearly, ဒီး ကွၢ်တၢ် တၢ်ကတိၤ ထီၣ်ဖျါ. အိၣ်မူ လ၁်: text inputs, ကွဲးတၢ် scaffolds, chat, ဒီး any editable field. Supports: multiple ကျိၥ်, punctuation commands (say period, comma, အသီ line), ဒီး editing commands (ဖျိၣ်ကွံာ် န့ၣ်). Dictation requires microphone permission လ၁် browser. Quality depends လ၁်ဖီခိၣ်: microphone quality, background noise, ဒီး speech clarity. Real-တၢ်ဆၢကတီၢ် transcription ဒုးနဲၣ် as နၤ ကတိၤတၢ်. ဘှီတၢ် transcribed text normally. ဒိၣ် လ၁်: ဖိသၣ်ကၠိ ဒီး motor challenges, reluctant writers, ဒီး idea ဆၢကတၢၢ်. Tip: ကတိၤတၢ် လ၁် ဝံၤ တၢ်ကတိၤထူ လ၁် better မ့ၢ်တၢ်.",
     "fab_focus": "Creates movable spotlight န့ၣ် dims everything except circular area around နၤအ cursor. အံၤ dramatically reduces visual clutter ဒီး helps maintain attention လ၁်ဖီခိၣ် current reading area. Especially beneficial လ၁် ဖိသၣ်ကၠိ ဒီး ADHD, sensory processing differences, မ့တမ့် anyone overwhelmed by busy screens. spotlight follows နၤအ mouse/touch automatically. Adjust spotlight size ဒီး dim intensity လ၁် Settings → အသုံးပြုနိုင်စွမ်း.",
     "fab_line_focus": "Single-line reading isolation tool လ၁် focused reading. When activated: one text line မ့ၢ် highlighted while others မ့ၢ် dimmed, creating visual focus. Navigate ဒီး: arrow keys (up/down), ဆဲးကၠုၥ် anywhere လ၁်ဖီခိၣ် text, မ့တမ့် touch/swipe လ၁်ဖီခိၣ် mobile. Benefits: reduces visual crowding, supports ပိၣ်ထွဲ difficulties, helps maintain place, ဒီး reduces regression. Intensity (how much surrounding text မ့ၢ် visible) မ့ၢ် adjustable လ၁် Settings → အသုံးပြုနိုင်စွမ်း. အိၣ်မူ လ၁်ဖီခိၣ်: all reading content, including ဘှီထီၣ် text, source တၢ်ပီးတၢ်လီ, ဒီး chat. Particularly helpful လ၁်: dyslexia, ADHD, visual processing differences, ဒီး anyone overwhelmed by text-heavy screens. Tip: Combine ဒီး larger font လ၁် maximum reading ease.",
-    "fab_ruler": "Adds semi-transparent horizontal bar န့ၣ် follows နၤအ cursor ဆူ တၢ်မၤစၢၤ track နၤအ reading အလီၢ် line by line. Particularly helpful လ၁် users ဒီး dyslexia, ADHD, မ့တမ့် visual ပိၣ်ထွဲ difficulties. Drag ruler up/down ဆူ reposition, use arrow keys လ၁် fine control, မ့တမ့် ဆဲးကၠုၥ် anywhere ဆူ jump. ruler color can be customized လ၁် Settings. အိၣ်မူ across all reading views including Simplified Text, FAQ, ဒီး Glossary definitions.",
     "fab_timer": "Opens interactive focus timer based လ၁်ဖီခိၣ် Pomodoro Technique. ဃုထၢ from preset durations (5/15/25/45 minutes) မ့တမ့် customize နၤအ own. Features include: visual countdown ဒီး progress ring, optional break reminders, XP rewards လ၁် completed sessions (longer = more XP), ဒီး session logging လ၁် သရၣ် review. Label နၤအ task (e.g., 'ဖးတၢ် Chapter 3') ဆူ track what နၤ accomplished. Minimizes ဆူ header bar so နၤ can work while it runs.",
     "scaffolds_edit_toggle": "Toggle အဘၢၣ်စၢၤ သရၣ် editing ဒီး ဖိသၣ်ကၠိ view mode. When ON (ဘှီတၢ် Mode): ဆဲးကၠုၥ် any scaffold ဆူ modify text, ထၢနုၥ် အသီ prompts, ဖျိၣ်ကွံာ် အပှ, ဒီး reorder content. When OFF: scaffolds ဒုးနဲၣ် as ဖိသၣ်ကၠိ ထံၣ်တၢ် them (ဖးတၢ်-only). Edits ပာ်ဖျါ automatically. ဖိသၣ်ကၠိ always ထံၣ်တၢ် ဖးတၢ်-only regardless အ နၤအ toggle (they cannot access ဘှီတၢ် mode). Use editing ဆူ: customize AI-ဘှီထီၣ် scaffolds, ထၢနုၥ် ကၠိ-အလီၤလီၤ examples, ထုးထီၣ်ကွံၥ် inappropriate prompts, ဒီး differentiate လ၁် အလီၤလီၤ ဖိသၣ်ကၠိ. Preview ဖိသၣ်ကၠိ view before sharing. အသနၢၣ် scaffolds can be restored from history. Tip: Review ဒီး ဘှီတၢ် scaffolds before ကၠိ ဆူ ensure they match နၤအ teaching style ဒီး ဖိသၣ်ကၠိ needs.",
     "scaffolds_goal_panel": "ဒုးနဲၣ် learning objectives လ၁် ဖိသၣ်ကၠိ ပူၤနီၣ်. Goals ထီၣ်ဖျါ prominently during activity. Effective goals မ့ၢ်: ဖိသၣ်ကၠိ-friendly (I can statements), အလီၤလီၤ ဒီး measurable, ဒီး aligned ဆူ activity. Examples: I can သုံၣ်ညါ three causes အ Civil War မ့တမ့် I can use အုၣ်အသး ဆူ support my claim. Goals increase: metacognition, အသးတံၤ-assessment, ဒီး purpose clarity. ဖိသၣ်ကၠိ can ပူၤနီၣ် goals while working. သရၣ် sets goals before ဖိသၣ်ကၠိ access. Multiple goals can be displayed. Goals can include success criteria: I know I have succeeded when my paragraph has တၢ်ဂ့ၢ် တၢ်ကတိၤထူ. Research ဒုးနဲၣ် visible learning targets improve achievement.",
@@ -7093,7 +7097,6 @@
     "immersive_line_focus": "Enable single-line reading guide. When active: current reading line မ့ၢ် fully visible, surrounding lines မ့ၢ် dimmed, ဒီး focus follows as နၤ navigate. Benefits: reduces visual overwhelm, improves ပိၣ်ထွဲ, ဒီး helps attention stay လ၁်ဖီခိၣ် current text. Navigate ဒီး: arrow keys, ဆဲးကၠုၥ် anywhere, မ့တမ့် auto-advance (ဒီး TTS). Dimming intensity မ့ၢ် adjustable လ၁် settings. Perfect လ၁်: dyslexia support, attention difficulties, ဒီး ပိၣ်ထွဲ challenges. Combines well ဒီး text-ဆူ-speech လ၁် multi-modal reading support. Line focus အိၣ်မူ လ၁်ဖီခိၣ် all text content. Research ဒုးနဲၣ် line isolation improves နၢ်ပၢၢ် လ၁် struggling readers. Tip: Combine ဒီး larger font လ၁် maximum reading ease.",
     "immersive_syllables": "Visual syllable segmentation လ၁် decoding support. When enabled: တၢ်ကတိၤ ဒုးနဲၣ် ဒီး syllable breaks (hy-phen-at-ed), helping readers attack multisyllabic တၢ်ကတိၤ. Benefits: ဘှီထီၣ် phonemic awareness, supports decoding strategies, develops morphological understanding, ဒီး aids pronunciation. Especially helpful လ၁်: struggling decoders, ELL ဖိသၣ်ကၠိ, dyslexia support, ဒီး vocabulary တၢ်ကတိၤ ဒီး complex syllable အသနိ. Syllabification follows standard phonetic rules. အိၣ်မူ လ၁်ဖီခိၣ်: all reading content including adapted text, glossary terms, ဒီး source တၢ်ပီးတၢ်လီ. Combine ဒီး audio ဆူ hear syllables pronounced. Toggle off when တ needed ဆူ reduce visual complexity. Tip: Use လ၁် challenging vocabulary, then disable လ၁် fluent reading practice.",
     "immersive_wide_text": "Expand text ဆူ use more horizontal screen space. When active: line length increases, less scrolling မ့ၢ် needed, ဒီး more text မ့ၢ် visible at once. Good လ၁်: fluent readers, wide displays, ဒီး when scanning လ၁် information. Default narrow width မ့ၢ် better လ၁်: struggling readers, mobile devices, ဒီး focused reading. Optimal line length varies by reader ဒီး device. Research ဒုးနဲၣ် 50-75 characters per line မ့ၢ် ideal လ၁် most readers. Wide text trades readability လ၁် efficiency. Combine ဒီး line focus if ပိၣ်ထွဲ becomes difficult. Setting မ့ၢ် remembered per device. Tip: Use wide text လ၁် research ဒီး scanning, narrow text လ၁် ကးတံၢ် reading.",
-    "sidebar_tab_create": "အိးထီၣ် content ဆၢကတၢၢ် panel ဒီး all AI-powered tools. Available generators: Quiz (assessments ဒီး တၢ်စံးဆၢ keys), Glossary (visual vocabulary), Outline (graphic organizers), Analysis (content examination), တၢ်မၤလိ တၢ်ကူၣ် (structured instruction), Timeline (chronological activities), Simplified Text (leveled reading), ဒီး more. Each tool အိးထီၣ် configuration panel လ၁် customization before ဆၢကတၢၢ်. Source content must be loaded လ၁် most tools ဆူ analyze. ဘှီထီၣ် content ဖျါထီၣ် လ၁် main workspace ဒီး မ့ၢ် ပာ်ဖျါဝံၤ ဆူ history. Use Create tab as နၤအ primary content ဆၢကတၢၢ် hub. Tip: စးထီၣ် ဒီး Analysis ဆူ understand content, then generate targeted resources.",
     "sidebar_tab_history": "Access all နၤအ ပာ်ဖျါဝံၤ content ဒီး session history. History includes: auto-ပာ်ဖျါဝံၤ sessions from recent work, manually ပာ်ဖျါဝံၤ projects ဒီး portfolios, ဘှီထီၣ် resources organized by creation date, ဒီး ဖိသၣ်ကၠိ submissions (သရၣ် view). Actions: load any အပ ဆူ ဆဲးလီၤ working, ဖျိၣ်ကွံာ် အပှ ဆူ free storage, export လ၁် backup, ဒီး ဃုကွၢ် by keyword. History sorts by recency by default. Filter by type (quiz, glossary, adventure, etc.) ဆူ find အလီၤလီၤ resources. Cloud-synced history မ့ၢ် accessible from any device. Storage limits vary by account—ဖျိၣ်ကွံာ် လီၢ်လံၤ အပှ if approaching limit. နၤအ history မ့ၢ် နၤအ personal teaching resource library.",
     "socratic_toggle": "Enable Socratic dialogue mode လ၁် deeper learning. When ON: AI never gives direct တၢ်စံးဆၢ—instead asks probing တၢ်သံကွၢ် န့ၣ် guide ဖိသၣ်ကၠိ toward discovery. Benefits: develops critical thinking, encourages အသးတံၤ-correction, ဘှီထီၣ် problem-solving skills, ဒီး creates memorable learning moments. AI uses techniques like: clarifying တၢ်သံကွၢ် (What do နၤ mean by...?), challenging assumptions (ဘၣ်ဆၣ် what if...?), ဒီး အုၣ်အသး requests (How do နၤ know န့ၣ်?). Best လ၁်: discussion preparation, တၢ်ဆိကမိၣ် exploration, ဒီး helping ဖိသၣ်ကၠိ who want quick တၢ်စံးဆၢ ဆူ think more deeply. May frustrate ဖိသၣ်ကၠိ seeking efficiency—explain purpose.",
     "socratic_input": "နုၥ်လီၤ နၤအ တၢ်သံကွၢ် မ့တမ့် statement လ၁် Socratic exploration. AI will respond ဒီး တၢ်သံကွၢ် rather than တၢ်စံးဆၢ. Good starting points: Why do နၤ think [X] happened? What makes [Y] important? မ့တမ့် I believe [Z] because... AI probes နၤအ reasoning: asking လ၁် အုၣ်အသး, exploring implications, testing logic, ဒီး surfacing assumptions. အံၤ develops argumentation ဒီး critical thinking skills. Be prepared ဆူ: justify နၤအ thinking, consider alternatives, ဒီး refine နၤအ အလီၢ်. Socratic dialogues can be frustrating initially ဘၣ်ဆၣ် ဘှီထီၣ် lasting understanding. နၤအ responses ဒီး reasoning မ့ၢ် tracked လ၁် reflection.",
@@ -15644,7 +15647,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "တဲဖျါထီၣ် မီဒံယၢ်ခဲအံၤ",
+    "describe_current_media_done": "ဖးဝဲ မီဒံယၢ် {index} လၢ {count} အကျါ.",
+    "describe_current_media_hint": "ဖးမီဒံယၢ်အတၢ်တဲဖျါခဲအံၤ မ့တမ့ၢ် အခံတခါ လၢတဟးထီၣ်လၢတၢ်ဂ့ၢ်အပူၤဘၣ်",
+    "describe_current_media_none": "မီဒံယၢ်တအိၣ်ဘၣ်လၢတၢ်ဂ့ၢ်ခဲအံၤအပူၤ.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "အိးထီၣ် Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore အိးထီၣ်ဝဲလံ.",
+    "open_learning_web_explorer_hint": "ကွၢ်ဃုတၢ်သိၣ်လိအထံၣ်, တၢ်ဆိကမိၣ်, တၢ်မၤလိ, တၢ်အုၣ်သး ဒီး တၢ်ကတိၤအတၢ်ဘျးစဲ လၢဂီၤတဘ့ၣ်ဃီအပူၤ",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "ဖးမီဒံယၢ်အတၢ်တဲဖျါခဲလၢာ်",
+    "read_media_descriptions_count": "ဖးဝဲ မီဒံယၢ်အတၢ်တဲဖျါ {count} ခါ.",
+    "read_media_descriptions_hint": "ဖးတၢ်ဂီၤ, ဗီးဒံၢ်ယိၤ မ့တမ့ၢ် တၢ်သီၣ်အတၢ်တဲဖျါခဲလၢာ်လၢတၢ်ဂ့ၢ်ခဲအံၤအပူၤ",
+    "read_media_descriptions_none": "မီဒံယၢ်တအိၣ်ဘၣ်လၢတၢ်ဂ့ၢ်ခဲအံၤအပူၤ.",
+    "suggest_contextual_next_steps": "ဟ့ၣ်ကူၣ် တၢ်ခီၣ်ထံး 3 ခါလၢအခံ",
+    "suggest_contextual_next_steps_hint": "ဟ့ၣ်တၢ်ဃုထၢ သၢခါလၢအဘၣ်ဒီးတၢ်အိၣ်သး, တဃုထၢ မ့တမ့ၢ် တမၤဘၣ်တခါဘၣ်",
+    "suggest_contextual_next_steps_working": "ဖးဝဲတၢ်မၤလိအတၢ်အိၣ်သးခဲအံၤ ဒီးကတဲာ်ကတီၤတၢ်ဃုထၢသၢခါ...",
+    "surprise_me_contextually": "ဟ့ၣ်ယၤ တၢ်ခီၣ်ထံးလၢအခံလၢအဘျုးအိၣ်",
+    "surprise_me_contextually_hint": "ဃုထၢထီၣ်တၢ်မၤတခါလၢအဘၣ်ဒီးအတၢ်လီၤဘၣ်ယိၣ်စှၤ လၢတၢ်မၤလိအတၢ်အိၣ်သးခဲအံၤအပူၤ",
+    "surprise_me_contextually_working": "ဖးဝဲတၢ်မၤလိအတၢ်အိၣ်သးခဲအံၤ ဒီးဃုထၢတၢ်ခီၣ်ထံးလၢအခံလၢအဘျုးအိၣ်...",
+    "use_contextual_suggestion": "သူတၢ်ခီၣ်ထံးလၢအခံလၢတၢ်ဟ့ၣ်ကူၣ်ဝဲ",
+    "use_contextual_suggestion_hint": "မၤဝဲတၢ်ဃုထၢ 1, 2, မ့တမ့ၢ် 3 လၢတၢ်ဟ့ၣ်ကူၣ်လၢခံကတၢၢ်အပူၤ",
+    "use_contextual_suggestion_working": "စးထီၣ်ဝဲတၢ်ခီၣ်ထံးလၢအခံလၢတၢ်ဃုထၢဝဲ..."
   },
   "palette": {
     "aria": "AlloFlow တၢ်ပၢအလီၢ်",
@@ -15667,10 +15696,11 @@
       "videoStudio": "ဖဲအံၤ — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "တၢ်မၤကိးမံၤဒဲးဘၣ်တၢ်ဒုးသ့ၣ်ညါ. Ctrl+K ဆီတလဲ.",
     "group": {
@@ -15948,6 +15978,12 @@
     "diff_types_hint": "ခွဲခြားထားသော အစုကို ဖန်တီးမည့်အရာ:",
     "diff_cost": "တစ်ကြိမ်လျှင် ဖန်တီးမှု {n} ခုခန့်။",
     "summary_standards": "စံနှုန်းများ",
-    "summary_interests": "စိတ်ဝင်စားမှုများ"
+    "summary_interests": "စိတ်ဝင်စားမှုများ",
+    "translations": "တၢ်ကတိၤကျိးထံ",
+    "translations_auto": "အသးအိၣ်ဝဲဒၣ် ({language})",
+    "translations_auto_plain": "အသးအိၣ်ဝဲဒၣ်",
+    "translations_none": "တအိၣ်ဘၣ်",
+    "translations_on_hint": "တၢ်ဂ့ၢ်လၢ {output} အပူၤ ကအိၣ်ဒီး {target} တဘ့ၣ်စ့ၢ်ကီး.",
+    "translations_off_hint": "တၢ်ဂ့ၢ်တဖၣ်ကအိၣ်လၢ {output} ဧိၤ, ကျိၥ်ခံခါတအိၣ်ဘၣ်."
   }
 }

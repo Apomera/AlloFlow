@@ -2250,7 +2250,7 @@
     "ai_guide_sub": "Ẹ̀kọ́, Ìrìnàjò àti Ìṣètò Aládàáṣe",
     "ai_guide_welcome": "Pẹ̀lẹ́ o! Èmi ni Olùdari AI rẹ. Mo lè ràn ọ́ lọ́wọ́ pẹ̀lú àwọn ìlànà UDL, ṣe ìtọ́sọ́nà ohun-èlò fún ọ, tàbí ṣètò àwọn ètò ẹ̀kọ́ rẹ lọ́nà aládàáṣe. Kàn béèrè!",
     "tool_analysis": "Ṣe atupale orisun Material",
-    "tool_glossary": "iwe ọrọ & ede Selection",
+    "tool_glossary": "Ìwé ìtumọ̀ ọ̀rọ̀",
     "tool_simplified": "ọrọ Adaptation",
     "tool_outline": "oju Organizer",
     "tool_visual": "oju atilẹyin",
@@ -2980,7 +2980,7 @@
     "choose_destination_aria": "Yan destination"
   },
   "glossary": {
-    "title": "iwe ọrọ & ede Selection",
+    "title": "Ìwé ìtumọ̀ ọ̀rọ̀",
     "tier2": "Ìpele 2 (Acad.)",
     "tier2_tooltip": "High-utility ẹkọ ọrọ lo across disciplines (e.g., 'ṣe atupale', 'verify').",
     "tier3": "Ìpele 3 (Aaye)",
@@ -3922,7 +3922,12 @@
     "gauge_simple": "rọrun",
     "word_bank_language": "Èdè ibi ìkójọ ọ̀rọ̀",
     "word_bank_english": "Gẹ̀ẹ́sì",
-    "word_bank_both": "Àwọn méjèèjì"
+    "word_bank_both": "Àwọn méjèèjì",
+    "measured_level_label": "Ìpele kíkà tí a wọ̀n",
+    "measured_on_target": "Ó bá {grade} mu",
+    "measured_above": "Ó ga ju ìpele {grade} lọ",
+    "measured_below": "Ó rẹlẹ̀ ju ìpele {grade} lọ",
+    "measured_note": "Flesch-Kincaid, a wọ̀n ọ́ lórí ọ̀rọ̀ yìí. Lo Check ipele fún àyẹ̀wò kíkún."
   },
   "quiz": {
     "title": "Ṣàyẹ̀wò",
@@ -5876,7 +5881,9 @@
     "title_poettree_config": "🌳 Iṣẹ́ PoetTree",
     "title_poettree_submission": "🌳 Ìfisílẹ̀ Ewì",
     "title_litlab_config": "🎭 Iṣẹ́ LitLab",
-    "title_litlab_submission": "🎭 Ìfisílẹ̀ Ìṣe"
+    "title_litlab_submission": "🎭 Ìfisílẹ̀ Ìṣe",
+    "translation_block": "Ìtumọ̀",
+    "translation_into": "Ìtumọ̀ ({language})"
   },
   "persona": {
     "title": "Interview ọna",
@@ -6295,7 +6302,7 @@
   },
   "tools": {
     "source": "orisun Material",
-    "glossary": "iwe ọrọ & ede Selection",
+    "glossary": "Ìwé ìtumọ̀ ọ̀rọ̀",
     "simplified": "ọrọ Adaptation & Engagement",
     "outline": "oju Organizer",
     "quiz": "Ṣàyẹ̀wò",
@@ -6884,7 +6891,6 @@
     "source_settings_instructions": "Tọ́ AI sọ́nà pẹ̀lú àwọn ìtọ́ni pàtó: ohùn, ìfojúsí, ipele ọ̀rọ̀, àti ìfojúsùn. Jẹ́ kí ó dájú fún àbájáde tó dára jùlọ.",
     "source_verify_checkbox": "Mú àyẹ̀wò òtítọ́ AI ṣiṣẹ́ nípasẹ̀ Google Search. Ó ń pẹ́ ìṣẹ̀dá díẹ̀ ṣùgbọ́n ó ń mú ìgbẹ́kẹ̀lé ọ̀rọ̀ òtítọ́ pọ̀ si.",
     "source_generate_button": "Ṣẹ̀dá ọ̀rọ̀ tí AI kọ lórí àkòrí tí o sọ. Ìṣẹ̀dá máa lo àkòrí, gígùn, ipele kíláàsì, àti ìtọ́ni rẹ.",
-    "generator_actions": "Ibi ìpàsẹ̀dá fún gbogbo àwọn ohun-èlò ìṣẹ̀dá: Quiz, Glossary, Lesson Plan, Math, Adventure Mode, àti àwọn mìíràn.",
     "tool_visual": "Iwọle oju generator irinṣẹ. Creates AI-ti ṣẹda aworan pẹlu: awọn ọrọ oju, concept illustrations, iṣẹlẹ depictions, aworan, ati infographics. oju types: reference aworan (fun kíkọ́), worksheets (fun activities), ati aworan (fun relationships). oju atilẹyin: ELL akẹkọọ (oju awọn ọrọ), oju learners, ati engagement. kọọkan generation ṣẹda unique aworan. eto control ọna, quality, ati akoonu. Generated oju le be: downloaded, embedded ninu materials, ati added si glossaries. Uses AI aworan generation credits. imọran: Ṣẹda oju fun abstract concepts iyẹn jẹ difficult si explain pẹlu ọrọ alone.",
     "tool_udl": "Kọ ẹkọ about UDL framework integration. Universal Design fun Learning has three principles: Ọ̀pọ̀lọpọ̀ Means ti Representation ( kini ti kíkọ́—present alaye ninu different ways), Ọ̀pọ̀lọpọ̀ Means ti Action ati Expression ( bawo ti kíkọ́—let akẹkọọ demonstrate understanding differently), ati Ọ̀pọ̀lọpọ̀ Means ti Engagement ( why ti kíkọ́—motivate ati sustain interest). eyi irinṣẹ atilẹyin gbogbo three through: varied akoonu apẹẹrẹ, ọ̀pọ̀lọpọ̀ interaction ọna, ati eré-ọnà engagement. Clicking ṣii alaye alaye about bawo kọọkan irinṣẹ awọn ẹya aligns pẹlu UDL research. Great fun: professional development, IEP justification, ati understanding pedagogical foundation. imọran: Reference UDL principles nigba ti advocating fun irinṣẹ adàṣàyàn.",
     "tour-analysis-settings": "Adjust parameters fun readability analysis, pẹlu target reading ipele ati pato metrics si track.",
@@ -6909,7 +6915,6 @@
     "adventure_system_state": "Fikun awọn ohun elo management mechanics si ìrìnàjòs. akẹkọọ track: Health (consequence ti ewuy yíyàns), wura/awọn ohun elo (economic decision-making), Reputation (awùjọ capital lati yíyàns), ati tirẹ awọn ohun elo iwọ define. Actions affect awọn ohun elo visibly—spend wura si buy nkan, lose health lati poor decisions, gain reputation lati ìrànlọ́wọ́ing others. Creates meaningful consequences iyẹn teach: cause-ati-effect reasoning, planning ahead, awọn ohun elo management, ati opportunity cost. oju dashboard fihan current awọn ohun elo ipele. nigba ti awọn ohun elo deplete, ere adaptively responds (e.g., low health = limited ṣayan). Math imọ integrate naturally through awọn ohun elo calculations.",
     "glossary_tier2_count": "Ṣeto bawo many Tier 2 (ẹkọ) awọn ọrọ ọrọ si fikun. Tier 2 ọrọ: appear across subjects, jẹ lo ninu ẹkọ contexts, ati jẹ essential fun ọrọ comprehension. apẹẹrẹ: ṣe atupale, evidence, significant, contrast. These ọrọ ni highest instructional iye—most akẹkọọ benefit lati explicit teaching. Recommended ka depends lori: ọrọ gigun (1 ọrọ per 100-150 ọrọ ti orisun), wa itọsọna time, ati akẹkọọ need. Balance pẹlu Tier 3 ka fun pari awọn ọrọ ṣeto. Focus itọsọna here fun maximum impact lori reading comprehension across gbogbo subjects.",
     "glossary_tier3_count": "Ṣètò iye àwọn ọ̀rọ̀ Tier 3 (ti ìbáwí kan pàtó) tí o fẹ́ fi kún. Wọ́n ṣe pàtàkì fún ìgbámú ọ̀rọ̀ kan pàtó.",
-    "glossary_definition_level": "Ṣàkóso bí a ṣe kọ àwọn ìtumọ̀: Bí Orísun, Lórí Kíláàsì, Rírọrùn, tabi Kíndágárínì. Bá ipele ìkàwé akẹ́kọ̀ọ́ mu.",
     "glossary_custom_instructions": "Provide pato guidance fun awọn ọrọ selection ati itumọ ọna. apẹẹrẹ: Focus lori ọrọ lati ori 3-5, Fikun only ọrọ related si water cycle, Avoid homonyms pẹlu simpler meanings, Fikun etymology fun Latin/Greek roots, Fikun Spanish cognates fun ELL akẹkọọ, ati Lo akẹkọọ-ọrẹ apẹẹrẹ lati pop culture. Custom itọsọna apẹrẹ: which ọrọ jẹ ti yan, bawo itumọ jẹ written, ati kini additional alaye appears. Clear itọsọna gbe jade dara julọ-targeted glossaries. iwọ le request pato apẹẹrẹ like: Fikun gbolohun lilo kọọkan ọrọ tabi Fikun oju memory hooks. AI follows itọsọna nigba ti making awọn ọrọ selections.",
     "glossary_language_input": "Sọ ni pato ede fun awọn ọrọ itumọ. Wọle ede: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, tabi any ede. iwọ le fikun ọ̀pọ̀lọpọ̀ ede separated by commas. kọọkan ọrọ yoo fihan: English itumọ, target ede itumọ(s), ati phonetic pronunciation guide ibi ti applicable. Lo fun: ELL atilẹyin, heritage ede connections, world ede awọn ọrọ, ati multilingual kíláàsìrooms. itumọ appear lori every awọn ọrọ kaadi fun instant reference. ohun pronunciation wa ninu supported ede. Research fihan connecting titun awọn ọrọ si home ede improves retention. Max 4 ede prevents oju clutter while supporting diverse kíláàsìrooms.",
     "glossary_auto_remove": "Automatically yan out very rọrun tabi common ọrọ.",
@@ -7043,7 +7048,6 @@
     "fab_dictation": "Convert speech si ọrọ fun hands-free wọle. Tẹ si activate microphone, sọrọ clearly, ati wo ọrọ appear. Works ninu: ọrọ wọle, writing scaffolds, ọrọ sisọ, ati any editable field. atilẹyin: ọ̀pọ̀lọpọ̀ ede, punctuation commands (say period, comma, titun ila), ati editing commands (parẹ iyẹn). Dictation requires microphone permission ninu browser. Quality depends lori: microphone quality, background noise, ati speech clarity. Akoko gidi transcription fihan as iwọ sọrọ. Ṣatunṣe transcribed ọrọ normally. Great fun: akẹkọọ pẹlu motor idanwo, reluctant writers, ati idea generation. imọran: Sọrọ ninu pari gbolohun fun dara julọ accuracy.",
     "fab_focus": "Creates movable spotlight iyẹn dims everything except circular agbegbe around rẹ cursor. eyi dramatically reduces oju clutter ati ìrànlọ́wọ́s maintain attention lori current reading agbegbe. Especially beneficial fun akẹkọọ pẹlu ADHD, sensory processing differences, tabi anyone overwhelmed by busy screens. spotlight follows rẹ mouse/touch automatically. Adjust spotlight size ati dim intensity ninu eto → Accessibility.",
     "fab_line_focus": "Single-ila reading isolation irinṣẹ fun focused reading. nigba ti activated: one ọrọ ila jẹ highlighted while others jẹ dimmed, creating oju focus. Navigate pẹlu: arrow keys (up/down), tẹ anywhere lori ọrọ, tabi touch/swipe lori mobile. Benefits: reduces oju crowding, atilẹyin ipasẹ difficulties, ìrànlọ́wọ́s maintain place, ati reduces regression. Intensity (bawo much surrounding ọrọ jẹ ti o han) jẹ adjustable ninu eto → Accessibility. Works lori: gbogbo reading akoonu, pẹlu ti ṣẹda ọrọ, orisun materials, ati ọrọ sisọ. Particularly ìrànlọ́wọ́ful fun: dyslexia, ADHD, oju processing differences, ati anyone overwhelmed by ọrọ-heavy screens. imọran: Combine pẹlu larger font fun maximum reading ease.",
-    "fab_ruler": "Adds semi-transparent horizontal bar iyẹn follows rẹ cursor si iranlọwọ track rẹ reading position ila by ila. Particularly ìrànlọ́wọ́ful fun users pẹlu dyslexia, ADHD, tabi oju ipasẹ difficulties. Fa ruler up/down si reposition, lo arrow keys fun fine control, tabi tẹ anywhere si jump. ruler awọ le be customized ninu eto. Works across gbogbo reading views pẹlu Simplified ọrọ, FAQ, ati iwe ọrọ itumọ.",
     "fab_timer": "Ṣí ọmọ àkókò àfiyèsí tó dá lórí Pomodoro Technique. Yan ìṣẹ́jú 5, 15, 25, tàbí 45.",
     "scaffolds_edit_toggle": "Yí pa àárín ọ̀nà ìṣàtúnṣe (olùkọ́) àti ọ̀nà ìwò akẹ́kọ̀ọ́. Àwọn ìṣàtúnṣe pamọ́ fúnra wọn.",
     "scaffolds_goal_panel": "Pánẹ́ẹ̀lì tó ń fi àwọn ìpinnu ẹ̀kọ́ hàn fún àwọn akẹ́kọ̀ọ́. Lo gbólóhùn 'Mo lè...' fún ìmọ́lẹ̀.",
@@ -7138,7 +7142,6 @@
     "immersive_line_focus": "Mu ṣiṣẹ single-ila reading guide. nigba ti lọwọ: current reading ila jẹ fully ti o han, surrounding ila jẹ dimmed, ati focus follows as iwọ navigate. Benefits: reduces oju overwhelm, improves ipasẹ, ati ìrànlọ́wọ́s attention stay lori current ọrọ. Navigate pẹlu: arrow keys, tẹ anywhere, tabi auto-advance (pẹlu TTS). Dimming intensity jẹ adjustable ninu eto. Perfect fun: dyslexia atilẹyin, attention difficulties, ati ipasẹ idanwo. Combines well pẹlu ọrọ-si-speech fun multi-modal reading atilẹyin. ila focus works lori gbogbo ọrọ akoonu. Research fihan ila isolation improves comprehension fun struggling readers. imọran: Combine pẹlu larger font fun maximum reading ease.",
     "immersive_syllables": "oju syllable segmentation fun decoding atilẹyin. nigba ti enabled: ọrọ display pẹlu syllable breaks (hy-phen-at-ed), ìrànlọ́wọ́ing readers attack multisyllabic ọrọ. Benefits: builds phonemic awareness, atilẹyin decoding awọn ilana, develops morphological understanding, ati aids pronunciation. Especially ìrànlọ́wọ́ful fun: struggling decoders, ELL akẹkọọ, dyslexia atilẹyin, ati awọn ọrọ ọrọ pẹlu idiju syllable patterns. Syllabification follows eto phonetic rules. Works lori: gbogbo reading akoonu pẹlu adapted ọrọ, iwe ọrọ ọrọ, ati orisun materials. Combine pẹlu ohun si hear syllables pronounced. Yipada off nigba ti ko needed si reduce oju idiju. imọran: Lo fun challenging awọn ọrọ, then dawọ duro fun fluent reading ṣe adaṣe.",
     "immersive_wide_text": "Expand ọrọ si lo sii horizontal screen space. nigba ti lọwọ: ila gigun increases, kere scrolling jẹ needed, ati sii ọrọ jẹ ti o han at once. dara fun: fluent readers, wide displays, ati nigba ti scanning fun alaye. aiyipada narrow ibu jẹ dara julọ fun: struggling readers, mobile devices, ati focused reading. Optimal ila gigun varies by reader ati device. Research fihan 50-75 oluyaworan per ila jẹ ideal fun most readers. Wide ọrọ trades readability fun efficiency. Combine pẹlu ila focus ti o ba ipasẹ becomes difficult. eto jẹ remembered per device. imọran: Lo wide ọrọ fun research ati scanning, narrow ọrọ fun tipa reading.",
-    "sidebar_tab_create": "Ṣí ojú-òpó ìpilẹ̀ṣẹ̀ àkóónú pẹ̀lú gbogbo irinṣẹ́ AI. Bẹ̀rẹ̀ pẹ̀lú ìṣàyẹ̀wò orísun, kí o tó ṣẹ̀dá àwọn ohun-èlò àfojúsùn.",
     "sidebar_tab_history": "Wo gbogbo àkóónú àti àpèjọ tí a ti fipamọ́. Túnṣe iṣẹ́ tí ó ti kọjá, yọ kúrò, tàbí wá nípa kọ́kọ́rọ́-ọ̀rọ̀.",
     "socratic_toggle": "Mú ọ̀nà ìjíròrò Socratic ṣiṣẹ́. AI kì í fún ìdáhùn tààrà — ó béèrè àwọn ìbéèrè tí ó ń tọ́ akẹ́kọ̀ọ́ sí ìṣàwárí.",
     "socratic_input": "Tẹ ìbéèrè rẹ síbí fún ìjíròrò Socratic. AI yóò dáhùn pẹ̀lú àwọn ìbéèrè dípò ìdáhùn.",
@@ -30908,7 +30911,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Ṣàpèjúwe mídíà tó wà nísinsìnyí",
+    "describe_current_media_done": "Ń ka mídíà {index} nínú {count}.",
+    "describe_current_media_hint": "Ka àpèjúwe mídíà tó wà nísinsìnyí tàbí èyí tó tẹ̀lé láìkúrò nínú ohun èlò náà",
+    "describe_current_media_none": "Kò sí mídíà nínú ohun èlò tó wà nísinsìnyí.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Ṣí Learning Web: Explore",
+    "open_learning_web_explorer_done": "A ti ṣí Learning Web: Explore.",
+    "open_learning_web_explorer_hint": "Ṣàwárí àwọn ìlànà, èrò, ẹ̀kọ́, ẹ̀rí, àti ìbáṣepọ̀ àwọn ọ̀rọ̀ nínú màpù kan ṣoṣo",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Ka gbogbo àpèjúwe mídíà",
+    "read_media_descriptions_count": "Ń ka àpèjúwe mídíà {count}.",
+    "read_media_descriptions_hint": "Ka gbogbo àpèjúwe àwòrán, fídíò, tàbí ohùn tí a kọ nínú ohun èlò tó wà nísinsìnyí",
+    "read_media_descriptions_none": "Kò sí mídíà nínú ohun èlò tó wà nísinsìnyí.",
+    "suggest_contextual_next_steps": "Dábàá àwọn ìgbésẹ̀ 3 tó tẹ̀lé",
+    "suggest_contextual_next_steps_hint": "Ó ń fúnni ní àṣàyàn mẹ́ta tó bá ipò mu, láìyàn tàbí ṣiṣẹ́ ọ̀kan",
+    "suggest_contextual_next_steps_working": "Ń ka ipò ẹ̀kọ́ tó wà nísinsìnyí, ó sì ń múra àṣàyàn mẹ́ta sílẹ̀...",
+    "surprise_me_contextually": "Fún mi ní ìgbésẹ̀ tó tẹ̀lé tó wúlò",
+    "surprise_me_contextually_hint": "Ó ń yan ìgbésẹ̀ kan tó bọ́gbọ́n mu tí kò sì léwu láti inú ipò ẹ̀kọ́ tó wà nísinsìnyí",
+    "surprise_me_contextually_working": "Ń ka ipò ẹ̀kọ́ tó wà nísinsìnyí, ó sì ń yan ìgbésẹ̀ tó tẹ̀lé tó wúlò...",
+    "use_contextual_suggestion": "Lo ìgbésẹ̀ tó tẹ̀lé tí a dábàá",
+    "use_contextual_suggestion_hint": "Ó ń ṣiṣẹ́ àṣàyàn 1, 2, tàbí 3 láti inú àwọn àbá tuntun",
+    "use_contextual_suggestion_working": "Ń bẹ̀rẹ̀ ìgbésẹ̀ tó tẹ̀lé tí a yàn..."
   },
   "palette": {
     "aria": "Pátákó àṣẹ AlloFlow",
@@ -30931,10 +30960,11 @@
       "videoStudio": "Níbí — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "A ń kéde gbogbo ìṣe. Ctrl+K ń yí padà.",
     "group": {
@@ -31236,6 +31266,12 @@
     "diff_types_hint": "Ṣẹ̀dá àkójọpọ̀ tí ó yàtọ̀ fún:",
     "diff_cost": "Bíi ìṣẹ̀dá {n} fún ìṣiṣẹ́ kọ̀ọ̀kan.",
     "summary_standards": "àwọn ìlànà",
-    "summary_interests": "àwọn ohun tí a fẹ́ràn"
+    "summary_interests": "àwọn ohun tí a fẹ́ràn",
+    "translations": "Àwọn ìtumọ̀",
+    "translations_auto": "Fúnra rẹ̀ ({language})",
+    "translations_auto_plain": "Fúnra rẹ̀",
+    "translations_none": "Kò sí",
+    "translations_on_hint": "Àwọn ohun èlò ní {output} yóò tún ní ẹ̀dà ní {target}.",
+    "translations_off_hint": "Àwọn ohun èlò yóò wà ní {output} nìkan, láìsí èdè kejì."
   }
 }

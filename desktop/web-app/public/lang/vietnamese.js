@@ -2259,7 +2259,7 @@
     "ai_guide_sub": "Sư phạm, Điều hướng & Cài đặt tự động",
     "ai_guide_welcome": "Xin chào! Tôi là Hướng dẫn AI của bạn. Tôi có thể giúp với các chiến lược UDL, điều hướng ứng dụng hoặc cài đặt tự động cho bài học của bạn. Cứ hỏi!",
     "tool_analysis": "Phân tích tài liệu nguồn",
-    "tool_glossary": "Từ vựng & Chọn ngôn ngữ",
+    "tool_glossary": "Từ vựng",
     "tool_simplified": "Điều chỉnh văn bản",
     "tool_outline": "Tổ chức trực quan",
     "tool_visual": "Hỗ trợ trực quan",
@@ -2989,7 +2989,7 @@
     "choose_destination_aria": "Chọn điểm đến"
   },
   "glossary": {
-    "title": "Từ vựng & Chọn ngôn ngữ",
+    "title": "Từ vựng",
     "tier2": "Cấp 2 (Học thuật)",
     "tier2_tooltip": "Các từ học thuật có tính ứng dụng cao được sử dụng trong nhiều lĩnh vực (ví dụ: 'phân tích', 'xác minh').",
     "tier3": "Cấp 3 (Chuyên ngành)",
@@ -3931,7 +3931,12 @@
     "gauge_simple": "Đơn giản",
     "word_bank_english": "Tiếng Anh",
     "word_bank_both": "Cả hai",
-    "word_bank_language": "Ngôn ngữ của ngân hàng từ"
+    "word_bank_language": "Ngôn ngữ của ngân hàng từ",
+    "measured_level_label": "Mức đọc đo được",
+    "measured_on_target": "Đúng mức {grade}",
+    "measured_above": "Cao hơn mức {grade}",
+    "measured_below": "Thấp hơn mức {grade}",
+    "measured_note": "Flesch-Kincaid, đo trên đoạn văn này. Dùng Kiểm tra cấp độ để kiểm tra đầy đủ hơn."
   },
   "quiz": {
     "title": "Đánh giá",
@@ -5877,7 +5882,9 @@
     "title_poettree_config": "🌳 Bài tập PoetTree",
     "title_poettree_submission": "🌳 Bài nộp thơ",
     "title_litlab_config": "🎭 Bài tập LitLab",
-    "title_litlab_submission": "🎭 Bài nộp trình diễn"
+    "title_litlab_submission": "🎭 Bài nộp trình diễn",
+    "translation_block": "Bản dịch",
+    "translation_into": "Bản dịch ({language})"
   },
   "persona": {
     "title": "Chế độ Phỏng vấn",
@@ -6295,7 +6302,7 @@
   },
   "tools": {
     "source": "Tài liệu Nguồn",
-    "glossary": "Từ vựng & Chọn Ngôn ngữ",
+    "glossary": "Từ vựng",
     "simplified": "Điều chỉnh & Gắn kết Văn bản",
     "outline": "Tổ chức Trực quan",
     "quiz": "Đánh giá",
@@ -29294,7 +29301,6 @@
     "source_settings_instructions": "Hướng dẫn tạo nội dung AI với hướng dẫn cụ thể. Ví dụ: Làm cho nó hấp dẫn cho các độc giả ngại đọc, Tập trung vào chu trình nước, Bao gồm các tên nhân vật đa dạng, Tránh các tham chiếu đến bạo lực và Sử dụng từ vựng đơn giản cho học sinh ELL. Hướng dẫn định hình: giọng điệu, trọng tâm nội dung, cấp độ từ vựng và quan điểm. Hãy cụ thể để có kết quả tốt nhất. Có thể kết hợp nhiều hướng dẫn. Hướng dẫn được xử lý cùng với chủ đề và cài đặt của bạn. Đối với các chủ đề nhạy cảm, hãy bao gồm hướng dẫn nội dung. Hướng dẫn không đảm bảo các kết quả cụ thể nhưng ảnh hưởng mạnh đến việc tạo. Mẹo: Bao gồm cấp lớp và bất kỳ hạn chế nội dung nào trong hướng dẫn của bạn để có đầu ra phù hợp nhất.",
     "source_verify_checkbox": "Bật kiểm tra sự thật bằng AI thông qua Google Search grounding. Khi BẬT: AI đối chiếu nội dung được tạo với các nguồn web, gắn cờ hoặc sửa các điểm không chính xác tiềm ẩn. Thêm 5-10 giây vào thời gian tạo nhưng cải thiện đáng kể độ tin cậy cho nội dung dựa trên sự thật. Đặc biệt quan trọng cho: lịch sử (ngày tháng, sự kiện), khoa học (quy trình, dữ liệu), tiểu sử và các sự kiện hiện tại. Đối với hư cấu, viết sáng tạo hoặc các tình huống giả định, điều này có thể bị tắt để cho phép tự do sáng tạo hơn. Các nguồn được tham khảo được liệt kê trong nhật ký tạo để giáo viên xem xét. Rất khuyến khích cho bất kỳ nội dung nào sẽ được trình bày là thực tế cho học sinh.",
     "source_generate_button": "Tạo nội dung được AI viết về chủ đề được chỉ định của bạn. Nhấp để bắt đầu tạo bằng cách sử dụng: mô tả chủ đề, độ dài mục tiêu, cấp lớp và hướng dẫn tùy chỉnh của bạn. Tạo mất 10-20 giây. Đầu ra được xem xét bởi các bộ lọc an toàn trước khi hiển thị. Nội dung được tạo có thể được: chỉnh sửa (giáo viên có thể sửa đổi bất kỳ phần nào), phân tích (chạy qua các công cụ tạo khác) và lưu (thêm vào lịch sử để tái sử dụng). Sử dụng khi: bạn cần nội dung về một chủ đề cụ thể, muốn độ phức tạp được kiểm soát hoặc cần lấp đầy các khoảng trống chương trình giảng dạy. Nội dung được tạo bao gồm: từ vựng phù hợp, tổ chức logic và cú pháp cấp lớp. Xác minh độ chính xác thực tế trước khi sử dụng trong lớp học.",
-    "generator_actions": "Trung tâm cho tất cả các công cụ tạo nội dung. Các trình tạo có sẵn bao gồm: Bài kiểm tra (đánh giá với đáp án), Từ điển (từ vựng trực quan), Văn bản Đơn giản hóa (đọc theo cấp), FAQ (cặp Hỏi và Đáp), Phân tích (kiểm tra nội dung), Giáo án (thiết kế giảng dạy), Dòng thời gian (hoạt động theo trình tự thời gian), Khung hỗ trợ (hỗ trợ viết), Phân loại Khái niệm (trò chơi phân loại), Toán (tạo bài toán), Cuộc phiêu lưu (truyện tương tác) và Brainstorm (ý tưởng hoạt động). Mỗi trình tạo biến đổi nội dung nguồn của bạn thành các định dạng khác nhau. Nhấp vào bất kỳ trình tạo nào để mở bảng cấu hình của nó. Nhiều trình tạo có thể được sử dụng trên cùng một nguồn. Nội dung được tạo xuất hiện trong không gian làm việc và lưu vào lịch sử. Mẹo: Bắt đầu với Phân tích để hiểu nội dung của bạn, sau đó tạo các tài nguyên được nhắm mục tiêu.",
     "tool_visual": "Truy cập công cụ tạo trực quan. Tạo hình ảnh do AI tạo bao gồm: hình ảnh từ vựng, minh họa khái niệm, mô tả cảnh, sơ đồ và infographic. Các loại trực quan: hình ảnh tham khảo (để học), phiếu bài tập (cho các hoạt động) và sơ đồ (cho các mối quan hệ). Hình ảnh trực quan hỗ trợ: học sinh ELL (từ vựng trực quan), người học trực quan và sự tham gia. Mỗi lần tạo tạo ra các hình ảnh duy nhất. Cài đặt kiểm soát phong cách, chất lượng và nội dung. Hình ảnh trực quan được tạo có thể được: tải xuống, nhúng vào tài liệu và thêm vào từ điển. Sử dụng tín dụng tạo hình ảnh AI. Mẹo: Tạo hình ảnh trực quan cho các khái niệm trừu tượng khó giải thích bằng từ ngữ.",
     "tool_udl": "Tìm hiểu về tích hợp khung UDL. Thiết kế Phổ quát cho việc Học có ba nguyên tắc: Nhiều Phương tiện Đại diện (cái gì của việc học, trình bày thông tin theo nhiều cách khác nhau), Nhiều Phương tiện Hành động và Biểu đạt (cách của việc học, cho phép học sinh thể hiện sự hiểu biết khác nhau) và Nhiều Phương tiện Tham gia (tại sao của việc học, động viên và duy trì sự quan tâm). Công cụ này hỗ trợ cả ba thông qua: các định dạng nội dung đa dạng, nhiều chế độ tương tác và tham gia được trò chơi hóa. Nhấp mở thông tin chi tiết về cách mỗi tính năng công cụ phù hợp với nghiên cứu UDL. Tuyệt vời cho: phát triển chuyên môn, biện minh IEP và hiểu nền tảng sư phạm. Mẹo: Tham khảo các nguyên tắc UDL khi vận động cho việc áp dụng công cụ.",
     "tour-analysis-settings": "Điều chỉnh các tham số cho phân tích khả năng đọc, bao gồm cấp đọc mục tiêu và các chỉ số cụ thể cần theo dõi.",
@@ -29319,7 +29325,6 @@
     "adventure_system_state": "Thêm cơ chế quản lý tài nguyên vào cuộc phiêu lưu. Học sinh theo dõi: Sức khỏe (hậu quả của các lựa chọn rủi ro), Vàng/Tài nguyên (ra quyết định kinh tế), Danh tiếng (vốn xã hội từ các lựa chọn) và các tài nguyên tùy chỉnh bạn xác định. Các hành động ảnh hưởng đến các tài nguyên một cách rõ ràng, chi vàng để mua các vật phẩm, mất sức khỏe từ các quyết định kém, đạt được danh tiếng từ việc giúp đỡ người khác. Tạo các hậu quả có ý nghĩa dạy: lý luận nguyên nhân-kết quả, lập kế hoạch trước, quản lý tài nguyên và chi phí cơ hội. Bảng điều khiển trực quan hiển thị các mức tài nguyên hiện tại. Khi tài nguyên cạn kiệt, trò chơi điều chỉnh phản hồi (ví dụ: sức khỏe thấp = các tùy chọn hạn chế). Các kỹ năng toán tích hợp tự nhiên thông qua các phép tính tài nguyên.",
     "glossary_tier2_count": "Đặt số lượng từ vựng Cấp 2 (học thuật) cần bao gồm. Các từ Cấp 2: xuất hiện trên các môn học, được sử dụng trong các ngữ cảnh học thuật và thiết yếu cho việc hiểu văn bản. Ví dụ: phân tích, bằng chứng, đáng kể, tương phản. Những từ này có giá trị giảng dạy cao nhất, hầu hết học sinh đều hưởng lợi từ việc dạy rõ ràng. Số lượng được khuyến nghị phụ thuộc vào: độ dài văn bản (1 từ mỗi 100-150 từ nguồn), thời gian giảng dạy có sẵn và nhu cầu của học sinh. Cân bằng với số lượng Cấp 3 cho một bộ từ vựng hoàn chỉnh. Tập trung giảng dạy ở đây để có tác động tối đa đến khả năng hiểu đọc trên tất cả các môn học.",
     "glossary_tier3_count": "Đặt số lượng từ vựng Cấp 3 (chuyên ngành) cần bao gồm. Các từ Cấp 3: cụ thể cho một lĩnh vực môn học, thường được định nghĩa trong ngữ cảnh và có thể không chuyển giao qua các môn học. Ví dụ: quang hợp, mẫu số, ám chỉ, lập pháp. Những từ này thiết yếu để hiểu nội dung cụ thể nhưng có sử dụng hạn chế ngoài lĩnh vực. Giảng dạy thường xảy ra trong khi dạy nội dung. Để đi sâu vào một chủ đề, hãy bao gồm nhiều Cấp 3 hơn. Đối với các kỹ năng đọc rộng hơn, ưu tiên Cấp 2. Các từ Cấp 3 thường xuất hiện in đậm hoặc nghiêng trong sách giáo khoa, báo hiệu tầm quan trọng của chúng trong lĩnh vực.",
-    "glossary_definition_level": "Kiểm soát cách các định nghĩa được viết. Các tùy chọn: Giống Nguồn (duy trì độ phức tạp ban đầu, tốt cho học sinh nâng cao), Đúng Cấp lớp (khớp với từ vựng cấp lớp mục tiêu), Đơn giản hóa (sử dụng các từ thông dụng, câu ngắn hơn) và Mẫu giáo (ngôn ngữ rất cơ bản, ví dụ cụ thể). Khớp độ phức tạp định nghĩa với cấp đọc của học sinh, không phải cấp nội dung. Một học sinh lớp 10 đang học sinh học nâng cao có thể cần các định nghĩa Đơn giản hóa cho các thuật ngữ không quen thuộc. Cân nhắc các độc giả yếu nhất của bạn khi chọn. Định nghĩa có thể được chỉnh sửa riêng lẻ sau khi tạo nếu một số cần điều chỉnh. Mẹo chuyên nghiệp: Sử dụng Đơn giản hóa ban đầu, sau đó thảo luận các định nghĩa kỹ thuật hơn trong lớp.",
     "glossary_custom_instructions": "Cung cấp hướng dẫn cụ thể cho lựa chọn từ vựng và phong cách định nghĩa. Ví dụ: Tập trung vào các từ từ các chương 3-5, Chỉ bao gồm các từ liên quan đến chu trình nước, Tránh từ đồng âm với nghĩa đơn giản hơn, Thêm nguồn gốc cho các gốc tiếng La-tinh/Hy Lạp, Bao gồm các từ tương đồng tiếng Tây Ban Nha cho học sinh ELL và Sử dụng các ví dụ thân thiện với học sinh từ văn hóa đại chúng. Hướng dẫn tùy chỉnh định hình: từ nào được chọn, cách định nghĩa được viết và thông tin bổ sung nào xuất hiện. Hướng dẫn rõ ràng tạo ra các từ điển được nhắm mục tiêu tốt hơn. Bạn có thể yêu cầu các định dạng cụ thể như: Bao gồm một câu sử dụng mỗi từ hoặc Thêm các móc nhớ trực quan. AI tuân theo hướng dẫn khi thực hiện các lựa chọn từ vựng.",
     "glossary_language_input": "Chỉ định các ngôn ngữ để dịch từ vựng. Nhập các ngôn ngữ: Tiếng Tây Ban Nha, Quan thoại, Ả Rập, Pháp, Việt, Tagalog hoặc bất kỳ ngôn ngữ nào. Bạn có thể thêm nhiều ngôn ngữ cách nhau bằng dấu phẩy. Mỗi thuật ngữ sẽ hiển thị: định nghĩa tiếng Anh, (các) bản dịch ngôn ngữ mục tiêu và hướng dẫn phát âm phiên âm khi áp dụng. Sử dụng cho: hỗ trợ ELL, kết nối ngôn ngữ di sản, từ vựng ngôn ngữ thế giới và các lớp học đa ngôn ngữ. Bản dịch xuất hiện trên mọi thẻ từ vựng để tham khảo ngay lập tức. Có sẵn phát âm bằng âm thanh ở các ngôn ngữ được hỗ trợ. Nghiên cứu cho thấy việc kết nối từ vựng mới với ngôn ngữ tại nhà cải thiện việc ghi nhớ. Tối đa 4 ngôn ngữ ngăn lộn xộn trực quan trong khi hỗ trợ các lớp học đa dạng.",
     "glossary_auto_remove": "Tự động lọc ra các từ rất đơn giản hoặc phổ biến.",
@@ -29453,7 +29458,6 @@
     "fab_dictation": "Chuyển đổi giọng nói thành văn bản cho nhập liệu rảnh tay. Nhấp để kích hoạt micrô, nói rõ ràng và xem các từ xuất hiện. Hoạt động trong: nhập văn bản, các khung hỗ trợ viết, trò chuyện và bất kỳ trường nào có thể chỉnh sửa. Hỗ trợ: nhiều ngôn ngữ, các lệnh dấu câu (nói chấm câu, dấu phẩy, dòng mới) và các lệnh chỉnh sửa (xóa điều đó). Đọc chính tả yêu cầu quyền micrô trong trình duyệt. Chất lượng phụ thuộc vào: chất lượng micrô, tiếng ồn nền và độ rõ ràng của giọng nói. Phiên âm thời gian thực hiển thị khi bạn nói. Chỉnh sửa văn bản được phiên âm bình thường. Tuyệt vời cho: học sinh gặp thách thức về vận động, người viết ngại viết và tạo ý tưởng. Mẹo: Nói bằng các câu hoàn chỉnh để có độ chính xác tốt hơn.",
     "fab_focus": "Tạo một điểm sáng có thể di chuyển làm mờ mọi thứ ngoại trừ một khu vực hình tròn xung quanh con trỏ của bạn. Điều này giảm đáng kể sự lộn xộn trực quan và giúp duy trì sự chú ý vào khu vực đọc hiện tại. Đặc biệt có lợi cho học sinh ADHD, các khác biệt xử lý cảm giác hoặc bất kỳ ai bị choáng ngợp bởi các màn hình bận rộn. Điểm sáng theo chuột/cảm ứng của bạn tự động. Điều chỉnh kích thước điểm sáng và cường độ làm mờ trong Cài đặt → Khả năng Tiếp cận.",
     "fab_line_focus": "Công cụ tách biệt đọc một dòng cho việc đọc tập trung. Khi được kích hoạt: một dòng văn bản được làm nổi bật trong khi các dòng khác bị làm mờ, tạo ra sự tập trung trực quan. Điều hướng với: các phím mũi tên (lên/xuống), nhấp ở bất kỳ đâu trên văn bản hoặc chạm/vuốt trên điện thoại di động. Lợi ích: giảm sự đông đúc trực quan, hỗ trợ các khó khăn về theo dõi, giúp duy trì vị trí và giảm sự thoái lui. Cường độ (lượng văn bản xung quanh có thể nhìn thấy) có thể điều chỉnh trong Cài đặt → Khả năng Tiếp cận. Hoạt động trên: tất cả nội dung đọc, bao gồm văn bản được tạo, tài liệu nguồn và trò chuyện. Đặc biệt hữu ích cho: chứng khó đọc, ADHD, các khác biệt xử lý trực quan và bất kỳ ai bị choáng ngợp bởi các màn hình nặng văn bản. Mẹo: Kết hợp với phông chữ lớn hơn để có sự dễ đọc tối đa.",
-    "fab_ruler": "Thêm một thanh ngang bán trong suốt theo dõi con trỏ của bạn để giúp theo dõi vị trí đọc của bạn từng dòng. Đặc biệt hữu ích cho người dùng bị chứng khó đọc, ADHD hoặc khó khăn theo dõi trực quan. Kéo thước lên/xuống để định vị lại, sử dụng các phím mũi tên để kiểm soát tinh chỉnh hoặc nhấp ở bất kỳ đâu để nhảy. Màu thước có thể được tùy chỉnh trong Cài đặt. Hoạt động trên tất cả các chế độ xem đọc bao gồm Văn bản Đơn giản hóa, FAQ và các định nghĩa Từ điển.",
     "fab_timer": "Mở một đồng hồ tập trung tương tác dựa trên Kỹ thuật Pomodoro. Chọn từ các thời lượng được đặt trước (5/15/25/45 phút) hoặc tùy chỉnh riêng. Tính năng bao gồm: đếm ngược trực quan với vòng tiến độ, lời nhắc nghỉ giải lao tùy chọn, phần thưởng XP cho các phiên đã hoàn thành (dài hơn = nhiều XP hơn) và ghi nhật ký phiên để giáo viên xem xét. Dán nhãn nhiệm vụ của bạn (ví dụ: 'Đọc Chương 3') để theo dõi những gì bạn đã hoàn thành. Thu nhỏ về thanh phần đầu trang để bạn có thể làm việc trong khi nó chạy.",
     "scaffolds_edit_toggle": "Bật tắt giữa chế độ chỉnh sửa giáo viên và chế độ xem học sinh. Khi BẬT (Chế độ Chỉnh sửa): nhấp vào bất kỳ khung hỗ trợ nào để sửa đổi văn bản, thêm các gợi ý mới, xóa các mục và sắp xếp lại nội dung. Khi TẮT: các khung hỗ trợ hiển thị như học sinh thấy chúng (chỉ đọc). Các chỉnh sửa tự động lưu. Học sinh luôn thấy chỉ đọc bất kể chuyển đổi của bạn (họ không thể truy cập chế độ chỉnh sửa). Sử dụng chỉnh sửa để: tùy chỉnh các khung hỗ trợ do AI tạo, thêm các ví dụ theo lớp cụ thể, xóa các gợi ý không phù hợp và phân biệt cho các học sinh cụ thể. Xem trước chế độ xem học sinh trước khi chia sẻ. Các khung hỗ trợ ban đầu có thể được khôi phục từ lịch sử. Mẹo: Xem xét và chỉnh sửa các khung hỗ trợ trước lớp để đảm bảo chúng khớp với phong cách giảng dạy và nhu cầu học sinh của bạn.",
     "scaffolds_goal_panel": "Hiển thị các mục tiêu học tập để học sinh tham khảo. Các mục tiêu xuất hiện nổi bật trong quá trình hoạt động. Các mục tiêu hiệu quả là: thân thiện với học sinh (các câu Tôi có thể), cụ thể và có thể đo lường được và phù hợp với hoạt động. Ví dụ: Tôi có thể xác định ba nguyên nhân của Nội chiến hoặc Tôi có thể sử dụng bằng chứng để hỗ trợ tuyên bố của tôi. Các mục tiêu tăng: siêu nhận thức, tự đánh giá và sự rõ ràng về mục đích. Học sinh có thể tham khảo các mục tiêu khi làm việc. Giáo viên đặt mục tiêu trước khi học sinh truy cập. Có thể hiển thị nhiều mục tiêu. Các mục tiêu có thể bao gồm các tiêu chí thành công: Tôi biết tôi đã thành công khi đoạn văn của tôi có một câu chủ đề. Nghiên cứu cho thấy các mục tiêu học tập có thể nhìn thấy cải thiện thành tích.",
@@ -29548,7 +29552,6 @@
     "immersive_line_focus": "Bật hướng dẫn đọc một dòng. Khi đang hoạt động: dòng đọc hiện tại hoàn toàn có thể nhìn thấy, các dòng xung quanh bị làm mờ và tập trung theo dõi khi bạn điều hướng. Lợi ích: giảm sự choáng ngợp trực quan, cải thiện theo dõi và giúp sự chú ý duy trì trên văn bản hiện tại. Điều hướng với: các phím mũi tên, nhấp ở bất kỳ đâu hoặc tự động tiến lên (với TTS). Cường độ làm mờ có thể điều chỉnh trong cài đặt. Hoàn hảo cho: hỗ trợ chứng khó đọc, các khó khăn về sự chú ý và các thách thức theo dõi. Kết hợp tốt với chuyển văn bản thành giọng nói cho hỗ trợ đọc đa phương thức. Tập trung dòng hoạt động trên tất cả nội dung văn bản. Nghiên cứu cho thấy tách biệt dòng cải thiện khả năng hiểu cho các độc giả gặp khó khăn. Mẹo: Kết hợp với phông chữ lớn hơn để có sự dễ đọc tối đa.",
     "immersive_syllables": "Phân đoạn âm tiết trực quan cho hỗ trợ giải mã. Khi được bật: các từ hiển thị với các ngắt âm tiết (hy-phen-at-ed), giúp các độc giả tấn công các từ đa âm tiết. Lợi ích: xây dựng nhận thức âm vị, hỗ trợ các chiến lược giải mã, phát triển hiểu biết hình thái và hỗ trợ phát âm. Đặc biệt hữu ích cho: các bộ giải mã gặp khó khăn, học sinh ELL, hỗ trợ chứng khó đọc và các từ vựng với các mẫu âm tiết phức tạp. Phân âm tiết tuân theo các quy tắc ngữ âm tiêu chuẩn. Hoạt động trên: tất cả nội dung đọc bao gồm văn bản được điều chỉnh, các thuật ngữ từ điển và các tài liệu nguồn. Kết hợp với âm thanh để nghe các âm tiết được phát âm. Tắt khi không cần thiết để giảm độ phức tạp trực quan. Mẹo: Sử dụng cho từ vựng đầy thử thách, sau đó tắt để luyện đọc trôi chảy.",
     "immersive_wide_text": "Mở rộng văn bản để sử dụng nhiều không gian màn hình ngang hơn. Khi đang hoạt động: độ dài dòng tăng, cần ít cuộn hơn và nhiều văn bản có thể nhìn thấy cùng một lúc. Tốt cho: các độc giả thông thạo, các màn hình rộng và khi quét tìm thông tin. Chiều rộng hẹp mặc định tốt hơn cho: các độc giả gặp khó khăn, các thiết bị di động và đọc tập trung. Độ dài dòng tối ưu thay đổi theo độ giả và thiết bị. Nghiên cứu cho thấy 50-75 ký tự mỗi dòng là lý tưởng cho hầu hết các độc giả. Văn bản rộng đánh đổi khả năng đọc cho hiệu quả. Kết hợp với tập trung dòng nếu việc theo dõi trở nên khó khăn. Cài đặt được ghi nhớ theo thiết bị. Mẹo: Sử dụng văn bản rộng cho nghiên cứu và quét, văn bản hẹp cho đọc gần.",
-    "sidebar_tab_create": "Mở bảng tạo nội dung với tất cả các công cụ do AI hỗ trợ. Các trình tạo có sẵn: Bài kiểm tra (đánh giá với đáp án), Từ điển (từ vựng trực quan), Dàn ý (sơ đồ tổ chức), Phân tích (kiểm tra nội dung), Giáo án (giảng dạy có cấu trúc), Dòng thời gian (các hoạt động theo trình tự thời gian), Văn bản Đơn giản hóa (đọc theo cấp) và hơn thế nữa. Mỗi công cụ mở một bảng cấu hình để tùy chỉnh trước khi tạo. Nội dung nguồn phải được tải cho hầu hết các công cụ để phân tích. Nội dung được tạo xuất hiện trong không gian làm việc chính và được lưu vào lịch sử. Sử dụng tab Tạo làm trung tâm tạo nội dung chính của bạn. Mẹo: Bắt đầu với Phân tích để hiểu nội dung, sau đó tạo các tài nguyên được nhắm mục tiêu.",
     "sidebar_tab_history": "Truy cập tất cả nội dung đã lưu và lịch sử phiên của bạn. Lịch sử bao gồm: các phiên được tự động lưu từ công việc gần đây, các dự án và danh mục đầu tư được lưu thủ công, các tài nguyên được tạo được tổ chức theo ngày tạo và các bài nộp của học sinh (chế độ xem giáo viên). Các hành động: tải bất kỳ mục nào để tiếp tục làm việc, xóa các mục để giải phóng lưu trữ, xuất để sao lưu và tìm kiếm theo từ khóa. Lịch sử sắp xếp theo độ gần đây theo mặc định. Lọc theo loại (bài kiểm tra, từ điển, phiêu lưu, v.v.) để tìm các tài nguyên cụ thể. Lịch sử đồng bộ đám mây có thể truy cập từ bất kỳ thiết bị nào. Giới hạn lưu trữ thay đổi theo tài khoản, xóa các mục cũ nếu sắp đến giới hạn. Lịch sử của bạn là thư viện tài nguyên giảng dạy cá nhân của bạn.",
     "socratic_toggle": "Bật chế độ hội thoại Socratic cho học tập sâu hơn. Khi BẬT: AI không bao giờ đưa ra câu trả lời trực tiếp, thay vào đó đặt các câu hỏi thăm dò hướng học sinh tới khám phá. Lợi ích: phát triển tư duy phản biện, khuyến khích tự sửa chữa, xây dựng các kỹ năng giải quyết vấn đề và tạo các khoảnh khắc học tập đáng nhớ. AI sử dụng các kỹ thuật như: các câu hỏi làm rõ (Ý bạn là gì khi...?), thách thức các giả định (Nhưng nếu...?) và các yêu cầu bằng chứng (Làm thế nào bạn biết điều đó?). Tốt nhất cho: chuẩn bị thảo luận, khám phá khái niệm và giúp các học sinh muốn câu trả lời nhanh suy nghĩ sâu hơn. Có thể gây bực bội cho các học sinh tìm hiệu quả, hãy giải thích mục đích.",
     "socratic_input": "Nhập câu hỏi hoặc tuyên bố của bạn để khám phá Socratic. AI sẽ phản hồi với các câu hỏi thay vì các câu trả lời. Các điểm khởi đầu tốt: 'Tại sao bạn nghĩ [X] đã xảy ra?', 'Điều gì làm cho [Y] quan trọng?' hoặc 'Tôi tin [Z] vì...'. AI thăm dò lý luận của bạn: yêu cầu bằng chứng, khám phá các hàm ý, kiểm tra logic và làm nổi bật các giả định. Điều này phát triển các kỹ năng lập luận và tư duy phản biện. Hãy chuẩn bị để: biện minh cho tư duy của bạn, cân nhắc các lựa chọn thay thế và tinh chỉnh quan điểm của bạn. Các đối thoại Socratic có thể gây bực bội ban đầu nhưng xây dựng sự hiểu biết bền vững. Các phản hồi và lý luận của bạn được theo dõi để suy ngẫm.",
@@ -31003,7 +31006,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Mô tả nội dung đa phương tiện hiện tại",
+    "describe_current_media_done": "Đang đọc nội dung {index} trên {count}.",
+    "describe_current_media_hint": "Đọc mô tả của nội dung đa phương tiện hiện tại hoặc kế tiếp mà không rời khỏi tài nguyên",
+    "describe_current_media_none": "Không có nội dung đa phương tiện trong tài nguyên hiện tại.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Mở Learning Web: Explore",
+    "open_learning_web_explorer_done": "Đã mở Learning Web: Explore.",
+    "open_learning_web_explorer_hint": "Khám phá chuẩn, khái niệm, bài học, bằng chứng và mối liên hệ giữa các từ trong một bản đồ",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Đọc tất cả mô tả đa phương tiện",
+    "read_media_descriptions_count": "Đang đọc {count} mô tả đa phương tiện.",
+    "read_media_descriptions_hint": "Đọc mọi mô tả hình ảnh, video hoặc âm thanh đã được viết trong tài nguyên hiện tại",
+    "read_media_descriptions_none": "Không có nội dung đa phương tiện trong tài nguyên hiện tại.",
+    "suggest_contextual_next_steps": "Gợi ý 3 bước tiếp theo",
+    "suggest_contextual_next_steps_hint": "Đưa ra ba lựa chọn phù hợp với ngữ cảnh, không chọn hay chạy lựa chọn nào",
+    "suggest_contextual_next_steps_working": "Đang đọc ngữ cảnh bài học hiện tại và chuẩn bị ba lựa chọn...",
+    "surprise_me_contextually": "Gợi ý cho tôi một bước tiếp theo hữu ích",
+    "surprise_me_contextually_hint": "Chọn một hành động tiếp theo hợp lý và ít rủi ro từ ngữ cảnh bài học hiện tại",
+    "surprise_me_contextually_working": "Đang đọc ngữ cảnh bài học hiện tại và chọn một bước tiếp theo hữu ích...",
+    "use_contextual_suggestion": "Dùng bước tiếp theo được gợi ý",
+    "use_contextual_suggestion_hint": "Chạy lựa chọn 1, 2 hoặc 3 từ các gợi ý mới nhất",
+    "use_contextual_suggestion_working": "Đang bắt đầu bước tiếp theo đã chọn..."
   },
   "palette": {
     "aria": "Bảng lệnh AlloFlow",
@@ -31026,10 +31055,11 @@
       "videoStudio": "Tại đây — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Mọi hành động đều được thông báo. Ctrl+K để bật/tắt.",
     "group": {
@@ -31358,6 +31388,12 @@
     "diff_types_hint": "Tạo bộ phân hóa cho:",
     "diff_cost": "Khoảng {n} lượt tạo mỗi lần chạy.",
     "summary_standards": "tiêu chuẩn",
-    "summary_interests": "sở thích"
+    "summary_interests": "sở thích",
+    "translations": "Bản dịch",
+    "translations_auto": "Tự động ({language})",
+    "translations_auto_plain": "Tự động",
+    "translations_none": "Không có",
+    "translations_on_hint": "Tài nguyên bằng {output} sẽ có thêm một bản bằng {target}.",
+    "translations_off_hint": "Tài nguyên sẽ chỉ bằng {output}, không có ngôn ngữ thứ hai."
   }
 }

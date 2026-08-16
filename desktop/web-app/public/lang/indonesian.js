@@ -2252,7 +2252,7 @@
     "ai_guide_sub": "Pedagogy, Navigation & Otomatis-Setup",
     "ai_guide_welcome": "Halo! Saya Pemandu AI Anda. Saya dapat membantu dengan strategi UDL, menavigasikan aplikasi untuk Anda, atau menyiapkan pengaturan pelajaran Anda secara otomatis. Tanya saja!",
     "tool_analysis": "Analisis sumber Material",
-    "tool_glossary": "daftar istilah & bahasa Selection",
+    "tool_glossary": "Daftar istilah",
     "tool_simplified": "teks Adaptation",
     "tool_outline": "visual Organizer",
     "tool_visual": "visual dukungan",
@@ -2982,7 +2982,7 @@
     "choose_destination_aria": "Pilih sebuah destination"
   },
   "glossary": {
-    "title": "daftar istilah & bahasa Selection",
+    "title": "Daftar istilah",
     "tier2": "Tingkat 2 (Acad.)",
     "tier2_tooltip": "Tinggi-utility akademik kata digunakan di seluruh disciplines (misal, 'analisis', 'verify').",
     "tier3": "Tingkat 3 (Domain)",
@@ -3924,7 +3924,12 @@
     "gauge_simple": "sederhana",
     "word_bank_english": "Inggris",
     "word_bank_both": "Keduanya",
-    "word_bank_language": "Bahasa bank kata"
+    "word_bank_language": "Bahasa bank kata",
+    "measured_level_label": "Tingkat bacaan terukur",
+    "measured_on_target": "Sesuai untuk {grade}",
+    "measured_above": "Di atas tingkat {grade}",
+    "measured_below": "Di bawah tingkat {grade}",
+    "measured_note": "Flesch-Kincaid, diukur pada teks ini. Gunakan Periksa tingkat untuk pemeriksaan lebih lengkap."
   },
   "quiz": {
     "title": "Menilai",
@@ -5878,7 +5883,9 @@
     "title_poettree_config": "🌳 Tugas PoetTree",
     "title_poettree_submission": "🌳 Pengiriman Puisi",
     "title_litlab_config": "🎭 Tugas LitLab",
-    "title_litlab_submission": "🎭 Pengiriman Pertunjukan"
+    "title_litlab_submission": "🎭 Pengiriman Pertunjukan",
+    "translation_block": "Terjemahan",
+    "translation_into": "Terjemahan ({language})"
   },
   "persona": {
     "title": "Interview mode",
@@ -6297,7 +6304,7 @@
   },
   "tools": {
     "source": "sumber Material",
-    "glossary": "daftar istilah & bahasa Selection",
+    "glossary": "Daftar istilah",
     "simplified": "teks Adaptation & Keterlibatan",
     "outline": "visual Organizer",
     "quiz": "Menilai",
@@ -6886,7 +6893,6 @@
     "source_settings_instructions": "Guide AI konten generasi dengan spesifik instruksi. contoh: Buat itu menarik untuk reluctant pembaca, Fokus di water cycle, Sertakan diverse karakter names, Avoid references ke violence, dan Gunakan sederhana kosakata untuk ELL siswa. instruksi bentuk: nada, konten fokus, kosakata tingkat, dan perspective. menjadi spesifik untuk terbaik hasil. Banyak instruksi dapat menjadi combined. instruksi adalah processed along dengan Anda topik dan pengaturan. Untuk sensitive topics, sertakan konten guidance. instruksi melakukan tidak guarantee spesifik outcomes tetapi strongly influence generasi. kiat: Sertakan tingkat kelas dan apapun konten restrictions di Anda instruksi untuk paling appropriate keluaran.",
     "source_verify_checkbox": "Aktifkan AI fact-checking via Google Cari grounding. ketika ON: AI cross-references dihasilkan konten against web sources, flagging atau correcting potential inaccuracies. Tambahs 5-10 detik ke generasi waktu tetapi significantly improves reliability untuk factual konten. Especially important untuk: sejarah (dates, acara), science (processes, data), biography, dan saat ini acara. Untuk fiction, kreatif menulis, atau hypothetical skenario, ini dapat menjadi disabled ke izinkan lebih kreatif freedom. Sources consulted adalah listed di generasi log untuk guru tinjauan. Highly recommended untuk apapun konten itu akan menjadi presented sebagai factual ke siswa.",
     "source_generate_button": "Buat AI-written konten di Anda specified topik. Klik ke begin generasi menggunakan Anda: topik description, target panjang, tingkat kelas, dan kustom instruksi. Generasi takes 10-20 detik. keluaran adalah reviewed by safety filters sebelum tampilan. Dihasilkan konten dapat menjadi: edited (guru dapat ubah apapun pseni), analyzed (jalankan melalui lainnya generasi alat), dan tersimpan (tambah ke sejarah untuk reuse). Gunakan ketika: Anda butuh konten di sebuah spesifik topik, ingin contlemparaned kompleksitas, atau butuh ke fill curriculum gaps. Dihasilkan konten termasuk: appropriate kosakata, logikaal organization, dan kelas-tingkat syntax. Verify factual akurasi sebelum kelas gunakan.",
-    "generator_actions": "Hub untuk semua konten generasi alat. tersedia generators sertakan: kuis (penilaian dengan jawaban keys), daftar istilah (visual kosakata), Simplified teks (leveled membaca), FAQ (Q dan sebuah pairs), Analisis (konten examination), pelajaran Rencana (instructional design), Timeline (chronologikaal aktivitas), Scaffolds (menulis dukungan), Konsep Urutkan (categorization permainan), Matematika (problem generasi), Petualangan (interaktif cerita), dan Brainstorm (aktivitas ideas). setiap generator mengubah Anda sumber konten ke dalam berbeda format. Klik apapun generator ke buka its configuration panel. Banyak generators dapat menjadi digunakan di sama sumber. Dihasilkan konten muncul di workspace dan saves ke sejarah. kiat: Mulai dengan Analisis ke memahami Anda konten, kemudian hasilkan targeted sumber daya.",
     "tool_visual": "Akses visual generator alat. Creates AI-dihasilkan gambar termasuk: kosakata visual, konsep illustrations, adegan depictions, diagram, dan infographics. visual types: referensi gambar (untuk pembelajaran), worksheets (untuk aktivitas), dan diagram (untuk relationships). visual dukungan: ELL siswa (visual kosakata), visual pelajar, dan keterlibatan. setiap generasi membuat unique gambar. pengaturan kontrol gaya, kualitas, dan konten. Dihasilkan visual dapat menjadi: downloaded, embedded di bahan, dan tambahed ke glossaries. Uses AI gambar generasi credits. kiat: Hasilkan visual untuk abstract konsep itu adalah difficult ke explain dengan kata alone.",
     "tool_udl": "Pelajari tentang UDL framework integration. Universal Design untuk Pembelajaran memiliki three principles: Banyak Means Representasi ( apa pembelajaran—present informasi di berbeda ways), Banyak Means Tindakan dan Expression ( bagaimana pembelajaran—let siswa demonstrate understanding differently), dan Banyak Means Keterlibatan ( why pembelajaran—motivate dan sustain interest). ini alat dukungan semua three melalui: varied konten format, banyak intertindakan mode, dan gamified keterlibatan. Clicking membuka rinci informasi tentang bagaimana setiap alat fitur aligns dengan UDL research. Hebat untuk: professional pengembangan, IEP justification, dan understanding pedagogical foundation. kiat: Referensi UDL principles ketika advocating untuk alat adoption.",
     "tour-analysis-settings": "Menyesuaikan parameters untuk readability analisis, termasuk target membaca tingkat dan spesifik metrics ke track.",
@@ -6911,7 +6917,6 @@
     "adventure_system_state": "Tambah sumber daya mengelolament mechanics ke petualangan. siswa track: Kesehatan (consequence berisiko pilihan), emas/sumber daya (economic keputusan-making), Reputation (sosial capital dari pilihan), dan kustom sumber daya Anda define. Tindakan affect sumber daya visibly—spend emas ke buy item, lose health dari poor keputusan, gain reputation dari bantuaning others. Creates meaningful konsekuensi itu teach: cause-dan-effect reasoning, planning ahead, sumber daya mengelolament, dan opportunity cost. visual dasbor menampilkan saat ini sumber daya tingkat. ketika sumber daya deplete, permainan adaptively responds (misal, low health = limited opsi). Matematika keterampilan integrate naturally melalui sumber daya calculations.",
     "glossary_tier2_count": "Atur bagaimana many Tingkat 2 (akademik) kosakata kata ke sertakan. Tingkat 2 kata: muncul di seluruh subjects, adalah digunakan di akademik contexts, dan adalah essential untuk teks pemahaman. contoh: analisis, bukti, significant, contrast. ini kata memiliki highest instructional nilai—paling siswa benefit dari explicit teaching. Recommended hitung depends di: teks panjang (1 kata per 100-150 kata sumber), tersedia instruksi waktu, dan siswa butuh. Balance dengan Tingkat 3 hitung untuk sebuah selesai kosakata atur. Fokus instruksi di sini untuk maximum impact di membaca pemahaman di seluruh semua subjects.",
     "glossary_tier3_count": "Atur bagaimana many Tingkat 3 (domain-spesifik) kosakata kata ke sertakan. Tingkat 3 kata: adalah spesifik ke sebuah subject luas, adalah usually defined di konteks, dan dapat tidak transfer di seluruh subjects. contoh: photosynthesis, denominator, alliteration, legislative. ini kata adalah essential untuk understanding spesifik konten tetapi memiliki limited gunakan outside domain. instruksi typically occurs selama konten teaching. Untuk deep dive ke dalam sebuah topik, sertakan lebih Tingkat 3. Untuk broader membaca keterampilan, prioritize Tingkat 2. Tingkat 3 kata often muncul di bold atau italics di textbooks, signaling mereka importance within discipline.",
-    "glossary_definition_level": "Kontrol bagaimana definisi adalah written. opsi: Sama sebagai sumber (maintains asli kompleksitas—baik untuk lanjutan siswa), Di kelas (matches target tingkat kelas kosakata), Simplified (menggunakan umum kata, shorter kalimat), dan Kindergsenien (sangat dasar bahasa, concrete contoh). Cocok definisi kompleksitas ke siswa membaca tingkat, tidak konten tingkat. sebuah 10th-grader studying lanjutan biology might butuh Simplified definisi untuk unfamiliar istilah. Pertimbangkan Anda siswa weakest pembaca ketika selecting. definisi dapat menjadi individually edited setelah generasi jika beberapa butuh adjustment. Pro kiat: Gunakan Simplified initially, kemudian discuss lebih technical definisi di kelas.",
     "glossary_custom_instructions": "Sediakan spesifik guidance untuk kosakata selection dan definisi gaya. contoh: Fokus di kata dari bab 3-5, Sertakan hanya kata related ke water cycle, Avoid homonyms dengan simpler meanings, Tambah etymology untuk Latin/Greek roots, Sertakan Spanish cognates untuk ELL siswa, dan Gunakan siswa-ramah contoh dari pop culture. Custom instruksi bentuk: yang kata adalah dipilih, bagaimana definisi adalah written, dan apa tambahitional informasi muncul. Clear instruksi memproduksi lebih baik-targeted glossaries. Anda dapat request spesifik format like: Sertakan sebuah kalimat menggunakan setiap kata atau Tambah visual memory hooks. AI follows instruksi ketika making kosakata selections.",
     "glossary_language_input": "Tentukan bahasa untuk kosakata terjemahan. Masukkan bahasa: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, atau apapun bahasa. Anda dapat tambah banyak bahasa separated by commas. setiap istilah akan tampilkan: English definisi, target bahasa terjemahan(s), dan phonetic pronunciation guide di mana applicable. Gunakan untuk: ELL dukungan, heritage bahasa connections, world bahasa kosakata, dan multilingual kelasrooms. terjemahan muncul di every kosakata kartu untuk instant referensi. audio pronunciation tersedia di supported bahasa. Research menampilkan connecting baru kosakata ke home bahasa improves retention. Max 4 bahasa prevents visual clutter sementara supporting diverse kelasrooms.",
     "glossary_auto_remove": "Automatically filter out sangat sederhana atau umum kata.",
@@ -7045,7 +7050,6 @@
     "fab_dictation": "Convert speech ke teks untuk hands-bebas masukan. Klik ke activate microphone, bicara clearly, dan tonton kata muncul. Berfungsi di: teks masukan, menulis scaffolds, obrolan, dan apapun editable field. dukungan: banyak bahasa, punctuation commands (say period, comma, baru garis), dan editing commands (hapus itu). Dictation requires microphone permission di browser. Kualitas depends di: microphone kualitas, background noise, dan speech clarity. Nyata-waktu transcription menampilkan sebagai Anda bicara. Ubah transcribed teks normally. Hebat untuk: siswa dengan motor tantangan, reluctant writers, dan idea generasi. kiat: Bicara di selesai kalimat untuk lebih baik akurasi.",
     "fab_focus": "Creates sebuah movable spotlight itu dims everything except sebuah circular luas around Anda cursor. ini dramatically reduces visual clutter dan membantu maintain attention di saat ini membaca luas. Especially beneficial untuk siswa dengan ADHD, sensory processing differences, atau anyone overwhelmed by busy screens. spotlight follows Anda mouse/touch secara otomatis. Menyesuaikan spotlight size dan dim intensity di pengaturan → Aksesibilitas.",
     "fab_line_focus": "Single-garis membaca isolation alat untuk focused membaca. ketika activated: one teks garis adalah highlighted sementara others adalah dimmed, creating visual fokus. Navigate dengan: arrow keys (up/down), klik anywhere di teks, atau touch/swipe di mobile. Benefits: reduces visual crowding, dukungan pelacakan difficulties, membantu maintain place, dan reduces regression. Intensity (bagaimana much surrounding teks adalah terlihat) adalah adjustable di pengaturan → Aksesibilitas. Berfungsi di: semua membaca konten, termasuk dihasilkan teks, sumber bahan, dan obrolan. Pseniicularly bantuanful untuk: dyslexia, ADHD, visual processing differences, dan anyone overwhelmed by teks-heavy screens. kiat: Combine dengan larger font untuk maximum membaca ease.",
-    "fab_ruler": "Tambahs sebuah semi-transparent horizontal bar itu follows Anda cursor ke bantuan track Anda membaca posisi garis by garis. Pseniicularly bantuanful untuk users dengan dyslexia, ADHD, atau visual pelacakan difficulties. Seret ruler up/down ke reposition, gunakan arrow keys untuk fine kontrol, atau klik anywhere ke jump. ruler warna dapat menjadi customized di pengaturan. Berfungsi di seluruh semua membaca views termasuk Simplified teks, FAQ, dan daftar istilah definisi.",
     "fab_timer": "Opens sebuah interaktif fokus timer berdasarkan di Pomodoro Technique. Pilih dari preset durations (5/15/25/45 minutes) atau sesuaikan Anda own. fitur sertakan: visual countdown dengan kemajuan ring, opsional break reminders, XP hadiah untuk completed sesi (longer = lebih XP), dan sesi logging untuk guru tinjauan. Label Anda task (misal, 'Baca bab 3') ke track apa Anda accomplished. Minimizes ke header bar so Anda dapat kerja sementara itu runs.",
     "scaffolds_edit_toggle": "Alihkan antara guru editing dan siswa lihat mode. ketika ON (Ubah mode): klik apapun scaffold ke ubah teks, tambah baru permintaan, hapus item, dan reorder konten. ketika OFF: scaffolds tampilan sebagai siswa lihat them (baca-hanya). Edits simpan secara otomatis. siswa always lihat baca-hanya regardless Anda alihkan (mereka cannot akses ubah mode). Gunakan editing ke: sesuaikan AI-dihasilkan scaffolds, tambah kelas-spesifik contoh, hapus inappropriate permintaan, dan differentiate untuk spesifik siswa. Preview siswa lihat sebelum sharing. Asli scaffolds dapat menjadi restored dari sejarah. kiat: Tinjauan dan ubah scaffolds sebelum kelas ke ensure mereka cocok Anda teaching gaya dan siswa needs.",
     "scaffolds_goal_panel": "Tampilan pembelajaran objectives untuk siswa referensi. tujuan muncul prominently selama aktivitas. Effective tujuan adalah: siswa-ramah (I dapat statements), spesifik dan measurable, dan aligned ke aktivitas. contoh: I dapat mengidentifikasi three causes Civil War atau I dapat gunakan bukti ke dukungan my claim. tujuan increase: metacognition, diri-penilaian, dan purpose clarity. siswa dapat referensi tujuan sementara working. guru sets tujuan sebelum siswa akses. Banyak tujuan dapat menjadi displayed. tujuan dapat sertakan sukses criteria: I know I memiliki succeeded ketika my paragraf memiliki sebuah topik kalimat. Research menampilkan terlihat pembelajaran targets improve achievement.",
@@ -7140,7 +7144,6 @@
     "immersive_line_focus": "Aktifkan single-garis membaca guide. ketika aktif: saat ini membaca garis adalah fully terlihat, surrounding garis adalah dimmed, dan fokus follows sebagai Anda navigate. Benefits: reduces visual overwhelm, improves pelacakan, dan membantu attention stay di saat ini teks. Navigate dengan: arrow keys, klik anywhere, atau otomatis-maju (dengan TTS). Dimming intensity adalah adjustable di pengaturan. Sempurna untuk: dyslexia dukungan, attention difficulties, dan pelacakan tantangan. Combines well dengan teks-ke-speech untuk multi-modal membaca dukungan. garis fokus berfungsi di semua teks konten. Research menampilkan garis isolation improves pemahaman untuk kesulitan pembaca. kiat: Combine dengan larger font untuk maximum membaca ease.",
     "immersive_syllables": "visual syllable segmentation untuk decoding dukungan. ketika enabled: kata tampilan dengan syllable breaks (hy-phen-di-ed), bantuaning pembaca attack multisyllabic kata. Benefits: membangun phonemic awareness, dukungan decoding strategi, develops morphologikaal understanding, dan aids pronunciation. Especially bantuanful untuk: kesulitan decoders, ELL siswa, dyslexia dukungan, dan kosakata kata dengan kompleks syllable pola. Syllabification follows standar phonetic rules. Berfungsi di: semua membaca konten termasuk adapted teks, daftar istilah istilah, dan sumber bahan. Combine dengan audio ke hear syllables pronounced. Alihkan off ketika tidak needed ke reduce visual kompleksitas. kiat: Gunakan untuk challenging kosakata, kemudian nonaktifkan untuk fluent membaca berlatih.",
     "immersive_wide_text": "Expand teks ke gunakan lebih horizontal layar space. ketika aktif: garis panjang increases, kurang sclemparaning adalah needed, dan lebih teks adalah terlihat di once. baik untuk: fluent pembaca, wide displays, dan ketika scanning untuk informasi. bawaan narrow lebar adalah lebih baik untuk: kesulitan pembaca, mobile devices, dan focused membaca. Optimal garis panjang varies by reader dan device. Research menampilkan 50-75 karakter per garis adalah ideal untuk paling pembaca. Wide teks trades readability untuk efficiency. Combine dengan garis fokus jika pelacakan becomes difficult. pengaturan adalah remembered per device. kiat: Gunakan wide teks untuk research dan scanning, narrow teks untuk tutup membaca.",
-    "sidebar_tab_create": "Buka panel pembuatan konten dengan semua alat bertenaga AI: Quiz, Glossary, Outline, Lesson Plan, Timeline, dan lainnya.",
     "sidebar_tab_history": "Akses semua konten tersimpan dan riwayat sesi Anda. Muat, hapus, ekspor, atau cari berdasarkan kata kunci.",
     "socratic_toggle": "Aktifkan Socratic dialogue mode untuk deeper pembelajaran. ketika ON: AI never gives direct jawaban—instead asks probing pertanyaan itu guide siswa toward discovery. Benefits: develops critical berpikir, encourages diri-correction, membangun problem-solving keterampilan, dan membuat memorable pembelajaran moments. AI menggunakan techniques like: clarifying pertanyaan (apa melakukan Anda mean by...?), challenging assumptions (tetapi apa jika...?), dan bukti requests (bagaimana melakukan Anda know itu?). Terbaik untuk: discussion preparation, konsep exploration, dan bantuaning siswa siapa ingin cepat jawaban ke think lebih deeply. Dapat frustrate siswa seeking efficiency—explain purpose.",
     "socratic_input": "Masukkan pertanyaan atau pernyataan Anda untuk eksplorasi Socratic. AI akan merespons dengan pertanyaan, bukan jawaban.",
@@ -31120,7 +31123,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Deskripsikan media saat ini",
+    "describe_current_media_done": "Membacakan media {index} dari {count}.",
+    "describe_current_media_hint": "Baca deskripsi media saat ini atau berikutnya tanpa meninggalkan sumber",
+    "describe_current_media_none": "Tidak ada media di sumber saat ini.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Buka Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore dibuka.",
+    "open_learning_web_explorer_hint": "Jelajahi standar, konsep, pelajaran, bukti, dan hubungan kata dalam satu peta",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Bacakan semua deskripsi media",
+    "read_media_descriptions_count": "Membacakan {count} deskripsi media.",
+    "read_media_descriptions_hint": "Baca setiap deskripsi gambar, video, atau audio yang ditulis di sumber saat ini",
+    "read_media_descriptions_none": "Tidak ada media di sumber saat ini.",
+    "suggest_contextual_next_steps": "Sarankan 3 langkah berikutnya",
+    "suggest_contextual_next_steps_hint": "Menawarkan tiga pilihan yang sesuai konteks, tanpa memilih atau menjalankannya",
+    "suggest_contextual_next_steps_working": "Membaca konteks pelajaran saat ini dan menyiapkan tiga pilihan...",
+    "surprise_me_contextually": "Beri saya langkah berikutnya yang berguna",
+    "surprise_me_contextually_hint": "Memilih satu tindakan berikutnya yang masuk akal dan berisiko rendah dari konteks pelajaran saat ini",
+    "surprise_me_contextually_working": "Membaca konteks pelajaran saat ini dan memilih langkah berikutnya yang berguna...",
+    "use_contextual_suggestion": "Gunakan langkah berikutnya yang disarankan",
+    "use_contextual_suggestion_hint": "Menjalankan pilihan 1, 2, atau 3 dari saran terbaru",
+    "use_contextual_suggestion_working": "Memulai langkah berikutnya yang dipilih..."
   },
   "palette": {
     "aria": "Palet perintah AlloFlow",
@@ -31143,10 +31172,11 @@
       "videoStudio": "Di sini — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Setiap tindakan diumumkan. Ctrl+K untuk beralih.",
     "group": {
@@ -31458,6 +31488,12 @@
     "diff_types_hint": "Buat set berdiferensiasi untuk:",
     "diff_cost": "Sekitar {n} generasi per proses.",
     "summary_standards": "standar",
-    "summary_interests": "minat"
+    "summary_interests": "minat",
+    "translations": "Terjemahan",
+    "translations_auto": "Otomatis ({language})",
+    "translations_auto_plain": "Otomatis",
+    "translations_none": "Tidak ada",
+    "translations_on_hint": "Materi dalam {output} juga akan disertai versi {target}.",
+    "translations_off_hint": "Materi hanya dalam {output}, tanpa bahasa kedua."
   }
 }

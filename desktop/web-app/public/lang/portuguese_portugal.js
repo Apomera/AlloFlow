@@ -622,7 +622,7 @@
     "ai_guide_sub": "Pedagogia, Navegação e Configuração Automática",
     "ai_guide_welcome": "Olá! Sou o seu Guia de IA. Posso ajudar com estratégias de UDL, navegar pela aplicação por si ou configurar automaticamente as definições da sua aula. É só pedir!",
     "tool_analysis": "Analisar Material-Fonte",
-    "tool_glossary": "Glossário e Seleção de Idioma",
+    "tool_glossary": "Glossário",
     "tool_simplified": "Adaptação de Texto",
     "tool_outline": "Organizador Visual",
     "tool_visual": "Suporte Visual",
@@ -940,7 +940,7 @@
   },
   "tools": {
     "source": "Material-Fonte",
-    "glossary": "Glossário e Seleção de Idioma",
+    "glossary": "Glossário",
     "simplified": "Adaptação de Texto e Engajamento",
     "outline": "Organizador Visual",
     "quiz": "Avaliar",
@@ -2868,7 +2868,9 @@
     "title_poettree_config": "🌳 Tarefa do PoetTree",
     "title_poettree_submission": "🌳 Envio de poema",
     "title_litlab_config": "🎭 Tarefa do LitLab",
-    "title_litlab_submission": "🎭 Envio de apresentação"
+    "title_litlab_submission": "🎭 Envio de apresentação",
+    "translation_block": "Tradução",
+    "translation_into": "Tradução ({language})"
   },
   "fullpack": {
     "button_label": "Gerar Pacote Completo de Recursos",
@@ -3039,7 +3041,12 @@
     "gauge_simple": "Simples",
     "word_bank_english": "Inglês",
     "word_bank_both": "Ambos",
-    "word_bank_language": "Idioma do banco de palavras"
+    "word_bank_language": "Idioma do banco de palavras",
+    "measured_level_label": "Nível de leitura medido",
+    "measured_on_target": "Adequado para {grade}",
+    "measured_above": "Acima do nível {grade}",
+    "measured_below": "Abaixo do nível {grade}",
+    "measured_note": "Flesch-Kincaid, medido neste texto. Use Verificar Nível para uma verificação mais completa."
   },
   "outline": {
     "title": "Organizador Visual",
@@ -3176,7 +3183,7 @@
     "student_worksheet": "Ficha do aluno"
   },
   "glossary": {
-    "title": "Glossário e Seleção de Idioma",
+    "title": "Glossário",
     "tier2": "Nível 2 (Acad.)",
     "tier2_tooltip": "Palavras acadêmicas de alta utilidade usadas em várias disciplinas (ex.: 'analisar', 'verificar').",
     "tier3": "Nível 3 (Domínio)",
@@ -7558,7 +7565,6 @@
     "fab_dictation": "Converte fala em texto para entrada hands-free. Clique para ativar o microfone, fale claramente e veja as palavras aparecerem. Funciona em: entradas de texto, andaimes de escrita, chat e qualquer campo editável. Suporta: múltiplos idiomas, comandos de pontuação (diga ponto, vírgula, nova linha) e comandos de edição (apague isso). A ditado requer permissão de microfone no navegador. A qualidade depende de: qualidade do microfone, ruído de fundo e clareza da fala. Transcrição em tempo real mostra enquanto você fala. Edite o texto transcrito normalmente. Ótimo para: alunos com desafios motores, escritores relutantes e geração de ideias. Dica: Fale em frases completas para melhor precisão.",
     "fab_focus": "Cria um foco móvel que escurece tudo exceto uma área circular ao redor do cursor. Isso reduz drasticamente a desordem visual e ajuda a manter a atenção na área de leitura atual. Especialmente benéfico para alunos com TDAH, diferenças de processamento sensorial ou qualquer pessoa sobrecarregada por ecrãs ocupadas. O foco segue o mouse/toque automaticamente. Ajuste o tamanho do foco e a intensidade do escurecimento em Configurações → Acessibilidade.",
     "fab_line_focus": "Ferramenta de isolamento de linha única para leitura focada. Quando ativada: uma linha de texto é destacada enquanto as outras são escurecidas, criando foco visual. Navegue com: teclas de seta (cima/baixo), clique em qualquer lugar do texto ou toque/deslize no telemóvel. Benefícios: reduz aglomeração visual, apoia dificuldades de rastreamento, ajuda a manter o lugar e reduz regressão. A intensidade (quanto do texto circundante é visível) é ajustável em Configurações → Acessibilidade. Funciona em: todo o conteúdo de leitura, incluindo texto gerado, materiais-fonte e chat. Particularmente útil para: dislexia, TDAH, diferenças de processamento visual e qualquer pessoa sobrecarregada por ecrãs com muito texto. Dica: Combine com fonte maior para máxima facilidade de leitura.",
-    "fab_ruler": "Adiciona uma barra horizontal semitransparente que segue seu cursor para ajudá-lo a rastrear sua posição de leitura linha por linha. Particularmente útil para utilizadores com dislexia, TDAH ou dificuldades de rastreamento visual. Arraste a régua para cima/baixo para reposicionar, use as teclas de seta para controle fino ou clique em qualquer lugar para pular. A cor da régua pode ser personalizada em Configurações. Funciona em todas as visualizações de leitura, incluindo Texto Simplificado, FAQ e definições de Glossário.",
     "fab_timer": "Abre um cronômetro de foco interativo baseado na Técnica Pomodoro. Escolha entre durações predefinidas (5/15/25/45 minutos) ou personalize a sua. Os recursos incluem: contagem regressiva visual com anel de progresso, lembretes opcionais de pausa, recompensas de XP por sessões completadas (mais longas = mais XP) e registro de sessões para revisão do professor. Rotule sua tarefa (ex.: 'Ler Capítulo 3') para acompanhar o que você realizou. Minimiza para a barra de cabeçalho para que você possa trabalhar enquanto roda.",
     "fab_toggle": "Mostra ou oculta o painel flutuante do botão de acessibilidade. Quando visível: acesso rápido a ferramentas de foco, ditado, cronômetros e auxiliares de leitura. Quando oculto: ecrã mais limpa com mais espaço de conteúdo. O FAB (Floating Action Button) fornece acesso com um clique a recursos de acessibilidade frequentemente usados sem navegar por menus. A posição pode ser movida por arrastar. O FAB lembra a posição entre sessões. Contém: foco em destaque, régua de linha, ditado, cronômetro e atalhos personalizáveis. Para distração mínima, oculte o FAB e use atalhos de teclado em vez disso. Recomendado: mantenha visível para alunos usando ferramentas de acessibilidade regularmente.",
     "faq_count": "Controla a quantidade de itens FAQ gerados. Faixa: 3 perguntas (referência rápida) a 20 perguntas (cobertura abrangente). Considere: comprimento do conteúdo (textos mais longos suportam mais perguntas), atenção do aluno e finalidade (visão geral vs. mergulho profundo). Menos perguntas: focadas em conceitos principais, revisão mais rápida, menos sobrecarga. Mais perguntas: cobertura completa, aborda casos extremos, apoia perguntas diversas de aprendizes. A IA prioriza os conceitos mais importantes quando limitada. Sempre pode gerar mais depois. Equilibre quantidade com qualidade, muitas podem sobrecarregar. Dica: Comece com 5-7 perguntas para a maioria dos textos, adicione mais se os alunos tiverem perguntas restantes.",
@@ -7582,14 +7588,12 @@
     "gen_loading_hint": "Dicas rotativas mostradas durante o tempo de geracao para o ajudar a obter melhores resultados (engenharia de prompts, atalhos, boas praticas pedagogicas).",
     "gen_loading_progress": "Indicador visual de progresso para geração de IA. Preenche da esquerda para a direita conforme as fases de geração são concluídas. As fases variam por tipo de conteúdo, mas geralmente incluem: análise de conteúdo, processamento de IA, formatação e finalização. O progresso pode pausar brevemente entre fases, isso é normal. O tempo real de conclusão depende de: comprimento do conteúdo, complexidade da solicitação, carga do servidor e tipo de recurso (imagens levam mais tempo do que texto). A barra é uma estimativa e pode pular perto da conclusão. Se preso em 100% por mais de 30 segundos, atualize a página e verifique se o conteúdo foi guardado no histórico.",
     "gen_loading_screen": "Painel de estado da geracao por IA. Indica a fase atual e o tempo estimado. Nao saia da pagina, pois pode perder as atualizacoes de estado.",
-    "generator_actions": "Hub para todas as ferramentas de geração de conteúdo. Geradores disponíveis incluem: Quiz (avaliação com gabaritos), Glossário (vocabulário visual), Texto Simplificado (leitura nivelada), FAQ (pares de P&R), Análise (exame de conteúdo), Plano de Aula (design instrucional), Linha do Tempo (atividade cronológica), Andaimes (suportes de escrita), Concept Sort (jogo de categorização), Matemática (geração de problemas), Aventura (história interativa) e Brainstorm (ideias de atividade). Cada gerador transforma seu conteúdo-fonte em diferentes formatos. Clique em qualquer gerador para abrir seu painel de configuração. Múltiplos geradores podem ser usados no mesmo conteúdo. O conteúdo gerado aparece no espaço de trabalho e guarda no histórico. Dica: Comece com a Análise para entender seu conteúdo, depois gere recursos direcionados.",
     "global_mute_toggle": "Botão de silenciamento universal de áudio. Quando ativado, TODOS os sons são silenciados, incluindo: vozes de texto-para-fala de IA, bipes de digitação e sons de voo do AlloBot, fala alternativa do navegador, efeitos de áudio do jogo e sons de notificação. Perfeito para salas de aula silenciosas, ambientes de teste ou quando os alunos precisam trabalhar em silêncio. O botão fica vermelho com um indicador pulsante quando ativo. O áudio é retomado automaticamente quando você clica para reativar. Esta configuração persiste entre recargas de página.",
     "glossary_add_term": "Adiciona um termo de vocabulário personalizado ao glossário. Insira um estilo (ex.: 'desenho animado', 'pixel art') e um termo para adicionar.",
     "glossary_auto_remove": "Filtra automaticamente palavras muito simples ou comuns.",
     "glossary_bingo": "Cria cartelas de Bingo imprimíveis com seus termos de vocabulário. Recursos: geração randomizada de cartelas (cada aluno recebe cartela única), tamanho de grade personalizável (3x3, 4x4, 5x5), definições como prompts de chamada e templates estilizados. Imprima conjunto da turma com um clique. Ótimo para: revisão com toda a turma, preparação para teste, atividades de dia chuvoso e celebrações de fim de unidade. As cartelas incluem: opção de espaço livre, numeradas para rastreamento e folha de chamada do professor. Exporte como PDF para impressão. A IA garante distribuição justa de termos em todas as cartelas. Dica: Use definições como chamadas para fazer os alunos combinarem significado, não apenas reconhecer palavras.",
     "glossary_crossword": "Cria um quebra-cabeça profissional de palavras cruzadas a partir do seu vocabulário. Recursos: geração automática de pistas a partir de definições, colocação otimizada de palavras, grade numerada com seções horizontal/vertical e dificuldade ajustável. A saída inclui: folha de quebra-cabeça imprimível, gabarito separado e versão digital interativa. Ótimo para: avaliação (preencher a partir das definições), revisão de vocabulário, pensamento crítico (usando letras cruzadas como dicas) e tarefa de casa envolvente. A IA maximiza as interseções de palavras para estrutura adequada de palavras cruzadas. Dica: Revise as pistas geradas automaticamente para clareza antes de imprimir.",
     "glossary_custom_instructions": "Instrucoes personalizadas que orientam a IA na selecao de vocabulario e no estilo das definicoes (por exemplo: focar em determinado capitulo, incluir cognatos, evitar homonimos).",
-    "glossary_definition_level": "Controla a complexidade das definicoes: igual a fonte, ao nivel do ano, simplificada ou educacao infantil. Ajuste ao nivel de leitura dos alunos.",
     "glossary_delete_image": "Remove a representação visual deste termo de vocabulário. A exclusão é permanente para esta imagem. O termo e a definição permanecem; apenas a imagem é removida. Use quando: a imagem é imprecisa, inadequada ou distrai. Após a exclusão: o termo aparece sem visual, você pode regerar uma nova imagem ou deixar sem imagem. Alguns termos podem funcionar melhor sem visuais (conceitos abstratos, palavras de função). Imagens eliminadas não podem ser recuperadas. Considere regerar em vez de eliminar se quiser uma imagem diferente. Dica: Exclua imagens que causem confusão ou representem mal o conceito, depois regere com configurações diferentes.",
     "glossary_download_audio": "Baixa um ficheiro MP3 deste termo de vocabulário sendo falado em voz alta. Perfeito para: criar baralhos de flashcard de áudio, prática de pronúncia offline, projetos multimídia e acomodações de acessibilidade. O áudio usa suas configurações de voz atuais (voz, velocidade, volume). O ficheiro é nomeado segundo o termo para fácil organização. Construa uma biblioteca de vocabulário de áudio completa baixando todos os termos. Combine com imagens e definições para materiais de estudo abrangentes.",
     "glossary_edit": "Abre o editor do Glossary para personalizar termos, definicoes, imagens e traducoes. Util quando as sugestoes da IA precisam de afinamento.",
@@ -7846,7 +7850,6 @@
     "settings_perm_mode": "Permite que os alunos alternem entre escolha multipla e resposta livre. Ative durante a pratica; desative em avaliacoes formais para garantir consistencia.",
     "settings_perm_visuals": "Permite que os alunos solicitem imagens geradas por IA. Ative para projetos criativos e visuais; desative para poupar creditos da API ou em aulas focadas em texto.",
     "settings_persona_free": "Controla o formato de conversa com a persona. Quando LIGADO: os alunos digitam suas próprias perguntas, permitindo investigação autêntica, exploração criativa e desenvolvimento de habilidades de comunicação. Quando DESLIGADO: os alunos escolhem entre iniciadores de conversa gerados por IA, fornecendo andaime para alunos em dificuldades e garantindo conversas produtivas. A resposta livre desenvolve: habilidades de questionamento, curiosidade e habilidades de conversação. O modo guiado garante: discussões no tópico, interações apropriadas e pontos de entrada acessíveis. Misture modos: comece guiado para modelar boas perguntas, depois ative a resposta livre conforme os alunos ganham confiança. Ambos os modos produzem aprendizagem valiosa. Dica: Ative a resposta livre para projetos de pesquisa; use o modo guiado para objetivos específicos do currículo.",
-    "sidebar_tab_create": "Abre o painel de geração de conteúdo com todas as ferramentas com IA. Geradores disponíveis: Quiz (avaliações com gabaritos), Glossário (vocabulário visual), Esboço (organizadores gráficos), Análise (exame de conteúdo), Plano de Aula (instrução estruturada), Linha do Tempo (atividades cronológicas), Texto Simplificado (leitura nivelada) e mais. Cada ferramenta abre um painel de configuração para personalização antes da geração. O conteúdo-fonte deve ser carregado para a maioria das ferramentas analisarem. O conteúdo gerado aparece no espaço de trabalho principal e é guardado no histórico. Use a aba Criar como seu hub principal de geração de conteúdo. Dica: Comece com a Análise para entender o conteúdo, depois gere recursos direcionados.",
     "sidebar_tab_history": "Acessa todo o seu conteúdo guardado e histórico de sessão. O histórico inclui: sessões salvas automaticamente do trabalho recente, projetos e portfólios salvos manualmente, recursos gerados organizados por data de criação e envios de alunos (visualização do professor). Ações: carregue qualquer item para continuar trabalhando, exclua itens para liberar armazenamento, exporte para backup e pesquise por palavra-chave. O histórico classifica por recência por padrão. Filtre por tipo (quiz, glossário, aventura etc.) para encontrar recursos específicos. O histórico sincronizado em nuvem é acessível de qualquer dispositivo. Os limites de armazenamento variam por conta, exclua itens antigos se estiver se aproximando do limite. Seu histórico é sua biblioteca pessoal de recursos de ensino.",
     "simplified_add_term": "Adiciona rapidamente vocabulário da sua leitura diretamente ao glossário. Selecione qualquer palavra no texto simplificado, depois clique neste botão. O termo é adicionado ao seu glossário com: definição gerada por IA no nível apropriado, áudio de pronúncia e visual (se os visuais estiverem ativados). Economiza tempo em comparação com a inserção manual de termos. Os termos adicionados se integram com o glossário existente. Ótimo para: construir listas de vocabulário em movimento, capturar termos sobre os quais os alunos perguntam e criar glossários orientados pelo aluno. Os alunos podem sugerir termos; os professores aprovam as adições. Dica: Incentive os alunos a identificar palavras desconhecidas e adicioná-las para construir listas personalizadas de vocabulário.",
     "simplified_charts": "Transforma dados textuais em representações visuais. A IA identifica: dados numéricos, relações, processos e comparações em seu texto, depois gera visualizações apropriadas. Formatos de saída: tabelas de dados (informação organizada), fluxogramas (processos), gráficos de comparação (diferenças/semelhanças) e linhas do tempo (sequências). O formato Mermaid.js permite: exibição interativa na web, edição fácil e múltiplas opções de exportação. Ótimo para: aprendizes visuais, compreensão de dados e tornar conceitos abstratos concretos. Os gráficos podem ser regerados com estilos diferentes. Edite gráficos gerados para refinar a precisão. Dica: Textos complexos frequentemente contêm dados ocultos que os gráficos podem revelar.",
@@ -31060,7 +31063,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Descrever o conteúdo multimédia atual",
+    "describe_current_media_done": "A ler o conteúdo {index} de {count}.",
+    "describe_current_media_hint": "Ler a descrição do conteúdo multimédia atual ou seguinte sem sair do recurso",
+    "describe_current_media_none": "Não há conteúdo multimédia no recurso atual.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Abrir Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore aberto.",
+    "open_learning_web_explorer_hint": "Explore normas, conceitos, lições, provas e ligações entre palavras num único mapa",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Ler todas as descrições multimédia",
+    "read_media_descriptions_count": "A ler {count} descrições multimédia.",
+    "read_media_descriptions_hint": "Ler cada descrição escrita de imagem, vídeo ou áudio no recurso atual",
+    "read_media_descriptions_none": "Não há conteúdo multimédia no recurso atual.",
+    "suggest_contextual_next_steps": "Sugerir 3 próximos passos",
+    "suggest_contextual_next_steps_hint": "Oferece três opções adequadas ao contexto, sem escolher nem executar nenhuma",
+    "suggest_contextual_next_steps_working": "A ler o contexto da lição atual e a preparar três opções...",
+    "surprise_me_contextually": "Surpreenda-me com um próximo passo útil",
+    "surprise_me_contextually_hint": "Escolhe uma ação seguinte sensata e de baixo risco a partir do contexto da lição atual",
+    "surprise_me_contextually_working": "A ler o contexto da lição atual e a escolher um próximo passo útil...",
+    "use_contextual_suggestion": "Usar um próximo passo sugerido",
+    "use_contextual_suggestion_hint": "Executa a opção 1, 2 ou 3 das sugestões mais recentes",
+    "use_contextual_suggestion_working": "A iniciar o próximo passo escolhido..."
   },
   "palette": {
     "aria": "Paleta de comandos do AlloFlow",
@@ -31083,10 +31112,11 @@
       "videoStudio": "Aqui — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Todas as ações são anunciadas. Ctrl+K alterna.",
     "group": {
@@ -31591,6 +31621,12 @@
     "diff_types_hint": "Gerar um conjunto diferenciado para:",
     "diff_cost": "Cerca de {n} gerações por execução.",
     "summary_standards": "normas",
-    "summary_interests": "interesses"
+    "summary_interests": "interesses",
+    "translations": "Traduções",
+    "translations_auto": "Automático ({language})",
+    "translations_auto_plain": "Automático",
+    "translations_none": "Nenhuma",
+    "translations_on_hint": "Os recursos em {output} terão também uma versão em {target}.",
+    "translations_off_hint": "Os recursos ficarão apenas em {output}, sem uma segunda língua."
   }
 }

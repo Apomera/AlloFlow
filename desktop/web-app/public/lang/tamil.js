@@ -2255,7 +2255,7 @@
     "ai_guide_sub": "கற்பித்தல், வழிசெலுத்தல் & தானியங்கி அமைப்பு",
     "ai_guide_welcome": "வணக்கம்! நான் உங்கள் AI வழிகாட்டி. UDL உத்திகளில் உதவ முடியும், உங்களுக்காக பயன்பாட்டை வழிசெலுத்த முடியும், அல்லது உங்கள் பாட அமைப்புகளை தானாகவே அமைக்க முடியும். கேளுங்கள்!",
     "tool_analysis": "பகுப்பாய் மூலம் Material",
-    "tool_glossary": "சொல்லகராதி & மொழி Selection",
+    "tool_glossary": "சொல்லகராதி",
     "tool_simplified": "உரை Adaptation",
     "tool_outline": "காட்சி Organizer",
     "tool_visual": "காட்சி ஆதரவு",
@@ -2985,7 +2985,7 @@
     "choose_destination_aria": "தேர்ந்தெடு ஒரு destination"
   },
   "glossary": {
-    "title": "சொல்லகராதி & மொழி Selection",
+    "title": "சொல்லகராதி",
     "tier2": "அடுக்கு 2 (கல்வி)",
     "tier2_tooltip": "High-utility கல்வி சொல் பயன்படுத்தப்பட்டது across disciplines (e.g., 'பகுப்பாய்', 'verify').",
     "tier3": "அடுக்கு 3 (துறை)",
@@ -3927,7 +3927,12 @@
     "gauge_simple": "எளிய",
     "word_bank_english": "ஆங்கிலம்",
     "word_bank_both": "இரண்டும்",
-    "word_bank_language": "சொல் வங்கியின் மொழி"
+    "word_bank_language": "சொல் வங்கியின் மொழி",
+    "measured_level_label": "அளக்கப்பட்ட வாசிப்பு நிலை",
+    "measured_on_target": "{grade} க்கு ஏற்றது",
+    "measured_above": "{grade} நிலைக்கு மேலே",
+    "measured_below": "{grade} நிலைக்கு கீழே",
+    "measured_note": "Flesch-Kincaid, இந்தப் பகுதியில் அளக்கப்பட்டது. முழுமையான சோதனைக்கு Check நிலை பயன்படுத்தவும்."
   },
   "quiz": {
     "title": "மதிப்பிடு",
@@ -5881,7 +5886,9 @@
     "title_poettree_config": "🌳 PoetTree பணி",
     "title_poettree_submission": "🌳 கவிதை சமர்ப்பிப்பு",
     "title_litlab_config": "🎭 LitLab பணி",
-    "title_litlab_submission": "🎭 நிகழ்ச்சி சமர்ப்பிப்பு"
+    "title_litlab_submission": "🎭 நிகழ்ச்சி சமர்ப்பிப்பு",
+    "translation_block": "மொழிபெயர்ப்பு",
+    "translation_into": "மொழிபெயர்ப்பு ({language})"
   },
   "persona": {
     "title": "Interview பயன்முறை",
@@ -6300,7 +6307,7 @@
   },
   "tools": {
     "source": "மூலம் Material",
-    "glossary": "சொல்லகராதி & மொழி Selection",
+    "glossary": "சொல்லகராதி",
     "simplified": "உரை Adaptation & Engagement",
     "outline": "காட்சி Organizer",
     "quiz": "மதிப்பிடு",
@@ -6889,7 +6896,6 @@
     "source_settings_instructions": "Guide AI உள்ளடக்கம் generation உடன் குறிப்பிட்ட அறிவுறுத்தல். எடுத்துக்காட்டு: செய் it ஈர்க்கக்கூடிய க்கு reluctant readers, Focus மீது water cycle, சேர் diverse பாத்திரம் names, Avoid references க்கு violence, மற்றும் பயன்படுத்து எளிய சொற்களஞ்சியம் க்கு ELL மாணவர். அறிவுறுத்தல் வடிவம்: தொனி, உள்ளடக்கம் focus, சொற்களஞ்சியம் நிலை, மற்றும் perspective. Be குறிப்பிட்ட க்கு best முடிவு. பல அறிவுறுத்தல் முடியும் be combined. அறிவுறுத்தல் ஆகும் processed along உடன் உங்கள் topic மற்றும் அமைப்புகள். க்கு sensitive topics, சேர் உள்ளடக்கம் guidance. அறிவுறுத்தல் do இல்லை guarantee குறிப்பிட்ட outcomes ஆனால் strongly influence generation. குறிப்பு: சேர் வகுப்பு நிலை மற்றும் any உள்ளடக்கம் restrictions இல் உங்கள் அறிவுறுத்தல் க்கு most appropriate வெளியீடு.",
     "source_verify_checkbox": "இயக்கு AI fact-checking via Google தேடு grounding. போது ON: AI cross-references உருவாக்கப்பட்டது உள்ளடக்கம் against web sources, flagging அல்லது correcting potential inaccuracies. Adds 5-10 seconds க்கு generation time ஆனால் significantly improves reliability க்கு factual உள்ளடக்கம். Especially important க்கு: history (dates, events), science (processes, தரவு), biography, மற்றும் current events. க்கு fiction, creative writing, அல்லது hypothetical scenarios, இது முடியும் be disabled க்கு allow மேலும் creative freedom. Sources consulted ஆகும் listed இல் generation log க்கு ஆசிரியர் மறுபரிசீலனை. Highly recommended க்கு any உள்ளடக்கம் அது விருந்து be presented as factual க்கு மாணவர்.",
     "source_generate_button": "உருவாக்கு AI-written உள்ளடக்கம் மீது உங்கள் specified topic. கிளிக் செய் க்கு begin generation பயன்படுத்தி உங்கள்: topic description, target நீளம், வகுப்பு நிலை, மற்றும் தனிப்பயன் அறிவுறுத்தல். Generation takes 10-20 seconds. வெளியீடு ஆகும் மறுபரிசீலனை by safety filters before display. Generated உள்ளடக்கம் முடியும் be: edited (ஆசிரியர் முடியும் மாற்றியமை any part), analyzed (இயக்கு through other generation கருவிகள்), மற்றும் சேமிக்கப்பட்டது (சேர் க்கு history க்கு reuse). பயன்படுத்து போது: நீங்கள் need உள்ளடக்கம் மீது ஒரு குறிப்பிட்ட topic, want controlled சிக்கல், அல்லது need க்கு fill curriculum gaps. Generated உள்ளடக்கம் உள்ளடக்கியது: appropriate சொற்களஞ்சியம், logical organization, மற்றும் வகுப்பு-நிலை syntax. Verify factual accuracy before வகுப்பு பயன்படுத்து.",
-    "generator_actions": "Hub க்கு எல்லாம் உள்ளடக்கம் generation கருவிகள். கிடைக்கும் generators சேர்: வினாடி வினா (மதிப்பீடு உடன் பதில் keys), சொல்லகராதி (காட்சி சொற்களஞ்சியம்), Simplified உரை (நிலை reading), FAQ (Q மற்றும் ஒரு pairs), Analysis (உள்ளடக்கம் examination), பாடம் Plan (instructional design), Timeline (chronological activity), Scaffolds (writing ஆதரவு), Concept வரிசைப்படுத்து (categorization விளையாட்டு), Math (problem generation), சாகசம் (ஊடாடும் கதை), மற்றும் Brainstorm (activity ideas). ஒவ்வொன்றும் generator மாற்றுகிறது உங்கள் மூலம் உள்ளடக்கம் உள்ளே different வடிவம். கிளிக் செய் any generator க்கு திற its configuration பலகை. பல generators முடியும் be பயன்படுத்தப்பட்டது மீது same மூலம். Generated உள்ளடக்கம் appears இல் workspace மற்றும் saves க்கு history. குறிப்பு: தொடங்கு உடன் Analysis க்கு புரிந்துகொள் உங்கள் உள்ளடக்கம், then உருவாக்கு targeted வளங்கள்.",
     "tool_visual": "அணுகல் காட்சி generator கருவிகள். Creates AI-generated படம் உட்பட: சொற்களஞ்சியம் காட்சி, concept illustrations, காட்சி depictions, வரைபடம், மற்றும் infographics. காட்சி types: reference படம் (க்கு கற்றல்), worksheets (க்கு activities), மற்றும் வரைபடம் (க்கு relationships). காட்சி ஆதரவு: ELL மாணவர் (காட்சி சொற்களஞ்சியம்), காட்சி learners, மற்றும் engagement. ஒவ்வொன்றும் generation உருவாக்குகிறது unique படம். அமைப்புகள் control பாணி, quality, மற்றும் உள்ளடக்கம். Generated காட்சி முடியும் be: downloaded, embedded இல் materials, மற்றும் added க்கு glossaries. Uses AI படம் generation credits. குறிப்பு: உருவாக்கு காட்சி க்கு abstract concepts அது ஆகும் difficult க்கு explain உடன் சொல் alone.",
     "tool_udl": "UDL கட்டமைப்பு ஒருங்கிணைப்பு பற்றி அறியவும். மூன்று கொள்கைகள்: பிரதிநிதித்துவம், செயல்/வெளிப்பாடு, மற்றும் ஈடுபாடு.",
     "tour-analysis-settings": "Adjust parameters க்கு readability analysis, உட்பட target reading நிலை மற்றும் குறிப்பிட்ட metrics க்கு track.",
@@ -6914,7 +6920,6 @@
     "adventure_system_state": "சாகசத்திற்கு வளங்கள் மேலாண்மை இயக்கவியலை சேர்க்கிறது—ஆரோக்கியம், தங்கம், புகழ், மற்றும் சொந்தப் பண்புகள்.",
     "glossary_tier2_count": "எத்தனை Tier 2 (கல்வி) சொற்களஞ்சியச் சொற்கள் சேர்க்கப்பட வேண்டும் என்பதை அமைக்கிறது. பாடங்கள் முழுவதும் தோன்றும் அதிக-பயன்பாட்டு சொற்கள்.",
     "glossary_tier3_count": "எத்தனை Tier 3 (பாடப்பகுதிக்கு குறிப்பிட்ட) சொற்களஞ்சியச் சொற்கள் சேர்க்கப்பட வேண்டும் என்பதை அமைக்கிறது.",
-    "glossary_definition_level": "Control எப்படி வரையறை ஆகும் written. விருப்பங்கள்: Same as மூலம் (maintains original சிக்கல்—நல்ல க்கு மேம்பட்ட மாணவர்), மீது வகுப்பு (matches target வகுப்பு நிலை சொற்களஞ்சியம்), Simplified (பயன்படுத்துகிறது common சொல், shorter வாக்கியம்), மற்றும் Kindergarten (very அடிப்படை மொழி, concrete எடுத்துக்காட்டு). Match வரையறை சிக்கல் க்கு மாணவர் reading நிலை, இல்லை உள்ளடக்கம் நிலை. ஒரு 10th-grader studying மேம்பட்ட biology might need Simplified வரையறை க்கு unfamiliar சொல். Consider உங்கள் மாணவர் weakest readers போது selecting. வரையறை முடியும் be individually edited after generation என்றால் some need adjustment. Pro குறிப்பு: பயன்படுத்து Simplified initially, then discuss மேலும் technical வரையறை இல் வகுப்பு.",
     "glossary_custom_instructions": "சொற்களஞ்சியத் தேர்வு மற்றும் வரையறை பாணி பற்றிய குறிப்பிட்ட வழிகாட்டுதலை வழங்குகிறது.",
     "glossary_language_input": "சொற்களஞ்சிய மொழிபெயர்ப்புக்கான இலக்கு மொழியை குறிப்பிடுகிறது. கமாக்களால் பிரிக்கப்பட்ட பல மொழிகளையும் உள்ளிடலாம்.",
     "glossary_auto_remove": "Automatically வடிகட்டு out very எளிய அல்லது common சொல்.",
@@ -7048,7 +7053,6 @@
     "fab_dictation": "Convert speech க்கு உரை க்கு hands-free உள்ளீடு. கிளிக் செய் க்கு activate microphone, பேசு clearly, மற்றும் பார் சொல் appear. Works இல்: உரை உள்ளீடு, writing scaffolds, அரட்டை, மற்றும் any editable field. ஆதரவு: பல மொழி, punctuation commands (say period, comma, புதிய கோடு), மற்றும் editing commands (நீக்கு அது). Dictation requires microphone permission இல் browser. Quality depends மீது: microphone quality, background noise, மற்றும் speech clarity. நிகழ்நேர transcription காட்டுகிறது as நீங்கள் பேசு. திருத்து transcribed உரை normally. Great க்கு: மாணவர் உடன் motor சவால், reluctant writers, மற்றும் idea generation. குறிப்பு: பேசு இல் முடி வாக்கியம் க்கு சிறந்த accuracy.",
     "fab_focus": "Creates ஒரு movable spotlight அது dims everything except ஒரு circular பரப்பளவு around உங்கள் cursor. இது dramatically reduces காட்சி clutter மற்றும் உதவி maintain attention மீது current reading பரப்பளவு. Especially beneficial க்கு மாணவர் உடன் ADHD, sensory processing differences, அல்லது anyone overwhelmed by busy screens. spotlight follows உங்கள் mouse/touch automatically. Adjust spotlight size மற்றும் dim intensity இல் அமைப்புகள் → Accessibility.",
     "fab_line_focus": "கவனம் செலுத்திய வாசிப்புக்கான ஒற்றை-வரி தனிமைப்படுத்தல் கருவி. ஒரு வரி தனிப்படுத்தப்படும், மற்றவை மங்கலாகும்.",
-    "fab_ruler": "Adds ஒரு semi-transparent horizontal bar அது follows உங்கள் cursor க்கு உதவி track உங்கள் reading position கோடு by கோடு. Particularly உதவி க்கு users உடன் dyslexia, ADHD, அல்லது காட்சி கண்காணிப்பு difficulties. இழு ruler up/down க்கு reposition, பயன்படுத்து arrow keys க்கு fine control, அல்லது கிளிக் செய் anywhere க்கு jump. ruler நிறம் முடியும் be customized இல் அமைப்புகள். Works across எல்லாம் reading views உட்பட Simplified உரை, FAQ, மற்றும் சொல்லகராதி வரையறை.",
     "fab_timer": "Opens ஒரு ஊடாடும் focus timer அடிப்படையிலான மீது Pomodoro Technique. தேர்ந்தெடு இருந்து preset durations (5/15/25/45 minutes) அல்லது தனிப்பயனாக்கு உங்கள் own. அம்சங்கள் சேர்: காட்சி countdown உடன் முன்னேற்றம் ring, விருப்பமான break reminders, XP வெகுமதி க்கு completed அமர்வு (longer = மேலும் XP), மற்றும் அமர்வு logging க்கு ஆசிரியர் மறுபரிசீலனை. Label உங்கள் task (e.g., 'படி அத்தியாயம் 3') க்கு track என்ன நீங்கள் accomplished. Minimizes க்கு header bar so நீங்கள் முடியும் work while it runs.",
     "scaffolds_edit_toggle": "ஆசிரியர் எடிட்டிங் மற்றும் மாணவர் காட்சி பயன்முறைகளுக்கு இடையே மாறுகிறது. திருத்து பயன்முறையில் சாரக்கட்டுகளை மாற்றியமைக்கலாம்.",
     "scaffolds_goal_panel": "மாணவர் குறிப்புக்கான கற்றல் நோக்கங்களைக் காட்டுகிறது. செயல்பாட்டின் போது இலக்குகள் முக்கியமாகத் தோன்றும்.",
@@ -7143,7 +7147,6 @@
     "immersive_line_focus": "ஒற்றை-வரி வாசிப்பு வழிகாட்டியை செயல்படுத்துகிறது. தற்போதைய வரி முழுமையாகத் தெரியும், சுற்றியுள்ள வரிகள் மங்கலாகும்.",
     "immersive_syllables": "காட்சி syllable segmentation க்கு decoding ஆதரவு. போது enabled: சொல் display உடன் syllable breaks (hy-phen-at-ed), உதவி readers attack multisyllabic சொல். Benefits: builds phonemic awareness, ஆதரவு decoding உத்திகள், develops morphological understanding, மற்றும் aids pronunciation. Especially உதவி க்கு: struggling decoders, ELL மாணவர், dyslexia ஆதரவு, மற்றும் சொற்களஞ்சியம் சொல் உடன் சிக்கலான syllable patterns. Syllabification follows தரநிலை phonetic rules. Works மீது: எல்லாம் reading உள்ளடக்கம் உட்பட adapted உரை, சொல்லகராதி சொல், மற்றும் மூலம் materials. Combine உடன் ஒலி க்கு hear syllables pronounced. மாற்று off போது இல்லை needed க்கு reduce காட்சி சிக்கல். குறிப்பு: பயன்படுத்து க்கு challenging சொற்களஞ்சியம், then முடக்கு க்கு fluent reading பயிற்சி செய்.",
     "immersive_wide_text": "Expand உரை க்கு பயன்படுத்து மேலும் horizontal screen space. போது செயலில்: கோடு நீளம் increases, குறைவாக scrolling ஆகும் needed, மற்றும் மேலும் உரை ஆகும் காணக்கூடிய at once. நல்ல க்கு: fluent readers, wide displays, மற்றும் போது scanning க்கு தகவல். இயல்புநிலை narrow அகலம் ஆகும் சிறந்த க்கு: struggling readers, mobile devices, மற்றும் focused reading. Optimal கோடு நீளம் varies by reader மற்றும் device. Research காட்டுகிறது 50-75 பாத்திரம் per கோடு ஆகும் ideal க்கு most readers. Wide உரை trades readability க்கு efficiency. Combine உடன் கோடு focus என்றால் கண்காணிப்பு becomes difficult. அமைப்பு ஆகும் remembered per device. குறிப்பு: பயன்படுத்து wide உரை க்கு research மற்றும் scanning, narrow உரை க்கு மூடு reading.",
-    "sidebar_tab_create": "திற உள்ளடக்கம் generation பலகை உடன் எல்லாம் AI-powered கருவிகள். கிடைக்கும் generators: வினாடி வினா (மதிப்பீடு உடன் பதில் keys), சொல்லகராதி (காட்சி சொற்களஞ்சியம்), Outline (graphic organizers), Analysis (உள்ளடக்கம் examination), பாடம் Plan (structured அறிவுறுத்தல்), Timeline (chronological activities), Simplified உரை (நிலை reading), மற்றும் மேலும். ஒவ்வொன்றும் கருவிகள் திறக்கிறது ஒரு configuration பலகை க்கு customization before generation. மூலம் உள்ளடக்கம் must be loaded க்கு most கருவிகள் க்கு பகுப்பாய். Generated உள்ளடக்கம் appears இல் main workspace மற்றும் ஆகும் சேமிக்கப்பட்டது க்கு history. பயன்படுத்து உருவாக்கு tab as உங்கள் primary உள்ளடக்கம் generation hub. குறிப்பு: தொடங்கு உடன் Analysis க்கு புரிந்துகொள் உள்ளடக்கம், then உருவாக்கு targeted வளங்கள்.",
     "sidebar_tab_history": "உங்கள் சேமிக்கப்பட்ட உள்ளடக்கம் மற்றும் அமர்வு வரலாற்றை அணுகுகிறது—தானியங்கி-சேமிக்கப்பட்ட அமர்வுகள், கைமுறை-சேமிக்கப்பட்ட திட்டங்கள், போர்ட்ஃபோலியோக்கள்.",
     "socratic_toggle": "ஆழமான கற்றலுக்கான Socratic உரையாடல் பயன்முறையை செயல்படுத்துகிறது. AI நேரடி பதில்கள் வழங்காது—கண்டுபிடிப்பை நோக்கி வழிநடத்தும் கேள்விகளைக் கேட்கிறது.",
     "socratic_input": "உள்ளிடு உங்கள் கேள்வி அல்லது statement க்கு Socratic exploration. AI விருந்து respond உடன் கேள்வி rather than பதில். நல்ல starting புள்ளி: Why do நீங்கள் think [X] happened? என்ன makes [Y] important? அல்லது I believe [Z] because... AI probes உங்கள் reasoning: asking க்கு evidence, exploring implications, testing logic, மற்றும் surfacing assumptions. இது develops argumentation மற்றும் critical thinking திறன். Be prepared க்கு: justify உங்கள் thinking, consider alternatives, மற்றும் refine உங்கள் position. Socratic dialogues முடியும் be frustrating initially ஆனால் build lasting understanding. உங்கள் responses மற்றும் reasoning ஆகும் tracked க்கு பிரதிபலிப்பு.",
@@ -31275,7 +31278,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "தற்போதைய ஊடகத்தை விவரிக்கவும்",
+    "describe_current_media_done": "{count} இல் {index} ஊடகம் படிக்கப்படுகிறது.",
+    "describe_current_media_hint": "ஆதாரத்தை விட்டு வெளியேறாமல் தற்போதைய அல்லது அடுத்த ஊடகத்தின் விளக்கத்தைப் படிக்கவும்",
+    "describe_current_media_none": "தற்போதைய ஆதாரத்தில் ஊடகம் எதுவும் இல்லை.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore திறக்கவும்",
+    "open_learning_web_explorer_done": "Learning Web: Explore திறக்கப்பட்டது.",
+    "open_learning_web_explorer_hint": "ஒரே வரைபடத்தில் தரநிலைகள், கருத்துகள், பாடங்கள், சான்றுகள் மற்றும் சொற்களின் தொடர்புகளை ஆராயுங்கள்",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "அனைத்து ஊடக விளக்கங்களையும் படிக்கவும்",
+    "read_media_descriptions_count": "{count} ஊடக விளக்கங்கள் படிக்கப்படுகின்றன.",
+    "read_media_descriptions_hint": "தற்போதைய ஆதாரத்தில் எழுதப்பட்ட ஒவ்வொரு படம், வீடியோ அல்லது ஒலி விளக்கத்தையும் படிக்கவும்",
+    "read_media_descriptions_none": "தற்போதைய ஆதாரத்தில் ஊடகம் எதுவும் இல்லை.",
+    "suggest_contextual_next_steps": "அடுத்த 3 படிகளைப் பரிந்துரைக்கவும்",
+    "suggest_contextual_next_steps_hint": "சூழலுக்கு ஏற்ற மூன்று வழிகளைத் தருகிறது, எதையும் தேர்ந்தெடுக்காது அல்லது இயக்காது",
+    "suggest_contextual_next_steps_working": "தற்போதைய பாடச் சூழலைப் படித்து மூன்று வழிகள் தயாராகின்றன...",
+    "surprise_me_contextually": "பயனுள்ள அடுத்த படியை எனக்குச் சொல்லுங்கள்",
+    "surprise_me_contextually_hint": "தற்போதைய பாடச் சூழலில் இருந்து பொருத்தமான, குறைந்த ஆபத்துள்ள ஒரு அடுத்த செயலைத் தேர்வு செய்கிறது",
+    "surprise_me_contextually_working": "தற்போதைய பாடச் சூழலைப் படித்து பயனுள்ள அடுத்த படி தேர்வு செய்யப்படுகிறது...",
+    "use_contextual_suggestion": "பரிந்துரைக்கப்பட்ட அடுத்த படியைப் பயன்படுத்தவும்",
+    "use_contextual_suggestion_hint": "சமீபத்திய பரிந்துரைகளில் இருந்து விருப்பம் 1, 2 அல்லது 3 ஐ இயக்குகிறது",
+    "use_contextual_suggestion_working": "தேர்ந்தெடுத்த அடுத்த படி தொடங்கப்படுகிறது..."
   },
   "palette": {
     "aria": "AlloFlow கட்டளைப் பலகை",
@@ -31298,10 +31327,11 @@
       "videoStudio": "இங்கே — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "ஒவ்வொரு செயலும் அறிவிக்கப்படுகிறது. Ctrl+K நிலைமாற்றுகிறது.",
     "group": {
@@ -31624,6 +31654,12 @@
     "diff_types_hint": "இதற்கான வேறுபடுத்தப்பட்ட தொகுப்பை உருவாக்கவும்:",
     "diff_cost": "ஒவ்வொரு இயக்கத்திலும் சுமார் {n} உருவாக்கங்கள்.",
     "summary_standards": "தரநிலைகள்",
-    "summary_interests": "ஆர்வங்கள்"
+    "summary_interests": "ஆர்வங்கள்",
+    "translations": "மொழிபெயர்ப்புகள்",
+    "translations_auto": "தானாக ({language})",
+    "translations_auto_plain": "தானாக",
+    "translations_none": "எதுவும் இல்லை",
+    "translations_on_hint": "{output} மொழியில் உள்ள வளங்களுடன் {target} பதிப்பும் கிடைக்கும்.",
+    "translations_off_hint": "வளங்கள் {output} மொழியில் மட்டுமே இருக்கும், இரண்டாவது மொழி இருக்காது."
   }
 }

@@ -2250,7 +2250,7 @@
     "ai_guide_sub": "Pedagogia, Navegação e Configuração Automática",
     "ai_guide_welcome": "Olá! Sou o seu Guia de IA. Posso ajudar com estratégias de UDL, navegar pela aplicação por si, ou configurar automaticamente as definições da sua lição. É só pedir!",
     "tool_analysis": "Analisar fonte Material",
-    "tool_glossary": "glossário & língua Selection",
+    "tool_glossary": "Glossário",
     "tool_simplified": "texto Adaptation",
     "tool_outline": "visual Organizer",
     "tool_visual": "visual apoio",
@@ -2980,7 +2980,7 @@
     "choose_destination_aria": "Escolher um destino"
   },
   "glossary": {
-    "title": "glossário & língua Selection",
+    "title": "Glossário",
     "tier2": "Nível 2 (Acad.)",
     "tier2_tooltip": "High-utility académico palavra usado across disciplines (e.g., 'analisar', 'verify').",
     "tier3": "Nível 3 (Domínio)",
@@ -3922,7 +3922,12 @@
     "gauge_simple": "simples",
     "word_bank_english": "Inglês",
     "word_bank_both": "Ambos",
-    "word_bank_language": "Idioma do banco de palavras"
+    "word_bank_language": "Idioma do banco de palavras",
+    "measured_level_label": "Nível de leitura medido",
+    "measured_on_target": "Adequado para {grade}",
+    "measured_above": "Acima do nível {grade}",
+    "measured_below": "Abaixo do nível {grade}",
+    "measured_note": "Flesch-Kincaid, medido neste texto. Use Check nível para uma verificação mais completa."
   },
   "quiz": {
     "title": "Avaliar",
@@ -5876,7 +5881,9 @@
     "title_poettree_config": "🌳 Tarefa do PoetTree",
     "title_poettree_submission": "🌳 Envio de poema",
     "title_litlab_config": "🎭 Tarefa do LitLab",
-    "title_litlab_submission": "🎭 Envio de apresentação"
+    "title_litlab_submission": "🎭 Envio de apresentação",
+    "translation_block": "Tradução",
+    "translation_into": "Tradução ({language})"
   },
   "persona": {
     "title": "Interview modo",
@@ -6296,7 +6303,7 @@
   },
   "tools": {
     "source": "fonte Material",
-    "glossary": "glossário & língua Selection",
+    "glossary": "Glossário",
     "simplified": "texto Adaptation & Engagement",
     "outline": "visual Organizer",
     "quiz": "Avaliar",
@@ -6885,7 +6892,6 @@
     "source_settings_instructions": "Guide AI conteúdo geração com específico instrução. exemplo: Fazer ele envolvente para reluctant readers, Focus em o water cycle, Incluir diversos personagem names, Avoid references para violence, e Usar simples vocabulário para ELL aluno. instrução forma: tom, conteúdo focus, vocabulário nível, e perspective. ser específico para best resultado. Múltipla instrução pode ser combined. instrução são processed along com seu topic e definições. Para sensitive topics, incluir conteúdo guidance. instrução faz não guarantee específico outcomes mas strongly influence geração. dica: Incluir nível escolar e qualquer conteúdo restrictions em seu instrução para most appropriate saída.",
     "source_verify_checkbox": "Activar AI fact-checking via Google Pesquisar grounding. quando ON: AI cross-references gerado conteúdo against web sources, flagging ou correcting potential inaccuracies. Adds 5-10 segundos para geração time mas significantly improves reliability para factual conteúdo. Especially important para: history (dates, events), science (processes, dados), biography, e current events. Para fiction, creative writing, ou hypothetical scenarios, este pode ser disabled para allow mais creative freedom. Sources consulted são listed em o geração log para professor revisão. Highly recommended para qualquer conteúdo esse irá ser presented como factual para aluno.",
     "source_generate_button": "Criar AI-written conteúdo em seu specified topic. Clicar para begin geração usando seu: topic description, target comprimento, nível escolar, e personalizado instrução. Geração takes 10-20 segundos. saída é revisãoed by safety filters antes display. Gerado conteúdo pode ser: edited (professor pode modificar qualquer part), analyzed (executar through outro geração ferramentas), e guardado (adicionar para history para reuse). Usar quando: você need conteúdo em um específico topic, want controlled complexidade, ou need para fill curriculum gaps. Gerado conteúdo inclui: appropriate vocabulário, logical organization, e classee-nível syntax. Verify factual accuracy antes turma usar.",
-    "generator_actions": "Hub para todos conteúdo geração ferramentas. disponível generators incluir: perguntaário (avaliação com resposta keys), glossário (visual vocabulário), Simplified texto (níveled reading), FAQ (Q e um pairs), Analysis (conteúdo examination), lição Plan (instructional design), Timeline (chronological activity), Scaffolds (writing apoio), Concept Ordenar (categorization jogo), Math (problem geração), Aventura (interativo história), e Brainstorm (activity ideas). cada generator transforma seu fonte conteúdo em different formato. Clicar qualquer generator para abrir its configuration painel. Múltipla generators pode ser usado em o same fonte. Gerado conteúdo aparece em o workspace e saves para history. dica: Iniciar com Analysis para compreender seu conteúdo, então gerar targeted recursos.",
     "tool_visual": "Acesso o visual generator ferramentas. Creates AI-gerado imagem incluindo: vocabulário visual, concept illustrations, cena depictions, diagrama, e infographics. visual types: referência imagem (para aprendizagem), worksheets (para activities), e diagrama (para relationships). visual apoio: ELL aluno (visual vocabulário), visual alunos, e engagement. cada geração cria unique imagem. definições control estilo, quality, e conteúdo. Gerado visual pode ser: downloaded, embedded em materials, e added para glossaries. Uses AI imagem geração credits. dica: Gerar visual para abstract concepts esse são difficult para explain com palavra alone.",
     "tool_udl": "Aprender about UDL framework integration. Universal Design para Learning tem three principles: Múltipla Means de Representation (o o que de aprendizagem—present informação em different ways), Múltipla Means de Action e Expression (o como de aprendizagem—let aluno demonstrate understanding differently), e Múltipla Means de Engagement (o why de aprendizagem—motivate e sustain interest). esta ferramenta apoio todos three through: varied conteúdo formato, múltipla interaction modo, e gamificado engagement. Clicking abre detalhado informação about como cada ferramentas funcionalidades aligns com UDL research. Excelente para: professional development, IEP justification, e understanding pedagogical foundation. dica: Referência UDL principles quando advocating para ferramentas adopção.",
     "tour-analysis-settings": "Ajustar parameters para readability analysis, incluindo target reading nível e específico metrics para track.",
@@ -6910,7 +6916,6 @@
     "adventure_system_state": "Adicionar recursos management mechanics para aventuras. aluno track: Health (consequence de riscoy escolhas), ouro/recursos (economic decision-making), Reputation (social capital de escolhas), e personalizado recursos você define. Actions affect recursos visibly—spend ouro para buy item, lose health de poor decisions, gain reputation de ajudaing others. Creates meaningful consequences esse teach: cause-e-effect reasoning, planning ahead, recursos management, e opportunity cost. visual dashboard mostra current recursos nível. quando recursos deplete, jogo adaptively responds (e.g., low health = limited opções). Math competência integrate naturally through recursos calculations.",
     "glossary_tier2_count": "Definir como many Tier 2 (académico) vocabulário palavra para incluir. Tier 2 palavra: aparecer across subjects, são usado em académico contexts, e são essential para texto comprehension. exemplo: analisar, evidência, significant, contrast. estes palavra tem o highest instructional valor—most aluno benefit de explicit teaching. Recommended contar depends em: texto comprimento (1 palavra per 100-150 palavra de fonte), disponível instrução time, e aluno need. Balance com Tier 3 contar para um concluir vocabulário definir. Focus instrução aqui para maximum impact em reading comprehension across todos subjects.",
     "glossary_tier3_count": "Definir como many Tier 3 (domain-específico) vocabulário palavra para incluir. Tier 3 palavra: são específico para um subject área, são usually defined em context, e may não transfer across subjects. exemplo: photosynthesis, denominator, alliteration, legislative. estes palavra são essential para understanding específico conteúdo mas tem limited usar outside o domain. instrução typically occurs durante conteúdo teaching. Para profundo dive em um topic, incluir mais Tier 3. Para broader reading competência, prioritize Tier 2. Tier 3 palavra often aparecer em bold ou italics em textbooks, signaling their importance within o discipline.",
-    "glossary_definition_level": "Control como definição são written. opções: Same como fonte (maintains original complexidade—bom para avançado aluno), Em classee (matches target nível escolar vocabulário), Simplified (usa common palavra, shorter frase), e Kindergarten (muito básico língua, concrete exemplo). Match definição complexidade para aluno reading nível, não conteúdo nível. um 10th-grader studying avançado biology might need Simplified definição para unfamiliar termo. Consider seu aluno weakest readers quando selecting. definição pode ser individually edited depois geração se algum need adjustment. Pro dica: Usar Simplified initially, então discuss o mais technical definição em turma.",
     "glossary_custom_instructions": "Provide específico guidance para vocabulário selection e definição estilo. exemplo: Focus em palavra de capítulo 3-5, Incluir apenas palavra related para o water cycle, Avoid homonyms com simpler meanings, Adicionar etymology para Latin/Greek roots, Incluir Spanish cognates para ELL aluno, e Usar aluno-amigável exemplo de pop culture. Custom instrução forma: que palavra são seleccionado, como definição são written, e o que additional informação aparece. Clear instrução produzir melhor-targeted glossaries. você pode request específico formato like: Incluir um frase usando cada palavra ou Adicionar visual memory hooks. AI follows instrução quando making vocabulário selections.",
     "glossary_language_input": "Especificar língua para vocabulário tradução. Introduzir língua: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, ou qualquer língua. você pode adicionar múltipla língua separated by commas. cada termo irá mostrar: English definição, target língua tradução(s), e phonetic pronunciation guide onde applicable. Usar para: ELL apoio, heritage língua connections, world língua vocabulário, e multilingual classerooms. tradução aparecer em every vocabulário cartão para instant referência. áudio pronunciation disponível em supported língua. Research mostra connecting novo vocabulário para home língua improves retention. Max 4 língua prevents visual clutter while supporting diversos classerooms.",
     "glossary_auto_remove": "Automatically filtrar out muito simples ou common palavra.",
@@ -7044,7 +7049,6 @@
     "fab_dictation": "Convert speech para texto para hands-free entrada. Clicar para activate microphone, falar clearly, e ver palavra aparecer. Funciona em: texto entrada, writing scaffolds, conversa, e qualquer editable field. apoio: múltipla língua, punctuation commands (say period, comma, novo linha), e editing commands (eliminar esse). Dictation requires microphone permission em browser. Quality depends em: microphone quality, background noise, e speech clarity. Tempo real transcription mostra como você falar. Editar transcribed texto normally. Excelente para: aluno com motor desafio, reluctant writers, e idea geração. dica: Falar em concluir frase para melhor accuracy.",
     "fab_focus": "Creates um movable spotlight esse dims everything except um circular área around seu cursor. este dramatically reduces visual clutter e ajudas maintain attention em o current reading área. Especially beneficial para aluno com ADHD, sensory processing differences, ou anyone overwhelmed by busy screens. O spotlight follows seu mouse/touch automatically. Ajustar spotlight size e dim intensity em definições → Accessibility.",
     "fab_line_focus": "Single-linha reading isolation ferramentas para focused reading. quando activated: one texto linha é highlighted while others são dimmed, creating visual focus. Navigate com: arrow keys (up/down), clicar anywhere em texto, ou touch/swipe em mobile. Benefits: reduces visual crowding, apoio rastreio difficulties, ajudas maintain place, e reduces regression. Intensity (como much surrounding texto é visível) é adjustable em definições → Accessibility. Funciona em: todos reading conteúdo, incluindo gerado texto, fonte materials, e conversa. Particularly ajudaful para: dyslexia, ADHD, visual processing differences, e anyone overwhelmed by texto-heavy screens. dica: Combine com larger font para maximum reading ease.",
-    "fab_ruler": "Adds um semi-transparent horizontal bar esse follows seu cursor para ajuda track seu reading posição linha by linha. Particularly ajudaful para users com dyslexia, ADHD, ou visual rastreio difficulties. Arrastar o ruler up/down para reposition, usar arrow keys para fine control, ou clicar anywhere para jump. O ruler cor pode ser customized em definições. Funciona across todos reading views incluindo Simplified texto, FAQ, e glossário definição.",
     "fab_timer": "Opens um interativo focus timer based em o Pomodoro Technique. Escolher de preset durations (5/15/25/45 minutes) ou personalizar seu own. funcionalidades incluir: visual countdown com progresso ring, opcional break reminders, XP recompensa para completed sessão (longer = mais XP), e sessão logging para professor revisão. Label seu task (e.g., 'Ler capítulo 3') para track o que você accomplished. Minimizes para o header bar so você pode work while ele runs.",
     "scaffolds_edit_toggle": "Alternar entre professor editing e aluno ver modo. quando ON (Editar modo): clicar qualquer scaffold para modificar texto, adicionar novo avisos, eliminar item, e reorder conteúdo. quando OFF: scaffolds display como aluno ver them (ler-apenas). Edits guardar automatically. aluno always ver ler-apenas regardless de seu alternar (they cannot acesso editar modo). Usar editing para: personalizar AI-gerado scaffolds, adicionar turma-específico exemplo, remover inappropriate avisos, e differentiate para específico aluno. Previsão aluno ver antes sharing. Original scaffolds pode ser restored de history. dica: Review e editar scaffolds antes turma para ensure they match seu teaching estilo e aluno needs.",
     "scaffolds_goal_panel": "Display aprendizagem objectives para aluno referência. objectivo aparecer prominently durante activity. Effective objectivo são: aluno-amigável (I pode statements), específico e measurable, e aligned para activity. exemplo: I pode identificar three causes de o Civil War ou I pode usar evidência para apoio my claim. objectivo increase: metacognition, próprio-avaliação, e purpose clarity. aluno pode referência objectivo while working. professor sets objectivo antes aluno acesso. Múltipla objectivo pode ser displayed. objectivo pode incluir sucesso criteria: I know I tem succeeded quando my parágrafo tem um topic frase. Research mostra visível aprendizagem targets improve achievement.",
@@ -7139,7 +7143,6 @@
     "immersive_line_focus": "Activar single-linha reading guide. quando activo: current reading linha é fully visível, surrounding linha são dimmed, e focus follows como você navegar. Benefits: reduces visual overwhelm, improves rastreio, e ajudas attention stay em current texto. Navigate com: arrow keys, clicar anywhere, ou auto-advance (com TTS). Dimming intensity é adjustable em definições. Perfect para: dyslexia apoio, attention difficulties, e rastreio desafio. Combines well com texto-para-speech para multi-modal reading apoio. linha focus funciona em todos texto conteúdo. Research mostra linha isolation improves comprehension para em dificuldades readers. dica: Combine com larger font para maximum reading ease.",
     "immersive_syllables": "visual syllable segmentation para decoding apoio. quando enabled: palavra display com syllable breaks (hy-phen-em-ed), ajudaing readers attack multisyllabic palavra. Benefits: constrói phonemic awareness, apoio decoding estratégias, develops morphological understanding, e aids pronunciation. Especially ajudaful para: em dificuldades decoders, ELL aluno, dyslexia apoio, e vocabulário palavra com complexo syllable padrões. Syllabification follows padrão phonetic rules. Funciona em: todos reading conteúdo incluindo adapted texto, glossário termo, e fonte materials. Combine com áudio para hear syllables pronounced. Alternar off quando não needed para reduce visual complexidade. dica: Usar para challenging vocabulário, então desactivar para fluent reading praticar.",
     "immersive_wide_text": "Expand texto para usar mais horizontal screen space. quando activo: linha comprimento increases, menos scrolling é needed, e mais texto é visível em once. bom para: fluent readers, wide displays, e quando scanning para informação. predefinição narrow largura é melhor para: em dificuldades readers, mobile devices, e focused reading. Optimal linha comprimento varies by reader e device. Research mostra 50-75 personagem per linha é ideal para most readers. Wide texto trades readability para efficiency. Combine com linha focus se rastreio becomes difficult. definição é remembered per device. dica: Usar wide texto para research e scanning, narrow texto para fechar reading.",
-    "sidebar_tab_create": "Abrir o conteúdo geração painel com todos AI-powered ferramentas. disponível generators: perguntaário (avaliação com resposta keys), glossário (visual vocabulário), Outline (graphic organizers), Analysis (conteúdo examination), lição Plan (structured instrução), Timeline (chronological activities), Simplified texto (níveled reading), e mais. cada ferramentas abre um configuration painel para customization antes geração. fonte conteúdo must ser loaded para most ferramentas para analisar. Gerado conteúdo aparece em o main workspace e é guardado para history. Usar o Criar tab como seu primary conteúdo geração hub. dica: Iniciar com Analysis para compreender conteúdo, então gerar targeted recursos.",
     "sidebar_tab_history": "Acesso todos seu guardado conteúdo e sessão history. History inclui: auto-guardado sessão de recent work, manually guardado projects e portfolios, gerado recursos organized by creation date, e aluno submissions (professor ver). Actions: carregar qualquer item para continuar working, eliminar item para free storage, exportar para backup, e pesquisar by keyword. History sorts by recency by predefinição. Filtrar by type (perguntaário, glossário, aventura, etc.) para find específico recursos. Cloud-synced history é acessível de qualquer device. Storage limits vary by account—eliminar antigo item se approaching limit. seu history é seu personal teaching recursos library.",
     "socratic_toggle": "Activar Socratic dialogue modo para deeper aprendizagem. quando ON: AI never gives direct resposta—instead asks probing pergunta esse guide aluno toward discovery. Benefits: develops critical thinking, encourages próprio-correction, constrói problem-solving competência, e cria memorable aprendizagem moments. O AI usa techniques like: clarifying pergunta (o que faz você mean by...?), challenging assumptions (mas o que se...?), e evidência requests (como faz você know esse?). Best para: discussion preparation, concept exploration, e ajudaing aluno quem want rápido resposta para think mais deeply. May frustrate aluno seeking efficiency—explain o purpose.",
     "socratic_input": "Introduzir seu pergunta ou statement para Socratic exploration. O AI irá respond com pergunta rather than resposta. bom starting ponto: Why faz você think [X] happened? o que makes [Y] important? ou I believe [Z] because... O AI probes seu reasoning: asking para evidência, exploring implications, testing logic, e surfacing assumptions. este develops argumentation e critical thinking competência. ser prepared para: justify seu thinking, consider alternatives, e refine seu posição. Socratic dialogues pode ser frustrating initially mas construir lasting understanding. seu responses e reasoning são tracked para reflexão.",
@@ -31074,7 +31077,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Descrever o conteúdo multimédia actual",
+    "describe_current_media_done": "A ler o conteúdo {index} de {count}.",
+    "describe_current_media_hint": "Ler a descrição do conteúdo multimédia actual ou seguinte sem sair do recurso",
+    "describe_current_media_none": "Não há conteúdo multimédia no recurso actual.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Abrir Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore aberto.",
+    "open_learning_web_explorer_hint": "Explore normas, conceitos, lições, provas e ligações entre palavras num único mapa",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Ler todas as descrições multimédia",
+    "read_media_descriptions_count": "A ler {count} descrições multimédia.",
+    "read_media_descriptions_hint": "Ler cada descrição escrita de imagem, vídeo ou áudio no recurso actual",
+    "read_media_descriptions_none": "Não há conteúdo multimédia no recurso actual.",
+    "suggest_contextual_next_steps": "Sugerir 3 próximos passos",
+    "suggest_contextual_next_steps_hint": "Oferece três opções adequadas ao contexto, sem escolher nem executar nenhuma",
+    "suggest_contextual_next_steps_working": "A ler o contexto da lição actual e a preparar três opções...",
+    "surprise_me_contextually": "Surpreenda-me com um próximo passo útil",
+    "surprise_me_contextually_hint": "Escolhe uma acção seguinte sensata e de baixo risco a partir do contexto da lição actual",
+    "surprise_me_contextually_working": "A ler o contexto da lição actual e a escolher um próximo passo útil...",
+    "use_contextual_suggestion": "Usar um próximo passo sugerido",
+    "use_contextual_suggestion_hint": "Executa a opção 1, 2 ou 3 das sugestões mais recentes",
+    "use_contextual_suggestion_working": "A iniciar o próximo passo escolhido..."
   },
   "palette": {
     "aria": "Paleta de comandos do AlloFlow",
@@ -31097,10 +31126,11 @@
       "videoStudio": "Aqui — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Todas as ações são anunciadas. Ctrl+K alterna.",
     "group": {
@@ -31598,6 +31628,12 @@
     "diff_types_hint": "Gerar um conjunto diferenciado para:",
     "diff_cost": "Cerca de {n} gerações por execução.",
     "summary_standards": "padrões",
-    "summary_interests": "interesses"
+    "summary_interests": "interesses",
+    "translations": "Traduções",
+    "translations_auto": "Automático ({language})",
+    "translations_auto_plain": "Automático",
+    "translations_none": "Nenhuma",
+    "translations_on_hint": "Os recursos em {output} terão também uma versão em {target}.",
+    "translations_off_hint": "Os recursos ficarão apenas em {output}, sem uma segunda língua."
   }
 }

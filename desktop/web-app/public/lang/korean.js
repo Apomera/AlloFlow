@@ -2256,7 +2256,7 @@
     "ai_guide_sub": "교수학, 탐색 및 자동 설정",
     "ai_guide_welcome": "안녕하세요! 저는 당신의 AI 가이드입니다. UDL 전략을 도와드리거나, 앱을 탐색하거나, 수업 설정을 자동으로 구성할 수 있습니다. 그냥 물어보세요!",
     "tool_analysis": "분석 소스 자료",
-    "tool_glossary": "용어집 & 언어 선택",
+    "tool_glossary": "용어집",
     "tool_simplified": "텍스트 각색",
     "tool_outline": "시각 조직자",
     "tool_visual": "시각 지원",
@@ -2986,7 +2986,7 @@
     "choose_destination_aria": "선택 destination"
   },
   "glossary": {
-    "title": "용어집 & 언어 Selection",
+    "title": "용어집",
     "tier2": "계층 2 (Acad.)",
     "tier2_tooltip": "여러 학문 분야에서 사용되는 활용도 높은 학문적 단어 (예: '분석하다', '검증하다').",
     "tier3": "계층 3 (Domain)",
@@ -3928,7 +3928,12 @@
     "gauge_simple": "간단",
     "word_bank_english": "영어",
     "word_bank_both": "둘 다",
-    "word_bank_language": "단어 은행 언어"
+    "word_bank_language": "단어 은행 언어",
+    "measured_level_label": "측정된 읽기 수준",
+    "measured_on_target": "{grade}에 맞음",
+    "measured_above": "{grade} 목표보다 높음",
+    "measured_below": "{grade} 목표보다 낮음",
+    "measured_note": "Flesch-Kincaid, 이 지문에서 측정했습니다. 더 자세히 보려면 확인 수준을 사용하세요."
   },
   "quiz": {
     "title": "평가",
@@ -5874,7 +5879,9 @@
     "title_poettree_config": "🌳 PoetTree 과제",
     "title_poettree_submission": "🌳 시 제출",
     "title_litlab_config": "🎭 LitLab 과제",
-    "title_litlab_submission": "🎭 공연 제출"
+    "title_litlab_submission": "🎭 공연 제출",
+    "translation_block": "번역",
+    "translation_into": "번역 ({language})"
   },
   "persona": {
     "title": "Interview 모드",
@@ -6292,7 +6299,7 @@
   },
   "tools": {
     "source": "소스 자료",
-    "glossary": "용어집 & 언어 Selection",
+    "glossary": "용어집",
     "simplified": "텍스트 Adaptation & 참여",
     "outline": "시각 Organizer",
     "quiz": "평가",
@@ -6881,7 +6888,6 @@
     "source_settings_instructions": "Guide AI 콘텐츠 생성 함께 특정 지시. 예: 만들기 it 매력적인 위한 reluctant 독자, 초점 위에 water cycle, 포함 다양한 캐릭터 names, Avoid references 에 violence, 및 사용 간단 어휘 위한 ELL 학생. 지시 도형: 톤, 콘텐츠 초점, 어휘 수준, 및 perspective. Be 특정 위한 최고 결과. 여러 지시 수 있습니다 be combined. 지시 입니다 processed along 함께 당신의 주제 및 설정. 위한 sensitive topics, 포함 콘텐츠 guidance. 지시 do 아닙니다 guarantee 특정 outcomes 하지만 strongly influence 생성. 팁: 포함 학년 수준 및 어떤 콘텐츠 restrictions 안에 당신의 지시 위한 가장 적절 출력.",
     "source_verify_checkbox": "활성화 AI fact-checking via Google 검색 grounding. 때 ON: AI cross-references 생성됨 콘텐츠 against web sources, flagging 또는 correcting potential inaccuracies. Adds 5-10 초 에 생성 시간 하지만 significantly improves reliability 위한 factual 콘텐츠. Especially important 위한: 역사 (dates, 이벤트), science (processes, 데이터), biography, 및 현재 이벤트. 위한 fiction, 창의적 쓰기, 또는 hypothetical 시나리오, 이것 수 있습니다 be disabled 에 허용 더 많이 창의적 freedom. Sources consulted 입니다 listed 안에 생성 log 위한 교사 검토. Highly recommended 위한 어떤 콘텐츠 저것 것입니다 be presented as factual 에 학생.",
     "source_generate_button": "지정한 주제로 AI가 작성한 콘텐츠를 만듭니다. 주제 설명, 길이, 학년 수준, 사용자 지시에 따라 약 10-20초 안에 생성됩니다.",
-    "generator_actions": "Hub 위한 모든 콘텐츠 생성 도구. 사용 가능 generators 포함: 퀴즈 (평가 함께 답변 keys), 용어집 (시각 어휘), Simplified 텍스트 (레벨 읽기), FAQ (Q 및 pairs), 분석 (콘텐츠 examination), 수업 계획 (교육 design), Timeline (chronological 활동), Scaffolds (쓰기 지원), 개념 정렬 (categorization 게임), 수학 (problem 생성), 모험 (인터랙티브 이야기), 및 Brainstorm (활동 ideas). 각각 generator 변환합니다 당신의 소스 콘텐츠 안으로 다른 형식. 클릭 어떤 generator 에 열기 its configuration 패널. 여러 generators 수 있습니다 be 사용됨 위에 동일 소스. 생성됨 콘텐츠 나타남 안에 workspace 및 저장 에 역사. 팁: 시작 함께 분석 에 이해 당신의 콘텐츠, 그 다음 생성 targeted 리소스.",
     "tool_visual": "접근 시각 generator 도구. Creates AI-generated 이미지 포함: 어휘 시각, 개념 일러스트, 장면 depictions, 다이어그램, 및 infographics. 시각 types: 참조 이미지 (위한 학습), worksheets (위한 활동), 및 다이어그램 (위한 relationships). 시각 지원: ELL 학생 (시각 어휘), 시각 학습자, 및 참여. 각각 생성 만들기 unique 이미지. 설정 제어 스타일, 품질, 및 콘텐츠. 생성됨 시각 수 있습니다 be: downloaded, embedded 안에 자료, 및 added 에 glossaries. Uses AI 이미지 생성 credits. 팁: 생성 시각 위한 abstract 개념 저것 입니다 difficult 에 explain 함께 단어 alone.",
     "tool_udl": "UDL 프레임워크 통합에 대해 학습합니다. Universal Design for Learning은 표현, 행동/표현, 참여의 세 원칙을 다룹니다.",
     "tour-analysis-settings": "조정 parameters 위한 readability 분석, 포함 대상 읽기 수준 및 특정 metrics 에 track.",
@@ -6906,7 +6912,6 @@
     "adventure_system_state": "Adventure Mode에 리소스 관리 메커니즘을 추가합니다. 학생이 체력, 골드, 평판 등을 추적하며 결정에 따라 변화합니다.",
     "glossary_tier2_count": "설정 어떻게 many 계층 2 (학술) 어휘 단어 에 포함. 계층 2 단어: 나타나다 걸쳐 subjects, 입니다 사용됨 안에 학술 contexts, 및 입니다 essential 위한 텍스트 이해. 예: 분석, 증거, significant, contrast. These 단어 있습니다 highest 교육 값—가장 학생 benefit 에서 explicit teaching. Recommended 세기 depends 위에: 텍스트 길이 (1 단어 당 100-150 단어 의 소스), 사용 가능 지시 시간, 및 학생 필요. Balance 함께 계층 3 세기 위한 완료 어휘 설정. 초점 지시 here 위한 maximum impact 위에 읽기 이해 걸쳐 모든 subjects.",
     "glossary_tier3_count": "포함할 Tier 3(교과 특정) 어휘 수를 설정합니다. 광합성, 분모, alliteration처럼 해당 교과에 특화된 단어입니다.",
-    "glossary_definition_level": "제어 어떻게 정의 입니다 written. 옵션: 동일 as 소스 (maintains 원본 복잡성—좋은 위한 고급 학생), 위에 학년 (matches 대상 학년 수준 어휘), Simplified (사용 공통 단어, 더 짧은 문장), 및 Kindergarten (very 기본 언어, concrete 예). 일치 정의 복잡성 에 학생 읽기 수준, 아닙니다 콘텐츠 수준. 10th-grader studying 고급 biology might 필요 Simplified 정의 위한 unfamiliar 용어. 고려 당신의 학생 weakest 독자 때 selecting. 정의 수 있습니다 be individually edited 후 생성 만약 일부 필요 adjustment. Pro 팁: 사용 Simplified initially, 그 다음 discuss 더 많이 technical 정의 안에 학급.",
     "glossary_custom_instructions": "어휘 선정과 정의 스타일에 대한 구체적 지침을 제공합니다. 특정 장(章) 집중, 주제 한정, 어원 추가, ELL용 동족어 포함 등을 지정할 수 있습니다.",
     "glossary_language_input": "어휘 번역에 사용할 언어를 지정합니다. 스페인어, 중국어, 아랍어, 프랑스어, 베트남어 등을 쉼표로 구분해 여러 언어를 추가할 수 있습니다.",
     "glossary_auto_remove": "자동으로 필터 out very 간단 또는 공통 단어.",
@@ -7040,7 +7045,6 @@
     "fab_dictation": "핸즈프리 입력을 위해 음성을 텍스트로 변환합니다. 마이크를 활성화하고 명확히 말하면 단어가 입력란, 비계, 채팅 등에 나타납니다.",
     "fab_focus": "Creates movable spotlight 저것 dims everything except circular 면적 around 당신의 cursor. 이것 dramatically reduces 시각 clutter 및 도움 maintain attention 위에 현재 읽기 면적. Especially beneficial 위한 학생 함께 ADHD, sensory processing 차이, 또는 anyone overwhelmed by busy screens. spotlight follows 당신의 mouse/touch 자동으로. 조정 spotlight size 및 dim intensity 안에 설정 → 접근성.",
     "fab_line_focus": "집중 읽기를 위한 한 줄 텍스트 분리 도구입니다. 현재 줄은 완전히 보이고 주변 줄은 흐려져 시각적 초점을 만들어줍니다.",
-    "fab_ruler": "Adds semi-transparent horizontal 막대 저것 follows 당신의 cursor 에 도움말 track 당신의 읽기 위치 선 by 선. Particularly 도움말 위한 users 함께 dyslexia, ADHD, 또는 시각 추적 difficulties. 드래그 ruler up/down 에 reposition, 사용 arrow keys 위한 fine 제어, 또는 클릭 anywhere 에 jump. ruler 색상 수 있습니다 be customized 안에 설정. 작동 걸쳐 모든 읽기 views 포함 Simplified 텍스트, FAQ, 및 용어집 정의.",
     "fab_timer": "Opens 인터랙티브 초점 timer 기반 위에 Pomodoro Technique. 선택 에서 preset durations (5/15/25/45 minutes) 또는 사용자 정의 당신의 own. 기능 포함: 시각 countdown 함께 진행 상황 ring, 선택 사항 break reminders, XP 보상 위한 completed 세션 (더 긴 = 더 많이 XP), 및 세션 logging 위한 교사 검토. Label 당신의 task (e.g., '읽기 장 3') 에 track 무엇 당신 accomplished. Minimizes 에 header 막대 so 당신 수 있습니다 작업 동안 it runs.",
     "scaffolds_edit_toggle": "전환 사이 교사 editing 및 학생 보기 모드. 때 ON (편집 모드): 클릭 어떤 scaffold 에 수정 텍스트, 추가 새로운 프롬프트, 삭제 항목, 및 reorder 콘텐츠. 때 OFF: scaffolds 표시 as 학생 보기 them (읽기-만). Edits 저장 자동으로. 학생 always 보기 읽기-만 regardless 의 당신의 전환 (그들 cannot 접근 편집 모드). 사용 editing 에: 사용자 정의 AI-generated scaffolds, 추가 학급-특정 예, 제거 inappropriate 프롬프트, 및 구별 위한 특정 학생. Preview 학생 보기 이전 sharing. 원본 scaffolds 수 있습니다 be restored 에서 역사. 팁: 검토 및 편집 scaffolds 이전 학급 에 ensure 그들 일치 당신의 teaching 스타일 및 학생 needs.",
     "scaffolds_goal_panel": "표시 학습 objectives 위한 학생 참조. 목표 나타나다 prominently 동안 활동. Effective 목표 입니다: 학생-친근 (I 수 있습니다 statements), 특정 및 measurable, 및 aligned 에 활동. 예: I 수 있습니다 식별 three causes 의 Civil War 또는 I 수 있습니다 사용 증거 에 지원 my claim. 목표 increase: metacognition, 자기-평가, 및 purpose clarity. 학생 수 있습니다 참조 목표 동안 working. 교사 sets 목표 이전 학생 접근. 여러 목표 수 있습니다 be displayed. 목표 수 있습니다 포함 성공 criteria: I know I 있습니다 succeeded 때 my 단락 has 주제 문장. Research 표시 보이는 학습 targets improve 업적.",
@@ -7135,7 +7139,6 @@
     "immersive_line_focus": "한 줄 읽기 가이드를 활성화합니다. 활성화 시 현재 줄은 완전히 보이고 주변 줄은 흐려져 시각적 부담을 줄이고 추적을 돕습니다.",
     "immersive_syllables": "디코딩 지원을 위해 시각적 음절 분리를 적용합니다. 활성화하면 단어가 음절 단위(예: hy-phen-at-ed)로 분리되어 다음절 단어 공략을 돕습니다.",
     "immersive_wide_text": "Expand 텍스트 에 사용 더 많이 horizontal 화면 space. 때 활성: 선 길이 increases, 더 적게 scrolling 입니다 needed, 및 더 많이 텍스트 입니다 보이는 at once. 좋은 위한: fluent 독자, wide displays, 및 때 scanning 위한 정보. 기본값 narrow 너비 입니다 더 좋은 위한: 어려움 독자, mobile devices, 및 focused 읽기. Optimal 선 길이 varies by 리더 및 device. Research 표시 50-75 캐릭터 당 선 입니다 ideal 위한 가장 독자. Wide 텍스트 trades readability 위한 efficiency. Combine 함께 선 초점 만약 추적 becomes difficult. 설정 입니다 remembered 당 device. 팁: 사용 wide 텍스트 위한 research 및 scanning, narrow 텍스트 위한 닫기 읽기.",
-    "sidebar_tab_create": "열기 콘텐츠 생성 패널 함께 모든 AI-powered 도구. 사용 가능 generators: 퀴즈 (평가 함께 답변 keys), 용어집 (시각 어휘), Outline (graphic organizers), 분석 (콘텐츠 examination), 수업 계획 (structured 지시), Timeline (chronological 활동), Simplified 텍스트 (레벨 읽기), 및 더 많이. 각각 도구 열기 configuration 패널 위한 customization 이전 생성. 소스 콘텐츠 must be loaded 위한 가장 도구 에 분석. 생성됨 콘텐츠 나타남 안에 main workspace 및 입니다 저장됨 에 역사. 사용 만들기 tab as 당신의 primary 콘텐츠 생성 hub. 팁: 시작 함께 분석 에 이해 콘텐츠, 그 다음 생성 targeted 리소스.",
     "sidebar_tab_history": "저장된 모든 콘텐츠와 세션 기록에 접근합니다. 자동 저장 세션, 수동 저장 프로젝트, 생성 리소스, 학생 제출물(교사 보기)이 포함됩니다.",
     "socratic_toggle": "깊이 있는 학습을 위한 Socratic 대화 모드를 활성화합니다. 켜면 AI가 직접 답을 주지 않고 학생이 스스로 발견하도록 탐색 질문을 던집니다.",
     "socratic_input": "Socratic 탐색을 위한 질문 또는 진술을 입력합니다. AI는 답 대신 질문으로 응답하며, 'Why do you think...' 같은 시작 문장이 좋습니다.",
@@ -31249,7 +31252,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "현재 미디어 설명",
+    "describe_current_media_done": "미디어 {count}개 중 {index}번째를 읽고 있습니다.",
+    "describe_current_media_hint": "자료를 벗어나지 않고 현재 또는 다음 미디어 설명을 읽습니다",
+    "describe_current_media_none": "현재 자료에 미디어가 없습니다.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore 열기",
+    "open_learning_web_explorer_done": "Learning Web: Explore을 열었습니다.",
+    "open_learning_web_explorer_hint": "기준, 개념, 수업, 근거, 낱말 연결을 하나의 지도에서 살펴봅니다",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "모든 미디어 설명 읽기",
+    "read_media_descriptions_count": "미디어 설명 {count}개를 읽고 있습니다.",
+    "read_media_descriptions_hint": "현재 자료에 작성된 이미지, 영상, 오디오 설명을 모두 읽습니다",
+    "read_media_descriptions_none": "현재 자료에 미디어가 없습니다.",
+    "suggest_contextual_next_steps": "다음 단계 3가지 제안",
+    "suggest_contextual_next_steps_hint": "상황에 맞는 세 가지 선택지를 제시하며, 고르거나 실행하지는 않습니다",
+    "suggest_contextual_next_steps_working": "현재 수업 상황을 읽고 세 가지 선택지를 준비하는 중...",
+    "surprise_me_contextually": "도움이 되는 다음 단계를 골라 주세요",
+    "surprise_me_contextually_hint": "현재 수업 상황에서 합리적이고 위험이 낮은 다음 동작 하나를 고릅니다",
+    "surprise_me_contextually_working": "현재 수업 상황을 읽고 도움이 되는 다음 단계를 고르는 중...",
+    "use_contextual_suggestion": "제안된 다음 단계 사용",
+    "use_contextual_suggestion_hint": "최근 제안 중 선택지 1, 2, 3을 실행합니다",
+    "use_contextual_suggestion_working": "선택한 다음 단계를 시작하는 중..."
   },
   "palette": {
     "aria": "AlloFlow 명령 팔레트",
@@ -31272,10 +31301,11 @@
       "videoStudio": "여기 — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "모든 작업이 안내됩니다. Ctrl+K로 전환합니다.",
     "group": {
@@ -31594,6 +31624,12 @@
     "diff_types_hint": "다음에 대한 차별화 세트 생성:",
     "diff_cost": "실행당 약 {n}회 생성됩니다.",
     "summary_standards": "기준",
-    "summary_interests": "관심사"
+    "summary_interests": "관심사",
+    "translations": "번역",
+    "translations_auto": "자동 ({language})",
+    "translations_auto_plain": "자동",
+    "translations_none": "없음",
+    "translations_on_hint": "{output} 자료에 {target} 버전도 함께 만들어집니다.",
+    "translations_off_hint": "자료는 {output}로만 만들어지고 두 번째 언어는 없습니다."
   }
 }

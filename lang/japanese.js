@@ -626,7 +626,7 @@
     "ai_guide_sub": "教育法、ナビゲーション & 自動設定",
     "ai_guide_welcome": "こんにちは！ AIガイドです。UDL戦略、アプリのナビゲーション、授業設定の自動セットアップをお手伝いします。何でも聞いてください！",
     "tool_analysis": "ソース資料を分析",
-    "tool_glossary": "用語集 & 言語選択",
+    "tool_glossary": "用語集",
     "tool_simplified": "テキスト適応",
     "tool_outline": "ビジュアル整理ツール",
     "tool_visual": "ビジュアルサポート",
@@ -1378,7 +1378,7 @@
   },
   "tools": {
     "source": "ソース資料",
-    "glossary": "用語集 & 言語選択",
+    "glossary": "用語集",
     "simplified": "テキスト適応 & エンゲージメント",
     "outline": "ビジュアル整理ツール",
     "quiz": "評価",
@@ -2658,7 +2658,9 @@
     "title_poettree_config": "🌳 PoetTree課題",
     "title_poettree_submission": "🌳 詩の提出",
     "title_litlab_config": "🎭 LitLab課題",
-    "title_litlab_submission": "🎭 パフォーマンスの提出"
+    "title_litlab_submission": "🎭 パフォーマンスの提出",
+    "translation_block": "翻訳",
+    "translation_into": "翻訳（{language}）"
   },
   "fullpack": {
     "button_label": "フルリソースパックを生成",
@@ -2829,7 +2831,12 @@
     "gauge_simple": "シンプル",
     "word_bank_both": "両方",
     "word_bank_language": "単語バンクの言語",
-    "word_bank_english": "英語"
+    "word_bank_english": "英語",
+    "measured_level_label": "測定した読解レベル",
+    "measured_on_target": "{grade} に合っています",
+    "measured_above": "{grade} の目標より上",
+    "measured_below": "{grade} の目標より下",
+    "measured_note": "Flesch-Kincaid。この文章で測定しました。詳しく調べるにはレベルを確認を使ってください。"
   },
   "outline": {
     "title": "ビジュアル整理ツール",
@@ -2966,7 +2973,7 @@
     "student_worksheet": "生徒ワークシート"
   },
   "glossary": {
-    "title": "用語集 & 言語選択",
+    "title": "用語集",
     "tier2": "ティア2 (学術)",
     "tier2_tooltip": "分野を超えて使用される高有用性の学術用語 (例： 「分析する」、「検証する」)。",
     "tier3": "ティア3 (ドメイン)",
@@ -6789,7 +6796,6 @@
     "source_settings_instructions": "ガイド AI コンテンツ生成特定の指示。",
     "source_verify_checkbox": "有効化 AI 事実-チェック via Google 検索グラウンディング。",
     "source_generate_button": "作成 AI-書かれたコンテンツ specified トピック。",
-    "generator_actions": "ハブすべてコンテンツ生成ツール。",
     "tool_visual": "アクセスビジュアルジェネレーターツール。",
     "tool_udl": "学習 〜について UDL フレームワーク統合。",
     "tour-analysis-settings": "調整パラメーター読みやすさのため分析、 含むターゲット読解レベルと特定のメトリクス追跡。",
@@ -6814,7 +6820,6 @@
     "adventure_system_state": "追加リソース管理メカニクスアドベンチャー。",
     "glossary_tier2_count": "設定どのように多くの第2層 (学術的) 語彙単語含む。",
     "glossary_tier3_count": "設定どのように多くの第3層 (専門分野) 語彙単語含む。",
-    "glossary_definition_level": "制御どのように定義書かれた。",
     "glossary_custom_instructions": "提供特定のガイダンス語彙選択と定義スタイル。",
     "glossary_language_input": "指定言語語彙翻訳。",
     "glossary_auto_remove": "自動的にフィルタ外 very シンプルまたは一般的単語。",
@@ -6948,7 +6953,6 @@
     "fab_dictation": "変換音声テキスト手-無料入力。",
     "fab_focus": "作成移動可能スポットライトその暗くするすべてを除く円形エリア周囲カーソル。",
     "fab_line_focus": "単一-線読解 isolation ツール集中読解。",
-    "fab_ruler": "追加半透明水平バーその従うカーソル役立ちます追跡読解位置線により線。",
     "fab_timer": "開くインタラクティブフォーカスタイマーに基づく Pomodoro Technique。",
     "scaffolds_edit_toggle": "切り替え間教師編集と生徒表示モード。",
     "scaffolds_goal_panel": "表示学習目標生徒参照。",
@@ -7043,7 +7047,6 @@
     "immersive_line_focus": "有効化単一-線読解ガイド。",
     "immersive_syllables": "ビジュアル音節 segmentation デコードサポート。",
     "immersive_wide_text": "展開テキスト使用もっと水平画面スペース。",
-    "sidebar_tab_create": "開くコンテンツ生成パネルすべて AI搭載ツール。",
     "sidebar_tab_history": "アクセスすべて保存済みコンテンツとセッション歴史。",
     "socratic_toggle": "有効化ソクラテス式ダイアログモードより深い学習。",
     "socratic_input": "入力質問またはステートメントソクラテス式 exploration。",
@@ -31301,7 +31304,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "現在のメディアを説明する",
+    "describe_current_media_done": "メディア {count} 件中 {index} 件目を読み上げています。",
+    "describe_current_media_hint": "リソースを離れずに、現在または次のメディアの説明を読み上げます",
+    "describe_current_media_none": "現在のリソースにメディアはありません。",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore を開く",
+    "open_learning_web_explorer_done": "Learning Web: Explore を開きました。",
+    "open_learning_web_explorer_hint": "基準、概念、レッスン、証拠、語のつながりを 1 つのマップで探索します",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "すべてのメディアの説明を読み上げる",
+    "read_media_descriptions_count": "メディアの説明を {count} 件読み上げています。",
+    "read_media_descriptions_hint": "現在のリソースにある画像、動画、音声の説明をすべて読み上げます",
+    "read_media_descriptions_none": "現在のリソースにメディアはありません。",
+    "suggest_contextual_next_steps": "次の 3 ステップを提案",
+    "suggest_contextual_next_steps_hint": "状況に合った 3 つの選択肢を示します。選んだり実行したりはしません",
+    "suggest_contextual_next_steps_working": "現在のレッスンの状況を読み取り、3 つの選択肢を準備しています...",
+    "surprise_me_contextually": "役に立つ次のステップを教えて",
+    "surprise_me_contextually_hint": "現在のレッスンの状況から、無理のない安全な次の行動を 1 つ選びます",
+    "surprise_me_contextually_working": "現在のレッスンの状況を読み取り、役に立つ次のステップを選んでいます...",
+    "use_contextual_suggestion": "提案された次のステップを使う",
+    "use_contextual_suggestion_hint": "最新の提案から選択肢 1、2、3 のいずれかを実行します",
+    "use_contextual_suggestion_working": "選んだ次のステップを開始しています..."
   },
   "palette": {
     "aria": "AlloFlow コマンドパレット",
@@ -31324,10 +31353,11 @@
       "videoStudio": "ここ — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "すべての操作は読み上げられます。Ctrl+K で切替。",
     "group": {
@@ -31639,6 +31669,12 @@
     "diff_types_hint": "次のために難易度を分けたセットを生成：",
     "diff_cost": "1 回の実行で約 {n} 件を生成します。",
     "summary_standards": "基準",
-    "summary_interests": "興味"
+    "summary_interests": "興味",
+    "translations": "翻訳",
+    "translations_auto": "自動（{language}）",
+    "translations_auto_plain": "自動",
+    "translations_none": "なし",
+    "translations_on_hint": "{output} の教材には {target} 版も付きます。",
+    "translations_off_hint": "教材は {output} のみで、第二言語は付きません。"
   }
 }

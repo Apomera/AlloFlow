@@ -2255,7 +2255,7 @@
     "ai_guide_sub": "គរុកោសល្យ, ការរុករក និងការរៀបចំស្វ័យប្រវត្តិ",
     "ai_guide_welcome": "សួស្តី! ខ្ញុំជាអ្នកណែនាំ AI របស់អ្នក។ ខ្ញុំអាចជួយជាមួយយុទ្ធសាស្ត្រ UDL រុករកកម្មវិធីសម្រាប់អ្នក ឬរៀបចំការកំណត់មេរៀនរបស់អ្នកដោយស្វ័យប្រវត្តិ។ គ្រាន់តែសួរ!",
     "tool_analysis": "វិភាគ ប្រភព Material",
-    "tool_glossary": "វាក្យានុក្រម & ភាសា Selection",
+    "tool_glossary": "វាក្យានុក្រម",
     "tool_simplified": "អត្ថបទ Adaptation",
     "tool_outline": "រូបភាព Organizer",
     "tool_visual": "រូបភាព ការគាំទ្រ",
@@ -2985,7 +2985,7 @@
     "choose_destination_aria": "ជ្រើសរើស destination"
   },
   "glossary": {
-    "title": "វាក្យានុក្រម & ភាសា Selection",
+    "title": "វាក្យានុក្រម",
     "tier2": "កម្រិត 2 (សិក្សា)",
     "tier2_tooltip": "ពាក្យសិក្សាដែលមានប្រយោជន៍ខ្ពស់ដែលប្រើទូទាំងវិញ្ញាសា (ឧ. 'វិភាគ' 'ផ្ទៀងផ្ទាត់')។",
     "tier3": "កម្រិត 3 (ដែន)",
@@ -3927,7 +3927,12 @@
     "gauge_simple": "សាមញ្ញ",
     "word_bank_both": "ទាំងពីរ",
     "word_bank_language": "ភាសាឃ្លាំងពាក្យ",
-    "word_bank_english": "អង់គ្លេស"
+    "word_bank_english": "អង់គ្លេស",
+    "measured_level_label": "កម្រិតអានដែលបានវាស់",
+    "measured_on_target": "ត្រូវនឹង {grade}",
+    "measured_above": "ខ្ពស់ជាងកម្រិត {grade}",
+    "measured_below": "ទាបជាងកម្រិត {grade}",
+    "measured_note": "Flesch-Kincaid, វាស់លើអត្ថបទនេះ។ ប្រើ ពិនិត្យ កម្រិត ដើម្បីពិនិត្យឲ្យបានពេញលេញ។"
   },
   "quiz": {
     "title": "វាយតម្លៃ",
@@ -5881,7 +5886,9 @@
     "title_poettree_config": "🌳 កិច្ចការ PoetTree",
     "title_poettree_submission": "🌳 ការដាក់ស្នើកំណាព្យ",
     "title_litlab_config": "🎭 កិច្ចការ LitLab",
-    "title_litlab_submission": "🎭 ការដាក់ស្នើការសម្ដែង"
+    "title_litlab_submission": "🎭 ការដាក់ស្នើការសម្ដែង",
+    "translation_block": "ការបកប្រែ",
+    "translation_into": "ការបកប្រែ ({language})"
   },
   "persona": {
     "title": "Interview របៀប",
@@ -6299,7 +6306,7 @@
   },
   "tools": {
     "source": "ប្រភព Material",
-    "glossary": "វាក្យានុក្រម & ភាសា Selection",
+    "glossary": "វាក្យានុក្រម",
     "simplified": "អត្ថបទ Adaptation & ការចូលរួម",
     "outline": "រូបភាព Organizer",
     "quiz": "វាយតម្លៃ",
@@ -6888,7 +6895,6 @@
     "source_settings_instructions": "Guide AI មាតិកា ជំនាន់ ជាមួយ ជាក់លាក់ ការណែនាំ. ឧទាហរណ៍: បង្កើត it ចាប់អារម្មណ៍ សម្រាប់ reluctant អ្នកអាន, ផ្តោត លើ water cycle, រួមបញ្ចូល diverse តួអង្គ names, Avoid references ទៅ violence, និង ប្រើ សាមញ្ញ វាក្យសព្ទ សម្រាប់ ELL សិស្ស. ការណែនាំ រូបរាង: សំឡេង, មាតិកា ផ្តោត, វាក្យសព្ទ កម្រិត, និង perspective. Be ជាក់លាក់ សម្រាប់ ល្អបំផុត លទ្ធផល. ច្រើន ការណែនាំ អាច be combined. ការណែនាំ គឺ processed along ជាមួយ របស់អ្នក ប្រធានបទ និង ការកំណត់. សម្រាប់ sensitive topics, រួមបញ្ចូល មាតិកា guidance. ការណែនាំ do មិន guarantee ជាក់លាក់ outcomes ប៉ុន្តែ strongly influence ជំនាន់. គន្លឹះ: រួមបញ្ចូល កម្រិតថ្នាក់ និង ណាមួយ មាតិកា restrictions ក្នុង របស់អ្នក ការណែនាំ សម្រាប់ ច្រើនបំផុត សមរម្យ លទ្ធផល.",
     "source_verify_checkbox": "បើកដំណើរការ AI fact-checking via Google ស្វែងរក grounding. ពេល ON: AI cross-references បានបង្កើត មាតិកា against web sources, flagging ឬ correcting potential inaccuracies. Adds 5-10 វិនាទី ទៅ ជំនាន់ ពេលវេលា ប៉ុន្តែ significantly improves reliability សម្រាប់ factual មាតិកា. Especially important សម្រាប់: ប្រវត្តិ (dates, ព្រឹត្តិការណ៍), science (processes, ទិន្នន័យ), biography, និង បច្ចុប្បន្ន ព្រឹត្តិការណ៍. សម្រាប់ fiction, creative ការសរសេរ, ឬ hypothetical scenarios, នេះ អាច be disabled ទៅ allow ច្រើនទៀត creative freedom. Sources consulted គឺ listed ក្នុង ជំនាន់ log សម្រាប់ គ្រូ ពិនិត្យឡើងវិញ. Highly recommended សម្រាប់ ណាមួយ មាតិកា នោះ នឹង be presented as factual ទៅ សិស្ស.",
     "source_generate_button": "បង្កើត AI-written មាតិកា លើ របស់អ្នក specified ប្រធានបទ. ចុច ទៅ begin ជំនាន់ ការប្រើ របស់អ្នក: ប្រធានបទ description, គោលដៅ ប្រវែង, កម្រិតថ្នាក់, និង តាមបំណង ការណែនាំ. ជំនាន់ takes 10-20 វិនាទី. លទ្ធផល គឺ ការពិនិត្យ by safety filters មុន បង្ហាញ. បានបង្កើត មាតិកា អាច be: edited (គ្រូ អាច កែប្រែ ណាមួយ part), analyzed (ដំណើរការ តាមរយៈ ផ្សេងទៀត ជំនាន់ ឧបករណ៍), និង បានរក្សាទុក (បន្ថែម ទៅ ប្រវត្តិ សម្រាប់ reuse). ប្រើ ពេល: អ្នក ត្រូវការ មាតិកា លើ ជាក់លាក់ ប្រធានបទ, ចង់ controlled ភាពស្មុគស្មាញ, ឬ ត្រូវការ ទៅ fill curriculum gaps. បានបង្កើត មាតិកា រួមមាន: សមរម្យ វាក្យសព្ទ, logical organization, និង ថ្នាក់-កម្រិត syntax. Verify factual ភាពត្រឹមត្រូវ មុន ថ្នាក់រៀន ប្រើ.",
-    "generator_actions": "Hub សម្រាប់ ទាំងអស់ មាតិកា ជំនាន់ ឧបករណ៍. អាចប្រើបាន generators រួមបញ្ចូល: សំណួរបញ្ហា (ការវាយតម្លៃ ជាមួយ ចម្លើយ keys), វាក្យានុក្រម (រូបភាព វាក្យសព្ទ), Simplified អត្ថបទ (កម្រិត ការអាន), FAQ (Q និង pairs), ការវិភាគ (មាតិកា examination), មេរៀន ផែនការ (instructional design), Timeline (chronological សកម្មភាព), Scaffolds (ការសរសេរ ការគាំទ្រ), គំនិត តម្រៀប (categorization ហ្គេម), គណិត (problem ជំនាន់), ដំណើរផ្សងព្រេង (អន្តរកម្ម រឿង), និង Brainstorm (សកម្មភាព ideas). នីមួយៗ generator បំប្លែង របស់អ្នក ប្រភព មាតិកា ចូលទៅ ខុសគ្នា ទម្រង់. ចុច ណាមួយ generator ទៅ បើក its configuration បន្ទះ. ច្រើន generators អាច be បានប្រើ លើ ដូចគ្នា ប្រភព. បានបង្កើត មាតិកា លេចឡើង ក្នុង workspace និង រក្សាទុក ទៅ ប្រវត្តិ. គន្លឹះ: ចាប់ផ្តើម ជាមួយ ការវិភាគ ទៅ យល់ របស់អ្នក មាតិកា, បន្ទាប់មក បង្កើត targeted ធនធាន.",
     "tool_visual": "ចូលប្រើ រូបភាព generator ឧបករណ៍. Creates AI-generated រូបភាព រួមមាន: វាក្យសព្ទ រូបភាព, គំនិត រូបភាព, ឈុត depictions, ដ្យាក្រាម, និង infographics. រូបភាព types: ឯកសារយោង រូបភាព (សម្រាប់ ការរៀន), worksheets (សម្រាប់ សកម្មភាព), និង ដ្យាក្រាម (សម្រាប់ relationships). រូបភាព ការគាំទ្រ: ELL សិស្ស (រូបភាព វាក្យសព្ទ), រូបភាព អ្នករៀន, និង ការចូលរួម. នីមួយៗ ជំនាន់ បង្កើត unique រូបភាព. ការកំណត់ ការគ្រប់គ្រង រចនាប័ទ្ម, គុណភាព, និង មាតិកា. បានបង្កើត រូបភាព អាច be: downloaded, embedded ក្នុង សម្ភារៈ, និង added ទៅ glossaries. Uses AI រូបភាព ជំនាន់ credits. គន្លឹះ: បង្កើត រូបភាព សម្រាប់ abstract គំនិត នោះ គឺ difficult ទៅ explain ជាមួយ ពាក្យ alone.",
     "tool_udl": "ស្វែងយល់អំពី framework UDL (Universal Design for Learning)៖ Representation, Action/Expression និង Engagement។",
     "tour-analysis-settings": "កែសម្រួល parameters សម្រាប់ readability ការវិភាគ, រួមមាន គោលដៅ ការអាន កម្រិត និង ជាក់លាក់ metrics ទៅ track.",
@@ -6913,7 +6919,6 @@
     "adventure_system_state": "បន្ថែម resource management៖ Health, Gold, Reputation និងធនធានផ្ទាល់ខ្លួនដែលសិស្សតាមដាន។",
     "glossary_tier2_count": "កំណត់ ដូចម្តេច many Tier 2 (សិក្សា) វាក្យសព្ទ ពាក្យ ទៅ រួមបញ្ចូល. Tier 2 ពាក្យ: លេចឡើង ឆ្លងកាត់ subjects, គឺ បានប្រើ ក្នុង សិក្សា contexts, និង គឺ essential សម្រាប់ អត្ថបទ ការយល់ដឹង. ឧទាហរណ៍: វិភាគ, ភស្តុតាង, significant, contrast. These ពាក្យ មាន highest instructional តម្លៃ—ច្រើនបំផុត សិស្ស benefit ពី explicit teaching. Recommended រាប់ depends លើ: អត្ថបទ ប្រវែង (1 ពាក្យ per 100-150 ពាក្យ នៃ ប្រភព), អាចប្រើបាន ការណែនាំ ពេលវេលា, និង សិស្ស ត្រូវការ. Balance ជាមួយ Tier 3 រាប់ សម្រាប់ បញ្ចប់ វាក្យសព្ទ កំណត់. ផ្តោត ការណែនាំ here សម្រាប់ maximum impact លើ ការអាន ការយល់ដឹង ឆ្លងកាត់ ទាំងអស់ subjects.",
     "glossary_tier3_count": "កំណត់ចំនួនពាក្យ Tier 3 (បច្ចេកទេសតាមមុខវិជ្ជា) ដែលត្រូវរួមបញ្ចូលក្នុងវាក្យានុក្រម។",
-    "glossary_definition_level": "ការគ្រប់គ្រង ដូចម្តេច និយមន័យ គឺ written. ជម្រើស: ដូចគ្នា as ប្រភព (maintains ដើម ភាពស្មុគស្មាញ—ល្អ សម្រាប់ កម្រិតខ្ពស់ សិស្ស), លើ ថ្នាក់ (matches គោលដៅ កម្រិតថ្នាក់ វាក្យសព្ទ), Simplified (ប្រើ ទូទៅ ពាក្យ, ខ្លីជាង ប្រយោគ), និង Kindergarten (very មូលដ្ឋាន ភាសា, concrete ឧទាហរណ៍). ផ្គូផ្គង និយមន័យ ភាពស្មុគស្មាញ ទៅ សិស្ស ការអាន កម្រិត, មិន មាតិកា កម្រិត. 10th-grader studying កម្រិតខ្ពស់ biology might ត្រូវការ Simplified និយមន័យ សម្រាប់ unfamiliar ពាក្យ. ពិចារណា របស់អ្នក សិស្ស weakest អ្នកអាន ពេល selecting. និយមន័យ អាច be individually edited បន្ទាប់ ជំនាន់ ប្រសិនបើ មួយចំនួន ត្រូវការ adjustment. Pro គន្លឹះ: ប្រើ Simplified initially, បន្ទាប់មក discuss ច្រើនទៀត technical និយមន័យ ក្នុង ថ្នាក់រៀន.",
     "glossary_custom_instructions": "ផ្ដល់ការណែនាំជាក់លាក់សម្រាប់ការជ្រើសរើសវាក្យសព្ទ និងរូបរាងនិយមន័យ (ឧ. ផ្ដោតលើជំពូក ៣-៥)។",
     "glossary_language_input": "បញ្ជាក់ភាសាសម្រាប់ការបកប្រែវាក្យសព្ទ (Spanish, Mandarin, Khmer, ច្រើនភាសាបំបែកដោយក្បៀស)។",
     "glossary_auto_remove": "ដោយស្វ័យប្រវត្តិ ច្រោះ out very សាមញ្ញ ឬ ទូទៅ ពាក្យ.",
@@ -7047,7 +7052,6 @@
     "fab_dictation": "បំលែង speech ទៅជា text សម្រាប់ការវាយ hands-free ក្នុងវាលអត្ថបទណាមួយ។",
     "fab_focus": "Creates movable spotlight នោះ dims everything except circular ផ្ទៃ around របស់អ្នក cursor. នេះ dramatically reduces រូបភាព clutter និង ជំនួយ maintain attention លើ បច្ចុប្បន្ន ការអាន ផ្ទៃ. Especially beneficial សម្រាប់ សិស្ស ជាមួយ ADHD, sensory processing ភាពខុសគ្នា, ឬ anyone overwhelmed by busy screens. spotlight follows របស់អ្នក mouse/touch ដោយស្វ័យប្រវត្តិ. កែសម្រួល spotlight size និង dim intensity ក្នុង ការកំណត់ → ភាពងាយស្រួល.",
     "fab_line_focus": "ឧបករណ៍ឯកោបន្ទាត់តែមួយ៖ បន្លិចបន្ទាត់បច្ចុប្បន្ន និងធ្វើឱ្យបន្ទាត់ផ្សេងងងឹត ដើម្បីការអានដែលផ្ដោត។",
-    "fab_ruler": "Adds semi-transparent horizontal របារ នោះ follows របស់អ្នក cursor ទៅ ជំនួយ track របស់អ្នក ការអាន ទីតាំង បន្ទាត់ by បន្ទាត់. Particularly ជំនួយ សម្រាប់ users ជាមួយ dyslexia, ADHD, ឬ រូបភាព តាមដាន difficulties. អូស ruler up/down ទៅ reposition, ប្រើ arrow keys សម្រាប់ fine ការគ្រប់គ្រង, ឬ ចុច anywhere ទៅ jump. ruler ពណ៌ អាច be customized ក្នុង ការកំណត់. ដំណើរការ ឆ្លងកាត់ ទាំងអស់ ការអាន views រួមមាន Simplified អត្ថបទ, FAQ, និង វាក្យានុក្រម និយមន័យ.",
     "fab_timer": "Opens អន្តរកម្ម ផ្តោត timer ផ្អែកលើ លើ Pomodoro Technique. ជ្រើសរើស ពី preset durations (5/15/25/45 minutes) ឬ កែប្រែតាមបំណង របស់អ្នក own. លក្ខណៈពិសេស រួមបញ្ចូល: រូបភាព countdown ជាមួយ វឌ្ឍនភាព ring, ស្រេចចិត្ត break reminders, XP រង្វាន់ សម្រាប់ completed វគ្គ (វែងជាង = ច្រើនទៀត XP), និង វគ្គ logging សម្រាប់ គ្រូ ពិនិត្យឡើងវិញ. Label របស់អ្នក task (e.g., 'អាន ជំពូក 3') ទៅ track អ្វី អ្នក accomplished. Minimizes ទៅ header របារ so អ្នក អាច ការងារ ខណៈពេលដែល it runs.",
     "scaffolds_edit_toggle": "បិទបើក រវាង គ្រូ editing និង សិស្ស មើល របៀប. ពេល ON (កែសម្រួល របៀប): ចុច ណាមួយ scaffold ទៅ កែប្រែ អត្ថបទ, បន្ថែម ថ្មី ការជំរុញ, លុប ធាតុ, និង reorder មាតិកា. ពេល OFF: scaffolds បង្ហាញ as សិស្ស មើល them (អាន-តែប៉ុណ្ណោះ). Edits រក្សាទុក ដោយស្វ័យប្រវត្តិ. សិស្ស always មើល អាន-តែប៉ុណ្ណោះ regardless នៃ របស់អ្នក បិទបើក (ពួកគេ cannot ចូលប្រើ កែសម្រួល របៀប). ប្រើ editing ទៅ: កែប្រែតាមបំណង AI-generated scaffolds, បន្ថែម ថ្នាក់រៀន-ជាក់លាក់ ឧទាហរណ៍, ដក inappropriate ការជំរុញ, និង differentiate សម្រាប់ ជាក់លាក់ សិស្ស. Preview សិស្ស មើល មុន sharing. ដើម scaffolds អាច be restored ពី ប្រវត្តិ. គន្លឹះ: ពិនិត្យឡើងវិញ និង កែសម្រួល scaffolds មុន ថ្នាក់រៀន ទៅ ensure ពួកគេ ផ្គូផ្គង របស់អ្នក teaching រចនាប័ទ្ម និង សិស្ស needs.",
     "scaffolds_goal_panel": "បង្ហាញ ការរៀន objectives សម្រាប់ សិស្ស ឯកសារយោង. គោលដៅ លេចឡើង prominently ក្នុងអំឡុង សកម្មភាព. Effective គោលដៅ គឺ: សិស្ស-រួសរាយ (I អាច statements), ជាក់លាក់ និង measurable, និង aligned ទៅ សកម្មភាព. ឧទាហរណ៍: I អាច កំណត់អត្តសញ្ញាណ three causes នៃ Civil War ឬ I អាច ប្រើ ភស្តុតាង ទៅ ការគាំទ្រ my claim. គោលដៅ increase: metacognition, ខ្លួនឯង-ការវាយតម្លៃ, និង purpose clarity. សិស្ស អាច ឯកសារយោង គោលដៅ ខណៈពេលដែល working. គ្រូ sets គោលដៅ មុន សិស្ស ចូលប្រើ. ច្រើន គោលដៅ អាច be displayed. គោលដៅ អាច រួមបញ្ចូល ជោគជ័យ criteria: I know I មាន succeeded ពេល my កថាខណ្ឌ has ប្រធានបទ ប្រយោគ. Research បង្ហាញ អាចមើលឃើញ ការរៀន targets improve សមិទ្ធផល.",
@@ -7142,7 +7146,6 @@
     "immersive_line_focus": "បើកមគ្គុទេសក៍អានបន្ទាត់តែមួយ៖ បន្លិចបន្ទាត់បច្ចុប្បន្ន និងធ្វើឱ្យបន្ទាត់ផ្សេងងងឹត ដើម្បីកាត់បន្ថយការវង្វេង។",
     "immersive_syllables": "រូបភាព syllable segmentation សម្រាប់ decoding ការគាំទ្រ. ពេល enabled: ពាក្យ បង្ហាញ ជាមួយ syllable breaks (hy-phen-at-ed), ជំនួយ អ្នកអាន attack multisyllabic ពាក្យ. Benefits: សាងសង់ phonemic awareness, ការគាំទ្រ decoding យុទ្ធសាស្ត្រ, develops morphological understanding, និង aids pronunciation. Especially ជំនួយ សម្រាប់: លំបាក decoders, ELL សិស្ស, dyslexia ការគាំទ្រ, និង វាក្យសព្ទ ពាក្យ ជាមួយ ស្មុគស្មាញ syllable លំនាំ. Syllabification follows ស្តង់ដារ phonetic rules. ដំណើរការ លើ: ទាំងអស់ ការអាន មាតិកា រួមមាន adapted អត្ថបទ, វាក្យានុក្រម ពាក្យ, និង ប្រភព សម្ភារៈ. Combine ជាមួយ សំឡេង ទៅ hear syllables pronounced. បិទបើក off ពេល មិន needed ទៅ reduce រូបភាព ភាពស្មុគស្មាញ. គន្លឹះ: ប្រើ សម្រាប់ challenging វាក្យសព្ទ, បន្ទាប់មក បិទដំណើរការ សម្រាប់ fluent ការអាន អនុវត្ត.",
     "immersive_wide_text": "Expand អត្ថបទ ទៅ ប្រើ ច្រើនទៀត horizontal អេក្រង់ space. ពេល សកម្ម: បន្ទាត់ ប្រវែង increases, តិចជាង scrolling គឺ needed, និង ច្រើនទៀត អត្ថបទ គឺ អាចមើលឃើញ at once. ល្អ សម្រាប់: fluent អ្នកអាន, wide displays, និង ពេល scanning សម្រាប់ ព័ត៌មាន. លំនាំដើម narrow ទទឹង គឺ ប្រសើរជាង សម្រាប់: លំបាក អ្នកអាន, mobile devices, និង focused ការអាន. Optimal បន្ទាត់ ប្រវែង varies by reader និង device. Research បង្ហាញ 50-75 តួអង្គ per បន្ទាត់ គឺ ideal សម្រាប់ ច្រើនបំផុត អ្នកអាន. Wide អត្ថបទ trades readability សម្រាប់ efficiency. Combine ជាមួយ បន្ទាត់ ផ្តោត ប្រសិនបើ តាមដាន becomes difficult. ការកំណត់ គឺ remembered per device. គន្លឹះ: ប្រើ wide អត្ថបទ សម្រាប់ research និង scanning, narrow អត្ថបទ សម្រាប់ បិទ ការអាន.",
-    "sidebar_tab_create": "បើក មាតិកា ជំនាន់ បន្ទះ ជាមួយ ទាំងអស់ AI-powered ឧបករណ៍. អាចប្រើបាន generators: សំណួរបញ្ហា (ការវាយតម្លៃ ជាមួយ ចម្លើយ keys), វាក្យានុក្រម (រូបភាព វាក្យសព្ទ), Outline (graphic organizers), ការវិភាគ (មាតិកា examination), មេរៀន ផែនការ (structured ការណែនាំ), Timeline (chronological សកម្មភាព), Simplified អត្ថបទ (កម្រិត ការអាន), និង ច្រើនទៀត. នីមួយៗ ឧបករណ៍ បើក configuration បន្ទះ សម្រាប់ customization មុន ជំនាន់. ប្រភព មាតិកា must be loaded សម្រាប់ ច្រើនបំផុត ឧបករណ៍ ទៅ វិភាគ. បានបង្កើត មាតិកា លេចឡើង ក្នុង main workspace និង គឺ បានរក្សាទុក ទៅ ប្រវត្តិ. ប្រើ បង្កើត tab as របស់អ្នក primary មាតិកា ជំនាន់ hub. គន្លឹះ: ចាប់ផ្តើម ជាមួយ ការវិភាគ ទៅ យល់ មាតិកា, បន្ទាប់មក បង្កើត targeted ធនធាន.",
     "sidebar_tab_history": "ចូលប្រើមាតិកាដែលរក្សាទុក និងប្រវត្តិវគ្គ៖ auto-saved, projects រក្សាដោយដៃ, ធនធានបង្កើតរៀបតាមកាលបរិច្ឆេទ។",
     "socratic_toggle": "បើករបៀប Socratic dialogue៖ AI មិនផ្ដល់ចម្លើយផ្ទាល់ទេ ប៉ុន្តែសួរសំណួរណែនាំសិស្សទៅរកការរកឃើញ។",
     "socratic_input": "បញ្ចូល របស់អ្នក សំណួរ ឬ statement សម្រាប់ Socratic exploration. AI នឹង respond ជាមួយ សំណួរ rather than ចម្លើយ. ល្អ starting ចំណុច: Why do អ្នក think [X] happened? អ្វី makes [Y] important? ឬ I believe [Z] because... AI probes របស់អ្នក reasoning: asking សម្រាប់ ភស្តុតាង, exploring implications, testing logic, និង surfacing assumptions. នេះ develops argumentation និង critical thinking ជំនាញ. Be prepared ទៅ: justify របស់អ្នក thinking, ពិចារណា alternatives, និង refine របស់អ្នក ទីតាំង. Socratic dialogues អាច be frustrating initially ប៉ុន្តែ សាង lasting understanding. របស់អ្នក responses និង reasoning គឺ tracked សម្រាប់ ការឆ្លុះបញ្ចាំង.",
@@ -29417,7 +29420,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "ពិពណ៌នាមេឌៀបច្ចុប្បន្ន",
+    "describe_current_media_done": "កំពុងអានមេឌៀទី {index} ក្នុងចំណោម {count}។",
+    "describe_current_media_hint": "អានការពិពណ៌នាមេឌៀបច្ចុប្បន្ន ឬបន្ទាប់ ដោយមិនចាកចេញពីធនធាន",
+    "describe_current_media_none": "មិនមានមេឌៀនៅក្នុងធនធានបច្ចុប្បន្នទេ។",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "បើក Learning Web: Explore",
+    "open_learning_web_explorer_done": "បានបើក Learning Web: Explore។",
+    "open_learning_web_explorer_hint": "ស្វែងយល់ស្តង់ដារ គំនិត មេរៀន ភស្តុតាង និងទំនាក់ទំនងពាក្យ ក្នុងផែនទីតែមួយ",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "អានការពិពណ៌នាមេឌៀទាំងអស់",
+    "read_media_descriptions_count": "កំពុងអានការពិពណ៌នាមេឌៀ {count}។",
+    "read_media_descriptions_hint": "អានរាល់ការពិពណ៌នារូបភាព វីដេអូ ឬសំឡេង ដែលបានសរសេរក្នុងធនធានបច្ចុប្បន្ន",
+    "read_media_descriptions_none": "មិនមានមេឌៀនៅក្នុងធនធានបច្ចុប្បន្នទេ។",
+    "suggest_contextual_next_steps": "ស្នើជំហានបន្ទាប់ 3",
+    "suggest_contextual_next_steps_hint": "ផ្តល់ជម្រើសបីដែលសមនឹងបរិបទ ដោយមិនជ្រើស ឬដំណើរការណាមួយ",
+    "suggest_contextual_next_steps_working": "កំពុងអានបរិបទមេរៀនបច្ចុប្បន្ន និងរៀបចំជម្រើសបី...",
+    "surprise_me_contextually": "ផ្តល់ជំហានបន្ទាប់ដ៏មានប្រយោជន៍ដល់ខ្ញុំ",
+    "surprise_me_contextually_hint": "ជ្រើសសកម្មភាពបន្ទាប់មួយដែលសមរម្យ និងហានិភ័យទាប ពីបរិបទមេរៀនបច្ចុប្បន្ន",
+    "surprise_me_contextually_working": "កំពុងអានបរិបទមេរៀនបច្ចុប្បន្ន និងជ្រើសជំហានបន្ទាប់ដ៏មានប្រយោជន៍...",
+    "use_contextual_suggestion": "ប្រើជំហានបន្ទាប់ដែលបានស្នើ",
+    "use_contextual_suggestion_hint": "ដំណើរការជម្រើស 1, 2 ឬ 3 ពីការស្នើចុងក្រោយ",
+    "use_contextual_suggestion_working": "កំពុងចាប់ផ្តើមជំហានបន្ទាប់ដែលបានជ្រើស..."
   },
   "palette": {
     "aria": "ផ្ទាំងពាក្យបញ្ជា AlloFlow",
@@ -29440,10 +29469,11 @@
       "videoStudio": "ទីនេះ — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "រាល់សកម្មភាពត្រូវបានប្រកាស។ Ctrl+K បិទ/បើក។",
     "group": {
@@ -29765,6 +29795,12 @@
     "diff_types_hint": "បង្កើតសំណុំបែងចែកសម្រាប់៖",
     "diff_cost": "ប្រហែលការបង្កើត {n} ក្នុងមួយដំណើរការ។",
     "summary_standards": "ស្តង់ដារ",
-    "summary_interests": "ចំណាប់អារម្មណ៍"
+    "summary_interests": "ចំណាប់អារម្មណ៍",
+    "translations": "ការបកប្រែ",
+    "translations_auto": "ស្វ័យប្រវត្តិ ({language})",
+    "translations_auto_plain": "ស្វ័យប្រវត្តិ",
+    "translations_none": "គ្មាន",
+    "translations_on_hint": "ធនធានជាភាសា {output} នឹងមានកំណែជា {target} ផងដែរ។",
+    "translations_off_hint": "ធនធាននឹងមានតែជាភាសា {output} ប៉ុណ្ណោះ ដោយគ្មានភាសាទីពីរ។"
   }
 }

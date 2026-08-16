@@ -2262,7 +2262,7 @@
     "ai_guide_sub": "Pedagogiek, navigatie & automatische instelling",
     "ai_guide_welcome": "Hallo! Ik ben je AI-gids. Ik kan je helpen met UDL-strategieën, voor je door de app navigeren of je lesinstellingen automatisch opzetten. Vraag het gerust!",
     "tool_analysis": "Bronmateriaal analyseren",
-    "tool_glossary": "Woordenlijst & taalkeuze",
+    "tool_glossary": "Woordenlijst",
     "tool_simplified": "Tekstaanpassing",
     "tool_outline": "Visuele organizer",
     "tool_visual": "Visuele ondersteuning",
@@ -3149,7 +3149,7 @@
     "choose_destination_aria": "Kies een bestemming"
   },
   "glossary": {
-    "title": "Woordenlijst & taalkeuze",
+    "title": "Woordenlijst",
     "tier2": "Niveau 2 (acad.)",
     "tier2_tooltip": "Veelgebruikte academische woorden die over vakgebieden heen worden gebruikt (bijv. 'analyseren', 'verifiëren').",
     "tier3": "Niveau 3 (domein)",
@@ -4091,7 +4091,12 @@
     "gauge_simple": "Eenvoudig",
     "word_bank_english": "Engels",
     "word_bank_both": "Beide",
-    "word_bank_language": "Taal van de woordenbank"
+    "word_bank_language": "Taal van de woordenbank",
+    "measured_level_label": "Gemeten leesniveau",
+    "measured_on_target": "Op niveau voor {grade}",
+    "measured_above": "Boven het niveau van {grade}",
+    "measured_below": "Onder het niveau van {grade}",
+    "measured_note": "Flesch-Kincaid, gemeten op deze tekst. Gebruik Niveau controleren voor een volledigere controle."
   },
   "quiz": {
     "title": "Beoordelen",
@@ -6050,7 +6055,9 @@
     "title_poettree_config": "🌳 PoetTree-opdracht",
     "title_poettree_submission": "🌳 Gedichtinzending",
     "title_litlab_config": "🎭 LitLab-opdracht",
-    "title_litlab_submission": "🎭 Voordrachtinzending"
+    "title_litlab_submission": "🎭 Voordrachtinzending",
+    "translation_block": "Vertaling",
+    "translation_into": "Vertaling ({language})"
   },
   "persona": {
     "title": "Interviewmodus",
@@ -6468,7 +6475,7 @@
   },
   "tools": {
     "source": "Bronmateriaal",
-    "glossary": "Woordenlijst & taalkeuze",
+    "glossary": "Woordenlijst",
     "simplified": "Tekstaanpassing & betrokkenheid",
     "outline": "Visuele organizer",
     "quiz": "Beoordelen",
@@ -7114,7 +7121,6 @@
     "source_settings_instructions": "Stuur de AI-inhoudsgeneratie aan met specifieke instructies. Voorbeelden: Maak het boeiend voor onwillige lezers, Focus op de waterkringloop, Gebruik diverse personagenamen, Vermijd verwijzingen naar geweld en Gebruik eenvoudige woordenschat voor NT2-leerlingen. Instructies bepalen: toon, inhoudelijke focus, woordenschatniveau en perspectief. Wees specifiek voor de beste resultaten. Meerdere instructies kunnen worden gecombineerd. Instructies worden verwerkt samen met uw onderwerp en instellingen. Voeg bij gevoelige onderwerpen inhoudelijke richtlijnen toe. Instructies garanderen geen specifieke uitkomsten, maar beïnvloeden de generatie sterk. Tip: vermeld het leerjaar en eventuele inhoudelijke beperkingen in uw instructies voor de meest passende uitvoer.",
     "source_verify_checkbox": "Schakel AI-feitencontrole in via Google Search-grounding. Indien AAN: de AI vergelijkt gegenereerde inhoud met webbronnen en markeert of corrigeert mogelijke onnauwkeurigheden. Voegt 5–10 seconden toe aan de generatietijd, maar verbetert de betrouwbaarheid van feitelijke inhoud aanzienlijk. Vooral belangrijk voor: geschiedenis (data, gebeurtenissen), wetenschap (processen, gegevens), biografie en actualiteiten. Voor fictie, creatief schrijven of hypothetische scenario's kan dit worden uitgeschakeld voor meer creatieve vrijheid. Geraadpleegde bronnen worden vermeld in het generatielogboek ter beoordeling door de docent. Sterk aanbevolen voor alle inhoud die als feitelijk aan leerlingen wordt gepresenteerd.",
     "source_generate_button": "Maak door AI geschreven inhoud over uw opgegeven onderwerp. Klik om de generatie te starten met uw: onderwerpbeschrijving, doellengte, leerjaar en aangepaste instructies. De generatie duurt 10–20 seconden. De uitvoer wordt door veiligheidsfilters beoordeeld voordat ze wordt weergegeven. Gegenereerde inhoud kan worden: bewerkt (de docent kan elk deel aanpassen), geanalyseerd (door andere generatiehulpmiddelen halen) en opgeslagen (toevoegen aan de geschiedenis voor hergebruik). Gebruik wanneer: u inhoud over een specifiek onderwerp nodig hebt, gecontroleerde complexiteit wilt of leerplanhiaten moet opvullen. Gegenereerde inhoud bevat: passende woordenschat, logische ordening en zinsbouw op leerjaarniveau. Controleer de feitelijke juistheid vóór gebruik in de klas.",
-    "generator_actions": "Centraal punt voor alle generatiehulpmiddelen. Beschikbare generatoren zijn onder andere: Quiz (toets met antwoordsleutels), Woordenlijst (visuele woordenschat), Vereenvoudigde tekst (leesniveaus), FAQ (vraag-en-antwoordparen), Analyse (inhoudelijk onderzoek), Lesplan (instructieontwerp), Tijdlijn (chronologische activiteit), Steigers (schrijfondersteuning), Conceptsortering (categorisatiespel), Wiskunde (opgavegeneratie), Avontuur (interactief verhaal) en Brainstorm (activiteitenideeën). Elke generator zet uw broninhoud om naar een ander formaat. Klik op een generator om het bijbehorende configuratiepaneel te openen. Meerdere generatoren kunnen op dezelfde bron worden toegepast. Gegenereerde inhoud verschijnt in de werkruimte en wordt opgeslagen in de geschiedenis. Tip: begin met Analyse om uw inhoud te begrijpen en genereer daarna gerichte hulpbronnen.",
     "tool_visual": "Open het hulpmiddel voor visuele generatie. Maakt door AI gegenereerde afbeeldingen, waaronder: woordenschatbeelden, conceptillustraties, scènebeelden, diagrammen en infographics. Beeldtypes: referentiebeelden (om te leren), werkbladen (voor activiteiten) en diagrammen (voor relaties). Beelden ondersteunen: NT2-leerlingen (visuele woordenschat), visuele leerlingen en betrokkenheid. Elke generatie maakt unieke afbeeldingen. Instellingen bepalen stijl, kwaliteit en inhoud. Gegenereerde beelden kunnen worden: gedownload, ingesloten in materiaal en toegevoegd aan woordenlijsten. Gebruikt AI-credits voor beeldgeneratie. Tip: genereer beelden voor abstracte concepten die moeilijk met woorden alleen uit te leggen zijn.",
     "tool_udl": "Leer over de integratie van het UDL-kader. Universal Design for Learning kent drie principes: Meerdere manieren van Representatie (het wat van leren—informatie op verschillende manieren presenteren), Meerdere manieren van Actie en Expressie (het hoe van leren—leerlingen begrip op verschillende manieren laten tonen) en Meerdere manieren van Betrokkenheid (het waarom van leren—motiveren en interesse vasthouden). Dit hulpmiddel ondersteunt alle drie via: gevarieerde inhoudsformaten, meerdere interactiemodi en gegamificeerde betrokkenheid. Door te klikken opent gedetailleerde informatie over hoe elke functie van het hulpmiddel aansluit bij UDL-onderzoek. Ideaal voor: professionalisering, onderbouwing van een IEP en begrip van de pedagogische grondslag. Tip: verwijs naar UDL-principes bij het pleiten voor invoering van het hulpmiddel.",
     "tour-analysis-settings": "Instellingenpaneel voor inhoudsanalyse-generatie. Opties omvatten: Diepgang van de analyse (snel overzicht versus uitgebreid onderzoek), Aandachtsgebieden (woordenschat, thema's, structuur, vooringenomenheid), Uitvoerformaat (lijst, verhalend, vergelijkend) en Doelgroep (referentie voor docent versus leerlinggericht). Configureer voor het genereren om het gewenste analysetype te krijgen. Een snelle analyse kost minder tijd maar levert minder details. Een uitgebreide analyse is grondig maar duurt langer. Aandachtsgebieden kunnen worden gecombineerd of geprioriteerd. Het uitvoerformaat bepaalt hoe de resultaten worden gepresenteerd. Sla voorkeursinstellingen op als standaard. Tip: begin met een snelle analyse om de inhoud te overzien en voer daarna een uitgebreide analyse uit op specifieke gebieden.",
@@ -7139,7 +7145,6 @@
     "adventure_system_state": "Voeg mechanismen voor middelenbeheer toe aan avonturen. Leerlingen houden bij: Gezondheid (gevolg van riskante keuzes), Goud/Middelen (economische besluitvorming), Reputatie (sociaal kapitaal uit keuzes) en eigen middelen die u definieert. Acties beïnvloeden middelen zichtbaar—geef goud uit om voorwerpen te kopen, verlies gezondheid door slechte beslissingen, krijg reputatie door anderen te helpen. Creëert betekenisvolle gevolgen die leren: oorzaak-gevolgredeneren, vooruitplannen, middelenbeheer en opportuniteitskosten. Een visueel dashboard toont de huidige niveaus van middelen. Wanneer middelen opraken, reageert het spel adaptief (bijv. lage gezondheid = beperkte opties). Wiskundige vaardigheden worden op natuurlijke wijze geïntegreerd via berekeningen van middelen.",
     "glossary_tier2_count": "Stel in hoeveel woorden van niveau 2 (academisch) uit de woordenschat u wilt opnemen. Woorden van niveau 2: komen voor in alle vakken, worden in academische contexten gebruikt en zijn essentieel voor tekstbegrip. Voorbeelden: analyseren, bewijs, significant, contrast. Deze woorden hebben de hoogste instructiewaarde—de meeste leerlingen hebben baat bij expliciet onderwijs. Het aanbevolen aantal hangt af van: tekstlengte (1 woord per 100–150 woorden bron), beschikbare instructietijd en behoefte van de leerling. Houd evenwicht met het aantal van niveau 3 voor een complete woordenschatset. Richt uw instructie hierop voor maximale impact op leesbegrip in alle vakken.",
     "glossary_tier3_count": "Stel in hoeveel woorden van niveau 3 (vakspecifiek) uit de woordenschat u wilt opnemen. Woorden van niveau 3: zijn specifiek voor een vakgebied, worden meestal in context gedefinieerd en zijn mogelijk niet overdraagbaar tussen vakken. Voorbeelden: fotosynthese, noemer, alliteratie, wetgevend. Deze woorden zijn essentieel voor het begrijpen van specifieke inhoud, maar hebben buiten het vakgebied beperkt nut. Instructie vindt doorgaans plaats tijdens het onderwijzen van de inhoud. Voor een verdieping in een onderwerp neemt u meer niveau 3 op. Voor bredere leesvaardigheden prioriteert u niveau 2. Woorden van niveau 3 staan in leerboeken vaak vet of cursief, wat hun belang binnen het vakgebied aangeeft.",
-    "glossary_definition_level": "Bepaal hoe definities worden geschreven. Opties: Gelijk aan bron (behoudt de oorspronkelijke complexiteit—goed voor gevorderde leerlingen), Op niveau (sluit aan bij de woordenschat van het doelleerjaar), Vereenvoudigd (gebruikt veelvoorkomende woorden, kortere zinnen) en Kleuterniveau (zeer eenvoudige taal, concrete voorbeelden). Stem de complexiteit van de definitie af op het leesniveau van de leerling, niet op het inhoudsniveau. Een leerling uit havo/vwo die geavanceerde biologie bestudeert, heeft mogelijk Vereenvoudigde definities nodig voor onbekende termen. Houd rekening met de zwakste lezers in uw groep bij uw keuze. Definities kunnen na generatie afzonderlijk worden bewerkt als sommige aanpassing nodig hebben. Pro-tip: gebruik aanvankelijk Vereenvoudigd en bespreek daarna de meer technische definities in de klas.",
     "glossary_custom_instructions": "Geef specifieke sturing voor de selectie van woordenschat en de definitiestijl. Voorbeelden: Focus op woorden uit hoofdstuk 3–5, Neem alleen woorden op die met de waterkringloop te maken hebben, Vermijd homoniemen met eenvoudigere betekenissen, Voeg etymologie toe voor Latijnse/Griekse wortels, Voeg Spaanse cognaten toe voor NT2-leerlingen en Gebruik leerlingvriendelijke voorbeelden uit de popcultuur. Aangepaste instructies bepalen: welke woorden worden geselecteerd, hoe definities worden geschreven en welke aanvullende informatie verschijnt. Duidelijke instructies leveren beter gerichte woordenlijsten op. U kunt specifieke formaten vragen zoals: Neem een zin op waarin elk woord wordt gebruikt of Voeg visuele geheugensteuntjes toe. AI volgt instructies bij het maken van woordenschatkeuzes.",
     "glossary_language_input": "Geef talen op voor de vertaling van woordenschat. Voer talen in: Spaans, Mandarijn, Arabisch, Frans, Vietnamees, Tagalog of een andere taal. U kunt meerdere talen toevoegen, gescheiden door komma's. Elke term toont: Engelse definitie, vertaling(en) in de doeltaal en een fonetische uitspraakgids waar van toepassing. Gebruik voor: NT2-ondersteuning, verbinding met thuistalen, woordenschat van wereldtalen en meertalige klassen. Vertalingen verschijnen op elke woordenschatkaart voor directe naslag. Audio-uitspraak is beschikbaar in ondersteunde talen. Onderzoek toont aan dat het verbinden van nieuwe woordenschat met thuistalen de retentie verbetert. Maximaal 4 talen voorkomt visuele rommel en ondersteunt toch diverse klassen.",
     "glossary_auto_remove": "Filter automatisch zeer eenvoudige of veelvoorkomende woorden eruit.",
@@ -7273,7 +7278,6 @@
     "fab_dictation": "Zet spraak om in tekst voor handsfree invoer. Klik om de microfoon te activeren, spreek duidelijk en zie de woorden verschijnen. Werkt in: tekstinvoervelden, schrijfsteigers, chat en elk bewerkbaar veld. Ondersteunt: meerdere talen, leestekencommando's (zeg punt, komma, nieuwe regel) en bewerkingscommando's (verwijder dat). Dictee vereist microfoontoestemming in de browser. De kwaliteit hangt af van: de microfoonkwaliteit, achtergrondgeluid en de helderheid van de spraak. Realtime transcriptie verschijnt terwijl je spreekt. Bewerk de getranscribeerde tekst normaal. Geweldig voor: leerlingen met motorische uitdagingen, terughoudende schrijvers en het genereren van ideeën. Tip: spreek in volledige zinnen voor betere nauwkeurigheid.",
     "fab_focus": "Creëert een verplaatsbare spotlight die alles dimt behalve een cirkelvormig gebied rond je cursor. Dit vermindert visuele rommel drastisch en helpt de aandacht vast te houden op het huidige leesgebied. Vooral nuttig voor leerlingen met ADHD, sensorische verwerkingsverschillen of iedereen die overweldigd wordt door drukke schermen. De spotlight volgt automatisch je muis/aanraking. Pas de grootte van de spotlight en de dimsterkte aan bij Instellingen → Toegankelijkheid.",
     "fab_line_focus": "Hulpmiddel voor het isoleren van één regel voor gefocust lezen. Indien geactiveerd: één tekstregel wordt gemarkeerd terwijl de andere worden gedimd, wat visuele focus creëert. Navigeer met: pijltjestoetsen (omhoog/omlaag), klik ergens op de tekst of tik/veeg op mobiel. Voordelen: vermindert visuele drukte, ondersteunt volgproblemen, helpt de plek vast te houden en vermindert teruglezen. De intensiteit (hoeveel omliggende tekst zichtbaar is) is aanpasbaar bij Instellingen → Toegankelijkheid. Werkt op: alle leesinhoud, inclusief gegenereerde tekst, bronmateriaal en chat. Bijzonder nuttig voor: dyslexie, ADHD, visuele verwerkingsverschillen en iedereen die overweldigd wordt door tekstrijke schermen. Tip: combineer met een groter lettertype voor maximaal leesgemak.",
-    "fab_ruler": "Voegt een halfdoorzichtige horizontale balk toe die je cursor volgt om je leespositie regel voor regel bij te houden. Bijzonder nuttig voor gebruikers met dyslexie, ADHD of problemen met visueel volgen. Sleep de liniaal omhoog/omlaag om te herpositioneren, gebruik de pijltjestoetsen voor fijne controle of klik ergens om te springen. De kleur van de liniaal kan aangepast worden bij Instellingen. Werkt in alle leesweergaven, inclusief Vereenvoudigde Tekst, FAQ en woordenlijstdefinities.",
     "fab_timer": "Opent een interactieve focustimer gebaseerd op de Pomodoro-techniek. Kies uit vooraf ingestelde duurtijden (5/15/25/45 minuten) of stel je eigen tijd in. Functies zijn onder andere: visueel aftellen met voortgangsring, optionele pauzeherinneringen, XP-beloningen voor voltooide sessies (langer = meer XP) en sessieregistratie voor docentbeoordeling. Geef je taak een label (bijv. 'Lees Hoofdstuk 3') om bij te houden wat je hebt bereikt. Minimaliseert naar de headerbalk zodat je kunt werken terwijl hij loopt.",
     "scaffolds_edit_toggle": "Wissel tussen de docentbewerkingsmodus en de leerlingweergavemodus. Indien AAN (Bewerkingsmodus): klik op een steiger om de tekst te wijzigen, nieuwe prompts toe te voegen, items te verwijderen en inhoud te herordenen. Indien UIT: steigers worden getoond zoals leerlingen ze zien (alleen-lezen). Bewerkingen worden automatisch opgeslagen. Leerlingen zien altijd alleen-lezen, ongeacht jouw schakelaar (ze hebben geen toegang tot de bewerkingsmodus). Gebruik bewerken om: door AI gegenereerde steigers aan te passen, klasspecifieke voorbeelden toe te voegen, ongepaste prompts te verwijderen en te differentiëren voor specifieke leerlingen. Bekijk de leerlingweergave als voorbeeld voordat je deelt. Originele steigers kunnen hersteld worden uit de geschiedenis. Tip: bekijk en bewerk steigers vóór de les zodat ze aansluiten bij je onderwijsstijl en de behoeften van je leerlingen.",
     "scaffolds_goal_panel": "Toon leerdoelen ter referentie voor leerlingen. Doelen verschijnen prominent tijdens de activiteit. Effectieve doelen zijn: leerlingvriendelijk (ik-kan-uitspraken), specifiek en meetbaar, en afgestemd op de activiteit. Voorbeelden: Ik kan drie oorzaken van de Burgeroorlog benoemen of Ik kan bewijs gebruiken om mijn stelling te onderbouwen. Doelen verhogen: metacognitie, zelfevaluatie en duidelijkheid van het doel. Leerlingen kunnen de doelen raadplegen terwijl ze werken. De docent stelt de doelen in voordat leerlingen toegang krijgen. Er kunnen meerdere doelen weergegeven worden. Doelen kunnen succescriteria bevatten: Ik weet dat het me gelukt is wanneer mijn alinea een onderwerpszin heeft. Onderzoek toont aan dat zichtbare leerdoelen de prestaties verbeteren.",
@@ -7368,7 +7372,6 @@
     "immersive_line_focus": "Schakel de leeshulp voor één regel in. Wanneer actief: de huidige leesregel is volledig zichtbaar, omliggende regels zijn gedimd en de focus volgt terwijl je navigeert. Voordelen: vermindert visuele overweldiging, verbetert het volgen en helpt de aandacht op de huidige tekst te houden. Navigeer met: pijltoetsen, klik ergens, of automatisch doorschuiven (met TTS). De dimintensiteit is aanpasbaar in de instellingen. Perfect voor: ondersteuning bij dyslexie, aandachtsproblemen en moeite met het volgen van tekst. Combineert goed met tekst-naar-spraak voor multimodale leesondersteuning. Regelfocus werkt op alle tekstinhoud. Onderzoek toont dat regelisolatie het begrip verbetert bij worstelende lezers. Tip: Combineer met een groter lettertype voor maximaal leesgemak.",
     "immersive_syllables": "Visuele lettergreepsegmentatie voor decodeerondersteuning. Wanneer ingeschakeld: woorden worden weergegeven met lettergreepscheidingen (af-ge-bro-ken), wat lezers helpt meerlettergrepige woorden aan te pakken. Voordelen: bouwt fonemisch bewustzijn op, ondersteunt decodeerstrategieën, ontwikkelt morfologisch inzicht en helpt bij de uitspraak. Vooral nuttig voor: worstelende decodeerders, NT2-leerlingen, ondersteuning bij dyslexie en woordenschatwoorden met complexe lettergreeppatronen. De lettergreepindeling volgt standaard fonetische regels. Werkt op: alle leesinhoud, inclusief aangepaste tekst, woordenlijsttermen en bronmateriaal. Combineer met audio om lettergrepen uitgesproken te horen. Schakel uit wanneer niet nodig om de visuele complexiteit te verminderen. Tip: Gebruik voor uitdagende woordenschat, schakel daarna uit voor vloeiende leesoefening.",
     "immersive_wide_text": "Vergroot de tekst om meer horizontale schermruimte te gebruiken. Wanneer actief: de regellengte neemt toe, er is minder scrollen nodig en er is meer tekst tegelijk zichtbaar. Goed voor: vloeiende lezers, brede schermen en het scannen naar informatie. De standaard smalle breedte is beter voor: worstelende lezers, mobiele apparaten en gefocust lezen. De optimale regellengte varieert per lezer en apparaat. Onderzoek toont dat 50-75 tekens per regel ideaal is voor de meeste lezers. Brede tekst ruilt leesbaarheid in voor efficiëntie. Combineer met regelfocus als het volgen lastig wordt. De instelling wordt per apparaat onthouden. Tip: Gebruik brede tekst voor onderzoek en scannen, smalle tekst voor nauwkeurig lezen.",
-    "sidebar_tab_create": "Open het contentgeneratiepaneel met alle AI-aangedreven tools. Beschikbare generatoren: Quiz (toetsen met antwoordsleutels), Woordenlijst (visuele woordenschat), Schema (grafische organisatoren), Analyse (contentonderzoek), Lesplan (gestructureerde instructie), Tijdlijn (chronologische activiteiten), Vereenvoudigde tekst (lezen op niveau) en meer. Elke tool opent een configuratiepaneel voor maatwerk vóór generatie. Voor de meeste tools moet broncontent zijn geladen om te analyseren. Gegenereerde content verschijnt in de hoofdwerkruimte en wordt opgeslagen in de geschiedenis. Gebruik het tabblad Maken als je primaire hub voor contentgeneratie. Tip: Begin met Analyse om de content te begrijpen, genereer dan gerichte bronnen.",
     "sidebar_tab_history": "Toegang tot al je opgeslagen content en sessiegeschiedenis. De geschiedenis omvat: automatisch opgeslagen sessies van recent werk, handmatig opgeslagen projecten en portfolio's, gegenereerde bronnen geordend op aanmaakdatum en leerlinginzendingen (docentweergave). Acties: laad een willekeurig item om verder te werken, verwijder items om opslag vrij te maken, exporteer voor back-up en zoek op trefwoord. De geschiedenis sorteert standaard op recentheid. Filter op type (quiz, woordenlijst, avontuur, enz.) om specifieke bronnen te vinden. Cloud-gesynchroniseerde geschiedenis is toegankelijk vanaf elk apparaat. Opslaglimieten variëren per account—verwijder oude items als je de limiet nadert. Je geschiedenis is je persoonlijke onderwijsbronnenbibliotheek.",
     "socratic_toggle": "Schakel de Socratische dialoogmodus in voor dieper leren. Wanneer AAN: de AI geeft nooit directe antwoorden—maar stelt in plaats daarvan onderzoekende vragen die leerlingen naar ontdekking leiden. Voordelen: ontwikkelt kritisch denken, moedigt zelfcorrectie aan, bouwt probleemoplossende vaardigheden op en creëert gedenkwaardige leermomenten. De AI gebruikt technieken zoals: verhelderende vragen (Wat bedoel je met...?), aannames uitdagen (Maar wat als...?) en verzoeken om bewijs (Hoe weet je dat?). Het beste voor: discussievoorbereiding, conceptverkenning en het helpen van leerlingen die snelle antwoorden willen om dieper na te denken. Kan leerlingen die efficiëntie zoeken frustreren—leg het doel uit.",
     "socratic_input": "Voer je vraag of stelling in voor Socratische verkenning. De AI reageert met vragen in plaats van antwoorden. Goede uitgangspunten: Waarom denk je dat [X] gebeurde? Wat maakt [Y] belangrijk? of Ik geloof [Z] omdat... De AI onderzoekt je redenering: vraagt om bewijs, verkent implicaties, test logica en brengt aannames aan het licht. Dit ontwikkelt argumentatie- en kritische denkvaardigheden. Wees bereid om: je denken te onderbouwen, alternatieven te overwegen en je standpunt te verfijnen. Socratische dialogen kunnen aanvankelijk frustrerend zijn maar bouwen blijvend begrip op. Je reacties en redeneringen worden bijgehouden voor reflectie.",
@@ -31106,7 +31109,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Beschrijf de huidige media",
+    "describe_current_media_done": "Media {index} van {count} wordt voorgelezen.",
+    "describe_current_media_hint": "Lees de huidige of volgende mediabeschrijving zonder de bron te verlaten",
+    "describe_current_media_none": "Er is geen media in de huidige bron.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore openen",
+    "open_learning_web_explorer_done": "Learning Web: Explore geopend.",
+    "open_learning_web_explorer_hint": "Verken standaarden, begrippen, lessen, bewijs en woordverbanden in één kaart",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Alle mediabeschrijvingen voorlezen",
+    "read_media_descriptions_count": "{count} mediabeschrijvingen worden voorgelezen.",
+    "read_media_descriptions_hint": "Lees elke geschreven beschrijving van afbeelding, video of audio in de huidige bron",
+    "read_media_descriptions_none": "Er is geen media in de huidige bron.",
+    "suggest_contextual_next_steps": "3 volgende stappen voorstellen",
+    "suggest_contextual_next_steps_hint": "Biedt drie opties die bij de context passen, zonder er een te kiezen of uit te voeren",
+    "suggest_contextual_next_steps_working": "De huidige lescontext wordt gelezen en drie opties worden voorbereid...",
+    "surprise_me_contextually": "Verras me met een nuttige volgende stap",
+    "surprise_me_contextually_hint": "Kiest één zinnige, risicoarme volgende actie uit de huidige lescontext",
+    "surprise_me_contextually_working": "De huidige lescontext wordt gelezen en een nuttige volgende stap wordt gekozen...",
+    "use_contextual_suggestion": "Een voorgestelde volgende stap gebruiken",
+    "use_contextual_suggestion_hint": "Voert optie 1, 2 of 3 uit de laatste suggesties uit",
+    "use_contextual_suggestion_working": "De gekozen volgende stap wordt gestart..."
   },
   "palette": {
     "aria": "AlloFlow-opdrachtenpalet",
@@ -31129,10 +31158,11 @@
       "videoStudio": "Hier — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Elke actie wordt aangekondigd. Ctrl+K schakelt om.",
     "group": {
@@ -31431,6 +31461,12 @@
     "diff_types_hint": "Genereer een gedifferentieerde set voor:",
     "diff_cost": "Ongeveer {n} generaties per uitvoering.",
     "summary_standards": "standaarden",
-    "summary_interests": "interesses"
+    "summary_interests": "interesses",
+    "translations": "Vertalingen",
+    "translations_auto": "Automatisch ({language})",
+    "translations_auto_plain": "Automatisch",
+    "translations_none": "Geen",
+    "translations_on_hint": "Materiaal in het {output} krijgt ook een versie in het {target}.",
+    "translations_off_hint": "Materiaal is alleen in het {output}, zonder tweede taal."
   }
 }

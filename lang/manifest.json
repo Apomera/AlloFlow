@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-08-03T04:57:30.066Z",
+  "generated": "2026-08-16T18:20:21.022Z",
   "count": 63,
   "total_keys_expected": 9307,
   "available": [
@@ -8,638 +8,505 @@
       "slug": "acholi",
       "display": "Acholi",
       "endonym": "Leb Acholi",
-      "keys": 21841,
-      "bytes": 1753288,
-      "updated": "2026-08-03",
-      "provenance": "english-passthrough",
-      "provenance_note": "English text. Acholi is a real Ugandan P1-P3 medium of instruction; a translator is needed."
+      "keys": 22432,
+      "bytes": 1785912,
+      "updated": "2026-08-16"
     },
     {
       "slug": "amharic",
       "display": "Amharic",
       "endonym": "አማርኛ",
-      "keys": 27648,
-      "bytes": 2747738,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 27908,
+      "bytes": 2769898,
+      "updated": "2026-08-16"
     },
     {
       "slug": "arabic",
       "display": "Arabic",
       "endonym": "العربية",
-      "keys": 29527,
-      "bytes": 3090072,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29934,
+      "bytes": 3115221,
+      "updated": "2026-08-16"
     },
     {
       "slug": "bengali",
       "display": "Bengali",
       "endonym": "বাংলা",
-      "keys": 29632,
-      "bytes": 3902436,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29892,
+      "bytes": 3931741,
+      "updated": "2026-08-16"
     },
     {
       "slug": "burmese",
       "display": "Burmese",
       "endonym": "မြန်မာ",
-      "keys": 27773,
-      "bytes": 4156901,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 28034,
+      "bytes": 4188517,
+      "updated": "2026-08-16"
     },
     {
       "slug": "chin_falam",
       "display": "Chin (Falam)",
       "endonym": "Laiholh (Falam)",
-      "keys": 21725,
-      "bytes": 1811628,
-      "updated": "2026-08-03",
-      "provenance": "english-passthrough",
-      "provenance_note": "English text. Awaiting a Falam Chin translator."
+      "keys": 21868,
+      "bytes": 1816316,
+      "updated": "2026-08-16"
     },
     {
       "slug": "chin_hakha",
       "display": "Chin (Hakha)",
       "endonym": "Laiholh (Hakha)",
-      "keys": 21762,
-      "bytes": 1819435,
-      "updated": "2026-08-03",
-      "provenance": "english-passthrough",
-      "provenance_note": "English text. Awaiting a Hakha Chin translator."
+      "keys": 22030,
+      "bytes": 1832773,
+      "updated": "2026-08-16"
     },
     {
       "slug": "chinese_simplified",
       "display": "Chinese (Simplified)",
       "endonym": "简体中文",
-      "keys": 29761,
-      "bytes": 2253737,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30166,
+      "bytes": 2275610,
+      "updated": "2026-08-16"
     },
     {
       "slug": "chinese_traditional",
       "display": "Chinese (Traditional)",
       "endonym": "繁體中文",
-      "keys": 29637,
-      "bytes": 2251409,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30043,
+      "bytes": 2273346,
+      "updated": "2026-08-16"
     },
     {
       "slug": "dari",
       "display": "Dari",
       "endonym": "دری",
-      "keys": 29534,
-      "bytes": 2914123,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29795,
+      "bytes": 2941473,
+      "updated": "2026-08-16"
     },
     {
       "slug": "dutch",
       "display": "Dutch",
       "endonym": "Nederlands",
-      "keys": 29373,
-      "bytes": 2586168,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29888,
+      "bytes": 2615697,
+      "updated": "2026-08-16"
     },
     {
       "slug": "esperanto",
       "display": "Esperanto",
       "endonym": "Esperanto",
-      "keys": 29615,
-      "bytes": 2490816,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29985,
+      "bytes": 2510760,
+      "updated": "2026-08-16"
     },
     {
       "slug": "farsi",
       "display": "Farsi",
       "endonym": "فارسی",
-      "keys": 29683,
-      "bytes": 2950776,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30088,
+      "bytes": 2989588,
+      "updated": "2026-08-16"
     },
     {
       "slug": "french",
       "display": "French",
       "endonym": "Français",
-      "keys": 29516,
-      "bytes": 2760146,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30112,
+      "bytes": 2795257,
+      "updated": "2026-08-16"
     },
     {
       "slug": "french_canadian",
       "display": "French (Canadian)",
       "endonym": "Français (Canada)",
-      "keys": 29518,
-      "bytes": 2760044,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29969,
+      "bytes": 2785036,
+      "updated": "2026-08-16"
     },
     {
       "slug": "german",
       "display": "German",
       "endonym": "Deutsch",
-      "keys": 29557,
-      "bytes": 2342743,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30070,
+      "bytes": 2381023,
+      "updated": "2026-08-16"
     },
     {
       "slug": "greek",
       "display": "Greek",
       "endonym": "Ελληνικά",
-      "keys": 29843,
-      "bytes": 3708730,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30358,
+      "bytes": 3756582,
+      "updated": "2026-08-16"
     },
     {
       "slug": "gujarati",
       "display": "Gujarati",
       "endonym": "ગુજરાતી",
-      "keys": 29436,
-      "bytes": 4393775,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29699,
+      "bytes": 4405648,
+      "updated": "2026-08-16"
     },
     {
       "slug": "haitian_creole",
       "display": "Haitian Creole",
       "endonym": "Kreyòl Ayisyen",
-      "keys": 29740,
-      "bytes": 2321051,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30256,
+      "bytes": 2350613,
+      "updated": "2026-08-16"
     },
     {
       "slug": "hausa",
       "display": "Hausa",
       "endonym": "Hausa",
-      "keys": 28816,
-      "bytes": 2410895,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29402,
+      "bytes": 2447333,
+      "updated": "2026-08-16"
     },
     {
       "slug": "hebrew",
       "display": "Hebrew",
       "endonym": "עברית",
-      "keys": 29770,
-      "bytes": 2969342,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30175,
+      "bytes": 2993598,
+      "updated": "2026-08-16"
     },
     {
       "slug": "hindi",
       "display": "Hindi",
       "endonym": "हिन्दी",
-      "keys": 29526,
-      "bytes": 3775415,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29931,
+      "bytes": 3819949,
+      "updated": "2026-08-16"
     },
     {
       "slug": "hmong",
       "display": "Hmong",
       "endonym": "Hmoob",
-      "keys": 29090,
-      "bytes": 2532422,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29352,
+      "bytes": 2545387,
+      "updated": "2026-08-16"
     },
     {
       "slug": "igbo",
       "display": "Igbo",
       "endonym": "Igbo",
-      "keys": 28956,
-      "bytes": 2557162,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29542,
+      "bytes": 2595814,
+      "updated": "2026-08-16"
     },
     {
       "slug": "indonesian",
       "display": "Indonesian",
       "endonym": "Bahasa Indonesia",
-      "keys": 29500,
-      "bytes": 2411067,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29905,
+      "bytes": 2435163,
+      "updated": "2026-08-16"
     },
     {
       "slug": "italian",
       "display": "Italian",
       "endonym": "Italiano",
-      "keys": 29412,
-      "bytes": 2386438,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29926,
+      "bytes": 2422069,
+      "updated": "2026-08-16"
     },
     {
       "slug": "japanese",
       "display": "Japanese",
       "endonym": "日本語",
-      "keys": 29688,
-      "bytes": 2341591,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30095,
+      "bytes": 2378256,
+      "updated": "2026-08-16"
     },
     {
       "slug": "kannada",
       "display": "Kannada",
       "endonym": "ಕನ್ನಡ",
-      "keys": 29257,
-      "bytes": 4963352,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29842,
+      "bytes": 5018866,
+      "updated": "2026-08-16"
     },
     {
       "slug": "karen",
       "display": "Karen",
       "endonym": "ကညီကျိာ်",
-      "keys": 14290,
-      "bytes": 1708382,
-      "updated": "2026-08-02",
-      "provenance": "partial-draft",
-      "provenance_note": "Roughly half the key count of a full pack and contains Burmese-script strings, which is not acceptable in a Karen pack. Needs a native reviewer before any use."
+      "keys": 14433,
+      "bytes": 1723275,
+      "updated": "2026-08-16"
     },
     {
       "slug": "khmer",
       "display": "Khmer",
       "endonym": "ភាសាខ្មែរ",
-      "keys": 27952,
-      "bytes": 3646799,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 28212,
+      "bytes": 3673584,
+      "updated": "2026-08-16"
     },
     {
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "endonym": "Ikinyarwanda",
-      "keys": 29028,
-      "bytes": 2524104,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29614,
+      "bytes": 2560990,
+      "updated": "2026-08-16"
     },
     {
       "slug": "kirundi",
       "display": "Kirundi",
       "endonym": "Ikirundi",
-      "keys": 28915,
-      "bytes": 2431043,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29500,
+      "bytes": 2470547,
+      "updated": "2026-08-16"
     },
     {
       "slug": "korean",
       "display": "Korean",
       "endonym": "한국어",
-      "keys": 29638,
-      "bytes": 2400267,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30043,
+      "bytes": 2428750,
+      "updated": "2026-08-16"
     },
     {
       "slug": "lao",
       "display": "Lao",
       "endonym": "ພາສາລາວ",
-      "keys": 27439,
-      "bytes": 3186016,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 27704,
+      "bytes": 3215386,
+      "updated": "2026-08-16"
     },
     {
       "slug": "latin",
       "display": "Latin",
       "endonym": "Latina",
-      "keys": 29255,
-      "bytes": 2481775,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29625,
+      "bytes": 2501081,
+      "updated": "2026-08-16"
     },
     {
       "slug": "lingala",
       "display": "Lingala",
       "endonym": "Lingála",
-      "keys": 28701,
-      "bytes": 2197151,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29286,
+      "bytes": 2240606,
+      "updated": "2026-08-16"
     },
     {
       "slug": "maay_maay",
       "display": "Maay Maay",
       "endonym": "Af-Maay",
-      "keys": 21923,
-      "bytes": 1860911,
-      "updated": "2026-08-03",
-      "provenance": "english-passthrough",
-      "provenance_note": "English text. The file previously carried Standard Somali, which is a different language from Af-Maay. Awaiting an Af-Maay speaker."
+      "keys": 22504,
+      "bytes": 1898853,
+      "updated": "2026-08-16"
     },
     {
       "slug": "malayalam",
       "display": "Malayalam",
       "endonym": "മലയാളം",
-      "keys": 29290,
-      "bytes": 5359011,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29876,
+      "bytes": 5418056,
+      "updated": "2026-08-16"
     },
     {
       "slug": "marathi",
       "display": "Marathi",
       "endonym": "मराठी",
-      "keys": 29595,
-      "bytes": 4534976,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29855,
+      "bytes": 4547001,
+      "updated": "2026-08-16"
     },
     {
       "slug": "marshallese",
       "display": "Marshallese",
       "endonym": "Kajin Ṃajeḷ",
-      "keys": 21846,
-      "bytes": 1892930,
-      "updated": "2026-08-03",
-      "provenance": "partial-draft",
-      "provenance_note": "Largely English with some Kajin Majel. Rated needs-work in the June 2026 review."
+      "keys": 22115,
+      "bytes": 1908293,
+      "updated": "2026-08-16"
     },
     {
       "slug": "nepali",
       "display": "Nepali",
       "endonym": "नेपाली",
-      "keys": 29630,
-      "bytes": 3990590,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29891,
+      "bytes": 4014604,
+      "updated": "2026-08-16"
     },
     {
       "slug": "pashto",
       "display": "Pashto",
       "endonym": "پښتو",
-      "keys": 29561,
-      "bytes": 2801578,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29823,
+      "bytes": 2828759,
+      "updated": "2026-08-16"
     },
     {
       "slug": "polish",
       "display": "Polish",
       "endonym": "Polski",
-      "keys": 29665,
-      "bytes": 2206304,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30179,
+      "bytes": 2248050,
+      "updated": "2026-08-16"
     },
     {
       "slug": "portuguese_angola",
       "display": "Portuguese (Angola)",
       "endonym": "Português (Angola)",
-      "keys": 29534,
-      "bytes": 2564866,
-      "updated": "2026-08-03",
-      "provenance": "needs-repair",
-      "provenance_note": "134 strings contain the corrupted word \"perguntaario\" from a bad find-and-replace, and some tour prose is code-switched."
+      "keys": 30049,
+      "bytes": 2596313,
+      "updated": "2026-08-16"
     },
     {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
       "endonym": "Português (Brasil)",
-      "keys": 29625,
-      "bytes": 2637952,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30139,
+      "bytes": 2667501,
+      "updated": "2026-08-16"
     },
     {
       "slug": "portuguese_portugal",
       "display": "Portuguese (Portugal)",
       "endonym": "Português (Portugal)",
-      "keys": 29614,
-      "bytes": 2568722,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30129,
+      "bytes": 2601213,
+      "updated": "2026-08-16"
     },
     {
       "slug": "punjabi",
       "display": "Punjabi",
       "endonym": "ਪੰਜਾਬੀ",
-      "keys": 29748,
-      "bytes": 3710718,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30008,
+      "bytes": 3736153,
+      "updated": "2026-08-16"
     },
     {
       "slug": "romanian",
       "display": "Romanian",
       "endonym": "Română",
-      "keys": 29693,
-      "bytes": 2332468,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30208,
+      "bytes": 2369248,
+      "updated": "2026-08-16"
     },
     {
       "slug": "russian",
       "display": "Russian",
       "endonym": "Русский",
-      "keys": 29708,
-      "bytes": 3078105,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30221,
+      "bytes": 3136664,
+      "updated": "2026-08-16"
     },
     {
       "slug": "somali",
       "display": "Somali",
       "endonym": "Soomaali",
-      "keys": 28973,
-      "bytes": 2576329,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29705,
+      "bytes": 2623468,
+      "updated": "2026-08-16"
     },
     {
       "slug": "spanish_castilian",
       "display": "Spanish (Castilian)",
       "endonym": "Español (España)",
-      "keys": 30000,
-      "bytes": 2712081,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30596,
+      "bytes": 2745958,
+      "updated": "2026-08-16"
     },
     {
       "slug": "spanish_latin_america",
       "display": "Spanish (Latin America)",
       "endonym": "Español (Latinoamérica)",
-      "keys": 30001,
-      "bytes": 2725087,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30597,
+      "bytes": 2758782,
+      "updated": "2026-08-16"
     },
     {
       "slug": "swahili",
       "display": "Swahili",
       "endonym": "Kiswahili",
-      "keys": 29321,
-      "bytes": 2339888,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30049,
+      "bytes": 2388207,
+      "updated": "2026-08-16"
     },
     {
       "slug": "tagalog",
       "display": "Tagalog",
       "endonym": "Tagalog",
-      "keys": 29270,
-      "bytes": 2283023,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29533,
+      "bytes": 2305060,
+      "updated": "2026-08-16"
     },
     {
       "slug": "tamil",
       "display": "Tamil",
       "endonym": "தமிழ்",
-      "keys": 29816,
-      "bytes": 4369512,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30075,
+      "bytes": 4404830,
+      "updated": "2026-08-16"
     },
     {
       "slug": "telugu",
       "display": "Telugu",
       "endonym": "తెలుగు",
-      "keys": 29680,
-      "bytes": 4078083,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29941,
+      "bytes": 4107761,
+      "updated": "2026-08-16"
     },
     {
       "slug": "thai",
       "display": "Thai",
       "endonym": "ภาษาไทย",
-      "keys": 30302,
-      "bytes": 3933156,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30707,
+      "bytes": 3979404,
+      "updated": "2026-08-16"
     },
     {
       "slug": "tigrinya",
       "display": "Tigrinya",
       "endonym": "ትግርኛ",
-      "keys": 27543,
-      "bytes": 2728417,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 27805,
+      "bytes": 2749484,
+      "updated": "2026-08-16"
     },
     {
       "slug": "turkish",
       "display": "Turkish",
       "endonym": "Türkçe",
-      "keys": 29572,
-      "bytes": 2650826,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30085,
+      "bytes": 2680403,
+      "updated": "2026-08-16"
     },
     {
       "slug": "ukrainian",
       "display": "Ukrainian",
       "endonym": "Українська",
-      "keys": 29810,
-      "bytes": 3212271,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 30324,
+      "bytes": 3260438,
+      "updated": "2026-08-16"
     },
     {
       "slug": "urdu",
       "display": "Urdu",
       "endonym": "اردو",
-      "keys": 29544,
-      "bytes": 2887655,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29806,
+      "bytes": 2915001,
+      "updated": "2026-08-16"
     },
     {
       "slug": "vietnamese",
       "display": "Vietnamese",
       "endonym": "Tiếng Việt",
-      "keys": 29500,
-      "bytes": 2908931,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29904,
+      "bytes": 2931736,
+      "updated": "2026-08-16"
     },
     {
       "slug": "yoruba",
       "display": "Yoruba",
       "endonym": "Yorùbá",
-      "keys": 29102,
-      "bytes": 2445227,
-      "updated": "2026-08-03",
-      "provenance": "ai-drafted",
-      "provenance_note": "Machine-drafted and cleaned in automated review passes. Not signed off by a native speaker."
+      "keys": 29687,
+      "bytes": 2493856,
+      "updated": "2026-08-16"
     }
-  ],
-  "provenance_legend": {
-    "ai-drafted": "Machine-drafted, automated quality passes applied, no native-speaker sign-off.",
-    "partial-draft": "Incomplete or known-contaminated. Needs a native reviewer before use.",
-    "needs-repair": "Contains known errors. Needs a native reviewer before use.",
-    "english-passthrough": "Renders English. Not a translation. A translator is needed.",
-    "community-reviewed": "A named native speaker has reviewed and corrected this pack."
-  }
+  ]
 }

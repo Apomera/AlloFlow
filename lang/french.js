@@ -1040,7 +1040,7 @@
     "ai_guide_sub": "Pédagogie, navigation et configuration automatique",
     "ai_guide_welcome": "Bonjour ! Je suis votre Guide IA. Je peux vous aider avec les stratégies CUA, naviguer dans l'application pour vous ou configurer automatiquement les paramètres de votre cours. Demandez-moi !",
     "tool_analysis": "Analyser le matériel source",
-    "tool_glossary": "Glossaire et sélection de la langue",
+    "tool_glossary": "Glossaire",
     "tool_simplified": "Adaptation du texte",
     "tool_outline": "Organisateur visuel",
     "tool_visual": "Soutien visuel",
@@ -5740,7 +5740,7 @@
     "generate_aria": "Générer le DBQ"
   },
   "glossary": {
-    "title": "Glossaire et sélection de langue",
+    "title": "Glossaire",
     "tier2": "Niveau 2 (acad.)",
     "tier2_tooltip": "Mots académiques à forte utilité utilisés entre disciplines (ex. « analyser », « vérifier »).",
     "tier3": "Niveau 3 (domaine)",
@@ -5995,7 +5995,12 @@
     "gauge_simple": "Simple",
     "word_bank_english": "Anglais",
     "word_bank_both": "Les deux",
-    "word_bank_language": "Langue de la banque de mots"
+    "word_bank_language": "Langue de la banque de mots",
+    "measured_level_label": "Niveau de lecture mesuré",
+    "measured_on_target": "Au niveau de {grade}",
+    "measured_above": "Au-dessus du niveau {grade}",
+    "measured_below": "En dessous du niveau {grade}",
+    "measured_note": "Flesch-Kincaid, mesuré sur ce texte. Utilisez Vérifier le niveau pour une analyse plus complète."
   },
   "pdf_audit": {
     "fidelity_delta": "Fidélité : {before}% → {after}%{detail}",
@@ -7509,7 +7514,9 @@
     "title_poettree_config": "🌳 Devoir PoetTree",
     "title_poettree_submission": "🌳 Soumission de poème",
     "title_litlab_config": "🎭 Devoir LitLab",
-    "title_litlab_submission": "🎭 Soumission de performance"
+    "title_litlab_submission": "🎭 Soumission de performance",
+    "translation_block": "Traduction",
+    "translation_into": "Traduction ({language})"
   },
   "dashboard": {
     "title": "Tableau de bord de notation de l'enseignant",
@@ -9696,7 +9703,6 @@
     "source_settings_instructions": "Guide la génération de contenu par IA avec des instructions spécifiques. Exemples : Rends-le engageant pour les lecteurs réticents, Concentre-toi sur le cycle de l'eau, Inclus des noms de personnages diversifiés, Évite les références à la violence, et Utilise un vocabulaire simple pour les élèves allophones. Les instructions façonnent : le ton, la focalisation du contenu, le niveau de vocabulaire et la perspective. Sois précis pour de meilleurs résultats. Plusieurs instructions peuvent être combinées. Les instructions sont traitées avec ton sujet et tes paramètres. Pour les sujets sensibles, inclus des conseils de contenu. Les instructions ne garantissent pas des résultats spécifiques mais influencent fortement la génération. Astuce : Inclus le niveau scolaire et toute restriction de contenu dans tes instructions pour une sortie la plus appropriée.",
     "source_verify_checkbox": "Active la vérification des faits par IA via l'ancrage de recherche Google. Lorsqu'activé : l'IA recoupe le contenu généré par rapport aux sources web, signalant ou corrigeant les inexactitudes potentielles. Ajoute 5-10 secondes au temps de génération mais améliore significativement la fiabilité pour le contenu factuel. Particulièrement important pour : l'histoire (dates, événements), les sciences (processus, données), la biographie et les événements actuels. Pour la fiction, l'écriture créative ou les scénarios hypothétiques, cela peut être désactivé pour permettre plus de liberté créative. Les sources consultées sont listées dans le journal de génération pour révision par l'enseignant. Hautement recommandé pour tout contenu qui sera présenté comme factuel aux élèves.",
     "source_generate_button": "Crée du contenu écrit par IA sur ton sujet spécifié. Clique pour commencer la génération en utilisant : la description de ton sujet, la longueur cible, le niveau scolaire et les instructions personnalisées. La génération prend 10-20 secondes. La sortie est examinée par des filtres de sécurité avant l'affichage. Le contenu généré peut être : modifié (l'enseignant peut modifier n'importe quelle partie), analysé (passé par d'autres outils de génération) et sauvegardé (ajouté à l'historique pour réutilisation). Utile lorsque : tu as besoin de contenu sur un sujet spécifique, tu veux une complexité contrôlée ou tu dois combler des lacunes du programme. Le contenu généré comprend : un vocabulaire approprié, une organisation logique et une syntaxe au niveau scolaire. Vérifie l'exactitude factuelle avant l'usage en classe.",
-    "generator_actions": "Plaque tournante pour tous les outils de génération de contenu. Les générateurs disponibles comprennent : Quiz (évaluation avec corrigés), Glossaire (vocabulaire visuel), Texte simplifié (lecture nivelée), FAQ (paires Q et R), Analyse (examen de contenu), Plan de leçon (conception pédagogique), Chronologie (activité chronologique), Étayages (soutiens à l'écriture), Tri de concepts (jeu de catégorisation), Mathématiques (génération de problèmes), Aventure (histoire interactive) et Brainstorm (idées d'activités). Chaque générateur transforme ton contenu source en différents formats. Clique sur n'importe quel générateur pour ouvrir son panneau de configuration. Plusieurs générateurs peuvent être utilisés sur la même source. Le contenu généré apparaît dans l'espace de travail et est sauvegardé dans l'historique. Astuce : Commence par Analyse pour comprendre ton contenu, puis génère des ressources ciblées.",
     "tool_visual": "Accède à l'outil de génération visuelle. Crée des images générées par IA, dont : visuels de vocabulaire, illustrations de concepts, représentations de scènes, schémas et infographies. Types de visuels : images de référence (pour l'apprentissage), feuilles d'exercices (pour les activités) et schémas (pour les relations). Les visuels soutiennent : les élèves allophones (vocabulaire visuel), les apprenants visuels et l'engagement. Chaque génération crée des images uniques. Les paramètres contrôlent le style, la qualité et le contenu. Les visuels générés peuvent être : téléchargés, intégrés dans des supports et ajoutés aux glossaires. Utilise les crédits de génération d'images IA. Astuce : Génère des visuels pour les concepts abstraits qui sont difficiles à expliquer avec des mots seuls.",
     "tool_udl": "Apprends-en plus sur l'intégration du cadre CUA. La Conception Universelle de l'Apprentissage a trois principes : Moyens multiples de représentation (le quoi de l'apprentissage : présenter l'information de différentes façons), Moyens multiples d'action et d'expression (le comment de l'apprentissage : laisser les élèves démontrer leur compréhension différemment) et Moyens multiples d'engagement (le pourquoi de l'apprentissage : motiver et soutenir l'intérêt). Cet outil soutient les trois grâce à : des formats de contenu variés, plusieurs modes d'interaction et un engagement gamifié. Cliquer ouvre des informations détaillées sur comment chaque fonctionnalité de l'outil s'aligne sur la recherche CUA. Excellent pour : le développement professionnel, la justification de PPI et la compréhension des fondements pédagogiques. Astuce : Référence les principes CUA lorsque tu plaides pour l'adoption de l'outil.",
     "tour-analysis-settings": "Ajuste les paramètres d'analyse de lisibilité, dont le niveau de lecture cible et les métriques spécifiques à suivre.",
@@ -9721,7 +9727,6 @@
     "adventure_system_state": "Ajoute des mécaniques de gestion de ressources aux aventures. Les élèves suivent : la santé (conséquence des choix risqués), l'or/les ressources (prise de décision économique), la réputation (capital social des choix) et des ressources personnalisées que tu définis. Les actions affectent les ressources visiblement : dépenser de l'or pour acheter des objets, perdre de la santé à cause de mauvaises décisions, gagner de la réputation en aidant les autres. Crée des conséquences significatives qui enseignent : le raisonnement cause-effet, la planification à l'avance, la gestion des ressources et le coût d'opportunité. Un tableau de bord visuel montre les niveaux de ressources actuels. Lorsque les ressources s'épuisent, le jeu réagit de manière adaptative (par exemple, faible santé = options limitées). Les compétences mathématiques s'intègrent naturellement à travers les calculs de ressources.",
     "glossary_tier2_count": "Définit combien de mots de vocabulaire de Niveau 2 (académique) inclure. Les mots de Niveau 2 : apparaissent dans toutes les matières, sont utilisés dans des contextes académiques et sont essentiels à la compréhension du texte. Exemples : analyser, preuve, significatif, contraster. Ces mots ont la valeur pédagogique la plus élevée : la plupart des élèves bénéficient d'un enseignement explicite. Le nombre recommandé dépend de : la longueur du texte (1 mot par 100-150 mots de source), le temps d'enseignement disponible et les besoins des élèves. Équilibre avec le nombre de Niveau 3 pour un ensemble de vocabulaire complet. Concentre l'enseignement ici pour un impact maximal sur la compréhension en lecture dans toutes les matières.",
     "glossary_tier3_count": "Définit combien de mots de vocabulaire de Niveau 3 (spécifiques au domaine) inclure. Les mots de Niveau 3 : sont spécifiques à un domaine, sont généralement définis en contexte et peuvent ne pas être transférables entre matières. Exemples : photosynthèse, dénominateur, allitération, législatif. Ces mots sont essentiels à la compréhension d'un contenu spécifique mais ont une utilisation limitée en dehors du domaine. L'enseignement a généralement lieu pendant l'enseignement du contenu. Pour une plongée approfondie dans un sujet, inclus plus de Niveau 3. Pour des compétences de lecture plus larges, donne la priorité au Niveau 2. Les mots de Niveau 3 apparaissent souvent en gras ou en italique dans les manuels, signalant leur importance au sein de la discipline.",
-    "glossary_definition_level": "Contrôle comment les définitions sont rédigées. Options : Identique à la source (maintient la complexité originale : bon pour les élèves avancés), Au niveau (correspond au vocabulaire du niveau scolaire cible), Simplifié (utilise des mots courants, des phrases plus courtes) et Maternelle (langage très basique, exemples concrets). Adapte la complexité de la définition au niveau de lecture des élèves, pas au niveau du contenu. Un élève de Seconde étudiant la biologie avancée pourrait avoir besoin de définitions Simplifiées pour les termes peu familiers. Tiens compte de tes lecteurs les plus faibles lors de la sélection. Les définitions peuvent être modifiées individuellement après la génération si certaines nécessitent des ajustements. Astuce pro : Utilise d'abord Simplifié, puis discute des définitions plus techniques en classe.",
     "glossary_custom_instructions": "Fournis des conseils spécifiques pour la sélection du vocabulaire et le style de définition. Exemples : Concentre-toi sur les mots des chapitres 3-5, Inclus uniquement les mots liés au cycle de l'eau, Évite les homonymes ayant des significations plus simples, Ajoute l'étymologie pour les racines latines/grecques, Inclus des cognats espagnols pour les élèves allophones, et Utilise des exemples adaptés aux élèves tirés de la culture pop. Les instructions personnalisées façonnent : quels mots sont sélectionnés, comment les définitions sont rédigées et quelles informations supplémentaires apparaissent. Des instructions claires produisent des glossaires mieux ciblés. Tu peux demander des formats spécifiques comme : Inclus une phrase utilisant chaque mot ou Ajoute des aide-mémoire visuels. L'IA suit les instructions lors de la sélection du vocabulaire.",
     "glossary_language_input": "Précise les langues pour la traduction du vocabulaire. Entre des langues : espagnol, mandarin, arabe, français, vietnamien, tagalog, ou n'importe quelle langue. Tu peux ajouter plusieurs langues séparées par des virgules. Chaque terme affichera : la définition anglaise, la ou les traductions dans la langue cible et un guide de prononciation phonétique le cas échéant. Utile pour : le soutien aux élèves allophones, les connexions à la langue maternelle, le vocabulaire de langue étrangère et les classes multilingues. Les traductions apparaissent sur chaque carte de vocabulaire pour une référence instantanée. Audio de prononciation disponible dans les langues prises en charge. La recherche montre que connecter le nouveau vocabulaire aux langues familiales améliore la rétention. Maximum 4 langues pour éviter l'encombrement visuel tout en soutenant des classes diverses.",
     "glossary_auto_remove": "Filtre automatiquement les mots très simples ou courants.",
@@ -9855,7 +9860,6 @@
     "fab_dictation": "Convertit la parole en texte pour une saisie mains libres. Clique pour activer le microphone, parle clairement et regarde les mots apparaître. Fonctionne dans : saisies de texte, étayages d'écriture, chat et tout champ modifiable. Prend en charge : plusieurs langues, commandes de ponctuation (dis virgule, point, nouvelle ligne) et commandes d'édition (supprimer cela). La dictée nécessite la permission du microphone dans le navigateur. La qualité dépend de : la qualité du microphone, le bruit de fond et la clarté de la parole. Transcription en temps réel s'affiche pendant que tu parles. Modifie le texte transcrit normalement. Excellent pour : les élèves ayant des défis moteurs, les écrivains réticents et la génération d'idées. Astuce : Parle en phrases complètes pour une meilleure précision.",
     "fab_focus": "Crée un projecteur mobile qui assombrit tout sauf une zone circulaire autour de ton curseur. Cela réduit considérablement l'encombrement visuel et aide à maintenir l'attention sur la zone de lecture actuelle. Particulièrement bénéfique pour les élèves avec TDAH, des différences de traitement sensoriel, ou toute personne dépassée par les écrans chargés. Le projecteur suit ta souris/ton toucher automatiquement. Ajuste la taille du projecteur et l'intensité d'assombrissement dans Paramètres → Accessibilité.",
     "fab_line_focus": "Outil d'isolation de lecture d'une seule ligne pour une lecture concentrée. Lorsqu'activé : une ligne de texte est mise en évidence pendant que les autres sont assombries, créant une focalisation visuelle. Navigue avec : touches fléchées (haut/bas), clic n'importe où sur le texte, ou touche/balayage sur mobile. Avantages : réduit l'encombrement visuel, soutient les difficultés de suivi, aide à maintenir la place et réduit la régression. L'intensité (combien de texte environnant est visible) est ajustable dans Paramètres → Accessibilité. Fonctionne sur : tout le contenu de lecture, y compris le texte généré, les matériaux source et le chat. Particulièrement utile pour : dyslexie, TDAH, différences de traitement visuel et toute personne dépassée par les écrans chargés en texte. Astuce : Combine avec une police plus grande pour une facilité de lecture maximale.",
-    "fab_ruler": "Ajoute une barre horizontale semi-transparente qui suit ton curseur pour t'aider à suivre ta position de lecture ligne par ligne. Particulièrement utile pour les utilisateurs avec dyslexie, TDAH ou difficultés de suivi visuel. Fais glisser la règle vers le haut/bas pour repositionner, utilise les touches fléchées pour un contrôle fin, ou clique n'importe où pour sauter. La couleur de la règle peut être personnalisée dans les Paramètres. Fonctionne dans toutes les vues de lecture, y compris Texte simplifié, FAQ et définitions de glossaire.",
     "fab_timer": "Ouvre un minuteur de focalisation interactif basé sur la technique Pomodoro. Choisis parmi les durées prédéfinies (5/15/25/45 minutes) ou personnalise les tiennes. Les fonctionnalités comprennent : compte à rebours visuel avec anneau de progression, rappels de pause optionnels, récompenses d'XP pour les sessions terminées (plus long = plus d'XP) et journal de session pour l'examen par l'enseignant. Étiquette ta tâche (par exemple, 'Lire le chapitre 3') pour suivre ce que tu as accompli. Se réduit à la barre d'en-tête pour que tu puisses travailler pendant qu'il s'exécute.",
     "scaffolds_edit_toggle": "Bascule entre l'édition par l'enseignant et le mode vue de l'élève. Lorsqu'activé (Mode édition) : clique sur n'importe quel étayage pour modifier le texte, ajouter de nouvelles invites, supprimer des items et réorganiser le contenu. Lorsque désactivé : les étayages s'affichent comme les élèves les voient (lecture seule). Les modifications se sauvegardent automatiquement. Les élèves voient toujours en lecture seule indépendamment de ta bascule (ils ne peuvent pas accéder au mode édition). Utilise l'édition pour : personnaliser les étayages générés par IA, ajouter des exemples spécifiques à la classe, supprimer des invites inappropriées et différencier pour des élèves spécifiques. Prévisualise la vue de l'élève avant de partager. Les étayages originaux peuvent être restaurés depuis l'historique. Astuce : Examine et modifie les étayages avant la classe pour t'assurer qu'ils correspondent à ton style d'enseignement et aux besoins des élèves.",
     "scaffolds_goal_panel": "Affiche les objectifs d'apprentissage pour référence des élèves. Les objectifs apparaissent en évidence pendant l'activité. Les objectifs efficaces sont : adaptés aux élèves (énoncés Je suis capable de), spécifiques et mesurables, et alignés sur l'activité. Exemples : Je suis capable d'identifier trois causes de la guerre civile ou Je suis capable d'utiliser des preuves pour soutenir mon affirmation. Les objectifs augmentent : la métacognition, l'auto-évaluation et la clarté du but. Les élèves peuvent référencer les objectifs pendant le travail. L'enseignant définit les objectifs avant l'accès des élèves. Plusieurs objectifs peuvent être affichés. Les objectifs peuvent inclure des critères de réussite : Je sais que j'ai réussi quand mon paragraphe a une phrase principale. La recherche montre que les cibles d'apprentissage visibles améliorent la réussite.",
@@ -9950,7 +9954,6 @@
     "immersive_line_focus": "Active le guide de lecture à ligne unique. Lorsque actif : la ligne de lecture actuelle est entièrement visible, les lignes environnantes sont assombries et le focus suit à mesure que tu navigues. Avantages : réduit la surcharge visuelle, améliore le suivi et aide l'attention à rester sur le texte actuel. Navigue avec : touches fléchées, clique n'importe où ou avance automatique (avec TTS). L'intensité d'assombrissement est ajustable dans les paramètres. Parfait pour : le soutien à la dyslexie, les difficultés d'attention et les défis de suivi. Se combine bien avec la synthèse vocale pour un soutien à la lecture multi-modal. Le focus ligne fonctionne sur tout le contenu textuel. La recherche montre que l'isolation de ligne améliore la compréhension pour les lecteurs en difficulté. Astuce : Combine avec une police plus grande pour une facilité de lecture maximale.",
     "immersive_syllables": "Segmentation syllabique visuelle pour le soutien au décodage. Lorsqu'activé : les mots s'affichent avec des coupures syllabiques (hy-phé-né), aidant les lecteurs à attaquer les mots multisyllabiques. Avantages : développe la conscience phonémique, soutient les stratégies de décodage, développe la compréhension morphologique et aide à la prononciation. Particulièrement utile pour : les décodeurs en difficulté, les élèves allophones, le soutien à la dyslexie et les mots de vocabulaire avec des schémas syllabiques complexes. La syllabification suit les règles phonétiques standard. Fonctionne sur : tout le contenu de lecture, y compris le texte adapté, les termes du glossaire et les matériaux sources. Combine avec l'audio pour entendre les syllabes prononcées. Désactive lorsqu'inutile pour réduire la complexité visuelle. Astuce : Utilise pour le vocabulaire difficile, puis désactive pour la pratique de lecture fluide.",
     "immersive_wide_text": "Étend le texte pour utiliser plus d'espace d'écran horizontal. Lorsqu'actif : la longueur de ligne augmente, moins de défilement est nécessaire et plus de texte est visible à la fois. Bon pour : les lecteurs fluides, les écrans larges et lors du balayage pour information. La largeur étroite par défaut est meilleure pour : les lecteurs en difficulté, les appareils mobiles et la lecture concentrée. La longueur de ligne optimale varie selon le lecteur et l'appareil. La recherche montre que 50-75 caractères par ligne est idéal pour la plupart des lecteurs. Le texte large échange la lisibilité contre l'efficacité. Combine avec le focus ligne si le suivi devient difficile. Le paramètre est mémorisé par appareil. Astuce : Utilise le texte large pour la recherche et le balayage, le texte étroit pour la lecture attentive.",
-    "sidebar_tab_create": "Ouvre le panneau de génération de contenu avec tous les outils alimentés par IA. Générateurs disponibles : Quiz (évaluations avec corrigés), Glossaire (vocabulaire visuel), Plan (organisateurs graphiques), Analyse (examen de contenu), Plan de leçon (enseignement structuré), Chronologie (activités chronologiques), Texte simplifié (lecture nivelée) et plus. Chaque outil ouvre un panneau de configuration pour la personnalisation avant la génération. Le contenu source doit être chargé pour que la plupart des outils l'analysent. Le contenu généré apparaît dans l'espace de travail principal et est sauvegardé dans l'historique. Utilise l'onglet Créer comme ton plaque tournante principale de génération de contenu. Astuce : Commence par Analyse pour comprendre le contenu, puis génère des ressources ciblées.",
     "sidebar_tab_history": "Accède à tout ton contenu sauvegardé et historique de session. L'historique comprend : sessions auto-sauvegardées des travaux récents, projets et portfolios sauvegardés manuellement, ressources générées organisées par date de création et soumissions d'élèves (vue enseignant). Actions : charger n'importe quel item pour continuer à travailler, supprimer des items pour libérer du stockage, exporter pour sauvegarde et rechercher par mot-clé. L'historique trie par récence par défaut. Filtre par type (quiz, glossaire, aventure, etc.) pour trouver des ressources spécifiques. L'historique synchronisé au cloud est accessible depuis n'importe quel appareil. Les limites de stockage varient selon le compte : supprime les anciens items si tu approches de la limite. Ton historique est ta bibliothèque personnelle de ressources d'enseignement.",
     "socratic_toggle": "Active le mode dialogue socratique pour un apprentissage plus profond. Lorsqu'activé : l'IA ne donne jamais de réponses directes : elle pose plutôt des questions de sondage qui guident les élèves vers la découverte. Avantages : développe la pensée critique, encourage l'autocorrection, développe les compétences de résolution de problèmes et crée des moments d'apprentissage mémorables. L'IA utilise des techniques comme : questions de clarification (Que veux-tu dire par... ?), défier les hypothèses (Mais que se passerait-il si... ?) et demandes de preuves (Comment le sais-tu ?). Le mieux pour : la préparation à la discussion, l'exploration de concepts et aider les élèves qui veulent des réponses rapides à penser plus profondément. Peut frustrer les élèves cherchant l'efficacité : explique le but.",
     "socratic_input": "Entre ta question ou affirmation pour l'exploration socratique. L'IA répondra avec des questions plutôt que des réponses. Bons points de départ : Pourquoi penses-tu que [X] est arrivé ? Qu'est-ce qui rend [Y] important ? ou Je crois [Z] parce que... L'IA sonde ton raisonnement : demande des preuves, explore les implications, teste la logique et fait émerger les hypothèses. Cela développe les compétences d'argumentation et de pensée critique. Sois prêt à : justifier ta pensée, considérer les alternatives et affiner ta position. Les dialogues socratiques peuvent être frustrants au début mais construisent une compréhension durable. Tes réponses et raisonnements sont suivis pour la réflexion.",
@@ -10992,7 +10995,7 @@
   },
   "tools": {
     "source": "Matériel source",
-    "glossary": "Glossaire et sélection de langue",
+    "glossary": "Glossaire",
     "simplified": "Adaptation du texte et engagement",
     "outline": "Organisateur visuel",
     "quiz": "Évaluer",
@@ -31036,7 +31039,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Décrire le média actuel",
+    "describe_current_media_done": "Lecture du média {index} sur {count}.",
+    "describe_current_media_hint": "Lire la description du média actuel ou suivant sans quitter la ressource",
+    "describe_current_media_none": "Aucun média n’est disponible dans la ressource actuelle.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Ouvrir Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore ouvert.",
+    "open_learning_web_explorer_hint": "Explorez les normes, les concepts, les leçons, les preuves et les liens entre les mots dans une seule carte",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Lire toutes les descriptions de médias",
+    "read_media_descriptions_count": "Lecture de {count} descriptions de médias.",
+    "read_media_descriptions_hint": "Lire chaque description rédigée d’image, de vidéo ou d’audio de la ressource actuelle",
+    "read_media_descriptions_none": "Aucun média n’est disponible dans la ressource actuelle.",
+    "suggest_contextual_next_steps": "Proposer 3 prochaines étapes",
+    "suggest_contextual_next_steps_hint": "Propose trois options adaptées au contexte, sans en choisir ni en lancer une",
+    "suggest_contextual_next_steps_working": "Lecture du contexte de la leçon en cours et préparation de trois options...",
+    "surprise_me_contextually": "Surprends-moi avec une prochaine étape utile",
+    "surprise_me_contextually_hint": "Choisit une prochaine action sensée et peu risquée à partir du contexte de la leçon en cours",
+    "surprise_me_contextually_working": "Lecture du contexte de la leçon en cours et choix d’une prochaine étape utile...",
+    "use_contextual_suggestion": "Utiliser une prochaine étape proposée",
+    "use_contextual_suggestion_hint": "Lance l’option 1, 2 ou 3 des dernières suggestions",
+    "use_contextual_suggestion_working": "Démarrage de la prochaine étape choisie..."
   },
   "palette": {
     "aria": "Palette de commandes AlloFlow",
@@ -31059,10 +31088,11 @@
       "videoStudio": "Ici — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Chaque action est annoncée. Ctrl+K pour basculer.",
     "group": {
@@ -31567,6 +31597,12 @@
     "diff_types_hint": "Générer un ensemble différencié pour :",
     "diff_cost": "Environ {n} générations par exécution.",
     "summary_standards": "normes",
-    "summary_interests": "centres d’intérêt"
+    "summary_interests": "centres d’intérêt",
+    "translations": "Traductions",
+    "translations_auto": "Automatique ({language})",
+    "translations_auto_plain": "Automatique",
+    "translations_none": "Aucune",
+    "translations_on_hint": "Les ressources en {output} auront aussi une version en {target}.",
+    "translations_off_hint": "Les ressources seront uniquement en {output}, sans deuxième langue."
   }
 }

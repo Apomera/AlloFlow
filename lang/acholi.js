@@ -2226,10 +2226,10 @@
     "ai_guide_sub": "Pedagogy, Navigation & Auto-Setup",
     "ai_guide_welcome": "Itye maber! An aye AI Latela mamegi. Atwero konyo i kom yoo me UDL, telo app pi in, onyo yubo settings me pwony mamegi pi kengi. Peny keken!",
     "tool_analysis": "Analyze Source Material",
-    "tool_glossary": "Glossary & leb Selection",
+    "tool_glossary": "Glossary",
     "tool_simplified": "Text Adaptation",
     "tool_outline": "Visual Organizer",
-    "tool_visual": "Visual Support",
+    "tool_visual": "Cal me pwony",
     "tool_faq": "FAQ Generator",
     "tool_scaffolds": "Coyo Scaffolds",
     "tool_scaffolds_parent": "Coyo Konyi",
@@ -2956,7 +2956,7 @@
     "choose_destination_aria": "Yer destination"
   },
   "glossary": {
-    "title": "Glossary & leb Selection",
+    "title": "Glossary",
     "tier2": "Tier 2 (Acad.)",
     "tier2_tooltip": "Malo-utility academic lok used across disciplines (e.g., 'analyze', 'verify').",
     "tier3": "Tier 3 (Domain)",
@@ -3898,7 +3898,12 @@
     "gauge_simple": "Simple",
     "word_bank_language": "Leb me bank lok",
     "word_bank_english": "English",
-    "word_bank_both": "Leb aryo ducu"
+    "word_bank_both": "Leb aryo ducu",
+    "measured_level_label": "Rwom me kwan ma kipimo",
+    "measured_on_target": "Rwom mupore pi {grade}",
+    "measured_above": "Malo loyo rwom pa {grade}",
+    "measured_below": "Piny loyo rwom pa {grade}",
+    "measured_note": "Flesch-Kincaid, kipimo i coc man. Tii ki Check Level me neno maber."
   },
   "quiz": {
     "title": "Ngi",
@@ -4086,7 +4091,7 @@
       "sidebar_simplified_desc": "Access differentiated versions pa mamegi text at various reading levels. Generate simplified content, side-by-side bilingual versions, ki modified texts.",
       "sidebar_outline_title": "Visual Organizers",
       "sidebar_outline_desc": "Create structured visual representations pa content including tam maps, flow charts, Venn diagrams, ki cause-ki-effect organizers.",
-      "sidebar_visuals_title": "Visual Supports",
+      "sidebar_visuals_title": "Cal me pwony",
       "sidebar_visuals_desc": "AI-yene cal ki visual aids i support niang. Create custom visuals onyo enhanced cal sets pi content.",
       "sidebar_faq_title": "FAQ Generator",
       "sidebar_faq_desc": "Generate frequently asked lapeny meno latin kwan might have pi content. Maber pi anticipating confusion ki preparing explanations.",
@@ -4227,7 +4232,7 @@
     "memory_palace": "Memory Palace (cik me poyo)"
   },
   "visuals": {
-    "title": "Visual Support",
+    "title": "Cal me pwony",
     "worksheet_mode": "latin kwan Worksheet Mode",
     "enhanced": "Enhanced Visuals",
     "text_reduced": "Text-Reduced Mode",
@@ -5844,7 +5849,9 @@
     "title_poettree_config": "🌳 Tic me PoetTree",
     "title_poettree_submission": "🌳 Cwalo Wer",
     "title_litlab_config": "🎭 Tic me LitLab",
-    "title_litlab_submission": "🎭 Cwalo Nyuto"
+    "title_litlab_submission": "🎭 Cwalo Nyuto",
+    "translation_block": "Gonyo lok",
+    "translation_into": "Gonyo lok ({language})"
   },
   "persona": {
     "title": "Interview Mode",
@@ -6262,7 +6269,7 @@
   },
   "tools": {
     "source": "Source Material",
-    "glossary": "Glossary & leb Selection",
+    "glossary": "Glossary",
     "simplified": "Text Adaptation & Engagement",
     "outline": "Visual Organizer",
     "quiz": "Ngi",
@@ -6851,7 +6858,6 @@
     "source_settings_instructions": "Guide AI content kwo ki mukene instructions. Examples: Make it engaging pi reluctant readers, Focus wi water cycle, Include diverse character nying, Avoid references i violence, ki Tii simple vocabulary pi ELL latin kwan. Instructions shape: tone, content focus, vocabulary level, ki perspective. Be mukene pi best results. Multiple instructions can be combined. Instructions tye processed along ki mamegi lok ki settings. Pi sensitive topics, include content guidance. Instructions do pe guarantee mukene outcomes ento strongly influence kwo. Tip: Include grade level ki any content restrictions i mamegi instructions pi most appropriate output.",
     "source_verify_checkbox": "Enable AI fact-checking via Google Yenyo grounding. ka ON: AI cross-references yene content against web sources, flagging onyo correcting potential inaccuracies. Adds 5-10 nyere i kwo kare ento significantly improves reliability pi factual content. Especially important pi: history (dates, events), science (processes, matter), biography, ki current events. Pi fiction, creative coyo, onyo hypothetical scenarios, man can be disabled i allow mapol creative freedom. Sources consulted tye listed i kwo log pi lapwony review. Highly recommended pi any content meno will be presented as factual i latin kwan.",
     "source_generate_button": "Create AI-written content wi mamegi specified lok. Dii i begin kwo using mamegi: lok description, kit length, grade level, ki custom instructions. Kwo takes 10-20 nyere. Output tye reviewed by safety filters before nyutu. Yene content can be: edited (lapwony can modify any part), analyzed (run ki bot okene kwo tools), ki gigwokki (med i history pi reuse). Tii ka: in need content wi mukene lok, want controlled complexity, onyo need i fill curriculum gaps. Yene content includes: appropriate vocabulary, logical organization, ki grade-level syntax. Verify factual atir before kilas tii.",
-    "generator_actions": "Hub pi ducu content kwo tools. Available generators include: Quiz (assessment ki doko keys), Glossary (visual vocabulary), Simplified Text (leveled reading), FAQ (Q ki pairs), Analysis (content examination), pwony Yub (instructional design), Timeline (chronological activity), Scaffolds (coyo supports), Tam Sort (categorization tuko), Kwan kit (problem kwo), Adventure (interactive lok ma kicoyo), ki Brainstorm (activity ideas). lwak generator transforms mamegi source content into different formats. Dii any generator i yab its configuration gicaa. Multiple generators can be used wi rom source. Yene content nen i workspace ki gwoko i history. Tip: Cak ki Analysis i understand mamegi content, then generate targeted resources.",
     "tool_visual": "Access visual generator tool. Creates AI-yene cal including: vocabulary visuals, tam illustrations, scene depictions, diagrams, ki infographics. Visual types: jami me lubo cal (pi learning), worksheets (pi activities), ki diagrams (pi relationships). Visuals support: ELL latin kwan (visual vocabulary), visual lupwonye, ki engagement. lwak kwo creates unique cal. Settings control style, quality, ki content. Yene visuals can be: downloaded, embedded i jami, ki added i glossaries. Uses AI cal kwo credits. Tip: Generate visuals pi abstract tam meno tye difficult i explain ki lok alone.",
     "tool_udl": "Pwonyo pi UDL framework integration. Universal Design pi Learning has three principles: Multiple Means pa Representation ( ngo pa learning—present information i different ways), Multiple Means pa Action ki Expression ( how pa learning—let latin kwan demonstrate understanding differently), ki Multiple Means pa Engagement ( why pa learning—motivate ki sustain interest). man tool supports ducu three ki bot: varied content formats, multiple interaction modes, ki gamified engagement. Clicking yabo detailed information pi how lwak tool feature aligns ki UDL research. Maber pi: professional development, IEP justification, ki understanding pedagogical foundation. Tip: Jami me lubo UDL principles ka advocating pi tool adoption.",
     "tour-analysis-settings": "Yubo parameters pi readability analysis, including kit reading level ki mukene metrics i track.",
@@ -6876,7 +6882,6 @@
     "adventure_system_state": "Med resource management mechanics i adventures. latin kwan track: Health (consequence pa risky yero), Gold/Resources (economic decision-making), Reputation (social capital ki bot yero), ki custom resources in define. Actions affect resources visibly—spend gold i buy jami, lose health ki bot poor decisions, gain reputation ki bot helping others. Creates meaningful consequences meno teach: cause-ki-effect reasoning, planning ahead, resource management, ki opportunity cost. Visual dashboard nyutu current resource levels. ka resources deplete, tuko adaptively responds (e.g., low health = limited options). Kwan kit skills integrate naturally ki bot resource calculations.",
     "glossary_tier2_count": "Set how many Tier 2 (academic) vocabulary lok i include. Tier 2 lok: nen across subjects, tye used i academic contexts, ki tye essential pi text niang. Examples: analyze, caden, significant, contrast. These lok have highest instructional value—most latin kwan benefit ki bot explicit teaching. Recommended count depends wi: text length (1 lok per 100-150 lok pa source), available instruction kare, ki latin kwan need. Balance ki Tier 3 count pi tyek vocabulary set. Focus instruction here pi maximum impact wi reading niang across ducu subjects.",
     "glossary_tier3_count": "Set how many Tier 3 (domain-mukene) vocabulary lok i include. Tier 3 lok: tye mukene i subject area, tye usually defined i context, ki may pe transfer across subjects. Examples: photosynthesis, denominator, alliteration, legislative. These lok tye essential pi understanding mukene content ento have limited tii outside domain. Instruction typically occurs during content teaching. Pi deep dive into lok, include mapol Tier 3. Pi broader reading skills, prioritize Tier 2. Tier 3 lok often nen i bold onyo italics i textbooks, signaling their importance within discipline.",
-    "glossary_definition_level": "Control how definitions tye written. Options: Rom as Source (maintains macon complexity—maber pi advanced latin kwan), Wi Grade (matches kit grade level vocabulary), Simplified (uses matye lok, shorter lok madwong), ki Kindergarten (very basic leb, concrete examples). Match definition complexity i latin kwan reading level, pe content level. 10th-grader studying advanced biology might need Simplified definitions pi unfamiliar terms. Consider mamegi latin kwan weakest readers ka selecting. Definitions can be individually edited after kwo ka mogo need adjustment. Pro tip: Tii Simplified initially, then discuss mapol technical definitions i kilas.",
     "glossary_custom_instructions": "Provide mukene guidance pi vocabulary selection ki definition style. Examples: Focus wi lok ki bot chapters 3-5, Include only lok related i water cycle, Avoid homonyms ki simpler meanings, Med etymology pi Latin/Greek roots, Include Spanish cognates pi ELL latin kwan, ki Tii latin kwan-friendly examples ki bot pop culture. Custom instructions shape: which lok tye selected, how definitions tye written, ki ngo additional information nen. Clear instructions produce better-targeted glossaries. in can request mukene formats like: Include lok madwong using lwak lok onyo Med visual memory hooks. AI follows instructions ka making vocabulary selections.",
     "glossary_language_input": "Specify leb pi vocabulary gony pa lok. Donyo leb: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, onyo any leb. in can med multiple leb separated by commas. lwak term will nyut: English definition, kit leb gony pa lok(s), ki phonetic pronunciation guide kwene applicable. Tii pi: ELL support, heritage leb connections, world leb vocabulary, ki multilingual classrooms. gony pa lok nen wi every vocabulary card pi instant jami me lubo. Audio pronunciation available i supported leb. Research nyutu connecting manyen vocabulary i gang leb improves retention. Max 4 leb prevents visual clutter while supporting diverse classrooms.",
     "glossary_auto_remove": "Automatically filter out very simple onyo matye lok.",
@@ -7010,7 +7015,6 @@
     "fab_dictation": "Convert speech i text pi hands-free input. Dii i activate microphone, loko clearly, ki nen lok nen. Tic i: text inputs, coyo scaffolds, chat, ki any editable field. Supports: multiple leb, punctuation commands (say period, comma, manyen line), ki editing commands (wodo meno). Dictation requires microphone permission i browser. Quality depends wi: microphone quality, background noise, ki speech clarity. Real-kare transcription nyutu as in loko. Loko transcribed text normally. Maber pi: latin kwan ki motor challenges, reluctant writers, ki idea kwo. Tip: Loko i tyek lok madwong pi better atir.",
     "fab_focus": "Creates movable spotlight meno dims everything except circular area around mamegi cursor. man dramatically reduces visual clutter ki helps maintain attention wi current reading area. Especially beneficial pi latin kwan ki ADHD, sensory processing differences, onyo anyone overwhelmed by busy screens. spotlight follows mamegi mouse/touch automatically. Yubo spotlight size ki dim intensity i Settings → Yot pa donyo.",
     "fab_line_focus": "Single-line reading isolation tool pi focused reading. ka activated: one text line tye highlighted while others tye dimmed, creating visual focus. Navigate ki: arrow keys (up/down), dii anywhere wi text, onyo touch/swipe wi mobile. Benefits: reduces visual crowding, supports lubo cok difficulties, helps maintain place, ki reduces regression. Intensity (how much surrounding text tye visible) tye adjustable i Settings → Yot pa donyo. Tic wi: ducu reading content, including yene text, source jami, ki chat. Particularly helpful pi: dyslexia, ADHD, visual processing differences, ki anyone overwhelmed by text-heavy screens. Tip: Combine ki larger font pi maximum reading ease.",
-    "fab_ruler": "Adds semi-transparent horizontal bar meno follows mamegi cursor i konyi track mamegi reading kabedo line by line. Particularly helpful pi users ki dyslexia, ADHD, onyo visual lubo cok difficulties. Drag ruler up/down i reposition, tii arrow keys pi fine control, onyo dii anywhere i jump. ruler color can be customized i Settings. Tic across ducu reading views including Simplified Text, FAQ, ki Glossary definitions.",
     "fab_timer": "Opens interactive focus timer based wi Pomodoro Technique. Yer ki bot preset durations (5/15/25/45 minutes) onyo customize mamegi own. Features include: visual countdown ki progress ring, optional break reminders, XP rewards pi completed sessions (longer = mapol XP), ki session logging pi lapwony review. Label mamegi task (e.g., 'Kwan Chapter 3') i track ngo in accomplished. Minimizes i header bar so in can work while it runs.",
     "scaffolds_edit_toggle": "Toggle kin lapwony editing ki latin kwan view mode. ka ON (Loko Mode): dii any scaffold i modify text, med manyen lok ma tito, wodo jami, ki reorder content. ka OFF: scaffolds nyutu as latin kwan nen them (kwan-only). Edits gwoki automatically. latin kwan always nen kwan-only regardless pa mamegi toggle (they cannot access loko mode). Tii editing i: customize AI-yene scaffolds, med kilas-mukene examples, kwany inappropriate lok ma tito, ki differentiate pi mukene latin kwan. Preview latin kwan view before sharing. Macon scaffolds can be restored ki bot history. Tip: Review ki loko scaffolds before kilas i ensure they match mamegi teaching style ki latin kwan needs.",
     "scaffolds_goal_panel": "Nyutu learning objectives pi latin kwan jami me lubo. Goals nen prominently during activity. Effective goals tye: latin kwan-friendly (I can statements), mukene ki measurable, ki aligned i activity. Examples: I can niang three causes pa Civil War onyo I can tii caden i support my claim. Goals increase: metacognition, kene-assessment, ki purpose clarity. latin kwan can jami me lubo goals while working. lapwony sets goals before latin kwan access. Multiple goals can be displayed. Goals can include success criteria: I know I have succeeded ka my paragraph has lok lok madwong. Research nyutu visible learning targets improve achievement.",
@@ -7105,7 +7109,6 @@
     "immersive_line_focus": "Enable single-line reading guide. ka active: current reading line tye fully visible, surrounding lines tye dimmed, ki focus follows as in navigate. Benefits: reduces visual overwhelm, improves lubo cok, ki helps attention stay wi current text. Navigate ki: arrow keys, dii anywhere, onyo auto-advance (ki TTS). Dimming intensity tye adjustable i settings. Perfect pi: dyslexia support, attention difficulties, ki lubo cok challenges. Combines well ki text-i-speech pi multi-modal reading support. Line focus tic wi ducu text content. Research nyutu line isolation improves niang pi lwany readers. Tip: Combine ki larger font pi maximum reading ease.",
     "immersive_syllables": "Visual syllable segmentation pi decoding support. ka enabled: lok nyutu ki syllable breaks (hy-phen-at-ed), helping readers attack multisyllabic lok. Benefits: gero phonemic awareness, supports decoding strategies, develops morphological understanding, ki aids pronunciation. Especially helpful pi: lwany decoders, ELL latin kwan, dyslexia support, ki vocabulary lok ki complex syllable kit. Syllabification follows standard phonetic rules. Tic wi: ducu reading content including adapted text, glossary terms, ki source jami. Combine ki audio i hear syllables pronounced. Toggle off ka pe needed i reduce visual complexity. Tip: Tii pi challenging vocabulary, then disable pi fluent reading practice.",
     "immersive_wide_text": "Expand text i tii mapol horizontal gicaa space. ka active: line length increases, less scrolling tye needed, ki mapol text tye visible at once. maber pi: fluent readers, wide displays, ki ka scanning pi information. Default narrow width tye better pi: lwany readers, mobile devices, ki focused reading. Optimal line length varies by reader ki device. Research nyutu 50-75 characters per line tye ideal pi most readers. Wide text trades readability pi efficiency. Combine ki line focus ka lubo cok becomes difficult. Setting tye remembered per device. Tip: Tii wide text pi research ki scanning, narrow text pi lor reading.",
-    "sidebar_tab_create": "Yab content kwo gicaa ki ducu AI-powered tools. Available generators: Quiz (assessments ki doko keys), Glossary (visual vocabulary), Outline (graphic organizers), Analysis (content examination), pwony Yub (structured instruction), Timeline (chronological activities), Simplified Text (leveled reading), ki mapol. lwak tool yabo configuration gicaa pi customization before kwo. Source content must be loaded pi most tools i analyze. Yene content nen i main workspace ki tye gigwokki i history. Tii Create tab as mamegi primary content kwo hub. Tip: Cak ki Analysis i understand content, then generate targeted resources.",
     "sidebar_tab_history": "Access ducu mamegi gigwokki content ki session history. History includes: auto-gigwokki sessions ki bot recent work, manually gigwokki projects ki portfolios, yene resources organized by creation date, ki latin kwan submissions (lapwony view). Actions: load any jami i mede working, wodo jami i free storage, export pi backup, ki yenyo by keyword. History sorts by recency by default. Filter by type (quiz, glossary, adventure, etc.) i find mukene resources. Cloud-synced history tye ngeyo nongo ki bot any device. Storage limits vary by account—wodo macon jami ka approaching limit. mamegi history tye mamegi personal teaching resource library.",
     "socratic_toggle": "Enable Socratic dialogue mode pi deeper learning. ka ON: AI never gives direct doko—instead asks probing lapeny meno guide latin kwan toward discovery. Benefits: develops critical thinking, encourages kene-correction, gero problem-solving skills, ki creates memorable learning moments. AI uses techniques like: clarifying lapeny (ngo do in mean by...?), challenging assumptions (ento ngo ka...?), ki caden requests (How do in know meno?). Best pi: discussion preparation, tam exploration, ki helping latin kwan who want quick doko i think mapol deeply. May frustrate latin kwan seeking efficiency—explain purpose.",
     "socratic_input": "Donyo mamegi lapeny onyo statement pi Socratic exploration. AI will respond ki lapeny rather than doko. maber starting points: Why do in think [X] happened? ngo makes [Y] important? onyo I believe [Z] because... AI probes mamegi reasoning: asking pi caden, exploring implications, testing logic, ki surfacing assumptions. man develops argumentation ki critical thinking skills. Be prepared i: justify mamegi thinking, consider alternatives, ki refine mamegi kabedo. Socratic dialogues can be frustrating initially ento gero lasting understanding. mamegi responses ki reasoning tye tracked pi reflection.",
@@ -23650,7 +23653,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Tit media ma kombedi",
+    "describe_current_media_done": "Kwano media {index} me {count}.",
+    "describe_current_media_hint": "Kwan tit media ma kombedi onyo ma lubo, ma pe iweko gin ma itye iye",
+    "describe_current_media_none": "Media mo pe tye i gin ma kombedi.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Yab Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore oyabbe.",
+    "open_learning_web_explorer_hint": "Nong cik pwony, tam madito, pwony, caden, ki kube pa nyig lok i map acel",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Kwan tit media weng",
+    "read_media_descriptions_count": "Kwano tit media {count}.",
+    "read_media_descriptions_hint": "Kwan tit cal, video, onyo dwon weng ma tye i gin ma kombedi",
+    "read_media_descriptions_none": "Media mo pe tye i gin ma kombedi.",
+    "suggest_contextual_next_steps": "Mi tam adek me kare malubo",
+    "suggest_contextual_next_steps_hint": "Miyo yoo adek ma lubo kit ma itye kwede, ma pe yero onyo cako mo",
+    "suggest_contextual_next_steps_working": "Kwano kit ma pwony tye kwede dok yubo yoo adek...",
+    "surprise_me_contextually": "Mii gin mabeco me tim malubo",
+    "surprise_me_contextually_hint": "Yero tic acel mabeco dok ma pe tek ki i pwony ma kombedi",
+    "surprise_me_contextually_working": "Kwano kit ma pwony tye kwede dok yero gin mabeco me tim...",
+    "use_contextual_suggestion": "Tii ki gin ma kimiyo me tim malubo",
+    "use_contextual_suggestion_hint": "Cako yoo 1, 2, onyo 3 ki i tam ma kimiyo cen",
+    "use_contextual_suggestion_working": "Cako gin ma iyero..."
   },
   "palette": {
     "aria": "Palette me cik me AlloFlow",
@@ -23673,10 +23702,11 @@
       "videoStudio": "Kany — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Tic ducu kityeko tito. Ctrl+K loko.",
     "group": {
@@ -23963,6 +23993,12 @@
     "diff_types_hint": "Ket jami ma tye ki yore mapat pa:",
     "diff_cost": "Pi run acel, generation ma romo {n}.",
     "summary_standards": "standards",
-    "summary_interests": "interests"
+    "summary_interests": "interests",
+    "translations": "Gonyo lok",
+    "translations_auto": "Pire kene ({language})",
+    "translations_auto_plain": "Pire kene",
+    "translations_none": "Pe tye",
+    "translations_on_hint": "Jami ma i {output} bibedo bene ki kit i {target}.",
+    "translations_off_hint": "Jami bibedo i {output} keken, ma pe ki leb mukene."
   }
 }

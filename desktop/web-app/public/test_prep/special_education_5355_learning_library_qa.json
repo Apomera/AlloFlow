@@ -1,5 +1,6 @@
 {
-  "packId": "praxis-special-education-5355", "version": "1.0.0",
+  "packId": "praxis-special-education-5355",
+  "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-special-education-5355-learning-library",
   "standard": {
@@ -143,5 +144,14 @@
       "references": 3,
       "status": "source-reviewed-editorial-pass"
     }
-  ]
+  ],
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "4476ab084d22baa502240b4d32df9ac17593a94e3c20ce9fe126196e3c66aaf8",
+    "learningLibrarySha256": "821a5d957aaac8736bde577ce184b8c347bf5f51811610797a24528ba74f2e1e",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
+  }
 }

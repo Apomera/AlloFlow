@@ -2263,7 +2263,7 @@
     "ai_guide_sub": "Pedagogy, Navigation & স্বয়ংক্রিয়-setup",
     "ai_guide_welcome": "হাই! আমি আপনার এআই গাইড। আমি UDL কৌশলে সাহায্য করতে, আপনার হয়ে অ্যাপটি নেভিগেট করতে, বা আপনার পাঠের সেটিংস স্বয়ংক্রিয়ভাবে সেট আপ করতে পারি। শুধু জিজ্ঞাসা করুন!",
     "tool_analysis": "Analyze উৎস উপাদান",
-    "tool_glossary": "শব্দকোষ & ভাষা selection",
+    "tool_glossary": "শব্দকোষ",
     "tool_simplified": "পাঠ্য Adaptation",
     "tool_outline": "ভিজ্যুয়াল অর্গানাইজার",
     "tool_visual": "দৃশ্যমান Support",
@@ -2993,7 +2993,7 @@
     "choose_destination_aria": "বেছে নিন এক destination"
   },
   "glossary": {
-    "title": "শব্দকোষ & ভাষা selection",
+    "title": "শব্দকোষ",
     "tier2": "স্তর ২ (একাডেমিক)",
     "tier2_tooltip": "উচ্চ-utility academic শব্দ ব্যবহার across disciplines (যেমন, 'analyze', 'verify').",
     "tier3": "স্তর ৩ (ডোমেন)",
@@ -3935,7 +3935,12 @@
     "gauge_simple": "সরল",
     "word_bank_english": "ইংরেজি",
     "word_bank_both": "উভয়",
-    "word_bank_language": "শব্দভান্ডারের ভাষা"
+    "word_bank_language": "শব্দভান্ডারের ভাষা",
+    "measured_level_label": "মাপা পড়ার স্তর",
+    "measured_on_target": "{grade} এর জন্য ঠিক আছে",
+    "measured_above": "{grade} স্তরের উপরে",
+    "measured_below": "{grade} স্তরের নিচে",
+    "measured_note": "Flesch-Kincaid, এই লেখার উপর মাপা। আরও বিশদ দেখতে চেক স্তর ব্যবহার করুন।"
   },
   "quiz": {
     "title": "মূল্যায়ন",
@@ -5881,7 +5886,9 @@
     "title_poettree_config": "🌳 PoetTree অ্যাসাইনমেন্ট",
     "title_poettree_submission": "🌳 কবিতা জমা",
     "title_litlab_config": "🎭 LitLab অ্যাসাইনমেন্ট",
-    "title_litlab_submission": "🎭 পরিবেশনা জমা"
+    "title_litlab_submission": "🎭 পরিবেশনা জমা",
+    "translation_block": "অনুবাদ",
+    "translation_into": "অনুবাদ ({language})"
   },
   "persona": {
     "title": "Interview মোড",
@@ -6299,7 +6306,7 @@
   },
   "tools": {
     "source": "উৎস উপাদান",
-    "glossary": "শব্দকোষ & ভাষা selection",
+    "glossary": "শব্দকোষ",
     "simplified": "পাঠ্য Adaptation & সংযুক্তি",
     "outline": "ভিজ্যুয়াল অর্গানাইজার",
     "quiz": "মূল্যায়ন",
@@ -6888,7 +6895,6 @@
     "source_settings_instructions": "Guide এআই বিষয়বস্তু প্রজন্ম সাথে নির্দিষ্ট instructions. Examples: তৈরি করুন it আকর্ষণীয় জন্য reluctant পড়ুন, ফোকাস on water cycle, include বিভিন্ন চরিত্র নাম, Avoid references এর violence, এবং ব্যবহার simple শব্দভান্ডার জন্য ELL শিক্ষার্থী. Instructions shape: tone, বিষয়বস্তু ফোকাস, শব্দভান্ডার স্তর, এবং perspective. Be নির্দিষ্ট জন্য best ফলাফল. Multiple instructions can be combined. Instructions হয় processed along সাথে আপনার বিষয় এবং সেটিং. জন্য sensitive বিষয়, include বিষয়বস্তু guidance. Instructions do not guarantee নির্দিষ্ট outcomes কিন্তু strongly influence প্রজন্ম. টিপ: include গ্রেড স্তর এবং any বিষয়বস্তু restrictions মধ্যে আপনার instructions জন্য most appropriate output.",
     "source_verify_checkbox": "সক্রিয় করুন এআই fact-চেক via Google অনুসন্ধান grounding. When ON: এআই cross-references তৈরি করুন বিষয়বস্তু against web sources, flagging বা সঠিক potential inaccuracies. যোগ করুন 5-10 সেকেন্ড এর প্রজন্ম সময় কিন্তু significantly improves reliability জন্য factual বিষয়বস্তু. Especially important জন্য: ইতিহাস (তারিখ, ঘটনা), science (processes, ডেটা), biography, এবং বর্তমান ঘটনা. জন্য fiction, creative লেখা, বা hypothetical scenarios, এই can be নিষ্ক্রিয় করুন এর allow more creative freedom. Sources consulted হয় listed মধ্যে প্রজন্ম log জন্য শিক্ষক পর্যালোচনা. Highly recommended জন্য any বিষয়বস্তু সেই will be presented as factual এর শিক্ষার্থী.",
     "source_generate_button": "আপনার নির্দিষ্ট বিষয়ে AI-লিখিত কন্টেন্ট তৈরি করুন। জেনারেশনে ১০-২০ সেকেন্ড লাগে; ক্লাসরুমে ব্যবহারের আগে তথ্যগত যথার্থতা যাচাই করুন।",
-    "generator_actions": "Hub জন্য all বিষয়বস্তু প্রজন্ম সরঞ্জাম. উপলব্ধ generators include: কুইজ (assessment সাথে উত্তর keys), শব্দকোষ (দৃশ্যমান শব্দভান্ডার), Simplified পাঠ্য (স্তর পড়ুন), FAQ (Q এবং এক pairs), বিশ্লেষণ (বিষয়বস্তু examination), পাঠ পরিকল্পনা (instructional design), timeline (chronological কার্যকলাপ), Scaffold (লেখা supports), ধারণা সাজান (categorization game), গণিত (problem প্রজন্ম), অ্যাডভেঞ্চার (ইন্টারঅ্যাকটিভ story), এবং Brainstorm (কার্যকলাপ ideas). Each generator রূপান্তরিত করে আপনার source বিষয়বস্তু এ ভিন্ন formats. ক্লিক any generator এর খুলুন its configuration প্যানেল. Multiple generators can be ব্যবহার on একই source. তৈরি করুন বিষয়বস্তু প্রদর্শিত হয় মধ্যে workspace এবং সংরক্ষণ এর ইতিহাস. টিপ: শুরু সাথে বিশ্লেষণ এর understand আপনার বিষয়বস্তু, তারপর তৈরি করুন target সম্পদ.",
     "tool_visual": "Access দৃশ্যমান generator সরঞ্জাম. তৈরি করুন AI-generated করুন চিত্র including: শব্দভান্ডার visuals, ধারণা illustrations, scene depictions, diagrams, এবং infographics. দৃশ্যমান ধরন: রেফারেন্স চিত্র (জন্য শেখা), worksheets (জন্য কার্যকলাপগুলি), এবং diagrams (জন্য relationships). Visuals support: ELL শিক্ষার্থী (দৃশ্যমান শব্দভান্ডার), দৃশ্যমান শিক্ষার্থী, এবং সংযুক্তি. Each প্রজন্ম তৈরি করুন unique চিত্র. সেটিং নিয়ন্ত্রণ শৈলী, quality, এবং বিষয়বস্তু. তৈরি করুন visuals can be: download করুন, embedded মধ্যে উপকরণ, এবং যোগ করুন এর glossaries. ব্যবহার এআই চিত্র প্রজন্ম create. টিপ: তৈরি করুন visuals জন্য abstract ধারণা সেই হয় difficult এর explain সাথে শব্দ alone.",
     "tool_udl": "UDL ফ্রেমওয়ার্ক ইন্টিগ্রেশন সম্পর্কে শিখুন: Representation, Action/Expression ও Engagement এর তিন নীতি। প্রতিটি টুল কীভাবে UDL গবেষণার সাথে সঙ্গতিপূর্ণ তার বিস্তারিত তথ্য।",
     "tour-analysis-settings": "পঠনযোগ্যতা বিশ্লেষণের প্যারামিটার সমন্বয় করুন, লক্ষ্য পড়ার স্তর ও ট্র্যাক করার নির্দিষ্ট মেট্রিক্স সহ।",
@@ -6913,7 +6919,6 @@
     "adventure_system_state": "Adventure-এ সম্পদ পরিচালনার মেকানিক যোগ করে। শিক্ষার্থীরা Health, Gold, Reputation ও কাস্টম সম্পদ ট্র্যাক করে—যা cause-and-effect চিন্তা, পরিকল্পনা এবং opportunity cost শেখায়।",
     "glossary_tier2_count": "সেট how many Tier 2 (academic) শব্দভান্ডার শব্দ এর include. Tier 2 শব্দ: দেখানো across বিষয়বস্তু, হয় ব্যবহার মধ্যে academic context, এবং হয় essential জন্য পাঠ্য বোধশক্তি. Examples: analyze, প্রমাণ, significant, contrast. These শব্দ have highest instructional value—most শিক্ষার্থী benefit থেকে explicit teaching. Recommended গণনা depends on: পাঠ্য length (1 শব্দ per 100-150 শব্দ এর source), উপলব্ধ instruction সময়, এবং শিক্ষার্থী প্রয়োজন. Balance সাথে Tier 3 গণনা জন্য এক সম্পূর্ণ করুন শব্দভান্ডার সেট. ফোকাস instruction here জন্য maximum impact on পড়ুন বোধশক্তি across all বিষয়বস্তু.",
     "glossary_tier3_count": "কতগুলো Tier 3 (বিষয়-নির্দিষ্ট) শব্দ অন্তর্ভুক্ত হবে তা নির্ধারণ করে। যেমন: photosynthesis, alliteration—যা নির্দিষ্ট বিষয়বস্তুর গভীর বোঝাপড়ার জন্য জরুরি। গভীর বিশ্লেষণে বেশি, বিস্তৃত পঠনে কম রাখুন।",
-    "glossary_definition_level": "সংজ্ঞাগুলো কীভাবে লেখা হবে তা নিয়ন্ত্রণ করে: Same as Source, On Grade, Simplified, বা Kindergarten। শিক্ষার্থীর পঠন স্তরের সঙ্গে মিলিয়ে নির্বাচন করুন।",
     "glossary_custom_instructions": "Provide নির্দিষ্ট guidance জন্য শব্দভান্ডার selection এবং সংজ্ঞা শৈলী. Examples: ফোকাস on শব্দ থেকে chapters 3-5, include শুধুমাত্র শব্দ related এর water cycle, Avoid homonyms সাথে simpler meanings, যোগ করুন etymology জন্য Latin/Greek roots, include Spanish cognates জন্য ELL শিক্ষার্থী, এবং ব্যবহার শিক্ষার্থী-friendly examples থেকে pop culture. Custom instructions shape: which শব্দ হয় নির্বাচন, how সংজ্ঞা হয় written, এবং what যোগ additional তথ্য প্রদর্শিত হয়. পরিষ্কার instructions produce better-target glossaries. আপনি can request নির্দিষ্ট formats like: include এক বাক্য using each শব্দ বা যোগ করুন দৃশ্যমান memory hooks. এআই follows instructions when making শব্দভান্ডার selections.",
     "glossary_language_input": "শব্দভান্ডার অনুবাদের জন্য ভাষা নির্দিষ্ট করুন (যেমন Spanish, Mandarin, Arabic)। প্রতিটি কার্ডে ইংরেজি সংজ্ঞা, লক্ষ্য ভাষার অনুবাদ ও উচ্চারণ গাইড দেখানো হবে। ELL সহায়তা ও বহুভাষিক শ্রেণিকক্ষের জন্য আদর্শ।",
     "glossary_auto_remove": "Automatically filter out very simple বা সাধারণ শব্দ.",
@@ -7047,7 +7052,6 @@
     "fab_dictation": "Hands-free ইনপুটের জন্য speech-কে টেক্সটে রূপান্তর করে। মাইক্রোফোন সক্রিয় হলে কথা বলুন; punctuation কমান্ড ও সম্পাদনা কমান্ড সমর্থিত। মোটর চ্যালেঞ্জ থাকা শিক্ষার্থী ও reluctant লেখকদের জন্য আদর্শ।",
     "fab_focus": "Cursor-এর চারপাশে একটি বৃত্তাকার এলাকা ছাড়া সবকিছু dim করে দেয়—যা দৃশ্য বিশৃঙ্খলা কমিয়ে মনোযোগ বজায় রাখতে সাহায্য করে। ADHD বা sensory processing চ্যালেঞ্জ থাকা শিক্ষার্থীদের জন্য বিশেষ উপকারী।",
     "fab_line_focus": "Single-line পড়ুন isolation সরঞ্জাম জন্য focus পড়ুন. When activated: one পাঠ্য line হয় উচ্চহালকা যখন others হয় dimmed, creating দৃশ্যমান ফোকাস. Navigate সঙ্গে: arrow keys (up/down), ক্লিক anywhere on পাঠ্য, বা touch/swipe on mobile. Benefits: reduces দৃশ্যমান crowding, supports ট্র্যাকিং difficulties, সাহায্য maintain place, এবং reduces regression. Intensity (how much surrounding পাঠ্য হয় visible) হয় adjustable মধ্যে সেটিং → অভিগম্যতা. কাজ করে on: all পড়ুন বিষয়বস্তু, including তৈরি করুন পাঠ্য, উৎস উপাদান, এবং chat. Particularly সাহায্য জন্য: dyslexia, ADHD, দৃশ্যমান processing differences, এবং anyone overwhelmed by পাঠ্য-heavy screens. টিপ: Combine সাথে bigger font জন্য maximum পড়ুন ease.",
-    "fab_ruler": "Cursor অনুসরণ করে একটি অর্ধস্বচ্ছ horizontal bar যোগ করে যা লাইন ধরে পঠন অবস্থান ট্র্যাক করতে সাহায্য করে। dyslexia, ADHD বা visual tracking সমস্যা থাকা পাঠকদের জন্য বিশেষ সহায়ক।",
     "fab_timer": "Pomodoro Technique-ভিত্তিক ইন্টারঅ্যাকটিভ focus টাইমার খোলে। preset সময় (৫/১৫/২৫/৪৫ মিনিট) বা কাস্টম সময় বেছে নিন। সম্পন্ন সেশনের জন্য XP মেলে; header bar-এ minimize করা যায়।",
     "scaffolds_edit_toggle": "টগল between শিক্ষক সম্পাদনা এবং শিক্ষার্থী view মোড. When ON (সম্পাদনা মোড): ক্লিক any scaffold এর modify পাঠ্য, যোগ করুন নতুন প্রম্পট, মুছুন আইটেম, এবং reorder বিষয়বস্তু. When OFF: scaffold disable as শিক্ষার্থী see them (পড়ুন-শুধুমাত্র). সম্পাদনা সংরক্ষণ automatically. শিক্ষার্থী always see পড়ুন-শুধুমাত্র regardless এর আপনার টগল (they cannot access সম্পাদনা মোড). ব্যবহার সম্পাদনা কে: customize AI-generated করুন scaffold, যোগ করুন শ্রেণী-নির্দিষ্ট examples, সরান inappropriate প্রম্পট, এবং differentiate জন্য নির্দিষ্ট শিক্ষার্থী. Preview শিক্ষার্থী view আগে sharing. মূল scaffold can be restored থেকে ইতিহাস. টিপ: পর্যালোচনা এবং সম্পাদনা scaffold আগে শ্রেণী এর ensure they মিল আপনার teaching শৈলী এবং শিক্ষার্থী প্রয়োজন.",
     "scaffolds_goal_panel": "Disable শেখা objectives জন্য শিক্ষার্থী রেফারেন্স. লক্ষ্য দেখানো prominently সময় কার্যকলাপ. Effective লক্ষ্য হয়: শিক্ষার্থী-friendly (আমি can statements), নির্দিষ্ট এবং measurable, এবং aligned এর কার্যকলাপ. Examples: আমি can চিহ্নিত three cause এর Civil War বা আমি can ব্যবহার প্রমাণ এর support my claim. লক্ষ্য increase: metacognition, নিজে-assessment, এবং purpose clarity. শিক্ষার্থী can রেফারেন্স লক্ষ্য যখন working. শিক্ষক সেট লক্ষ্য আগে শিক্ষার্থী access. Multiple লক্ষ্য can be disable. লক্ষ্য can include সাফল্য criteria: আমি know আমি have succeeded when my paragraph has এক বিষয় বাক্য. Research দেখান visible শেখা target improve achievement.",
@@ -7142,7 +7146,6 @@
     "immersive_line_focus": "সক্রিয় করুন single-line পড়ুন guide. When সক্রিয়: বর্তমান পড়ুন line হয় fully visible, surrounding lines হয় dimmed, এবং ফোকাস follows as আপনি নেভিগেট. Benefits: reduces দৃশ্যমান overwhelm, improves ট্র্যাকিং, এবং সাহায্য attention stay on বর্তমান পাঠ্য. Navigate সঙ্গে: arrow keys, ক্লিক anywhere, বা auto-advance (সঙ্গে TTS). Dimming intensity হয় adjustable মধ্যে সেটিং. নিখুঁত জন্য: dyslexia support, attention difficulties, এবং ট্র্যাকিং challenges. Combines well সাথে text-to-speech জন্য multi-modal পড়ুন support. Line ফোকাস কাজ করে on all পাঠ্য বিষয়বস্তু. Research দেখান line isolation improves বোধশক্তি জন্য সংগ্রাম পড়ুন. টিপ: Combine সাথে bigger font জন্য maximum পড়ুন ease.",
     "immersive_syllables": "ডিকোডিং সহায়তার জন্য শব্দে সিলেবল বিভাজন (hy-phen-at-ed) দেখায়। সংগ্রামী পাঠক, ELL শিক্ষার্থী ও dyslexia সহায়তার জন্য বিশেষভাবে উপযোগী।",
     "immersive_wide_text": "টেক্সটকে আরও প্রশস্ত করে দেখান — লাইন লম্বা হয়, স্ক্রলিং কম লাগে। স্ক্যানিংয়ের জন্য ভালো, তবে ঘনিষ্ঠ পঠনের জন্য ৫০-৭৫ অক্ষরের সংকীর্ণ লাইন বেশি উপযোগী।",
-    "sidebar_tab_create": "খুলুন বিষয়বস্তু প্রজন্ম প্যানেল সাথে all AI-powered সরঞ্জাম. উপলব্ধ generators: কুইজ (assessments সাথে উত্তর keys), শব্দকোষ (দৃশ্যমান শব্দভান্ডার), Outline (graphic organizers), বিশ্লেষণ (বিষয়বস্তু examination), পাঠ পরিকল্পনা (structured instruction), timeline (chronological কার্যকলাপগুলি), Simplified পাঠ্য (স্তর পড়ুন), এবং more. Each সরঞ্জাম খুলুন এক configuration প্যানেল জন্য customization আগে প্রজন্ম. Source বিষয়বস্তু must be লোড করুন জন্য most সরঞ্জাম এর analyze. তৈরি করুন বিষয়বস্তু প্রদর্শিত হয় মধ্যে main workspace এবং হয় সংরক্ষণ এর ইতিহাস. ব্যবহার তৈরি করুন tab as আপনার primary বিষয়বস্তু প্রজন্ম hub. টিপ: শুরু সাথে বিশ্লেষণ এর understand বিষয়বস্তু, তারপর তৈরি করুন target সম্পদ.",
     "sidebar_tab_history": "আপনার সমস্ত সংরক্ষিত বিষয়বস্তু ও সেশন ইতিহাস দেখুন। প্রকার অনুযায়ী ফিল্টার করুন, কীওয়ার্ড দিয়ে সার্চ করুন, এবং লোড/ডিলিট/এক্সপোর্ট করুন।",
     "socratic_toggle": "Socratic সংলাপ মোড সক্রিয় করুন। AI সরাসরি উত্তর না দিয়ে প্রশ্নের মাধ্যমে শিক্ষার্থীকে আবিষ্কারের পথে চালিত করবে — সমালোচনামূলক চিন্তাভাবনা বিকাশে সহায়ক।",
     "socratic_input": "Enter আপনার প্রশ্ন বা statement জন্য Socratic exploration. এআই will respond সাথে প্রশ্ন rather than উত্তর. ভালো শুরু পয়েন্ট: Why do আপনি think [X] happened? What তৈরি করুন [Y] important? বা আমি believe [Z] because... এআই probes আপনার reasoning: asking জন্য প্রমাণ, exploring implications, testing logic, এবং surfacing assumptions. এই develops argumentation এবং critical thinking skills. Be prepared কে: justify আপনার thinking, consider alternatives, এবং refine আপনার অবস্থান. Socratic dialogues can be frustrating initially কিন্তু তৈরি শেষ understanding. আপনার responses এবং reasoning হয় tracked জন্য reflection.",
@@ -31107,7 +31110,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "বর্তমান মিডিয়ার বর্ণনা দিন",
+    "describe_current_media_done": "{count}টির মধ্যে {index} নম্বর মিডিয়া পড়া হচ্ছে।",
+    "describe_current_media_hint": "রিসোর্স ছেড়ে না গিয়েই বর্তমান বা পরবর্তী মিডিয়ার বর্ণনা পড়ুন",
+    "describe_current_media_none": "বর্তমান রিসোর্সে কোনো মিডিয়া নেই।",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore খুলুন",
+    "open_learning_web_explorer_done": "Learning Web: Explore খোলা হয়েছে।",
+    "open_learning_web_explorer_hint": "একটি মানচিত্রে মান, ধারণা, পাঠ, প্রমাণ ও শব্দের সংযোগ অন্বেষণ করুন",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "সব মিডিয়ার বর্ণনা পড়ুন",
+    "read_media_descriptions_count": "{count}টি মিডিয়ার বর্ণনা পড়া হচ্ছে।",
+    "read_media_descriptions_hint": "বর্তমান রিসোর্সের প্রতিটি লেখা ছবি, ভিডিও বা অডিও বর্ণনা পড়ুন",
+    "read_media_descriptions_none": "বর্তমান রিসোর্সে কোনো মিডিয়া নেই।",
+    "suggest_contextual_next_steps": "3টি পরবর্তী ধাপের পরামর্শ দিন",
+    "suggest_contextual_next_steps_hint": "প্রসঙ্গ অনুযায়ী তিনটি বিকল্প দেখায়, কোনোটি বেছে নেয় না বা চালায় না",
+    "suggest_contextual_next_steps_working": "বর্তমান পাঠের প্রসঙ্গ পড়ে তিনটি বিকল্প তৈরি করা হচ্ছে...",
+    "surprise_me_contextually": "কাজে লাগে এমন একটি পরবর্তী ধাপ দিয়ে চমকে দিন",
+    "surprise_me_contextually_hint": "বর্তমান পাঠের প্রসঙ্গ থেকে একটি যুক্তিসঙ্গত ও কম ঝুঁকির পরবর্তী কাজ বেছে নেয়",
+    "surprise_me_contextually_working": "বর্তমান পাঠের প্রসঙ্গ পড়ে একটি কাজের পরবর্তী ধাপ বেছে নেওয়া হচ্ছে...",
+    "use_contextual_suggestion": "প্রস্তাবিত একটি পরবর্তী ধাপ ব্যবহার করুন",
+    "use_contextual_suggestion_hint": "সাম্প্রতিক পরামর্শ থেকে বিকল্প 1, 2 বা 3 চালায়",
+    "use_contextual_suggestion_working": "নির্বাচিত পরবর্তী ধাপ শুরু করা হচ্ছে..."
   },
   "palette": {
     "aria": "AlloFlow কমান্ড প্যালেট",
@@ -31130,10 +31159,11 @@
       "videoStudio": "এখানে — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "প্রতিটি কাজ ঘোষণা করা হয়। Ctrl+K টগল করে।",
     "group": {
@@ -31449,6 +31479,12 @@
     "diff_types_hint": "যে বিষয়গুলোর জন্য পার্থক্যযুক্ত সেট তৈরি হবে:",
     "diff_cost": "প্রতি রান-এ প্রায় {n}টি জেনারেশন।",
     "summary_standards": "মানদণ্ড",
-    "summary_interests": "আগ্রহ"
+    "summary_interests": "আগ্রহ",
+    "translations": "অনুবাদ",
+    "translations_auto": "স্বয়ংক্রিয় ({language})",
+    "translations_auto_plain": "স্বয়ংক্রিয়",
+    "translations_none": "কোনোটিই নয়",
+    "translations_on_hint": "{output} ভাষার রিসোর্সের সঙ্গে {target} ভাষার একটি সংস্করণও থাকবে।",
+    "translations_off_hint": "রিসোর্স শুধু {output} ভাষায় থাকবে, দ্বিতীয় কোনো ভাষা থাকবে না।"
   }
 }

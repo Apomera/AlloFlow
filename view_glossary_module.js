@@ -1149,9 +1149,13 @@ function GlossaryView(props) {
   // of them is a search:
   //
   //   1. A sticky vocabulary filter. `glossaryFilter` lives in the host's
-  //      glossary reducer (AlloFlowANTI.txt:8627). Its `GLOSS_RESET` action
-  //      has NO call site anywhere in the monolith, so the filter survives a
-  //      tool switch, a history load and a fresh generation.
+  //      glossary reducer (AlloFlowANTI.txt:8627). It used to survive a tool
+  //      switch, a history load and a fresh generation, because `GLOSS_RESET`
+  //      had no call site anywhere in the monolith. FIXED in wave 2: the host
+  //      now dispatches `GLOSS_RESET` and clears `glossarySearchTerm` when
+  //      `generatedContent.id` changes, so causes 1 and 3 can no longer carry
+  //      across from a previous glossary. The branches below still matter,
+  //      because a filter or search set on THIS glossary can still empty it.
   //   2. A glossary whose entries carry no tier at all. The target-terms
   //      generator at AlloFlowANTI.txt:53891 writes
   //      `tier: <valid> ? <valid> : undefined`, so with a tier filter left on
@@ -2623,7 +2627,10 @@ function GlossaryView(props) {
       size: 14
     })))) : /*#__PURE__*/React.createElement("div", {
       className: "px-2 py-1 font-bold text-slate-800 whitespace-pre-wrap text-center"
-    }, item.term), /*#__PURE__*/React.createElement("div", {
+    }, item.emoji ? /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true",
+      className: "mr-1"
+    }, item.emoji) : null, item.term), /*#__PURE__*/React.createElement("div", {
       className: "mt-1 px-1"
     }, item.image ? /*#__PURE__*/React.createElement("div", {
       className: "flex flex-col gap-2"

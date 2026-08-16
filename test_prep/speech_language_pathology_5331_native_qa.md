@@ -1,6 +1,6 @@
 # Praxis Speech-Language Pathology (5331) QA report
 
-Generated: 2026-08-13T08:44:04.353Z
+Generated: 2026-08-16T17:38:25.238Z
 
 ## Result
 
@@ -12,3 +12,5 @@ Generated: 2026-08-13T08:44:04.353Z
 - Optional timed simulation: 132 questions / 150 minutes
 
 > This is not ETS or ASHA approval, independent licensed-SLP validation, field testing, psychometric calibration, a scaled-score model, clinical evaluation, diagnosis, medical or swallowing-safety decision, treatment, supervision, or legal advice.
+
+- Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 100 distinct independent content kernels. 300 additional activities remain guided review only. 400 new independent questions remain to reach 500.

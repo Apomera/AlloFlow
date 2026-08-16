@@ -2253,7 +2253,7 @@
     "ai_guide_sub": "Педагогіка, навігація та автоналаштування",
     "ai_guide_welcome": "Вітаю! Я ваш AI-гід. Я можу допомогти зі стратегіями UDL, провести вас по застосунку або автоматично налаштувати параметри вашого уроку. Просто запитайте!",
     "tool_analysis": "Аналізувати вихідний матеріал",
-    "tool_glossary": "глосарій & мови Selection",
+    "tool_glossary": "Глосарій",
     "tool_simplified": "текст Adaptation",
     "tool_outline": "візуальний Organizer",
     "tool_visual": "візуальний підтримка",
@@ -2983,7 +2983,7 @@
     "choose_destination_aria": "Вибрати destination"
   },
   "glossary": {
-    "title": "глосарій & мови Selection",
+    "title": "Глосарій",
     "tier2": "Рівень 2 (Acad.)",
     "tier2_tooltip": "Високовживані академічні слова, що використовуються в різних дисциплінах (напр., «аналізувати», «перевіряти»).",
     "tier3": "Рівень 3 (Domain)",
@@ -3925,7 +3925,12 @@
     "gauge_simple": "простий",
     "word_bank_english": "Англійська",
     "word_bank_both": "Обидва",
-    "word_bank_language": "Мова банку слів"
+    "word_bank_language": "Мова банку слів",
+    "measured_level_label": "Виміряний рівень читання",
+    "measured_on_target": "Відповідає {grade}",
+    "measured_above": "Вище рівня {grade}",
+    "measured_below": "Нижче рівня {grade}",
+    "measured_note": "Flesch-Kincaid, виміряно на цьому тексті. Для повнішої перевірки скористайтеся Перевірити рівні."
   },
   "quiz": {
     "title": "Оцінити",
@@ -5871,7 +5876,9 @@
     "title_poettree_config": "🌳 Завдання PoetTree",
     "title_poettree_submission": "🌳 Надсилання вірша",
     "title_litlab_config": "🎭 Завдання LitLab",
-    "title_litlab_submission": "🎭 Надсилання виступу"
+    "title_litlab_submission": "🎭 Надсилання виступу",
+    "translation_block": "Переклад",
+    "translation_into": "Переклад ({language})"
   },
   "persona": {
     "title": "Interview режим",
@@ -6290,7 +6297,7 @@
   },
   "tools": {
     "source": "вихідний матеріал",
-    "glossary": "глосарій & мови Selection",
+    "glossary": "Глосарій",
     "simplified": "текст Adaptation & Залучення",
     "outline": "візуальний Organizer",
     "quiz": "Оцінити",
@@ -6879,7 +6886,6 @@
     "source_settings_instructions": "Guide AI вміст генерація з специфічних інструкції. приклади: Зробити it захоплюючий для reluctant читачі, Фокус на water cycle, Включити різноманітних персонажі names, Avoid references до violence, та Використати простий словник для ELL учні. інструкції форми: тон, вміст фокус, словник рівні, та perspective. Be специфічних для найкращий результати. Кілька інструкції може be combined. інструкції є processed along з ваш тема та налаштування. Для sensitive topics, включити вміст guidance. інструкції do не guarantee специфічних outcomes але strongly influence генерація. поради: Включити рівень класу та будь-який вміст restrictions в ваш інструкції для найбільше відповідний вивід.",
     "source_verify_checkbox": "Увімкнути AI fact-checking via Google Пошук grounding. коли ON: AI cross-references створено вміст against web sources, flagging або correcting potential inaccuracies. Adds 5-10 секунди до генерація час але significantly improves reliability для factual вміст. Especially important для: історія (dates, події), science (processes, дані), biography, та поточний події. Для fiction, creative письмо, або hypothetical scenarios, це може be disabled до дозволити більше creative freedom. Sources consulted є listed в генерація log для вчителі огляд. Highly recommended для будь-який вміст те буде be presented as factual до учні.",
     "source_generate_button": "Створити AI-written вміст на ваш specified тема. Натиснути до begin генерація використання ваш: тема description, ціль довжина, рівень класу, та користувацький інструкції. Генерація takes 10-20 секунди. вивід є огляд by safety filters перед відображення. Згенеровано вміст може be: edited (вчителі може змінити будь-який part), analyzed (запустити через інший генерація інструмент), та збережено (додати до історія для reuse). Використати коли: ви потрібно вміст на специфічних тема, хочу controlled складність, або потрібно до fill curriculum gaps. Згенеровано вміст включає: відповідний словник, logical organization, та клас-рівні syntax. Verify factual точність перед клас використати.",
-    "generator_actions": "Hub для всі вміст генерація інструмент. доступний generators включити: тест (оцінювання з відповіді keys), глосарій (візуальний словник), Simplified текст (рівень читання), FAQ (Q та pairs), Аналіз (вміст examination), уроки План (instructional design), Timeline (chronological діяльність), Scaffolds (письмо підтримка), Концепція Сортувати (categorization ігри), Математика (problem генерація), Пригода (інтерактивний історія), та Brainstorm (діяльність ideas). кожен generator перетворює ваш джерело вміст в різний формат. Натиснути будь-який generator до відкрити its configuration панель. Кілька generators може be використано на той самий джерело. Згенеровано вміст з'являється в workspace та зберігає до історія. поради: Почати з Аналіз до розуміти ваш вміст, потім створити targeted ресурси.",
     "tool_visual": "Доступ візуальний generator інструмент. Creates AI-generated зображення включаючи: словник візуальний, концепція ілюстрації, сцени depictions, діаграми, та infographics. візуальний types: довідка зображення (для навчання), worksheets (для діяльність), та діаграми (для relationships). візуальний підтримка: ELL учні (візуальний словник), візуальний учні, та залучення. кожен генерація створює unique зображення. налаштування контроль стилі, якість, та вміст. Згенеровано візуальний може be: downloaded, embedded в матеріали, та added до glossaries. Uses AI зображення генерація credits. поради: Створити візуальний для abstract концепції те є difficult до explain з слова alone.",
     "tool_udl": "Дізнайтеся про інтеграцію UDL у застосунку. UDL має три принципи: репрезентація, дія та залучення.",
     "tour-analysis-settings": "Налаштувати parameters для readability аналіз, включаючи ціль читання рівні та специфічних metrics до track.",
@@ -6904,7 +6910,6 @@
     "adventure_system_state": "Додає механіку керування ресурсами: здоров'я, золото, репутація та інші параметри для прийняття рішень.",
     "glossary_tier2_count": "Встановити як many Рівень 2 (академічний) словник слова до включити. Рівень 2 слова: з'являтися через subjects, є використано в академічний contexts, та є essential для текст розуміння. приклади: аналізувати, докази, significant, contrast. These слова має highest instructional значення—найбільше учні benefit від explicit teaching. Recommended рахувати depends на: текст довжина (1 слова за 100-150 слова джерело), доступний інструкції час, та учні потрібно. Balance з Рівень 3 рахувати для завершити словник встановити. Фокус інструкції here для maximum impact на читання розуміння через всі subjects.",
     "glossary_tier3_count": "Визначає кількість слів рівня 3 (вузькоспеціалізованих) у словнику. Слова рівня 3 пов'язані з конкретною предметною галуззю.",
-    "glossary_definition_level": "Контроль як визначення є written. опції: Той самий as джерело (maintains оригінал складність—добрий для розширений учні), На клас (matches ціль рівень класу словник), Simplified (використовує загальний слова, коротший речення), та Kindergarten (very базовий мови, concrete приклади). Відповідність визначення складність до учні читання рівні, не вміст рівні. 10th-grader studying розширений biology might потрібно Simplified визначення для unfamiliar терміни. Розглянути ваш учні weakest читачі коли selecting. визначення може be individually edited після генерація якщо деякі потрібно adjustment. Pro поради: Використати Simplified initially, потім discuss більше technical визначення в клас.",
     "glossary_custom_instructions": "Надає вказівки для добору словника й стилю визначень. Наприклад: «фокус на словах розділів 3–5».",
     "glossary_language_input": "Вкажіть мову (мови) для перекладів словника. Можна перерахувати декілька, розділяючи комами.",
     "glossary_auto_remove": "автоматично фільтр out very простий або загальний слова.",
@@ -7038,7 +7043,6 @@
     "fab_dictation": "Перетворює мовлення на текст для введення без використання рук. Працює в усіх редагованих полях.",
     "fab_focus": "Creates movable spotlight те dims everything except circular площа around ваш cursor. Це dramatically reduces візуальний clutter та допомагає maintain attention на поточний читання площа. Especially beneficial для учні з ADHD, sensory processing різниця, або anyone overwhelmed by busy screens. spotlight follows ваш mouse/touch автоматично. Налаштувати spotlight size та dim intensity в налаштування → Доступність.",
     "fab_line_focus": "Інструмент ізоляції одного рядка для зосередженого читання. Поточний рядок підсвічується, інші — приглушені.",
-    "fab_ruler": "Adds semi-transparent horizontal смужки те follows ваш cursor до допомога track ваш читання позиція лінії by лінії. Particularly допомога для users з dyslexia, ADHD, або візуальний відстеження difficulties. Перетягнути ruler up/down до reposition, використати arrow keys для fine контроль, або натиснути anywhere до jump. ruler кольори може be customized в налаштування. Працює через всі читання views включаючи Simplified текст, FAQ, та глосарій визначення.",
     "fab_timer": "Opens інтерактивний фокус timer на основі на Pomodoro Technique. Вибрати від preset durations (5/15/25/45 minutes) або налаштувати ваш own. функції включити: візуальний countdown з прогрес ring, необов'язковий break reminders, XP нагороди для completed сесії (довший = більше XP), та сесії logging для вчителі огляд. Label ваш task (e.g., 'Читати розділи 3') до track що ви accomplished. Minimizes до header смужки so ви може робота поки it runs.",
     "scaffolds_edit_toggle": "Перемкнути між вчителі editing та учні перегляд режим. коли ON (Редагувати режим): натиснути будь-який scaffold до змінити текст, додати новий підказки, видалити елементи, та reorder вміст. коли OFF: scaffolds відображення as учні бачити them (читати-тільки). Edits зберегти автоматично. учні always бачити читати-тільки regardless ваш перемкнути (вони cannot доступ редагувати режим). Використати editing до: налаштувати AI-generated scaffolds, додати клас-специфічних приклади, видалити inappropriate підказки, та диференціюйте для специфічних учні. Preview учні перегляд перед sharing. Оригінал scaffolds може be restored від історія. поради: Огляд та редагувати scaffolds перед клас до ensure вони відповідність ваш teaching стилі та учні needs.",
     "scaffolds_goal_panel": "Відображення навчання objectives для учні довідка. цілі з'являтися prominently під час діяльність. Effective цілі є: учні-дружній (I може statements), специфічних та measurable, та aligned до діяльність. приклади: I може ідентифікувати three causes Civil War або I може використати докази до підтримка my claim. цілі increase: metacognition, себе-оцінювання, та purpose clarity. учні може довідка цілі поки working. вчителі sets цілі перед учні доступ. Кілька цілі може be displayed. цілі може включити успіх criteria: I know I має succeeded коли my абзац has тема речення. Research показує видимий навчання targets improve досягнення.",
@@ -7133,7 +7137,6 @@
     "immersive_line_focus": "Вмикає підсвічення одного рядка читання. Поточний рядок видно повністю, сусідні — приглушені.",
     "immersive_syllables": "візуальний syllable segmentation для decoding підтримка. коли enabled: слова відображення з syllable breaks (hy-phen-at-ed), допомога читачі attack multisyllabic слова. Benefits: будує phonemic awareness, підтримка decoding стратегії, develops morphological understanding, та aids pronunciation. Especially допомога для: труднощі decoders, ELL учні, dyslexia підтримка, та словник слова з складний syllable шаблони. Syllabification follows стандарти phonetic rules. Працює на: всі читання вміст включаючи adapted текст, глосарій терміни, та джерело матеріали. Combine з аудіо до hear syllables pronounced. Перемкнути off коли не needed до reduce візуальний складність. поради: Використати для challenging словник, потім вимкнути для fluent читання практика.",
     "immersive_wide_text": "Expand текст до використати більше horizontal екран space. коли активний: лінії довжина increases, менше scrolling є needed, та більше текст є видимий at once. добрий для: fluent читачі, wide displays, та коли scanning для інформація. за замовчуванням narrow ширина є кращий для: труднощі читачі, mobile devices, та focused читання. Optimal лінії довжина varies by reader та device. Research показує 50-75 персонажі за лінії є ideal для найбільше читачі. Wide текст trades readability для efficiency. Combine з лінії фокус якщо відстеження becomes difficult. налаштування є remembered за device. поради: Використати wide текст для research та scanning, narrow текст для закрити читання.",
-    "sidebar_tab_create": "Відкрити вміст генерація панель з всі AI-powered інструмент. доступний generators: тест (оцінювання з відповіді keys), глосарій (візуальний словник), Outline (graphic organizers), Аналіз (вміст examination), уроки План (structured інструкції), Timeline (chronological діяльність), Simplified текст (рівень читання), та більше. кожен інструмент відкриває configuration панель для customization перед генерація. джерело вміст must be loaded для найбільше інструмент до аналізувати. Згенеровано вміст з'являється в main workspace та є збережено до історія. Використати Створити tab as ваш primary вміст генерація hub. поради: Почати з Аналіз до розуміти вміст, потім створити targeted ресурси.",
     "sidebar_tab_history": "Доступ до всього збереженого матеріалу й історії сесій: автозбереження, проєктів і портфоліо.",
     "socratic_toggle": "Активує сократівський режим діалогу. AI не дає прямих відповідей, а ставить запитання, що скеровують до відкриття.",
     "socratic_input": "Ввести ваш питання або statement для Socratic exploration. AI буде respond з питання rather than відповіді. добрий starting точки: Why do ви think [X] happened? що makes [Y] important? або I believe [Z] because... AI probes ваш reasoning: asking для докази, exploring implications, testing logic, та surfacing assumptions. Це develops argumentation та critical thinking навички. Be prepared до: justify ваш thinking, розглянути alternatives, та refine ваш позиція. Socratic dialogues може be frustrating initially але будувати lasting understanding. ваш responses та reasoning є tracked для роздум.",
@@ -31536,7 +31539,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Описати поточний медіафайл",
+    "describe_current_media_done": "Читається медіафайл {index} з {count}.",
+    "describe_current_media_hint": "Прочитати опис поточного або наступного медіафайлу, не залишаючи ресурс",
+    "describe_current_media_none": "У поточному ресурсі немає медіафайлів.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Відкрити Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore відкрито.",
+    "open_learning_web_explorer_hint": "Досліджуйте стандарти, поняття, уроки, докази та зв’язки між словами на одній карті",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Прочитати всі описи медіафайлів",
+    "read_media_descriptions_count": "Читається {count} описів медіафайлів.",
+    "read_media_descriptions_hint": "Прочитати кожен написаний опис зображення, відео чи звуку в поточному ресурсі",
+    "read_media_descriptions_none": "У поточному ресурсі немає медіафайлів.",
+    "suggest_contextual_next_steps": "Запропонувати 3 наступні кроки",
+    "suggest_contextual_next_steps_hint": "Показує три доречні для контексту варіанти, не обираючи й не запускаючи жодного",
+    "suggest_contextual_next_steps_working": "Читається контекст поточного уроку та готуються три варіанти...",
+    "surprise_me_contextually": "Підкажи корисний наступний крок",
+    "surprise_me_contextually_hint": "Обирає одну розумну дію з низьким ризиком із контексту поточного уроку",
+    "surprise_me_contextually_working": "Читається контекст поточного уроку та обирається корисний наступний крок...",
+    "use_contextual_suggestion": "Використати запропонований наступний крок",
+    "use_contextual_suggestion_hint": "Запускає варіант 1, 2 або 3 з останніх пропозицій",
+    "use_contextual_suggestion_working": "Запускається обраний наступний крок..."
   },
   "palette": {
     "aria": "Командна палітра AlloFlow",
@@ -31559,10 +31588,11 @@
       "videoStudio": "Тут — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Кожна дія озвучується. Ctrl+K перемикає.",
     "group": {
@@ -31875,6 +31905,12 @@
     "diff_types_hint": "Створити диференційований набір для:",
     "diff_cost": "Близько {n} генерацій за один запуск.",
     "summary_standards": "стандарти",
-    "summary_interests": "інтереси"
+    "summary_interests": "інтереси",
+    "translations": "Переклади",
+    "translations_auto": "Автоматично ({language})",
+    "translations_auto_plain": "Автоматично",
+    "translations_none": "Немає",
+    "translations_on_hint": "Матеріали мовою {output} матимуть також версію мовою {target}.",
+    "translations_off_hint": "Матеріали будуть лише мовою {output}, без другої мови."
   }
 }

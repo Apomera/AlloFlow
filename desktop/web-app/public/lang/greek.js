@@ -2253,7 +2253,7 @@
     "ai_guide_sub": "Pedagogy, Navigation & Αυτόματο-Setup",
     "ai_guide_welcome": "Γεια! Είμαι ο οδηγός AI σας. Μπορώ να βοηθήσω με στρατηγικές UDL, να σας πλοηγήσω στην εφαρμογή ή να ρυθμίσω αυτόματα τις ρυθμίσεις του μαθήματός σας. Απλά ρωτήστε!",
     "tool_analysis": "Ανάλυση πηγή Material",
-    "tool_glossary": "γλωσσάρι & γλώσσα Selection",
+    "tool_glossary": "Γλωσσάρι",
     "tool_simplified": "κείμενο Adaptation",
     "tool_outline": "οπτικός Organizer",
     "tool_visual": "οπτικός υποστήριξη",
@@ -2983,7 +2983,7 @@
     "choose_destination_aria": "Επιλέξτε destination"
   },
   "glossary": {
-    "title": "γλωσσάρι & γλώσσα Selection",
+    "title": "Γλωσσάρι",
     "tier2": "Επίπεδο 2 (Acad.)",
     "tier2_tooltip": "Ακαδημαϊκές λέξεις υψηλής χρησιμότητας που χρησιμοποιούνται σε όλους τους κλάδους (π.χ., 'αναλύω', 'επαληθεύω').",
     "tier3": "Επίπεδο 3 (Domain)",
@@ -3925,7 +3925,12 @@
     "gauge_simple": "απλό",
     "word_bank_english": "Αγγλικά",
     "word_bank_both": "Και τα δύο",
-    "word_bank_language": "Γλώσσα τράπεζας λέξεων"
+    "word_bank_language": "Γλώσσα τράπεζας λέξεων",
+    "measured_level_label": "Μετρημένο επίπεδο ανάγνωσης",
+    "measured_on_target": "Στο επίπεδο της {grade}",
+    "measured_above": "Πάνω από το επίπεδο {grade}",
+    "measured_below": "Κάτω από το επίπεδο {grade}",
+    "measured_note": "Flesch-Kincaid, μετρημένο σε αυτό το κείμενο. Χρησιμοποιήστε Έλεγχος επίπεδο για πληρέστερο έλεγχο."
   },
   "quiz": {
     "title": "Αξιολόγηση",
@@ -5879,7 +5884,9 @@
     "title_poettree_config": "🌳 Εργασία PoetTree",
     "title_poettree_submission": "🌳 Υποβολή ποιήματος",
     "title_litlab_config": "🎭 Εργασία LitLab",
-    "title_litlab_submission": "🎭 Υποβολή παράστασης"
+    "title_litlab_submission": "🎭 Υποβολή παράστασης",
+    "translation_block": "Μετάφραση",
+    "translation_into": "Μετάφραση ({language})"
   },
   "persona": {
     "title": "Interview λειτουργία",
@@ -6298,7 +6305,7 @@
   },
   "tools": {
     "source": "πηγή Material",
-    "glossary": "γλωσσάρι & γλώσσα Selection",
+    "glossary": "Γλωσσάρι",
     "simplified": "κείμενο Adaptation & Εμπλοκή",
     "outline": "οπτικός Organizer",
     "quiz": "Αξιολόγηση",
@@ -6887,7 +6894,6 @@
     "source_settings_instructions": "Guide AI περιεχόμενο γενιά με συγκεκριμένος οδηγία. παράδειγμα: Δημιουργία αυτό ελκυστικός για reluctant αναγνώστες, Εστίαση σε water cycle, Συμπερίληψη diverse χαρακτήρας names, Avoid references σε violence, και Χρήση απλό λεξιλόγιο για ELL μαθητής. οδηγία σχήμα: τόνος, περιεχόμενο εστίαση, λεξιλόγιο επίπεδο, και perspective. είναι συγκεκριμένος για καλύτερος αποτέλεσμα. Πολλαπλό οδηγία μπορεί είναι combined. οδηγία είναι processed along με σας θέμα και ρυθμίσεις. Για sensitive topics, συμπερίληψη περιεχόμενο guidance. οδηγία κάνει δεν guarantee συγκεκριμένος outcomes αλλά strongly influence γενιά. συμβουλή: Συμπερίληψη επίπεδο τάξης και οποιοδήποτε περιεχόμενο restrictions σε σας οδηγία για πιο appropriate έξοδος.",
     "source_verify_checkbox": "Ενεργοποίηση AI fact-checking via Google Αναζήτηση grounding. όταν ON: AI cross-references δημιουργήθηκε περιεχόμενο against web sources, flagging ή correcting potential inaccuracies. Adds 5-10 δευτερόλεπτα σε γενιά χρόνος αλλά significantly improves reliability για factual περιεχόμενο. Especially important για: ιστορία (dates, γεγονότα), science (processes, δεδομένα), biography, και τρέχων γεγονότα. Για fiction, creative γραφή, ή hypothetical scenarios, αυτό μπορεί είναι disabled σε επιτρέπω περισσότερο creative freedom. Sources consulted είναι listed σε γενιά log για δάσκαλος αναθεώρηση. Highly recommended για οποιοδήποτε περιεχόμενο αυτό θα είναι presented ως factual σε μαθητής.",
     "source_generate_button": "Δημιουργία AI-written περιεχόμενο σε σας specified θέμα. Κάντε κλικ σε begin γενιά χρησιμοποιώντας σας: θέμα description, στόχος μήκος, επίπεδο τάξης, και προσαρμοσμένο οδηγία. Γενιά takes 10-20 δευτερόλεπτα. έξοδος είναι αναθεώρησηed by safety filters πριν εμφάνιση. Δημιουργήθηκε περιεχόμενο μπορεί είναι: edited (δάσκαλος μπορεί τροποποίηση οποιοδήποτε part), analyzed (εκτέλεση μέσω άλλος γενιά εργαλεία), και αποθηκευμένο (προσθήκη σε ιστορία για reuse). Χρήση όταν: εσείς ανάγκη περιεχόμενο σε συγκεκριμένος θέμα, θέλω controlled πολυπλοκότητα, ή ανάγκη σε fill curriculum gaps. Δημιουργήθηκε περιεχόμενο περιλαμβάνει: appropriate λεξιλόγιο, λογικήal organization, και τάξη-επίπεδο syntax. Verify factual ακρίβεια πριν τάξη χρήση.",
-    "generator_actions": "Hub για όλα περιεχόμενο γενιά εργαλεία. διαθέσιμο generators συμπερίληψη: κουίζ (αξιολόγηση με απάντηση keys), γλωσσάρι (οπτικός λεξιλόγιο), Simplified κείμενο (επίπεδοed ανάγνωση), FAQ (Q και pairs), Ανάλυση (περιεχόμενο examination), μάθημα Σχέδιο (instructional design), Timeline (chronoλογικήal δραστηριότητα), Scaffolds (γραφή υποστήριξη), Έννοια Ταξινόμηση (categorization παιχνίδι), Μαθηματικά (problem γενιά), Περιπέτεια (διαδραστικός ιστορία), και Brainstorm (δραστηριότητα ideas). κάθε generator μετατρέπει σας πηγή περιεχόμενο σε διαφορετικός μορφή. Κάντε κλικ οποιοδήποτε generator σε άνοιγμα its configuration πίνακας. Πολλαπλό generators μπορεί είναι χρησιμοποιήθηκε σε ίδιος πηγή. Δημιουργήθηκε περιεχόμενο εμφανίζεται σε workspace και αποθήκευσηs σε ιστορία. συμβουλή: Έναρξη με Ανάλυση σε κατανοήστε σας περιεχόμενο, τότε δημιουργία targeted πόροι.",
     "tool_visual": "Πρόσβαση οπτικός generator εργαλεία. Creates AI-δημιουργήθηκε εικόνα συμπεριλαμβανομένων: λεξιλόγιο οπτικός, έννοια illustrations, σκηνή depictions, διάγραμμα, και infographics. οπτικός types: αναφορά εικόνα (για μάθηση), worksheets (για δραστηριότητες), και διάγραμμα (για relationships). οπτικός υποστήριξη: ELL μαθητής (οπτικός λεξιλόγιο), οπτικός μαθητές, και εμπλοκή. κάθε γενιά δημιουργεί unique εικόνα. ρυθμίσεις έλεγχος στυλ, ποιότητα, και περιεχόμενο. Δημιουργήθηκε οπτικός μπορεί είναι: downloaded, embedded σε υλικά, και added σε glossaries. Uses AI εικόνα γενιά credits. συμβουλή: Δημιουργία οπτικός για abstract έννοιες αυτό είναι difficult σε explain με λέξη alone.",
     "tool_udl": "Μάθετε σχετικά UDL framework integration. Universal Design για Μάθηση έχει three principles: Πολλαπλό Means του Representation ( τι του μάθηση—present πληροφορίες σε διαφορετικός ways), Πολλαπλό Means του Action και Expression ( πώς του μάθηση—let μαθητής demonstrate understanding differently), και Πολλαπλό Means του Εμπλοκή ( why του μάθηση—motivate και sustain interest). αυτό εργαλεία υποστήριξη όλα three μέσω: varied περιεχόμενο μορφή, πολλαπλό interaction λειτουργία, και παιχνιδοποιημένος εμπλοκή. Κλικing ανοίγει λεπτομερές πληροφορίες σχετικά πώς κάθε εργαλεία χαρακτηριστικά aligns με UDL research. Υπέροχο για: professional development, IEP justification, και understanding pedagogical foundation. συμβουλή: Αναφορά UDL principles όταν advocating για εργαλεία adεπιλογή.",
     "tour-analysis-settings": "Ρυθμίζω parameters για readability ανάλυση, συμπεριλαμβανομένων στόχος ανάγνωση επίπεδο και συγκεκριμένος metrics σε track.",
@@ -6912,7 +6918,6 @@
     "adventure_system_state": "Προσθήκη πόροι διαχειρίζομαιment mechanics σε περιπέτειαs. μαθητής track: Health (consequence του κίνδυνοςy επιλογές), χρυσός/πόροι (economic απόφαση-making), Reputation (κοινωνικός capital από επιλογές), και προσαρμοσμένο πόροι εσείς define. Actions affect πόροι visibly—spend χρυσός σε buy στοιχείο, lose health από poor αποφάσεις, gain reputation από βοήθειαing others. Creates meaningful consequences αυτό teach: cause-και-effect reasoning, planning ahead, πόροι διαχειρίζομαιment, και opportunity cost. οπτικός πίνακας ελέγχου εμφανίζει τρέχων πόροι επίπεδο. όταν πόροι deplete, παιχνίδι adaptively responds (e.g., low health = limited επιλογές). Μαθηματικά δεξιότητα integrate naturally μέσω πόροι calculations.",
     "glossary_tier2_count": "Ορισμός πώς many Επίπεδο 2 (ακαδημαϊκός) λεξιλόγιο λέξη σε συμπερίληψη. Επίπεδο 2 λέξη: εμφανίζομαι απέναντι subjects, είναι χρησιμοποιήθηκε σε ακαδημαϊκός contexts, και είναι essential για κείμενο κατανόηση. παράδειγμα: ανάλυση, στοιχεία, significant, contrast. αυτά λέξη έχει highest instructional τιμή—πιο μαθητής benefit από explicit teaching. Recommended μετρήστε depends σε: κείμενο μήκος (1 λέξη ανά 100-150 λέξη του πηγή), διαθέσιμο οδηγία χρόνος, και μαθητής ανάγκη. Balance με Επίπεδο 3 μετρήστε για ολοκλήρωση λεξιλόγιο ορισμός. Εστίαση οδηγία εδώ για maximum impact σε ανάγνωση κατανόηση απέναντι όλα subjects.",
     "glossary_tier3_count": "Ορισμός πώς many Επίπεδο 3 (domain-συγκεκριμένος) λεξιλόγιο λέξη σε συμπερίληψη. Επίπεδο 3 λέξη: είναι συγκεκριμένος σε subject εμβαδόν, είναι usually defined σε πλαίσιο, και μπορεί δεν transfer απέναντι subjects. παράδειγμα: photosynthesis, παρονομαστής, alliteration, legislative. αυτά λέξη είναι essential για understanding συγκεκριμένος περιεχόμενο αλλά έχει limited χρήση outside domain. οδηγία typically occurs κατά περιεχόμενο teaching. Για deep dive σε θέμα, συμπερίληψη περισσότερο Επίπεδο 3. Για broader ανάγνωση δεξιότητα, prioritize Επίπεδο 2. Επίπεδο 3 λέξη often εμφανίζομαι σε bold ή italics σε textbooks, signaling τους importance within discipline.",
-    "glossary_definition_level": "Έλεγχος πώς ορισμός είναι written. επιλογές: Ίδιος ως πηγή (maintains πρωτότυπο πολυπλοκότητα—καλό για προχωρημένο μαθητής), Σε τάξη (matches στόχος επίπεδο τάξης λεξιλόγιο), Simplified (χρησιμοποιεί κοινός λέξη, shorter πρόταση), και Kindergarten (πολύ βασικό γλώσσα, concrete παράδειγμα). Αντιστοίχιση ορισμός πολυπλοκότητα σε μαθητής ανάγνωση επίπεδο, δεν περιεχόμενο επίπεδο. 10th-grader studying προχωρημένο biology might ανάγκη Simplified ορισμός για unfamiliar όρος. Σκεφτείτε σας μαθητής weakest αναγνώστες όταν selecting. ορισμός μπορεί είναι individually edited μετά γενιά αν κάποιος ανάγκη adjustment. Pro συμβουλή: Χρήση Simplified initially, τότε discuss περισσότερο technical ορισμός σε τάξη.",
     "glossary_custom_instructions": "Παρέχω συγκεκριμένος guidance για λεξιλόγιο selection και ορισμός στυλ. παράδειγμα: Εστίαση σε λέξη από κεφάλαιο 3-5, Συμπερίληψη μόνο λέξη related σε water cycle, Avoid homonyms με simpler meanings, Προσθήκη etymology για Latin/Greek roots, Συμπερίληψη Spanish cognates για ELL μαθητής, και Χρήση μαθητής-φιλικός παράδειγμα από pop culture. Custom οδηγία σχήμα: που λέξη είναι επιλεγμένο, πώς ορισμός είναι written, και τι additional πληροφορίες εμφανίζεται. Clear οδηγία παράγει καλύτερο-targeted glossaries. εσείς μπορεί request συγκεκριμένος μορφή like: Συμπερίληψη πρόταση χρησιμοποιώντας κάθε λέξη ή Προσθήκη οπτικός memory hooks. AI follows οδηγία όταν making λεξιλόγιο selections.",
     "glossary_language_input": "Καθορισμός γλώσσα για λεξιλόγιο μετάφραση. Εισάγετε γλώσσα: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, ή οποιοδήποτε γλώσσα. εσείς μπορεί προσθήκη πολλαπλό γλώσσα separated by commas. κάθε όρος θα εμφάνιση: English ορισμός, στόχος γλώσσα μετάφραση(s), και phonetic pronunciation guide που applicable. Χρήση για: ELL υποστήριξη, heritage γλώσσα connections, world γλώσσα λεξιλόγιο, και multilingual τάξηrooms. μετάφραση εμφανίζομαι σε every λεξιλόγιο κάρτα για άμεσος αναφορά. ήχος pronunciation διαθέσιμο σε supported γλώσσα. Research εμφανίζει connecting νέος λεξιλόγιο σε home γλώσσα improves retention. Max 4 γλώσσα prevents οπτικός clutter ενώ supporting diverse τάξηrooms.",
     "glossary_auto_remove": "Automatically φίλτρο out πολύ απλό ή κοινός λέξη.",
@@ -7046,7 +7051,6 @@
     "fab_dictation": "Convert speech σε κείμενο για hands-δωρεάν είσοδος. Κάντε κλικ σε activate microphone, μιλήστε clearly, και παρακολουθήστε λέξη εμφανίζομαι. Λειτουργεί σε: κείμενο είσοδος, γραφή scaffolds, συνομιλία, και οποιοδήποτε editable field. υποστήριξη: πολλαπλό γλώσσα, punctuation commands (say period, comma, νέος γραμμή), και editing commands (διαγραφή αυτό). Dictation requires microphone permission σε browser. Ποιότητα depends σε: microphone ποιότητα, background noise, και speech clarity. Πραγματικός-χρόνος transcription εμφανίζει ως εσείς μιλήστε. Επεξεργασία transcribed κείμενο normally. Υπέροχο για: μαθητής με motor πρόκληση, reluctant writers, και idea γενιά. συμβουλή: Μιλήστε σε ολοκλήρωση πρόταση για καλύτερο ακρίβεια.",
     "fab_focus": "Creates movable spotlight αυτό dims everything except circular εμβαδόν around σας cursor. αυτό dramatically reduces οπτικός clutter και βοηθά maintain attention σε τρέχων ανάγνωση εμβαδόν. Especially beneficial για μαθητής με ADHD, sensory processing differences, ή anyone overwhelmed by busy screens. spotlight follows σας mouse/touch automatically. Ρυθμίζω spotlight size και dim intensity σε ρυθμίσεις → Προσβασιμότητα.",
     "fab_line_focus": "Single-γραμμή ανάγνωση isolation εργαλεία για focused ανάγνωση. όταν activated: one κείμενο γραμμή είναι highlighted ενώ others είναι dimmed, creating οπτικός εστίαση. Navigate με: arrow keys (up/down), κάντε κλικ anywhere σε κείμενο, ή touch/swipe σε mobile. Benefits: reduces οπτικός crowding, υποστήριξη παρακολούθηση difficulties, βοηθά maintain place, και reduces regression. Intensity (πώς much surrounding κείμενο είναι ορατό) είναι adjustable σε ρυθμίσεις → Προσβασιμότητα. Λειτουργεί σε: όλα ανάγνωση περιεχόμενο, συμπεριλαμβανομένων δημιουργήθηκε κείμενο, πηγή υλικά, και συνομιλία. Particularly βοήθειαful για: dyslexia, ADHD, οπτικός processing differences, και anyone overwhelmed by κείμενο-heavy screens. συμβουλή: Combine με larger font για maximum ανάγνωση ease.",
-    "fab_ruler": "Adds semi-transparent horizontal bar αυτό follows σας cursor σε βοήθεια track σας ανάγνωση θέση γραμμή by γραμμή. Particularly βοήθειαful για users με dyslexia, ADHD, ή οπτικός παρακολούθηση difficulties. Σύρετε ruler up/down σε reposition, χρήση arrow keys για fine έλεγχος, ή κάντε κλικ anywhere σε jump. ruler χρώμα μπορεί είναι customized σε ρυθμίσεις. Λειτουργεί απέναντι όλα ανάγνωση views συμπεριλαμβανομένων Simplified κείμενο, FAQ, και γλωσσάρι ορισμός.",
     "fab_timer": "Opens διαδραστικός εστίαση timer βασισμένος σε Pomodoro Technique. Επιλέξτε από preset durations (5/15/25/45 minutes) ή προσαρμογή σας own. χαρακτηριστικά συμπερίληψη: οπτικός countdown με πρόοδος ring, προαιρετικό break reminders, XP ανταμοιβή για completed συνεδρία (longer = περισσότερο XP), και συνεδρία logging για δάσκαλος αναθεώρηση. Label σας task (e.g., 'Διαβάστε κεφάλαιο 3') σε track τι εσείς accomplished. Minimizes σε header bar so εσείς μπορεί εργασία ενώ αυτό runs.",
     "scaffolds_edit_toggle": "Εναλλαγή μεταξύ δάσκαλος editing και μαθητής προβολή λειτουργία. όταν ON (Επεξεργασία λειτουργία): κάντε κλικ οποιοδήποτε scaffold σε τροποποίηση κείμενο, προσθήκη νέος προτροπές, διαγραφή στοιχείο, και reorder περιεχόμενο. όταν OFF: scaffolds εμφάνιση ως μαθητής δείτε them (διαβάστε-μόνο). Edits αποθήκευση automatically. μαθητής always δείτε διαβάστε-μόνο regardless του σας εναλλαγή (αυτοί cannot πρόσβαση επεξεργασία λειτουργία). Χρήση editing σε: προσαρμογή AI-δημιουργήθηκε scaffolds, προσθήκη τάξη-συγκεκριμένος παράδειγμα, αφαίρεση inappropriate προτροπές, και differentiate για συγκεκριμένος μαθητής. Pαναθεώρηση μαθητής προβολή πριν sharing. Πρωτότυπο scaffolds μπορεί είναι restored από ιστορία. συμβουλή: Αναθεώρηση και επεξεργασία scaffolds πριν τάξη σε ensure αυτοί αντιστοίχιση σας teaching στυλ και μαθητής needs.",
     "scaffolds_goal_panel": "Εμφάνιση μάθηση objectives για μαθητής αναφορά. στόχος εμφανίζομαι prominently κατά δραστηριότητα. Effective στόχος είναι: μαθητής-φιλικός (I μπορεί statements), συγκεκριμένος και measurable, και aligned σε δραστηριότητα. παράδειγμα: I μπορεί ταυτοποιώ three causes του Civil War ή I μπορεί χρήση στοιχεία σε υποστήριξη my claim. στόχος increase: metacognition, εαυτός-αξιολόγηση, και purpose clarity. μαθητής μπορεί αναφορά στόχος ενώ working. δάσκαλος sets στόχος πριν μαθητής πρόσβαση. Πολλαπλό στόχος μπορεί είναι displayed. στόχος μπορεί συμπερίληψη επιτυχία criteria: I know I έχει succeeded όταν my παράγραφος έχει θέμα πρόταση. Research εμφανίζει ορατό μάθηση targets improve achievement.",
@@ -7141,7 +7145,6 @@
     "immersive_line_focus": "Ενεργοποίηση single-γραμμή ανάγνωση guide. όταν ενεργό: τρέχων ανάγνωση γραμμή είναι fully ορατό, surrounding γραμμή είναι dimmed, και εστίαση follows ως εσείς navigate. Benefits: reduces οπτικός overwhelm, improves παρακολούθηση, και βοηθά attention stay σε τρέχων κείμενο. Navigate με: arrow keys, κάντε κλικ anywhere, ή αυτόματο-advance (με TTS). Dimming intensity είναι adjustable σε ρυθμίσεις. Τέλειος για: dyslexia υποστήριξη, attention difficulties, και παρακολούθηση πρόκληση. Combines well με κείμενο-σε-speech για multi-modal ανάγνωση υποστήριξη. γραμμή εστίαση λειτουργεί σε όλα κείμενο περιεχόμενο. Research εμφανίζει γραμμή isolation improves κατανόηση για παλεύει αναγνώστες. συμβουλή: Combine με larger font για maximum ανάγνωση ease.",
     "immersive_syllables": "οπτικός syllable segmentation για decoding υποστήριξη. όταν enabled: λέξη εμφάνιση με syllable breaks (hy-phen-σε-ed), βοήθειαing αναγνώστες attack multisyllabic λέξη. Benefits: χτίζει phonemic awareness, υποστήριξη decoding στρατηγικές, develops morphoλογικήal understanding, και aids pronunciation. Especially βοήθειαful για: παλεύει decoders, ELL μαθητής, dyslexia υποστήριξη, και λεξιλόγιο λέξη με πολύπλοκος syllable μοτίβα. Syllabification follows πρότυπο phonetic rules. Λειτουργεί σε: όλα ανάγνωση περιεχόμενο συμπεριλαμβανομένων adapted κείμενο, γλωσσάρι όρος, και πηγή υλικά. Combine με ήχος σε hear syllables pronounced. Εναλλαγή off όταν δεν needed σε reduce οπτικός πολυπλοκότητα. συμβουλή: Χρήση για challenging λεξιλόγιο, τότε απενεργοποίηση για fluent ανάγνωση εξάσκηση.",
     "immersive_wide_text": "Expand κείμενο σε χρήση περισσότερο horizontal οθόνη space. όταν ενεργό: γραμμή μήκος increases, λιγότερο scrolling είναι needed, και περισσότερο κείμενο είναι ορατό σε once. καλό για: fluent αναγνώστες, wide displays, και όταν scanning για πληροφορίες. προεπιλογή narrow πλάτος είναι καλύτερο για: παλεύει αναγνώστες, mobile devices, και focused ανάγνωση. Optimal γραμμή μήκος varies by reader και device. Research εμφανίζει 50-75 χαρακτήρας ανά γραμμή είναι ideal για πιο αναγνώστες. Wide κείμενο trades readability για efficiency. Combine με γραμμή εστίαση αν παρακολούθηση becomes difficult. ρύθμιση είναι remembered ανά device. συμβουλή: Χρήση wide κείμενο για research και scanning, narrow κείμενο για κλείσιμο ανάγνωση.",
-    "sidebar_tab_create": "Άνοιγμα περιεχόμενο γενιά πίνακας με όλα AI-powered εργαλεία. διαθέσιμο generators: κουίζ (αξιολόγηση με απάντηση keys), γλωσσάρι (οπτικός λεξιλόγιο), Outline (graphic organizers), Ανάλυση (περιεχόμενο examination), μάθημα Σχέδιο (structured οδηγία), Timeline (chronoλογικήal δραστηριότητες), Simplified κείμενο (επίπεδοed ανάγνωση), και περισσότερο. κάθε εργαλεία ανοίγει configuration πίνακας για customization πριν γενιά. πηγή περιεχόμενο must είναι loaded για πιο εργαλεία σε ανάλυση. Δημιουργήθηκε περιεχόμενο εμφανίζεται σε main workspace και είναι αποθηκευμένο σε ιστορία. Χρήση Δημιουργία tab ως σας primary περιεχόμενο γενιά hub. συμβουλή: Έναρξη με Ανάλυση σε κατανοήστε περιεχόμενο, τότε δημιουργία targeted πόροι.",
     "sidebar_tab_history": "Πρόσβαση όλα σας αποθηκευμένο περιεχόμενο και συνεδρία ιστορία. Ιστορία περιλαμβάνει: αυτόματο-αποθηκευμένο συνεδρία από recent εργασία, manually αποθηκευμένο projects και portfolios, δημιουργήθηκε πόροι organized by creation date, και μαθητής submissions (δάσκαλος προβολή). Actions: φόρτωση οποιοδήποτε στοιχείο σε συνέχεια working, διαγραφή στοιχείο σε δωρεάν storage, εξαγωγή για backup, και αναζήτηση by keyword. Ιστορία sorts by recency by προεπιλογή. Φίλτρο by τύπος (κουίζ, γλωσσάρι, περιπέτεια, etc.) σε βρίσκω συγκεκριμένος πόροι. Cloud-synced ιστορία είναι προσβάσιμο από οποιοδήποτε device. Storage limits vary by account—διαγραφή παλιός στοιχείο αν approaching limit. σας ιστορία είναι σας personal teaching πόροι library.",
     "socratic_toggle": "Ενεργοποίηση Socratic dialogue λειτουργία για deeper μάθηση. όταν ON: AI never gives direct απάντηση—instead asks probing ερώτηση αυτό guide μαθητής toward discovery. Benefits: develops critical thinking, encourages εαυτός-correction, χτίζει problem-solving δεξιότητα, και δημιουργεί memorable μάθηση moments. AI χρησιμοποιεί techniques like: clarifying ερώτηση (τι κάνει εσείς mean by...?), challenging assumptions (αλλά τι αν...?), και στοιχεία requests (πώς κάνει εσείς know αυτό?). Καλύτερος για: discussion preparation, έννοια exploration, και βοήθειαing μαθητής ποιος θέλω γρήγορο απάντηση σε think περισσότερο deeply. Μπορεί frustrate μαθητής seeking efficiency—explain purpose.",
     "socratic_input": "Εισάγετε σας ερώτηση ή statement για Socratic exploration. AI θα respond με ερώτηση rather than απάντηση. καλό starting σημείο: Why κάνει εσείς think [X] happened? τι makes [Y] important? ή I believe [Z] because... AI probes σας reasoning: asking για στοιχεία, exploring implications, testing λογική, και surfacing assumptions. αυτό develops επιχείρημαation και critical thinking δεξιότητα. είναι prepared σε: justify σας thinking, σκεφτείτε alternatives, και refine σας θέση. Socratic dialogues μπορεί είναι frustrating initially αλλά χτίζω lasting understanding. σας responses και reasoning είναι tracked για αναστοχασμός.",
@@ -31573,7 +31576,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Περιγραφή του τρέχοντος πολυμέσου",
+    "describe_current_media_done": "Ανάγνωση πολυμέσου {index} από {count}.",
+    "describe_current_media_hint": "Διαβάστε την περιγραφή του τρέχοντος ή του επόμενου πολυμέσου χωρίς να φύγετε από τον πόρο",
+    "describe_current_media_none": "Δεν υπάρχουν πολυμέσα στον τρέχοντα πόρο.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Άνοιγμα Learning Web: Explore",
+    "open_learning_web_explorer_done": "Το Learning Web: Explore άνοιξε.",
+    "open_learning_web_explorer_hint": "Εξερευνήστε πρότυπα, έννοιες, μαθήματα, τεκμήρια και συνδέσεις λέξεων σε έναν χάρτη",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Ανάγνωση όλων των περιγραφών πολυμέσων",
+    "read_media_descriptions_count": "Ανάγνωση {count} περιγραφών πολυμέσων.",
+    "read_media_descriptions_hint": "Διαβάστε κάθε γραμμένη περιγραφή εικόνας, βίντεο ή ήχου στον τρέχοντα πόρο",
+    "read_media_descriptions_none": "Δεν υπάρχουν πολυμέσα στον τρέχοντα πόρο.",
+    "suggest_contextual_next_steps": "Πρότεινε 3 επόμενα βήματα",
+    "suggest_contextual_next_steps_hint": "Προσφέρει τρεις επιλογές προσαρμοσμένες στο πλαίσιο, χωρίς να επιλέγει ή να εκτελεί κάποια",
+    "suggest_contextual_next_steps_working": "Ανάγνωση του τρέχοντος πλαισίου μαθήματος και προετοιμασία τριών επιλογών...",
+    "surprise_me_contextually": "Εξέπληξέ με με ένα χρήσιμο επόμενο βήμα",
+    "surprise_me_contextually_hint": "Επιλέγει μία λογική ενέργεια χαμηλού ρίσκου από το τρέχον πλαίσιο μαθήματος",
+    "surprise_me_contextually_working": "Ανάγνωση του τρέχοντος πλαισίου μαθήματος και επιλογή ενός χρήσιμου επόμενου βήματος...",
+    "use_contextual_suggestion": "Χρήση ενός προτεινόμενου επόμενου βήματος",
+    "use_contextual_suggestion_hint": "Εκτελεί την επιλογή 1, 2 ή 3 από τις τελευταίες προτάσεις",
+    "use_contextual_suggestion_working": "Έναρξη του επιλεγμένου επόμενου βήματος..."
   },
   "palette": {
     "aria": "Παλέτα εντολών AlloFlow",
@@ -31596,10 +31625,11 @@
       "videoStudio": "Εδώ — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Κάθε ενέργεια ανακοινώνεται. Το Ctrl+K κάνει εναλλαγή.",
     "group": {
@@ -31911,6 +31941,12 @@
     "diff_types_hint": "Δημιουργία διαφοροποιημένου συνόλου για:",
     "diff_cost": "Περίπου {n} δημιουργίες ανά εκτέλεση.",
     "summary_standards": "πρότυπα",
-    "summary_interests": "ενδιαφέροντα"
+    "summary_interests": "ενδιαφέροντα",
+    "translations": "Μεταφράσεις",
+    "translations_auto": "Αυτόματα ({language})",
+    "translations_auto_plain": "Αυτόματα",
+    "translations_none": "Καμία",
+    "translations_on_hint": "Το υλικό στα {output} θα περιλαμβάνει και μια έκδοση στα {target}.",
+    "translations_off_hint": "Το υλικό θα είναι μόνο στα {output}, χωρίς δεύτερη γλώσσα."
   }
 }

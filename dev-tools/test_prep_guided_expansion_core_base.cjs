@@ -16,7 +16,25 @@ function createTestPrepGuidedExpansion() {
     return (sentence > 80 ? clipped.slice(0, sentence + 1)
       : clipped.replace(/[,;:]?\s+\S*$/, '') + '.').trim();
   };
-  const quote = value => '"' + String(value || '').replace(/["']/g, '').replace(/\s+/g, ' ').trim() + '"';
+  // Only strip marks that would break the surrounding double quotes. An
+  // apostrophe between two letters (child's, don't) or closing a plural
+  // possessive (students') is prose, not a quotation mark. Removing it wrote
+  // "young childs" into 104 learner-visible rationales in 5692 alone, and the
+  // same damage to every other possessive across all 22 packs.
+  const quoteMarkOnly = value => String(value || '')
+    .replace(/["“”]/g, '')
+    .replace(/['‘’]/gu, (mark, offset, text) => {
+      const before = text[offset - 1] || '';
+      const after = text[offset + 1] || '';
+      const isLetter = /\p{L}/u;
+      // Return `mark` unchanged, never a normalized substitute: the quoted span
+      // must stay byte-identical to the source prose it was taken from, or
+      // containment checks against that source stop matching.
+      if (isLetter.test(before) && isLetter.test(after)) return mark;
+      if (/s/i.test(before) && !isLetter.test(after)) return mark;
+      return '';
+    });
+  const quote = value => '"' + quoteMarkOnly(value).replace(/\s+/g, ' ').trim() + '"';
   const inlineQuote = value => quote(String(value || '').replace(/[.?!]+$/, '').trim());
   function placeAnswer(correct, distractors, answerIndex) {
     const choices = [], wrong = [...distractors];
@@ -35,6 +53,17 @@ function createTestPrepGuidedExpansion() {
   const clueTokens = value => new Set(clueCanonical(value).split(' ')
     .filter(token => token.length > 3 && !clueStopwords.has(token)));
   const clueRaw = value => String(value == null ? '' : value).normalize('NFKC').replace(/\s+/g, ' ').trim();
+  // clueCanonical output is a COMPARISON key, not prose: it is lowercased and
+  // stripped of apostrophes, so splicing it into a learner-visible choice printed
+  // tokenizer artefacts such as "young childs personality type". Recover each
+  // token's surface form from the text it was taken from before displaying it.
+  const clueSurfaceForm = (text, token) => {
+    for (const word of clueRaw(text).split(' ')) {
+      const bare = word.replace(/^[^A-Za-z0-9'’]+|[^A-Za-z0-9'’]+$/g, '');
+      if (clueCanonical(bare) === token) return bare;
+    }
+    return token;
+  };
   const clueExtremeReplacements = [
     [/\ball students\b/gi, 'students generally'],
     [/\bno students\b/gi, 'few students'],
@@ -77,7 +106,7 @@ function createTestPrepGuidedExpansion() {
       const leaked = [...stem].filter(token => key.has(token)
         && wrongIndexes.some(index => !clueTokens(choices[index]).has(token)));
       if (!leaked.length) return false;
-      const label = leaked.join(' ');
+      const label = leaked.map(token => clueSurfaceForm(item.prompt, token)).join(' ');
       let localChanged = false;
       for (const index of wrongIndexes) {
         if (leaked.some(token => !clueTokens(choices[index]).has(token))) {

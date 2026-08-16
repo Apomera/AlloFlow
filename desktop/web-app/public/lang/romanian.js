@@ -2252,7 +2252,7 @@
     "ai_guide_sub": "Pedagogie, navigare și configurare automată",
     "ai_guide_welcome": "Bună! Sunt ghidul tău AI. Pot ajuta cu strategii UDL, să navighez aplicația pentru tine sau să configurez automat setările lecției tale. Doar întreabă!",
     "tool_analysis": "Analizează sursă Material",
-    "tool_glossary": "glosar & limbă Selection",
+    "tool_glossary": "Glosar",
     "tool_simplified": "text Adaptation",
     "tool_outline": "vizual Organizer",
     "tool_visual": "vizual suport",
@@ -2982,7 +2982,7 @@
     "choose_destination_aria": "Alege un destination"
   },
   "glossary": {
-    "title": "glosar & limbă Selection",
+    "title": "Glosar",
     "tier2": "Nivel 2 (Acad.)",
     "tier2_tooltip": "High-utility academic cuvânt folosit across disciplines (e.g., 'analizează', 'verify').",
     "tier3": "Nivel 3 (Domeniu)",
@@ -3924,7 +3924,12 @@
     "gauge_simple": "simplu",
     "word_bank_english": "Engleză",
     "word_bank_both": "Ambele",
-    "word_bank_language": "Limba băncii de cuvinte"
+    "word_bank_language": "Limba băncii de cuvinte",
+    "measured_level_label": "Nivel de citire măsurat",
+    "measured_on_target": "Potrivit pentru {grade}",
+    "measured_above": "Peste nivelul {grade}",
+    "measured_below": "Sub nivelul {grade}",
+    "measured_note": "Flesch-Kincaid, măsurat pe acest text. Folosește Verifică nivelul pentru o verificare mai completă."
   },
   "quiz": {
     "title": "Evaluează",
@@ -5870,7 +5875,9 @@
     "title_poettree_config": "🌳 Temă PoetTree",
     "title_poettree_submission": "🌳 Trimitere poezie",
     "title_litlab_config": "🎭 Temă LitLab",
-    "title_litlab_submission": "🎭 Trimitere spectacol"
+    "title_litlab_submission": "🎭 Trimitere spectacol",
+    "translation_block": "Traducere",
+    "translation_into": "Traducere ({language})"
   },
   "persona": {
     "title": "Interview mod",
@@ -6287,7 +6294,7 @@
   },
   "tools": {
     "source": "sursă Material",
-    "glossary": "glosar & limbă Selection",
+    "glossary": "Glosar",
     "simplified": "text Adaptation & Engagement",
     "outline": "vizual Organizer",
     "quiz": "Evaluează",
@@ -6876,7 +6883,6 @@
     "source_settings_instructions": "Ghidează generarea de conținut AI cu instrucțiuni specifice: tonul, focusul, nivelul de vocabular și perspectiva. Fii specific pentru rezultate optime.",
     "source_verify_checkbox": "Activează verificarea factuală AI prin Google Search grounding. Adaugă 5-10 secunde, dar îmbunătățește semnificativ fiabilitatea conținutului factual.",
     "source_generate_button": "Creează conținut scris de AI pe subiectul specificat. Folosește descrierea subiectului, lungimea țintă, nivelul de clasă și instrucțiunile personalizate.",
-    "generator_actions": "Hub pentru toate instrumentele de generare de conținut: Quiz, Glossary, Simplified, FAQ, Analysis, Lesson Plan, Timeline, Scaffolds, Concept Sort, Math, Adventure Mode și Brainstorm.",
     "tool_visual": "Accesează instrumentele Visualize: imagini AI pentru vocabular, ilustrații de concepte, scene, diagrame și infografice. Sprijină ELL și cei vizuali.",
     "tool_udl": "Învață despre integrarea cadrului UDL. Cele trei principii: Reprezentare multiplă, Acțiune și expresie multiplă, Angajament multiplu.",
     "tour-analysis-settings": "Adjust parameters pentru readability analysis, inclusiv target reading nivel și specific metrics la track.",
@@ -6901,7 +6907,6 @@
     "adventure_system_state": "Adaugă resurse gestioneazăment mechanics la aventurăs. elev track: Health (consequence de riscy alegeres), aur/resurse (economic decizie-making), Reputation (social capital din alegeres), și personalizat resurse tu define. Actions affect resurse visibly—spend aur la buy element, lose health din poor decizii, gain reputation din ajutoring others. Creates meaningful consequences acela teach: cause-și-effect reasoning, planning ahead, resurse gestioneazăment, și opportunity cost. vizual dashboard afișează current resurse nivel. când resurse deplete, joc adaptively responds (e.g., low health = limited opțiuni). Math abilitate integrate naturally through resurse calculations.",
     "glossary_tier2_count": "Numărul de cuvinte Tier 2 (academice generale) incluse. Aceste cuvinte apar în mai multe materii și au cea mai mare valoare instrucțională pentru comprehensiune.",
     "glossary_tier3_count": "Numărul de cuvinte Tier 3 (specifice domeniului) incluse. Cuvinte tehnice esențiale pentru un subiect, dar cu transfer limitat între materii.",
-    "glossary_definition_level": "Alege complexitatea definițiilor: identic cu sursa, la nivelul clasei, simplificat sau de grădiniță. Potrivește nivelul cu cititorul, nu cu conținutul.",
     "glossary_custom_instructions": "Oferă instrucțiuni pentru selectarea cuvintelor și stilul definițiilor (de ex. focus pe capitolul 3, include cognate pentru ELL, adaugă etimologie).",
     "glossary_language_input": "specifică limbă pentru vocabular traducere. Introdu limbă: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, sau any limbă. tu poate adaugă multiple limbă separated by commas. fiecare termen va afișează: English definiție, target limbă traducere(s), și phonetic pronunciation guide unde applicable. Folosește pentru: ELL suport, heritage limbă connections, world limbă vocabular, și multilingual clasărooms. traducere appear pe every vocabular card pentru instant reference. audio pronunciation disponibil în supported limbă. Research afișează connecting nou vocabular la home limbă improves retention. Max 4 limbă prevents vizual clutter while supporting diverse clasărooms.",
     "glossary_auto_remove": "Automatically filtrează out very simplu sau common cuvânt.",
@@ -7035,7 +7040,6 @@
     "fab_dictation": "Convert speech la text pentru hands-free intrare. Apasă la activate microphone, vorbește clearly, și privește cuvânt appear. Works în: text intrare, writing scaffolds, conversație, și any editable field. suport: multiple limbă, punctuation commands (say period, comma, nou linie), și editing commands (șterge acela). Dictation requires microphone permission în browser. Quality depends pe: microphone quality, background noise, și speech clarity. În timp real transcription afișează as tu vorbește. Editează transcribed text normally. Great pentru: elev cu motor provocare, reluctant writers, și idea generation. sfat: Vorbește în finalizează propoziție pentru mai bun accuracy.",
     "fab_focus": "Creates un movable spotlight acela dims everything except un circular arie around tău cursor. acesta dramatically reduces vizual clutter și ajutors maintain attention pe current reading arie. Especially beneficial pentru elev cu ADHD, sensory processing differences, sau anyone overwhelmed by busy screens. spotlight follows tău mouse/touch automatically. Adjust spotlight size și dim intensity în setări → Accessibility.",
     "fab_line_focus": "Single-linie reading isolation instrumente pentru focused reading. când activated: one text linie este highlighted while others sunt dimmed, creating vizual focus. Navigate cu: arrow keys (up/down), apasă anywhere pe text, sau touch/swipe pe mobile. Benefits: reduces vizual crowding, suport urmărire difficulties, ajutors maintain place, și reduces regression. Intensity (cum much surrounding text este vizibil) este adjustable în setări → Accessibility. Works pe: toate reading conținut, inclusiv generat text, sursă materials, și conversație. Particularly ajutorful pentru: dyslexia, ADHD, vizual processing differences, și anyone overwhelmed by text-heavy screens. sfat: Combine cu larger font pentru maximum reading ease.",
-    "fab_ruler": "Adds un semi-transparent horizontal bar acela follows tău cursor la ajutor track tău reading position linie by linie. Particularly ajutorful pentru users cu dyslexia, ADHD, sau vizual urmărire difficulties. Trage ruler up/down la reposition, folosește arrow keys pentru fine control, sau apasă anywhere la jump. ruler culoare poate be customized în setări. Works across toate reading views inclusiv Simplified text, FAQ, și glosar definiție.",
     "fab_timer": "Deschide un cronometru de focus bazat pe tehnica Pomodoro. Durate presetate (5/15/25/45 min); XP crește cu durata sesiunii finalizate.",
     "scaffolds_edit_toggle": "Comută între modul de editare al profesorului și vizualizarea elevului. ON: poți modifica scaffold-urile; OFF: vizualizare doar-citire.",
     "scaffolds_goal_panel": "Afișează obiectivele de învățare ca referință pentru elev (formulări „Pot să...”). Sporește metacogniția și claritatea scopului.",
@@ -7130,7 +7134,6 @@
     "immersive_line_focus": "Activează single-linie reading guide. când activ: current reading linie este fully vizibil, surrounding linie sunt dimmed, și focus follows as tu navigate. Benefits: reduces vizual overwhelm, improves urmărire, și ajutors attention stay pe current text. Navigate cu: arrow keys, apasă anywhere, sau auto-advance (cu TTS). Dimming intensity este adjustable în setări. Perfect pentru: dyslexia suport, attention difficulties, și urmărire provocare. Combines well cu text-la-speech pentru multi-modal reading suport. linie focus works pe toate text conținut. Research afișează linie isolation improves comprehension pentru struggling readers. sfat: Combine cu larger font pentru maximum reading ease.",
     "immersive_syllables": "vizual syllable segmentation pentru decoding suport. când enabled: cuvânt display cu syllable breaks (hy-phen-at-ed), ajutoring readers attack multisyllabic cuvânt. Benefits: builds phonemic awareness, suport decoding strategii, develops morphologicăal understanding, și aids pronunciation. Especially ajutorful pentru: struggling decoders, ELL elev, dyslexia suport, și vocabular cuvânt cu complex syllable patterns. Syllabification follows standard phonetic rules. Works pe: toate reading conținut inclusiv adapted text, glosar termen, și sursă materials. Combine cu audio la hear syllables pronounced. Comută off când nu needed la reduce vizual complexitate. sfat: Folosește pentru challenging vocabular, then dezactivează pentru fluent reading exersează.",
     "immersive_wide_text": "Expand text la folosește mai mult horizontal screen space. când activ: linie lungime increases, mai puțîn scrolling este needed, și mai mult text este vizibil at once. bun pentru: fluent readers, wide displays, și când scanning pentru informație. implicit narrow lățime este mai bun pentru: struggling readers, mobile devices, și focused reading. Optimal linie lungime varies by reader și device. Research afișează 50-75 personaj per linie este ideal pentru most readers. Wide text trades readability pentru efficiency. Combine cu linie focus dacă urmărire becomes difficult. setare este remembered per device. sfat: Folosește wide text pentru research și scanning, narrow text pentru închide reading.",
-    "sidebar_tab_create": "Deschide panoul de generare a conținutului cu toate instrumentele AI: Quiz, Glossary, Outline, Lesson Plan, Timeline, text simplificat și altele.",
     "sidebar_tab_history": "Accesează tot conținutul salvat și istoricul sesiunilor. Filtrează după tip, caută după cuvânt-cheie și încarcă orice element pentru a continua lucrul.",
     "socratic_toggle": "Activează modul de dialog socratic. AI nu oferă răspunsuri directe, ci pune întrebări care îndrumă elevii spre descoperire. Dezvoltă gândirea critică.",
     "socratic_input": "Introdu întrebarea sau afirmația ta pentru explorare socratică. AI va răspunde cu întrebări care testează raționamentul, dovezile și ipotezele tale.",
@@ -31409,7 +31412,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Descrie conținutul media curent",
+    "describe_current_media_done": "Se citește elementul media {index} din {count}.",
+    "describe_current_media_hint": "Citește descrierea conținutului media curent sau următor fără a părăsi resursa",
+    "describe_current_media_none": "Nu există conținut media în resursa curentă.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Deschide Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore deschis.",
+    "open_learning_web_explorer_hint": "Explorează standarde, concepte, lecții, dovezi și legături între cuvinte pe o singură hartă",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Citește toate descrierile media",
+    "read_media_descriptions_count": "Se citesc {count} descrieri media.",
+    "read_media_descriptions_hint": "Citește fiecare descriere scrisă de imagine, video sau audio din resursa curentă",
+    "read_media_descriptions_none": "Nu există conținut media în resursa curentă.",
+    "suggest_contextual_next_steps": "Sugerează 3 pași următori",
+    "suggest_contextual_next_steps_hint": "Oferă trei opțiuni potrivite contextului, fără a alege sau a rula vreuna",
+    "suggest_contextual_next_steps_working": "Se citește contextul lecției curente și se pregătesc trei opțiuni...",
+    "surprise_me_contextually": "Surprinde-mă cu un pas următor util",
+    "surprise_me_contextually_hint": "Alege o singură acțiune următoare rezonabilă și cu risc scăzut din contextul lecției curente",
+    "surprise_me_contextually_working": "Se citește contextul lecției curente și se alege un pas următor util...",
+    "use_contextual_suggestion": "Folosește un pas următor sugerat",
+    "use_contextual_suggestion_hint": "Rulează opțiunea 1, 2 sau 3 din ultimele sugestii",
+    "use_contextual_suggestion_working": "Se pornește pasul următor ales..."
   },
   "palette": {
     "aria": "Paleta de comenzi AlloFlow",
@@ -31432,10 +31461,11 @@
       "videoStudio": "Aici — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Fiecare acțiune este anunțată. Ctrl+K comută.",
     "group": {
@@ -31755,6 +31785,12 @@
     "diff_types_hint": "Generează un set diferențiat pentru:",
     "diff_cost": "Aproximativ {n} generări la fiecare rulare.",
     "summary_standards": "standarde",
-    "summary_interests": "interese"
+    "summary_interests": "interese",
+    "translations": "Traduceri",
+    "translations_auto": "Automat ({language})",
+    "translations_auto_plain": "Automat",
+    "translations_none": "Niciuna",
+    "translations_on_hint": "Resursele în {output} vor include și o versiune în {target}.",
+    "translations_off_hint": "Resursele vor fi doar în {output}, fără o a doua limbă."
   }
 }

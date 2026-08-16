@@ -2249,7 +2249,7 @@
     "ai_guide_sub": "Paedagogia, Navigatio et Auto-Constitutio",
     "ai_guide_welcome": "Salvē! Dux tuus AI sum. Possum tē adiuvāre cōnsiliīs UDL, in applicātiōne tē dīrigere, aut cōnstitūtiōnēs lēctiōnis tuae sponte parāre. Modo rogā!",
     "tool_analysis": "Resolve fōns Material",
-    "tool_glossary": "glōssārium & lingua Selection",
+    "tool_glossary": "Glōssārium",
     "tool_simplified": "textus Adaptation",
     "tool_outline": "vīsuālis Organizer",
     "tool_visual": "vīsuālis subsidium",
@@ -2979,7 +2979,7 @@
     "choose_destination_aria": "Ēlige destination"
   },
   "glossary": {
-    "title": "glōssārium & lingua Selection",
+    "title": "Glōssārium",
     "tier2": "Gradus II (Acad.)",
     "tier2_tooltip": "Altus-utility acadēmicus verbum ūsus across disciplines (e.g., 'resolve', 'verify').",
     "tier3": "Gradus III (Provincia)",
@@ -3921,7 +3921,12 @@
     "gauge_simple": "simplex",
     "word_bank_language": "Lingua capsulae verborum",
     "word_bank_english": "Anglica",
-    "word_bank_both": "Utraque"
+    "word_bank_both": "Utraque",
+    "measured_level_label": "Gradus legendi mensuratus",
+    "measured_on_target": "Gradui {grade} aptus",
+    "measured_above": "Supra gradum {grade}",
+    "measured_below": "Infra gradum {grade}",
+    "measured_note": "Flesch-Kincaid, in hoc textu mensuratus. Ad pleniorem inspectionem Check gradus adhibe."
   },
   "quiz": {
     "title": "Aestimare",
@@ -5875,7 +5880,9 @@
     "title_poettree_config": "🌳 Pensum PoetTree",
     "title_poettree_submission": "🌳 Submissio Carminis",
     "title_litlab_config": "🎭 Pensum LitLab",
-    "title_litlab_submission": "🎭 Submissio Spectaculi"
+    "title_litlab_submission": "🎭 Submissio Spectaculi",
+    "translation_block": "Translatio",
+    "translation_into": "Translatio ({language})"
   },
   "persona": {
     "title": "Interview modus",
@@ -6292,7 +6299,7 @@
   },
   "tools": {
     "source": "fōns Material",
-    "glossary": "glōssārium & lingua Selection",
+    "glossary": "Glōssārium",
     "simplified": "textus Adaptation & Engagement",
     "outline": "vīsuālis Organizer",
     "quiz": "Aestimare",
@@ -6881,7 +6888,6 @@
     "source_settings_instructions": "Guide AI contentum generātiō cum specificus īnstrūctiō. exemplum: Fac it engaging prō reluctant readers, Focus in water cycle, Inclūde diverse persōna names, Avoid references ad violence, et Ūtere simplex vocābulārium prō ELL discipulus. īnstrūctiō fōrma: sonus, contentum focus, vocābulārium gradus, et perspective. Be specificus prō best effectus. Multiple īnstrūctiō potest be combined. īnstrūctiō sunt processed along cum tuus thema et cōnstitūtiōnēs. Prō sensitive topics, inclūde contentum guidance. īnstrūctiō do nōn guarantee specificus outcomes sed strongly influence generātiō. cōnsilium: Inclūde gradus classis et any contentum restrictions in tuus īnstrūctiō prō most aptus exitus.",
     "source_verify_checkbox": "Permitte AI fact-checking via Google Quaere grounding. cum ON: AI cross-references generātum contentum against web sources, flagging aut correcting potential inaccuracies. Adds 5-10 secundae ad generātiō time sed significantly improves reliability prō factual contentum. Especially important prō: history (dates, events), science (processes, data), biography, et current events. Prō fiction, creative scrīptiō, aut hypothetical scenarios, hoc potest be disabled ad allow plūs creative freedom. Sources consulted sunt listed in generātiō log prō magister review. Highly recommended prō any contentum illud will be presented as factual ad discipulus.",
     "source_generate_button": "Creā AI-written contentum in tuus specified thema. Pulsā ad begin generātiō ūtendō tuus: thema description, scopus longitūdō, gradus classis, et accommodātus īnstrūctiō. Generātiō takes 10-20 secundae. exitus est reviewed by safety filters before ostendere. Generātus contentum potest be: edited (magister potest mūtā any part), analyzed (exsequere per alius generātiō īnstrūmenta), et servātum (adde ad history prō reuse). Ūtere cum: tu need contentum in specificus thema, want controlled complexitās, aut need ad fill curriculum gaps. Generātus contentum inclūdit: aptus vocābulārium, logical organization, et gradus-gradus syntax. Verify factual accūrātiō before classis ūtere.",
-    "generator_actions": "Hub prō omnia contentum generātiō īnstrūmenta. praestō generators inclūde: quaestiōnārium (aestimātiō cum respōnsum keys), glōssārium (vīsuālis vocābulārium), Simplified textus (leveled reading), FAQ (Q et pairs), Analysis (contentum examination), lectiō Cōnsilium (instructional design), Timeline (chronological activity), Scaffolds (scrīptiō subsidium), Conceptus Dispōne (categorization lūdus), Mathēmatica (problem generātiō), Adventure (interāctīvus fābula), et Brainstorm (activity ideas). quisque generator transforms tuus fōns contentum into different fōrma. Pulsā any generator ad aperī its configuration pannus. Multiple generators potest be ūsus in idem fōns. Generātus contentum appāret in workspace et servat ad history. cōnsilium: Incipe cum Analysis ad intellege tuus contentum, then generā targeted subsidia.",
     "tool_visual": "Aditus vīsuālis generator īnstrūmenta. Creates AI-generātum imāgō inclūdēns: vocābulārium vīsuālis, conceptus illūstrātiō, scaena depictions, diagramma, et infographics. vīsuālis types: reference imāgō (prō learning), worksheets (prō activities), et diagramma (prō relationships). vīsuālis subsidium: ELL discipulus (vīsuālis vocābulārium), vīsuālis discentēs, et engagement. quisque generātiō creat unique imāgō. cōnstitūtiōnēs control stilus, quality, et contentum. Generātus vīsuālis potest be: downloaded, embedded in māteriae, et added ad glossaries. Uses AI imāgō generātiō credits. cōnsilium: Generā vīsuālis prō abstract conceptūs illud sunt difficult ad explain cum verbum alone.",
     "tool_udl": "Disce dē UDL framework integration. Universal Design prō Learning has three principles: Multiple Means Representation ( quid learning—present īnformātiō in different ways), Multiple Means Action et expressiō ( quōmodo learning—let discipulus demonstrate understanding differently), et Multiple Means Engagement ( why learning—motivate et sustain interest). Hoc īnstrūmenta subsidium omnia three per: varied contentum fōrma, multiple interaction modus, et gamified engagement. Clicking aperit cōpiōsus īnformātiō dē quōmodo quisque īnstrūmenta facultātēs aligns cum UDL research. Magnus prō: professional development, IEP justification, et understanding pedagogical foundation. cōnsilium: Reference UDL principles cum advocating prō īnstrūmenta adoption.",
     "tour-analysis-settings": "Aptāre parameters prō readability analysis, inclūdēns scopus reading gradus et specificus metrics ad track.",
@@ -6906,7 +6912,6 @@
     "adventure_system_state": "Adde subsidia management mechanics ad adventures. discipulus track: Health (consequence risky optiōnēs), aurum/subsidia (economic decision-making), Reputation (social capital ā optiōnēs), et accommodātus subsidia tu define. Actions affect subsidia visibly—spend aurum ad buy rēs, lose health ā poor decisions, gain reputation ā helping others. Creates meaningful consequences illud teach: cause-et-effect reasoning, planning ahead, subsidia management, et opportunity cost. vīsuālis dashboard mōnstrat current subsidia gradus. cum subsidia deplete, lūdus adaptively responds (e.g., low health = limited optiōnēs). Mathēmatica peritia integrate naturally per subsidia calculations.",
     "glossary_tier2_count": "Pōne quōmodo many Tier 2 (acadēmicus) vocābulārium verbum ad inclūde. Tier 2 verbum: appārēre across subjects, sunt ūsus in acadēmicus contexts, et sunt essential prō textus comprehēnsiō. exemplum: resolve, testimōnium, significant, contrast. These verbum have highest instructional valor—most discipulus benefit ā explicit teaching. Recommended numerā depends in: textus longitūdō (1 verbum per 100-150 verbum fōns), praestō īnstrūctiō time, et discipulus need. Balance cum Tier 3 numerā prō complē vocābulārium pōne. Focus īnstrūctiō here prō maximum impact in reading comprehēnsiō across omnia subjects.",
     "glossary_tier3_count": "Pōne quōmodo many Tier 3 (domain-specificus) vocābulārium verbum ad inclūde. Tier 3 verbum: sunt specificus ad subject ārea, sunt usually defined in context, et may nōn transfer across subjects. exemplum: photosynthesis, dēnōminātor, alliteration, legislative. These verbum sunt essential prō understanding specificus contentum sed have limited ūtere outside domain. īnstrūctiō typically occurs during contentum teaching. Prō deep dive into thema, inclūde plūs Tier 3. Prō broader reading peritia, prioritize Tier 2. Tier 3 verbum often appārēre in bold aut italics in textbooks, signaling their importance within discipline.",
-    "glossary_definition_level": "Control quōmodo dēfīnītiō sunt written. optiōnēs: Idem as fōns (maintains orīginālis complexitās—bonus prō prōvectus discipulus), In gradus (matches scopus gradus classis vocābulārium), Simplified (ūtitur commūnis verbum, brevior sententia), et Kindergarten (very basicus lingua, concrete exemplum). Match dēfīnītiō complexitās ad discipulus reading gradus, nōn contentum gradus. 10th-grader studying prōvectus biology might need Simplified dēfīnītiō prō unfamiliar terminus. Consider tuus discipulus weakest readers cum selecting. dēfīnītiō potest be individually edited after generātiō sī aliquī need adjustment. Pro cōnsilium: Ūtere Simplified initially, then discuss plūs technical dēfīnītiō in classis.",
     "glossary_custom_instructions": "Provide specificus guidance prō vocābulārium selection et dēfīnītiō stilus. exemplum: Focus in verbum ā caput 3-5, Inclūde only verbum related ad water cycle, Avoid homonyms cum simpler meanings, Adde etymology prō Latin/Greek roots, Inclūde Spanish cognates prō ELL discipulus, et Ūtere discipulus-amīcus exemplum ā pop culture. Custom īnstrūctiō fōrma: which verbum sunt ēlectum, quōmodo dēfīnītiō sunt written, et quid additional īnformātiō appāret. Clear īnstrūctiō prōduce melior-targeted glossaries. tu potest request specificus fōrma like: Inclūde sententia ūtendō quisque verbum aut Adde vīsuālis memory hooks. AI follows īnstrūctiō cum making vocābulārium selections.",
     "glossary_language_input": "specificusā lingua prō vocābulārium trānslātiō. Inscrībe lingua: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, aut any lingua. tu potest adde multiple lingua separated by commas. quisque terminus will mōnstrā: English dēfīnītiō, scopus lingua trānslātiō(s), et phonetic pronunciation guide ubi applicable. Ūtere prō: ELL subsidium, heritage lingua connections, world lingua vocābulārium, et multilingual classrooms. trānslātiō appārēre in every vocābulārium schedula prō instant reference. sonus pronunciation praestō in supported lingua. Research mōnstrat connecting novus vocābulārium ad home lingua improves retention. Max 4 lingua prevents vīsuālis clutter while supporting diverse classrooms.",
     "glossary_auto_remove": "automaticē excerne out very simplex aut commūnis verbum.",
@@ -7040,7 +7045,6 @@
     "fab_dictation": "Convert speech ad textus prō hands-free aditus. Pulsā ad activate microphone, loquere clearly, et spectā verbum appārēre. Operātur in: textus aditus, scrīptiō scaffolds, colloquium, et any editable field. subsidium: multiple lingua, punctuation commands (say period, comma, novus līnea), et editing commands (dēlē illud). Dictation requires microphone permission in browser. Quality depends in: microphone quality, background noise, et speech clarity. Real-time transcription mōnstrat as tu loquere. Recense transcribed textus normally. Magnus prō: discipulus cum motor certāmen, reluctant writers, et idea generātiō. cōnsilium: Loquere in complē sententia prō melior accūrātiō.",
     "fab_focus": "Creates movable spotlight illud dims everything except circular ārea around tuus cursor. Hoc dramatically reduces vīsuālis clutter et helps maintain attention in current reading ārea. Especially beneficial prō discipulus cum ADHD, sensory processing differentia, aut anyone overwhelmed by busy screens. spotlight follows tuus mouse/touch automaticē. Aptāre spotlight size et dim intensity in cōnstitūtiōnēs → Accessibilitas.",
     "fab_line_focus": "Single-līnea reading isolation īnstrūmenta prō focused reading. cum activated: one textus līnea est highlighted while others sunt dimmed, creandō vīsuālis focus. Navigate cum: arrow keys (up/down), pulsā anywhere in textus, aut touch/swipe in mobile. Benefits: reduces vīsuālis crowding, subsidium sequendum difficulties, helps maintain place, et reduces regression. Intensity (quōmodo much surrounding textus est vīsibilis) est adjustable in cōnstitūtiōnēs → Accessibilitas. Operātur in: omnia reading contentum, inclūdēns generātum textus, fōns māteriae, et colloquium. Particularly helpful prō: dyslexia, ADHD, vīsuālis processing differentia, et anyone overwhelmed by textus-heavy screens. cōnsilium: Combine cum larger font prō maximum reading ease.",
-    "fab_ruler": "Adds semi-transparent horizontal vectis illud follows tuus cursor ad auxilium track tuus reading positiō līnea by līnea. Particularly helpful prō users cum dyslexia, ADHD, aut vīsuālis sequendum difficulties. Trahe ruler up/down ad reposition, ūtere arrow keys prō fine control, aut pulsā anywhere ad jump. ruler color potest be customized in cōnstitūtiōnēs. Operātur across omnia reading views inclūdēns Simplified textus, FAQ, et glōssārium dēfīnītiō.",
     "fab_timer": "Opens interāctīvus focus timer based in Pomodoro Technique. Ēlige ā preset durations (5/15/25/45 minutes) aut accommodā tuus own. facultātēs inclūde: vīsuālis countdown cum prōgressus ring, optātīvus break reminders, XP praemium prō completed sessiō (longior = plūs XP), et sessiō logging prō magister review. Label tuus task (e.g., 'Lege caput 3') ad track quid tu accomplished. Minimizes ad header vectis so tu potest work while it runs.",
     "scaffolds_edit_toggle": "Mūtā inter magister editing et discipulus aspice modus. cum ON (Recense modus): pulsā any scaffold ad mūtā textus, adde novus monita, dēlē rēs, et reorder contentum. cum OFF: scaffolds ostendere as discipulus vidē them (lege-only). Edits servā automaticē. discipulus always vidē lege-only regardless tuus mūtā (they cannot aditus recense modus). Ūtere editing ad: accommodā AI-generātum scaffolds, adde classis-specificus exemplum, remove inappropriate monita, et differentiate prō specificus discipulus. Preview discipulus aspice before sharing. Orīginālis scaffolds potest be restored ā history. cōnsilium: Review et recense scaffolds before classis ad ensure they match tuus teaching stilus et discipulus needs.",
     "scaffolds_goal_panel": "Ostendere learning objectives prō discipulus reference. fīnis appārēre prominently during activity. Effective fīnis sunt: discipulus-amīcus (I potest statements), specificus et measurable, et aligned ad activity. exemplum: I potest identificāre three causes Civil War aut I potest ūtere testimōnium ad subsidium my claim. fīnis increase: metacognition, ipse-aestimātiō, et purpose clarity. discipulus potest reference fīnis while working. magister sets fīnis before discipulus aditus. Multiple fīnis potest be displayed. fīnis potest inclūde successus criteria: I know I have succeeded cum my paragraphus has thema sententia. Research mōnstrat vīsibilis learning targets improve rēs gesta.",
@@ -7135,7 +7139,6 @@
     "immersive_line_focus": "Permitte single-līnea reading guide. cum āctīvus: current reading līnea est fully vīsibilis, surrounding līnea sunt dimmed, et focus follows as tu navigate. Benefits: reduces vīsuālis overwhelm, improves sequendum, et helps attention stay in current textus. Navigate cum: arrow keys, pulsā anywhere, aut auto-advance (cum TTS). Dimming intensity est adjustable in cōnstitūtiōnēs. Perfect prō: dyslexia subsidium, attention difficulties, et sequendum certāmen. Combines well cum textus-ad-speech prō multi-modal reading subsidium. līnea focus operātur in omnia textus contentum. Research mōnstrat līnea isolation improves comprehēnsiō prō cōnāns readers. cōnsilium: Combine cum larger font prō maximum reading ease.",
     "immersive_syllables": "vīsuālis syllable segmentation prō decoding subsidium. cum enabled: verbum ostendere cum syllable breaks (hy-phen-at-ed), helping readers attack multisyllabic verbum. Benefits: aedificat phonemic awareness, subsidium decoding cōnsilia, develops morphological understanding, et aids pronunciation. Especially helpful prō: cōnāns decoders, ELL discipulus, dyslexia subsidium, et vocābulārium verbum cum complexus syllable exempla. Syllabification follows norma phonetic rules. Operātur in: omnia reading contentum inclūdēns adapted textus, glōssārium terminus, et fōns māteriae. Combine cum sonus ad hear syllables pronounced. Mūtā off cum nōn needed ad reduce vīsuālis complexitās. cōnsilium: Ūtere prō challenging vocābulārium, then prohibe prō fluent reading exercē.",
     "immersive_wide_text": "Expand textus ad ūtere plūs horizontal scrīnium space. cum āctīvus: līnea longitūdō increases, minus scrolling est needed, et plūs textus est vīsibilis at once. bonus prō: fluent readers, wide displays, et cum scanning prō īnformātiō. praedēfīnītus narrow lātitūdō est melior prō: cōnāns readers, mobile devices, et focused reading. Optimal līnea longitūdō varies by reader et device. Research mōnstrat 50-75 persōna per līnea est ideal prō most readers. Wide textus trades readability prō efficiency. Combine cum līnea focus sī sequendum becomes difficult. cōnstitūtiō est remembered per device. cōnsilium: Ūtere wide textus prō research et scanning, narrow textus prō claude reading.",
-    "sidebar_tab_create": "Aperī contentum generātiō pannus cum omnia AI-powered īnstrūmenta. praestō generators: quaestiōnārium (aestimātiō cum respōnsum keys), glōssārium (vīsuālis vocābulārium), Outline (graphic organizers), Analysis (contentum examination), lectiō Cōnsilium (structured īnstrūctiō), Timeline (chronological activities), Simplified textus (leveled reading), et plūs. quisque īnstrūmenta aperit configuration pannus prō customization before generātiō. fōns contentum must be loaded prō most īnstrūmenta ad resolve. Generātus contentum appāret in main workspace et est servātum ad history. Ūtere Creā tab as tuus primary contentum generātiō hub. cōnsilium: Incipe cum Analysis ad intellege contentum, then generā targeted subsidia.",
     "sidebar_tab_history": "Aditus omnia tuus servātum contentum et sessiō history. History inclūdit: auto-servātum sessiō ā recent work, manuāliter servātum projects et portfolios, generātum subsidia organized by creation date, et discipulus submissions (magister aspice). Actions: onerā any rēs ad continuā working, dēlē rēs ad free storage, exportā prō backup, et quaere by keyword. History sorts by recency by praedēfīnītus. Excerne by type (quaestiōnārium, glōssārium, adventure, etc.) ad find specificus subsidia. Cloud-synced history est accessibilis ā any device. Storage limits vary by account—dēlē vetus rēs sī approaching limit. tuus history est tuus personal teaching subsidia library.",
     "socratic_toggle": "Permitte Socratic dialogue modus prō deeper learning. cum ON: AI never gives direct respōnsum—instead asks probing quaestiō illud guide discipulus toward discovery. Benefits: develops critical thinking, encourages ipse-correction, aedificat problem-solving peritia, et creat memorable learning moments. AI ūtitur techniques like: clarifying quaestiō (quid do tu mean by...?), challenging assumptions (sed quid sī...?), et testimōnium requests (quōmodo do tu know illud?). Best prō: discussion preparation, conceptus exploration, et helping discipulus who want celer respōnsum ad think plūs deeply. May frustrate discipulus seeking efficiency—explain purpose.",
     "socratic_input": "Inscrībe tuus quaestiō aut statement prō Socratic exploration. AI will respond cum quaestiō rather than respōnsum. bonus starting pūnctum: Why do tu think [X] happened? quid makes [Y] important? aut I believe [Z] because... AI probes tuus reasoning: asking prō testimōnium, exploring implications, testing logic, et surfacing assumptions. Hoc develops argumentation et critical thinking peritia. Be prepared ad: justify tuus thinking, consider alternatives, et refine tuus positiō. Socratic dialogues potest be frustrating initially sed aedificāre lasting understanding. tuus responses et reasoning sunt tracked prō reflection.",
@@ -30844,7 +30847,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Media praesentia describe",
+    "describe_current_media_done": "Medium {index} ex {count} legitur.",
+    "describe_current_media_hint": "Descriptionem medii praesentis vel proximi lege sine fonte relicto",
+    "describe_current_media_none": "Nulla media in fonte praesenti sunt.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore aperire",
+    "open_learning_web_explorer_done": "Learning Web: Explore apertum est.",
+    "open_learning_web_explorer_hint": "Normas, notiones, lectiones, testimonia et verborum nexus in una tabula explora",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Omnes mediorum descriptiones legere",
+    "read_media_descriptions_count": "{count} mediorum descriptiones leguntur.",
+    "read_media_descriptions_hint": "Omnem imaginis, pelliculae vel soni descriptionem scriptam in fonte praesenti lege",
+    "read_media_descriptions_none": "Nulla media in fonte praesenti sunt.",
+    "suggest_contextual_next_steps": "3 gradus proximos suadere",
+    "suggest_contextual_next_steps_hint": "Tres optiones contextui aptas praebet, nullam eligens nec exsequens",
+    "suggest_contextual_next_steps_working": "Contextus lectionis praesentis legitur et tres optiones parantur...",
+    "surprise_me_contextually": "Gradum proximum utilem mihi propone",
+    "surprise_me_contextually_hint": "Unam actionem proximam prudentem et parvi periculi ex contextu lectionis praesentis eligit",
+    "surprise_me_contextually_working": "Contextus lectionis praesentis legitur et gradus proximus utilis eligitur...",
+    "use_contextual_suggestion": "Gradu proximo suaso uti",
+    "use_contextual_suggestion_hint": "Optionem 1, 2 vel 3 ex suasionibus novissimis exsequitur",
+    "use_contextual_suggestion_working": "Gradus proximus electus incipitur..."
   },
   "palette": {
     "aria": "AlloFlow tabula mandatorum",
@@ -30867,10 +30896,11 @@
       "videoStudio": "Hic — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Omnis actio nuntiatur. Ctrl+K commutat.",
     "group": {
@@ -31172,6 +31202,12 @@
     "diff_types_hint": "Conseriem differentiatam crea pro:",
     "diff_cost": "Circiter {n} generationes per cursum.",
     "summary_standards": "normae",
-    "summary_interests": "studia"
+    "summary_interests": "studia",
+    "translations": "Translationes",
+    "translations_auto": "Automatice ({language})",
+    "translations_auto_plain": "Automatice",
+    "translations_none": "Nulla",
+    "translations_on_hint": "Subsidia lingua {output} etiam exemplar lingua {target} habebunt.",
+    "translations_off_hint": "Subsidia sola lingua {output} erunt, sine altera lingua."
   }
 }

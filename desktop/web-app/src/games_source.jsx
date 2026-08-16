@@ -5248,7 +5248,11 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
   return (
     <div ref={crosswordDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="crossword-game-title" className="fixed inset-0 z-[100] bg-white flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300" data-help-key="crossword_game_container">
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      <div className="bg-indigo-600 p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md shrink-0">
+      {/* no-print: W2 rendered this under emulateMedia('print') and the indigo
+          bar, with the theme toggle and the close button in it, landed at the
+          top of every printed worksheet. The twelve other no-print marks in
+          this modal were all correct; this was the one that was missed. */}
+      <div className="bg-indigo-600 p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md shrink-0 no-print">
          <h2 id="crossword-game-title" className="text-xl font-bold flex items-center gap-2"><Gamepad2 aria-hidden="true" /> {t('games.crossword_title')}</h2>
          <div className="flex flex-wrap items-center gap-3">
              {isWon && (
@@ -6527,7 +6531,11 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
       const parts = gameTermParts(item.term);
       if (gameGraphemes(parts.letters).length <= 2) return null;
       if (!canScrambleWord(parts.letters)) return null;
-      return { display: parts.display, letters: parts.letters, emoji: parts.emoji, def: item.def };
+      // parts.emoji is the LEGACY path: an emoji the model smuggled into the term
+      // string itself. The glossary schema now has a real `emoji` field
+      // (generate_dispatcher_source.jsx), so fall through to it when the term is
+      // clean, or the decoration disappears the moment the model behaves.
+      return { display: parts.display, letters: parts.letters, emoji: parts.emoji || item.emoji || '', def: item.def };
     })
     .filter(Boolean), [data]);
   const eligibleTermCount = scrambleItems.length;

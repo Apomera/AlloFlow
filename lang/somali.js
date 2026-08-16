@@ -622,7 +622,7 @@
     "ai_guide_sub": "Waxbarasho, Marin-habayn & Habayn-Toos ah",
     "ai_guide_welcome": "Salaan! Anigu waxaan ahay Hagahaaga AI. Waxaan ku caawin karaa istiraatiijiyado UDL, kuugu marin-habayn karaa codsiga, ama si toos ah u habayn karaa dejintaha casharkaaga. Kaliya i weydii!",
     "tool_analysis": "Falanqee Qalabka Isha",
-    "tool_glossary": "Liiska Erayada & Doorashada Luqadda",
+    "tool_glossary": "Liiska Erayada",
     "tool_simplified": "Habboonaynta Qoraalka",
     "tool_outline": "Habayn Muuqaal",
     "tool_visual": "Taageero Muuqaal",
@@ -915,7 +915,7 @@
   },
   "tools": {
     "source": "Qalabka Isha",
-    "glossary": "Liiska Erayada & Doorashada Luqadda",
+    "glossary": "Liiska Erayada",
     "simplified": "Habboonaynta Qoraalka & Ka-qaybgalka",
     "outline": "Habayn Muuqaal",
     "quiz": "Qiimee",
@@ -2044,7 +2044,9 @@
     "title_poettree_config": "🌳 Hawsha PoetTree",
     "title_poettree_submission": "🌳 Gudbinta gabayga",
     "title_litlab_config": "🎭 Hawsha LitLab",
-    "title_litlab_submission": "🎭 Gudbinta bandhigga"
+    "title_litlab_submission": "🎭 Gudbinta bandhigga",
+    "translation_block": "Turjumaad",
+    "translation_into": "Turjumaad ({language})"
   },
   "fullpack": {
     "button_label": "Samee Xirmo Kheyraad Dhameystiran",
@@ -3038,7 +3040,12 @@
     "gauge_simple": "Fudud",
     "word_bank_language": "Luqadda kaydka erayada",
     "word_bank_english": "Ingiriisi",
-    "word_bank_both": "Labadaba"
+    "word_bank_both": "Labadaba",
+    "measured_level_label": "Heerka akhriska ee la cabbiray",
+    "measured_on_target": "Ku habboon {grade}",
+    "measured_above": "Ka sarreeya heerka {grade}",
+    "measured_below": "Ka hooseeya heerka {grade}",
+    "measured_note": "Flesch-Kincaid, waxaa lagu cabbiray qoraalkan. Isticmaal Hubi Heerka si aad u eegto si buuxda."
   },
   "outline": {
     "title": "Habayn Muuqaal",
@@ -3175,7 +3182,7 @@
     "student_worksheet": "Xaashida shaqada ardayga"
   },
   "glossary": {
-    "title": "Liiska Erayada & Doorashada Luqadda",
+    "title": "Liiska Erayada",
     "tier2": "Heer 2 (Acad.)",
     "tier2_tooltip": "Erayada cilmiyeed ee faa'iido sare oo loo isticmaalo dhammaan cilmiyada (tusaale, 'falanqee', 'xaqiiji').",
     "tier3": "Heer 3 (Goob)",
@@ -28912,7 +28919,6 @@
     "source_settings_instructions": "Hag AI soo-saarka nuxurka oo leh tilmaamo gaar ah. Tusaalooyin: Ka dhig mid soo-jiidasho leh akhristayaasha diidanaha, Diiradda saara wareegga biyaha, Ku dar magacyo jilaa oo kala duwan, Ka fogoow tixraacyada rabshad, iyo Isticmaal eraybixin fudud ardayda ELL. Tilmaamuhu waxay qaabeeyaan: codka, diiradda nuxurka, heerka eraybixinta, iyo aragtida. U noqo mid gaar ah natiijooyin fiican. Tilmaamo badan ayaa la isku dari karaa. Tilmaamaha waxa la processed mawduucaaga iyo goobaha. Mawduucyada xasaasiga ah, ku dar hagidda nuxurka. Tilmaamuhu ma damaanad qaadayaan natiijooyin gaar ah laakiin si xooggan ayey u saamayn ku yeeshaan soo-saaridda. Talo: Ku dar heerka fasalka iyo xayiraadda nuxurka ee tilmaamahaaga soo-saar ugu habboon.",
     "source_verify_checkbox": "Awood u sii xaqiijinta xaqiiqada AI iyada oo loo marayo Google Search grounding. Marka ON: AI wuxuu is-tixraac nuxurka la soo saaray ilaha shabakadda, calaamadeyn ama saxida cilladaha suurtagalka ah. Wuxuu ku darayaa 5-10 sek waqtiga soo-saaridda laakiin si weyn wuxuu hagaajiyaa kalsoonida nuxurka xaqiiqada ah. Si gaar ah u muhiim ah: taariikhda (taariikhda, dhacdooyinka), cilmiga (hababka, xogta), taariikh nololeed, iyo dhacdooyinka hadda. Khayaali, qoris hal-abuur, ama xaalado saadaalin, tan waa la damin karaa si loo oggolaado xornimo hal-abuur badan. Ilaha la wax-weydiiyay waxa lagu liiska soo-saaridda dib-u-eegista macallinka. Si xooggan ayaa lagu talinayaa nuxur kasta oo loo soo bandhigi doono ardayda sida xaqiiqo ah.",
     "source_generate_button": "Abuur nuxur AI-qoran mawduucaaga gaarka ah. Riix si aad u bilowdo soo-saarid adoo isticmaalaya: sharaxaadda mawduucaaga, dhererka bartilmaameedka, heerka fasalka, iyo tilmaamaha gaarka. Soo-saaridda waxay qaadanaysaa 10-20 sek. Soo-saarka waxa dib u eegay shaandhayaha badbaada ka hor muujinta. Nuxurka la soo saaray waa la: tafatiri karaa (macallinka wuxuu wax ka beddeli karaa qayb kasta), falanqeeyn karaa (lagu maro qalabka soo-saarka kale), iyo kaydin karaa (ku dar taariikhda dib-u-isticmaal). U adeegso marka: aad u baahantahay nuxur mawduuc gaar ah, aad rabto isku-dhafnaanta la xakameeyo, ama aad u baahantahay inaad buuxiso banaanaha manhajka. Nuxurka la soo saaray wuxuu ku jiraa: eraybixinta habboon, abaabul macquul ah, iyo syntax heer-fasalka. Xaqiiji saxsanaanta xaqiiqada ka hor adeegsiga fasalka.",
-    "generator_actions": "Xarunta dhammaan qalabka soo-saaridda nuxurka. Soo-saareyaasha la heli karo waxaa ka mid ah: Imtixaan (qiimayn oo leh furayaasha jawaab), Glossary (eraybixin muuqaal ah), Qoraal La Fududeeyay (akhrid heer leh), FAQ (Q&A laanyo), Falanqayn (eegis nuxur), Qorshe Cashar (naqshad waxbarid), Isku-xig (hawl waqti ah), Taageero (taageero qoris), Concept Sort (ciyaarta kala-soocaadda), Math (soo-saaridda dhibaatada), Adventure (sheekoy isdhexgal leh), iyo Brainstorm (fikradaha hawsha). Soo-saare kasta wuxuu u beddelaa nuxurkaaga asalka qaabab kala duwan. Riix soo-saare kasta si aad u furto panel-ka habaynta. Soo-saareyaal badan ayaa lagu isticmaali karaa nuxur isku mid ah. Nuxurka la soo saaray wuxuu ka muuqdaa workspace oo wuxuu ku kaydsadaa taariikhda. Talo: Ka bilow Falanqayn si aad u fahanto nuxurkaaga, ka dibna soo saar kheyraad bartilmaameed ah.",
     "tool_visual": "Hel qalabka soo-saaridda muuqaalka. Wuxuu abuuraa sawirro AI ah oo ay ku jiraan: muuqaalada eraybixinta, sawirrada fikradda, soo-bandhigida muuqaalka, jaantusyo, iyo infographics. Noocyada muuqaalka: sawirrada tixraaca (barashada), warqado shaqo (hawlaha), iyo jaantusyada (xidhiidhada). Muuqaaladu waxay taageeraan: ardayda ELL (eraybixin muuqaal ah), baraha muuqaalka, iyo ka-qaybgalka. Soo-saarid kasta waxay abuurtaa sawirro gaar ah. Goobaha waxay xakameeyaan qaabka, tayada, iyo nuxurka. Muuqaaladu la soo saaray waa la: soo dejisan karaa, lagu dhejin karaa qalabka, iyo lagu dari karaa glossary. Wuxuu isticmaalaa credit-yada soo-saaridda sawirka AI. Talo: U soo saar muuqaalo fikradaha abstract oo ku adag in lagu sharaxo ereyo kaliya.",
     "tool_udl": "Baro isku-darka qaab-dhismeedka UDL. Universal Design for Learning wuxuu leeyahay saddex mabaadi'da: Hababka Kala Duwan ee Muujinta (maxay ka tahay barashada — soo bandhig macluumaadka siyaabo kala duwan), Hababka Kala Duwan ee Ficilka iyo Muujinta (sida ay tahay barashada — u oggolow ardayda inay muujiyaan fahanka siyaabo kala duwan), iyo Hababka Kala Duwan ee Ka-qaybgalka (sababta ay tahay barashada — dhiirrigelin oo sii hayn xiisaha). Qalabkani wuxuu taageeraa dhammaan saddexda: qaabab nuxur kala duwan, hababka isdhexgalka kala duwan, iyo ka-qaybgalka ciyaaraha. Riixku wuxuu furaa macluumaad faahfaahsan oo ku saabsan sida sifo qalab kasta uu ula jaanqaado cilmibaadhista UDL. Aad u fiican: horumarinta xirfadeed, caddaynta IEP, iyo fahanka aasaaska waxbaridda. Talo: Tixraac mabaadi'da UDL marka aad u doodayso qaadashada qalabka.",
     "tour-analysis-settings": "Hagaaji parametersyada falanqaynta akhriska, oo ay ku jiraan heerka akhriska bartilmaameedka iyo cabbirrada gaarka ah ee la raadinayo.",
@@ -28937,7 +28943,6 @@
     "adventure_system_state": "Ku dar qaabka maamulka kheyraadka adventures. Ardaydu waxay raadiyaan: Caafimaad (natiijada doorashooyinka khatarta leh), Gold/Kheyraad (go'aan-qaadasho dhaqaaleed), Sumcad (ras-maal bulsho oo doorashooyin), iyo kheyraad gaar ah aad qeexdo. Ficilladu waxay si muuqata u saamayn ku yeeshaan kheyraadka — bixinta gold si loo iibsado walxaha, lumida caafimaad go'aamo xun, helitaanka sumcad ka caawinta dadka kale. Wuxuu abuuraa natiijooyin macno leh oo baraya: sababayn sabab-natiijo, qorshe horre, maamul kheyraad, iyo qiimaha fursadda. Dashboard muuqaal ah wuxuu muujiyaa heerarka kheyraadka hadda. Marka kheyraadka liddi ah, ciyaartu si hagaajin ah u jawaabtaa (tus., caafimaad hoose = doorashooyin xaddidan). Xirfadaha xisaabtu si dabiici ah ayey isugu darmaan adoo isticmaalaya xisaabaadka kheyraadka.",
     "glossary_tier2_count": "Dejiso intee Tier 2 (akademi) eraybixin ah oo la darayo. Ereyada Tier 2: waxay ka muuqdaan mawduucyo kala duwan, waxa loo isticmaalaa macnayaal akademi ah, oo waa muhiim fahanka qoraalka. Tusaalooyin: falanqee, caddayn, muhiim, is-bar-bar-dhig. Ereyadan waxay leeyihiin qiimo waxbarid ugu sarreeya — ardayda badankoodu waxay ka faa'iidaystaan wax-baridda cadda. Tirinta lagu talinayo waxay ku xidhan tahay: dhererka qoraalka (1 eray 100-150 eray asal ah), waqtiga waxbaridda la heli karo, iyo baahida ardayga. Isku dheelitir tirinta Tier 3 si aad u hesho set eraybixin oo dhammaystiran. Diiradda wax-baridda saara halkan saamaynta ugu sarreeya fahanka akhriska mawduucyada oo dhan.",
     "glossary_tier3_count": "Dejiso intee Tier 3 (mawduuc-gaar ah) eraybixin ah oo la darayo. Ereyada Tier 3: waxay u gaaran yihiin aag mawduuc, badanaa waxa lagu qeexaa macno, oo waxay yeeshan karaan adeegsi xaddidan banaanka mawduuca. Tusaalooyin: photosynthesis, hooseeyaha, halgan, sharci-dejis. Ereyadani waa muhiim fahanka nuxurka gaarka ah laakiin waxay leeyihiin adeegsi xaddidan banaanka mawduuca. Wax-baridu badanaa waxay dhacdaa inta lagu jiro waxbaridda nuxurka. Sahmin qoto-dheer mawduuca, ku dar Tier 3 badan. Akhrid balaadhan, mudnaan sii Tier 2. Ereyada Tier 3 badanaa waxay ka muuqdaan bold ama italics kutubta, taasoo muujinaysa muhiimadooda gudaha cilmiga.",
-    "glossary_definition_level": "Xakamee sida qeexitaannada loo qoray. Doorashooyinka: Same as Source (ilaalinaya isku-dhafnaanta asalka — ku fiican ardayda sare), On Grade (la jaanqaada eraybixinta heerka fasalka bartilmaameedka), Simplified (isticmaalaya ereyo caadi ah, jumlado gaaban), iyo Kindergarten (luuqad aasaasi ah aad u, tusaalooyin taban). U dhig isku-dhafnaanta qeexitaanka heerka akhriska ardayga, ma aha heerka nuxurka. Arday fasalka 10aad oo baranaya cilmiga noolaha sare wuxuu u baahan karaa qeexitaanno Simplified ereyo aan-la-yaqaano. Tixgali ardaydaada akhristayaasha ugu liidata marka aad doorato. Qeexitaannada waa la tafatiri karaa hal-hal ka dib soo-saaridda haddii qaarkood u baahdaan hagaajin. Talo Pro: Isticmaal Simplified hordhaca, ka dibna ka wada hadal qeexitaannada teknikiga ah fasalka.",
     "glossary_custom_instructions": "Sii hagid gaar ah ee doorashada eraybixinta iyo qaabka qeexitaannada. Tusaalooyin: Diiradda saara ereyada cutubyada 3-5, Ku dar oo keliya ereyada la xidhiidha wareegga biyaha, Ka fogoow homonyms macno fudud, Ku dar etymology xididdada Latin/Greek, Ku dar cognates Spanish ardayda ELL, oo Adeegso tusaalooyin arday-saaxiib ah pop culture. Tilmaamuhu waxay qaabeeyaan: ereyada la dooray, sida qeexitaannada loo qoray, iyo macluumaadka dheeraad ah ee soo muuqda. Tilmaamo cad ayaa soo saara glossary-yo bartilmaameed-fiican. Waad weydiin kartaa qaabab gaar ah sida: Ku dar jumlad isticmaalaysa eray kasta ama Ku dar hooks xasuus muuqaal ah. AI wuxuu raacaa tilmaamaha marka uu sameynayo doorashooyinka eraybixinta.",
     "glossary_language_input": "Cayimi luuqadaha turjumaadda eraybixinta. Geli luuqadaha: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, ama luuqad kasta. Waad ku dari kartaa luuqado badan oo ay kala soocan yihiin xunjufyada. Eray kasta wuxuu muujin doonaa: qeexitaanka Ingiriiska, turjumaadda luuqadda bartilmaameedka, iyo hagaha dhawaaqa phonetic halka la dabaqayo. U adeegso: taageero ELL, xidhiidhada luuqadda dhaxalka, eraybixinta luuqadda dunida, iyo fasallada luuqado-badan. Turjumaaddu waxay ka muuqdaan kaadh kasta oo eraybixin tixraac degdeg ah. Dhawaaq codka oo loo heli karo luuqado la taageeray. Cilmibaadhku wuxuu muujinayaa isku-xidhka eraybixinta cusub luuqadaha guriga inay hagaajiso haynta. Ugu badnaan 4 luuqadood ayaa ka hortagaya isku-buuxsanaanta muuqaalka inta uu taageerayo fasallada kala duwan.",
     "glossary_auto_remove": "Si toos ah u shaandhee ereyada aad u fudud ama caadiga ah.",
@@ -29071,7 +29076,6 @@
     "fab_dictation": "U beddel hadalka qoraal geliska aan-gacmood lahayn. Riix si aad u shidid mikrafoonka, si cad u hadal, oo eeg ereyada inay soo muuqdaan. Wuxuu ka shaqeeyaa: gelinta qoraalka, taageerooyinka qoraalka, wadahadalka, iyo beer kasta oo la tafatiri karo. Wuxuu taageeraa: luuqado badan, amarrada calaamadaha (sheeg dhibic, xunjuf, sadar cusub), iyo amarrada tafatirka (tirtir taas). Cod-soo-saaridda waxay u baahan tahay ogolaansho mikrafoonka browser-ka. Tayada waxay ku xidhan tahay: tayada mikrofoonka, sanqadhda asalka, iyo caddaanta hadalka. Qoraal waqti dhab ah ayaa muujinaya marka aad hadleysid. Tafatir qoraalka caadi ahaan. Aad u fiican: ardayda u baahan caqabado dhaqdhaqaaq, qoraayaal diidan, iyo soo-saaridda fikradaha. Talo: Ku hadal jumlado dhammaystiran saxsanaan ka fiican.",
     "fab_focus": "Wuxuu abuuraa iftiim la dhaqaaji karo oo daboola wax kasta marka laga reebo aag goobaale ah oo ku xeeran cursor-kaaga. Tani waxay si dramatic ah u yarayn cluttarka muuqaalka oo waxay caawisaa ilaalinta dareenka aagga akhriska hadda. Si gaar ah u faa'iido leh ardayda ADHD, kala-duwanaanshaha falanqaynta dareenka, ama qof kasta oo ay ka jiqsisaan shaashado xanaaqsan. Iftiimka wuxuu raacaa mouse-kaaga/taabashada si toos ah. Hagaaji cabbirka iftiimka iyo xoogga dabool ee Goobaha → Helitaan.",
     "fab_line_focus": "Qalab go'is-akhrid sadar-keliya ah ee akhrid diiradda saaran. Marka la shido: hal sadar qoraal ah ayaa la iftiimiyaa halka kuwa kale la dabbaaday, abuuraya diirad muuqaal ah. Sahmin: furayaasha falaadhka (kor/hoos), riix meel kasta qoraalka, ama taab/jiidasho mobile. Faa'iidooyinka: yareeya isku-buuxsanaanta muuqaalka, taageero dhibaatooyinka raadinta, caawiya ilaalinta boostada, iyo yareeya dib-u-noqoshada. Xoogga (intee qoraal ku xeeran muuqda) waa la hagaajin karaa Goobaha → Helitaan. Wuxuu ka shaqeeyaa: dhammaan nuxurka akhriska, oo ay ku jiraan qoraal la soo saaray, walxaha asalka, iyo wadahadalka. Si gaar ah ugu caawiya: dyslexia, ADHD, kala-duwanaansho falanqaynta muuqaalka, iyo qof kasta oo ay ka jiqsisaan shaashado qoraal-badan. Talo: Iskudar font weyn akhrid u sahlan ugu badan.",
-    "fab_ruler": "Wuxuu ku darayaa sadar barbar ah oo semi-transparent ah oo raacaya cursor-kaaga si aad u raadiso boostaada akhriska sadar-sadar. Si gaar ah u faa'iido leh isticmaalayaasha leh dyslexia, ADHD, ama dhibaatooyinka raadinta muuqaalka. Jiido tilmaamaha kor/hoos si aad u dib u dhigid, isticmaal furayaasha falaadhka xakamayn jeer ah, ama riix meel kasta si aad u boodid. Midabka tilmaamaha waa la habayn karaa Goobaha. Wuxuu ka shaqeeyaa dhammaan aragtiyada akhriska oo ay ku jiraan Qoraal La Fududeeyay, FAQ, iyo qeexitaannada Glossary.",
     "fab_timer": "Wuxuu furaa saacad diiradda isdhexgal leh oo ku saleysan Pomodoro Technique. Dooro muddooyin horay loo dejiyay (5/15/25/45 daqiiqo) ama habee kaaga gaar ah. Sifooyin waxaa ka mid ah: countdown muuqaal ah oo leh giringir horumar, ogeysiisyo nasasho ikhtiyaari ah, abaalmarinno XP fadhiyada la dhammeeyay (dheer = XP badan), iyo diiwaangelinta fadhiga dib-u-eegista macallinka. U calaamadee hawshaada (tus., 'Akhri Cutubka 3') si aad u raadiso waxa aad gaadhay. Wuxuu hoos u dhigaa madaxa si aad u shaqayso inta uu socdo.",
     "scaffolds_edit_toggle": "Kala beddel qaabka tafatirka macallinka iyo aragga ardayga. Marka ON (Edit Mode): riix taageero kasta si aad u wax ka beddesho qoraalka, ku darto tilmaamo cusub, tirtirto walxood, oo dib u habeyso nuxurka. Marka OFF: taageerooyinku waxay u muuqdaan sida ardaydu arkaan (akhri-kaliya). Tafatirka si toos ah ayuu u kaydsadaa. Ardaydu mar walba waxay arkaan akhri-kaliya iyada oo aan loo eegin kala-beddelkaaga (ma heli karaan qaabka tafatirka). U adeegso tafatir si aad u: habayso taageerooyinka AI-soo-saaray, ku darto tusaalooyin fasal-gaar ah, saarid tilmaamo aan u qalmin, iyo kala duwiso ardayda gaarka. Aragti aragga ardayga ka hor wadaagga. Taageerooyinka asalka ah waa laga soo celin karaa taariikhda. Talo: Dib u eeg oo tafatir taageerooyinka ka hor fasalka si la jaanqaadaan qaabkaaga waxbaridda iyo baahida ardayga.",
     "scaffolds_goal_panel": "Muuji yoolalka waxbaridda tixraaca ardayga. Yoolasha waxay si caan ah uga muuqdaan inta lagu jiro hawsha. Yoolalka wax-ku-ool ah waa: arday-saaxiib ah (bayaanno waan awoodaa), gaar ah oo la cabbiri karo, iyo isku-toosin hawsha. Tusaalooyin: Waan aqoonsan karaa saddex sababood oo Dagaalkii Sokeeye ama Waan isticmaali karaa caddayn si aan u taageero sheegashayda. Yoolasha waxay kor u qaadaan: metacognition, is-qiimayn, iyo cadda ujeeddada. Ardaydu way tixraaci karaan yoolasha inta ay shaqeynayaan. Macallinku wuxuu dejiyaa yoolasha ka hor helitaanka ardayga. Yoolalo badan ayaa la muujin karaa. Yoolasha waxa ku jiri kara shuruudaha guusha: Waan ogahay inaan ku guulaystay marka paragraph-kayga uu leeyahay jumlad mawduuc. Cilmibaadhku wuxuu muujinayaa bartilmaameedyada barashada muuqda inay hagaajiyaan waxqabadka.",
@@ -29166,7 +29170,6 @@
     "immersive_line_focus": "Awood u sii hage akhrid hal-sadar ah. Marka firfircoon: sadarka akhriska hadda si buuxda ayaa loo arki karaa, sadarrada ku xeeran way dabbaaday, oo diiraddu way raacdaa markaad navigateysid. Faa'iidooyinka: yareeya jiqsiga muuqaalka, hagaajiyaa raadinta, oo caawiyaa dareenku inuu joogtaado qoraalka hadda. Sahmin: furayaasha falaadhka, riix meel kasta, ama hor-u-soco toos ah (TTS). Xoogga dabool waa la hagaajin karaa goobaha. Aad u fiican: taageero dyslexia, dhibaatooyinka dareenka, iyo caqabadaha raadinta. Si fiican ula shaqeeya text-to-speech taageero akhris hababka-badan. Diiradda sadarku waxay ka shaqaysaa dhammaan nuxurka qoraalka. Cilmibaadhku wuxuu muujinayaa go'is sadarku inay hagaajiso fahanka akhristayaasha dhibsa. Talo: Iskudar font weyn akhrid u sahlan ugu badan.",
     "immersive_syllables": "Kala-saaridda syllable muuqaal ah ee taageerada decoding. Marka la awood-siiyo: ereyada waxay muujiyaan kala-goyn syllable (hy-phen-at-ed), caawinaya akhristayaasha inay weeraraan ereyada multisyllabic. Faa'iidooyinka: wuxuu dhisaa phonemic awareness, taageera xeeladaha decoding, horumariyaa fahan morphological, iyo caawiya dhawaaqa. Si gaar ah ugu caawiya: decoders dhibsa, ardayda ELL, taageero dyslexia, iyo ereyada eraybixinta leh qaababka syllable isku-dhafan. Syllabification wuxuu raacaa qawaaniinta phonetic standard. Wuxuu ka shaqeeyaa: dhammaan nuxurka akhriska oo ay ku jiraan qoraal la hagaajiyay, ereyada glossary, iyo walxaha asalka. Iskudar maqal si aad u maqashid syllables-ka oo lagu hadlay. Kala beddel marka aan loo baahnayn si aad u yarayso isku-dhafnaanta muuqaalka. Talo: Adeegso eraybixinta caqabadda leh, ka dibna damin tababbarka akhriska qulqulaya.",
     "immersive_wide_text": "Balaadhi qoraalka si aad u isticmaasho meel-shaashadda barbar dheeri ah. Marka firfircoon: dhererka sadarku wuu kordhaa, scrolling yar baa loo baahan yahay, iyo qoraal badan baa la arkayaa isla mar. Aad u fiican: akhristayaasha qulqulaya, muujiyayaal balaadhan, iyo marka aad raadineysid macluumaad. Default ballaca cidhiidhi ah way ka fiican tahay: akhristayaasha dhibsa, qalabka mobile, iyo akhrid diiradda saaran. Dhererka sadarka ugu fiican waa la kala duwan tahay akhriste iyo qalab. Cilmibaadhku wuxuu muujinayaa 50-75 xaraf sadar inay yihiin kuwa ugu fiican akhristayaasha badankooda. Qoraalka ballaaranku wuxuu beddelayaa akhri-karnaanta hufnaanta. Iskudar diiradda sadarka haddii raadintu adag tahay. Habayntu waa la xasuusto qalab kasta. Talo: Adeegso qoraal ballaaran cilmibaadhista iyo baadhitaan, qoraal cidhiidhi ah akhrid dhow.",
-    "sidebar_tab_create": "Fur panel-ka soo-saaridda nuxurka oo leh dhammaan qalabka AI-ku xeel-dheer. Soo-saareyaasha la heli karo: Imtixaan (qiimaynno leh furayaasha jawaabaha), Glossary (eraybixin muuqaal ah), Outline (qaab-dhismeedyo muuqaal ah), Falanqayn (eegis nuxur), Qorshe Cashar (waxbarid qaab-dhismeed leh), Isku-xig (hawlaha waqti ah), Qoraal La Fududeeyay (akhrid heer leh), iyo wax kale. Qalab kasta wuxuu furaa panel-ka habaynta habayn ka hor soo-saaridda. Nuxurka asalka waa in la soo dejiyaa qalabka badankoodu si loo falanqeeyo. Nuxurka la soo saaray wuxuu ka muuqdaa workspace koowaad oo waxa lagu kaydiyay taariikhda. Adeegso tab-ka Create sida xarunta soo-saaridda nuxurkaaga koowaad. Talo: Ka bilow Falanqayn si aad u fahanto nuxurka, ka dibna soo saar kheyraad bartilmaameed ah.",
     "sidebar_tab_history": "Hel dhammaan nuxurkaaga la kaydiyay iyo taariikhda fadhiga. Taariikhda waxa ku jira: fadhiyo auto-saved shaqada dhowaan, mashruucyo iyo boortolio gacanle loo kaydiyay, kheyraadka la soo saaray oo loo abaabulay taariikhda abuurka, iyo gudbinta ardayga (aragga macallinka). Ficillada: soo deji shay kasta si aad u sii wadid, tirtir walxood si aad u xoreyso kayd, soo saar kayd, iyo raadi erayga muhiimka. Taariikhdu waxay u kala saaraa soo-noqodka default. Shaandhee nooca (imtixaan, glossary, adventure, iwm) si aad u hesho kheyraadka gaarka. Taariikhda la sync-yiray daruurta waxa laga heli karaa qalab kasta. Xaddidaadyada kaydintu way kala duwan yihiin akoon — tirtir walxood duug ah haddii aad u dhowdahay xadka. Taariikhdaadu waa maktabaddaada waxbaridda shaqsiyeed.",
     "socratic_toggle": "Awood u sii qaabka wadahadalka Socratic barasho qoto-dheer. Marka ON: AI mar weligood ma siiyo jawaab toos ah — halkii wuxuu weydiyaa su'aalo daabin oo hagaya ardayda ilaa helitaanka. Faa'iidooyinka: wuxuu horumariyaa fakirka muhiimka ah, dhiirrigeliyaa is-saxitaanka, dhisaa xirfadaha xal-dhibaateed, iyo abuura daqiiqado barasho xasuus-leh. AI wuxuu isticmaalaa xeelado sida: su'aalaha cad-noqoshada (Maxaad u jeedaa...?), caqabadda kaab-ku-buusinta (Laakiin maxaa dhici lahaa...?), iyo codsiyada caddaynta (Sidee taas u ogtahay?). Ugu fiican: diyaarinta wadahadalka, sahminta fikradda, iyo caawinta ardayda doonaya jawaabo degdeg ah inay si qoto-dheer u fakiraan. Waxay laga yaabaa inay xanaajisaan ardayda doonaya hufnaan — sharrax ujeeddada.",
     "socratic_input": "Geli su'aashaada ama bayaankaaga sahminta Socratic. AI wuxuu kuugu jawaabi doonaa su'aalo halkii jawaabaha. Dhibco bilow oo fiican: Maxay u maleeyaa in [X] u dhacday? Maxaa ka dhigaya [Y] muhiim? ama Waxaan rumeeyaa [Z] sababtoo ah... AI wuxuu daabineeyaa sababayntaada: codsada caddayn, sahmin saamaynta, tijaabin macquul, iyo soo bandhig kaab-ku-buusin. Tani waxay horumarisaa argumentation iyo xirfadaha fakirka muhiimka ah. Diyaar u noqo inaad: caddaysid fakirkaaga, tixgali kuwa kale, oo aad hagaajiso boostadaada. Wadahadallada Socratic way xanaajin karaan bilowga laakiin waxay dhisaan fahan muddo dheer. Jawaabahaaga iyo sababayntu waxa lagu raadiyay fiirsiga.",
@@ -30810,7 +30813,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Sharax warbaahinta hadda jirta",
+    "describe_current_media_done": "Waxaa la akhrinayaa warbaahinta {index} ee {count}.",
+    "describe_current_media_hint": "Akhri sharaxaadda warbaahinta hadda jirta ama tan xigta adigoo ka bixin ilaha",
+    "describe_current_media_none": "Ilaha hadda jira warbaahin kuma jirto.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Fur Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore waa la furay.",
+    "open_learning_web_explorer_hint": "Sahamin heerarka, fikradaha, casharrada, caddaymaha iyo xiriirka erayada hal khariidad",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Akhri dhammaan sharaxaadaha warbaahinta",
+    "read_media_descriptions_count": "Waxaa la akhrinayaa {count} sharaxaad warbaahin.",
+    "read_media_descriptions_hint": "Akhri sharaxaad kasta oo la qoray ee sawir, fiidiyow ama cod ee ku jira ilaha hadda",
+    "read_media_descriptions_none": "Ilaha hadda jira warbaahin kuma jirto.",
+    "suggest_contextual_next_steps": "Soo jeedi 3 tallaabo oo xiga",
+    "suggest_contextual_next_steps_hint": "Waxay bixisaa saddex ikhtiyaar oo ku habboon xaaladda, iyadoon mid dooran ama socodsiin",
+    "suggest_contextual_next_steps_working": "Waxaa la akhrinayaa xaaladda casharka hadda waxaana la diyaarinayaa saddex ikhtiyaar...",
+    "surprise_me_contextually": "I sii tallaabo xigta oo faa’iido leh",
+    "surprise_me_contextually_hint": "Waxay ka doorataa xaaladda casharka hadda hal tallaabo macquul ah oo khatar yar leh",
+    "surprise_me_contextually_working": "Waxaa la akhrinayaa xaaladda casharka hadda waxaana la dooranayaa tallaabo xigta oo faa’iido leh...",
+    "use_contextual_suggestion": "Isticmaal tallaabada xigta ee la soo jeediyay",
+    "use_contextual_suggestion_hint": "Waxay socodsiisaa ikhtiyaarka 1, 2, ama 3 ee soo jeedinta ugu dambaysay",
+    "use_contextual_suggestion_working": "Waxaa la bilaabayaa tallaabada xigta ee la doortay..."
   },
   "palette": {
     "aria": "Liiska amarrada AlloFlow",
@@ -30833,10 +30862,11 @@
       "videoStudio": "Halkan — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Tallaabo kasta waa la ku dhawaaqaa. Ctrl+K ayaa beddela.",
     "group": {
@@ -31157,6 +31187,12 @@
     "diff_types_hint": "Samee xirmo kala duwan oo loogu talagalay:",
     "diff_cost": "Qiyaastii {n} abuurid halkii orod.",
     "summary_standards": "heerar",
-    "summary_interests": "danaha"
+    "summary_interests": "danaha",
+    "translations": "Turjumaadaha",
+    "translations_auto": "Toos ah ({language})",
+    "translations_auto_plain": "Toos ah",
+    "translations_none": "Midna",
+    "translations_on_hint": "Ilaha {output} waxay sidoo kale yeelan doonaan nooc {target} ah.",
+    "translations_off_hint": "Ilaha waxay noqon doonaan {output} oo keliya, iyadoo aan luqad labaad lahayn."
   }
 }

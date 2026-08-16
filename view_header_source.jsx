@@ -127,7 +127,16 @@ function HeaderBar(props) {
   // Object.assign()s lucide icons onto window — check_free_vars flags them.
   // Declaring them matches every other icon here; behavior is unchanged.
   const X = window.X || noop;
-  const History = window.History || noop;
+  // C4b follow-through (W3, 2026-08-16). `window.History` is a DOM built-in: the
+  // History interface CONSTRUCTOR. React treats a bare class as a function
+  // component and calls it without `new`, which throws
+  // "Class constructor History cannot be invoked without 'new'" and takes the
+  // whole header down. In the running app it happens to work, and only because
+  // AlloFlowANTI.txt Object.assign()s the lucide icons onto window and clobbers
+  // the DOM global before any module renders. Depending on that is the trap.
+  // AlloIcons first, DOM global never reached when the registry is present.
+  const icon = (name) => (window.AlloIcons && window.AlloIcons[name]) || window[name] || noop;
+  const History = icon('History');
   const ArrowRight = window.ArrowRight || noop;
   const BookOpen = window.BookOpen || noop;
   const CheckCircle2 = window.CheckCircle2 || noop;
@@ -1382,6 +1391,23 @@ function HeaderBar(props) {
                             )}
                             {showExportMenu && <div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleSetShowExportMenuToFalse}></div>}
                         </div>
+                            {/* W3 (2026-08-16): this button is deliberately NOT gated on
+                                !isParentMode, and that is easy to get wrong twice.
+
+                                Family mode sets isTeacherMode AND isParentMode, so a bare
+                                isTeacherMode gate normally is a parent leak. Here it is not an
+                                oversight: MODE_AUDIT_2026-08-03.md F1 lists Class Analytics
+                                under "Kept for parents by decision", because a home-schooling
+                                parent has a real use for probe administration and progress.
+
+                                What was actually wrong is one level down, and is fixed there:
+                                the panel was handing a parent the Student Data (roster import)
+                                and Research (IRB / Likert study suite) tabs. It now receives
+                                isParentMode and drops those two, keeping Administer and
+                                progress. See student_analytics_module.js.
+
+                                Independent mode is excluded from neither: the panel has its own
+                                "My Learning Journey" presentation for it. */}
                             <button type="button"
                                 onClick={() => setShowClassAnalytics(true)}
                                 className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40"

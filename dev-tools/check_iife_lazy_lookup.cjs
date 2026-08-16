@@ -117,6 +117,56 @@ function findAlloModulesRef(node) {
   return null;
 }
 
+// ──────────────────────────────────────────────────────────────────────────
+// Which AlloModules keys does THIS module register? A module reading the key
+// it itself writes is not the bug class this check exists for.
+//
+// The footgun is module A snapshotting module B before B has loaded, so A is
+// stuck on a fallback forever. When A === B the read is a REGISTRATION-time
+// read and has to happen at load time by construction:
+//
+//   var previous = window.AlloModules.Self;              // "am I already loaded?"
+//   if (previous && previous.version === 13) return;     // dedupe guard
+//   window.AlloModules.Self = Object.freeze({ ... });
+//
+//   var coreApi = window.AlloModules.Self || {};         // "merge with the
+//   window.AlloModules.Self = merge(coreApi, mine);      //  bundled core"
+//
+// Wrapping either of those in a lazy getter does not make them safer; it
+// breaks them. The first guard would never fire and the module would
+// re-register itself on every load, and the second reads a value it consumes
+// three lines later to build the object it then registers.
+//
+// So: collect every key this IIFE ASSIGNS (at any depth — a module may
+// register itself from inside an init function) and exempt reads of those
+// keys. Exempted sites are PRINTED, never silently dropped.
+// ──────────────────────────────────────────────────────────────────────────
+function collectOwnedKeys(node, out) {
+  if (!node || typeof node !== 'object') return out;
+  if (node.type === 'AssignmentExpression' && node.left && node.left.type === 'MemberExpression') {
+    const left = node.left;
+    const obj = left.object;
+    if (
+      obj && obj.type === 'MemberExpression' &&
+      obj.object && obj.object.type === 'Identifier' && obj.object.name === 'window' &&
+      obj.property && obj.property.type === 'Identifier' && obj.property.name === 'AlloModules' &&
+      left.property && left.property.type === 'Identifier'
+    ) {
+      out.add(left.property.name);
+    }
+  }
+  for (const key of Object.keys(node)) {
+    if (key === 'loc' || key === 'range' || key === 'start' || key === 'end' || key === 'type') continue;
+    const child = node[key];
+    if (Array.isArray(child)) {
+      for (const c of child) if (c && typeof c === 'object' && c.type) collectOwnedKeys(c, out);
+    } else if (child && typeof child === 'object' && child.type) {
+      collectOwnedKeys(child, out);
+    }
+  }
+  return out;
+}
+
 // Locate the IIFE body in the top-level program. Pattern is:
 //   (function() { ...body... })();
 // or:
@@ -141,7 +191,9 @@ function getIifeBody(programNode) {
 }
 
 let totalFindings = 0;
+let totalExempt = 0;
 const fileFindings = [];
+const fileExempt = [];
 
 for (const file of modules) {
   const fp = path.join(ROOT, file);
@@ -156,8 +208,12 @@ for (const file of modules) {
   // Find IIFE body
   const iifeBody = getIifeBody(ast);
   if (!iifeBody) continue;
+  // Keys this module registers itself — reads of those are registration-time
+  // by construction, not cross-module snapshots. See collectOwnedKeys above.
+  const ownedKeys = collectOwnedKeys(iifeBody, new Set());
   // Walk top-level statements of the IIFE body
   const findings = [];
+  const exempt = [];
   for (const stmt of iifeBody.body) {
     if (stmt.type !== 'VariableDeclaration') continue;
     for (const d of stmt.declarations) {
@@ -166,18 +222,24 @@ for (const file of modules) {
       if (ref) {
         // Reconstruct the path: window.AlloModules.<prop>
         const moduleName = (ref.property && ref.property.type === 'Identifier') ? ref.property.name : '?';
-        findings.push({
+        const entry = {
           line: stmt.loc.start.line,
           varName: (d.id && d.id.name) || '(destructured)',
           moduleName,
           kind: stmt.kind,
-        });
+        };
+        if (ownedKeys.has(moduleName)) exempt.push(entry);
+        else findings.push(entry);
       }
     }
   }
   if (findings.length > 0) {
     fileFindings.push({ file, findings });
     totalFindings += findings.length;
+  }
+  if (exempt.length > 0) {
+    fileExempt.push({ file, findings: exempt });
+    totalExempt += exempt.length;
   }
 }
 
@@ -186,7 +248,20 @@ log('IIFE lazy-lookup audit');
 log('──────────────────────');
 log('  Scanned ' + modules.length + ' *_module.js IIFEs');
 log('  Top-level snapshots of window.AlloModules.X: ' + totalFindings);
+log("  Registration-time reads of the module's OWN key (exempt): " + totalExempt);
 log('');
+
+// Print the exemptions. A check that silently drops sites is how a real
+// finding hides behind a rule nobody can see.
+if (totalExempt > 0) {
+  for (const { file, findings } of fileExempt) {
+    log('  ' + file + '  (own key, registration-time — not a snapshot):');
+    for (const f of findings) {
+      log('     L' + f.line + '  ' + f.kind + ' ' + f.varName + ' = window.AlloModules.' + f.moduleName + ' …');
+    }
+  }
+  log('');
+}
 
 if (totalFindings === 0) {
   log('  ✅ No IIFE-load-time snapshots of window.AlloModules.X found.');

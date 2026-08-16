@@ -1,6 +1,6 @@
 # Praxis Special Education: Foundational Knowledge (5355) QA report
 
-Generated: 2026-08-13T08:43:58.535Z
+Generated: 2026-08-16T17:38:24.694Z
 
 ## Result
 
@@ -12,3 +12,5 @@ Generated: 2026-08-13T08:43:58.535Z
 - Optional timed simulation: 120 questions / 120 minutes
 
 > This is not ETS approval, independent expert validation, field testing, psychometric calibration, a scaled-score model, or legal advice.
+
+- Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 100 distinct independent content kernels. 300 additional activities remain guided review only. 400 new independent questions remain to reach 500.

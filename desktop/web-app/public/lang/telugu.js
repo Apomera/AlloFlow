@@ -2251,7 +2251,7 @@
     "ai_guide_sub": "బోధనా శాస్త్రం, నావిగేషన్ & ఆటో-సెటప్",
     "ai_guide_welcome": "హాయ్! నేను మీ AI గైడ్. UDL వ్యూహాలతో సహాయపడగలను, మీ కోసం యాప్‌ని నావిగేట్ చేయగలను లేదా మీ పాఠ సెట్టింగ్‌లను స్వయంచాలకంగా సెటప్ చేయగలను. అడగండి!",
     "tool_analysis": "విశ్లేషించు మూలం Material",
-    "tool_glossary": "పదకోశం & భాష Selection",
+    "tool_glossary": "పదకోశం",
     "tool_simplified": "వచనం Adaptation",
     "tool_outline": "దృశ్య Organizer",
     "tool_visual": "దృశ్య మద్దతు",
@@ -2981,7 +2981,7 @@
     "choose_destination_aria": "ఎంచుకో ఒక destination"
   },
   "glossary": {
-    "title": "పదకోశం & భాష Selection",
+    "title": "పదకోశం",
     "tier2": "Tier 2 (అకాడెమిక్)",
     "tier2_tooltip": "High-utility విద్యా పదం ఉపయోగించబడింది across disciplines (e.g., 'విశ్లేషించు', 'verify').",
     "tier3": "Tier 3 (డొమైన్)",
@@ -3923,7 +3923,12 @@
     "gauge_simple": "సాధారణ",
     "word_bank_both": "రెండూ",
     "word_bank_language": "పదాల బ్యాంక్ భాష",
-    "word_bank_english": "ఆంగ్లం"
+    "word_bank_english": "ఆంగ్లం",
+    "measured_level_label": "కొలిచిన చదివే స్థాయి",
+    "measured_on_target": "{grade} కు సరిపోతుంది",
+    "measured_above": "{grade} స్థాయి కంటే పైన",
+    "measured_below": "{grade} స్థాయి కంటే కింద",
+    "measured_note": "Flesch-Kincaid, ఈ పాఠ్యంపై కొలిచారు. పూర్తి సమీక్ష కోసం Check స్థాయి వాడండి."
   },
   "quiz": {
     "title": "అంచనా",
@@ -5877,7 +5882,9 @@
     "title_poettree_config": "🌳 PoetTree అసైన్‌మెంట్",
     "title_poettree_submission": "🌳 కవిత సమర్పణ",
     "title_litlab_config": "🎭 LitLab అసైన్‌మెంట్",
-    "title_litlab_submission": "🎭 ప్రదర్శన సమర్పణ"
+    "title_litlab_submission": "🎭 ప్రదర్శన సమర్పణ",
+    "translation_block": "అనువాదం",
+    "translation_into": "అనువాదం ({language})"
   },
   "persona": {
     "title": "Interview మోడ్",
@@ -6295,7 +6302,7 @@
   },
   "tools": {
     "source": "మూలం Material",
-    "glossary": "పదకోశం & భాష Selection",
+    "glossary": "పదకోశం",
     "simplified": "వచనం Adaptation & Engagement",
     "outline": "దృశ్య Organizer",
     "quiz": "అంచనా",
@@ -6884,7 +6891,6 @@
     "source_settings_instructions": "Guide AI కంటెంట్ generation తో నిర్దిష్ట సూచన. ఉదాహరణ: తయారు చేయి it ఆకర్షణీయమైన కోసం reluctant readers, Focus పై water cycle, చేర్చు diverse పాత్ర names, Avoid references కు violence, మరియు ఉపయోగించు సాధారణ పదజాలం కోసం ELL విద్యార్థి. సూచన ఆకారం: స్వరం, కంటెంట్ focus, పదజాలం స్థాయి, మరియు perspective. Be నిర్దిష్ట కోసం best ఫలితం. బహుళ సూచన చేయగలదు be combined. సూచన ఉన్నాయి processed along తో మీ topic మరియు సెట్టింగులు. కోసం sensitive topics, చేర్చు కంటెంట్ guidance. సూచన do కాదు guarantee నిర్దిష్ట outcomes కానీ strongly influence generation. చిట్కా: చేర్చు తరగతి స్థాయి మరియు any కంటెంట్ restrictions లో మీ సూచన కోసం most appropriate అవుట్‌పుట్.",
     "source_verify_checkbox": "ప్రారంభించు AI fact-checking via Google వెతుకు grounding. ఎప్పుడు ON: AI cross-references రూపొందించబడింది కంటెంట్ against web sources, flagging లేదా correcting potential inaccuracies. Adds 5-10 seconds కు generation time కానీ significantly improves reliability కోసం factual కంటెంట్. Especially important కోసం: history (dates, events), science (processes, డేటా), biography, మరియు current events. కోసం fiction, creative writing, లేదా hypothetical scenarios, ఇది చేయగలదు be disabled కు allow మరిన్ని creative freedom. Sources consulted ఉన్నాయి listed లో generation log కోసం ఉపాధ్యాయుడు సమీక్ష. Highly recommended కోసం any కంటెంట్ అది చేస్తుంది be presented as factual కు విద్యార్థి.",
     "source_generate_button": "సృష్టించు AI-written కంటెంట్ పై మీ specified topic. క్లిక్ చేయి కు begin generation ఉపయోగిస్తూ మీ: topic description, target పొడవు, తరగతి స్థాయి, మరియు అనుకూల సూచన. Generation takes 10-20 seconds. అవుట్‌పుట్ ఉంది సమీక్ష by safety filters before display. Generated కంటెంట్ చేయగలదు be: edited (ఉపాధ్యాయుడు చేయగలదు సవరించు any part), analyzed (అమలు చేయి through other generation సాధనాలు), మరియు సేవ్ చేయబడింది (జోడించు కు history కోసం reuse). ఉపయోగించు ఎప్పుడు: మీరు need కంటెంట్ పై ఒక నిర్దిష్ట topic, want controlled సంక్లిష్టత, లేదా need కు fill curriculum gaps. Generated కంటెంట్ కలిగి ఉంది: appropriate పదజాలం, logical organization, మరియు తరగతి-స్థాయి syntax. Verify factual accuracy before తరగతి ఉపయోగించు.",
-    "generator_actions": "Hub కోసం అన్నీ కంటెంట్ generation సాధనాలు. అందుబాటులో generators చేర్చు: క్విజ్ (మూల్యాంకనం తో జవాబు keys), పదకోశం (దృశ్య పదజాలం), Simplified వచనం (స్థాయి reading), FAQ (Q మరియు ఒక pairs), Analysis (కంటెంట్ examination), పాఠం Plan (instructional design), Timeline (chronological activity), Scaffolds (writing మద్దతు), Concept క్రమబద్ధీకరించు (categorization ఆట), Math (problem generation), సాహసం (ఇంటరాక్టివ్ కథ), మరియు Brainstorm (activity ideas). ప్రతి generator మారుస్తుంది మీ మూలం కంటెంట్ లోకి different ఫార్మాట్. క్లిక్ చేయి any generator కు తెరువు its configuration ప్యానెల్. బహుళ generators చేయగలదు be ఉపయోగించబడింది పై same మూలం. Generated కంటెంట్ appears లో workspace మరియు saves కు history. చిట్కా: ప్రారంభించు తో Analysis కు అర్థం చేసుకో మీ కంటెంట్, then రూపొందించు targeted వనరులు.",
     "tool_visual": "ప్రవేశం దృశ్య generator సాధనాలు. Creates AI-generated చిత్రం సహా: పదజాలం దృశ్య, concept illustrations, దృశ్యం depictions, రేఖాచిత్రం, మరియు infographics. దృశ్య types: reference చిత్రం (కోసం నేర్చుకోవడం), worksheets (కోసం activities), మరియు రేఖాచిత్రం (కోసం relationships). దృశ్య మద్దతు: ELL విద్యార్థి (దృశ్య పదజాలం), దృశ్య learners, మరియు engagement. ప్రతి generation సృష్టిస్తుంది unique చిత్రం. సెట్టింగులు control శైలి, quality, మరియు కంటెంట్. Generated దృశ్య చేయగలదు be: downloaded, embedded లో materials, మరియు added కు glossaries. Uses AI చిత్రం generation credits. చిట్కా: రూపొందించు దృశ్య కోసం abstract concepts అది ఉన్నాయి difficult కు explain తో పదం alone.",
     "tool_udl": "UDL ఫ్రేమ్‌వర్క్ ఏకీకరణ గురించి తెలుసుకోండి. Universal Design for Learning యొక్క మూడు సూత్రాలు: ప్రాతినిధ్యం, చర్య, నిమగ్నత మార్గాలు.",
     "tour-analysis-settings": "Adjust parameters కోసం readability analysis, సహా target reading స్థాయి మరియు నిర్దిష్ట metrics కు track.",
@@ -6909,7 +6915,6 @@
     "adventure_system_state": "Adventureకు వనరుల నిర్వహణ మెకానిక్‌లను జోడిస్తుంది. విద్యార్థులు ఆరోగ్యం, బంగారం/వనరులు, ఖ్యాతిని ట్రాక్ చేస్తారు.",
     "glossary_tier2_count": "ఎన్ని Tier 2 (అకాడెమిక్) పదజాల పదాలు చేర్చాలో సెట్ చేస్తుంది. Tier 2 పదాలు విషయాల అంతటా కనిపిస్తాయి, పాఠ్య అవగాహనకు అవసరమైనవి.",
     "glossary_tier3_count": "ఎన్ని Tier 3 (విషయ-నిర్దిష్ట) పదజాల పదాలు చేర్చాలో సెట్ చేస్తుంది. Tier 3 పదాలు ఒక విషయ ప్రాంతానికి ప్రత్యేకమైనవి.",
-    "glossary_definition_level": "Control ఎలా నిర్వచనం ఉన్నాయి written. ఎంపికలు: Same as మూలం (maintains original సంక్లిష్టత—మంచి కోసం అధునాతన విద్యార్థి), పై తరగతి (matches target తరగతి స్థాయి పదజాలం), Simplified (ఉపయోగిస్తుంది common పదం, shorter వాక్యం), మరియు Kindergarten (very ప్రాథమిక భాష, concrete ఉదాహరణ). Match నిర్వచనం సంక్లిష్టత కు విద్యార్థి reading స్థాయి, కాదు కంటెంట్ స్థాయి. ఒక 10th-grader studying అధునాతన biology might need Simplified నిర్వచనం కోసం unfamiliar పదం. Consider మీ విద్యార్థి weakest readers ఎప్పుడు selecting. నిర్వచనం చేయగలదు be individually edited after generation అయితే some need adjustment. Pro చిట్కా: ఉపయోగించు Simplified initially, then discuss మరిన్ని technical నిర్వచనం లో తరగతి.",
     "glossary_custom_instructions": "పదజాల ఎంపిక మరియు నిర్వచన శైలి కోసం నిర్దిష్ట మార్గదర్శకత్వాన్ని అందించండి. ఫోకస్ ప్రాంతాలు, మినహాయింపులను పేర్కొనవచ్చు.",
     "glossary_language_input": "పదజాల అనువాదాల కోసం భాషను పేర్కొంటుంది. స్పానిష్, మాండరిన్, అరబిక్, ఫ్రెంచ్ లేదా ఏదైనా భాషను నమోదు చేయండి. కామాలతో అనేక భాషలు జోడించవచ్చు.",
     "glossary_auto_remove": "Automatically ఫిల్టర్ చేయి out very సాధారణ లేదా common పదం.",
@@ -7043,7 +7048,6 @@
     "fab_dictation": "Convert speech కు వచనం కోసం hands-free ఇన్‌పుట్. క్లిక్ చేయి కు activate microphone, మాట్లాడు clearly, మరియు చూడు పదం appear. Works లో: వచనం ఇన్‌పుట్, writing scaffolds, చాట్, మరియు any editable field. మద్దతు: బహుళ భాష, punctuation commands (say period, comma, కొత్త రేఖ), మరియు editing commands (తొలగించు అది). Dictation requires microphone permission లో browser. Quality depends పై: microphone quality, background noise, మరియు speech clarity. రియల్-టైమ్ transcription చూపిస్తుంది as మీరు మాట్లాడు. సవరించు transcribed వచనం normally. Great కోసం: విద్యార్థి తో motor సవాలు, reluctant writers, మరియు idea generation. చిట్కా: మాట్లాడు లో పూర్తి చేయి వాక్యం కోసం మెరుగైన accuracy.",
     "fab_focus": "Creates ఒక movable spotlight అది dims everything except ఒక circular వైశాల్యం around మీ cursor. ఇది dramatically reduces దృశ్య clutter మరియు సహాయం maintain attention పై current reading వైశాల్యం. Especially beneficial కోసం విద్యార్థి తో ADHD, sensory processing differences, లేదా anyone overwhelmed by busy screens. spotlight follows మీ mouse/touch automatically. Adjust spotlight size మరియు dim intensity లో సెట్టింగులు → Accessibility.",
     "fab_line_focus": "దృష్టి కేంద్రీకృత పఠనం కోసం సింగిల్-లైన్ రీడింగ్ ఐసోలేషన్ టూల్. సక్రియమైనప్పుడు ఒక లైన్ హైలైట్ అవుతుంది, మిగతావి మసకబారతాయి.",
-    "fab_ruler": "Adds ఒక semi-transparent horizontal bar అది follows మీ cursor కు సహాయం track మీ reading position రేఖ by రేఖ. Particularly సహాయం కోసం users తో dyslexia, ADHD, లేదా దృశ్య ట్రాకింగ్ difficulties. లాగు ruler up/down కు reposition, ఉపయోగించు arrow keys కోసం fine control, లేదా క్లిక్ చేయి anywhere కు jump. ruler రంగు చేయగలదు be customized లో సెట్టింగులు. Works across అన్నీ reading views సహా Simplified వచనం, FAQ, మరియు పదకోశం నిర్వచనం.",
     "fab_timer": "Opens ఒక ఇంటరాక్టివ్ focus timer ఆధారిత పై Pomodoro Technique. ఎంచుకో నుండి preset durations (5/15/25/45 minutes) లేదా అనుకూలీకరించు మీ own. లక్షణాలు చేర్చు: దృశ్య countdown తో పురోగతి ring, ఐచ్ఛిక break reminders, XP బహుమతి కోసం completed సెషన్ (longer = మరిన్ని XP), మరియు సెషన్ logging కోసం ఉపాధ్యాయుడు సమీక్ష. Label మీ task (e.g., 'చదువు అధ్యాయం 3') కు track ఏమి మీరు accomplished. Minimizes కు header bar so మీరు చేయగలదు work while it runs.",
     "scaffolds_edit_toggle": "ఉపాధ్యాయ ఎడిటింగ్ మరియు విద్యార్థి వీక్షణ మోడ్‌ల మధ్య మారుస్తుంది. ఆన్: స్కాఫోల్డ్‌లను సవరించవచ్చు; ఆఫ్: విద్యార్థి-సిద్ధంగా ఉన్న వీక్షణ.",
     "scaffolds_goal_panel": "విద్యార్థి సూచన కోసం అభ్యాస లక్ష్యాలను ప్రదర్శిస్తుంది. లక్ష్యాలు కార్యకలాపం సమయంలో ప్రముఖంగా కనిపిస్తాయి.",
@@ -7138,7 +7142,6 @@
     "immersive_line_focus": "సింగిల్-లైన్ రీడింగ్ గైడ్‌ను ప్రారంభిస్తుంది. క్రియాశీలమైనప్పుడు ప్రస్తుత లైన్ పూర్తిగా కనిపిస్తుంది, చుట్టుపక్కల లైన్‌లు మసకబారతాయి.",
     "immersive_syllables": "దృశ్య syllable segmentation కోసం decoding మద్దతు. ఎప్పుడు enabled: పదం display తో syllable breaks (hy-phen-at-ed), సహాయం readers attack multisyllabic పదం. Benefits: builds phonemic awareness, మద్దతు decoding వ్యూహాలు, develops morphological understanding, మరియు aids pronunciation. Especially సహాయం కోసం: struggling decoders, ELL విద్యార్థి, dyslexia మద్దతు, మరియు పదజాలం పదం తో సంక్లిష్ట syllable patterns. Syllabification follows ప్రమాణం phonetic rules. Works పై: అన్నీ reading కంటెంట్ సహా adapted వచనం, పదకోశం పదం, మరియు మూలం materials. Combine తో ఆడియో కు hear syllables pronounced. మార్చు off ఎప్పుడు కాదు needed కు reduce దృశ్య సంక్లిష్టత. చిట్కా: ఉపయోగించు కోసం challenging పదజాలం, then నిష్క్రియం చేయి కోసం fluent reading అభ్యాసం.",
     "immersive_wide_text": "Expand వచనం కు ఉపయోగించు మరిన్ని horizontal screen space. ఎప్పుడు క్రియాశీల: రేఖ పొడవు increases, తక్కువ scrolling ఉంది needed, మరియు మరిన్ని వచనం ఉంది కనిపించే at once. మంచి కోసం: fluent readers, wide displays, మరియు ఎప్పుడు scanning కోసం సమాచారం. డిఫాల్ట్ narrow వెడల్పు ఉంది మెరుగైన కోసం: struggling readers, mobile devices, మరియు focused reading. Optimal రేఖ పొడవు varies by reader మరియు device. Research చూపిస్తుంది 50-75 పాత్ర per రేఖ ఉంది ideal కోసం most readers. Wide వచనం trades readability కోసం efficiency. Combine తో రేఖ focus అయితే ట్రాకింగ్ becomes difficult. సెట్టింగ్ ఉంది remembered per device. చిట్కా: ఉపయోగించు wide వచనం కోసం research మరియు scanning, narrow వచనం కోసం మూసివేయి reading.",
-    "sidebar_tab_create": "తెరువు కంటెంట్ generation ప్యానెల్ తో అన్నీ AI-powered సాధనాలు. అందుబాటులో generators: క్విజ్ (మూల్యాంకనం తో జవాబు keys), పదకోశం (దృశ్య పదజాలం), Outline (graphic organizers), Analysis (కంటెంట్ examination), పాఠం Plan (structured సూచన), Timeline (chronological activities), Simplified వచనం (స్థాయి reading), మరియు మరిన్ని. ప్రతి సాధనాలు తెరుస్తుంది ఒక configuration ప్యానెల్ కోసం customization before generation. మూలం కంటెంట్ must be loaded కోసం most సాధనాలు కు విశ్లేషించు. Generated కంటెంట్ appears లో main workspace మరియు ఉంది సేవ్ చేయబడింది కు history. ఉపయోగించు సృష్టించు tab as మీ primary కంటెంట్ generation hub. చిట్కా: ప్రారంభించు తో Analysis కు అర్థం చేసుకో కంటెంట్, then రూపొందించు targeted వనరులు.",
     "sidebar_tab_history": "మీ సేవ్ చేసిన అన్ని కంటెంట్ మరియు సెషన్ చరిత్రకు ప్రవేశం. ఇటీవలి పని నుండి ఆటో-సేవ్ చేసిన సెషన్‌లు, మాన్యువల్‌గా సేవ్ చేసిన ప్రాజెక్ట్‌లు ఉంటాయి.",
     "socratic_toggle": "లోతైన అభ్యాసం కోసం Socratic సంభాషణ మోడ్‌ను ప్రారంభిస్తుంది. ఆన్‌లో ఉన్నప్పుడు: AI నేరుగా సమాధానాలు ఇవ్వదు—బదులుగా శోధనా ప్రశ్నలు అడుగుతుంది.",
     "socratic_input": "నమోదు చేయి మీ ప్రశ్న లేదా statement కోసం Socratic exploration. AI చేస్తుంది respond తో ప్రశ్న rather than జవాబు. మంచి starting బిందువు: Why do మీరు think [X] happened? ఏమి makes [Y] important? లేదా I believe [Z] because... AI probes మీ reasoning: asking కోసం evidence, exploring implications, testing logic, మరియు surfacing assumptions. ఇది develops argumentation మరియు critical thinking నైపుణ్యం. Be prepared కు: justify మీ thinking, consider alternatives, మరియు refine మీ position. Socratic dialogues చేయగలదు be frustrating initially కానీ build lasting understanding. మీ responses మరియు reasoning ఉన్నాయి tracked కోసం ప్రతిబింబం.",
@@ -31151,7 +31154,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "ప్రస్తుత మీడియాను వివరించండి",
+    "describe_current_media_done": "{count} లో {index} మీడియా చదవబడుతోంది.",
+    "describe_current_media_hint": "వనరును వదలకుండా ప్రస్తుత లేదా తదుపరి మీడియా వివరణను చదవండి",
+    "describe_current_media_none": "ప్రస్తుత వనరులో మీడియా ఏదీ లేదు.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore తెరవండి",
+    "open_learning_web_explorer_done": "Learning Web: Explore తెరవబడింది.",
+    "open_learning_web_explorer_hint": "ఒకే మ్యాప్‌లో ప్రమాణాలు, భావనలు, పాఠాలు, ఆధారాలు, పదాల అనుసంధానాలను అన్వేషించండి",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "అన్ని మీడియా వివరణలను చదవండి",
+    "read_media_descriptions_count": "{count} మీడియా వివరణలు చదవబడుతున్నాయి.",
+    "read_media_descriptions_hint": "ప్రస్తుత వనరులో రాసిన ప్రతి చిత్రం, వీడియో లేదా ఆడియో వివరణను చదవండి",
+    "read_media_descriptions_none": "ప్రస్తుత వనరులో మీడియా ఏదీ లేదు.",
+    "suggest_contextual_next_steps": "తదుపరి 3 అడుగులు సూచించండి",
+    "suggest_contextual_next_steps_hint": "సందర్భానికి తగిన మూడు ఎంపికలను ఇస్తుంది, ఏదీ ఎంచుకోదు లేదా నడపదు",
+    "suggest_contextual_next_steps_working": "ప్రస్తుత పాఠ సందర్భాన్ని చదివి మూడు ఎంపికలు సిద్ధం చేస్తోంది...",
+    "surprise_me_contextually": "ఉపయోగకరమైన తదుపరి అడుగు నాకు చెప్పండి",
+    "surprise_me_contextually_hint": "ప్రస్తుత పాఠ సందర్భం నుండి సముచితమైన, తక్కువ ప్రమాదం ఉన్న ఒక తదుపరి చర్యను ఎంచుకుంటుంది",
+    "surprise_me_contextually_working": "ప్రస్తుత పాఠ సందర్భాన్ని చదివి ఉపయోగకరమైన తదుపరి అడుగును ఎంచుకుంటోంది...",
+    "use_contextual_suggestion": "సూచించిన తదుపరి అడుగును ఉపయోగించండి",
+    "use_contextual_suggestion_hint": "ఇటీవలి సూచనల నుండి ఎంపిక 1, 2 లేదా 3 ను నడుపుతుంది",
+    "use_contextual_suggestion_working": "ఎంచుకున్న తదుపరి అడుగు ప్రారంభమవుతోంది..."
   },
   "palette": {
     "aria": "AlloFlow కమాండ్ పాలెట్",
@@ -31174,10 +31203,11 @@
       "videoStudio": "ఇక్కడ — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "ప్రతి చర్య ప్రకటించబడుతుంది. Ctrl+K మారుస్తుంది.",
     "group": {
@@ -31488,6 +31518,12 @@
     "diff_types_hint": "వీటి కోసం విభిన్న సెట్‌ను రూపొందించండి:",
     "diff_cost": "ప్రతి రన్‌కు సుమారు {n} ఉత్పత్తులు.",
     "summary_standards": "ప్రమాణాలు",
-    "summary_interests": "ఆసక్తులు"
+    "summary_interests": "ఆసక్తులు",
+    "translations": "అనువాదాలు",
+    "translations_auto": "స్వయంచాలకం ({language})",
+    "translations_auto_plain": "స్వయంచాలకం",
+    "translations_none": "ఏదీ లేదు",
+    "translations_on_hint": "{output} భాషలోని వనరులతో పాటు {target} రూపం కూడా వస్తుంది.",
+    "translations_off_hint": "వనరులు {output} భాషలో మాత్రమే ఉంటాయి, రెండో భాష ఉండదు."
   }
 }

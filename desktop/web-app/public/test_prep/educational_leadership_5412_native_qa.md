@@ -1,6 +1,6 @@
 # Praxis Educational Leadership (5412) QA report
 
-Generated: 2026-08-16T14:42:30.651Z
+Generated: 2026-08-16T17:38:25.761Z
 
 ## Result
 

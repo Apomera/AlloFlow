@@ -2250,7 +2250,7 @@
     "ai_guide_sub": "Koyarwa, Kewayawa & Saiti Atomatik",
     "ai_guide_welcome": "Sannu! Ni ne jagoran AI naka. Zan iya taimakawa da dabarun UDL, kewaya app a gareka, ko saita saitunan darasinka ta atomatik. Ka tambaya!",
     "tool_analysis": "Yi nazari tushe Material",
-    "tool_glossary": "ƙamus & harshe Selection",
+    "tool_glossary": "Ƙamus",
     "tool_simplified": "rubutu Adaptation",
     "tool_outline": "gani Organizer",
     "tool_visual": "gani tallafi",
@@ -2980,7 +2980,7 @@
     "choose_destination_aria": "Zaɓi destination"
   },
   "glossary": {
-    "title": "ƙamus & harshe Selection",
+    "title": "Ƙamus",
     "tier2": "Mataki 2 (Ilimi)",
     "tier2_tooltip": "High-utility na ilimi kalma yi amfani across disciplines (e.g., 'yi nazari', 'verify').",
     "tier3": "Mataki 3 (Yanki)",
@@ -3922,7 +3922,12 @@
     "gauge_simple": "mai sauƙi",
     "word_bank_language": "Harshen bankin kalmomi",
     "word_bank_english": "Turanci",
-    "word_bank_both": "Duka biyun"
+    "word_bank_both": "Duka biyun",
+    "measured_level_label": "Matakin karatu da aka auna",
+    "measured_on_target": "Ya dace da {grade}",
+    "measured_above": "Sama da matakin {grade}",
+    "measured_below": "Kasa da matakin {grade}",
+    "measured_note": "Flesch-Kincaid, an auna a kan wannan rubutun. Yi amfani da Check matakin don cikakken duba."
   },
   "quiz": {
     "title": "Tantance",
@@ -5876,7 +5881,9 @@
     "title_poettree_config": "🌳 Aikin PoetTree",
     "title_poettree_submission": "🌳 Mika Waƙa",
     "title_litlab_config": "🎭 Aikin LitLab",
-    "title_litlab_submission": "🎭 Mika Wasan kwaikwayo"
+    "title_litlab_submission": "🎭 Mika Wasan kwaikwayo",
+    "translation_block": "Fassara",
+    "translation_into": "Fassara ({language})"
   },
   "persona": {
     "title": "Interview yanayi",
@@ -6295,7 +6302,7 @@
   },
   "tools": {
     "source": "tushe Material",
-    "glossary": "ƙamus & harshe Selection",
+    "glossary": "Ƙamus",
     "simplified": "rubutu Adaptation & Engagement",
     "outline": "gani Organizer",
     "quiz": "Tantance",
@@ -6884,7 +6891,6 @@
     "source_settings_instructions": "Guide AI abun ciki generation tare da na musamman umarni. misali: Yi it mai jan hankali don reluctant readers, Focus kan water cycle, Haɗ diverse tafarki names, Avoid references zuwa violence, da Yi amfani mai sauƙi ƙamus don ELL ɗalibi. umarni siffa: sauti, abun ciki focus, ƙamus matakin, da perspective. Be na musamman don best sakamako. Da yawa umarni zai iya be combined. umarni su ne processed along tare da naka topic da saiti. Don sensitive topics, haɗ abun ciki guidance. umarni do ba guarantee na musamman outcomes amma strongly influence generation. shawara: Haɗ matakin aji da any abun ciki restrictions naka umarni don most appropriate fito.",
     "source_verify_checkbox": "Kunna AI fact-checking via Google Bincika grounding. lokacin ON: AI cross-references samar abun ciki against web sources, flagging ko correcting potential inaccuracies. Adds 5-10 seconds zuwa generation time amma significantly improves reliability don factual abun ciki. Especially important don: history (dates, events), science (processes, bayanai), biography, da current events. Don fiction, creative writing, ko hypothetical scenarios, wannan zai iya be disabled zuwa allow ƙari creative freedom. Sources consulted su ne listed generation log don malami bita. Highly recommended don any abun ciki wancan za be presented as factual zuwa ɗalibi.",
     "source_generate_button": "Ƙirƙira AI-written abun ciki kan naka specified topic. Danna zuwa begin generation amfani naka: topic description, target tsawo, matakin aji, da na musamman umarni. Generation takes 10-20 seconds. fito shi ne bitaed by safety filters before display. Generated abun ciki zai iya be: edited (malami zai iya gyara any part), analyzed (gudanar through other generation kayan aiki), da ajiye (ƙara zuwa history don reuse). Yi amfani lokacin: kai need abun ciki kan na musamman topic, want controlled rikitarwa, ko need zuwa fill curriculum gaps. Generated abun ciki ya haɗ da: appropriate ƙamus, logical organization, da aji-matakin syntax. Verify factual accuracy before aji yi amfani.",
-    "generator_actions": "Hub don duka abun ciki generation kayan aiki. akwai generators haɗ: gwaji (tantance tare da amsa keys), ƙamus (gani ƙamus), Simplified rubutu (matakied reading), FAQ (Q da pairs), Analysis (abun ciki examination), darasi Plan (instructional design), Timeline (chronological activity), Scaffolds (writing tallafi), Concept Tsara (categorization wasa), Math (problem generation), Bincike (mu'amala labari), da Brainstorm (activity ideas). kowane generator yana canzawa naka tushe abun ciki cikin different tsari. Danna any generator zuwa buɗe its configuration panel. Da yawa generators zai iya be yi amfani kan same tushe. Generated abun ciki appears workspace da saves zuwa history. shawara: Fara tare da Analysis zuwa fahimta naka abun ciki, then samar da targeted albarkatu.",
     "tool_visual": "Shiga gani generator kayan aiki. Creates AI- samar hoto da: ƙamus gani, concept illustrations, wuri depictions, zanen, da infographics. gani types: reference hoto (don koyo), worksheets (don activities), da zanen (don relationships). gani tallafi: ELL ɗalibi (gani ƙamus), gani learners, da engagement. kowane generation ƙirƙira unique hoto. saiti control salo, quality, da abun ciki. Generated gani zai iya be: downloaded, embedded materials, da added zuwa glossaries. Uses AI hoto generation credits. shawara: Samar da gani don abstract concepts wancan su ne difficult zuwa explain tare da kalma alone.",
     "tool_udl": "Koya about UDL framework integration. Universal Design don Learning has three principles: Da yawa Means na Representation ( menene na koyo—present bayani different ways), Da yawa Means na Action da Expression ( yaya na koyo—let ɗalibi demonstrate understanding differently), da Da yawa Means na Engagement ( why na koyo—motivate da sustain interest). wannan kayan aiki tallafi duka three through: varied abun ciki tsari, da yawa interaction yanayi, da wasa engagement. Clicking na buɗewa cikakke bayani about yaya kowane kayan aiki fasaloli aligns tare da UDL research. Great don: professional development, IEP justification, da understanding pedagogical foundation. shawara: Reference UDL principles lokacin advocating don kayan aiki adzaɓi.",
     "tour-analysis-settings": "Adjust parameters don readability analysis, da target reading matakin da na musamman metrics zuwa track.",
@@ -6909,7 +6915,6 @@
     "adventure_system_state": "Ƙara albarkatu management mechanics zuwa bincikes. ɗalibi track: Health (consequence na haɗariy zaɓis), zinare/albarkatu (economic decision-making), Reputation (zamantakewa capital daga zaɓis), da na musamman albarkatu kai define. Actions affect albarkatu visibly—spend zinare zuwa buy abu, lose health daga poor decisions, gain reputation daga taimakoing others. Creates meaningful consequences wancan teach: cause-da-effect reasoning, planning ahead, albarkatu management, da opportunity cost. gani dashboard nuna current albarkatu matakin. lokacin albarkatu deplete, wasa adaptively responds (e.g., low health = limited zaɓi). Math fasaha integrate naturally through albarkatu calculations.",
     "glossary_tier2_count": "Saita yaya many Tier 2 (na ilimi) ƙamus kalma zuwa haɗ. Tier 2 kalma: appear across subjects, su ne yi amfani na ilimi contexts, da su ne essential don rubutu comprehension. misali: yi nazari, evidence, significant, contrast. These kalma yana da highest instructional darajar—most ɗalibi benefit daga explicit teaching. Recommended ƙirga depends kan: rubutu tsawo (1 kalma per 100-150 kalma na tushe), akwai umarni time, da ɗalibi need. Balance tare da Tier 3 ƙirga don kammala ƙamus saita. Focus umarni here don maximum impact kan reading comprehension across duka subjects.",
     "glossary_tier3_count": "Saita yaya many Tier 3 (domain-na musamman) ƙamus kalma zuwa haɗ. Tier 3 kalma: su ne na musamman zuwa subject fadin, su ne usually defined context, da may ba transfer across subjects. misali: photosynthesis, denominator, alliteration, legislative. These kalma su ne essential don understanding na musamman abun ciki amma yana da limited yi amfani outside domain. umarni typically occurs during abun ciki teaching. Don mai zurfi dive cikin topic, haɗ ƙari Tier 3. Don broader reading fasaha, prioritize Tier 2. Tier 3 kalma often appear bold ko italics textbooks, signaling their importance within discipline.",
-    "glossary_definition_level": "Control yaya ma'ana su ne written. zaɓi: Same as tushe (maintains original rikitarwa—mai kyau don na ci-gaba ɗalibi), kan aji (matches target matakin aji ƙamus), Simplified (yana amfani common kalma, shorter jimla), da Kindergarten (very na asali harshe, concrete misali). Match ma'ana rikitarwa zuwa ɗalibi reading matakin, ba abun ciki matakin. 10th-grader studying na ci-gaba biology might need Simplified ma'ana don unfamiliar kalma. Consider naka ɗalibi weakest readers lokacin selecting. ma'ana zai iya be individually edited after generation idan some need adjustment. Pro shawara: Yi amfani Simplified initially, then discuss ƙari technical ma'ana aji.",
     "glossary_custom_instructions": "Provide na musamman guidance don ƙamus selection da ma'ana salo. misali: Focus kan kalma daga babi 3-5, Haɗ only kalma related zuwa water cycle, Avoid homonyms tare da simpler meanings, Ƙara etymology don Latin/Greek roots, Haɗ Spanish cognates don ELL ɗalibi, da Yi amfani ɗalibi-mai abota misali daga pop culture. Custom umarni siffa: which kalma su ne zaɓ, yaya ma'ana su ne written, da menene additional bayani appears. Clear umarni samar ya fi kyau-targeted glossaries. kai zai iya request na musamman tsari like: Haɗ jimla amfani kowane kalma ko Ƙara gani memory hooks. AI follows umarni lokacin making ƙamus selections.",
     "glossary_language_input": "Bayyana harshe don ƙamus fassara. Shigar harshe: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, ko any harshe. kai zai iya ƙara da yawa harshe separated by commas. kowane kalma za nuna: English ma'ana, target harshe fassara(s), da phonetic pronunciation guide ina applicable. Yi amfani don: ELL tallafi, heritage harshe connections, world harshe ƙamus, da multilingual ajirooms. fassara appear kan every ƙamus kati don instant reference. sauti pronunciation akwai supported harshe. Research nuna connecting sabon ƙamus zuwa home harshe improves retention. Max 4 harshe prevents gani clutter while supporting diverse ajirooms.",
     "glossary_auto_remove": "Automatically tace out very mai sauƙi ko common kalma.",
@@ -7043,7 +7048,6 @@
     "fab_dictation": "Convert speech zuwa rubutu don hands-free shigarwa. Danna zuwa activate microphone, yi magana clearly, da kalla kalma appear. Works : rubutu shigarwa, writing scaffolds, tattaunawa, da any editable field. tallafi: da yawa harshe, punctuation commands (say period, comma, sabon layi), da editing commands (goge wancan). Dictation requires microphone permission browser. Quality depends kan: microphone quality, background noise, da speech clarity. Lokaci-zahiri transcription nuna as kai yi magana. Gyara transcribed rubutu normally. Great don: ɗalibi tare da motor ƙalubale, reluctant writers, da idea generation. shawara: Yi magana kammala jimla don ya fi kyau accuracy.",
     "fab_focus": "Creates movable spotlight wancan dims everything except circular fadin around naka cursor. wannan dramatically reduces gani clutter da taimakos maintain attention kan current reading fadin. Especially beneficial don ɗalibi tare da ADHD, sensory processing differences, ko anyone overwhelmed by busy screens. spotlight follows naka mouse/touch automatically. Adjust spotlight size da dim intensity saiti → Accessibility.",
     "fab_line_focus": "Single-layi reading isolation kayan aiki don focused reading. lokacin activated: one rubutu layi shi ne highlighted while others su ne dimmed, creating gani focus. Navigate tare da: arrow keys (up/down), danna anywhere kan rubutu, ko touch/swipe kan mobile. Benefits: reduces gani crowding, tallafi bibiya difficulties, taimakos maintain place, da reduces regression. Intensity (yaya much surrounding rubutu shi ne bayyane) shi ne adjustable saiti → Accessibility. Works kan: duka reading abun ciki, da samar rubutu, tushe materials, da tattaunawa. Particularly taimakoful don: dyslexia, ADHD, gani processing differences, da anyone overwhelmed by rubutu-heavy screens. shawara: Combine tare da larger font don maximum reading ease.",
-    "fab_ruler": "Adds semi-transparent horizontal bar wancan follows naka cursor zuwa taimako track naka reading position layi by layi. Particularly taimakoful don users tare da dyslexia, ADHD, ko gani bibiya difficulties. Ja ruler up/down zuwa reposition, yi amfani arrow keys don fine control, ko danna anywhere zuwa jump. ruler launi zai iya be customized saiti. Works across duka reading views da Simplified rubutu, FAQ, da ƙamus ma'ana.",
     "fab_timer": "Opens mu'amala focus timer bisa kan Pomodoro Technique. Zaɓi daga preset durations (5/15/25/45 minutes) ko tsara naka own. fasaloli haɗ: gani countdown tare da ci gaba ring, zaɓi break reminders, XP lada don completed zama (longer = ƙari XP), da zama logging don malami bita. Label naka task (e.g., 'Karanta babi 3') zuwa track menene kai accomplished. Minimizes zuwa header bar so kai zai iya work while it runs.",
     "scaffolds_edit_toggle": "Canza between malami editing da ɗalibi duba yanayi. lokacin ON (Gyara yanayi): danna any scaffold zuwa gyara rubutu, ƙara sabon prompts, goge abu, da reorder abun ciki. lokacin OFF: scaffolds display as ɗalibi gani them (karanta-only). Edits ajiye automatically. ɗalibi always gani karanta-only regardless na naka canza (they cannot shiga gyara yanayi). Yi amfani editing zuwa: tsara AI- samar scaffolds, ƙara aji-na musamman misali, cire inappropriate prompts, da differentiate don na musamman ɗalibi. Pbita ɗalibi duba before sharing. Original scaffolds zai iya be restored daga history. shawara: Review da gyara scaffolds before aji zuwa ensure they match naka teaching salo da ɗalibi needs.",
     "scaffolds_goal_panel": "Display koyo objectives don ɗalibi reference. manufa appear prominently during activity. Effective manufa su ne: ɗalibi-mai abota (I zai iya statements), na musamman da measurable, da aligned zuwa activity. misali: I zai iya identify three causes na Civil War ko I zai iya yi amfani evidence zuwa tallafi my claim. manufa increase: metacognition, self-tantance, da purpose clarity. ɗalibi zai iya reference manufa while working. malami sets manufa before ɗalibi shiga. Da yawa manufa zai iya be displayed. manufa zai iya haɗ nasara criteria: I know I yana da succeeded lokacin my sakin layi has topic jimla. Research nuna bayyane koyo targets improve achievement.",
@@ -7138,7 +7142,6 @@
     "immersive_line_focus": "Kunna single-layi reading guide. lokacin mai aiki: current reading layi shi ne fully bayyane, surrounding layi su ne dimmed, da focus follows as kai navigate. Benefits: reduces gani overwhelm, improves bibiya, da taimakos attention stay kan current rubutu. Navigate tare da: arrow keys, danna anywhere, ko auto-advance (tare da TTS). Dimming intensity shi ne adjustable saiti. Perfect don: dyslexia tallafi, attention difficulties, da bibiya ƙalubale. Combines well tare da rubutu-zuwa-speech don multi-modal reading tallafi. layi focus works kan duka rubutu abun ciki. Research nuna layi isolation improves comprehension don struggling readers. shawara: Combine tare da larger font don maximum reading ease.",
     "immersive_syllables": "gani syllable segmentation don decoding tallafi. lokacin enabled: kalma display tare da syllable breaks (hy-phen-at-ed), taimakoing readers attack multisyllabic kalma. Benefits: builds phonemic awareness, tallafi decoding dabaru, develops morphological understanding, da aids pronunciation. Especially taimakoful don: struggling decoders, ELL ɗalibi, dyslexia tallafi, da ƙamus kalma tare da mai rikitarwa syllable patterns. Syllabification follows mizani phonetic rules. Works kan: duka reading abun ciki da adapted rubutu, ƙamus kalma, da tushe materials. Combine tare da sauti zuwa hear syllables pronounced. Canza off lokacin ba needed zuwa reduce gani rikitarwa. shawara: Yi amfani don challenging ƙamus, then kashe don fluent reading horo.",
     "immersive_wide_text": "Expand rubutu zuwa yi amfani ƙari horizontal screen space. lokacin mai aiki: layi tsawo increases, ƙasa scrolling shi ne needed, da ƙari rubutu shi ne bayyane at once. mai kyau don: fluent readers, wide displays, da lokacin scanning don bayani. tsohuwa narrow faɗi shi ne ya fi kyau don: struggling readers, mobile devices, da focused reading. Optimal layi tsawo varies by reader da device. Research nuna 50-75 tafarki per layi shi ne ideal don most readers. Wide rubutu trades readability don efficiency. Combine tare da layi focus idan bibiya becomes difficult. saiti shi ne remembered per device. shawara: Yi amfani wide rubutu don research da scanning, narrow rubutu don rufe reading.",
-    "sidebar_tab_create": "Buɗe abun ciki generation panel tare da duka AI-powered kayan aiki. akwai generators: gwaji (tantance tare da amsa keys), ƙamus (gani ƙamus), Outline (graphic organizers), Analysis (abun ciki examination), darasi Plan (structured umarni), Timeline (chronological activities), Simplified rubutu (matakied reading), da ƙari. kowane kayan aiki na buɗewa configuration panel don customization before generation. tushe abun ciki must be loaded don most kayan aiki zuwa yi nazari. Generated abun ciki appears main workspace da shi ne ajiye zuwa history. Yi amfani Ƙirƙira tab as naka primary abun ciki generation hub. shawara: Fara tare da Analysis zuwa fahimta abun ciki, then samar da targeted albarkatu.",
     "sidebar_tab_history": "Shiga duka naka ajiye abun ciki da zama history. History ya haɗ da: auto- ajiye zama daga recent work, manually ajiye projects da portfolios, samar albarkatu organized by creation date, da ɗalibi submissions (malami duba). Actions: ɗora any abu zuwa ci gaba working, goge abu zuwa free storage, fitar don backup, da bincika by keyword. History sorts by recency by tsohuwa. Tace by type (gwaji, ƙamus, bincike, etc.) zuwa find na musamman albarkatu. Cloud-synced history shi ne accessible daga any device. Storage limits vary by account—goge tsohon abu idan approaching limit. naka history shi ne naka personal teaching albarkatu library.",
     "socratic_toggle": "Kunna Socratic dialogue yanayi don deeper koyo. lokacin ON: AI never gives direct amsa—instead asks probing tambaya wancan guide ɗalibi toward discovery. Benefits: develops critical thinking, encourages self-correction, builds problem-solving fasaha, da ƙirƙira memorable koyo moments. AI yana amfani techniques like: clarifying tambaya (menene do kai mean by...?), challenging assumptions (amma menene idan...?), da evidence requests (yaya do kai know wancan?). Best don: discussion preparation, concept exploration, da taimakoing ɗalibi who want da sauri amsa zuwa think ƙari deeply. May frustrate ɗalibi seeking efficiency—explain purpose.",
     "socratic_input": "Shigar naka tambaya ko statement don Socratic exploration. AI za respond tare da tambaya rather than amsa. mai kyau starting wuri: Why do kai think [X] happened? menene makes [Y] important? ko I believe [Z] because... AI probes naka reasoning: asking don evidence, exploring implications, testing logic, da surfacing assumptions. wannan develops argumentation da critical thinking fasaha. Be prepared zuwa: justify naka thinking, consider alternatives, da refine naka position. Socratic dialogues zai iya be frustrating initially amma build lasting understanding. naka responses da reasoning su ne tracked don tunani.",
@@ -30613,7 +30616,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Bayyana midiyar da ake ciki",
+    "describe_current_media_done": "Ana karanta midiya {index} daga {count}.",
+    "describe_current_media_hint": "Karanta bayanin midiyar yanzu ko na gaba ba tare da barin abin da ake kallo ba",
+    "describe_current_media_none": "Babu midiya a cikin abin da ake kallo yanzu.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Buɗe Learning Web: Explore",
+    "open_learning_web_explorer_done": "An buɗe Learning Web: Explore.",
+    "open_learning_web_explorer_hint": "Bincika ma’auni, ra’ayoyi, darussa, shaidu da alaƙar kalmomi a taswira ɗaya",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Karanta dukkan bayanan midiya",
+    "read_media_descriptions_count": "Ana karanta bayanan midiya {count}.",
+    "read_media_descriptions_hint": "Karanta kowane rubutaccen bayanin hoto, bidiyo ko sauti a abin da ake kallo yanzu",
+    "read_media_descriptions_none": "Babu midiya a cikin abin da ake kallo yanzu.",
+    "suggest_contextual_next_steps": "Ba da shawarar matakai 3 na gaba",
+    "suggest_contextual_next_steps_hint": "Yana ba da zaɓuɓɓuka uku da suka dace da yanayin, ba tare da zaɓar ko gudanar da ɗaya ba",
+    "suggest_contextual_next_steps_working": "Ana karanta yanayin darasin yanzu ana kuma shirya zaɓuɓɓuka uku...",
+    "surprise_me_contextually": "Ba ni mataki na gaba mai amfani",
+    "surprise_me_contextually_hint": "Yana zaɓar mataki ɗaya na gaba mai ma’ana kuma mai ƙarancin haɗari daga yanayin darasin yanzu",
+    "surprise_me_contextually_working": "Ana karanta yanayin darasin yanzu ana kuma zaɓar mataki na gaba mai amfani...",
+    "use_contextual_suggestion": "Yi amfani da matakin gaba da aka ba da shawara",
+    "use_contextual_suggestion_hint": "Yana gudanar da zaɓi 1, 2, ko 3 daga sabbin shawarwari",
+    "use_contextual_suggestion_working": "Ana fara matakin gaba da aka zaɓa..."
   },
   "palette": {
     "aria": "Panel ɗin umarni na AlloFlow",
@@ -30636,10 +30665,11 @@
       "videoStudio": "Nan — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Ana sanar da kowane aiki. Ctrl+K yana sauyawa.",
     "group": {
@@ -30951,6 +30981,12 @@
     "diff_types_hint": "Ƙirƙiri saiti mai bambance-bambance don:",
     "diff_cost": "Kusan ƙirƙirawa {n} a kowace gudu.",
     "summary_standards": "ma’auni",
-    "summary_interests": "sha’awa"
+    "summary_interests": "sha’awa",
+    "translations": "Fassarori",
+    "translations_auto": "Ta atomatik ({language})",
+    "translations_auto_plain": "Ta atomatik",
+    "translations_none": "Babu",
+    "translations_on_hint": "Kayan da ke {output} za su kuma zo da sigar {target}.",
+    "translations_off_hint": "Kayan za su kasance a {output} kawai, ba tare da harshe na biyu ba."
   }
 }

@@ -2054,12 +2054,12 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${levelContext}
               ${localLangInstruction}
               ${effCustomInstructions ? `Prioritize these terms or concepts if they appear: "${effCustomInstructions}".` : ''}
-              ${useEmojis ? 'Include a helpful emoji only when it clarifies the term.' : 'Do not use emojis.'}
+              ${useEmojis ? 'Include a helpful emoji only when it clarifies the term, and put it in the separate "emoji" field, never inside "term".' : 'Do not use emojis.'}
               ${standardsDirective}
               ${dokDirective}
               ${interestsDirective}
               Return ONLY valid JSON with this shape:
-              { "terms": [{ "term": "Name", "def": "Student-friendly definition", "tier": "Academic" | "Domain-Specific"${langsReq.length > 0 ? ', "translations": { "Language": "Translated Term: Translated Definition" }' : ''} }] }
+              { "terms": [{ "term": "Name", "def": "Student-friendly definition", "tier": "Academic" | "Domain-Specific"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${langsReq.length > 0 ? ', "translations": { "Language": "Translated Term: Translated Definition" }' : ''} }] }
               Source excerpt:
               """
               ${localExcerpt(textToProcess, 6000)}
@@ -2125,14 +2125,14 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                  Each "root" = source-language morpheme (prefix / root / suffix). "lang" = origin language name. "meaning" = short English meaning (1-4 words). "related" = 1-3 modern English words sharing this root (optional per-root; include when they genuinely exist in common usage).
               ` : ''}
               ${effCustomInstructions ? `IMPORTANT: Prioritize these specific terms/concepts if they appear in the text: "${effCustomInstructions}".` : ''}
-              ${useEmojis ? 'Include a relevant emoji for each term.' : 'Do not use emojis.'}
+              ${useEmojis ? 'Include a relevant emoji for each term in the separate "emoji" field shown in the return shape below. Never place the emoji inside the "term" text itself.' : 'Do not use emojis.'}
               ${langsReq.length > 0 ? "STRICT DIALECT ADHERENCE: For any requested language that specifies a region (e.g. 'Brazilian Portuguese'), use that specific dialect's conventions." : ""}
               CRITICAL FOR TRANSLATIONS: Provide both the translated TERM and the translated DEFINITION.
               Format: "Translated Term: Translated Definition",
               ${standardsDirective}
               ${dokDirective}
               ${interestsDirective}
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }${includeEtymology ? ', "etymology": "..." (optional), "etymologyByLang": { "English": "...", "Spanish": "..." } (optional, one key per requested language), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}, "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }${includeEtymology ? ', "etymology": "..." (optional), "etymologyByLang": { "English": "...", "Spanish": "..." } (optional, one key per requested language), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
             `;
@@ -2166,11 +2166,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                  Each "root" = source-language morpheme. "lang" = origin language. "meaning" = short English meaning (1-4 words). "related" = 1-3 modern English words sharing this root (optional per-root; include when they genuinely exist).
               ` : ''}
               ${effCustomInstructions ? `IMPORTANT: Prioritize these specific terms/concepts if they appear in the text: "${effCustomInstructions}".` : ''}
-              ${useEmojis ? 'Include a relevant emoji for each term.' : 'Do not use emojis.'}
+              ${useEmojis ? 'Include a relevant emoji for each term in the separate "emoji" field shown in the return shape below. Never place the emoji inside the "term" text itself.' : 'Do not use emojis.'}
               ${standardsDirective}
               ${dokDirective}
               ${interestsDirective}
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific"${includeEtymology ? ', "etymology": "..." (optional), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${includeEtymology ? ', "etymology": "..." (optional), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
             `;

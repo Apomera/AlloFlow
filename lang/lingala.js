@@ -2251,7 +2251,7 @@
     "ai_guide_sub": "Mateya, Bokei mpe Bobongisi ya Yo Moko",
     "ai_guide_welcome": "Mbote! Nazali motambwisi na yo ya AI. Nakoki kosalisa na mayele ya UDL, kokamba app mpo na yo, to kobongisa ba bonkonki na liteya na yo. Tuna!",
     "tool_analysis": "Tálá malamu esika ya kobimisa Material",
-    "tool_glossary": "mokanda ya maloba & monoko Selection",
+    "tool_glossary": "Mokanda ya maloba",
     "tool_simplified": "makomi Adaptation",
     "tool_outline": "elilingi Organizer",
     "tool_visual": "elilingi lisalisi",
@@ -2981,7 +2981,7 @@
     "choose_destination_aria": "Poná destination"
   },
   "glossary": {
-    "title": "mokanda ya maloba & monoko Selection",
+    "title": "Mokanda ya maloba",
     "tier2": "Tier 2 (Acad.)",
     "tier2_tooltip": "Likoló-utility academic maloba esalelami across disciplines (e.g., 'tálá malamu', 'verify').",
     "tier3": "Tier 3 (Domaine)",
@@ -3923,7 +3923,12 @@
     "gauge_simple": "pete",
     "word_bank_both": "Nyonso mibale",
     "word_bank_language": "Lokótá ya ebombelo ya maloba",
-    "word_bank_english": "Lingelesi"
+    "word_bank_english": "Lingelesi",
+    "measured_level_label": "Nivo ya botangi oyo emekami",
+    "measured_on_target": "Ekokani na {grade}",
+    "measured_above": "Likolo ya nivo {grade}",
+    "measured_below": "Na se ya nivo {grade}",
+    "measured_note": "Flesch-Kincaid, emekami na makomi oyo. Salela Check niveau mpo na botali ya mobimba."
   },
   "quiz": {
     "title": "Talela",
@@ -5869,7 +5874,9 @@
     "title_poettree_config": "🌳 Mosala PoetTree",
     "title_poettree_submission": "🌳 Botindi Loyembo",
     "title_litlab_config": "🎭 Mosala LitLab",
-    "title_litlab_submission": "🎭 Botindi Bomonisi"
+    "title_litlab_submission": "🎭 Botindi Bomonisi",
+    "translation_block": "Libongoli",
+    "translation_into": "Libongoli ({language})"
   },
   "persona": {
     "title": "Interview lolenge",
@@ -6288,7 +6295,7 @@
   },
   "tools": {
     "source": "esika ya kobimisa Material",
-    "glossary": "mokanda ya maloba & monoko Selection",
+    "glossary": "Mokanda ya maloba",
     "simplified": "makomi Adaptation & Engagement",
     "outline": "elilingi Organizer",
     "quiz": "Talela",
@@ -6877,7 +6884,6 @@
     "source_settings_instructions": "Lakisa AI ndenge ya kosala makomi. Lolenge: salisa kobenda, nzela na ELL, boya violence. Lakisa kelasi mpe restrictions.",
     "source_verify_checkbox": "Fungola fact-checking ya Google Search. Esalisi bisaluki ya solo. Ebakisaka 5-10s. Sembo mpo na histoire mpe siansi.",
     "source_generate_button": "Sala makomi ya AI na ntina na yo. Etalami na safety filters; ekoki kobongisama, kotalama, mpe kobombama na historique.",
-    "generator_actions": "Hub mpo na generators nyonso: Quiz, Glossary, Simplified, FAQ, Analysis, Lesson Plan, Timeline, Scaffolds, Math, Adventure, Brainstorm.",
     "tool_visual": "Kota na generator ya bililingi: maloba, makanisi, scènes, mpe infographies. Esalisi ELL, bayekoli ya bololingi, mpe engagement.",
     "tool_udl": "Esalisaka bisaleli ya UDL framework: ndenge ya kolakisa, ndenge ya kosalisa bayekoli kolakisa boyebi, mpe ndenge ya kopesa mposa ya koyekola.",
     "tour-analysis-settings": "Kobongisa parameters mpo na readability analysis, elongo na mokano reading niveau na oyo metrics na track.",
@@ -6902,7 +6908,6 @@
     "adventure_system_state": "Bakisá biloko management mechanics na mobembos. moyekoli track: Health (consequence ya likamay maponi), wolo/biloko (economic decision-making), Reputation (ya bato capital uta maponi), na ya yo biloko yo define. Actions affect biloko visibly—spend wolo na buy eloko, lose health uta poor decisions, gain reputation uta lisalisiing others. Creates meaningful consequences yango teach: cause-na-effect reasoning, planning ahead, biloko management, na opportunity cost. elilingi dashboard elakisaka current biloko niveau. tángo biloko deplete, lisano adaptively responds (e.g., low health = limited baponi). Mituya mayele integrate naturally na nzela biloko calculations.",
     "glossary_tier2_count": "Pona motango ya maloba ya Tier 2 (maloba ya kelasi) oyo ezali na mateya mingi.",
     "glossary_tier3_count": "Pona motango ya maloba ya Tier 3 (maloba ya mateya moko) oyo elimbolama na kati ya makomi.",
-    "glossary_definition_level": "Pona ndenge ndimbola ekomama: ndenge moko na ya kala, niveau ya kelasi, ya pete, to mpo na bana ya mike.",
     "glossary_custom_instructions": "Pesa malako mpo na lolenge ya kopona maloba mpe kosala ndimbola na Glossary.",
     "glossary_language_input": "Koma minoko mpo na libongoli ya maloba (ndakisa: Lifalanse, Liesipanyolo).",
     "glossary_auto_remove": "Automatically pona out very pete to na bokó maloba.",
@@ -7036,7 +7041,6 @@
     "fab_dictation": "Convert speech na makomi mpo na hands-free eloko ekoti. Finá na activate microphone, lobá clearly, na talá maloba komonana. Esalaka na: makomi eloko ekoti, kokoma scaffolds, lisolo, na any editable field. lisalisi: ebele monoko, punctuation commands (say period, comma, ya sika molongo), na editing commands (bomá yango). Dictation requires microphone permission na browser. Quality depends likoló: microphone quality, background noise, na speech clarity. Ngonga ya solo transcription elakisaka as yo lobá. Bongisá transcribed makomi normally. Monene mpo na: moyekoli na motor mpasi, reluctant writers, na idea ekeke. toli: Lobá na silisá fraze mpo na malamu koleka bosolo.",
     "fab_focus": "Creates movable spotlight yango dims everything except circular surface around yo cursor. Oyo dramatically reduces elilingi clutter na lisalisis maintain attention likoló current reading surface. Especially beneficial mpo na moyekoli na ADHD, sensory processing differences, to anyone overwhelmed by busy screens. spotlight follows yo mouse/touch automatically. Kobongisa spotlight size na dim intensity na bobongisi → Bokokoki.",
     "fab_line_focus": "Eleli molongo moko ya makomi mpe ekomisi mosusu motane mpo na kosalisa kotanga.",
-    "fab_ruler": "Etia ligne ya horizontale oyo elandi cursor mpo na kosalisa kotanga molongo na molongo.",
     "fab_timer": "Efungoli ngonga ya focus na lolenge ya Pomodoro (5/15/25/45 miniti).",
     "scaffolds_edit_toggle": "Bongola kati ya bongisa ya molakisi mpe komonisa ya moyekoli.",
     "scaffolds_goal_panel": "Elakisi mokano ya mateya na bayekoli na nzela ya I can statements.",
@@ -7131,7 +7135,6 @@
     "immersive_line_focus": "Funguá molongo moko kaka ya kotanga. Milongo mosusu ekomi epayi ya mwindo. Esalisi na dyslexia mpe difficultés ya kotala.",
     "immersive_syllables": "elilingi syllable segmentation mpo na decoding lisalisi. tángo enabled: maloba komonisa na syllable breaks (hy-phen-at-ed), lisalisiing readers attack multisyllabic maloba. Benefits: etongaka phonemic awareness, lisalisi decoding stratégies, develops morphological understanding, na aids pronunciation. Especially lisalisiful mpo na: kobunda decoders, ELL moyekoli, dyslexia lisalisi, na maloba maloba na mpasi syllable bilembo. Syllabification follows mibeko phonetic rules. Esalaka likoló: nyonso reading mateya elongo na adapted makomi, mokanda ya maloba liloba, na esika ya kobimisa biloko. Combine na mongongo na hear syllables pronounced. Bongolá off tángo te needed na reduce elilingi mpasi. toli: Salelá mpo na challenging maloba, then kangá mpo na fluent reading salela.",
     "immersive_wide_text": "Expand makomi na salelá mingi horizontal écran space. tángo esalaka: molongo molayi increases, moke scrolling ezali needed, na mingi makomi ezali emonanaka at once. malamu mpo na: fluent readers, wide displays, na tángo scanning mpo na sango. ya ebandeli narrow monene ezali malamu koleka mpo na: kobunda readers, mobile devices, na focused reading. Optimal molongo molayi varies by reader na device. Research elakisaka 50-75 mosali na lisapo per molongo ezali ideal mpo na most readers. Wide makomi trades readability mpo na efficiency. Combine na molongo focus soki kolanda becomes difficult. bobongisi ezali remembered per device. toli: Salelá wide makomi mpo na research na scanning, narrow makomi mpo na kangá reading.",
-    "sidebar_tab_create": "Funguá lopangu ya kosala mateya na bisaleli ya AI: Quiz, Glossary, Outline, BehaviorLens, mpe mosusu.",
     "sidebar_tab_history": "Kokota bisaleli nyonso oyo obombaki na History. Ezali na auto-save, projets, mpe mosala ya bayekoli.",
     "socratic_toggle": "Funguá lolenge ya Socratic: AI ekopesa eyano te, kasi ekotuna mituna mpo na koteya kokanisa ya pesi.",
     "socratic_input": "Komá motuna to likanisi na yo. AI akoyanola na motuna mosusu na esika ya kopesa eyano, mpo na kolendisa kokanisa ya pesi.",
@@ -30502,7 +30505,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Lakisa media ya sikoyo",
+    "describe_current_media_done": "Kotanga media {index} na {count}.",
+    "describe_current_media_hint": "Tanga ndimbola ya media ya sikoyo to oyo elandi, kobima na esika te",
+    "describe_current_media_none": "Media ezali te na esika ya sikoyo.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Fungola Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore efungwami.",
+    "open_learning_web_explorer_hint": "Luka mibeko, makanisi, mateya, bilembo mpe boyokani ya maloba na karte moko",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Tanga bandimbola nyonso ya media",
+    "read_media_descriptions_count": "Kotanga bandimbola {count} ya media.",
+    "read_media_descriptions_hint": "Tanga ndimbola nyonso ekomami ya elilingi, video to mongongo na esika ya sikoyo",
+    "read_media_descriptions_none": "Media ezali te na esika ya sikoyo.",
+    "suggest_contextual_next_steps": "Pesa matambe 3 oyo elandi",
+    "suggest_contextual_next_steps_hint": "Epesaka baponi misato oyo ekokani na esika ozali, kopona to kosala moko te",
+    "suggest_contextual_next_steps_working": "Kotanga esika liteya ezali mpe kobongisa baponi misato...",
+    "surprise_me_contextually": "Pesa ngai litambe ya malamu oyo elandi",
+    "surprise_me_contextually_hint": "Eponaka likambo moko ya malamu mpe ya likama moke uta na liteya ya sikoyo",
+    "surprise_me_contextually_working": "Kotanga esika liteya ezali mpe kopona litambe ya malamu oyo elandi...",
+    "use_contextual_suggestion": "Salela litambe oyo epesami",
+    "use_contextual_suggestion_hint": "Esalaka poni 1, 2, to 3 uta na batoli ya suka",
+    "use_contextual_suggestion_working": "Kobanda litambe oyo eponami..."
   },
   "palette": {
     "aria": "Palette ya mitindo ya AlloFlow",
@@ -30525,10 +30554,11 @@
       "videoStudio": "Awa — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Litambe nyonso esakolami. Ctrl+K ebongolaka.",
     "group": {
@@ -30831,6 +30861,12 @@
     "diff_types_hint": "Salá liboke ya bokeseni mpo na:",
     "diff_cost": "Bokeli soki moke {n} na mbangu moko.",
     "summary_standards": "mibeko",
-    "summary_interests": "makambo oyo olingaka"
+    "summary_interests": "makambo oyo olingaka",
+    "translations": "Mabongoli",
+    "translations_auto": "Yango moko ({language})",
+    "translations_auto_plain": "Yango moko",
+    "translations_none": "Eloko te",
+    "translations_on_hint": "Biloko ya {output} ekozala mpe na lolenge ya {target}.",
+    "translations_off_hint": "Biloko ekozala kaka na {output}, monoko ya mibale te."
   }
 }

@@ -1,6 +1,7 @@
 {
+  "packId": "praxis-school-counselor-5422",
+  "version": "1.0.0",
   "schemaVersion": 1,
-  "generatedAt": "2026-08-13T08:43:59.255Z",
   "libraryId": "praxis-school-counselor-5422-learning-library",
   "standard": {
     "label": "AlloFlow Praxis School Counselor 5422 learning-library source and editorial review v1",
@@ -143,5 +144,14 @@
       "references": 4,
       "status": "source-reviewed-editorial-pass"
     }
-  ]
+  ],
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "fefb7925bb3239e3094a2be919f0ba1c62eb51f06baa0381babd1742f534dba0",
+    "learningLibrarySha256": "a3e6a23efb20bba4eadf68cba1b7326f8672ea4a913fc6fc52fdbf10a165d770",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
+  }
 }

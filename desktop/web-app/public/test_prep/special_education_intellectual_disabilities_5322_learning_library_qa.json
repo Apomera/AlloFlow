@@ -22,5 +22,14 @@
     "editorialReviewedSourcePendingMemoryAids": 0,
     "findings": [],
     "status": "pass"
+  },
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "0b95c450bc39afbc1f8424cab78ac7da743088d76dfb7d1902d58d9d56a93afe",
+    "learningLibrarySha256": "83783a5f3f59c9fd51aa07702cf2f3835f2546c236dd20889b955944fca9c134",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

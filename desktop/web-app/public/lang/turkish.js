@@ -2258,7 +2258,7 @@
     "ai_guide_sub": "Pedagoji, Gezinme ve Otomatik Kurulum",
     "ai_guide_welcome": "Merhaba! Ben AI Rehberinizim. UDL stratejileri konusunda yardımcı olabilir, uygulamada sizin için gezinebilir veya ders ayarlarınızı otomatik olarak yapabilirim. Sadece sorun!",
     "tool_analysis": "Kaynak Materyali Analiz Et",
-    "tool_glossary": "Sözlük ve Dil Seçimi",
+    "tool_glossary": "Sözlük",
     "tool_simplified": "Metin Uyarlaması",
     "tool_outline": "Görsel Düzenleyici",
     "tool_visual": "Görsel Destek",
@@ -3145,7 +3145,7 @@
     "choose_destination_aria": "Bir hedef seç"
   },
   "glossary": {
-    "title": "Sözlük ve Dil Seçimi",
+    "title": "Sözlük",
     "tier2": "Kademe 2 (Akad.)",
     "tier2_tooltip": "Farklı disiplinlerde kullanılan yüksek faydalı akademik kelimeler (ör. 'analiz etmek', 'doğrulamak').",
     "tier3": "Kademe 3 (Alan)",
@@ -4087,7 +4087,12 @@
     "gauge_simple": "Basit",
     "word_bank_english": "İngilizce",
     "word_bank_language": "Kelime bankası dili",
-    "word_bank_both": "İkisi de"
+    "word_bank_both": "İkisi de",
+    "measured_level_label": "Ölçülen okuma düzeyi",
+    "measured_on_target": "{grade} için uygun",
+    "measured_above": "{grade} düzeyinin üstünde",
+    "measured_below": "{grade} düzeyinin altında",
+    "measured_note": "Flesch-Kincaid, bu metin üzerinde ölçüldü. Daha ayrıntılı bir inceleme için Düzeyi Denetle kullanın."
   },
   "quiz": {
     "title": "Değerlendir",
@@ -6046,7 +6051,9 @@
     "title_poettree_config": "🌳 PoetTree Ödevi",
     "title_poettree_submission": "🌳 Şiir Teslimi",
     "title_litlab_config": "🎭 LitLab Ödevi",
-    "title_litlab_submission": "🎭 Performans Teslimi"
+    "title_litlab_submission": "🎭 Performans Teslimi",
+    "translation_block": "Çeviri",
+    "translation_into": "Çeviri ({language})"
   },
   "persona": {
     "title": "Görüşme Modu",
@@ -6464,7 +6471,7 @@
   },
   "tools": {
     "source": "Kaynak Materyal",
-    "glossary": "Sözlük ve Dil Seçimi",
+    "glossary": "Sözlük",
     "simplified": "Metin Uyarlama ve Katılım",
     "outline": "Görsel Düzenleyici",
     "quiz": "Değerlendir",
@@ -7110,7 +7117,6 @@
     "source_settings_instructions": "AI içerik oluşturmasına özel talimatlarla rehberlik edin. Örnekler: İsteksiz okuyucular için ilgi çekici hale getir, Su döngüsüne odaklan, Çeşitli karakter isimleri ekle, Şiddet referanslarından kaçın ve ELL öğrencileri için basit sözcük kullan. Talimatlar şunları şekillendirir: ton, içerik odağı, sözcük düzeyi ve bakış açısı. En iyi sonuçlar için belirgin olun. Birden fazla talimat birleştirilebilir. Talimatlar, konunuz ve ayarlarınızla birlikte işlenir. Hassas konular için içerik rehberliği ekleyin. Talimatlar belirli sonuçları garanti etmez ancak oluşturmayı güçlü bir şekilde etkiler. İpucu: En uygun çıktı için talimatlarınıza sınıf düzeyini ve içerik kısıtlamalarını ekleyin.",
     "source_verify_checkbox": "Google Arama temellendirmesi yoluyla AI olgu denetimini etkinleştirin. AÇIK olduğunda: AI, oluşturulan içeriği web kaynaklarıyla karşılaştırarak olası yanlışlıkları işaretler veya düzeltir. Oluşturma süresine 5-10 saniye ekler ancak olgusal içerik için güvenilirliği önemli ölçüde artırır. Özellikle şunlar için önemlidir: tarih (tarihler, olaylar), bilim (süreçler, veriler), biyografi ve güncel olaylar. Kurgu, yaratıcı yazma veya varsayımsal senaryolar için daha fazla yaratıcı özgürlüğe izin vermek üzere bu devre dışı bırakılabilir. Başvurulan kaynaklar, öğretmen incelemesi için oluşturma günlüğünde listelenir. Öğrencilere olgu olarak sunulacak herhangi bir içerik için şiddetle önerilir.",
     "source_generate_button": "Belirttiğiniz konuda AI tarafından yazılmış içerik oluşturun. Şunları kullanarak oluşturmayı başlatmak için tıklayın: konu açıklaması, hedef uzunluk, sınıf düzeyi ve özel talimatlar. Oluşturma 10-20 saniye sürer. Çıktı, görüntülenmeden önce güvenlik filtrelerinden geçer. Oluşturulan içerik şunlar yapılabilir: düzenlenebilir (öğretmen herhangi bir bölümü değiştirebilir), analiz edilebilir (diğer oluşturma araçlarından geçirilebilir) ve kaydedilebilir (yeniden kullanım için geçmişe eklenebilir). Şu durumlarda kullanın: belirli bir konuda içeriğe ihtiyaç duyduğunuzda, denetimli karmaşıklık istediğinizde veya müfredat boşluklarını doldurmanız gerektiğinde. Oluşturulan içerik şunları içerir: uygun sözcük dağarcığı, mantıksal düzen ve sınıf düzeyine uygun sözdizimi. Sınıfta kullanmadan önce olgusal doğruluğu kontrol edin.",
-    "generator_actions": "Tüm içerik oluşturma araçları için merkez. Kullanılabilir oluşturucular şunları içerir: Sınav (cevap anahtarlı değerlendirme), Sözlük (görsel sözcük dağarcığı), Basitleştirilmiş Metin (düzeyli okuma), FAQ (Soru ve Cevap çiftleri), Analiz (içerik incelemesi), Ders Planı (öğretim tasarımı), Zaman Çizelgesi (kronolojik etkinlik), İskeleler (yazma destekleri), Kavram Sıralama (kategorileme oyunu), Matematik (problem oluşturma), Macera (etkileşimli hikaye) ve Beyin Fırtınası (etkinlik fikirleri). Her oluşturucu, kaynak içeriğinizi farklı biçimlere dönüştürür. Yapılandırma panelini açmak için herhangi bir oluşturucuya tıklayın. Aynı kaynak üzerinde birden fazla oluşturucu kullanılabilir. Oluşturulan içerik çalışma alanında görünür ve geçmişe kaydedilir. İpucu: İçeriğinizi anlamak için Analiz ile başlayın, ardından hedefe yönelik kaynaklar oluşturun.",
     "tool_visual": "Görsel oluşturma aracına erişin. Şunlar dahil AI ile oluşturulan görseller oluşturur: sözcük görselleri, kavram çizimleri, sahne tasvirleri, diyagramlar ve infografikler. Görsel türleri: referans resimler (öğrenme için), çalışma sayfaları (etkinlikler için) ve diyagramlar (ilişkiler için). Görseller şunları destekler: ELL öğrencileri (görsel sözcük dağarcığı), görsel öğrenenler ve etkileşim. Her oluşturma benzersiz resimler oluşturur. Ayarlar stili, kaliteyi ve içeriği denetler. Oluşturulan görseller şunlar yapılabilir: indirilebilir, materyallere gömülebilir ve sözlüklere eklenebilir. AI resim oluşturma kredisi kullanır. İpucu: Yalnızca kelimelerle açıklanması zor olan soyut kavramlar için görseller oluşturun.",
     "tool_udl": "UDL çerçevesi entegrasyonu hakkında bilgi edinin. Öğrenme için Evrensel Tasarımın üç ilkesi vardır: Çoklu Temsil Yolları (öğrenmenin neyi—bilgiyi farklı şekillerde sunma), Çoklu Eylem ve İfade Yolları (öğrenmenin nasılı—öğrencilerin anlayışlarını farklı şekillerde göstermesine izin verme) ve Çoklu Katılım Yolları (öğrenmenin nedeni—ilgiyi motive etme ve sürdürme). Bu araç, üçünü de şunlar aracılığıyla destekler: çeşitli içerik biçimleri, birden fazla etkileşim modu ve oyunlaştırılmış katılım. Tıklamak, her araç özelliğinin UDL araştırmasıyla nasıl uyumlu olduğuna dair ayrıntılı bilgiyi açar. Şunlar için harikadır: mesleki gelişim, IEP gerekçelendirmesi ve pedagojik temeli anlama. İpucu: Araç benimsemesini savunurken UDL ilkelerine başvurun.",
     "tour-analysis-settings": "İçerik analizi oluşturma için ayarlar paneli. Seçenekler şunları içerir: Analiz derinliği (hızlı genel bakış ile kapsamlı inceleme), Odak alanları (sözcük dağarcığı, temalar, yapı, önyargı), Çıktı biçimi (liste, anlatı, karşılaştırmalı) ve Hedef kitle (öğretmen referansı ile öğrenciye yönelik). İhtiyacınız olan analiz türünü almak için oluşturmadan önce yapılandırın. Hızlı analiz daha az zaman alır ancak daha az ayrıntı sağlar. Kapsamlı analiz ayrıntılıdır ancak daha uzun sürer. Odak alanları birleştirilebilir veya önceliklendirilebilir. Çıktı biçimi, sonuçların nasıl sunulduğunu etkiler. Tercih edilen ayarları varsayılan olarak kaydedin. İpucu: İçeriğe genel bakış için hızlı analizle başlayın, ardından belirli alanlarda kapsamlı analiz çalıştırın.",
@@ -7135,7 +7141,6 @@
     "adventure_system_state": "Maceralara kaynak yönetimi mekanikleri ekleyin. Öğrenciler şunları takip eder: Sağlık (riskli seçimlerin sonucu), Altın/Kaynaklar (ekonomik karar verme), İtibar (seçimlerden gelen sosyal sermaye) ve tanımladığınız özel kaynaklar. Eylemler kaynakları görünür şekilde etkiler—eşya almak için altın harca, kötü kararlardan sağlık kaybet, başkalarına yardım ederek itibar kazan. Şunları öğreten anlamlı sonuçlar yaratır: neden-sonuç akıl yürütmesi, ileriyi planlama, kaynak yönetimi ve fırsat maliyeti. Görsel pano mevcut kaynak düzeylerini gösterir. Kaynaklar tükendiğinde oyun uyarlanabilir şekilde yanıt verir (örneğin, düşük sağlık = sınırlı seçenekler). Kaynak hesaplamaları aracılığıyla matematik becerileri doğal olarak entegre olur.",
     "glossary_tier2_count": "Kaç Kademe 2 (akademik) sözcük dahil edileceğini ayarlayın. Kademe 2 sözcükler: konular arasında görünür, akademik bağlamlarda kullanılır ve metin anlama için gereklidir. Örnekler: analiz et, kanıt, önemli, karşıtlık. Bu sözcükler en yüksek öğretim değerine sahiptir—çoğu öğrenci açık öğretimden yararlanır. Önerilen sayı şunlara bağlıdır: metin uzunluğu (kaynak metnin her 100-150 kelimesi için 1 kelime), mevcut öğretim süresi ve öğrenci ihtiyacı. Eksiksiz bir sözcük seti için Kademe 3 sayısıyla dengeleyin. Tüm konularda okuduğunu anlama üzerinde maksimum etki için öğretimi buraya odaklayın.",
     "glossary_tier3_count": "Kaç Kademe 3 (alana özgü) sözcük dahil edileceğini ayarlayın. Kademe 3 sözcükler: bir konu alanına özgüdür, genellikle bağlamda tanımlanır ve konular arasında aktarılmayabilir. Örnekler: fotosentez, payda, aliterasyon, yasama. Bu sözcükler belirli içeriği anlamak için gereklidir ancak alan dışında sınırlı kullanıma sahiptir. Öğretim tipik olarak içerik öğretimi sırasında gerçekleşir. Bir konuya derinlemesine dalmak için daha fazla Kademe 3 ekleyin. Daha geniş okuma becerileri için Kademe 2'ye öncelik verin. Kademe 3 sözcükler ders kitaplarında genellikle kalın veya italik olarak görünür ve disiplin içindeki önemlerine işaret eder.",
-    "glossary_definition_level": "Tanımların nasıl yazıldığını denetleyin. Seçenekler: Kaynakla Aynı (orijinal karmaşıklığı korur—ileri düzey öğrenciler için iyi), Sınıf Düzeyinde (hedef sınıf düzeyi sözcüğüne uyar), Basitleştirilmiş (yaygın kelimeler, daha kısa cümleler kullanır) ve Anaokulu (çok temel dil, somut örnekler). Tanım karmaşıklığını içerik düzeyine değil, öğrenci okuma düzeyine uydurun. İleri düzey biyoloji okuyan 10. sınıf bir öğrenci, tanıdık olmayan terimler için Basitleştirilmiş tanımlara ihtiyaç duyabilir. Seçim yaparken öğrencilerinizin en zayıf okuyucularını göz önünde bulundurun. Tanımlar, bazıları ayarlama gerektiriyorsa oluşturulduktan sonra tek tek düzenlenebilir. Profesyonel ipucu: Başlangıçta Basitleştirilmiş kullanın, ardından daha teknik tanımları sınıfta tartışın.",
     "glossary_custom_instructions": "Sözcük seçimi ve tanım stili için belirli rehberlik sağlayın. Örnekler: 3-5. bölümlerdeki kelimelere odaklan, Yalnızca su döngüsüyle ilgili kelimeleri dahil et, Daha basit anlamlara sahip eş seslilerden kaçın, Latince/Yunanca kökleri için etimoloji ekle, ELL öğrencileri için İspanyolca türdeşleri dahil et ve Pop kültüründen öğrenci dostu örnekler kullan. Özel talimatlar şunları şekillendirir: hangi kelimelerin seçildiği, tanımların nasıl yazıldığı ve hangi ek bilgilerin göründüğü. Açık talimatlar daha iyi hedeflenmiş sözlükler üretir. Şunun gibi belirli biçimler isteyebilirsiniz: Her kelimeyi kullanan bir cümle ekle veya Görsel hafıza kancaları ekle. AI, sözcük seçimleri yaparken talimatları izler.",
     "glossary_language_input": "Sözcük çevirisi için dilleri belirtin. Dilleri girin: İspanyolca, Mandarin, Arapça, Fransızca, Vietnamca, Tagalogca veya herhangi bir dil. Virgülle ayırarak birden fazla dil ekleyebilirsiniz. Her terim şunları gösterir: İngilizce tanım, hedef dil çeviri(leri) ve uygun olduğunda fonetik telaffuz kılavuzu. Şunlar için kullanın: ELL desteği, miras dili bağlantıları, dünya dilleri sözcük dağarcığı ve çok dilli sınıflar. Çeviriler, anında referans için her sözcük kartında görünür. Desteklenen dillerde sesli telaffuz mevcuttur. Araştırmalar, yeni sözcükleri ev dillerine bağlamanın akılda kalmayı iyileştirdiğini gösteriyor. En fazla 4 dil, çeşitli sınıfları desteklerken görsel karmaşayı önler.",
     "glossary_auto_remove": "Çok basit veya yaygın kelimeleri otomatik olarak filtreleyip çıkarır.",
@@ -7269,7 +7274,6 @@
     "fab_dictation": "Eller serbest giriş için konuşmayı metne dönüştürün. Mikrofonu etkinleştirmek için tıklayın, net konuşun ve sözcüklerin görünmesini izleyin. Şunlarda çalışır: metin girişleri, yazma yapı iskeleleri, sohbet ve düzenlenebilir herhangi bir alan. Şunları destekler: birden fazla dil, noktalama komutları (nokta, virgül, yeni satır deyin) ve düzenleme komutları (bunu sil). Dikte, tarayıcıda mikrofon izni gerektirir. Kalite şunlara bağlıdır: mikrofon kalitesi, arka plan gürültüsü ve konuşma netliği. Gerçek zamanlı transkripsiyon siz konuşurken gösterilir. Yazıya dökülen metni normal şekilde düzenleyin. Şunlar için harika: motor zorlukları olan öğrenciler, isteksiz yazarlar ve fikir üretme. İpucu: Daha iyi doğruluk için tam cümlelerle konuşun.",
     "fab_focus": "İmlecinizin etrafındaki dairesel bir alan dışında her şeyi karartan hareketli bir spot ışığı oluşturur. Bu, görsel karmaşayı önemli ölçüde azaltır ve mevcut okuma alanına dikkat sürdürmeye yardımcı olur. Özellikle ADHD, duyusal işleme farklılıkları olan öğrenciler veya yoğun ekranlardan bunalan herkes için faydalıdır. Spot ışığı, farenizi/dokunuşunuzu otomatik olarak takip eder. Spot ışığı boyutunu ve karartma yoğunluğunu Ayarlar → Erişilebilirlik bölümünden ayarlayın.",
     "fab_line_focus": "Odaklı okuma için tek satırlık okuma izolasyon aracı. Etkinleştirildiğinde: diğerleri karartılırken bir metin satırı vurgulanır, görsel odak oluşturur. Şunlarla gezinin: ok tuşları (yukarı/aşağı), metin üzerinde herhangi bir yere tıklama veya mobilde dokunma/kaydırma. Faydalar: görsel kalabalığı azaltır, izleme zorluklarını destekler, yeri korumaya yardımcı olur ve gerilemeyi azaltır. Yoğunluk (çevredeki metnin ne kadarının görünür olduğu) Ayarlar → Erişilebilirlik bölümünden ayarlanabilir. Şunlarda çalışır: oluşturulan metin, kaynak materyaller ve sohbet dahil tüm okuma içeriği. Özellikle şunlar için yararlı: disleksi, ADHD, görsel işleme farklılıkları ve metin yoğun ekranlardan bunalan herkes. İpucu: Maksimum okuma kolaylığı için daha büyük yazı tipiyle birleştirin.",
-    "fab_ruler": "Okuma konumunuzu satır satır izlemenize yardımcı olmak için imlecinizi takip eden yarı saydam yatay bir çubuk ekler. Özellikle disleksi, ADHD veya görsel izleme zorlukları olan kullanıcılar için yararlıdır. Yeniden konumlandırmak için cetveli yukarı/aşağı sürükleyin, hassas kontrol için ok tuşlarını kullanın veya atlamak için herhangi bir yere tıklayın. Cetvel rengi Ayarlar'dan özelleştirilebilir. Sadeleştirilmiş Metin, FAQ ve Sözlük tanımları dahil tüm okuma görünümlerinde çalışır.",
     "fab_timer": "Pomodoro Tekniği'ne dayalı etkileşimli bir odak zamanlayıcı açar. Önceden ayarlanmış sürelerden (5/15/25/45 dakika) seçin veya kendinizinkini özelleştirin. Özellikler şunları içerir: ilerleme halkalı görsel geri sayım, isteğe bağlı mola hatırlatıcıları, tamamlanan oturumlar için XP ödülleri (uzun = daha fazla XP) ve öğretmen incelemesi için oturum kaydı. Neyi başardığınızı izlemek için görevinizi etiketleyin (ör. '3. Bölümü Oku'). Çalışırken çalışabilmeniz için başlık çubuğuna küçülür.",
     "scaffolds_edit_toggle": "Öğretmen düzenleme ile öğrenci görünüm modu arasında geçiş yapın. AÇIK olduğunda (Düzenleme Modu): metni değiştirmek, yeni istemler eklemek, öğeleri silmek ve içeriği yeniden sıralamak için herhangi bir yapı iskelesine tıklayın. KAPALI olduğunda: yapı iskeleleri öğrencilerin gördüğü gibi görüntülenir (salt okunur). Düzenlemeler otomatik kaydedilir. Öğrenciler, geçişinizden bağımsız olarak her zaman salt okunur görür (düzenleme moduna erişemezler). Düzenlemeyi şunlar için kullanın: AI tarafından oluşturulan yapı iskelelerini özelleştirmek, sınıfa özel örnekler eklemek, uygunsuz istemleri kaldırmak ve belirli öğrenciler için farklılaştırmak. Paylaşmadan önce öğrenci görünümünü önizleyin. Orijinal yapı iskeleleri geçmişten geri yüklenebilir. İpucu: Öğretim tarzınıza ve öğrenci ihtiyaçlarına uyduklarından emin olmak için dersten önce yapı iskelelerini gözden geçirin ve düzenleyin.",
     "scaffolds_goal_panel": "Öğrenci referansı için öğrenme hedeflerini görüntüleyin. Hedefler etkinlik sırasında belirgin şekilde görünür. Etkili hedefler şöyledir: öğrenci dostu (Yapabilirim ifadeleri), belirli ve ölçülebilir ve etkinlikle uyumlu. Örnekler: İç Savaş'ın üç nedenini belirleyebilirim veya İddiamı desteklemek için kanıt kullanabilirim. Hedefler şunları artırır: üstbiliş, öz değerlendirme ve amaç netliği. Öğrenciler çalışırken hedeflere başvurabilir. Öğretmen, öğrenci erişiminden önce hedefleri belirler. Birden fazla hedef görüntülenebilir. Hedefler başarı ölçütlerini içerebilir: Paragrafımın bir konu cümlesi olduğunda başardığımı bilirim. Araştırmalar, görünür öğrenme hedeflerinin başarıyı artırdığını gösteriyor.",
@@ -7364,7 +7368,6 @@
     "immersive_line_focus": "Tek satırlık okuma kılavuzunu etkinleştirin. Etkin olduğunda: geçerli okuma satırı tamamen görünür, çevredeki satırlar soluklaştırılır ve siz gezindikçe odak takip eder. Faydalar: görsel aşırı yüklenmeyi azaltır, takibi iyileştirir ve dikkatin geçerli metinde kalmasına yardımcı olur. Şunlarla gezinin: ok tuşları, herhangi bir yere tıklama veya otomatik ilerleme (TTS ile). Soluklaştırma yoğunluğu ayarlarda ayarlanabilir. Şunlar için mükemmeldir: disleksi desteği, dikkat güçlükleri ve takip zorlukları. Çok kipli okuma desteği için metin-konuşma ile iyi birleşir. Satır odağı tüm metin içeriğinde çalışır. Araştırmalar, satır izolasyonunun zorlanan okurlar için kavramayı iyileştirdiğini gösteriyor. İpucu: Maksimum okuma kolaylığı için daha büyük yazı tipiyle birleştirin.",
     "immersive_syllables": "Kod çözme desteği için görsel hece bölümleme. Etkinleştirildiğinde: kelimeler hece kırılmalarıyla görüntülenir (he-ce-le-me), okurların çok heceli kelimelere yaklaşmasına yardımcı olur. Faydalar: fonemik farkındalık oluşturur, kod çözme stratejilerini destekler, biçimbilimsel anlayış geliştirir ve telaffuza yardımcı olur. Özellikle şunlar için yararlıdır: zorlanan kod çözücüler, ELL öğrenciler, disleksi desteği ve karmaşık hece kalıpları olan kelimeler. Heceleme, standart fonetik kurallarını izler. Şunlarda çalışır: uyarlanmış metin, sözlük terimleri ve kaynak materyaller dahil tüm okuma içeriği. Heceleri telaffuz edilirken duymak için ses ile birleştirin. Görsel karmaşıklığı azaltmak için gerekmediğinde kapatın. İpucu: Zorlayıcı kelimeler için kullanın, ardından akıcı okuma alıştırması için devre dışı bırakın.",
     "immersive_wide_text": "Daha fazla yatay ekran alanı kullanmak için metni genişletin. Etkin olduğunda: satır uzunluğu artar, daha az kaydırma gerekir ve aynı anda daha fazla metin görünür. Şunlar için iyidir: akıcı okurlar, geniş ekranlar ve bilgi tararken. Varsayılan dar genişlik şunlar için daha iyidir: zorlanan okurlar, mobil cihazlar ve odaklanmış okuma. Optimal satır uzunluğu okura ve cihaza göre değişir. Araştırmalar, satır başına 50-75 karakterin çoğu okur için ideal olduğunu gösteriyor. Geniş metin, okunabilirliği verimlilikle değiştirir. Takip zorlaşırsa satır odağı ile birleştirin. Ayar cihaz başına hatırlanır. İpucu: Araştırma ve tarama için geniş metin, yakın okuma için dar metin kullanın.",
-    "sidebar_tab_create": "Tüm AI destekli araçları içeren içerik oluşturma panelini açın. Kullanılabilir oluşturucular: Sınav (cevap anahtarlı değerlendirmeler), Sözlük (görsel kelime), Taslak (grafik düzenleyiciler), Analiz (içerik incelemesi), Ders Planı (yapılandırılmış öğretim), Zaman Çizelgesi (kronolojik etkinlikler), Basitleştirilmiş Metin (düzeyli okuma) ve daha fazlası. Her araç, oluşturmadan önce özelleştirme için bir yapılandırma paneli açar. Çoğu aracın analiz etmesi için kaynak içerik yüklenmelidir. Oluşturulan içerik ana çalışma alanında görünür ve geçmişe kaydedilir. Birincil içerik oluşturma merkeziniz olarak Oluştur sekmesini kullanın. İpucu: İçeriği anlamak için Analiz ile başlayın, ardından hedefe yönelik kaynaklar oluşturun.",
     "sidebar_tab_history": "Kaydedilmiş tüm içeriğinize ve oturum geçmişinize erişin. Geçmiş şunları içerir: son çalışmadan otomatik kaydedilen oturumlar, manuel kaydedilen projeler ve portföyler, oluşturma tarihine göre düzenlenmiş kaynaklar ve öğrenci gönderimleri (öğretmen görünümü). Eylemler: çalışmaya devam etmek için herhangi bir öğeyi yükleyin, depolamayı boşaltmak için öğeleri silin, yedekleme için dışa aktarın ve anahtar kelimeyle arayın. Geçmiş, varsayılan olarak en sonuncuya göre sıralanır. Belirli kaynakları bulmak için türe göre filtreleyin (sınav, sözlük, macera vb.). Bulutla eşitlenen geçmiş, herhangi bir cihazdan erişilebilir. Depolama sınırları hesaba göre değişir—sınıra yaklaşıyorsanız eski öğeleri silin. Geçmişiniz, kişisel öğretim kaynak kitaplığınızdır.",
     "socratic_toggle": "Daha derin öğrenme için Sokratik diyalog modunu etkinleştirin. AÇIK olduğunda: AI asla doğrudan cevap vermez—bunun yerine öğrencileri keşfe yönlendiren sorgulayıcı sorular sorar. Faydalar: eleştirel düşünmeyi geliştirir, öz düzeltmeyi teşvik eder, problem çözme becerileri oluşturur ve akılda kalıcı öğrenme anları yaratır. AI şu teknikleri kullanır: açıklayıcı sorular (...ile ne demek istiyorsun?), varsayımlara meydan okuma (Peki ya...?) ve kanıt istekleri (Bunu nereden biliyorsun?). Şunlar için en iyisidir: tartışma hazırlığı, kavram keşfi ve hızlı cevap isteyen öğrencilerin daha derin düşünmesine yardımcı olma. Verimlilik arayan öğrencileri hayal kırıklığına uğratabilir—amacı açıklayın.",
     "socratic_input": "Sokratik keşif için sorunuzu veya ifadenizi girin. AI, cevaplar yerine sorularla yanıt verecek. İyi başlangıç noktaları: [X]'in neden olduğunu düşünüyorsun? [Y]'yi önemli kılan nedir? veya [Z]'ye inanıyorum çünkü... AI mantığınızı sorgular: kanıt isteme, sonuçları keşfetme, mantığı sınama ve varsayımları ortaya çıkarma. Bu, argümantasyon ve eleştirel düşünme becerilerini geliştirir. Şunlara hazırlıklı olun: düşüncenizi gerekçelendirme, alternatifleri değerlendirme ve konumunuzu iyileştirme. Sokratik diyaloglar başlangıçta sinir bozucu olabilir ancak kalıcı anlayış oluşturur. Yanıtlarınız ve mantığınız yansıtma için izlenir.",
@@ -31311,7 +31314,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Geçerli medyayı açıkla",
+    "describe_current_media_done": "{count} medyadan {index}. okunuyor.",
+    "describe_current_media_hint": "Kaynaktan çıkmadan geçerli veya sonraki medya açıklamasını oku",
+    "describe_current_media_none": "Geçerli kaynakta medya yok.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore aç",
+    "open_learning_web_explorer_done": "Learning Web: Explore açıldı.",
+    "open_learning_web_explorer_hint": "Standartları, kavramları, dersleri, kanıtları ve sözcük bağlantılarını tek bir haritada keşfedin",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Tüm medya açıklamalarını oku",
+    "read_media_descriptions_count": "{count} medya açıklaması okunuyor.",
+    "read_media_descriptions_hint": "Geçerli kaynaktaki yazılmış her görsel, video veya ses açıklamasını oku",
+    "read_media_descriptions_none": "Geçerli kaynakta medya yok.",
+    "suggest_contextual_next_steps": "3 sonraki adım öner",
+    "suggest_contextual_next_steps_hint": "Bağlama uygun üç seçenek sunar, birini seçmez veya çalıştırmaz",
+    "suggest_contextual_next_steps_working": "Geçerli ders bağlamı okunuyor ve üç seçenek hazırlanıyor...",
+    "surprise_me_contextually": "Bana yararlı bir sonraki adım öner",
+    "surprise_me_contextually_hint": "Geçerli ders bağlamından mantıklı ve düşük riskli tek bir sonraki eylemi seçer",
+    "surprise_me_contextually_working": "Geçerli ders bağlamı okunuyor ve yararlı bir sonraki adım seçiliyor...",
+    "use_contextual_suggestion": "Önerilen bir sonraki adımı kullan",
+    "use_contextual_suggestion_hint": "Son önerilerden 1, 2 veya 3 numaralı seçeneği çalıştırır",
+    "use_contextual_suggestion_working": "Seçilen sonraki adım başlatılıyor..."
   },
   "palette": {
     "aria": "AlloFlow komut paleti",
@@ -31334,10 +31363,11 @@
       "videoStudio": "Burada — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Her eylem duyurulur. Ctrl+K aç/kapatır.",
     "group": {
@@ -31631,6 +31661,12 @@
     "diff_types_hint": "Şunlar için farklılaştırılmış bir set oluşturun:",
     "diff_cost": "Çalıştırma başına yaklaşık {n} üretim.",
     "summary_standards": "standartlar",
-    "summary_interests": "ilgi alanları"
+    "summary_interests": "ilgi alanları",
+    "translations": "Çeviriler",
+    "translations_auto": "Otomatik ({language})",
+    "translations_auto_plain": "Otomatik",
+    "translations_none": "Yok",
+    "translations_on_hint": "{output} dilindeki kaynaklara {target} dilinde bir sürüm de eklenir.",
+    "translations_off_hint": "Kaynaklar yalnızca {output} dilinde olur, ikinci dil eklenmez."
   }
 }

@@ -2253,7 +2253,7 @@
     "ai_guide_sub": "शिक्षाशास्त्र, नेविगेशन और स्वतः-सेटअप",
     "ai_guide_welcome": "नमस्ते! मैं आपका AI गाइड हूं। मैं UDL रणनीतियों में मदद कर सकता हूं, आपके लिए ऐप नेविगेट कर सकता हूं, या आपकी पाठ सेटिंग्स को स्वचालित रूप से सेटअप कर सकता हूं। बस पूछें!",
     "tool_analysis": "विश्लेषण करें स्रोत सामग्री",
-    "tool_glossary": "शब्दकोश & भाषा Selection",
+    "tool_glossary": "शब्दकोश",
     "tool_simplified": "पाठ Adaptation",
     "tool_outline": "दृश्य Organizer",
     "tool_visual": "दृश्य समर्थन",
@@ -2983,7 +2983,7 @@
     "choose_destination_aria": "चुनें एक destination"
   },
   "glossary": {
-    "title": "शब्दकोश & भाषा Selection",
+    "title": "शब्दकोश",
     "tier2": "स्तर 2 (Acad.)",
     "tier2_tooltip": "विभिन्न विषयों में उपयोग किए जाने वाले उच्च-उपयोगिता शैक्षणिक शब्द (जैसे, 'analyze', 'verify')।",
     "tier3": "स्तर 3 (Domain)",
@@ -3925,7 +3925,12 @@
     "gauge_simple": "सरल",
     "word_bank_both": "दोनों",
     "word_bank_language": "शब्द बैंक की भाषा",
-    "word_bank_english": "अंग्रेज़ी"
+    "word_bank_english": "अंग्रेज़ी",
+    "measured_level_label": "मापा गया पठन स्तर",
+    "measured_on_target": "{grade} के लिए ठीक",
+    "measured_above": "{grade} स्तर से ऊपर",
+    "measured_below": "{grade} स्तर से नीचे",
+    "measured_note": "Flesch-Kincaid, इसी पाठ पर मापा गया। पूरी जाँच के लिए जाँच स्तर का उपयोग करें।"
   },
   "quiz": {
     "title": "आकलन",
@@ -5871,7 +5876,9 @@
     "title_poettree_config": "🌳 PoetTree असाइनमेंट",
     "title_poettree_submission": "🌳 कविता सबमिशन",
     "title_litlab_config": "🎭 LitLab असाइनमेंट",
-    "title_litlab_submission": "🎭 प्रदर्शन सबमिशन"
+    "title_litlab_submission": "🎭 प्रदर्शन सबमिशन",
+    "translation_block": "अनुवाद",
+    "translation_into": "अनुवाद ({language})"
   },
   "persona": {
     "title": "Interview मोड",
@@ -6289,7 +6296,7 @@
   },
   "tools": {
     "source": "स्रोत सामग्री",
-    "glossary": "शब्दकोश & भाषा Selection",
+    "glossary": "शब्दकोश",
     "simplified": "पाठ Adaptation & जुड़ाव",
     "outline": "दृश्य Organizer",
     "quiz": "आकलन",
@@ -6878,7 +6885,6 @@
     "source_settings_instructions": "AI सामग्री निर्माण को विशिष्ट निर्देशों के साथ मार्गदर्शित करें (जैसे विषय, स्वर, सीमाएँ)।",
     "source_verify_checkbox": "सक्षम करें AI fact-checking via Google खोजें grounding. जब ON: AI cross-references उत्पन्न सामग्री against web sources, flagging या correcting potential inaccuracies. Adds 5-10 सेकंड को पीढ़ी समय लेकिन significantly improves reliability के लिए factual सामग्री. Especially important के लिए: इतिहास (dates, घटनाएं), science (processes, डेटा), biography, और वर्तमान घटनाएं. के लिए fiction, रचनात्मक लेखन, या hypothetical परिदृश्य, यह सकता है be disabled को अनुमति अधिक रचनात्मक freedom. Sources consulted हैं listed में पीढ़ी log के लिए शिक्षक समीक्षा. Highly recommended के लिए कोई भी सामग्री वह होगा be presented as factual को छात्र.",
     "source_generate_button": "बनाएं AI-written सामग्री पर आपका specified विषय. क्लिक करें को begin पीढ़ी उपयोग करते हुए आपका: विषय description, लक्ष्य लंबाई, कक्षा स्तर, और अनुकूलित निर्देश. पीढ़ी takes 10-20 सेकंड. आउटपुट है reviewed by safety filters पहले प्रदर्शन. उत्पन्न सामग्री सकता है be: edited (शिक्षक सकता है संशोधित करें कोई भी part), analyzed (चलाएं के माध्यम से अन्य पीढ़ी उपकरण), और सहेजा गया (जोड़ें को इतिहास के लिए reuse). उपयोग करें जब: आप आवश्यकता सामग्री पर एक विशिष्ट विषय, चाहते controlled जटिलता, या आवश्यकता को fill curriculum gaps. उत्पन्न सामग्री शामिल है: उपयुक्त शब्दावली, तर्क organization, और कक्षा-स्तर syntax. Verify factual सटीकता पहले कक्षा उपयोग करें.",
-    "generator_actions": "Hub के लिए सभी सामग्री पीढ़ी उपकरण. उपलब्ध generators शामिल करें: प्रश्नोत्तरी (मूल्यांकन के साथ उत्तर keys), शब्दकोश (दृश्य शब्दावली), Simplified पाठ (स्तर पढ़ना), FAQ (Q और एक pairs), विश्लेषण (सामग्री examination), पाठ योजना (instructional design), Timeline (chronologic गतिविधि), Scaffolds (लेखन समर्थन), अवधारणा क्रमबद्ध करें (categorization खेल), गणित (problem पीढ़ी), साहसिक (इंटरैक्टिव कहानी), और Brainstorm (गतिविधि ideas). प्रत्येक generator बदलता है आपका स्रोत सामग्री में अलग प्रारूप. क्लिक करें कोई भी generator को खोलें its configuration पैनल. कई generators सकता है be उपयोग किया गया पर समान स्रोत. उत्पन्न सामग्री दिखाई देता में workspace और सहेजता है को इतिहास. सुझाव: शुरू करें के साथ विश्लेषण को समझें आपका सामग्री, फिर उत्पन्न करें targeted संसाधन.",
     "tool_visual": "पहुंच दृश्य generator उपकरण. Creates AI-generated छवि सहित: शब्दावली दृश्य, अवधारणा चित्रण, दृश्य depictions, आरेख, और infographics. दृश्य टाइप करें: संदर्भ छवि (के लिए सीखना), worksheets (के लिए गतिविधियां), और आरेख (के लिए relationships). दृश्य समर्थन: ELL छात्र (दृश्य शब्दावली), दृश्य शिक्षार्थी, और जुड़ाव. प्रत्येक पीढ़ी बनाता है unique छवि. सेटिंग्स नियंत्रण शैली, गुणवत्ता, और सामग्री. उत्पन्न दृश्य सकता है be: downloaded, embedded में सामग्री, और added को glossaries. Uses AI छवि पीढ़ी credits. सुझाव: उत्पन्न करें दृश्य के लिए abstract अवधारणाएं वह हैं difficult को explain के साथ शब्द alone.",
     "tool_udl": "UDL ढाँचा एकीकरण के बारे में जानें। Universal Design for Learning के तीन सिद्धांत: प्रतिनिधित्व, क्रिया एवं अभिव्यक्ति, और जुड़ाव।",
     "tour-analysis-settings": "समायोजित parameters के लिए readability विश्लेषण, सहित लक्ष्य पढ़ना स्तर और विशिष्ट metrics को track.",
@@ -6903,7 +6909,6 @@
     "adventure_system_state": "Adventure Mode में संसाधन प्रबंधन mechanics जोड़ें—स्वास्थ्य, सोना, प्रतिष्ठा और कस्टम संसाधन।",
     "glossary_tier2_count": "सेट करें कैसे many स्तर 2 (शैक्षणिक) शब्दावली शब्द को शामिल करें. स्तर 2 शब्द: दिखाई देना के पार subjects, हैं उपयोग किया गया में शैक्षणिक contexts, और हैं essential के लिए पाठ समझ. उदाहरण: विश्लेषण करें, सबूत, significant, contrast. These शब्द है highest instructional मान—सबसे ज़्यादा छात्र benefit से explicit सिखाना. Recommended गिनें depends पर: पाठ लंबाई (1 शब्द प्रति 100-150 शब्द का स्रोत), उपलब्ध निर्देश समय, और छात्र आवश्यकता. Balance के साथ स्तर 3 गिनें के लिए एक पूरा करें शब्दावली सेट करें. फोकस निर्देश here के लिए maximum impact पर पढ़ना समझ के पार सभी subjects.",
     "glossary_tier3_count": "कितने Tier 3 (डोमेन-विशिष्ट) शब्दावली शब्द शामिल किए जाएं, यह निर्धारित करें।",
-    "glossary_definition_level": "नियंत्रण कैसे परिभाषा हैं written. विकल्प: समान as स्रोत (maintains मूल जटिलता—अच्छा के लिए उन्नत छात्र), पर कक्षा (matches लक्ष्य कक्षा स्तर शब्दावली), Simplified (उपयोग करता है सामान्य शब्द, छोटा वाक्य), और Kindergarten (very बुनियादी भाषा, concrete उदाहरण). मिलान परिभाषा जटिलता को छात्र पढ़ना स्तर, नहीं सामग्री स्तर. एक 10th-grader studying उन्नत biology might आवश्यकता Simplified परिभाषा के लिए unfamiliar शब्द. विचार आपका छात्र weakest पाठक जब selecting. परिभाषा सकता है be individually edited बाद पीढ़ी यदि कुछ आवश्यकता adjustment. Pro सुझाव: उपयोग करें Simplified initially, फिर discuss अधिक technical परिभाषा में कक्षा.",
     "glossary_custom_instructions": "शब्दावली चयन और परिभाषा शैली के लिए विशिष्ट मार्गदर्शन प्रदान करें (फोकस, विषय, उदाहरण)।",
     "glossary_language_input": "निर्दिष्ट करें भाषा के लिए शब्दावली अनुवाद. दर्ज करें भाषा: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, या कोई भी भाषा. आप सकता है जोड़ें कई भाषा separated by commas. प्रत्येक शब्द होगा दिखाएं: English परिभाषा, लक्ष्य भाषा अनुवाद(s), और phonetic pronunciation guide कहाँ applicable. उपयोग करें के लिए: ELL समर्थन, heritage भाषा connections, world भाषा शब्दावली, और multilingual classrooms. अनुवाद दिखाई देना पर every शब्दावली कार्ड के लिए instant संदर्भ. ऑडियो pronunciation उपलब्ध में समर्थन भाषा. Research दिखाता है connecting नया शब्दावली को home भाषा improves retention. Max 4 भाषा prevents दृश्य clutter जबकि समर्थन विविध classrooms.",
     "glossary_auto_remove": "स्वचालित रूप से फ़िल्टर out very सरल या सामान्य शब्द.",
@@ -7037,7 +7042,6 @@
     "fab_dictation": "Convert speech को पाठ के लिए hands-free इनपुट. क्लिक करें को activate microphone, बोलें clearly, और देखें शब्द दिखाई देना. काम करता में: पाठ इनपुट, लेखन scaffolds, चैट, और कोई भी editable field. समर्थन: कई भाषा, punctuation commands (say period, comma, नया रेखा), और editing commands (हटाएं वह). Dictation requires microphone permission में browser. गुणवत्ता depends पर: microphone गुणवत्ता, background noise, और speech clarity. वास्तविक समय transcription दिखाता है as आप बोलें. संपादित करें transcribed पाठ normally. बढ़िया के लिए: छात्र के साथ motor चुनौती, reluctant writers, और idea पीढ़ी. सुझाव: बोलें में पूरा करें वाक्य के लिए बेहतर सटीकता.",
     "fab_focus": "Creates एक movable spotlight वह dims everything except एक circular क्षेत्रफल around आपका cursor. यह dramatically reduces दृश्य clutter और मदद maintain attention पर वर्तमान पढ़ना क्षेत्रफल. Especially beneficial के लिए छात्र के साथ ADHD, sensory processing अंतर, या anyone overwhelmed by busy screens. spotlight follows आपका mouse/touch स्वचालित रूप से. समायोजित spotlight size और dim intensity में सेटिंग्स → पहुंच.",
     "fab_line_focus": "focused पठन के लिए single-line पठन isolation उपकरण। एक पंक्ति highlight होती है जबकि अन्य dim हो जाती हैं।",
-    "fab_ruler": "Adds एक semi-transparent horizontal बार वह follows आपका cursor को सहायता track आपका पढ़ना स्थिति रेखा by रेखा. Particularly helpful के लिए users के साथ dyslexia, ADHD, या दृश्य ट्रैकिंग difficulties. खींचें ruler up/down को reposition, उपयोग करें arrow keys के लिए fine नियंत्रण, या क्लिक करें anywhere को jump. ruler रंग सकता है be customized में सेटिंग्स. काम करता के पार सभी पढ़ना views सहित Simplified पाठ, FAQ, और शब्दकोश परिभाषा.",
     "fab_timer": "Opens एक इंटरैक्टिव फोकस timer आधारित पर Pomodoro Technique. चुनें से preset durations (5/15/25/45 minutes) या अनुकूलित करें आपका own. विशेषताएं शामिल करें: दृश्य countdown के साथ प्रगति ring, वैकल्पिक break reminders, XP पुरस्कार के लिए completed सत्र (लंबा = अधिक XP), और सत्र logging के लिए शिक्षक समीक्षा. Label आपका task (e.g., 'पढ़ें अध्याय 3') को track क्या आप accomplished. Minimizes को header बार so आप सकता है काम जबकि it runs.",
     "scaffolds_edit_toggle": "टॉगल करें के बीच शिक्षक editing और छात्र देखें मोड. जब ON (संपादित करें मोड): क्लिक करें कोई भी scaffold को संशोधित करें पाठ, जोड़ें नया संकेत, हटाएं आइटम, और reorder सामग्री. जब OFF: scaffolds प्रदर्शन as छात्र देखें them (पढ़ें-केवल). Edits सहेजें स्वचालित रूप से. छात्र always देखें पढ़ें-केवल regardless का आपका टॉगल करें (वे cannot पहुंच संपादित करें मोड). उपयोग करें editing को: अनुकूलित करें AI-generated scaffolds, जोड़ें कक्षा-विशिष्ट उदाहरण, हटाएं inappropriate संकेत, और विभेदित करें के लिए विशिष्ट छात्र. Preview छात्र देखें पहले sharing. मूल scaffolds सकता है be restored से इतिहास. सुझाव: समीक्षा और संपादित करें scaffolds पहले कक्षा को ensure वे मिलान आपका सिखाना शैली और छात्र needs.",
     "scaffolds_goal_panel": "प्रदर्शन सीखना objectives के लिए छात्र संदर्भ. लक्ष्य दिखाई देना prominently के दौरान गतिविधि. Effective लक्ष्य हैं: छात्र-मित्रवत (I सकता है statements), विशिष्ट और measurable, और aligned को गतिविधि. उदाहरण: I सकता है पहचानना three causes का Civil War या I सकता है उपयोग करें सबूत को समर्थन my claim. लक्ष्य increase: metacognition, स्वयं-मूल्यांकन, और purpose clarity. छात्र सकता है संदर्भ लक्ष्य जबकि working. शिक्षक sets लक्ष्य पहले छात्र पहुंच. कई लक्ष्य सकता है be displayed. लक्ष्य सकता है शामिल करें सफलता criteria: I know I है succeeded जब my अनुच्छेद has एक विषय वाक्य. Research दिखाता है दृश्यमान सीखना targets improve उपलब्धि.",
@@ -7132,7 +7136,6 @@
     "immersive_line_focus": "single-line पठन मार्गदर्शिका सक्षम करें। वर्तमान पंक्ति पूरी तरह दिखती है जबकि आसपास की पंक्तियाँ dim हो जाती हैं।",
     "immersive_syllables": "decoding समर्थन के लिए दृश्य syllable segmentation। शब्दों को syllable breaks के साथ दिखाता है (जैसे hy-phen-at-ed)।",
     "immersive_wide_text": "Expand पाठ को उपयोग करें अधिक horizontal स्क्रीन space. जब सक्रिय: रेखा लंबाई increases, कम scrolling है needed, और अधिक पाठ है दृश्यमान at once. अच्छा के लिए: fluent पाठक, wide displays, और जब scanning के लिए जानकारी. डिफ़ॉल्ट narrow चौड़ाई है बेहतर के लिए: संघर्ष पाठक, mobile devices, और focused पढ़ना. Optimal रेखा लंबाई varies by पाठक और device. Research दिखाता है 50-75 पात्र प्रति रेखा है ideal के लिए सबसे ज़्यादा पाठक. Wide पाठ trades readability के लिए efficiency. Combine के साथ रेखा फोकस यदि ट्रैकिंग becomes difficult. सेटिंग है remembered प्रति device. सुझाव: उपयोग करें wide पाठ के लिए research और scanning, narrow पाठ के लिए बंद करें पढ़ना.",
-    "sidebar_tab_create": "सभी AI-संचालित उपकरणों के साथ सामग्री निर्माण पैनल खोलें—Quiz, Glossary, Outline, Analysis आदि।",
     "sidebar_tab_history": "अपनी सभी सहेजी गई सामग्री और सत्र इतिहास तक पहुँचें—स्वचालित-सहेजे गए सत्र और manually-सहेजे projects।",
     "socratic_toggle": "गहन सीखने के लिए Socratic dialogue mode सक्षम करें। ON: AI सीधे उत्तर नहीं देता, बल्कि probing प्रश्न पूछता है।",
     "socratic_input": "Socratic exploration के लिए अपना प्रश्न या statement दर्ज करें। AI उत्तर के बजाय प्रश्नों से प्रतिक्रिया देगा।",
@@ -31131,7 +31134,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "मौजूदा मीडिया का वर्णन करें",
+    "describe_current_media_done": "{count} में से {index} मीडिया पढ़ा जा रहा है।",
+    "describe_current_media_hint": "संसाधन छोड़े बिना मौजूदा या अगले मीडिया का वर्णन पढ़ें",
+    "describe_current_media_none": "मौजूदा संसाधन में कोई मीडिया नहीं है।",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore खोलें",
+    "open_learning_web_explorer_done": "Learning Web: Explore खुल गया।",
+    "open_learning_web_explorer_hint": "एक ही नक्शे में मानक, अवधारणाएँ, पाठ, प्रमाण और शब्दों के संबंध देखें",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "सभी मीडिया वर्णन पढ़ें",
+    "read_media_descriptions_count": "{count} मीडिया वर्णन पढ़े जा रहे हैं।",
+    "read_media_descriptions_hint": "मौजूदा संसाधन में लिखा हर चित्र, वीडियो या ऑडियो वर्णन पढ़ें",
+    "read_media_descriptions_none": "मौजूदा संसाधन में कोई मीडिया नहीं है।",
+    "suggest_contextual_next_steps": "3 अगले कदम सुझाएँ",
+    "suggest_contextual_next_steps_hint": "संदर्भ के अनुसार तीन विकल्प देता है, किसी को चुनता या चलाता नहीं",
+    "suggest_contextual_next_steps_working": "मौजूदा पाठ का संदर्भ पढ़कर तीन विकल्प तैयार किए जा रहे हैं...",
+    "surprise_me_contextually": "कोई उपयोगी अगला कदम बताकर चौंका दें",
+    "surprise_me_contextually_hint": "मौजूदा पाठ के संदर्भ से एक समझदार और कम जोखिम वाला अगला काम चुनता है",
+    "surprise_me_contextually_working": "मौजूदा पाठ का संदर्भ पढ़कर एक उपयोगी अगला कदम चुना जा रहा है...",
+    "use_contextual_suggestion": "सुझाया गया अगला कदम इस्तेमाल करें",
+    "use_contextual_suggestion_hint": "हाल के सुझावों में से विकल्प 1, 2 या 3 चलाता है",
+    "use_contextual_suggestion_working": "चुना गया अगला कदम शुरू किया जा रहा है..."
   },
   "palette": {
     "aria": "AlloFlow कमांड पैलेट",
@@ -31154,10 +31183,11 @@
       "videoStudio": "यहाँ — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "हर क्रिया की घोषणा की जाती है। Ctrl+K टॉगल करता है।",
     "group": {
@@ -31482,6 +31512,12 @@
     "diff_types_hint": "इनके लिए अलग-अलग स्तरों वाला सेट बनाएँ:",
     "diff_cost": "हर रन में लगभग {n} जनरेशन।",
     "summary_standards": "मानक",
-    "summary_interests": "रुचियाँ"
+    "summary_interests": "रुचियाँ",
+    "translations": "अनुवाद",
+    "translations_auto": "स्वचालित ({language})",
+    "translations_auto_plain": "स्वचालित",
+    "translations_none": "कोई नहीं",
+    "translations_on_hint": "{output} में बने संसाधनों के साथ {target} रूप भी मिलेगा।",
+    "translations_off_hint": "संसाधन केवल {output} में होंगे, दूसरी भाषा के बिना।"
   }
 }

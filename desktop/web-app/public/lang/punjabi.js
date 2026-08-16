@@ -2253,7 +2253,7 @@
     "ai_guide_sub": "ਸਿੱਖਿਆ-ਸ਼ਾਸਤਰ, ਨੈਵੀਗੇਸ਼ਨ ਅਤੇ ਆਟੋ-ਸੈੱਟਅੱਪ",
     "ai_guide_welcome": "ਨਮਸਕਾਰ! ਮੈਂ ਤੁਹਾਡਾ AI ਗਾਈਡ ਹਾਂ। ਮੈਂ UDL ਰਣਨੀਤੀਆਂ ਵਿੱਚ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ, ਤੁਹਾਡੇ ਲਈ ਐਪ ਨੇਵੀਗੇਟ ਕਰ ਸਕਦਾ ਹਾਂ, ਜਾਂ ਤੁਹਾਡੀ ਪਾਠ ਸੈਟਿੰਗਾਂ ਨੂੰ ਆਪਣੇ ਆਪ ਸੈਟਅੱਪ ਕਰ ਸਕਦਾ ਹਾਂ। ਬੱਸ ਪੁੱਛੋ!",
     "tool_analysis": "ਵਿਸ਼ਲੇਸ਼ਣ ਕਰੋ ਸਰੋਤ ਸਮੱਗਰੀ",
-    "tool_glossary": "ਸ਼ਬਦਕੋਸ਼ & ਭਾਸ਼ਾ Selection",
+    "tool_glossary": "ਸ਼ਬਦਕੋਸ਼",
     "tool_simplified": "ਟੈਕਸਟ Adaptation",
     "tool_outline": "ਦ੍ਰਿਸ਼ਟੀ Organizer",
     "tool_visual": "ਦ੍ਰਿਸ਼ਟੀ ਸਹਾਇਤਾ",
@@ -2983,7 +2983,7 @@
     "choose_destination_aria": "ਚੁਣੋ ਇੱਕ destination"
   },
   "glossary": {
-    "title": "ਸ਼ਬਦਕੋਸ਼ & ਭਾਸ਼ਾ Selection",
+    "title": "ਸ਼ਬਦਕੋਸ਼",
     "tier2": "ਟੀਅਰ 2 (ਅਕਾਦਮਿਕ)",
     "tier2_tooltip": "ਵਿਸ਼ਿਆਂ ਵਿੱਚ ਵਰਤੇ ਜਾਣ ਵਾਲੇ ਉੱਚ-ਉਪਯੋਗਤਾ ਅਕਾਦਮਿਕ ਸ਼ਬਦ (ਉਦਾ., 'ਵਿਸ਼ਲੇਸ਼ਣ ਕਰੋ', 'ਤਸਦੀਕ ਕਰੋ')।",
     "tier3": "ਟੀਅਰ 3 (ਖੇਤਰ)",
@@ -3925,7 +3925,12 @@
     "gauge_simple": "ਸਾਦਾ",
     "word_bank_both": "ਦੋਵੇਂ",
     "word_bank_language": "ਸ਼ਬਦ ਬੈਂਕ ਦੀ ਭਾਸ਼ਾ",
-    "word_bank_english": "ਅੰਗਰੇਜ਼ੀ"
+    "word_bank_english": "ਅੰਗਰੇਜ਼ੀ",
+    "measured_level_label": "ਮਾਪਿਆ ਗਿਆ ਪੜ੍ਹਨ ਪੱਧਰ",
+    "measured_on_target": "{grade} ਲਈ ਠੀਕ",
+    "measured_above": "{grade} ਪੱਧਰ ਤੋਂ ਉੱਪਰ",
+    "measured_below": "{grade} ਪੱਧਰ ਤੋਂ ਹੇਠਾਂ",
+    "measured_note": "Flesch-Kincaid, ਇਸੇ ਲਿਖਤ ਉੱਤੇ ਮਾਪਿਆ। ਪੂਰੀ ਜਾਂਚ ਲਈ ਜਾਂਚ ਪੱਧਰ ਵਰਤੋ।"
   },
   "quiz": {
     "title": "ਮੁਲਾਂਕਣ",
@@ -5871,7 +5876,9 @@
     "title_poettree_config": "🌳 PoetTree ਅਸਾਈਨਮੈਂਟ",
     "title_poettree_submission": "🌳 ਕਵਿਤਾ ਜਮ੍ਹਾਂ",
     "title_litlab_config": "🎭 LitLab ਅਸਾਈਨਮੈਂਟ",
-    "title_litlab_submission": "🎭 ਪ੍ਰਦਰਸ਼ਨ ਜਮ੍ਹਾਂ"
+    "title_litlab_submission": "🎭 ਪ੍ਰਦਰਸ਼ਨ ਜਮ੍ਹਾਂ",
+    "translation_block": "ਅਨੁਵਾਦ",
+    "translation_into": "ਅਨੁਵਾਦ ({language})"
   },
   "persona": {
     "title": "Interview ਮੋਡ",
@@ -6290,7 +6297,7 @@
   },
   "tools": {
     "source": "ਸਰੋਤ ਸਮੱਗਰੀ",
-    "glossary": "ਸ਼ਬਦਕੋਸ਼ & ਭਾਸ਼ਾ Selection",
+    "glossary": "ਸ਼ਬਦਕੋਸ਼",
     "simplified": "ਟੈਕਸਟ Adaptation & ਸ਼ਮੂਲੀਅਤ",
     "outline": "ਦ੍ਰਿਸ਼ਟੀ Organizer",
     "quiz": "ਮੁਲਾਂਕਣ",
@@ -6879,7 +6886,6 @@
     "source_settings_instructions": "Guide AI ਸਮੱਗਰੀ ਪੀੜ੍ਹੀ ਨਾਲ ਖਾਸ ਹਦਾਇਤ. ਉਦਾਹਰਨ: ਬਣਾਓ it ਆਕਰਸ਼ਕ ਲਈ reluctant ਪਾਠਕ, ਫੋਕਸ ਉੱਤੇ water cycle, ਸ਼ਾਮਲ ਕਰੋ diverse ਪਾਤਰ names, Avoid references ਨੂੰ violence, ਅਤੇ ਵਰਤੋ ਸਾਦਾ ਸ਼ਬਦਾਵਲੀ ਲਈ ELL ਵਿਦਿਆਰਥੀ. ਹਦਾਇਤ ਆਕਾਰ: ਸੁਰ, ਸਮੱਗਰੀ ਫੋਕਸ, ਸ਼ਬਦਾਵਲੀ ਪੱਧਰ, ਅਤੇ perspective. Be ਖਾਸ ਲਈ ਸਭ ਤੋਂ ਵਧੀਆ ਨਤੀਜਾ. ਕਈ ਹਦਾਇਤ ਸਕਦਾ ਹੈ be combined. ਹਦਾਇਤ ਹਨ processed along ਨਾਲ ਤੁਹਾਡਾ ਵਿਸ਼ਾ ਅਤੇ ਸੈਟਿੰਗਾਂ. ਲਈ sensitive topics, ਸ਼ਾਮਲ ਕਰੋ ਸਮੱਗਰੀ guidance. ਹਦਾਇਤ do ਨਹੀਂ guarantee ਖਾਸ outcomes ਪਰ strongly influence ਪੀੜ੍ਹੀ. ਸੁਝਾਅ: ਸ਼ਾਮਲ ਕਰੋ ਜਮਾਤ ਪੱਧਰ ਅਤੇ ਕੋਈ ਵੀ ਸਮੱਗਰੀ restrictions ਵਿੱਚ ਤੁਹਾਡਾ ਹਦਾਇਤ ਲਈ ਜ਼ਿਆਦਾਤਰ ਉਚਿਤ ਆਉਟਪੁੱਟ.",
     "source_verify_checkbox": "ਯੋਗ ਕਰੋ AI fact-checking via Google ਖੋਜੋ grounding. ਜਦੋਂ ON: AI cross-references ਤਿਆਰ ਕੀਤਾ ਗਿਆ ਸਮੱਗਰੀ against web sources, flagging ਜਾਂ correcting potential inaccuracies. Adds 5-10 ਸਕਿੰਟ ਨੂੰ ਪੀੜ੍ਹੀ ਸਮਾਂ ਪਰ significantly improves reliability ਲਈ factual ਸਮੱਗਰੀ. Especially important ਲਈ: ਇਤਿਹਾਸ (dates, ਘਟਨਾਵਾਂ), science (processes, ਡਾਟਾ), biography, ਅਤੇ ਮੌਜੂਦਾ ਘਟਨਾਵਾਂ. ਲਈ fiction, creative ਲਿਖਾਈ, ਜਾਂ hypothetical scenarios, ਇਹ ਸਕਦਾ ਹੈ be disabled ਨੂੰ allow ਹੋਰ creative freedom. Sources consulted ਹਨ listed ਵਿੱਚ ਪੀੜ੍ਹੀ log ਲਈ ਅਧਿਆਪਕ ਸਮੀਖਿਆ. Highly recommended ਲਈ ਕੋਈ ਵੀ ਸਮੱਗਰੀ ਉਹ ਹੋਵੇਗਾ be presented as factual ਨੂੰ ਵਿਦਿਆਰਥੀ.",
     "source_generate_button": "ਬਣਾਓ AI-written ਸਮੱਗਰੀ ਉੱਤੇ ਤੁਹਾਡਾ specified ਵਿਸ਼ਾ. ਕਲਿੱਕ ਕਰੋ ਨੂੰ begin ਪੀੜ੍ਹੀ ਵਰਤਦੇ ਹੋਏ ਤੁਹਾਡਾ: ਵਿਸ਼ਾ description, ਟੀਚਾ ਲੰਬਾਈ, ਜਮਾਤ ਪੱਧਰ, ਅਤੇ ਅਨੁਕੂਲਿਤ ਹਦਾਇਤ. ਪੀੜ੍ਹੀ takes 10-20 ਸਕਿੰਟ. ਆਉਟਪੁੱਟ ਹੈ ਸਮੀਖਿਆ by safety filters ਪਹਿਲਾਂ ਪ੍ਰਦਰਸ਼ਨ. ਪੈਦਾ ਕੀਤਾ ਸਮੱਗਰੀ ਸਕਦਾ ਹੈ be: edited (ਅਧਿਆਪਕ ਸਕਦਾ ਹੈ ਸੋਧੋ ਕੋਈ ਵੀ part), analyzed (ਚਲਾਓ ਰਾਹੀਂ ਹੋਰ ਪੀੜ੍ਹੀ ਔਜ਼ਾਰ), ਅਤੇ ਸੰਭਾਲਿਆ ਗਿਆ (ਜੋੜੋ ਨੂੰ ਇਤਿਹਾਸ ਲਈ reuse). ਵਰਤੋ ਜਦੋਂ: ਤੁਸੀਂ ਲੋੜ ਸਮੱਗਰੀ ਉੱਤੇ ਇੱਕ ਖਾਸ ਵਿਸ਼ਾ, ਚਾਹੁੰਦੇ controlled ਜਟਿਲਤਾ, ਜਾਂ ਲੋੜ ਨੂੰ fill curriculum gaps. ਪੈਦਾ ਕੀਤਾ ਸਮੱਗਰੀ ਸ਼ਾਮਲ ਹੈ: ਉਚਿਤ ਸ਼ਬਦਾਵਲੀ, logical organization, ਅਤੇ ਜਮਾਤ-ਪੱਧਰ syntax. Verify factual ਸ਼ੁੱਧਤਾ ਪਹਿਲਾਂ ਜਮਾਤ ਵਰਤੋ.",
-    "generator_actions": "Hub ਲਈ ਸਾਰੇ ਸਮੱਗਰੀ ਪੀੜ੍ਹੀ ਔਜ਼ਾਰ. ਉਪਲਬਧ generators ਸ਼ਾਮਲ ਕਰੋ: ਕਵਿਜ਼ (ਮੁਲਾਂਕਣ ਨਾਲ ਜਵਾਬ keys), ਸ਼ਬਦਕੋਸ਼ (ਦ੍ਰਿਸ਼ਟੀ ਸ਼ਬਦਾਵਲੀ), Simplified ਟੈਕਸਟ (ਪੱਧਰ ਪੜ੍ਹਨਾ), FAQ (Q ਅਤੇ ਇੱਕ pairs), ਵਿਸ਼ਲੇਸ਼ਣ (ਸਮੱਗਰੀ examination), ਪਾਠ ਯੋਜਨਾ (instructional design), Timeline (chronological ਗਤੀਵਿਧੀ), Scaffolds (ਲਿਖਾਈ ਸਹਾਇਤਾ), ਸੰਕਲਪ ਕ੍ਰਮਬੱਧ ਕਰੋ (categorization ਖੇਡ), ਗਣਿਤ (problem ਪੀੜ੍ਹੀ), ਸਾਹਸ (ਇੰਟਰਐਕਟਿਵ ਕਹਾਣੀ), ਅਤੇ Brainstorm (ਗਤੀਵਿਧੀ ideas). ਹਰ generator ਬਦਲਦਾ ਹੈ ਤੁਹਾਡਾ ਸਰੋਤ ਸਮੱਗਰੀ ਵਿੱਚ ਵੱਖਰਾ ਫਾਰਮੈਟ. ਕਲਿੱਕ ਕਰੋ ਕੋਈ ਵੀ generator ਨੂੰ ਖੋਲ੍ਹੋ its configuration ਪੈਨਲ. ਕਈ generators ਸਕਦਾ ਹੈ be ਵਰਤਿਆ ਗਿਆ ਉੱਤੇ ਉਹੀ ਸਰੋਤ. ਪੈਦਾ ਕੀਤਾ ਸਮੱਗਰੀ ਦਿਖਾਈ ਦਿੰਦਾ ਵਿੱਚ workspace ਅਤੇ ਸੰਭਾਲਦਾ ਹੈ ਨੂੰ ਇਤਿਹਾਸ. ਸੁਝਾਅ: ਸ਼ੁਰੂ ਕਰੋ ਨਾਲ ਵਿਸ਼ਲੇਸ਼ਣ ਨੂੰ ਸਮਝੋ ਤੁਹਾਡਾ ਸਮੱਗਰੀ, ਫਿਰ ਤਿਆਰ ਕਰੋ targeted ਸਰੋਤ.",
     "tool_visual": "ਪਹੁੰਚ ਦ੍ਰਿਸ਼ਟੀ generator ਔਜ਼ਾਰ. Creates AI-generated ਕੀਤਾ ਗਿਆ ਚਿੱਤਰ ਸਮੇਤ: ਸ਼ਬਦਾਵਲੀ ਦ੍ਰਿਸ਼ਟੀ, ਸੰਕਲਪ ਚਿੱਤਰਣ, ਦ੍ਰਿਸ਼ depictions, ਚਿੱਤਰ, ਅਤੇ infographics. ਦ੍ਰਿਸ਼ਟੀ types: ਹਵਾਲਾ ਚਿੱਤਰ (ਲਈ ਸਿੱਖਣਾ), worksheets (ਲਈ ਗਤੀਵਿਧੀਆਂ), ਅਤੇ ਚਿੱਤਰ (ਲਈ relationships). ਦ੍ਰਿਸ਼ਟੀ ਸਹਾਇਤਾ: ELL ਵਿਦਿਆਰਥੀ (ਦ੍ਰਿਸ਼ਟੀ ਸ਼ਬਦਾਵਲੀ), ਦ੍ਰਿਸ਼ਟੀ ਸਿੱਖਣ ਵਾਲੇ, ਅਤੇ ਸ਼ਮੂਲੀਅਤ. ਹਰ ਪੀੜ੍ਹੀ ਬਣਾਉਂਦਾ ਹੈ unique ਚਿੱਤਰ. ਸੈਟਿੰਗਾਂ ਨਿਯੰਤਰਣ ਸ਼ੈਲੀ, ਗੁਣਵੱਤਾ, ਅਤੇ ਸਮੱਗਰੀ. ਪੈਦਾ ਕੀਤਾ ਦ੍ਰਿਸ਼ਟੀ ਸਕਦਾ ਹੈ be: downloaded, embedded ਵਿੱਚ ਸਮੱਗਰੀ, ਅਤੇ added ਨੂੰ glossaries. Uses AI ਚਿੱਤਰ ਪੀੜ੍ਹੀ credits. ਸੁਝਾਅ: ਤਿਆਰ ਕਰੋ ਦ੍ਰਿਸ਼ਟੀ ਲਈ abstract ਸੰਕਲਪ ਉਹ ਹਨ difficult ਨੂੰ explain ਨਾਲ ਸ਼ਬਦ alone.",
     "tool_udl": "UDL ਫਰੇਮਵਰਕ ਏਕੀਕਰਨ ਬਾਰੇ ਜਾਣੋ। Universal Design for Learning ਦੇ ਤਿੰਨ ਸਿਧਾਂਤ: ਪੇਸ਼ਕਾਰੀ, ਕਾਰਵਾਈ ਅਤੇ ਪ੍ਰਗਟਾਅ, ਅਤੇ ਸ਼ਮੂਲੀਅਤ ਦੇ ਕਈ ਸਾਧਨ।",
     "tour-analysis-settings": "ਐਡਜਸਟ parameters ਲਈ readability ਵਿਸ਼ਲੇਸ਼ਣ, ਸਮੇਤ ਟੀਚਾ ਪੜ੍ਹਨਾ ਪੱਧਰ ਅਤੇ ਖਾਸ metrics ਨੂੰ track.",
@@ -6904,7 +6910,6 @@
     "adventure_system_state": "Adventure ਵਿੱਚ ਸਰੋਤ ਪ੍ਰਬੰਧਨ ਮਕੈਨਿਕਸ ਜੋੜੋ — ਸਿਹਤ, ਸੋਨਾ/ਸਰੋਤ, ਪ੍ਰਤਿਸ਼ਠਾ ਅਤੇ ਅਨੁਕੂਲਿਤ ਟਰੈਕਰ।",
     "glossary_tier2_count": "ਸੈੱਟ ਕਰੋ ਕਿਵੇਂ many Tier 2 (ਅਕਾਦਮਿਕ) ਸ਼ਬਦਾਵਲੀ ਸ਼ਬਦ ਨੂੰ ਸ਼ਾਮਲ ਕਰੋ. Tier 2 ਸ਼ਬਦ: ਦਿਖਾਈ ਦੇਣਾ ਪਾਰ subjects, ਹਨ ਵਰਤਿਆ ਗਿਆ ਵਿੱਚ ਅਕਾਦਮਿਕ contexts, ਅਤੇ ਹਨ essential ਲਈ ਟੈਕਸਟ ਸਮਝ. ਉਦਾਹਰਨ: ਵਿਸ਼ਲੇਸ਼ਣ ਕਰੋ, ਸਬੂਤ, significant, contrast. These ਸ਼ਬਦ ਹੈ highest instructional ਮੁੱਲ—ਜ਼ਿਆਦਾਤਰ ਵਿਦਿਆਰਥੀ benefit ਤੋਂ explicit teaching. Recommended ਗਿਣੋ depends ਉੱਤੇ: ਟੈਕਸਟ ਲੰਬਾਈ (1 ਸ਼ਬਦ per 100-150 ਸ਼ਬਦ ਦਾ ਸਰੋਤ), ਉਪਲਬਧ ਹਦਾਇਤ ਸਮਾਂ, ਅਤੇ ਵਿਦਿਆਰਥੀ ਲੋੜ. Balance ਨਾਲ Tier 3 ਗਿਣੋ ਲਈ ਇੱਕ ਪੂਰਾ ਕਰੋ ਸ਼ਬਦਾਵਲੀ ਸੈੱਟ ਕਰੋ. ਫੋਕਸ ਹਦਾਇਤ here ਲਈ maximum impact ਉੱਤੇ ਪੜ੍ਹਨਾ ਸਮਝ ਪਾਰ ਸਾਰੇ subjects.",
     "glossary_tier3_count": "ਕਿੰਨੇ Tier 3 (ਡੋਮੇਨ-ਖਾਸ) ਸ਼ਬਦਾਵਲੀ ਸ਼ਬਦ ਸ਼ਾਮਲ ਕਰਨੇ ਹਨ ਉਹ ਸੈੱਟ ਕਰੋ। ਉਦਾਹਰਨ: photosynthesis, mitochondria।",
-    "glossary_definition_level": "ਨਿਯੰਤਰਣ ਕਿਵੇਂ ਪਰਿਭਾਸ਼ਾ ਹਨ written. ਵਿਕਲਪ: ਉਹੀ as ਸਰੋਤ (maintains ਮੂਲ ਜਟਿਲਤਾ—ਚੰਗਾ ਲਈ ਉੱਨਤ ਵਿਦਿਆਰਥੀ), ਉੱਤੇ ਜਮਾਤ (matches ਟੀਚਾ ਜਮਾਤ ਪੱਧਰ ਸ਼ਬਦਾਵਲੀ), Simplified (ਵਰਤਦਾ ਹੈ ਆਮ ਸ਼ਬਦ, ਛੋਟਾ ਵਾਕ), ਅਤੇ Kindergarten (very ਮੁੱਢਲਾ ਭਾਸ਼ਾ, concrete ਉਦਾਹਰਨ). ਮੇਲ ਪਰਿਭਾਸ਼ਾ ਜਟਿਲਤਾ ਨੂੰ ਵਿਦਿਆਰਥੀ ਪੜ੍ਹਨਾ ਪੱਧਰ, ਨਹੀਂ ਸਮੱਗਰੀ ਪੱਧਰ. ਇੱਕ 10th-grader studying ਉੱਨਤ biology might ਲੋੜ Simplified ਪਰਿਭਾਸ਼ਾ ਲਈ unfamiliar ਸ਼ਬਦ. ਵਿਚਾਰ ਤੁਹਾਡਾ ਵਿਦਿਆਰਥੀ weakest ਪਾਠਕ ਜਦੋਂ selecting. ਪਰਿਭਾਸ਼ਾ ਸਕਦਾ ਹੈ be individually edited ਬਾਅਦ ਪੀੜ੍ਹੀ ਜੇ ਕੁਝ ਲੋੜ adjustment. Pro ਸੁਝਾਅ: ਵਰਤੋ Simplified initially, ਫਿਰ discuss ਹੋਰ technical ਪਰਿਭਾਸ਼ਾ ਵਿੱਚ ਜਮਾਤ.",
     "glossary_custom_instructions": "ਸ਼ਬਦਾਵਲੀ ਚੋਣ ਅਤੇ ਪਰਿਭਾਸ਼ਾ ਸ਼ੈਲੀ ਲਈ ਖਾਸ ਮਾਰਗਦਰਸ਼ਨ ਦਿਓ। ਉਦਾਹਰਨ: 'ਅਧਿਆਇ 3-5 ਦੇ ਸ਼ਬਦਾਂ 'ਤੇ ਫੋਕਸ ਕਰੋ', 'etymology ਜੋੜੋ'।",
     "glossary_language_input": "ਸ਼ਬਦਾਵਲੀ ਅਨੁਵਾਦ ਲਈ ਭਾਸ਼ਾ ਨਿਰਧਾਰਤ ਕਰੋ — Spanish, Mandarin, Arabic, French ਜਾਂ ਕੋਈ ਵੀ। ਕਾਮਿਆਂ ਨਾਲ ਕਈ ਭਾਸ਼ਾਵਾਂ ਜੋੜ ਸਕਦੇ ਹੋ।",
     "glossary_auto_remove": "ਆਟੋਮੈਟਿਕ ਤੌਰ ਤੇ ਫਿਲਟਰ out very ਸਾਦਾ ਜਾਂ ਆਮ ਸ਼ਬਦ.",
@@ -7038,7 +7043,6 @@
     "fab_dictation": "ਹੱਥ-ਮੁਕਤ ਇਨਪੁੱਟ ਲਈ ਬੋਲੀ ਨੂੰ ਟੈਕਸਟ ਵਿੱਚ ਬਦਲੋ। ਮਾਈਕ ਚਾਲੂ ਕਰਨ ਲਈ ਕਲਿੱਕ ਕਰੋ, ਸਾਫ਼ ਬੋਲੋ ਅਤੇ ਸ਼ਬਦ ਆਉਂਦੇ ਦੇਖੋ।",
     "fab_focus": "Creates ਇੱਕ movable spotlight ਉਹ dims everything except ਇੱਕ circular ਖੇਤਰਫਲ around ਤੁਹਾਡਾ cursor. ਇਹ dramatically reduces ਦ੍ਰਿਸ਼ਟੀ clutter ਅਤੇ ਮਦਦ maintain attention ਉੱਤੇ ਮੌਜੂਦਾ ਪੜ੍ਹਨਾ ਖੇਤਰਫਲ. Especially beneficial ਲਈ ਵਿਦਿਆਰਥੀ ਨਾਲ ADHD, sensory processing ਫਰਕ, ਜਾਂ anyone overwhelmed by busy screens. spotlight follows ਤੁਹਾਡਾ mouse/touch ਆਟੋਮੈਟਿਕ ਤੌਰ ਤੇ. ਐਡਜਸਟ spotlight size ਅਤੇ dim intensity ਵਿੱਚ ਸੈਟਿੰਗਾਂ → ਪਹੁੰਚਯੋਗਤਾ.",
     "fab_line_focus": "ਫੋਕਸਡ ਪੜ੍ਹਨ ਲਈ ਸਿੰਗਲ-ਲਾਈਨ ਆਈਸੋਲੇਸ਼ਨ ਟੂਲ। ਚਾਲੂ ਹੋਣ 'ਤੇ ਇੱਕ ਟੈਕਸਟ ਲਾਈਨ ਹਾਈਲਾਈਟ ਹੁੰਦੀ ਹੈ ਅਤੇ ਬਾਕੀ ਧੁੰਦਲੀਆਂ ਹੋ ਜਾਂਦੀਆਂ ਹਨ।",
-    "fab_ruler": "Adds ਇੱਕ semi-transparent horizontal ਪੱਟੀ ਉਹ follows ਤੁਹਾਡਾ cursor ਨੂੰ ਮਦਦ track ਤੁਹਾਡਾ ਪੜ੍ਹਨਾ ਸਥਿਤੀ ਲਾਈਨ by ਲਾਈਨ. Particularly ਮਦਦ ਲਈ users ਨਾਲ dyslexia, ADHD, ਜਾਂ ਦ੍ਰਿਸ਼ਟੀ ਟਰੈਕਿੰਗ difficulties. ਖਿੱਚੋ ruler up/down ਨੂੰ reposition, ਵਰਤੋ arrow keys ਲਈ fine ਨਿਯੰਤਰਣ, ਜਾਂ ਕਲਿੱਕ ਕਰੋ anywhere ਨੂੰ jump. ruler ਰੰਗ ਸਕਦਾ ਹੈ be customized ਵਿੱਚ ਸੈਟਿੰਗਾਂ. ਕੰਮ ਕਰਦਾ ਪਾਰ ਸਾਰੇ ਪੜ੍ਹਨਾ views ਸਮੇਤ Simplified ਟੈਕਸਟ, FAQ, ਅਤੇ ਸ਼ਬਦਕੋਸ਼ ਪਰਿਭਾਸ਼ਾ.",
     "fab_timer": "Opens ਇੱਕ ਇੰਟਰਐਕਟਿਵ ਫੋਕਸ timer ਆਧਾਰਿਤ ਉੱਤੇ Pomodoro Technique. ਚੁਣੋ ਤੋਂ preset durations (5/15/25/45 minutes) ਜਾਂ ਅਨੁਕੂਲਿਤ ਕਰੋ ਤੁਹਾਡਾ own. ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਸ਼ਾਮਲ ਕਰੋ: ਦ੍ਰਿਸ਼ਟੀ countdown ਨਾਲ ਤਰੱਕੀ ring, ਵਿਕਲਪਿਕ break reminders, XP ਇਨਾਮ ਲਈ completed ਸੈਸ਼ਨ (ਲੰਬਾ = ਹੋਰ XP), ਅਤੇ ਸੈਸ਼ਨ logging ਲਈ ਅਧਿਆਪਕ ਸਮੀਖਿਆ. Label ਤੁਹਾਡਾ task (e.g., 'ਪੜ੍ਹੋ ਅਧਿਆਇ 3') ਨੂੰ track ਕੀ ਤੁਸੀਂ accomplished. Minimizes ਨੂੰ header ਪੱਟੀ so ਤੁਸੀਂ ਸਕਦਾ ਹੈ ਕੰਮ ਜਦੋਂ ਕਿ it runs.",
     "scaffolds_edit_toggle": "ਟੌਗਲ ਕਰੋ ਵਿਚਕਾਰ ਅਧਿਆਪਕ editing ਅਤੇ ਵਿਦਿਆਰਥੀ ਦੇਖੋ ਮੋਡ. ਜਦੋਂ ON (ਸੰਪਾਦਿਤ ਕਰੋ ਮੋਡ): ਕਲਿੱਕ ਕਰੋ ਕੋਈ ਵੀ scaffold ਨੂੰ ਸੋਧੋ ਟੈਕਸਟ, ਜੋੜੋ ਨਵਾਂ ਪ੍ਰੋਂਪਟ, ਮਿਟਾਓ ਆਈਟਮ, ਅਤੇ reorder ਸਮੱਗਰੀ. ਜਦੋਂ OFF: scaffolds ਪ੍ਰਦਰਸ਼ਨ as ਵਿਦਿਆਰਥੀ ਦੇਖੋ them (ਪੜ੍ਹੋ-ਸਿਰਫ਼). Edits ਸੰਭਾਲੋ ਆਟੋਮੈਟਿਕ ਤੌਰ ਤੇ. ਵਿਦਿਆਰਥੀ always ਦੇਖੋ ਪੜ੍ਹੋ-ਸਿਰਫ਼ regardless ਦਾ ਤੁਹਾਡਾ ਟੌਗਲ ਕਰੋ (ਉਹ cannot ਪਹੁੰਚ ਸੰਪਾਦਿਤ ਕਰੋ ਮੋਡ). ਵਰਤੋ editing ਨੂੰ: ਅਨੁਕੂਲਿਤ ਕਰੋ AI-generated ਕੀਤਾ ਗਿਆ scaffolds, ਜੋੜੋ ਜਮਾਤ-ਖਾਸ ਉਦਾਹਰਨ, ਹਟਾਓ inappropriate ਪ੍ਰੋਂਪਟ, ਅਤੇ differentiate ਲਈ ਖਾਸ ਵਿਦਿਆਰਥੀ. Preview ਵਿਦਿਆਰਥੀ ਦੇਖੋ ਪਹਿਲਾਂ sharing. ਮੂਲ scaffolds ਸਕਦਾ ਹੈ be restored ਤੋਂ ਇਤਿਹਾਸ. ਸੁਝਾਅ: ਸਮੀਖਿਆ ਅਤੇ ਸੰਪਾਦਿਤ ਕਰੋ scaffolds ਪਹਿਲਾਂ ਜਮਾਤ ਨੂੰ ensure ਉਹ ਮੇਲ ਤੁਹਾਡਾ teaching ਸ਼ੈਲੀ ਅਤੇ ਵਿਦਿਆਰਥੀ needs.",
     "scaffolds_goal_panel": "ਪ੍ਰਦਰਸ਼ਨ ਸਿੱਖਣਾ objectives ਲਈ ਵਿਦਿਆਰਥੀ ਹਵਾਲਾ. ਟੀਚਾ ਦਿਖਾਈ ਦੇਣਾ prominently ਦੌਰਾਨ ਗਤੀਵਿਧੀ. Effective ਟੀਚਾ ਹਨ: ਵਿਦਿਆਰਥੀ-ਦੋਸਤਾਨਾ (I ਸਕਦਾ ਹੈ statements), ਖਾਸ ਅਤੇ measurable, ਅਤੇ aligned ਨੂੰ ਗਤੀਵਿਧੀ. ਉਦਾਹਰਨ: I ਸਕਦਾ ਹੈ ਪਛਾਣੋ three causes ਦਾ Civil War ਜਾਂ I ਸਕਦਾ ਹੈ ਵਰਤੋ ਸਬੂਤ ਨੂੰ ਸਹਾਇਤਾ my claim. ਟੀਚਾ increase: metacognition, ਆਪ-ਮੁਲਾਂਕਣ, ਅਤੇ purpose clarity. ਵਿਦਿਆਰਥੀ ਸਕਦਾ ਹੈ ਹਵਾਲਾ ਟੀਚਾ ਜਦੋਂ ਕਿ working. ਅਧਿਆਪਕ sets ਟੀਚਾ ਪਹਿਲਾਂ ਵਿਦਿਆਰਥੀ ਪਹੁੰਚ. ਕਈ ਟੀਚਾ ਸਕਦਾ ਹੈ be displayed. ਟੀਚਾ ਸਕਦਾ ਹੈ ਸ਼ਾਮਲ ਕਰੋ ਸਫਲਤਾ criteria: I know I ਹੈ succeeded ਜਦੋਂ my ਪੈਰਾ has ਇੱਕ ਵਿਸ਼ਾ ਵਾਕ. Research ਦਿਖਾਉਂਦਾ ਹੈ ਦਿਖਾਈ ਦੇਣ ਵਾਲਾ ਸਿੱਖਣਾ targets improve ਪ੍ਰਾਪਤੀ.",
@@ -7133,7 +7137,6 @@
     "immersive_line_focus": "ਸਿੰਗਲ-ਲਾਈਨ ਪੜ੍ਹਨ ਗਾਈਡ ਚਾਲੂ ਕਰੋ। ਮੌਜੂਦਾ ਲਾਈਨ ਪੂਰੀ ਦਿਖਾਈ ਦਿੰਦੀ ਹੈ ਅਤੇ ਆਲੇ-ਦੁਆਲੇ ਦੀਆਂ ਧੁੰਦਲੀਆਂ ਹੁੰਦੀਆਂ ਹਨ।",
     "immersive_syllables": "ਦ੍ਰਿਸ਼ਟੀ syllable segmentation ਲਈ decoding ਸਹਾਇਤਾ. ਜਦੋਂ enabled: ਸ਼ਬਦ ਪ੍ਰਦਰਸ਼ਨ ਨਾਲ syllable breaks (hy-phen-at-ed), ਮਦਦ ਪਾਠਕ attack multisyllabic ਸ਼ਬਦ. Benefits: ਬਣਾਉਂਦਾ phonemic awareness, ਸਹਾਇਤਾ decoding ਰਣਨੀਤੀਆਂ, develops morphological understanding, ਅਤੇ aids pronunciation. Especially ਮਦਦ ਲਈ: ਸੰਘਰਸ਼ decoders, ELL ਵਿਦਿਆਰਥੀ, dyslexia ਸਹਾਇਤਾ, ਅਤੇ ਸ਼ਬਦਾਵਲੀ ਸ਼ਬਦ ਨਾਲ ਜਟਿਲ syllable ਪੈਟਰਨ. Syllabification follows ਮਿਆਰ phonetic rules. ਕੰਮ ਕਰਦਾ ਉੱਤੇ: ਸਾਰੇ ਪੜ੍ਹਨਾ ਸਮੱਗਰੀ ਸਮੇਤ adapted ਟੈਕਸਟ, ਸ਼ਬਦਕੋਸ਼ ਸ਼ਬਦ, ਅਤੇ ਸਰੋਤ ਸਮੱਗਰੀ. Combine ਨਾਲ ਆਡੀਓ ਨੂੰ hear syllables pronounced. ਟੌਗਲ ਕਰੋ off ਜਦੋਂ ਨਹੀਂ needed ਨੂੰ reduce ਦ੍ਰਿਸ਼ਟੀ ਜਟਿਲਤਾ. ਸੁਝਾਅ: ਵਰਤੋ ਲਈ challenging ਸ਼ਬਦਾਵਲੀ, ਫਿਰ ਅਯੋਗ ਕਰੋ ਲਈ fluent ਪੜ੍ਹਨਾ ਅਭਿਆਸ ਕਰੋ.",
     "immersive_wide_text": "Expand ਟੈਕਸਟ ਨੂੰ ਵਰਤੋ ਹੋਰ horizontal ਸਕ੍ਰੀਨ space. ਜਦੋਂ ਸਰਗਰਮ: ਲਾਈਨ ਲੰਬਾਈ increases, ਘੱਟ scrolling ਹੈ needed, ਅਤੇ ਹੋਰ ਟੈਕਸਟ ਹੈ ਦਿਖਾਈ ਦੇਣ ਵਾਲਾ at once. ਚੰਗਾ ਲਈ: fluent ਪਾਠਕ, wide displays, ਅਤੇ ਜਦੋਂ scanning ਲਈ ਜਾਣਕਾਰੀ. ਡਿਫਾਲਟ narrow ਚੌੜਾਈ ਹੈ ਬਿਹਤਰ ਲਈ: ਸੰਘਰਸ਼ ਪਾਠਕ, mobile devices, ਅਤੇ focused ਪੜ੍ਹਨਾ. Optimal ਲਾਈਨ ਲੰਬਾਈ varies by reader ਅਤੇ device. Research ਦਿਖਾਉਂਦਾ ਹੈ 50-75 ਪਾਤਰ per ਲਾਈਨ ਹੈ ideal ਲਈ ਜ਼ਿਆਦਾਤਰ ਪਾਠਕ. Wide ਟੈਕਸਟ trades readability ਲਈ efficiency. Combine ਨਾਲ ਲਾਈਨ ਫੋਕਸ ਜੇ ਟਰੈਕਿੰਗ becomes difficult. ਸੈਟਿੰਗ ਹੈ remembered per device. ਸੁਝਾਅ: ਵਰਤੋ wide ਟੈਕਸਟ ਲਈ research ਅਤੇ scanning, narrow ਟੈਕਸਟ ਲਈ ਬੰਦ ਕਰੋ ਪੜ੍ਹਨਾ.",
-    "sidebar_tab_create": "ਖੋਲ੍ਹੋ ਸਮੱਗਰੀ ਪੀੜ੍ਹੀ ਪੈਨਲ ਨਾਲ ਸਾਰੇ AI-powered ਔਜ਼ਾਰ. ਉਪਲਬਧ generators: ਕਵਿਜ਼ (ਮੁਲਾਂਕਣ ਨਾਲ ਜਵਾਬ keys), ਸ਼ਬਦਕੋਸ਼ (ਦ੍ਰਿਸ਼ਟੀ ਸ਼ਬਦਾਵਲੀ), Outline (graphic organizers), ਵਿਸ਼ਲੇਸ਼ਣ (ਸਮੱਗਰੀ examination), ਪਾਠ ਯੋਜਨਾ (structured ਹਦਾਇਤ), Timeline (chronological ਗਤੀਵਿਧੀਆਂ), Simplified ਟੈਕਸਟ (ਪੱਧਰ ਪੜ੍ਹਨਾ), ਅਤੇ ਹੋਰ. ਹਰ ਔਜ਼ਾਰ ਖੋਲ੍ਹਦਾ ਹੈ ਇੱਕ configuration ਪੈਨਲ ਲਈ customization ਪਹਿਲਾਂ ਪੀੜ੍ਹੀ. ਸਰੋਤ ਸਮੱਗਰੀ must be loaded ਲਈ ਜ਼ਿਆਦਾਤਰ ਔਜ਼ਾਰ ਨੂੰ ਵਿਸ਼ਲੇਸ਼ਣ ਕਰੋ. ਪੈਦਾ ਕੀਤਾ ਸਮੱਗਰੀ ਦਿਖਾਈ ਦਿੰਦਾ ਵਿੱਚ main workspace ਅਤੇ ਹੈ ਸੰਭਾਲਿਆ ਗਿਆ ਨੂੰ ਇਤਿਹਾਸ. ਵਰਤੋ ਬਣਾਓ tab as ਤੁਹਾਡਾ primary ਸਮੱਗਰੀ ਪੀੜ੍ਹੀ hub. ਸੁਝਾਅ: ਸ਼ੁਰੂ ਕਰੋ ਨਾਲ ਵਿਸ਼ਲੇਸ਼ਣ ਨੂੰ ਸਮਝੋ ਸਮੱਗਰੀ, ਫਿਰ ਤਿਆਰ ਕਰੋ targeted ਸਰੋਤ.",
     "sidebar_tab_history": "ਆਪਣੀ ਸਾਰੀ ਸੰਭਾਲੀ ਸਮੱਗਰੀ ਅਤੇ ਸੈਸ਼ਨ ਇਤਿਹਾਸ ਤੱਕ ਪਹੁੰਚ ਕਰੋ — ਆਟੋ-ਸੇਵ ਕੀਤੇ ਹਾਲੀਆ ਸੈਸ਼ਨ, ਹੱਥੀਂ ਸੰਭਾਲੇ ਪ੍ਰੋਜੈਕਟ ਅਤੇ ਜਨਰੇਟ ਕੀਤੇ ਸਰੋਤ।",
     "socratic_toggle": "ਡੂੰਘੇ ਸਿੱਖਣ ਲਈ Socratic ਸੰਵਾਦ ਮੋਡ ਚਾਲੂ ਕਰੋ। AI ਸਿੱਧੇ ਜਵਾਬ ਨਹੀਂ ਦਿੰਦਾ — ਸਗੋਂ ਖੋਜੀ ਸਵਾਲ ਪੁੱਛ ਕੇ ਵਿਦਿਆਰਥੀਆਂ ਨੂੰ ਖੋਜ ਵੱਲ ਅਗਵਾਈ ਕਰਦਾ ਹੈ।",
     "socratic_input": "ਦਾਖਲ ਕਰੋ ਤੁਹਾਡਾ ਸਵਾਲ ਜਾਂ statement ਲਈ Socratic exploration. AI ਹੋਵੇਗਾ respond ਨਾਲ ਸਵਾਲ rather than ਜਵਾਬ. ਚੰਗਾ starting ਬਿੰਦੂ: Why do ਤੁਸੀਂ think [X] happened? ਕੀ makes [Y] important? ਜਾਂ I believe [Z] because... AI probes ਤੁਹਾਡਾ reasoning: asking ਲਈ ਸਬੂਤ, exploring implications, testing logic, ਅਤੇ surfacing assumptions. ਇਹ develops argumentation ਅਤੇ critical thinking ਹੁਨਰ. Be prepared ਨੂੰ: justify ਤੁਹਾਡਾ thinking, ਵਿਚਾਰ alternatives, ਅਤੇ refine ਤੁਹਾਡਾ ਸਥਿਤੀ. Socratic dialogues ਸਕਦਾ ਹੈ be frustrating initially ਪਰ ਬਣਾਓ lasting understanding. ਤੁਹਾਡਾ responses ਅਤੇ reasoning ਹਨ tracked ਲਈ ਪ੍ਰਤੀਬਿੰਬ.",
@@ -31208,7 +31211,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "ਮੌਜੂਦਾ ਮੀਡੀਆ ਦਾ ਵਰਣਨ ਕਰੋ",
+    "describe_current_media_done": "{count} ਵਿੱਚੋਂ {index} ਮੀਡੀਆ ਪੜ੍ਹਿਆ ਜਾ ਰਿਹਾ ਹੈ।",
+    "describe_current_media_hint": "ਸਰੋਤ ਛੱਡੇ ਬਿਨਾਂ ਮੌਜੂਦਾ ਜਾਂ ਅਗਲੇ ਮੀਡੀਆ ਦਾ ਵਰਣਨ ਪੜ੍ਹੋ",
+    "describe_current_media_none": "ਮੌਜੂਦਾ ਸਰੋਤ ਵਿੱਚ ਕੋਈ ਮੀਡੀਆ ਨਹੀਂ ਹੈ।",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore ਖੋਲ੍ਹੋ",
+    "open_learning_web_explorer_done": "Learning Web: Explore ਖੁੱਲ੍ਹ ਗਿਆ।",
+    "open_learning_web_explorer_hint": "ਇੱਕੋ ਨਕਸ਼ੇ ਵਿੱਚ ਮਿਆਰ, ਸੰਕਲਪ, ਪਾਠ, ਸਬੂਤ ਅਤੇ ਸ਼ਬਦਾਂ ਦੇ ਸੰਬੰਧ ਵੇਖੋ",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "ਸਾਰੇ ਮੀਡੀਆ ਵਰਣਨ ਪੜ੍ਹੋ",
+    "read_media_descriptions_count": "{count} ਮੀਡੀਆ ਵਰਣਨ ਪੜ੍ਹੇ ਜਾ ਰਹੇ ਹਨ।",
+    "read_media_descriptions_hint": "ਮੌਜੂਦਾ ਸਰੋਤ ਵਿੱਚ ਲਿਖਿਆ ਹਰ ਤਸਵੀਰ, ਵੀਡੀਓ ਜਾਂ ਆਡੀਓ ਵਰਣਨ ਪੜ੍ਹੋ",
+    "read_media_descriptions_none": "ਮੌਜੂਦਾ ਸਰੋਤ ਵਿੱਚ ਕੋਈ ਮੀਡੀਆ ਨਹੀਂ ਹੈ।",
+    "suggest_contextual_next_steps": "ਅਗਲੇ 3 ਕਦਮ ਸੁਝਾਓ",
+    "suggest_contextual_next_steps_hint": "ਸੰਦਰਭ ਅਨੁਸਾਰ ਤਿੰਨ ਵਿਕਲਪ ਦਿੰਦਾ ਹੈ, ਕੋਈ ਚੁਣਦਾ ਜਾਂ ਚਲਾਉਂਦਾ ਨਹੀਂ",
+    "suggest_contextual_next_steps_working": "ਮੌਜੂਦਾ ਪਾਠ ਦਾ ਸੰਦਰਭ ਪੜ੍ਹ ਕੇ ਤਿੰਨ ਵਿਕਲਪ ਤਿਆਰ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ...",
+    "surprise_me_contextually": "ਕੋਈ ਲਾਭਦਾਇਕ ਅਗਲਾ ਕਦਮ ਦੱਸੋ",
+    "surprise_me_contextually_hint": "ਮੌਜੂਦਾ ਪਾਠ ਦੇ ਸੰਦਰਭ ਵਿੱਚੋਂ ਇੱਕ ਸਮਝਦਾਰ ਅਤੇ ਘੱਟ ਜੋਖਮ ਵਾਲਾ ਅਗਲਾ ਕੰਮ ਚੁਣਦਾ ਹੈ",
+    "surprise_me_contextually_working": "ਮੌਜੂਦਾ ਪਾਠ ਦਾ ਸੰਦਰਭ ਪੜ੍ਹ ਕੇ ਲਾਭਦਾਇਕ ਅਗਲਾ ਕਦਮ ਚੁਣਿਆ ਜਾ ਰਿਹਾ ਹੈ...",
+    "use_contextual_suggestion": "ਸੁਝਾਇਆ ਅਗਲਾ ਕਦਮ ਵਰਤੋ",
+    "use_contextual_suggestion_hint": "ਤਾਜ਼ਾ ਸੁਝਾਵਾਂ ਵਿੱਚੋਂ ਵਿਕਲਪ 1, 2 ਜਾਂ 3 ਚਲਾਉਂਦਾ ਹੈ",
+    "use_contextual_suggestion_working": "ਚੁਣਿਆ ਅਗਲਾ ਕਦਮ ਸ਼ੁਰੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ..."
   },
   "palette": {
     "aria": "AlloFlow ਕਮਾਂਡ ਪੈਲੇਟ",
@@ -31231,10 +31260,11 @@
       "videoStudio": "ਇੱਥੇ — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "ਹਰ ਕਾਰਵਾਈ ਦਾ ਐਲਾਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। Ctrl+K ਟੌਗਲ ਕਰਦਾ ਹੈ।",
     "group": {
@@ -31559,6 +31589,12 @@
     "diff_types_hint": "ਇਨ੍ਹਾਂ ਲਈ ਵੱਖ-ਵੱਖ ਪੱਧਰਾਂ ਵਾਲਾ ਸੈੱਟ ਬਣਾਓ:",
     "diff_cost": "ਹਰ ਰਨ ਵਿੱਚ ਲਗਭਗ {n} ਜਨਰੇਸ਼ਨ।",
     "summary_standards": "ਮਿਆਰ",
-    "summary_interests": "ਰੁਚੀਆਂ"
+    "summary_interests": "ਰੁਚੀਆਂ",
+    "translations": "ਅਨੁਵਾਦ",
+    "translations_auto": "ਆਪਣੇ ਆਪ ({language})",
+    "translations_auto_plain": "ਆਪਣੇ ਆਪ",
+    "translations_none": "ਕੋਈ ਨਹੀਂ",
+    "translations_on_hint": "{output} ਵਿੱਚ ਬਣੇ ਸਰੋਤਾਂ ਨਾਲ {target} ਰੂਪ ਵੀ ਮਿਲੇਗਾ।",
+    "translations_off_hint": "ਸਰੋਤ ਸਿਰਫ਼ {output} ਵਿੱਚ ਹੋਣਗੇ, ਦੂਜੀ ਭਾਸ਼ਾ ਤੋਂ ਬਿਨਾਂ।"
   }
 }

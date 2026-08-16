@@ -2230,10 +2230,10 @@
     "ai_guide_sub": "Cilmiga Barashada, Navigation & Auto-Setup",
     "ai_guide_welcome": "Hi! I'm kaaga AI Guide. I wuu kara caawimaad la UDL strategies, navigate app u adigu, ama auto-setup kaaga casharro settings. Just ask!",
     "tool_analysis": "Falanqee Walxaha Ilaha",
-    "tool_glossary": "Glossary & luqad Selection",
+    "tool_glossary": "Liiska Erayada",
     "tool_simplified": "Text Adaptation",
     "tool_outline": "Visual Organizer",
-    "tool_visual": "Visual Support",
+    "tool_visual": "Sawirrada Casharka",
     "tool_faq": "Soo saare FAQ",
     "tool_scaffolds": "Writing Scaffolds",
     "tool_scaffolds_parent": "Writing caawimaad",
@@ -2960,7 +2960,7 @@
     "choose_destination_aria": "Door a destination"
   },
   "glossary": {
-    "title": "Glossary & luqad Selection",
+    "title": "Liiska Erayada",
     "tier2": "Tier 2 (Acad.)",
     "tier2_tooltip": "High-utility academic ereyo used across disciplines (e.g., 'analyze', 'verify').",
     "tier3": "Tier 3 (Domain)",
@@ -3902,7 +3902,12 @@
     "gauge_simple": "Simple",
     "word_bank_language": "Luuqadda keydka erayada",
     "word_bank_english": "Ingiriisi",
-    "word_bank_both": "Labadaba"
+    "word_bank_both": "Labadaba",
+    "measured_level_label": "Heerka akhriska ee la cabbiray",
+    "measured_on_target": "Ku habboon {grade}",
+    "measured_above": "Ka sarreeya heerka {grade}",
+    "measured_below": "Ka hooseeya heerka {grade}",
+    "measured_note": "Flesch-Kincaid, waxaa lagu cabbiray qoraalkan. Isticmaal Check Level si aad u eegto si buuxda."
   },
   "quiz": {
     "title": "Exit Ticket",
@@ -4090,7 +4095,7 @@
       "sidebar_simplified_desc": "Access differentiated versions kaaga text at various reading levels. Generate simplified content, side-by-side bilingual versions, iyo modified texts.",
       "sidebar_outline_title": "Visual Organizers",
       "sidebar_outline_desc": "Create structured visual representations content including concept maps, flow charts, Venn diagrams, iyo cause-iyo-effect organizers.",
-      "sidebar_visuals_title": "Visual Supports",
+      "sidebar_visuals_title": "Sawirrada Casharka",
       "sidebar_visuals_desc": "AI-soo saaray sawir iyo visual aids ku support comprehension. Create custom visuals ama enhanced sawir sets u content.",
       "sidebar_faq_title": "Soo saare FAQ",
       "sidebar_faq_desc": "Generate frequently asked su'aalo taas arday might leeyahay about content. Weyn u anticipating confusion iyo preparing explanations.",
@@ -4231,7 +4236,7 @@
     "memory_palace": "Qasriga Xusuusta (habka goobaha)"
   },
   "visuals": {
-    "title": "Visual Support",
+    "title": "Sawirrada Casharka",
     "worksheet_mode": "arday Worksheet Mode",
     "enhanced": "Enhanced Visuals",
     "text_reduced": "Text-Reduced Mode",
@@ -5856,7 +5861,9 @@
     "title_poettree_config": "🌳 Hawsha PoetTree",
     "title_poettree_submission": "🌳 Gudbinta gabayga",
     "title_litlab_config": "🎭 Hawsha LitLab",
-    "title_litlab_submission": "🎭 Gudbinta bandhigga"
+    "title_litlab_submission": "🎭 Gudbinta bandhigga",
+    "translation_block": "Turjumaad",
+    "translation_into": "Turjumaad ({language})"
   },
   "persona": {
     "title": "Interview Mode",
@@ -6271,7 +6278,7 @@
   },
   "tools": {
     "source": "Source Material",
-    "glossary": "Glossary & luqad Selection",
+    "glossary": "Liiska Erayada",
     "simplified": "Text Adaptation & Engagement",
     "outline": "Visual Organizer",
     "quiz": "Exit Ticket",
@@ -6860,7 +6867,6 @@
     "source_settings_instructions": "Guide AI content qarni la specific instructions. Examples: Make it engaging u reluctant readers, Focus ku water cycle, Include diverse character magac, Avoid references ku violence, iyo Isticmaal simple vocabulary u ELL arday. Instructions shape: tone, content focus, vocabulary level, iyo perspective. Be specific u best results. Multiple instructions wuu kara be combined. Instructions waa processed along la kaaga topic iyo settings. U sensitive topics, include content guidance. Instructions do maaha guarantee specific outcomes but strongly influence qarni. Tip: Include grade level iyo any content restrictions ku kaaga instructions u most appropriate output.",
     "source_verify_checkbox": "Enable AI fact-checking via Google Raadi grounding. markay ON: AI cross-references soo saaray content against web sources, flagging ama correcting potential inaccuracies. Adds 5-10 ilbiriqsiyaal ku qarni waqti but significantly improves reliability u factual content. Especially important u: history (dates, events), science (processes, data), biography, iyo current events. U fiction, creative writing, ama hypothetical scenarios, tan wuu kara be disabled ku allow badan creative freedom. Sources consulted waa listed ku qarni log u macallin review. Highly recommended u any content taas will be presented as factual ku arday.",
     "source_generate_button": "Create AI-written content ku kaaga specified topic. Riix ku begin qarni using kaaga: topic description, target length, grade level, iyo custom instructions. Qarni takes 10-20 ilbiriqsiyaal. Output waa reviewed by safety filters kahor display. Soo saaray content wuu kara be: edited (macallin wuu kara modify any part), analyzed (run through kale qarni tools), iyo saved (ku dar ku history u reuse). Isticmaal markay: adigu need content ku a specific topic, want controlled complexity, ama need ku fill curriculum gaps. Soo saaray content includes: appropriate vocabulary, logical organization, iyo grade-level syntax. Verify factual accuracy kahor fasal isticmaal.",
-    "generator_actions": "Hub u dhammaan content qarni tools. Available generators include: Quiz (assessment la jawaabo keys), Glossary (visual vocabulary), Simplified Text (leveled reading), FAQ (Q iyo A pairs), Analysis (content examination), casharro Plan (instructional design), Timeline (chronological activity), Scaffolds (writing supports), Concept Sort (categorization ciyaar), Math (problem qarni), Adventure (interactive sheeko), iyo Brainstorm (activity ideas). kasta generator transforms kaaga source content into different formats. Riix any generator ku fur its configuration panel. Multiple generators wuu kara be used ku same source. Soo saaray content muuqda ku workspace iyo saves ku history. Tip: Bilow la Analysis ku understand kaaga content, then generate targeted resources.",
     "tool_visual": "Access visual generator tool. Creates AI-soo saaray sawir including: vocabulary visuals, concept illustrations, scene depictions, diagrams, iyo infographics. Visual types: reference sawir (u learning), worksheets (u activities), iyo diagrams (u relationships). Visuals support: ELL arday (visual vocabulary), visual arday, iyo engagement. kasta qarni creates unique sawir. Settings control style, quality, iyo content. Soo saaray visuals wuu kara be: downloaded, embedded ku materials, iyo added ku glossaries. Uses AI sawir qarni credits. Tip: Generate visuals u abstract concepts taas waa difficult ku explain la ereyo alone.",
     "tool_udl": "Baro about UDL framework integration. Universal Design u Learning has three principles: Multiple Means Representation ( maxay learning—present information ku different ways), Multiple Means Action iyo Expression ( sidee learning—let arday demonstrate understanding differently), iyo Multiple Means Engagement ( why learning—motivate iyo sustain interest). tan tool supports dhammaan three through: varied content formats, multiple interaction modes, iyo gamified engagement. Clicking opens detailed information about sidee kasta tool feature aligns la UDL research. Weyn u: professional development, IEP justification, iyo understanding pedagogical foundation. Tip: Reference UDL principles markay advocating u tool adoption.",
     "tour-analysis-settings": "Adjust parameters u readability analysis, including target reading level iyo specific metrics ku track.",
@@ -6885,7 +6891,6 @@
     "adventure_system_state": "Ku dar resource management mechanics ku adventures. arday track: Health (consequence risky doorashooyin), Gold/Resources (economic decision-making), Reputation (social capital from doorashooyin), iyo custom resources adigu define. Actions affect resources visibly—spend gold ku buy items, lose health from poor decisions, gain reputation from helping others. Creates meaningful consequences taas teach: cause-iyo-effect reasoning, planning ahead, resource management, iyo opportunity cost. Visual dashboard shows current resource levels. markay resources deplete, ciyaar adaptively responds (e.g., low health = limited options). Math skills integrate naturally through resource calculations.",
     "glossary_tier2_count": "Set sidee many Tier 2 (academic) vocabulary ereyo ku include. Tier 2 ereyo: muuqda across subjects, waa used ku academic contexts, iyo waa essential u text comprehension. Examples: analyze, caddayn, significant, contrast. These ereyo leeyahay highest instructional value—most arday benefit from explicit teaching. Recommended count depends ku: text length (1 ereyo per 100-150 ereyo source), available instruction waqti, iyo arday need. Balance la Tier 3 count u a dhammee vocabulary set. Focus instruction here u maximum impact ku reading comprehension across dhammaan subjects.",
     "glossary_tier3_count": "Set sidee many Tier 3 (domain-specific) vocabulary ereyo ku include. Tier 3 ereyo: waa specific ku a subject area, waa usually defined ku context, iyo may maaha transfer across subjects. Examples: photosynthesis, denominator, alliteration, legislative. These ereyo waa essential u understanding specific content but leeyahay limited isticmaal outside domain. Instruction typically occurs during content teaching. U deep dive into a topic, include badan Tier 3. U broader reading skills, prioritize Tier 2. Tier 3 ereyo often muuqda ku bold ama italics ku textbooks, signaling their importance within discipline.",
-    "glossary_definition_level": "Control sidee definitions waa written. Options: Same as Source (maintains asal complexity—wanaagsan u advanced arday), Ku Grade (matches target grade level vocabulary), Simplified (uses common ereyo, shorter sentences), iyo Kindergarten (very basic luqad, concrete examples). Match definition complexity ku arday reading level, maaha content level. A 10th-grader studying advanced biology might need Simplified definitions u unfamiliar terms. Consider kaaga arday weakest readers markay selecting. Definitions wuu kara be individually edited kadib qarni if some need adjustment. Pro tip: Isticmaal Simplified initially, then discuss badan technical definitions ku fasal.",
     "glossary_custom_instructions": "Provide specific guidance u vocabulary selection iyo definition style. Examples: Focus ku ereyo from chapters 3-5, Include only ereyo related ku water cycle, Avoid homonyms la simpler meanings, Ku dar etymology u Latin/Greek roots, Include Spanish cognates u ELL arday, iyo Isticmaal arday-friendly examples from pop culture. Custom instructions shape: which ereyo waa selected, sidee definitions waa written, iyo maxay additional information muuqda. Clear instructions produce better-targeted glossaries. adigu wuu kara request specific formats like: Include a sentence using kasta ereyo ama Ku dar visual memory hooks. AI follows instructions markay making vocabulary selections.",
     "glossary_language_input": "Specify luqad u vocabulary translation. Geli luqad: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, ama any luqad. adigu wuu kara ku dar multiple luqad separated by commas. kasta term will tus: English definition, target luqad translation(s), iyo phonetic pronunciation guide meesha applicable. Isticmaal u: ELL support, heritage luqad connections, world luqad vocabulary, iyo multilingual classrooms. Translations muuqda ku every vocabulary card u instant reference. Audio pronunciation available ku supported luqad. Research shows connecting cusub vocabulary ku home luqad improves retention. Max 4 luqad prevents visual clutter while supporting diverse classrooms.",
     "glossary_auto_remove": "Automatically filter out very simple ama common ereyo.",
@@ -7019,7 +7024,6 @@
     "fab_dictation": "Convert speech ku text u hands-free input. Riix ku activate microphone, hadal clearly, iyo watch ereyo muuqda. Shaqaynaya ku: text inputs, writing scaffolds, chat, iyo any editable field. Supports: multiple luqad, punctuation commands (say period, comma, cusub line), iyo editing commands (tirtir taas). Dictation requires microphone permission ku browser. Quality depends ku: microphone quality, background noise, iyo speech clarity. Real-waqti transcription shows as adigu hadal. Wax ka beddel transcribed text normally. Weyn u: arday la motor challenges, reluctant writers, iyo idea qarni. Tip: Hadal ku dhammee sentences u better accuracy.",
     "fab_focus": "Creates a movable spotlight taas dims everything except a circular area around kaaga cursor. tan dramatically reduces visual clutter iyo helps maintain attention ku current reading area. Especially beneficial u arday la ADHD, sensory processing differences, ama anyone overwhelmed by busy screens. spotlight follows kaaga mouse/touch automatically. Adjust spotlight size iyo dim intensity ku Settings → Accessibility.",
     "fab_line_focus": "Single-line reading isolation tool u focused reading. markay activated: one text line waa highlighted while others waa dimmed, creating visual focus. Navigate la: arrow keys (up/down), riix anywhere ku text, ama touch/swipe ku mobile. Benefits: reduces visual crowding, supports raadraac difficulties, helps maintain place, iyo reduces regression. Intensity (sidee much surrounding text waa visible) waa adjustable ku Settings → Accessibility. Shaqaynaya ku: dhammaan reading content, including soo saaray text, source materials, iyo chat. Particularly helpful u: dyslexia, ADHD, visual processing differences, iyo anyone overwhelmed by text-heavy screens. Tip: Combine la larger font u maximum reading ease.",
-    "fab_ruler": "Adds a semi-transparent horizontal bar taas follows kaaga cursor ku caawimaad track kaaga reading goob line by line. Particularly helpful u users la dyslexia, ADHD, ama visual raadraac difficulties. Drag ruler up/down ku reposition, isticmaal arrow keys u fine control, ama riix anywhere ku jump. ruler color wuu kara be customized ku Settings. Shaqaynaya across dhammaan reading views including Simplified Text, FAQ, iyo Glossary definitions.",
     "fab_timer": "Opens an interactive focus timer based ku Pomodoro Technique. Door from preset durations (5/15/25/45 minutes) ama customize kaaga own. Features include: visual countdown la progress ring, optional break reminders, XP rewards u completed sessions (longer = badan XP), iyo session logging u macallin review. Label kaaga task (e.g., 'Akhri Chapter 3') ku track maxay adigu accomplished. Minimizes ku header bar so adigu wuu kara work while it runs.",
     "scaffolds_edit_toggle": "Toggle between macallin editing iyo arday view mode. markay ON (Wax ka beddel Mode): riix any scaffold ku modify text, ku dar cusub tilmaamayaal, tirtir items, iyo reorder content. markay OFF: scaffolds display as arday eeg them (akhri-only). Edits kaydi automatically. arday always eeg akhri-only regardless kaaga toggle (they cannot access wax ka beddel mode). Isticmaal editing ku: customize AI-soo saaray scaffolds, ku dar fasal-specific examples, saar inappropriate tilmaamayaal, iyo differentiate u specific arday. Preview arday view kahor sharing. Asal scaffolds wuu kara be restored from history. Tip: Review iyo wax ka beddel scaffolds kahor fasal ku ensure they match kaaga teaching style iyo arday needs.",
     "scaffolds_goal_panel": "Display learning objectives u arday reference. Goals muuqda prominently during activity. Effective goals waa: arday-friendly (I wuu kara statements), specific iyo measurable, iyo aligned ku activity. Examples: I wuu kara aqoonso three causes Civil War ama I wuu kara isticmaal caddayn ku support my claim. Goals increase: metacognition, naftiisa-assessment, iyo purpose clarity. arday wuu kara reference goals while working. macallin sets goals kahor arday access. Multiple goals wuu kara be displayed. Goals wuu kara include success criteria: I know I leeyahay succeeded markay my paragraph has a topic sentence. Research shows visible learning targets improve achievement.",
@@ -7114,7 +7118,6 @@
     "immersive_line_focus": "Enable single-line reading guide. markay active: current reading line waa fully visible, surrounding lines waa dimmed, iyo focus follows as adigu navigate. Benefits: reduces visual overwhelm, improves raadraac, iyo helps attention stay ku current text. Navigate la: arrow keys, riix anywhere, ama auto-advance (la TTS). Dimming intensity waa adjustable ku settings. Perfect u: dyslexia support, attention difficulties, iyo raadraac challenges. Combines well la text-ku-speech u multi-modal reading support. Line focus shaqaynaya ku dhammaan text content. Research shows line isolation improves comprehension u struggling readers. Tip: Combine la larger font u maximum reading ease.",
     "immersive_syllables": "Visual syllable segmentation u decoding support. markay enabled: ereyo display la syllable breaks (hy-phen-at-ed), helping readers attack multisyllabic ereyo. Benefits: dhisaya phonemic awareness, supports decoding strategies, develops morphological understanding, iyo aids pronunciation. Especially helpful u: struggling decoders, ELL arday, dyslexia support, iyo vocabulary ereyo la complex syllable patterns. Syllabification follows standard phonetic rules. Shaqaynaya ku: dhammaan reading content including adapted text, glossary terms, iyo source materials. Combine la audio ku hear syllables pronounced. Toggle off markay maaha needed ku reduce visual complexity. Tip: Isticmaal u challenging vocabulary, then disable u fluent reading practice.",
     "immersive_wide_text": "Expand text ku isticmaal badan horizontal screen space. markay active: line length increases, yar scrolling waa needed, iyo badan text waa visible at once. wanaagsan u: fluent readers, wide displays, iyo markay scanning u information. Default narrow width waa better u: struggling readers, mobile devices, iyo focused reading. Optimal line length varies by reader iyo device. Research shows 50-75 characters per line waa ideal u most readers. Wide text trades readability u efficiency. Combine la line focus if raadraac becomes difficult. Setting waa remembered per device. Tip: Isticmaal wide text u research iyo scanning, narrow text u xidh reading.",
-    "sidebar_tab_create": "Fur content qarni panel la dhammaan AI-powered tools. Available generators: Quiz (assessments la jawaabo keys), Glossary (visual vocabulary), Outline (graphic organizers), Analysis (content examination), casharro Plan (structured instruction), Timeline (chronological activities), Simplified Text (leveled reading), iyo badan. kasta tool opens a configuration panel u customization kahor qarni. Source content must be loaded u most tools ku analyze. Soo saaray content muuqda ku main workspace iyo waa saved ku history. Isticmaal Create tab as kaaga primary content qarni hub. Tip: Bilow la Analysis ku understand content, then generate targeted resources.",
     "sidebar_tab_history": "Access dhammaan kaaga saved content iyo session history. History includes: auto-saved sessions from recent work, manually saved projects iyo portfolios, soo saaray resources organized by creation date, iyo arday submissions (macallin view). Actions: load any shay ku sii wad working, tirtir items ku free storage, export u backup, iyo raadi by keyword. History sorts by recency by default. Filter by type (quiz, glossary, adventure, etc.) ku find specific resources. Cloud-synced history waa accessible from any device. Storage limits vary by account—tirtir duug items if approaching limit. kaaga history waa kaaga personal teaching resource library.",
     "socratic_toggle": "Enable Socratic dialogue mode u deeper learning. markay ON: AI never gives direct jawaabo—instead asks probing su'aalo taas guide arday toward discovery. Benefits: develops critical thinking, encourages naftiisa-correction, dhisaya problem-solving skills, iyo creates memorable learning moments. AI uses techniques like: clarifying su'aalo (maxay do adigu mean by...?), challenging assumptions (But maxay if...?), iyo caddayn requests (sidee do adigu know taas?). Best u: discussion preparation, concept exploration, iyo helping arday who want quick jawaabo ku think badan deeply. May frustrate arday seeking efficiency—explain purpose.",
     "socratic_input": "Geli kaaga su'aalo ama statement u Socratic exploration. AI will respond la su'aalo rather than jawaabo. wanaagsan starting points: Why do adigu think [X] happened? maxay makes [Y] important? ama I believe [Z] because... AI probes kaaga reasoning: asking u caddayn, exploring implications, testing logic, iyo surfacing assumptions. tan develops argumentation iyo critical thinking skills. Be prepared ku: justify kaaga thinking, consider alternatives, iyo refine kaaga goob. Socratic dialogues wuu kara be frustrating initially but dhis lasting understanding. kaaga responses iyo reasoning waa tracked u reflection.",
@@ -23719,7 +23722,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Sharax warbaahinta hadda jirta",
+    "describe_current_media_done": "Waxaa la akhrinayaa warbaahinta {index} ee {count}.",
+    "describe_current_media_hint": "Akhri sharaxaadda warbaahinta hadda jirta ama tan xigta adigoo ka bixin ilaha",
+    "describe_current_media_none": "Ilaha hadda jira warbaahin kuma jirto.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Fur Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore waa la furay.",
+    "open_learning_web_explorer_hint": "Sahamin heerarka, fikradaha, casharrada, caddaymaha iyo xiriirka erayada khariidad keliya",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Akhri dhammaan sharaxaadaha warbaahinta",
+    "read_media_descriptions_count": "Waxaa la akhrinayaa {count} sharaxaad warbaahin.",
+    "read_media_descriptions_hint": "Akhri sharaxaad kasta oo la qoray ee sawir, fiidiyow ama cod ee ku jira ilaha hadda",
+    "read_media_descriptions_none": "Ilaha hadda jira warbaahin kuma jirto.",
+    "suggest_contextual_next_steps": "Soo jeedi 3 tallaabo xiga",
+    "suggest_contextual_next_steps_hint": "Waxay bixisaa saddex ikhtiyaar oo ku habboon xaaladda, iyadoon mid dooran ama socodsiin",
+    "suggest_contextual_next_steps_working": "Waxaa la akhrinayaa xaaladda casharka hadda waxaana la diyaarinayaa saddex ikhtiyaar...",
+    "surprise_me_contextually": "I sii tallaabo xigta oo faa’iido leh",
+    "surprise_me_contextually_hint": "Waxay ka doorataa xaaladda casharka hadda hal tallaabo macquul ah oo khatar yar leh",
+    "surprise_me_contextually_working": "Waxaa la akhrinayaa xaaladda casharka hadda waxaana la dooranayaa tallaabo xigta oo faa’iido leh...",
+    "use_contextual_suggestion": "Isticmaal tallaabada xigta ee la soo jeediyay",
+    "use_contextual_suggestion_hint": "Waxay socodsiisaa ikhtiyaarka 1, 2, ama 3 ee soo jeedinta ugu dambaysay",
+    "use_contextual_suggestion_working": "Waxaa la bilaabayaa tallaabada xigta ee la doortay..."
   },
   "palette": {
     "aria": "Liiska amarrada AlloFlow",
@@ -23742,10 +23771,11 @@
       "videoStudio": "Halkan — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Falkasta waa la ku dhawaaqaa. Ctrl+K ayaa beddela.",
     "group": {
@@ -24040,6 +24070,12 @@
     "diff_types_hint": "Samee xirmo kala duwan oo loogu talagalay:",
     "diff_cost": "Qiyaastii {n} abuurid halkii orod.",
     "summary_standards": "heerar",
-    "summary_interests": "danaha"
+    "summary_interests": "danaha",
+    "translations": "Turjumaadaha",
+    "translations_auto": "Toos ah ({language})",
+    "translations_auto_plain": "Toos ah",
+    "translations_none": "Midna",
+    "translations_on_hint": "Ilaha {output} waxay sidoo kale yeelan doonaan nooc {target} ah.",
+    "translations_off_hint": "Ilaha waxay noqon doonaan {output} oo keliya, iyadoo aan luqad labaad lahayn."
   }
 }

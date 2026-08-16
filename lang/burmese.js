@@ -2249,7 +2249,7 @@
     "ai_guide_sub": "သင်ကြားရေး၊ လမ်းညွှန်ခြင်း နှင့် အလိုအလျောက် ပြင်ဆင်ခြင်း",
     "ai_guide_welcome": "မင်္ဂလာပါ! ကျွန်ုပ်သည် သင်၏ AI လမ်းညွှန်ဖြစ်သည်။ UDL နည်းဗျူဟာများ၊ သင့်အတွက် အက်ပ်ကို လမ်းညွှန်ခြင်း သို့မဟုတ် သင်ခန်းစာဆက်တင်များကို အလိုအလျောက်စနစ်ဖြင့်တပ်ဆင်ခြင်း တွင် ကူညီနိုင်ပါသည်။ မေးလိုက်ရုံပါပဲ။",
     "tool_analysis": "ခွဲခြမ်းစိတ်ဖြာပါ အရင်းအမြစ်ပစ္စည်း",
-    "tool_glossary": "အဘိဓာန် & ဘာသာစကား Selection",
+    "tool_glossary": "အဘိဓာန်",
     "tool_simplified": "စာသား Adaptation",
     "tool_outline": "အမြင် Organizer",
     "tool_visual": "အမြင် ပံ့ပိုးမှု",
@@ -2979,7 +2979,7 @@
     "choose_destination_aria": "ရွေးချယ်ပါ destination"
   },
   "glossary": {
-    "title": "အဘိဓာန် & ဘာသာစကား Selection",
+    "title": "အဘိဓာန်",
     "tier2": "အဆင့် ၂ (သုတေသန)",
     "tier2_tooltip": "ဘာသာရပ်များတွင် သုံးသော အသုံးဝင်သော ပညာရေး စကားလုံးများ (ဥပမာ - 'ခွဲခြမ်းစိတ်ဖြာ', 'အတည်ပြု')။",
     "tier3": "အဆင့် ၃ (နယ်ပယ်)",
@@ -3921,7 +3921,12 @@
     "gauge_simple": "ရိုးရှင်း",
     "word_bank_english": "အင်္ဂလိပ်",
     "word_bank_both": "နှစ်ခုစလုံး",
-    "word_bank_language": "ဝေါဟာရဘဏ် ဘာသာစကား"
+    "word_bank_language": "ဝေါဟာရဘဏ် ဘာသာစကား",
+    "measured_level_label": "တိုင်းတာထားသော စာဖတ်အဆင့်",
+    "measured_on_target": "{grade} အတွက် သင့်တော်သည်",
+    "measured_above": "{grade} အဆင့်ထက် မြင့်သည်",
+    "measured_below": "{grade} အဆင့်ထက် နိမ့်သည်",
+    "measured_note": "Flesch-Kincaid၊ ဤစာပိုဒ်ပေါ်တွင် တိုင်းတာထားသည်။ ပိုမိုပြည့်စုံစွာ သုံးသပ်ရန် စစ်ဆေး အဆင့် ကို သုံးပါ။"
   },
   "quiz": {
     "title": "အကဲဖြတ်",
@@ -5867,7 +5872,9 @@
     "title_poettree_config": "🌳 PoetTree လုပ်ငန်း",
     "title_poettree_submission": "🌳 ကဗျာ တင်သွင်းမှု",
     "title_litlab_config": "🎭 LitLab လုပ်ငန်း",
-    "title_litlab_submission": "🎭 ဖျော်ဖြေမှု တင်သွင်းမှု"
+    "title_litlab_submission": "🎭 ဖျော်ဖြေမှု တင်သွင်းမှု",
+    "translation_block": "ဘာသာပြန်",
+    "translation_into": "ဘာသာပြန် ({language})"
   },
   "persona": {
     "title": "Interview မုဒ်",
@@ -6284,7 +6291,7 @@
   },
   "tools": {
     "source": "အရင်းအမြစ်ပစ္စည်း",
-    "glossary": "အဘိဓာန် & ဘာသာစကား Selection",
+    "glossary": "အဘိဓာန်",
     "simplified": "စာသား Adaptation & ပါ၀င်မှု",
     "outline": "အမြင် Organizer",
     "quiz": "အကဲဖြတ်",
@@ -6873,7 +6880,6 @@
     "source_settings_instructions": "Guide AI အကြောင်းအရာ မျိုးဆက် ဖြင့် တိကျသော ညွှန်ကြားချက်. ဥပမာ: ပြုလုပ်ပါ it စိတ်ဝင်စားဖွယ် အတွက် reluctant ဖတ်သူများ, အာရုံ အပေါ် water cycle, ထည့်သွင်းပါ diverse ဇာတ်ကောင် names, Avoid references သို့ violence, နှင့် အသုံးပြုပါ ရိုးရှင်း ဝေါဟာရ အတွက် ELL ကျောင်းသား. ညွှန်ကြားချက် ပုံသဏ္ဍာန်: အသံ, အကြောင်းအရာ အာရုံ, ဝေါဟာရ အဆင့်, နှင့် perspective. Be တိကျသော အတွက် အကောင်းဆုံး ရလဒ်. များစွာ ညွှန်ကြားချက် နိုင်သည် be combined. ညွှန်ကြားချက် ဖြစ်ကြသည် processed along ဖြင့် သင်၏ အကြောင်းအရာ နှင့် ဆက်တင်များ. အတွက် sensitive topics, ထည့်သွင်းပါ အကြောင်းအရာ guidance. ညွှန်ကြားချက် do မ guarantee တိကျသော outcomes သို့သော် strongly influence မျိုးဆက်. အကြံပြုချက်: ထည့်သွင်းပါ အတန်းအဆင့် နှင့် မည်သည့် အကြောင်းအရာ restrictions တွင် သင်၏ ညွှန်ကြားချက် အတွက် အများဆုံး သင့်လျော် ထွက်ရှိမှု.",
     "source_verify_checkbox": "ဖွင့်ပါ AI fact-checking via Google ရှာဖွေပါ grounding. အခါ ON: AI cross-references ထုတ်လုပ်ပြီး အကြောင်းအရာ against web sources, flagging သို့မဟုတ် correcting potential inaccuracies. Adds 5-10 စက္ကန့် သို့ မျိုးဆက် အချိန် သို့သော် significantly improves reliability အတွက် factual အကြောင်းအရာ. Especially important အတွက်: သမိုင်း (dates, ဖြစ်ရပ်များ), science (processes, ဒေတာ), biography, နှင့် လက်ရှိ ဖြစ်ရပ်များ. အတွက် fiction, creative ရေးသားခြင်း, သို့မဟုတ် hypothetical scenarios, ဤ နိုင်သည် be disabled သို့ allow ပိုပြီး creative freedom. Sources consulted ဖြစ်ကြသည် listed တွင် မျိုးဆက် log အတွက် ဆရာ ပြန်လည်စိစစ်. Highly recommended အတွက် မည်သည့် အကြောင်းအရာ ထို မည် be presented as factual သို့ ကျောင်းသား.",
     "source_generate_button": "ဖန်တီးပါ AI-written အကြောင်းအရာ အပေါ် သင်၏ specified အကြောင်းအရာ. နှိပ်ပါ သို့ begin မျိုးဆက် အသုံးပြုခြင်း သင်၏: အကြောင်းအရာ description, ပစ်မှတ် အရှည်, အတန်းအဆင့်, နှင့် စိတ်ကြိုက် ညွှန်ကြားချက်. မျိုးဆက် takes 10-20 စက္ကန့်. ထွက်ရှိမှု ဖြစ်သည် သုံးသပ်ချက် by safety filters မတိုင်မီ ပြသခြင်း. ထုတ်လုပ် အကြောင်းအရာ နိုင်သည် be: edited (ဆရာ နိုင်သည် ပြုပြင်ပါ မည်သည့် part), analyzed (လုပ်ဆောင်ပါ မှတဆင့် အခြား မျိုးဆက် ကိရိယာများ), နှင့် သိမ်းပြီး (ထည့်ပါ သို့ သမိုင်း အတွက် reuse). အသုံးပြုပါ အခါ: သင် လိုအပ် အကြောင်းအရာ အပေါ် တိကျသော အကြောင်းအရာ, လိုချင် controlled ရှုပ်ထွေးမှု, သို့မဟုတ် လိုအပ် သို့ fill curriculum gaps. ထုတ်လုပ် အကြောင်းအရာ ပါဝင်သည်: သင့်လျော် ဝေါဟာရ, logical organization, နှင့် အတန်း-အဆင့် syntax. Verify factual တိကျမှု မတိုင်မီ အတန်း အသုံးပြုပါ.",
-    "generator_actions": "Hub အတွက် အားလုံး အကြောင်းအရာ မျိုးဆက် ကိရိယာများ. ရရှိနိုင် generators ထည့်သွင်းပါ: စစ်ဆေးခြင်း (အကဲဖြတ်ခြင်း ဖြင့် အဖြေ keys), အဘိဓာန် (အမြင် ဝေါဟာရ), Simplified စာသား (အဆင့် ဖတ်ခြင်း), FAQ (Q နှင့် pairs), ခွဲခြမ်းစိတ်ဖြာမှု (အကြောင်းအရာ examination), သင်ခန်းစာ အစီအစဉ် (instructional design), Timeline (chronological လှုပ်ရှားမှု), Scaffolds (ရေးသားခြင်း ပံ့ပိုးမှု), အယူအဆ စီစဉ်ပါ (categorization ဂိမ်း), သင်္ချာ (problem မျိုးဆက်), ခရီး (အပြန်အလှန် ပုံပြင်), နှင့် Brainstorm (လှုပ်ရှားမှု ideas). တစ်ခုစီ generator ပြောင်းလဲစေသည် သင်၏ အရင်းအမြစ် အကြောင်းအရာ ထဲသို့ ကွဲပြား ပုံစံ. နှိပ်ပါ မည်သည့် generator သို့ ဖွင့်ပါ its configuration panel. များစွာ generators နိုင်သည် be အသုံးပြုပြီး အပေါ် တူညီ အရင်းအမြစ်. ထုတ်လုပ် အကြောင်းအရာ ပေါ်လာ တွင် workspace နှင့် သိမ်း သို့ သမိုင်း. အကြံပြုချက်: စတင်ပါ ဖြင့် ခွဲခြမ်းစိတ်ဖြာမှု သို့ နားလည်ပါ သင်၏ အကြောင်းအရာ, ထို့နောက် ထုတ်လုပ်ပါ targeted အရင်းအမြစ်များ.",
     "tool_visual": "ဝင်ရောက်ခွင့် အမြင် generator ကိရိယာများ. Creates AI-generated ပုံ အပါအဝင်: ဝေါဟာရ အမြင်, အယူအဆ ပုံပြင်, မြင်ကွင်း depictions, ပုံ, နှင့် infographics. အမြင် types: ကိုးကား ပုံ (အတွက် သင်ယူခြင်း), worksheets (အတွက် လှုပ်ရှားမှုများ), နှင့် ပုံ (အတွက် relationships). အမြင် ပံ့ပိုးမှု: ELL ကျောင်းသား (အမြင် ဝေါဟာရ), အမြင် သင်ယူသူများ, နှင့် ပါ၀င်မှု. တစ်ခုစီ မျိုးဆက် ဖန်တီး unique ပုံ. ဆက်တင်များ ထိန်းချုပ်မှု ပုံစံ, အရည်အသွေး, နှင့် အကြောင်းအရာ. ထုတ်လုပ် အမြင် နိုင်သည် be: downloaded, embedded တွင် ပစ္စည်းများ, နှင့် added သို့ glossaries. Uses AI ပုံ မျိုးဆက် credits. အကြံပြုချက်: ထုတ်လုပ်ပါ အမြင် အတွက် abstract အယူအဆများ ထို ဖြစ်ကြသည် difficult သို့ explain ဖြင့် စကားလုံး alone.",
     "tool_udl": "UDL framework integration အကြောင်း လေ့လာပါ—Multiple Means of Representation, Engagement နှင့် Action/Expression သုံးခုစလုံး။",
     "tour-analysis-settings": "ညှိ parameters အတွက် readability ခွဲခြမ်းစိတ်ဖြာမှု, အပါအဝင် ပစ်မှတ် ဖတ်ခြင်း အဆင့် နှင့် တိကျသော metrics သို့ track.",
@@ -6898,7 +6904,6 @@
     "adventure_system_state": "Adventure သို့ resource management—Health, Gold, Reputation—ထည့်သွင်းပါ။",
     "glossary_tier2_count": "သတ်မှတ်ပါ ဘယ်လို many Tier 2 (ပညာရေး) ဝေါဟာရ စကားလုံး သို့ ထည့်သွင်းပါ. Tier 2 စကားလုံး: ပေါ်လာ တစ်လျှောက် subjects, ဖြစ်ကြသည် အသုံးပြုပြီး တွင် ပညာရေး contexts, နှင့် ဖြစ်ကြသည် essential အတွက် စာသား နားလည်မှု. ဥပမာ: ခွဲခြမ်းစိတ်ဖြာပါ, အထောက်အထား, significant, contrast. These စကားလုံး ရှိသည် highest instructional တန်ဖိုး—အများဆုံး ကျောင်းသား benefit မှ explicit teaching. Recommended ရေတွက်ပါ depends အပေါ်: စာသား အရှည် (1 စကားလုံး per 100-150 စကားလုံး ၏ အရင်းအမြစ်), ရရှိနိုင် ညွှန်ကြားချက် အချိန်, နှင့် ကျောင်းသား လိုအပ်. Balance ဖြင့် Tier 3 ရေတွက်ပါ အတွက် ပြီးစီးပါ ဝေါဟာရ သတ်မှတ်ပါ. အာရုံ ညွှန်ကြားချက် here အတွက် maximum impact အပေါ် ဖတ်ခြင်း နားလည်မှု တစ်လျှောက် အားလုံး subjects.",
     "glossary_tier3_count": "ထည့်သွင်းမည့် Tier 3 (domain-specific) ဝေါဟာရ စကားလုံး အရေအတွက်ကို သတ်မှတ်ပါ။",
-    "glossary_definition_level": "ထိန်းချုပ်မှု ဘယ်လို အဓိပ္ပါယ် ဖြစ်ကြသည် written. ရွေးချယ်စရာ: တူညီ as အရင်းအမြစ် (maintains မူရင်း ရှုပ်ထွေးမှု—ကောင်း အတွက် အဆင့်မြင့် ကျောင်းသား), အပေါ် အတန်း (matches ပစ်မှတ် အတန်းအဆင့် ဝေါဟာရ), Simplified (အသုံးပြု ဘုံ စကားလုံး, ပိုတို ဝါကျ), နှင့် Kindergarten (very အခြေခံ ဘာသာစကား, concrete ဥပမာ). ကိုက်ညီ အဓိပ္ပါယ် ရှုပ်ထွေးမှု သို့ ကျောင်းသား ဖတ်ခြင်း အဆင့်, မ အကြောင်းအရာ အဆင့်. 10th-grader studying အဆင့်မြင့် biology might လိုအပ် Simplified အဓိပ္ပါယ် အတွက် unfamiliar ဝေါဟာရ. စဉ်းစား သင်၏ ကျောင်းသား weakest ဖတ်သူများ အခါ selecting. အဓိပ္ပါယ် နိုင်သည် be individually edited နောက် မျိုးဆက် လျှင် အချို့ လိုအပ် adjustment. Pro အကြံပြုချက်: အသုံးပြုပါ Simplified initially, ထို့နောက် discuss ပိုပြီး technical အဓိပ္ပါယ် တွင် အတန်း.",
     "glossary_custom_instructions": "ဝေါဟာရ ရွေးချယ်ခြင်းနှင့် အဓိပ္ပါယ်ဖွင့်ဆိုပုံအတွက် specific guidance ပေးပါ (ဥပမာ chapter range, topic focus)။",
     "glossary_language_input": "ဝေါဟာရ ဘာသာပြန်အတွက် ဘာသာစကားကို သတ်မှတ်ပါ (Spanish, Mandarin, Arabic, comma ဖြင့်ခွဲ၍ ဘာသာစကားများစွာ)။",
     "glossary_auto_remove": "အလိုအလျောက် စစ်ထုတ်ပါ out very ရိုးရှင်း သို့မဟုတ် ဘုံ စကားလုံး.",
@@ -7032,7 +7037,6 @@
     "fab_dictation": "Speech ကို text သို့ ပြောင်းပါ—microphone ကို activate လုပ်ပြီး ပြောလိုက်လျှင် စကားလုံးများ ပေါ်လာသည်။",
     "fab_focus": "Creates movable spotlight ထို dims everything except circular ဧရိယာ around သင်၏ cursor. ဤ dramatically reduces အမြင် clutter နှင့် အကူအညီ maintain attention အပေါ် လက်ရှိ ဖတ်ခြင်း ဧရိယာ. Especially beneficial အတွက် ကျောင်းသား ဖြင့် ADHD, sensory processing ခြားနားချက်, သို့မဟုတ် anyone overwhelmed by busy screens. spotlight follows သင်၏ mouse/touch အလိုအလျောက်. ညှိ spotlight size နှင့် dim intensity တွင် ဆက်တင်များ → အသုံးပြုနိုင်စွမ်း.",
     "fab_line_focus": "focused reading အတွက် single-line reading isolation tool—စာသား တစ်ကြောင်းကို highlight လုပ်ပြီး အခြားကြောင်းများကို dim လုပ်ပါသည်။",
-    "fab_ruler": "Adds semi-transparent horizontal ဘား ထို follows သင်၏ cursor သို့ အကူအညီ track သင်၏ ဖတ်ခြင်း အနေအထား မျဉ်း by မျဉ်း. Particularly အကူအညီ အတွက် users ဖြင့် dyslexia, ADHD, သို့မဟုတ် အမြင် ခြေရာခံ difficulties. ဆွဲပါ ruler up/down သို့ reposition, အသုံးပြုပါ arrow keys အတွက် fine ထိန်းချုပ်မှု, သို့မဟုတ် နှိပ်ပါ anywhere သို့ jump. ruler အရောင် နိုင်သည် be customized တွင် ဆက်တင်များ. အလုပ်လုပ် တစ်လျှောက် အားလုံး ဖတ်ခြင်း views အပါအဝင် Simplified စာသား, FAQ, နှင့် အဘိဓာန် အဓိပ္ပါယ်.",
     "fab_timer": "Opens အပြန်အလှန် အာရုံ timer အပေါ်အခြေခံ အပေါ် Pomodoro Technique. ရွေးချယ်ပါ မှ preset durations (5/15/25/45 minutes) သို့မဟုတ် စိတ်ကြိုက်ပြုပြင်ပါ သင်၏ own. အင်္ဂါရပ်များ ထည့်သွင်းပါ: အမြင် countdown ဖြင့် တိုးတက်မှု ring, ရွေးချယ်စရာ break reminders, XP ဆုလာဘ် အတွက် completed sessions (ပိုရှည် = ပိုပြီး XP), နှင့် sessions logging အတွက် ဆရာ ပြန်လည်စိစစ်. Label သင်၏ task (e.g., 'ဖတ်ပါ အခန်း 3') သို့ track ဘာ သင် accomplished. Minimizes သို့ header ဘား so သင် နိုင်သည် အလုပ် စဉ် it runs.",
     "scaffolds_edit_toggle": "ပြောင်းပါ ကြား ဆရာ editing နှင့် ကျောင်းသား ကြည့်ပါ မုဒ်. အခါ ON (တည်းဖြတ်ပါ မုဒ်): နှိပ်ပါ မည်သည့် scaffold သို့ ပြုပြင်ပါ စာသား, ထည့်ပါ အသစ် အချက်ပြ, ဖျက်ပါ အရာ, နှင့် reorder အကြောင်းအရာ. အခါ OFF: scaffolds ပြသခြင်း as ကျောင်းသား ကြည့်ပါ them (ဖတ်ပါ-သာ). Edits သိမ်းပါ အလိုအလျောက်. ကျောင်းသား always ကြည့်ပါ ဖတ်ပါ-သာ regardless ၏ သင်၏ ပြောင်းပါ (၎င်းတို့ cannot ဝင်ရောက်ခွင့် တည်းဖြတ်ပါ မုဒ်). အသုံးပြုပါ editing သို့: စိတ်ကြိုက်ပြုပြင်ပါ AI-generated scaffolds, ထည့်ပါ အတန်း-တိကျသော ဥပမာ, ဖယ်ရှားပါ inappropriate အချက်ပြ, နှင့် differentiate အတွက် တိကျသော ကျောင်းသား. Preview ကျောင်းသား ကြည့်ပါ မတိုင်မီ sharing. မူရင်း scaffolds နိုင်သည် be restored မှ သမိုင်း. အကြံပြုချက်: ပြန်လည်စိစစ် နှင့် တည်းဖြတ်ပါ scaffolds မတိုင်မီ အတန်း သို့ ensure ၎င်းတို့ ကိုက်ညီ သင်၏ teaching ပုံစံ နှင့် ကျောင်းသား needs.",
     "scaffolds_goal_panel": "ပြသခြင်း သင်ယူခြင်း objectives အတွက် ကျောင်းသား ကိုးကား. ပန်းတိုင် ပေါ်လာ prominently အတွင်း လှုပ်ရှားမှု. Effective ပန်းတိုင် ဖြစ်ကြသည်: ကျောင်းသား-ဖော်ရွေ (I နိုင်သည် statements), တိကျသော နှင့် measurable, နှင့် aligned သို့ လှုပ်ရှားမှု. ဥပမာ: I နိုင်သည် ဖော်ထုတ် three causes ၏ Civil War သို့မဟုတ် I နိုင်သည် အသုံးပြုပါ အထောက်အထား သို့ ပံ့ပိုးမှု my claim. ပန်းတိုင် increase: metacognition, ကိုယ်တိုင်-အကဲဖြတ်ခြင်း, နှင့် purpose clarity. ကျောင်းသား နိုင်သည် ကိုးကား ပန်းတိုင် စဉ် working. ဆရာ sets ပန်းတိုင် မတိုင်မီ ကျောင်းသား ဝင်ရောက်ခွင့်. များစွာ ပန်းတိုင် နိုင်သည် be displayed. ပန်းတိုင် နိုင်သည် ထည့်သွင်းပါ အောင်မြင် criteria: I know I ရှိသည် succeeded အခါ my စာပိုဒ် has အကြောင်းအရာ ဝါကျ. Research ပြ မြင်နိုင် သင်ယူခြင်း targets improve အောင်မြင်မှု.",
@@ -7127,7 +7131,6 @@
     "immersive_line_focus": "Single-line reading guide ဖွင့်ပါ—လက်ရှိ စာသား တစ်ကြောင်းသာ ပြည့်ပြည့်ဝဝ မြင်ရပြီး အခြားကြောင်းများကို dim လုပ်ပါသည်။",
     "immersive_syllables": "အမြင် syllable segmentation အတွက် decoding ပံ့ပိုးမှု. အခါ enabled: စကားလုံး ပြသခြင်း ဖြင့် syllable breaks (hy-phen-at-ed), အကူအညီ ဖတ်သူများ attack multisyllabic စကားလုံး. Benefits: တည်ဆောက် phonemic awareness, ပံ့ပိုးမှု decoding နည်းဗျူဟာများ, develops morphological understanding, နှင့် aids pronunciation. Especially အကူအညီ အတွက်: ရုန်းကန် decoders, ELL ကျောင်းသား, dyslexia ပံ့ပိုးမှု, နှင့် ဝေါဟာရ စကားလုံး ဖြင့် ရှုပ်ထွေး syllable ပုံစံများ. Syllabification follows စံချိန် phonetic rules. အလုပ်လုပ် အပေါ်: အားလုံး ဖတ်ခြင်း အကြောင်းအရာ အပါအဝင် adapted စာသား, အဘိဓာန် ဝေါဟာရ, နှင့် အရင်းအမြစ် ပစ္စည်းများ. Combine ဖြင့် အသံ သို့ hear syllables pronounced. ပြောင်းပါ off အခါ မ needed သို့ reduce အမြင် ရှုပ်ထွေးမှု. အကြံပြုချက်: အသုံးပြုပါ အတွက် challenging ဝေါဟာရ, ထို့နောက် ပိတ်ပါ အတွက် fluent ဖတ်ခြင်း လေ့ကျင့်ပါ.",
     "immersive_wide_text": "Expand စာသား သို့ အသုံးပြုပါ ပိုပြီး horizontal ဖန်သားပြင် space. အခါ အသက်ဝင်: မျဉ်း အရှည် increases, နည်း scrolling ဖြစ်သည် needed, နှင့် ပိုပြီး စာသား ဖြစ်သည် မြင်နိုင် at once. ကောင်း အတွက်: fluent ဖတ်သူများ, wide displays, နှင့် အခါ scanning အတွက် အချက်အလက်. မူရင်း narrow အကျယ် ဖြစ်သည် ပိုကောင်း အတွက်: ရုန်းကန် ဖတ်သူများ, mobile devices, နှင့် focused ဖတ်ခြင်း. Optimal မျဉ်း အရှည် varies by reader နှင့် device. Research ပြ 50-75 ဇာတ်ကောင် per မျဉ်း ဖြစ်သည် ideal အတွက် အများဆုံး ဖတ်သူများ. Wide စာသား trades readability အတွက် efficiency. Combine ဖြင့် မျဉ်း အာရုံ လျှင် ခြေရာခံ becomes difficult. ဆက်တင် ဖြစ်သည် remembered per device. အကြံပြုချက်: အသုံးပြုပါ wide စာသား အတွက် research နှင့် scanning, narrow စာသား အတွက် ပိတ်ပါ ဖတ်ခြင်း.",
-    "sidebar_tab_create": "ဖွင့်ပါ အကြောင်းအရာ မျိုးဆက် panel ဖြင့် အားလုံး AI-powered ကိရိယာများ. ရရှိနိုင် generators: စစ်ဆေးခြင်း (အကဲဖြတ်ခြင်း ဖြင့် အဖြေ keys), အဘိဓာန် (အမြင် ဝေါဟာရ), Outline (graphic organizers), ခွဲခြမ်းစိတ်ဖြာမှု (အကြောင်းအရာ examination), သင်ခန်းစာ အစီအစဉ် (structured ညွှန်ကြားချက်), Timeline (chronological လှုပ်ရှားမှုများ), Simplified စာသား (အဆင့် ဖတ်ခြင်း), နှင့် ပိုပြီး. တစ်ခုစီ ကိရိယာများ ဖွင့် configuration panel အတွက် customization မတိုင်မီ မျိုးဆက်. အရင်းအမြစ် အကြောင်းအရာ must be loaded အတွက် အများဆုံး ကိရိယာများ သို့ ခွဲခြမ်းစိတ်ဖြာပါ. ထုတ်လုပ် အကြောင်းအရာ ပေါ်လာ တွင် main workspace နှင့် ဖြစ်သည် သိမ်းပြီး သို့ သမိုင်း. အသုံးပြုပါ ဖန်တီးပါ tab as သင်၏ primary အကြောင်းအရာ မျိုးဆက် hub. အကြံပြုချက်: စတင်ပါ ဖြင့် ခွဲခြမ်းစိတ်ဖြာမှု သို့ နားလည်ပါ အကြောင်းအရာ, ထို့နောက် ထုတ်လုပ်ပါ targeted အရင်းအမြစ်များ.",
     "sidebar_tab_history": "သိမ်းထားသော content နှင့် session history အားလုံးကို ဖွင့်ပါ—auto-saved session, manually saved project, ထုတ်လုပ်ထားသော resource ပါဝင်သည်။",
     "socratic_toggle": "Socratic dialogue mode ဖွင့်ပါ—AI က တိုက်ရိုက်အဖြေမပေးဘဲ probing မေးခွန်းများဖြင့် ကျောင်းသားကို discovery ဆီသို့ ဦးတည်စေသည်။",
     "socratic_input": "ထည့်ပါ သင်၏ မေးခွန်း သို့မဟုတ် statement အတွက် Socratic exploration. AI မည် respond ဖြင့် မေးခွန်း rather than အဖြေ. ကောင်း starting အမှတ်: Why do သင် think [X] happened? ဘာ makes [Y] important? သို့မဟုတ် I believe [Z] because... AI probes သင်၏ reasoning: asking အတွက် အထောက်အထား, exploring implications, testing logic, နှင့် surfacing assumptions. ဤ develops argumentation နှင့် critical thinking ကျွမ်းကျင်မှု. Be prepared သို့: justify သင်၏ thinking, စဉ်းစား alternatives, နှင့် refine သင်၏ အနေအထား. Socratic dialogues နိုင်သည် be frustrating initially သို့သော် တည်ဆောက် lasting understanding. သင်၏ responses နှင့် reasoning ဖြစ်ကြသည် tracked အတွက် ပြန်လည်သုံးသပ်ခြင်း.",
@@ -29247,7 +29250,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "လက်ရှိ မီဒီယာကို ဖော်ပြပါ",
+    "describe_current_media_done": "မီဒီယာ {count} ခုအနက် {index} ခုကို ဖတ်နေသည်။",
+    "describe_current_media_hint": "အရင်းအမြစ်မှ မထွက်ဘဲ လက်ရှိ သို့မဟုတ် နောက်တစ်ခု မီဒီယာ ဖော်ပြချက်ကို ဖတ်ပါ",
+    "describe_current_media_none": "လက်ရှိ အရင်းအမြစ်တွင် မီဒီယာ မရှိပါ။",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore ကို ဖွင့်ပါ",
+    "open_learning_web_explorer_done": "Learning Web: Explore ကို ဖွင့်ပြီးပါပြီ။",
+    "open_learning_web_explorer_hint": "စံနှုန်းများ၊ အယူအဆများ၊ သင်ခန်းစာများ၊ သက်သေအထောက်အထားများနှင့် စကားလုံးဆက်စပ်မှုများကို မြေပုံတစ်ခုတည်းတွင် လေ့လာပါ",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "မီဒီယာ ဖော်ပြချက်အားလုံးကို ဖတ်ပါ",
+    "read_media_descriptions_count": "မီဒီယာ ဖော်ပြချက် {count} ခုကို ဖတ်နေသည်။",
+    "read_media_descriptions_hint": "လက်ရှိ အရင်းအမြစ်ရှိ ရေးသားထားသော ပုံ၊ ဗီဒီယို သို့မဟုတ် အသံ ဖော်ပြချက်တိုင်းကို ဖတ်ပါ",
+    "read_media_descriptions_none": "လက်ရှိ အရင်းအမြစ်တွင် မီဒီယာ မရှိပါ။",
+    "suggest_contextual_next_steps": "နောက်တစ်ဆင့် 3 ခု အကြံပြုပါ",
+    "suggest_contextual_next_steps_hint": "အခြေအနေနှင့် ကိုက်ညီသော ရွေးချယ်စရာ သုံးခုကို ပြသည်၊ တစ်ခုကို မရွေးဘဲ မလုပ်ဆောင်ပါ",
+    "suggest_contextual_next_steps_working": "လက်ရှိ သင်ခန်းစာ အခြေအနေကို ဖတ်ပြီး ရွေးချယ်စရာ သုံးခု ပြင်ဆင်နေသည်...",
+    "surprise_me_contextually": "အသုံးဝင်သော နောက်တစ်ဆင့်ဖြင့် အံ့အားသင့်စေပါ",
+    "surprise_me_contextually_hint": "လက်ရှိ သင်ခန်းစာ အခြေအနေမှ သင့်လျော်ပြီး အန္တရာယ်နည်းသော နောက်လုပ်ဆောင်ချက် တစ်ခုကို ရွေးသည်",
+    "surprise_me_contextually_working": "လက်ရှိ သင်ခန်းစာ အခြေအနေကို ဖတ်ပြီး အသုံးဝင်သော နောက်တစ်ဆင့်ကို ရွေးနေသည်...",
+    "use_contextual_suggestion": "အကြံပြုထားသော နောက်တစ်ဆင့်ကို သုံးပါ",
+    "use_contextual_suggestion_hint": "နောက်ဆုံး အကြံပြုချက်များမှ ရွေးချယ်စရာ 1၊ 2 သို့မဟုတ် 3 ကို လုပ်ဆောင်သည်",
+    "use_contextual_suggestion_working": "ရွေးချယ်ထားသော နောက်တစ်ဆင့်ကို စတင်နေသည်..."
   },
   "palette": {
     "aria": "AlloFlow အမိန့်ပေး ပါးလက်",
@@ -29270,10 +29299,11 @@
       "videoStudio": "ဤနေရာ — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "လုပ်ဆောင်ချက်တိုင်းကို ကြေညာသည်။ Ctrl+K က ဖွင့်/ပိတ်သည်။",
     "group": {
@@ -29583,6 +29613,12 @@
     "diff_types_hint": "ခွဲခြားထားသော အစုကို ဖန်တီးမည့်အရာ:",
     "diff_cost": "တစ်ကြိမ်လျှင် ဖန်တီးမှု {n} ခုခန့်။",
     "summary_standards": "စံနှုန်းများ",
-    "summary_interests": "စိတ်ဝင်စားမှုများ"
+    "summary_interests": "စိတ်ဝင်စားမှုများ",
+    "translations": "ဘာသာပြန်များ",
+    "translations_auto": "အလိုအလျောက် ({language})",
+    "translations_auto_plain": "အလိုအလျောက်",
+    "translations_none": "မရှိ",
+    "translations_on_hint": "{output} ဖြင့် ရင်းမြစ်များတွင် {target} ဗားရှင်းလည်း ပါဝင်ပါမည်။",
+    "translations_off_hint": "ရင်းမြစ်များသည် {output} ဖြင့်သာ ဖြစ်ပြီး ဒုတိယဘာသာစကား မပါဝင်ပါ။"
   }
 }

@@ -2248,7 +2248,7 @@
     "ai_guide_sub": "ፔዳጎጂ፣ ናቪጌሽንን ኣውቶ-ምድላውን",
     "ai_guide_welcome": "ሰላም! ኣነ ናትካ መራሒ AI እየ። ምስ ኣገባባት UDL ክሕግዘካ፣ ናይ መተግበሪ ምልዓል ክገብር፣ ወይ ኣቕዓምታት ናይ ትምህርትኻ ብኣውቶማቲክ ክስርዕ ይኽእል። ሕተት!",
     "tool_analysis": "ኣጻሪ ምንጪ ጽሑፍ",
-    "tool_glossary": "መዝገበ ቃላት & ቋንቋ Selection",
+    "tool_glossary": "መዝገበ ቃላት",
     "tool_simplified": "ጽሑፍ Adaptation",
     "tool_outline": "ምርኢት Organizer",
     "tool_visual": "ምርኢት ደገፍ",
@@ -2978,7 +2978,7 @@
     "choose_destination_aria": "ምረጽ ሓደ destination"
   },
   "glossary": {
-    "title": "መዝገበ ቃላት & ቋንቋ Selection",
+    "title": "መዝገበ ቃላት",
     "tier2": "ደረጃ 2 (ኣካዳ.)",
     "tier2_tooltip": "ብኣካዳምያዊ መንገዲ ኣብ ኩሉ ዓውድታት ዝስርሑ ብልዑል-ጠቕሚ ቃላት (ንኣብነት፣ 'analyze'፣ 'verify')።",
     "tier3": "ደረጃ 3 (ጽላት)",
@@ -3920,7 +3920,12 @@
     "gauge_simple": "ቐሊል",
     "word_bank_both": "ክልቲኦም",
     "word_bank_language": "ቋንቋ ባንኪ ቃላት",
-    "word_bank_english": "እንግሊዝኛ"
+    "word_bank_english": "እንግሊዝኛ",
+    "measured_level_label": "እተለክዐ ናይ ንባብ ደረጃ",
+    "measured_on_target": "ንዓ {grade} ዝሰማማዕ",
+    "measured_above": "ካብ ደረጃ {grade} ንላዕሊ",
+    "measured_below": "ካብ ደረጃ {grade} ንታሕቲ",
+    "measured_note": "Flesch-Kincaid፣ ኣብዚ ጽሑፍ እተለክዐ። ንዝያዳ ምሉእ መርመራ ምርመራ ደረጃ ተጠቐም።"
   },
   "quiz": {
     "title": "ገምጋም",
@@ -5866,7 +5871,9 @@
     "title_poettree_config": "🌳 ናይ PoetTree ዕዮ",
     "title_poettree_submission": "🌳 ናይ ግጥሚ ምቕራብ",
     "title_litlab_config": "🎭 ናይ LitLab ዕዮ",
-    "title_litlab_submission": "🎭 ናይ ኣቀራርባ ምቕራብ"
+    "title_litlab_submission": "🎭 ናይ ኣቀራርባ ምቕራብ",
+    "translation_block": "ትርጉም",
+    "translation_into": "ትርጉም ({language})"
   },
   "persona": {
     "title": "Interview ኣገባብ",
@@ -6284,7 +6291,7 @@
   },
   "tools": {
     "source": "ምንጪ ጽሑፍ",
-    "glossary": "መዝገበ ቃላት & ቋንቋ Selection",
+    "glossary": "መዝገበ ቃላት",
     "simplified": "ጽሑፍ Adaptation & ተሳትፎ",
     "outline": "ምርኢት Organizer",
     "quiz": "ገምጋም",
@@ -6873,7 +6880,6 @@
     "source_settings_instructions": "Guide AI ትሕዝቶ ወለዶ ምስ ፍሉይ መምርሒ. ኣብነት: ግበር it መሳጢ ንዓ reluctant ኣንበብቲ, ኣተኩሮ ኣብ water cycle, ኣካትት diverse ባህሪ names, Avoid references ናብ violence, ከምኡውን ተጠቐም ቐሊል ቃላት ንዓ ELL ተምሃራይ. መምርሒ ቅርጺ: ድምጺ, ትሕዝቶ ኣተኩሮ, ቃላት ደረጃ, ከምኡውን perspective. Be ፍሉይ ንዓ ዝበለጸ ውጽኢት. ብዙሕ መምርሒ ይኽእል be combined. መምርሒ እዮም processed along ምስ ናትካ ኣርእስቲ ከምኡውን ስርዓታት. ንዓ sensitive topics, ኣካትት ትሕዝቶ guidance. መምርሒ do ኣይኮነን guarantee ፍሉይ outcomes ግን strongly influence ወለዶ. ሓሳብ: ኣካትት ደረጃ ክፍሊ ከምኡውን ዝኾነ ትሕዝቶ restrictions ኣብ ናትካ መምርሒ ንዓ ዝበዝሐ ግቡእ ውጽኢት.",
     "source_verify_checkbox": "ኣንቅሕ AI fact-checking via Google ድለ grounding. መዓስ ON: AI cross-references ተፈጢሩ ትሕዝቶ against web sources, flagging ወይ correcting potential inaccuracies. Adds 5-10 ካልኢት ናብ ወለዶ ግዜ ግን significantly improves reliability ንዓ factual ትሕዝቶ. Especially important ንዓ: ታሪኽ (dates, ፍጻመታት), science (processes, ዳታ), biography, ከምኡውን ህልው ፍጻመታት. ንዓ fiction, creative ምጽሓፍ, ወይ hypothetical scenarios, እዚ ይኽእል be disabled ናብ allow ተወሳኺ creative freedom. Sources consulted እዮም listed ኣብ ወለዶ log ንዓ መምህር ምግምጋም. Highly recommended ንዓ ዝኾነ ትሕዝቶ እቲ ክ be presented as factual ናብ ተምሃራይ.",
     "source_generate_button": "ፍጠር AI-written ትሕዝቶ ኣብ ናትካ specified ኣርእስቲ. ጠውቕ ናብ begin ወለዶ ምጥቃም ናትካ: ኣርእስቲ description, ዕላማ ንውሓት, ደረጃ ክፍሊ, ከምኡውን ናይ ብሕቲ መምርሒ. ወለዶ takes 10-20 ካልኢት. ውጽኢት እዩ ግምገማ by safety filters ቅድሚ ምርኢት. ዝተፈጥረ ትሕዝቶ ይኽእል be: edited (መምህር ይኽእል ቀይር ዝኾነ part), analyzed (ኣምራሕ ብ ካልእ ወለዶ መሳርሒታት), ከምኡውን ተቐሚጡ (ወስኽ ናብ ታሪኽ ንዓ reuse). ተጠቐም መዓስ: ንስኻ የድሊ ትሕዝቶ ኣብ ሓደ ፍሉይ ኣርእስቲ, ዝደሊ controlled ብኩእነት, ወይ የድሊ ናብ fill curriculum gaps. ዝተፈጥረ ትሕዝቶ የጠቓልል: ግቡእ ቃላት, logical organization, ከምኡውን ክፍሊ-ደረጃ syntax. Verify factual ልክዕነት ቅድሚ ክፍሊ ተጠቐም.",
-    "generator_actions": "Hub ንዓ ኩሉ ትሕዝቶ ወለዶ መሳርሒታት. ዝርከብ generators ኣካትት: ፈተና (ግምገማ ምስ መልሲ keys), መዝገበ ቃላት (ምርኢት ቃላት), Simplified ጽሑፍ (ደረጃ ምንባብ), FAQ (Q ከምኡውን ሓደ pairs), ትንታነ (ትሕዝቶ examination), ትምህርቲ ውጥን (instructional design), Timeline (chronological ንጥፈት), Scaffolds (ምጽሓፍ ደገፍ), ሓሳብ ኣሰናዲ (categorization ጸወታ), ሕሳብ (problem ወለዶ), ናይ ኣድቨንቸር (ምትሕውዋስ ዛንታ), ከምኡውን Brainstorm (ንጥፈት ideas). ነፍሲወከፍ generator ይቕይር ናትካ ምንጪ ትሕዝቶ ናብ ውሽጢ ዝተፈልየ ቅርጻ. ጠውቕ ዝኾነ generator ናብ ክፈት its configuration ፓነል. ብዙሕ generators ይኽእል be ተጠቒሙ ኣብ ሓደ ምንጪ. ዝተፈጥረ ትሕዝቶ ይርአ ኣብ workspace ከምኡውን የቐምጥ ናብ ታሪኽ. ሓሳብ: ጀምር ምስ ትንታነ ናብ ተረዳእ ናትካ ትሕዝቶ, ድሕሪኡ ፍጠር targeted ጸጋታት.",
     "tool_visual": "መእተዊ ምርኢት generator መሳርሒታት. Creates AI-generated ስእሊ ምስኡ: ቃላት ምርኢት, ሓሳብ ስእሊ, ትርኢት depictions, መግለጺ ስእሊ, ከምኡውን infographics. ምርኢት types: መወከሲ ስእሊ (ንዓ ምምሃር), worksheets (ንዓ ንጥፈታት), ከምኡውን መግለጺ ስእሊ (ንዓ relationships). ምርኢት ደገፍ: ELL ተምሃራይ (ምርኢት ቃላት), ምርኢት ተማሃሮ, ከምኡውን ተሳትፎ. ነፍሲወከፍ ወለዶ ይፈጥር unique ስእሊ. ስርዓታት ቁጽጽር ኣገባብ, ጽሬት, ከምኡውን ትሕዝቶ. ዝተፈጥረ ምርኢት ይኽእል be: downloaded, embedded ኣብ ጽሑፋት, ከምኡውን added ናብ glossaries. Uses AI ስእሊ ወለዶ credits. ሓሳብ: ፍጠር ምርኢት ንዓ abstract ሓሳባት እቲ እዮም difficult ናብ explain ምስ ቃላት alone.",
     "tool_udl": "ብዛዕባ UDL framework — Universal Design for Learning ሰለስቲኦም ኣገባባት ኣካቱ።",
     "tour-analysis-settings": "ምስናይ parameters ንዓ readability ትንታነ, ምስኡ ዕላማ ምንባብ ደረጃ ከምኡውን ፍሉይ metrics ናብ track.",
@@ -6898,7 +6904,6 @@
     "adventure_system_state": "ናይ ጸጋ ምሕደራ mechanics ይውስኽ — Health፣ ወርቂ፣ Reputation ጭቡጥ ጸጋታት።",
     "glossary_tier2_count": "ኣዳሉ ብኸመይ many Tier 2 (ኣካዳምያዊ) ቃላት ቃላት ናብ ኣካትት. Tier 2 ቃላት: ይርአ ኣብ ኩሉ subjects, እዮም ተጠቒሙ ኣብ ኣካዳምያዊ contexts, ከምኡውን እዮም essential ንዓ ጽሑፍ ምርዳእ. ኣብነት: ኣጻሪ, መርትዖ, significant, contrast. These ቃላት ኣለዎ highest instructional ዋጋ—ዝበዝሐ ተምሃራይ benefit ካብ explicit teaching. Recommended ቑጸር depends ኣብ: ጽሑፍ ንውሓት (1 ቃላት per 100-150 ቃላት ናይ ምንጪ), ዝርከብ መምርሒ ግዜ, ከምኡውን ተምሃራይ የድሊ. Balance ምስ Tier 3 ቑጸር ንዓ ሓደ ወድእ ቃላት ኣዳሉ. ኣተኩሮ መምርሒ here ንዓ maximum impact ኣብ ምንባብ ምርዳእ ኣብ ኩሉ ኩሉ subjects.",
     "glossary_tier3_count": "ቑጽሪ ናይ Tier 3 (ናይ ሞያ ፍሉያት) ናይ ቃላት ኣቕሑ ኣዳሉ።",
-    "glossary_definition_level": "ቁጽጽር ብኸመይ ትርጉም እዮም written. ኣማራጺታት: ሓደ as ምንጪ (maintains ኦርጅናል ብኩእነት—ጽቡቕ ንዓ ዝያዳ ተምሃራይ), ኣብ ክፍሊ (matches ዕላማ ደረጃ ክፍሊ ቃላት), Simplified (ይጥቀም ሓባራዊ ቃላት, ዝሓጸረ ሓረግ), ከምኡውን Kindergarten (very መሰረታዊ ቋንቋ, concrete ኣብነት). ምስምማዕ ትርጉም ብኩእነት ናብ ተምሃራይ ምንባብ ደረጃ, ኣይኮነን ትሕዝቶ ደረጃ. ሓደ 10th-grader studying ዝያዳ biology might የድሊ Simplified ትርጉም ንዓ unfamiliar ቃል. ምሕሳብ ናትካ ተምሃራይ weakest ኣንበብቲ መዓስ selecting. ትርጉም ይኽእል be individually edited ድሕሪ ወለዶ እንተ ገለ የድሊ adjustment. Pro ሓሳብ: ተጠቐም Simplified initially, ድሕሪኡ discuss ተወሳኺ technical ትርጉም ኣብ ክፍሊ.",
     "glossary_custom_instructions": "ናይ መዝገበ-ቃላት ምፍጣር ኣዳሉ — ኣብ ምዕራፍ ኣተኩር፣ ኣርእስቲ ድሩት ግበር ወይ etymology ኣእቱ።",
     "glossary_language_input": "ናይ ትርጉም ቋንቋ ኣእቱ — Spanish፣ Mandarin፣ Arabic ወይ ካልእ።",
     "glossary_auto_remove": "ብናይ ገዛእ ኣጻሪ out very ቐሊል ወይ ሓባራዊ ቃላት.",
@@ -7032,7 +7037,6 @@
     "fab_dictation": "ድምጺ ናብ ጽሑፍ ይትርጉም ናብ ናይ ኣእታዊ ሕተት — ጠውቕ ናብ microphone ምንቓሕ።",
     "fab_focus": "Creates ሓደ movable spotlight እቲ dims everything except ሓደ circular ስፍሓት around ናትካ cursor. እዚ dramatically reduces ምርኢት clutter ከምኡውን ሓገዝ maintain attention ኣብ ህልው ምንባብ ስፍሓት. Especially beneficial ንዓ ተምሃራይ ምስ ADHD, sensory processing ፍልልይ, ወይ anyone overwhelmed by busy screens. spotlight follows ናትካ mouse/touch ብናይ ገዛእ. ምስናይ spotlight size ከምኡውን dim intensity ኣብ ስርዓታት → ተበጻሕነት.",
     "fab_line_focus": "ናይ ሓደ-መስመር ምንባብ ቀይዲ መሳርሒ — ቐጥ ዝበለ ጽሑፍ መስመር ይብራህ፣ ካልኦት ይድኹሙ።",
-    "fab_ruler": "Adds ሓደ semi-transparent horizontal ጨናፊር እቲ follows ናትካ cursor ናብ ሓገዝ track ናትካ ምንባብ ኣቐማምጣ መስመር by መስመር. Particularly ሓገዝ ንዓ users ምስ dyslexia, ADHD, ወይ ምርኢት ምክትታል difficulties. ስሓብ ruler up/down ናብ reposition, ተጠቐም arrow keys ንዓ fine ቁጽጽር, ወይ ጠውቕ anywhere ናብ jump. ruler ሕብሪ ይኽእል be customized ኣብ ስርዓታት. ይሰርሕ ኣብ ኩሉ ኩሉ ምንባብ views ምስኡ Simplified ጽሑፍ, FAQ, ከምኡውን መዝገበ ቃላት ትርጉም.",
     "fab_timer": "Opens ሓደ ምትሕውዋስ ኣተኩሮ timer መሰረት ኣብ Pomodoro Technique. ምረጽ ካብ preset durations (5/15/25/45 minutes) ወይ ኣሰናድእ ናትካ own. ባህርያት ኣካትት: ምርኢት countdown ምስ ዕቤት ring, ኣማራጺ break reminders, XP ሽልማት ንዓ completed ኣኼባ (ዝነውሐ = ተወሳኺ XP), ከምኡውን ኣኼባ logging ንዓ መምህር ምግምጋም. Label ናትካ task (e.g., 'ኣንብብ ምዕራፍ 3') ናብ track እንታይ ንስኻ accomplished. Minimizes ናብ header ጨናፊር so ንስኻ ይኽእል ስራሕ ክሳብ it runs.",
     "scaffolds_edit_toggle": "ቀይር ኣብ ሞንጎ መምህር editing ከምኡውን ተምሃራይ ርአ ኣገባብ. መዓስ ON (ኣርም ኣገባብ): ጠውቕ ዝኾነ scaffold ናብ ቀይር ጽሑፍ, ወስኽ ሓድሽ ጥሙዕ, ሰርዝ ኣቕሓ, ከምኡውን reorder ትሕዝቶ. መዓስ OFF: scaffolds ምርኢት as ተምሃራይ ርአ them (ኣንብብ-ጥራይ). Edits ኣቐምጥ ብናይ ገዛእ. ተምሃራይ always ርአ ኣንብብ-ጥራይ regardless ናይ ናትካ ቀይር (ንሳቶም cannot መእተዊ ኣርም ኣገባብ). ተጠቐም editing ናብ: ኣሰናድእ AI-generated scaffolds, ወስኽ ክፍሊ-ፍሉይ ኣብነት, ኣልግስ inappropriate ጥሙዕ, ከምኡውን differentiate ንዓ ፍሉይ ተምሃራይ. Preview ተምሃራይ ርአ ቅድሚ sharing. ኦርጅናል scaffolds ይኽእል be restored ካብ ታሪኽ. ሓሳብ: ምግምጋም ከምኡውን ኣርም scaffolds ቅድሚ ክፍሊ ናብ ensure ንሳቶም ምስምማዕ ናትካ teaching ኣገባብ ከምኡውን ተምሃራይ needs.",
     "scaffolds_goal_panel": "ምርኢት ምምሃር objectives ንዓ ተምሃራይ መወከሲ. ዕላማ ይርአ prominently ኣብ ግዜ ንጥፈት. Effective ዕላማ እዮም: ተምሃራይ-ምስ ዝሰማማዕ (I ይኽእል statements), ፍሉይ ከምኡውን measurable, ከምኡውን aligned ናብ ንጥፈት. ኣብነት: I ይኽእል ምልላይ three causes ናይ Civil War ወይ I ይኽእል ተጠቐም መርትዖ ናብ ደገፍ my claim. ዕላማ increase: metacognition, ናይ ገዛእ-ግምገማ, ከምኡውን purpose clarity. ተምሃራይ ይኽእል መወከሲ ዕላማ ክሳብ working. መምህር sets ዕላማ ቅድሚ ተምሃራይ መእተዊ. ብዙሕ ዕላማ ይኽእል be displayed. ዕላማ ይኽእል ኣካትት ዓወት criteria: I know I ኣለዎ succeeded መዓስ my ምዕራፍ has ሓደ ኣርእስቲ ሓረግ. Research የርእይ ዝርአ ምምሃር targets improve ዓወት.",
@@ -7127,7 +7131,6 @@
     "immersive_line_focus": "ሓደ-መስመር ምንባብ ምራሕ — ህልው መስመር ይብራህ፣ ካልኦት ይድኩሙ።",
     "immersive_syllables": "ምርኢት syllable segmentation ንዓ decoding ደገፍ. መዓስ enabled: ቃላት ምርኢት ምስ syllable breaks (hy-phen-at-ed), ሓገዝ ኣንበብቲ attack multisyllabic ቃላት. Benefits: ይሃንፅ phonemic awareness, ደገፍ decoding ስትራተጂታት, develops morphological understanding, ከምኡውን aids pronunciation. Especially ሓገዝ ንዓ: ቃልሲ decoders, ELL ተምሃራይ, dyslexia ደገፍ, ከምኡውን ቃላት ቃላት ምስ ብኩእ syllable ቅርፂ. Syllabification follows መዐቀኒ phonetic rules. ይሰርሕ ኣብ: ኩሉ ምንባብ ትሕዝቶ ምስኡ adapted ጽሑፍ, መዝገበ ቃላት ቃል, ከምኡውን ምንጪ ጽሑፋት. Combine ምስ ድምጺ ናብ hear syllables pronounced. ቀይር off መዓስ ኣይኮነን needed ናብ reduce ምርኢት ብኩእነት. ሓሳብ: ተጠቐም ንዓ challenging ቃላት, ድሕሪኡ ኣደስክል ንዓ fluent ምንባብ ተለማመድ.",
     "immersive_wide_text": "Expand ጽሑፍ ናብ ተጠቐም ተወሳኺ horizontal መርኣዪ space. መዓስ ንቑሕ: መስመር ንውሓት increases, ውሑድ scrolling እዩ needed, ከምኡውን ተወሳኺ ጽሑፍ እዩ ዝርአ at once. ጽቡቕ ንዓ: fluent ኣንበብቲ, wide displays, ከምኡውን መዓስ scanning ንዓ ሓበሬታ. ቀዳማይ ምርጫ narrow ስፍሓት እዩ ዝሓሸ ንዓ: ቃልሲ ኣንበብቲ, mobile devices, ከምኡውን focused ምንባብ. Optimal መስመር ንውሓት varies by reader ከምኡውን device. Research የርእይ 50-75 ባህሪ per መስመር እዩ ideal ንዓ ዝበዝሐ ኣንበብቲ. Wide ጽሑፍ trades readability ንዓ efficiency. Combine ምስ መስመር ኣተኩሮ እንተ ምክትታል becomes difficult. ስርዓት እዩ remembered per device. ሓሳብ: ተጠቐም wide ጽሑፍ ንዓ research ከምኡውን scanning, narrow ጽሑፍ ንዓ ዕጾ ምንባብ.",
-    "sidebar_tab_create": "ክፈት ትሕዝቶ ወለዶ ፓነል ምስ ኩሉ AI-powered መሳርሒታት. ዝርከብ generators: ፈተና (ግምገማ ምስ መልሲ keys), መዝገበ ቃላት (ምርኢት ቃላት), Outline (graphic organizers), ትንታነ (ትሕዝቶ examination), ትምህርቲ ውጥን (structured መምርሒ), Timeline (chronological ንጥፈታት), Simplified ጽሑፍ (ደረጃ ምንባብ), ከምኡውን ተወሳኺ. ነፍሲወከፍ መሳርሒታት ይኸፍት ሓደ configuration ፓነል ንዓ customization ቅድሚ ወለዶ. ምንጪ ትሕዝቶ must be loaded ንዓ ዝበዝሐ መሳርሒታት ናብ ኣጻሪ. ዝተፈጥረ ትሕዝቶ ይርአ ኣብ main workspace ከምኡውን እዩ ተቐሚጡ ናብ ታሪኽ. ተጠቐም ፍጠር tab as ናትካ primary ትሕዝቶ ወለዶ hub. ሓሳብ: ጀምር ምስ ትንታነ ናብ ተረዳእ ትሕዝቶ, ድሕሪኡ ፍጠር targeted ጸጋታት.",
     "sidebar_tab_history": "ናይ ኩሉ ዝኽበቱ ትሕዝቶን ናይ ኣኼባ ታሪኽን ይኽፈት — auto-saved፣ ብ ኢድ ዝኽበቱን submissionsን።",
     "socratic_toggle": "ናይ Socratic dialogue ኣገባብ የንቅሕ — AI ቅኑዕ መልስታት ኣይህብን፣ መርምር ሕቶታት ይሕተት።",
     "socratic_input": "እተው ናትካ ሕቶ ወይ statement ንዓ Socratic exploration. AI ክ respond ምስ ሕቶ rather than መልሲ. ጽቡቕ starting ነጥቢ: Why do ንስኻ think [X] happened? እንታይ makes [Y] important? ወይ I believe [Z] because... AI probes ናትካ reasoning: asking ንዓ መርትዖ, exploring implications, testing logic, ከምኡውን surfacing assumptions. እዚ develops argumentation ከምኡውን critical thinking ክእለት. Be prepared ናብ: justify ናትካ thinking, ምሕሳብ alternatives, ከምኡውን refine ናትካ ኣቐማምጣ. Socratic dialogues ይኽእል be frustrating initially ግን ሃንፅ lasting understanding. ናትካ responses ከምኡውን reasoning እዮም tracked ንዓ ምስልጣን.",
@@ -29022,7 +29025,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "ነቲ ሕጂ ዘሎ ሚድያ ግለጾ",
+    "describe_current_media_done": "ሚድያ {index} ካብ {count} ይንበብ ኣሎ።",
+    "describe_current_media_hint": "ካብቲ ጸጋ ከይወጻእካ ናይ ሕጂ ወይ ናይ ቀጺሉ ዘሎ ሚድያ መግለጺ ኣንብብ",
+    "describe_current_media_none": "ኣብዚ ሕጂ ዘሎ ጸጋ ሚድያ የለን።",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore ክፈት",
+    "open_learning_web_explorer_done": "Learning Web: Explore ተኸፊቱ።",
+    "open_learning_web_explorer_hint": "መለክዒታት፣ ሓሳባት፣ ትምህርትታት፣ መርትዖታትን ምትእስሳር ቃላትን ኣብ ሓደ ካርታ ኣናዲ",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "ኩሎም መግለጺታት ሚድያ ኣንብብ",
+    "read_media_descriptions_count": "{count} መግለጺታት ሚድያ ይንበቡ ኣለዉ።",
+    "read_media_descriptions_hint": "ኣብዚ ሕጂ ዘሎ ጸጋ ዝተጻሕፈ ኩሉ ስእሊ፣ ቪድዮ ወይ ድምጺ መግለጺ ኣንብብ",
+    "read_media_descriptions_none": "ኣብዚ ሕጂ ዘሎ ጸጋ ሚድያ የለን።",
+    "suggest_contextual_next_steps": "3 ዝቕጽሉ ስጉምትታት ሓብር",
+    "suggest_contextual_next_steps_hint": "ምስቲ ኩነታት ዝሰማምዑ ሰለስተ ኣማራጺታት የቕርብ፤ ሓደ ኣይመርጽን ኣየሰርሕን",
+    "suggest_contextual_next_steps_working": "ናይ ሕጂ ትምህርቲ ኩነታት እናንበበ ሰለስተ ኣማራጺታት የዳሉ ኣሎ...",
+    "surprise_me_contextually": "ጠቓሚ ዝቕጽል ስጉምቲ ሃበኒ",
+    "surprise_me_contextually_hint": "ካብ ናይ ሕጂ ትምህርቲ ኩነታት ሓደ ግቡእን ትሑት ሓደጋ ዘለዎን ዝቕጽል ተግባር ይመርጽ",
+    "surprise_me_contextually_working": "ናይ ሕጂ ትምህርቲ ኩነታት እናንበበ ጠቓሚ ዝቕጽል ስጉምቲ ይመርጽ ኣሎ...",
+    "use_contextual_suggestion": "እተሓበረ ዝቕጽል ስጉምቲ ተጠቐም",
+    "use_contextual_suggestion_hint": "ካብ ናይ መወዳእታ ሓሳባት ኣማራጺ 1፣ 2 ወይ 3 የሰርሕ",
+    "use_contextual_suggestion_working": "እተመርጸ ዝቕጽል ስጉምቲ ይጅምር ኣሎ..."
   },
   "palette": {
     "aria": "ናይ AlloFlow ናይ ትእዛዝ ፓለት",
@@ -29045,10 +29074,11 @@
       "videoStudio": "ኣብዚ — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "ነፍሲ-ወከፍ ተግባር ይግለጽ። Ctrl+K ይቐያይር።",
     "group": {
@@ -29356,6 +29386,12 @@
     "diff_types_hint": "ንዚ ዝተፈላለየ ስብስብ ፍጠር:",
     "diff_cost": "ኣብ ሓደ ምክያድ ከባቢ {n} ምፍጣር።",
     "summary_standards": "መዐቀኒታት",
-    "summary_interests": "ዝምድናታት"
+    "summary_interests": "ዝምድናታት",
+    "translations": "ትርጉማት",
+    "translations_auto": "ብቐጥታ ({language})",
+    "translations_auto_plain": "ብቐጥታ",
+    "translations_none": "የለን",
+    "translations_on_hint": "ብ{output} ዘለዉ ጸጋታት ናይ {target} ቅዳሕ እውን ክህልዎም እዩ።",
+    "translations_off_hint": "ጸጋታት ብ{output} ጥራይ ክኾኑ እዮም፣ ካልኣይ ቋንቋ የብሎምን።"
   }
 }

@@ -742,7 +742,7 @@ function UniversalSettingsPanel(props) {
                                 </select>
                                 <p className="text-[10px] text-slate-500 leading-snug mt-1">
                                     {translationPolicy.enabled
-                                        ? (t('universal.translations_on_hint') || 'Resources in {output} will also include a {target} version.')
+                                        ? (t('universal.translations_on_hint') || 'Resources in {output} will also include a version in {target}.')
                                             .replace('{output}', leveledTextLanguage).replace('{target}', translationPolicy.target)
                                         : (t('universal.translations_off_hint') || 'Resources will be in {output} only, with no second-language version.')
                                             .replace('{output}', leveledTextLanguage)}
@@ -2445,6 +2445,8 @@ function GlossaryPanel(props) {
                                 <option value="4th Grade">{t('grades.g4')}</option>
                                 <option value="5th Grade">{t('grades.g5')}</option>
                                 <option value="6th Grade">{t('grades.g6')}</option>
+                                <option value="7th Grade">{t('grades.g7')}</option>
+                                <option value="8th Grade">{t('grades.g8')}</option>
                                 <option value="9th Grade">{t('grades.g9')}</option>
                                 <option value="10th Grade">{t('grades.g10')}</option>
                                 <option value="11th Grade">{t('grades.g11')}</option>

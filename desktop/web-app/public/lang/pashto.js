@@ -634,7 +634,7 @@
     "ai_guide_sub": "علم ښوونه اوالتنقل اوتنظیم تلقائی",
     "ai_guide_welcome": "سلام! زه ستاسو د AI لارښود یم. زه کولی شم د UDL ستراتیژیو سره مرسته وکړم، ستاسو لپاره په اپلیکیشن کې لاره ښکاره کړم، یا ستاسو د درس تنظیمات په اتومات ډول جوړ کړم. یوازې پوښتنه وکړئ!",
     "tool_analysis": "د سرچینې مواد تحلیل کړئ",
-    "tool_glossary": "قاموس اوغوراوی ژبه",
+    "tool_glossary": "قاموس",
     "tool_simplified": "تکییف متن",
     "tool_outline": "څخهظِّم بصری",
     "tool_visual": "دعم بصری",
@@ -952,7 +952,7 @@
   },
   "tools": {
     "source": "د سرچینې مواد",
-    "glossary": "قاموس اوغوراوی ژبه",
+    "glossary": "قاموس",
     "simplified": "تکییف متن اوالشریک کړئ",
     "outline": "څخهظِّم بصری",
     "quiz": "ارزونه",
@@ -2759,7 +2759,9 @@
     "title_poettree_config": "🌳 د PoetTree دنده",
     "title_poettree_submission": "🌳 د شعر وړاندې کول",
     "title_litlab_config": "🎭 د LitLab دنده",
-    "title_litlab_submission": "🎭 د اجرا وړاندې کول"
+    "title_litlab_submission": "🎭 د اجرا وړاندې کول",
+    "translation_block": "ژباړه",
+    "translation_into": "ژباړه ({language})"
   },
   "fullpack": {
     "button_label": "د سرچینو بشپړ پاکټ جوړ کړئ",
@@ -3050,7 +3052,12 @@
     "gauge_simple": "ساده",
     "word_bank_language": "د کلمو بانک ژبه",
     "word_bank_english": "انګلیسي",
-    "word_bank_both": "دواړه"
+    "word_bank_both": "دواړه",
+    "measured_level_label": "اندازه شوې لوستلو کچه",
+    "measured_on_target": "د {grade} لپاره مناسب",
+    "measured_above": "د {grade} کچې څخه پورته",
+    "measured_below": "د {grade} کچې څخه ښکته",
+    "measured_note": "Flesch-Kincaid، پر همدې متن اندازه شوې. د بشپړې کتنې لپاره فحص پړاو وکاروئ."
   },
   "outline": {
     "title": "څخهظِّم بصری",
@@ -3260,7 +3267,7 @@
     "panel_refined": "پینل ښه شو!"
   },
   "glossary": {
-    "title": "قاموس اوغوراوی ژبه",
+    "title": "قاموس",
     "tier2": "کچه 2 (اکاډمیک)",
     "tier2_tooltip": "د لوړ ګټورۍ اکاډمیک کلمې چې په مختلفو څانګو کې کارول کیږي (د بیلګې په توګه: 'تحلیل'، 'تایید').",
     "tier3": "کچه 3 (ساحه)",
@@ -8262,7 +8269,6 @@
     "source_settings_instructions": "د AI محتوا جوړونه د ځانګړو لارښوونو سره لارښوونه وکړئ. لکه: 'د ELL زده کوونکو لپاره ساده ژبه وکاروه'.",
     "source_verify_checkbox": "د Google لټون پیوستون له لارې د AI د حقیقت چک فعال کړئ. د حقیقي محتوا لپاره د اعتبار وړ والی ښه کوي.",
     "source_generate_button": "ستاسو د ټاکل شوي موضوع په اړه د AI لخوا لیکل شوې محتوا جوړ کړئ. د جوړونې لپاره 10-20 ثانیې وخت نیسي.",
-    "generator_actions": "د محتوا د جوړونې ټولو وسایلو لپاره مرکز: Quiz، Glossary، اسانه شوي متن، FAQ، Lesson Plan، Timeline، Scaffolds، Concept Sort، ریاضي، Adventure، Brainstorm.",
     "tool_visual": "د بصري جنریټر وسیلې ته لاسرسی. د AI لخوا جوړ شوي د لغتونو بصري انځورونه، د مفهوم انځورونه، د منظرې انځورونه، او ډیاګرامونه.",
     "tool_udl": "د UDL چوکاټ همغږي زده کړئ. درې اصلونه: د نمایش څو لارې، د کړنې/بیان څو لارې، او د ښکیلتیا څو لارې.",
     "tour-analysis-settings": "د لوستلو تحلیل پیرامیټرونه تنظیم کړئ، چې پکې د هدف د لوستلو کچه او د تعقیب لپاره ځانګړي میټریکونه شامل دي.",
@@ -8287,7 +8293,6 @@
     "adventure_system_state": "Adventure Mode ته د سرچینې مدیریت میخانیکونه اضافه کوي. روغتیا، سره زر/سرچینې، شهرت، او دودیز سرچینې تعقیب کوي.",
     "glossary_tier2_count": "د دوهم پړاو (اکاډمیک) د لغت کلمو شمیر مشخص کړئ. د اوسط زده کوونکو لپاره د لوړ ارزښت لرونکي.",
     "glossary_tier3_count": "د دریم پړاو (تخصصي) د لغت کلمو شمیر مشخص کړئ. د موضوع لپاره ځانګړي، تخنیکي اصطلاحات.",
-    "glossary_definition_level": "کنټرول کړئ چې تعریفونه څنګه لیکل کیږي: د سرچینې په څیر، په کچه، ساده، یا د وړکتون.",
     "glossary_custom_instructions": "د لغت انتخاب او د تعریف سټایل لپاره دودیز لارښوونې وړاندې کړئ. لکه: 'د ETL لپاره انګلیسي همغږي شامل کړه'.",
     "glossary_language_input": "د لغت ژباړې لپاره ژبې مشخص کړئ. د کوما لخوا جلا شوي ګڼ شمیر ژبې اضافه کړئ. تر 4 پورې ژبې.",
     "glossary_auto_remove": "په اتومات ډول د ډیرو سادو یا عام کلمو فلټر کړئ.",
@@ -8421,7 +8426,6 @@
     "fab_dictation": "وینا په متن واړوي د بې لاسي ننوتلو لپاره. د مایکروفون فعالولو لپاره کلیک وکړئ.",
     "fab_focus": "د مؤشر شاوخوا د موټر کیدونکی روښانه نقطې جوړوی چې هرڅه پرته له دایروی ساحې تیاره کوی. د بصری ګډوډۍ کموی او تمرکز ساتی.",
     "fab_line_focus": "د یوې کرښې د لوستلو وسیله ده چې یوازې یوه کرښه روښانه کوی او نور تیاره کوی. د لاسرسی تڼیو، کلیک، یا لمس له لارې حرکت کوی.",
-    "fab_ruler": "نیمه شفاف افقی بار اضافه کوی چې ستاسو د مؤشر تعقیب کوی ترڅو ستاسو د لوستلو ځای کرښه په کرښه تعقیب کړی. د ډیسلیکسیا او ADHD لرونکو لپاره ګټور.",
     "fab_timer": "د Pomodoro تمرکز ټایمر پرانیزئ — ۵، ۱۵، ۲۵، یا ۴۵ دقیقې، د XP انعام سره.",
     "scaffolds_edit_toggle": "د ښوونکي د سمون حالت او د زده کوونکي د لیدلو حالت ترمنځ بدلون. سمونونه پخپله ساتل کیږي.",
     "scaffolds_goal_panel": "د زده کړې هدفونه زده کوونکو ته وښیئ (د \"زه کولی شم\" بیانونه).",
@@ -8516,7 +8520,6 @@
     "immersive_line_focus": "د یوې کرښې د لوستلو لارښود فعالوي — اوسنۍ کرښه روښانه او نورې کرښې ډنډورې.",
     "immersive_syllables": "د بصری سیلابونو ویشل د کوډ ماتولو ملاتړ لپاره فعالوی. کلمې د سیلابی ویشلو سره ښیی (lik-ash-ka)، چې د څو سیلابی کلمو سره مرسته کوی.",
     "immersive_wide_text": "متن پراخوي ترڅو د افقي پردې ډېره ساحه وکاروي. د لیسانس وړ لوستونکو او پراخو پردو لپاره.",
-    "sidebar_tab_create": "د AlloFlow د جوړونې لوحه: Quiz، Glossary، Anchor Chart، Lesson Plan، Outline، اسانه شوی متن او نور درسي وسایل جوړ کړئ. مننۍ سرچینه ورزیاته کړئ او جوړ شوي وسایل ستاسو په کاري ځای کې ښکاره کیږي او په تاریخچه کې خوندي کیږي.",
     "sidebar_tab_history": "ستاسو ټول خوندي شوي وسایل او ناستې. د سپارلو تاریخ، خوندي شوي پروژې، یوازې جوړ شوي وسایل او د ټولګي سپارنې راټولوي. د بیا کارولو لپاره یې بار کړئ، نومونه یې بدل کړئ، ړنګ یې کړئ یا د بیک اپ لپاره یې صادر کړئ.",
     "socratic_toggle": "د سقراطي خبرو اترو حالت چالان کړئ، چې په کې AI پوښتنې اړوي په ځای د دې چې مستقیم ځوابونه ورکړي. د نقاد فکر، اوسني کیدو او د ستونزو حل وده ورکوي. د کوم زده کوونکي لپاره ښه چې غواړي ژوره پوهه تر چټک ځواب غوره کړي.",
     "socratic_input": "خپله پوښتنه یا فکر دلته ولیکئ. AI به د جواب پر ځای د پوهې غوره پوښتنې وکړي. د دلیلونو سره خپل دریځ روښانه کړئ او چمتو وسئ چې خپل فکر ته بدلون ورکړئ.",
@@ -30942,7 +30945,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "اوسنۍ رسنۍ تشریح کړه",
+    "describe_current_media_done": "د {count} څخه {index} رسنۍ لوستل کیږي.",
+    "describe_current_media_hint": "له سرچینې د وتلو پرته د اوسنۍ یا راتلونکې رسنۍ تشریح ولوله",
+    "describe_current_media_none": "په اوسنۍ سرچینه کې هیڅ رسنۍ نشته.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Learning Web: Explore پرانیستل",
+    "open_learning_web_explorer_done": "Learning Web: Explore پرانیستل شو.",
+    "open_learning_web_explorer_hint": "معیارونه، مفکورې، لوستونه، شواهد او د کلمو اړیکې په یوه نقشه کې وپلټه",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "د ټولو رسنیو تشریحات ولوله",
+    "read_media_descriptions_count": "د رسنیو {count} تشریحات لوستل کیږي.",
+    "read_media_descriptions_hint": "په اوسنۍ سرچینه کې هره لیکل شوې د انځور، ویډیو یا غږ تشریح ولوله",
+    "read_media_descriptions_none": "په اوسنۍ سرچینه کې هیڅ رسنۍ نشته.",
+    "suggest_contextual_next_steps": "3 راتلونکي ګامونه وړاندیز کړه",
+    "suggest_contextual_next_steps_hint": "د حالت سره سم درې انتخابونه وړاندې کوي، پرته له دې چې یو وټاکي یا پرانیزي",
+    "suggest_contextual_next_steps_working": "د اوسني لوست حالت لوستل کیږي او درې انتخابونه چمتو کیږي...",
+    "surprise_me_contextually": "یو ګټور راتلونکی ګام راکړه",
+    "surprise_me_contextually_hint": "د اوسني لوست له حالته یو منطقي او کم خطر راتلونکی کار غوره کوي",
+    "surprise_me_contextually_working": "د اوسني لوست حالت لوستل کیږي او یو ګټور راتلونکی ګام غوره کیږي...",
+    "use_contextual_suggestion": "وړاندیز شوی راتلونکی ګام وکاروه",
+    "use_contextual_suggestion_hint": "له وروستیو وړاندیزونو څخه انتخاب 1، 2 یا 3 پرانیزي",
+    "use_contextual_suggestion_working": "ټاکل شوی راتلونکی ګام پیل کیږي..."
   },
   "palette": {
     "aria": "د AlloFlow د امر پالیټ",
@@ -30965,10 +30994,11 @@
       "videoStudio": "دلته — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "هر کړنه اعلانیږي. Ctrl+K و گرځوي.",
     "group": {
@@ -31272,6 +31302,12 @@
     "diff_types_hint": "د دې لپاره بېلګه‌يي ټولګه جوړه کړئ:",
     "diff_cost": "په هر ځل شاوخوا {n} تولیدونه.",
     "summary_standards": "معیارونه",
-    "summary_interests": "علاقې"
+    "summary_interests": "علاقې",
+    "translations": "ژباړې",
+    "translations_auto": "اتوماتیک ({language})",
+    "translations_auto_plain": "اتوماتیک",
+    "translations_none": "هیڅ یو نه",
+    "translations_on_hint": "په {output} کې سرچینې به د {target} بڼه هم ولري.",
+    "translations_off_hint": "سرچینې به یوازې په {output} کې وي، پرته له دویمې ژبې."
   }
 }

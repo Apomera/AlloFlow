@@ -83,6 +83,26 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain('Simulation controls hidden. Press H');
   });
 
+  it('collapses the chamber-controls card instead of letting it cover the stage', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const tool = readFileSync(resolve(process.cwd(), filePath), 'utf8');
+      // Expanded, the card used to run the full width of the stage and sit under the
+      // live read-outs on the right. It is now width-capped and foldable.
+      expect(tool).toContain('max-w-[min(20rem,calc(100%-1.5rem))]');
+      expect(tool).toContain('var [legendOpen, setLegendOpen] = useState(bucket.legendOpen !== false)');
+      expect(tool).toContain("'aria-controls': 'particle-chamber-guide'");
+      expect(tool).toContain("h('div', { id: 'particle-chamber-guide' }");
+      expect(tool).toContain('persist({ legendOpen: next })');
+      expect(tool).toContain('Chamber controls guide collapsed.');
+      // The card is click-through so it never eats an orbit drag; only the toggle
+      // itself takes pointer events back.
+      expect(tool).toMatch(/pointer-events-none absolute left-3 top-3 z-20 max-w-/);
+      expect(tool).toContain('pointer-events-auto -mr-1 flex min-h-6 min-w-6');
+      // Every body row is gated, so collapsing really removes them from the tree.
+      expect((tool.match(/legendOpen && /g) || []).length).toBeGreaterThanOrEqual(4);
+    });
+  });
+
   it('documents every chamber shortcut', () => {
     ['Run or pause the simulation', 'Reset the chamber', 'Velocity vector arrows',
      'Diffusion membrane', 'Gravity field', 'Follow the traced particle',

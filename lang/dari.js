@@ -642,7 +642,7 @@
     "ai_guide_sub": "علم تدریس والتنقل وتنظیم خودکار",
     "ai_guide_welcome": "سلام! من راهنمای AI شما هستم. می‌توانم در راهبردهای UDL کمک کنم، برنامه را برایتان مرور کنم، یا تنظیمات درس شما را به طور خودکار آماده کنم. فقط بپرسید!",
     "tool_analysis": "تحلیل مواد منبع",
-    "tool_glossary": "واژه‌نامه وانتخاب زبان",
+    "tool_glossary": "واژه‌نامه",
     "tool_simplified": "تکییف متن",
     "tool_outline": "ازظِّم بصری",
     "tool_visual": "دعم بصری",
@@ -960,7 +960,7 @@
   },
   "tools": {
     "source": "مواد منبع",
-    "glossary": "واژه‌نامه وانتخاب زبان",
+    "glossary": "واژه‌نامه",
     "simplified": "تکییف متن واخیرشتراک‌گذاری",
     "outline": "ازظِّم بصری",
     "quiz": "ارزیابی",
@@ -2767,7 +2767,9 @@
     "title_poettree_config": "🌳 تکلیف PoetTree",
     "title_poettree_submission": "🌳 ارسال شعر",
     "title_litlab_config": "🎭 تکلیف LitLab",
-    "title_litlab_submission": "🎭 ارسال اجرا"
+    "title_litlab_submission": "🎭 ارسال اجرا",
+    "translation_block": "ترجمه",
+    "translation_into": "ترجمه ({language})"
   },
   "fullpack": {
     "button_label": "ساختن بستهٔ کامل منابع",
@@ -3058,7 +3060,12 @@
     "gauge_simple": "ساده",
     "word_bank_english": "انگلیسی",
     "word_bank_language": "زبان بانک واژه‌ها",
-    "word_bank_both": "هر دو"
+    "word_bank_both": "هر دو",
+    "measured_level_label": "سطح خواندن اندازه‌گیری‌شده",
+    "measured_on_target": "مناسب برای {grade}",
+    "measured_above": "بالاتر از سطح {grade}",
+    "measured_below": "پایین‌تر از سطح {grade}",
+    "measured_note": "Flesch-Kincaid، اندازه‌گیری‌شده روی همین متن. برای بررسی کامل‌تر از فحص سطح استفاده کنید."
   },
   "outline": {
     "title": "ازظِّم بصری",
@@ -3268,7 +3275,7 @@
     "panel_refined": "پنل اصلاح شد!"
   },
   "glossary": {
-    "title": "واژه‌نامه وانتخاب زبان",
+    "title": "واژه‌نامه",
     "tier2": "سطح ۲ (علمی)",
     "tier2_tooltip": "کلمات علمی پرکاربرد که در رشته‌های مختلف استفاده می‌شوند (مانند: «تحلیل کردن»، «تأیید کردن»).",
     "tier3": "سطح ۳ (تخصصی)",
@@ -8270,7 +8277,6 @@
     "source_settings_instructions": "تولید محتوای AI را با دستورالعمل‌های خاص هدایت کنید. مثال‌ها: «جذاب برای خوانندگان دودل»، «روی چرخه آب تمرکز کن»، «از واژگان ساده برای ELL استفاده کن».",
     "source_verify_checkbox": "بررسی واقعیت توسط AI از طریق مبنا قرار دادن جستجوی Google را فعال می‌کند. AI محتوای تولیدشده را با منابع وب مقایسه می‌کند. برای محتوای واقعی به‌شدت توصیه می‌شود.",
     "source_generate_button": "محتوای نوشتاری AI درباره موضوع مشخص‌شده شما ایجاد می‌کند. کلیک کنید تا تولید شروع شود. ۱۰ تا ۲۰ ثانیه طول می‌کشد. دقت واقعی را قبل از استفاده در کلاس بررسی کنید.",
-    "generator_actions": "محور همه ابزارهای تولید محتوا. شامل کوییز، واژه‌نامه، متن ساده‌شده، پرسش و پاسخ، تحلیل، طرح درس، خط زمانی، داربست‌ها، Concept Sort، ریاضی، ماجراجویی و طوفان فکری است.",
     "tool_visual": "به ابزار تولیدکننده بصری دسترسی پیدا کنید. تصاویر تولیدشده توسط AI را ایجاد می‌کند، شامل بصری واژگان، نمودارهای مفهومی، تصویر صحنه و نمودارها.",
     "tool_udl": "درباره ادغام چارچوب UDL بیاموزید. سه اصل UDL: ابزارهای متعدد بازنمایی، ابزارهای متعدد عمل/بیان و ابزارهای متعدد تعامل. این ابزار از هر سه پشتیبانی می‌کند.",
     "tour-analysis-settings": "پارامترهای تحلیل خوانایی، شامل سطح خواندن هدف و معیارهای خاص برای پیگیری را تنظیم کنید.",
@@ -8295,7 +8301,6 @@
     "adventure_system_state": "مکانیک‌های مدیریت منابع به ماجراجویی‌ها اضافه می‌کند. شاگردان سلامتی، طلا/منابع، شهرت و منابع سفارشی را پیگیری می‌کنند. عواقب معنادار را ایجاد می‌کند.",
     "glossary_tier2_count": "تعداد کلمات واژگان از سطح دو (آکادمیک) را مشخص می‌کند. کلمات سطح دو در بین دروس ظاهر می‌شوند و برای درک متن ضروری هستند. مثال‌ها: تحلیل، شاهد، اساسی.",
     "glossary_tier3_count": "تعداد کلمات واژگان از سطح سه (تخصصی) را مشخص می‌کند. کلمات سطح سه مخصوص رشته هستند، معمولاً در زمینه تعریف می‌شوند. مثال‌ها: فتوسنتز، دموکراسی.",
-    "glossary_definition_level": "نحوه نوشتن تعاریف را کنترل می‌کند. گزینه‌ها: مانند منبع، در سطح، ساده‌شده، باغ‌کودک. با سطح خواندن شاگرد هم‌خوان باشید، نه سطح محتوا.",
     "glossary_custom_instructions": "هدایت خاص برای انتخاب واژگان و سبک تعریف ارائه دهید. مثال‌ها: «روی کلمات از صنف‌های ۳-۵ تمرکز کن»، «همتایان اسپانیایی برای ELL بگنجان».",
     "glossary_language_input": "زبان‌ها برای ترجمه واژگان را مشخص کنید. زبان‌ها را وارد کنید: اسپانیایی، چینی، عربی، فرانسوی، ویتنامی، یا هر زبان دیگری. می‌توانید چندین زبان جدا شده با کاما اضافه کنید.",
     "glossary_auto_remove": "کلمات خیلی ساده یا رایج را به‌طور خودکار فیلتر می‌کند.",
@@ -8429,7 +8434,6 @@
     "fab_dictation": "گفتار را به متن تبدیل می‌کند برای ورودی بدون دست. در هر میدان قابل ویرایش کار می‌کند. زبان‌های متعدد و دستورات نقطه‌گذاری پشتیبانی می‌شود.",
     "fab_focus": "نقطه‌ای متحرک ایجاد می‌کند که همه‌چیز را به جز ناحیه دایره‌ای اطراف نشانگر شما تاریک می‌کند. به ویژه برای شاگردان دارای ADHD مفید است.",
     "fab_line_focus": "ابزار جداسازی یک خط متن برای خواندن متمرکز. خط فعلی برجسته می‌شود در حالی که سایر خطوط تاریک می‌شوند تا تمرکز بصری ایجاد شود.",
-    "fab_ruler": "نوار افقی نیمه‌شفاف که نشانگر شما را دنبال می‌کند تا به ردیابی موقعیت خواندن کمک کند. به ویژه برای شاگردان دارای dyslexia یا ADHD مفید است.",
     "fab_timer": "مؤقت تمرکز تعاملی مبتنی بر تکنیک Pomodoro باز می‌کند. مدت‌های ۵/۱۵/۲۵/۴۵ دقیقه. شامل تذکر استراحت و پاداش XP.",
     "scaffolds_edit_toggle": "بین حالت ویرایش معلم و نمای شاگرد عوض می‌کند. در حالت ویرایش، روی هر داربست کلیک کنید تا متن را تغییر دهید.",
     "scaffolds_goal_panel": "اهداف یادگیری را برای بازگشت شاگرد نمایش می‌دهد. اهداف موثر دوستانه («می‌توانم...»)، خاص و قابل اندازه‌گیری هستند.",
@@ -8524,7 +8528,6 @@
     "immersive_line_focus": "راهنمای خواندن یک‌خطی را فعال می‌کند. خط فعلی کاملاً قابل دیدن، خطوط اطراف کم‌رنگ. برای پشتیبانی Dyslexia مناسب است.",
     "immersive_syllables": "تقسیم هجایی بصری را برای پشتیبانی از رمزگشایی فعال می‌کند. کلمات با تفکیک هجاها نمایش داده می‌شوند (مانند hy-phen-at-ed).",
     "immersive_wide_text": "متن را گسترش می‌دهد تا از فضای افقی صنفحه بیشتر استفاده شود. برای خوانندگان روان و صنفحه عریض مناسب است.",
-    "sidebar_tab_create": "پنل تولید محتوا با همه ابزار مبتنی بر AI را باز می‌کند. مولدها: Quiz، Glossary، Outline، تحلیل، Lesson Plan، Timeline و بیشتر.",
     "sidebar_tab_history": "دسترسی به همه محتوای ذخیره‌شده و سابقه جلسه. جلسات AutoSave، پروژه‌ها، منابع تولیدشده و تسلیم فیلد. قابل جستجو با کلیدواژه.",
     "socratic_toggle": "حالت گفتگوی Socratic برای یادگیری عمیق‌تر را فعال می‌کند. AI هرگز پاسخ مستقیم نمی‌دهد بلکه سؤالات کاوشی برای کشف می‌پرسد.",
     "socratic_input": "پرسش یا عبارت تان را برای کاوش سقراطی وارد کنید. هوش مصنوعی با سؤالات بیشتر پاسخ می‌دهد تا فکر شما را عمیق‌تر کند. شروع‌های خوب: 'چرا فکر می‌کنید [X]؟'، 'چه چیزی [Y] را مهم می‌سازد؟' یا 'فکر می‌کنم [Z] چون...'. آماده باشید برای توجیه فکر، در نظر گرفتن گزینه‌های دیگر و پالایش موضع تان.",
@@ -30908,7 +30911,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "رسانهٔ فعلی را توصیف کن",
+    "describe_current_media_done": "خواندن رسانهٔ {index} از {count}.",
+    "describe_current_media_hint": "بدون خارج شدن از منبع، توضیح رسانهٔ فعلی یا بعدی را بخوان",
+    "describe_current_media_none": "در منبع فعلی هیچ رسانه‌ای وجود ندارد.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "باز کردن Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore باز شد.",
+    "open_learning_web_explorer_hint": "معیارها، مفاهیم، درس‌ها، شواهد و پیوند واژه‌ها را در یک نقشه کاوش کن",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "خواندن همهٔ توضیحات رسانه",
+    "read_media_descriptions_count": "خواندن {count} توضیح رسانه.",
+    "read_media_descriptions_hint": "هر توضیح نوشته‌شدهٔ عکس، ویدیو یا صدا را در منبع فعلی بخوان",
+    "read_media_descriptions_none": "در منبع فعلی هیچ رسانه‌ای وجود ندارد.",
+    "suggest_contextual_next_steps": "پیشنهاد 3 گام بعدی",
+    "suggest_contextual_next_steps_hint": "سه گزینهٔ متناسب با زمینه ارائه می‌کند، بدون آنکه یکی را انتخاب یا اجرا کند",
+    "suggest_contextual_next_steps_working": "خواندن زمینهٔ درس فعلی و آماده کردن سه گزینه...",
+    "surprise_me_contextually": "یک گام بعدی مفید را برایم انتخاب کن",
+    "surprise_me_contextually_hint": "یک اقدام بعدی منطقی و کم‌خطر را از زمینهٔ درس فعلی انتخاب می‌کند",
+    "surprise_me_contextually_working": "خواندن زمینهٔ درس فعلی و انتخاب یک گام بعدی مفید...",
+    "use_contextual_suggestion": "استفاده از یک گام بعدی پیشنهادی",
+    "use_contextual_suggestion_hint": "گزینهٔ 1، 2 یا 3 را از آخرین پیشنهادها اجرا می‌کند",
+    "use_contextual_suggestion_working": "شروع گام بعدی انتخاب‌شده..."
   },
   "palette": {
     "aria": "پالت فرمان AlloFlow",
@@ -30931,10 +30960,11 @@
       "videoStudio": "اینجا — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "هر کنش اعلام می‌شود. Ctrl+K تغییر وضعیت می‌دهد.",
     "group": {
@@ -31253,6 +31283,12 @@
     "diff_types_hint": "یک مجموعه متفاوت برای این موارد ایجاد کنید:",
     "diff_cost": "در هر اجرا حدود {n} تولید.",
     "summary_standards": "استانداردها",
-    "summary_interests": "علاقه‌مندی‌ها"
+    "summary_interests": "علاقه‌مندی‌ها",
+    "translations": "ترجمه‌ها",
+    "translations_auto": "خودکار ({language})",
+    "translations_auto_plain": "خودکار",
+    "translations_none": "هیچ‌کدام",
+    "translations_on_hint": "منابع به زبان {output} یک نسخهٔ {target} هم خواهند داشت.",
+    "translations_off_hint": "منابع تنها به زبان {output} خواهند بود، بدون زبان دوم."
   }
 }

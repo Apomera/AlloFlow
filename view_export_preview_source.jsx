@@ -8150,11 +8150,28 @@ function ExportPreviewView(props) {
                         const tooltip = isTeacherOnly
                           ? 'Always included in teacher copy. Toggle to also include in student copy.'
                           : '';
+                        // Cloze is a variant of the leveled text on paper, not a
+                        // resource of its own, so it rides under that checkbox
+                        // rather than adding a row to the list. It needs both a
+                        // worksheet export and a glossary to blank against, so it
+                        // only appears when both are true.
+                        const showCloze = key === 'includeSimplified'
+                          && exportPreviewMode === 'worksheet'
+                          && exportConfig.includeSimplified
+                          && history.some(h => h && h.type === 'glossary');
                         return (
-                          <label key={key} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={tooltip}>
+                          <React.Fragment key={key}>
+                          <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={tooltip}>
                             <input type="checkbox" checked={exportConfig[key]} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
                             <span>{label}{isTeacherOnly && <span className="ml-1 text-[11px] text-indigo-700 font-bold">(also in student copy)</span>}</span>
                           </label>
+                          {showCloze && (
+                            <label className="flex items-start gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5 ml-5" title="Blanks out the glossary words in the passage and adds a word bank. The answer key rides with the teacher copy.">
+                              <input type="checkbox" checked={!!exportConfig.clozeWorksheet} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, clozeWorksheet: e.target.checked }))} className="rounded mt-0.5" />
+                              <span>✏️ Fill in the blanks<span className="block text-[11px] text-slate-600 leading-tight">Blanks the glossary words and adds a word bank.</span></span>
+                            </label>
+                          )}
+                          </React.Fragment>
                         );
                       });
                     })()}

@@ -622,7 +622,7 @@
     "ai_guide_sub": "Pedagoji, Navigasyon ak Oto-Konfigirasyon",
     "ai_guide_welcome": "Bonjou! Mwen se Gid IA ou a. Mwen ka ede ak estrateji UDL, navige nan aplikasyon an pou ou, oswa konfigire paramèt leson ou yo otomatikman. Mande sèlman!",
     "tool_analysis": "Analize Materyèl Sous",
-    "tool_glossary": "Glosè ak Seleksyon Lang",
+    "tool_glossary": "Glosè",
     "tool_simplified": "Adaptasyon Tèks",
     "tool_outline": "Òganizatè Vizyèl",
     "tool_visual": "Sipò Vizyèl",
@@ -2254,7 +2254,7 @@
   },
   "tools": {
     "source": "Materyèl Sous",
-    "glossary": "Glosè ak Seleksyon Lang",
+    "glossary": "Glosè",
     "simplified": "Adapte Tèks ak Angajman",
     "outline": "Òganizatè Vizyèl",
     "quiz": "Evalye",
@@ -2941,7 +2941,9 @@
     "title_poettree_config": "🌳 Devwa PoetTree",
     "title_poettree_submission": "🌳 Soumèt powèm",
     "title_litlab_config": "🎭 Devwa LitLab",
-    "title_litlab_submission": "🎭 Soumèt pèfòmans"
+    "title_litlab_submission": "🎭 Soumèt pèfòmans",
+    "translation_block": "Tradiksyon",
+    "translation_into": "Tradiksyon ({language})"
   },
   "fullpack": {
     "button_label": "Jenere Pakèt Resous Konplè",
@@ -3188,7 +3190,12 @@
     "gauge_simple": "Senp",
     "word_bank_language": "Lang bank mo yo",
     "word_bank_english": "Anglè",
-    "word_bank_both": "Tou le de"
+    "word_bank_both": "Tou le de",
+    "measured_level_label": "Nivo lekti mezire",
+    "measured_on_target": "Nan nivo {grade}",
+    "measured_above": "Pi wo pase nivo {grade}",
+    "measured_below": "Pi ba pase nivo {grade}",
+    "measured_note": "Flesch-Kincaid, mezire sou tèks sa a. Sèvi ak Tcheke Nivo pou yon tchèk pi konplè."
   },
   "outline": {
     "title": "Òganizatè Vizyèl",
@@ -3325,7 +3332,7 @@
     "student_worksheet": "Worksheet Elèv"
   },
   "glossary": {
-    "title": "Glosè ak Seleksyon Lang",
+    "title": "Glosè",
     "tier2": "Tier 2 (Akademik)",
     "tier2_tooltip": "Mo akademik gwo-itilite itilize atravè disiplin (egz: 'analize', 'verifye').",
     "tier3": "Tier 3 (Domèn)",
@@ -5723,7 +5730,6 @@
     "source_settings_instructions": "Gide jenerasyon kontni IA ak enstriksyon espesifik. Egzanp: Fè li angaje pou lektè rezistan, Konsantre sou sik dlo a, Enkli non karaktè divès, Evite referans nan vyolans, ak Itilize vokabilè senp pou elèv ELL. Enstriksyon fòme: ton, konsantrasyon kontni, nivo vokabilè, ak pèspektiv. Sèvis espesifik pou pi bon rezilta. Plizyè enstriksyon ka konbine. Enstriksyon pwosesis ansanm ak sijè ak paramèt ou. Pou sijè sansib, enkli gid kontni. Enstriksyon pa garanti rezilta espesifik men enfliyanse fò jenerasyon. Konsèy: Enkli nivo ak nenpòt restriksyon kontni nan enstriksyon ou pou pwodiksyon ki pi apwopriye.",
     "source_verify_checkbox": "Aktive tchèk reyalite IA atravè Google Search grounding. Lè SOU: IA referans-kwa kontni jenere kont sous wèb, make oswa korije erè potansyèl. Ajoute 5-10 segonn nan tan jenerasyon men siyifikativman amelyore fyab pou kontni faktyèl. Espesyalman enpòtan pou: istwa (dat, evènman), syans (pwosesis, done), byografi, ak evènman aktyèl. Pou fiksyon, ekriti kreyatif, oswa senaryo ipotètik, sa ka dezaktive pou pèmèt plis libète kreyatif. Sous konsilte lis nan log jenerasyon pou revizyon pwofesè. Trè rekòmande pou nenpòt kontni ki ap prezante kòm faktyèl bay elèv.",
     "source_generate_button": "Kreye kontni ekri pa IA sou sijè espesifye ou. Klike pou kòmanse jenerasyon lè w itilize: deskripsyon sijè ou, longè sib, nivo, ak enstriksyon pèsonalize. Jenerasyon pran 10-20 segonn. Pwodiksyon revize pa filtè sekirite anvan afichaj. Kontni jenere ka: edite (pwofesè ka modifye nenpòt pati), analize (kouri atravè lòt zouti jenerasyon), ak anrejistre (ajoute nan istwa pou re-itilizasyon). Itilize lè: ou bezwen kontni sou yon sijè espesifik, vle konpleksite kontwole, oswa bezwen ranpli lakin korikilòm. Kontni jenere enkli: vokabilè apwopriye, òganizasyon lojik, ak sentaks nivo. Verifye presizyon faktyèl anvan itilizasyon klas.",
-    "generator_actions": "Hub pou tout zouti jenerasyon kontni. Jeneratè disponib enkli: Kèsyon (evalyasyon ak kle repons), Leksik (vokabilè vizyèl), Tèks Senplifye (lekti pa nivo), FAQ (pè Q ak A), Analiz (egzaminasyon kontni), Plan Leson (konsepsyon enstriksyonèl), Liy Tan (aktivite kwonolojik), Sipò (sipò ekriti), Konsèp Klasman (jwèt kategorizasyon), Matematik (jenerasyon pwoblèm), Avanti (istwa entèraktif), ak Brainstòm (ide aktivite). Chak jeneratè transfòme kontni sous ou nan diferan fòma. Klike nenpòt jeneratè pou ouvri panèl konfigirasyon li. Plizyè jeneratè ka itilize sou menm sous. Kontni jenere parèt nan espas travay ak anrejistre nan istwa. Konsèy: Kòmanse ak Analiz pou konprann kontni ou, epi jenere resous sib.",
     "tool_visual": "Aksè zouti jeneratè vizyèl. Kreye imaj jenere pa IA gen ladan: vizyèl vokabilè, ilistrasyon konsèp, depikti sèn, dyagram, ak enfografik. Tip vizyèl: imaj referans (pou aprantisaj), fèy travay (pou aktivite), ak dyagram (pou relasyon). Vizyèl sipòte: elèv ELL (vokabilè vizyèl), aprantè vizyèl, ak angajman. Chak jenerasyon kreye imaj inik. Paramèt kontwole stil, kalite, ak kontni. Vizyèl jenere ka: telechaje, entegre nan materyèl, ak ajoute nan leksik. Itilize kredi jenerasyon imaj IA. Konsèy: Jenere vizyèl pou konsèp abstrè difisil eksplike ak mo sèlman.",
     "tool_udl": "Aprann sou entegrasyon fwèm UDL. Konsepsyon Inivèsèl pou Aprantisaj gen twa prensip: Plizyè Mwayen Reprezantasyon (sa nan aprantisaj—prezante enfòmasyon nan diferan fason), Plizyè Mwayen Aksyon ak Ekspresyon (kijan nan aprantisaj—kite elèv demontre konpreyansyon yon lòt fason), ak Plizyè Mwayen Angajman (poukisa nan aprantisaj—motive ak soutni enterè). Zouti sa a sipòte tout twa atravè: fòma kontni varye, mòd entèraksyon miltip, ak angajman gamifye. Klike ouvri enfòmasyon detaye sou kijan chak karakteristik zouti aliyen ak rechèch UDL. Bon pou: devlopman pwofesyonèl, jistifikasyon IEP, ak konprann fondasyon pedagojik. Konsèy: Referans prensip UDL lè defann adopsyon zouti.",
     "tour-analysis-settings": "Ajiste paramèt pou analiz lizibilite, gen ladan nivo lekti sib ak metrik espesifik pou swiv.",
@@ -5748,7 +5754,6 @@
     "adventure_system_state": "Ajoute mekanik jesyon resous nan avanti. Elèv swiv: Sante (konsekans chwa riske), Lò/Resous (desizyon ekonomik), Repitasyon (kapital sosyal soti nan chwa), ak resous pèsonalize ou defini. Aksyon afekte resous vizibman—depanse lò pou achte atik, pèdi sante soti nan chwa pòv, genyen repitasyon soti nan ede lòt yo. Kreye konsekans siyifikatif ki anseye: rezònman kòz-efè, planifye davans, jesyon resous, ak kou opòtinite. Tablodbo vizyèl montre nivo resous aktyèl. Lè resous epize, jwèt adapte reponn (pa egzanp, sante ba = opsyon limite). Konpetans matematik entegre natirèlman atravè kalkilasyon resous.",
     "glossary_tier2_count": "Mete konbyen mo vokabilè Tier 2 (akademik) pou enkli. Mo Tier 2: parèt atravè sijè, itilize nan kontèks akademik, ak esansyèl pou konpreyansyon tèks. Egzanp: analize, prèv, siyifikatif, kontras. Mo sa yo gen valè enstriksyonèl pi wo—pifò elèv benefisye de ansèyman eksplisit. Konte rekòmande depann sou: longè tèks (1 mo pa 100-150 mo nan sous), tan enstriksyon disponib, ak bezwen elèv. Balanse ak konte Tier 3 pou yon seri vokabilè konplè. Konsantre enstriksyon la pou enpak maksimòm sou konpreyansyon lekti atravè tout sijè.",
     "glossary_tier3_count": "Mete konbyen mo vokabilè Tier 3 (domèn-espesifik) pou enkli. Mo Tier 3: espesifik pou yon zòn sijè, anjeneral defini nan kontèks, ak ka pa transfè atravè sijè. Egzanp: fotosentèz, denominatè, aliterasyon, lejislatif. Mo sa yo esansyèl pou konprann kontni espesifik men gen itilizasyon limite deyò domèn. Enstriksyon tipikman fèt pandan ansèyman kontni. Pou plonje pwofon nan yon sijè, enkli plis Tier 3. Pou konpetans lekti pi laj, priyorize Tier 2. Mo Tier 3 souvan parèt an gra oswa itali nan liv tèks, siyale enpòtans yo nan disiplin.",
-    "glossary_definition_level": "Kontwole kijan definisyon ekri. Opsyon: Menm ak Sous (kenbe konpleksite orijinal—bon pou elèv avanse), Sou Nivo (matche vokabilè nivo sib), Senplifye (itilize mo komen, fraz pi kout), ak Jaden Anfanten (lang trè debaz, egzanp konkrè). Matche konpleksite definisyon ak nivo lekti elèv, pa nivo kontni. Yon elèv 10yèm grad k ap etidye byoloji avanse ka bezwen definisyon Senplifye pou tèm pa abitye. Konsidere lektè pi fèb elèv ou lè chwazi. Definisyon ka edite endividyèlman apre jenerasyon si kèk bezwen ajisteman. Pro konsèy: Itilize Senplifye nan kòmansman, epi diskite definisyon pi teknik nan klas.",
     "glossary_custom_instructions": "Bay gid espesifik pou seleksyon vokabilè ak stil definisyon. Egzanp: Konsantre sou mo soti nan chapit 3-5, Enkli sèlman mo ki gen rapò ak sik dlo, Evite omonim ak siyifikasyon pi senp, Ajoute etimoloji pou rasin Laten/Grèk, Enkli kogonat Panyòl pou elèv ELL, ak Itilize egzanp zanmi-elèv soti nan kilti popilè. Enstriksyon pèsonalize fòme: ki mo chwazi, kijan definisyon ekri, ak ki enfòmasyon adisyonèl parèt. Enstriksyon klè pwodui leksik pi byen sib. Ou ka mande fòma espesifik tankou: Enkli yon fraz lè w itilize chak mo oswa Ajoute kwochè memwa vizyèl. IA swiv enstriksyon lè fè seleksyon vokabilè.",
     "glossary_language_input": "Espesifye lang pou tradiksyon vokabilè. Antre lang: Panyòl, Mandaren, Arab, Franse, Vyetnamyen, Tagalog, oswa nenpòt lang. Ou ka ajoute plizyè lang separe pa vigil. Chak tèm ap montre: definisyon Anglè, tradiksyon lang sib, ak gid pwononsyasyon fonetik kote aplikab. Itilize pou: sipò ELL, koneksyon lang ereditè, vokabilè lang mond, ak klas miltileng. Tradiksyon parèt sou chak kat vokabilè pou referans enstantane. Pwononsyasyon odyo disponib nan lang sipòte. Rechèch montre konekte nouvo vokabilè ak lang lakay amelyore retansyon. Max 4 lang anpeche konjèsyon vizyèl pandan sipòte klas divès.",
     "glossary_auto_remove": "Otomatikman filtre mo trè senp oswa komen yo.",
@@ -5882,7 +5887,6 @@
     "fab_dictation": "Konvèti pawòl an tèks pou antre san men. Klike pou aktive mikwofòn, pale klèman, ak gade mo parèt. Travay nan: antre tèks, sipò ekriti, chat, ak nenpòt chan editab. Sipòte: plizyè lang, kòmandman ponktiasyon (di pwen, vigil, nouvo liy), ak kòmandman edisyon (efase sa). Diktasyon mande pèmisyon mikwofòn nan navigatè. Kalite depann sou: kalite mikwofòn, bri background, ak klète pawòl. Transkripsyon an tan reyèl montre pandan ou pale. Edite tèks transkri nòmalman. Bon pou: elèv ak defi motè, ekriven rezistan, ak jenerasyon ide. Konsèy: Pale nan fraz konplè pou pi bon presizyon.",
     "fab_focus": "Kreye yon espòtlayt ki deplase ki femen tout bagay sof yon zòn sikilè alantou kurseur ou. Sa dramatikman redwi konjèsyon vizyèl ak ede kenbe atansyon sou zòn lekti aktyèl. Espesyalman benefisye pou elèv ak ADHD, diferans pwosesis sansoryèl, oswa nenpòt moun anvayi pa ekran okipe. Espòtlayt swiv sourit/touche ou otomatikman. Ajiste gwosè espòtlayt ak entansite femen nan Paramèt → Aksesibilite.",
     "fab_line_focus": "Zouti izolasyon lekti yon-liy pou lekti konsantre. Lè aktive: yon liy tèks mete an evidans pandan lòt yo femen, kreye konsantrasyon vizyèl. Navige ak: flèch (anwo/anba), klike nenpòt kote sou tèks, oswa touche/glise sou mobil. Benefis: redwi konjèsyon vizyèl, sipòte difikilte swivi, ede kenbe plas, ak redwi regresyon. Entansite (konbyen tèks anvironan vizib) ajistab nan Paramèt → Aksesibilite. Travay sou: tout kontni lekti, gen ladan tèks jenere, materyèl sous, ak chat. Patikilyèman itil pou: dyslèksi, ADHD, diferans pwosesis vizyèl, ak nenpòt moun anvayi pa ekran tèks-anpil. Konsèy: Konbine ak font pi gwo pou fasilite lekti maksimòm.",
-    "fab_ruler": "Ajoute yon ba orizontal semi-transparan ki swiv kurseur ou pou ede swiv pozisyon lekti ou liy pa liy. Patikilyèman itil pou itilizatè ak dyslèksi, ADHD, oswa difikilte swivi vizyèl. Trennen règ anwo/anba pou re-pozisyone, itilize flèch pou kontwòl fen, oswa klike nenpòt kote pou sote. Koulè règ ka pèsonalize nan Paramèt. Travay atravè tout vi lekti gen ladan Tèks Senplifye, FAQ, ak definisyon Leksik.",
     "fab_timer": "Ouvri yon tan konsantrasyon entèraktif baze sou Teknik Pomodoro. Chwazi soti nan dire preset (5/15/25/45 minit) oswa pèsonalize pwòp ou. Karakteristik enkli: kontwen vizyèl ak bag pwogrè, rapèl repo opsyonèl, rekonpans XP pou sesyon konplete (pi long = plis XP), ak log sesyon pou revizyon pwofesè. Etikèt travay ou (pa egzanp, 'Li Chapit 3') pou swiv sa ou reyalize. Minimize nan ba antèt pou ou ka travay pandan li kouri.",
     "scaffolds_edit_toggle": "Chanje ant edisyon pwofesè ak mòd vi elèv. Lè SOU (Mòd Edisyon): klike nenpòt sipò pou modifye tèks, ajoute nouvo pwòp, efase atik, ak re-lòd kontni. Lè ETENN: sipò afiche jan elèv wè yo (sèlman-li). Edisyon anrejistre otomatikman. Elèv toujou wè sèlman-li kèlkeswa chanje ou (yo pa ka aksè mòd edisyon). Itilize edisyon pou: pèsonalize sipò IA-jenere, ajoute egzanp klas-espesifik, retire pwòp enkonvenan, ak diferansye pou elèv espesifik. Prevyou vi elèv anvan pataje. Sipò orijinal ka retabli soti nan istwa. Konsèy: Revize ak edite sipò anvan klas pou asire yo matche ak stil ansèyman ak bezwen elèv ou.",
     "scaffolds_goal_panel": "Afiche objektif aprantisaj pou referans elèv. Objektif parèt prominemman pandan aktivite. Bon objektif: zanmi-elèv (deklarasyon Mwen ka), espesifik ak mezurab, ak aliyen ak aktivite. Egzanp: Mwen ka idantifye twa kòz Lagè Sivil oswa Mwen ka itilize prèv pou sipòte reklamasyon mwen. Objektif ogmante: metakognisyon, oto-evalyasyon, ak klète bi. Elèv ka referans objektif pandan travay. Pwofesè mete objektif anvan aksè elèv. Plizyè objektif ka afiche. Objektif ka enkli kritè siksè: Mwen konnen mwen reyisi lè paragraf mwen gen yon fraz sijè. Rechèch montre sib aprantisaj vizib amelyore reyalizasyon.",
@@ -5977,7 +5981,6 @@
     "immersive_line_focus": "Aktive gid lekti sèl-liy. Lè aktif: liy lekti aktyèl konplètman vizib, liy anvironan femen, ak konsantrasyon swiv pandan ou navige. Benefis: redwi anvayisman vizyèl, amelyore swivi, ak ede atansyon rete sou tèks aktyèl. Navige ak: flèch, klike nenpòt kote, oswa oto-avanse (ak TTS). Entansite femen ajistab nan paramèt. Pafè pou: sipò dyslèksi, difikilte atansyon, ak defi swivi. Konbine byen ak tèks-pou-pawòl pou sipò lekti milti-modal. Konsantrasyon liy travay sou tout kontni tèks. Rechèch montre izolasyon liy amelyore konpreyansyon pou lektè k ap lite. Konsèy: Konbine ak font pi gwo pou fasilite lekti maksimòm.",
     "immersive_syllables": "Segmentasyon silab vizyèl pou sipò dekodaj. Lè aktive: mo afiche ak kase silab (de-ko-daj), ede lektè atake mo milti-silab. Benefis: bati konsyans fonèm, sipòte estrateji dekodaj, devlope konpreyansyon mòfolojik, ak èd pwononsyasyon. Espesyalman itil pou: dekodè k ap lite, elèv ELL, sipò dyslèksi, ak mo vokabilè ak modèl silab konplèks. Silabifikasyon swiv règ fonetik estanda. Travay sou: tout kontni lekti gen ladan tèks adapte, tèm leksik, ak materyèl sous. Konbine ak odyo pou tande silab pwononse. Chanje etenn lè pa bezwen pou redwi konpleksite vizyèl. Konsèy: Itilize pou vokabilè defi, epi dezaktive pou pratik lekti flikan.",
     "immersive_wide_text": "Elaji tèks pou itilize plis espas ekran orizontal. Lè aktif: longè liy ogmante, mwens defileman bezwen, ak plis tèks vizib an menm tan. Bon pou: lektè flikan, ekran laj, ak lè eskanaj pou enfòmasyon. Default lajè etwat pi bon pou: lektè k ap lite, aparèy mobil, ak lekti konsantre. Longè liy optimal varye pa lektè ak aparèy. Rechèch montre 50-75 karaktè pa liy ideyal pou pifò lektè. Tèks laj komèsye lizibilite pou efikasite. Konbine ak konsantrasyon liy si swivi vin difisil. Paramèt raple pa aparèy. Konsèy: Itilize tèks laj pou rechèch ak eskanaj, tèks etwat pou lekti pre.",
-    "sidebar_tab_create": "Ouvri panèl jenerasyon kontni ak tout zouti IA-pwisans. Jeneratè disponib: Kèsyon (evalyasyon ak kle repons), Leksik (vokabilè vizyèl), Plan (òganizatè grafik), Analiz (egzaminasyon kontni), Plan Leson (enstriksyon estriktire), Liy Tan (aktivite kwonolojik), Tèks Senplifye (lekti pa nivo), ak plis. Chak zouti ouvri yon panèl konfigirasyon pou pèsonalizasyon anvan jenerasyon. Kontni sous dwe chaje pou pifò zouti analize. Kontni jenere parèt nan espas travay prensipal ak anrejistre nan istwa. Itilize onglè Kreye kòm hub jenerasyon kontni prensipal ou. Konsèy: Kòmanse ak Analiz pou konprann kontni, epi jenere resous sib.",
     "sidebar_tab_history": "Aksè tout kontni ak istwa sesyon anrejistre ou. Istwa enkli: sesyon oto-anrejistre soti nan travay resan, pwojè ak pòtfolyo manyèlman anrejistre, resous jenere òganize pa dat kreyasyon, ak soumisyon elèv (vi pwofesè). Aksyon: chaje nenpòt atik pou kontinye travay, efase atik pou libere depo, ekspòte pou sovgad, ak chèche pa motkle. Istwa klase pa resans pa default. Filtre pa tip (kèsyon, leksik, avanti, elatriye) pou jwenn resous espesifik. Istwa nway-senkronize aksesib soti nan nenpòt aparèy. Limit depo varye pa kont—efase atik ansyen si apwoche limit. Istwa ou se bibliyotèk resous ansèyman pèsonèl ou.",
     "socratic_toggle": "Aktive mòd dyalòg Socratic pou aprantisaj pi pwofon. Lè SOU: IA pa janm bay repons dirèk—olye mande kesyon sonde ki gide elèv nan direksyon dekouvèt. Benefis: devlope panse kritik, ankouraje oto-korije, bati konpetans rezoud pwoblèm, ak kreye moman aprantisaj memorab. IA itilize teknik tankou: kesyon klarifikasyon (Sa w vle di pa...?), defi sipozisyon (Men sa ki ta pase si...?), ak demand prèv (Kijan ou konnen sa?). Pi bon pou: preparasyon diskisyon, eksplorasyon konsèp, ak ede elèv ki vle repons rapid pou panse pi pwofon. Ka fristè elèv k ap chèche efikasite—eksplike bi a.",
     "socratic_input": "Antre kesyon ou oswa deklarasyon pou eksplorasyon Socratic. IA ap reponn ak kesyon olye repons. Bon pwen kòmansman: Poukisa ou panse [X] te rive? Sa ki fè [Y] enpòtan? oswa Mwen kwè [Z] paske... IA sonde rezònman ou: mande prèv, eksplore enplikasyon, teste lojik, ak fè parèt sipozisyon. Sa devlope agiman ak konpetans panse kritik. Prepare pou: jistifye panse ou, konsidere altènatif, ak rafine pozisyon ou. Dyalòg Socratic ka fristè nan kòmansman men bati konpreyansyon ki dire. Repons ak rezònman ou swiv pou refleksyon.",
@@ -31458,7 +31461,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Dekri medya aktyèl la",
+    "describe_current_media_done": "Ap li medya {index} sou {count}.",
+    "describe_current_media_hint": "Li deskripsyon medya aktyèl la oswa pwochen an san kite resous la",
+    "describe_current_media_none": "Pa gen okenn medya nan resous aktyèl la.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Louvri Learning Web: Explore",
+    "open_learning_web_explorer_done": "Learning Web: Explore louvri.",
+    "open_learning_web_explorer_hint": "Eksplore estanda, konsèp, leson, prèv ak koneksyon mo nan yon sèl kat",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Li tout deskripsyon medya yo",
+    "read_media_descriptions_count": "Ap li {count} deskripsyon medya.",
+    "read_media_descriptions_hint": "Li chak deskripsyon imaj, videyo oswa odyo ki ekri nan resous aktyèl la",
+    "read_media_descriptions_none": "Pa gen okenn medya nan resous aktyèl la.",
+    "suggest_contextual_next_steps": "Pwopoze 3 pwochen etap",
+    "suggest_contextual_next_steps_hint": "Bay twa opsyon ki matche ak kontèks la, san li pa chwazi ni lanse youn",
+    "suggest_contextual_next_steps_working": "Ap li kontèks leson aktyèl la epi ap prepare twa opsyon...",
+    "surprise_me_contextually": "Sipriz mwen ak yon pwochen etap ki itil",
+    "surprise_me_contextually_hint": "Chwazi yon sèl pwochen aksyon ki rezonab e ki gen ti risk nan kontèks leson aktyèl la",
+    "surprise_me_contextually_working": "Ap li kontèks leson aktyèl la epi ap chwazi yon pwochen etap ki itil...",
+    "use_contextual_suggestion": "Sèvi ak yon pwochen etap yo pwopoze",
+    "use_contextual_suggestion_hint": "Lanse opsyon 1, 2 oswa 3 nan dènye sijesyon yo",
+    "use_contextual_suggestion_working": "Ap kòmanse pwochen etap ki chwazi a..."
   },
   "palette": {
     "aria": "Palèt kòmand AlloFlow",
@@ -31481,10 +31510,11 @@
       "videoStudio": "Isit — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "Tout aksyon anonse. Ctrl+K aktive/dezaktive.",
     "group": {
@@ -31800,6 +31830,12 @@
     "diff_types_hint": "Jenere yon seri ki adapte pou:",
     "diff_cost": "Anviwon {n} jenerasyon pou chak ekzekisyon.",
     "summary_standards": "estanda",
-    "summary_interests": "enterè"
+    "summary_interests": "enterè",
+    "translations": "Tradiksyon",
+    "translations_auto": "Otomatik ({language})",
+    "translations_auto_plain": "Otomatik",
+    "translations_none": "Okenn",
+    "translations_on_hint": "Resous nan {output} ap gen yon vèsyon nan {target} tou.",
+    "translations_off_hint": "Resous yo ap nan {output} sèlman, san dezyèm lang."
   }
 }

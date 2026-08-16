@@ -2699,6 +2699,12 @@
     "audio_only_error": "Currently only audio files (MP3, WAV, etc.) are supported for chunked transcription.",
     "starting": "Starting..."
   },
+  "shell_link": {
+    "banner_aria": "About this tool",
+    "banner_text": "One tool from AlloFlow, a free teaching platform.",
+    "banner_open": "Explore the full app",
+    "banner_dismiss": "Dismiss this note"
+  },
   "voice_engine": {
     "preparing": "Preparing voice engine...",
     "downloading_model": "Downloading voice model",
@@ -3002,7 +3008,7 @@
     "translations_auto": "Automatic ({language})",
     "translations_auto_plain": "Automatic",
     "translations_none": "None",
-    "translations_on_hint": "Resources in {output} will also include a {target} version.",
+    "translations_on_hint": "Resources in {output} will also include a version in {target}.",
     "translations_off_hint": "Resources will be in {output} only, with no second-language version."
   },
   "wizard": {
@@ -69096,7 +69102,23 @@
   "storage": {
     "remediation_title": "Cached accessibility remediation",
     "remediation_hint": "A remediated document from this session is still held on this device. Reopen it to review the accessibility results or export the fixed copies.",
-    "remediation_open": "Open remediation results"
+    "remediation_open": "Open remediation results",
+    "preset_automatic": "Automatic",
+    "preset_automatic_detail": "Uses Standard normally and Compact when reported storage is under pressure.",
+    "preset_compact": "Compact",
+    "preset_compact_detail": "Targets 4 workspaces / 50 MB and 20 offline resources; old unpinned draft-only work may expire after 14 days.",
+    "preset_standard": "Standard",
+    "preset_standard_detail": "Current behavior: targets 20 workspaces / 150 MB and 50 offline resources.",
+    "speech_models_title": "On-device speech models",
+    "speech_models_note": "Downloaded once, then kept on this device so voice features work without sending audio anywhere. Removing browser data below also removes these.",
+    "model_whisper_label": "Speech recognition (Whisper)",
+    "model_whisper_desc": "Understands what you say, on this device",
+    "model_kokoro_label": "Natural voice (Kokoro)",
+    "model_kokoro_desc": "Reads text aloud in a natural voice",
+    "model_on_device": "On this device",
+    "model_downloading": "Downloading…",
+    "model_download": "Download {size}",
+    "model_cache": "Model cache on this device: ~{size}"
   },
   "read_this_page": {
     "panel_aria": "Read This Page panel",

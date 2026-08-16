@@ -783,6 +783,20 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openSourceGenerator();
       return t("cmd.open_source_generator_done", "Source generator opened.");
     } },
+    // W3 2026-08-16 (C5). Math Fluency and Fluency Maze had ZERO palette entries and
+    // exactly one door each: the 5th and 6th <option> of the Mode <select> inside the
+    // collapsed Math accordion. A 6,000-line CBM probe instrument was reachable only by
+    // someone who already knew where it was. Student audience is excluded on purpose:
+    // the panel lives in the create sidebar, which a student view does not render, so
+    // the command would report success and show nothing.
+    { id: "open_math_fluency", icon: "\u23F1\uFE0F", roles: ["teacher", "independent", "parent"], when: (c) => typeof c.openMathFluency === "function", label: t("cmd.open_math_fluency", "Open Math Fluency probes"), aliases: ["fluency probe", "fluency probes", "math fluency", "timed math", "math minute", "cbm probe", "curriculum based measurement", "mad minute", "timed math facts", "math facts practice"], hint: t("cmd.open_math_fluency_hint", "Timed math fact probes with a score history"), run: (c) => {
+      c.openMathFluency();
+      return t("cmd.open_math_fluency_done", "Math Fluency probes opened in the Math tool.");
+    } },
+    { id: "open_fluency_maze", icon: "\u{1F3AF}", roles: ["teacher", "independent", "parent"], when: (c) => typeof c.openFluencyMaze === "function", label: t("cmd.open_fluency_maze", "Open the Fluency Maze"), aliases: ["fluency maze", "math maze", "maze", "math maze game", "fluency game"], hint: t("cmd.open_fluency_maze_hint", "A maze students solve by answering math facts"), run: (c) => {
+      c.openFluencyMaze();
+      return t("cmd.open_fluency_maze_done", "Fluency Maze opened in the Math tool.");
+    } },
     { id: "open_history", icon: "\u{1F558}", roles: "all", label: t("cmd.open_history", "Open history"), aliases: ["history", "my history", "saved work", "previous work", "recent lessons", "projects"], hint: t("cmd.open_history_hint", "Browse saved lessons and projects"), run: (c) => {
       c.openHistory();
       return t("cmd.open_history_done", "History opened.");
@@ -5018,7 +5032,11 @@ const CMD_GROUP = {
   toggle_content_editing: "create",
   toggle_quiz_answers: "create",
   open_screen_coach: "tools",
-  print_page: "navigate"
+  print_page: "navigate",
+  // W3 (C5): Math Fluency's palette entries. 'tools' rather than 'create',
+  // because these open an existing instrument rather than generating a resource.
+  open_math_fluency: "tools",
+  open_fluency_maze: "tools"
 };
 const CMD_CONTEXT = {
   pipeline_score: ["pipeline"],

@@ -2252,7 +2252,7 @@
     "ai_guide_sub": "Nkuzi, Nchọgharị & Nhazi Akpaaka",
     "ai_guide_welcome": "Ndewo! Abụ m onye nduzi AI gị. Enwere m ike inye aka na atụmatụ UDL, gagharịa ngwa maka gị, ma ọ bụ doo ntọala ihe ọmụmụ gị na akpaaka. Jụọ!",
     "tool_analysis": "Nyochaa ebe sitere Material",
-    "tool_glossary": "akwụkwọ ọkọwa & asụsụ Selection",
+    "tool_glossary": "Akwụkwọ ọkọwa okwu",
     "tool_simplified": "ederede Adaptation",
     "tool_outline": "ihu Organizer",
     "tool_visual": "ihu nkwado",
@@ -2982,7 +2982,7 @@
     "choose_destination_aria": "Họrọ otu destination"
   },
   "glossary": {
-    "title": "akwụkwọ ọkọwa & asụsụ Selection",
+    "title": "Akwụkwọ ọkọwa okwu",
     "tier2": "Ọkwa 2 (Agụmakwụkwọ)",
     "tier2_tooltip": "High-utility agụmakwụkwọ okwu ejiri across disciplines (e.g., 'nyochaa', 'verify').",
     "tier3": "Ọkwa 3 (Ngalaba)",
@@ -3924,7 +3924,12 @@
     "gauge_simple": "dị mfe",
     "word_bank_english": "Bekee",
     "word_bank_language": "Asụsụ ebe nchekwa okwu",
-    "word_bank_both": "Ha abụọ"
+    "word_bank_both": "Ha abụọ",
+    "measured_level_label": "Ọkwa ọgụgụ a tụrụ atụ",
+    "measured_on_target": "Kwesịrị {grade}",
+    "measured_above": "Karịrị ọkwa {grade}",
+    "measured_below": "Erughị ọkwa {grade}",
+    "measured_note": "Flesch-Kincaid, a tụrụ ya na ederede a. Jiri Check ọkwa maka nyocha zuru ezu."
   },
   "quiz": {
     "title": "Nyochaa",
@@ -5878,7 +5883,9 @@
     "title_poettree_config": "🌳 Ọrụ PoetTree",
     "title_poettree_submission": "🌳 Nzipu Uri",
     "title_litlab_config": "🎭 Ọrụ LitLab",
-    "title_litlab_submission": "🎭 Nzipu Ngosi"
+    "title_litlab_submission": "🎭 Nzipu Ngosi",
+    "translation_block": "Ntụgharị asụsụ",
+    "translation_into": "Ntụgharị asụsụ ({language})"
   },
   "persona": {
     "title": "Interview ọnọdụ",
@@ -6297,7 +6304,7 @@
   },
   "tools": {
     "source": "ebe sitere Material",
-    "glossary": "akwụkwọ ọkọwa & asụsụ Selection",
+    "glossary": "Akwụkwọ ọkọwa okwu",
     "simplified": "ederede Adaptation & Engagement",
     "outline": "ihu Organizer",
     "quiz": "Nyochaa",
@@ -6886,7 +6893,6 @@
     "source_settings_instructions": "Guide AI ọdịnaya generation na kpọmkwem ntuziaka. ọmụmaatụ: Mee it na-adọrọ mmasị maka reluctant readers, Focus na water cycle, Gụnye diverse agwa names, Avoid references na violence, na Jiri dị mfe okwu maka ELL nwa akwụkwọ. ntuziaka ọdịdị: ụda, ọdịnaya focus, okwu ọkwa, na perspective. Be kpọmkwem maka best nsonaazụ. Dị iche iche ntuziaka nwere ike be combined. ntuziaka bụ processed along na gị topic na ntọala. Maka sensitive topics, gụnye ọdịnaya guidance. ntuziaka do anaghị guarantee kpọmkwem outcomes mana strongly influence generation. ndụmọdụ: Gụnye ọkwa klas na any ọdịnaya restrictions na gị ntuziaka maka most appropriate mmepụta.",
     "source_verify_checkbox": "Kwado AI fact-checking via Google Chọọ grounding. mgbe ON: AI cross-references mepụtara ọdịnaya against web sources, flagging maọbụ correcting potential inaccuracies. Adds 5-10 seconds na generation time mana significantly improves reliability maka factual ọdịnaya. Especially important maka: history (dates, events), science (processes, data), biography, na current events. Maka fiction, creative writing, maọbụ hypothetical scenarios, nke otu nwere ike be disabled na allow karịa creative freedom. Sources consulted bụ listed na generation log maka onye nkụzi nyocha. Highly recommended maka any ọdịnaya nke ahụ ga- be presented as factual na nwa akwụkwọ.",
     "source_generate_button": "Kee AI-written ọdịnaya na gị specified topic. Pịa na begin generation iji gị: topic description, target ogologo, ọkwa klas, na omenala ntuziaka. Generation takes 10-20 seconds. mmepụta bụ nyochaed by safety filters before display. Generated ọdịnaya nwere ike be: edited (onye nkụzi nwere ike gbanwee any part), analyzed (gbaa ọsọ through other generation ngwa), na echekwala (tinye na history maka reuse). Jiri mgbe: gị need ọdịnaya na otu kpọmkwem topic, want controlled ịda mgbagwoju anya, maọbụ need na fill curriculum gaps. Generated ọdịnaya gụnyere: appropriate okwu, logical organization, na klas-ọkwa syntax. Verify factual accuracy before klas jiri.",
-    "generator_actions": "Hub maka niile ọdịnaya generation ngwa. dị generators gụnye: ajụjụ ọnụ (nyocha na azịza keys), akwụkwọ ọkọwa (ihu okwu), Simplified ederede (ọkwaed reading), FAQ (Q na otu pairs), Analysis (ọdịnaya examination), nkuzi Plan (instructional design), Timeline (chronological activity), Scaffolds (writing nkwado), Concept Hazie (categorization egwuregwu), Math (problem generation), Njem nlere (mmekọrịta akụkọ), na Brainstorm (activity ideas). nke ọ bụla generator na-agbanwe gị ebe sitere ọdịnaya na different usoro. Pịa any generator na mepee its configuration mbara. Dị iche iche generators nwere ike be ejiri na same ebe sitere. Generated ọdịnaya appears na workspace na saves na history. ndụmọdụ: Bido na Analysis na ghọta gị ọdịnaya, then mepụta targeted ihe enyemaka.",
     "tool_visual": "Nweta ihu generator ngwa. Creates AI-mepụtara foto gụnyere: okwu ihu, concept illustrations, ihe nkiri depictions, eserese, na infographics. ihu types: reference foto (maka mmụta), worksheets (maka activities), na eserese (maka relationships). ihu nkwado: ELL nwa akwụkwọ (ihu okwu), ihu learners, na engagement. nke ọ bụla generation na-eke unique foto. ntọala control ụdị, quality, na ọdịnaya. Generated ihu nwere ike be: downloaded, embedded na materials, na added na glossaries. Uses AI foto generation credits. ndụmọdụ: Mepụta ihu maka abstract concepts nke ahụ bụ difficult na explain na okwu alone.",
     "tool_udl": "Mụta about UDL framework integration. Universal Design maka Learning has three principles: Dị iche iche Means nke Representation ( gịnị nke mmụta—present ozi na different ways), Dị iche iche Means nke Action na Expression ( kedu nke mmụta—let nwa akwụkwọ demonstrate understanding differently), na Dị iche iche Means nke Engagement ( why nke mmụta—motivate na sustain interest). nke otu ngwa nkwado niile three through: varied ọdịnaya usoro, dị iche iche interaction ọnọdụ, na egwuregwu engagement. Clicking meghere zuru ezu ozi about kedu nke ọ bụla ngwa atụmatụ aligns na UDL research. Great maka: professional development, IEP justification, na understanding pedagogical foundation. ndụmọdụ: Reference UDL principles mgbe advocating maka ngwa adnhọrọ.",
     "tour-analysis-settings": "Adjust parameters maka readability analysis, gụnyere target reading ọkwa na kpọmkwem metrics na track.",
@@ -6911,7 +6917,6 @@
     "adventure_system_state": "Tinye ihe enyemaka management mechanics na njem nleres. nwa akwụkwọ track: Health (consequence nke ihe ize ndụy nhọrọs), ọla edo/ihe enyemaka (economic decision-making), Reputation (mmekọrịta ọha capital site na nhọrọs), na omenala ihe enyemaka gị define. Actions affect ihe enyemaka visibly—spend ọla edo na buy ihe, lose health site na poor decisions, gain reputation site na enyemakaing others. Creates meaningful consequences nke ahụ teach: cause-na-effect reasoning, planning ahead, ihe enyemaka management, na opportunity cost. ihu dashboard gosi current ihe enyemaka ọkwa. mgbe ihe enyemaka deplete, egwuregwu adaptively responds (e.g., low health = limited nhọrọ). Math nkà integrate naturally through ihe enyemaka calculations.",
     "glossary_tier2_count": "Tọọ kedu many Tier 2 (agụmakwụkwọ) okwu okwu na gụnye. Tier 2 okwu: appear across subjects, bụ ejiri na agụmakwụkwọ contexts, na bụ essential maka ederede comprehension. ọmụmaatụ: nyochaa, evidence, significant, contrast. These okwu nwere highest instructional uru—most nwa akwụkwọ benefit site na explicit teaching. Recommended gụọ depends na: ederede ogologo (1 okwu per 100-150 okwu nke ebe sitere), dị ntuziaka time, na nwa akwụkwọ need. Balance na Tier 3 gụọ maka otu mechaa okwu tọọ. Focus ntuziaka here maka maximum impact na reading comprehension across niile subjects.",
     "glossary_tier3_count": "Tọọ kedu many Tier 3 (domain-kpọmkwem) okwu okwu na gụnye. Tier 3 okwu: bụ kpọmkwem na otu subject mpaghara, bụ usually defined na context, na may anaghị transfer across subjects. ọmụmaatụ: photosynthesis, denominator, alliteration, legislative. These okwu bụ essential maka understanding kpọmkwem ọdịnaya mana nwere limited jiri outside domain. ntuziaka typically occurs during ọdịnaya teaching. Maka omimi dive na otu topic, gụnye karịa Tier 3. Maka broader reading nkà, prioritize Tier 2. Tier 3 okwu often appear na bold maọbụ italics na textbooks, signaling their importance within discipline.",
-    "glossary_definition_level": "Control kedu nkọwa bụ written. nhọrọ: Same as ebe sitere (maintains original ịda mgbagwoju anya—mma maka dị elu nwa akwụkwọ), Na klas (matches target ọkwa klas okwu), Simplified (eji common okwu, shorter ahịrịokwu), na Kindergarten (very ntọala asụsụ, concrete ọmụmaatụ). Match nkọwa ịda mgbagwoju anya na nwa akwụkwọ reading ọkwa, anaghị ọdịnaya ọkwa. otu 10th-grader studying dị elu biology might need Simplified nkọwa maka unfamiliar okwu. Consider gị nwa akwụkwọ weakest readers mgbe selecting. nkọwa nwere ike be individually edited after generation ọ bụrụ na some need adjustment. Pro ndụmọdụ: Jiri Simplified initially, then discuss karịa technical nkọwa na klas.",
     "glossary_custom_instructions": "Provide kpọmkwem guidance maka okwu selection na nkọwa ụdị. ọmụmaatụ: Focus na okwu site na isi 3-5, Gụnye only okwu related na water cycle, Avoid homonyms na simpler meanings, Tinye etymology maka Latin/Greek roots, Gụnye Spanish cognates maka ELL nwa akwụkwọ, na Jiri nwa akwụkwọ-enyi ọmụmaatụ site na pop culture. Custom ntuziaka ọdịdị: which okwu bụ họọrọ, kedu nkọwa bụ written, na gịnị additional ozi appears. Clear ntuziaka mepụta ka mma-targeted glossaries. gị nwere ike request kpọmkwem usoro like: Gụnye otu ahịrịokwu iji nke ọ bụla okwu maọbụ Tinye ihu memory hooks. AI follows ntuziaka mgbe making okwu selections.",
     "glossary_language_input": "Kọwapụta asụsụ maka okwu ntụgharị asụsụ. Tinye asụsụ: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, maọbụ any asụsụ. gị nwere ike tinye dị iche iche asụsụ separated by commas. nke ọ bụla okwu ga- gosi: English nkọwa, target asụsụ ntụgharị asụsụ(s), na phonetic pronunciation guide ebe applicable. Jiri maka: ELL nkwado, heritage asụsụ connections, world asụsụ okwu, na multilingual klasrooms. ntụgharị asụsụ appear na every okwu kaadị maka instant reference. olu pronunciation dị na supported asụsụ. Research gosi connecting ọhụrụ okwu na home asụsụ improves retention. Max 4 asụsụ prevents ihu clutter while supporting diverse klasrooms.",
     "glossary_auto_remove": "Automatically nyochaa out very dị mfe maọbụ common okwu.",
@@ -7045,7 +7050,6 @@
     "fab_dictation": "Convert speech na ederede maka hands-free ntinye. Pịa na activate microphone, kwuo clearly, na lee okwu appear. Works na: ederede ntinye, writing scaffolds, nkata, na any editable field. nkwado: dị iche iche asụsụ, punctuation commands (say period, comma, ọhụrụ ahịrị), na editing commands (hichapụ nke ahụ). Dictation requires microphone permission na browser. Quality depends na: microphone quality, background noise, na speech clarity. Oge real transcription gosi as gị kwuo. Dezie transcribed ederede normally. Great maka: nwa akwụkwọ na motor ihe ịma aka, reluctant writers, na idea generation. ndụmọdụ: Kwuo na mechaa ahịrịokwu maka ka mma accuracy.",
     "fab_focus": "Creates otu movable spotlight nke ahụ dims everything except otu circular mpaghara around gị cursor. nke otu dramatically reduces ihu clutter na enyemakas maintain attention na current reading mpaghara. Especially beneficial maka nwa akwụkwọ na ADHD, sensory processing differences, maọbụ anyone overwhelmed by busy screens. spotlight follows gị mouse/touch automatically. Adjust spotlight size na dim intensity na ntọala → Accessibility.",
     "fab_line_focus": "Single-ahịrị reading isolation ngwa maka focused reading. mgbe activated: one ederede ahịrị bụ highlighted while others bụ dimmed, creating ihu focus. Navigate na: arrow keys (up/down), pịa anywhere na ederede, maọbụ touch/swipe na mobile. Benefits: reduces ihu crowding, nkwado nleta difficulties, enyemakas maintain place, na reduces regression. Intensity (kedu much surrounding ederede bụ ahụ anya) bụ adjustable na ntọala → Accessibility. Works na: niile reading ọdịnaya, gụnyere mepụtara ederede, ebe sitere materials, na nkata. Particularly enyemakaful maka: dyslexia, ADHD, ihu processing differences, na anyone overwhelmed by ederede-heavy screens. ndụmọdụ: Combine na larger font maka maximum reading ease.",
-    "fab_ruler": "Adds otu semi-transparent horizontal bar nke ahụ follows gị cursor na enyemaka track gị reading position ahịrị by ahịrị. Particularly enyemakaful maka users na dyslexia, ADHD, maọbụ ihu nleta difficulties. Dọrọ ruler up/down na reposition, jiri arrow keys maka fine control, maọbụ pịa anywhere na jump. ruler agwa nwere ike be customized na ntọala. Works across niile reading views gụnyere Simplified ederede, FAQ, na akwụkwọ ọkọwa nkọwa.",
     "fab_timer": "Opens otu mmekọrịta focus timer dabere na Pomodoro Technique. Họrọ site na preset durations (5/15/25/45 minutes) maọbụ hazie gị own. atụmatụ gụnye: ihu countdown na ọganihu ring, nhọrọ break reminders, XP ụgwọ ọrụ maka completed nnọkọ (longer = karịa XP), na nnọkọ logging maka onye nkụzi nyocha. Label gị task (e.g., 'Gụọ isi 3') na track gịnị gị accomplished. Minimizes na header bar so gị nwere ike work while it runs.",
     "scaffolds_edit_toggle": "Gbanwee between onye nkụzi editing na nwa akwụkwọ lee ọnọdụ. mgbe ON (Dezie ọnọdụ): pịa any scaffold na gbanwee ederede, tinye ọhụrụ prompts, hichapụ ihe, na reorder ọdịnaya. mgbe OFF: scaffolds display as nwa akwụkwọ hụ them (gụọ-only). Edits chekwaa automatically. nwa akwụkwọ always hụ gụọ-only regardless nke gị gbanwee (they cannot nweta dezie ọnọdụ). Jiri editing na: hazie AI-mepụtara scaffolds, tinye klas-kpọmkwem ọmụmaatụ, wepụ inappropriate prompts, na differentiate maka kpọmkwem nwa akwụkwọ. Pnyocha nwa akwụkwọ lee before sharing. Original scaffolds nwere ike be restored site na history. ndụmọdụ: Review na dezie scaffolds before klas na ensure they match gị teaching ụdị na nwa akwụkwọ needs.",
     "scaffolds_goal_panel": "Display mmụta objectives maka nwa akwụkwọ reference. ihe mgbaru ọsọ appear prominently during activity. Effective ihe mgbaru ọsọ bụ: nwa akwụkwọ-enyi (I nwere ike statements), kpọmkwem na measurable, na aligned na activity. ọmụmaatụ: I nwere ike identify three causes nke Civil War maọbụ I nwere ike jiri evidence na nkwado my claim. ihe mgbaru ọsọ increase: metacognition, self-nyocha, na purpose clarity. nwa akwụkwọ nwere ike reference ihe mgbaru ọsọ while working. onye nkụzi sets ihe mgbaru ọsọ before nwa akwụkwọ nweta. Dị iche iche ihe mgbaru ọsọ nwere ike be displayed. ihe mgbaru ọsọ nwere ike gụnye ihe ịga nke ọma criteria: I know I nwere succeeded mgbe my paragraf has otu topic ahịrịokwu. Research gosi ahụ anya mmụta targets improve achievement.",
@@ -7140,7 +7144,6 @@
     "immersive_line_focus": "Kwado single-ahịrị reading guide. mgbe na-arụ ọrụ: current reading ahịrị bụ fully ahụ anya, surrounding ahịrị bụ dimmed, na focus follows as gị navigate. Benefits: reduces ihu overwhelm, improves nleta, na enyemakas attention stay na current ederede. Navigate na: arrow keys, pịa anywhere, maọbụ auto-advance (na TTS). Dimming intensity bụ adjustable na ntọala. Perfect maka: dyslexia nkwado, attention difficulties, na nleta ihe ịma aka. Combines well na ederede-na-speech maka multi-modal reading nkwado. ahịrị focus works na niile ederede ọdịnaya. Research gosi ahịrị isolation improves comprehension maka struggling readers. ndụmọdụ: Combine na larger font maka maximum reading ease.",
     "immersive_syllables": "ihu syllable segmentation maka decoding nkwado. mgbe enabled: okwu display na syllable breaks (hy-phen-at-ed), enyemakaing readers attack multisyllabic okwu. Benefits: builds phonemic awareness, nkwado decoding atụmatụ, develops morphological understanding, na aids pronunciation. Especially enyemakaful maka: struggling decoders, ELL nwa akwụkwọ, dyslexia nkwado, na okwu okwu na mgbagwoju anya syllable patterns. Syllabification follows ọkwa phonetic rules. Works na: niile reading ọdịnaya gụnyere adapted ederede, akwụkwọ ọkọwa okwu, na ebe sitere materials. Combine na olu na hear syllables pronounced. Gbanwee off mgbe anaghị needed na reduce ihu ịda mgbagwoju anya. ndụmọdụ: Jiri maka challenging okwu, then gbanyụọ maka fluent reading omume.",
     "immersive_wide_text": "Expand ederede na jiri karịa horizontal screen space. mgbe na-arụ ọrụ: ahịrị ogologo increases, pere mpe scrolling bụ needed, na karịa ederede bụ ahụ anya at once. mma maka: fluent readers, wide displays, na mgbe scanning maka ozi. ndabara narrow obosara bụ ka mma maka: struggling readers, mobile devices, na focused reading. Optimal ahịrị ogologo varies by reader na device. Research gosi 50-75 agwa per ahịrị bụ ideal maka most readers. Wide ederede trades readability maka efficiency. Combine na ahịrị focus ọ bụrụ na nleta becomes difficult. ntọala bụ remembered per device. ndụmọdụ: Jiri wide ederede maka research na scanning, narrow ederede maka mechie reading.",
-    "sidebar_tab_create": "Mepee ọdịnaya generation mbara na niile AI-powered ngwa. dị generators: ajụjụ ọnụ (nyocha na azịza keys), akwụkwọ ọkọwa (ihu okwu), Outline (graphic organizers), Analysis (ọdịnaya examination), nkuzi Plan (structured ntuziaka), Timeline (chronological activities), Simplified ederede (ọkwaed reading), na karịa. nke ọ bụla ngwa meghere otu configuration mbara maka customization before generation. ebe sitere ọdịnaya must be loaded maka most ngwa na nyochaa. Generated ọdịnaya appears na main workspace na bụ echekwala na history. Jiri Kee tab as gị primary ọdịnaya generation hub. ndụmọdụ: Bido na Analysis na ghọta ọdịnaya, then mepụta targeted ihe enyemaka.",
     "sidebar_tab_history": "Nweta niile gị echekwala ọdịnaya na nnọkọ history. History gụnyere: auto-echekwala nnọkọ site na recent work, manually echekwala projects na portfolios, mepụtara ihe enyemaka organized by creation date, na nwa akwụkwọ submissions (onye nkụzi lee). Actions: bulite any ihe na gaa n'ihu working, hichapụ ihe na free storage, bupụ maka backup, na chọọ by keyword. History sorts by recency by ndabara. Nyochaa by type (ajụjụ ọnụ, akwụkwọ ọkọwa, njem nlere, etc.) na find kpọmkwem ihe enyemaka. Cloud-synced history bụ accessible site na any device. Storage limits vary by account—hichapụ ochie ihe ọ bụrụ na approaching limit. gị history bụ gị personal teaching ihe enyemaka library.",
     "socratic_toggle": "Kwado Socratic dialogue ọnọdụ maka deeper mmụta. mgbe ON: AI never gives direct azịza—instead asks probing ajụjụ nke ahụ guide nwa akwụkwọ toward discovery. Benefits: develops critical thinking, encourages self-correction, builds problem-solving nkà, na na-eke memorable mmụta moments. AI eji techniques like: clarifying ajụjụ (gịnị do gị mean by...?), challenging assumptions (mana gịnị ọ bụrụ na...?), na evidence requests (kedu do gị know nke ahụ?). Best maka: discussion preparation, concept exploration, na enyemakaing nwa akwụkwọ who want ngwa ngwa azịza na think karịa deeply. May frustrate nwa akwụkwọ seeking efficiency—explain purpose.",
     "socratic_input": "Tinye gị ajụjụ maọbụ statement maka Socratic exploration. AI ga- respond na ajụjụ rather than azịza. mma starting ebe: Why do gị think [X] happened? gịnị makes [Y] important? maọbụ I believe [Z] because... AI probes gị reasoning: asking maka evidence, exploring implications, testing logic, na surfacing assumptions. nke otu develops argumentation na critical thinking nkà. Be prepared na: justify gị thinking, consider alternatives, na refine gị position. Socratic dialogues nwere ike be frustrating initially mana build lasting understanding. gị responses na reasoning bụ tracked maka ntụgharị uche.",
@@ -30753,7 +30756,33 @@
     "test_prep_hands_free_status": "Check Test Prep voice status",
     "test_prep_hands_free_status_hint": "Hear whether the active Test Prep set is ready for voice control",
     "test_prep_hands_free_status_unavailable": "Test Prep voice status is unavailable while the hub is loading.",
-    "voice_confirm": "Say yes to confirm, or no to cancel."
+    "voice_confirm": "Say yes to confirm, or no to cancel.",
+    "describe_current_media": "Kọwaa mgbasa ozi dị ugbu a",
+    "describe_current_media_done": "Na-agụ mgbasa ozi {index} nke {count}.",
+    "describe_current_media_hint": "Gụọ nkọwa mgbasa ozi dị ugbu a ma ọ bụ nke ọzọ n’ahapụghị ihe onwunwe ahụ",
+    "describe_current_media_none": "Ọ dịghị mgbasa ozi dị n’ihe onwunwe dị ugbu a.",
+    "open_fluency_maze": "Open the Fluency Maze",
+    "open_fluency_maze_done": "Fluency Maze opened in the Math tool.",
+    "open_fluency_maze_hint": "A maze students solve by answering math facts",
+    "open_learning_web_explorer": "Mepee Learning Web: Explore",
+    "open_learning_web_explorer_done": "Emepere Learning Web: Explore.",
+    "open_learning_web_explorer_hint": "Nyochaa ụkpụrụ, echiche, ihe ọmụmụ, ihe àmà, na njikọ okwu n’otu maapụ",
+    "open_math_fluency": "Open Math Fluency probes",
+    "open_math_fluency_done": "Math Fluency probes opened in the Math tool.",
+    "open_math_fluency_hint": "Timed math fact probes with a score history",
+    "read_media_descriptions": "Gụọ nkọwa mgbasa ozi niile",
+    "read_media_descriptions_count": "Na-agụ nkọwa mgbasa ozi {count}.",
+    "read_media_descriptions_hint": "Gụọ nkọwa ọ bụla e dere maka foto, vidiyo, ma ọ bụ ụda n’ihe onwunwe dị ugbu a",
+    "read_media_descriptions_none": "Ọ dịghị mgbasa ozi dị n’ihe onwunwe dị ugbu a.",
+    "suggest_contextual_next_steps": "Tụọ aro nzọụkwụ 3 na-esote",
+    "suggest_contextual_next_steps_hint": "Na-enye nhọrọ atọ dabara n’ọnọdụ, ma ọ naghị ahọrọ ma ọ bụ mee otu",
+    "suggest_contextual_next_steps_working": "Na-agụ ọnọdụ nke ihe ọmụmụ dị ugbu a ma na-akwadebe nhọrọ atọ...",
+    "surprise_me_contextually": "Nye m otu nzọụkwụ na-esote bara uru",
+    "surprise_me_contextually_hint": "Na-ahọrọ otu ihe na-esote nwere ezi uche na obere ihe egwu site n’ọnọdụ ihe ọmụmụ dị ugbu a",
+    "surprise_me_contextually_working": "Na-agụ ọnọdụ nke ihe ọmụmụ dị ugbu a ma na-ahọrọ nzọụkwụ na-esote bara uru...",
+    "use_contextual_suggestion": "Jiri nzọụkwụ na-esote a tụrụ aro",
+    "use_contextual_suggestion_hint": "Na-eme nhọrọ 1, 2, ma ọ bụ 3 site na aro kacha ọhụrụ",
+    "use_contextual_suggestion_working": "Na-amalite nzọụkwụ na-esote a họrọrọ..."
   },
   "palette": {
     "aria": "Palette iwu AlloFlow",
@@ -30776,10 +30805,11 @@
       "videoStudio": "Ebe a — Video Studio",
       "litLab": "Here — Lit Lab",
       "liveSession": "Here — Live session",
-      "mindMap": "Here — Throughline",
+      "mindMap": "Here — Learning Web: Unit Path",
       "poetTree": "Here — Poet Tree",
       "researchHub": "Here — Research Hub",
-      "sourceSetup": "Here — Source setup"
+      "sourceSetup": "Here — Source setup",
+      "learningWebExplorer": "Here — Learning Web: Explore"
     },
     "footer": "A na-ekwupụta omume ọ bụla. Ctrl+K na-agbanwe ya.",
     "group": {
@@ -31091,6 +31121,12 @@
     "diff_types_hint": "Mepụta otu dị iche iche maka:",
     "diff_cost": "Ihe dị ka mmepụta {n} n’otu ọsọ.",
     "summary_standards": "ụkpụrụ",
-    "summary_interests": "mmasị"
+    "summary_interests": "mmasị",
+    "translations": "Ntụgharị asụsụ",
+    "translations_auto": "Akpaaka ({language})",
+    "translations_auto_plain": "Akpaaka",
+    "translations_none": "Ọ dịghị",
+    "translations_on_hint": "Ihe onwunwe dị na {output} ga-enwekwa ụdị {target}.",
+    "translations_off_hint": "Ihe onwunwe ga-adị naanị na {output}, na-enweghị asụsụ nke abụọ."
   }
 }
