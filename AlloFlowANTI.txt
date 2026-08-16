@@ -2033,8 +2033,8 @@ function _installLocalTextBridgeFromStorage() {
         imageProvider: userConfig.imageProvider || 'auto',
         localModelProfile: userConfig.localModelProfile,
         localFallback: userConfig.localFallback,
-        fetchWithRetry: fetchWithExponentialBackoff,
-        optimizeImage: optimizeImage,
+        fetchWithRetry: (...a) => fetchWithExponentialBackoff(...a), // late-bound (2026-08-16): the direct reference froze the boot STUB when this factory won the CDN race against UtilsPure — see the note at _upgradeGeminiAPI
+        optimizeImage: (...a) => optimizeImage(...a), // late-bound (2026-08-16): same stub-freeze class as fetchWithRetry above
         debugLog: debugLog,
         warnLog: warnLog,
     });
@@ -2048,7 +2048,17 @@ function _upgradeGeminiAPI() {
     const effectiveApiKey = _alloEffectiveGeminiApiKey();
     const api = factory({
         apiKey: effectiveApiKey, _isCanvasEnv, GEMINI_MODELS,
-        fetchWithExponentialBackoff, optimizeImage, warnLog, debugLog,
+        // ── Late-bound injection (2026-08-16, diagnostic bundle 0e888f4c) ─────────────────────
+        // These lets start as BOOT STUBS (fetchWithExponentialBackoff = bare fetch, line ~997)
+        // and are rebound by _upgradeUtilsPure when the UtilsPure CDN module arrives. This deps
+        // literal used to inject the VALUE at factory-build time, so whenever the GeminiAPI
+        // module won the CDN race, createGeminiAPI destructured and froze the STUB forever:
+        // no inner 429/503 retries, no per-request timeout, no telemetry. The field bundle
+        // proved it — 87/87 calls with innerAttempts:0, httpAttempts:[]. Forwarder arrows read
+        // the let at CALL time, so the upgrade takes effect even for already-built factories.
+        fetchWithExponentialBackoff: (...a) => fetchWithExponentialBackoff(...a),
+        optimizeImage: (...a) => optimizeImage(...a),
+        warnLog, debugLog,
         getAbortSignal: () => (typeof window !== 'undefined' ? window.__alloPdfAbortSignal : null)
     });
     callGemini = _alloWrapCallGeminiForProvenance(api.callGemini);
@@ -28916,8 +28926,8 @@ const parseTaggedContent = (text) => {
     imageProvider: _aiUserConfig?.imageProvider || 'auto',
     localModelProfile: _aiUserConfig?.localModelProfile,
     localFallback: _aiUserConfig?.localFallback,
-    fetchWithRetry: fetchWithExponentialBackoff,
-    optimizeImage: optimizeImage,
+    fetchWithRetry: (...a) => fetchWithExponentialBackoff(...a), // late-bound (2026-08-16): the direct reference froze the boot STUB when this factory won the CDN race against UtilsPure — see the note at _upgradeGeminiAPI
+    optimizeImage: (...a) => optimizeImage(...a), // late-bound (2026-08-16): same stub-freeze class as fetchWithRetry above
     debugLog: debugLog,
     warnLog: warnLog,
   };
@@ -42990,7 +43000,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       setHistory: setHistory,
       getCurrentResourceId: () => (generatedContent && generatedContent.id) || null,
       firebase: window.__alloFirebase || {},
-      shared: { safeGetItem, safeSetItem, warnLog, fetchWithExponentialBackoff },
+      shared: { safeGetItem, safeSetItem, warnLog, fetchWithExponentialBackoff: (...a) => fetchWithExponentialBackoff(...a) /* late-bound, stub-freeze class 2026-08-16 */ },
     });
     return _escapeRoomEngineRef.current;
   };
@@ -48357,27 +48367,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             <div style={{display: isGuidedToolVisible('sentence-frames') ? undefined : 'none'}} id="tour-tool-scaffolds" data-help-key="tool_scaffolds" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
                 ${activeView === 'sentence-frames' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
               `}>
-                <div className="w-full bg-slate-50 border-b border-slate-100 flex items-center hover:bg-rose-50 transition-colors">
-                  <button
+                <button
                     data-help-key="tool_scaffolds"
-                    onClick={() => toggleTool('sentence-frames')}
-                    aria-expanded={expandedTools.includes('sentence-frames')}
-                    className="flex-1 p-3 flex justify-between items-center text-start"
-                  >
-                    <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
-                      <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
-                    </div>
-                    {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowStoryForge(true)}
-                    className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-rose-800 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/50 rounded-full transition-all hover:shadow-sm"
-                    aria-label={t('sidebar.open_storyforge_aria') || 'Open StoryForge'}
-                  >
-                    {'\uD83D\uDCD6'} <span className="group-hover:tracking-wide transition-all">{t('sidebar.storyforge_label') || 'StoryForge'}</span>
-                  </button>
-                </div>
+                    aria-expanded={expandedTools.includes('sentence-frames')} onClick={() => toggleTool('sentence-frames')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
+                    <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
+                  </div>
+                  {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
                 {/* ── SentenceFramesPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('sentence-frames') && window.AlloModules && window.AlloModules.SentenceFramesPanel && React.createElement(window.AlloModules.SentenceFramesPanel, {
           expandedTools, frameCustomInstructions, frameType, handleGenerate, hasSourceOrAnalysis,
