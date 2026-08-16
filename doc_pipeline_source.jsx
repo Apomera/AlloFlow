@@ -7547,6 +7547,34 @@ var createDocPipeline = function(deps) {
       return rec;
     } catch (_) { return null; }
   };
+  // Compact, content-free HTTP evidence for the human-readable ✗ lines: the per-attempt status
+  // codes from the inner fetch ladder plus any Retry-After the service sent. This is exactly the
+  // field the 2026-08-14 investigation had to reconstruct by hand — in a log that prints only
+  // err.message, a 401 misfiled as a timeout and a 429 ladder are indistinguishable, and the
+  // 60s-to-401 mystery stayed a mystery. Codes and seconds only; never response content.
+  var _alloHttpTrail = function (profile, err) {
+    try {
+      var bits = [];
+      var ledger = profile && profile.ledger;
+      if (ledger && Array.isArray(ledger.httpAttempts) && ledger.httpAttempts.length) {
+        bits.push('http ' + ledger.httpAttempts.map(function (a) {
+          if (!a) return '?';
+          if (a.status != null) return a.status;
+          return a.errorClass ? a.errorClass : 'pending';
+        }).join(','));
+        for (var i = ledger.httpAttempts.length - 1; i >= 0; i--) {
+          if (ledger.httpAttempts[i] && ledger.httpAttempts[i].retryAfterSec != null) {
+            bits.push('retry-after ' + ledger.httpAttempts[i].retryAfterSec + 's');
+            break;
+          }
+        }
+      } else if (err && err.httpStatus != null) {
+        bits.push('http ' + err.httpStatus);
+        if (err.retryAfterSec != null) bits.push('retry-after ' + err.retryAfterSec + 's');
+      }
+      return bits.length ? ' [' + bits.join('; ') + ']' : '';
+    } catch (_) { return ''; }
+  };
   // Rendered at [DocPipe][Done]. Sorted by bytes so the biggest sender is the first thing read.
   var _alloFormatPayloadLedger = function (payload) {
     try {
@@ -7858,6 +7886,8 @@ var createDocPipeline = function(deps) {
         for (var i = ledger.httpAttempts.length - 1; i >= 0; i--) {
           if (ledger.httpAttempts[i].status == null && (!attempt || ledger.httpAttempts[i].attempt === attempt)) {
             ledger.httpAttempts[i].status = info && info.status != null ? Number(info.status) || 0 : null;
+            // Server-directed backoff, when the limiter sends one (2026-08-15). A number (seconds).
+            if (info && info.retryAfterSec != null) ledger.httpAttempts[i].retryAfterSec = Math.max(0, Number(info.retryAfterSec) || 0);
             return;
           }
         }
@@ -7895,7 +7925,7 @@ var createDocPipeline = function(deps) {
       _callStats.totalApiMs += dur;
       var _abortedCall = !!(err && (err.name === 'AbortError' || err.isAbort));
       if (!_abortedCall) _callStats.terminalFailures = (_callStats.terminalFailures || 0) + 1;
-      _pipeLog(_abortedCall ? 'API-stop' : 'API✗', 'callGemini #' + callNum + (_abortedCall ? ' cancelled' : ' FAILED') + ' after ' + dur + 'ms: ' + (err && err.message || err), null, _callOwner);
+      _pipeLog(_abortedCall ? 'API-stop' : 'API✗', 'callGemini #' + callNum + (_abortedCall ? ' cancelled' : ' FAILED') + ' after ' + dur + 'ms: ' + (err && err.message || err) + (_abortedCall ? '' : _alloHttpTrail(_requestProfile, err)), null, _callOwner);
       throw err;
     });
   } : null;
@@ -8026,6 +8056,8 @@ var createDocPipeline = function(deps) {
         for (var i = ledger.httpAttempts.length - 1; i >= 0; i--) {
           if (ledger.httpAttempts[i].status == null && (!attempt || ledger.httpAttempts[i].attempt === attempt)) {
             ledger.httpAttempts[i].status = info && info.status != null ? Number(info.status) || 0 : null;
+            // Server-directed backoff, when the limiter sends one (2026-08-15). A number (seconds).
+            if (info && info.retryAfterSec != null) ledger.httpAttempts[i].retryAfterSec = Math.max(0, Number(info.retryAfterSec) || 0);
             return;
           }
         }
@@ -8066,7 +8098,7 @@ var createDocPipeline = function(deps) {
       _callStats.totalApiMs += dur;
       var _abortedCall = !!(err && (err.name === 'AbortError' || err.isAbort));
       if (!_abortedCall) _callStats.terminalFailures = (_callStats.terminalFailures || 0) + 1;
-      _pipeLog(_abortedCall ? 'Vision-stop' : 'Vision✗', 'callGeminiVision #' + callNum + (_abortedCall ? ' cancelled' : ' FAILED') + ' after ' + dur + 'ms: ' + (err && err.message || err), null, _callOwner);
+      _pipeLog(_abortedCall ? 'Vision-stop' : 'Vision✗', 'callGeminiVision #' + callNum + (_abortedCall ? ' cancelled' : ' FAILED') + ' after ' + dur + 'ms: ' + (err && err.message || err) + (_abortedCall ? '' : _alloHttpTrail(_requestProfile, err)), null, _callOwner);
       throw err;
     });
   } : null;
@@ -36649,26 +36681,71 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       const _lblDef = _escTxt(t('output.col_def') || 'Definition');
                       const _lblTrans = _escTxt(t('output.col_trans') || 'Translation');
                       return `
-                  <table role="table">
-                  <thead role="rowgroup"><tr role="row">
-                      ${hasAnyImages ? `<th role="columnheader" scope="col" style="text-align: center; width: ${_glossImgPx + 24}px; max-width: 26%;">${_lblImage}</th>` : ''}
-                      <th role="columnheader" scope="col" style="text-align: ${align}; width: 22%;">${_lblTerm}</th>
-                      <th role="columnheader" scope="col" style="text-align: ${align};">${_lblDef}</th>
-                      ${hasAnyTranslations ? `<th role="columnheader" scope="col" style="text-align: ${align}; width: 22%;">${_lblTrans}</th>` : ''}
+                  <table data-gloss-table>
+                  <thead><tr>
+                      ${hasAnyImages ? `<th scope="col" style="text-align: center; width: ${_glossImgPx + 24}px; max-width: 26%;">${_lblImage}</th>` : ''}
+                      <th scope="col" style="text-align: ${align}; width: 22%;">${_lblTerm}</th>
+                      <th scope="col" style="text-align: ${align};">${_lblDef}</th>
+                      ${hasAnyTranslations ? `<th scope="col" style="text-align: ${align}; width: 22%;">${_lblTrans}</th>` : ''}
                   </tr></thead>
-                  <tbody role="rowgroup">
+                  <tbody>
                       ${item.data.map(gItem => `
-                      <tr role="row">
-                          ${hasAnyImages ? `<td role="cell" data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(gItem.term)}" />` : ''}</td>` : ''}
-                          <td role="cell" data-gloss-label="${_lblTerm}" style="text-align: ${align}">
+                      <tr>
+                          ${hasAnyImages ? `<td data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(gItem.term)}" />` : ''}</td>` : ''}
+                          <td data-gloss-label="${_lblTerm}" style="text-align: ${align}">
                             <strong class="gloss-term">${_escTxt(gItem.term)}</strong>
                           </td>
-                          <td role="cell" data-gloss-label="${_lblDef}" style="text-align: ${align}">${_hideCell(gItem.def)}</td>
-                          ${hasAnyTranslations ? `<td role="cell" data-gloss-label="${_lblTrans}" style="text-align: ${align}">${_hideCell(Object.entries(gItem.translations || {}).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join('<br><br>'))}</td>` : ''}
+                          <td data-gloss-label="${_lblDef}" style="text-align: ${align}">${_hideCell(gItem.def)}</td>
+                          ${hasAnyTranslations ? `<td data-gloss-label="${_lblTrans}" style="text-align: ${align}">${_hideCell(Object.entries(gItem.translations || {}).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join('<br><br>'))}</td>` : ''}
                       </tr>
                       `).join('')}
                   </tbody>
-                  </table>`;
+                  </table>
+                  <script>
+                    // A browser drops a table's implicit semantics the moment its
+                    // display changes, so the stacked layout needs explicit ARIA
+                    // roles to stay a table for a screen reader. Those roles are
+                    // added ONLY while the stack is actually in effect, because a
+                    // native table that also carries role="table" with explicitly
+                    // roled descendants is itself an accessibility finding (IBM
+                    // Equal Access flags it as table_aria_descendants, 9 hits when
+                    // the roles were hardcoded into the markup). So: no roles in
+                    // the shipped HTML, roles applied by measurement.
+                    (function () {
+                      var tbl = document.querySelector('[data-glossary-section="${item.id}"] [data-gloss-table]');
+                      if (!tbl) return;
+                      var ROLES = [['table', 'table'], ['thead', 'rowgroup'], ['tbody', 'rowgroup'], ['tr', 'row'], ['th', 'columnheader'], ['td', 'cell']];
+                      function sync() {
+                        var row = tbl.querySelector('tbody tr');
+                        if (!row) return;
+                        var stacked = false;
+                        try { stacked = window.getComputedStyle(row).display === 'block'; } catch (e) { return; }
+                        for (var i = 0; i < ROLES.length; i++) {
+                          var sel = ROLES[i][0] === 'table' ? [tbl] : tbl.querySelectorAll(ROLES[i][0]);
+                          for (var j = 0; j < sel.length; j++) {
+                            if (stacked) sel[j].setAttribute('role', ROLES[i][1]);
+                            else sel[j].removeAttribute('role');
+                          }
+                        }
+                      }
+                      var pending = false;
+                      function schedule() {
+                        if (pending) return;
+                        pending = true;
+                        requestAnimationFrame(function () { pending = false; sync(); });
+                      }
+                      sync();
+                      window.addEventListener('resize', schedule);
+                      // The reader's text-size and font controls change the stack
+                      // threshold too, since the container query is in em.
+                      document.addEventListener('click', function (e) {
+                        if (e.target && e.target.closest && e.target.closest('[data-rt-text]')) schedule();
+                      });
+                      document.addEventListener('change', function (e) {
+                        if (e.target && e.target.closest && e.target.closest('[data-rt-font]')) schedule();
+                      });
+                    })();
+                  </script>`;
                   })()}
                   ${wordSearchHtml}
                   ${_glossarySelfTest ? `
@@ -41201,12 +41278,18 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               } catch (err) { return null; }
             }
             // Deepest content element whose box contains a host-relative point.
+            // Every call is wrapped: elementFromPoint is unimplemented in some
+            // non-browser DOMs (jsdom throws), and anchoring is an enhancement —
+            // it must never be able to stop a note or highlight being created.
             function elementAtHostPoint(x, y) {
               var hr = host.getBoundingClientRect();
               var cx = hr.left + x, cy = hr.top + y;
-              if (cx >= 0 && cy >= 0 && cx <= (window.innerWidth || 0) && cy <= (window.innerHeight || 0)) {
-                var hit = document.elementFromPoint(cx, cy);
-                if (hit && host.contains(hit) && !(hit.closest && hit.closest('.alloflow-anno'))) return hit;
+              if (typeof document.elementFromPoint === 'function'
+                  && cx >= 0 && cy >= 0 && cx <= (window.innerWidth || 0) && cy <= (window.innerHeight || 0)) {
+                try {
+                  var hit = document.elementFromPoint(cx, cy);
+                  if (hit && host.contains(hit) && !(hit.closest && hit.closest('.alloflow-anno'))) return hit;
+                } catch (err) { /* fall through to the geometric search */ }
               }
               var best = null, bestArea = Infinity;
               var all = host.querySelectorAll('p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote, div, section');
@@ -41222,28 +41305,32 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               return best;
             }
             function pointAnchor(x, y) {
-              var el = elementAtHostPoint(x, y);
-              if (!el) return null;
-              var p = pathOf(el);
-              if (p == null) return null;
-              var hr = host.getBoundingClientRect();
-              var r = el.getBoundingClientRect();
-              if (!r.width || !r.height) return null;
-              return {
-                p: p,
-                fx: Math.max(0, Math.min(1, (x - (r.left - hr.left)) / r.width)),
-                fy: Math.max(0, Math.min(1, (y - (r.top - hr.top)) / r.height))
-              };
+              try {
+                var el = elementAtHostPoint(x, y);
+                if (!el) return null;
+                var p = pathOf(el);
+                if (p == null) return null;
+                var hr = host.getBoundingClientRect();
+                var r = el.getBoundingClientRect();
+                if (!r.width || !r.height) return null;
+                return {
+                  p: p,
+                  fx: Math.max(0, Math.min(1, (x - (r.left - hr.left)) / r.width)),
+                  fy: Math.max(0, Math.min(1, (y - (r.top - hr.top)) / r.height))
+                };
+              } catch (err) { return null; }
             }
             function highlightAnchorFromRange(range) {
-              var anc = range.commonAncestorContainer;
-              var el = anc && (anc.nodeType === 1 ? anc : anc.parentNode);
-              if (!el || !host.contains(el)) return null;
-              var p = pathOf(el);
-              if (p == null) return null;
-              var off = textOffsetsIn(el, range);
-              if (!off) return null;
-              return { p: p, s: off.s, e: off.e };
+              try {
+                var anc = range.commonAncestorContainer;
+                var el = anc && (anc.nodeType === 1 ? anc : anc.parentNode);
+                if (!el || !host.contains(el)) return null;
+                var p = pathOf(el);
+                if (p == null) return null;
+                var off = textOffsetsIn(el, range);
+                if (!off) return null;
+                return { p: p, s: off.s, e: off.e };
+              } catch (err) { return null; }
             }
             // Last-resort anchor for a saved highlight that predates anchoring:
             // find its own stored text in the document.
@@ -42575,7 +42662,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             // its stored x/y and behaves exactly as it did before. The derived
             // anchors are persisted on the next save, so an old annotation starts
             // following its words from the first load after this update.
-            reprojectAll();
+            // Anchoring is an enhancement: if any of it fails on an unusual DOM,
+            // fall back to the plain render so marks still appear where they were.
+            try { reprojectAll(); } catch (e) { render(); }
             // Reproject on resize. The old handler re-rendered but explicitly did
             // not re-measure ("Coordinates are frozen at placement time"), so a
             // window resize left every mark behind: measured 103px of vertical

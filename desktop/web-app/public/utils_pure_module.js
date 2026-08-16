@@ -403,7 +403,21 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
     }
     try {
       const response = await fetch(url, _timeoutCtrl ? { ...options, signal: _timeoutCtrl.signal } : options);
-      _notify('onInnerResponse', { attempt: i + 1, maxRetries, status: response.status, ok: response.ok, url: _safeUrl });
+      // Retry-After (2026-08-15): when a rate limiter says HOW LONG, that number is the single most
+      // valuable diagnostic in the log — it separates "server-directed backoff" from guessing, and
+      // the 2026-08-14 investigation had to infer the refill rate from success timestamps because
+      // nothing captured this header. Delta-seconds or HTTP-date per RFC 9110; normalized to whole
+      // seconds-from-now. A number, never text — safe for the pasteable log.
+      let _retryAfterSec = null;
+      try {
+        const _ra = (!response.ok && response.headers && typeof response.headers.get === 'function') ? response.headers.get('retry-after') : null;
+        if (_ra != null && _ra !== '') {
+          const _raNum = Number(_ra);
+          const _sec = Number.isFinite(_raNum) ? _raNum : (Date.parse(_ra) - Date.now()) / 1000;
+          if (Number.isFinite(_sec)) _retryAfterSec = Math.max(0, Math.round(_sec));
+        }
+      } catch (_) {}
+      _notify('onInnerResponse', { attempt: i + 1, maxRetries, status: response.status, ok: response.ok, retryAfterSec: _retryAfterSec, url: _safeUrl });
       if (response.ok) {
         return response;
       }
@@ -422,13 +436,20 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
         const error = new Error(errorMessage);
         error.isFatal = true;
         if (response.status === 401) error.isAuth = true;
+        // Numeric evidence for the layers above: the classifier re-wraps this error and its
+        // message alone cannot distinguish 401 from 403, nor carry the server's Retry-After.
+        error.httpStatus = response.status;
+        if (_retryAfterSec != null) error.retryAfterSec = _retryAfterSec;
         throw error;
       }
       if (response.status === 429 || response.status === 503) {
         if (i < maxRetries - 1) _notify('onInnerRetry', { attempt: i + 1, nextAttempt: i + 2, status: response.status });
         warnLog(`⚠️ Transient API error ${response.status}, retrying (${i+1}/${maxRetries})...`);
         if (i === maxRetries - 1) {
-          throw new Error(`HTTP ${response.status} — Failed to fetch ${_safeUrl} after ${maxRetries} retries.`);
+          const _exhausted = new Error(`HTTP ${response.status} — Failed to fetch ${_safeUrl} after ${maxRetries} retries.`);
+          _exhausted.httpStatus = response.status;
+          if (_retryAfterSec != null) _exhausted.retryAfterSec = _retryAfterSec;
+          throw _exhausted;
         }
       }
     } catch (error) {

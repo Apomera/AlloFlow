@@ -398,6 +398,11 @@ const createGeminiAPI = (deps) => {
         out.canvasTransientAuth = (cls.kind === 'auth' && !!_isCanvasEnv);
         out.classification = cls;
         out.originalMessage = err && err.message;
+        // (2026-08-15) Numeric evidence survives the re-wrap. The classified message collapses
+        // 401 and 403 into API_AUTH_FAILED, and the 2026-08-14 investigation could not tell them
+        // apart from the field log; Retry-After is the server saying how long the throttle is.
+        if (err && err.httpStatus != null) out.httpStatus = err.httpStatus;
+        if (err && err.retryAfterSec != null) out.retryAfterSec = err.retryAfterSec;
         throw out;
       }
       throw err;
