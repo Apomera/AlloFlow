@@ -3848,6 +3848,39 @@ function PdfAuditView(props) {
   }, [_pipelineIsRemediating]);
   // Use this — not bare pdfFixLoading — for anything that must not be interactive during a run.
   const _remediationBusy = pdfFixLoading || pipelineRunActive;
+  // ── Hidden-tab honesty (2026-08-16, Aaron) ────────────────────────────────────────────────
+  // Chrome deprioritizes a hidden tab: canvas rasterization suspends (pdf.js page renders sat
+  // 46s+ in the field log) and timers stretch, so a minimized run is SLOWER — but never wrong;
+  // network calls complete and the reconciler recovers pages the raster side lost. The user
+  // cannot read a warning WHILE hidden, so this speaks at the two moments they can see it:
+  // a standing tip during the run, and a welcome-back toast that says how long the tab was
+  // hidden and that nothing was lost. Both are per-run; the log line makes it diagnosable.
+  const _hiddenSinceRef = useRef(0);
+  const [tabHiddenNoticeMs, setTabHiddenNoticeMs] = useState(0);
+  useEffect(() => {
+    if (!_remediationBusy) { _hiddenSinceRef.current = 0; setTabHiddenNoticeMs(0); return undefined; }
+    const _onVis = () => {
+      try {
+        if (document.visibilityState === 'hidden') {
+          if (!_hiddenSinceRef.current) _hiddenSinceRef.current = Date.now();
+          return;
+        }
+        if (_hiddenSinceRef.current) {
+          const _hiddenFor = Date.now() - _hiddenSinceRef.current;
+          _hiddenSinceRef.current = 0;
+          if (_hiddenFor > 15000) {
+            setTabHiddenNoticeMs((prev) => prev + _hiddenFor);
+            const _mins = Math.max(1, Math.round(_hiddenFor / 60000));
+            addToast((t('pdf_audit.hidden_tab.welcome_back') || 'Welcome back — this tab was hidden for about {m} min, which slows the run (the browser pauses page rendering in hidden tabs). Nothing was lost; the run continued safely.').replace('{m}', String(_mins)), 'info');
+            _auditGateLog('tab returned from hidden during run', { hiddenForMs: _hiddenFor });
+          }
+        }
+      } catch (_) {}
+    };
+    document.addEventListener('visibilitychange', _onVis);
+    if (document.visibilityState === 'hidden' && !_hiddenSinceRef.current) _hiddenSinceRef.current = Date.now();
+    return () => document.removeEventListener('visibilitychange', _onVis);
+  }, [_remediationBusy]);
   const _oneClickOperationBusy = oneClickRemediationBusy || pdfAuditLoading || _remediationBusy || pdfAutoContinueRunning;
   // (2026-08-15) Audit-modal visibility transitions, logged. 'CLOSED {hasResult:false,
   // loading:false}' arriving moments after 'audit START clicked' with no DROPPED line between
@@ -10278,6 +10311,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <span title={t('pdf_audit.chips.retries_title') || 'Requests re-attempted after a timeout or rate-limit — nothing is skipped, retried work is re-attempted later in the run'} className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">Retries {_progressStats.transportRetries || 0}</span>
                           {!!_progressStats.recoveredRetries && <span title={t('pdf_audit.chips.recovered_title') || 'Retries that then succeeded'} className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Recovered {_progressStats.recoveredRetries}</span>}
                           {!!_progressStats.authThrottles && <span title={t('pdf_audit.chips.throttle_title') || 'Times the AI service signaled a rate limit and this run deliberately backed off'} className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Throttle signals {_progressStats.authThrottles}</span>}
+                        </div>
+                        <div className="mt-1.5 text-center text-[10px] text-slate-500">
+                          {t('pdf_audit.hidden_tab.tip') || '💡 Keep this tab visible — a minimized or covered tab runs slower (the browser pauses page rendering), though nothing is lost.'}
+                          {tabHiddenNoticeMs > 60000 ? ' ' + (t('pdf_audit.hidden_tab.accrued') || 'This run was hidden ~{m} min so far.').replace('{m}', String(Math.round(tabHiddenNoticeMs / 60000))) : ''}
                         </div>
                         {remediationProgress?.activity?.message && (
                           <div className={'mt-2 rounded-lg border px-2.5 py-1.5 text-[11px] ' + (remediationProgress.status === 'throttled' ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-slate-50 border-slate-200 text-slate-700')}>
