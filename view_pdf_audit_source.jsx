@@ -3909,6 +3909,41 @@ function PdfAuditView(props) {
     addToast('The audit engine is still loading' + (names.length ? ': ' + names.join(', ') : '') + '. Retry when the dependencies are ready.', state.failed && state.failed.length ? 'error' : 'info');
     return false;
   };
+  // ── One-click gate reporting (2026-08-15, field report) ──────────────────────────────────────
+  // Field symptom: "I upload the document, click Make Accessible, the modal never appears and
+  // nothing happens — the second click works." That produced ZERO evidence. The re-entry guard ORs
+  // four independent conditions and emitted a single generic "already running" toast, and it wrote
+  // nothing to the copyable Log panel at all. So a teacher's report could not distinguish:
+  //   (a) an opening audit still finishing,     (b) a stale pipeline lock the 1s poll hasn't cleared,
+  //   (c) the auto-continue loop still running, (d) the same-tick re-entry ref,
+  // and — worse — could not distinguish ANY rejected click from a click that never registered,
+  // because only an ACCEPTED click ever reached the log (via the pipeline's own Init line).
+  //
+  // These two helpers change reporting ONLY. _oneClickGateBlockers() is the exact same OR as the
+  // guard it serves (_remediationBusy is inlined as its two parts, pdfFixLoading || pipelineRunActive,
+  // precisely so the log can tell those two apart) — it must never gate on anything the guard does
+  // not, or this becomes a behaviour change wearing a diagnostics costume.
+  const _oneClickGateBlockers = () => {
+    const blockers = [];
+    try {
+      if (_oneClickRemediationBusyRef.current) blockers.push('a click is already in flight (same-tick re-entry)');
+      if (pdfAuditLoading) blockers.push('the accessibility audit is still running');
+      if (pdfFixLoading) blockers.push('a remediation run is already in progress');
+      if (pipelineRunActive) blockers.push('the pipeline still reports a run in progress');
+      if (pdfAutoContinueRunning) blockers.push('the auto-continue loop is still running');
+    } catch (_) {}
+    return blockers;
+  };
+  // Distinct tag so this greps cleanly out of a pasted log: [DocPipe][ClickGate].
+  const _oneClickGateLog = (event, detail) => {
+    try {
+      if (_docPipeline && typeof _docPipeline.logHostDiagnostic === 'function') {
+        let json = '';
+        try { json = JSON.stringify(detail || {}); } catch (_) { json = ''; }
+        _docPipeline.logHostDiagnostic('ClickGate', event + (json ? ' ' + json : ''), detail || null);
+      }
+    } catch (_) {}
+  };
   const _remediationDependencies = remediationDependencyState || { pending: [], failed: [] };
 
   // WCAG 2.1.2 / 2.4.3: keep Tab inside the audit dialog while it is open.
@@ -7823,8 +7858,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   )}
                   <p className="text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200">🔒 {t('pdf_audit.gemini_disclosure') || 'Privacy: this document’s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don’t upload documents containing student personal information you aren’t permitted to share with a third-party AI service.'}</p>
                   <button data-help-key="pdf_audit_view_make_accessible_btn" disabled={_oneClickOperationBusy || remediationReady === false} aria-busy={_oneClickOperationBusy ? 'true' : undefined} onClick={async () => {
-                    if (_oneClickRemediationBusyRef.current || pdfAuditLoading || _remediationBusy || pdfAutoContinueRunning) {
-                      addToast(t('toasts.remediation_already_running') || 'Remediation is already running. This click was ignored so the active run can finish.', 'info');
+                    const _gateBlockers = _oneClickGateBlockers();
+                    if (_gateBlockers.length) {
+                      _oneClickGateLog('one-click REJECTED — run did NOT start', { blockers: _gateBlockers, docEpoch: pdfDocumentEpoch });
+                      // The translated sentence still carries the meaning for a teacher; the specific
+                      // reason is appended so a screenshot of the toast is self-diagnosing. Deliberately
+                      // NOT new i18n keys — this suffix is diagnostic detail, not product copy.
+                      addToast((t('toasts.remediation_already_running') || 'Remediation is already running. This click was ignored so the active run can finish.') + ' — ' + _gateBlockers.join('; '), 'info');
                       return;
                     }
                     const _oneClickDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
@@ -7833,6 +7873,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         ? isPdfDocumentIntakeCurrent(_oneClickDocumentEpoch) : _oneClickDocumentEpoch === pdfDocumentEpoch);
                     _oneClickRemediationBusyRef.current = true;
                     setOneClickRemediationBusy(true);
+                    // Records that the click was ACCEPTED. Without this line a rejected click and a
+                    // click that never registered are indistinguishable — both are silence in the log.
+                    // epochIsCurrent is carried because a non-integer/stale intake epoch makes every
+                    // downstream `if (!_oneClickDocumentIsCurrent()) return;` bail silently, which
+                    // presents as the exact same "nothing happened" symptom from a different cause.
+                    _oneClickGateLog('one-click ACCEPTED — starting', { docEpoch: _oneClickDocumentEpoch, epochIsCurrent: _oneClickDocumentIsCurrent() });
                     try {
                     if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; }
                     if (!_requireRemediationReady()) return;

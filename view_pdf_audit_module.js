@@ -3995,6 +3995,32 @@ function PdfAuditView(props) {
     addToast("The audit engine is still loading" + (names.length ? ": " + names.join(", ") : "") + ". Retry when the dependencies are ready.", state.failed && state.failed.length ? "error" : "info");
     return false;
   };
+  const _oneClickGateBlockers = () => {
+    const blockers = [];
+    try {
+      if (_oneClickRemediationBusyRef.current) blockers.push("a click is already in flight (same-tick re-entry)");
+      if (pdfAuditLoading) blockers.push("the accessibility audit is still running");
+      if (pdfFixLoading) blockers.push("a remediation run is already in progress");
+      if (pipelineRunActive) blockers.push("the pipeline still reports a run in progress");
+      if (pdfAutoContinueRunning) blockers.push("the auto-continue loop is still running");
+    } catch (_) {
+    }
+    return blockers;
+  };
+  const _oneClickGateLog = (event, detail) => {
+    try {
+      if (_docPipeline && typeof _docPipeline.logHostDiagnostic === "function") {
+        let json = "";
+        try {
+          json = JSON.stringify(detail || {});
+        } catch (_) {
+          json = "";
+        }
+        _docPipeline.logHostDiagnostic("ClickGate", event + (json ? " " + json : ""), detail || null);
+      }
+    } catch (_) {
+    }
+  };
   const _remediationDependencies = remediationDependencyState || { pending: [], failed: [] };
   const pdfModalRef = useRef(null);
   _alloUseFocusTrap(pdfModalRef, !!(pdfAuditResult || pdfAuditLoading));
@@ -8100,14 +8126,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         }
       }, className: "px-4 py-2 bg-cyan-600 text-white rounded-xl font-bold text-xs hover:bg-cyan-700 disabled:opacity-50" }, mediaDigesting ? "\u23F3 " + (mediaDigestProgress || (t("pdf_audit.media.digesting") || "Digesting\u2026 (large recordings take a while)")) : "\u25B6 " + (t("pdf_audit.media.go") || "Digest recording")), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 ml-2" }, t("pdf_audit.media.unlock_note") || "The buttons below unlock once the digest is ready."));
     })(), /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4" }, remediationReady === false && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mb-3 rounded-xl border border-amber-400 bg-amber-50 p-3 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-black" }, "Remediation engine not ready"), /* @__PURE__ */ React.createElement("div", null, _remediationDependencies.failed.length ? "Required modules failed to load: " + _remediationDependencies.failed.join(", ") : "Required modules are still loading: " + _remediationDependencies.pending.join(", ")), _remediationDependencies.failed.length > 0 && typeof retryRemediationDependencies === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: retryRemediationDependencies, className: "mt-2 rounded-lg border border-amber-500 bg-white px-3 py-1 font-bold hover:bg-amber-100" }, "Retry required modules")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200" }, "\u{1F512} ", t("pdf_audit.gemini_disclosure") || "Privacy: this document\u2019s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don\u2019t upload documents containing student personal information you aren\u2019t permitted to share with a third-party AI service."), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_make_accessible_btn", disabled: _oneClickOperationBusy || remediationReady === false, "aria-busy": _oneClickOperationBusy ? "true" : void 0, onClick: async () => {
-      if (_oneClickRemediationBusyRef.current || pdfAuditLoading || _remediationBusy || pdfAutoContinueRunning) {
-        addToast(t("toasts.remediation_already_running") || "Remediation is already running. This click was ignored so the active run can finish.", "info");
+      const _gateBlockers = _oneClickGateBlockers();
+      if (_gateBlockers.length) {
+        _oneClickGateLog("one-click REJECTED \u2014 run did NOT start", { blockers: _gateBlockers, docEpoch: pdfDocumentEpoch });
+        addToast((t("toasts.remediation_already_running") || "Remediation is already running. This click was ignored so the active run can finish.") + " \u2014 " + _gateBlockers.join("; "), "info");
         return;
       }
       const _oneClickDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
       const _oneClickDocumentIsCurrent = () => Number.isInteger(_oneClickDocumentEpoch) && (typeof isPdfDocumentIntakeCurrent === "function" ? isPdfDocumentIntakeCurrent(_oneClickDocumentEpoch) : _oneClickDocumentEpoch === pdfDocumentEpoch);
       _oneClickRemediationBusyRef.current = true;
       setOneClickRemediationBusy(true);
+      _oneClickGateLog("one-click ACCEPTED \u2014 starting", { docEpoch: _oneClickDocumentEpoch, epochIsCurrent: _oneClickDocumentIsCurrent() });
       try {
         if (pdfAuditResult?._mediaPending) {
           addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
